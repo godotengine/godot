@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 
 #include "editor_export.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 
 void EditorRunNative::_notification(int p_what) {
 
@@ -49,13 +50,13 @@ void EditorRunNative::_notification(int p_what) {
 				im->clear_mipmaps();
 				if (!im->empty()) {
 
-					im->resize(16, 16);
+					im->resize(16 * EDSCALE, 16 * EDSCALE);
 					Ref<ImageTexture> small_icon;
 					small_icon.instance();
 					small_icon->create_from_image(im, 0);
 					MenuButton *mb = memnew(MenuButton);
 					mb->get_popup()->connect("id_pressed", this, "_run_native", varray(i));
-					//mb->connect("pressed", this, "_run_native", varray(-1, i));
+					mb->connect("pressed", this, "_run_native", varray(-1, i));
 					mb->set_icon(small_icon);
 					add_child(mb);
 					menus[i] = mb;
@@ -81,10 +82,14 @@ void EditorRunNative::_notification(int p_what) {
 				} else {
 					mb->get_popup()->clear();
 					mb->show();
-					mb->set_tooltip(TTR("Select device from the list"));
-					for (int i = 0; i < dc; i++) {
-						mb->get_popup()->add_icon_item(get_icon("Play", "EditorIcons"), eep->get_device_name(i));
-						mb->get_popup()->set_item_tooltip(mb->get_popup()->get_item_count() - 1, eep->get_device_info(i).strip_edges());
+					if (dc == 1) {
+						mb->set_tooltip(eep->get_device_name(0) + "\n\n" + eep->get_device_info(0).strip_edges());
+					} else {
+						mb->set_tooltip("Select device from the list");
+						for (int i = 0; i < dc; i++) {
+							mb->get_popup()->add_icon_item(get_icon("Play", "EditorIcons"), eep->get_device_name(i));
+							mb->get_popup()->set_item_tooltip(mb->get_popup()->get_item_count() - 1, eep->get_device_info(i).strip_edges());
+						}
 					}
 				}
 			}
@@ -98,14 +103,15 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 
 	Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(p_platform);
 	ERR_FAIL_COND(eep.is_null());
-	/*if (p_idx == -1) {
+
+	if (p_idx == -1) {
 		if (eep->get_device_count() == 1) {
 			menus[p_platform]->get_popup()->hide();
 			p_idx = 0;
 		} else {
 			return;
 		}
-	}*/
+	}
 
 	Ref<EditorExportPreset> preset;
 

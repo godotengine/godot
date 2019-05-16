@@ -5,9 +5,11 @@
 #include "../IDMath.hpp"
 #include "../MultiBodyTree.hpp"
 
-namespace btInverseDynamics {
+namespace btInverseDynamics
+{
 /// Mass properties of a rigid body
-struct InertiaData {
+struct InertiaData
+{
 	ID_DECLARE_ALIGNED_ALLOCATOR();
 
 	/// mass
@@ -21,7 +23,8 @@ struct InertiaData {
 };
 
 /// Joint properties
-struct JointData {
+struct JointData
+{
 	ID_DECLARE_ALIGNED_ALLOCATOR();
 
 	/// type of joint
@@ -48,7 +51,8 @@ struct JointData {
 
 /// Data structure to store data passed by the user.
 /// This is used in MultiBodyTree::finalize to build internal data structures.
-class MultiBodyTree::InitCache {
+class MultiBodyTree::InitCache
+{
 public:
 	ID_DECLARE_ALIGNED_ALLOCATOR();
 	/// constructor
@@ -105,5 +109,5 @@ private:
 	// index of root body (or -1 if not set)
 	int m_root_index;
 };
-}
+}  // namespace btInverseDynamics
 #endif  // MULTIBODYTREEINITCACHE_HPP_

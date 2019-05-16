@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,6 +62,7 @@ void BodyPair2DSW::_contact_added_callback(const Vector2 &p_point_A, const Vecto
 	contact.local_B = local_B;
 	contact.reused = true;
 	contact.normal = (p_point_A - p_point_B).normalized();
+	contact.mass_normal = 0; // will be computed in setup()
 
 	// attempt to determine if the contact will be reused
 
@@ -137,7 +138,7 @@ void BodyPair2DSW::_validate_contacts() {
 		Contact &c = contacts[i];
 
 		bool erase = false;
-		if (c.reused == false) {
+		if (!c.reused) {
 			//was left behind in previous frame
 			erase = true;
 		} else {
@@ -218,6 +219,14 @@ bool BodyPair2DSW::_test_ccd(real_t p_step, Body2DSW *p_A, int p_shape_A, const 
 	return true;
 }
 
+real_t combine_bounce(Body2DSW *A, Body2DSW *B) {
+	return CLAMP(A->get_bounce() + B->get_bounce(), 0, 1);
+}
+
+real_t combine_friction(Body2DSW *A, Body2DSW *B) {
+	return ABS(MIN(A->get_friction(), B->get_friction()));
+}
+
 bool BodyPair2DSW::setup(real_t p_step) {
 
 	//cannot collide
@@ -294,7 +303,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 					Contact &c = contacts[i];
 					if (!c.reused)
 						continue;
-					if (c.normal.dot(direction) < 0)
+					if (c.normal.dot(direction) > 0) //greater (normal inverted)
 						continue;
 
 					valid = true;
@@ -317,7 +326,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 					Contact &c = contacts[i];
 					if (!c.reused)
 						continue;
-					if (c.normal.dot(direction) < 0)
+					if (c.normal.dot(direction) < 0) //less (normal ok)
 						continue;
 
 					valid = true;
@@ -431,7 +440,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 
 #endif
 
-		c.bounce = MAX(A->get_bounce(), B->get_bounce());
+		c.bounce = combine_bounce(A, B);
 		if (c.bounce) {
 
 			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
@@ -487,7 +496,7 @@ void BodyPair2DSW::solve(real_t p_step) {
 		real_t jnOld = c.acc_normal_impulse;
 		c.acc_normal_impulse = MAX(jnOld + jn, 0.0f);
 
-		real_t friction = A->get_friction() * B->get_friction();
+		real_t friction = combine_friction(A, B);
 
 		real_t jtMax = friction * c.acc_normal_impulse;
 		real_t jt = -vt * c.mass_tangent;

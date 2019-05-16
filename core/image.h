@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include "color.h"
-#include "dvector.h"
-#include "math_2d.h"
-#include "resource.h"
+#include "core/color.h"
+#include "core/math/rect2.h"
+#include "core/pool_vector.h"
+#include "core/resource.h"
 
 /**
  *	@author Juan Linietsky <reduzio@gmail.com>
@@ -47,17 +47,18 @@
 class Image;
 
 typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img);
+typedef Ref<Image> (*ImageMemLoadFunc)(const uint8_t *p_png, int p_size);
 
 class Image : public Resource {
 	GDCLASS(Image, Resource);
+
+public:
+	static SavePNGFunc save_png_func;
 
 	enum {
 		MAX_WIDTH = 16384, // force a limit somehow
 		MAX_HEIGHT = 16384 // force a limit somehow
 	};
-
-public:
-	static SavePNGFunc save_png_func;
 
 	enum Format {
 
@@ -107,21 +108,26 @@ public:
 		INTERPOLATE_NEAREST,
 		INTERPOLATE_BILINEAR,
 		INTERPOLATE_CUBIC,
+		INTERPOLATE_TRILINEAR,
+		/* INTERPOLATE_TRICUBIC, */
 		/* INTERPOLATE GAUSS */
 	};
 
 	enum CompressSource {
 		COMPRESS_SOURCE_GENERIC,
 		COMPRESS_SOURCE_SRGB,
-		COMPRESS_SOURCE_NORMAL
+		COMPRESS_SOURCE_NORMAL,
+		COMPRESS_SOURCE_LAYERED,
 	};
 
 	//some functions provided by something else
 
-	static Ref<Image> (*_png_mem_loader_func)(const uint8_t *p_png, int p_size);
-	static Ref<Image> (*_jpg_mem_loader_func)(const uint8_t *p_png, int p_size);
+	static ImageMemLoadFunc _png_mem_loader_func;
+	static ImageMemLoadFunc _jpg_mem_loader_func;
+	static ImageMemLoadFunc _webp_mem_loader_func;
 
-	static void (*_image_compress_bc_func)(Image *, CompressSource p_source);
+	static void (*_image_compress_bc_func)(Image *, float, CompressSource p_source);
+	static void (*_image_compress_bptc_func)(Image *, float p_lossy_quality, CompressSource p_source);
 	static void (*_image_compress_pvrtc2_func)(Image *);
 	static void (*_image_compress_pvrtc4_func)(Image *);
 	static void (*_image_compress_etc1_func)(Image *, float);
@@ -129,6 +135,7 @@ public:
 
 	static void (*_image_decompress_pvrtc)(Image *);
 	static void (*_image_decompress_bc)(Image *);
+	static void (*_image_decompress_bptc)(Image *);
 	static void (*_image_decompress_etc1)(Image *);
 	static void (*_image_decompress_etc2)(Image *);
 
@@ -175,6 +182,17 @@ private:
 	void _set_data(const Dictionary &p_data);
 	Dictionary _get_data() const;
 
+	Error _load_from_buffer(const PoolVector<uint8_t> &p_array, ImageMemLoadFunc p_loader);
+
+	static void average_4_uint8(uint8_t &p_out, const uint8_t &p_a, const uint8_t &p_b, const uint8_t &p_c, const uint8_t &p_d);
+	static void average_4_float(float &p_out, const float &p_a, const float &p_b, const float &p_c, const float &p_d);
+	static void average_4_half(uint16_t &p_out, const uint16_t &p_a, const uint16_t &p_b, const uint16_t &p_c, const uint16_t &p_d);
+	static void average_4_rgbe9995(uint32_t &p_out, const uint32_t &p_a, const uint32_t &p_b, const uint32_t &p_c, const uint32_t &p_d);
+	static void renormalize_uint8(uint8_t *p_rgb);
+	static void renormalize_float(float *p_rgb);
+	static void renormalize_half(uint16_t *p_rgb);
+	static void renormalize_rgbe9995(uint32_t *p_rgb);
+
 public:
 	int get_width() const; ///< Get image width
 	int get_height() const; ///< Get image height
@@ -205,6 +223,7 @@ public:
 	void resize(int p_width, int p_height, Interpolation p_interpolation = INTERPOLATE_BILINEAR);
 	void shrink_x2();
 	void expand_x2_hq2x();
+	bool is_size_po2() const;
 	/**
 	 * Crop the image to a specific size, if larger, then the image is filled by black
 	 */
@@ -217,9 +236,10 @@ public:
 	/**
 	 * Generate a mipmap to an image (creates an image 1/4 the size, with averaging of 4->1)
 	 */
-	Error generate_mipmaps();
+	Error generate_mipmaps(bool p_renormalize = false);
 
 	void clear_mipmaps();
+	void normalize(); //for normal maps
 
 	/**
 	 * Create a new image of a given size and format. Current image will be lost
@@ -265,8 +285,9 @@ public:
 	static int get_format_block_size(Format p_format);
 	static void get_format_min_pixel_size(Format p_format, int &r_w, int &r_h);
 
-	static int get_image_data_size(int p_width, int p_height, Format p_format, int p_mipmaps = 0);
+	static int get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps = false);
 	static int get_image_required_mipmaps(int p_width, int p_height, Format p_format);
+	static int get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap);
 
 	enum CompressMode {
 		COMPRESS_S3TC,
@@ -274,6 +295,7 @@ public:
 		COMPRESS_PVRTC4,
 		COMPRESS_ETC,
 		COMPRESS_ETC2,
+		COMPRESS_BPTC
 	};
 
 	Error compress(CompressMode p_mode = COMPRESS_S3TC, CompressSource p_source = COMPRESS_SOURCE_GENERIC, float p_lossy_quality = 0.7);
@@ -284,6 +306,7 @@ public:
 	void premultiply_alpha();
 	void srgb_to_linear();
 	void normalmap_to_xy();
+	Ref<Image> rgbe_to_srgb();
 	void bumpmap_to_normalmap(float bump_scale = 1.0);
 
 	void blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest);
@@ -295,11 +318,13 @@ public:
 	Rect2 get_used_rect() const;
 	Ref<Image> get_rect(const Rect2 &p_area) const;
 
-	static void set_compress_bc_func(void (*p_compress_func)(Image *, CompressSource));
+	static void set_compress_bc_func(void (*p_compress_func)(Image *, float, CompressSource));
+	static void set_compress_bptc_func(void (*p_compress_func)(Image *, float, CompressSource));
 	static String get_format_name(Format p_format);
 
 	Error load_png_from_buffer(const PoolVector<uint8_t> &p_array);
 	Error load_jpg_from_buffer(const PoolVector<uint8_t> &p_array);
+	Error load_webp_from_buffer(const PoolVector<uint8_t> &p_array);
 
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);
 	Image(const char **p_xpm);
@@ -320,8 +345,11 @@ public:
 	};
 
 	DetectChannels get_detected_channels();
+	void optimize_channels();
 
+	Color get_pixelv(const Point2 &p_src) const;
 	Color get_pixel(int p_x, int p_y) const;
+	void set_pixelv(const Point2 &p_dest, const Color &p_color);
 	void set_pixel(int p_x, int p_y, const Color &p_color);
 
 	void copy_internals_from(const Ref<Image> &p_image) {

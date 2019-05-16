@@ -1,10 +1,10 @@
 
 /* png.c - location for general purpose libpng functions
  *
- * Last changed in libpng 1.6.33 [September 28, 2017]
- * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
- * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
- * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+ * Copyright (c) 2018-2019 Cosmin Truta
+ * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
+ * Copyright (c) 1996-1997 Andreas Dilger
+ * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -14,7 +14,7 @@
 #include "pngpriv.h"
 
 /* Generate a compiler error if there is an old png.h in the search path. */
-typedef png_libpng_version_1_6_34 Your_png_h_is_not_version_1_6_34;
+typedef png_libpng_version_1_6_37 Your_png_h_is_not_version_1_6_37;
 
 #ifdef __GNUC__
 /* The version tests may need to be added to, but the problem warning has
@@ -71,7 +71,7 @@ png_set_sig_bytes(png_structrp png_ptr, int num_bytes)
  * PNG signature (this is the same behavior as strcmp, memcmp, etc).
  */
 int PNGAPI
-png_sig_cmp(png_const_bytep sig, png_size_t start, png_size_t num_to_check)
+png_sig_cmp(png_const_bytep sig, size_t start, size_t num_to_check)
 {
    png_byte png_signature[8] = {137, 80, 78, 71, 13, 10, 26, 10};
 
@@ -136,7 +136,7 @@ png_reset_crc(png_structrp png_ptr)
  * trouble of calculating it.
  */
 void /* PRIVATE */
-png_calculate_crc(png_structrp png_ptr, png_const_bytep ptr, png_size_t length)
+png_calculate_crc(png_structrp png_ptr, png_const_bytep ptr, size_t length)
 {
    int need_crc = 1;
 
@@ -421,7 +421,7 @@ png_destroy_info_struct(png_const_structrp png_ptr, png_infopp info_ptr_ptr)
  * those cases where it does anything other than a memset.
  */
 PNG_FUNCTION(void,PNGAPI
-png_info_init_3,(png_infopp ptr_ptr, png_size_t png_info_struct_size),
+png_info_init_3,(png_infopp ptr_ptr, size_t png_info_struct_size),
     PNG_DEPRECATED)
 {
    png_inforp info_ptr = *ptr_ptr;
@@ -736,7 +736,7 @@ png_save_int_32(png_bytep buf, png_int_32 i)
 int PNGAPI
 png_convert_to_rfc1123_buffer(char out[29], png_const_timep ptime)
 {
-   static PNG_CONST char short_months[12][4] =
+   static const char short_months[12][4] =
         {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
@@ -814,20 +814,14 @@ png_get_copyright(png_const_structrp png_ptr)
 #ifdef PNG_STRING_COPYRIGHT
    return PNG_STRING_COPYRIGHT
 #else
-#  ifdef __STDC__
    return PNG_STRING_NEWLINE \
-      "libpng version 1.6.34 - September 29, 2017" PNG_STRING_NEWLINE \
-      "Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson" \
+      "libpng version 1.6.37" PNG_STRING_NEWLINE \
+      "Copyright (c) 2018-2019 Cosmin Truta" PNG_STRING_NEWLINE \
+      "Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson" \
       PNG_STRING_NEWLINE \
       "Copyright (c) 1996-1997 Andreas Dilger" PNG_STRING_NEWLINE \
       "Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc." \
       PNG_STRING_NEWLINE;
-#  else
-   return "libpng version 1.6.34 - September 29, 2017\
-      Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson\
-      Copyright (c) 1996-1997 Andreas Dilger\
-      Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.";
-#  endif
 #endif
 }
 
@@ -942,7 +936,7 @@ png_handle_as_unknown(png_const_structrp png_ptr, png_const_bytep chunk_name)
 
    /* The code is the fifth byte after each four byte string.  Historically this
     * code was always searched from the end of the list, this is no longer
-    * necessary because the 'set' routine handles duplicate entries correcty.
+    * necessary because the 'set' routine handles duplicate entries correctly.
     */
    do /* num_chunk_list > 0, so at least one */
    {
@@ -1121,7 +1115,7 @@ png_colorspace_set_gamma(png_const_structrp png_ptr,
     png_colorspacerp colorspace, png_fixed_point gAMA)
 {
    /* Changed in libpng-1.5.4 to limit the values to ensure overflow can't
-    * occur.  Since the fixed point representation is asymetrical it is
+    * occur.  Since the fixed point representation is asymmetrical it is
     * possible for 1/gamma to overflow the limit of 21474 and this means the
     * gamma value must be at least 5/100000 and hence at most 20000.0.  For
     * safety the limits here are a little narrower.  The values are 0.00016 to
@@ -2067,7 +2061,7 @@ png_icc_check_header(png_const_structrp png_ptr, png_colorspacerp colorspace,
     */
 
    /* Data checks (could be skipped).  These checks must be independent of the
-    * version number; however, the version number doesn't accomodate changes in
+    * version number; however, the version number doesn't accommodate changes in
     * the header fields (just the known tags and the interpretation of the
     * data.)
     */
@@ -2707,7 +2701,7 @@ png_check_IHDR(png_const_structrp png_ptr,
 
 #if defined(PNG_sCAL_SUPPORTED) || defined(PNG_pCAL_SUPPORTED)
 /* ASCII to fp functions */
-/* Check an ASCII formated floating point value, see the more detailed
+/* Check an ASCII formatted floating point value, see the more detailed
  * comments in pngpriv.h
  */
 /* The following is used internally to preserve the sticky flags */
@@ -2715,11 +2709,11 @@ png_check_IHDR(png_const_structrp png_ptr,
 #define png_fp_set(state, value) ((state) = (value) | ((state) & PNG_FP_STICKY))
 
 int /* PRIVATE */
-png_check_fp_number(png_const_charp string, png_size_t size, int *statep,
+png_check_fp_number(png_const_charp string, size_t size, int *statep,
     png_size_tp whereami)
 {
    int state = *statep;
-   png_size_t i = *whereami;
+   size_t i = *whereami;
 
    while (i < size)
    {
@@ -2842,10 +2836,10 @@ PNG_FP_End:
 
 /* The same but for a complete string. */
 int
-png_check_fp_string(png_const_charp string, png_size_t size)
+png_check_fp_string(png_const_charp string, size_t size)
 {
    int        state=0;
-   png_size_t char_index=0;
+   size_t char_index=0;
 
    if (png_check_fp_number(string, size, &state, &char_index) != 0 &&
       (char_index == size || string[char_index] == 0))
@@ -2906,7 +2900,7 @@ png_pow10(int power)
 #pragma GCC diagnostic warning "-Wstrict-overflow=2"
 #endif /* GCC_STRICT_OVERFLOW */
 void /* PRIVATE */
-png_ascii_from_fp(png_const_structrp png_ptr, png_charp ascii, png_size_t size,
+png_ascii_from_fp(png_const_structrp png_ptr, png_charp ascii, size_t size,
     double fp, unsigned int precision)
 {
    /* We use standard functions from math.h, but not printf because
@@ -3134,11 +3128,11 @@ png_ascii_from_fp(png_const_structrp png_ptr, png_charp ascii, png_size_t size,
             /* The total output count (max) is now 4+precision */
 
             /* Check for an exponent, if we don't need one we are
-             * done and just need to terminate the string.  At
-             * this point exp_b10==(-1) is effectively a flag - it got
-             * to '-1' because of the decrement after outputting
-             * the decimal point above (the exponent required is
-             * *not* -1!)
+             * done and just need to terminate the string.  At this
+             * point, exp_b10==(-1) is effectively a flag: it got
+             * to '-1' because of the decrement, after outputting
+             * the decimal point above. (The exponent required is
+             * *not* -1.)
              */
             if (exp_b10 >= (-1) && exp_b10 <= 2)
             {
@@ -3237,7 +3231,7 @@ png_ascii_from_fp(png_const_structrp png_ptr, png_charp ascii, png_size_t size,
  */
 void /* PRIVATE */
 png_ascii_from_fixed(png_const_structrp png_ptr, png_charp ascii,
-    png_size_t size, png_fixed_point fp)
+    size_t size, png_fixed_point fp)
 {
    /* Require space for 10 decimal digits, a decimal point, a minus sign and a
     * trailing \0, 13 characters:
@@ -3976,18 +3970,18 @@ png_gamma_correct(png_structrp png_ptr, unsigned int value,
  */
 static void
 png_build_16bit_table(png_structrp png_ptr, png_uint_16pp *ptable,
-    PNG_CONST unsigned int shift, PNG_CONST png_fixed_point gamma_val)
+    unsigned int shift, png_fixed_point gamma_val)
 {
    /* Various values derived from 'shift': */
-   PNG_CONST unsigned int num = 1U << (8U - shift);
+   unsigned int num = 1U << (8U - shift);
 #ifdef PNG_FLOATING_ARITHMETIC_SUPPORTED
    /* CSE the division and work round wacky GCC warnings (see the comments
     * in png_gamma_8bit_correct for where these come from.)
     */
-   PNG_CONST double fmax = 1./(((png_int_32)1 << (16U - shift))-1);
+   double fmax = 1.0 / (((png_int_32)1 << (16U - shift)) - 1);
 #endif
-   PNG_CONST unsigned int max = (1U << (16U - shift))-1U;
-   PNG_CONST unsigned int max_by_2 = 1U << (15U-shift);
+   unsigned int max = (1U << (16U - shift)) - 1U;
+   unsigned int max_by_2 = 1U << (15U - shift);
    unsigned int i;
 
    png_uint_16pp table = *ptable =
@@ -4053,10 +4047,10 @@ png_build_16bit_table(png_structrp png_ptr, png_uint_16pp *ptable,
  */
 static void
 png_build_16to8_table(png_structrp png_ptr, png_uint_16pp *ptable,
-    PNG_CONST unsigned int shift, PNG_CONST png_fixed_point gamma_val)
+    unsigned int shift, png_fixed_point gamma_val)
 {
-   PNG_CONST unsigned int num = 1U << (8U - shift);
-   PNG_CONST unsigned int max = (1U << (16U - shift))-1U;
+   unsigned int num = 1U << (8U - shift);
+   unsigned int max = (1U << (16U - shift))-1U;
    unsigned int i;
    png_uint_32 last;
 
@@ -4121,7 +4115,7 @@ png_build_16to8_table(png_structrp png_ptr, png_uint_16pp *ptable,
  */
 static void
 png_build_8bit_table(png_structrp png_ptr, png_bytepp ptable,
-    PNG_CONST png_fixed_point gamma_val)
+    png_fixed_point gamma_val)
 {
    unsigned int i;
    png_bytep table = *ptable = (png_bytep)png_malloc(png_ptr, 256);
@@ -4344,7 +4338,7 @@ png_set_option(png_structrp png_ptr, int option, int onoff)
       png_uint_32 setting = (2U + (onoff != 0)) << option;
       png_uint_32 current = png_ptr->options;
 
-      png_ptr->options = (png_uint_32)(((current & ~mask) | setting) & 0xff);
+      png_ptr->options = (png_uint_32)((current & ~mask) | setting);
 
       return (int)(current & mask) >> option;
    }
@@ -4594,8 +4588,7 @@ png_image_free(png_imagep image)
    if (image != NULL && image->opaque != NULL &&
       image->opaque->error_buf == NULL)
    {
-      /* Ignore errors here: */
-      (void)png_safe_execute(image, png_image_free_function, image);
+      png_image_free_function(image);
       image->opaque = NULL;
    }
 }

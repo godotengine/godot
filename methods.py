@@ -1,574 +1,93 @@
 import os
-from compat import iteritems
+import os.path
+import sys
+import re
+import glob
+import string
+import subprocess
+from compat import iteritems, isbasestring, decode_utf8
 
 
 def add_source_files(self, sources, filetype, lib_env=None, shared=False):
-    import glob
-    import string
-    # if not lib_objects:
-    if not lib_env:
-        lib_env = self
-    if type(filetype) == type(""):
 
-        dir = self.Dir('.').abspath
-        list = glob.glob(dir + "/" + filetype)
-        for f in list:
-            sources.append(self.Object(f))
+    if isbasestring(filetype):
+        dir_path = self.Dir('.').abspath
+        filetype = sorted(glob.glob(dir_path + "/" + filetype))
+
+    for path in filetype:
+        sources.append(self.Object(path))
+
+
+def disable_warnings(self):
+    # 'self' is the environment
+    if self.msvc:
+        # We have to remove existing warning level defines before appending /w,
+        # otherwise we get: "warning D9025 : overriding '/W3' with '/w'"
+        warn_flags = ['/Wall', '/W4', '/W3', '/W2', '/W1', '/WX']
+        self.Append(CCFLAGS=['/w'])
+        self.Append(CFLAGS=['/w'])
+        self.Append(CPPFLAGS=['/w'])
+        self['CCFLAGS'] = [x for x in self['CCFLAGS'] if not x in warn_flags]
+        self['CFLAGS'] = [x for x in self['CFLAGS'] if not x in warn_flags]
+        self['CXXFLAGS'] = [x for x in self['CXXFLAGS'] if not x in warn_flags]
     else:
-        for f in filetype:
-            sources.append(self.Object(f))
+        self.Append(CCFLAGS=['-w'])
+        self.Append(CFLAGS=['-w'])
+        self.Append(CXXFLAGS=['-w'])
 
-
-
-class LegacyGLHeaderStruct:
-
-    def __init__(self):
-        self.vertex_lines = []
-        self.fragment_lines = []
-        self.uniforms = []
-        self.attributes = []
-        self.feedbacks = []
-        self.fbos = []
-        self.conditionals = []
-        self.enums = {}
-        self.texunits = []
-        self.texunit_names = []
-        self.ubos = []
-        self.ubo_names = []
-
-        self.vertex_included_files = []
-        self.fragment_included_files = []
-
-        self.reading = ""
-        self.line_offset = 0
-        self.vertex_offset = 0
-        self.fragment_offset = 0
-
-
-def include_file_in_legacygl_header(filename, header_data, depth):
-    fs = open(filename, "r")
-    line = fs.readline()
-
-    while(line):
-
-        if (line.find("[vertex]") != -1):
-            header_data.reading = "vertex"
-            line = fs.readline()
-            header_data.line_offset += 1
-            header_data.vertex_offset = header_data.line_offset
-            continue
-
-        if (line.find("[fragment]") != -1):
-            header_data.reading = "fragment"
-            line = fs.readline()
-            header_data.line_offset += 1
-            header_data.fragment_offset = header_data.line_offset
-            continue
-
-        while(line.find("#include ") != -1):
-            includeline = line.replace("#include ", "").strip()[1:-1]
-
-            import os.path
-
-            included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
-            if (not included_file in header_data.vertex_included_files and header_data.reading == "vertex"):
-                header_data.vertex_included_files += [included_file]
-                if(include_file_in_legacygl_header(included_file, header_data, depth + 1) == None):
-                    print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
-            elif (not included_file in header_data.fragment_included_files and header_data.reading == "fragment"):
-                header_data.fragment_included_files += [included_file]
-                if(include_file_in_legacygl_header(included_file, header_data, depth + 1) == None):
-                    print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
-
-            line = fs.readline()
-
-        if (line.find("#ifdef ") != -1 or line.find("#elif defined(") != -1):
-            if (line.find("#ifdef ") != -1):
-                ifdefline = line.replace("#ifdef ", "").strip()
-            else:
-                ifdefline = line.replace("#elif defined(", "").strip()
-                ifdefline = ifdefline.replace(")", "").strip()
-
-            if (line.find("_EN_") != -1):
-                enumbase = ifdefline[:ifdefline.find("_EN_")]
-                ifdefline = ifdefline.replace("_EN_", "_")
-                line = line.replace("_EN_", "_")
-#				print(enumbase+":"+ifdefline);
-                if (enumbase not in header_data.enums):
-                    header_data.enums[enumbase] = []
-                if (ifdefline not in header_data.enums[enumbase]):
-                    header_data.enums[enumbase].append(ifdefline)
-
-            elif (not ifdefline in header_data.conditionals):
-                header_data.conditionals += [ifdefline]
-
-        if (line.find("uniform") != -1 and line.lower().find("texunit:") != -1):
-            # texture unit
-            texunitstr = line[line.find(":") + 1:].strip()
-            if (texunitstr == "auto"):
-                texunit = "-1"
-            else:
-                texunit = str(int(texunitstr))
-            uline = line[:line.lower().find("//")]
-            uline = uline.replace("uniform", "")
-            uline = uline.replace("highp", "")
-            uline = uline.replace(";", "")
-            lines = uline.split(",")
-            for x in lines:
-
-                x = x.strip()
-                x = x[x.rfind(" ") + 1:]
-                if (x.find("[") != -1):
-                    # unfiorm array
-                    x = x[:x.find("[")]
-
-                if (not x in header_data.texunit_names):
-                    header_data.texunits += [(x, texunit)]
-                    header_data.texunit_names += [x]
-
-        elif (line.find("uniform") != -1 and line.lower().find("ubo:") != -1):
-            # uniform buffer object
-            ubostr = line[line.find(":") + 1:].strip()
-            ubo = str(int(ubostr))
-            uline = line[:line.lower().find("//")]
-            uline = uline[uline.find("uniform") + len("uniform"):]
-            uline = uline.replace("highp", "")
-            uline = uline.replace(";", "")
-            uline = uline.replace("{", "").strip()
-            lines = uline.split(",")
-            for x in lines:
-
-                x = x.strip()
-                x = x[x.rfind(" ") + 1:]
-                if (x.find("[") != -1):
-                    # unfiorm array
-                    x = x[:x.find("[")]
-
-                if (not x in header_data.ubo_names):
-                    header_data.ubos += [(x, ubo)]
-                    header_data.ubo_names += [x]
-
-        elif (line.find("uniform") != -1 and line.find("{") == -1 and line.find(";") != -1):
-            uline = line.replace("uniform", "")
-            uline = uline.replace(";", "")
-            lines = uline.split(",")
-            for x in lines:
-
-                x = x.strip()
-                x = x[x.rfind(" ") + 1:]
-                if (x.find("[") != -1):
-                    # unfiorm array
-                    x = x[:x.find("[")]
-
-                if (not x in header_data.uniforms):
-                    header_data.uniforms += [x]
-
-        if (line.strip().find("attribute ") == 0 and line.find("attrib:") != -1):
-            uline = line.replace("in ", "")
-            uline = uline.replace("attribute ", "")
-            uline = uline.replace("highp ", "")
-            uline = uline.replace(";", "")
-            uline = uline[uline.find(" "):].strip()
-
-            if (uline.find("//") != -1):
-                name, bind = uline.split("//")
-                if (bind.find("attrib:") != -1):
-                    name = name.strip()
-                    bind = bind.replace("attrib:", "").strip()
-                    header_data.attributes += [(name, bind)]
-
-        if (line.strip().find("out ") == 0 and line.find("tfb:") != -1):
-            uline = line.replace("out ", "")
-            uline = uline.replace("highp ", "")
-            uline = uline.replace(";", "")
-            uline = uline[uline.find(" "):].strip()
-
-            if (uline.find("//") != -1):
-                name, bind = uline.split("//")
-                if (bind.find("tfb:") != -1):
-                    name = name.strip()
-                    bind = bind.replace("tfb:", "").strip()
-                    header_data.feedbacks += [(name, bind)]
-
-        line = line.replace("\r", "")
-        line = line.replace("\n", "")
-        # line=line.replace("\\","\\\\")
-        # line=line.replace("\"","\\\"")
-        # line=line+"\\n\\"
-
-        if (header_data.reading == "vertex"):
-            header_data.vertex_lines += [line]
-        if (header_data.reading == "fragment"):
-            header_data.fragment_lines += [line]
-
-        line = fs.readline()
-        header_data.line_offset += 1
-
-    fs.close()
-
-    return header_data
-
-
-def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2=False):
-
-    header_data = LegacyGLHeaderStruct()
-    include_file_in_legacygl_header(filename, header_data, 0)
-
-    out_file = filename + ".gen.h"
-    fd = open(out_file, "w")
-
-    enum_constants = []
-
-    fd.write("/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */\n")
-
-    out_file_base = out_file
-    out_file_base = out_file_base[out_file_base.rfind("/") + 1:]
-    out_file_base = out_file_base[out_file_base.rfind("\\") + 1:]
-#	print("out file "+out_file+" base " +out_file_base)
-    out_file_ifdef = out_file_base.replace(".", "_").upper()
-    fd.write("#ifndef " + out_file_ifdef + class_suffix + "_120\n")
-    fd.write("#define " + out_file_ifdef + class_suffix + "_120\n")
-
-    out_file_class = out_file_base.replace(".glsl.gen.h", "").title().replace("_", "").replace(".", "") + "Shader" + class_suffix
-    fd.write("\n\n")
-    fd.write("#include \"" + include + "\"\n\n\n")
-    fd.write("class " + out_file_class + " : public Shader" + class_suffix + " {\n\n")
-    fd.write("\t virtual String get_shader_name() const { return \"" + out_file_class + "\"; }\n")
-
-    fd.write("public:\n\n")
-
-    if (len(header_data.conditionals)):
-        fd.write("\tenum Conditionals {\n")
-        for x in header_data.conditionals:
-            fd.write("\t\t" + x.upper() + ",\n")
-        fd.write("\t};\n\n")
-
-    if (len(header_data.uniforms)):
-        fd.write("\tenum Uniforms {\n")
-        for x in header_data.uniforms:
-            fd.write("\t\t" + x.upper() + ",\n")
-        fd.write("\t};\n\n")
-
-    fd.write("\t_FORCE_INLINE_ int get_uniform(Uniforms p_uniform) const { return _get_uniform(p_uniform); }\n\n")
-    if (len(header_data.conditionals)):
-
-        fd.write("\t_FORCE_INLINE_ void set_conditional(Conditionals p_conditional,bool p_enable)  {  _set_conditional(p_conditional,p_enable); }\n\n")
-    fd.write("\t#define _FU if (get_uniform(p_uniform)<0) return; ERR_FAIL_COND( get_active()!=this );\n\n ")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_value) { _FU glUniform1f(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, double p_value) { _FU glUniform1f(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint8_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int8_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint16_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int16_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint32_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int32_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
-    #fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint64_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n");
-    #fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int64_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n");
-    #fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, unsigned long p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n");
-    #fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, long p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n");
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Color& p_color) { _FU GLfloat col[4]={p_color.r,p_color.g,p_color.b,p_color.a}; glUniform4fv(get_uniform(p_uniform),1,col); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector2& p_vec2) { _FU GLfloat vec2[2]={p_vec2.x,p_vec2.y}; glUniform2fv(get_uniform(p_uniform),1,vec2); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector3& p_vec3) { _FU GLfloat vec3[3]={p_vec3.x,p_vec3.y,p_vec3.z}; glUniform3fv(get_uniform(p_uniform),1,vec3); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_a, float p_b) { _FU glUniform2f(get_uniform(p_uniform),p_a,p_b); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_a, float p_b, float p_c) { _FU glUniform3f(get_uniform(p_uniform),p_a,p_b,p_c); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_a, float p_b, float p_c, float p_d) { _FU glUniform4f(get_uniform(p_uniform),p_a,p_b,p_c,p_d); }\n\n")
-
-    fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform& p_transform) {  _FU
-
-		const Transform &tr = p_transform;
-
-		GLfloat matrix[16]={ /* build a 16x16 matrix */
-			tr.basis.elements[0][0],
-			tr.basis.elements[1][0],
-			tr.basis.elements[2][0],
-			0,
-			tr.basis.elements[0][1],
-			tr.basis.elements[1][1],
-			tr.basis.elements[2][1],
-			0,
-			tr.basis.elements[0][2],
-			tr.basis.elements[1][2],
-			tr.basis.elements[2][2],
-			0,
-			tr.origin.x,
-			tr.origin.y,
-			tr.origin.z,
-			1
-		};
-
-
-                glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
-
-
-	}
-
-	""")
-
-    fd.write("""_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform2D& p_transform) {  _FU
-
-		const Transform2D &tr = p_transform;
-
-		GLfloat matrix[16]={ /* build a 16x16 matrix */
-			tr.elements[0][0],
-			tr.elements[0][1],
-			0,
-			0,
-			tr.elements[1][0],
-			tr.elements[1][1],
-			0,
-			0,
-			0,
-			0,
-			1,
-			0,
-			tr.elements[2][0],
-			tr.elements[2][1],
-			0,
-			1
-		};
-
-
-                glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
-
-
-	}
-
-	""")
-
-    fd.write("""_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const CameraMatrix& p_matrix) {  _FU
-
-		GLfloat matrix[16];
-
-		for (int i=0;i<4;i++) {
-			for (int j=0;j<4;j++) {
-
-				matrix[i*4+j]=p_matrix.matrix[i][j];
-			}
-		}
-
-		glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
-        } """)
-
-    fd.write("\n\n#undef _FU\n\n\n")
-
-    fd.write("\tvirtual void init() {\n\n")
-
-    enum_value_count = 0
-
-    if (len(header_data.enums)):
-
-        fd.write("\t\t//Written using math, given nonstandarity of 64 bits integer constants..\n")
-        fd.write("\t\tstatic const Enum _enums[]={\n")
-
-        bitofs = len(header_data.conditionals)
-        enum_vals = []
-
-        for xv in header_data.enums:
-            x = header_data.enums[xv]
-            bits = 1
-            amt = len(x)
-#			print(x)
-            while(2**bits < amt):
-                bits += 1
-#			print("amount: "+str(amt)+" bits "+str(bits));
-            strs = "{"
-            for i in range(amt):
-                strs += "\"#define " + x[i] + "\\n\","
-
-                v = {}
-                v["set_mask"] = "uint64_t(" + str(i) + ")<<" + str(bitofs)
-                v["clear_mask"] = "((uint64_t(1)<<40)-1) ^ (((uint64_t(1)<<" + str(bits) + ") - 1)<<" + str(bitofs) + ")"
-                enum_vals.append(v)
-                enum_constants.append(x[i])
-
-            strs += "NULL}"
-
-            fd.write("\t\t\t{(uint64_t(1<<" + str(bits) + ")-1)<<" + str(bitofs) + "," + str(bitofs) + "," + strs + "},\n")
-            bitofs += bits
-
-        fd.write("\t\t};\n\n")
-
-        fd.write("\t\tstatic const EnumValue _enum_values[]={\n")
-
-        enum_value_count = len(enum_vals)
-        for x in enum_vals:
-            fd.write("\t\t\t{" + x["set_mask"] + "," + x["clear_mask"] + "},\n")
-
-        fd.write("\t\t};\n\n")
-
-    conditionals_found = []
-    if (len(header_data.conditionals)):
-
-        fd.write("\t\tstatic const char* _conditional_strings[]={\n")
-        if (len(header_data.conditionals)):
-            for x in header_data.conditionals:
-                fd.write("\t\t\t\"#define " + x + "\\n\",\n")
-                conditionals_found.append(x)
-        fd.write("\t\t};\n\n")
-    else:
-        fd.write("\t\tstatic const char **_conditional_strings=NULL;\n")
-
-    if (len(header_data.uniforms)):
-
-        fd.write("\t\tstatic const char* _uniform_strings[]={\n")
-        if (len(header_data.uniforms)):
-            for x in header_data.uniforms:
-                fd.write("\t\t\t\"" + x + "\",\n")
-        fd.write("\t\t};\n\n")
-    else:
-        fd.write("\t\tstatic const char **_uniform_strings=NULL;\n")
-
-    if output_attribs:
-        if (len(header_data.attributes)):
-
-            fd.write("\t\tstatic AttributePair _attribute_pairs[]={\n")
-            for x in header_data.attributes:
-                fd.write("\t\t\t{\"" + x[0] + "\"," + x[1] + "},\n")
-            fd.write("\t\t};\n\n")
-        else:
-            fd.write("\t\tstatic AttributePair *_attribute_pairs=NULL;\n")
-
-    feedback_count = 0
-
-    if (not gles2 and len(header_data.feedbacks)):
-
-        fd.write("\t\tstatic const Feedback _feedbacks[]={\n")
-        for x in header_data.feedbacks:
-            name = x[0]
-            cond = x[1]
-            if (cond in conditionals_found):
-                fd.write("\t\t\t{\"" + name + "\"," + str(conditionals_found.index(cond)) + "},\n")
-            else:
-                fd.write("\t\t\t{\"" + name + "\",-1},\n")
-
-            feedback_count += 1
-
-        fd.write("\t\t};\n\n")
-    else:
-        if gles2:
-            pass
-        else:
-            fd.write("\t\tstatic const Feedback* _feedbacks=NULL;\n")
-
-    if (len(header_data.texunits)):
-        fd.write("\t\tstatic TexUnitPair _texunit_pairs[]={\n")
-        for x in header_data.texunits:
-            fd.write("\t\t\t{\"" + x[0] + "\"," + x[1] + "},\n")
-        fd.write("\t\t};\n\n")
-    else:
-        fd.write("\t\tstatic TexUnitPair *_texunit_pairs=NULL;\n")
-
-    if (not gles2 and len(header_data.ubos)):
-        fd.write("\t\tstatic UBOPair _ubo_pairs[]={\n")
-        for x in header_data.ubos:
-            fd.write("\t\t\t{\"" + x[0] + "\"," + x[1] + "},\n")
-        fd.write("\t\t};\n\n")
-    else:
-        if gles2:
-            pass
-        else:
-            fd.write("\t\tstatic UBOPair *_ubo_pairs=NULL;\n")
-
-    fd.write("\t\tstatic const char _vertex_code[]={\n")
-    for x in header_data.vertex_lines:
-        for i in range(len(x)):
-            fd.write(str(ord(x[i])) + ",")
-
-        fd.write(str(ord('\n')) + ",")
-    fd.write("\t\t0};\n\n")
-
-    fd.write("\t\tstatic const int _vertex_code_start=" + str(header_data.vertex_offset) + ";\n")
-
-    fd.write("\t\tstatic const char _fragment_code[]={\n")
-    for x in header_data.fragment_lines:
-        for i in range(len(x)):
-            fd.write(str(ord(x[i])) + ",")
-
-        fd.write(str(ord('\n')) + ",")
-    fd.write("\t\t0};\n\n")
-
-    fd.write("\t\tstatic const int _fragment_code_start=" + str(header_data.fragment_offset) + ";\n")
-
-    if output_attribs:
-        if gles2:
-            fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_attribute_pairs," + str(len(header_data.attributes)) + ", _texunit_pairs," + str(len(header_data.texunits)) + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
-        else:
-            fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_attribute_pairs," + str(len(header_data.attributes)) + ", _texunit_pairs," + str(len(header_data.texunits)) + ",_ubo_pairs," + str(len(header_data.ubos)) + ",_feedbacks," + str(feedback_count) + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
-    else:
-        if gles2:
-            fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_texunit_pairs," + str(len(header_data.texunits)) + ",_enums," + str(len(header_data.enums)) + ",_enum_values," + str(enum_value_count) + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
-        else:
-            fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_texunit_pairs," + str(len(header_data.texunits)) + ",_enums," + str(len(header_data.enums)) + ",_enum_values," + str(enum_value_count) + ",_ubo_pairs," + str(len(header_data.ubos)) + ",_feedbacks," + str(feedback_count) + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
-
-    fd.write("\t}\n\n")
-
-    if (len(enum_constants)):
-
-        fd.write("\tenum EnumConditionals {\n")
-        for x in enum_constants:
-            fd.write("\t\t" + x.upper() + ",\n")
-        fd.write("\t};\n\n")
-        fd.write("\tvoid set_enum_conditional(EnumConditionals p_cond) { _set_enum_conditional(p_cond); }\n")
-
-    fd.write("};\n\n")
-    fd.write("#endif\n\n")
-    fd.close()
-
-
-def build_gles3_headers(target, source, env):
-
-    for x in source:
-        build_legacygl_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix="GLES3", output_attribs=True)
-
-
-def build_gles2_headers(target, source, env):
-
-    for x in source:
-        build_legacygl_header(str(x), include="drivers/gles2/shader_gles2.h", class_suffix="GLES2", output_attribs=True, gles2=True)
 
 def add_module_version_string(self,s):
     self.module_version_string += "." + s
 
+
 def update_version(module_version_string=""):
 
     build_name = "custom_build"
-    if (os.getenv("BUILD_NAME") != None):
+    if os.getenv("BUILD_NAME") != None:
         build_name = os.getenv("BUILD_NAME")
         print("Using custom build name: " + build_name)
 
     import version
 
+    # NOTE: It is safe to generate this file here, since this is still executed serially
     f = open("core/version_generated.gen.h", "w")
     f.write("#define VERSION_SHORT_NAME \"" + str(version.short_name) + "\"\n")
     f.write("#define VERSION_NAME \"" + str(version.name) + "\"\n")
     f.write("#define VERSION_MAJOR " + str(version.major) + "\n")
     f.write("#define VERSION_MINOR " + str(version.minor) + "\n")
-    if (hasattr(version, 'patch')):
+    if hasattr(version, 'patch'):
         f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
     f.write("#define VERSION_STATUS \"" + str(version.status) + "\"\n")
     f.write("#define VERSION_BUILD \"" + str(build_name) + "\"\n")
     f.write("#define VERSION_MODULE_CONFIG \"" + str(version.module_config) + module_version_string + "\"\n")
-    import datetime
-    f.write("#define VERSION_YEAR " + str(datetime.datetime.now().year) + "\n")
+    f.write("#define VERSION_YEAR " + str(version.year) + "\n")
     f.close()
 
+    # NOTE: It is safe to generate this file here, since this is still executed serially
     fhash = open("core/version_hash.gen.h", "w")
     githash = ""
-    if os.path.isfile(".git/HEAD"):
-        head = open(".git/HEAD", "r").readline().strip()
+    gitfolder = ".git"
+
+    if os.path.isfile(".git"):
+        module_folder = open(".git", "r").readline().strip()
+        if module_folder.startswith("gitdir: "):
+            gitfolder = module_folder[8:]
+
+    if os.path.isfile(os.path.join(gitfolder, "HEAD")):
+        head = open(os.path.join(gitfolder, "HEAD"), "r").readline().strip()
         if head.startswith("ref: "):
-            head = ".git/" + head[5:]
+            head = os.path.join(gitfolder, head[5:])
             if os.path.isfile(head):
                 githash = open(head, "r").readline().strip()
         else:
             githash = head
+
     fhash.write("#define VERSION_HASH \"" + githash + "\"")
     fhash.close()
 
 
 def parse_cg_file(fname, uniforms, sizes, conditionals):
 
-    import re
     fs = open(fname, "r")
     line = fs.readline()
 
@@ -582,7 +101,7 @@ def parse_cg_file(fname, uniforms, sizes, conditionals):
 
             uniforms.append(name)
 
-            if (type.find("texobj") != -1):
+            if type.find("texobj") != -1:
                 sizes.append(1)
             else:
                 t = re.match(r"float(\d)x(\d)", type)
@@ -600,9 +119,6 @@ def parse_cg_file(fname, uniforms, sizes, conditionals):
     fs.close()
 
 
-import glob
-
-
 def detect_modules():
 
     module_list = []
@@ -613,9 +129,9 @@ def detect_modules():
     files = glob.glob("modules/*")
     files.sort()  # so register_module_types does not change that often, and also plugins are registered in alphabetic order
     for x in files:
-        if (not os.path.isdir(x)):
+        if not os.path.isdir(x):
             continue
-        if (not os.path.exists(x + "/config.py")):
+        if not os.path.exists(x + "/config.py"):
             continue
         x = x.replace("modules/", "")  # rest of world
         x = x.replace("modules\\", "")  # win32
@@ -647,6 +163,7 @@ void unregister_module_types() {
 }
 """
 
+    # NOTE: It is safe to generate this file here, since this is still executed serially
     with open("modules/register_module_types.gen.cpp", "w") as f:
         f.write(modules_cpp)
 
@@ -658,7 +175,6 @@ def win32_spawn(sh, escape, cmd, args, env):
     newargs = ' '.join(args[1:])
     cmdline = cmd + " " + newargs
     startupinfo = subprocess.STARTUPINFO()
-    #startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     for e in env:
         if type(env[e]) != type(""):
             env[e] = str(env[e])
@@ -701,65 +217,6 @@ def win32_spawn(sh, escape, cmd, args, spawnenv):
 	return exit_code
 """
 
-def android_add_flat_dir(self, dir):
-    if (dir not in self.android_flat_dirs):
-        self.android_flat_dirs.append(dir)
-
-def android_add_maven_repository(self, url):
-    if (url not in self.android_maven_repos):
-        self.android_maven_repos.append(url)
-
-def android_add_dependency(self, depline):
-    if (depline not in self.android_dependencies):
-        self.android_dependencies.append(depline)
-
-def android_add_java_dir(self, subpath):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_java_dirs):
-        self.android_java_dirs.append(base_path)
-
-def android_add_res_dir(self, subpath):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_res_dirs):
-        self.android_res_dirs.append(base_path)
-
-def android_add_aidl_dir(self, subpath):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_aidl_dirs):
-        self.android_aidl_dirs.append(base_path)
-
-def android_add_jni_dir(self, subpath):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_jni_dirs):
-        self.android_jni_dirs.append(base_path)
-
-def android_add_gradle_plugin(self, plugin):
-    if (plugin not in self.android_gradle_plugins):
-        self.android_gradle_plugins.append(plugin)
-
-def android_add_gradle_classpath(self, classpath):
-    if (classpath not in self.android_gradle_classpath):
-        self.android_gradle_classpath.append(classpath)
-
-def android_add_default_config(self, config):
-    if (config not in self.android_default_config):
-        self.android_default_config.append(config)
-
-def android_add_to_manifest(self, file):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    with open(base_path, "r") as f:
-        self.android_manifest_chunk += f.read()
-
-def android_add_to_permissions(self, file):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    with open(base_path, "r") as f:
-        self.android_permission_chunk += f.read()
-
-def android_add_to_attributes(self, file):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    with open(base_path, "r") as f:
-        self.android_appattributes_chunk += f.read()
-
 def disable_module(self):
     self.disabled_modules.append(self.current_module)
 
@@ -777,8 +234,6 @@ def use_windows_spawn_fix(self, platform=None):
     # Furthermore, since SCons will rebuild the library from scratch when an object file
     # changes, no multiple versions of the same object file will be present.
     self.Replace(ARFLAGS='q')
-
-    import subprocess
 
     def mySubProcess(cmdline, env):
 
@@ -816,7 +271,6 @@ def use_windows_spawn_fix(self, platform=None):
 
 
 def split_lib(self, libname, src_list = None, env_lib = None):
-    import string
     env = self
 
     num = 0
@@ -825,7 +279,7 @@ def split_lib(self, libname, src_list = None, env_lib = None):
     list = []
     lib_list = []
 
-    if src_list == None:
+    if src_list is None:
         src_list = getattr(env, libname + "_sources")
 
     if type(env_lib) == type(None):
@@ -852,7 +306,6 @@ def split_lib(self, libname, src_list = None, env_lib = None):
     lib_list.append(lib)
 
     if len(lib_list) > 0:
-        import os, sys
         if os.name == 'posix' and sys.platform == 'msys':
             env.Replace(ARFLAGS=['rcsT'])
             lib = env_lib.add_library(libname + "_collated", lib_list)
@@ -878,7 +331,7 @@ def save_active_platforms(apnames, ap):
             b = pngf.read(1)
             str = " /* AUTOGENERATED FILE, DO NOT EDIT */ \n"
             str += " static const unsigned char _" + x[9:] + "_" + name + "[]={"
-            while(len(b) == 1):
+            while len(b) == 1:
                 str += hex(ord(b))
                 b = pngf.read(1)
                 if (len(b) == 1):
@@ -888,6 +341,7 @@ def save_active_platforms(apnames, ap):
 
             pngf.close()
 
+            # NOTE: It is safe to generate this file here, since this is still executed serially
             wf = x + "/" + name + ".gen.h"
             with open(wf, "w") as pngw:
                 pngw.write(str)
@@ -998,7 +452,6 @@ def detect_visual_c_compiler_version(tools_env):
 
     # and for VS 2017 and newer we check VCTOOLSINSTALLDIR:
     if 'VCTOOLSINSTALLDIR' in tools_env:
-        # print("Checking VCTOOLSINSTALLDIR")
 
         # Newer versions have a different path available
         vc_amd64_compiler_detection_index = tools_env["PATH"].upper().find(tools_env['VCTOOLSINSTALLDIR'].upper() + "BIN\\HOSTX64\\X64;")
@@ -1027,24 +480,16 @@ def detect_visual_c_compiler_version(tools_env):
             vc_chosen_compiler_index = vc_x86_amd64_compiler_detection_index
             vc_chosen_compiler_str = "x86_amd64"
 
-    # debug help
-    # print(vc_amd64_compiler_detection_index)
-    # print(vc_amd64_x86_compiler_detection_index)
-    # print(vc_x86_compiler_detection_index)
-    # print(vc_x86_amd64_compiler_detection_index)
-    # print("chosen "+str(vc_chosen_compiler_index)+ " | "+str(vc_chosen_compiler_str))
-
     return vc_chosen_compiler_str
 
 def find_visual_c_batch_file(env):
-    from  SCons.Tool.MSCommon.vc import get_default_version, get_host_target, find_batch_file
+    from SCons.Tool.MSCommon.vc import get_default_version, get_host_target, find_batch_file
 
     version = get_default_version(env)
     (host_platform, target_platform,req_target_platform) = get_host_target(env)
     return find_batch_file(env, version, host_platform, target_platform)[0]
 
 def generate_cpp_hint_file(filename):
-    import os.path
     if os.path.isfile(filename):
         # Don't overwrite an existing hint file since the user may have customized it.
         pass
@@ -1066,7 +511,6 @@ def generate_vs_project(env, num_jobs):
                                     'call "' + batch_file + '" !plat!']
 
             result = " ^& ".join(common_build_prefix + [commands])
-            # print("Building commandline: ", result)
             return result
 
         env.AddToVSProject(env.core_sources)
@@ -1095,13 +539,17 @@ def generate_vs_project(env, num_jobs):
         release_targets = ['bin\\godot.windows.opt.32.exe'] + ['bin\\godot.windows.opt.64.exe']
         release_debug_targets = ['bin\\godot.windows.opt.tools.32.exe'] + ['bin\\godot.windows.opt.tools.64.exe']
         targets = debug_targets + release_targets + release_debug_targets
-        msvproj = env.MSVSProject(target=['#godot' + env['MSVSPROJECTSUFFIX']],
-                                    incs=env.vs_incs,
-                                    srcs=env.vs_srcs,
-                                    runfile=targets,
-                                    buildtarget=targets,
-                                    auto_build_solution=1,
-                                    variant=variants)
+        if not env.get('MSVS'):
+            env['MSVS']['PROJECTSUFFIX'] = '.vcxproj'
+            env['MSVS']['SOLUTIONSUFFIX'] = '.sln'
+        env.MSVSProject(
+            target=['#godot' + env['MSVSPROJECTSUFFIX']],
+            incs=env.vs_incs,
+            srcs=env.vs_srcs,
+            runfile=targets,
+            buildtarget=targets,
+            auto_build_solution=1,
+            variant=variants)
     else:
         print("Could not locate Visual Studio batch file for setting up the build environment. Not generating VS project.")
 
@@ -1124,3 +572,45 @@ def add_program(env, name, sources, **args):
     program = env.Program(name, sources, **args)
     env.NoCache(program)
     return program
+
+def CommandNoCache(env, target, sources, command, **args):
+    result = env.Command(target, sources, command, **args)
+    env.NoCache(result)
+    return result
+
+def detect_darwin_sdk_path(platform, env):
+    sdk_name = ''
+    if platform == 'osx':
+        sdk_name = 'macosx'
+        var_name = 'MACOS_SDK_PATH'
+    elif platform == 'iphone':
+        sdk_name = 'iphoneos'
+        var_name = 'IPHONESDK'
+    elif platform == 'iphonesimulator':
+        sdk_name = 'iphonesimulator'
+        var_name = 'IPHONESDK'
+    else:
+        raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")
+
+    if not env[var_name]:
+        try:
+            sdk_path = decode_utf8(subprocess.check_output(['xcrun', '--sdk', sdk_name, '--show-sdk-path']).strip())
+            if sdk_path:
+                env[var_name] = sdk_path
+        except (subprocess.CalledProcessError, OSError) as e:
+            print("Failed to find SDK path while running xcrun --sdk {} --show-sdk-path.".format(sdk_name))
+            raise
+
+def get_compiler_version(env):
+    version = decode_utf8(subprocess.check_output([env['CXX'], '--version']).strip())
+    match = re.search('[0-9][0-9.]*', version)
+    if match is not None:
+        return match.group().split('.')
+    else:
+        return None
+
+def using_gcc(env):
+    return 'gcc' in os.path.basename(env["CC"])
+
+def using_clang(env):
+    return 'clang' in os.path.basename(env["CC"])

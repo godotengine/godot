@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  cffload.h                                                              */
-/*                                                                         */
-/*    OpenType & CFF data/program tables loader (specification).           */
-/*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * cffload.h
+ *
+ *   OpenType & CFF data/program tables loader (specification).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef CFFLOAD_H_
@@ -21,9 +21,9 @@
 
 
 #include <ft2build.h>
-#include "cfftypes.h"
+#include FT_INTERNAL_CFF_TYPES_H
 #include "cffparse.h"
-#include "cffobjs.h"  /* for CFF_Face */
+#include FT_INTERNAL_CFF_OBJECTS_TYPES_H  /* for CFF_Face */
 
 
 FT_BEGIN_HEADER
@@ -60,9 +60,6 @@ FT_BEGIN_HEADER
   cff_charset_cid_to_gindex( CFF_Charset  charset,
                              FT_UInt      cid );
 
-
-  FT_LOCAL( FT_UInt32 )
-  cff_random( FT_UInt32  r );
 
   FT_LOCAL( FT_Error )
   cff_font_load( FT_Library  library,

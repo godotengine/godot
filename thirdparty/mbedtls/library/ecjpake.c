@@ -33,10 +33,17 @@
 #if defined(MBEDTLS_ECJPAKE_C)
 
 #include "mbedtls/ecjpake.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
 #if !defined(MBEDTLS_ECJPAKE_ALT)
+
+/* Parameter validation macros based on platform_util.h */
+#define ECJPAKE_VALIDATE_RET( cond )    \
+    MBEDTLS_INTERNAL_VALIDATE_RET( cond, MBEDTLS_ERR_ECP_BAD_INPUT_DATA )
+#define ECJPAKE_VALIDATE( cond )        \
+    MBEDTLS_INTERNAL_VALIDATE( cond )
 
 /*
  * Convert a mbedtls_ecjpake_role to identifier string
@@ -54,8 +61,7 @@ static const char * const ecjpake_id[] = {
  */
 void mbedtls_ecjpake_init( mbedtls_ecjpake_context *ctx )
 {
-    if( ctx == NULL )
-        return;
+    ECJPAKE_VALIDATE( ctx != NULL );
 
     ctx->md_info = NULL;
     mbedtls_ecp_group_init( &ctx->grp );
@@ -106,6 +112,11 @@ int mbedtls_ecjpake_setup( mbedtls_ecjpake_context *ctx,
 {
     int ret;
 
+    ECJPAKE_VALIDATE_RET( ctx != NULL );
+    ECJPAKE_VALIDATE_RET( role == MBEDTLS_ECJPAKE_CLIENT ||
+                          role == MBEDTLS_ECJPAKE_SERVER );
+    ECJPAKE_VALIDATE_RET( secret != NULL || len == 0 );
+
     ctx->role = role;
 
     if( ( ctx->md_info = mbedtls_md_info_from_type( hash ) ) == NULL )
@@ -127,6 +138,8 @@ cleanup:
  */
 int mbedtls_ecjpake_check( const mbedtls_ecjpake_context *ctx )
 {
+    ECJPAKE_VALIDATE_RET( ctx != NULL );
+
     if( ctx->md_info == NULL ||
         ctx->grp.id == MBEDTLS_ECP_DP_NONE ||
         ctx->s.p == NULL )
@@ -301,7 +314,7 @@ cleanup:
  */
 static int ecjpake_zkp_write( const mbedtls_md_info_t *md_info,
                               const mbedtls_ecp_group *grp,
-                              const int pf, 
+                              const int pf,
                               const mbedtls_ecp_point *G,
                               const mbedtls_mpi *x,
                               const mbedtls_ecp_point *X,
@@ -504,6 +517,9 @@ int mbedtls_ecjpake_read_round_one( mbedtls_ecjpake_context *ctx,
                                     const unsigned char *buf,
                                     size_t len )
 {
+    ECJPAKE_VALIDATE_RET( ctx != NULL );
+    ECJPAKE_VALIDATE_RET( buf != NULL );
+
     return( ecjpake_kkpp_read( ctx->md_info, &ctx->grp, ctx->point_format,
                                &ctx->grp.G,
                                &ctx->Xp1, &ctx->Xp2, ID_PEER,
@@ -518,6 +534,11 @@ int mbedtls_ecjpake_write_round_one( mbedtls_ecjpake_context *ctx,
                             int (*f_rng)(void *, unsigned char *, size_t),
                             void *p_rng )
 {
+    ECJPAKE_VALIDATE_RET( ctx   != NULL );
+    ECJPAKE_VALIDATE_RET( buf   != NULL );
+    ECJPAKE_VALIDATE_RET( olen  != NULL );
+    ECJPAKE_VALIDATE_RET( f_rng != NULL );
+
     return( ecjpake_kkpp_write( ctx->md_info, &ctx->grp, ctx->point_format,
                                 &ctx->grp.G,
                                 &ctx->xm1, &ctx->Xm1, &ctx->xm2, &ctx->Xm2,
@@ -559,6 +580,9 @@ int mbedtls_ecjpake_read_round_two( mbedtls_ecjpake_context *ctx,
     const unsigned char *end = buf + len;
     mbedtls_ecp_group grp;
     mbedtls_ecp_point G;    /* C: GB, S: GA */
+
+    ECJPAKE_VALIDATE_RET( ctx != NULL );
+    ECJPAKE_VALIDATE_RET( buf != NULL );
 
     mbedtls_ecp_group_init( &grp );
     mbedtls_ecp_point_init( &G );
@@ -652,6 +676,11 @@ int mbedtls_ecjpake_write_round_two( mbedtls_ecjpake_context *ctx,
     const unsigned char *end = buf + len;
     size_t ec_len;
 
+    ECJPAKE_VALIDATE_RET( ctx   != NULL );
+    ECJPAKE_VALIDATE_RET( buf   != NULL );
+    ECJPAKE_VALIDATE_RET( olen  != NULL );
+    ECJPAKE_VALIDATE_RET( f_rng != NULL );
+
     mbedtls_ecp_point_init( &G );
     mbedtls_ecp_point_init( &Xm );
     mbedtls_mpi_init( &xm );
@@ -726,6 +755,11 @@ int mbedtls_ecjpake_derive_secret( mbedtls_ecjpake_context *ctx,
     mbedtls_mpi m_xm2_s, one;
     unsigned char kx[MBEDTLS_ECP_MAX_BYTES];
     size_t x_bytes;
+
+    ECJPAKE_VALIDATE_RET( ctx   != NULL );
+    ECJPAKE_VALIDATE_RET( buf   != NULL );
+    ECJPAKE_VALIDATE_RET( olen  != NULL );
+    ECJPAKE_VALIDATE_RET( f_rng != NULL );
 
     *olen = mbedtls_md_get_size( ctx->md_info );
     if( len < *olen )

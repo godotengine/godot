@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,21 +31,84 @@
 #ifndef GROUPS_EDITOR_H
 #define GROUPS_EDITOR_H
 
+#include "core/undo_redo.h"
+#include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/popup.h"
+#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
-#include "undo_redo.h"
 
 /**
 @author Juan Linietsky <reduzio@gmail.com>
 */
+
+class GroupDialog : public ConfirmationDialog {
+
+	GDCLASS(GroupDialog, ConfirmationDialog);
+
+	ConfirmationDialog *error;
+
+	SceneTree *scene_tree;
+	TreeItem *groups_root;
+
+	LineEdit *add_group_text;
+
+	Tree *groups;
+
+	Tree *nodes_to_add;
+	TreeItem *add_node_root;
+	LineEdit *add_filter;
+
+	Tree *nodes_to_remove;
+	TreeItem *remove_node_root;
+	LineEdit *remove_filter;
+
+	ToolButton *add_button;
+	ToolButton *remove_button;
+
+	String selected_group;
+
+	void ok_pressed();
+	void _cancel_pressed();
+	void _group_selected();
+
+	void _remove_filter_changed(const String &p_filter);
+	void _add_filter_changed(const String &p_filter);
+
+	void _add_pressed();
+	void _removed_pressed();
+	void _add_group_pressed();
+
+	void _group_renamed();
+
+	void _add_group(String p_name);
+	void _delete_group_pressed(Object *p_item, int p_column, int p_id);
+
+	bool _can_edit(Node *p_node, String p_group);
+
+	void _load_groups(Node *p_current);
+	void _load_nodes(Node *p_current);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	void edit();
+
+	GroupDialog();
+};
 
 class GroupsEditor : public VBoxContainer {
 
 	GDCLASS(GroupsEditor, VBoxContainer);
 
 	Node *node;
+
+	GroupDialog *group_dialog;
 
 	LineEdit *group_name;
 	Button *add;
@@ -57,6 +120,9 @@ class GroupsEditor : public VBoxContainer {
 	void _add_group(const String &p_group = "");
 	void _remove_group(Object *p_item, int p_column, int p_id);
 	void _close();
+
+	void _show_group_dialog();
+	void _group_dialog_closed();
 
 protected:
 	static void _bind_methods();

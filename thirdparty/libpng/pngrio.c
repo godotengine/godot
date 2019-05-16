@@ -1,10 +1,10 @@
 
 /* pngrio.c - functions for data input
  *
- * Last changed in libpng 1.6.24 [August 4, 2016]
- * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
- * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
- * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+ * Copyright (c) 2018 Cosmin Truta
+ * Copyright (c) 1998-2002,2004,2006-2016,2018 Glenn Randers-Pehrson
+ * Copyright (c) 1996-1997 Andreas Dilger
+ * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -29,7 +29,7 @@
  * to read more than 64K on a 16-bit machine.
  */
 void /* PRIVATE */
-png_read_data(png_structrp png_ptr, png_bytep data, png_size_t length)
+png_read_data(png_structrp png_ptr, png_bytep data, size_t length)
 {
    png_debug1(4, "reading %d bytes", (int)length);
 
@@ -47,14 +47,14 @@ png_read_data(png_structrp png_ptr, png_bytep data, png_size_t length)
  * than changing the library.
  */
 void PNGCBAPI
-png_default_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
+png_default_read_data(png_structp png_ptr, png_bytep data, size_t length)
 {
-   png_size_t check;
+   size_t check;
 
    if (png_ptr == NULL)
       return;
 
-   /* fread() returns 0 on error, so it is OK to store this in a png_size_t
+   /* fread() returns 0 on error, so it is OK to store this in a size_t
     * instead of an int, which is what fread() actually returns.
     */
    check = fread(data, 1, length, png_voidcast(png_FILE_p, png_ptr->io_ptr));

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,11 @@
 #ifndef METHOD_BIND_H
 #define METHOD_BIND_H
 
-#include "list.h"
-#include "method_ptrcall.h"
-#include "object.h"
-#include "variant.h"
+#include "core/list.h"
+#include "core/method_ptrcall.h"
+#include "core/object.h"
+#include "core/variant.h"
+
 #include <stdio.h>
 
 /**
@@ -45,7 +46,7 @@
 #define DEBUG_METHODS_ENABLED
 #endif
 
-#include "type_info.h"
+#include "core/type_info.h"
 
 enum MethodFlags {
 
@@ -128,10 +129,36 @@ struct VariantCaster<const T &> {
 // Object enum casts must go here
 VARIANT_ENUM_CAST(Object::ConnectFlags);
 
+template <typename T>
+struct VariantObjectClassChecker {
+	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
+		return true;
+	}
+};
+
+template <>
+struct VariantObjectClassChecker<Node *> {
+	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
+		Object *obj = p_variant;
+		Node *node = p_variant;
+		return node || !obj;
+	}
+};
+
+template <>
+struct VariantObjectClassChecker<Control *> {
+	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
+		Object *obj = p_variant;
+		Control *control = p_variant;
+		return control || !obj;
+	}
+};
+
 #define CHECK_ARG(m_arg)                                                            \
 	if ((m_arg - 1) < p_arg_count) {                                                \
 		Variant::Type argtype = get_argument_type(m_arg - 1);                       \
-		if (!Variant::can_convert_strict(p_args[m_arg - 1]->get_type(), argtype)) { \
+		if (!Variant::can_convert_strict(p_args[m_arg - 1]->get_type(), argtype) || \
+				!VariantObjectClassChecker<P##m_arg>::check(*p_args[m_arg - 1])) {  \
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;        \
 			r_error.argument = m_arg - 1;                                           \
 			r_error.expected = argtype;                                             \
@@ -246,6 +273,8 @@ public:
 	void set_argument_names(const Vector<StringName> &p_names); //set by class, db, can't be inferred otherwise
 	Vector<StringName> get_argument_names() const;
 
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const = 0;
+
 #endif
 	void set_hint_flags(uint32_t p_hint) { hint_flags = p_hint; }
 	uint32_t get_hint_flags() const { return hint_flags | (is_const() ? METHOD_FLAG_CONST : 0) | (is_vararg() ? METHOD_FLAG_VARARG : 0); }
@@ -302,6 +331,10 @@ public:
 		return _gen_argument_type_info(p_arg).type;
 	}
 
+	virtual GodotTypeInfo::Metadata get_argument_meta(int) const {
+		return GodotTypeInfo::METADATA_NONE;
+	}
+
 #else
 
 	virtual Variant::Type _gen_argument_type(int p_arg) const {
@@ -328,7 +361,7 @@ public:
 			for (int i = 0; i < p_info.arguments.size(); i++) {
 
 				at[i + 1] = p_info.arguments[i].type;
-				names[i] = p_info.arguments[i].name;
+				names.write[i] = p_info.arguments[i].name;
 			}
 
 			set_argument_names(names);

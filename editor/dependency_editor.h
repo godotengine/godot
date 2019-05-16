@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,7 +102,8 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 	Tree *owners;
 
 	Map<String, String> all_remove_files;
-	Vector<String> to_delete;
+	Vector<String> dirs_to_delete;
+	Vector<String> files_to_delete;
 
 	struct RemovedDependency {
 		String file;
@@ -125,6 +126,8 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 
 	void ok_pressed();
 
+	static void _bind_methods();
+
 public:
 	void show(const Vector<String> &p_folders, const Vector<String> &p_files);
 	DependencyRemoveDialog();
@@ -133,7 +136,15 @@ public:
 class DependencyErrorDialog : public ConfirmationDialog {
 	GDCLASS(DependencyErrorDialog, ConfirmationDialog);
 
+public:
+	enum Mode {
+		MODE_SCENE,
+		MODE_RESOURCE,
+	};
+
+private:
 	String for_file;
+	Mode mode;
 	Button *fdep;
 	Label *text;
 	Tree *files;
@@ -141,7 +152,7 @@ class DependencyErrorDialog : public ConfirmationDialog {
 	void custom_action(const String &);
 
 public:
-	void show(const String &p_for_file, const Vector<String> &report);
+	void show(Mode p_mode, const String &p_for_file, const Vector<String> &report);
 	DependencyErrorDialog();
 };
 

@@ -15,11 +15,11 @@ subject to the following restrictions:
 
 #include "btCylinderShape.h"
 
-btCylinderShape::btCylinderShape (const btVector3& halfExtents)
-:btConvexInternalShape(),
-m_upAxis(1)
+btCylinderShape::btCylinderShape(const btVector3& halfExtents)
+	: btConvexInternalShape(),
+	  m_upAxis(1)
 {
-	btVector3 margin(getMargin(),getMargin(),getMargin());
+	btVector3 margin(getMargin(), getMargin(), getMargin());
 	m_implicitShapeDimensions = (halfExtents * m_localScaling) - margin;
 
 	setSafeMargin(halfExtents);
@@ -27,30 +27,25 @@ m_upAxis(1)
 	m_shapeType = CYLINDER_SHAPE_PROXYTYPE;
 }
 
-
-btCylinderShapeX::btCylinderShapeX (const btVector3& halfExtents)
-:btCylinderShape(halfExtents)
+btCylinderShapeX::btCylinderShapeX(const btVector3& halfExtents)
+	: btCylinderShape(halfExtents)
 {
 	m_upAxis = 0;
-
 }
 
-
-btCylinderShapeZ::btCylinderShapeZ (const btVector3& halfExtents)
-:btCylinderShape(halfExtents)
+btCylinderShapeZ::btCylinderShapeZ(const btVector3& halfExtents)
+	: btCylinderShape(halfExtents)
 {
 	m_upAxis = 2;
-
 }
 
-void btCylinderShape::getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const
+void btCylinderShape::getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const
 {
-	btTransformAabb(getHalfExtentsWithoutMargin(),getMargin(),t,aabbMin,aabbMax);
+	btTransformAabb(getHalfExtentsWithoutMargin(), getMargin(), t, aabbMin, aabbMax);
 }
 
-void	btCylinderShape::calculateLocalInertia(btScalar mass,btVector3& inertia) const
+void btCylinderShape::calculateLocalInertia(btScalar mass, btVector3& inertia) const
 {
-
 //Until Bullet 2.77 a box approximation was used, so uncomment this if you need backwards compatibility
 //#define USE_BOX_INERTIA_APPROXIMATION 1
 #ifndef USE_BOX_INERTIA_APPROXIMATION
@@ -64,25 +59,25 @@ void	btCylinderShape::calculateLocalInertia(btScalar mass,btVector3& inertia) co
 	*
 	*/
 
-	btScalar radius2;	// square of cylinder radius
-	btScalar height2;	// square of cylinder height
-	btVector3 halfExtents = getHalfExtentsWithMargin();	// get cylinder dimension
+	btScalar radius2;                                    // square of cylinder radius
+	btScalar height2;                                    // square of cylinder height
+	btVector3 halfExtents = getHalfExtentsWithMargin();  // get cylinder dimension
 	btScalar div12 = mass / 12.f;
 	btScalar div4 = mass / 4.f;
 	btScalar div2 = mass / 2.f;
 	int idxRadius, idxHeight;
 
-	switch (m_upAxis)	// get indices of radius and height of cylinder
+	switch (m_upAxis)  // get indices of radius and height of cylinder
 	{
-		case 0:		// cylinder is aligned along x
+		case 0:  // cylinder is aligned along x
 			idxRadius = 1;
 			idxHeight = 0;
 			break;
-		case 2:		// cylinder is aligned along z
+		case 2:  // cylinder is aligned along z
 			idxRadius = 0;
 			idxHeight = 2;
 			break;
-		default:	// cylinder is aligned along y
+		default:  // cylinder is aligned along y
 			idxRadius = 0;
 			idxHeight = 1;
 	}
@@ -95,188 +90,164 @@ void	btCylinderShape::calculateLocalInertia(btScalar mass,btVector3& inertia) co
 	btScalar t1 = div12 * height2 + div4 * radius2;
 	btScalar t2 = div2 * radius2;
 
-	switch (m_upAxis)	// set diagonal elements of inertia tensor
+	switch (m_upAxis)  // set diagonal elements of inertia tensor
 	{
-		case 0:		// cylinder is aligned along x
-			inertia.setValue(t2,t1,t1);
+		case 0:  // cylinder is aligned along x
+			inertia.setValue(t2, t1, t1);
 			break;
-		case 2:		// cylinder is aligned along z
-			inertia.setValue(t1,t1,t2);
+		case 2:  // cylinder is aligned along z
+			inertia.setValue(t1, t1, t2);
 			break;
-		default:	// cylinder is aligned along y
-			inertia.setValue(t1,t2,t1);
+		default:  // cylinder is aligned along y
+			inertia.setValue(t1, t2, t1);
 	}
-#else //USE_BOX_INERTIA_APPROXIMATION
+#else   //USE_BOX_INERTIA_APPROXIMATION
 	//approximation of box shape
 	btVector3 halfExtents = getHalfExtentsWithMargin();
 
-	btScalar lx=btScalar(2.)*(halfExtents.x());
-	btScalar ly=btScalar(2.)*(halfExtents.y());
-	btScalar lz=btScalar(2.)*(halfExtents.z());
+	btScalar lx = btScalar(2.) * (halfExtents.x());
+	btScalar ly = btScalar(2.) * (halfExtents.y());
+	btScalar lz = btScalar(2.) * (halfExtents.z());
 
-	inertia.setValue(mass/(btScalar(12.0)) * (ly*ly + lz*lz),
-					mass/(btScalar(12.0)) * (lx*lx + lz*lz),
-					mass/(btScalar(12.0)) * (lx*lx + ly*ly));
-#endif //USE_BOX_INERTIA_APPROXIMATION
+	inertia.setValue(mass / (btScalar(12.0)) * (ly * ly + lz * lz),
+					 mass / (btScalar(12.0)) * (lx * lx + lz * lz),
+					 mass / (btScalar(12.0)) * (lx * lx + ly * ly));
+#endif  //USE_BOX_INERTIA_APPROXIMATION
 }
 
-
-SIMD_FORCE_INLINE btVector3 CylinderLocalSupportX(const btVector3& halfExtents,const btVector3& v) 
+SIMD_FORCE_INLINE btVector3 CylinderLocalSupportX(const btVector3& halfExtents, const btVector3& v)
 {
-const int cylinderUpAxis = 0;
-const int XX = 1;
-const int YY = 0;
-const int ZZ = 2;
+	const int cylinderUpAxis = 0;
+	const int XX = 1;
+	const int YY = 0;
+	const int ZZ = 2;
 
 	//mapping depends on how cylinder local orientation is
 	// extents of the cylinder is: X,Y is for radius, and Z for height
 
-
 	btScalar radius = halfExtents[XX];
 	btScalar halfHeight = halfExtents[cylinderUpAxis];
 
+	btVector3 tmp;
+	btScalar d;
 
-    btVector3 tmp;
-	btScalar d ;
-
-    btScalar s = btSqrt(v[XX] * v[XX] + v[ZZ] * v[ZZ]);
-    if (s != btScalar(0.0))
+	btScalar s = btSqrt(v[XX] * v[XX] + v[ZZ] * v[ZZ]);
+	if (s != btScalar(0.0))
 	{
-        d = radius / s;  
+		d = radius / s;
 		tmp[XX] = v[XX] * d;
 		tmp[YY] = v[YY] < 0.0 ? -halfHeight : halfHeight;
 		tmp[ZZ] = v[ZZ] * d;
 		return tmp;
 	}
-    else
+	else
 	{
-	    tmp[XX] = radius;
+		tmp[XX] = radius;
 		tmp[YY] = v[YY] < 0.0 ? -halfHeight : halfHeight;
 		tmp[ZZ] = btScalar(0.0);
 		return tmp;
-    }
-
-
+	}
 }
 
-
-
-
-
-
-inline  btVector3 CylinderLocalSupportY(const btVector3& halfExtents,const btVector3& v) 
+inline btVector3 CylinderLocalSupportY(const btVector3& halfExtents, const btVector3& v)
 {
-
-const int cylinderUpAxis = 1;
-const int XX = 0;
-const int YY = 1;
-const int ZZ = 2;
-
+	const int cylinderUpAxis = 1;
+	const int XX = 0;
+	const int YY = 1;
+	const int ZZ = 2;
 
 	btScalar radius = halfExtents[XX];
 	btScalar halfHeight = halfExtents[cylinderUpAxis];
 
+	btVector3 tmp;
+	btScalar d;
 
-    btVector3 tmp;
-	btScalar d ;
-
-    btScalar s = btSqrt(v[XX] * v[XX] + v[ZZ] * v[ZZ]);
-    if (s != btScalar(0.0))
+	btScalar s = btSqrt(v[XX] * v[XX] + v[ZZ] * v[ZZ]);
+	if (s != btScalar(0.0))
 	{
-        d = radius / s;  
+		d = radius / s;
 		tmp[XX] = v[XX] * d;
 		tmp[YY] = v[YY] < 0.0 ? -halfHeight : halfHeight;
 		tmp[ZZ] = v[ZZ] * d;
 		return tmp;
 	}
-    else
+	else
 	{
-	    tmp[XX] = radius;
+		tmp[XX] = radius;
 		tmp[YY] = v[YY] < 0.0 ? -halfHeight : halfHeight;
 		tmp[ZZ] = btScalar(0.0);
 		return tmp;
-    }
-
+	}
 }
 
-inline btVector3 CylinderLocalSupportZ(const btVector3& halfExtents,const btVector3& v) 
+inline btVector3 CylinderLocalSupportZ(const btVector3& halfExtents, const btVector3& v)
 {
-const int cylinderUpAxis = 2;
-const int XX = 0;
-const int YY = 2;
-const int ZZ = 1;
+	const int cylinderUpAxis = 2;
+	const int XX = 0;
+	const int YY = 2;
+	const int ZZ = 1;
 
 	//mapping depends on how cylinder local orientation is
 	// extents of the cylinder is: X,Y is for radius, and Z for height
 
-
 	btScalar radius = halfExtents[XX];
 	btScalar halfHeight = halfExtents[cylinderUpAxis];
 
+	btVector3 tmp;
+	btScalar d;
 
-    btVector3 tmp;
-	btScalar d ;
-
-    btScalar s = btSqrt(v[XX] * v[XX] + v[ZZ] * v[ZZ]);
-    if (s != btScalar(0.0))
+	btScalar s = btSqrt(v[XX] * v[XX] + v[ZZ] * v[ZZ]);
+	if (s != btScalar(0.0))
 	{
-        d = radius / s;  
+		d = radius / s;
 		tmp[XX] = v[XX] * d;
 		tmp[YY] = v[YY] < 0.0 ? -halfHeight : halfHeight;
 		tmp[ZZ] = v[ZZ] * d;
 		return tmp;
 	}
-    else
+	else
 	{
-	    tmp[XX] = radius;
+		tmp[XX] = radius;
 		tmp[YY] = v[YY] < 0.0 ? -halfHeight : halfHeight;
 		tmp[ZZ] = btScalar(0.0);
 		return tmp;
-    }
-
-
-}
-
-btVector3	btCylinderShapeX::localGetSupportingVertexWithoutMargin(const btVector3& vec)const
-{
-	return CylinderLocalSupportX(getHalfExtentsWithoutMargin(),vec);
-}
-
-
-btVector3	btCylinderShapeZ::localGetSupportingVertexWithoutMargin(const btVector3& vec)const
-{
-	return CylinderLocalSupportZ(getHalfExtentsWithoutMargin(),vec);
-}
-btVector3	btCylinderShape::localGetSupportingVertexWithoutMargin(const btVector3& vec)const
-{
-	return CylinderLocalSupportY(getHalfExtentsWithoutMargin(),vec);
-}
-
-void	btCylinderShape::batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const
-{
-	for (int i=0;i<numVectors;i++)
-	{
-		supportVerticesOut[i] = CylinderLocalSupportY(getHalfExtentsWithoutMargin(),vectors[i]);
 	}
 }
 
-void	btCylinderShapeZ::batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const
+btVector3 btCylinderShapeX::localGetSupportingVertexWithoutMargin(const btVector3& vec) const
 {
-	for (int i=0;i<numVectors;i++)
+	return CylinderLocalSupportX(getHalfExtentsWithoutMargin(), vec);
+}
+
+btVector3 btCylinderShapeZ::localGetSupportingVertexWithoutMargin(const btVector3& vec) const
+{
+	return CylinderLocalSupportZ(getHalfExtentsWithoutMargin(), vec);
+}
+btVector3 btCylinderShape::localGetSupportingVertexWithoutMargin(const btVector3& vec) const
+{
+	return CylinderLocalSupportY(getHalfExtentsWithoutMargin(), vec);
+}
+
+void btCylinderShape::batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors, btVector3* supportVerticesOut, int numVectors) const
+{
+	for (int i = 0; i < numVectors; i++)
 	{
-		supportVerticesOut[i] = CylinderLocalSupportZ(getHalfExtentsWithoutMargin(),vectors[i]);
+		supportVerticesOut[i] = CylinderLocalSupportY(getHalfExtentsWithoutMargin(), vectors[i]);
 	}
 }
 
-
-
-
-void	btCylinderShapeX::batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const
+void btCylinderShapeZ::batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors, btVector3* supportVerticesOut, int numVectors) const
 {
-	for (int i=0;i<numVectors;i++)
+	for (int i = 0; i < numVectors; i++)
 	{
-		supportVerticesOut[i] = CylinderLocalSupportX(getHalfExtentsWithoutMargin(),vectors[i]);
+		supportVerticesOut[i] = CylinderLocalSupportZ(getHalfExtentsWithoutMargin(), vectors[i]);
 	}
 }
 
-
+void btCylinderShapeX::batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors, btVector3* supportVerticesOut, int numVectors) const
+{
+	for (int i = 0; i < numVectors; i++)
+	{
+		supportVerticesOut[i] = CylinderLocalSupportX(getHalfExtentsWithoutMargin(), vectors[i]);
+	}
+}

@@ -36,6 +36,7 @@
 #if defined(MBEDTLS_DHM_C)
 
 #include "mbedtls/dhm.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -58,10 +59,11 @@
 #endif
 
 #if !defined(MBEDTLS_DHM_ALT)
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
-}
+
+#define DHM_VALIDATE_RET( cond )    \
+    MBEDTLS_INTERNAL_VALIDATE_RET( cond, MBEDTLS_ERR_DHM_BAD_INPUT_DATA )
+#define DHM_VALIDATE( cond )        \
+    MBEDTLS_INTERNAL_VALIDATE( cond )
 
 /*
  * helper to validate the mbedtls_mpi size and import it
@@ -124,6 +126,7 @@ cleanup:
 
 void mbedtls_dhm_init( mbedtls_dhm_context *ctx )
 {
+    DHM_VALIDATE( ctx != NULL );
     memset( ctx, 0, sizeof( mbedtls_dhm_context ) );
 }
 
@@ -135,6 +138,9 @@ int mbedtls_dhm_read_params( mbedtls_dhm_context *ctx,
                      const unsigned char *end )
 {
     int ret;
+    DHM_VALIDATE_RET( ctx != NULL );
+    DHM_VALIDATE_RET( p != NULL && *p != NULL );
+    DHM_VALIDATE_RET( end != NULL );
 
     if( ( ret = dhm_read_bignum( &ctx->P,  p, end ) ) != 0 ||
         ( ret = dhm_read_bignum( &ctx->G,  p, end ) ) != 0 ||
@@ -160,6 +166,10 @@ int mbedtls_dhm_make_params( mbedtls_dhm_context *ctx, int x_size,
     int ret, count = 0;
     size_t n1, n2, n3;
     unsigned char *p;
+    DHM_VALIDATE_RET( ctx != NULL );
+    DHM_VALIDATE_RET( output != NULL );
+    DHM_VALIDATE_RET( olen != NULL );
+    DHM_VALIDATE_RET( f_rng != NULL );
 
     if( mbedtls_mpi_cmp_int( &ctx->P, 0 ) == 0 )
         return( MBEDTLS_ERR_DHM_BAD_INPUT_DATA );
@@ -230,9 +240,9 @@ int mbedtls_dhm_set_group( mbedtls_dhm_context *ctx,
                            const mbedtls_mpi *G )
 {
     int ret;
-
-    if( ctx == NULL || P == NULL || G == NULL )
-        return( MBEDTLS_ERR_DHM_BAD_INPUT_DATA );
+    DHM_VALIDATE_RET( ctx != NULL );
+    DHM_VALIDATE_RET( P != NULL );
+    DHM_VALIDATE_RET( G != NULL );
 
     if( ( ret = mbedtls_mpi_copy( &ctx->P, P ) ) != 0 ||
         ( ret = mbedtls_mpi_copy( &ctx->G, G ) ) != 0 )
@@ -251,8 +261,10 @@ int mbedtls_dhm_read_public( mbedtls_dhm_context *ctx,
                      const unsigned char *input, size_t ilen )
 {
     int ret;
+    DHM_VALIDATE_RET( ctx != NULL );
+    DHM_VALIDATE_RET( input != NULL );
 
-    if( ctx == NULL || ilen < 1 || ilen > ctx->len )
+    if( ilen < 1 || ilen > ctx->len )
         return( MBEDTLS_ERR_DHM_BAD_INPUT_DATA );
 
     if( ( ret = mbedtls_mpi_read_binary( &ctx->GY, input, ilen ) ) != 0 )
@@ -270,8 +282,11 @@ int mbedtls_dhm_make_public( mbedtls_dhm_context *ctx, int x_size,
                      void *p_rng )
 {
     int ret, count = 0;
+    DHM_VALIDATE_RET( ctx != NULL );
+    DHM_VALIDATE_RET( output != NULL );
+    DHM_VALIDATE_RET( f_rng != NULL );
 
-    if( ctx == NULL || olen < 1 || olen > ctx->len )
+    if( olen < 1 || olen > ctx->len )
         return( MBEDTLS_ERR_DHM_BAD_INPUT_DATA );
 
     if( mbedtls_mpi_cmp_int( &ctx->P, 0 ) == 0 )
@@ -383,8 +398,11 @@ int mbedtls_dhm_calc_secret( mbedtls_dhm_context *ctx,
 {
     int ret;
     mbedtls_mpi GYb;
+    DHM_VALIDATE_RET( ctx != NULL );
+    DHM_VALIDATE_RET( output != NULL );
+    DHM_VALIDATE_RET( olen != NULL );
 
-    if( ctx == NULL || output_size < ctx->len )
+    if( output_size < ctx->len )
         return( MBEDTLS_ERR_DHM_BAD_INPUT_DATA );
 
     if( ( ret = dhm_check_range( &ctx->GY, &ctx->P ) ) != 0 )
@@ -431,13 +449,21 @@ cleanup:
  */
 void mbedtls_dhm_free( mbedtls_dhm_context *ctx )
 {
-    mbedtls_mpi_free( &ctx->pX ); mbedtls_mpi_free( &ctx->Vf );
-    mbedtls_mpi_free( &ctx->Vi ); mbedtls_mpi_free( &ctx->RP );
-    mbedtls_mpi_free( &ctx->K  ); mbedtls_mpi_free( &ctx->GY );
-    mbedtls_mpi_free( &ctx->GX ); mbedtls_mpi_free( &ctx->X  );
-    mbedtls_mpi_free( &ctx->G  ); mbedtls_mpi_free( &ctx->P  );
+    if( ctx == NULL )
+        return;
 
-    mbedtls_zeroize( ctx, sizeof( mbedtls_dhm_context ) );
+    mbedtls_mpi_free( &ctx->pX );
+    mbedtls_mpi_free( &ctx->Vf );
+    mbedtls_mpi_free( &ctx->Vi );
+    mbedtls_mpi_free( &ctx->RP );
+    mbedtls_mpi_free( &ctx->K  );
+    mbedtls_mpi_free( &ctx->GY );
+    mbedtls_mpi_free( &ctx->GX );
+    mbedtls_mpi_free( &ctx->X  );
+    mbedtls_mpi_free( &ctx->G  );
+    mbedtls_mpi_free( &ctx->P  );
+
+    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_dhm_context ) );
 }
 
 #if defined(MBEDTLS_ASN1_PARSE_C)
@@ -452,7 +478,12 @@ int mbedtls_dhm_parse_dhm( mbedtls_dhm_context *dhm, const unsigned char *dhmin,
     unsigned char *p, *end;
 #if defined(MBEDTLS_PEM_PARSE_C)
     mbedtls_pem_context pem;
+#endif /* MBEDTLS_PEM_PARSE_C */
 
+    DHM_VALIDATE_RET( dhm != NULL );
+    DHM_VALIDATE_RET( dhmin != NULL );
+
+#if defined(MBEDTLS_PEM_PARSE_C)
     mbedtls_pem_init( &pem );
 
     /* Avoid calling mbedtls_pem_read_buffer() on non-null-terminated string */
@@ -575,7 +606,7 @@ static int load_file( const char *path, unsigned char **buf, size_t *n )
     {
         fclose( f );
 
-        mbedtls_zeroize( *buf, *n + 1 );
+        mbedtls_platform_zeroize( *buf, *n + 1 );
         mbedtls_free( *buf );
 
         return( MBEDTLS_ERR_DHM_FILE_IO_ERROR );
@@ -599,13 +630,15 @@ int mbedtls_dhm_parse_dhmfile( mbedtls_dhm_context *dhm, const char *path )
     int ret;
     size_t n;
     unsigned char *buf;
+    DHM_VALIDATE_RET( dhm != NULL );
+    DHM_VALIDATE_RET( path != NULL );
 
     if( ( ret = load_file( path, &buf, &n ) ) != 0 )
         return( ret );
 
     ret = mbedtls_dhm_parse_dhm( dhm, buf, n );
 
-    mbedtls_zeroize( buf, n );
+    mbedtls_platform_zeroize( buf, n );
     mbedtls_free( buf );
 
     return( ret );

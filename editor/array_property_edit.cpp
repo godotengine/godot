@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "array_property_edit.h"
 
+#include "core/io/marshalls.h"
 #include "editor_node.h"
 
 #define ITEMS_PER_PAGE 100
@@ -202,6 +203,11 @@ bool ArrayPropertyEdit::_get(const StringName &p_name, Variant &r_ret) const {
 			int idx = pn.get_slicec('/', 1).to_int();
 			bool valid;
 			r_ret = arr.get(idx, &valid);
+
+			if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
+				r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
+			}
+
 			return valid;
 		}
 	}
@@ -230,6 +236,11 @@ void ArrayPropertyEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		if (!is_typed) {
 			p_list->push_back(PropertyInfo(Variant::INT, "indices/" + itos(i + offset) + "_type", PROPERTY_HINT_ENUM, vtypes));
+		}
+
+		if (v.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(v)) {
+			p_list->push_back(PropertyInfo(Variant::INT, "indices/" + itos(i + offset), PROPERTY_HINT_OBJECT_ID, "Object"));
+			continue;
 		}
 
 		if (is_typed || v.get_type() != Variant::NIL) {
@@ -277,12 +288,17 @@ Node *ArrayPropertyEdit::get_node() {
 	return Object::cast_to<Node>(ObjectDB::get_instance(obj));
 }
 
+bool ArrayPropertyEdit::_dont_undo_redo() {
+	return true;
+}
+
 void ArrayPropertyEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_size"), &ArrayPropertyEdit::_set_size);
 	ClassDB::bind_method(D_METHOD("_set_value"), &ArrayPropertyEdit::_set_value);
 	ClassDB::bind_method(D_METHOD("_notif_change"), &ArrayPropertyEdit::_notif_change);
 	ClassDB::bind_method(D_METHOD("_notif_changev"), &ArrayPropertyEdit::_notif_changev);
+	ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &ArrayPropertyEdit::_dont_undo_redo);
 }
 
 ArrayPropertyEdit::ArrayPropertyEdit() {

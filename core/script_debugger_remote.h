@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,11 @@
 #ifndef SCRIPT_DEBUGGER_REMOTE_H
 #define SCRIPT_DEBUGGER_REMOTE_H
 
-#include "io/packet_peer.h"
-#include "io/stream_peer_tcp.h"
-#include "list.h"
-#include "script_language.h"
+#include "core/io/packet_peer.h"
+#include "core/io/stream_peer_tcp.h"
+#include "core/list.h"
+#include "core/os/os.h"
+#include "core/script_language.h"
 
 class ScriptDebuggerRemote : public ScriptDebugger {
 
@@ -132,6 +133,8 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	Vector<FrameData> profile_frame_data;
 
 	void _put_variable(const String &p_name, const Variant &p_variable);
+
+	void _save_node(ObjectID id, const String &p_path);
 
 public:
 	struct ResourceUsage {

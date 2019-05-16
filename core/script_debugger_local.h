@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,15 +31,21 @@
 #ifndef SCRIPT_DEBUGGER_LOCAL_H
 #define SCRIPT_DEBUGGER_LOCAL_H
 
-#include "script_language.h"
+#include "core/list.h"
+#include "core/script_language.h"
 
 class ScriptDebuggerLocal : public ScriptDebugger {
 
 	bool profiling;
 	float frame_time, idle_time, physics_time, physics_frame_time;
 	uint64_t idle_accum;
+	String target_function;
+	Map<String, String> options;
 
 	Vector<ScriptLanguage::ProfilingInfo> pinfo;
+
+	Pair<String, int> to_breakpoint(const String &p_line);
+	void print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix);
 
 public:
 	void debug(ScriptLanguage *p_script, bool p_can_continue);

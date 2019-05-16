@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "collision_solver_2d_sat.h"
 
-#include "geometry.h"
+#include "core/math/geometry.h"
 
 struct _CollectorCallback2D {
 
@@ -237,8 +237,8 @@ public:
 
 		Vector2 axis = p_axis;
 
-		if (Math::abs(axis.x) < CMP_EPSILON &&
-				Math::abs(axis.y) < CMP_EPSILON) {
+		if (Math::is_zero_approx(axis.x) &&
+				Math::is_zero_approx(axis.y)) {
 			// strange case, try an upwards separator
 			axis = Vector2(0.0, 1.0);
 		}
@@ -300,7 +300,6 @@ public:
 			}
 		}
 
-//print_line("test axis: "+p_axis+" depth: "+rtos(best_depth));
 #ifdef DEBUG_ENABLED
 		best_axis_count++;
 #endif

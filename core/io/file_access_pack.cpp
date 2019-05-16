@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "file_access_pack.h"
-#include "version.h"
+
+#include "core/version.h"
 
 #include <stdio.h>
 
@@ -168,11 +169,11 @@ bool PackedSourcePCK::try_open_pack(const String &p_path) {
 	uint32_t version = f->get_32();
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
-	uint32_t ver_rev = f->get_32();
+	f->get_32(); // ver_rev
 
 	ERR_EXPLAIN("Pack version unsupported: " + itos(version));
 	ERR_FAIL_COND_V(version != PACK_VERSION, false);
-	ERR_EXPLAIN("Pack created with a newer version of the engine: " + itos(ver_major) + "." + itos(ver_minor) + "." + itos(ver_rev));
+	ERR_EXPLAIN("Pack created with a newer version of the engine: " + itos(ver_major) + "." + itos(ver_minor));
 	ERR_FAIL_COND_V(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), false);
 
 	for (int i = 0; i < 16; i++) {
@@ -271,7 +272,7 @@ int FileAccessPack::get_buffer(uint8_t *p_dst, int p_length) const {
 	if (eof)
 		return 0;
 
-	int64_t to_read = p_length;
+	uint64_t to_read = p_length;
 	if (to_read + pos > pf.size) {
 		eof = true;
 		to_read = int64_t(pf.size) - int64_t(pos);
@@ -454,7 +455,7 @@ String DirAccessPack::get_current_dir() {
 
 	while (pd->parent) {
 		pd = pd->parent;
-		p = pd->name + "/" + p;
+		p = pd->name.plus_file(p);
 	}
 
 	return "res://" + p;
@@ -487,6 +488,10 @@ Error DirAccessPack::remove(String p_name) {
 size_t DirAccessPack::get_space_left() {
 
 	return 0;
+}
+
+String DirAccessPack::get_filesystem_type() const {
+	return "PCK";
 }
 
 DirAccessPack::DirAccessPack() {

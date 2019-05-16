@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef HTTPREQUEST_H
 #define HTTPREQUEST_H
 
-#include "io/http_client.h"
+#include "core/io/http_client.h"
+#include "core/os/file_access.h"
+#include "core/os/thread.h"
 #include "node.h"
-#include "os/file_access.h"
-#include "os/thread.h"
 
 class HTTPRequest : public Node {
 

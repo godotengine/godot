@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,15 @@
 extern "C" {
 #endif
 
+// For future versions of the API we should only add new functions at the end of the structure and use the
+// version info to detect whether a call is available
+
+// Use these to populate version in your plugin
+#define GODOTVR_API_MAJOR 1
+#define GODOTVR_API_MINOR 1
+
 typedef struct {
+	godot_gdnative_api_version version; /* version of our API */
 	void *(*constructor)(godot_object *);
 	void (*destructor)(void *);
 	godot_string (*get_name)(const void *);
@@ -53,6 +61,9 @@ typedef struct {
 	void (*fill_projection_for_eye)(void *, godot_real *, godot_int, godot_real, godot_real, godot_real);
 	void (*commit_for_eye)(void *, godot_int, godot_rid *, godot_rect2 *);
 	void (*process)(void *);
+	// only in 1.1 onwards
+	godot_int (*get_external_texture_for_eye)(void *, godot_int);
+	void (*notification)(void *, godot_int);
 } godot_arvr_interface_gdnative;
 
 void GDAPI godot_arvr_register_interface(const godot_arvr_interface_gdnative *p_interface);

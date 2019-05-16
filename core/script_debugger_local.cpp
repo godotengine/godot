@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,22 @@
 
 #include "script_debugger_local.h"
 
-#include "os/os.h"
+#include "core/os/os.h"
+#include "scene/main/scene_tree.h"
 
 void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue) {
 
-	print_line("Debugger Break, Reason: '" + p_script->debug_get_error() + "'");
+	if (!target_function.empty()) {
+		String current_function = p_script->debug_get_stack_level_function(0);
+		if (current_function != target_function) {
+			set_depth(0);
+			set_lines_left(1);
+			return;
+		}
+		target_function = "";
+	}
+
+	print_line("\nDebugger Break, Reason: '" + p_script->debug_get_error() + "'");
 	print_line("*Frame " + itos(0) + " - " + p_script->debug_get_stack_level_source(0) + ":" + itos(p_script->debug_get_stack_level_line(0)) + " in function '" + p_script->debug_get_stack_level_function(0) + "'");
 	print_line("Enter \"help\" for assistance.");
 	int current_frame = 0;
@@ -44,8 +55,11 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue) {
 		OS::get_singleton()->print("debug> ");
 		String line = OS::get_singleton()->get_stdin_string().strip_edges();
 
+		// Cache options
+		String variable_prefix = options["variable_prefix"];
+
 		if (line == "") {
-			print_line("Debugger Break, Reason: '" + p_script->debug_get_error() + "'");
+			print_line("\nDebugger Break, Reason: '" + p_script->debug_get_error() + "'");
 			print_line("*Frame " + itos(current_frame) + " - " + p_script->debug_get_stack_level_source(current_frame) + ":" + itos(p_script->debug_get_stack_level_line(current_frame)) + " in function '" + p_script->debug_get_stack_level_function(current_frame) + "'");
 			print_line("Enter \"help\" for assistance.");
 		} else if (line == "c" || line == "continue")
@@ -72,38 +86,56 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue) {
 				}
 			}
 
+		} else if (line.begins_with("set")) {
+
+			if (line.get_slice_count(" ") == 1) {
+
+				for (Map<String, String>::Element *E = options.front(); E; E = E->next()) {
+					print_line("\t" + E->key() + "=" + E->value());
+				}
+
+			} else {
+				String key_value = line.get_slicec(' ', 1);
+				int value_pos = key_value.find("=");
+
+				if (value_pos < 0) {
+					print_line("Error: Invalid set format. Use: set key=value");
+				} else {
+
+					String key = key_value.left(value_pos);
+
+					if (!options.has(key)) {
+						print_line("Error: Unknown option " + key);
+					} else {
+
+						// Allow explicit tab character
+						String value = key_value.right(value_pos + 1).replace("\\t", "\t");
+
+						options[key] = value;
+					}
+				}
+			}
+
 		} else if (line == "lv" || line == "locals") {
 
 			List<String> locals;
 			List<Variant> values;
 			p_script->debug_get_stack_level_locals(current_frame, &locals, &values);
-			List<Variant>::Element *V = values.front();
-			for (List<String>::Element *E = locals.front(); E; E = E->next()) {
-				print_line(E->get() + ": " + String(V->get()));
-				V = V->next();
-			}
+			print_variables(locals, values, variable_prefix);
 
 		} else if (line == "gv" || line == "globals") {
 
-			List<String> locals;
+			List<String> globals;
 			List<Variant> values;
-			p_script->debug_get_globals(&locals, &values);
-			List<Variant>::Element *V = values.front();
-			for (List<String>::Element *E = locals.front(); E; E = E->next()) {
-				print_line(E->get() + ": " + String(V->get()));
-				V = V->next();
-			}
+			p_script->debug_get_globals(&globals, &values);
+			print_variables(globals, values, variable_prefix);
 
 		} else if (line == "mv" || line == "members") {
 
-			List<String> locals;
+			List<String> members;
 			List<Variant> values;
-			p_script->debug_get_stack_level_members(current_frame, &locals, &values);
-			List<Variant>::Element *V = values.front();
-			for (List<String>::Element *E = locals.front(); E; E = E->next()) {
-				print_line(E->get() + ": " + String(V->get()));
-				V = V->next();
-			}
+			p_script->debug_get_stack_level_members(current_frame, &members, &values);
+			print_variables(members, values, variable_prefix);
 
 		} else if (line.begins_with("p") || line.begins_with("print")) {
 
@@ -121,63 +153,147 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue) {
 			set_depth(-1);
 			set_lines_left(1);
 			break;
-		} else if (line.begins_with("n") || line.begins_with("next")) {
+		} else if (line == "n" || line == "next") {
 
 			set_depth(0);
 			set_lines_left(1);
 			break;
+		} else if (line == "fin" || line == "finish") {
+
+			String current_function = p_script->debug_get_stack_level_function(0);
+
+			for (int i = 0; i < total_frames; i++) {
+				target_function = p_script->debug_get_stack_level_function(i);
+				if (target_function != current_function) {
+					set_depth(0);
+					set_lines_left(1);
+					return;
+				}
+			}
+
+			print_line("Error: Reached last frame.");
+			target_function = "";
+
 		} else if (line.begins_with("br") || line.begins_with("break")) {
 
 			if (line.get_slice_count(" ") <= 1) {
-				//show breakpoints
+
+				const Map<int, Set<StringName> > &breakpoints = get_breakpoints();
+				if (breakpoints.size() == 0) {
+					print_line("No Breakpoints.");
+					continue;
+				}
+
+				print_line("Breakpoint(s): " + itos(breakpoints.size()));
+				for (Map<int, Set<StringName> >::Element *E = breakpoints.front(); E; E = E->next()) {
+					print_line("\t" + String(E->value().front()->get()) + ":" + itos(E->key()));
+				}
+
 			} else {
 
-				String bppos = line.get_slicec(' ', 1);
-				String source = bppos.get_slicec(':', 0).strip_edges();
-				int line = bppos.get_slicec(':', 1).strip_edges().to_int();
+				Pair<String, int> breakpoint = to_breakpoint(line);
 
-				source = breakpoint_find_source(source);
+				String source = breakpoint.first;
+				int linenr = breakpoint.second;
 
-				insert_breakpoint(line, source);
+				if (source.empty())
+					continue;
 
-				print_line("BreakPoint at " + source + ":" + itos(line));
+				insert_breakpoint(linenr, source);
+
+				print_line("Added breakpoint at " + source + ":" + itos(linenr));
 			}
 
+		} else if (line == "q" || line == "quit") {
+
+			// Do not stop again on quit
+			clear_breakpoints();
+			ScriptDebugger::get_singleton()->set_depth(-1);
+			ScriptDebugger::get_singleton()->set_lines_left(-1);
+
+			SceneTree::get_singleton()->quit();
+			break;
 		} else if (line.begins_with("delete")) {
 
 			if (line.get_slice_count(" ") <= 1) {
 				clear_breakpoints();
 			} else {
 
-				String bppos = line.get_slicec(' ', 1);
-				String source = bppos.get_slicec(':', 0).strip_edges();
-				int line = bppos.get_slicec(':', 1).strip_edges().to_int();
+				Pair<String, int> breakpoint = to_breakpoint(line);
 
-				source = breakpoint_find_source(source);
+				String source = breakpoint.first;
+				int linenr = breakpoint.second;
 
-				remove_breakpoint(line, source);
+				if (source.empty())
+					continue;
 
-				print_line("Removed BreakPoint at " + source + ":" + itos(line));
+				remove_breakpoint(linenr, source);
+
+				print_line("Removed breakpoint at " + source + ":" + itos(linenr));
 			}
 
 		} else if (line == "h" || line == "help") {
 
 			print_line("Built-In Debugger command list:\n");
-			print_line("\tc,continue :\t\t Continue execution.");
-			print_line("\tbt,backtrace :\t\t Show stack trace (frames).");
+			print_line("\tc,continue\t\t Continue execution.");
+			print_line("\tbt,backtrace\t\t Show stack trace (frames).");
 			print_line("\tfr,frame <frame>:\t Change current frame.");
-			print_line("\tlv,locals :\t\t Show local variables for current frame.");
-			print_line("\tmv,members :\t\t Show member variables for \"this\" in frame.");
-			print_line("\tgv,globals :\t\t Show global variables.");
-			print_line("\tp,print <expr> :\t Execute and print variable in expression.");
-			print_line("\ts,step :\t\t Step to next line.");
-			print_line("\tn,next :\t\t Next line.");
-			print_line("\tbr,break source:line :\t Place a breakpoint.");
-			print_line("\tdelete [source:line]:\t\t Delete one/all breakpoints.");
+			print_line("\tlv,locals\t\t Show local variables for current frame.");
+			print_line("\tmv,members\t\t Show member variables for \"this\" in frame.");
+			print_line("\tgv,globals\t\t Show global variables.");
+			print_line("\tp,print <expr>\t\t Execute and print variable in expression.");
+			print_line("\ts,step\t\t\t Step to next line.");
+			print_line("\tn,next\t\t\t Next line.");
+			print_line("\tfin,finish\t\t Step out of current frame.");
+			print_line("\tbr,break [source:line]\t List all breakpoints or place a breakpoint.");
+			print_line("\tdelete [source:line]:\t Delete one/all breakpoints.");
+			print_line("\tset [key=value]:\t List all options, or set one.");
+			print_line("\tq,quit\t\t\t Quit application.");
 		} else {
 			print_line("Error: Invalid command, enter \"help\" for assistance.");
 		}
 	}
+}
+
+void ScriptDebuggerLocal::print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix) {
+
+	String value;
+	Vector<String> value_lines;
+	const List<Variant>::Element *V = values.front();
+	for (const List<String>::Element *E = names.front(); E; E = E->next()) {
+
+		value = String(V->get());
+
+		if (variable_prefix.empty()) {
+			print_line(E->get() + ": " + String(V->get()));
+		} else {
+
+			print_line(E->get() + ":");
+			value_lines = value.split("\n");
+			for (int i = 0; i < value_lines.size(); ++i) {
+				print_line(variable_prefix + value_lines[i]);
+			}
+		}
+
+		V = V->next();
+	}
+}
+
+Pair<String, int> ScriptDebuggerLocal::to_breakpoint(const String &p_line) {
+
+	String breakpoint_part = p_line.get_slicec(' ', 1);
+	Pair<String, int> breakpoint;
+
+	int last_colon = breakpoint_part.rfind(":");
+	if (last_colon < 0) {
+		print_line("Error: Invalid breakpoint format. Expected [source:line]");
+		return breakpoint;
+	}
+
+	breakpoint.first = breakpoint_find_source(breakpoint_part.left(last_colon).strip_edges());
+	breakpoint.second = breakpoint_part.right(last_colon).strip_edges().to_int();
+
+	return breakpoint;
 }
 
 struct _ScriptDebuggerLocalProfileInfoSort {
@@ -209,7 +325,7 @@ void ScriptDebuggerLocal::idle_poll() {
 
 	int ofs = 0;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&pinfo[ofs], pinfo.size() - ofs);
+		ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&pinfo.write[ofs], pinfo.size() - ofs);
 	}
 
 	SortArray<ScriptLanguage::ProfilingInfo, _ScriptDebuggerLocalProfileInfoSort> sort;
@@ -261,7 +377,7 @@ void ScriptDebuggerLocal::profiling_end() {
 	int ofs = 0;
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&pinfo[ofs], pinfo.size() - ofs);
+		ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&pinfo.write[ofs], pinfo.size() - ofs);
 	}
 
 	SortArray<ScriptLanguage::ProfilingInfo, _ScriptDebuggerLocalProfileInfoSort> sort;
@@ -304,4 +420,5 @@ ScriptDebuggerLocal::ScriptDebuggerLocal() {
 
 	profiling = false;
 	idle_accum = OS::get_singleton()->get_ticks_usec();
+	options["variable_prefix"] = "";
 }

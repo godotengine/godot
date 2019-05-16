@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "multi_node_edit.h"
 
-#include "core/helper/math_fieldwise.h"
+#include "core/math/math_fieldwise.h"
 #include "editor_node.h"
 
 bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
@@ -52,7 +52,7 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
-	ur->create_action(TTR("MultiNode Set") + " " + String(name));
+	ur->create_action(TTR("MultiNode Set") + " " + String(name), UndoRedo::MERGE_ENDS);
 	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
 
 		if (!es->has_node(E->get()))
@@ -80,8 +80,8 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 
 		ur->add_undo_property(n, name, n->get(name));
 	}
-	ur->add_do_method(EditorNode::get_singleton()->get_property_editor(), "refresh");
-	ur->add_undo_method(EditorNode::get_singleton()->get_property_editor(), "refresh");
+	ur->add_do_method(EditorNode::get_singleton()->get_inspector(), "refresh");
+	ur->add_undo_method(EditorNode::get_singleton()->get_inspector(), "refresh");
 
 	ur->commit_action();
 	return true;

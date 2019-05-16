@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GlobalScope" category="Core" version="3.1">
+<class name="@GlobalScope" category="Core" version="3.2">
 	<brief_description>
 		Global scope constants and variables.
 	</brief_description>
@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
@@ -28,9 +26,6 @@
 		</member>
 		<member name="Geometry" type="Geometry" setter="" getter="">
 			[Geometry] singleton
-		</member>
-		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
-			[GodotSharp] singleton
 		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			[IP] singleton
@@ -886,6 +881,12 @@
 		<constant name="BUTTON_MIDDLE" value="3" enum="ButtonList">
 			Middle Mouse Button
 		</constant>
+		<constant name="BUTTON_XBUTTON1" value="8" enum="ButtonList">
+			Extra Mouse Button 1
+		</constant>
+		<constant name="BUTTON_XBUTTON2" value="9" enum="ButtonList">
+			Extra Mouse Button 2
+		</constant>
 		<constant name="BUTTON_WHEEL_UP" value="4" enum="ButtonList">
 			Mouse wheel up
 		</constant>
@@ -906,6 +907,12 @@
 		</constant>
 		<constant name="BUTTON_MASK_MIDDLE" value="4" enum="ButtonList">
 			Middle Mouse Button Mask
+		</constant>
+		<constant name="BUTTON_MASK_XBUTTON1" value="128" enum="ButtonList">
+			Extra Mouse Button 1 Mask
+		</constant>
+		<constant name="BUTTON_MASK_XBUTTON2" value="256" enum="ButtonList">
+			Extra Mouse Button 2 Mask
 		</constant>
 		<constant name="JOY_BUTTON_0" value="0" enum="JoystickList">
 			Joypad Button 0
@@ -1076,6 +1083,20 @@
 		<constant name="JOY_ANALOG_R2" value="7" enum="JoystickList">
 			Joypad Right Analog Trigger
 		</constant>
+		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MidiMessageList">
+		</constant>
+		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MidiMessageList">
+		</constant>
+		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MidiMessageList">
+		</constant>
+		<constant name="MIDI_MESSAGE_CONTROL_CHANGE" value="11" enum="MidiMessageList">
+		</constant>
+		<constant name="MIDI_MESSAGE_PROGRAM_CHANGE" value="12" enum="MidiMessageList">
+		</constant>
+		<constant name="MIDI_MESSAGE_CHANNEL_PRESSURE" value="13" enum="MidiMessageList">
+		</constant>
+		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MidiMessageList">
+		</constant>
 		<constant name="OK" value="0" enum="Error">
 			Functions that return Error return OK when no error occurred. Most functions don't return errors and/or just print errors to STDOUT.
 		</constant>
@@ -1243,12 +1264,14 @@
 		</constant>
 		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="19" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="19" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="20" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="20" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="21" enum="PropertyHint">
 			Hints that the image is compressed using lossy compression.
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="21" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="22" enum="PropertyHint">
 			Hints that the image is compressed using lossless compression.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="1" enum="PropertyUsageFlags">
@@ -1270,10 +1293,6 @@
 		<constant name="PROPERTY_USAGE_GROUP" value="128" enum="PropertyUsageFlags">
 		</constant>
 		<constant name="PROPERTY_USAGE_CATEGORY" value="256" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_STORE_IF_NONZERO" value="512" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_STORE_IF_NONONE" value="1024" enum="PropertyUsageFlags">
 		</constant>
 		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="2048" enum="PropertyUsageFlags">
 		</constant>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,8 @@
 
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 #include "thirdparty/misc/md5.h"
 #include "thirdparty/misc/sha256.h"
@@ -46,7 +46,6 @@ bool FileAccess::backup_save = false;
 
 FileAccess *FileAccess::create(AccessType p_access) {
 
-	ERR_FAIL_COND_V(!create_func, 0);
 	ERR_FAIL_INDEX_V(p_access, ACCESS_MAX, 0);
 
 	FileAccess *ret = create_func[p_access]();
@@ -166,6 +165,7 @@ String FileAccess::fix_path(const String &p_path) const {
 
 			return r_path;
 		} break;
+		case ACCESS_MAX: break; // Can't happen, but silences warning
 	}
 
 	return r_path;
@@ -262,15 +262,14 @@ String FileAccess::get_token() const {
 	while (!eof_reached()) {
 
 		if (c <= ' ') {
-			if (!token.empty())
+			if (token.length())
 				break;
 		} else {
-			token.push_back(c);
+			token += c;
 		}
 		c = get_8();
 	}
 
-	token.push_back(0);
 	return String::utf8(token.get_data());
 }
 
@@ -293,7 +292,7 @@ class CharBuffer {
 
 			for (int i = 0; i < written; i++) {
 
-				vector[i] = stack_buffer[i];
+				vector.write[i] = stack_buffer[i];
 			}
 		}
 
@@ -347,14 +346,15 @@ String FileAccess::get_line() const {
 	return String::utf8(line.get_data());
 }
 
-Vector<String> FileAccess::get_csv_line(String delim) const {
+Vector<String> FileAccess::get_csv_line(const String &p_delim) const {
 
-	ERR_FAIL_COND_V(delim.length() != 1, Vector<String>());
+	ERR_FAIL_COND_V(p_delim.length() != 1, Vector<String>());
 
 	String l;
 	int qc = 0;
 	do {
-		ERR_FAIL_COND_V(eof_reached(), Vector<String>());
+		if (eof_reached())
+			break;
 
 		l += get_line() + "\n";
 		qc = 0;
@@ -377,7 +377,7 @@ Vector<String> FileAccess::get_csv_line(String delim) const {
 		CharType c = l[i];
 		CharType s[2] = { 0, 0 };
 
-		if (!in_quote && c == delim[0]) {
+		if (!in_quote && c == p_delim[0]) {
 			strings.push_back(current);
 			current = String();
 		} else if (c == '"') {
@@ -407,6 +407,23 @@ int FileAccess::get_buffer(uint8_t *p_dst, int p_length) const {
 		p_dst[i] = get_8();
 
 	return i;
+}
+
+String FileAccess::get_as_utf8_string() const {
+	PoolVector<uint8_t> sourcef;
+	int len = get_len();
+	sourcef.resize(len + 1);
+
+	PoolVector<uint8_t>::Write w = sourcef.write();
+	int r = get_buffer(w.ptr(), len);
+	ERR_FAIL_COND_V(r != len, String());
+	w[len] = 0;
+
+	String s;
+	if (s.parse_utf8((const char *)w.ptr())) {
+		return String();
+	}
+	return s;
 }
 
 void FileAccess::store_16(uint16_t p_dest) {
@@ -490,6 +507,29 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 	return mt;
 }
 
+uint32_t FileAccess::get_unix_permissions(const String &p_file) {
+
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_file))
+		return 0;
+
+	FileAccess *fa = create_for_path(p_file);
+	ERR_FAIL_COND_V(!fa, 0);
+
+	uint32_t mt = fa->_get_unix_permissions(p_file);
+	memdelete(fa);
+	return mt;
+}
+
+Error FileAccess::set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+
+	FileAccess *fa = create_for_path(p_file);
+	ERR_FAIL_COND_V(!fa, ERR_CANT_CREATE);
+
+	Error err = fa->_set_unix_permissions(p_file, p_permissions);
+	memdelete(fa);
+	return err;
+}
+
 void FileAccess::store_string(const String &p_string) {
 
 	if (p_string.length() == 0)
@@ -526,21 +566,69 @@ void FileAccess::store_line(const String &p_line) {
 	store_8('\n');
 }
 
+void FileAccess::store_csv_line(const Vector<String> &p_values, const String &p_delim) {
+
+	ERR_FAIL_COND(p_delim.length() != 1);
+
+	String line = "";
+	int size = p_values.size();
+	for (int i = 0; i < size; ++i) {
+		String value = p_values[i];
+
+		if (value.find("\"") != -1 || value.find(p_delim) != -1 || value.find("\n") != -1) {
+			value = "\"" + value.replace("\"", "\"\"") + "\"";
+		}
+		if (i < size - 1) {
+			value += p_delim;
+		}
+
+		line += value;
+	}
+
+	store_line(line);
+}
+
 void FileAccess::store_buffer(const uint8_t *p_src, int p_length) {
 
 	for (int i = 0; i < p_length; i++)
 		store_8(p_src[i]);
 }
 
-Vector<uint8_t> FileAccess::get_file_as_array(const String &p_path) {
+Vector<uint8_t> FileAccess::get_file_as_array(const String &p_path, Error *r_error) {
 
-	FileAccess *f = FileAccess::open(p_path, READ);
-	ERR_FAIL_COND_V(!f, Vector<uint8_t>());
+	FileAccess *f = FileAccess::open(p_path, READ, r_error);
+	if (!f) {
+		if (r_error) { // if error requested, do not throw error
+			return Vector<uint8_t>();
+		} else {
+			ERR_FAIL_COND_V(!f, Vector<uint8_t>());
+		}
+	}
 	Vector<uint8_t> data;
 	data.resize(f->get_len());
 	f->get_buffer(data.ptrw(), data.size());
 	memdelete(f);
 	return data;
+}
+
+String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
+
+	Error err;
+	Vector<uint8_t> array = get_file_as_array(p_path, &err);
+	if (r_error) {
+		*r_error = err;
+	}
+	if (err != OK) {
+		if (r_error) {
+			return String();
+		} else {
+			ERR_FAIL_COND_V(err != OK, String());
+		}
+	}
+
+	String ret;
+	ret.parse_utf8((const char *)array.ptr(), array.size());
+	return ret;
 }
 
 String FileAccess::get_md5(const String &p_file) {

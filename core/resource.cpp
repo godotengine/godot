@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,12 @@
 
 #include "resource.h"
 
-#include "core_string_names.h"
-#include "io/resource_loader.h"
-#include "os/file_access.h"
+#include "core/core_string_names.h"
+#include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
+#include "core/script_language.h"
 #include "scene/main/node.h" //only so casting works
-#include "script_language.h"
+
 #include <stdio.h>
 
 void Resource::emit_changed() {
@@ -151,7 +152,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
-	Resource *r = (Resource *)ClassDB::instance(get_class());
+	Resource *r = Object::cast_to<Resource>(ClassDB::instance(get_class()));
 	ERR_FAIL_COND_V(!r, Ref<Resource>());
 
 	r->local_scene = p_for_scene;
@@ -182,12 +183,13 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 		r->set(E->get().name, p);
 	}
 
-	return Ref<Resource>(r);
+	RES res = Ref<Resource>(r);
+
+	return res;
 }
 
 void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
 
-	print_line("configure for local: " + get_class());
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
@@ -226,15 +228,20 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 
 		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
 			continue;
-		Variant p = get(E->get().name).duplicate(true);
-		if (p.get_type() == Variant::OBJECT && p_subresources) {
+		Variant p = get(E->get().name);
+
+		if ((p.get_type() == Variant::DICTIONARY || p.get_type() == Variant::ARRAY)) {
+			r->set(E->get().name, p.duplicate(p_subresources));
+		} else if (p.get_type() == Variant::OBJECT && (p_subresources || (E->get().usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE))) {
 
 			RES sr = p;
-			if (sr.is_valid())
-				p = sr->duplicate(true);
-		}
+			if (sr.is_valid()) {
+				r->set(E->get().name, sr->duplicate(p_subresources));
+			}
+		} else {
 
-		r->set(E->get().name, p);
+			r->set(E->get().name, p);
+		}
 	}
 
 	return Ref<Resource>(r);
@@ -288,7 +295,7 @@ uint32_t Resource::hash_edited_version() const {
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
 
-		if (E->get().type == Variant::OBJECT && E->get().hint == PROPERTY_HINT_RESOURCE_TYPE) {
+		if (E->get().usage & PROPERTY_USAGE_STORAGE && E->get().type == Variant::OBJECT && E->get().hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			RES res = get(E->get().name);
 			if (res.is_valid()) {
 				hash = hash_djb2_one_32(res->hash_edited_version(), hash);
@@ -356,6 +363,26 @@ bool Resource::is_translation_remapped() const {
 	return remapped_list.in_list();
 }
 
+#ifdef TOOLS_ENABLED
+//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
+void Resource::set_id_for_path(const String &p_path, int p_id) {
+	if (p_id == -1) {
+		id_for_path.erase(p_path);
+	} else {
+		id_for_path[p_path] = p_id;
+	}
+}
+
+int Resource::get_id_for_path(const String &p_path) const {
+
+	if (id_for_path.has(p_path)) {
+		return id_for_path[p_path];
+	} else {
+		return -1;
+	}
+}
+#endif
+
 void Resource::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &Resource::_set_path);
@@ -372,9 +399,9 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("duplicate", "subresources"), &Resource::duplicate, DEFVAL(false));
 	ADD_SIGNAL(MethodInfo("changed"));
 	ADD_GROUP("Resource", "resource_");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
 
 	BIND_VMETHOD(MethodInfo("_setup_local_to_scene"));
 }

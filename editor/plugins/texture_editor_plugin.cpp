@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "texture_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/project_settings.h"
 #include "editor/editor_settings.h"
-#include "io/resource_loader.h"
-#include "project_settings.h"
 
 void TextureEditor::_gui_input(Ref<InputEvent> p_event) {
 }
@@ -138,39 +138,33 @@ TextureEditor::TextureEditor() {
 	set_custom_minimum_size(Size2(1, 150));
 }
 
-void TextureEditorPlugin::edit(Object *p_object) {
-
-	Texture *s = Object::cast_to<Texture>(p_object);
-	if (!s)
-		return;
-
-	texture_editor->edit(Ref<Texture>(s));
-}
-
-bool TextureEditorPlugin::handles(Object *p_object) const {
-
-	return p_object->is_class("Texture");
-}
-
-void TextureEditorPlugin::make_visible(bool p_visible) {
-
-	if (p_visible) {
-		texture_editor->show();
-		//texture_editor->set_process(true);
-	} else {
-
-		texture_editor->hide();
-		//texture_editor->set_process(false);
+TextureEditor::~TextureEditor() {
+	if (!texture.is_null()) {
+		texture->remove_change_receptor(this);
 	}
+}
+//
+bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
+
+	return Object::cast_to<ImageTexture>(p_object) != NULL || Object::cast_to<AtlasTexture>(p_object) != NULL || Object::cast_to<StreamTexture>(p_object) != NULL || Object::cast_to<LargeTexture>(p_object) != NULL || Object::cast_to<AnimatedTexture>(p_object) != NULL;
+}
+
+void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
+
+	Texture *texture = Object::cast_to<Texture>(p_object);
+	if (!texture) {
+		return;
+	}
+	Ref<Texture> m(texture);
+
+	TextureEditor *editor = memnew(TextureEditor);
+	editor->edit(m);
+	add_custom_control(editor);
 }
 
 TextureEditorPlugin::TextureEditorPlugin(EditorNode *p_node) {
 
-	editor = p_node;
-	texture_editor = memnew(TextureEditor);
-	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, texture_editor);
-	texture_editor->hide();
-}
-
-TextureEditorPlugin::~TextureEditorPlugin() {
+	Ref<EditorInspectorPluginTexture> plugin;
+	plugin.instance();
+	add_inspector_plugin(plugin);
 }

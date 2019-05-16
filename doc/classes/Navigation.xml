@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Navigation" inherits="Spatial" category="Core" version="3.1">
+<class name="Navigation" inherits="Spatial" category="Core" version="3.2">
 	<brief_description>
 		Mesh-based navigation and pathfinding node.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_closest_point">
 			<return type="Vector3">
@@ -35,7 +33,7 @@
 			<argument index="0" name="to_point" type="Vector3">
 			</argument>
 			<description>
-				Returns the owner of the [NavigationMesh] which contains the navigation point closest to the point given. This is usually a [NavigtionMeshInstance]. For meshes added via [method navmesh_add], returns the owner that was given (or [code]null[/code] if the [code]owner[/code] parameter was omitted).
+				Returns the owner of the [NavigationMesh] which contains the navigation point closest to the point given. This is usually a [NavigationMeshInstance]. For meshes added via [method navmesh_add], returns the owner that was given (or [code]null[/code] if the [code]owner[/code] parameter was omitted).
 			</description>
 		</method>
 		<method name="get_closest_point_to_segment">

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,13 +30,17 @@
 
 #include "thread_jandroid.h"
 
+#include "core/os/memory.h"
 #include "core/safe_refcount.h"
-#include "os/memory.h"
-#include "script_language.h"
+#include "core/script_language.h"
+
+static void _thread_id_key_destr_callback(void *p_value) {
+	memdelete(static_cast<Thread::ID *>(p_value));
+}
 
 static pthread_key_t _create_thread_id_key() {
 	pthread_key_t key;
-	pthread_key_create(&key, NULL);
+	pthread_key_create(&key, &_thread_id_key_destr_callback);
 	return key;
 }
 
@@ -59,7 +63,7 @@ void *ThreadAndroid::thread_callback(void *userdata) {
 	setup_thread();
 	ScriptServer::thread_enter(); //scripts may need to attach a stack
 	t->id = atomic_increment(&next_thread_id);
-	pthread_setspecific(thread_id_key, (void *)t->id);
+	pthread_setspecific(thread_id_key, (void *)memnew(ID(t->id)));
 	t->callback(t->user);
 	ScriptServer::thread_exit();
 	return NULL;
@@ -80,7 +84,14 @@ Thread *ThreadAndroid::create_func_jandroid(ThreadCreateCallback p_callback, voi
 
 Thread::ID ThreadAndroid::get_thread_id_func_jandroid() {
 
-	return (ID)pthread_getspecific(thread_id_key);
+	void *value = pthread_getspecific(thread_id_key);
+
+	if (value)
+		return *static_cast<ID *>(value);
+
+	ID new_id = atomic_increment(&next_thread_id);
+	pthread_setspecific(thread_id_key, (void *)memnew(ID(new_id)));
+	return new_id;
 }
 
 void ThreadAndroid::wait_to_finish_func_jandroid(Thread *p_thread) {
@@ -132,7 +143,7 @@ JNIEnv *ThreadAndroid::get_env() {
 	}
 
 	JNIEnv *env = NULL;
-	int status = java_vm->AttachCurrentThread(&env, NULL);
+	java_vm->AttachCurrentThread(&env, NULL);
 	return env;
 }
 

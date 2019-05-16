@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,10 @@
 #ifndef GLOBAL_CONFIG_H
 #define GLOBAL_CONFIG_H
 
-#include "object.h"
-#include "os/thread_safe.h"
-#include "set.h"
+#include "core/object.h"
+#include "core/os/thread_safe.h"
+#include "core/set.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -59,18 +60,21 @@ protected:
 		Variant initial;
 		bool hide_from_editor;
 		bool overridden;
+		bool restart_if_changed;
 		VariantContainer() :
 				order(0),
 				persist(false),
 				hide_from_editor(false),
-				overridden(false) {
+				overridden(false),
+				restart_if_changed(false) {
 		}
 		VariantContainer(const Variant &p_variant, int p_order, bool p_persist = false) :
 				order(p_order),
 				persist(p_persist),
 				variant(p_variant),
 				hide_from_editor(false),
-				overridden(false) {
+				overridden(false),
+				restart_if_changed(false) {
 		}
 	};
 
@@ -102,16 +106,20 @@ protected:
 
 	Error _save_custom_bnd(const String &p_file);
 
-	void _convert_to_last_version();
+	void _convert_to_last_version(int p_from_version);
 
 	bool _load_resource_pack(const String &p_pack);
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
+	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
+
 protected:
 	static void _bind_methods();
 
 public:
+	static const int CONFIG_VERSION = 4;
+
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting) const;
 
@@ -120,6 +128,7 @@ public:
 	String globalize_path(const String &p_path) const;
 
 	void set_initial_value(const String &p_name, const Variant &p_value);
+	void set_restart_if_changed(const String &p_name, bool p_restart);
 	bool property_can_revert(const String &p_name);
 	Variant property_get_revert(const String &p_name);
 
@@ -137,6 +146,7 @@ public:
 	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Vector<String> &p_custom_features = Vector<String>(), bool p_merge_with_current = true);
 	Error save();
 	void set_custom_property_info(const String &p_prop, const PropertyInfo &p_info);
+	const Map<StringName, PropertyInfo> &get_custom_property_info() const;
 
 	Vector<String> get_optimizer_presets() const;
 
@@ -144,19 +154,20 @@ public:
 
 	void set_disable_feature_overrides(bool p_disable);
 
-	void register_global_defaults();
-
 	bool is_using_datapack() const;
 
 	void set_registering_order(bool p_enable);
+
+	bool has_custom_feature(const String &p_feature) const;
 
 	ProjectSettings();
 	~ProjectSettings();
 };
 
 //not a macro any longer
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default);
+Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false);
 #define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
+#define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
 
 #endif

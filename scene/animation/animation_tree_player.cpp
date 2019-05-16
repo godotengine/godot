@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -136,9 +136,9 @@ bool AnimationTreePlayer::_set(const StringName &p_name, const Variant &p_value)
 				else
 					animation_node_set_animation(id, node.get_valid("animation"));
 				Array filters = node.get_valid("filter");
-				for (int i = 0; i < filters.size(); i++) {
+				for (int j = 0; j < filters.size(); j++) {
 
-					animation_node_set_filter_path(id, filters[i], true);
+					animation_node_set_filter_path(id, filters[j], true);
 				}
 			} break;
 			case NODE_ONESHOT: {
@@ -150,9 +150,9 @@ bool AnimationTreePlayer::_set(const StringName &p_name, const Variant &p_value)
 				oneshot_node_set_autorestart_delay(id, node.get_valid("autorestart_delay"));
 				oneshot_node_set_autorestart_random_delay(id, node.get_valid("autorestart_random_delay"));
 				Array filters = node.get_valid("filter");
-				for (int i = 0; i < filters.size(); i++) {
+				for (int j = 0; j < filters.size(); j++) {
 
-					oneshot_node_set_filter_path(id, filters[i], true);
+					oneshot_node_set_filter_path(id, filters[j], true);
 				}
 
 			} break;
@@ -162,9 +162,9 @@ bool AnimationTreePlayer::_set(const StringName &p_name, const Variant &p_value)
 			case NODE_BLEND2: {
 				blend2_node_set_amount(id, node.get_valid("blend"));
 				Array filters = node.get_valid("filter");
-				for (int i = 0; i < filters.size(); i++) {
+				for (int j = 0; j < filters.size(); j++) {
 
-					blend2_node_set_filter_path(id, filters[i], true);
+					blend2_node_set_filter_path(id, filters[j], true);
 				}
 			} break;
 			case NODE_BLEND3: {
@@ -193,7 +193,8 @@ bool AnimationTreePlayer::_set(const StringName &p_name, const Variant &p_value)
 				}
 
 			} break;
-			default: {};
+			default: {
+			};
 		}
 	}
 
@@ -278,8 +279,8 @@ bool AnimationTreePlayer::_get(const StringName &p_name, Variant &r_ret) const {
 				an->filter.get_key_list(&keys);
 				k.resize(keys.size());
 				int i = 0;
-				for (List<NodePath>::Element *E = keys.front(); E; E = E->next()) {
-					k[i++] = E->get();
+				for (List<NodePath>::Element *F = keys.front(); F; F = F->next()) {
+					k[i++] = F->get();
 				}
 				node["filter"] = k;
 			} break;
@@ -297,8 +298,8 @@ bool AnimationTreePlayer::_get(const StringName &p_name, Variant &r_ret) const {
 				osn->filter.get_key_list(&keys);
 				k.resize(keys.size());
 				int i = 0;
-				for (List<NodePath>::Element *E = keys.front(); E; E = E->next()) {
-					k[i++] = E->get();
+				for (List<NodePath>::Element *F = keys.front(); F; F = F->next()) {
+					k[i++] = F->get();
 				}
 				node["filter"] = k;
 
@@ -315,8 +316,8 @@ bool AnimationTreePlayer::_get(const StringName &p_name, Variant &r_ret) const {
 				bn->filter.get_key_list(&keys);
 				k.resize(keys.size());
 				int i = 0;
-				for (List<NodePath>::Element *E = keys.front(); E; E = E->next()) {
-					k[i++] = E->get();
+				for (List<NodePath>::Element *F = keys.front(); F; F = F->next()) {
+					k[i++] = F->get();
 				}
 				node["filter"] = k;
 
@@ -352,7 +353,8 @@ bool AnimationTreePlayer::_get(const StringName &p_name, Variant &r_ret) const {
 				node["transitions"] = transitions;
 
 			} break;
-			default: {};
+			default: {
+			};
 		}
 
 		nodes.push_back(node);
@@ -401,6 +403,9 @@ void AnimationTreePlayer::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
+			ERR_EXPLAIN("AnimationTreePlayer has been deprecated. Use AnimationTree instead.");
+			WARN_DEPRECATED
+
 			if (!processing) {
 				//make sure that a previous process state was not saved
 				//only process if "processing" is set
@@ -409,12 +414,14 @@ void AnimationTreePlayer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_READY: {
+
 			dirty_caches = true;
 			if (master != NodePath()) {
 				_update_sources();
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
+
 			if (animation_process_mode == ANIMATION_PROCESS_PHYSICS)
 				break;
 
@@ -767,7 +774,8 @@ float AnimationTreePlayer::_process_node(const StringName &p_node, AnimationNode
 			}
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	return 0;
@@ -813,7 +821,11 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 		t.value = t.object->get_indexed(t.subpath);
 		t.value.zero();
 
-		t.skip = false;
+		if (t.skeleton) {
+			t.skip = t.skeleton->is_bone_ignore_animation(t.bone_idx);
+		} else {
+			t.skip = false;
+		}
 	}
 
 	/* STEP 2 PROCESS ANIMATIONS */
@@ -865,14 +877,16 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 
 						List<int> indices;
 						a->method_track_get_key_indices(tr.local_track, anim_list->time, anim_list->step, &indices);
-						for (List<int>::Element *E = indices.front(); E; E = E->next()) {
+						for (List<int>::Element *F = indices.front(); F; F = F->next()) {
 
-							StringName method = a->method_track_get_name(tr.local_track, E->get());
-							Vector<Variant> args = a->method_track_get_params(tr.local_track, E->get());
+							StringName method = a->method_track_get_name(tr.local_track, F->get());
+							Vector<Variant> args = a->method_track_get_params(tr.local_track, F->get());
 							args.resize(VARIANT_ARG_MAX);
 							tr.track->object->call(method, args[0], args[1], args[2], args[3], args[4]);
 						}
 					} break;
+					default: {
+					}
 				}
 			}
 		}
@@ -959,7 +973,8 @@ void AnimationTreePlayer::add_node(NodeType p_type, const StringName &p_node) {
 			n = memnew(TransitionNode);
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	//n->name+=" "+itos(p_node);
@@ -1148,7 +1163,7 @@ void AnimationTreePlayer::transition_node_set_input_auto_advance(const StringNam
 	GET_NODE(NODE_TRANSITION, TransitionNode);
 	ERR_FAIL_INDEX(p_input, n->input_data.size());
 
-	n->input_data[p_input].auto_advance = p_auto_advance;
+	n->input_data.write[p_input].auto_advance = p_auto_advance;
 }
 void AnimationTreePlayer::transition_node_set_xfade_time(const StringName &p_node, float p_time) {
 
@@ -1210,6 +1225,12 @@ String AnimationTreePlayer::animation_node_get_master_animation(const StringName
 
 	GET_NODE_V(NODE_ANIMATION, AnimationNode, String());
 	return n->from;
+}
+
+float AnimationTreePlayer::animation_node_get_position(const StringName &p_node) const {
+
+	GET_NODE_V(NODE_ANIMATION, AnimationNode, 0);
+	return n->time;
 }
 
 bool AnimationTreePlayer::animation_node_is_path_filtered(const StringName &p_node, const NodePath &p_path) const {
@@ -1355,7 +1376,7 @@ void AnimationTreePlayer::remove_node(const StringName &p_node) {
 		for (int i = 0; i < nb->inputs.size(); i++) {
 
 			if (nb->inputs[i].node == p_node)
-				nb->inputs[i].node = StringName();
+				nb->inputs.write[i].node = StringName();
 		}
 	}
 
@@ -1416,11 +1437,11 @@ Error AnimationTreePlayer::connect_nodes(const StringName &p_src_node, const Str
 		for (int i = 0; i < nb->inputs.size(); i++) {
 
 			if (nb->inputs[i].node == p_src_node)
-				nb->inputs[i].node = StringName();
+				nb->inputs.write[i].node = StringName();
 		}
 	}
 
-	dst->inputs[p_dst_input].node = p_src_node;
+	dst->inputs.write[p_dst_input].node = p_src_node;
 
 	_clear_cycle_test();
 
@@ -1453,7 +1474,7 @@ void AnimationTreePlayer::disconnect_nodes(const StringName &p_node, int p_input
 
 	NodeBase *dst = node_map[p_node];
 	ERR_FAIL_INDEX(p_input, dst->inputs.size());
-	dst->inputs[p_input].node = StringName();
+	dst->inputs.write[p_input].node = StringName();
 	last_error = CONNECT_INCOMPLETE;
 	dirty_caches = true;
 }
@@ -1693,7 +1714,7 @@ Error AnimationTreePlayer::node_rename(const StringName &p_node, const StringNam
 		for (int i = 0; i < nb->inputs.size(); i++) {
 
 			if (nb->inputs[i].node == p_node) {
-				nb->inputs[i].node = p_new_name;
+				nb->inputs.write[i].node = p_new_name;
 			}
 		}
 	}
@@ -1702,6 +1723,11 @@ Error AnimationTreePlayer::node_rename(const StringName &p_node, const StringNam
 	node_map.erase(p_node);
 
 	return OK;
+}
+
+String AnimationTreePlayer::get_configuration_warning() const {
+
+	return TTR("This node has been deprecated. Use AnimationTree instead.");
 }
 
 void AnimationTreePlayer::_bind_methods() {
@@ -1720,6 +1746,7 @@ void AnimationTreePlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("animation_node_set_master_animation", "id", "source"), &AnimationTreePlayer::animation_node_set_master_animation);
 	ClassDB::bind_method(D_METHOD("animation_node_get_master_animation", "id"), &AnimationTreePlayer::animation_node_get_master_animation);
+	ClassDB::bind_method(D_METHOD("animation_node_get_position", "id"), &AnimationTreePlayer::animation_node_get_position);
 	ClassDB::bind_method(D_METHOD("animation_node_set_filter_path", "id", "path", "enable"), &AnimationTreePlayer::animation_node_set_filter_path);
 
 	ClassDB::bind_method(D_METHOD("oneshot_node_set_fadein_time", "id", "time_sec"), &AnimationTreePlayer::oneshot_node_set_fadein_time);
@@ -1803,7 +1830,7 @@ void AnimationTreePlayer::_bind_methods() {
 	ADD_GROUP("Playback", "playback_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_animation_process_mode", "get_animation_process_mode");
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "master_player"), "set_master_player", "get_master_player");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "master_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_master_player", "get_master_player");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "base_path"), "set_base_path", "get_base_path");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
 

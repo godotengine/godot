@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,7 +52,7 @@ void CollisionObject::_notification(int p_what) {
 
 			_update_pickable();
 			//get space
-		};
+		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
@@ -148,7 +148,7 @@ void CollisionObject::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_position"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
 
-	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_position"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
+	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_position"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 
@@ -259,9 +259,9 @@ void CollisionObject::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape> &
 	s.index = total_subshapes;
 	s.shape = p_shape;
 	if (area) {
-		PhysicsServer::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform);
+		PhysicsServer::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
 	} else {
-		PhysicsServer::get_singleton()->body_add_shape(rid, p_shape->get_rid(), sd.xform);
+		PhysicsServer::get_singleton()->body_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
 	}
 	sd.shapes.push_back(s);
 
@@ -305,7 +305,7 @@ void CollisionObject::shape_owner_remove_shape(uint32_t p_owner, int p_shape) {
 	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().shapes.size(); i++) {
 			if (E->get().shapes[i].index > index_to_remove) {
-				E->get().shapes[i].index -= 1;
+				E->get().shapes.write[i].index -= 1;
 			}
 		}
 	}

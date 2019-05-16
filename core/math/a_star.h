@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,9 @@
 #ifndef ASTAR_H
 #define ASTAR_H
 
-#include "reference.h"
-#include "self_list.h"
+#include "core/reference.h"
+#include "core/self_list.h"
+
 /**
 	A* pathfinding algorithm
 
@@ -53,8 +54,9 @@ class AStar : public Reference {
 		Vector3 pos;
 		real_t weight_scale;
 		uint64_t last_pass;
+		bool enabled;
 
-		Vector<Point *> neighbours;
+		Set<Point *> neighbours;
 
 		// Used for pathfinding
 		Point *prev_point;
@@ -112,6 +114,9 @@ public:
 	bool has_point(int p_id) const;
 	PoolVector<int> get_point_connections(int p_id);
 	Array get_points();
+
+	void set_point_disabled(int p_id, bool p_disabled = true);
+	bool is_point_disabled(int p_id) const;
 
 	void connect_points(int p_id, int p_with_id, bool bidirectional = true);
 	void disconnect_points(int p_id, int p_with_id);

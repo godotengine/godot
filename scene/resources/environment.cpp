@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "environment.h"
-#include "project_settings.h"
+#include "core/project_settings.h"
 #include "servers/visual_server.h"
 #include "texture.h"
 
@@ -60,6 +60,25 @@ void Environment::set_sky_custom_fov(float p_scale) {
 
 	bg_sky_custom_fov = p_scale;
 	VS::get_singleton()->environment_set_sky_custom_fov(environment, p_scale);
+}
+void Environment::set_sky_orientation(const Basis &p_orientation) {
+
+	bg_sky_orientation = p_orientation;
+	_change_notify("background_sky_rotation");
+	_change_notify("background_sky_rotation_degrees");
+	VS::get_singleton()->environment_set_sky_orientation(environment, bg_sky_orientation);
+}
+void Environment::set_sky_rotation(const Vector3 &p_euler_rad) {
+
+	bg_sky_orientation.set_euler(p_euler_rad);
+	_change_notify("background_sky_orientation");
+	_change_notify("background_sky_rotation_degrees");
+	VS::get_singleton()->environment_set_sky_orientation(environment, bg_sky_orientation);
+}
+void Environment::set_sky_rotation_degrees(const Vector3 &p_euler_deg) {
+
+	set_sky_rotation(p_euler_deg * Math_PI / 180.0);
+	_change_notify("background_sky_rotation");
 }
 void Environment::set_bg_color(const Color &p_color) {
 
@@ -104,6 +123,22 @@ Ref<Sky> Environment::get_sky() const {
 float Environment::get_sky_custom_fov() const {
 
 	return bg_sky_custom_fov;
+}
+
+Basis Environment::get_sky_orientation() const {
+
+	return bg_sky_orientation;
+}
+
+Vector3 Environment::get_sky_rotation() const {
+
+	// should we cache this? maybe overkill
+	return bg_sky_orientation.get_euler();
+}
+
+Vector3 Environment::get_sky_rotation_degrees() const {
+
+	return get_sky_rotation() * 180.0 / Math_PI;
 }
 
 Color Environment::get_bg_color() const {
@@ -268,7 +303,7 @@ Ref<Texture> Environment::get_adjustment_color_correction() const {
 
 void Environment::_validate_property(PropertyInfo &property) const {
 
-	if (property.name == "background_sky" || property.name == "background_sky_custom_fov" || property.name == "ambient_light/sky_contribution") {
+	if (property.name == "background_sky" || property.name == "background_sky_custom_fov" || property.name == "background_sky_orientation" || property.name == "background_sky_rotation" || property.name == "background_sky_rotation_degrees" || property.name == "ambient_light/sky_contribution") {
 		if (bg_mode != BG_SKY && bg_mode != BG_COLOR_SKY) {
 			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 		}
@@ -299,6 +334,19 @@ void Environment::_validate_property(PropertyInfo &property) const {
 
 	};
 
+	static const char *high_end_prefixes[] = {
+		"auto_exposure_",
+		"tonemap_",
+		"ss_reflections_",
+		"ssao_",
+		"dof_blur_far_",
+		"dof_blur_near_",
+		"glow_",
+		"adjustment_",
+		NULL
+
+	};
+
 	const char **prefixes = hide_prefixes;
 	while (*prefixes) {
 		String prefix = String(*prefixes);
@@ -310,6 +358,20 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		}
 
 		prefixes++;
+	}
+
+	if (VisualServer::get_singleton()->is_low_end()) {
+		prefixes = high_end_prefixes;
+		while (*prefixes) {
+			String prefix = String(*prefixes);
+
+			if (property.name.begins_with(prefix)) {
+				property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+				return;
+			}
+
+			prefixes++;
+		}
 	}
 }
 
@@ -378,7 +440,7 @@ bool Environment::is_ssr_rough() const {
 void Environment::set_ssao_enabled(bool p_enable) {
 
 	ssao_enabled = p_enable;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 	_change_notify();
 }
 
@@ -390,7 +452,7 @@ bool Environment::is_ssao_enabled() const {
 void Environment::set_ssao_radius(float p_radius) {
 
 	ssao_radius = p_radius;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 float Environment::get_ssao_radius() const {
 
@@ -400,7 +462,7 @@ float Environment::get_ssao_radius() const {
 void Environment::set_ssao_intensity(float p_intensity) {
 
 	ssao_intensity = p_intensity;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 
 float Environment::get_ssao_intensity() const {
@@ -411,7 +473,7 @@ float Environment::get_ssao_intensity() const {
 void Environment::set_ssao_radius2(float p_radius) {
 
 	ssao_radius2 = p_radius;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 float Environment::get_ssao_radius2() const {
 
@@ -421,7 +483,7 @@ float Environment::get_ssao_radius2() const {
 void Environment::set_ssao_intensity2(float p_intensity) {
 
 	ssao_intensity2 = p_intensity;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 float Environment::get_ssao_intensity2() const {
 
@@ -431,7 +493,7 @@ float Environment::get_ssao_intensity2() const {
 void Environment::set_ssao_bias(float p_bias) {
 
 	ssao_bias = p_bias;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 float Environment::get_ssao_bias() const {
 
@@ -441,17 +503,27 @@ float Environment::get_ssao_bias() const {
 void Environment::set_ssao_direct_light_affect(float p_direct_light_affect) {
 
 	ssao_direct_light_affect = p_direct_light_affect;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 float Environment::get_ssao_direct_light_affect() const {
 
 	return ssao_direct_light_affect;
 }
 
+void Environment::set_ssao_ao_channel_affect(float p_ao_channel_affect) {
+
+	ssao_ao_channel_affect = p_ao_channel_affect;
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+}
+float Environment::get_ssao_ao_channel_affect() const {
+
+	return ssao_ao_channel_affect;
+}
+
 void Environment::set_ssao_color(const Color &p_color) {
 
 	ssao_color = p_color;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 
 Color Environment::get_ssao_color() const {
@@ -462,7 +534,7 @@ Color Environment::get_ssao_color() const {
 void Environment::set_ssao_blur(SSAOBlur p_blur) {
 
 	ssao_blur = p_blur;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 Environment::SSAOBlur Environment::get_ssao_blur() const {
 
@@ -472,7 +544,7 @@ Environment::SSAOBlur Environment::get_ssao_blur() const {
 void Environment::set_ssao_quality(SSAOQuality p_quality) {
 
 	ssao_quality = p_quality;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 
 Environment::SSAOQuality Environment::get_ssao_quality() const {
@@ -483,7 +555,7 @@ Environment::SSAOQuality Environment::get_ssao_quality() const {
 void Environment::set_ssao_edge_sharpness(float p_edge_sharpness) {
 
 	ssao_edge_sharpness = p_edge_sharpness;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 
 float Environment::get_ssao_edge_sharpness() const {
@@ -494,7 +566,7 @@ float Environment::get_ssao_edge_sharpness() const {
 void Environment::set_glow_enabled(bool p_enabled) {
 
 	glow_enabled = p_enabled;
-	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_bicubic_upscale);
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_hdr_luminance_cap, glow_bicubic_upscale);
 	_change_notify();
 }
 
@@ -512,7 +584,7 @@ void Environment::set_glow_level(int p_level, bool p_enabled) {
 	else
 		glow_levels &= ~(1 << p_level);
 
-	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_bicubic_upscale);
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_hdr_luminance_cap, glow_bicubic_upscale);
 }
 bool Environment::is_glow_level_enabled(int p_level) const {
 
@@ -525,7 +597,7 @@ void Environment::set_glow_intensity(float p_intensity) {
 
 	glow_intensity = p_intensity;
 
-	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_bicubic_upscale);
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_hdr_luminance_cap, glow_bicubic_upscale);
 }
 float Environment::get_glow_intensity() const {
 
@@ -535,7 +607,7 @@ float Environment::get_glow_intensity() const {
 void Environment::set_glow_strength(float p_strength) {
 
 	glow_strength = p_strength;
-	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_bicubic_upscale);
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_hdr_luminance_cap, glow_bicubic_upscale);
 }
 float Environment::get_glow_strength() const {
 
@@ -546,7 +618,7 @@ void Environment::set_glow_bloom(float p_threshold) {
 
 	glow_bloom = p_threshold;
 
-	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_bicubic_upscale);
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_hdr_luminance_cap, glow_bicubic_upscale);
 }
 float Environment::get_glow_bloom() const {
 
@@ -557,7 +629,7 @@ void Environment::set_glow_blend_mode(GlowBlendMode p_mode) {
 
 	glow_blend_mode = p_mode;
 
-	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_bicubic_upscale);
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_hdr_luminance_cap, glow_bicubic_upscale);
 }
 Environment::GlowBlendMode Environment::get_glow_blend_mode() const {
 
@@ -568,18 +640,29 @@ void Environment::set_glow_hdr_bleed_threshold(float p_threshold) {
 
 	glow_hdr_bleed_threshold = p_threshold;
 
-	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_bicubic_upscale);
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_hdr_luminance_cap, glow_bicubic_upscale);
 }
 float Environment::get_glow_hdr_bleed_threshold() const {
 
 	return glow_hdr_bleed_threshold;
 }
 
+void Environment::set_glow_hdr_luminance_cap(float p_amount) {
+
+	glow_hdr_luminance_cap = p_amount;
+
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_hdr_luminance_cap, glow_bicubic_upscale);
+}
+float Environment::get_glow_hdr_luminance_cap() const {
+
+	return glow_hdr_luminance_cap;
+}
+
 void Environment::set_glow_hdr_bleed_scale(float p_scale) {
 
 	glow_hdr_bleed_scale = p_scale;
 
-	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_bicubic_upscale);
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_hdr_luminance_cap, glow_bicubic_upscale);
 }
 float Environment::get_glow_hdr_bleed_scale() const {
 
@@ -589,7 +672,7 @@ float Environment::get_glow_hdr_bleed_scale() const {
 void Environment::set_glow_bicubic_upscale(bool p_enable) {
 
 	glow_bicubic_upscale = p_enable;
-	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_bicubic_upscale);
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_hdr_luminance_cap, glow_bicubic_upscale);
 }
 
 bool Environment::is_glow_bicubic_upscale_enabled() const {
@@ -751,7 +834,7 @@ float Environment::get_fog_sun_amount() const {
 void Environment::set_fog_depth_enabled(bool p_enabled) {
 
 	fog_depth_enabled = p_enabled;
-	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
+	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_end, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
 }
 bool Environment::is_fog_depth_enabled() const {
 
@@ -761,17 +844,28 @@ bool Environment::is_fog_depth_enabled() const {
 void Environment::set_fog_depth_begin(float p_distance) {
 
 	fog_depth_begin = p_distance;
-	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
+	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_end, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
 }
 float Environment::get_fog_depth_begin() const {
 
 	return fog_depth_begin;
 }
 
+void Environment::set_fog_depth_end(float p_distance) {
+
+	fog_depth_end = p_distance;
+	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_end, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
+}
+
+float Environment::get_fog_depth_end() const {
+
+	return fog_depth_end;
+}
+
 void Environment::set_fog_depth_curve(float p_curve) {
 
 	fog_depth_curve = p_curve;
-	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
+	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_end, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
 }
 float Environment::get_fog_depth_curve() const {
 
@@ -781,7 +875,7 @@ float Environment::get_fog_depth_curve() const {
 void Environment::set_fog_transmit_enabled(bool p_enabled) {
 
 	fog_transmit_enabled = p_enabled;
-	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
+	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_end, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
 }
 bool Environment::is_fog_transmit_enabled() const {
 
@@ -791,7 +885,7 @@ bool Environment::is_fog_transmit_enabled() const {
 void Environment::set_fog_transmit_curve(float p_curve) {
 
 	fog_transmit_curve = p_curve;
-	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
+	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_end, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
 }
 float Environment::get_fog_transmit_curve() const {
 
@@ -843,6 +937,9 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_background", "mode"), &Environment::set_background);
 	ClassDB::bind_method(D_METHOD("set_sky", "sky"), &Environment::set_sky);
 	ClassDB::bind_method(D_METHOD("set_sky_custom_fov", "scale"), &Environment::set_sky_custom_fov);
+	ClassDB::bind_method(D_METHOD("set_sky_orientation", "orientation"), &Environment::set_sky_orientation);
+	ClassDB::bind_method(D_METHOD("set_sky_rotation", "euler_radians"), &Environment::set_sky_rotation);
+	ClassDB::bind_method(D_METHOD("set_sky_rotation_degrees", "euler_degrees"), &Environment::set_sky_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("set_bg_color", "color"), &Environment::set_bg_color);
 	ClassDB::bind_method(D_METHOD("set_bg_energy", "energy"), &Environment::set_bg_energy);
 	ClassDB::bind_method(D_METHOD("set_canvas_max_layer", "layer"), &Environment::set_canvas_max_layer);
@@ -853,6 +950,9 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_background"), &Environment::get_background);
 	ClassDB::bind_method(D_METHOD("get_sky"), &Environment::get_sky);
 	ClassDB::bind_method(D_METHOD("get_sky_custom_fov"), &Environment::get_sky_custom_fov);
+	ClassDB::bind_method(D_METHOD("get_sky_orientation"), &Environment::get_sky_orientation);
+	ClassDB::bind_method(D_METHOD("get_sky_rotation"), &Environment::get_sky_rotation);
+	ClassDB::bind_method(D_METHOD("get_sky_rotation_degrees"), &Environment::get_sky_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("get_bg_color"), &Environment::get_bg_color);
 	ClassDB::bind_method(D_METHOD("get_bg_energy"), &Environment::get_bg_energy);
 	ClassDB::bind_method(D_METHOD("get_canvas_max_layer"), &Environment::get_canvas_max_layer);
@@ -864,6 +964,9 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_mode", PROPERTY_HINT_ENUM, "Clear Color,Custom Color,Sky,Color+Sky,Canvas,Keep"), "set_background", "get_background");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "background_sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_sky", "get_sky");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "background_sky_custom_fov", PROPERTY_HINT_RANGE, "0,180,0.1"), "set_sky_custom_fov", "get_sky_custom_fov");
+	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "background_sky_orientation"), "set_sky_orientation", "get_sky_orientation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "background_sky_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_sky_rotation", "get_sky_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "background_sky_rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_sky_rotation_degrees", "get_sky_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "background_color"), "set_bg_color", "get_bg_color");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "background_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_bg_energy", "get_bg_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_canvas_max_layer", PROPERTY_HINT_RANGE, "-1000,1000,1"), "set_canvas_max_layer", "get_canvas_max_layer");
@@ -889,6 +992,9 @@ void Environment::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_fog_depth_begin", "distance"), &Environment::set_fog_depth_begin);
 	ClassDB::bind_method(D_METHOD("get_fog_depth_begin"), &Environment::get_fog_depth_begin);
+
+	ClassDB::bind_method(D_METHOD("set_fog_depth_end", "distance"), &Environment::set_fog_depth_end);
+	ClassDB::bind_method(D_METHOD("get_fog_depth_end"), &Environment::get_fog_depth_end);
 
 	ClassDB::bind_method(D_METHOD("set_fog_depth_curve", "curve"), &Environment::set_fog_depth_curve);
 	ClassDB::bind_method(D_METHOD("get_fog_depth_curve"), &Environment::get_fog_depth_curve);
@@ -918,6 +1024,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_sun_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_fog_sun_amount", "get_fog_sun_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_depth_enabled"), "set_fog_depth_enabled", "is_fog_depth_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_depth_begin", PROPERTY_HINT_RANGE, "0,4000,0.1"), "set_fog_depth_begin", "get_fog_depth_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_depth_end", PROPERTY_HINT_RANGE, "0,4000,0.1,or_greater"), "set_fog_depth_end", "get_fog_depth_end");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_depth_curve", PROPERTY_HINT_EXP_EASING), "set_fog_depth_curve", "get_fog_depth_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_transmit_enabled"), "set_fog_transmit_enabled", "is_fog_transmit_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_transmit_curve", PROPERTY_HINT_EXP_EASING), "set_fog_transmit_curve", "get_fog_transmit_curve");
@@ -951,7 +1058,7 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tonemap_auto_exposure_grey"), &Environment::get_tonemap_auto_exposure_grey);
 
 	ADD_GROUP("Tonemap", "tonemap_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reindhart,Filmic,Aces"), "set_tonemapper", "get_tonemapper");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reinhard,Filmic,Aces"), "set_tonemapper", "get_tonemapper");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_exposure", "get_tonemap_exposure");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "tonemap_white", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_white", "get_tonemap_white");
 	ADD_GROUP("Auto Exposure", "auto_exposure_");
@@ -1008,6 +1115,9 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ssao_direct_light_affect", "amount"), &Environment::set_ssao_direct_light_affect);
 	ClassDB::bind_method(D_METHOD("get_ssao_direct_light_affect"), &Environment::get_ssao_direct_light_affect);
 
+	ClassDB::bind_method(D_METHOD("set_ssao_ao_channel_affect", "amount"), &Environment::set_ssao_ao_channel_affect);
+	ClassDB::bind_method(D_METHOD("get_ssao_ao_channel_affect"), &Environment::get_ssao_ao_channel_affect);
+
 	ClassDB::bind_method(D_METHOD("set_ssao_color", "color"), &Environment::set_ssao_color);
 	ClassDB::bind_method(D_METHOD("get_ssao_color"), &Environment::get_ssao_color);
 
@@ -1028,6 +1138,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_intensity2", PROPERTY_HINT_RANGE, "0.0,128,0.1"), "set_ssao_intensity2", "get_ssao_intensity2");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_bias", PROPERTY_HINT_RANGE, "0.001,8,0.001"), "set_ssao_bias", "get_ssao_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_light_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_direct_light_affect", "get_ssao_direct_light_affect");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_ao_channel_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_ao_channel_affect", "get_ssao_ao_channel_affect");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ssao_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ssao_color", "get_ssao_color");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssao_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"), "set_ssao_quality", "get_ssao_quality");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssao_blur", PROPERTY_HINT_ENUM, "Disabled,1x1,2x2,3x3"), "set_ssao_blur", "get_ssao_blur");
@@ -1098,6 +1209,9 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_glow_hdr_bleed_threshold", "threshold"), &Environment::set_glow_hdr_bleed_threshold);
 	ClassDB::bind_method(D_METHOD("get_glow_hdr_bleed_threshold"), &Environment::get_glow_hdr_bleed_threshold);
 
+	ClassDB::bind_method(D_METHOD("set_glow_hdr_luminance_cap", "amount"), &Environment::set_glow_hdr_luminance_cap);
+	ClassDB::bind_method(D_METHOD("get_glow_hdr_luminance_cap"), &Environment::get_glow_hdr_luminance_cap);
+
 	ClassDB::bind_method(D_METHOD("set_glow_hdr_bleed_scale", "scale"), &Environment::set_glow_hdr_bleed_scale);
 	ClassDB::bind_method(D_METHOD("get_glow_hdr_bleed_scale"), &Environment::get_glow_hdr_bleed_scale);
 
@@ -1119,6 +1233,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "glow_bloom", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_glow_bloom", "get_glow_bloom");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "glow_blend_mode", PROPERTY_HINT_ENUM, "Additive,Screen,Softlight,Replace"), "set_glow_blend_mode", "get_glow_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "glow_hdr_threshold", PROPERTY_HINT_RANGE, "0.0,4.0,0.01"), "set_glow_hdr_bleed_threshold", "get_glow_hdr_bleed_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "glow_hdr_luminance_cap", PROPERTY_HINT_RANGE, "0.0,256.0,0.01"), "set_glow_hdr_luminance_cap", "get_glow_hdr_luminance_cap");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "glow_hdr_scale", PROPERTY_HINT_RANGE, "0.0,4.0,0.01"), "set_glow_hdr_bleed_scale", "get_glow_hdr_bleed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "glow_bicubic_upscale"), "set_glow_bicubic_upscale", "is_glow_bicubic_upscale_enabled");
 
@@ -1176,12 +1291,20 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(SSAO_QUALITY_HIGH);
 }
 
-Environment::Environment() {
+Environment::Environment() :
+		bg_mode(BG_CLEAR_COLOR),
+		tone_mapper(TONE_MAPPER_LINEAR),
+		ssao_blur(SSAO_BLUR_DISABLED),
+		ssao_quality(SSAO_QUALITY_LOW),
+		glow_blend_mode(GLOW_BLEND_MODE_ADDITIVE),
+		dof_blur_far_quality(DOF_BLUR_QUALITY_LOW),
+		dof_blur_near_quality(DOF_BLUR_QUALITY_LOW) {
 
 	environment = VS::get_singleton()->environment_create();
 
 	bg_mode = BG_CLEAR_COLOR;
 	bg_sky_custom_fov = 0;
+	bg_sky_orientation = Basis();
 	bg_energy = 1.0;
 	bg_canvas_max_layer = 0;
 	ambient_energy = 1.0;
@@ -1220,6 +1343,7 @@ Environment::Environment() {
 	ssao_intensity2 = 1;
 	ssao_bias = 0.01;
 	ssao_direct_light_affect = 0.0;
+	ssao_ao_channel_affect = 0.0;
 	ssao_blur = SSAO_BLUR_3x3;
 	set_ssao_edge_sharpness(4);
 	set_ssao_quality(SSAO_QUALITY_LOW);
@@ -1231,6 +1355,7 @@ Environment::Environment() {
 	glow_bloom = 0.0;
 	glow_blend_mode = GLOW_BLEND_MODE_SOFTLIGHT;
 	glow_hdr_bleed_threshold = 1.0;
+	glow_hdr_luminance_cap = 12.0;
 	glow_hdr_bleed_scale = 2.0;
 	glow_bicubic_upscale = false;
 
@@ -1254,6 +1379,7 @@ Environment::Environment() {
 	fog_depth_enabled = true;
 
 	fog_depth_begin = 10;
+	fog_depth_end = 0;
 	fog_depth_curve = 1;
 
 	fog_transmit_enabled = false;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WindowDialog" inherits="Popup" category="Core" version="3.1">
+<class name="WindowDialog" inherits="Popup" category="Core" version="3.2">
 	<brief_description>
 		Base class for window dialogs.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_close_button">
 			<return type="TextureButton">
@@ -21,10 +19,10 @@
 	</methods>
 	<members>
 		<member name="resizable" type="bool" setter="set_resizable" getter="get_resizable">
-			If [code]true[/code] the user can resize the window. Default value: [code]false[/code].
+			If [code]true[/code], the user can resize the window. Default value: [code]false[/code].
 		</member>
 		<member name="window_title" type="String" setter="set_title" getter="get_title">
-			The text displayed in the window's title bar. Default value: "Save a File".
+			The text displayed in the window's title bar.
 		</member>
 	</members>
 	<constants>

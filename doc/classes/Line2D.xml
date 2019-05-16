@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Line2D" inherits="Node2D" category="Core" version="3.1">
+<class name="Line2D" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
 		A 2D line.
 	</brief_description>
@@ -8,16 +8,24 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_point">
 			<return type="void">
 			</return>
 			<argument index="0" name="position" type="Vector2">
 			</argument>
+			<argument index="1" name="at_position" type="int" default="-1">
+			</argument>
 			<description>
 				Add a point at the [code]position[/code]. Appends the point at the end of the line.
+				If [code]at_position[/code] is given, the point is inserted before the point number [code]at_position[/code], moving that point (and every point after) after the inserted point. If [code]at_position[/code] is not given, or is an illegal value ([code]at_position &lt; 0[/code] or [code]at_position &gt;= [method get_point_count][/code]), the point will be appended at the end of the point list.
+			</description>
+		</method>
+		<method name="clear_points">
+			<return type="void">
+			</return>
+			<description>
+				Removes all points from the line.
 			</description>
 		</method>
 		<method name="get_point_count" qualifiers="const">
@@ -116,6 +124,9 @@
 		</constant>
 		<constant name="LINE_TEXTURE_TILE" value="1" enum="LineTextureMode">
 			Tiles the texture over the line. The texture need to be imported with Repeat Enabled for it to work properly.
+		</constant>
+		<constant name="LINE_TEXTURE_STRETCH" value="2" enum="LineTextureMode">
+			Stretches the texture across the line. Import the texture with Repeat Disabled for best results.
 		</constant>
 	</constants>
 </class>

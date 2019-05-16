@@ -139,12 +139,7 @@ VP8AccumulateSSEFunc VP8AccumulateSSE;
 
 extern void VP8SSIMDspInitSSE2(void);
 
-static volatile VP8CPUInfo ssim_last_cpuinfo_used =
-    (VP8CPUInfo)&ssim_last_cpuinfo_used;
-
-WEBP_TSAN_IGNORE_FUNCTION void VP8SSIMDspInit(void) {
-  if (ssim_last_cpuinfo_used == VP8GetCPUInfo) return;
-
+WEBP_DSP_INIT_FUNC(VP8SSIMDspInit) {
 #if !defined(WEBP_REDUCE_SIZE)
   VP8SSIMGetClipped = SSIMGetClipped_C;
   VP8SSIMGet = SSIMGet_C;
@@ -161,6 +156,4 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8SSIMDspInit(void) {
     }
 #endif
   }
-
-  ssim_last_cpuinfo_used = VP8GetCPUInfo;
 }

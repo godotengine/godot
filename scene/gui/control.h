@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
-#include "math_2d.h"
-#include "rid.h"
+#include "core/math/transform_2d.h"
+#include "core/rid.h"
 #include "scene/2d/canvas_item.h"
 #include "scene/gui/shortcut.h"
 #include "scene/main/node.h"
@@ -76,7 +76,7 @@ public:
 		SIZE_EXPAND = 2,
 		SIZE_EXPAND_FILL = SIZE_EXPAND | SIZE_FILL,
 		SIZE_SHRINK_CENTER = 4, //ignored by expand or fill
-		SIZE_SHRINK_END = 8, //ignored by expand or fil
+		SIZE_SHRINK_END = 8, //ignored by expand or fill
 
 	};
 
@@ -148,6 +148,11 @@ private:
 
 		Point2 pos_cache;
 		Size2 size_cache;
+		Size2 minimum_size_cache;
+		bool minimum_size_valid;
+
+		Size2 last_minimum_size;
+		bool updating_last_minimum_size;
 
 		float margin[4];
 		float anchor[4];
@@ -164,7 +169,6 @@ private:
 		int h_size_flags;
 		int v_size_flags;
 		float expand;
-		bool pending_min_size_update;
 		Point2 custom_minimum_size;
 
 		bool pass_on_modal_close_click;
@@ -178,7 +182,6 @@ private:
 
 		Control *parent;
 		ObjectID drag_owner;
-		bool modal;
 		bool modal_exclusive;
 		uint64_t modal_frame; //frame used to put something as modal
 		Ref<Theme> theme;
@@ -198,13 +201,12 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
-		HashMap<StringName, Ref<Texture>, StringNameHasher> icon_override;
-		HashMap<StringName, Ref<Shader>, StringNameHasher> shader_override;
-		HashMap<StringName, Ref<StyleBox>, StringNameHasher> style_override;
-		HashMap<StringName, Ref<Font>, StringNameHasher> font_override;
-		HashMap<StringName, Color, StringNameHasher> color_override;
-		HashMap<StringName, int, StringNameHasher> constant_override;
-		Map<Ref<Font>, int> font_refcount;
+		HashMap<StringName, Ref<Texture> > icon_override;
+		HashMap<StringName, Ref<Shader> > shader_override;
+		HashMap<StringName, Ref<StyleBox> > style_override;
+		HashMap<StringName, Ref<Font> > font_override;
+		HashMap<StringName, Color> color_override;
+		HashMap<StringName, int> constant_override;
 
 	} data;
 
@@ -216,10 +218,6 @@ private:
 
 	void _set_anchor(Margin p_margin, float p_anchor);
 
-	float _get_parent_range(int p_idx) const;
-	float _get_range(int p_idx) const;
-	float _s2a(float p_val, float p_anchor, float p_range) const;
-	float _a2s(float p_val, float p_anchor, float p_range) const;
 	void _propagate_theme_changed(CanvasItem *p_at, Control *p_owner, bool p_assign = true);
 	void _theme_changed();
 
@@ -229,12 +227,13 @@ private:
 	void _update_scroll();
 	void _resize(const Size2 &p_size);
 
+	Rect2 _compute_child_rect(const float p_anchors[4], const float p_margins[4]) const;
+	void _compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]);
+
 	void _size_changed();
 	String _get_tooltip() const;
 
-	void _ref_font(Ref<Font> p_sc);
-	void _unref_font(Ref<Font> p_sc);
-	void _font_changed();
+	void _override_changed();
 
 	void _update_canvas_item_transform();
 
@@ -243,6 +242,8 @@ private:
 	friend class Viewport;
 	void _modal_stack_remove();
 	void _modal_set_prev_focus_owner(ObjectID p_prev);
+
+	void _update_minimum_size_cache();
 
 protected:
 	virtual void add_child_notify(Node *p_child);
@@ -277,6 +278,7 @@ public:
 
 	};
 
+	/* EDITOR */
 	virtual Dictionary _edit_get_state() const;
 	virtual void _edit_set_state(const Dictionary &p_state);
 
@@ -352,6 +354,7 @@ public:
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;
 	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
+	Rect2 get_anchorable_rect() const;
 
 	void set_rotation(float p_radians);
 	void set_rotation_degrees(float p_degrees);
@@ -447,6 +450,7 @@ public:
 
 	void set_tooltip(const String &p_tooltip);
 	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual Control *make_custom_tooltip(const String &p_text) const;
 
 	/* CURSOR */
 
@@ -459,6 +463,7 @@ public:
 	bool is_toplevel_control() const;
 
 	Size2 get_parent_area_size() const;
+	Rect2 get_parent_anchorable_rect() const;
 
 	void grab_click_focus();
 

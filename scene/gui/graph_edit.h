@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef GRAPH_EDIT_H
 #define GRAPH_EDIT_H
 
+#include "scene/gui/box_container.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
@@ -62,6 +63,7 @@ public:
 		StringName to;
 		int from_port;
 		int to_port;
+		float activity;
 	};
 
 private:
@@ -79,6 +81,9 @@ private:
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
 
+	float port_grab_distance_horizontal;
+	float port_grab_distance_vertical;
+
 	bool connecting;
 	String connecting_from;
 	bool connecting_out;
@@ -89,7 +94,7 @@ private:
 	Vector2 connecting_to;
 	String connecting_target_to;
 	int connecting_target_index;
-	bool just_disconected;
+	bool just_disconnected;
 
 	bool dragging;
 	bool just_selected;
@@ -125,6 +130,9 @@ private:
 	Control *connections_layer;
 	GraphEditFilter *top_layer;
 	void _top_layer_input(const Ref<InputEvent> &p_ev);
+
+	bool is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos);
+
 	void _top_layer_draw();
 	void _connections_layer_draw();
 	void _update_scroll_offset();
@@ -157,10 +165,14 @@ private:
 	Set<int> valid_left_disconnect_types;
 	Set<int> valid_right_disconnect_types;
 
+	HBoxContainer *zoom_hb;
+
 	friend class GraphEditFilter;
 	bool _filter_input(const Point2 &p_point);
 	void _snap_toggled();
 	void _snap_value_changed(double);
+
+	bool _check_clickable_control(Control *p_control, const Vector2 &pos);
 
 protected:
 	static void _bind_methods();
@@ -174,6 +186,8 @@ public:
 	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void clear_connections();
+
+	void set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity);
 
 	void add_valid_connection_type(int p_type, int p_with_type);
 	void remove_valid_connection_type(int p_type, int p_with_type);
@@ -205,6 +219,8 @@ public:
 
 	int get_snap() const;
 	void set_snap(int p_snap);
+
+	HBoxContainer *get_zoom_hbox();
 
 	GraphEdit();
 };

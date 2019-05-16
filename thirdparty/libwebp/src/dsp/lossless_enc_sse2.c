@@ -46,16 +46,14 @@ static void SubtractGreenFromBlueAndRed_SSE2(uint32_t* argb_data,
 //------------------------------------------------------------------------------
 // Color Transform
 
+#define MK_CST_16(HI, LO) \
+  _mm_set1_epi32((int)(((uint32_t)(HI) << 16) | ((LO) & 0xffff)))
+
 static void TransformColor_SSE2(const VP8LMultipliers* const m,
                                 uint32_t* argb_data, int num_pixels) {
-  const __m128i mults_rb = _mm_set_epi16(
-      CST_5b(m->green_to_red_), CST_5b(m->green_to_blue_),
-      CST_5b(m->green_to_red_), CST_5b(m->green_to_blue_),
-      CST_5b(m->green_to_red_), CST_5b(m->green_to_blue_),
-      CST_5b(m->green_to_red_), CST_5b(m->green_to_blue_));
-  const __m128i mults_b2 = _mm_set_epi16(
-      CST_5b(m->red_to_blue_), 0, CST_5b(m->red_to_blue_), 0,
-      CST_5b(m->red_to_blue_), 0, CST_5b(m->red_to_blue_), 0);
+  const __m128i mults_rb = MK_CST_16(CST_5b(m->green_to_red_),
+                                     CST_5b(m->green_to_blue_));
+  const __m128i mults_b2 = MK_CST_16(CST_5b(m->red_to_blue_), 0);
   const __m128i mask_ag = _mm_set1_epi32(0xff00ff00);  // alpha-green masks
   const __m128i mask_rb = _mm_set1_epi32(0x00ff00ff);  // red-blue masks
   int i;
@@ -85,12 +83,8 @@ static void CollectColorBlueTransforms_SSE2(const uint32_t* argb, int stride,
                                             int tile_width, int tile_height,
                                             int green_to_blue, int red_to_blue,
                                             int histo[]) {
-  const __m128i mults_r = _mm_set_epi16(
-      CST_5b(red_to_blue), 0, CST_5b(red_to_blue), 0,
-      CST_5b(red_to_blue), 0, CST_5b(red_to_blue), 0);
-  const __m128i mults_g = _mm_set_epi16(
-      0, CST_5b(green_to_blue), 0, CST_5b(green_to_blue),
-      0, CST_5b(green_to_blue), 0, CST_5b(green_to_blue));
+  const __m128i mults_r = MK_CST_16(CST_5b(red_to_blue), 0);
+  const __m128i mults_g = MK_CST_16(0, CST_5b(green_to_blue));
   const __m128i mask_g = _mm_set1_epi32(0x00ff00);  // green mask
   const __m128i mask_b = _mm_set1_epi32(0x0000ff);  // blue mask
   int y;
@@ -135,9 +129,7 @@ static void CollectColorBlueTransforms_SSE2(const uint32_t* argb, int stride,
 static void CollectColorRedTransforms_SSE2(const uint32_t* argb, int stride,
                                            int tile_width, int tile_height,
                                            int green_to_red, int histo[]) {
-  const __m128i mults_g = _mm_set_epi16(
-      0, CST_5b(green_to_red), 0, CST_5b(green_to_red),
-      0, CST_5b(green_to_red), 0, CST_5b(green_to_red));
+  const __m128i mults_g = MK_CST_16(0, CST_5b(green_to_red));
   const __m128i mask_g = _mm_set1_epi32(0x00ff00);  // green mask
   const __m128i mask = _mm_set1_epi32(0xff);
 
@@ -174,15 +166,17 @@ static void CollectColorRedTransforms_SSE2(const uint32_t* argb, int stride,
   }
 }
 #undef SPAN
+#undef MK_CST_16
 
 //------------------------------------------------------------------------------
 
+// Note we are adding uint32_t's as *signed* int32's (using _mm_add_epi32). But
+// that's ok since the histogram values are less than 1<<28 (max picture size).
 #define LINE_SIZE 16    // 8 or 16
 static void AddVector_SSE2(const uint32_t* a, const uint32_t* b, uint32_t* out,
                            int size) {
   int i;
-  assert(size % LINE_SIZE == 0);
-  for (i = 0; i < size; i += LINE_SIZE) {
+  for (i = 0; i + LINE_SIZE <= size; i += LINE_SIZE) {
     const __m128i a0 = _mm_loadu_si128((const __m128i*)&a[i +  0]);
     const __m128i a1 = _mm_loadu_si128((const __m128i*)&a[i +  4]);
 #if (LINE_SIZE == 16)
@@ -202,12 +196,14 @@ static void AddVector_SSE2(const uint32_t* a, const uint32_t* b, uint32_t* out,
     _mm_storeu_si128((__m128i*)&out[i + 12], _mm_add_epi32(a3, b3));
 #endif
   }
+  for (; i < size; ++i) {
+    out[i] = a[i] + b[i];
+  }
 }
 
 static void AddVectorEq_SSE2(const uint32_t* a, uint32_t* out, int size) {
   int i;
-  assert(size % LINE_SIZE == 0);
-  for (i = 0; i < size; i += LINE_SIZE) {
+  for (i = 0; i + LINE_SIZE <= size; i += LINE_SIZE) {
     const __m128i a0 = _mm_loadu_si128((const __m128i*)&a[i +  0]);
     const __m128i a1 = _mm_loadu_si128((const __m128i*)&a[i +  4]);
 #if (LINE_SIZE == 16)
@@ -227,35 +223,11 @@ static void AddVectorEq_SSE2(const uint32_t* a, uint32_t* out, int size) {
     _mm_storeu_si128((__m128i*)&out[i + 12], _mm_add_epi32(a3, b3));
 #endif
   }
+  for (; i < size; ++i) {
+    out[i] += a[i];
+  }
 }
 #undef LINE_SIZE
-
-// Note we are adding uint32_t's as *signed* int32's (using _mm_add_epi32). But
-// that's ok since the histogram values are less than 1<<28 (max picture size).
-static void HistogramAdd_SSE2(const VP8LHistogram* const a,
-                              const VP8LHistogram* const b,
-                              VP8LHistogram* const out) {
-  int i;
-  const int literal_size = VP8LHistogramNumCodes(a->palette_code_bits_);
-  assert(a->palette_code_bits_ == b->palette_code_bits_);
-  if (b != out) {
-    AddVector_SSE2(a->literal_, b->literal_, out->literal_, NUM_LITERAL_CODES);
-    AddVector_SSE2(a->red_, b->red_, out->red_, NUM_LITERAL_CODES);
-    AddVector_SSE2(a->blue_, b->blue_, out->blue_, NUM_LITERAL_CODES);
-    AddVector_SSE2(a->alpha_, b->alpha_, out->alpha_, NUM_LITERAL_CODES);
-  } else {
-    AddVectorEq_SSE2(a->literal_, out->literal_, NUM_LITERAL_CODES);
-    AddVectorEq_SSE2(a->red_, out->red_, NUM_LITERAL_CODES);
-    AddVectorEq_SSE2(a->blue_, out->blue_, NUM_LITERAL_CODES);
-    AddVectorEq_SSE2(a->alpha_, out->alpha_, NUM_LITERAL_CODES);
-  }
-  for (i = NUM_LITERAL_CODES; i < literal_size; ++i) {
-    out->literal_[i] = a->literal_[i] + b->literal_[i];
-  }
-  for (i = 0; i < NUM_DISTANCE_CODES; ++i) {
-    out->distance_[i] = a->distance_[i] + b->distance_[i];
-  }
-}
 
 //------------------------------------------------------------------------------
 // Entropy
@@ -682,7 +654,8 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8LEncDspInitSSE2(void) {
   VP8LTransformColor = TransformColor_SSE2;
   VP8LCollectColorBlueTransforms = CollectColorBlueTransforms_SSE2;
   VP8LCollectColorRedTransforms = CollectColorRedTransforms_SSE2;
-  VP8LHistogramAdd = HistogramAdd_SSE2;
+  VP8LAddVector = AddVector_SSE2;
+  VP8LAddVectorEq = AddVectorEq_SSE2;
   VP8LCombinedShannonEntropy = CombinedShannonEntropy_SSE2;
   VP8LVectorMismatch = VectorMismatch_SSE2;
   VP8LBundleColorMap = BundleColorMap_SSE2;

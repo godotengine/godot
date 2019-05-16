@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,23 +35,23 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-#include "aabb.h"
-#include "array.h"
-#include "color.h"
-#include "dictionary.h"
-#include "dvector.h"
-#include "face3.h"
-#include "io/ip_address.h"
-#include "math_2d.h"
-#include "matrix3.h"
-#include "node_path.h"
-#include "plane.h"
-#include "quat.h"
-#include "ref_ptr.h"
-#include "rid.h"
-#include "transform.h"
-#include "ustring.h"
-#include "vector3.h"
+#include "core/array.h"
+#include "core/color.h"
+#include "core/dictionary.h"
+#include "core/io/ip_address.h"
+#include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/face3.h"
+#include "core/math/plane.h"
+#include "core/math/quat.h"
+#include "core/math/transform.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector3.h"
+#include "core/node_path.h"
+#include "core/pool_vector.h"
+#include "core/ref_ptr.h"
+#include "core/rid.h"
+#include "core/ustring.h"
 
 class RefPtr;
 class Object;
@@ -68,6 +68,13 @@ typedef PoolVector<String> PoolStringArray;
 typedef PoolVector<Vector2> PoolVector2Array;
 typedef PoolVector<Vector3> PoolVector3Array;
 typedef PoolVector<Color> PoolColorArray;
+
+// Temporary workaround until c++11 alignas()
+#ifdef __GNUC__
+#define GCC_ALIGNED_8 __attribute__((aligned(8)))
+#else
+#define GCC_ALIGNED_8
+#endif
 
 class Variant {
 public:
@@ -116,7 +123,7 @@ public:
 	};
 
 private:
-	friend class _VariantCall;
+	friend struct _VariantCall;
 	// Variant takes 20 bytes when real_t is float, and 36 if double
 	// it only allocates extra memory for aabb/matrix.
 
@@ -132,7 +139,6 @@ private:
 	_FORCE_INLINE_ const ObjData &_get_obj() const;
 
 	union {
-
 		bool _bool;
 		int64_t _int;
 		double _real;
@@ -140,10 +146,9 @@ private:
 		::AABB *_aabb;
 		Basis *_basis;
 		Transform *_transform;
-		RefPtr *_resource;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
-	} _data;
+	} _data GCC_ALIGNED_8;
 
 	void reference(const Variant &p_variant);
 	void clear();
@@ -217,6 +222,7 @@ public:
 	operator Vector<int>() const;
 	operator Vector<real_t>() const;
 	operator Vector<String>() const;
+	operator Vector<StringName>() const;
 	operator Vector<Vector3>() const;
 	operator Vector<Color>() const;
 	operator Vector<RID>() const;
@@ -281,6 +287,7 @@ public:
 	Variant(const Vector<int> &p_int_array);
 	Variant(const Vector<real_t> &p_real_array);
 	Variant(const Vector<String> &p_string_array);
+	Variant(const Vector<StringName> &p_string_array);
 	Variant(const Vector<Vector3> &p_vector3_array);
 	Variant(const Vector<Color> &p_color_array);
 	Variant(const Vector<Plane> &p_array); // helper
@@ -394,12 +401,13 @@ public:
 
 	bool hash_compare(const Variant &p_variant) const;
 	bool booleanize() const;
+	String stringify(List<const void *> &stack) const;
 
 	void static_assign(const Variant &p_variant);
 	static void get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_list);
-	static void get_numeric_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
-	static bool has_numeric_constant(Variant::Type p_type, const StringName &p_value);
-	static int get_numeric_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = NULL);
+	static void get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
+	static bool has_constant(Variant::Type p_type, const StringName &p_value);
+	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = NULL);
 
 	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
 	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);

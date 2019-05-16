@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "convex_polygon_shape.h"
-#include "quick_hull.h"
+#include "core/math/quick_hull.h"
 #include "servers/physics_server.h"
 
 Vector<Vector3> ConvexPolygonShape::_gen_debug_mesh_lines() {
@@ -38,16 +38,15 @@ Vector<Vector3> ConvexPolygonShape::_gen_debug_mesh_lines() {
 
 	if (points.size() > 3) {
 
-		QuickHull qh;
 		Vector<Vector3> varr = Variant(points);
 		Geometry::MeshData md;
-		Error err = qh.build(varr, md);
+		Error err = QuickHull::build(varr, md);
 		if (err == OK) {
 			Vector<Vector3> lines;
 			lines.resize(md.edges.size() * 2);
 			for (int i = 0; i < md.edges.size(); i++) {
-				lines[i * 2 + 0] = md.vertices[md.edges[i].a];
-				lines[i * 2 + 1] = md.vertices[md.edges[i].b];
+				lines.write[i * 2 + 0] = md.vertices[md.edges[i].a];
+				lines.write[i * 2 + 1] = md.vertices[md.edges[i].b];
 			}
 			return lines;
 		}
@@ -59,7 +58,7 @@ Vector<Vector3> ConvexPolygonShape::_gen_debug_mesh_lines() {
 void ConvexPolygonShape::_update_shape() {
 
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), points);
-	emit_changed();
+	Shape::_update_shape();
 }
 
 void ConvexPolygonShape::set_points(const PoolVector<Vector3> &p_points) {
@@ -84,6 +83,4 @@ void ConvexPolygonShape::_bind_methods() {
 
 ConvexPolygonShape::ConvexPolygonShape() :
 		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONVEX_POLYGON)) {
-
-	//set_points(Vector3(1,1,1));
 }

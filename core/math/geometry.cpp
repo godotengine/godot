@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,11 @@
 /*************************************************************************/
 
 #include "geometry.h"
-#include "print_string.h"
 
+#include "core/print_string.h"
+#include "thirdparty/misc/triangulator.h"
+
+/* this implementation is very inefficient, commenting unless bugs happen. See the other one.
 bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon) {
 
 	Vector<int> indices = Geometry::triangulate_polygon(p_polygon);
@@ -41,6 +44,7 @@ bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2>
 	}
 	return false;
 }
+*/
 
 void Geometry::MeshData::optimize_vertices() {
 
@@ -56,7 +60,7 @@ void Geometry::MeshData::optimize_vertices() {
 				vtx_remap[idx] = ni;
 			}
 
-			faces[i].indices[j] = vtx_remap[idx];
+			faces.write[i].indices.write[j] = vtx_remap[idx];
 		}
 	}
 
@@ -74,8 +78,8 @@ void Geometry::MeshData::optimize_vertices() {
 			vtx_remap[b] = ni;
 		}
 
-		edges[i].a = vtx_remap[a];
-		edges[i].b = vtx_remap[b];
+		edges.write[i].a = vtx_remap[a];
+		edges.write[i].b = vtx_remap[b];
 	}
 
 	Vector<Vector3> new_vertices;
@@ -84,7 +88,7 @@ void Geometry::MeshData::optimize_vertices() {
 	for (int i = 0; i < vertices.size(); i++) {
 
 		if (vtx_remap.has(i))
-			new_vertices[vtx_remap[i]] = vertices[i];
+			new_vertices.write[vtx_remap[i]] = vertices[i];
 	}
 	vertices = new_vertices;
 }
@@ -511,7 +515,7 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 		Vector3(1,1,1),
 	};
 */
-#define vert(m_idx) Vector3((m_idx & 4) >> 2, (m_idx & 2) >> 1, m_idx & 1)
+#define vert(m_idx) Vector3(((m_idx)&4) >> 2, ((m_idx)&2) >> 1, (m_idx)&1)
 
 	static const uint8_t indices[6][4] = {
 		{ 7, 6, 4, 5 },
@@ -626,7 +630,6 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 	voxelsize.z /= div_z;
 
 	// create and initialize cells to zero
-	//print_line("Wrapper: Initializing Cells");
 
 	uint8_t ***cell_status = memnew_arr(uint8_t **, div_x);
 	for (int i = 0; i < div_x; i++) {
@@ -645,7 +648,6 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 	}
 
 	// plot faces into cells
-	//print_line("Wrapper (1/6): Plotting Faces");
 
 	for (int i = 0; i < face_count; i++) {
 
@@ -658,8 +660,6 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 	}
 
 	// determine which cells connect to the outside by traversing the outside and recursively flood-fill marking
-
-	//print_line("Wrapper (2/6): Flood Filling");
 
 	for (int i = 0; i < div_x; i++) {
 
@@ -690,8 +690,6 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 
 	// build faces for the inside-outside cell divisors
 
-	//print_line("Wrapper (3/6): Building Faces");
-
 	PoolVector<Face3> wrapped_faces;
 
 	for (int i = 0; i < div_x; i++) {
@@ -704,8 +702,6 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 			}
 		}
 	}
-
-	//print_line("Wrapper (4/6): Transforming Back Vertices");
 
 	// transform face vertices to global coords
 
@@ -724,7 +720,6 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 	}
 
 	// clean up grid
-	//print_line("Wrapper (5/6): Grid Cleanup");
 
 	for (int i = 0; i < div_x; i++) {
 
@@ -740,8 +735,41 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 	if (p_error)
 		*p_error = voxelsize.length();
 
-	//print_line("Wrapper (6/6): Finished.");
 	return wrapped_faces;
+}
+
+Vector<Vector<Vector2> > Geometry::decompose_polygon_in_convex(Vector<Point2> polygon) {
+	Vector<Vector<Vector2> > decomp;
+	List<TriangulatorPoly> in_poly, out_poly;
+
+	TriangulatorPoly inp;
+	inp.Init(polygon.size());
+	for (int i = 0; i < polygon.size(); i++) {
+		inp.GetPoint(i) = polygon[i];
+	}
+	inp.SetOrientation(TRIANGULATOR_CCW);
+	in_poly.push_back(inp);
+	TriangulatorPartition tpart;
+	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //failed!
+		ERR_PRINT("Convex decomposing failed!");
+		return decomp;
+	}
+
+	decomp.resize(out_poly.size());
+	int idx = 0;
+	for (List<TriangulatorPoly>::Element *I = out_poly.front(); I; I = I->next()) {
+		TriangulatorPoly &tp = I->get();
+
+		decomp.write[idx].resize(tp.GetNumPoints());
+
+		for (int i = 0; i < tp.GetNumPoints(); i++) {
+			decomp.write[idx].write[i] = tp.GetPoint(i);
+		}
+
+		idx++;
+	}
+
+	return decomp;
 }
 
 Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes) {
@@ -808,7 +836,7 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 					Vector3 rel = edge1_A - edge0_A;
 
 					real_t den = clip.normal.dot(rel);
-					if (Math::abs(den) < CMP_EPSILON)
+					if (Math::is_zero_approx(den))
 						continue; // point too short
 
 					real_t dist = -(clip.normal.dot(edge0_A) - clip.d) / den;
@@ -1014,8 +1042,8 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 	Vector<_AtlasWorkRect> wrects;
 	wrects.resize(p_rects.size());
 	for (int i = 0; i < p_rects.size(); i++) {
-		wrects[i].s = p_rects[i];
-		wrects[i].idx = i;
+		wrects.write[i].s = p_rects[i];
+		wrects.write[i].idx = i;
 	}
 	wrects.sort();
 	int widest = wrects[0].s.width;
@@ -1033,7 +1061,7 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 		Vector<int> hmax;
 		hmax.resize(w);
 		for (int j = 0; j < w; j++)
-			hmax[j] = 0;
+			hmax.write[j] = 0;
 
 		//place them
 		int ofs = 0;
@@ -1052,8 +1080,8 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 					from_y = hmax[ofs + k];
 			}
 
-			wrects[j].p.x = ofs;
-			wrects[j].p.y = from_y;
+			wrects.write[j].p.x = ofs;
+			wrects.write[j].p.y = from_y;
 			int end_h = from_y + wrects[j].s.height;
 			int end_w = ofs + wrects[j].s.width;
 			if (ofs == 0)
@@ -1061,7 +1089,7 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 
 			for (int k = 0; k < wrects[j].s.width; k++) {
 
-				hmax[ofs + k] = end_h;
+				hmax.write[ofs + k] = end_h;
 			}
 
 			if (end_h > max_h)
@@ -1101,7 +1129,7 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 
 	for (int i = 0; i < p_rects.size(); i++) {
 
-		r_result[results[best].result[i].idx] = results[best].result[i].p;
+		r_result.write[results[best].result[i].idx] = results[best].result[i].p;
 	}
 
 	r_size = Size2(results[best].max_w, results[best].max_h);

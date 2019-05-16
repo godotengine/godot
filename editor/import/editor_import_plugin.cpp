@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -130,7 +130,7 @@ bool EditorImportPlugin::get_option_visibility(const String &p_option, const Map
 	return get_script_instance()->call("get_option_visibility", p_option, d);
 }
 
-Error EditorImportPlugin::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
+Error EditorImportPlugin::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 
 	ERR_FAIL_COND_V(!(get_script_instance() && get_script_instance()->has_method("import")), ERR_UNAVAILABLE);
 	Dictionary options;
@@ -165,5 +165,5 @@ void EditorImportPlugin::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::REAL, "get_priority"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::INT, "get_import_order"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "get_option_visibility", PropertyInfo(Variant::STRING, "option"), PropertyInfo(Variant::DICTIONARY, "options")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::INT, "import", PropertyInfo(Variant::STRING, "source_file"), PropertyInfo(Variant::STRING, "save_path"), PropertyInfo(Variant::DICTIONARY, "options"), PropertyInfo(Variant::ARRAY, "r_platform_variants"), PropertyInfo(Variant::ARRAY, "r_gen_files")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::INT, "import", PropertyInfo(Variant::STRING, "source_file"), PropertyInfo(Variant::STRING, "save_path"), PropertyInfo(Variant::DICTIONARY, "options"), PropertyInfo(Variant::ARRAY, "platform_variants"), PropertyInfo(Variant::ARRAY, "gen_files")));
 }

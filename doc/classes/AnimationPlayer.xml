@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationPlayer" inherits="Node" category="Core" version="3.1">
+<class name="AnimationPlayer" inherits="Node" category="Core" version="3.2">
 	<brief_description>
 		Container and player of [Animation] resources.
 	</brief_description>
@@ -7,11 +7,9 @@
 		An animation player is used for general purpose playback of [Animation] resources. It contains a dictionary of animations (referenced by name) and custom blend times between their transitions. Additionally, animations can be played and blended in different channels.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/getting_started/step_by_step/animations.html
-		http://docs.godotengine.org/en/3.0/tutorials/animation/index.html
+		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/animations.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_animation">
 			<return type="int" enum="Error">
@@ -30,7 +28,7 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
-				Shifts position in the animation timeline. Delta is the time in seconds to shift.
+				Shifts position in the animation timeline. Delta is the time in seconds to shift. Events between the current frame and [code]delta[/code] are handled.
 			</description>
 		</method>
 		<method name="animation_get_next" qualifiers="const">
@@ -57,7 +55,7 @@
 			<return type="void">
 			</return>
 			<description>
-				[code]AnimationPlayer[/code] caches animated nodes. It may not notice if a node disappears, so clear_caches forces it to update the cache again.
+				[AnimationPlayer] caches animated nodes. It may not notice if a node disappears, so clear_caches forces it to update the cache again.
 			</description>
 		</method>
 		<method name="clear_queue">
@@ -110,13 +108,19 @@
 				Get the actual playing speed of current animation or 0 if not playing. This speed is the [code]playback_speed[/code] property multiplied by [code]custom_speed[/code] argument specified when calling the [code]play[/code] method.
 			</description>
 		</method>
+		<method name="get_queue">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="has_animation" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the [code]AnimationPlayer[/code] stores an [Animation] with key [code]name[/code].
+				Returns [code]true[/code] if the [AnimationPlayer] stores an [Animation] with key [code]name[/code].
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -138,7 +142,8 @@
 			<argument index="3" name="from_end" type="bool" default="false">
 			</argument>
 			<description>
-				Play the animation with key [code]name[/code]. Custom speed and blend times can be set. If custom speed is negative (-1), 'from_end' being true can play the animation backwards.
+				Play the animation with key [code]name[/code]. Custom speed and blend times can be set. If custom speed is negative (-1), 'from_end' being [code]true[/code] can play the animation backwards.
+				If the animation has been paused by [code]stop(true)[/code] it will be resumed. Calling [code]play()[/code] without arguments will also resume the animation.
 			</description>
 		</method>
 		<method name="play_backwards">
@@ -150,6 +155,7 @@
 			</argument>
 			<description>
 				Play the animation with key [code]name[/code] in reverse.
+				If the animation has been paused by [code]stop(true)[/code] it will be resumed backwards. Calling [code]play_backwards()[/code] without arguments will also resume the animation backwards.
 			</description>
 		</method>
 		<method name="queue">
@@ -189,7 +195,7 @@
 			<argument index="1" name="update" type="bool" default="false">
 			</argument>
 			<description>
-				Seek the animation to the [code]seconds[/code] point in time (in seconds). If [code]update[/code] is [code]true[/code], the animation updates too, otherwise it updates at process time.
+				Seek the animation to the [code]seconds[/code] point in time (in seconds). If [code]update[/code] is [code]true[/code], the animation updates too, otherwise it updates at process time. Events between the current frame and [code]seconds[/code] are skipped.
 			</description>
 		</method>
 		<method name="set_blend_time">
@@ -211,7 +217,8 @@
 			<argument index="0" name="reset" type="bool" default="true">
 			</argument>
 			<description>
-				Stop the currently playing animation. If [code]reset[/code] is [code]true[/code], the anim position is reset to [code]0[/code].
+				Stop the currently playing animation. If [code]reset[/code] is [code]true[/code], the animation position is reset to [code]0[/code] and the playback speed is reset to [code]1.0[/code].
+				If [code]reset[/code] is [code]false[/code], then calling [code]play()[/code] without arguments or [code]play("same_as_before")[/code] will resume the animation. Works the same for the [code]play_backwards()[/code] method.
 			</description>
 		</method>
 	</methods>
@@ -238,7 +245,7 @@
 			The default time in which to blend animations. Ranges from 0 to 4096 with 0.01 precision. Default value: [code]0[/code].
 		</member>
 		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" enum="AnimationPlayer.AnimationProcessMode">
-			The process notification in which to update animations. Default value: [enum ANIMATION_PROCESS_IDLE].
+			The process notification in which to update animations. Default value: [code]ANIMATION_PROCESS_IDLE[/code].
 		</member>
 		<member name="playback_speed" type="float" setter="set_speed_scale" getter="get_speed_scale">
 			The speed scaling ratio. For instance, if this value is 1 then the animation plays at normal speed. If it's 0.5 then it plays at half speed. If it's 2 then it plays at double speed. Default value: [code]1[/code].
@@ -271,6 +278,10 @@
 				Notifies when an animation starts playing.
 			</description>
 		</signal>
+		<signal name="caches_cleared">
+			<description>
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessMode">
@@ -278,6 +289,9 @@
 		</constant>
 		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessMode">
 			Process animation during the idle process.
+		</constant>
+		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessMode">
+			Do not process animation. Use the 'advance' method to process the animation manually.
 		</constant>
 	</constants>
 </class>

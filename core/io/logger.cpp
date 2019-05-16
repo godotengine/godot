@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,19 +30,23 @@
 
 #include "logger.h"
 
-#include "os/dir_access.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/os/dir_access.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 // va_copy was defined in the C99, but not in C++ standards before C++11.
 // When you compile C++ without --std=c++<XX> option, compilers still define
 // va_copy, otherwise you have to use the internal version (__va_copy).
 #if !defined(va_copy)
 #if defined(__GNUC__)
-#define va_copy(d, s) __va_copy(d, s)
+#define va_copy(d, s) __va_copy((d), (s))
 #else
 #define va_copy(d, s) ((d) = (s))
 #endif
+#endif
+
+#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#define sprintf sprintf_s
 #endif
 
 bool Logger::should_log(bool p_err) {
@@ -112,7 +116,7 @@ void RotatedFileLogger::clear_old_backups() {
 	int max_backups = max_files - 1; // -1 for the current file
 
 	String basename = base_path.get_file().get_basename();
-	String extension = "." + base_path.get_extension();
+	String extension = base_path.get_extension();
 
 	DirAccess *da = DirAccess::open(base_path.get_base_dir());
 	if (!da) {
@@ -123,7 +127,7 @@ void RotatedFileLogger::clear_old_backups() {
 	String f = da->get_next();
 	Set<String> backups;
 	while (f != String()) {
-		if (!da->current_is_dir() && f.begins_with(basename) && f.ends_with(extension) && f != base_path.get_file()) {
+		if (!da->current_is_dir() && f.begins_with(basename) && f.get_extension() == extension && f != base_path.get_file()) {
 			backups.insert(f);
 		}
 		f = da->get_next();
@@ -152,7 +156,10 @@ void RotatedFileLogger::rotate_file() {
 			OS::Time time = OS::get_singleton()->get_time();
 			sprintf(timestamp, "-%04d-%02d-%02d-%02d-%02d-%02d", date.year, date.month, date.day, time.hour, time.min, time.sec);
 
-			String backup_name = base_path.get_basename() + timestamp + "." + base_path.get_extension();
+			String backup_name = base_path.get_basename() + timestamp;
+			if (base_path.get_extension() != String()) {
+				backup_name += "." + base_path.get_extension();
+			}
 
 			DirAccess *da = DirAccess::open(base_path.get_base_dir());
 			if (da) {
@@ -172,11 +179,10 @@ void RotatedFileLogger::rotate_file() {
 	file = FileAccess::open(base_path, FileAccess::WRITE);
 }
 
-RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) {
-	file = NULL;
-	base_path = p_base_path.simplify_path();
-	max_files = p_max_files > 0 ? p_max_files : 1;
-
+RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) :
+		base_path(p_base_path.simplify_path()),
+		max_files(p_max_files > 0 ? p_max_files : 1),
+		file(NULL) {
 	rotate_file();
 }
 
@@ -233,8 +239,8 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 
 StdLogger::~StdLogger() {}
 
-CompositeLogger::CompositeLogger(Vector<Logger *> p_loggers) {
-	loggers = p_loggers;
+CompositeLogger::CompositeLogger(Vector<Logger *> p_loggers) :
+		loggers(p_loggers) {
 }
 
 void CompositeLogger::logv(const char *p_format, va_list p_list, bool p_err) {

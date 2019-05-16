@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,7 +65,7 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		icon->set_normal_texture(get_icon("GodotAssetDefault", "EditorIcons"));
+		icon->set_normal_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
 		category->add_color_override("font_color", Color(0.5, 0.5, 0.5));
 		author->add_color_override("font_color", Color(0.5, 0.5, 0.5));
 	}
@@ -110,6 +110,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	add_child(hb);
 
 	icon = memnew(TextureButton);
+	icon->set_custom_minimum_size(Size2(64, 64));
 	icon->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	icon->connect("pressed", this, "_asset_clicked");
 
@@ -170,7 +171,26 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 
 			for (int i = 0; i < preview_images.size(); i++) {
 				if (preview_images[i].id == p_index) {
-					preview_images[i].button->set_icon(p_image);
+					if (preview_images[i].is_video) {
+						Ref<Image> overlay = get_icon("PlayOverlay", "EditorIcons")->get_data();
+						Ref<Image> thumbnail = p_image->get_data();
+						thumbnail = thumbnail->duplicate();
+						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width() / 2) / 2, (thumbnail->get_height() - overlay->get_height() / 2) / 2);
+
+						// Overlay and thumbnail need the same format for `blend_rect` to work.
+						thumbnail->convert(Image::FORMAT_RGBA8);
+						thumbnail->lock();
+						thumbnail->blend_rect(overlay, overlay->get_used_rect(), overlay_pos);
+						thumbnail->unlock();
+
+						Ref<ImageTexture> tex;
+						tex.instance();
+						tex->create_from_image(thumbnail);
+
+						preview_images[i].button->set_icon(tex);
+					} else {
+						preview_images[i].button->set_icon(p_image);
+					}
 					break;
 				}
 			}
@@ -180,7 +200,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 
 			for (int i = 0; i < preview_images.size(); i++) {
 				if (preview_images[i].id == p_index) {
-					preview_images[i].image = p_image;
+					preview_images.write[i].image = p_image;
 					if (preview_images[i].button->is_pressed()) {
 						_preview_click(p_index);
 					}
@@ -217,6 +237,7 @@ void EditorAssetLibraryItemDescription::_preview_click(int p_id) {
 			if (!preview_images[i].is_video) {
 				if (preview_images[i].image.is_valid()) {
 					preview->set_texture(preview_images[i].image);
+					minimum_size_changed();
 				}
 			} else {
 				_link_click(preview_images[i].video_link);
@@ -289,15 +310,20 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	description = memnew(RichTextLabel);
 	description->connect("meta_clicked", this, "_link_click");
+	description->set_custom_minimum_size(Size2(440 * EDSCALE, 300 * EDSCALE));
 	desc_bg->add_child(description);
+
+	VBoxContainer *previews_vbox = memnew(VBoxContainer);
+	hbox->add_child(previews_vbox);
+	previews_vbox->add_constant_override("separation", 15 * EDSCALE);
 
 	preview = memnew(TextureRect);
 	preview->set_custom_minimum_size(Size2(640 * EDSCALE, 345 * EDSCALE));
-	hbox->add_child(preview);
+	previews_vbox->add_child(preview);
 
 	previews_bg = memnew(PanelContainer);
-	vbox->add_child(previews_bg);
-	previews_bg->set_custom_minimum_size(Size2(0, 101 * EDSCALE));
+	previews_vbox->add_child(previews_bg);
+	previews_bg->set_custom_minimum_size(Size2(640 * EDSCALE, 101 * EDSCALE));
 
 	previews = memnew(ScrollContainer);
 	previews_bg->add_child(previews);
@@ -366,14 +392,11 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 		return;
 	}
 
-	progress->set_max(download->get_body_size());
-	progress->set_value(download->get_downloaded_bytes());
-
 	install->set_disabled(false);
+	status->set_text(TTR("Success!"));
+	// Make the progress bar invisible but don't reflow other Controls around it
+	progress->set_modulate(Color(0, 0, 0, 0));
 
-	progress->set_value(download->get_downloaded_bytes());
-
-	status->set_text(TTR("Success!") + " (" + String::humanize_size(download->get_downloaded_bytes()) + ")");
 	set_process(false);
 }
 
@@ -383,7 +406,7 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 	icon->set_texture(p_preview);
 	asset_id = p_asset_id;
 	if (!p_preview.is_valid())
-		icon->set_texture(get_icon("GodotAssetDefault", "EditorIcons"));
+		icon->set_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
 	host = p_download_url;
 	sha256 = p_sha256_hash;
 	asset_installer->connect("confirmed", this, "_close");
@@ -395,27 +418,49 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_PROCESS) {
 
-		progress->set_max(download->get_body_size());
-		progress->set_value(download->get_downloaded_bytes());
+		// Make the progress bar visible again when retrying the download
+		progress->set_modulate(Color(1, 1, 1, 1));
+
+		if (download->get_downloaded_bytes() > 0) {
+			progress->set_max(download->get_body_size());
+			progress->set_value(download->get_downloaded_bytes());
+		}
 
 		int cstatus = download->get_http_client_status();
 
-		if (cstatus == HTTPClient::STATUS_BODY)
-			status->set_text(TTR("Fetching:") + " " + String::humanize_size(download->get_downloaded_bytes()));
+		if (cstatus == HTTPClient::STATUS_BODY) {
+			if (download->get_body_size() > 0) {
+				status->set_text(
+						vformat(
+								TTR("Downloading (%s / %s)..."),
+								String::humanize_size(download->get_downloaded_bytes()),
+								String::humanize_size(download->get_body_size())));
+			} else {
+				// Total file size is unknown, so it cannot be displayed
+				status->set_text(TTR("Downloading..."));
+			}
+		}
 
 		if (cstatus != prev_status) {
 			switch (cstatus) {
 
 				case HTTPClient::STATUS_RESOLVING: {
 					status->set_text(TTR("Resolving..."));
+					progress->set_max(1);
+					progress->set_value(0);
 				} break;
 				case HTTPClient::STATUS_CONNECTING: {
 					status->set_text(TTR("Connecting..."));
+					progress->set_max(1);
+					progress->set_value(0);
 				} break;
 				case HTTPClient::STATUS_REQUESTING: {
 					status->set_text(TTR("Requesting..."));
+					progress->set_max(1);
+					progress->set_value(0);
 				} break;
-				default: {}
+				default: {
+				}
 			}
 			prev_status = cstatus;
 		}
@@ -509,7 +554,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	hb2->add_child(retry);
 	hb2->add_child(install);
-	set_custom_minimum_size(Size2(250, 0));
+	set_custom_minimum_size(Size2(310, 0));
 
 	download = memnew(HTTPRequest);
 	add_child(download);
@@ -536,6 +581,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 			error_tr->set_texture(get_icon("Error", "EditorIcons"));
 			reverse->set_icon(get_icon("Sort", "EditorIcons"));
+			filter->set_right_icon(get_icon("Search", "EditorIcons"));
+			filter->set_clear_button_enabled(true);
 
 			error_label->raise();
 		} break;
@@ -571,7 +618,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 					case HTTPClient::STATUS_BODY: {
 						load_status->set_value(0.4);
 					} break;
-					default: {}
+					default: {
+					}
 				}
 			}
 
@@ -586,6 +634,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 			library_scroll_bg->add_style_override("panel", get_stylebox("bg", "Tree"));
 			error_tr->set_texture(get_icon("Error", "EditorIcons"));
 			reverse->set_icon(get_icon("Sort", "EditorIcons"));
+			filter->set_right_icon(get_icon("Search", "EditorIcons"));
+			filter->set_clear_button_enabled(true);
 		} break;
 	}
 }
@@ -639,7 +689,7 @@ const char *EditorAssetLibrary::support_key[SUPPORT_MAX] = {
 
 void EditorAssetLibrary::_select_author(int p_id) {
 
-	//opemn author window
+	// Open author window
 }
 
 void EditorAssetLibrary::_select_category(int p_id) {
@@ -659,16 +709,6 @@ void EditorAssetLibrary::_select_category(int p_id) {
 void EditorAssetLibrary::_select_asset(int p_id) {
 
 	_api_request("asset/" + itos(p_id), REQUESTING_ASSET);
-
-	/*
-	if (description) {
-		memdelete(description);
-	}
-
-
-	description = memnew( EditorAssetLibraryItemDescription );
-	add_child(description);
-	description->popup_centered_minsize();*/
 }
 
 void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByteArray &p_data, int p_queue_id) {
@@ -698,13 +738,24 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 		int len = image_data.size();
 		PoolByteArray::Read r = image_data.read();
-		Ref<Image> image = Ref<Image>(memnew(Image(r.ptr(), len)));
+		Ref<Image> image = Ref<Image>(memnew(Image));
+
+		uint8_t png_signature[8] = { 137, 80, 78, 71, 13, 10, 26, 10 };
+		uint8_t jpg_signature[3] = { 255, 216, 255 };
+
+		if (r.ptr()) {
+			if (memcmp(&r[0], &png_signature[0], 8) == 0) {
+				image->copy_internals_from(Image::_png_mem_loader_func(r.ptr(), len));
+			} else if (memcmp(&r[0], &jpg_signature[0], 3) == 0) {
+				image->copy_internals_from(Image::_jpg_mem_loader_func(r.ptr(), len));
+			}
+		}
 
 		if (!image->empty()) {
 			switch (image_queue[p_queue_id].image_type) {
 				case IMAGE_QUEUE_ICON:
 
-					image->resize(80 * EDSCALE, 80 * EDSCALE, Image::INTERPOLATE_CUBIC);
+					image->resize(64 * EDSCALE, 64 * EDSCALE, Image::INTERPOLATE_CUBIC);
 
 					break;
 				case IMAGE_QUEUE_THUMBNAIL: {
@@ -734,7 +785,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 		}
 
 		if (!image_set && final) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("ErrorSign", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("DefaultProjectIcon", "EditorIcons"));
 		}
 	}
 }
@@ -743,7 +794,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 
 	ERR_FAIL_COND(!image_queue.has(p_queue_id));
 
-	if (p_status == HTTPRequest::RESULT_SUCCESS) {
+	if (p_status == HTTPRequest::RESULT_SUCCESS && p_code < HTTPClient::RESPONSE_BAD_REQUEST) {
 
 		if (p_code != HTTPClient::RESPONSE_NOT_MODIFIED) {
 			for (int i = 0; i < headers.size(); i++) {
@@ -774,10 +825,10 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		_image_update(p_code == HTTPClient::RESPONSE_NOT_MODIFIED, true, p_data, p_queue_id);
 
 	} else {
-		WARN_PRINTS("Error getting PNG file for asset id " + itos(image_queue[p_queue_id].asset_id));
+		WARN_PRINTS("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("ErrorSign", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("DefaultProjectIcon", "EditorIcons"));
 		}
 	}
 
@@ -921,6 +972,9 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
+	if (p_page_count < 2)
+		return hbc;
+
 	//do the mario
 	int from = p_page - 5;
 	if (from < 0)
@@ -929,41 +983,43 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	if (to > p_page_count)
 		to = p_page_count;
 
-	Color gray = Color(0.65, 0.65, 0.65);
-
 	hbc->add_spacer();
-	hbc->add_constant_override("separation", 10);
+	hbc->add_constant_override("separation", 5);
 
+	Button *first = memnew(Button);
+	first->set_text(TTR("First"));
 	if (p_page != 0) {
-		LinkButton *first = memnew(LinkButton);
-		first->set_text(TTR("first"));
-		first->add_color_override("font_color", gray);
-		first->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 		first->connect("pressed", this, "_search", varray(0));
-		hbc->add_child(first);
+	} else {
+		first->set_disabled(true);
+		first->set_focus_mode(Control::FOCUS_NONE);
 	}
+	hbc->add_child(first);
 
+	Button *prev = memnew(Button);
+	prev->set_text(TTR("Previous"));
 	if (p_page > 0) {
-		LinkButton *prev = memnew(LinkButton);
-		prev->set_text(TTR("prev"));
-		prev->add_color_override("font_color", gray);
-		prev->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 		prev->connect("pressed", this, "_search", varray(p_page - 1));
-		hbc->add_child(prev);
+	} else {
+		prev->set_disabled(true);
+		prev->set_focus_mode(Control::FOCUS_NONE);
 	}
+	hbc->add_child(prev);
+	hbc->add_child(memnew(VSeparator));
 
 	for (int i = from; i < to; i++) {
 
 		if (i == p_page) {
 
-			Label *current = memnew(Label);
+			Button *current = memnew(Button);
 			current->set_text(itos(i + 1));
+			current->set_disabled(true);
+			current->set_focus_mode(Control::FOCUS_NONE);
+
 			hbc->add_child(current);
 		} else {
 
-			LinkButton *current = memnew(LinkButton);
-			current->add_color_override("font_color", gray);
-			current->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
+			Button *current = memnew(Button);
 			current->set_text(itos(i + 1));
 			current->connect("pressed", this, "_search", varray(i));
 
@@ -971,28 +1027,26 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		}
 	}
 
+	Button *next = memnew(Button);
+	next->set_text(TTR("Next"));
 	if (p_page < p_page_count - 1) {
-		LinkButton *next = memnew(LinkButton);
-		next->set_text(TTR("next"));
-		next->add_color_override("font_color", gray);
-		next->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 		next->connect("pressed", this, "_search", varray(p_page + 1));
-
-		hbc->add_child(next);
+	} else {
+		next->set_disabled(true);
+		next->set_focus_mode(Control::FOCUS_NONE);
 	}
+	hbc->add_child(memnew(VSeparator));
+	hbc->add_child(next);
 
+	Button *last = memnew(Button);
+	last->set_text(TTR("Last"));
 	if (p_page != p_page_count - 1) {
-		LinkButton *last = memnew(LinkButton);
-		last->set_text(TTR("last"));
-		last->add_color_override("font_color", gray);
-		last->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-		hbc->add_child(last);
 		last->connect("pressed", this, "_search", varray(p_page_count - 1));
+	} else {
+		last->set_disabled(true);
+		last->set_focus_mode(Control::FOCUS_NONE);
 	}
-
-	Label *totals = memnew(Label);
-	totals->set_text("( " + itos(from * p_page_len) + " - " + itos(from * p_page_len + p_current_items - 1) + " / " + itos(p_total_items) + " )");
-	hbc->add_child(totals);
+	hbc->add_child(last);
 
 	hbc->add_spacer();
 
@@ -1293,6 +1347,7 @@ void EditorAssetLibrary::_bind_methods() {
 
 EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
+	requesting = REQUESTING_NONE;
 	templates_only = p_templates_only;
 
 	VBoxContainer *library_main = memnew(VBoxContainer);

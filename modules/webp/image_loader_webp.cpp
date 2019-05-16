@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "image_loader_webp.h"
 
-#include "io/marshalls.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/io/marshalls.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 #include <stdlib.h>
 #include <webp/decode.h>
@@ -116,55 +116,64 @@ static Ref<Image> _webp_lossy_unpack(const PoolVector<uint8_t> &p_buffer) {
 	return img;
 }
 
-Error ImageLoaderWEBP::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
+Error webp_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
 
-	uint32_t size = f->get_len();
-	PoolVector<uint8_t> src_image;
-	src_image.resize(size);
+	ERR_FAIL_NULL_V(p_image, ERR_INVALID_PARAMETER);
 
 	WebPBitstreamFeatures features;
-
-	PoolVector<uint8_t>::Write src_w = src_image.write();
-	f->get_buffer(src_w.ptr(), size);
-	ERR_FAIL_COND_V(f->eof_reached(), ERR_FILE_EOF);
-
-	if (WebPGetFeatures(src_w.ptr(), size, &features) != VP8_STATUS_OK) {
-		f->close();
-		//ERR_EXPLAIN("Error decoding WEBP image: "+p_file);
+	if (WebPGetFeatures(p_buffer, p_buffer_len, &features) != VP8_STATUS_OK) {
+		// ERR_EXPLAIN("Error decoding WEBP image");
 		ERR_FAIL_V(ERR_FILE_CORRUPT);
 	}
-
-	/*
-	print_line("width: " + itos(features.width));
-	print_line("height: " + itos(features.height));
-	print_line("alpha: " + itos(features.has_alpha));
-	*/
-
-	src_w = PoolVector<uint8_t>::Write();
 
 	PoolVector<uint8_t> dst_image;
 	int datasize = features.width * features.height * (features.has_alpha ? 4 : 3);
 	dst_image.resize(datasize);
-
-	PoolVector<uint8_t>::Read src_r = src_image.read();
 	PoolVector<uint8_t>::Write dst_w = dst_image.write();
 
 	bool errdec = false;
 	if (features.has_alpha) {
-		errdec = WebPDecodeRGBAInto(src_r.ptr(), size, dst_w.ptr(), datasize, 4 * features.width) == NULL;
+		errdec = WebPDecodeRGBAInto(p_buffer, p_buffer_len, dst_w.ptr(), datasize, 4 * features.width) == NULL;
 	} else {
-		errdec = WebPDecodeRGBInto(src_r.ptr(), size, dst_w.ptr(), datasize, 3 * features.width) == NULL;
+		errdec = WebPDecodeRGBInto(p_buffer, p_buffer_len, dst_w.ptr(), datasize, 3 * features.width) == NULL;
 	}
-
-	//ERR_EXPLAIN("Error decoding webp! - "+p_file);
-	ERR_FAIL_COND_V(errdec, ERR_FILE_CORRUPT);
-
-	src_r = PoolVector<uint8_t>::Read();
 	dst_w = PoolVector<uint8_t>::Write();
+
+	//ERR_EXPLAIN("Error decoding webp!");
+	ERR_FAIL_COND_V(errdec, ERR_FILE_CORRUPT);
 
 	p_image->create(features.width, features.height, 0, features.has_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8, dst_image);
 
 	return OK;
+}
+
+static Ref<Image> _webp_mem_loader_func(const uint8_t *p_png, int p_size) {
+
+	Ref<Image> img;
+	img.instance();
+	Error err = webp_load_image_from_buffer(img.ptr(), p_png, p_size);
+	ERR_FAIL_COND_V(err, Ref<Image>());
+	return img;
+}
+
+Error ImageLoaderWEBP::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
+
+	PoolVector<uint8_t> src_image;
+	int src_image_len = f->get_len();
+	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
+	src_image.resize(src_image_len);
+
+	PoolVector<uint8_t>::Write w = src_image.write();
+
+	f->get_buffer(&w[0], src_image_len);
+
+	f->close();
+
+	Error err = webp_load_image_from_buffer(p_image.ptr(), w.ptr(), src_image_len);
+
+	w = PoolVector<uint8_t>::Write();
+
+	return err;
 }
 
 void ImageLoaderWEBP::get_recognized_extensions(List<String> *p_extensions) const {
@@ -173,7 +182,7 @@ void ImageLoaderWEBP::get_recognized_extensions(List<String> *p_extensions) cons
 }
 
 ImageLoaderWEBP::ImageLoaderWEBP() {
-
+	Image::_webp_mem_loader_func = _webp_mem_loader_func;
 	Image::lossy_packer = _webp_lossy_pack;
 	Image::lossy_unpacker = _webp_lossy_unpack;
 }

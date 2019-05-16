@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef TREE_H
 #define TREE_H
 
-#include "core/helper/value_evaluator.h"
 #include "scene/gui/control.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/popup_menu.h"
@@ -54,7 +53,6 @@ public:
 		CELL_MODE_STRING, ///< just a string
 		CELL_MODE_CHECK, ///< string + check
 		CELL_MODE_RANGE, ///< Contains a range
-		CELL_MODE_RANGE_EXPRESSION, ///< Contains a range
 		CELL_MODE_ICON, ///< Contains an icon, not editable
 		CELL_MODE_CUSTOM, ///< Contains a custom value, show a string, and an edit button
 	};
@@ -331,6 +329,8 @@ private:
 	bool range_drag_enabled;
 	Vector2 range_drag_capture_pos;
 
+	bool propagate_mouse_activated;
+
 	//TreeItem *cursor_item;
 	//int cursor_column;
 
@@ -436,6 +436,7 @@ private:
 		int button_margin;
 		Point2 offset;
 		int draw_relationship_lines;
+		int draw_guides;
 		int scroll_border;
 		int scroll_speed;
 
@@ -457,6 +458,8 @@ private:
 
 		TreeItem *hover_item;
 		int hover_cell;
+
+		Point2i text_editor_position;
 
 	} cache;
 
@@ -504,8 +507,6 @@ private:
 
 	bool hide_folding;
 
-	ValueEvaluator *evaluator;
-
 	int _count_selected_items(TreeItem *p_from) const;
 	void _go_left();
 	void _go_right();
@@ -516,7 +517,7 @@ protected:
 	static void _bind_methods();
 
 	//bind helpers
-	Object *_create_item(Object *p_parent, int p_idx = -1) {
+	TreeItem *_create_item(Object *p_parent, int p_idx = -1) {
 		return create_item(Object::cast_to<TreeItem>(p_parent), p_idx);
 	}
 
@@ -600,8 +601,6 @@ public:
 
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
-
-	void set_value_evaluator(ValueEvaluator *p_evaluator);
 
 	Tree();
 	~Tree();

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="JavaScript" inherits="Object" category="Core" version="3.1">
+<class name="JavaScript" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		Singleton that connects the engine with the browser's JavaScript context in HTML5 export.
 	</brief_description>
@@ -7,10 +7,8 @@
 		The JavaScript singleton is implemented only in HTML5 export. It's used to access the browser's JavaScript context. This allows interaction with embedding pages or calling third-party JavaScript APIs.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/getting_started/workflow/export/exporting_for_web.html#calling-javascript-from-script
+		<link>https://docs.godotengine.org/en/latest/getting_started/workflow/export/exporting_for_web.html#calling-javascript-from-script</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="eval">
 			<return type="Variant">

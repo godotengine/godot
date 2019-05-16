@@ -35,41 +35,37 @@ class btSoftRigidCollisionAlgorithm : public btCollisionAlgorithm
 	//btCollisionObject*		m_rigidCollisionObject;
 
 	///for rigid versus soft (instead of soft versus rigid), we use this swapped boolean
-	bool	m_isSwapped;
+	bool m_isSwapped;
 
 public:
-
-	btSoftRigidCollisionAlgorithm(btPersistentManifold* mf,const btCollisionAlgorithmConstructionInfo& ci,const btCollisionObjectWrapper* col0,const btCollisionObjectWrapper* col1Wrap, bool isSwapped);
+	btSoftRigidCollisionAlgorithm(btPersistentManifold* mf, const btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* col0, const btCollisionObjectWrapper* col1Wrap, bool isSwapped);
 
 	virtual ~btSoftRigidCollisionAlgorithm();
 
-	virtual void processCollision (const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+	virtual void processCollision(const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	virtual btScalar calculateTimeOfImpact(btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
+	virtual btScalar calculateTimeOfImpact(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
 
-	virtual	void	getAllContactManifolds(btManifoldArray&	manifoldArray)
+	virtual void getAllContactManifolds(btManifoldArray& manifoldArray)
 	{
 		//we don't add any manifolds
 	}
 
-
-	struct CreateFunc :public 	btCollisionAlgorithmCreateFunc
+	struct CreateFunc : public btCollisionAlgorithmCreateFunc
 	{
-		virtual	btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap)
+		virtual btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap)
 		{
 			void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btSoftRigidCollisionAlgorithm));
 			if (!m_swapped)
 			{
-				return new(mem) btSoftRigidCollisionAlgorithm(0,ci,body0Wrap,body1Wrap,false);
-			} else
+				return new (mem) btSoftRigidCollisionAlgorithm(0, ci, body0Wrap, body1Wrap, false);
+			}
+			else
 			{
-				return new(mem) btSoftRigidCollisionAlgorithm(0,ci,body0Wrap,body1Wrap,true);
+				return new (mem) btSoftRigidCollisionAlgorithm(0, ci, body0Wrap, body1Wrap, true);
 			}
 		}
 	};
-
 };
 
-#endif //BT_SOFT_RIGID_COLLISION_ALGORITHM_H
-
-
+#endif  //BT_SOFT_RIGID_COLLISION_ALGORITHM_H

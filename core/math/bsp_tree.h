@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,13 @@
 #ifndef BSP_TREE_H
 #define BSP_TREE_H
 
-#include "aabb.h"
-#include "dvector.h"
-#include "face3.h"
-#include "method_ptrcall.h"
-#include "plane.h"
-#include "variant.h"
-#include "vector.h"
+#include "core/math/aabb.h"
+#include "core/math/face3.h"
+#include "core/math/plane.h"
+#include "core/method_ptrcall.h"
+#include "core/pool_vector.h"
+#include "core/variant.h"
+#include "core/vector.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

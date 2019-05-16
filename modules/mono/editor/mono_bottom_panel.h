@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,18 +51,20 @@ class MonoBottomPanel : public VBoxContainer {
 	ItemList *build_tabs_list;
 	TabContainer *build_tabs;
 
-	Button *warnings_btn;
-	Button *errors_btn;
+	ToolButton *warnings_btn;
+	ToolButton *errors_btn;
+	Button *view_log_btn;
 
 	void _update_build_tabs_list();
 
-	void _build_tab_item_selected(int p_idx);
-	void _build_tab_changed(int p_idx);
+	void _build_tabs_item_selected(int p_idx);
+	void _build_tabs_nothing_selected();
 
 	void _warnings_toggled(bool p_pressed);
 	void _errors_toggled(bool p_pressed);
 
 	void _build_project_pressed();
+	void _view_log_pressed();
 
 	static MonoBottomPanel *singleton;
 

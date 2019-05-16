@@ -5,7 +5,7 @@
 /* This is the public header file for the PCRE library, second API, to be
 #included by applications that call PCRE2 functions.
 
-           Copyright (c) 2016 University of Cambridge
+           Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -41,10 +41,16 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* The current PCRE version information. */
 
-#define PCRE2_MAJOR          10
-#define PCRE2_MINOR          23
-#define PCRE2_PRERELEASE     
-#define PCRE2_DATE           2017-02-14
+#define PCRE2_MAJOR           10
+#define PCRE2_MINOR           32
+#define PCRE2_PRERELEASE      
+#define PCRE2_DATE            2018-09-10
+
+/* For the benefit of systems without stdint.h, an alternative is to use
+inttypes.h. The existence of these headers is checked by configure or CMake. */
+
+#define PCRE2_HAVE_STDINT_H   1
+#define PCRE2_HAVE_INTTYPES_H 1
 
 /* When an application links to a PCRE DLL in Windows, the symbols that are
 imported have to be identified as such. When building PCRE2, the appropriate
@@ -81,12 +87,18 @@ set, we ensure here that it has no effect. */
 #define PCRE2_CALL_CONVENTION
 #endif
 
-/* Have to include limits.h, stdlib.h and stdint.h to ensure that size_t and
-uint8_t, UCHAR_MAX, etc are defined. */
+/* Have to include limits.h, stdlib.h and stdint.h (or inttypes.h) to ensure
+that size_t and uint8_t, UCHAR_MAX, etc are defined. If the system has neither
+header, the relevant values must be provided by some other means. */
 
 #include <limits.h>
 #include <stdlib.h>
+
+#if PCRE2_HAVE_STDINT_H
 #include <stdint.h>
+#elif PCRE2_HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 
 /* Allow for C++ users compiling this directly. */
 
@@ -101,6 +113,7 @@ others can be added next to them */
 
 #define PCRE2_ANCHORED            0x80000000u
 #define PCRE2_NO_UTF_CHECK        0x40000000u
+#define PCRE2_ENDANCHORED         0x20000000u
 
 /* The following option bits can be passed only to pcre2_compile(). However,
 they may affect compilation, JIT compilation, and/or interpretive execution.
@@ -136,6 +149,15 @@ D   is inspected during pcre2_dfa_match() execution
 #define PCRE2_ALT_CIRCUMFLEX      0x00200000u  /*   J M D */
 #define PCRE2_ALT_VERBNAMES       0x00400000u  /* C       */
 #define PCRE2_USE_OFFSET_LIMIT    0x00800000u  /*   J M D */
+#define PCRE2_EXTENDED_MORE       0x01000000u  /* C       */
+#define PCRE2_LITERAL             0x02000000u  /* C       */
+
+/* An additional compile options word is available in the compile context. */
+
+#define PCRE2_EXTRA_ALLOW_SURROGATE_ESCAPES  0x00000001u  /* C */
+#define PCRE2_EXTRA_BAD_ESCAPE_IS_LITERAL    0x00000002u  /* C */
+#define PCRE2_EXTRA_MATCH_WORD               0x00000004u  /* C */
+#define PCRE2_EXTRA_MATCH_LINE               0x00000008u  /* C */
 
 /* These are for pcre2_jit_compile(). */
 
@@ -174,6 +196,16 @@ ignored for pcre2_jit_match(). */
 
 #define PCRE2_NO_JIT              0x00002000u
 
+/* Options for pcre2_pattern_convert(). */
+
+#define PCRE2_CONVERT_UTF                    0x00000001u
+#define PCRE2_CONVERT_NO_UTF_CHECK           0x00000002u
+#define PCRE2_CONVERT_POSIX_BASIC            0x00000004u
+#define PCRE2_CONVERT_POSIX_EXTENDED         0x00000008u
+#define PCRE2_CONVERT_GLOB                   0x00000010u
+#define PCRE2_CONVERT_GLOB_NO_WILD_SEPARATOR 0x00000030u
+#define PCRE2_CONVERT_GLOB_NO_STARSTAR       0x00000050u
+
 /* Newline and \R settings, for use in compile contexts. The newline values
 must be kept in step with values set in config.h and both sets must all be
 greater than zero. */
@@ -183,11 +215,112 @@ greater than zero. */
 #define PCRE2_NEWLINE_CRLF        3
 #define PCRE2_NEWLINE_ANY         4
 #define PCRE2_NEWLINE_ANYCRLF     5
+#define PCRE2_NEWLINE_NUL         6
 
 #define PCRE2_BSR_UNICODE         1
 #define PCRE2_BSR_ANYCRLF         2
 
-/* Error codes: no match and partial match are "expected" errors. */
+/* Error codes for pcre2_compile(). Some of these are also used by
+pcre2_pattern_convert(). */
+
+#define PCRE2_ERROR_END_BACKSLASH                  101
+#define PCRE2_ERROR_END_BACKSLASH_C                102
+#define PCRE2_ERROR_UNKNOWN_ESCAPE                 103
+#define PCRE2_ERROR_QUANTIFIER_OUT_OF_ORDER        104
+#define PCRE2_ERROR_QUANTIFIER_TOO_BIG             105
+#define PCRE2_ERROR_MISSING_SQUARE_BRACKET         106
+#define PCRE2_ERROR_ESCAPE_INVALID_IN_CLASS        107
+#define PCRE2_ERROR_CLASS_RANGE_ORDER              108
+#define PCRE2_ERROR_QUANTIFIER_INVALID             109
+#define PCRE2_ERROR_INTERNAL_UNEXPECTED_REPEAT     110
+#define PCRE2_ERROR_INVALID_AFTER_PARENS_QUERY     111
+#define PCRE2_ERROR_POSIX_CLASS_NOT_IN_CLASS       112
+#define PCRE2_ERROR_POSIX_NO_SUPPORT_COLLATING     113
+#define PCRE2_ERROR_MISSING_CLOSING_PARENTHESIS    114
+#define PCRE2_ERROR_BAD_SUBPATTERN_REFERENCE       115
+#define PCRE2_ERROR_NULL_PATTERN                   116
+#define PCRE2_ERROR_BAD_OPTIONS                    117
+#define PCRE2_ERROR_MISSING_COMMENT_CLOSING        118
+#define PCRE2_ERROR_PARENTHESES_NEST_TOO_DEEP      119
+#define PCRE2_ERROR_PATTERN_TOO_LARGE              120
+#define PCRE2_ERROR_HEAP_FAILED                    121
+#define PCRE2_ERROR_UNMATCHED_CLOSING_PARENTHESIS  122
+#define PCRE2_ERROR_INTERNAL_CODE_OVERFLOW         123
+#define PCRE2_ERROR_MISSING_CONDITION_CLOSING      124
+#define PCRE2_ERROR_LOOKBEHIND_NOT_FIXED_LENGTH    125
+#define PCRE2_ERROR_ZERO_RELATIVE_REFERENCE        126
+#define PCRE2_ERROR_TOO_MANY_CONDITION_BRANCHES    127
+#define PCRE2_ERROR_CONDITION_ASSERTION_EXPECTED   128
+#define PCRE2_ERROR_BAD_RELATIVE_REFERENCE         129
+#define PCRE2_ERROR_UNKNOWN_POSIX_CLASS            130
+#define PCRE2_ERROR_INTERNAL_STUDY_ERROR           131
+#define PCRE2_ERROR_UNICODE_NOT_SUPPORTED          132
+#define PCRE2_ERROR_PARENTHESES_STACK_CHECK        133
+#define PCRE2_ERROR_CODE_POINT_TOO_BIG             134
+#define PCRE2_ERROR_LOOKBEHIND_TOO_COMPLICATED     135
+#define PCRE2_ERROR_LOOKBEHIND_INVALID_BACKSLASH_C 136
+#define PCRE2_ERROR_UNSUPPORTED_ESCAPE_SEQUENCE    137
+#define PCRE2_ERROR_CALLOUT_NUMBER_TOO_BIG         138
+#define PCRE2_ERROR_MISSING_CALLOUT_CLOSING        139
+#define PCRE2_ERROR_ESCAPE_INVALID_IN_VERB         140
+#define PCRE2_ERROR_UNRECOGNIZED_AFTER_QUERY_P     141
+#define PCRE2_ERROR_MISSING_NAME_TERMINATOR        142
+#define PCRE2_ERROR_DUPLICATE_SUBPATTERN_NAME      143
+#define PCRE2_ERROR_INVALID_SUBPATTERN_NAME        144
+#define PCRE2_ERROR_UNICODE_PROPERTIES_UNAVAILABLE 145
+#define PCRE2_ERROR_MALFORMED_UNICODE_PROPERTY     146
+#define PCRE2_ERROR_UNKNOWN_UNICODE_PROPERTY       147
+#define PCRE2_ERROR_SUBPATTERN_NAME_TOO_LONG       148
+#define PCRE2_ERROR_TOO_MANY_NAMED_SUBPATTERNS     149
+#define PCRE2_ERROR_CLASS_INVALID_RANGE            150
+#define PCRE2_ERROR_OCTAL_BYTE_TOO_BIG             151
+#define PCRE2_ERROR_INTERNAL_OVERRAN_WORKSPACE     152
+#define PCRE2_ERROR_INTERNAL_MISSING_SUBPATTERN    153
+#define PCRE2_ERROR_DEFINE_TOO_MANY_BRANCHES       154
+#define PCRE2_ERROR_BACKSLASH_O_MISSING_BRACE      155
+#define PCRE2_ERROR_INTERNAL_UNKNOWN_NEWLINE       156
+#define PCRE2_ERROR_BACKSLASH_G_SYNTAX             157
+#define PCRE2_ERROR_PARENS_QUERY_R_MISSING_CLOSING 158
+/* Error 159 is obsolete and should now never occur */
+#define PCRE2_ERROR_VERB_ARGUMENT_NOT_ALLOWED      159
+#define PCRE2_ERROR_VERB_UNKNOWN                   160
+#define PCRE2_ERROR_SUBPATTERN_NUMBER_TOO_BIG      161
+#define PCRE2_ERROR_SUBPATTERN_NAME_EXPECTED       162
+#define PCRE2_ERROR_INTERNAL_PARSED_OVERFLOW       163
+#define PCRE2_ERROR_INVALID_OCTAL                  164
+#define PCRE2_ERROR_SUBPATTERN_NAMES_MISMATCH      165
+#define PCRE2_ERROR_MARK_MISSING_ARGUMENT          166
+#define PCRE2_ERROR_INVALID_HEXADECIMAL            167
+#define PCRE2_ERROR_BACKSLASH_C_SYNTAX             168
+#define PCRE2_ERROR_BACKSLASH_K_SYNTAX             169
+#define PCRE2_ERROR_INTERNAL_BAD_CODE_LOOKBEHINDS  170
+#define PCRE2_ERROR_BACKSLASH_N_IN_CLASS           171
+#define PCRE2_ERROR_CALLOUT_STRING_TOO_LONG        172
+#define PCRE2_ERROR_UNICODE_DISALLOWED_CODE_POINT  173
+#define PCRE2_ERROR_UTF_IS_DISABLED                174
+#define PCRE2_ERROR_UCP_IS_DISABLED                175
+#define PCRE2_ERROR_VERB_NAME_TOO_LONG             176
+#define PCRE2_ERROR_BACKSLASH_U_CODE_POINT_TOO_BIG 177
+#define PCRE2_ERROR_MISSING_OCTAL_OR_HEX_DIGITS    178
+#define PCRE2_ERROR_VERSION_CONDITION_SYNTAX       179
+#define PCRE2_ERROR_INTERNAL_BAD_CODE_AUTO_POSSESS 180
+#define PCRE2_ERROR_CALLOUT_NO_STRING_DELIMITER    181
+#define PCRE2_ERROR_CALLOUT_BAD_STRING_DELIMITER   182
+#define PCRE2_ERROR_BACKSLASH_C_CALLER_DISABLED    183
+#define PCRE2_ERROR_QUERY_BARJX_NEST_TOO_DEEP      184
+#define PCRE2_ERROR_BACKSLASH_C_LIBRARY_DISABLED   185
+#define PCRE2_ERROR_PATTERN_TOO_COMPLICATED        186
+#define PCRE2_ERROR_LOOKBEHIND_TOO_LONG            187
+#define PCRE2_ERROR_PATTERN_STRING_TOO_LONG        188
+#define PCRE2_ERROR_INTERNAL_BAD_CODE              189
+#define PCRE2_ERROR_INTERNAL_BAD_CODE_IN_SKIP      190
+#define PCRE2_ERROR_NO_SURROGATES_IN_UTF16         191
+#define PCRE2_ERROR_BAD_LITERAL_OPTIONS            192
+#define PCRE2_ERROR_SUPPORTED_ONLY_IN_UNICODE      193
+#define PCRE2_ERROR_INVALID_HYPHEN_IN_OPTIONS      194
+
+
+/* "Expected" matching error codes: no match and partial match. */
 
 #define PCRE2_ERROR_NOMATCH          (-1)
 #define PCRE2_ERROR_PARTIAL          (-2)
@@ -227,10 +360,10 @@ greater than zero. */
 #define PCRE2_ERROR_UTF32_ERR1      (-27)
 #define PCRE2_ERROR_UTF32_ERR2      (-28)
 
-/* Error codes for pcre2[_dfa]_match(), substring extraction functions, context
-functions, and serializing functions. They are in numerical order. Originally
-they were in alphabetical order too, but now that PCRE2 is released, the
-numbers must not be changed. */
+/* Miscellaneous error codes for pcre2[_dfa]_match(), substring extraction
+functions, context functions, and serializing functions. They are in numerical
+order. Originally they were in alphabetical order too, but now that PCRE2 is
+released, the numbers must not be changed. */
 
 #define PCRE2_ERROR_BADDATA           (-29)
 #define PCRE2_ERROR_MIXEDTABLES       (-30)  /* Name was changed */
@@ -256,7 +389,8 @@ numbers must not be changed. */
 #define PCRE2_ERROR_NOUNIQUESUBSTRING (-50)
 #define PCRE2_ERROR_NULL              (-51)
 #define PCRE2_ERROR_RECURSELOOP       (-52)
-#define PCRE2_ERROR_RECURSIONLIMIT    (-53)
+#define PCRE2_ERROR_DEPTHLIMIT        (-53)
+#define PCRE2_ERROR_RECURSIONLIMIT    (-53)  /* Obsolete synonym */
 #define PCRE2_ERROR_UNAVAILABLE       (-54)
 #define PCRE2_ERROR_UNSET             (-55)
 #define PCRE2_ERROR_BADOFFSETLIMIT    (-56)
@@ -266,6 +400,10 @@ numbers must not be changed. */
 #define PCRE2_ERROR_BADSUBSPATTERN    (-60)
 #define PCRE2_ERROR_TOOMANYREPLACE    (-61)
 #define PCRE2_ERROR_BADSERIALIZEDDATA (-62)
+#define PCRE2_ERROR_HEAPLIMIT         (-63)
+#define PCRE2_ERROR_CONVERT_SYNTAX    (-64)
+#define PCRE2_ERROR_INTERNAL_DUPMATCH (-65)
+
 
 /* Request types for pcre2_pattern_info() */
 
@@ -290,9 +428,13 @@ numbers must not be changed. */
 #define PCRE2_INFO_NAMEENTRYSIZE        18
 #define PCRE2_INFO_NAMETABLE            19
 #define PCRE2_INFO_NEWLINE              20
-#define PCRE2_INFO_RECURSIONLIMIT       21
+#define PCRE2_INFO_DEPTHLIMIT           21
+#define PCRE2_INFO_RECURSIONLIMIT       21  /* Obsolete synonym */
 #define PCRE2_INFO_SIZE                 22
 #define PCRE2_INFO_HASBACKSLASHC        23
+#define PCRE2_INFO_FRAMESIZE            24
+#define PCRE2_INFO_HEAPLIMIT            25
+#define PCRE2_INFO_EXTRAOPTIONS         26
 
 /* Request types for pcre2_config(). */
 
@@ -303,11 +445,16 @@ numbers must not be changed. */
 #define PCRE2_CONFIG_MATCHLIMIT              4
 #define PCRE2_CONFIG_NEWLINE                 5
 #define PCRE2_CONFIG_PARENSLIMIT             6
-#define PCRE2_CONFIG_RECURSIONLIMIT          7
-#define PCRE2_CONFIG_STACKRECURSE            8
+#define PCRE2_CONFIG_DEPTHLIMIT              7
+#define PCRE2_CONFIG_RECURSIONLIMIT          7  /* Obsolete synonym */
+#define PCRE2_CONFIG_STACKRECURSE            8  /* Obsolete */
 #define PCRE2_CONFIG_UNICODE                 9
 #define PCRE2_CONFIG_UNICODE_VERSION        10
 #define PCRE2_CONFIG_VERSION                11
+#define PCRE2_CONFIG_HEAPLIMIT              12
+#define PCRE2_CONFIG_NEVER_BACKSLASH_C      13
+#define PCRE2_CONFIG_COMPILED_WIDTHS        14
+
 
 /* Types for code units in patterns and subject strings. */
 
@@ -342,6 +489,9 @@ typedef struct pcre2_real_compile_context pcre2_compile_context; \
 struct pcre2_real_match_context; \
 typedef struct pcre2_real_match_context pcre2_match_context; \
 \
+struct pcre2_real_convert_context; \
+typedef struct pcre2_real_convert_context pcre2_convert_context; \
+\
 struct pcre2_real_code; \
 typedef struct pcre2_real_code pcre2_code; \
 \
@@ -359,6 +509,11 @@ structure so that new fields can be added on the end in future versions,
 without changing the API of the function, thereby allowing old clients to work
 without modification. Define the generic version in a macro; the width-specific
 versions are generated from this macro below. */
+
+/* Flags for the callout_flags field. These are cleared after a callout. */
+
+#define PCRE2_CALLOUT_STARTMATCH    0x00000001u  /* Set for each bumpalong */
+#define PCRE2_CALLOUT_BACKTRACK     0x00000002u  /* Set after a backtrack */
 
 #define PCRE2_STRUCTURE_LIST \
 typedef struct pcre2_callout_block { \
@@ -379,6 +534,8 @@ typedef struct pcre2_callout_block { \
   PCRE2_SIZE    callout_string_offset; /* Offset to string within pattern */ \
   PCRE2_SIZE    callout_string_length; /* Length of string compiled into pattern */ \
   PCRE2_SPTR    callout_string;    /* String compiled into pattern */ \
+  /* ------------------- Added for Version 2 -------------------------- */ \
+  uint32_t      callout_flags;     /* See above for list */ \
   /* ------------------------------------------------------------------ */ \
 } pcre2_callout_block; \
 \
@@ -426,6 +583,8 @@ PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_set_character_tables(pcre2_compile_context *, const unsigned char *); \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
+  pcre2_set_compile_extra_options(pcre2_compile_context *, uint32_t); \
+PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_set_max_pattern_length(pcre2_compile_context *, PCRE2_SIZE); \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_set_newline(pcre2_compile_context *, uint32_t); \
@@ -446,6 +605,10 @@ PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_set_callout(pcre2_match_context *, \
     int (*)(pcre2_callout_block *, void *), void *); \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
+  pcre2_set_depth_limit(pcre2_match_context *, uint32_t); \
+PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
+  pcre2_set_heap_limit(pcre2_match_context *, uint32_t); \
+PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_set_match_limit(pcre2_match_context *, uint32_t); \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_set_offset_limit(pcre2_match_context *, PCRE2_SIZE); \
@@ -454,6 +617,18 @@ PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_set_recursion_memory_management(pcre2_match_context *, \
     void *(*)(PCRE2_SIZE, void *), void (*)(void *, void *), void *);
+
+#define PCRE2_CONVERT_CONTEXT_FUNCTIONS \
+PCRE2_EXP_DECL pcre2_convert_context PCRE2_CALL_CONVENTION \
+  *pcre2_convert_context_copy(pcre2_convert_context *); \
+PCRE2_EXP_DECL pcre2_convert_context PCRE2_CALL_CONVENTION \
+  *pcre2_convert_context_create(pcre2_general_context *); \
+PCRE2_EXP_DECL void PCRE2_CALL_CONVENTION \
+  pcre2_convert_context_free(pcre2_convert_context *); \
+PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
+  pcre2_set_glob_escape(pcre2_convert_context *, uint32_t); \
+PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
+  pcre2_set_glob_separator(pcre2_convert_context *, uint32_t);
 
 
 /* Functions concerned with compiling a pattern to PCRE internal code. */
@@ -561,6 +736,16 @@ PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
     PCRE2_SIZE, PCRE2_UCHAR *, PCRE2_SIZE *);
 
 
+/* Functions for converting pattern source strings. */
+
+#define PCRE2_CONVERT_FUNCTIONS \
+PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
+  pcre2_pattern_convert(PCRE2_SPTR, PCRE2_SIZE, uint32_t, PCRE2_UCHAR **, \
+    PCRE2_SIZE *, pcre2_convert_context *); \
+PCRE2_EXP_DECL void PCRE2_CALL_CONVENTION \
+  pcre2_converted_pattern_free(PCRE2_UCHAR *);
+
+
 /* Functions for JIT processing */
 
 #define PCRE2_JIT_FUNCTIONS \
@@ -612,6 +797,7 @@ pcre2_compile are called by application code. */
 #define pcre2_real_code             PCRE2_SUFFIX(pcre2_real_code_)
 #define pcre2_real_general_context  PCRE2_SUFFIX(pcre2_real_general_context_)
 #define pcre2_real_compile_context  PCRE2_SUFFIX(pcre2_real_compile_context_)
+#define pcre2_real_convert_context  PCRE2_SUFFIX(pcre2_real_convert_context_)
 #define pcre2_real_match_context    PCRE2_SUFFIX(pcre2_real_match_context_)
 #define pcre2_real_jit_stack        PCRE2_SUFFIX(pcre2_real_jit_stack_)
 #define pcre2_real_match_data       PCRE2_SUFFIX(pcre2_real_match_data_)
@@ -623,6 +809,7 @@ pcre2_compile are called by application code. */
 #define pcre2_callout_enumerate_block  PCRE2_SUFFIX(pcre2_callout_enumerate_block_)
 #define pcre2_general_context          PCRE2_SUFFIX(pcre2_general_context_)
 #define pcre2_compile_context          PCRE2_SUFFIX(pcre2_compile_context_)
+#define pcre2_convert_context          PCRE2_SUFFIX(pcre2_convert_context_)
 #define pcre2_match_context            PCRE2_SUFFIX(pcre2_match_context_)
 #define pcre2_match_data               PCRE2_SUFFIX(pcre2_match_data_)
 
@@ -638,6 +825,10 @@ pcre2_compile are called by application code. */
 #define pcre2_compile_context_create          PCRE2_SUFFIX(pcre2_compile_context_create_)
 #define pcre2_compile_context_free            PCRE2_SUFFIX(pcre2_compile_context_free_)
 #define pcre2_config                          PCRE2_SUFFIX(pcre2_config_)
+#define pcre2_convert_context_copy            PCRE2_SUFFIX(pcre2_convert_context_copy_)
+#define pcre2_convert_context_create          PCRE2_SUFFIX(pcre2_convert_context_create_)
+#define pcre2_convert_context_free            PCRE2_SUFFIX(pcre2_convert_context_free_)
+#define pcre2_converted_pattern_free          PCRE2_SUFFIX(pcre2_converted_pattern_free_)
 #define pcre2_dfa_match                       PCRE2_SUFFIX(pcre2_dfa_match_)
 #define pcre2_general_context_copy            PCRE2_SUFFIX(pcre2_general_context_copy_)
 #define pcre2_general_context_create          PCRE2_SUFFIX(pcre2_general_context_create_)
@@ -661,6 +852,7 @@ pcre2_compile are called by application code. */
 #define pcre2_match_data_create               PCRE2_SUFFIX(pcre2_match_data_create_)
 #define pcre2_match_data_create_from_pattern  PCRE2_SUFFIX(pcre2_match_data_create_from_pattern_)
 #define pcre2_match_data_free                 PCRE2_SUFFIX(pcre2_match_data_free_)
+#define pcre2_pattern_convert                 PCRE2_SUFFIX(pcre2_pattern_convert_)
 #define pcre2_pattern_info                    PCRE2_SUFFIX(pcre2_pattern_info_)
 #define pcre2_serialize_decode                PCRE2_SUFFIX(pcre2_serialize_decode_)
 #define pcre2_serialize_encode                PCRE2_SUFFIX(pcre2_serialize_encode_)
@@ -669,14 +861,17 @@ pcre2_compile are called by application code. */
 #define pcre2_set_bsr                         PCRE2_SUFFIX(pcre2_set_bsr_)
 #define pcre2_set_callout                     PCRE2_SUFFIX(pcre2_set_callout_)
 #define pcre2_set_character_tables            PCRE2_SUFFIX(pcre2_set_character_tables_)
+#define pcre2_set_compile_extra_options       PCRE2_SUFFIX(pcre2_set_compile_extra_options_)
 #define pcre2_set_compile_recursion_guard     PCRE2_SUFFIX(pcre2_set_compile_recursion_guard_)
+#define pcre2_set_depth_limit                 PCRE2_SUFFIX(pcre2_set_depth_limit_)
+#define pcre2_set_glob_escape                 PCRE2_SUFFIX(pcre2_set_glob_escape_)
+#define pcre2_set_glob_separator              PCRE2_SUFFIX(pcre2_set_glob_separator_)
+#define pcre2_set_heap_limit                  PCRE2_SUFFIX(pcre2_set_heap_limit_)
 #define pcre2_set_match_limit                 PCRE2_SUFFIX(pcre2_set_match_limit_)
 #define pcre2_set_max_pattern_length          PCRE2_SUFFIX(pcre2_set_max_pattern_length_)
 #define pcre2_set_newline                     PCRE2_SUFFIX(pcre2_set_newline_)
 #define pcre2_set_parens_nest_limit           PCRE2_SUFFIX(pcre2_set_parens_nest_limit_)
 #define pcre2_set_offset_limit                PCRE2_SUFFIX(pcre2_set_offset_limit_)
-#define pcre2_set_recursion_limit             PCRE2_SUFFIX(pcre2_set_recursion_limit_)
-#define pcre2_set_recursion_memory_management PCRE2_SUFFIX(pcre2_set_recursion_memory_management_)
 #define pcre2_substitute                      PCRE2_SUFFIX(pcre2_substitute_)
 #define pcre2_substring_copy_byname           PCRE2_SUFFIX(pcre2_substring_copy_byname_)
 #define pcre2_substring_copy_bynumber         PCRE2_SUFFIX(pcre2_substring_copy_bynumber_)
@@ -690,6 +885,11 @@ pcre2_compile are called by application code. */
 #define pcre2_substring_nametable_scan        PCRE2_SUFFIX(pcre2_substring_nametable_scan_)
 #define pcre2_substring_number_from_name      PCRE2_SUFFIX(pcre2_substring_number_from_name_)
 
+/* Keep this old function name for backwards compatibility */
+#define pcre2_set_recursion_limit PCRE2_SUFFIX(pcre2_set_recursion_limit_)
+
+/* Keep this obsolete function for backwards compatibility: it is now a noop. */
+#define pcre2_set_recursion_memory_management PCRE2_SUFFIX(pcre2_set_recursion_memory_management_)
 
 /* Now generate all three sets of width-specific structures and function
 prototypes. */
@@ -700,6 +900,8 @@ PCRE2_STRUCTURE_LIST \
 PCRE2_GENERAL_INFO_FUNCTIONS \
 PCRE2_GENERAL_CONTEXT_FUNCTIONS \
 PCRE2_COMPILE_CONTEXT_FUNCTIONS \
+PCRE2_CONVERT_CONTEXT_FUNCTIONS \
+PCRE2_CONVERT_FUNCTIONS \
 PCRE2_MATCH_CONTEXT_FUNCTIONS \
 PCRE2_COMPILE_FUNCTIONS \
 PCRE2_PATTERN_INFO_FUNCTIONS \
@@ -729,6 +931,7 @@ PCRE2_TYPES_STRUCTURES_AND_FUNCTIONS
 #undef PCRE2_GENERAL_INFO_FUNCTIONS
 #undef PCRE2_GENERAL_CONTEXT_FUNCTIONS
 #undef PCRE2_COMPILE_CONTEXT_FUNCTIONS
+#undef PCRE2_CONVERT_CONTEXT_FUNCTIONS
 #undef PCRE2_MATCH_CONTEXT_FUNCTIONS
 #undef PCRE2_COMPILE_FUNCTIONS
 #undef PCRE2_PATTERN_INFO_FUNCTIONS

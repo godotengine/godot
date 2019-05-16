@@ -19,6 +19,14 @@
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 
+/*
+ * Ensure gmtime_r is available even with -std=c99; must be defined before
+ * config.h, which pulls in glibc's features.h. Harmless on other platforms.
+ */
+#if !defined(_POSIX_C_SOURCE)
+#define _POSIX_C_SOURCE 200112L
+#endif
+
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"
 #else
@@ -28,6 +36,36 @@
 #if defined(MBEDTLS_THREADING_C)
 
 #include "mbedtls/threading.h"
+
+#if defined(MBEDTLS_HAVE_TIME_DATE) && !defined(MBEDTLS_PLATFORM_GMTIME_R_ALT)
+
+#if !defined(_WIN32) && (defined(unix) || \
+    defined(__unix) || defined(__unix__) || (defined(__APPLE__) && \
+    defined(__MACH__)))
+#include <unistd.h>
+#endif /* !_WIN32 && (unix || __unix || __unix__ ||
+        * (__APPLE__ && __MACH__)) */
+
+#if !( ( defined(_POSIX_VERSION) && _POSIX_VERSION >= 200809L ) ||     \
+       ( defined(_POSIX_THREAD_SAFE_FUNCTIONS ) &&                     \
+         _POSIX_THREAD_SAFE_FUNCTIONS >= 20112L ) )
+/*
+ * This is a convenience shorthand macro to avoid checking the long
+ * preprocessor conditions above. Ideally, we could expose this macro in
+ * platform_util.h and simply use it in platform_util.c, threading.c and
+ * threading.h. However, this macro is not part of the Mbed TLS public API, so
+ * we keep it private by only defining it in this file
+ */
+
+#if ! ( defined(_WIN32) && !defined(EFIX64) && !defined(EFI32) )
+#define THREADING_USE_GMTIME
+#endif /* ! ( defined(_WIN32) && !defined(EFIX64) && !defined(EFI32) ) */
+
+#endif /* !( ( defined(_POSIX_VERSION) && _POSIX_VERSION >= 200809L ) ||     \
+             ( defined(_POSIX_THREAD_SAFE_FUNCTIONS ) &&                     \
+                _POSIX_THREAD_SAFE_FUNCTIONS >= 20112L ) ) */
+
+#endif /* MBEDTLS_HAVE_TIME_DATE && !MBEDTLS_PLATFORM_GMTIME_R_ALT */
 
 #if defined(MBEDTLS_THREADING_PTHREAD)
 static void threading_mutex_init_pthread( mbedtls_threading_mutex_t *mutex )
@@ -111,8 +149,12 @@ void mbedtls_threading_set_alt( void (*mutex_init)( mbedtls_threading_mutex_t * 
     mbedtls_mutex_lock = mutex_lock;
     mbedtls_mutex_unlock = mutex_unlock;
 
+#if defined(MBEDTLS_FS_IO)
     mbedtls_mutex_init( &mbedtls_threading_readdir_mutex );
+#endif
+#if defined(THREADING_USE_GMTIME)
     mbedtls_mutex_init( &mbedtls_threading_gmtime_mutex );
+#endif
 }
 
 /*
@@ -120,8 +162,12 @@ void mbedtls_threading_set_alt( void (*mutex_init)( mbedtls_threading_mutex_t * 
  */
 void mbedtls_threading_free_alt( void )
 {
+#if defined(MBEDTLS_FS_IO)
     mbedtls_mutex_free( &mbedtls_threading_readdir_mutex );
+#endif
+#if defined(THREADING_USE_GMTIME)
     mbedtls_mutex_free( &mbedtls_threading_gmtime_mutex );
+#endif
 }
 #endif /* MBEDTLS_THREADING_ALT */
 
@@ -131,7 +177,11 @@ void mbedtls_threading_free_alt( void )
 #ifndef MUTEX_INIT
 #define MUTEX_INIT
 #endif
+#if defined(MBEDTLS_FS_IO)
 mbedtls_threading_mutex_t mbedtls_threading_readdir_mutex MUTEX_INIT;
+#endif
+#if defined(THREADING_USE_GMTIME)
 mbedtls_threading_mutex_t mbedtls_threading_gmtime_mutex MUTEX_INIT;
+#endif
 
 #endif /* MBEDTLS_THREADING_C */

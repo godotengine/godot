@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef EMWSCLIENT_H
 #define EMWSCLIENT_H
 
@@ -41,6 +42,8 @@ class EMWSClient : public WebSocketClient {
 	GDCIIMPL(EMWSClient, WebSocketClient);
 
 private:
+	int _in_buf_size;
+	int _in_pkt_size;
 	int _js_id;
 
 public:
@@ -48,10 +51,11 @@ public:
 
 	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocol = PoolVector<String>());
 	Ref<WebSocketPeer> get_peer(int p_peer_id) const;
-	void disconnect_from_host();
+	void disconnect_from_host(int p_code = 1000, String p_reason = "");
 	IP_Address get_connected_host() const;
 	uint16_t get_connected_port() const;
 	virtual ConnectionStatus get_connection_status() const;
+	int get_max_packet_size() const;
 	virtual void poll();
 	EMWSClient();
 	~EMWSClient();

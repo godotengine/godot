@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -54,6 +54,7 @@ just to undefine them all. */
 #undef ACROSSCHAR
 #undef BACKCHAR
 #undef BYTES2CU
+#undef CHMAX_255
 #undef CU2BYTES
 #undef FORWARDCHAR
 #undef FORWARDCHARTEST
@@ -201,20 +202,25 @@ arithmetic results in a signed value. Hence the cast. */
 
 /* Other macros that are different for 8-bit mode. The MAX_255 macro checks
 whether its argument, which is assumed to be one code unit, is less than 256.
-The maximum length of a MARK name must fit in one code unit; currently it is
-set to 255 or 65535. The TABLE_GET macro is used to access elements of tables
-containing exactly 256 items. When code points can be greater than 255, a check
-is needed before accessing these tables. */
+The CHMAX_255 macro does not assume one code unit. The maximum length of a MARK
+name must fit in one code unit; currently it is set to 255 or 65535. The
+TABLE_GET macro is used to access elements of tables containing exactly 256
+items. When code points can be greater than 255, a check is needed before
+accessing these tables. */
 
 #if PCRE2_CODE_UNIT_WIDTH == 8
 #define MAX_255(c) TRUE
 #define MAX_MARK ((1u << 8) - 1)
 #ifdef SUPPORT_UNICODE
 #define SUPPORT_WIDE_CHARS
+#define CHMAX_255(c) ((c) <= 255u)
+#else
+#define CHMAX_255(c) TRUE
 #endif  /* SUPPORT_UNICODE */
 #define TABLE_GET(c, table, default) ((table)[c])
 
 #else  /* Code units are 16 or 32 bits */
+#define CHMAX_255(c) ((c) <= 255u)
 #define MAX_255(c) ((c) <= 255u)
 #define MAX_MARK ((1u << 16) - 1)
 #define SUPPORT_WIDE_CHARS
@@ -345,7 +351,7 @@ because almost all calls are already within a block of UTF-8 only code. */
 
 /* Same as above, but it allows a fully customizable form. */
 #define ACROSSCHAR(condition, eptr, action) \
-  while((condition) && ((eptr) & 0xc0u) == 0x80u) action
+  while((condition) && ((*eptr) & 0xc0u) == 0x80u) action
 
 /* Deposit a character into memory, returning the number of code units. */
 
@@ -451,7 +457,7 @@ code. */
 
 /* Same as above, but it allows a fully customizable form. */
 #define ACROSSCHAR(condition, eptr, action) \
-  if ((condition) && ((eptr) & 0xfc00u) == 0xdc00u) action
+  if ((condition) && ((*eptr) & 0xfc00u) == 0xdc00u) action
 
 /* Deposit a character into memory, returning the number of code units. */
 
@@ -566,15 +572,13 @@ typedef struct pcre2_real_compile_context {
   uint16_t bsr_convention;
   uint16_t newline_convention;
   uint32_t parens_nest_limit;
+  uint32_t extra_options;
 } pcre2_real_compile_context;
 
 /* The real match context structure. */
 
 typedef struct pcre2_real_match_context {
   pcre2_memctl memctl;
-#ifdef HEAP_MATCH_RECURSE
-  pcre2_memctl stack_memctl;
-#endif
 #ifdef SUPPORT_JIT
   pcre2_jit_callback jit_callback;
   void *jit_callback_data;
@@ -582,9 +586,18 @@ typedef struct pcre2_real_match_context {
   int    (*callout)(pcre2_callout_block *, void *);
   void    *callout_data;
   PCRE2_SIZE offset_limit;
+  uint32_t heap_limit;
   uint32_t match_limit;
-  uint32_t recursion_limit;
+  uint32_t depth_limit;
 } pcre2_real_match_context;
+
+/* The real convert context structure. */
+
+typedef struct pcre2_real_convert_context {
+  pcre2_memctl memctl;
+  uint32_t glob_separator;
+  uint32_t glob_escape;
+} pcre2_real_convert_context;
 
 /* The real compiled code structure. The type for the blocksize field is
 defined specially because it is required in pcre2_serialize_decode() when
@@ -610,9 +623,11 @@ typedef struct pcre2_real_code {
   uint32_t magic_number;          /* Paranoid and endianness check */
   uint32_t compile_options;       /* Options passed to pcre2_compile() */
   uint32_t overall_options;       /* Options after processing the pattern */
+  uint32_t extra_options;         /* Taken from compile_context */
   uint32_t flags;                 /* Various state flags */
+  uint32_t limit_heap;            /* Limit set in the pattern */
   uint32_t limit_match;           /* Limit set in the pattern */
-  uint32_t limit_recursion;       /* Limit set in the pattern */
+  uint32_t limit_depth;           /* Limit set in the pattern */
   uint32_t first_codeunit;        /* Starting code unit */
   uint32_t last_codeunit;         /* This codeunit must be seen */
   uint16_t bsr_convention;        /* What \R matches */
@@ -625,7 +640,13 @@ typedef struct pcre2_real_code {
   uint16_t name_count;            /* Number of name entries in the table */
 } pcre2_real_code;
 
-/* The real match data structure. */
+/* The real match data structure. Define ovector as large as it can ever
+actually be so that array bound checkers don't grumble. Memory for this
+structure is obtained by calling pcre2_match_data_create(), which sets the size
+as the offset of ovector plus a pair of elements for each capturable string, so
+the size varies from call to call. As the maximum number of capturing
+subpatterns is 65535 we must allow for 65536 strings to include the overall
+match. (See also the heapframe structure below.) */
 
 typedef struct pcre2_real_match_data {
   pcre2_memctl     memctl;
@@ -638,7 +659,7 @@ typedef struct pcre2_real_match_data {
   uint16_t         matchedby;     /* Type of match (normal, JIT, DFA) */
   uint16_t         oveccount;     /* Number of pairs */
   int              rc;            /* The return code from the match */
-  PCRE2_SIZE       ovector[1];    /* The first field */
+  PCRE2_SIZE       ovector[131072]; /* Must be last in the structure */
 } pcre2_real_match_data;
 
 
@@ -705,6 +726,8 @@ typedef struct compile_block {
   PCRE2_SIZE erroroffset;          /* Offset of error in pattern */
   uint16_t names_found;            /* Number of entries so far */
   uint16_t name_entry_size;        /* Size of each entry */
+  uint16_t parens_depth;           /* Depth of nested parentheses */
+  uint16_t assert_depth;           /* Depth of nested assertions */
   open_capitem *open_caps;         /* Chain of open capture items */
   named_group *named_groups;       /* Points to vector in pre-compile */
   uint32_t named_group_list_size;  /* Number of entries in the list */
@@ -723,8 +746,6 @@ typedef struct compile_block {
   uint32_t class_range_end;        /* Overall class range end */
   PCRE2_UCHAR nl[4];               /* Newline string when fixed length */
   int  max_lookbehind;             /* Maximum lookbehind (characters) */
-  int  parens_depth;               /* Depth of nested parentheses */
-  int  assert_depth;               /* Depth of nested assertions */
   int  req_varyopt;                /* "After variable item" flag for reqbyte */
   BOOL had_accept;                 /* (*ACCEPT) encountered */
   BOOL had_pruneorskip;            /* (*PRUNE) or (*SKIP) encountered */
@@ -740,27 +761,8 @@ typedef struct pcre2_real_jit_stack {
   void* stack;
 } pcre2_real_jit_stack;
 
-/* Structure for keeping a chain of heap blocks used for saving ovectors
-during pattern recursion when the ovector is larger than can be saved on
-the system stack. */
-
-typedef struct ovecsave_frame {
-  struct ovecsave_frame *next;     /* Next frame on free chain */
-  PCRE2_SIZE saved_ovec[1];        /* First vector element */
-} ovecsave_frame;
-
 /* Structure for items in a linked list that represents an explicit recursive
-call within the pattern; used by pcre_match(). */
-
-typedef struct recursion_info {
-  struct recursion_info *prevrec;  /* Previous recursion record (or NULL) */
-  unsigned int group_num;          /* Number of group that was called */
-  PCRE2_SIZE *ovec_save;           /* Pointer to saved ovector frame */
-  uint32_t saved_capture_last;     /* Last capture number */
-  PCRE2_SPTR subject_position;     /* Position at start of recursion */
-} recursion_info;
-
-/* A similar structure for pcre_dfa_match(). */
+call within the pattern when running pcre_dfa_match(). */
 
 typedef struct dfa_recursion_info {
   struct dfa_recursion_info *prevrec;
@@ -768,35 +770,90 @@ typedef struct dfa_recursion_info {
   uint32_t group_num;
 } dfa_recursion_info;
 
-/* Structure for building a chain of data for holding the values of the subject
-pointer at the start of each subpattern, so as to detect when an empty string
-has been matched by a subpattern - to break infinite loops; used by
-pcre2_match(). */
+/* Structure for "stack" frames that are used for remembering backtracking
+positions during matching. As these are used in a vector, with the ovector item
+being extended, the size of the structure must be a multiple of PCRE2_SIZE. The
+only way to check this at compile time is to force an error by generating an
+array with a negative size. By putting this in a typedef (which is never used),
+we don't generate any code when all is well. */
 
-typedef struct eptrblock {
-  struct eptrblock *epb_prev;
-  PCRE2_SPTR epb_saved_eptr;
-} eptrblock;
+typedef struct heapframe {
+
+  /* The first set of fields are variables that have to be preserved over calls
+  to RRMATCH(), but which do not need to be copied to new frames. */
+
+  PCRE2_SPTR ecode;          /* The current position in the pattern */
+  PCRE2_SPTR temp_sptr[2];   /* Used for short-term PCRE_SPTR values */
+  PCRE2_SIZE length;         /* Used for character, string, or code lengths */
+  PCRE2_SIZE back_frame;     /* Amount to subtract on RRETURN */
+  PCRE2_SIZE temp_size;      /* Used for short-term PCRE2_SIZE values */
+  uint32_t rdepth;           /* "Recursion" depth */
+  uint32_t group_frame_type; /* Type information for group frames */
+  uint32_t temp_32[4];       /* Used for short-term 32-bit or BOOL values */
+  uint8_t return_id;         /* Where to go on in internal "return" */
+  uint8_t op;                /* Processing opcode */
+
+  /* At this point, the structure is 16-bit aligned. On most architectures
+  the alignment requirement for a pointer will ensure that the eptr field below
+  is 32-bit or 64-bit aligned. However, on m68k it is fine to have a pointer
+  that is 16-bit aligned. We must therefore ensure that what comes between here
+  and eptr is an odd multiple of 16 bits so as to get back into 32-bit
+  alignment. This happens naturally when PCRE2_UCHAR is 8 bits wide, but needs
+  fudges in the other cases. In the 32-bit case the padding comes first so that
+  the occu field itself is 32-bit aligned. Without the padding, this structure
+  is no longer a multiple of PCRE2_SIZE on m68k, and the check below fails. */
+
+#if PCRE2_CODE_UNIT_WIDTH == 8
+  PCRE2_UCHAR occu[6];       /* Used for other case code units */
+#elif PCRE2_CODE_UNIT_WIDTH == 16
+  PCRE2_UCHAR occu[2];       /* Used for other case code units */
+  uint8_t unused[2];         /* Ensure 32-bit alignment (see above) */
+#else
+  uint8_t unused[2];         /* Ensure 32-bit alignment (see above) */
+  PCRE2_UCHAR occu[1];       /* Used for other case code units */
+#endif
+
+  /* The rest have to be copied from the previous frame whenever a new frame
+  becomes current. The final field is specified as a large vector so that
+  runtime array bound checks don't catch references to it. However, for any
+  specific call to pcre2_match() the memory allocated for each frame structure
+  allows for exactly the right size ovector for the number of capturing
+  parentheses. (See also the comment for pcre2_real_match_data above.) */
+
+  PCRE2_SPTR eptr;           /* MUST BE FIRST */
+  PCRE2_SPTR start_match;    /* Can be adjusted by \K */
+  PCRE2_SPTR mark;           /* Most recent mark on the success path */
+  uint32_t current_recurse;  /* Current (deepest) recursion number */
+  uint32_t capture_last;     /* Most recent capture */
+  PCRE2_SIZE last_group_offset;  /* Saved offset to most recent group frame */
+  PCRE2_SIZE offset_top;     /* Offset after highest capture */
+  PCRE2_SIZE ovector[131072]; /* Must be last in the structure */
+} heapframe;
+
+/* This typedef is a check that the size of the heapframe structure is a
+multiple of PCRE2_SIZE. See various comments above. */
+
+typedef char check_heapframe_size[
+  ((sizeof(heapframe) % sizeof(PCRE2_SIZE)) == 0)? (+1):(-1)];
 
 /* Structure for passing "static" information around between the functions
 doing traditional NFA matching (pcre2_match() and friends). */
 
 typedef struct match_block {
   pcre2_memctl memctl;            /* For general use */
-#ifdef HEAP_MATCH_RECURSE
-  pcre2_memctl stack_memctl;      /* For "stack" frames */
-#endif
-  uint32_t match_call_count;      /* As it says */
+  PCRE2_SIZE frame_vector_size;   /* Size of a backtracking frame */
+  heapframe *match_frames;        /* Points to vector of frames */
+  heapframe *match_frames_top;    /* Points after the end of the vector */
+  heapframe *stack_frames;        /* The original vector on the stack */
+  PCRE2_SIZE heap_limit;          /* As it says */
   uint32_t match_limit;           /* As it says */
-  uint32_t match_limit_recursion; /* As it says */
+  uint32_t match_limit_depth;     /* As it says */
+  uint32_t match_call_count;      /* Number of times a new frame is created */
   BOOL hitend;                    /* Hit the end of the subject at some point */
   BOOL hasthen;                   /* Pattern contains (*THEN) */
   const uint8_t *lcc;             /* Points to lower casing table */
   const uint8_t *fcc;             /* Points to case-flipping table */
   const uint8_t *ctypes;          /* Points to table of type maps */
-  PCRE2_SIZE *ovector;            /* Pointer to the offset vector */
-  PCRE2_SIZE offset_end;          /* One past the end */
-  PCRE2_SIZE offset_max;          /* The maximum usable for return data */
   PCRE2_SIZE start_offset;        /* The start offset value */
   PCRE2_SIZE end_offset_top;      /* Highwater mark at end of match */
   uint16_t partial;               /* PARTIAL options */
@@ -807,30 +864,24 @@ typedef struct match_block {
   PCRE2_SPTR start_code;          /* For use when recursing */
   PCRE2_SPTR start_subject;       /* Start of the subject string */
   PCRE2_SPTR end_subject;         /* End of the subject string */
-  PCRE2_SPTR start_match_ptr;     /* Start of matched string */
   PCRE2_SPTR end_match_ptr;       /* Subject position at end match */
   PCRE2_SPTR start_used_ptr;      /* Earliest consulted character */
   PCRE2_SPTR last_used_ptr;       /* Latest consulted character */
   PCRE2_SPTR mark;                /* Mark pointer to pass back on success */
   PCRE2_SPTR nomatch_mark;        /* Mark pointer to pass back on failure */
-  PCRE2_SPTR once_target;         /* Where to back up to for atomic groups */
+  PCRE2_SPTR verb_ecode_ptr;      /* For passing back info */
+  PCRE2_SPTR verb_skip_ptr;       /* For passing back a (*SKIP) name */
+  uint32_t verb_current_recurse;  /* Current recurse when (*VERB) happens */
   uint32_t moptions;              /* Match options */
   uint32_t poptions;              /* Pattern options */
-  uint32_t capture_last;          /* Most recent capture number + overflow flag */
   uint32_t skip_arg_count;        /* For counting SKIP_ARGs */
   uint32_t ignore_skip_arg;       /* For re-run when SKIP arg name not found */
-  uint32_t match_function_type;   /* Set for certain special calls of match() */
   uint32_t nltype;                /* Newline type */
   uint32_t nllen;                 /* Newline string length */
   PCRE2_UCHAR nl[4];              /* Newline string when fixed */
-  eptrblock *eptrchain;           /* Chain of eptrblocks for tail recursions */
-  recursion_info *recursive;      /* Linked list of recursion data */
-  ovecsave_frame *ovecsave_chain; /* Linked list of free ovecsave blocks */
+  pcre2_callout_block *cb;        /* Points to a callout block */
   void  *callout_data;            /* To pass back to callouts */
   int (*callout)(pcre2_callout_block *,void *);  /* Callout function or NULL */
-#ifdef HEAP_MATCH_RECURSE
-  void  *match_frames_base;       /* For remembering malloc'd frames */
-#endif
 } match_block;
 
 /* A similar structure is used for the same purpose by the DFA matching
@@ -845,13 +896,18 @@ typedef struct dfa_match_block {
   PCRE2_SPTR last_used_ptr;       /* Latest consulted character */
   const uint8_t *tables;          /* Character tables */
   PCRE2_SIZE start_offset;        /* The start offset value */
-  uint32_t match_limit_recursion; /* As it says */
+  PCRE2_SIZE heap_limit;          /* As it says */
+  PCRE2_SIZE heap_used;           /* As it says */
+  uint32_t match_limit;           /* As it says */
+  uint32_t match_limit_depth;     /* As it says */
+  uint32_t match_call_count;      /* Number of calls of internal function */
   uint32_t moptions;              /* Match options */
   uint32_t poptions;              /* Pattern options */
   uint32_t nltype;                /* Newline type */
   uint32_t nllen;                 /* Newline string length */
   PCRE2_UCHAR nl[4];              /* Newline string when fixed */
   uint16_t bsr_convention;        /* \R interpretation */
+  pcre2_callout_block *cb;        /* Points to a callout block */
   void *callout_data;             /* To pass back to callouts */
   int (*callout)(pcre2_callout_block *,void *);  /* Callout function or NULL */
   dfa_recursion_info *recursive;  /* Linked list of recursion data */

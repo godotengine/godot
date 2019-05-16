@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,11 +56,11 @@ bool VisualScriptExpression::_set(const StringName &p_name, const Variant &p_val
 		int from = inputs.size();
 		inputs.resize(int(p_value));
 		for (int i = from; i < inputs.size(); i++) {
-			inputs[i].name = String::chr('a' + i);
+			inputs.write[i].name = String::chr('a' + i);
 			if (from == 0) {
-				inputs[i].type = output_type;
+				inputs.write[i].type = output_type;
 			} else {
-				inputs[i].type = inputs[from - 1].type;
+				inputs.write[i].type = inputs[from - 1].type;
 			}
 		}
 		expression_dirty = true;
@@ -78,10 +78,10 @@ bool VisualScriptExpression::_set(const StringName &p_name, const Variant &p_val
 
 		if (what == "type") {
 
-			inputs[idx].type = Variant::Type(int(p_value));
+			inputs.write[idx].type = Variant::Type(int(p_value));
 		} else if (what == "name") {
 
-			inputs[idx].name = p_value;
+			inputs.write[idx].name = p_value;
 		} else {
 			return false;
 		}
@@ -455,7 +455,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 					break;
 				}
 
-				if (cchar == '-' || (cchar >= '0' && cchar <= '9')) {
+				if (cchar >= '0' && cchar <= '9') {
 					//a number
 
 					String num;
@@ -465,11 +465,6 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 #define READING_EXP 3
 #define READING_DONE 4
 					int reading = READING_INT;
-
-					if (cchar == '-') {
-						num += '-';
-						cchar = GET_CHAR();
-					}
 
 					CharType c = cchar;
 					bool exp_sign = false;
@@ -684,10 +679,10 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					}
 					str_ofs = cofs; //revert
 					//parse an expression
-					ENode *expr = _parse_expression();
-					if (!expr)
+					ENode *expr2 = _parse_expression();
+					if (!expr2)
 						return NULL;
-					dn->dict.push_back(expr);
+					dn->dict.push_back(expr2);
 
 					_get_token(tk);
 					if (tk.type != TK_COLON) {
@@ -695,11 +690,11 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 						return NULL;
 					}
 
-					expr = _parse_expression();
-					if (!expr)
+					expr2 = _parse_expression();
+					if (!expr2)
 						return NULL;
 
-					dn->dict.push_back(expr);
+					dn->dict.push_back(expr2);
 
 					cofs = str_ofs;
 					_get_token(tk);
@@ -728,10 +723,10 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					}
 					str_ofs = cofs; //revert
 					//parse an expression
-					ENode *expr = _parse_expression();
-					if (!expr)
+					ENode *expr2 = _parse_expression();
+					if (!expr2)
 						return NULL;
-					an->array.push_back(expr);
+					an->array.push_back(expr2);
 
 					cofs = str_ofs;
 					_get_token(tk);
@@ -812,11 +807,11 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					}
 					str_ofs = cofs; //revert
 					//parse an expression
-					ENode *expr = _parse_expression();
-					if (!expr)
+					ENode *expr2 = _parse_expression();
+					if (!expr2)
 						return NULL;
 
-					constructor->arguments.push_back(expr);
+					constructor->arguments.push_back(expr2);
 
 					cofs = str_ofs;
 					_get_token(tk);
@@ -853,11 +848,11 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					}
 					str_ofs = cofs; //revert
 					//parse an expression
-					ENode *expr = _parse_expression();
-					if (!expr)
+					ENode *expr2 = _parse_expression();
+					if (!expr2)
 						return NULL;
 
-					bifunc->arguments.push_back(expr);
+					bifunc->arguments.push_back(expr2);
 
 					cofs = str_ofs;
 					_get_token(tk);
@@ -952,25 +947,25 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 						while (true) {
 
-							int cofs = str_ofs;
+							int cofs3 = str_ofs;
 							_get_token(tk);
 							if (tk.type == TK_PARENTHESIS_CLOSE) {
 								break;
 							}
-							str_ofs = cofs; //revert
+							str_ofs = cofs3; //revert
 							//parse an expression
-							ENode *expr = _parse_expression();
-							if (!expr)
+							ENode *expr2 = _parse_expression();
+							if (!expr2)
 								return NULL;
 
-							func_call->arguments.push_back(expr);
+							func_call->arguments.push_back(expr2);
 
-							cofs = str_ofs;
+							cofs3 = str_ofs;
 							_get_token(tk);
 							if (tk.type == TK_COMMA) {
 								//all good
 							} else if (tk.type == TK_PARENTHESIS_CLOSE) {
-								str_ofs = cofs;
+								str_ofs = cofs3;
 							} else {
 								_set_error("Expected ',' or ')'");
 							}
@@ -1037,7 +1032,8 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 			case TK_OP_BIT_OR: op = Variant::OP_BIT_OR; break;
 			case TK_OP_BIT_XOR: op = Variant::OP_BIT_XOR; break;
 			case TK_OP_BIT_INVERT: op = Variant::OP_BIT_NEGATE; break;
-			default: {};
+			default: {
+			};
 		}
 
 		if (op == Variant::OP_MAX) { //stop appending stuff
@@ -1158,8 +1154,8 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				op->op = expression[i].op;
 				op->nodes[0] = expression[i + 1].node;
 				op->nodes[1] = NULL;
-				expression[i].is_op = false;
-				expression[i].node = op;
+				expression.write[i].is_op = false;
+				expression.write[i].node = op;
 				expression.remove(i + 1);
 			}
 
@@ -1193,7 +1189,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 			op->nodes[1] = expression[next_op + 1].node; //next expression goes as right
 
 			//replace all 3 nodes by this operator and make it an expression
-			expression[next_op - 1].node = op;
+			expression.write[next_op - 1].node = op;
 			expression.remove(next_op);
 			expression.remove(next_op);
 		}
@@ -1375,8 +1371,8 @@ public:
 					bool ret = _execute(p_inputs, constructor->arguments[i], value, r_error_str, ce);
 					if (ret)
 						return true;
-					arr[i] = value;
-					argp[i] = &arr[i];
+					arr.write[i] = value;
+					argp.write[i] = &arr[i];
 				}
 
 				r_ret = Variant::construct(constructor->data_type, (const Variant **)argp.ptr(), argp.size(), ce);
@@ -1402,8 +1398,8 @@ public:
 					bool ret = _execute(p_inputs, bifunc->arguments[i], value, r_error_str, ce);
 					if (ret)
 						return true;
-					arr[i] = value;
-					argp[i] = &arr[i];
+					arr.write[i] = value;
+					argp.write[i] = &arr[i];
 				}
 
 				VisualScriptBuiltinFunc::exec_func(bifunc->func, (const Variant **)argp.ptr(), &r_ret, ce, r_error_str);
@@ -1431,11 +1427,11 @@ public:
 				for (int i = 0; i < call->arguments.size(); i++) {
 
 					Variant value;
-					bool ret = _execute(p_inputs, call->arguments[i], value, r_error_str, ce);
-					if (ret)
+					bool ret2 = _execute(p_inputs, call->arguments[i], value, r_error_str, ce);
+					if (ret2)
 						return true;
-					arr[i] = value;
-					argp[i] = &arr[i];
+					arr.write[i] = value;
+					argp.write[i] = &arr[i];
 				}
 
 				r_ret = base.call(call->method, (const Variant **)argp.ptr(), argp.size(), ce);

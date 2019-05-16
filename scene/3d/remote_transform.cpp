@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,38 +63,40 @@ void RemoteTransform::_update_remote() {
 		if (update_remote_position && update_remote_rotation && update_remote_scale) {
 			n->set_global_transform(get_global_transform());
 		} else {
-			Transform n_trans = n->get_global_transform();
 			Transform our_trans = get_global_transform();
 
-			if (!update_remote_position)
-				our_trans.set_origin(n_trans.get_origin());
+			if (update_remote_rotation)
+				n->set_rotation(our_trans.basis.get_rotation());
 
-			n->set_global_transform(our_trans);
+			if (update_remote_scale)
+				n->set_scale(our_trans.basis.get_scale());
 
-			if (!update_remote_rotation)
-				n->set_rotation(n_trans.basis.get_rotation());
+			if (update_remote_position) {
+				Transform n_trans = n->get_global_transform();
 
-			if (!update_remote_scale)
-				n->set_scale(n_trans.basis.get_scale());
+				n_trans.set_origin(our_trans.get_origin());
+				n->set_global_transform(n_trans);
+			}
 		}
 
 	} else {
 		if (update_remote_position && update_remote_rotation && update_remote_scale) {
-			n->set_global_transform(get_global_transform());
+			n->set_transform(get_transform());
 		} else {
-			Transform n_trans = n->get_transform();
 			Transform our_trans = get_transform();
 
-			if (!update_remote_position)
-				our_trans.set_origin(n_trans.get_origin());
+			if (update_remote_rotation)
+				n->set_rotation(our_trans.basis.get_rotation());
 
-			n->set_transform(our_trans);
+			if (update_remote_scale)
+				n->set_scale(our_trans.basis.get_scale());
 
-			if (!update_remote_rotation)
-				n->set_rotation(n_trans.basis.get_rotation());
+			if (update_remote_position) {
+				Transform n_trans = n->get_transform();
 
-			if (!update_remote_scale)
-				n->set_scale(n_trans.basis.get_scale());
+				n_trans.set_origin(our_trans.get_origin());
+				n->set_transform(n_trans);
+			}
 		}
 	}
 }
@@ -124,8 +126,10 @@ void RemoteTransform::_notification(int p_what) {
 void RemoteTransform::set_remote_node(const NodePath &p_remote_node) {
 
 	remote_node = p_remote_node;
-	if (is_inside_tree())
+	if (is_inside_tree()) {
 		_update_cache();
+		_update_remote();
+	}
 
 	update_configuration_warning();
 }
@@ -194,7 +198,7 @@ void RemoteTransform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_update_scale", "update_remote_scale"), &RemoteTransform::set_update_scale);
 	ClassDB::bind_method(D_METHOD("get_update_scale"), &RemoteTransform::get_update_scale);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "remote_path"), "set_remote_node", "get_remote_node");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "remote_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Spatial"), "set_remote_node", "get_remote_node");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_global_coordinates"), "set_use_global_coordinates", "get_use_global_coordinates");
 
 	ADD_GROUP("Update", "update_");

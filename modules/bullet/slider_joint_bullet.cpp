@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -366,6 +366,7 @@ void SliderJointBullet::set_param(PhysicsServer::SliderJointParam p_param, real_
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS: setSoftnessOrthoAng(p_value); break;
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION: setRestitutionOrthoAng(p_value); break;
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING: setDampingOrthoAng(p_value); break;
+		case PhysicsServer::SLIDER_JOINT_MAX: break; // Can't happen, but silences warning
 	}
 }
 

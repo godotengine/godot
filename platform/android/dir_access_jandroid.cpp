@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANDROID_NATIVE_ACTIVITY
-
 #include "dir_access_jandroid.h"
+#include "core/print_string.h"
 #include "file_access_jandroid.h"
-#include "print_string.h"
+#include "string_android.h"
 #include "thread_jandroid.h"
 
 jobject DirAccessJAndroid::io = NULL;
@@ -71,7 +70,7 @@ String DirAccessJAndroid::get_next() {
 	if (!str)
 		return "";
 
-	String ret = String::utf8(env->GetStringUTFChars((jstring)str, NULL));
+	String ret = jstring_to_string((jstring)str, env);
 	env->DeleteLocalRef((jobject)str);
 	return ret;
 }
@@ -153,7 +152,6 @@ String DirAccessJAndroid::get_current_dir() {
 
 bool DirAccessJAndroid::file_exists(String p_file) {
 
-	JNIEnv *env = ThreadAndroid::get_env();
 	String sd;
 	if (current_dir == "")
 		sd = p_file;
@@ -215,6 +213,11 @@ Error DirAccessJAndroid::remove(String p_name) {
 	ERR_FAIL_V(ERR_UNAVAILABLE);
 }
 
+String DirAccessJAndroid::get_filesystem_type() const {
+
+	return "APK";
+}
+
 //FileType get_file_type() const;
 size_t DirAccessJAndroid::get_space_left() {
 
@@ -246,4 +249,3 @@ DirAccessJAndroid::~DirAccessJAndroid() {
 
 	list_dir_end();
 }
-#endif

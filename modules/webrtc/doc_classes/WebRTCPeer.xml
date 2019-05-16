@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WebRTCPeer" inherits="PacketPeer" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_ice_candidate">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="media" type="String">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<argument index="2" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="create_offer">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_connection_state" qualifiers="const">
+			<return type="int" enum="WebRTCPeer.ConnectionState">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="poll">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_local_description">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<argument index="1" name="sdp" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_remote_description">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<argument index="1" name="sdp" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="was_string_packet" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="write_mode" type="int" setter="set_write_mode" getter="get_write_mode" enum="WebRTCPeer.WriteMode">
+		</member>
+	</members>
+	<signals>
+		<signal name="new_ice_candidate">
+			<argument index="0" name="media" type="String">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<argument index="2" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="offer_created">
+			<argument index="0" name="type" type="String">
+			</argument>
+			<argument index="1" name="sdp" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="WRITE_MODE_TEXT" value="0" enum="WriteMode">
+		</constant>
+		<constant name="WRITE_MODE_BINARY" value="1" enum="WriteMode">
+		</constant>
+		<constant name="STATE_NEW" value="0" enum="ConnectionState">
+		</constant>
+		<constant name="STATE_CONNECTING" value="1" enum="ConnectionState">
+		</constant>
+		<constant name="STATE_CONNECTED" value="2" enum="ConnectionState">
+		</constant>
+		<constant name="STATE_DISCONNECTED" value="3" enum="ConnectionState">
+		</constant>
+		<constant name="STATE_FAILED" value="4" enum="ConnectionState">
+		</constant>
+		<constant name="STATE_CLOSED" value="5" enum="ConnectionState">
+		</constant>
+	</constants>
+</class>

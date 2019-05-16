@@ -140,10 +140,9 @@ static void DoRemap(WebPIDecoder* const idec, ptrdiff_t offset) {
       if (NeedCompressedAlpha(idec)) {
         ALPHDecoder* const alph_dec = dec->alph_dec_;
         dec->alpha_data_ += offset;
-        if (alph_dec != NULL) {
+        if (alph_dec != NULL && alph_dec->vp8l_dec_ != NULL) {
           if (alph_dec->method_ == ALPHA_LOSSLESS_COMPRESSION) {
             VP8LDecoder* const alph_vp8l_dec = alph_dec->vp8l_dec_;
-            assert(alph_vp8l_dec != NULL);
             assert(dec->alpha_data_size_ >= ALPHA_HEADER_LEN);
             VP8LBitReaderSetBuffer(&alph_vp8l_dec->br_,
                                    dec->alpha_data_ + ALPHA_HEADER_LEN,
@@ -283,10 +282,8 @@ static void RestoreContext(const MBContext* context, VP8Decoder* const dec,
 
 static VP8StatusCode IDecError(WebPIDecoder* const idec, VP8StatusCode error) {
   if (idec->state_ == STATE_VP8_DATA) {
-    VP8Io* const io = &idec->io_;
-    if (io->teardown != NULL) {
-      io->teardown(io);
-    }
+    // Synchronize the thread, clean-up and check for errors.
+    VP8ExitCritical((VP8Decoder*)idec->dec_, &idec->io_);
   }
   idec->state_ = STATE_ERROR;
   return error;
@@ -451,7 +448,10 @@ static VP8StatusCode DecodeRemaining(WebPIDecoder* const idec) {
   VP8Decoder* const dec = (VP8Decoder*)idec->dec_;
   VP8Io* const io = &idec->io_;
 
-  assert(dec->ready_);
+  // Make sure partition #0 has been read before, to set dec to ready_.
+  if (!dec->ready_) {
+    return IDecError(idec, VP8_STATUS_BITSTREAM_ERROR);
+  }
   for (; dec->mb_y_ < dec->mb_h_; ++dec->mb_y_) {
     if (idec->last_mb_y_ != dec->mb_y_) {
       if (!VP8ParseIntraModeRow(&dec->br_, dec)) {
@@ -473,6 +473,12 @@ static VP8StatusCode DecodeRemaining(WebPIDecoder* const idec) {
             MemDataSize(&idec->mem_) > MAX_MB_SIZE) {
           return IDecError(idec, VP8_STATUS_BITSTREAM_ERROR);
         }
+        // Synchronize the threads.
+        if (dec->mt_method_ > 0) {
+          if (!WebPGetWorkerInterface()->Sync(&dec->worker_)) {
+            return IDecError(idec, VP8_STATUS_BITSTREAM_ERROR);
+          }
+        }
         RestoreContext(&context, dec, token_br);
         return VP8_STATUS_SUSPENDED;
       }
@@ -491,6 +497,7 @@ static VP8StatusCode DecodeRemaining(WebPIDecoder* const idec) {
   }
   // Synchronize the thread and check for errors.
   if (!VP8ExitCritical(dec, io)) {
+    idec->state_ = STATE_ERROR;  // prevent re-entry in IDecError
     return IDecError(idec, VP8_STATUS_USER_ABORT);
   }
   dec->ready_ = 0;
@@ -571,6 +578,10 @@ static VP8StatusCode IDecode(WebPIDecoder* idec) {
     status = DecodePartition0(idec);
   }
   if (idec->state_ == STATE_VP8_DATA) {
+    const VP8Decoder* const dec = (VP8Decoder*)idec->dec_;
+    if (dec == NULL) {
+      return VP8_STATUS_SUSPENDED;  // can't continue if we have no decoder.
+    }
     status = DecodeRemaining(idec);
   }
   if (idec->state_ == STATE_VP8L_HEADER) {

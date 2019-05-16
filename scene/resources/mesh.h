@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,12 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "resource.h"
+#include "core/math/face3.h"
+#include "core/math/triangle_mesh.h"
+#include "core/resource.h"
 #include "scene/resources/material.h"
 #include "scene/resources/shape.h"
 #include "servers/visual_server.h"
-#include "triangle_mesh.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -44,11 +45,10 @@ class Mesh : public Resource {
 	GDCLASS(Mesh, Resource);
 
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
+	mutable Vector<Vector3> debug_lines;
 	Size2 lightmap_size_hint;
 
 protected:
-	void _clear_triangle_mesh() const;
-
 	static void _bind_methods();
 
 public:
@@ -100,7 +100,7 @@ public:
 		ARRAY_FLAG_USE_16_BIT_BONES = ARRAY_COMPRESS_INDEX << 2,
 		ARRAY_FLAG_USE_DYNAMIC_UPDATE = ARRAY_COMPRESS_INDEX << 3,
 
-		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_VERTEX | ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2 | ARRAY_COMPRESS_WEIGHTS
+		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2 | ARRAY_COMPRESS_WEIGHTS
 
 	};
 
@@ -123,6 +123,7 @@ public:
 	virtual int get_surface_count() const = 0;
 	virtual int surface_get_array_len(int p_idx) const = 0;
 	virtual int surface_get_array_index_len(int p_idx) const = 0;
+	virtual bool surface_is_softbody_friendly(int p_idx) const;
 	virtual Array surface_get_arrays(int p_surface) const = 0;
 	virtual Array surface_get_blend_shape_arrays(int p_surface) const = 0;
 	virtual uint32_t surface_get_format(int p_idx) const = 0;
@@ -133,6 +134,8 @@ public:
 
 	PoolVector<Face3> get_faces() const;
 	Ref<TriangleMesh> generate_triangle_mesh() const;
+	void generate_debug_mesh_lines(Vector<Vector3> &r_lines);
+	void generate_debug_mesh_indices(Vector<Vector3> &r_points);
 
 	Ref<Shape> create_trimesh_shape() const;
 	Ref<Shape> create_convex_shape() const;
@@ -143,6 +146,13 @@ public:
 
 	void set_lightmap_size_hint(const Vector2 &p_size);
 	Size2 get_lightmap_size_hint() const;
+	void clear_cache() const;
+
+	typedef Vector<Vector<Face3> > (*ConvexDecompositionFunc)(const Vector<Face3> &);
+
+	static ConvexDecompositionFunc convex_composition_function;
+
+	Vector<Ref<Shape> > convex_decompose() const;
 
 	Mesh();
 };
@@ -208,6 +218,7 @@ public:
 	void surface_set_material(int p_idx, const Ref<Material> &p_material);
 	Ref<Material> surface_get_material(int p_idx) const;
 
+	int surface_find_by_name(const String &p_name) const;
 	void surface_set_name(int p_idx, const String &p_name);
 	String surface_get_name(int p_idx) const;
 
@@ -219,7 +230,6 @@ public:
 	AABB get_aabb() const;
 	virtual RID get_rid() const;
 
-	void center_geometry();
 	void regen_normalmaps();
 
 	Error lightmap_unwrap(const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);

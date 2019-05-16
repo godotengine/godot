@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,13 +32,14 @@
 #include "servers/physics/physics_server_sw.h"
 #include "space_sw.h"
 
-void CollisionObjectSW::add_shape(ShapeSW *p_shape, const Transform &p_transform) {
+void CollisionObjectSW::add_shape(ShapeSW *p_shape, const Transform &p_transform, bool p_disabled) {
 
 	Shape s;
 	s.shape = p_shape;
 	s.xform = p_transform;
 	s.xform_inv = s.xform.affine_inverse();
 	s.bpid = 0; //needs update
+	s.disabled = p_disabled;
 	shapes.push_back(s);
 	p_shape->add_owner(this);
 
@@ -53,7 +54,7 @@ void CollisionObjectSW::set_shape(int p_index, ShapeSW *p_shape) {
 
 	ERR_FAIL_INDEX(p_index, shapes.size());
 	shapes[p_index].shape->remove_owner(this);
-	shapes[p_index].shape = p_shape;
+	shapes.write[p_index].shape = p_shape;
 
 	p_shape->add_owner(this);
 	if (!pending_shape_update_list.in_list()) {
@@ -66,8 +67,8 @@ void CollisionObjectSW::set_shape_transform(int p_index, const Transform &p_tran
 
 	ERR_FAIL_INDEX(p_index, shapes.size());
 
-	shapes[p_index].xform = p_transform;
-	shapes[p_index].xform_inv = p_transform.affine_inverse();
+	shapes.write[p_index].xform = p_transform;
+	shapes.write[p_index].xform_inv = p_transform.affine_inverse();
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
 	}
@@ -97,7 +98,7 @@ void CollisionObjectSW::remove_shape(int p_index) {
 			continue;
 		//should never get here with a null owner
 		space->get_broadphase()->remove(shapes[i].bpid);
-		shapes[i].bpid = 0;
+		shapes.write[i].bpid = 0;
 	}
 	shapes[p_index].shape->remove_owner(this);
 	shapes.remove(p_index);
@@ -117,7 +118,7 @@ void CollisionObjectSW::_set_static(bool p_static) {
 	if (!space)
 		return;
 	for (int i = 0; i < get_shape_count(); i++) {
-		Shape &s = shapes[i];
+		const Shape &s = shapes[i];
 		if (s.bpid > 0) {
 			space->get_broadphase()->set_static(s.bpid, _static);
 		}
@@ -128,7 +129,7 @@ void CollisionObjectSW::_unregister_shapes() {
 
 	for (int i = 0; i < shapes.size(); i++) {
 
-		Shape &s = shapes[i];
+		Shape &s = shapes.write[i];
 		if (s.bpid > 0) {
 			space->get_broadphase()->remove(s.bpid);
 			s.bpid = 0;
@@ -143,7 +144,7 @@ void CollisionObjectSW::_update_shapes() {
 
 	for (int i = 0; i < shapes.size(); i++) {
 
-		Shape &s = shapes[i];
+		Shape &s = shapes.write[i];
 		if (s.bpid == 0) {
 			s.bpid = space->get_broadphase()->create(this, i);
 			space->get_broadphase()->set_static(s.bpid, _static);
@@ -170,7 +171,7 @@ void CollisionObjectSW::_update_shapes_with_motion(const Vector3 &p_motion) {
 
 	for (int i = 0; i < shapes.size(); i++) {
 
-		Shape &s = shapes[i];
+		Shape &s = shapes.write[i];
 		if (s.bpid == 0) {
 			s.bpid = space->get_broadphase()->create(this, i);
 			space->get_broadphase()->set_static(s.bpid, _static);
@@ -195,7 +196,7 @@ void CollisionObjectSW::_set_space(SpaceSW *p_space) {
 
 		for (int i = 0; i < shapes.size(); i++) {
 
-			Shape &s = shapes[i];
+			Shape &s = shapes.write[i];
 			if (s.bpid) {
 				space->get_broadphase()->remove(s.bpid);
 				s.bpid = 0;

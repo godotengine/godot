@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,32 +31,16 @@
 #ifndef GD_MONO_HEADER_H
 #define GD_MONO_HEADER_H
 
-#include "int_types.h"
+#include "core/int_types.h"
 
 class GDMonoAssembly;
 class GDMonoClass;
-class GDMonoClassMember;
 class GDMonoField;
-class GDMonoProperty;
 class GDMonoMethod;
+class GDMonoProperty;
 
-struct ManagedType {
-	int type_encoding;
-	GDMonoClass *type_class;
+class IMonoClassMember;
 
-	ManagedType() {
-		type_class = 0;
-	}
-};
-
-typedef union {
-	uint32_t _uint32;
-	float _float;
-} mono_float;
-
-typedef union {
-	uint64_t _uint64;
-	float _double;
-} mono_double;
+#include "managed_type.h"
 
 #endif // GD_MONO_HEADER_H

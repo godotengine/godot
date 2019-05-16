@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -249,6 +249,11 @@ public:
 		PARAM_LINEAR_LIMIT_SOFTNESS = PhysicsServer::G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS,
 		PARAM_LINEAR_RESTITUTION = PhysicsServer::G6DOF_JOINT_LINEAR_RESTITUTION,
 		PARAM_LINEAR_DAMPING = PhysicsServer::G6DOF_JOINT_LINEAR_DAMPING,
+		PARAM_LINEAR_MOTOR_TARGET_VELOCITY = PhysicsServer::G6DOF_JOINT_LINEAR_MOTOR_TARGET_VELOCITY,
+		PARAM_LINEAR_MOTOR_FORCE_LIMIT = PhysicsServer::G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT,
+		PARAM_LINEAR_SPRING_STIFFNESS = PhysicsServer::G6DOF_JOINT_LINEAR_SPRING_STIFFNESS,
+		PARAM_LINEAR_SPRING_DAMPING = PhysicsServer::G6DOF_JOINT_LINEAR_SPRING_DAMPING,
+		PARAM_LINEAR_SPRING_EQUILIBRIUM_POINT = PhysicsServer::G6DOF_JOINT_LINEAR_SPRING_EQUILIBRIUM_POINT,
 		PARAM_ANGULAR_LOWER_LIMIT = PhysicsServer::G6DOF_JOINT_ANGULAR_LOWER_LIMIT,
 		PARAM_ANGULAR_UPPER_LIMIT = PhysicsServer::G6DOF_JOINT_ANGULAR_UPPER_LIMIT,
 		PARAM_ANGULAR_LIMIT_SOFTNESS = PhysicsServer::G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS,
@@ -258,13 +263,19 @@ public:
 		PARAM_ANGULAR_ERP = PhysicsServer::G6DOF_JOINT_ANGULAR_ERP,
 		PARAM_ANGULAR_MOTOR_TARGET_VELOCITY = PhysicsServer::G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY,
 		PARAM_ANGULAR_MOTOR_FORCE_LIMIT = PhysicsServer::G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT,
+		PARAM_ANGULAR_SPRING_STIFFNESS = PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS,
+		PARAM_ANGULAR_SPRING_DAMPING = PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_DAMPING,
+		PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT = PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT,
 		PARAM_MAX = PhysicsServer::G6DOF_JOINT_MAX,
 	};
 
 	enum Flag {
 		FLAG_ENABLE_LINEAR_LIMIT = PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT,
 		FLAG_ENABLE_ANGULAR_LIMIT = PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT,
+		FLAG_ENABLE_LINEAR_SPRING = PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING,
+		FLAG_ENABLE_ANGULAR_SPRING = PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING,
 		FLAG_ENABLE_MOTOR = PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_MOTOR,
+		FLAG_ENABLE_LINEAR_MOTOR = PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR,
 		FLAG_MAX = PhysicsServer::G6DOF_JOINT_FLAG_MAX
 	};
 
@@ -294,6 +305,8 @@ protected:
 	float params_z[PARAM_MAX];
 	bool flags_z[FLAG_MAX];
 
+	int precision;
+
 	virtual RID _configure_joint(PhysicsBody *body_a, PhysicsBody *body_b);
 	static void _bind_methods();
 
@@ -315,6 +328,11 @@ public:
 
 	void set_flag_z(Flag p_flag, bool p_enabled);
 	bool get_flag_z(Flag p_flag) const;
+
+	void set_precision(int p_precision);
+	int get_precision() const {
+		return precision;
+	}
 
 	Generic6DOFJoint();
 };

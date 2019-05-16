@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,28 +35,29 @@
 
 class AudioDriverJavaScript : public AudioDriver {
 
-	enum {
-		INTERNAL_BUFFER_SIZE = 4096,
-	};
-
-	int mix_rate;
 	float *internal_buffer;
-	int internal_buffer_channels;
-	int32_t *stream_buffer;
+
+	int buffer_length;
 
 public:
-	void mix_to_js(int p_frames);
-	static AudioDriverJavaScript *singleton_js;
+	void mix_to_js();
+	void process_capture(float sample);
+
+	static AudioDriverJavaScript *singleton;
 
 	virtual const char *get_name() const;
 
 	virtual Error init();
 	virtual void start();
+	void resume();
 	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
+
+	virtual Error capture_start();
+	virtual Error capture_stop();
 
 	AudioDriverJavaScript();
 };

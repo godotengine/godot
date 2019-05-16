@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afranges.c                                                             */
-/*                                                                         */
-/*    Auto-fitter Unicode script ranges (body).                            */
-/*                                                                         */
-/*  Copyright 2013-2017 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afranges.c
+ *
+ *   Auto-fitter Unicode script ranges (body).
+ *
+ * Copyright (C) 2013-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include "afranges.h"
@@ -91,7 +91,7 @@
     AF_UNIRANGE_REC(  0x06E7,  0x06E8 ),
     AF_UNIRANGE_REC(  0x06EA,  0x06ED ),
     AF_UNIRANGE_REC(  0x08D4,  0x08E1 ),
-    AF_UNIRANGE_REC(  0x08E3,  0x08FF ),
+    AF_UNIRANGE_REC(  0x08D3,  0x08FF ),
     AF_UNIRANGE_REC(  0xFBB2,  0xFBC1 ),
     AF_UNIRANGE_REC(  0xFE70,  0xFE70 ),
     AF_UNIRANGE_REC(  0xFE72,  0xFE72 ),
@@ -163,6 +163,7 @@
     AF_UNIRANGE_REC(  0x09C1,  0x09C4 ),
     AF_UNIRANGE_REC(  0x09CD,  0x09CD ),
     AF_UNIRANGE_REC(  0x09E2,  0x09E3 ),
+    AF_UNIRANGE_REC(  0x09FE,  0x09FE ),
     AF_UNIRANGE_REC(       0,       0 )
   };
 
@@ -190,6 +191,7 @@
   {
     AF_UNIRANGE_REC( 0x11100, 0x11102 ),
     AF_UNIRANGE_REC( 0x11127, 0x11134 ),
+    AF_UNIRANGE_REC( 0x11146, 0x11146 ),
     AF_UNIRANGE_REC(       0,       0 )
   };
 
@@ -304,6 +306,7 @@
     AF_UNIRANGE_REC(  0x0953,  0x0957 ),
     AF_UNIRANGE_REC(  0x0962,  0x0963 ),
     AF_UNIRANGE_REC(  0xA8E0,  0xA8F1 ),
+    AF_UNIRANGE_REC(  0xA8FF,  0xA8FF ),
     AF_UNIRANGE_REC(       0,       0 )
   };
 
@@ -338,11 +341,8 @@
 
   const AF_Script_UniRangeRec  af_geor_uniranges[] =
   {
-    AF_UNIRANGE_REC(  0x10D0,  0x10FF ),  /* Georgian (Mkhedruli) */
-#if 0
-    /* the following range is proposed for inclusion in Unicode */
-    AF_UNIRANGE_REC(  0x1C90,  0x1CBF ),  /* Georgian (Mtavruli)  */
-#endif
+    AF_UNIRANGE_REC(  0x10D0,  0x10FF ),  /* Georgian (Mkhedruli)          */
+    AF_UNIRANGE_REC(  0x1C90,  0x1CBF ),  /* Georgian Extended (Mtavruli)  */
     AF_UNIRANGE_REC(       0,       0 )
   };
 
@@ -355,8 +355,8 @@
   const AF_Script_UniRangeRec  af_geok_uniranges[] =
   {
     /* Khutsuri */
-    AF_UNIRANGE_REC(  0x10A0,  0x10CD ),  /* Georgian (Asomtavruli) */
-    AF_UNIRANGE_REC(  0x2D00,  0x2D2D ),  /* Georgian (Nuskhuri)    */
+    AF_UNIRANGE_REC(  0x10A0,  0x10CD ),  /* Georgian (Asomtavruli)         */
+    AF_UNIRANGE_REC(  0x2D00,  0x2D2D ),  /* Georgian Supplement (Nuskhuri) */
     AF_UNIRANGE_REC(       0,       0 )
   };
 
@@ -425,6 +425,7 @@
     AF_UNIRANGE_REC(  0x0AC1,  0x0AC8 ),
     AF_UNIRANGE_REC(  0x0ACD,  0x0ACD ),
     AF_UNIRANGE_REC(  0x0AE2,  0x0AE3 ),
+    AF_UNIRANGE_REC(  0x0AFA,  0x0AFF ),
     AF_UNIRANGE_REC(       0,       0 )
   };
 
@@ -655,7 +656,8 @@
 
   const AF_Script_UniRangeRec  af_mlym_nonbase_uniranges[] =
   {
-    AF_UNIRANGE_REC(  0x0D01,  0x0D01 ),
+    AF_UNIRANGE_REC(  0x0D00,  0x0D01 ),
+    AF_UNIRANGE_REC(  0x0D3B,  0x0D3C ),
     AF_UNIRANGE_REC(  0x0D4D,  0x0D4E ),
     AF_UNIRANGE_REC(  0x0D62,  0x0D63 ),
     AF_UNIRANGE_REC(       0,       0 )
@@ -697,6 +699,7 @@
   const AF_Script_UniRangeRec  af_nkoo_nonbase_uniranges[] =
   {
     AF_UNIRANGE_REC(  0x07EB,  0x07F5 ),
+    AF_UNIRANGE_REC(  0x07FD,  0x07FD ),
     AF_UNIRANGE_REC(       0,       0 )
   };
 
@@ -856,6 +859,7 @@
   const AF_Script_UniRangeRec  af_telu_nonbase_uniranges[] =
   {
     AF_UNIRANGE_REC(  0x0C00,  0x0C00 ),
+    AF_UNIRANGE_REC(  0x0C04,  0x0C04 ),
     AF_UNIRANGE_REC(  0x0C3E,  0x0C40 ),
     AF_UNIRANGE_REC(  0x0C46,  0x0C56 ),
     AF_UNIRANGE_REC(  0x0C62,  0x0C63 ),
@@ -1006,10 +1010,13 @@
     AF_UNIRANGE_REC(  0xFE30,  0xFE4F ),  /* CJK Compatibility Forms                 */
     AF_UNIRANGE_REC(  0xFF00,  0xFFEF ),  /* Halfwidth and Fullwidth Forms           */
     AF_UNIRANGE_REC( 0x1B000, 0x1B0FF ),  /* Kana Supplement                         */
+    AF_UNIRANGE_REC( 0x1B100, 0x1B12F ),  /* Kana Extended-A                         */
     AF_UNIRANGE_REC( 0x1D300, 0x1D35F ),  /* Tai Xuan Hing Symbols                   */
     AF_UNIRANGE_REC( 0x20000, 0x2A6DF ),  /* CJK Unified Ideographs Extension B      */
     AF_UNIRANGE_REC( 0x2A700, 0x2B73F ),  /* CJK Unified Ideographs Extension C      */
     AF_UNIRANGE_REC( 0x2B740, 0x2B81F ),  /* CJK Unified Ideographs Extension D      */
+    AF_UNIRANGE_REC( 0x2B820, 0x2CEAF ),  /* CJK Unified Ideographs Extension E      */
+    AF_UNIRANGE_REC( 0x2CEB0, 0x2EBEF ),  /* CJK Unified Ideographs Extension F      */
     AF_UNIRANGE_REC( 0x2F800, 0x2FA1F ),  /* CJK Compatibility Ideographs Supplement */
     AF_UNIRANGE_REC(       0,       0 )
   };

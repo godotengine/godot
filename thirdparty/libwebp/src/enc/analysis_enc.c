@@ -434,7 +434,9 @@ typedef struct {
 } SegmentJob;
 
 // main work call
-static int DoSegmentsJob(SegmentJob* const job, VP8EncIterator* const it) {
+static int DoSegmentsJob(void* arg1, void* arg2) {
+  SegmentJob* const job = (SegmentJob*)arg1;
+  VP8EncIterator* const it = (VP8EncIterator*)arg2;
   int ok = 1;
   if (!VP8IteratorIsDone(it)) {
     uint8_t tmp[32 + WEBP_ALIGN_CST];
@@ -456,13 +458,13 @@ static void MergeJobs(const SegmentJob* const src, SegmentJob* const dst) {
   dst->uv_alpha += src->uv_alpha;
 }
 
-// initialize the job struct with some TODOs
+// initialize the job struct with some tasks to perform
 static void InitSegmentJob(VP8Encoder* const enc, SegmentJob* const job,
                            int start_row, int end_row) {
   WebPGetWorkerInterface()->Init(&job->worker);
   job->worker.data1 = job;
   job->worker.data2 = &job->it;
-  job->worker.hook = (WebPWorkerHook)DoSegmentsJob;
+  job->worker.hook = DoSegmentsJob;
   VP8IteratorInit(enc, &job->it);
   VP8IteratorSetRow(&job->it, start_row);
   VP8IteratorSetCountDown(&job->it, (end_row - start_row) * enc->mb_w_);

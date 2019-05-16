@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef UNDO_REDO_H
 #define UNDO_REDO_H
 
-#include "object.h"
-#include "resource.h"
+#include "core/object.h"
+#include "core/resource.h"
 
 class UndoRedo : public Object {
 
@@ -80,6 +80,7 @@ private:
 	int current_action;
 	int action_level;
 	MergeMode merge_mode;
+	bool merging;
 	uint64_t version;
 
 	void _pop_history_tail();
@@ -94,6 +95,8 @@ private:
 	MethodNotifyCallback method_callback;
 	PropertyNotifyCallback property_callback;
 
+	int commiting;
+
 protected:
 	static void _bind_methods();
 
@@ -107,12 +110,13 @@ public:
 	void add_do_reference(Object *p_object);
 	void add_undo_reference(Object *p_object);
 
+	bool is_commiting_action() const;
 	void commit_action();
 
-	void redo();
-	void undo();
+	bool redo();
+	bool undo();
 	String get_current_action_name() const;
-	void clear_history();
+	void clear_history(bool p_increase_version = true);
 
 	uint64_t get_version() const;
 

@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  t1objs.c                                                               */
-/*                                                                         */
-/*    Type 1 objects manager (body).                                       */
-/*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * t1objs.c
+ *
+ *   Type 1 objects manager (body).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -21,6 +21,7 @@
 #include FT_INTERNAL_DEBUG_H
 #include FT_INTERNAL_STREAM_H
 #include FT_TRUETYPE_IDS_H
+#include FT_DRIVER_H
 
 #include "t1gload.h"
 #include "t1load.h"
@@ -35,21 +36,21 @@
 #include FT_INTERNAL_POSTSCRIPT_AUX_H
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_t1objs
+#define FT_COMPONENT  t1objs
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*                            SIZE FUNCTIONS                             */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   *                           SIZE FUNCTIONS
+   *
+   */
 
 
   static PSH_Globals_Funcs
@@ -132,11 +133,11 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*                            SLOT  FUNCTIONS                            */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   *                           SLOT  FUNCTIONS
+   *
+   */
 
   FT_LOCAL_DEF( void )
   T1_GlyphSlot_Done( FT_GlyphSlot  slot )
@@ -176,24 +177,25 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*                            FACE  FUNCTIONS                            */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   *                           FACE  FUNCTIONS
+   *
+   */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    T1_Face_Done                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    The face object destructor.                                        */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    face :: A typeless pointer to the face object to destroy.          */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   T1_Face_Done
+   *
+   * @Description:
+   *   The face object destructor.
+   *
+   * @Input:
+   *   face ::
+   *     A typeless pointer to the face object to destroy.
+   */
   FT_LOCAL_DEF( void )
   T1_Face_Done( FT_Face  t1face )         /* T1_Face */
   {
@@ -273,29 +275,34 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    T1_Face_Init                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    The face object constructor.                                       */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    stream     ::  input stream where to load font data.               */
-  /*                                                                       */
-  /*    face_index :: The index of the font face in the resource.          */
-  /*                                                                       */
-  /*    num_params :: Number of additional generic parameters.  Ignored.   */
-  /*                                                                       */
-  /*    params     :: Additional generic parameters.  Ignored.             */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    face       :: The face record to build.                            */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   T1_Face_Init
+   *
+   * @Description:
+   *   The face object constructor.
+   *
+   * @Input:
+   *   stream ::
+   *     input stream where to load font data.
+   *
+   *   face_index ::
+   *     The index of the font face in the resource.
+   *
+   *   num_params ::
+   *     Number of additional generic parameters.  Ignored.
+   *
+   *   params ::
+   *     Additional generic parameters.  Ignored.
+   *
+   * @InOut:
+   *   face ::
+   *     The face record to build.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   T1_Face_Init( FT_Stream      stream,
                 FT_Face        t1face,          /* T1_Face */
@@ -340,6 +347,10 @@
     if ( error )
       goto Exit;
 
+    FT_TRACE2(( "T1_Face_Init: %08p (index %d)\n",
+                face,
+                face_index ));
+
     /* if we just wanted to check the format, leave successfully now */
     if ( face_index < 0 )
       goto Exit;
@@ -379,7 +390,7 @@
       /* simplistic and might get some things wrong.  For a full-featured */
       /* algorithm you might have a look at the whitepaper given at       */
       /*                                                                  */
-      /*   http://blogs.msdn.com/text/archive/2007/04/23/wpf-font-selection-model.aspx */
+      /*   https://blogs.msdn.com/text/archive/2007/04/23/wpf-font-selection-model.aspx */
 
       /* get style name -- be careful, some broken fonts only */
       /* have a `/FontName' dictionary entry!                 */
@@ -515,7 +526,8 @@
 
         error = FT_CMap_New( cmap_classes->unicode, NULL, &charmap, NULL );
         if ( error                                      &&
-             FT_ERR_NEQ( error, No_Unicode_Glyph_Name ) )
+             FT_ERR_NEQ( error, No_Unicode_Glyph_Name ) &&
+             FT_ERR_NEQ( error, Unimplemented_Feature ) )
           goto Exit;
         error = FT_Err_Ok;
 
@@ -563,40 +575,75 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    T1_Driver_Init                                                     */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Initializes a given Type 1 driver object.                          */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    driver :: A handle to the target driver object.                    */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   T1_Driver_Init
+   *
+   * @Description:
+   *   Initializes a given Type 1 driver object.
+   *
+   * @Input:
+   *   driver ::
+   *     A handle to the target driver object.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
-  T1_Driver_Init( FT_Module  driver )
+  T1_Driver_Init( FT_Module  module )
   {
-    FT_UNUSED( driver );
+    PS_Driver  driver = (PS_Driver)module;
+
+    FT_UInt32  seed;
+
+
+    /* set default property values, cf. `ftt1drv.h' */
+#ifdef T1_CONFIG_OPTION_OLD_ENGINE
+    driver->hinting_engine = FT_HINTING_FREETYPE;
+#else
+    driver->hinting_engine = FT_HINTING_ADOBE;
+#endif
+
+    driver->no_stem_darkening = TRUE;
+
+    driver->darken_params[0] = CFF_CONFIG_OPTION_DARKENING_PARAMETER_X1;
+    driver->darken_params[1] = CFF_CONFIG_OPTION_DARKENING_PARAMETER_Y1;
+    driver->darken_params[2] = CFF_CONFIG_OPTION_DARKENING_PARAMETER_X2;
+    driver->darken_params[3] = CFF_CONFIG_OPTION_DARKENING_PARAMETER_Y2;
+    driver->darken_params[4] = CFF_CONFIG_OPTION_DARKENING_PARAMETER_X3;
+    driver->darken_params[5] = CFF_CONFIG_OPTION_DARKENING_PARAMETER_Y3;
+    driver->darken_params[6] = CFF_CONFIG_OPTION_DARKENING_PARAMETER_X4;
+    driver->darken_params[7] = CFF_CONFIG_OPTION_DARKENING_PARAMETER_Y4;
+
+    /* compute random seed from some memory addresses */
+    seed = (FT_UInt32)( (FT_Offset)(char*)&seed          ^
+                        (FT_Offset)(char*)&module        ^
+                        (FT_Offset)(char*)module->memory );
+    seed = seed ^ ( seed >> 10 ) ^ ( seed >> 20 );
+
+    driver->random_seed = (FT_Int32)seed;
+    if ( driver->random_seed < 0 )
+      driver->random_seed = -driver->random_seed;
+    else if ( driver->random_seed == 0 )
+      driver->random_seed = 123456789;
 
     return FT_Err_Ok;
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    T1_Driver_Done                                                     */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Finalizes a given Type 1 driver.                                   */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    driver :: A handle to the target Type 1 driver.                    */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   T1_Driver_Done
+   *
+   * @Description:
+   *   Finalizes a given Type 1 driver.
+   *
+   * @Input:
+   *   driver ::
+   *     A handle to the target Type 1 driver.
+   */
   FT_LOCAL_DEF( void )
   T1_Driver_Done( FT_Module  driver )
   {

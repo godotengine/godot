@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  t1gload.c                                                              */
-/*                                                                         */
-/*    Type 1 Glyph Loader (body).                                          */
-/*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * t1gload.c
+ *
+ *   Type 1 Glyph Loader (body).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -23,49 +23,43 @@
 #include FT_INTERNAL_STREAM_H
 #include FT_OUTLINE_H
 #include FT_INTERNAL_POSTSCRIPT_AUX_H
+#include FT_INTERNAL_CFF_TYPES_H
+#include FT_DRIVER_H
 
 #include "t1errors.h"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_t1gload
-
-
-  /*************************************************************************/
-  /*************************************************************************/
-  /*************************************************************************/
-  /**********                                                      *********/
-  /**********            COMPUTE THE MAXIMUM ADVANCE WIDTH         *********/
-  /**********                                                      *********/
-  /**********    The following code is in charge of computing      *********/
-  /**********    the maximum advance width of the font.  It        *********/
-  /**********    quickly processes each glyph charstring to        *********/
-  /**********    extract the value from either a `sbw' or `seac'   *********/
-  /**********    operator.                                         *********/
-  /**********                                                      *********/
-  /*************************************************************************/
-  /*************************************************************************/
-  /*************************************************************************/
+#define FT_COMPONENT  t1gload
 
 
   static FT_Error
   T1_Parse_Glyph_And_Get_Char_String( T1_Decoder  decoder,
                                       FT_UInt     glyph_index,
-                                      FT_Data*    char_string )
+                                      FT_Data*    char_string,
+                                      FT_Bool*    force_scaling )
   {
     T1_Face   face  = (T1_Face)decoder->builder.face;
     T1_Font   type1 = &face->type1;
     FT_Error  error = FT_Err_Ok;
 
+    PSAux_Service           psaux         = (PSAux_Service)face->psaux;
+    const T1_Decoder_Funcs  decoder_funcs = psaux->t1_decoder_funcs;
+    PS_Decoder              psdecoder;
+
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
     FT_Incremental_InterfaceRec *inc =
                       face->root.internal->incremental_interface;
+#endif
+
+#ifdef T1_CONFIG_OPTION_OLD_ENGINE
+    PS_Driver  driver = (PS_Driver)FT_FACE_DRIVER( face );
 #endif
 
 
@@ -90,9 +84,56 @@
     }
 
     if ( !error )
-      error = decoder->funcs.parse_charstrings(
-                decoder, (FT_Byte*)char_string->pointer,
-                (FT_UInt)char_string->length );
+    {
+      /* choose which renderer to use */
+#ifdef T1_CONFIG_OPTION_OLD_ENGINE
+      if ( driver->hinting_engine == FT_HINTING_FREETYPE ||
+           decoder->builder.metrics_only                 )
+        error = decoder_funcs->parse_charstrings_old(
+                  decoder,
+                  (FT_Byte*)char_string->pointer,
+                  (FT_UInt)char_string->length );
+#else
+      if ( decoder->builder.metrics_only )
+        error = decoder_funcs->parse_metrics(
+                  decoder,
+                  (FT_Byte*)char_string->pointer,
+                  (FT_UInt)char_string->length );
+#endif
+      else
+      {
+        CFF_SubFontRec  subfont;
+
+
+        psaux->ps_decoder_init( &psdecoder, decoder, TRUE );
+
+        psaux->t1_make_subfont( FT_FACE( face ),
+                                &face->type1.private_dict, &subfont );
+        psdecoder.current_subfont = &subfont;
+
+        error = decoder_funcs->parse_charstrings(
+                  &psdecoder,
+                  (FT_Byte*)char_string->pointer,
+                  (FT_ULong)char_string->length );
+
+        /* Adobe's engine uses 16.16 numbers everywhere;              */
+        /* as a consequence, glyphs larger than 2000ppem get rejected */
+        if ( FT_ERR_EQ( error, Glyph_Too_Big ) )
+        {
+          /* this time, we retry unhinted and scale up the glyph later on */
+          /* (the engine uses and sets the hardcoded value 0x10000 / 64 = */
+          /* 0x400 for both `x_scale' and `y_scale' in this case)         */
+          ((T1_GlyphSlot)decoder->builder.glyph)->hint = FALSE;
+
+          *force_scaling = TRUE;
+
+          error = decoder_funcs->parse_charstrings(
+                    &psdecoder,
+                    (FT_Byte*)char_string->pointer,
+                    (FT_ULong)char_string->length );
+        }
+      }
+    }
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
 
@@ -126,8 +167,10 @@
                   FT_UInt     glyph_index )
   {
     FT_Data   glyph_data;
-    FT_Error  error = T1_Parse_Glyph_And_Get_Char_String(
-                        decoder, glyph_index, &glyph_data );
+    FT_Bool   force_scaling = FALSE;
+    FT_Error  error         = T1_Parse_Glyph_And_Get_Char_String(
+                                decoder, glyph_index, &glyph_data,
+                                &force_scaling );
 
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
@@ -147,6 +190,23 @@
 
     return error;
   }
+
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /*************************************************************************/
+  /**********                                                      *********/
+  /**********            COMPUTE THE MAXIMUM ADVANCE WIDTH         *********/
+  /**********                                                      *********/
+  /**********    The following code is in charge of computing      *********/
+  /**********    the maximum advance width of the font.  It        *********/
+  /**********    quickly processes each glyph charstring to        *********/
+  /**********    extract the value from either a `sbw' or `seac'   *********/
+  /**********    operator.                                         *********/
+  /**********                                                      *********/
+  /*************************************************************************/
+  /*************************************************************************/
+  /*************************************************************************/
 
 
   FT_LOCAL_DEF( FT_Error )
@@ -190,6 +250,8 @@
 
     *max_advance = 0;
 
+    FT_TRACE6(( "T1_Compute_Max_Advance:\n" ));
+
     /* for each glyph, parse the glyph charstring and extract */
     /* the advance width                                      */
     for ( glyph_index = 0; glyph_index < type1->num_glyphs; glyph_index++ )
@@ -201,6 +263,9 @@
 
       /* ignore the error if one occurred - skip to next glyph */
     }
+
+    FT_TRACE6(( "T1_Compute_Max_Advance: max advance: %f\n",
+                *max_advance / 65536.0 ));
 
     psaux->t1_decoder_funcs->done( &decoder );
 
@@ -223,10 +288,17 @@
     FT_Error       error;
 
 
+    FT_TRACE5(( "T1_Get_Advances:\n" ));
+
     if ( load_flags & FT_LOAD_VERTICAL_LAYOUT )
     {
       for ( nn = 0; nn < count; nn++ )
+      {
         advances[nn] = 0;
+
+        FT_TRACE5(( "  idx %d: advance height 0 font units\n",
+                    first + nn ));
+      }
 
       return FT_Err_Ok;
     }
@@ -261,6 +333,11 @@
         advances[nn] = FIXED_TO_INT( decoder.builder.advance.x );
       else
         advances[nn] = 0;
+
+      FT_TRACE5(( "  idx %d: advance width %d font unit%s\n",
+                  first + nn,
+                  advances[nn],
+                  advances[nn] == 1 ? "" : "s" ));
     }
 
     return FT_Err_Ok;
@@ -278,6 +355,8 @@
     T1_DecoderRec           decoder;
     T1_Face                 face = (T1_Face)t1glyph->face;
     FT_Bool                 hinting;
+    FT_Bool                 scaled;
+    FT_Bool                 force_scaling = FALSE;
     T1_Font                 type1         = &face->type1;
     PSAux_Service           psaux         = (PSAux_Service)face->psaux;
     const T1_Decoder_Funcs  decoder_funcs = psaux->t1_decoder_funcs;
@@ -323,9 +402,12 @@
     t1glyph->outline.n_points   = 0;
     t1glyph->outline.n_contours = 0;
 
-    hinting = FT_BOOL( ( load_flags & FT_LOAD_NO_SCALE   ) == 0 &&
-                       ( load_flags & FT_LOAD_NO_HINTING ) == 0 );
+    hinting = FT_BOOL( !( load_flags & FT_LOAD_NO_SCALE   ) &&
+                       !( load_flags & FT_LOAD_NO_HINTING ) );
+    scaled  = FT_BOOL( !( load_flags & FT_LOAD_NO_SCALE   ) );
 
+    glyph->hint     = hinting;
+    glyph->scaled   = scaled;
     t1glyph->format = FT_GLYPH_FORMAT_OUTLINE;
 
     error = decoder_funcs->init( &decoder,
@@ -334,7 +416,7 @@
                                  t1glyph,
                                  (FT_Byte**)type1->glyph_names,
                                  face->blend,
-                                 FT_BOOL( hinting ),
+                                 hinting,
                                  FT_LOAD_TARGET_MODE( load_flags ),
                                  T1_Parse_Glyph );
     if ( error )
@@ -342,8 +424,7 @@
 
     must_finish_decoder = TRUE;
 
-    decoder.builder.no_recurse = FT_BOOL(
-                                   ( load_flags & FT_LOAD_NO_RECURSE ) != 0 );
+    decoder.builder.no_recurse = FT_BOOL( load_flags & FT_LOAD_NO_RECURSE );
 
     decoder.num_subrs     = type1->num_subrs;
     decoder.subrs         = type1->subrs;
@@ -355,13 +436,15 @@
 
     /* now load the unscaled outline */
     error = T1_Parse_Glyph_And_Get_Char_String( &decoder, glyph_index,
-                                                &glyph_data );
+                                                &glyph_data,
+                                                &force_scaling );
     if ( error )
       goto Exit;
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
     glyph_data_loaded = 1;
 #endif
 
+    hinting     = glyph->hint;
     font_matrix = decoder.font_matrix;
     font_offset = decoder.font_offset;
 
@@ -451,7 +534,7 @@
         }
 #endif
 
-        if ( ( load_flags & FT_LOAD_NO_SCALE ) == 0 )
+        if ( ( load_flags & FT_LOAD_NO_SCALE ) == 0 || force_scaling )
         {
           /* scale the outline and the metrics */
           FT_Int       n;
@@ -462,7 +545,7 @@
 
 
           /* First of all, scale the points, if we are not hinting */
-          if ( !hinting || ! decoder.builder.hints_funcs )
+          if ( !hinting || !decoder.builder.hints_funcs )
             for ( n = cur->n_points; n > 0; n--, vec++ )
             {
               vec->x = FT_MulFix( vec->x, x_scale );

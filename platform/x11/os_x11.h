@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,26 +32,25 @@
 #define OS_X11_H
 
 #include "context_gl_x11.h"
+#include "core/os/input.h"
 #include "crash_handler_x11.h"
-#include "drivers/unix/os_unix.h"
-#include "os/input.h"
-#include "servers/visual_server.h"
-//#include "servers/visual/visual_server_wrap_mt.h"
 #include "drivers/alsa/audio_driver_alsa.h"
+#include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
+#include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
 #include "power_x11.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
+#include "servers/visual_server.h"
+//#include "servers/visual/visual_server_wrap_mt.h"
 
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/Xlib.h>
+#include <X11/extensions/XInput2.h>
 #include <X11/extensions/Xrandr.h>
 #include <X11/keysym.h>
-#ifdef TOUCH_ENABLED
-#include <X11/extensions/XInput2.h>
-#endif
 
 // Hints for X11 fullscreen
 typedef struct {
@@ -116,22 +115,36 @@ class OS_X11 : public OS_Unix {
 	static void xim_destroy_callback(::XIM im, ::XPointer client_data,
 			::XPointer call_data);
 
-	Point2i last_mouse_pos;
+	// IME
+	bool im_active;
+	Vector2 im_position;
+
+	Point2 last_mouse_pos;
 	bool last_mouse_pos_valid;
 	Point2i last_click_pos;
 	uint64_t last_click_ms;
+	int last_click_button_index;
 	uint32_t last_button_state;
-#ifdef TOUCH_ENABLED
+
 	struct {
 		int opcode;
-		Vector<int> devices;
-		XIEventMask event_mask;
+		Vector<int> touch_devices;
+		Map<int, Vector2> absolute_devices;
+		XIEventMask all_event_mask;
+		XIEventMask all_master_event_mask;
 		Map<int, Vector2> state;
-	} touch;
-#endif
+		Vector2 mouse_pos_to_filter;
+		Vector2 relative_motion;
+		Vector2 raw_pos;
+		Vector2 old_raw_pos;
+		::Time last_relative_time;
+	} xi;
 
-	unsigned int get_mouse_button_state(unsigned int p_x11_state);
+	bool refresh_device_info();
+
+	unsigned int get_mouse_button_state(unsigned int p_x11_button, int p_x11_type);
 	void get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
+	void flush_mouse_motion();
 
 	MouseMode mouse_mode;
 	Point2i center;
@@ -139,7 +152,6 @@ class OS_X11 : public OS_Unix {
 	void handle_key_event(XKeyEvent *p_event, bool p_echo = false);
 	void process_xevents();
 	virtual void delete_main_loop();
-	IP_Unix *ip_unix;
 
 	bool force_quit;
 	bool minimized;
@@ -163,18 +175,21 @@ class OS_X11 : public OS_Unix {
 	AudioDriverALSA driver_alsa;
 #endif
 
+#ifdef ALSAMIDI_ENABLED
+	MIDIDriverALSAMidi driver_alsamidi;
+#endif
+
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
 #endif
 
-	Atom net_wm_icon;
-
 	PowerX11 *power_manager;
+
+	bool layered_window;
 
 	CrashHandler crash_handler;
 
-	int audio_driver_index;
-	unsigned int capture_idle;
+	int video_driver_index;
 	bool maximized;
 	//void set_wm_border(bool p_enabled);
 	void set_wm_fullscreen(bool p_enabled);
@@ -188,6 +203,8 @@ class OS_X11 : public OS_Unix {
 	Bool xrandr_ext_ok;
 
 protected:
+	virtual int get_current_video_driver() const;
+
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();
@@ -202,6 +219,7 @@ public:
 	virtual String get_name();
 
 	virtual void set_cursor_shape(CursorShape p_shape);
+	virtual CursorShape get_cursor_shape() const;
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 
 	void set_mouse_mode(MouseMode p_mode);
@@ -262,6 +280,11 @@ public:
 
 	virtual void set_borderless_window(bool p_borderless);
 	virtual bool get_borderless_window();
+
+	virtual bool get_window_per_pixel_transparency_enabled() const;
+	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
+
+	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
 
 	virtual String get_unique_id() const;
@@ -293,6 +316,7 @@ public:
 
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
 
+	void update_real_mouse_position();
 	OS_X11();
 };
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,7 +54,8 @@ public:
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
-		BLEND_MODE_PREMULT_ALPHA
+		BLEND_MODE_PREMULT_ALPHA,
+		BLEND_MODE_DISABLED
 	};
 
 	enum LightMode {
@@ -69,6 +70,7 @@ private:
 		struct {
 			uint32_t blend_mode : 4;
 			uint32_t light_mode : 4;
+			uint32_t particles_animation : 1;
 			uint32_t invalid_key : 1;
 		};
 
@@ -78,6 +80,14 @@ private:
 			return key < p_key.key;
 		}
 	};
+
+	struct ShaderNames {
+		StringName particles_anim_h_frames;
+		StringName particles_anim_v_frames;
+		StringName particles_anim_loop;
+	};
+
+	static ShaderNames *shader_names;
 
 	struct ShaderData {
 		RID shader;
@@ -94,11 +104,12 @@ private:
 		mk.key = 0;
 		mk.blend_mode = blend_mode;
 		mk.light_mode = light_mode;
+		mk.particles_animation = particles_animation;
 		return mk;
 	}
 
 	static Mutex *material_mutex;
-	static SelfList<CanvasItemMaterial>::List dirty_materials;
+	static SelfList<CanvasItemMaterial>::List *dirty_materials;
 	SelfList<CanvasItemMaterial> element;
 
 	void _update_shader();
@@ -107,6 +118,11 @@ private:
 
 	BlendMode blend_mode;
 	LightMode light_mode;
+	bool particles_animation;
+
+	int particles_anim_h_frames;
+	int particles_anim_v_frames;
+	bool particles_anim_loop;
 
 protected:
 	static void _bind_methods();
@@ -118,6 +134,17 @@ public:
 
 	void set_light_mode(LightMode p_light_mode);
 	LightMode get_light_mode() const;
+
+	void set_particles_animation(bool p_particles_anim);
+	bool get_particles_animation() const;
+
+	void set_particles_anim_h_frames(int p_frames);
+	int get_particles_anim_h_frames() const;
+	void set_particles_anim_v_frames(int p_frames);
+	int get_particles_anim_v_frames() const;
+
+	void set_particles_anim_loop(bool p_frames);
+	bool get_particles_anim_loop() const;
 
 	static void init_shaders();
 	static void finish_shaders();
@@ -145,7 +172,8 @@ public:
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
-		BLEND_MODE_PREMULT_ALPHA
+		BLEND_MODE_PREMULT_ALPHA,
+		BLEND_MODE_DISABLED
 	};
 
 private:
@@ -194,6 +222,8 @@ private:
 	void _set_on_top(bool p_on_top) { set_draw_behind_parent(!p_on_top); }
 	bool _is_on_top() const { return !is_draw_behind_parent_enabled(); }
 
+	static CanvasItem *current_item_drawn;
+
 protected:
 	_FORCE_INLINE_ void _notify_transform() {
 		if (!is_inside_tree()) return;
@@ -220,6 +250,9 @@ public:
 
 	/* EDITOR */
 
+	// Select the node
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
 	// Save and restore a CanvasItem state
 	virtual void _edit_set_state(const Dictionary &p_state){};
 	virtual Dictionary _edit_get_state() const { return Dictionary(); };
@@ -232,36 +265,21 @@ public:
 	virtual void _edit_set_scale(const Size2 &p_scale) = 0;
 	virtual Size2 _edit_get_scale() const = 0;
 
+	// Used to rotate the node
+	virtual bool _edit_use_rotation() const { return false; };
+	virtual void _edit_set_rotation(float p_rotation){};
+	virtual float _edit_get_rotation() const { return 0.0; };
+
 	// Used to resize/move the node
+	virtual bool _edit_use_rect() const { return false; }; // MAYBE REPLACE BY A _edit_get_editmode()
 	virtual void _edit_set_rect(const Rect2 &p_rect){};
 	virtual Rect2 _edit_get_rect() const { return Rect2(0, 0, 0, 0); };
-	virtual bool _edit_use_rect() const { return false; };
-
-	Rect2 _edit_get_item_and_children_rect() const;
-
-	// used to select the node
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
-
-	// Used to rotate the node
-	virtual void
-	_edit_set_rotation(float p_rotation){};
-	virtual float _edit_get_rotation() const {
-		return 0.0;
-	};
-	virtual bool _edit_use_rotation() const {
-		return false;
-	};
+	virtual Size2 _edit_get_minimum_size() const { return Size2(-1, -1); }; // LOOKS WEIRD
 
 	// Used to set a pivot
+	virtual bool _edit_use_pivot() const { return false; };
 	virtual void _edit_set_pivot(const Point2 &p_pivot){};
-	virtual Point2 _edit_get_pivot() const {
-		return Point2();
-	};
-	virtual bool _edit_use_pivot() const {
-		return false;
-	};
-
-	virtual Size2 _edit_get_minimum_size() const;
+	virtual Point2 _edit_get_pivot() const { return Point2(); };
 
 	/* VISIBILITY */
 
@@ -299,7 +317,7 @@ public:
 	void draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture> p_texture = Ref<Texture>(), const Ref<Texture> &p_normal_map = Ref<Texture>(), bool p_antialiased = false);
 	void draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture> p_texture = Ref<Texture>(), const Ref<Texture> &p_normal_map = Ref<Texture>(), bool p_antialiased = false);
 
-	void draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map);
+	void draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map, const Transform2D &p_transform = Transform2D(), const Color &p_modulate = Color(1, 1, 1));
 	void draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map);
 
 	void draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1);
@@ -307,6 +325,8 @@ public:
 
 	void draw_set_transform(const Point2 &p_offset, float p_rot, const Size2 &p_scale);
 	void draw_set_transform_matrix(const Transform2D &p_matrix);
+
+	static CanvasItem *get_current_item_drawn();
 
 	/* RECT / TRANSFORM */
 
@@ -336,6 +356,7 @@ public:
 	Rect2 get_viewport_rect() const;
 	RID get_viewport_rid() const;
 	RID get_canvas() const;
+	ObjectID get_canvas_layer_instance_id() const;
 	Ref<World2D> get_world_2d() const;
 
 	virtual void set_material(const Ref<Material> &p_material);
@@ -355,6 +376,11 @@ public:
 
 	void set_notify_transform(bool p_enable);
 	bool is_transform_notification_enabled() const;
+
+	void force_update_transform();
+
+	// Used by control nodes to retrieve the parent's anchorable area
+	virtual Rect2 get_anchorable_rect() const { return Rect2(0, 0, 0, 0); };
 
 	int get_canvas_layer() const;
 

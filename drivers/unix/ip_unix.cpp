@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,15 +50,17 @@
 #define _WIN32_WINNT 0x0501 // Windows XP, disable Vista API
 #include <iphlpapi.h>
 #undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600 // Reenable Vista API
+#define _WIN32_WINNT 0x0600 // Re-enable Vista API
 #else
 #include <iphlpapi.h>
 #endif // MINGW hack
 #endif
-#else
+#else // UNIX
 #include <netdb.h>
 #ifdef ANDROID_ENABLED
-#include "platform/android/ifaddrs_android.h"
+// We could drop this file once we up our API level to 24,
+// where the NDK's ifaddrs.h supports to needed getifaddrs.
+#include "thirdparty/misc/ifaddrs-android.h"
 #else
 #ifdef __FreeBSD__
 #include <sys/types.h>
@@ -101,7 +103,7 @@ IP_Address IP_Unix::_resolve_hostname(const String &p_hostname, Type p_type) {
 		hints.ai_family = AF_UNSPEC;
 		hints.ai_flags = AI_ADDRCONFIG;
 	};
-	hints.ai_flags &= !AI_NUMERICHOST;
+	hints.ai_flags &= ~AI_NUMERICHOST;
 
 	int s = getaddrinfo(p_hostname.utf8().get_data(), NULL, &hints, &result);
 	if (s != 0) {
@@ -111,6 +113,8 @@ IP_Address IP_Unix::_resolve_hostname(const String &p_hostname, Type p_type) {
 
 	if (result == NULL || result->ai_addr == NULL) {
 		ERR_PRINT("Invalid response from getaddrinfo");
+		if (result)
+			freeaddrinfo(result);
 		return IP_Address();
 	};
 
@@ -199,7 +203,7 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 
 #endif
 
-#else
+#else // UNIX
 
 void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 

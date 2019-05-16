@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,11 @@
 
 #include "input_event.h"
 
-#include "input_map.h"
-#include "os/keyboard.h"
+#include "core/input_map.h"
+#include "core/os/keyboard.h"
+
+const int InputEvent::DEVICE_ID_TOUCH_MOUSE = -1;
+const int InputEvent::DEVICE_ID_INTERNAL = -2;
 
 void InputEvent::set_device(int p_device) {
 	device = p_device;
@@ -121,6 +124,8 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shortcut_match", "event"), &InputEvent::shortcut_match);
 
 	ClassDB::bind_method(D_METHOD("is_action_type"), &InputEvent::is_action_type);
+
+	ClassDB::bind_method(D_METHOD("accumulate", "with_event"), &InputEvent::accumulate);
 
 	ClassDB::bind_method(D_METHOD("xformed_by", "xform", "local_ofs"), &InputEvent::xformed_by, DEFVAL(Vector2()));
 
@@ -509,6 +514,12 @@ String InputEventMouseButton::as_text() const {
 		case BUTTON_WHEEL_RIGHT:
 			button_index_string = "BUTTON_WHEEL_RIGHT";
 			break;
+		case BUTTON_XBUTTON1:
+			button_index_string = "BUTTON_XBUTTON1";
+			break;
+		case BUTTON_XBUTTON2:
+			button_index_string = "BUTTON_XBUTTON2";
+			break;
 		default:
 			button_index_string = itos(get_button_index());
 			break;
@@ -601,11 +612,55 @@ String InputEventMouseMotion::as_text() const {
 		case BUTTON_MASK_RIGHT:
 			button_mask_string = "BUTTON_MASK_RIGHT";
 			break;
+		case BUTTON_MASK_XBUTTON1:
+			button_mask_string = "BUTTON_MASK_XBUTTON1";
+			break;
+		case BUTTON_MASK_XBUTTON2:
+			button_mask_string = "BUTTON_MASK_XBUTTON2";
+			break;
 		default:
 			button_mask_string = itos(get_button_mask());
 			break;
 	}
 	return "InputEventMouseMotion : button_mask=" + button_mask_string + ", position=(" + String(get_position()) + "), relative=(" + String(get_relative()) + "), speed=(" + String(get_speed()) + ")";
+}
+
+bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
+
+	Ref<InputEventMouseMotion> motion = p_event;
+	if (motion.is_null())
+		return false;
+
+	if (is_pressed() != motion->is_pressed()) {
+		return false;
+	}
+
+	if (get_button_mask() != motion->get_button_mask()) {
+		return false;
+	}
+
+	if (get_shift() != motion->get_shift()) {
+		return false;
+	}
+
+	if (get_control() != motion->get_control()) {
+		return false;
+	}
+
+	if (get_alt() != motion->get_alt()) {
+		return false;
+	}
+
+	if (get_metakey() != motion->get_metakey()) {
+		return false;
+	}
+
+	set_position(motion->get_position());
+	set_global_position(motion->get_global_position());
+	set_speed(motion->get_speed());
+	relative += motion->get_relative();
+
+	return true;
 }
 
 void InputEventMouseMotion::_bind_methods() {
@@ -656,12 +711,23 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *
 	if (jm.is_null())
 		return false;
 
-	bool match = (axis == jm->axis && (((axis_value < 0) == (jm->axis_value < 0)) || jm->axis_value == 0));
+	bool match = (axis == jm->axis); // Matches even if not in the same direction, but returns a "not pressed" event.
 	if (match) {
+		bool same_direction = (((axis_value < 0) == (jm->axis_value < 0)) || jm->axis_value == 0);
+		bool pressed = same_direction ? Math::abs(jm->get_axis_value()) >= p_deadzone : false;
 		if (p_pressed != NULL)
-			*p_pressed = Math::abs(jm->get_axis_value()) >= p_deadzone;
-		if (p_strength != NULL)
-			*p_strength = (*p_pressed) ? Math::inverse_lerp(p_deadzone, 1.0f, Math::abs(jm->get_axis_value())) : 0.0f;
+			*p_pressed = pressed;
+		if (p_strength != NULL) {
+			if (pressed) {
+				if (p_deadzone == 1.0f) {
+					*p_strength = 1.0f;
+				} else {
+					*p_strength = CLAMP(Math::inverse_lerp(p_deadzone, 1.0f, Math::abs(jm->get_axis_value())), 0.0f, 1.0f);
+				}
+			} else {
+				*p_strength = 0.0f;
+			}
+		}
 	}
 	return match;
 }
@@ -733,6 +799,15 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *
 	}
 
 	return match;
+}
+
+bool InputEventJoypadButton::shortcut_match(const Ref<InputEvent> &p_event) const {
+
+	Ref<InputEventJoypadButton> button = p_event;
+	if (button.is_null())
+		return false;
+
+	return button_index == button->button_index;
 }
 
 String InputEventJoypadButton::as_text() const {
@@ -935,9 +1010,32 @@ bool InputEventAction::is_pressed() const {
 	return pressed;
 }
 
+bool InputEventAction::shortcut_match(const Ref<InputEvent> &p_event) const {
+	if (p_event.is_null())
+		return false;
+
+	return p_event->is_action(action);
+}
+
 bool InputEventAction::is_action(const StringName &p_action) const {
 
 	return action == p_action;
+}
+
+bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
+
+	Ref<InputEventAction> act = p_event;
+	if (act.is_null())
+		return false;
+
+	bool match = action == act->action;
+	if (match) {
+		if (p_pressed != NULL)
+			*p_pressed = act->pressed;
+		if (p_strength != NULL)
+			*p_strength = (*p_pressed) ? 1.0f : 0.0f;
+	}
+	return match;
 }
 
 String InputEventAction::as_text() const {
@@ -1065,4 +1163,123 @@ void InputEventPanGesture::_bind_methods() {
 InputEventPanGesture::InputEventPanGesture() {
 
 	delta = Vector2(0, 0);
+}
+/////////////////////////////
+
+void InputEventMIDI::set_channel(const int p_channel) {
+
+	channel = p_channel;
+}
+
+int InputEventMIDI::get_channel() const {
+	return channel;
+}
+
+void InputEventMIDI::set_message(const int p_message) {
+
+	message = p_message;
+}
+
+int InputEventMIDI::get_message() const {
+	return message;
+}
+
+void InputEventMIDI::set_pitch(const int p_pitch) {
+
+	pitch = p_pitch;
+}
+
+int InputEventMIDI::get_pitch() const {
+	return pitch;
+}
+
+void InputEventMIDI::set_velocity(const int p_velocity) {
+
+	velocity = p_velocity;
+}
+
+int InputEventMIDI::get_velocity() const {
+	return velocity;
+}
+
+void InputEventMIDI::set_instrument(const int p_instrument) {
+
+	instrument = p_instrument;
+}
+
+int InputEventMIDI::get_instrument() const {
+	return instrument;
+}
+
+void InputEventMIDI::set_pressure(const int p_pressure) {
+
+	pressure = p_pressure;
+}
+
+int InputEventMIDI::get_pressure() const {
+	return pressure;
+}
+
+void InputEventMIDI::set_controller_number(const int p_controller_number) {
+
+	controller_number = p_controller_number;
+}
+
+int InputEventMIDI::get_controller_number() const {
+	return controller_number;
+}
+
+void InputEventMIDI::set_controller_value(const int p_controller_value) {
+
+	controller_value = p_controller_value;
+}
+
+int InputEventMIDI::get_controller_value() const {
+	return controller_value;
+}
+
+String InputEventMIDI::as_text() const {
+
+	return "InputEventMIDI : channel=(" + itos(get_channel()) + "), message=(" + itos(get_message()) + ")";
+}
+
+void InputEventMIDI::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_channel", "channel"), &InputEventMIDI::set_channel);
+	ClassDB::bind_method(D_METHOD("get_channel"), &InputEventMIDI::get_channel);
+	ClassDB::bind_method(D_METHOD("set_message", "message"), &InputEventMIDI::set_message);
+	ClassDB::bind_method(D_METHOD("get_message"), &InputEventMIDI::get_message);
+	ClassDB::bind_method(D_METHOD("set_pitch", "pitch"), &InputEventMIDI::set_pitch);
+	ClassDB::bind_method(D_METHOD("get_pitch"), &InputEventMIDI::get_pitch);
+	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &InputEventMIDI::set_velocity);
+	ClassDB::bind_method(D_METHOD("get_velocity"), &InputEventMIDI::get_velocity);
+	ClassDB::bind_method(D_METHOD("set_instrument", "instrument"), &InputEventMIDI::set_instrument);
+	ClassDB::bind_method(D_METHOD("get_instrument"), &InputEventMIDI::get_instrument);
+	ClassDB::bind_method(D_METHOD("set_pressure", "pressure"), &InputEventMIDI::set_pressure);
+	ClassDB::bind_method(D_METHOD("get_pressure"), &InputEventMIDI::get_pressure);
+	ClassDB::bind_method(D_METHOD("set_controller_number", "controller_number"), &InputEventMIDI::set_controller_number);
+	ClassDB::bind_method(D_METHOD("get_controller_number"), &InputEventMIDI::get_controller_number);
+	ClassDB::bind_method(D_METHOD("set_controller_value", "controller_value"), &InputEventMIDI::set_controller_value);
+	ClassDB::bind_method(D_METHOD("get_controller_value"), &InputEventMIDI::get_controller_value);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "channel"), "set_channel", "get_channel");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "message"), "set_message", "get_message");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "pitch"), "set_pitch", "get_pitch");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "velocity"), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "instrument"), "set_instrument", "get_instrument");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "pressure"), "set_pressure", "get_pressure");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_number"), "set_controller_number", "get_controller_number");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_value"), "set_controller_value", "get_controller_value");
+}
+
+InputEventMIDI::InputEventMIDI() {
+
+	channel = 0;
+	message = 0;
+	pitch = 0;
+	velocity = 0;
+	instrument = 0;
+	pressure = 0;
+	controller_number = 0;
+	controller_value = 0;
 }

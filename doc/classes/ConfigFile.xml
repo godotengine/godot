@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConfigFile" inherits="Reference" category="Core" version="3.1">
+<class name="ConfigFile" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		Helper class to handle INI-style files.
 	</brief_description>
@@ -18,18 +18,17 @@
 		var err = config.load("user://settings.cfg")
 		if err == OK: # if not, something went wrong with the file loading
 		    # Look for the display/width pair, and default to 1024 if missing
-		    var screen_width = get_value("display", "width", 1024)
+		    var screen_width = config.get_value("display", "width", 1024)
 		    # Store a variable if and only if it hasn't been defined yet
 		    if not config.has_section_key("audio", "mute"):
 		        config.set_value("audio", "mute", false)
 		    # Save the changes by overwriting the previous file
 		    config.save("user://settings.cfg")
 		[/codeblock]
+		Keep in mind that section and property names can't contain spaces. Anything after a space will be ignored on save and on load.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="erase_section">
 			<return type="void">
@@ -117,7 +116,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Assigns a value to the specified key of the the specified section. If the section and/or the key do not exist, they are created. Passing a [code]null[/code] value deletes the specified key if it exists, and deletes the section if it ends up empty once the key has been removed.
+				Assigns a value to the specified key of the specified section. If the section and/or the key do not exist, they are created. Passing a [code]null[/code] value deletes the specified key if it exists, and deletes the section if it ends up empty once the key has been removed.
 			</description>
 		</method>
 	</methods>

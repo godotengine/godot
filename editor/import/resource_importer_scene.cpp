@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "resource_importer_scene.h"
 
+#include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
-#include "io/resource_saver.h"
 #include "scene/resources/packed_scene.h"
 
 #include "scene/3d/collision_shape.h"
@@ -46,7 +46,7 @@
 #include "scene/resources/box_shape.h"
 #include "scene/resources/plane_shape.h"
 #include "scene/resources/ray_shape.h"
-#include "scene/resources/scene_format_text.h"
+#include "scene/resources/resource_format_text.h"
 #include "scene/resources/sphere_shape.h"
 
 uint32_t EditorSceneImporter::get_import_flags() const {
@@ -130,7 +130,9 @@ void EditorSceneImporter::_bind_methods() {
 /////////////////////////////////
 void EditorScenePostImport::_bind_methods() {
 
-	BIND_VMETHOD(MethodInfo("post_import", PropertyInfo(Variant::OBJECT, "scene")));
+	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "post_import", PropertyInfo(Variant::OBJECT, "scene")));
+	ClassDB::bind_method(D_METHOD("get_source_folder"), &EditorScenePostImport::get_source_folder);
+	ClassDB::bind_method(D_METHOD("get_source_file"), &EditorScenePostImport::get_source_file);
 }
 
 Node *EditorScenePostImport::post_import(Node *p_scene) {
@@ -139,6 +141,21 @@ Node *EditorScenePostImport::post_import(Node *p_scene) {
 		return get_script_instance()->call("post_import", p_scene);
 
 	return p_scene;
+}
+
+String EditorScenePostImport::get_source_folder() const {
+
+	return source_folder;
+}
+
+String EditorScenePostImport::get_source_file() const {
+
+	return source_file;
+}
+
+void EditorScenePostImport::init(const String &p_source_folder, const String &p_source_file) {
+	source_folder = p_source_folder;
+	source_file = p_source_file;
 }
 
 EditorScenePostImport::EditorScenePostImport() {
@@ -224,34 +241,68 @@ String ResourceImporterScene::get_preset_name(int p_idx) const {
 
 static bool _teststr(const String &p_what, const String &p_str) {
 
-	if (p_what.findn("$" + p_str) != -1) //blender and other stuff
+	String what = p_what;
+
+	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
+	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
+
+		what = what.substr(0, what.length() - 1);
+	}
+
+	if (what.findn("$" + p_str) != -1) //blender and other stuff
 		return true;
-	if (p_what.to_lower().ends_with("-" + p_str)) //collada only supports "_" and "-" besides letters
+	if (what.to_lower().ends_with("-" + p_str)) //collada only supports "_" and "-" besides letters
 		return true;
-	if (p_what.to_lower().ends_with("_" + p_str)) //collada only supports "_" and "-" besides letters
+	if (what.to_lower().ends_with("_" + p_str)) //collada only supports "_" and "-" besides letters
 		return true;
 	return false;
 }
 
 static String _fixstr(const String &p_what, const String &p_str) {
 
-	if (p_what.findn("$" + p_str) != -1) //blender and other stuff
-		return p_what.replace("$" + p_str, "");
-	if (p_what.to_lower().ends_with("-" + p_str)) //collada only supports "_" and "-" besides letters
-		return p_what.substr(0, p_what.length() - (p_str.length() + 1));
-	if (p_what.to_lower().ends_with("_" + p_str)) //collada only supports "_" and "-" besides letters
-		return p_what.substr(0, p_what.length() - (p_str.length() + 1));
-	return p_what;
+	String what = p_what;
+
+	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
+	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
+
+		what = what.substr(0, what.length() - 1);
+	}
+
+	String end = p_what.substr(what.length(), p_what.length() - what.length());
+
+	if (what.findn("$" + p_str) != -1) //blender and other stuff
+		return what.replace("$" + p_str, "") + end;
+	if (what.to_lower().ends_with("-" + p_str)) //collada only supports "_" and "-" besides letters
+		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
+	if (what.to_lower().ends_with("_" + p_str)) //collada only supports "_" and "-" besides letters
+		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
+	return what;
 }
 
-Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<ArrayMesh>, Ref<Shape> > &collision_map, LightBakeMode p_light_bake_mode) {
+static void _gen_shape_list(const Ref<Mesh> &mesh, List<Ref<Shape> > &r_shape_list, bool p_convex) {
 
-	// children first..
+	if (!p_convex) {
+
+		Ref<Shape> shape = mesh->create_trimesh_shape();
+		r_shape_list.push_back(shape);
+	} else {
+
+		Vector<Ref<Shape> > cd = mesh->convex_decompose();
+		if (cd.size()) {
+			for (int i = 0; i < cd.size(); i++) {
+				r_shape_list.push_back(cd[i]);
+			}
+		}
+	}
+}
+
+Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, List<Ref<Shape> > > &collision_map, LightBakeMode p_light_bake_mode) {
+
+	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 
 		Node *r = _fix_node(p_node->get_child(i), p_root, collision_map, p_light_bake_mode);
 		if (!r) {
-			print_line("was erased...");
 			i--; //was erased
 		}
 	}
@@ -331,32 +382,54 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 			return p_node;
 		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 		if (mi) {
-			Node *col;
+			Ref<Mesh> mesh = mi->get_mesh();
 
-			if (_teststr(name, "colonly")) {
-				col = mi->create_trimesh_collision_node();
-				ERR_FAIL_COND_V(!col, NULL);
+			if (mesh.is_valid()) {
+				List<Ref<Shape> > shapes;
+				String fixed_name;
+				if (collision_map.has(mesh)) {
+					shapes = collision_map[mesh];
+				} else if (_teststr(name, "colonly")) {
+					_gen_shape_list(mesh, shapes, false);
+					collision_map[mesh] = shapes;
+				} else if (_teststr(name, "convcolonly")) {
+					_gen_shape_list(mesh, shapes, true);
+					collision_map[mesh] = shapes;
+				}
 
-				col->set_name(_fixstr(name, "colonly"));
-			} else {
-				col = mi->create_convex_collision_node();
-				ERR_FAIL_COND_V(!col, NULL);
+				if (_teststr(name, "colonly")) {
+					fixed_name = _fixstr(name, "colonly");
+				} else if (_teststr(name, "convcolonly")) {
+					fixed_name = _fixstr(name, "convcolonly");
+				}
 
-				col->set_name(_fixstr(name, "convcolonly"));
+				ERR_FAIL_COND_V(fixed_name == String(), NULL);
+
+				if (shapes.size()) {
+
+					StaticBody *col = memnew(StaticBody);
+					col->set_transform(mi->get_transform());
+					col->set_name(fixed_name);
+					p_node->replace_by(col);
+					memdelete(p_node);
+					p_node = col;
+
+					int idx = 0;
+					for (List<Ref<Shape> >::Element *E = shapes.front(); E; E = E->next()) {
+
+						CollisionShape *cshape = memnew(CollisionShape);
+						cshape->set_shape(E->get());
+						col->add_child(cshape);
+
+						cshape->set_name("shape" + itos(idx));
+						cshape->set_owner(col->get_owner());
+						idx++;
+					}
+				}
 			}
 
-			Object::cast_to<Spatial>(col)->set_transform(mi->get_transform());
-			p_node->replace_by(col);
-			memdelete(p_node);
-			p_node = col;
-
-			StaticBody *sb = Object::cast_to<StaticBody>(col);
-			CollisionShape *colshape = Object::cast_to<CollisionShape>(sb->get_child(0));
-			colshape->set_name("shape");
-			colshape->set_owner(p_node->get_owner());
 		} else if (p_node->has_meta("empty_draw_type")) {
 			String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
-			print_line(empty_draw_type);
 			StaticBody *sb = memnew(StaticBody);
 			sb->set_name(_fixstr(name, "colonly"));
 			Object::cast_to<Spatial>(sb)->set_transform(Object::cast_to<Spatial>(p_node)->get_transform());
@@ -393,71 +466,91 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		if (isroot)
 			return p_node;
 
-		// get mesh instance and bounding box
 		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
-		AABB aabb = mi->get_aabb();
+		Ref<Mesh> mesh = mi->get_mesh();
 
-		// create a new rigid body collision node
-		RigidBody *rigid_body = memnew(RigidBody);
-		Node *col = rigid_body;
-		ERR_FAIL_COND_V(!col, NULL);
+		if (mesh.is_valid()) {
+			List<Ref<Shape> > shapes;
+			if (collision_map.has(mesh)) {
+				shapes = collision_map[mesh];
+			} else {
+				_gen_shape_list(mesh, shapes, true);
+			}
 
-		// remove node name postfix
-		col->set_name(_fixstr(name, "rigid"));
-		// get mesh instance xform matrix to the rigid body collision node
-		Object::cast_to<Spatial>(col)->set_transform(mi->get_transform());
-		// save original node by duplicating it into a new instance and correcting the name
-		Node *mesh = p_node->duplicate();
-		mesh->set_name(_fixstr(name, "rigid"));
-		// reset the xform matrix of the duplicated node so it can inherit parent node xform
-		Object::cast_to<Spatial>(mesh)->set_transform(Transform(Basis()));
-		// reparent the new mesh node to the rigid body collision node
-		p_node->add_child(mesh);
-		mesh->set_owner(p_node->get_owner());
-		// replace the original node with the rigid body collision node
-		p_node->replace_by(col);
-		memdelete(p_node);
-		p_node = col;
+			RigidBody *rigid_body = memnew(RigidBody);
+			rigid_body->set_name(_fixstr(name, "rigid"));
+			p_node->replace_by(rigid_body);
+			rigid_body->set_transform(mi->get_transform());
+			p_node = rigid_body;
+			mi->set_name("mesh");
+			mi->set_transform(Transform());
+			rigid_body->add_child(mi);
+			mi->set_owner(rigid_body->get_owner());
 
-		// create an alias for the rigid body collision node
-		RigidBody *rb = Object::cast_to<RigidBody>(col);
-		// create a new Box collision shape and set the right extents
-		Ref<BoxShape> shape = memnew(BoxShape);
-		shape->set_extents(aabb.get_size() * 0.5);
-		CollisionShape *colshape = memnew(CollisionShape);
-		colshape->set_name("shape");
-		colshape->set_shape(shape);
-		// reparent the new collision shape to the rigid body collision node
-		rb->add_child(colshape);
-		colshape->set_owner(p_node->get_owner());
+			int idx = 0;
+			for (List<Ref<Shape> >::Element *E = shapes.front(); E; E = E->next()) {
+
+				CollisionShape *cshape = memnew(CollisionShape);
+				cshape->set_shape(E->get());
+				rigid_body->add_child(cshape);
+
+				cshape->set_name("shape" + itos(idx));
+				cshape->set_owner(p_node->get_owner());
+				idx++;
+			}
+		}
 
 	} else if ((_teststr(name, "col") || (_teststr(name, "convcol"))) && Object::cast_to<MeshInstance>(p_node)) {
 
 		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
-		Node *col;
 
-		if (_teststr(name, "col")) {
-			mi->set_name(_fixstr(name, "col"));
-			col = mi->create_trimesh_collision_node();
-			ERR_FAIL_COND_V(!col, NULL);
+		Ref<Mesh> mesh = mi->get_mesh();
 
-			col->set_name("col");
-		} else {
-			mi->set_name(_fixstr(name, "convcol"));
-			col = mi->create_convex_collision_node();
-			ERR_FAIL_COND_V(!col, NULL);
+		if (mesh.is_valid()) {
+			List<Ref<Shape> > shapes;
+			String fixed_name;
+			if (collision_map.has(mesh)) {
+				shapes = collision_map[mesh];
+			} else if (_teststr(name, "col")) {
+				_gen_shape_list(mesh, shapes, false);
+				collision_map[mesh] = shapes;
+			} else if (_teststr(name, "convcol")) {
+				_gen_shape_list(mesh, shapes, true);
+				collision_map[mesh] = shapes;
+			}
 
-			col->set_name("convcol");
+			if (_teststr(name, "col")) {
+				fixed_name = _fixstr(name, "col");
+			} else if (_teststr(name, "convcol")) {
+				fixed_name = _fixstr(name, "convcol");
+			}
+
+			if (fixed_name != String()) {
+				if (mi->get_parent() && !mi->get_parent()->has_node(fixed_name)) {
+					mi->set_name(fixed_name);
+				}
+			}
+
+			if (shapes.size()) {
+				StaticBody *col = memnew(StaticBody);
+				col->set_name("static_collision");
+				mi->add_child(col);
+				col->set_owner(mi->get_owner());
+
+				int idx = 0;
+				for (List<Ref<Shape> >::Element *E = shapes.front(); E; E = E->next()) {
+
+					CollisionShape *cshape = memnew(CollisionShape);
+					cshape->set_shape(E->get());
+					col->add_child(cshape);
+
+					cshape->set_name("shape" + itos(idx));
+					cshape->set_owner(p_node->get_owner());
+
+					idx++;
+				}
+			}
 		}
-
-		p_node->add_child(col);
-
-		StaticBody *sb = Object::cast_to<StaticBody>(col);
-		CollisionShape *colshape = Object::cast_to<CollisionShape>(sb->get_child(0));
-		colshape->set_name("shape");
-		col->add_child(colshape);
-		colshape->set_owner(p_node->get_owner());
-		sb->set_owner(p_node->get_owner());
 
 	} else if (_teststr(name, "navmesh") && Object::cast_to<MeshInstance>(p_node)) {
 
@@ -527,48 +620,35 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		Ref<ArrayMesh> mesh = mi->get_mesh();
 		if (!mesh.is_null()) {
 
-			if (_teststr(mesh->get_name(), "col") || _teststr(mesh->get_name(), "convcol")) {
-				Ref<Shape> shape;
-				if (_teststr(mesh->get_name(), "col")) {
-					mesh->set_name(_fixstr(mesh->get_name(), "col"));
+			List<Ref<Shape> > shapes;
+			if (collision_map.has(mesh)) {
+				shapes = collision_map[mesh];
+			} else if (_teststr(mesh->get_name(), "col")) {
+				_gen_shape_list(mesh, shapes, false);
+				collision_map[mesh] = shapes;
+				mesh->set_name(_fixstr(mesh->get_name(), "col"));
+			} else if (_teststr(mesh->get_name(), "convcol")) {
+				_gen_shape_list(mesh, shapes, true);
+				collision_map[mesh] = shapes;
+				mesh->set_name(_fixstr(mesh->get_name(), "convcol"));
+			}
 
-					if (collision_map.has(mesh)) {
-						shape = collision_map[mesh];
+			if (shapes.size()) {
+				StaticBody *col = memnew(StaticBody);
+				col->set_name("static_collision");
+				p_node->add_child(col);
+				col->set_owner(p_node->get_owner());
 
-					} else {
+				int idx = 0;
+				for (List<Ref<Shape> >::Element *E = shapes.front(); E; E = E->next()) {
 
-						shape = mesh->create_trimesh_shape();
-						if (!shape.is_null())
-							collision_map[mesh] = shape;
-					}
-				} else if (_teststr(mesh->get_name(), "convcol")) {
-					mesh->set_name(_fixstr(mesh->get_name(), "convcol"));
-
-					if (collision_map.has(mesh)) {
-						shape = collision_map[mesh];
-
-					} else {
-
-						shape = mesh->create_convex_shape();
-						if (!shape.is_null())
-							collision_map[mesh] = shape;
-					}
-				}
-
-				if (!shape.is_null()) {
-					StaticBody *col = memnew(StaticBody);
 					CollisionShape *cshape = memnew(CollisionShape);
-					cshape->set_shape(shape);
+					cshape->set_shape(E->get());
 					col->add_child(cshape);
 
-					col->set_transform(mi->get_transform());
-					col->set_name(mi->get_name());
-					p_node->replace_by(col);
-					memdelete(p_node);
-					p_node = col;
-
-					cshape->set_name("shape");
+					cshape->set_name("shape" + itos(idx));
 					cshape->set_owner(p_node->get_owner());
+					idx++;
 				}
 			}
 		}
@@ -628,6 +708,10 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 								default_anim->transform_track_interpolate(j, from, &p, &q, &s);
 								new_anim->transform_track_insert_key(dtrack, 0, p, q, s);
 							}
+							if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
+								Variant var = default_anim->value_track_interpolate(j, from);
+								new_anim->track_insert_key(dtrack, 0, var);
+							}
 						}
 					}
 
@@ -637,6 +721,10 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 						Vector3 s;
 						default_anim->transform_track_get_key(j, k, &p, &q, &s);
 						new_anim->transform_track_insert_key(dtrack, kt - from, p, q, s);
+					}
+					if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
+						Variant var = default_anim->track_get_key_value(j, k);
+						new_anim->track_insert_key(dtrack, kt - from, var);
 					}
 				}
 
@@ -648,6 +736,10 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 						Vector3 s;
 						default_anim->transform_track_interpolate(j, to, &p, &q, &s);
 						new_anim->transform_track_insert_key(dtrack, to - from, p, q, s);
+					}
+					if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
+						Variant var = default_anim->value_track_interpolate(j, to);
+						new_anim->track_insert_key(dtrack, to - from, var);
 					}
 				}
 			}
@@ -666,6 +758,12 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 					default_anim->transform_track_interpolate(j, to, &p, &q, &s);
 					new_anim->transform_track_insert_key(dtrack, to - from, p, q, s);
 				}
+				if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
+					Variant var = default_anim->value_track_interpolate(j, from);
+					new_anim->track_insert_key(dtrack, 0, var);
+					Variant to_var = default_anim->value_track_interpolate(j, to);
+					new_anim->track_insert_key(dtrack, to - from, to_var);
+				}
 			}
 		}
 
@@ -682,15 +780,11 @@ void ResourceImporterScene::_filter_anim_tracks(Ref<Animation> anim, Set<String>
 	Ref<Animation> a = anim;
 	ERR_FAIL_COND(!a.is_valid());
 
-	print_line("From Anim " + anim->get_name() + ":");
-
 	for (int j = 0; j < a->get_track_count(); j++) {
 
 		String path = a->track_get_path(j);
 
 		if (!keep.has(path)) {
-
-			print_line("Remove: " + path);
 			a->remove_track(j);
 			j--;
 		}
@@ -709,7 +803,7 @@ void ResourceImporterScene::_filter_tracks(Node *scene, const String &p_text) {
 	Vector<String> strings = p_text.split("\n");
 	for (int i = 0; i < strings.size(); i++) {
 
-		strings[i] = strings[i].strip_edges();
+		strings.write[i] = strings[i].strip_edges();
 	}
 
 	List<StringName> anim_names;
@@ -858,8 +952,6 @@ void ResourceImporterScene::_find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Trans
 			}
 
 			meshes[mesh] = transform;
-
-			print_line("mesh transform: " + meshes[mesh]);
 		}
 	}
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -871,8 +963,6 @@ void ResourceImporterScene::_find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Trans
 void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_keep_animations, bool p_make_materials, bool p_keep_materials, bool p_make_meshes, Map<Ref<Animation>, Ref<Animation> > &p_animations, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes) {
 
 	List<PropertyInfo> pi;
-
-	print_line("node: " + String(p_node->get_name()));
 
 	if (p_make_animations) {
 		if (Object::cast_to<AnimationPlayer>(p_node)) {
@@ -893,7 +983,6 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 					}
 
 					String ext_name = p_base_path.plus_file(_make_extname(E->get()) + ".anim");
-
 					if (FileAccess::exists(ext_name) && p_keep_animations) {
 						//try to keep custom animation tracks
 						Ref<Animation> old_anim = ResourceLoader::load(ext_name, "Animation", true);
@@ -904,9 +993,11 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 									old_anim->copy_track(i, anim);
 								}
 							}
+							anim->set_loop(old_anim->has_loop());
 						}
 					}
 
+					anim->set_path(ext_name, true); //if not set, then its never saved externally
 					ResourceSaver::save(ext_name, anim, ResourceSaver::FLAG_CHANGE_PATH);
 					p_animations[anim] = anim;
 				}
@@ -1054,7 +1145,7 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 15));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "animation/filter_script", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "animation/storage", PROPERTY_HINT_ENUM, "Built-In,Files"), animations_out ? true : false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "animation/storage", PROPERTY_HINT_ENUM, "Built-In,Files", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), animations_out ? true : false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/keep_custom_tracks"), animations_out ? true : false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/optimizer/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/optimizer/max_linear_error"), 0.05));
@@ -1144,7 +1235,7 @@ Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(Edito
 	return importer->import_animation(p_path, p_flags, p_bake_fps);
 }
 
-Error ResourceImporterScene::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
+Error ResourceImporterScene::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 
 	String src_path = p_source_file;
 
@@ -1201,7 +1292,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	String root_type = p_options["nodes/root_type"];
 
-	if (scene->get_class() != root_type) {
+	if (root_type != "Spatial") {
 		Node *base_node = Object::cast_to<Node>(ClassDB::instance(root_type));
 
 		if (base_node) {
@@ -1217,7 +1308,10 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		Object::cast_to<Spatial>(scene)->scale(Vector3(root_scale, root_scale, root_scale));
 	}
 
-	scene->set_name(p_options["nodes/root_name"]);
+	if (p_options["nodes/root_name"] != "Scene Root")
+		scene->set_name(p_options["nodes/root_name"]);
+	else
+		scene->set_name(p_save_path.get_file().get_basename());
 
 	err = OK;
 
@@ -1229,7 +1323,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	float anim_optimizer_maxang = p_options["animation/optimizer/max_angle"];
 	int light_bake_mode = p_options["meshes/light_baking"];
 
-	Map<Ref<ArrayMesh>, Ref<Shape> > collision_map;
+	Map<Ref<Mesh>, List<Ref<Shape> > > collision_map;
 
 	scene = _fix_node(scene, scene, collision_map, LightBakeMode(light_bake_mode));
 
@@ -1275,10 +1369,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		if (bool(p_options["external_files/store_in_subdir"])) {
 			String subdir_name = p_source_file.get_file().get_basename();
 			DirAccess *da = DirAccess::open(base_path);
-			print_line("at path " + da->get_current_dir() + " making " + subdir_name);
-			Error err = da->make_dir(subdir_name);
+			Error err2 = da->make_dir(subdir_name);
 			memdelete(da);
-			ERR_FAIL_COND_V(err != OK && err != ERR_ALREADY_EXISTS, err);
+			ERR_FAIL_COND_V(err2 != OK && err2 != ERR_ALREADY_EXISTS, err2);
 			base_path = base_path.plus_file(subdir_name);
 		}
 	}
@@ -1293,7 +1386,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 			float texel_size = p_options["meshes/lightmap_texel_size"];
 			texel_size = MAX(0.001, texel_size);
 
-			EditorProgress progress("gen_lightmaps", TTR("Generating Lightmaps"), meshes.size());
+			EditorProgress progress2("gen_lightmaps", TTR("Generating Lightmaps"), meshes.size());
 			int step = 0;
 			for (Map<Ref<ArrayMesh>, Transform>::Element *E = meshes.front(); E; E = E->next()) {
 
@@ -1303,10 +1396,10 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 					name = "Mesh " + itos(step);
 				}
 
-				progress.step(TTR("Generating for Mesh: ") + name + " (" + itos(step) + "/" + itos(meshes.size()) + ")", step);
+				progress2.step(TTR("Generating for Mesh: ") + name + " (" + itos(step) + "/" + itos(meshes.size()) + ")", step);
 
-				Error err = mesh->lightmap_unwrap(E->get(), texel_size);
-				if (err != OK) {
+				Error err2 = mesh->lightmap_unwrap(E->get(), texel_size);
+				if (err2 != OK) {
 					EditorNode::add_io_error("Mesh '" + name + "' failed lightmap generation. Please fix geometry.");
 				}
 				step++;
@@ -1346,6 +1439,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	}
 
 	if (post_import_script.is_valid()) {
+		post_import_script->init(base_path, p_source_file);
 		scene = post_import_script->post_import(scene);
 		if (!scene) {
 			EditorNode::add_io_error(TTR("Error running post-import script:") + " " + post_import_script_path);
@@ -1379,7 +1473,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	Ref<PackedScene> packer = memnew(PackedScene);
 	packer->pack(scene);
-	print_line("SAVING TO: " + p_save_path + ".scn");
+	print_verbose("Saving scene to: " + p_save_path + ".scn");
 	err = ResourceSaver::save(p_save_path + ".scn", packer); //do not take over, let the changed files reload themselves
 	ERR_FAIL_COND_V(err != OK, err);
 

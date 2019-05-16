@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 
 #include "scene/3d/camera.h"
 #include "scene/3d/spatial.h"
+#include "scene/resources/mesh.h"
 #include "servers/arvr/arvr_positional_tracker.h"
 
 /**
@@ -62,7 +63,7 @@ public:
 };
 
 /*
-	ARVRController is a helper node that automatically updates it's position based on tracker data.
+	ARVRController is a helper node that automatically updates its position based on tracker data.
 
 	It must be a child node of our ARVROrigin node
 */
@@ -75,6 +76,7 @@ private:
 	int controller_id;
 	bool is_active;
 	int button_states;
+	Ref<Mesh> mesh;
 
 protected:
 	void _notification(int p_what);
@@ -95,6 +97,8 @@ public:
 	bool get_is_active() const;
 	ARVRPositionalTracker::TrackerHand get_hand() const;
 
+	Ref<Mesh> get_mesh(void) const;
+
 	String get_configuration_warning() const;
 
 	ARVRController();
@@ -102,7 +106,7 @@ public:
 };
 
 /*
-	ARVRAnchor is a helper node that automatically updates it's position based on anchor data, it represents a real world location.
+	ARVRAnchor is a helper node that automatically updates its position based on anchor data, it represents a real world location.
 	It must be a child node of our ARVROrigin node
 */
 
@@ -113,6 +117,7 @@ private:
 	int anchor_id;
 	bool is_active;
 	Vector3 size;
+	Ref<Mesh> mesh;
 
 protected:
 	void _notification(int p_what);
@@ -127,6 +132,8 @@ public:
 	Vector3 get_size() const;
 
 	Plane get_plane() const;
+
+	Ref<Mesh> get_mesh(void) const;
 
 	String get_configuration_warning() const;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,16 +29,61 @@
 /*************************************************************************/
 
 #include "resource_saver.h"
-#include "os/file_access.h"
-#include "project_settings.h"
-#include "resource_loader.h"
-#include "script_language.h"
+#include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
 
-ResourceFormatSaver *ResourceSaver::saver[MAX_SAVERS];
+Ref<ResourceFormatSaver> ResourceSaver::saver[MAX_SAVERS];
 
 int ResourceSaver::saver_count = 0;
 bool ResourceSaver::timestamp_on_save = false;
 ResourceSavedCallback ResourceSaver::save_callback = 0;
+
+Error ResourceFormatSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+
+	if (get_script_instance() && get_script_instance()->has_method("save")) {
+		return (Error)get_script_instance()->call("save", p_path, p_resource, p_flags).operator int64_t();
+	}
+
+	return ERR_METHOD_NOT_FOUND;
+}
+
+bool ResourceFormatSaver::recognize(const RES &p_resource) const {
+
+	if (get_script_instance() && get_script_instance()->has_method("recognize")) {
+		return get_script_instance()->call("recognize", p_resource);
+	}
+
+	return false;
+}
+
+void ResourceFormatSaver::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
+
+	if (get_script_instance() && get_script_instance()->has_method("get_recognized_extensions")) {
+		PoolStringArray exts = get_script_instance()->call("get_recognized_extensions", p_resource);
+
+		{
+			PoolStringArray::Read r = exts.read();
+			for (int i = 0; i < exts.size(); ++i) {
+				p_extensions->push_back(r[i]);
+			}
+		}
+	}
+}
+
+void ResourceFormatSaver::_bind_methods() {
+
+	{
+		PropertyInfo arg0 = PropertyInfo(Variant::STRING, "path");
+		PropertyInfo arg1 = PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource");
+		PropertyInfo arg2 = PropertyInfo(Variant::INT, "flags");
+		ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::INT, "save", arg0, arg1, arg2));
+	}
+
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::POOL_STRING_ARRAY, "get_recognized_extensions", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "recognize", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+}
 
 Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
 
@@ -56,7 +101,7 @@ Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t 
 
 		for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
 
-			if (E->get().nocasecmp_to(extension.get_extension()) == 0)
+			if (E->get().nocasecmp_to(extension) == 0)
 				recognized = true;
 		}
 
@@ -89,7 +134,7 @@ Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t 
 				rwcopy->set_path(old_path);
 
 			if (save_callback && p_path.begins_with("res://"))
-				save_callback(p_path);
+				save_callback(p_resource, p_path);
 
 			return OK;
 		} else {
@@ -112,8 +157,9 @@ void ResourceSaver::get_recognized_extensions(const RES &p_resource, List<String
 	}
 }
 
-void ResourceSaver::add_resource_format_saver(ResourceFormatSaver *p_format_saver, bool p_at_front) {
+void ResourceSaver::add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front) {
 
+	ERR_FAIL_COND(p_format_saver.is_null());
 	ERR_FAIL_COND(saver_count >= MAX_SAVERS);
 
 	if (p_at_front) {
@@ -124,5 +170,104 @@ void ResourceSaver::add_resource_format_saver(ResourceFormatSaver *p_format_save
 		saver_count++;
 	} else {
 		saver[saver_count++] = p_format_saver;
+	}
+}
+
+void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver) {
+
+	ERR_FAIL_COND(p_format_saver.is_null());
+
+	// Find saver
+	int i = 0;
+	for (; i < saver_count; ++i) {
+		if (saver[i] == p_format_saver)
+			break;
+	}
+
+	ERR_FAIL_COND(i >= saver_count); // Not found
+
+	// Shift next savers up
+	for (; i < saver_count - 1; ++i) {
+		saver[i] = saver[i + 1];
+	}
+	saver[saver_count - 1].unref();
+	--saver_count;
+}
+
+Ref<ResourceFormatSaver> ResourceSaver::_find_custom_resource_format_saver(String path) {
+	for (int i = 0; i < saver_count; ++i) {
+		if (saver[i]->get_script_instance() && saver[i]->get_script_instance()->get_script()->get_path() == path) {
+			return saver[i];
+		}
+	}
+	return Ref<ResourceFormatSaver>();
+}
+
+bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
+
+	if (_find_custom_resource_format_saver(script_path).is_valid())
+		return false;
+
+	Ref<Resource> res = ResourceLoader::load(script_path);
+	ERR_FAIL_COND_V(res.is_null(), false);
+	ERR_FAIL_COND_V(!res->is_class("Script"), false);
+
+	Ref<Script> s = res;
+	StringName ibt = s->get_instance_base_type();
+	bool valid_type = ClassDB::is_parent_class(ibt, "ResourceFormatSaver");
+	ERR_EXPLAIN("Script does not inherit a CustomResourceSaver: " + script_path);
+	ERR_FAIL_COND_V(!valid_type, false);
+
+	Object *obj = ClassDB::instance(ibt);
+
+	ERR_EXPLAIN("Cannot instance script as custom resource saver, expected 'ResourceFormatSaver' inheritance, got: " + String(ibt));
+	ERR_FAIL_COND_V(obj == NULL, false);
+
+	ResourceFormatSaver *crl = NULL;
+	crl = Object::cast_to<ResourceFormatSaver>(obj);
+	crl->set_script(s.get_ref_ptr());
+	ResourceSaver::add_resource_format_saver(crl);
+
+	return true;
+}
+
+void ResourceSaver::remove_custom_resource_format_saver(String script_path) {
+
+	Ref<ResourceFormatSaver> custom_saver = _find_custom_resource_format_saver(script_path);
+	if (custom_saver.is_valid())
+		remove_resource_format_saver(custom_saver);
+}
+
+void ResourceSaver::add_custom_savers() {
+	// Custom resource savers exploits global class names
+
+	String custom_saver_base_class = ResourceFormatSaver::get_class_static();
+
+	List<StringName> global_classes;
+	ScriptServer::get_global_class_list(&global_classes);
+
+	for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
+
+		StringName class_name = E->get();
+		StringName base_class = ScriptServer::get_global_class_native_base(class_name);
+
+		if (base_class == custom_saver_base_class) {
+			String path = ScriptServer::get_global_class_path(class_name);
+			add_custom_resource_format_saver(path);
+		}
+	}
+}
+
+void ResourceSaver::remove_custom_savers() {
+
+	Vector<Ref<ResourceFormatSaver> > custom_savers;
+	for (int i = 0; i < saver_count; ++i) {
+		if (saver[i]->get_script_instance()) {
+			custom_savers.push_back(saver[i]);
+		}
+	}
+
+	for (int i = 0; i < custom_savers.size(); ++i) {
+		remove_resource_format_saver(custom_savers[i]);
 	}
 }

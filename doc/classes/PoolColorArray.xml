@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PoolColorArray" category="Built-In Types" version="3.1">
+<class name="PoolColorArray" category="Built-In Types" version="3.2">
 	<brief_description>
-		Array of Colors
+		A pooled [Array] of [Color].
 	</brief_description>
 	<description>
-		Array of Color, Contains colors. Optimized for memory usage, can't fragment the memory. Note that this type is passed by value and not by reference.
+		An [Array] specifically designed to hold [Color]. Optimized for memory usage, does not fragment the memory. Note that this type is passed by value and not by reference.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="PoolColorArray">
 			<return type="PoolColorArray">
@@ -17,7 +15,7 @@
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Create from a generic array.
+				Construct a new [PoolColorArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
@@ -31,7 +29,7 @@
 			<argument index="0" name="array" type="PoolColorArray">
 			</argument>
 			<description>
-				Append a [code]PoolColorArray[/code] at the end of this array.
+				Append a [PoolColorArray] at the end of this array.
 			</description>
 		</method>
 		<method name="insert">
@@ -42,12 +40,12 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+				Insert a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
 		</method>
 		<method name="invert">
 			<description>
-				Reverse the order of the elements in the array (so first element will now be the last).
+				Reverse the order of the elements in the array.
 			</description>
 		</method>
 		<method name="push_back">

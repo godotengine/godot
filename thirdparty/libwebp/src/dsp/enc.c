@@ -734,18 +734,12 @@ VP8BlockCopy VP8Copy16x8;
 
 extern void VP8EncDspInitSSE2(void);
 extern void VP8EncDspInitSSE41(void);
-extern void VP8EncDspInitAVX2(void);
 extern void VP8EncDspInitNEON(void);
 extern void VP8EncDspInitMIPS32(void);
 extern void VP8EncDspInitMIPSdspR2(void);
 extern void VP8EncDspInitMSA(void);
 
-static volatile VP8CPUInfo enc_last_cpuinfo_used =
-    (VP8CPUInfo)&enc_last_cpuinfo_used;
-
-WEBP_TSAN_IGNORE_FUNCTION void VP8EncDspInit(void) {
-  if (enc_last_cpuinfo_used == VP8GetCPUInfo) return;
-
+WEBP_DSP_INIT_FUNC(VP8EncDspInit) {
   VP8DspInit();  // common inverse transforms
   InitTables();
 
@@ -787,11 +781,6 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8EncDspInit(void) {
         VP8EncDspInitSSE41();
       }
 #endif
-    }
-#endif
-#if defined(WEBP_USE_AVX2)
-    if (VP8GetCPUInfo(kAVX2)) {
-      VP8EncDspInitAVX2();
     }
 #endif
 #if defined(WEBP_USE_MIPS32)
@@ -838,6 +827,4 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8EncDspInit(void) {
   assert(VP8EncQuantizeBlockWHT != NULL);
   assert(VP8Copy4x4 != NULL);
   assert(VP8Copy16x8 != NULL);
-
-  enc_last_cpuinfo_used = VP8GetCPUInfo;
 }

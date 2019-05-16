@@ -38,9 +38,12 @@
 #if defined(MBEDTLS_PKCS5_C)
 
 #include "mbedtls/pkcs5.h"
+
+#if defined(MBEDTLS_ASN1_PARSE_C)
 #include "mbedtls/asn1.h"
 #include "mbedtls/cipher.h"
 #include "mbedtls/oid.h"
+#endif /* MBEDTLS_ASN1_PARSE_C */
 
 #include <string.h>
 
@@ -51,6 +54,7 @@
 #define mbedtls_printf printf
 #endif
 
+#if defined(MBEDTLS_ASN1_PARSE_C)
 static int pkcs5_parse_pbkdf2_params( const mbedtls_asn1_buf *params,
                                       mbedtls_asn1_buf *salt, int *iterations,
                                       int *keylen, mbedtls_md_type_t *md_type )
@@ -211,6 +215,7 @@ exit:
 
     return( ret );
 }
+#endif /* MBEDTLS_ASN1_PARSE_C */
 
 int mbedtls_pkcs5_pbkdf2_hmac( mbedtls_md_context_t *ctx, const unsigned char *password,
                        size_t plen, const unsigned char *salt, size_t slen,
@@ -229,8 +234,10 @@ int mbedtls_pkcs5_pbkdf2_hmac( mbedtls_md_context_t *ctx, const unsigned char *p
     memset( counter, 0, 4 );
     counter[3] = 1;
 
+#if UINT_MAX > 0xFFFFFFFF
     if( iteration_count > 0xFFFFFFFF )
         return( MBEDTLS_ERR_PKCS5_BAD_INPUT_DATA );
+#endif
 
     while( key_length )
     {

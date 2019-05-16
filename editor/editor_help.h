@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,101 +31,61 @@
 #ifndef EDITOR_HELP_H
 #define EDITOR_HELP_H
 
+#include "editor/code_editor.h"
+#include "editor/doc/doc_data.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
-#include "scene/gui/tree.h"
-
-#include "editor/code_editor.h"
-#include "editor/doc/doc_data.h"
 #include "scene/main/timer.h"
 
-class EditorNode;
+class FindBar : public HBoxContainer {
+	GDCLASS(FindBar, HBoxContainer);
 
-class EditorHelpSearch : public ConfirmationDialog {
+	LineEdit *search_text;
+	ToolButton *find_prev;
+	ToolButton *find_next;
+	Label *error_label;
+	TextureButton *hide_button;
+	String prev_search;
 
-	GDCLASS(EditorHelpSearch, ConfirmationDialog)
+	RichTextLabel *rich_text_label;
 
-	LineEdit *search_box;
-	Tree *search_options;
-	String base_type;
+	void _show_search();
+	void _hide_bar();
 
-	class IncrementalSearch : public Reference {
-		String term;
-		TreeItem *root;
+	void _search_text_changed(const String &p_text);
+	void _search_text_entered(const String &p_text);
 
-		EditorHelpSearch *search;
-		Tree *search_options;
-
-		DocData *doc;
-		Ref<Texture> def_icon;
-
-		int phase;
-		Map<String, DocData::ClassDoc>::Element *iterator;
-
-		void phase1(Map<String, DocData::ClassDoc>::Element *E);
-		void phase2(Map<String, DocData::ClassDoc>::Element *E);
-		bool slice();
-
-	public:
-		IncrementalSearch(EditorHelpSearch *p_search, Tree *p_search_options, const String &p_term);
-
-		bool empty() const;
-		bool work(uint64_t slot = 1000000 / 10);
-	};
-
-	Ref<IncrementalSearch> search;
-
-	void _update_search();
-
-	void _sbox_input(const Ref<InputEvent> &p_ie);
-
-	void _confirmed();
-	void _text_changed(const String &p_newtext);
+	void _update_size();
 
 protected:
 	void _notification(int p_what);
+	void _unhandled_input(const Ref<InputEvent> &p_event);
+
+	bool _search(bool p_search_previous = false);
+
 	static void _bind_methods();
 
 public:
-	void popup();
-	void popup(const String &p_term);
+	void set_error(const String &p_label);
 
-	EditorHelpSearch();
-};
+	void set_rich_text_label(RichTextLabel *p_rich_text_label);
 
-class EditorHelpIndex : public ConfirmationDialog {
-	GDCLASS(EditorHelpIndex, ConfirmationDialog);
+	void popup_search();
 
-	LineEdit *search_box;
-	Tree *class_list;
-	HashMap<String, TreeItem *> tree_item_map;
+	bool search_prev();
+	bool search_next();
 
-	void _tree_item_selected();
-	void _text_changed(const String &p_text);
-	void _sbox_input(const Ref<InputEvent> &p_ie);
-
-	void _update_class_list();
-
-	void add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	void select_class(const String &p_class);
-
-	void popup();
-
-	EditorHelpIndex();
+	FindBar();
 };
 
 class EditorHelp : public VBoxContainer {
+
 	GDCLASS(EditorHelp, VBoxContainer);
 
 	enum Page {
@@ -161,6 +121,7 @@ class EditorHelp : public VBoxContainer {
 
 	ConfirmationDialog *search_dialog;
 	LineEdit *search;
+	FindBar *find_bar;
 
 	String base_path;
 
@@ -194,9 +155,10 @@ class EditorHelp : public VBoxContainer {
 
 	void _request_help(const String &p_string);
 	void _search(const String &p_str);
-	void _search_cbk();
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
+
+	String _fix_constant(const String &p_constant) const;
 
 protected:
 	void _notification(int p_what);
@@ -226,9 +188,9 @@ public:
 	~EditorHelp();
 };
 
-class EditorHelpBit : public Panel {
+class EditorHelpBit : public PanelContainer {
 
-	GDCLASS(EditorHelpBit, Panel);
+	GDCLASS(EditorHelpBit, PanelContainer);
 
 	RichTextLabel *rich_text;
 	void _go_to_help(String p_what);
@@ -239,6 +201,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	RichTextLabel *get_rich_text() { return rich_text; }
 	void set_text(const String &p_text);
 	EditorHelpBit();
 };

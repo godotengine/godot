@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,20 +31,27 @@
 #include "register_types.h"
 
 #include "bullet_physics_server.h"
-#include "class_db.h"
+#include "core/class_db.h"
+#include "core/project_settings.h"
 
 /**
 	@author AndreaCatania
 */
 
+#ifndef _3D_DISABLED
 PhysicsServer *_createBulletPhysicsCallback() {
 	return memnew(BulletPhysicsServer);
 }
+#endif
 
 void register_bullet_types() {
-
+#ifndef _3D_DISABLED
 	PhysicsServerManager::register_server("Bullet", &_createBulletPhysicsCallback);
 	PhysicsServerManager::set_default_server("Bullet", 1);
+
+	GLOBAL_DEF("physics/3d/active_soft_world", true);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/active_soft_world", PropertyInfo(Variant::BOOL, "physics/3d/active_soft_world"));
+#endif
 }
 
 void unregister_bullet_types() {

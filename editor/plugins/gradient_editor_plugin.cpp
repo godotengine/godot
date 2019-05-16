@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,77 +33,70 @@
 #include "canvas_item_editor_plugin.h"
 #include "spatial_editor_plugin.h"
 
-GradientEditorPlugin::GradientEditorPlugin(EditorNode *p_node) {
+Size2 GradientEditor::get_minimum_size() const {
+	return Size2(0, 60) * EDSCALE;
+}
+void GradientEditor::_gradient_changed() {
 
-	editor = p_node;
-	ramp_editor = memnew(GradientEdit);
+	if (editing)
+		return;
 
-	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, ramp_editor);
-
-	ramp_editor->set_custom_minimum_size(Size2(100, 48));
-	ramp_editor->hide();
-	ramp_editor->connect("ramp_changed", this, "ramp_changed");
+	editing = true;
+	Vector<Gradient::Point> points = gradient->get_points();
+	set_points(points);
+	editing = false;
 }
 
-void GradientEditorPlugin::edit(Object *p_object) {
+void GradientEditor::_ramp_changed() {
+
+	editing = true;
+	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	undo_redo->create_action(TTR("Gradient Edited"));
+	undo_redo->add_do_method(gradient.ptr(), "set_offsets", get_offsets());
+	undo_redo->add_do_method(gradient.ptr(), "set_colors", get_colors());
+	undo_redo->add_undo_method(gradient.ptr(), "set_offsets", gradient->get_offsets());
+	undo_redo->add_undo_method(gradient.ptr(), "set_colors", gradient->get_colors());
+	undo_redo->commit_action();
+	editing = false;
+}
+
+void GradientEditor::_bind_methods() {
+
+	ClassDB::bind_method("_gradient_changed", &GradientEditor::_gradient_changed);
+	ClassDB::bind_method("_ramp_changed", &GradientEditor::_ramp_changed);
+}
+
+void GradientEditor::set_gradient(const Ref<Gradient> &p_gradient) {
+	gradient = p_gradient;
+	connect("ramp_changed", this, "_ramp_changed");
+	gradient->connect("changed", this, "_gradient_changed");
+	set_points(gradient->get_points());
+}
+
+GradientEditor::GradientEditor() {
+	editing = false;
+}
+
+///////////////////////
+
+bool EditorInspectorPluginGradient::can_handle(Object *p_object) {
+
+	return Object::cast_to<Gradient>(p_object) != NULL;
+}
+
+void EditorInspectorPluginGradient::parse_begin(Object *p_object) {
 
 	Gradient *gradient = Object::cast_to<Gradient>(p_object);
-	if (!gradient)
-		return;
-	gradient_ref = Ref<Gradient>(gradient);
-	ramp_editor->set_points(gradient_ref->get_points());
+	Ref<Gradient> g(gradient);
+
+	GradientEditor *editor = memnew(GradientEditor);
+	editor->set_gradient(g);
+	add_custom_control(editor);
 }
 
-bool GradientEditorPlugin::handles(Object *p_object) const {
+GradientEditorPlugin::GradientEditorPlugin(EditorNode *p_node) {
 
-	return p_object->is_class("Gradient");
-}
-
-void GradientEditorPlugin::make_visible(bool p_visible) {
-
-	if (p_visible) {
-		ramp_editor->show();
-	} else {
-		ramp_editor->hide();
-	}
-}
-
-void GradientEditorPlugin::_ramp_changed() {
-
-	if (gradient_ref.is_valid()) {
-
-		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-
-		//Not sure if I should convert this data to PoolVector
-		Vector<float> new_offsets = ramp_editor->get_offsets();
-		Vector<Color> new_colors = ramp_editor->get_colors();
-		Vector<float> old_offsets = gradient_ref->get_offsets();
-		Vector<Color> old_colors = gradient_ref->get_colors();
-
-		if (old_offsets.size() != new_offsets.size())
-			ur->create_action(TTR("Add/Remove Color Ramp Point"));
-		else
-			ur->create_action(TTR("Modify Color Ramp"), UndoRedo::MERGE_ENDS);
-		ur->add_do_method(this, "undo_redo_gradient", new_offsets, new_colors);
-		ur->add_undo_method(this, "undo_redo_gradient", old_offsets, old_colors);
-		ur->commit_action();
-
-		//color_ramp_ref->set_points(ramp_editor->get_points());
-	}
-}
-
-void GradientEditorPlugin::_undo_redo_gradient(const Vector<float> &offsets, const Vector<Color> &colors) {
-
-	gradient_ref->set_offsets(offsets);
-	gradient_ref->set_colors(colors);
-	ramp_editor->set_points(gradient_ref->get_points());
-	ramp_editor->update();
-}
-
-GradientEditorPlugin::~GradientEditorPlugin() {
-}
-
-void GradientEditorPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("ramp_changed"), &GradientEditorPlugin::_ramp_changed);
-	ClassDB::bind_method(D_METHOD("undo_redo_gradient", "offsets", "colors"), &GradientEditorPlugin::_undo_redo_gradient);
+	Ref<EditorInspectorPluginGradient> plugin;
+	plugin.instance();
+	add_inspector_plugin(plugin);
 }

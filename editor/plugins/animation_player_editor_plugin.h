@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,8 +42,9 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class AnimationKeyEditor;
+class AnimationTrackEditor;
 class AnimationPlayerEditorPlugin;
+
 class AnimationPlayerEditor : public VBoxContainer {
 
 	GDCLASS(AnimationPlayerEditor, VBoxContainer);
@@ -53,6 +54,14 @@ class AnimationPlayerEditor : public VBoxContainer {
 	AnimationPlayer *player;
 
 	enum {
+		TOOL_NEW_ANIM,
+		TOOL_LOAD_ANIM,
+		TOOL_SAVE_ANIM,
+		TOOL_SAVE_AS_ANIM,
+		TOOL_DUPLICATE_ANIM,
+		TOOL_RENAME_ANIM,
+		TOOL_EDIT_TRANSITIONS,
+		TOOL_REMOVE_ANIM,
 		TOOL_COPY_ANIM,
 		TOOL_PASTE_ANIM,
 		TOOL_EDIT_RESOURCE
@@ -72,6 +81,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	};
 
 	enum {
+		ANIM_OPEN,
 		ANIM_SAVE,
 		ANIM_SAVE_AS
 	};
@@ -89,16 +99,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Button *play_bw_from;
 
 	//Button *pause;
-	Button *add_anim;
 	Button *autoplay;
-	Button *rename_anim;
-	Button *duplicate_anim;
 
-	Button *resource_edit_anim;
-	Button *load_anim;
-	MenuButton *save_anim;
-	Button *blend_anim;
-	Button *remove_anim;
 	MenuButton *tool_anim;
 	MenuButton *onion_skinning;
 	ToolButton *pin;
@@ -130,7 +132,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	bool updating;
 	bool updating_blends;
 
-	AnimationKeyEditor *key_editor;
+	AnimationTrackEditor *track_editor;
 
 	// Onion skinning
 	struct {
@@ -207,8 +209,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 	void _animation_tool_menu(int p_option);
-	void _animation_save_menu(int p_option);
 	void _onion_skinning_menu(int p_option);
+	void _animation_about_to_show_menu();
 
 	void _editor_visibility_changed();
 	bool _are_onion_layers_valid();
@@ -218,6 +220,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _prepare_onion_layers_2();
 	void _start_onion_skinning();
 	void _stop_onion_skinning();
+
+	void _pin_pressed();
 
 	AnimationPlayerEditor();
 	~AnimationPlayerEditor();
@@ -232,7 +236,9 @@ public:
 	AnimationPlayer *get_player() const;
 	static AnimationPlayerEditor *singleton;
 
-	AnimationKeyEditor *get_key_editor() { return key_editor; }
+	bool is_pinned() const { return pin->is_pressed(); }
+	void unpin() { pin->set_pressed(false); }
+	AnimationTrackEditor *get_track_editor() { return track_editor; }
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);
 
@@ -240,7 +246,7 @@ public:
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	void edit(AnimationPlayer *p_player);
-	void forward_force_draw_over_viewport(Control *p_overlay);
+	void forward_canvas_force_draw_over_viewport(Control *p_overlay);
 
 	AnimationPlayerEditor(EditorNode *p_editor, AnimationPlayerEditorPlugin *p_plugin);
 };
@@ -265,7 +271,7 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
-	virtual void forward_force_draw_over_viewport(Control *p_overlay) { anim_editor->forward_force_draw_over_viewport(p_overlay); }
+	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay) { anim_editor->forward_canvas_force_draw_over_viewport(p_overlay); }
 
 	AnimationPlayerEditorPlugin(EditorNode *p_node);
 	~AnimationPlayerEditorPlugin();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -178,13 +178,17 @@ void RegEx::clear() {
 
 	if (sizeof(CharType) == 2) {
 
-		if (code)
+		if (code) {
 			pcre2_code_free_16((pcre2_code_16 *)code);
+			code = NULL;
+		}
 
 	} else {
 
-		if (code)
+		if (code) {
 			pcre2_code_free_32((pcre2_code_32 *)code);
+			code = NULL;
+		}
 	}
 }
 
@@ -205,6 +209,8 @@ Error RegEx::compile(const String &p_pattern) {
 
 		code = pcre2_compile_16(p, pattern.length(), flags, &err, &offset, cctx);
 
+		pcre2_compile_context_free_16(cctx);
+
 		if (!code) {
 			PCRE2_UCHAR16 buf[256];
 			pcre2_get_error_message_16(err, buf, 256);
@@ -220,6 +226,8 @@ Error RegEx::compile(const String &p_pattern) {
 		PCRE2_SPTR32 p = (PCRE2_SPTR32)pattern.c_str();
 
 		code = pcre2_compile_32(p, pattern.length(), flags, &err, &offset, cctx);
+
+		pcre2_compile_context_free_32(cctx);
 
 		if (!code) {
 			PCRE2_UCHAR32 buf[256];
@@ -265,8 +273,8 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 
 		for (uint32_t i = 0; i < size; i++) {
 
-			result->data[i].start = ovector[i * 2];
-			result->data[i].end = ovector[i * 2 + 1];
+			result->data.write[i].start = ovector[i * 2];
+			result->data.write[i].end = ovector[i * 2 + 1];
 		}
 
 		pcre2_match_data_free_16(match);
@@ -285,6 +293,8 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 
 		if (res < 0) {
 			pcre2_match_data_free_32(match);
+			pcre2_match_context_free_32(mctx);
+
 			return NULL;
 		}
 
@@ -295,8 +305,8 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 
 		for (uint32_t i = 0; i < size; i++) {
 
-			result->data[i].start = ovector[i * 2];
-			result->data[i].end = ovector[i * 2 + 1];
+			result->data.write[i].start = ovector[i * 2];
+			result->data.write[i].end = ovector[i * 2 + 1];
 		}
 
 		pcre2_match_data_free_32(match);

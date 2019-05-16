@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,11 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef WEBSOCKET_CLIENT_H
 #define WEBSOCKET_CLIENT_H
 
 #include "core/error_list.h"
-#include "websocket_multiplayer.h"
+#include "websocket_multiplayer_peer.h"
 #include "websocket_peer.h"
 
 class WebSocketClient : public WebSocketMultiplayerPeer {
@@ -53,7 +54,7 @@ public:
 
 	virtual void poll() = 0;
 	virtual Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocol = PoolVector<String>()) = 0;
-	virtual void disconnect_from_host() = 0;
+	virtual void disconnect_from_host(int p_code = 1000, String p_reason = "") = 0;
 	virtual IP_Address get_connected_host() const = 0;
 	virtual uint16_t get_connected_port() const = 0;
 
@@ -62,7 +63,8 @@ public:
 
 	void _on_peer_packet();
 	void _on_connect(String p_protocol);
-	void _on_disconnect();
+	void _on_close_request(int p_code, String p_reason);
+	void _on_disconnect(bool p_was_clean);
 	void _on_error();
 
 	WebSocketClient();

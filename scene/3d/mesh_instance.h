@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,6 +41,7 @@ class MeshInstance : public GeometryInstance {
 
 	GDCLASS(MeshInstance, GeometryInstance);
 
+protected:
 	Ref<Mesh> mesh;
 	NodePath skeleton_path;
 
@@ -75,6 +76,7 @@ public:
 	void set_skeleton_path(const NodePath &p_skeleton);
 	NodePath get_skeleton_path();
 
+	int get_surface_material_count() const;
 	void set_surface_material(int p_surface, const Ref<Material> &p_material);
 	Ref<Material> get_surface_material(int p_surface) const;
 

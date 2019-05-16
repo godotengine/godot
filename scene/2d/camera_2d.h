@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,6 +44,11 @@ public:
 		ANCHOR_MODE_DRAG_CENTER
 	};
 
+	enum Camera2DProcessMode {
+		CAMERA2D_PROCESS_PHYSICS,
+		CAMERA2D_PROCESS_IDLE
+	};
+
 protected:
 	Point2 camera_pos;
 	Point2 smoothed_camera_pos;
@@ -73,6 +78,7 @@ protected:
 	float v_ofs;
 
 	Point2 camera_screen_center;
+	void _update_process_mode();
 	void _update_scroll();
 
 	void _make_current(Object *p_which);
@@ -83,6 +89,8 @@ protected:
 	bool screen_drawing_enabled;
 	bool limit_drawing_enabled;
 	bool margin_drawing_enabled;
+
+	Camera2DProcessMode process_mode;
 
 protected:
 	virtual Transform2D get_camera_transform();
@@ -126,6 +134,9 @@ public:
 	void set_follow_smoothing(float p_speed);
 	float get_follow_smoothing() const;
 
+	void set_process_mode(Camera2DProcessMode p_mode);
+	Camera2DProcessMode get_process_mode() const;
+
 	void make_current();
 	void clear_current();
 	bool is_current() const;
@@ -156,5 +167,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(Camera2D::AnchorMode);
+VARIANT_ENUM_CAST(Camera2D::Camera2DProcessMode);
 
 #endif // CAMERA_2D_H

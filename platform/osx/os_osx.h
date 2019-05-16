@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,19 +31,23 @@
 #ifndef OS_OSX_H
 #define OS_OSX_H
 
+#include "core/os/input.h"
 #include "crash_handler_osx.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
+#include "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_osx.h"
 #include "main/input_default.h"
-#include "os/input.h"
 #include "power_osx.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "servers/visual_server.h"
+
+#include <AppKit/AppKit.h>
 #include <AppKit/NSCursor.h>
 #include <ApplicationServices/ApplicationServices.h>
+#include <CoreVideo/CoreVideo.h>
 
 #undef CursorShape
 /**
@@ -73,7 +77,12 @@ public:
 
 	IP_Unix *ip_unix;
 
+#ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;
+#endif
+#ifdef COREMIDI_ENABLED
+	MIDIDriverCoreMidi midi_driver;
+#endif
 
 	InputDefault *input;
 	JoypadOSX *joypad_osx;
@@ -96,8 +105,13 @@ public:
 	id window_view;
 	id autoreleasePool;
 	id cursor;
-	id pixelFormat;
-	id context;
+	NSOpenGLPixelFormat *pixelFormat;
+	NSOpenGLContext *context;
+
+	bool layered_window;
+	bool waiting_for_vsync;
+	NSCondition *vsync_condition;
+	CVDisplayLinkRef displayLink;
 
 	CursorShape cursor_shape;
 	NSCursor *cursors[CURSOR_MAX];
@@ -107,6 +121,7 @@ public:
 	bool minimized;
 	bool maximized;
 	bool zoomed;
+	bool resizable;
 
 	Size2 window_size;
 	Rect2 restore_rect;
@@ -114,10 +129,11 @@ public:
 	String open_with_filename;
 
 	Point2 im_position;
-	ImeCallback im_callback;
-	void *im_target;
+	bool im_active;
+	String im_text;
+	Point2 im_selection;
 
-	power_osx *power_manager;
+	PowerOSX *power_manager;
 
 	CrashHandler crash_handler;
 
@@ -132,6 +148,9 @@ public:
 	float _display_scale(id screen) const;
 
 	void _update_window();
+
+	int video_driver_index;
+	virtual int get_current_video_driver() const;
 
 protected:
 	virtual void initialize_core();
@@ -153,6 +172,7 @@ public:
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
 
 	virtual void set_cursor_shape(CursorShape p_shape);
+	virtual CursorShape get_cursor_shape() const;
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 
 	virtual void set_mouse_show(bool p_show);
@@ -226,8 +246,14 @@ public:
 
 	virtual void set_borderless_window(bool p_borderless);
 	virtual bool get_borderless_window();
+
+	virtual bool get_window_per_pixel_transparency_enabled() const;
+	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
+
+	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
-	virtual void set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp);
+	virtual Point2 get_ime_selection() const;
+	virtual String get_ime_text() const;
 
 	virtual String get_unique_id() const;
 

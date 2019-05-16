@@ -1,0 +1,47 @@
+diff --git a/thirdparty/libwebsockets/plat/lws-plat-win.c b/thirdparty/libwebsockets/plat/lws-plat-win.c
+index bd513b494..1850b6425 100644
+--- a/thirdparty/libwebsockets/plat/lws-plat-win.c
++++ b/thirdparty/libwebsockets/plat/lws-plat-win.c
+@@ -641,9 +641,20 @@ _lws_plat_file_open(const struct lws_plat_file_ops *fops, const char *filename,
+ 	HANDLE ret;
+ 	WCHAR buf[MAX_PATH];
+ 	lws_fop_fd_t fop_fd;
+-	LARGE_INTEGER llFileSize = {0};
++	FILE_STANDARD_INFO fInfo = {0};
+ 
+ 	MultiByteToWideChar(CP_UTF8, 0, filename, -1, buf, LWS_ARRAY_SIZE(buf));
++
++#if defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0602 // Windows 8 (minimum when UWP_ENABLED, but can be used in Windows builds)
++	CREATEFILE2_EXTENDED_PARAMETERS extParams = {0};
++	extParams.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
++
++	if (((*flags) & 7) == _O_RDONLY) {
++		ret = CreateFile2(buf, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, &extParams);
++	} else {
++		ret = CreateFile2(buf, GENERIC_WRITE, 0, CREATE_ALWAYS, &extParams);
++	}
++#else
+ 	if (((*flags) & 7) == _O_RDONLY) {
+ 		ret = CreateFileW(buf, GENERIC_READ, FILE_SHARE_READ,
+ 			  NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+@@ -651,6 +662,7 @@ _lws_plat_file_open(const struct lws_plat_file_ops *fops, const char *filename,
+ 		ret = CreateFileW(buf, GENERIC_WRITE, 0, NULL,
+ 			  CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+ 	}
++#endif
+ 
+ 	if (ret == LWS_INVALID_FILE)
+ 		goto bail;
+@@ -663,9 +675,9 @@ _lws_plat_file_open(const struct lws_plat_file_ops *fops, const char *filename,
+ 	fop_fd->fd = ret;
+ 	fop_fd->filesystem_priv = NULL; /* we don't use it */
+ 	fop_fd->flags = *flags;
+-	fop_fd->len = GetFileSize(ret, NULL);
+-	if(GetFileSizeEx(ret, &llFileSize))
+-		fop_fd->len = llFileSize.QuadPart;
++	fop_fd->len = 0;
++	if(GetFileInformationByHandleEx(ret, FileStandardInfo, &fInfo, sizeof(fInfo)))
++		fop_fd->len = fInfo.EndOfFile.QuadPart;
+ 
+ 	fop_fd->pos = 0;
+ 

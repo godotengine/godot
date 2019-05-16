@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,9 +37,7 @@
 #include "haiku_application.h"
 #include "haiku_direct_window.h"
 #include "main/input_default.h"
-#include "power_haiku.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
 class OS_Haiku : public OS_Unix {
@@ -48,10 +46,9 @@ private:
 	HaikuDirectWindow *window;
 	MainLoop *main_loop;
 	InputDefault *input;
-	Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	VideoMode current_video_mode;
-	PowerHaiku *power_manager;
+	int video_driver_index;
 
 #ifdef MEDIA_KIT_ENABLED
 	AudioDriverMediaKit driver_media_kit;
@@ -66,6 +63,7 @@ private:
 protected:
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
+	virtual int get_current_video_driver() const;
 
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();
@@ -88,6 +86,7 @@ public:
 	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_cursor_shape(CursorShape p_shape);
+	virtual CursorShape get_cursor_shape() const;
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 
 	virtual int get_screen_count() const;

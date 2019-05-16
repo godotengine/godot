@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,12 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 
-#include "class_db.h"
-#include "object.h"
-#include "ref_ptr.h"
-#include "reference.h"
-#include "safe_refcount.h"
-#include "self_list.h"
+#include "core/class_db.h"
+#include "core/object.h"
+#include "core/ref_ptr.h"
+#include "core/reference.h"
+#include "core/safe_refcount.h"
+#include "core/self_list.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -88,7 +88,9 @@ protected:
 
 	void _set_path(const String &p_path);
 	void _take_over_path(const String &p_path);
-
+#ifdef TOOLS_ENABLED
+	Map<String, int> id_for_path;
+#endif
 public:
 	static Node *(*_get_local_scene_func)(); //used by editor
 
@@ -136,6 +138,12 @@ public:
 	bool is_translation_remapped() const;
 
 	virtual RID get_rid() const; // some resources may offer conversion to RID
+
+#ifdef TOOLS_ENABLED
+	//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
+	void set_id_for_path(const String &p_path, int p_id);
+	int get_id_for_path(const String &p_path) const;
+#endif
 
 	Resource();
 	~Resource();

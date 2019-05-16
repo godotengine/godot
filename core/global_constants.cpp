@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "global_constants.h"
 
-#include "object.h"
-#include "os/input_event.h"
-#include "os/keyboard.h"
-#include "variant.h"
+#include "core/object.h"
+#include "core/os/input_event.h"
+#include "core/os/keyboard.h"
+#include "core/variant.h"
 
 struct _GlobalConstant {
 
@@ -89,6 +89,7 @@ VARIANT_ENUM_CAST(KeyList);
 VARIANT_ENUM_CAST(KeyModifierMask);
 VARIANT_ENUM_CAST(ButtonList);
 VARIANT_ENUM_CAST(JoystickList);
+VARIANT_ENUM_CAST(MidiMessageList);
 
 void register_global_constants() {
 
@@ -378,6 +379,8 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(BUTTON_LEFT);
 	BIND_GLOBAL_ENUM_CONSTANT(BUTTON_RIGHT);
 	BIND_GLOBAL_ENUM_CONSTANT(BUTTON_MIDDLE);
+	BIND_GLOBAL_ENUM_CONSTANT(BUTTON_XBUTTON1);
+	BIND_GLOBAL_ENUM_CONSTANT(BUTTON_XBUTTON2);
 	BIND_GLOBAL_ENUM_CONSTANT(BUTTON_WHEEL_UP);
 	BIND_GLOBAL_ENUM_CONSTANT(BUTTON_WHEEL_DOWN);
 	BIND_GLOBAL_ENUM_CONSTANT(BUTTON_WHEEL_LEFT);
@@ -385,6 +388,8 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(BUTTON_MASK_LEFT);
 	BIND_GLOBAL_ENUM_CONSTANT(BUTTON_MASK_RIGHT);
 	BIND_GLOBAL_ENUM_CONSTANT(BUTTON_MASK_MIDDLE);
+	BIND_GLOBAL_ENUM_CONSTANT(BUTTON_MASK_XBUTTON1);
+	BIND_GLOBAL_ENUM_CONSTANT(BUTTON_MASK_XBUTTON2);
 
 	//joypads
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_0);
@@ -454,6 +459,15 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_ANALOG_L2);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_ANALOG_R2);
 
+	// midi
+	BIND_GLOBAL_ENUM_CONSTANT(MIDI_MESSAGE_NOTE_OFF);
+	BIND_GLOBAL_ENUM_CONSTANT(MIDI_MESSAGE_NOTE_ON);
+	BIND_GLOBAL_ENUM_CONSTANT(MIDI_MESSAGE_AFTERTOUCH);
+	BIND_GLOBAL_ENUM_CONSTANT(MIDI_MESSAGE_CONTROL_CHANGE);
+	BIND_GLOBAL_ENUM_CONSTANT(MIDI_MESSAGE_PROGRAM_CHANGE);
+	BIND_GLOBAL_ENUM_CONSTANT(MIDI_MESSAGE_CHANNEL_PRESSURE);
+	BIND_GLOBAL_ENUM_CONSTANT(MIDI_MESSAGE_PITCH_BEND);
+
 	// error list
 
 	BIND_GLOBAL_ENUM_CONSTANT(OK);
@@ -518,6 +532,7 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_GLOBAL_DIR);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_RESOURCE_TYPE);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_MULTILINE_TEXT);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_PLACEHOLDER_TEXT);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_COLOR_NO_ALPHA);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_IMAGE_COMPRESS_LOSSY);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS);
@@ -532,8 +547,9 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_INTERNATIONALIZED);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_GROUP);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_CATEGORY);
-	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_STORE_IF_NONZERO);
-	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_STORE_IF_NONONE);
+	//deprecated, replaced by ClassDB function to check default value
+	//BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_STORE_IF_NONZERO);
+	//BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_STORE_IF_NONONE);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_NO_INSTANCE_STATE);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_RESTART_IF_CHANGED);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_SCRIPT_VARIABLE);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,181 +31,186 @@
 #ifndef OA_HASH_MAP_H
 #define OA_HASH_MAP_H
 
-#include "hashfuncs.h"
-#include "math_funcs.h"
-#include "os/copymem.h"
-#include "os/memory.h"
-
-// uncomment this to disable initial local storage.
-#define OA_HASH_MAP_INITIAL_LOCAL_STORAGE
+#include "core/hashfuncs.h"
+#include "core/math/math_funcs.h"
+#include "core/os/copymem.h"
+#include "core/os/memory.h"
 
 /**
- * This class implements a hash map datastructure that uses open addressing with
- * local probing.
+ * A HashMap implementation that uses open addressing with robinhood hashing.
+ * Robinhood hashing swaps out entries that have a smaller probing distance
+ * than the to-be-inserted entry, that evens out the average probing distance
+ * and enables faster lookups.
  *
- * It can give huge performance improvements over a chained HashMap because of
- * the increased data locality.
- *
- * Because of that locality property it's important to not use "large" value
- * types as the "TData" type. If TData values are too big it can cause more
- * cache misses then chaining. If larger values are needed then storing those
- * in a separate array and using pointers or indices to reference them is the
- * better solution.
- *
- * This hash map also implements real-time incremental rehashing.
- *
+ * The entries are stored inplace, so huge keys or values might fill cache lines
+ * a lot faster.
  */
-template <class TKey, class TData,
-		uint16_t INITIAL_NUM_ELEMENTS = 64,
+template <class TKey, class TValue,
 		class Hasher = HashMapHasherDefault,
 		class Comparator = HashMapComparatorDefault<TKey> >
 class OAHashMap {
 
 private:
-#ifdef OA_HASH_MAP_INITIAL_LOCAL_STORAGE
-	TData local_data[INITIAL_NUM_ELEMENTS];
-	TKey local_keys[INITIAL_NUM_ELEMENTS];
-	uint32_t local_hashes[INITIAL_NUM_ELEMENTS];
-	uint8_t local_flags[INITIAL_NUM_ELEMENTS / 4 + (INITIAL_NUM_ELEMENTS % 4 != 0 ? 1 : 0)];
-#endif
+	TValue *values;
+	TKey *keys;
+	uint32_t *hashes;
 
-	struct {
-		TData *data;
-		TKey *keys;
-		uint32_t *hashes;
+	uint32_t capacity;
 
-		// This is actually an array of bits, 4 bit pairs per octet.
-		// | ba ba ba ba | ba ba ba ba | ....
-		//
-		// if a is set it means that there is an element present.
-		// if b is set it means that an element was deleted. This is needed for
-		//   the local probing to work without relocating any succeeding and
-		//    colliding entries.
-		uint8_t *flags;
+	uint32_t num_elements;
 
-		uint32_t capacity;
-	} table, old_table;
+	static const uint32_t EMPTY_HASH = 0;
+	static const uint32_t DELETED_HASH_BIT = 1 << 31;
 
-	bool is_rehashing;
-	uint32_t rehash_position;
-	uint32_t rehash_amount;
+	_FORCE_INLINE_ uint32_t _hash(const TKey &p_key) {
+		uint32_t hash = Hasher::hash(p_key);
 
-	uint32_t elements;
+		if (hash == EMPTY_HASH) {
+			hash = EMPTY_HASH + 1;
+		} else if (hash & DELETED_HASH_BIT) {
+			hash &= ~DELETED_HASH_BIT;
+		}
 
-	/* Methods */
+		return hash;
+	}
 
-	// returns true if the value already existed, false if it's a new entry
-	bool _raw_set_with_hash(uint32_t p_hash, const TKey &p_key, const TData &p_data) {
-		for (int i = 0; i < table.capacity; i++) {
+	_FORCE_INLINE_ uint32_t _get_probe_length(uint32_t p_pos, uint32_t p_hash) {
+		p_hash = p_hash & ~DELETED_HASH_BIT; // we don't care if it was deleted or not
 
-			int pos = (p_hash + i) % table.capacity;
+		uint32_t original_pos = p_hash % capacity;
 
-			int flags_pos = pos / 4;
-			int flags_pos_offset = pos % 4;
+		return p_pos - original_pos;
+	}
 
-			bool is_filled_flag = table.flags[flags_pos] & (1 << (2 * flags_pos_offset));
-			bool is_deleted_flag = table.flags[flags_pos] & (1 << (2 * flags_pos_offset + 1));
+	_FORCE_INLINE_ void _construct(uint32_t p_pos, uint32_t p_hash, const TKey &p_key, const TValue &p_value) {
+		memnew_placement(&keys[p_pos], TKey(p_key));
+		memnew_placement(&values[p_pos], TValue(p_value));
+		hashes[p_pos] = p_hash;
 
-			if (is_filled_flag) {
-				if (table.hashes[pos] == p_hash && Comparator::compare(table.keys[pos], p_key)) {
-					table.data[pos] = p_data;
-					return true;
+		num_elements++;
+	}
+
+	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) {
+		uint32_t hash = _hash(p_key);
+		uint32_t pos = hash % capacity;
+		uint32_t distance = 0;
+
+		while (42) {
+			if (hashes[pos] == EMPTY_HASH) {
+				return false;
+			}
+
+			if (distance > _get_probe_length(pos, hashes[pos])) {
+				return false;
+			}
+
+			if (hashes[pos] == hash && Comparator::compare(keys[pos], p_key)) {
+				r_pos = pos;
+				return true;
+			}
+
+			pos = (pos + 1) % capacity;
+			distance++;
+		}
+	}
+
+	void _insert_with_hash(uint32_t p_hash, const TKey &p_key, const TValue &p_value) {
+
+		uint32_t hash = p_hash;
+		uint32_t distance = 0;
+		uint32_t pos = hash % capacity;
+
+		TKey key = p_key;
+		TValue value = p_value;
+
+		while (42) {
+			if (hashes[pos] == EMPTY_HASH) {
+				_construct(pos, hash, key, value);
+
+				return;
+			}
+
+			// not an empty slot, let's check the probing length of the existing one
+			uint32_t existing_probe_len = _get_probe_length(pos, hashes[pos]);
+			if (existing_probe_len < distance) {
+
+				if (hashes[pos] & DELETED_HASH_BIT) {
+					// we found a place where we can fit in!
+					_construct(pos, hash, key, value);
+
+					return;
 				}
+
+				SWAP(hash, hashes[pos]);
+				SWAP(key, keys[pos]);
+				SWAP(value, values[pos]);
+				distance = existing_probe_len;
+			}
+
+			pos = (pos + 1) % capacity;
+			distance++;
+		}
+	}
+	void _resize_and_rehash() {
+
+		TKey *old_keys = keys;
+		TValue *old_values = values;
+		uint32_t *old_hashes = hashes;
+
+		uint32_t old_capacity = capacity;
+
+		capacity = old_capacity * 2;
+		num_elements = 0;
+
+		keys = memnew_arr(TKey, capacity);
+		values = memnew_arr(TValue, capacity);
+		hashes = memnew_arr(uint32_t, capacity);
+
+		for (uint32_t i = 0; i < capacity; i++) {
+			hashes[i] = 0;
+		}
+
+		for (uint32_t i = 0; i < old_capacity; i++) {
+			if (old_hashes[i] == EMPTY_HASH) {
+				continue;
+			}
+			if (old_hashes[i] & DELETED_HASH_BIT) {
 				continue;
 			}
 
-			table.keys[pos] = p_key;
-			table.data[pos] = p_data;
-			table.hashes[pos] = p_hash;
-
-			table.flags[flags_pos] |= (1 << (2 * flags_pos_offset));
-			table.flags[flags_pos] &= ~(1 << (2 * flags_pos_offset + 1));
-
-			return false;
+			_insert_with_hash(old_hashes[i], old_keys[i], old_values[i]);
 		}
-		return false;
+
+		memdelete_arr(old_keys);
+		memdelete_arr(old_values);
+		memdelete_arr(old_hashes);
 	}
 
 public:
-	_FORCE_INLINE_ uint32_t get_capacity() const { return table.capacity; }
-	_FORCE_INLINE_ uint32_t get_num_elements() const { return elements; }
+	_FORCE_INLINE_ uint32_t get_capacity() const { return capacity; }
+	_FORCE_INLINE_ uint32_t get_num_elements() const { return num_elements; }
 
-	void set(const TKey &p_key, const TData &p_data) {
+	void insert(const TKey &p_key, const TValue &p_value) {
 
-		uint32_t hash = Hasher::hash(p_key);
-
-		// We don't progress the rehashing if the table just got resized
-		// to keep the cost of this function low.
-		if (is_rehashing) {
-
-			// rehash progress
-
-			for (int i = 0; i <= rehash_amount && rehash_position < old_table.capacity; rehash_position++) {
-
-				int flags_pos = rehash_position / 4;
-				int flags_pos_offset = rehash_position % 4;
-
-				bool is_filled_flag = (old_table.flags[flags_pos] & (1 << (2 * flags_pos_offset))) > 0;
-				bool is_deleted_flag = (old_table.flags[flags_pos] & (1 << (2 * flags_pos_offset + 1))) > 0;
-
-				if (is_filled_flag) {
-					_raw_set_with_hash(old_table.hashes[rehash_position], old_table.keys[rehash_position], old_table.data[rehash_position]);
-
-					old_table.keys[rehash_position].~TKey();
-					old_table.data[rehash_position].~TData();
-
-					memnew_placement(&old_table.keys[rehash_position], TKey);
-					memnew_placement(&old_table.data[rehash_position], TData);
-
-					old_table.flags[flags_pos] &= ~(1 << (2 * flags_pos_offset));
-					old_table.flags[flags_pos] |= (1 << (2 * flags_pos_offset + 1));
-				}
-			}
-
-			if (rehash_position >= old_table.capacity) {
-
-				// wohooo, we can get rid of the old table.
-				is_rehashing = false;
-
-#ifdef OA_HASH_MAP_INITIAL_LOCAL_STORAGE
-				if (old_table.data == local_data) {
-					// Everything is local, so no cleanup :P
-				} else
-#endif
-				{
-					memdelete_arr(old_table.data);
-					memdelete_arr(old_table.keys);
-					memdelete_arr(old_table.hashes);
-					memdelete_arr(old_table.flags);
-				}
-			}
+		if ((float)num_elements / (float)capacity > 0.9) {
+			_resize_and_rehash();
 		}
 
-		// Table is almost full, resize and start rehashing process.
-		if (elements >= table.capacity * 0.7) {
+		uint32_t hash = _hash(p_key);
 
-			old_table.capacity = table.capacity;
-			old_table.data = table.data;
-			old_table.flags = table.flags;
-			old_table.hashes = table.hashes;
-			old_table.keys = table.keys;
+		_insert_with_hash(hash, p_key, p_value);
+	}
 
-			table.capacity = old_table.capacity * 2;
+	void set(const TKey &p_key, const TValue &p_data) {
+		uint32_t pos = 0;
+		bool exists = _lookup_pos(p_key, pos);
 
-			table.data = memnew_arr(TData, table.capacity);
-			table.flags = memnew_arr(uint8_t, table.capacity / 4 + (table.capacity % 4 != 0 ? 1 : 0));
-			table.hashes = memnew_arr(uint32_t, table.capacity);
-			table.keys = memnew_arr(TKey, table.capacity);
-
-			zeromem(table.flags, table.capacity / 4 + (table.capacity % 4 != 0 ? 1 : 0));
-
-			is_rehashing = true;
-			rehash_position = 0;
-			rehash_amount = (elements * 2) / (table.capacity * 0.7 - old_table.capacity);
+		if (exists) {
+			values[pos].~TValue();
+			memnew_placement(&values[pos], TValue(p_data));
+		} else {
+			insert(p_key, p_data);
 		}
-
-		if (!_raw_set_with_hash(hash, p_key, p_data))
-			elements++;
 	}
 
 	/**
@@ -214,380 +219,108 @@ public:
 	 * if r_data is not NULL then the value will be written to the object
 	 * it points to.
 	 */
-	bool lookup(const TKey &p_key, TData *r_data) {
+	bool lookup(const TKey &p_key, TValue &r_data) {
+		uint32_t pos = 0;
+		bool exists = _lookup_pos(p_key, pos);
 
-		uint32_t hash = Hasher::hash(p_key);
-
-		bool check_old_table = is_rehashing;
-		bool check_new_table = true;
-
-		// search for the key and return the value associated with it
-		//
-		// if we're rehashing we need to check both the old and the
-		// current table. If we find a value in the old table we still
-		// need to continue searching in the new table as it might have
-		// been added after
-
-		TData *value = NULL;
-
-		for (int i = 0; i < table.capacity; i++) {
-
-			if (!check_new_table && !check_old_table) {
-
-				break;
-			}
-
-			// if we're rehashing check the old table
-			if (check_old_table && i < old_table.capacity) {
-
-				int pos = (hash + i) % old_table.capacity;
-
-				int flags_pos = pos / 4;
-				int flags_pos_offset = pos % 4;
-
-				bool is_filled_flag = (old_table.flags[flags_pos] & (1 << (2 * flags_pos_offset))) > 0;
-				bool is_deleted_flag = (old_table.flags[flags_pos] & (1 << (2 * flags_pos_offset + 1))) > 0;
-
-				if (is_filled_flag) {
-					// found our entry?
-					if (old_table.hashes[pos] == hash && Comparator::compare(old_table.keys[pos], p_key)) {
-						value = &old_table.data[pos];
-						check_old_table = false;
-					}
-				} else if (!is_deleted_flag) {
-
-					// we hit an empty field here, we don't
-					// need to further check this old table
-					// because we know it's not in here.
-
-					check_old_table = false;
-				}
-			}
-
-			if (check_new_table) {
-
-				int pos = (hash + i) % table.capacity;
-
-				int flags_pos = pos / 4;
-				int flags_pos_offset = pos % 4;
-
-				bool is_filled_flag = (table.flags[flags_pos] & (1 << (2 * flags_pos_offset))) > 0;
-				bool is_deleted_flag = (table.flags[flags_pos] & (1 << (2 * flags_pos_offset + 1))) > 0;
-
-				if (is_filled_flag) {
-					// found our entry?
-					if (table.hashes[pos] == hash && Comparator::compare(table.keys[pos], p_key)) {
-						if (r_data != NULL)
-							*r_data = table.data[pos];
-						return true;
-					}
-					continue;
-				} else if (is_deleted_flag) {
-					continue;
-				} else if (value != NULL) {
-
-					// We found a value in the old table
-					if (r_data != NULL)
-						*r_data = *value;
-					return true;
-				} else {
-					check_new_table = false;
-				}
-			}
-		}
-
-		if (value != NULL) {
-			if (r_data != NULL)
-				*r_data = *value;
+		if (exists) {
+			r_data.~TValue();
+			memnew_placement(&r_data, TValue(values[pos]));
 			return true;
 		}
+
 		return false;
 	}
 
 	_FORCE_INLINE_ bool has(const TKey &p_key) {
-		return lookup(p_key, NULL);
+		uint32_t _pos = 0;
+		return _lookup_pos(p_key, _pos);
 	}
 
 	void remove(const TKey &p_key) {
-		uint32_t hash = Hasher::hash(p_key);
+		uint32_t pos = 0;
+		bool exists = _lookup_pos(p_key, pos);
 
-		bool check_old_table = is_rehashing;
-		bool check_new_table = true;
-
-		for (int i = 0; i < table.capacity; i++) {
-
-			if (!check_new_table && !check_old_table) {
-				return;
-			}
-
-			// if we're rehashing check the old table
-			if (check_old_table && i < old_table.capacity) {
-
-				int pos = (hash + i) % old_table.capacity;
-
-				int flags_pos = pos / 4;
-				int flags_pos_offset = pos % 4;
-
-				bool is_filled_flag = (old_table.flags[flags_pos] & (1 << (2 * flags_pos_offset))) > 0;
-				bool is_deleted_flag = (old_table.flags[flags_pos] & (1 << (2 * flags_pos_offset + 1))) > 0;
-
-				if (is_filled_flag) {
-					// found our entry?
-					if (old_table.hashes[pos] == hash && Comparator::compare(old_table.keys[pos], p_key)) {
-						old_table.keys[pos].~TKey();
-						old_table.data[pos].~TData();
-
-						memnew_placement(&old_table.keys[pos], TKey);
-						memnew_placement(&old_table.data[pos], TData);
-
-						old_table.flags[flags_pos] &= ~(1 << (2 * flags_pos_offset));
-						old_table.flags[flags_pos] |= (1 << (2 * flags_pos_offset + 1));
-
-						elements--;
-						return;
-					}
-				} else if (!is_deleted_flag) {
-
-					// we hit an empty field here, we don't
-					// need to further check this old table
-					// because we know it's not in here.
-
-					check_old_table = false;
-				}
-			}
-
-			if (check_new_table) {
-
-				int pos = (hash + i) % table.capacity;
-
-				int flags_pos = pos / 4;
-				int flags_pos_offset = pos % 4;
-
-				bool is_filled_flag = (table.flags[flags_pos] & (1 << (2 * flags_pos_offset))) > 0;
-				bool is_deleted_flag = (table.flags[flags_pos] & (1 << (2 * flags_pos_offset + 1))) > 0;
-
-				if (is_filled_flag) {
-					// found our entry?
-					if (table.hashes[pos] == hash && Comparator::compare(table.keys[pos], p_key)) {
-						table.keys[pos].~TKey();
-						table.data[pos].~TData();
-
-						memnew_placement(&table.keys[pos], TKey);
-						memnew_placement(&table.data[pos], TData);
-
-						table.flags[flags_pos] &= ~(1 << (2 * flags_pos_offset));
-						table.flags[flags_pos] |= (1 << (2 * flags_pos_offset + 1));
-
-						// don't return here, this value might still be in the old table
-						// if it was already relocated.
-
-						elements--;
-						return;
-					}
-					continue;
-				} else if (is_deleted_flag) {
-					continue;
-				} else {
-					check_new_table = false;
-				}
-			}
+		if (!exists) {
+			return;
 		}
+
+		hashes[pos] |= DELETED_HASH_BIT;
+		values[pos].~TValue();
+		keys[pos].~TKey();
+		num_elements--;
 	}
 
 	struct Iterator {
 		bool valid;
 
-		uint32_t hash;
-
 		const TKey *key;
-		const TData *data;
+		const TValue *value;
 
 	private:
+		uint32_t pos;
 		friend class OAHashMap;
-		bool was_from_old_table;
 	};
 
 	Iterator iter() const {
 		Iterator it;
 
-		it.valid = false;
-		it.was_from_old_table = false;
+		it.valid = true;
+		it.pos = 0;
 
-		bool check_old_table = is_rehashing;
-
-		for (int i = 0; i < table.capacity; i++) {
-
-			// if we're rehashing check the old table first
-			if (check_old_table && i < old_table.capacity) {
-
-				int pos = i;
-
-				int flags_pos = pos / 4;
-				int flags_pos_offset = pos % 4;
-
-				bool is_filled_flag = (old_table.flags[flags_pos] & (1 << (2 * flags_pos_offset))) > 0;
-
-				if (is_filled_flag) {
-					it.valid = true;
-					it.hash = old_table.hashes[pos];
-					it.data = &old_table.data[pos];
-					it.key = &old_table.keys[pos];
-
-					it.was_from_old_table = true;
-
-					return it;
-				}
-			}
-
-			{
-
-				int pos = i;
-
-				int flags_pos = pos / 4;
-				int flags_pos_offset = pos % 4;
-
-				bool is_filled_flag = (table.flags[flags_pos] & (1 << (2 * flags_pos_offset))) > 0;
-
-				if (is_filled_flag) {
-					it.valid = true;
-					it.hash = table.hashes[pos];
-					it.data = &table.data[pos];
-					it.key = &table.keys[pos];
-
-					return it;
-				}
-			}
-		}
-
-		return it;
+		return next_iter(it);
 	}
 
 	Iterator next_iter(const Iterator &p_iter) const {
+
 		if (!p_iter.valid) {
 			return p_iter;
 		}
 
 		Iterator it;
-
 		it.valid = false;
-		it.was_from_old_table = false;
+		it.pos = p_iter.pos;
+		it.key = NULL;
+		it.value = NULL;
 
-		bool check_old_table = is_rehashing;
+		for (uint32_t i = it.pos; i < capacity; i++) {
+			it.pos = i + 1;
 
-		// we use this to skip the first check or not
-		bool was_from_old_table = p_iter.was_from_old_table;
-
-		int prev_index = (p_iter.data - (p_iter.was_from_old_table ? old_table.data : table.data));
-
-		if (!was_from_old_table) {
-			prev_index++;
-		}
-
-		for (int i = prev_index; i < table.capacity; i++) {
-
-			// if we're rehashing check the old table first
-			if (check_old_table && i < old_table.capacity && !was_from_old_table) {
-
-				int pos = i;
-
-				int flags_pos = pos / 4;
-				int flags_pos_offset = pos % 4;
-
-				bool is_filled_flag = (old_table.flags[flags_pos] & (1 << (2 * flags_pos_offset))) > 0;
-
-				if (is_filled_flag) {
-					it.valid = true;
-					it.hash = old_table.hashes[pos];
-					it.data = &old_table.data[pos];
-					it.key = &old_table.keys[pos];
-
-					it.was_from_old_table = true;
-
-					return it;
-				}
+			if (hashes[i] == EMPTY_HASH) {
+				continue;
+			}
+			if (hashes[i] & DELETED_HASH_BIT) {
+				continue;
 			}
 
-			was_from_old_table = false;
-
-			{
-				int pos = i;
-
-				int flags_pos = pos / 4;
-				int flags_pos_offset = pos % 4;
-
-				bool is_filled_flag = (table.flags[flags_pos] & (1 << (2 * flags_pos_offset))) > 0;
-
-				if (is_filled_flag) {
-					it.valid = true;
-					it.hash = table.hashes[pos];
-					it.data = &table.data[pos];
-					it.key = &table.keys[pos];
-
-					return it;
-				}
-			}
+			it.valid = true;
+			it.key = &keys[i];
+			it.value = &values[i];
+			return it;
 		}
 
 		return it;
 	}
 
-	OAHashMap(uint32_t p_initial_capacity = INITIAL_NUM_ELEMENTS) {
+	OAHashMap(uint32_t p_initial_capacity = 64) {
 
-#ifdef OA_HASH_MAP_INITIAL_LOCAL_STORAGE
+		capacity = p_initial_capacity;
+		num_elements = 0;
 
-		if (p_initial_capacity <= INITIAL_NUM_ELEMENTS) {
-			table.data = local_data;
-			table.keys = local_keys;
-			table.hashes = local_hashes;
-			table.flags = local_flags;
+		keys = memnew_arr(TKey, p_initial_capacity);
+		values = memnew_arr(TValue, p_initial_capacity);
+		hashes = memnew_arr(uint32_t, p_initial_capacity);
 
-			zeromem(table.flags, INITIAL_NUM_ELEMENTS / 4 + (INITIAL_NUM_ELEMENTS % 4 != 0 ? 1 : 0));
-
-			table.capacity = INITIAL_NUM_ELEMENTS;
-			elements = 0;
-		} else
-#endif
-		{
-			table.data = memnew_arr(TData, p_initial_capacity);
-			table.keys = memnew_arr(TKey, p_initial_capacity);
-			table.hashes = memnew_arr(uint32_t, p_initial_capacity);
-			table.flags = memnew_arr(uint8_t, p_initial_capacity / 4 + (p_initial_capacity % 4 != 0 ? 1 : 0));
-
-			zeromem(table.flags, p_initial_capacity / 4 + (p_initial_capacity % 4 != 0 ? 1 : 0));
-
-			table.capacity = p_initial_capacity;
-			elements = 0;
+		for (uint32_t i = 0; i < p_initial_capacity; i++) {
+			hashes[i] = 0;
 		}
-
-		is_rehashing = false;
-		rehash_position = 0;
 	}
 
 	~OAHashMap() {
-#ifdef OA_HASH_MAP_INITIAL_LOCAL_STORAGE
-		if (table.capacity <= INITIAL_NUM_ELEMENTS) {
-			return; // Everything is local, so no cleanup :P
-		}
-#endif
-		if (is_rehashing) {
 
-#ifdef OA_HASH_MAP_INITIAL_LOCAL_STORAGE
-			if (old_table.data == local_data) {
-				// Everything is local, so no cleanup :P
-			} else
-#endif
-			{
-				memdelete_arr(old_table.data);
-				memdelete_arr(old_table.keys);
-				memdelete_arr(old_table.hashes);
-				memdelete_arr(old_table.flags);
-			}
-		}
-
-		memdelete_arr(table.data);
-		memdelete_arr(table.keys);
-		memdelete_arr(table.hashes);
-		memdelete_arr(table.flags);
+		memdelete_arr(keys);
+		memdelete_arr(values);
+		memdelete_arr(hashes);
 	}
 };
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "editor_asset_installer.h"
 
+#include "core/io/zip_io.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
 #include "editor_node.h"
-#include "io/zip_io.h"
-#include "os/dir_access.h"
-#include "os/file_access.h"
 
 void EditorAssetInstaller::_update_subitems(TreeItem *p_item, bool p_check, bool p_first) {
 
@@ -172,7 +172,6 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			parent = root;
 		} else {
 			String ppath = path.substr(0, pp);
-			print_line("PPATH IS: " + ppath);
 			ERR_CONTINUE(!dir_map.has(ppath));
 			parent = dir_map[ppath];
 		}
@@ -305,7 +304,7 @@ void EditorAssetInstaller::ok_pressed() {
 			EditorNode::get_singleton()->show_warning(msg);
 	} else {
 		if (EditorNode::get_singleton() != NULL)
-			EditorNode::get_singleton()->show_warning(TTR("Package Installed Successfully!"), TTR("Success!"));
+			EditorNode::get_singleton()->show_warning(TTR("Package installed successfully!"), TTR("Success!"));
 	}
 	EditorFileSystem::get_singleton()->scan_changes();
 }

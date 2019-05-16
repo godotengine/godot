@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PathFollow2D" inherits="Node2D" category="Core" version="3.1">
+<class name="PathFollow2D" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
 		Point sampler for a [Path2D].
 	</brief_description>
@@ -9,13 +9,11 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
 		<member name="cubic_interp" type="bool" setter="set_cubic_interpolation" getter="get_cubic_interpolation">
-			If [code]true[/code] the position between two cached points is interpolated cubically, and linearly otherwise.
+			If [code]true[/code], the position between two cached points is interpolated cubically, and linearly otherwise.
 			The points along the [Curve2D] of the [Path2D] are precomputed before use, for faster calculations. The point at the requested offset is then calculated interpolating between two adjacent cached points. This may present a problem if the curve makes sharp turns, as the cached points may not follow the curve closely enough.
 			There are two answers to this problem: Either increase the number of cached points and increase memory consumption, or make a cubic interpolation between two points at the cost of (slightly) slower calculations.
 		</member>
@@ -23,6 +21,7 @@
 			The node's offset along the curve.
 		</member>
 		<member name="lookahead" type="float" setter="set_lookahead" getter="get_lookahead">
+			How far to look ahead of the curve to calculate the tangent if the node is rotating. E.g. shorter lookaheads will lead to faster rotations. Default value: [code]4[/code].
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop">
 			If [code]true[/code], any offset outside the path's length will wrap around, instead of stopping at the ends. Use it for cyclic paths.

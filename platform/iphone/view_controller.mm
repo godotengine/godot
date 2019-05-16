@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,48 +83,33 @@ int add_cmdline(int p_argc, char **p_args) {
 	printf("*********** did receive memory warning!\n");
 };
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)p_orientation {
-
-	if (/*OSIPhone::get_singleton() == NULL*/ TRUE) {
-
-		printf("checking on info.plist\n");
-		NSArray *arr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"UISupportedInterfaceOrientations"];
-		switch (p_orientation) {
-
-			case UIInterfaceOrientationLandscapeLeft:
-				return [arr indexOfObject:@"UIInterfaceOrientationLandscapeLeft"] != NSNotFound ? YES : NO;
-
-			case UIInterfaceOrientationLandscapeRight:
-				return [arr indexOfObject:@"UIInterfaceOrientationLandscapeRight"] != NSNotFound ? YES : NO;
-
-			case UIInterfaceOrientationPortrait:
-				return [arr indexOfObject:@"UIInterfaceOrientationPortrait"] != NSNotFound ? YES : NO;
-
-			case UIInterfaceOrientationPortraitUpsideDown:
-				return [arr indexOfObject:@"UIInterfaceOrientationPortraitUpsideDown"] != NSNotFound ? YES : NO;
-
-			default:
-				return NO;
-		}
-	};
-
-	uint8_t supported = OSIPhone::get_singleton()->get_orientations();
-	switch (p_orientation) {
-
-		case UIInterfaceOrientationLandscapeLeft:
-			return supported & (1 << OSIPhone::LandscapeLeft) ? YES : NO;
-
-		case UIInterfaceOrientationLandscapeRight:
-			return supported & (1 << OSIPhone::LandscapeRight) ? YES : NO;
-
-		case UIInterfaceOrientationPortrait:
-			return supported & (1 << OSIPhone::PortraitDown) ? YES : NO;
-
-		case UIInterfaceOrientationPortraitUpsideDown:
-			return supported & (1 << OSIPhone::PortraitUp) ? YES : NO;
-
+- (BOOL)shouldAutorotate {
+	switch (OS::get_singleton()->get_screen_orientation()) {
+		case OS::SCREEN_SENSOR:
+		case OS::SCREEN_SENSOR_LANDSCAPE:
+		case OS::SCREEN_SENSOR_PORTRAIT:
+			return YES;
 		default:
 			return NO;
+	}
+};
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+	switch (OS::get_singleton()->get_screen_orientation()) {
+		case OS::SCREEN_PORTRAIT:
+			return UIInterfaceOrientationMaskPortrait;
+		case OS::SCREEN_REVERSE_LANDSCAPE:
+			return UIInterfaceOrientationMaskLandscapeRight;
+		case OS::SCREEN_REVERSE_PORTRAIT:
+			return UIInterfaceOrientationMaskPortraitUpsideDown;
+		case OS::SCREEN_SENSOR_LANDSCAPE:
+			return UIInterfaceOrientationMaskLandscape;
+		case OS::SCREEN_SENSOR_PORTRAIT:
+			return UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
+		case OS::SCREEN_SENSOR:
+			return UIInterfaceOrientationMaskAll;
+		case OS::SCREEN_LANDSCAPE:
+			return UIInterfaceOrientationMaskLandscapeLeft;
 	}
 };
 

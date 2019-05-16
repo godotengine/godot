@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef THEME_H
 #define THEME_H
 
-#include "io/resource_loader.h"
-#include "resource.h"
+#include "core/io/resource_loader.h"
+#include "core/resource.h"
 #include "scene/resources/font.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/style_box.h"
@@ -47,20 +47,14 @@ class Theme : public Resource {
 	RES_BASE_EXTENSION("theme");
 
 	static Ref<Theme> default_theme;
-
-	//keep a reference count to font, so each time the font changes, we emit theme changed too
-	Map<Ref<Font>, int> font_refcount;
-
-	void _ref_font(Ref<Font> p_sc);
-	void _unref_font(Ref<Font> p_sc);
 	void _emit_theme_changed();
 
-	HashMap<StringName, HashMap<StringName, Ref<Texture>, StringNameHasher>, StringNameHasher> icon_map;
-	HashMap<StringName, HashMap<StringName, Ref<StyleBox>, StringNameHasher>, StringNameHasher> style_map;
-	HashMap<StringName, HashMap<StringName, Ref<Font>, StringNameHasher>, StringNameHasher> font_map;
-	HashMap<StringName, HashMap<StringName, Ref<Shader>, StringNameHasher>, StringNameHasher> shader_map;
-	HashMap<StringName, HashMap<StringName, Color, StringNameHasher>, StringNameHasher> color_map;
-	HashMap<StringName, HashMap<StringName, int, StringNameHasher>, StringNameHasher> constant_map;
+	HashMap<StringName, HashMap<StringName, Ref<Texture> > > icon_map;
+	HashMap<StringName, HashMap<StringName, Ref<StyleBox> > > style_map;
+	HashMap<StringName, HashMap<StringName, Ref<Font> > > font_map;
+	HashMap<StringName, HashMap<StringName, Ref<Shader> > > shader_map;
+	HashMap<StringName, HashMap<StringName, Color> > color_map;
+	HashMap<StringName, HashMap<StringName, int> > constant_map;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -190,17 +184,11 @@ public:
 	void get_type_list(List<StringName> *p_list) const;
 
 	void copy_default_theme();
+	void copy_theme(const Ref<Theme> &p_other);
+	void clear();
 
 	Theme();
 	~Theme();
-};
-
-class ResourceFormatLoaderTheme : public ResourceFormatLoader {
-public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
 };
 
 #endif

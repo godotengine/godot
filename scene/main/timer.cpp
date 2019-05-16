@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "timer.h"
 
-#include "engine.h"
+#include "core/engine.h"
 
 void Timer::_notification(int p_what) {
 
@@ -107,7 +107,10 @@ bool Timer::has_autostart() const {
 	return autostart;
 }
 
-void Timer::start() {
+void Timer::start(float p_time) {
+	if (p_time > 0) {
+		set_wait_time(p_time);
+	}
 	time_left = wait_time;
 	_set_process(true);
 }
@@ -185,7 +188,7 @@ void Timer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autostart", "enable"), &Timer::set_autostart);
 	ClassDB::bind_method(D_METHOD("has_autostart"), &Timer::has_autostart);
 
-	ClassDB::bind_method(D_METHOD("start"), &Timer::start);
+	ClassDB::bind_method(D_METHOD("start", "time_sec"), &Timer::start, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("stop"), &Timer::stop);
 
 	ClassDB::bind_method(D_METHOD("set_paused", "paused"), &Timer::set_paused);

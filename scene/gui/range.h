@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,6 +43,8 @@ class Range : public Control {
 		double val, min, max;
 		double step, page;
 		bool exp_ratio;
+		bool allow_greater;
+		bool allow_lesser;
 		Set<Range *> owners;
 		void emit_value_changed();
 		void emit_changed(const char *p_what = "");
@@ -86,8 +88,16 @@ public:
 	void set_exp_ratio(bool p_enable);
 	bool is_ratio_exp() const;
 
+	void set_allow_greater(bool p_allow);
+	bool is_greater_allowed() const;
+
+	void set_allow_lesser(bool p_allow);
+	bool is_lesser_allowed() const;
+
 	void share(Range *p_range);
 	void unshare();
+
+	virtual String get_configuration_warning() const;
 
 	Range();
 	~Range();

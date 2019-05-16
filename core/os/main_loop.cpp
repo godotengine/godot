@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,18 +29,19 @@
 /*************************************************************************/
 
 #include "main_loop.h"
-#include "script_language.h"
+
+#include "core/script_language.h"
 
 void MainLoop::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("input_event", "ev"), &MainLoop::input_event);
+	ClassDB::bind_method(D_METHOD("input_event", "event"), &MainLoop::input_event);
 	ClassDB::bind_method(D_METHOD("input_text", "text"), &MainLoop::input_text);
 	ClassDB::bind_method(D_METHOD("init"), &MainLoop::init);
 	ClassDB::bind_method(D_METHOD("iteration", "delta"), &MainLoop::iteration);
 	ClassDB::bind_method(D_METHOD("idle", "delta"), &MainLoop::idle);
 	ClassDB::bind_method(D_METHOD("finish"), &MainLoop::finish);
 
-	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "ev", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo("_input_text", PropertyInfo(Variant::STRING, "text")));
 	BIND_VMETHOD(MethodInfo("_initialize"));
 	BIND_VMETHOD(MethodInfo("_iteration", PropertyInfo(Variant::REAL, "delta")));
@@ -58,6 +59,8 @@ void MainLoop::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
 	BIND_CONSTANT(NOTIFICATION_TRANSLATION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);
+	BIND_CONSTANT(NOTIFICATION_CRASH);
+	BIND_CONSTANT(NOTIFICATION_OS_IME_UPDATE);
 };
 
 void MainLoop::set_init_script(const Ref<Script> &p_init_script) {

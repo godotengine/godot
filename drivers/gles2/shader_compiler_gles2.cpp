@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  shader_compiler_gles3.cpp                                            */
+/*  shader_compiler_gles2.cpp                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,11 +27,13 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "shader_compiler_gles2.h"
 
-#include "os/os.h"
-#include "string_buffer.h"
-#include "string_builder.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "core/string_buffer.h"
+#include "core/string_builder.h"
 
 #define SL ShaderLanguage
 
@@ -78,19 +80,17 @@ static String _opstr(SL::Operator p_op) {
 
 static String _mkid(const String &p_id) {
 
-	StringBuffer<> id;
-	id += "m_";
-	id += p_id;
-
-	return id.as_string();
+	String id = "m_" + p_id;
+	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
 }
 
 static String f2sp0(float p_float) {
 
-	if (int(p_float) == p_float)
-		return itos(p_float) + ".0";
-	else
-		return rtoss(p_float);
+	String num = rtoss(p_float);
+	if (num.find(".") == -1 && num.find("e") == -1) {
+		num += ".0";
+	}
+	return num;
 }
 
 static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNode::Value> &p_values) {
@@ -161,7 +161,7 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			return text.as_string();
 
 		} break;
-		case SL::TYPE_FLOAT: return f2sp0(p_values[0].real) + "f";
+		case SL::TYPE_FLOAT: return f2sp0(p_values[0].real);
 		case SL::TYPE_VEC2:
 		case SL::TYPE_VEC3:
 		case SL::TYPE_VEC4: {
@@ -318,17 +318,17 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 				uniform_code += "uniform ";
 
-				uniform_code += _prestr(E->get().precission);
+				uniform_code += _prestr(E->get().precision);
 				uniform_code += _typestr(E->get().type);
 				uniform_code += " ";
 				uniform_code += _mkid(E->key());
 				uniform_code += ";\n";
 
 				if (SL::is_sampler_type(E->get().type)) {
-					r_gen_code.texture_uniforms[E->get().texture_order] = _mkid(E->key());
-					r_gen_code.texture_hints[E->get().texture_order] = E->get().hint;
+					r_gen_code.texture_uniforms.write[E->get().texture_order] = E->key();
+					r_gen_code.texture_hints.write[E->get().texture_order] = E->get().hint;
 				} else {
-					r_gen_code.uniforms[E->get().order] = E->key();
+					r_gen_code.uniforms.write[E->get().order] = E->key();
 				}
 
 				vertex_global += uniform_code.as_string();
@@ -344,7 +344,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				StringBuffer<> varying_code;
 
 				varying_code += "varying ";
-				varying_code += _prestr(E->get().precission);
+				varying_code += _prestr(E->get().precision);
 				varying_code += _typestr(E->get().type);
 				varying_code += " ";
 				varying_code += _mkid(E->key());
@@ -362,6 +362,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			for (int i = 0; i < snode->functions.size(); i++) {
 				SL::FunctionNode *fnode = snode->functions[i].function;
+				current_func_name = fnode->name;
 				function_code[fnode->name] = _dump_node_code(fnode->body, 1, r_gen_code, p_actions, p_default_actions, p_assigning);
 			}
 
@@ -507,7 +508,6 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				case SL::OP_ASSIGN_DIV:
 				case SL::OP_ASSIGN_SHIFT_LEFT:
 				case SL::OP_ASSIGN_SHIFT_RIGHT:
-				case SL::OP_ASSIGN_MOD:
 				case SL::OP_ASSIGN_BIT_AND:
 				case SL::OP_ASSIGN_BIT_OR:
 				case SL::OP_ASSIGN_BIT_XOR: {
@@ -516,6 +516,16 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					code += _opstr(op_node->op);
 					code += " ";
 					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				} break;
+
+				case SL::OP_ASSIGN_MOD: {
+					code += _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, true);
+					code += " = ";
+					code += "mod(";
+					code += _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, true);
+					code += ", ";
+					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					code += ")";
 				} break;
 
 				case SL::OP_BIT_INVERT:
@@ -550,6 +560,46 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 								code += "texture2D";
 							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLERCUBE) {
 								code += "textureCube";
+							}
+
+						} else if (var_node->name == "textureLod") {
+							// emit texture call
+
+							if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLER2D) {
+								code += "texture2DLod";
+							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLERCUBE) {
+								code += "textureCubeLod";
+							}
+
+						} else if (var_node->name == "mix") {
+
+							switch (op_node->arguments[3]->get_datatype()) {
+
+								case SL::TYPE_BVEC2: {
+									code += "select2";
+								} break;
+
+								case SL::TYPE_BVEC3: {
+									code += "select3";
+								} break;
+
+								case SL::TYPE_BVEC4: {
+									code += "select4";
+								} break;
+
+								case SL::TYPE_VEC2:
+								case SL::TYPE_VEC3:
+								case SL::TYPE_VEC4:
+								case SL::TYPE_FLOAT: {
+
+									code += "mix";
+								} break;
+
+								default: {
+									SL::DataType type = op_node->arguments[3]->get_datatype();
+									// FIXME: Proper error print or graceful handling
+									print_line(String("uhhhh invalid mix with type: ") + itos(type));
+								} break;
 							}
 
 						} else if (p_default_actions.renames.has(var_node->name)) {
@@ -588,6 +638,15 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 					code += " : ";
 					code += _dump_node_code(op_node->arguments[2], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				} break;
+
+				case SL::OP_MOD: {
+
+					code += "mod(float(";
+					code += _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					code += "), float(";
+					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					code += "))";
 				} break;
 
 				default: {
@@ -647,6 +706,10 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				}
 				code += ";\n";
 			} else if (cf_node->flow_op == SL::FLOW_OP_DISCARD) {
+				if (p_actions.usage_flag_pointers.has("DISCARD") && !used_flag_pointers.has("DISCARD")) {
+					*p_actions.usage_flag_pointers["DISCARD"] = true;
+					used_flag_pointers.insert("DISCARD");
+				}
 				code += "discard;";
 			} else if (cf_node->flow_op == SL::FLOW_OP_CONTINUE) {
 				code += "continue;";
@@ -674,7 +737,7 @@ Error ShaderCompilerGLES2::compile(VS::ShaderMode p_mode, const String &p_code, 
 
 		Vector<String> shader = p_code.split("\n");
 		for (int i = 0; i < shader.size(); i++) {
-			print_line(itos(i) + " " + shader[i]);
+			print_line(itos(i + 1) + " " + shader[i]);
 		}
 
 		_err_print_error(NULL, p_path.utf8().get_data(), parser.get_error_line(), parser.get_error_text().utf8().get_data(), ERR_HANDLER_SHADER);
@@ -707,12 +770,12 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	/** CANVAS ITEM SHADER **/
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["VERTEX"] = "outvec.xy";
-	actions[VS::SHADER_CANVAS_ITEM].renames["UV"] = "uv_interp";
+	actions[VS::SHADER_CANVAS_ITEM].renames["UV"] = "uv";
 	actions[VS::SHADER_CANVAS_ITEM].renames["POINT_SIZE"] = "gl_PointSize";
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["WORLD_MATRIX"] = "modelview_matrix";
 	actions[VS::SHADER_CANVAS_ITEM].renames["PROJECTION_MATRIX"] = "projection_matrix";
-	actions[VS::SHADER_CANVAS_ITEM].renames["EXTRA_MATRIX"] == "extra_matrix";
+	actions[VS::SHADER_CANVAS_ITEM].renames["EXTRA_MATRIX"] = "extra_matrix";
 	actions[VS::SHADER_CANVAS_ITEM].renames["TIME"] = "time";
 	actions[VS::SHADER_CANVAS_ITEM].renames["AT_LIGHT_PASS"] = "at_light_pass";
 	actions[VS::SHADER_CANVAS_ITEM].renames["INSTANCE_CUSTOM"] = "instance_custom";
@@ -721,8 +784,6 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMAL"] = "normal";
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMALMAP"] = "normal_map";
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMALMAP_DEPTH"] = "normal_depth";
-	actions[VS::SHADER_CANVAS_ITEM].renames["UV"] = "uv_interp";
-	actions[VS::SHADER_CANVAS_ITEM].renames["COLOR"] = "color";
 	actions[VS::SHADER_CANVAS_ITEM].renames["TEXTURE"] = "color_texture";
 	actions[VS::SHADER_CANVAS_ITEM].renames["TEXTURE_PIXEL_SIZE"] = "color_texpixel_size";
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMAL_TEXTURE"] = "normal_texture";
@@ -736,7 +797,6 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_HEIGHT"] = "light_height";
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_COLOR"] = "light_color";
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_UV"] = "light_uv";
-	//actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_SHADOW_COLOR"]="light_shadow_color";
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT"] = "light";
 	actions[VS::SHADER_CANVAS_ITEM].renames["SHADOW_COLOR"] = "shadow_color";
 
@@ -746,9 +806,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SCREEN_PIXEL_SIZE"] = "@SCREEN_UV";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["NORMAL"] = "#define NORMAL_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["NORMALMAP"] = "#define NORMALMAP_USED\n";
-	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SHADOW_COLOR"] = "#define SHADOW_COLOR_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
-
 	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 
 	/** SPATIAL SHADER **/
@@ -757,18 +815,20 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].renames["INV_CAMERA_MATRIX"] = "camera_inverse_matrix";
 	actions[VS::SHADER_SPATIAL].renames["CAMERA_MATRIX"] = "camera_matrix";
 	actions[VS::SHADER_SPATIAL].renames["PROJECTION_MATRIX"] = "projection_matrix";
-	actions[VS::SHADER_SPATIAL].renames["INV_PROJECTION_MATRIX"] = "inv_projection_matrix";
+	actions[VS::SHADER_SPATIAL].renames["INV_PROJECTION_MATRIX"] = "projection_inverse_matrix";
 	actions[VS::SHADER_SPATIAL].renames["MODELVIEW_MATRIX"] = "modelview";
 
 	actions[VS::SHADER_SPATIAL].renames["VERTEX"] = "vertex.xyz";
 	actions[VS::SHADER_SPATIAL].renames["NORMAL"] = "normal";
 	actions[VS::SHADER_SPATIAL].renames["TANGENT"] = "tangent";
 	actions[VS::SHADER_SPATIAL].renames["BINORMAL"] = "binormal";
+	actions[VS::SHADER_SPATIAL].renames["POSITION"] = "position";
 	actions[VS::SHADER_SPATIAL].renames["UV"] = "uv_interp";
 	actions[VS::SHADER_SPATIAL].renames["UV2"] = "uv2_interp";
 	actions[VS::SHADER_SPATIAL].renames["COLOR"] = "color_interp";
 	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "gl_PointSize";
-	//actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"]=ShaderLanguage::TYPE_INT;
+	// gl_InstanceID is not available in OpenGL ES 2.0
+	actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"] = "0";
 
 	//builtins
 
@@ -790,24 +850,25 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].renames["CLEARCOAT_GLOSS"] = "clearcoat_gloss";
 	actions[VS::SHADER_SPATIAL].renames["ANISOTROPY"] = "anisotropy";
 	actions[VS::SHADER_SPATIAL].renames["ANISOTROPY_FLOW"] = "anisotropy_flow";
-	//actions[VS::SHADER_SPATIAL].renames["SSS_SPREAD"] = "sss_spread";
 	actions[VS::SHADER_SPATIAL].renames["SSS_STRENGTH"] = "sss_strength";
 	actions[VS::SHADER_SPATIAL].renames["TRANSMISSION"] = "transmission";
 	actions[VS::SHADER_SPATIAL].renames["AO"] = "ao";
 	actions[VS::SHADER_SPATIAL].renames["AO_LIGHT_AFFECT"] = "ao_light_affect";
 	actions[VS::SHADER_SPATIAL].renames["EMISSION"] = "emission";
-	//actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"]=ShaderLanguage::TYPE_VEC2;
 	actions[VS::SHADER_SPATIAL].renames["POINT_COORD"] = "gl_PointCoord";
 	actions[VS::SHADER_SPATIAL].renames["INSTANCE_CUSTOM"] = "instance_custom";
 	actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"] = "screen_uv";
 	actions[VS::SHADER_SPATIAL].renames["SCREEN_TEXTURE"] = "screen_texture";
-	actions[VS::SHADER_SPATIAL].renames["DEPTH_TEXTURE"] = "depth_buffer";
-	actions[VS::SHADER_SPATIAL].renames["SIDE"] = "side";
+	actions[VS::SHADER_SPATIAL].renames["DEPTH_TEXTURE"] = "depth_texture";
+	// Defined in GLES3, but not available in GLES2
+	//actions[VS::SHADER_SPATIAL].renames["DEPTH"] = "gl_FragDepth";
 	actions[VS::SHADER_SPATIAL].renames["ALPHA_SCISSOR"] = "alpha_scissor";
+	actions[VS::SHADER_SPATIAL].renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 
 	//for light
 	actions[VS::SHADER_SPATIAL].renames["VIEW"] = "view";
 	actions[VS::SHADER_SPATIAL].renames["LIGHT_COLOR"] = "light_color";
+	actions[VS::SHADER_SPATIAL].renames["LIGHT"] = "light";
 	actions[VS::SHADER_SPATIAL].renames["ATTENUATION"] = "attenuation";
 	actions[VS::SHADER_SPATIAL].renames["DIFFUSE_LIGHT"] = "diffuse_light";
 	actions[VS::SHADER_SPATIAL].renames["SPECULAR_LIGHT"] = "specular_light";
@@ -829,52 +890,52 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].usage_defines["COLOR"] = "#define ENABLE_COLOR_INTERP\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["ALPHA_SCISSOR"] = "#define ALPHA_SCISSOR_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
 
 	actions[VS::SHADER_SPATIAL].usage_defines["SSS_STRENGTH"] = "#define ENABLE_SSS\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["TRANSMISSION"] = "#define TRANSMISSION_USED\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["SCREEN_TEXTURE"] = "#define SCREEN_TEXTURE_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["DEPTH_TEXTURE"] = "#define DEPTH_TEXTURE_USED\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 
 	actions[VS::SHADER_SPATIAL].usage_defines["DIFFUSE_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["SPECULAR_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
 
-	actions[VS::SHADER_SPATIAL].renames["SSS_STRENGTH"] = "sss_strength";
-
 	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";
 
-	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_burley"] = "#define DIFFUSE_BURLEY\n";
+	// Defined in GLES3, could be implemented in GLES2 too if there's a need for it
+	//actions[VS::SHADER_SPATIAL].render_mode_defines["ensure_correct_normals"] = "#define ENSURE_CORRECT_NORMALS\n";
+	// Defined in GLES3, might not be possible in GLES2 as gl_FrontFacing is not available
+	//actions[VS::SHADER_SPATIAL].render_mode_defines["cull_front"] = "#define DO_SIDE_CHECK\n";
+	//actions[VS::SHADER_SPATIAL].render_mode_defines["cull_disabled"] = "#define DO_SIDE_CHECK\n";
+
+	bool force_lambert = GLOBAL_GET("rendering/quality/shading/force_lambert_over_burley");
+
+	if (!force_lambert) {
+		actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_burley"] = "#define DIFFUSE_BURLEY\n";
+	}
+
 	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_oren_nayar"] = "#define DIFFUSE_OREN_NAYAR\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_lambert_wrap"] = "#define DIFFUSE_LAMBERT_WRAP\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_toon"] = "#define DIFFUSE_TOON\n";
 
-	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
+	bool force_blinn = GLOBAL_GET("rendering/quality/shading/force_blinn_over_ggx");
+
+	if (!force_blinn) {
+		actions[VS::SHADER_SPATIAL].render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
+	} else {
+		actions[VS::SHADER_SPATIAL].render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_BLINN\n";
+	}
+
 	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_blinn"] = "#define SPECULAR_BLINN\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_phong"] = "#define SPECULAR_PHONG\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_toon"] = "#define SPECULAR_TOON\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_disabled"] = "#define SPECULAR_DISABLED\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["shadows_disabled"] = "#define SHADOWS_DISABLED\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["ambient_light_disabled"] = "#define AMBIENT_LIGHT_DISABLED\n";
 
-	/* PARTICLES SHADER */
-
-	actions[VS::SHADER_PARTICLES].renames["COLOR"] = "out_color";
-	actions[VS::SHADER_PARTICLES].renames["VELOCITY"] = "out_velocity_active.xyz";
-	actions[VS::SHADER_PARTICLES].renames["MASS"] = "mass";
-	actions[VS::SHADER_PARTICLES].renames["ACTIVE"] = "active";
-	actions[VS::SHADER_PARTICLES].renames["RESTART"] = "restart";
-	actions[VS::SHADER_PARTICLES].renames["CUSTOM"] = "out_custom";
-	actions[VS::SHADER_PARTICLES].renames["TRANSFORM"] = "xform";
-	actions[VS::SHADER_PARTICLES].renames["TIME"] = "time";
-	actions[VS::SHADER_PARTICLES].renames["LIFETIME"] = "lifetime";
-	actions[VS::SHADER_PARTICLES].renames["DELTA"] = "local_delta";
-	actions[VS::SHADER_PARTICLES].renames["NUMBER"] = "particle_number";
-	actions[VS::SHADER_PARTICLES].renames["INDEX"] = "index";
-	actions[VS::SHADER_PARTICLES].renames["GRAVITY"] = "current_gravity";
-	actions[VS::SHADER_PARTICLES].renames["EMISSION_TRANSFORM"] = "emission_transform";
-	actions[VS::SHADER_PARTICLES].renames["RANDOM_SEED"] = "random_seed";
-
-	actions[VS::SHADER_PARTICLES].render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
-	actions[VS::SHADER_PARTICLES].render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
-	actions[VS::SHADER_PARTICLES].render_mode_defines["keep_data"] = "#define ENABLE_KEEP_DATA\n";
+	// No defines for particle shaders in GLES2, there are no GPU particles
 
 	vertex_name = "vertex";
 	fragment_name = "fragment";

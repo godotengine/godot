@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "light_2d.h"
 
-#include "engine.h"
+#include "core/engine.h"
 #include "servers/visual_server.h"
 
 Dictionary Light2D::_edit_get_state() const {
@@ -59,14 +59,22 @@ bool Light2D::_edit_use_pivot() const {
 
 Rect2 Light2D::_edit_get_rect() const {
 	if (texture.is_null())
-		return Node2D::_edit_get_rect();
+		return Rect2();
 
 	Size2 s = texture->get_size() * _scale;
 	return Rect2(texture_offset - s / 2.0, s);
 }
 
 bool Light2D::_edit_use_rect() const {
-	return true;
+	return !texture.is_null();
+}
+
+Rect2 Light2D::get_anchorable_rect() const {
+	if (texture.is_null())
+		return Rect2();
+
+	Size2 s = texture->get_size() * _scale;
+	return Rect2(texture_offset - s / 2.0, s);
 }
 
 void Light2D::_update_light_visibility() {
@@ -430,7 +438,7 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "energy", PROPERTY_HINT_RANGE, "0.01,100,0.01"), "set_energy", "get_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Add,Sub,Mix,Mask"), "set_mode", "get_mode");
 	ADD_GROUP("Range", "range_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "range_height", PROPERTY_HINT_RANGE, "-100,100,0.1"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "range_height", PROPERTY_HINT_RANGE, "-2048,2048,0.1,or_lesser,or_greater"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_min", PROPERTY_HINT_RANGE, itos(VS::CANVAS_ITEM_Z_MIN) + "," + itos(VS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_min", "get_z_range_min");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_max", PROPERTY_HINT_RANGE, itos(VS::CANVAS_ITEM_Z_MIN) + "," + itos(VS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_max", "get_z_range_max");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_min", PROPERTY_HINT_RANGE, "-512,512,1"), "set_layer_range_min", "get_layer_range_min");
@@ -442,7 +450,7 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_buffer_size", PROPERTY_HINT_RANGE, "32,16384,1"), "set_shadow_buffer_size", "get_shadow_buffer_size");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "shadow_gradient_length", PROPERTY_HINT_RANGE, "0,4096,0.1"), "set_shadow_gradient_length", "get_shadow_gradient_length");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "shadow_filter", PROPERTY_HINT_ENUM, "None,PCF3,PCF5,PCF7,PCF9,PCF13"), "set_shadow_filter", "get_shadow_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_filter", PROPERTY_HINT_ENUM, "None,PCF3,PCF5,PCF7,PCF9,PCF13"), "set_shadow_filter", "get_shadow_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "shadow_filter_smooth", PROPERTY_HINT_RANGE, "0,64,0.1"), "set_shadow_smooth", "get_shadow_smooth");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_item_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_item_shadow_cull_mask", "get_item_shadow_cull_mask");
 

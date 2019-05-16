@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,7 +59,7 @@ public:
 	virtual StringName get_name() const;
 	virtual int get_capabilities() const;
 
-	virtual bool is_initialized();
+	virtual bool is_initialized() const;
 	virtual bool initialize();
 	virtual void uninitialize();
 
@@ -78,9 +78,11 @@ public:
 	// and a CameraMatrix version to ARVRServer
 	virtual CameraMatrix get_projection_for_eye(ARVRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far);
 
+	virtual unsigned int get_external_texture_for_eye(ARVRInterface::Eyes p_eye);
 	virtual void commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect);
 
 	virtual void process();
+	virtual void notification(int p_what);
 };
 
 #endif // ARVR_INTERFACE_GDNATIVE_H

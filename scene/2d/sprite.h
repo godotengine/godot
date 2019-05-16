@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,6 +75,8 @@ public:
 	virtual bool _edit_use_pivot() const;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
+	bool is_pixel_opaque(const Point2 &p_point) const;
+
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_use_rect() const;
 
@@ -115,6 +117,7 @@ public:
 	int get_hframes() const;
 
 	Rect2 get_rect() const;
+	virtual Rect2 get_anchorable_rect() const;
 
 	Sprite();
 	~Sprite();

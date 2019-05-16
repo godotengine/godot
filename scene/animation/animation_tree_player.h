@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -109,6 +109,14 @@ private:
 		Variant value;
 
 		bool skip;
+
+		Track() :
+				id(0),
+				object(NULL),
+				spatial(NULL),
+				skeleton(NULL),
+				bone_idx(-1),
+				skip(false) {}
 	};
 
 	typedef Map<TrackKey, Track> TrackMap;
@@ -343,11 +351,14 @@ public:
 	int node_get_input_count(const StringName &p_node) const;
 	StringName node_get_input_source(const StringName &p_node, int p_input) const;
 
+	String get_configuration_warning() const;
+
 	/* ANIMATION NODE */
 	void animation_node_set_animation(const StringName &p_node, const Ref<Animation> &p_animation);
 	Ref<Animation> animation_node_get_animation(const StringName &p_node) const;
 	void animation_node_set_master_animation(const StringName &p_node, const String &p_master_animation);
 	String animation_node_get_master_animation(const StringName &p_node) const;
+	float animation_node_get_position(const StringName &p_node) const;
 
 	void animation_node_set_filter_path(const StringName &p_node, const NodePath &p_track_path, bool p_filter);
 	void animation_node_set_get_filtered_paths(const StringName &p_node, List<NodePath> *r_paths) const;

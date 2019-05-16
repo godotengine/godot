@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,13 +32,16 @@
 #define PYTHONSCRIPT_PY_LOADER_H
 
 // Godot imports
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/script_language.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
 
 class PluginScriptLanguage;
 
 class ResourceFormatLoaderPluginScript : public ResourceFormatLoader {
+
+	GDCLASS(ResourceFormatLoaderPluginScript, ResourceFormatLoader)
+
 	PluginScriptLanguage *_language;
 
 public:
@@ -50,6 +53,9 @@ public:
 };
 
 class ResourceFormatSaverPluginScript : public ResourceFormatSaver {
+
+	GDCLASS(ResourceFormatSaverPluginScript, ResourceFormatSaver)
+
 	PluginScriptLanguage *_language;
 
 public:

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef VIEWPORT_H
 #define VIEWPORT_H
 
-#include "math_2d.h"
+#include "core/math/transform_2d.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/world_2d.h"
@@ -45,10 +45,12 @@ class Camera2D;
 class Listener;
 class Control;
 class CanvasItem;
+class CanvasLayer;
 class Panel;
 class Label;
 class Timer;
 class Viewport;
+class CollisionObject;
 
 class ViewportTexture : public Texture {
 
@@ -58,6 +60,7 @@ class ViewportTexture : public Texture {
 
 	friend class Viewport;
 	Viewport *vp;
+	uint32_t flags;
 
 	RID proxy;
 
@@ -162,6 +165,7 @@ private:
 
 	Camera *camera;
 	Set<Camera *> cameras;
+	Set<CanvasLayer *> canvas_layers;
 
 	RID viewport;
 	RID current_canvas;
@@ -202,8 +206,26 @@ private:
 	List<Ref<InputEvent> > physics_picking_events;
 	ObjectID physics_object_capture;
 	ObjectID physics_object_over;
+	Transform physics_last_object_transform;
+	Transform physics_last_camera_transform;
+	ObjectID physics_last_id;
+	bool physics_has_last_mousepos;
 	Vector2 physics_last_mousepos;
-	void _test_new_mouseover(ObjectID new_collider);
+	struct {
+
+		bool alt;
+		bool control;
+		bool shift;
+		bool meta;
+		int mouse_mask;
+
+	} physics_last_mouse_state;
+
+	void _collision_object_input_event(CollisionObject *p_object, Camera *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
+
+	bool handle_input_locally;
+	bool local_input_handled;
+
 	Map<ObjectID, uint64_t> physics_2d_mouseover;
 
 	Ref<World2D> world_2d;
@@ -226,6 +248,7 @@ private:
 	void _update_global_transform();
 
 	bool disable_3d;
+	bool keep_3d_linear;
 	UpdateMode update_mode;
 	RID texture_rid;
 	uint32_t texture_flags;
@@ -248,12 +271,13 @@ private:
 
 		bool key_event_accepted;
 		Control *mouse_focus;
+		Control *last_mouse_focus;
 		Control *mouse_click_grabber;
-		int mouse_focus_button;
+		int mouse_focus_mask;
 		Control *key_focus;
 		Control *mouse_over;
 		Control *tooltip;
-		Panel *tooltip_popup;
+		Control *tooltip_popup;
 		Label *tooltip_label;
 		Point2 tooltip_pos;
 		Point2 last_mouse_pos;
@@ -266,10 +290,13 @@ private:
 		List<Control *> modal_stack;
 		Transform2D focus_inv_xform;
 		bool subwindow_order_dirty;
-		List<Control *> subwindows;
+		bool subwindow_visibility_dirty;
+		List<Control *> subwindows; // visible subwindows
+		List<Control *> all_known_subwindows;
 		bool roots_order_dirty;
 		List<Control *> roots;
 		int canvas_sort_index; //for sorting items with canvas as root
+		bool dragging;
 
 		GUI();
 	} gui;
@@ -277,6 +304,9 @@ private:
 	bool disable_input;
 
 	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
+	void _gui_call_notification(Control *p_control, int p_what);
+
+	void _gui_prepare_subwindows();
 	void _gui_sort_subwindows();
 	void _gui_sort_roots();
 	void _gui_sort_modal_stack();
@@ -307,6 +337,7 @@ private:
 	void _gui_remove_root_control(List<Control *>::Element *RI);
 	void _gui_remove_subwindow_control(List<Control *>::Element *SI);
 
+	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_which = NULL);
 	void _gui_cancel_tooltip();
 	void _gui_show_tooltip();
 
@@ -347,9 +378,19 @@ private:
 	void _camera_remove(Camera *p_camera);
 	void _camera_make_next_current(Camera *p_exclude);
 
+	friend class CanvasLayer;
+	void _canvas_layer_add(CanvasLayer *p_canvas_layer);
+	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
+
+	void _drop_mouse_focus();
+	void _drop_physics_mouseover();
+
+	void _update_canvas_items(Node *p_node);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
 	Listener *get_listener() const;
@@ -365,6 +406,7 @@ public:
 	bool is_audio_listener_2d() const;
 
 	void set_size(const Size2 &p_size);
+	void update_canvas_items();
 
 	Size2 get_size() const;
 	Rect2 get_visible_rect() const;
@@ -433,6 +475,9 @@ public:
 	void set_disable_3d(bool p_disable);
 	bool is_3d_disabled() const;
 
+	void set_keep_3d_linear(bool p_keep_3d_linear);
+	bool get_keep_3d_linear() const;
+
 	void set_attach_to_screen_rect(const Rect2 &p_rect);
 	Rect2 get_attach_to_screen_rect() const;
 
@@ -462,6 +507,16 @@ public:
 
 	void set_snap_controls_to_pixels(bool p_enable);
 	bool is_snap_controls_to_pixels_enabled() const;
+
+	void _subwindow_visibility_changed();
+
+	void set_input_as_handled();
+	bool is_input_handled() const;
+
+	void set_handle_input_locally(bool p_enable);
+	bool is_handling_input_locally() const;
+
+	bool gui_is_dragging() const;
 
 	Viewport();
 	~Viewport();

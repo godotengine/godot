@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GridMap" inherits="Spatial" category="Core" version="3.1">
+<class name="GridMap" inherits="Spatial" category="Core" version="3.2">
 	<brief_description>
 		Node for 3D tile-based maps.
 	</brief_description>
@@ -10,10 +10,8 @@
 		A GridMap is split into a sparse collection of octants for efficient rendering and physics processing. Every octant has the same dimensions and can contain several cells.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/3d/using_gridmaps.html
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_gridmaps.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="clear">
 			<return type="void">
@@ -52,7 +50,7 @@
 			<argument index="2" name="z" type="int">
 			</argument>
 			<description>
-				The [MeshLibrary] item index located at the grid-based X, Y and Z coordinates. If the cell is empty, [INVALID_CELL_ITEM] will be returned.
+				The [MeshLibrary] item index located at the grid-based X, Y and Z coordinates. If the cell is empty, [constant INVALID_CELL_ITEM] will be returned.
 			</description>
 		</method>
 		<method name="get_cell_item_orientation" qualifiers="const">
@@ -65,7 +63,7 @@
 			<argument index="2" name="z" type="int">
 			</argument>
 			<description>
-				The orientation of the cell at the grid-based X, Y and Z coordinates. -1 is retuned if the cell is empty.
+				The orientation of the cell at the grid-based X, Y and Z coordinates. -1 is returned if the cell is empty.
 			</description>
 		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
@@ -192,13 +190,13 @@
 	</methods>
 	<members>
 		<member name="cell_center_x" type="bool" setter="set_center_x" getter="get_center_x">
-			If [code]true[/code] grid items are centered on the X axis.
+			If [code]true[/code], grid items are centered on the X axis.
 		</member>
 		<member name="cell_center_y" type="bool" setter="set_center_y" getter="get_center_y">
-			If [code]true[/code] grid items are centered on the Y axis.
+			If [code]true[/code], grid items are centered on the Y axis.
 		</member>
 		<member name="cell_center_z" type="bool" setter="set_center_z" getter="get_center_z">
-			If [code]true[/code] grid items are centered on the Z axis.
+			If [code]true[/code], grid items are centered on the Z axis.
 		</member>
 		<member name="cell_octant_size" type="int" setter="set_octant_size" getter="get_octant_size">
 			The size of each octant measured in number of cells. This applies to all three axis.
@@ -212,8 +210,11 @@
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
 		</member>
-		<member name="theme" type="MeshLibrary" setter="set_theme" getter="get_theme">
+		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].
+		</member>
+		<member name="theme" type="MeshLibrary" setter="set_theme" getter="get_theme">
+			Deprecated, use [member mesh_library] instead.
 		</member>
 	</members>
 	<constants>

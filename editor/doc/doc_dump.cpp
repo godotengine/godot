@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "doc_dump.h"
 
-#include "os/file_access.h"
+#include "core/os/file_access.h"
+#include "core/version.h"
 #include "scene/main/node.h"
-#include "version.h"
 
 static void _write_string(FileAccess *f, int p_tablevel, const String &p_string) {
 
@@ -142,7 +142,7 @@ void DocDump::dump(const String &p_file) {
 					if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE)
 						type_name = arginfo.hint_string;
 					else if (arginfo.type == Variant::NIL)
-						type_name = "var";
+						type_name = "Variant";
 					else
 						type_name = Variant::get_type_name(arginfo.type);
 
@@ -199,7 +199,8 @@ void DocDump::dump(const String &p_file) {
 							case Variant::ARRAY:
 							case Variant::_RID:
 
-							default: {}
+							default: {
+							}
 						}
 
 						_write_string(f, 3, "<argument index=\"" + itos(i) + "\" name=\"" + _escape_string(arginfo.name) + "\" type=\"" + type_name + "\" default=\"" + _escape_string(default_arg_text) + "\">");
@@ -223,11 +224,12 @@ void DocDump::dump(const String &p_file) {
 						hint = "Values: ";
 						for (int j = 0; j < arginfo.hint_string.get_slice_count(","); j++) {
 							if (j > 0) hint += ", ";
-							hint += arginfo.hint_string.get_slice(",", j) + "=" + itos(1 << j);
+							hint += arginfo.hint_string.get_slice(",", j) + "=" + itos((uint64_t)1 << j);
 						}
 						break;
 					case PROPERTY_HINT_FILE: hint = "A file:"; break;
-					default: {}
+					default: {
+					}
 						//case PROPERTY_HINT_RESOURCE_TYPE: hint="Type: "+arginfo.hint_string; break;
 				};
 				if (hint != "")

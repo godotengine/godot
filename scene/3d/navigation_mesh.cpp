@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,9 +55,9 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 		for (int j = 0; j < rlen; j += 3) {
 			Vector<int> vi;
 			vi.resize(3);
-			vi[0] = r[j + 0] + from;
-			vi[1] = r[j + 1] + from;
-			vi[2] = r[j + 2] + from;
+			vi.write[0] = r[j + 0] + from;
+			vi.write[1] = r[j + 1] + from;
+			vi.write[2] = r[j + 2] + from;
 
 			add_polygon(vi);
 		}
@@ -215,7 +215,7 @@ void NavigationMesh::_set_polygons(const Array &p_array) {
 
 	polygons.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
-		polygons[i].indices = p_array[i];
+		polygons.write[i].indices = p_array[i];
 	}
 }
 
@@ -292,11 +292,11 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 				if (ek.from < ek.to)
 					SWAP(ek.from, ek.to);
 
-				Map<_EdgeKey, bool>::Element *E = edge_map.find(ek);
+				Map<_EdgeKey, bool>::Element *F = edge_map.find(ek);
 
-				if (E) {
+				if (F) {
 
-					E->get() = false;
+					F->get() = false;
 
 				} else {
 
@@ -410,19 +410,19 @@ void NavigationMesh::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sample_partition_type/sample_partition_type", PROPERTY_HINT_ENUM, "Watershed,Monotone,Layers"), "set_sample_partition_type", "get_sample_partition_type");
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell/size", PROPERTY_HINT_RANGE, "0.1,1.0,0.01"), "set_cell_size", "get_cell_size");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell/height", PROPERTY_HINT_RANGE, "0.1,1.0,0.01"), "set_cell_height", "get_cell_height");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/height", PROPERTY_HINT_RANGE, "0.1,5.0,0.01"), "set_agent_height", "get_agent_height");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/radius", PROPERTY_HINT_RANGE, "0.1,5.0,0.01"), "set_agent_radius", "get_agent_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/max_climb", PROPERTY_HINT_RANGE, "0.1,5.0,0.01"), "set_agent_max_climb", "get_agent_max_climb");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell/size", PROPERTY_HINT_RANGE, "0.1,1.0,0.01,or_greater"), "set_cell_size", "get_cell_size");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell/height", PROPERTY_HINT_RANGE, "0.1,1.0,0.01,or_greater"), "set_cell_height", "get_cell_height");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/height", PROPERTY_HINT_RANGE, "0.1,5.0,0.01,or_greater"), "set_agent_height", "get_agent_height");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/radius", PROPERTY_HINT_RANGE, "0.1,5.0,0.01,or_greater"), "set_agent_radius", "get_agent_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/max_climb", PROPERTY_HINT_RANGE, "0.1,5.0,0.01,or_greater"), "set_agent_max_climb", "get_agent_max_climb");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent/max_slope", PROPERTY_HINT_RANGE, "0.0,90.0,0.1"), "set_agent_max_slope", "get_agent_max_slope");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "region/min_size", PROPERTY_HINT_RANGE, "0.0,150.0,0.01"), "set_region_min_size", "get_region_min_size");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "region/merge_size", PROPERTY_HINT_RANGE, "0.0,150.0,0.01"), "set_region_merge_size", "get_region_merge_size");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "edge/max_length", PROPERTY_HINT_RANGE, "0.0,50.0,0.01"), "set_edge_max_length", "get_edge_max_length");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "edge/max_error", PROPERTY_HINT_RANGE, "0.1,3.0,0.01"), "set_edge_max_error", "get_edge_max_error");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "polygon/verts_per_poly", PROPERTY_HINT_RANGE, "3.0,12.0,1.0"), "set_verts_per_poly", "get_verts_per_poly");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "detail/sample_distance", PROPERTY_HINT_RANGE, "0.0,16.0,0.01"), "set_detail_sample_distance", "get_detail_sample_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "detail/sample_max_error", PROPERTY_HINT_RANGE, "0.0,16.0,0.01"), "set_detail_sample_max_error", "get_detail_sample_max_error");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "region/min_size", PROPERTY_HINT_RANGE, "0.0,150.0,0.01,or_greater"), "set_region_min_size", "get_region_min_size");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "region/merge_size", PROPERTY_HINT_RANGE, "0.0,150.0,0.01,or_greater"), "set_region_merge_size", "get_region_merge_size");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "edge/max_length", PROPERTY_HINT_RANGE, "0.0,50.0,0.01,or_greater"), "set_edge_max_length", "get_edge_max_length");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "edge/max_error", PROPERTY_HINT_RANGE, "0.1,3.0,0.01,or_greater"), "set_edge_max_error", "get_edge_max_error");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "polygon/verts_per_poly", PROPERTY_HINT_RANGE, "3.0,12.0,1.0,or_greater"), "set_verts_per_poly", "get_verts_per_poly");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "detail/sample_distance", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,or_greater"), "set_detail_sample_distance", "get_detail_sample_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "detail/sample_max_error", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,or_greater"), "set_detail_sample_max_error", "get_detail_sample_max_error");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter/low_hanging_obstacles"), "set_filter_low_hanging_obstacles", "get_filter_low_hanging_obstacles");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter/ledge_spans"), "set_filter_ledge_spans", "get_filter_ledge_spans");

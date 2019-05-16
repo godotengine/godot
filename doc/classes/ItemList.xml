@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ItemList" inherits="Control" category="Core" version="3.1">
+<class name="ItemList" inherits="Control" category="Core" version="3.2">
 	<brief_description>
 		Control that provides a list of selectable items (and/or icons) in a single column, or optionally in multiple columns.
 	</brief_description>
 	<description>
-		This control provides a selectable list of items that may be in a single (or multiple columns) with option of text, icons,
-		or both text and icon.  Tooltips are supported and may be different for every item in the list.  Selectable items in the list
-		may be selected or deselected and multiple selection may be enabled.  Selection with right mouse button may also be enabled
-		to allow use of popup context menus.  Items may also be 'activated' with a double click (or Enter key).
+		This control provides a selectable list of items that may be in a single (or multiple columns) with option of text, icons, or both text and icon. Tooltips are supported and may be different for every item in the list.
+		Selectable items in the list may be selected or deselected and multiple selection may be enabled. Selection with right mouse button may also be enabled to allow use of popup context menus. Items may also be 'activated' with a double click (or Enter key).
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_icon_item">
 			<return type="void">
@@ -35,8 +31,8 @@
 			<argument index="2" name="selectable" type="bool" default="true">
 			</argument>
 			<description>
-				Adds an item to the item list with specified text.  Specify an icon of null for a list item with no icon.
-				If selectable is true the list item will be selectable.
+				Adds an item to the item list with specified text. Specify an icon of null for a list item with no icon.
+				If selectable is [code]true[/code] the list item will be selectable.
 			</description>
 		</method>
 		<method name="clear">
@@ -72,6 +68,14 @@
 			</description>
 		</method>
 		<method name="get_item_custom_bg_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_custom_fg_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<argument index="0" name="idx" type="int">
@@ -160,6 +164,14 @@
 				Returns whether or not the item at the specified index is disabled
 			</description>
 		</method>
+		<method name="is_item_icon_transposed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="is_item_selectable" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -216,7 +228,7 @@
 			</argument>
 			<description>
 				Select the item at the specified index.
-				Note:  This method does not trigger the item selection signal.
+				Note: This method does not trigger the item selection signal.
 			</description>
 		</method>
 		<method name="set_item_custom_bg_color">
@@ -225,6 +237,16 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<argument index="1" name="custom_bg_color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_custom_fg_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="custom_fg_color" type="Color">
 			</argument>
 			<description>
 			</description>
@@ -269,6 +291,16 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_icon_transposed">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="rect" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -354,10 +386,10 @@
 	</methods>
 	<members>
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect">
-			If [code]true[/code] the currently selected item may be selected again.
+			If [code]true[/code], the currently selected item may be selected again.
 		</member>
 		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select">
-			If [code]true[/code] a right mouse button click can select items.
+			If [code]true[/code], a right mouse button click can select items.
 		</member>
 		<member name="auto_height" type="bool" setter="set_auto_height" getter="has_auto_height">
 		</member>
@@ -396,6 +428,7 @@
 				Fired when specified list item has been selected via right mouse clicking.
 				The click position is also provided to allow appropriate popup of context menus
 				at the correct location.
+				[member allow_rmb_select] must be enabled.
 			</description>
 		</signal>
 		<signal name="item_selected">
@@ -403,6 +436,7 @@
 			</argument>
 			<description>
 				Fired when specified item has been selected.
+				[member allow_reselect] must be enabled to reselect an item.
 			</description>
 		</signal>
 		<signal name="multi_selected">

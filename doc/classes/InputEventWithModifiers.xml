@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventWithModifiers" inherits="InputEvent" category="Core" version="3.1">
+<class name="InputEventWithModifiers" inherits="InputEvent" category="Core" version="3.2">
 	<brief_description>
 		Base class for keys events with modifiers.
 	</brief_description>
@@ -7,10 +7,8 @@
 		Contains keys events information with modifiers support like [code]SHIFT[/code] or [code]ALT[/code]. See [method Node._input].
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/inputs/inputevent.html
+		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>

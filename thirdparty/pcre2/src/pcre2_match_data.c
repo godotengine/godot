@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2017 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@ POSSIBILITY OF SUCH DAMAGE.
 *  Create a match data block given ovector size  *
 *************************************************/
 
-/* A minimum of 1 is imposed on the number of ovector triplets. */
+/* A minimum of 1 is imposed on the number of ovector pairs. */
 
 PCRE2_EXP_DEFN pcre2_match_data * PCRE2_CALL_CONVENTION
 pcre2_match_data_create(uint32_t oveccount, pcre2_general_context *gcontext)
@@ -59,7 +59,7 @@ pcre2_match_data_create(uint32_t oveccount, pcre2_general_context *gcontext)
 pcre2_match_data *yield;
 if (oveccount < 1) oveccount = 1;
 yield = PRIV(memctl_malloc)(
-  sizeof(pcre2_match_data) + 3*oveccount*sizeof(PCRE2_SIZE),
+  offsetof(pcre2_match_data, ovector) + 2*oveccount*sizeof(PCRE2_SIZE),
   (pcre2_memctl *)gcontext);
 if (yield == NULL) return NULL;
 yield->oveccount = oveccount;

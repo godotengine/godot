@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,9 +48,9 @@ public:
 	virtual void clear() = 0;
 	virtual void redraw() = 0;
 	virtual void free() = 0;
-	virtual bool can_draw() const = 0;
 
 	SpatialGizmo();
+	virtual ~SpatialGizmo() {}
 };
 
 class Spatial : public Node {
@@ -92,6 +92,7 @@ class Spatial : public Node {
 		bool notify_transform;
 
 		bool visible;
+		bool disable_scale;
 
 #ifdef TOOLS_ENABLED
 		Ref<SpatialGizmo> gizmo;
@@ -100,10 +101,8 @@ class Spatial : public Node {
 #endif
 
 	} data;
-#ifdef TOOLS_ENABLED
 
 	void _update_gizmo();
-#endif
 	void _notify_dirty();
 	void _propagate_transform_changed(Spatial *p_origin);
 
@@ -147,8 +146,16 @@ public:
 	Transform get_transform() const;
 	Transform get_global_transform() const;
 
+#ifdef TOOLS_ENABLED
+	virtual Transform get_global_gizmo_transform() const;
+	virtual Transform get_local_gizmo_transform() const;
+#endif
+
 	void set_as_toplevel(bool p_enabled);
 	bool is_set_as_toplevel() const;
+
+	void set_disable_scale(bool p_enabled);
+	bool is_scale_disabled() const;
 
 	void set_disable_gizmo(bool p_enabled);
 	void update_gizmo();
@@ -194,6 +201,8 @@ public:
 	void show();
 	void hide();
 	bool is_visible_in_tree() const;
+
+	void force_update_transform();
 
 	Spatial();
 	~Spatial();

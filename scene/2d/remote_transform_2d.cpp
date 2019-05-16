@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,7 +67,7 @@ void RemoteTransform2D::_update_remote() {
 		} else {
 			Transform2D n_trans = n->get_global_transform();
 			Transform2D our_trans = get_global_transform();
-			Vector2 n_scale = n->get_global_scale();
+			Vector2 n_scale = n->get_scale();
 
 			if (!update_remote_position)
 				our_trans.set_origin(n_trans.get_origin());
@@ -131,8 +131,10 @@ void RemoteTransform2D::_notification(int p_what) {
 void RemoteTransform2D::set_remote_node(const NodePath &p_remote_node) {
 
 	remote_node = p_remote_node;
-	if (is_inside_tree())
+	if (is_inside_tree()) {
 		_update_cache();
+		_update_remote();
+	}
 
 	update_configuration_warning();
 }
@@ -144,6 +146,7 @@ NodePath RemoteTransform2D::get_remote_node() const {
 
 void RemoteTransform2D::set_use_global_coordinates(const bool p_enable) {
 	use_global_coordinates = p_enable;
+	_update_remote();
 }
 
 bool RemoteTransform2D::get_use_global_coordinates() const {
@@ -201,7 +204,7 @@ void RemoteTransform2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_update_scale", "update_remote_scale"), &RemoteTransform2D::set_update_scale);
 	ClassDB::bind_method(D_METHOD("get_update_scale"), &RemoteTransform2D::get_update_scale);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "remote_path"), "set_remote_node", "get_remote_node");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "remote_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_remote_node", "get_remote_node");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_global_coordinates"), "set_use_global_coordinates", "get_use_global_coordinates");
 
 	ADD_GROUP("Update", "update_");

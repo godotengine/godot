@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "video_stream_theora.h"
 
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
 
@@ -94,15 +94,15 @@ void VideoStreamPlaybackTheora::video_write(void) {
 
 		if (px_fmt == TH_PF_444) {
 
-			yuv444_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2, 0);
+			yuv444_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2);
 
 		} else if (px_fmt == TH_PF_422) {
 
-			yuv422_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2, 0);
+			yuv422_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2);
 
 		} else if (px_fmt == TH_PF_420) {
 
-			yuv420_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[2].data, (uint8_t *)yuv[1].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2, 0);
+			yuv420_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2);
 		};
 
 		format = Image::FORMAT_RGBA8;
@@ -296,8 +296,8 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		if (ogg_sync_pageout(&oy, &og) > 0) {
 			queue_page(&og); /* demux into the appropriate stream */
 		} else {
-			int ret = buffer_data(); /* someone needs more data */
-			if (ret == 0) {
+			int ret2 = buffer_data(); /* someone needs more data */
+			if (ret2 == 0) {
 				fprintf(stderr, "End of file while searching for codec headers.\n");
 				clear();
 				return;
@@ -332,8 +332,8 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 		int w;
 		int h;
-		w = (ti.pic_x + ti.frame_width + 1 & ~1) - (ti.pic_x & ~1);
-		h = (ti.pic_y + ti.frame_height + 1 & ~1) - (ti.pic_y & ~1);
+		w = ((ti.pic_x + ti.frame_width + 1) & ~1) - (ti.pic_x & ~1);
+		h = ((ti.pic_y + ti.frame_height + 1) & ~1) - (ti.pic_y & ~1);
 		size.x = w;
 		size.y = h;
 
@@ -365,7 +365,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 float VideoStreamPlaybackTheora::get_time() const {
 
-	return time - AudioServer::get_singleton()->get_output_delay() - delay_compensation; //-((get_total())/(float)vi.rate);
+	return time - AudioServer::get_singleton()->get_output_latency() - delay_compensation; //-((get_total())/(float)vi.rate);
 };
 
 Ref<Texture> VideoStreamPlaybackTheora::get_texture() {
@@ -387,7 +387,6 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 	thread_sem->post();
 #endif
 
-	//print_line("play "+rtos(p_delta));
 	time += p_delta;
 
 	if (videobuf_time > get_time()) {
@@ -440,17 +439,9 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 					}
 				}
 
-				int tr = vorbis_synthesis_read(&vd, ret - to_read);
-
-				if (vd.granulepos >= 0) {
-					//print_line("wrote: "+itos(audio_frames_wrote)+" gpos: "+itos(vd.granulepos));
-				}
-
-				//print_line("mix audio!");
+				vorbis_synthesis_read(&vd, ret - to_read);
 
 				audio_frames_wrote += ret - to_read;
-
-				//print_line("AGP: "+itos(vd.granulepos)+" added "+itos(ret-to_read));
 
 			} else {
 
@@ -460,7 +451,6 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 						vorbis_synthesis_blockin(&vd, &vb);
 					}
 				} else { /* we need more data; break out to suck in another page */
-					//printf("need moar data\n");
 					break;
 				};
 			}
@@ -729,4 +719,46 @@ void VideoStreamTheora::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_file"), &VideoStreamTheora::get_file);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_file", "get_file");
+}
+
+////////////
+
+RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error) {
+
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
+	if (!f) {
+		if (r_error) {
+			*r_error = ERR_CANT_OPEN;
+		}
+		return RES();
+	}
+
+	VideoStreamTheora *stream = memnew(VideoStreamTheora);
+	stream->set_file(p_path);
+
+	Ref<VideoStreamTheora> ogv_stream = Ref<VideoStreamTheora>(stream);
+
+	if (r_error) {
+		*r_error = OK;
+	}
+
+	return ogv_stream;
+}
+
+void ResourceFormatLoaderTheora::get_recognized_extensions(List<String> *p_extensions) const {
+
+	p_extensions->push_back("ogv");
+}
+
+bool ResourceFormatLoaderTheora::handles_type(const String &p_type) const {
+
+	return ClassDB::is_parent_class(p_type, "VideoStream");
+}
+
+String ResourceFormatLoaderTheora::get_resource_type(const String &p_path) const {
+
+	String el = p_path.get_extension().to_lower();
+	if (el == "ogv")
+		return "VideoStreamTheora";
+	return "";
 }

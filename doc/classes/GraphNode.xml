@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphNode" inherits="Container" category="Core" version="3.1">
+<class name="GraphNode" inherits="Container" category="Core" version="3.2">
 	<brief_description>
 		A GraphNode is a container with several input and output slots allowing connections between GraphNodes. Slots can have different, incompatible types.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="clear_all_slots">
 			<return type="void">
@@ -137,7 +135,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return true if left (input) slot 'idx' is enabled. False otherwise.
+				Return [code]true[/code] if left (input) slot 'idx' is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="is_slot_enabled_right" qualifiers="const">
@@ -146,7 +144,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return true if right (output) slot 'idx' is enabled. False otherwise.
+				Return [code]true[/code] if right (output) slot 'idx' is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="set_slot">
@@ -235,6 +233,8 @@
 		<theme_item name="breakpoint" type="StyleBox">
 		</theme_item>
 		<theme_item name="close" type="Texture">
+		</theme_item>
+		<theme_item name="close_color" type="Color">
 		</theme_item>
 		<theme_item name="close_offset" type="int">
 		</theme_item>

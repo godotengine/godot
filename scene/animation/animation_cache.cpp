@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@ void AnimationCache::_node_exit_tree(Node *p_node) {
 		if (path_cache[i].node != p_node)
 			continue;
 
-		path_cache[i].valid = false; //invalidate path cache
+		path_cache.write[i].valid = false; //invalidate path cache
 	}
 }
 
@@ -133,19 +133,19 @@ void AnimationCache::_update_cache() {
 		} else {
 			if (np.get_subname_count() > 0) {
 
-				RES res;
+				RES res2;
 				Vector<StringName> leftover_subpath;
 
 				// We don't want to cache the last resource unless it is a method call
 				bool is_method = animation->track_get_type(i) == Animation::TYPE_METHOD;
-				root->get_node_and_resource(np, res, leftover_subpath, is_method);
+				root->get_node_and_resource(np, res2, leftover_subpath, is_method);
 
-				if (res.is_valid()) {
-					path.resource = res;
+				if (res2.is_valid()) {
+					path.resource = res2;
 				} else {
 					path.node = node;
 				}
-				path.object = res.is_valid() ? res.ptr() : (Object *)node;
+				path.object = res2.is_valid() ? res2.ptr() : (Object *)node;
 				path.subpath = leftover_subpath;
 
 			} else {
@@ -196,7 +196,7 @@ void AnimationCache::set_track_transform(int p_idx, const Transform &p_transform
 
 	ERR_FAIL_COND(!cache_valid);
 	ERR_FAIL_INDEX(p_idx, path_cache.size());
-	Path &p = path_cache[p_idx];
+	Path &p = path_cache.write[p_idx];
 	if (!p.valid)
 		return;
 
@@ -217,7 +217,7 @@ void AnimationCache::set_track_value(int p_idx, const Variant &p_value) {
 
 	ERR_FAIL_COND(!cache_valid);
 	ERR_FAIL_INDEX(p_idx, path_cache.size());
-	Path &p = path_cache[p_idx];
+	Path &p = path_cache.write[p_idx];
 	if (!p.valid)
 		return;
 
@@ -232,7 +232,7 @@ void AnimationCache::call_track(int p_idx, const StringName &p_method, const Var
 
 	ERR_FAIL_COND(!cache_valid);
 	ERR_FAIL_INDEX(p_idx, path_cache.size());
-	Path &p = path_cache[p_idx];
+	Path &p = path_cache.write[p_idx];
 	if (!p.valid)
 		return;
 
@@ -297,11 +297,11 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 						call_track(i, name, NULL, 0, err);
 					} else {
 
-						Vector<Variant *> argptrs;
+						Vector<const Variant *> argptrs;
 						argptrs.resize(args.size());
 						for (int j = 0; j < args.size(); j++) {
 
-							argptrs[j] = &args[j];
+							argptrs.write[j] = &args.write[j];
 						}
 
 						call_track(i, name, (const Variant **)&argptrs[0], args.size(), err);
@@ -309,7 +309,8 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 				}
 
 			} break;
-			default: {}
+			default: {
+			}
 		}
 	}
 }

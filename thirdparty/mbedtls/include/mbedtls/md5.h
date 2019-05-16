@@ -37,15 +37,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/* MBEDTLS_ERR_MD5_HW_ACCEL_FAILED is deprecated and should not be used. */
 #define MBEDTLS_ERR_MD5_HW_ACCEL_FAILED                   -0x002F  /**< MD5 hardware accelerator failed */
-
-#if !defined(MBEDTLS_MD5_ALT)
-// Regular implementation
-//
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#if !defined(MBEDTLS_MD5_ALT)
+// Regular implementation
+//
 
 /**
  * \brief          MD5 context structure
@@ -55,13 +56,17 @@ extern "C" {
  *                 stronger message digests instead.
  *
  */
-typedef struct
+typedef struct mbedtls_md5_context
 {
     uint32_t total[2];          /*!< number of bytes processed  */
     uint32_t state[4];          /*!< intermediate digest state  */
     unsigned char buffer[64];   /*!< data block being processed */
 }
 mbedtls_md5_context;
+
+#else  /* MBEDTLS_MD5_ALT */
+#include "md5_alt.h"
+#endif /* MBEDTLS_MD5_ALT */
 
 /**
  * \brief          Initialize MD5 context
@@ -237,18 +242,6 @@ MBEDTLS_DEPRECATED void mbedtls_md5_process( mbedtls_md5_context *ctx,
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
-
-#ifdef __cplusplus
-}
-#endif
-
-#else  /* MBEDTLS_MD5_ALT */
-#include "md5_alt.h"
-#endif /* MBEDTLS_MD5_ALT */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * \brief          Output = MD5( input buffer )

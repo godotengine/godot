@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "tween.h"
-#include "method_bind_ext.gen.inc"
+
+#include "core/method_bind_ext.gen.inc"
 
 void Tween::_add_pending_command(StringName p_key, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5, const Variant &p_arg6, const Variant &p_arg7, const Variant &p_arg8, const Variant &p_arg9, const Variant &p_arg10) {
 
@@ -150,7 +151,7 @@ void Tween::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (!processing) {
+			if (!is_active()) {
 				//make sure that a previous process state was not saved
 				//only process if "processing" is set
 				set_physics_process_internal(false);
@@ -164,7 +165,7 @@ void Tween::_notification(int p_what) {
 			if (tween_process_mode == TWEEN_PROCESS_PHYSICS)
 				break;
 
-			if (processing)
+			if (is_active())
 				_tween_process(get_process_delta_time());
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -172,7 +173,7 @@ void Tween::_notification(int p_what) {
 			if (tween_process_mode == TWEEN_PROCESS_IDLE)
 				break;
 
-			if (processing)
+			if (is_active())
 				_tween_process(get_physics_process_delta_time());
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -204,7 +205,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("resume", "object", "key"), &Tween::resume, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("resume_all"), &Tween::resume_all);
 	ClassDB::bind_method(D_METHOD("remove", "object", "key"), &Tween::remove, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("_remove", "object", "key", "first_only"), &Tween::_remove);
+	ClassDB::bind_method(D_METHOD("_remove_by_uid", "uid"), &Tween::_remove_by_uid);
 	ClassDB::bind_method(D_METHOD("remove_all"), &Tween::remove_all);
 	ClassDB::bind_method(D_METHOD("seek", "time"), &Tween::seek);
 	ClassDB::bind_method(D_METHOD("tell"), &Tween::tell);
@@ -222,6 +223,7 @@ void Tween::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tween_started", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::NODE_PATH, "key")));
 	ADD_SIGNAL(MethodInfo("tween_step", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::NODE_PATH, "key"), PropertyInfo(Variant::REAL, "elapsed"), PropertyInfo(Variant::OBJECT, "value")));
 	ADD_SIGNAL(MethodInfo("tween_completed", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::NODE_PATH, "key")));
+	ADD_SIGNAL(MethodInfo("tween_all_completed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "repeat"), "set_repeat", "is_repeat");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_tween_process_mode", "get_tween_process_mode");
@@ -276,7 +278,10 @@ Variant &Tween::_get_initial_val(InterpolateData &p_data) {
 				ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, p_data.initial_val);
 			}
 			return initial_val;
-		} break;
+		}
+
+		case INTER_CALLBACK:
+			break;
 	}
 	return p_data.delta_val;
 }
@@ -312,7 +317,7 @@ Variant &Tween::_get_delta_val(InterpolateData &p_data) {
 			if (final_val.get_type() == Variant::INT) final_val = final_val.operator real_t();
 			_calc_delta_val(p_data.initial_val, final_val, p_data.delta_val);
 			return p_data.delta_val;
-		} break;
+		}
 
 		case TARGETING_PROPERTY:
 		case TARGETING_METHOD: {
@@ -324,7 +329,10 @@ Variant &Tween::_get_delta_val(InterpolateData &p_data) {
 			//_calc_delta_val(p_data.initial_val, p_data.final_val, p_data.delta_val);
 			_calc_delta_val(initial_val, p_data.final_val, p_data.delta_val);
 			return p_data.delta_val;
-		} break;
+		}
+
+		case INTER_CALLBACK:
+			break;
 	}
 	return p_data.initial_val;
 }
@@ -521,8 +529,8 @@ void Tween::_tween_process(float p_delta) {
 
 	pending_update++;
 	// if repeat and all interpolates was finished then reset all interpolates
+	bool all_finished = true;
 	if (repeat) {
-		bool all_finished = true;
 
 		for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
 
@@ -538,9 +546,12 @@ void Tween::_tween_process(float p_delta) {
 			reset_all();
 	}
 
+	all_finished = true;
 	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
 
 		InterpolateData &data = E->get();
+		all_finished = all_finished && data.finish;
+
 		if (!data.active || data.finish)
 			continue;
 
@@ -554,8 +565,8 @@ void Tween::_tween_process(float p_delta) {
 			continue;
 		else if (prev_delaying) {
 
-			emit_signal("tween_started", object, NodePath(Vector<StringName>(), data.key, false));
 			_apply_tween_value(data, data.initial_val);
+			emit_signal("tween_started", object, NodePath(Vector<StringName>(), data.key, false));
 		}
 
 		if (data.elapsed > (data.delay + data.duration)) {
@@ -602,32 +613,31 @@ void Tween::_tween_process(float p_delta) {
 			}
 		} else {
 			Variant result = _run_equation(data);
-			emit_signal("tween_step", object, NodePath(Vector<StringName>(), data.key, false), data.elapsed, result);
 			_apply_tween_value(data, result);
+			emit_signal("tween_step", object, NodePath(Vector<StringName>(), data.key, false), data.elapsed, result);
 		}
 
 		if (data.finish) {
 			_apply_tween_value(data, data.final_val);
+			data.elapsed = 0;
 			emit_signal("tween_completed", object, NodePath(Vector<StringName>(), data.key, false));
 			// not repeat mode, remove completed action
 			if (!repeat)
-				call_deferred("_remove", object, NodePath(Vector<StringName>(), data.key, false), true);
-		}
+				call_deferred("_remove_by_uid", data.uid);
+		} else if (!repeat)
+			all_finished = all_finished && data.finish;
 	}
 	pending_update--;
+
+	if (all_finished) {
+		set_active(false);
+		emit_signal("tween_all_completed");
+	}
 }
 
 void Tween::set_tween_process_mode(TweenProcessMode p_mode) {
 
-	if (tween_process_mode == p_mode)
-		return;
-
-	bool pr = processing;
-	if (pr)
-		_set_process(false);
 	tween_process_mode = p_mode;
-	if (pr)
-		_set_process(true);
 }
 
 Tween::TweenProcessMode Tween::get_tween_process_mode() const {
@@ -635,32 +645,21 @@ Tween::TweenProcessMode Tween::get_tween_process_mode() const {
 	return tween_process_mode;
 }
 
-void Tween::_set_process(bool p_process, bool p_force) {
-
-	if (processing == p_process && !p_force)
-		return;
-
-	switch (tween_process_mode) {
-
-		case TWEEN_PROCESS_PHYSICS: set_physics_process_internal(p_process && active); break;
-		case TWEEN_PROCESS_IDLE: set_process_internal(p_process && active); break;
-	}
-
-	processing = p_process;
-}
-
 bool Tween::is_active() const {
 
-	return active;
+	return is_processing_internal() || is_physics_processing_internal();
 }
 
 void Tween::set_active(bool p_active) {
 
-	if (active == p_active)
+	if (is_active() == p_active)
 		return;
 
-	active = p_active;
-	_set_process(processing, true);
+	switch (tween_process_mode) {
+
+		case TWEEN_PROCESS_IDLE: set_process_internal(p_active); break;
+		case TWEEN_PROCESS_PHYSICS: set_physics_process_internal(p_active); break;
+	}
 }
 
 bool Tween::is_repeat() const {
@@ -684,9 +683,12 @@ float Tween::get_speed_scale() const {
 }
 
 bool Tween::start() {
+	if (pending_update != 0) {
+		call_deferred("start");
+		return true;
+	}
 
 	set_active(true);
-	_set_process(true);
 	return true;
 }
 
@@ -746,7 +748,6 @@ bool Tween::stop(Object *p_object, StringName p_key) {
 bool Tween::stop_all() {
 
 	set_active(false);
-	_set_process(false);
 
 	pending_update++;
 	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
@@ -761,7 +762,6 @@ bool Tween::stop_all() {
 bool Tween::resume(Object *p_object, StringName p_key) {
 
 	set_active(true);
-	_set_process(true);
 
 	pending_update++;
 	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
@@ -780,7 +780,6 @@ bool Tween::resume(Object *p_object, StringName p_key) {
 bool Tween::resume_all() {
 
 	set_active(true);
-	_set_process(true);
 
 	pending_update++;
 	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
@@ -793,15 +792,9 @@ bool Tween::resume_all() {
 }
 
 bool Tween::remove(Object *p_object, StringName p_key) {
-	_remove(p_object, p_key, false);
-	return true;
-}
-
-void Tween::_remove(Object *p_object, StringName p_key, bool first_only) {
-
 	if (pending_update != 0) {
-		call_deferred("_remove", p_object, p_key, first_only);
-		return;
+		call_deferred("remove", p_object, p_key);
+		return true;
 	}
 	List<List<InterpolateData>::Element *> for_removal;
 	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
@@ -812,14 +805,33 @@ void Tween::_remove(Object *p_object, StringName p_key, bool first_only) {
 			continue;
 		if (object == p_object && (data.concatenated_key == p_key || p_key == "")) {
 			for_removal.push_back(E);
-			if (first_only) {
-				break;
-			}
 		}
 	}
 	for (List<List<InterpolateData>::Element *>::Element *E = for_removal.front(); E; E = E->next()) {
 		interpolates.erase(E->get());
 	}
+	return true;
+}
+
+void Tween::_remove_by_uid(int uid) {
+	if (pending_update != 0) {
+		call_deferred("_remove_by_uid", uid);
+		return;
+	}
+
+	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
+		if (uid == E->get().uid) {
+			E->erase();
+			break;
+		}
+	}
+}
+
+void Tween::_push_interpolate_data(InterpolateData &p_data) {
+	pending_update++;
+	p_data.uid = ++uid;
+	interpolates.push_back(p_data);
+	pending_update--;
 }
 
 bool Tween::remove_all() {
@@ -829,8 +841,8 @@ bool Tween::remove_all() {
 		return true;
 	}
 	set_active(false);
-	_set_process(false);
 	interpolates.clear();
+	uid = 0;
 	return true;
 }
 
@@ -854,12 +866,8 @@ bool Tween::seek(real_t p_time) {
 			data.finish = false;
 		}
 
-		switch (data.type) {
-			case INTER_PROPERTY:
-			case INTER_METHOD:
-				break;
-			case INTER_CALLBACK:
-				continue;
+		if (data.type == INTER_CALLBACK) {
+			continue;
 		}
 
 		Variant result = _run_equation(data);
@@ -886,6 +894,10 @@ real_t Tween::tell() const {
 
 real_t Tween::get_runtime() const {
 
+	if (speed_scale == 0) {
+		return INFINITY;
+	}
+
 	pending_update++;
 	real_t runtime = 0;
 	for (const List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
@@ -896,7 +908,8 @@ real_t Tween::get_runtime() const {
 			runtime = t;
 	}
 	pending_update--;
-	return runtime;
+
+	return runtime / speed_scale;
 }
 
 bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final_val, Variant &p_delta_val) {
@@ -1038,7 +1051,7 @@ bool Tween::interpolate_property(Object *p_object, NodePath p_property, Variant 
 	if (!_calc_delta_val(data.initial_val, data.final_val, data.delta_val))
 		return false;
 
-	interpolates.push_back(data);
+	_push_interpolate_data(data);
 	return true;
 }
 
@@ -1081,7 +1094,7 @@ bool Tween::interpolate_method(Object *p_object, StringName p_method, Variant p_
 	if (!_calc_delta_val(data.initial_val, data.final_val, data.delta_val))
 		return false;
 
-	interpolates.push_back(data);
+	_push_interpolate_data(data);
 	return true;
 }
 
@@ -1133,9 +1146,7 @@ bool Tween::interpolate_callback(Object *p_object, real_t p_duration, String p_c
 	data.arg[3] = p_arg4;
 	data.arg[4] = p_arg5;
 
-	pending_update++;
-	interpolates.push_back(data);
-	pending_update--;
+	_push_interpolate_data(data);
 	return true;
 }
 
@@ -1186,9 +1197,7 @@ bool Tween::interpolate_deferred_callback(Object *p_object, real_t p_duration, S
 	data.arg[3] = p_arg4;
 	data.arg[4] = p_arg5;
 
-	pending_update++;
-	interpolates.push_back(data);
-	pending_update--;
+	_push_interpolate_data(data);
 	return true;
 }
 
@@ -1243,7 +1252,7 @@ bool Tween::follow_property(Object *p_object, NodePath p_property, Variant p_ini
 	data.ease_type = p_ease_type;
 	data.delay = p_delay;
 
-	interpolates.push_back(data);
+	_push_interpolate_data(data);
 	return true;
 }
 
@@ -1294,7 +1303,7 @@ bool Tween::follow_method(Object *p_object, StringName p_method, Variant p_initi
 	data.ease_type = p_ease_type;
 	data.delay = p_delay;
 
-	interpolates.push_back(data);
+	_push_interpolate_data(data);
 	return true;
 }
 
@@ -1352,7 +1361,7 @@ bool Tween::targeting_property(Object *p_object, NodePath p_property, Object *p_
 	if (!_calc_delta_val(data.initial_val, data.final_val, data.delta_val))
 		return false;
 
-	interpolates.push_back(data);
+	_push_interpolate_data(data);
 	return true;
 }
 
@@ -1407,7 +1416,7 @@ bool Tween::targeting_method(Object *p_object, StringName p_method, Object *p_in
 	if (!_calc_delta_val(data.initial_val, data.final_val, data.delta_val))
 		return false;
 
-	interpolates.push_back(data);
+	_push_interpolate_data(data);
 	return true;
 }
 
@@ -1415,11 +1424,10 @@ Tween::Tween() {
 
 	//String autoplay;
 	tween_process_mode = TWEEN_PROCESS_IDLE;
-	processing = false;
-	active = false;
 	repeat = false;
 	speed_scale = 1;
 	pending_update = 0;
+	uid = 0;
 }
 
 Tween::~Tween() {

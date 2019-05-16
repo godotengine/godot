@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -46,9 +46,7 @@ collecting data (e.g. minimum matching length). */
 #include "config.h"
 #endif
 
-
 #include "pcre2_internal.h"
-
 
 /* The maximum remembered capturing brackets minimum. */
 
@@ -158,12 +156,12 @@ for (;;)
       }
     goto PROCESS_NON_CAPTURE;
 
-    /* There's a special case of OP_ONCE, when it is wrapped round an
+    case OP_BRA:
+    /* There's a special case of OP_BRA, when it is wrapped round a repeated
     OP_RECURSE. We'd like to process the latter at this level so that
     remembering the value works for repeated cases. So we do nothing, but
     set a fudge value to skip over the OP_KET after the recurse. */
 
-    case OP_ONCE:
     if (cc[1+LINK_SIZE] == OP_RECURSE && cc[2*(1+LINK_SIZE)] == OP_KET)
       {
       once_fudge = 1 + LINK_SIZE;
@@ -172,8 +170,7 @@ for (;;)
       }
     /* Fall through */
 
-    case OP_ONCE_NC:
-    case OP_BRA:
+    case OP_ONCE:
     case OP_SBRA:
     case OP_BRAPOS:
     case OP_SBRAPOS:
@@ -710,6 +707,7 @@ for (;;)
     /* Skip these, but we need to add in the name length. */
 
     case OP_MARK:
+    case OP_COMMIT_ARG:
     case OP_PRUNE_ARG:
     case OP_SKIP_ARG:
     case OP_THEN_ARG:
@@ -789,6 +787,7 @@ if (utf)
 
 if (caseless)
   {
+#ifdef SUPPORT_UNICODE
   if (utf)
     {
 #if PCRE2_CODE_UNIT_WIDTH == 8
@@ -801,10 +800,12 @@ if (caseless)
     if (c > 0xff) SET_BIT(0xff); else SET_BIT(c);
 #endif
     }
+  else
+#endif  /* SUPPORT_UNICODE */
 
   /* Not UTF */
 
-  else if (MAX_255(c)) SET_BIT(re->tables[fcc_offset + c]);
+  if (MAX_255(c)) SET_BIT(re->tables[fcc_offset + c]);
   }
 
 return p;
@@ -953,10 +954,10 @@ do
       case OP_ALLANY:
       case OP_ANY:
       case OP_ANYBYTE:
-      case OP_CIRC:
       case OP_CIRCM:
       case OP_CLOSE:
       case OP_COMMIT:
+      case OP_COMMIT_ARG:
       case OP_COND:
       case OP_CREF:
       case OP_FALSE:
@@ -1021,6 +1022,13 @@ do
       case OP_THEN_ARG:
       return SSB_FAIL;
 
+      /* OP_CIRC happens only at the start of an anchored branch (multiline ^
+      uses OP_CIRCM). Skip over it. */
+
+      case OP_CIRC:
+      tcode += PRIV(OP_lengths)[OP_CIRC];
+      break;
+
       /* A "real" property test implies no starting bits, but the fake property
       PT_CLIST identifies a list of characters. These lists are short, as they
       are used for characters with more than one "other case", so there is no
@@ -1067,7 +1075,6 @@ do
       case OP_CBRAPOS:
       case OP_SCBRAPOS:
       case OP_ONCE:
-      case OP_ONCE_NC:
       case OP_ASSERT:
       rc = set_start_bits(re, tcode, utf);
       if (rc == SSB_FAIL || rc == SSB_UNKNOWN) return rc;
@@ -1269,7 +1276,7 @@ do
       break;
 
       /* Single character types set the bits and stop. Note that if PCRE2_UCP
-      is set, we do not see these op codes because \d etc are converted to
+      is set, we do not see these opcodes because \d etc are converted to
       properties. Therefore, these apply in the case when only characters less
       than 256 are recognized to match the types. */
 
@@ -1449,6 +1456,10 @@ do
       classmap = ((tcode[1 + LINK_SIZE] & XCL_MAP) == 0)? NULL :
         (uint8_t *)(tcode + 1 + LINK_SIZE + 1);
 #endif
+      /* It seems that the fall through comment must be outside the #ifdef if
+      it is to avoid the gcc compiler warning. */
+
+      /* Fall through */
 
       /* Enter here for a negative non-XCLASS. In the 8-bit library, if we are
       in UTF mode, any byte with a value >= 0xc4 is a potentially valid starter
@@ -1576,12 +1587,11 @@ BOOL utf = (re->overall_options & PCRE2_UTF) != 0;
 code = (PCRE2_UCHAR *)((uint8_t *)re + sizeof(pcre2_real_code)) +
   re->name_entry_size * re->name_count;
 
-/* For an anchored pattern, or an unanchored pattern that has a first code
-unit, or a multiline pattern that matches only at "line start", there is no
-point in seeking a list of starting code units. */
+/* For a pattern that has a first code unit, or a multiline pattern that
+matches only at "line start", there is no point in seeking a list of starting
+code units. */
 
-if ((re->overall_options & PCRE2_ANCHORED) == 0 &&
-    (re->flags & (PCRE2_FIRSTSET|PCRE2_STARTLINE)) == 0)
+if ((re->flags & (PCRE2_FIRSTSET|PCRE2_STARTLINE)) == 0)
   {
   int rc = set_start_bits(re, code, utf);
   if (rc == SSB_UNKNOWN) return 1;

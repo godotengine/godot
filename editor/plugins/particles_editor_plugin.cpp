@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,138 +29,20 @@
 /*************************************************************************/
 
 #include "particles_editor_plugin.h"
+
+#include "core/io/resource_loader.h"
 #include "editor/plugins/spatial_editor_plugin.h"
-#include "io/resource_loader.h"
+#include "scene/3d/cpu_particles.h"
+#include "scene/resources/particles_material.h"
 
-void ParticlesEditor::_node_removed(Node *p_node) {
+bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vector3> &normals) {
 
-	if (p_node == node) {
-		node = NULL;
-		hide();
-	}
-}
-
-void ParticlesEditor::_node_selected(const NodePath &p_path) {
-
-	Node *sel = get_node(p_path);
-	if (!sel)
-		return;
-
-	VisualInstance *vi = Object::cast_to<VisualInstance>(sel);
-	if (!vi) {
-
-		err_dialog->set_text(TTR("Node does not contain geometry."));
-		err_dialog->popup_centered_minsize();
-		return;
-	}
-
-	geometry = vi->get_faces(VisualInstance::FACES_SOLID);
-
-	if (geometry.size() == 0) {
-
-		err_dialog->set_text(TTR("Node does not contain geometry (faces)."));
-		err_dialog->popup_centered_minsize();
-		return;
-	}
-
-	Transform geom_xform = node->get_global_transform().affine_inverse() * vi->get_global_transform();
-
-	int gc = geometry.size();
-	PoolVector<Face3>::Write w = geometry.write();
-
-	for (int i = 0; i < gc; i++) {
-		for (int j = 0; j < 3; j++) {
-			w[i].vertex[j] = geom_xform.xform(w[i].vertex[j]);
-		}
-	}
-
-	w = PoolVector<Face3>::Write();
-
-	emission_dialog->popup_centered(Size2(300, 130));
-}
-
-void ParticlesEditor::_notification(int p_notification) {
-
-	if (p_notification == NOTIFICATION_ENTER_TREE) {
-		options->set_icon(options->get_popup()->get_icon("Particles", "EditorIcons"));
-	}
-}
-
-void ParticlesEditor::_menu_option(int p_option) {
-
-	switch (p_option) {
-
-		case MENU_OPTION_GENERATE_AABB: {
-			generate_aabb->popup_centered_minsize();
-		} break;
-		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH: {
-
-			Ref<ParticlesMaterial> material = node->get_process_material();
-			if (material.is_null()) {
-				EditorNode::get_singleton()->show_warning(TTR("A processor material of type 'ParticlesMaterial' is required."));
-				return;
-			}
-			emission_file_dialog->popup_centered_ratio();
-
-		} break;
-
-		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
-			Ref<ParticlesMaterial> material = node->get_process_material();
-			if (material.is_null()) {
-				EditorNode::get_singleton()->show_warning(TTR("A processor material of type 'ParticlesMaterial' is required."));
-				return;
-			}
-
-			emission_tree_dialog->popup_centered_ratio();
-
-		} break;
-	}
-}
-
-void ParticlesEditor::_generate_aabb() {
-
-	float time = generate_seconds->get_value();
-
-	float running = 0.0;
-
-	EditorProgress ep("gen_aabb", TTR("Generating AABB"), int(time));
-
-	AABB rect;
-	while (running < time) {
-
-		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		ep.step("Generating...", int(running), true);
-		OS::get_singleton()->delay_usec(1000);
-
-		AABB capture = node->capture_aabb();
-		if (rect == AABB())
-			rect = capture;
-		else
-			rect.merge_with(capture);
-
-		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
-	}
-
-	node->set_visibility_aabb(rect);
-}
-
-void ParticlesEditor::edit(Particles *p_particles) {
-
-	node = p_particles;
-}
-
-void ParticlesEditor::_generate_emission_points() {
-
-	/// hacer codigo aca
-	PoolVector<float> points;
 	bool use_normals = emission_fill->get_selected() == 1;
-	PoolVector<float> normals;
 
 	if (emission_fill->get_selected() < 2) {
 
 		float area_accum = 0;
 		Map<float, int> triangle_area_map;
-		print_line("geometry size: " + itos(geometry.size()));
 
 		for (int i = 0; i < geometry.size(); i++) {
 
@@ -175,7 +57,7 @@ void ParticlesEditor::_generate_emission_points() {
 
 			err_dialog->set_text(TTR("Faces contain no area!"));
 			err_dialog->popup_centered_minsize();
-			return;
+			return false;
 		}
 
 		int emissor_count = emission_amount->get_value();
@@ -185,9 +67,9 @@ void ParticlesEditor::_generate_emission_points() {
 			float areapos = Math::random(0.0f, area_accum);
 
 			Map<float, int>::Element *E = triangle_area_map.find_closest(areapos);
-			ERR_FAIL_COND(!E)
+			ERR_FAIL_COND_V(!E, false)
 			int index = E->get();
-			ERR_FAIL_INDEX(index, geometry.size());
+			ERR_FAIL_INDEX_V(index, geometry.size(), false);
 
 			// ok FINALLY get face
 			Face3 face = geometry[index];
@@ -195,15 +77,11 @@ void ParticlesEditor::_generate_emission_points() {
 
 			Vector3 pos = face.get_random_point_inside();
 
-			points.push_back(pos.x);
-			points.push_back(pos.y);
-			points.push_back(pos.z);
+			points.push_back(pos);
 
 			if (use_normals) {
 				Vector3 normal = face.get_plane().normal;
-				normals.push_back(normal.x);
-				normals.push_back(normal.y);
-				normals.push_back(normal.z);
+				normals.push_back(normal);
 			}
 		}
 	} else {
@@ -214,7 +92,7 @@ void ParticlesEditor::_generate_emission_points() {
 
 			err_dialog->set_text(TTR("No faces!"));
 			err_dialog->popup_centered_minsize();
-			return;
+			return false;
 		}
 
 		PoolVector<Face3>::Read r = geometry.read();
@@ -276,91 +154,61 @@ void ParticlesEditor::_generate_emission_points() {
 
 				Vector3 point = ofs + dir * val;
 
-				points.push_back(point.x);
-				points.push_back(point.y);
-				points.push_back(point.z);
+				points.push_back(point);
 				break;
 			}
 		}
 	}
 
-	int point_count = points.size() / 3;
+	return true;
+}
 
-	int w = 2048;
-	int h = (point_count / 2048) + 1;
+void ParticlesEditorBase::_node_selected(const NodePath &p_path) {
 
-	PoolVector<uint8_t> point_img;
-	point_img.resize(w * h * 3 * sizeof(float));
+	Node *sel = get_node(p_path);
+	if (!sel)
+		return;
 
-	{
-		PoolVector<uint8_t>::Write iw = point_img.write();
-		zeromem(iw.ptr(), w * h * 3 * sizeof(float));
-		PoolVector<float>::Read r = points.read();
-		copymem(iw.ptr(), r.ptr(), point_count * sizeof(float) * 3);
+	VisualInstance *vi = Object::cast_to<VisualInstance>(sel);
+	if (!vi) {
+
+		err_dialog->set_text(TTR("Node does not contain geometry."));
+		err_dialog->popup_centered_minsize();
+		return;
 	}
 
-	Ref<Image> image = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img));
+	geometry = vi->get_faces(VisualInstance::FACES_SOLID);
 
-	Ref<ImageTexture> tex;
-	tex.instance();
-	tex->create_from_image(image, Texture::FLAG_FILTER);
+	if (geometry.size() == 0) {
 
-	Ref<ParticlesMaterial> material = node->get_process_material();
-	ERR_FAIL_COND(material.is_null());
+		err_dialog->set_text(TTR("Node does not contain geometry (faces)."));
+		err_dialog->popup_centered_minsize();
+		return;
+	}
 
-	if (use_normals) {
+	Transform geom_xform = base_node->get_global_transform().affine_inverse() * vi->get_global_transform();
 
-		material->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
-		material->set_emission_point_count(point_count);
-		material->set_emission_point_texture(tex);
+	int gc = geometry.size();
+	PoolVector<Face3>::Write w = geometry.write();
 
-		PoolVector<uint8_t> point_img2;
-		point_img2.resize(w * h * 3 * sizeof(float));
-
-		{
-			PoolVector<uint8_t>::Write iw = point_img2.write();
-			zeromem(iw.ptr(), w * h * 3 * sizeof(float));
-			PoolVector<float>::Read r = normals.read();
-			copymem(iw.ptr(), r.ptr(), point_count * sizeof(float) * 3);
+	for (int i = 0; i < gc; i++) {
+		for (int j = 0; j < 3; j++) {
+			w[i].vertex[j] = geom_xform.xform(w[i].vertex[j]);
 		}
-
-		Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
-
-		Ref<ImageTexture> tex2;
-		tex2.instance();
-		tex2->create_from_image(image2, Texture::FLAG_FILTER);
-
-		material->set_emission_normal_texture(tex2);
-	} else {
-
-		material->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_POINTS);
-		material->set_emission_point_count(point_count);
-		material->set_emission_point_texture(tex);
 	}
+
+	w = PoolVector<Face3>::Write();
+
+	emission_dialog->popup_centered(Size2(300, 130));
 }
 
-void ParticlesEditor::_bind_methods() {
+void ParticlesEditorBase::_bind_methods() {
 
-	ClassDB::bind_method("_menu_option", &ParticlesEditor::_menu_option);
-	ClassDB::bind_method("_node_selected", &ParticlesEditor::_node_selected);
-	ClassDB::bind_method("_generate_emission_points", &ParticlesEditor::_generate_emission_points);
-	ClassDB::bind_method("_generate_aabb", &ParticlesEditor::_generate_aabb);
+	ClassDB::bind_method("_node_selected", &ParticlesEditorBase::_node_selected);
+	ClassDB::bind_method("_generate_emission_points", &ParticlesEditorBase::_generate_emission_points);
 }
 
-ParticlesEditor::ParticlesEditor() {
-
-	particles_editor_hb = memnew(HBoxContainer);
-	SpatialEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
-	options = memnew(MenuButton);
-	particles_editor_hb->add_child(options);
-	particles_editor_hb->hide();
-
-	options->set_text(TTR("Particles"));
-	options->get_popup()->add_item(TTR("Generate AABB"), MENU_OPTION_GENERATE_AABB);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Create Emission Points From Mesh"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH);
-	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
-	options->get_popup()->connect("id_pressed", this, "_menu_option");
+ParticlesEditorBase::ParticlesEditorBase() {
 
 	emission_dialog = memnew(ConfirmationDialog);
 	emission_dialog->set_title(TTR("Create Emitter"));
@@ -403,6 +251,222 @@ ParticlesEditor::ParticlesEditor() {
 	}
 
 	emission_file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+}
+
+void ParticlesEditor::_node_removed(Node *p_node) {
+
+	if (p_node == node) {
+		node = NULL;
+		hide();
+	}
+}
+
+void ParticlesEditor::_notification(int p_notification) {
+
+	if (p_notification == NOTIFICATION_ENTER_TREE) {
+		options->set_icon(options->get_popup()->get_icon("Particles", "EditorIcons"));
+		get_tree()->connect("node_removed", this, "_node_removed");
+	}
+}
+
+void ParticlesEditor::_menu_option(int p_option) {
+
+	switch (p_option) {
+
+		case MENU_OPTION_GENERATE_AABB: {
+			float gen_time = node->get_lifetime();
+
+			if (gen_time < 1.0)
+				generate_seconds->set_value(1.0);
+			else
+				generate_seconds->set_value(trunc(gen_time) + 1.0);
+			generate_aabb->popup_centered_minsize();
+		} break;
+		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH: {
+
+			Ref<ParticlesMaterial> material = node->get_process_material();
+			if (material.is_null()) {
+				EditorNode::get_singleton()->show_warning(TTR("A processor material of type 'ParticlesMaterial' is required."));
+				return;
+			}
+			emission_file_dialog->popup_centered_ratio();
+
+		} break;
+
+		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
+			Ref<ParticlesMaterial> material = node->get_process_material();
+			if (material.is_null()) {
+				EditorNode::get_singleton()->show_warning(TTR("A processor material of type 'ParticlesMaterial' is required."));
+				return;
+			}
+
+			emission_tree_dialog->popup_centered_ratio();
+
+		} break;
+		case MENU_OPTION_CONVERT_TO_CPU_PARTICLES: {
+
+			CPUParticles *cpu_particles = memnew(CPUParticles);
+			cpu_particles->convert_from_particles(node);
+			cpu_particles->set_name(node->get_name());
+			cpu_particles->set_transform(node->get_transform());
+			cpu_particles->set_visible(node->is_visible());
+			cpu_particles->set_pause_mode(node->get_pause_mode());
+
+			EditorNode::get_singleton()->get_scene_tree_dock()->replace_node(node, cpu_particles, false);
+
+		} break;
+	}
+}
+
+void ParticlesEditor::_generate_aabb() {
+
+	float time = generate_seconds->get_value();
+
+	float running = 0.0;
+
+	EditorProgress ep("gen_aabb", TTR("Generating AABB"), int(time));
+
+	bool was_emitting = node->is_emitting();
+	if (!was_emitting) {
+		node->set_emitting(true);
+		OS::get_singleton()->delay_usec(1000);
+	}
+
+	AABB rect;
+
+	while (running < time) {
+
+		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+		ep.step("Generating...", int(running), true);
+		OS::get_singleton()->delay_usec(1000);
+
+		AABB capture = node->capture_aabb();
+		if (rect == AABB())
+			rect = capture;
+		else
+			rect.merge_with(capture);
+
+		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
+	}
+
+	if (!was_emitting) {
+		node->set_emitting(false);
+	}
+
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Generate Visibility AABB"));
+	ur->add_do_method(node, "set_visibility_aabb", rect);
+	ur->add_undo_method(node, "set_visibility_aabb", node->get_visibility_aabb());
+	ur->commit_action();
+}
+
+void ParticlesEditor::edit(Particles *p_particles) {
+
+	base_node = p_particles;
+	node = p_particles;
+}
+
+void ParticlesEditor::_generate_emission_points() {
+
+	/// hacer codigo aca
+	PoolVector<Vector3> points;
+	PoolVector<Vector3> normals;
+
+	if (!_generate(points, normals)) {
+		return;
+	}
+
+	int point_count = points.size();
+
+	int w = 2048;
+	int h = (point_count / 2048) + 1;
+
+	PoolVector<uint8_t> point_img;
+	point_img.resize(w * h * 3 * sizeof(float));
+
+	{
+		PoolVector<uint8_t>::Write iw = point_img.write();
+		zeromem(iw.ptr(), w * h * 3 * sizeof(float));
+		PoolVector<Vector3>::Read r = points.read();
+		float *wf = (float *)iw.ptr();
+		for (int i = 0; i < point_count; i++) {
+			wf[i * 3 + 0] = r[i].x;
+			wf[i * 3 + 1] = r[i].y;
+			wf[i * 3 + 2] = r[i].z;
+		}
+	}
+
+	Ref<Image> image = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img));
+
+	Ref<ImageTexture> tex;
+	tex.instance();
+	tex->create_from_image(image, Texture::FLAG_FILTER);
+
+	Ref<ParticlesMaterial> material = node->get_process_material();
+	ERR_FAIL_COND(material.is_null());
+
+	if (normals.size() > 0) {
+
+		material->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
+		material->set_emission_point_count(point_count);
+		material->set_emission_point_texture(tex);
+
+		PoolVector<uint8_t> point_img2;
+		point_img2.resize(w * h * 3 * sizeof(float));
+
+		{
+			PoolVector<uint8_t>::Write iw = point_img2.write();
+			zeromem(iw.ptr(), w * h * 3 * sizeof(float));
+			PoolVector<Vector3>::Read r = normals.read();
+			float *wf = (float *)iw.ptr();
+			for (int i = 0; i < point_count; i++) {
+				wf[i * 3 + 0] = r[i].x;
+				wf[i * 3 + 1] = r[i].y;
+				wf[i * 3 + 2] = r[i].z;
+			}
+		}
+
+		Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
+
+		Ref<ImageTexture> tex2;
+		tex2.instance();
+		tex2->create_from_image(image2, Texture::FLAG_FILTER);
+
+		material->set_emission_normal_texture(tex2);
+	} else {
+
+		material->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_POINTS);
+		material->set_emission_point_count(point_count);
+		material->set_emission_point_texture(tex);
+	}
+}
+
+void ParticlesEditor::_bind_methods() {
+
+	ClassDB::bind_method("_menu_option", &ParticlesEditor::_menu_option);
+	ClassDB::bind_method("_generate_aabb", &ParticlesEditor::_generate_aabb);
+	ClassDB::bind_method("_node_removed", &ParticlesEditor::_node_removed);
+}
+
+ParticlesEditor::ParticlesEditor() {
+
+	node = NULL;
+	particles_editor_hb = memnew(HBoxContainer);
+	SpatialEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
+	options = memnew(MenuButton);
+	options->set_switch_on_hover(true);
+	particles_editor_hb->add_child(options);
+	particles_editor_hb->hide();
+
+	options->set_text(TTR("Particles"));
+	options->get_popup()->add_item(TTR("Generate AABB"), MENU_OPTION_GENERATE_AABB);
+	options->get_popup()->add_separator();
+	options->get_popup()->add_item(TTR("Create Emission Points From Mesh"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH);
+	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
+	options->get_popup()->add_separator();
+	options->get_popup()->add_item(TTR("Convert to CPUParticles"), MENU_OPTION_CONVERT_TO_CPU_PARTICLES);
+
+	options->get_popup()->connect("id_pressed", this, "_menu_option");
 
 	generate_aabb = memnew(ConfirmationDialog);
 	generate_aabb->set_title(TTR("Generate Visibility AABB"));

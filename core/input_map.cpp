@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "input_map.h"
 
-#include "os/keyboard.h"
-#include "project_settings.h"
+#include "core/os/keyboard.h"
+#include "core/project_settings.h"
 
 InputMap *InputMap::singleton = NULL;
 
@@ -44,10 +44,11 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::add_action, DEFVAL(0.5f));
 	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
 
-	ClassDB::bind_method(D_METHOD("action_set_deadzone", "deadzone"), &InputMap::action_set_deadzone);
+	ClassDB::bind_method(D_METHOD("action_set_deadzone", "action", "deadzone"), &InputMap::action_set_deadzone);
 	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event"), &InputMap::action_add_event);
 	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event"), &InputMap::action_has_event);
 	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event"), &InputMap::action_erase_event);
+	ClassDB::bind_method(D_METHOD("action_erase_events", "action"), &InputMap::action_erase_events);
 	ClassDB::bind_method(D_METHOD("get_action_list", "action"), &InputMap::_get_action_list);
 	ClassDB::bind_method(D_METHOD("event_is_action", "event", "action"), &InputMap::event_is_action);
 	ClassDB::bind_method(D_METHOD("load_from_globals"), &InputMap::load_from_globals);
@@ -98,7 +99,7 @@ List<StringName> InputMap::get_actions() const {
 	return actions;
 }
 
-List<Ref<InputEvent> >::Element *InputMap::_find_event(Action p_action, const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength) const {
+List<Ref<InputEvent> >::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength) const {
 
 	for (List<Ref<InputEvent> >::Element *E = p_action.inputs.front(); E; E = E->next()) {
 
@@ -155,6 +156,13 @@ void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEve
 		input_map[p_action].inputs.erase(E);
 }
 
+void InputMap::action_erase_events(const StringName &p_action) {
+
+	ERR_FAIL_COND(!input_map.has(p_action));
+
+	input_map[p_action].inputs.clear();
+}
+
 Array InputMap::_get_action_list(const StringName &p_action) {
 
 	Array ret;
@@ -191,6 +199,10 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 
 	Ref<InputEventAction> input_event_action = p_event;
 	if (input_event_action.is_valid()) {
+		if (p_pressed != NULL)
+			*p_pressed = input_event_action->is_pressed();
+		if (p_strength != NULL)
+			*p_strength = (*p_pressed) ? 1.0f : 0.0f;
 		return input_event_action->get_action() == p_action;
 	}
 

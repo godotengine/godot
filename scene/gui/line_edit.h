@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,6 +72,7 @@ private:
 	String undo_text;
 	String text;
 	String placeholder;
+	String secret_character;
 	float placeholder_alpha;
 	String ime_text;
 	Point2 ime_selection;
@@ -85,6 +86,10 @@ private:
 
 	int cached_width;
 	int cached_placeholder_width;
+
+	bool clear_button_enabled;
+
+	Ref<Texture> right_icon;
 
 	struct Selection {
 
@@ -104,13 +109,19 @@ private:
 	List<TextOperation> undo_stack;
 	List<TextOperation>::Element *undo_stack_pos;
 
+	struct ClearButtonStatus {
+		bool press_attempt;
+		bool pressing_inside;
+	} clear_button_status;
+
+	bool _is_over_clear_button(const Point2 &p_pos) const;
+
 	void _clear_undo_stack();
 	void _clear_redo();
 	void _create_undo_state();
 
 	Timer *caret_blink_timer;
 
-	static void _ime_text_callback(void *p_self, String p_text, Point2 p_selection);
 	void _text_changed();
 	void _emit_text_change();
 	bool expand_to_text_length;
@@ -123,7 +134,6 @@ private:
 	void shift_selection_check_post(bool);
 
 	void selection_fill_at_cursor();
-	void selection_delete();
 	void set_window_pos(int p_pos);
 
 	void set_cursor_at_pixel_pos(int p_x);
@@ -134,9 +144,7 @@ private:
 	void clear_internal();
 	void changed_internal();
 
-#ifdef TOOLS_ENABLED
 	void _editor_settings_changed();
-#endif
 
 	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
@@ -152,6 +160,8 @@ public:
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
 
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
+
 	void menu_option(int p_option);
 	void set_context_menu_enabled(bool p_enable);
 	bool is_context_menu_enabled();
@@ -159,6 +169,7 @@ public:
 
 	void select(int p_from = 0, int p_to = -1);
 	void select_all();
+	void selection_delete();
 	void deselect();
 
 	void delete_char();
@@ -194,10 +205,18 @@ public:
 	void set_secret(bool p_secret);
 	bool is_secret() const;
 
+	void set_secret_character(const String &p_string);
+	String get_secret_character() const;
+
 	virtual Size2 get_minimum_size() const;
 
 	void set_expand_to_text_length(bool p_enabled);
 	bool get_expand_to_text_length() const;
+
+	void set_clear_button_enabled(bool p_enabled);
+	bool is_clear_button_enabled() const;
+
+	void set_right_icon(const Ref<Texture> &p_icon);
 
 	virtual bool is_text_field() const;
 	LineEdit();

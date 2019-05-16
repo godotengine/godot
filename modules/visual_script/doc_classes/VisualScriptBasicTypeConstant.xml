@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptBasicTypeConstant" inherits="VisualScriptNode" category="Core" version="3.1">
+<class name="VisualScriptBasicTypeConstant" inherits="VisualScriptNode" category="Core" version="3.2">
 	<brief_description>
 		A Visual Script node representing a constant from the base types.
 	</brief_description>
 	<description>
-		A Visual Script node representing a constant from base types, such as [Vector3.AXIS_X].
+		A Visual Script node representing a constant from base types, such as [constant Vector3.AXIS_X].
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>

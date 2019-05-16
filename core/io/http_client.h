@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef HTTP_CLIENT_H
 #define HTTP_CLIENT_H
 
-#include "io/ip.h"
-#include "io/stream_peer.h"
-#include "io/stream_peer_tcp.h"
-#include "reference.h"
+#include "core/io/ip.h"
+#include "core/io/stream_peer.h"
+#include "core/io/stream_peer_tcp.h"
+#include "core/reference.h"
 
 class HTTPClient : public Reference {
 
@@ -165,14 +165,17 @@ private:
 	bool ssl;
 	bool ssl_verify_host;
 	bool blocking;
+	bool handshaking;
 
 	Vector<uint8_t> response_str;
 
 	bool chunked;
 	Vector<uint8_t> chunk;
 	int chunk_left;
+	bool chunk_trailer_part;
 	int body_size;
 	int body_left;
+	bool read_until_eof;
 
 	Ref<StreamPeerTCP> tcp_connection;
 	Ref<StreamPeer> connection;

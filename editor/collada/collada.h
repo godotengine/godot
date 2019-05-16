@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,9 +33,9 @@
 #ifndef COLLADA_H
 #define COLLADA_H
 
-#include "io/xml_parser.h"
-#include "map.h"
-#include "project_settings.h"
+#include "core/io/xml_parser.h"
+#include "core/map.h"
+#include "core/project_settings.h"
 #include "scene/resources/material.h"
 
 class Collada {
@@ -110,14 +110,13 @@ public:
 		float z_near;
 		float z_far;
 
-		CameraData() {
-
-			mode = MODE_PERSPECTIVE;
-			perspective.y_fov = 0;
+		CameraData() :
+				mode(MODE_PERSPECTIVE),
+				aspect(1),
+				z_near(0.1),
+				z_far(100) {
 			perspective.x_fov = 0;
-			aspect = 1;
-			z_near = 0.1;
-			z_far = 100;
+			perspective.y_fov = 0;
 		}
 	};
 
@@ -141,16 +140,14 @@ public:
 		float spot_angle;
 		float spot_exp;
 
-		LightData() {
-
-			mode = MODE_AMBIENT;
-			color = Color(1, 1, 1, 1);
-			constant_att = 0;
-			linear_att = 0;
-			quad_att = 0;
-
-			spot_angle = 45;
-			spot_exp = 1;
+		LightData() :
+				mode(MODE_AMBIENT),
+				color(Color(1, 1, 1, 1)),
+				constant_att(0),
+				linear_att(0),
+				quad_att(0),
+				spot_angle(45),
+				spot_exp(1) {
 		}
 	};
 
@@ -312,7 +309,7 @@ public:
 					total += weights[i].weight;
 				if (total)
 					for (int i = 0; i < 4; i++)
-						weights[i].weight /= total;
+						weights.write[i].weight /= total;
 			}
 		}
 
@@ -515,7 +512,7 @@ public:
 			Key() { interp_type = INTERP_LINEAR; }
 		};
 
-		Vector<float> get_value_at_time(float p_time);
+		Vector<float> get_value_at_time(float p_time) const;
 
 		Vector<Key> keys;
 
@@ -580,11 +577,11 @@ public:
 
 		float animation_length;
 
-		State() {
-			unit_scale = 1.0;
-			up_axis = Vector3::AXIS_Y;
-			import_flags = 0;
-			animation_length = 0;
+		State() :
+				import_flags(0),
+				unit_scale(1.0),
+				up_axis(Vector3::AXIS_Y),
+				animation_length(0) {
 		}
 	} state;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "shape_2d_sw.h"
 
-#include "geometry.h"
-#include "sort.h"
+#include "core/math/geometry.h"
+#include "core/sort_array.h"
 
 void Shape2DSW::configure(const Rect2 &p_aabb) {
 	aabb = p_aabb;
@@ -369,8 +369,11 @@ void RectangleShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_suppor
 }
 
 bool RectangleShape2DSW::contains_point(const Vector2 &p_point) const {
-
-	return Math::abs(p_point.x) < half_extents.x && Math::abs(p_point.y) < half_extents.y;
+	float x = p_point.x;
+	float y = p_point.y;
+	float edge_x = half_extents.x;
+	float edge_y = half_extents.y;
+	return (x >= -edge_x) && (x < edge_x) && (y >= -edge_y) && (y < edge_y);
 }
 
 bool RectangleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
@@ -583,7 +586,7 @@ bool ConvexPolygonShape2DSW::contains_point(const Vector2 &p_point) const {
 			in = true;
 	}
 
-	return (in && !out) || (!in && out);
+	return in != out;
 }
 
 bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
@@ -775,22 +778,22 @@ bool ConcavePolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Ve
 	while (true) {
 
 		uint32_t node = stack[level] & NODE_IDX_MASK;
-		const BVH &b = bvhptr[node];
+		const BVH &bvh = bvhptr[node];
 		bool done = false;
 
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
 			case TEST_AABB_BIT: {
 
-				bool valid = b.aabb.intersects_segment(p_begin, p_end);
+				bool valid = bvh.aabb.intersects_segment(p_begin, p_end);
 				if (!valid) {
 
 					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
 
 				} else {
 
-					if (b.left < 0) {
+					if (bvh.left < 0) {
 
-						const Segment &s = segmentptr[b.right];
+						const Segment &s = segmentptr[bvh.right];
 						Vector2 a = pointptr[s.points[0]];
 						Vector2 b = pointptr[s.points[1]];
 
@@ -820,14 +823,14 @@ bool ConcavePolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Ve
 			case VISIT_LEFT_BIT: {
 
 				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.left | TEST_AABB_BIT;
+				stack[level + 1] = bvh.left | TEST_AABB_BIT;
 				level++;
 			}
 				continue;
 			case VISIT_RIGHT_BIT: {
 
 				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.right | TEST_AABB_BIT;
+				stack[level + 1] = bvh.right | TEST_AABB_BIT;
 				level++;
 			}
 				continue;
@@ -891,8 +894,8 @@ int ConcavePolygonShape2DSW::_generate_bvh(BVH *p_bvh, int p_len, int p_depth) {
 
 	int l = _generate_bvh(p_bvh, median, p_depth + 1);
 	int r = _generate_bvh(&p_bvh[median], p_len - median, p_depth + 1);
-	bvh[node_idx].left = l;
-	bvh[node_idx].right = r;
+	bvh.write[node_idx].left = l;
+	bvh.write[node_idx].right = r;
 
 	return node_idx;
 }
@@ -953,20 +956,20 @@ void ConcavePolygonShape2DSW::set_data(const Variant &p_data) {
 		for (Map<Point2, int>::Element *E = pointmap.front(); E; E = E->next()) {
 
 			aabb.expand_to(E->key());
-			points[E->get()] = E->key();
+			points.write[E->get()] = E->key();
 		}
 
 		Vector<BVH> main_vbh;
 		main_vbh.resize(segments.size());
 		for (int i = 0; i < main_vbh.size(); i++) {
 
-			main_vbh[i].aabb.position = points[segments[i].points[0]];
-			main_vbh[i].aabb.expand_to(points[segments[i].points[1]]);
-			main_vbh[i].left = -1;
-			main_vbh[i].right = i;
+			main_vbh.write[i].aabb.position = points[segments[i].points[0]];
+			main_vbh.write[i].aabb.expand_to(points[segments[i].points[1]]);
+			main_vbh.write[i].left = -1;
+			main_vbh.write[i].right = i;
 		}
 
-		_generate_bvh(&main_vbh[0], main_vbh.size(), 1);
+		_generate_bvh(main_vbh.ptrw(), main_vbh.size(), 1);
 
 	} else {
 		//dictionary with arrays
@@ -1011,6 +1014,10 @@ void ConcavePolygonShape2DSW::cull(const Rect2 &p_local_aabb, Callback p_callbac
 		stack[i]=0;
 	*/
 
+	if (segments.size() == 0 || points.size() == 0 || bvh.size() == 0) {
+		return;
+	}
+
 	int level = 0;
 
 	const Segment *segmentptr = &segments[0];
@@ -1021,21 +1028,21 @@ void ConcavePolygonShape2DSW::cull(const Rect2 &p_local_aabb, Callback p_callbac
 	while (true) {
 
 		uint32_t node = stack[level] & NODE_IDX_MASK;
-		const BVH &b = bvhptr[node];
+		const BVH &bvh = bvhptr[node];
 
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
 			case TEST_AABB_BIT: {
 
-				bool valid = p_local_aabb.intersects(b.aabb);
+				bool valid = p_local_aabb.intersects(bvh.aabb);
 				if (!valid) {
 
 					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
 
 				} else {
 
-					if (b.left < 0) {
+					if (bvh.left < 0) {
 
-						const Segment &s = segmentptr[b.right];
+						const Segment &s = segmentptr[bvh.right];
 						Vector2 a = pointptr[s.points[0]];
 						Vector2 b = pointptr[s.points[1]];
 
@@ -1054,14 +1061,14 @@ void ConcavePolygonShape2DSW::cull(const Rect2 &p_local_aabb, Callback p_callbac
 			case VISIT_LEFT_BIT: {
 
 				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.left | TEST_AABB_BIT;
+				stack[level + 1] = bvh.left | TEST_AABB_BIT;
 				level++;
 			}
 				continue;
 			case VISIT_RIGHT_BIT: {
 
 				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.right | TEST_AABB_BIT;
+				stack[level + 1] = bvh.right | TEST_AABB_BIT;
 				level++;
 			}
 				continue;

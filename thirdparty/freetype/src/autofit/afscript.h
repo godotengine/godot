@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afscript.h                                                             */
-/*                                                                         */
-/*    Auto-fitter scripts (specification only).                            */
-/*                                                                         */
-/*  Copyright 2013-2017 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afscript.h
+ *
+ *   Auto-fitter scripts (specification only).
+ *
+ * Copyright (C) 2013-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
   /* The following part can be included multiple times. */
@@ -137,7 +137,7 @@
           "Georgian (Mkhedruli)",
           HB_SCRIPT_GEORGIAN,
           HINTING_BOTTOM_TO_TOP,
-          "\xE1\x83\x98 \xE1\x83\x94 \xE1\x83\x90" ) /* ი ე ა */
+          "\xE1\x83\x98 \xE1\x83\x94 \xE1\x83\x90 \xE1\xB2\xBF" ) /* ი ე ა Ი */
 
   SCRIPT( geok, GEOK,
           "Georgian (Khutsuri)",

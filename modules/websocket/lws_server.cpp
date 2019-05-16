@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,10 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef JAVASCRIPT_ENABLED
 
 #include "lws_server.h"
 #include "core/os/os.h"
+#include "core/project_settings.h"
 
 Error LWSServer::listen(int p_port, PoolVector<String> p_protocols, bool gd_mp_api) {
 
@@ -40,9 +42,6 @@ Error LWSServer::listen(int p_port, PoolVector<String> p_protocols, bool gd_mp_a
 
 	struct lws_context_creation_info info;
 	memset(&info, 0, sizeof info);
-
-	if (p_protocols.size() == 0) // default to binary protocol
-		p_protocols.append(String("binary"));
 
 	// Prepare lws protocol structs
 	_lws_make_protocols(this, &LWSServer::_lws_gd_callback, p_protocols, &_lws_ref);
@@ -70,6 +69,10 @@ bool LWSServer::is_listening() const {
 	return context != NULL;
 }
 
+int LWSServer::get_max_packet_size() const {
+	return (1 << _out_buf_size) - PROTO_SIZE;
+}
+
 int LWSServer::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {
 
 	LWSPeer::PeerData *peer_data = (LWSPeer::PeerData *)user;
@@ -88,34 +91,41 @@ int LWSServer::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 			int32_t id = _gen_unique_id();
 
 			Ref<LWSPeer> peer = Ref<LWSPeer>(memnew(LWSPeer));
-			peer->set_wsi(wsi);
+			peer->set_wsi(wsi, _in_buf_size, _in_pkt_size, _out_buf_size, _out_pkt_size);
 			_peer_map[id] = peer;
 
 			peer_data->peer_id = id;
-			peer_data->in_size = 0;
-			peer_data->in_count = 0;
-			peer_data->out_count = 0;
-			peer_data->rbw.resize(16);
-			peer_data->rbr.resize(16);
 			peer_data->force_close = false;
-
+			peer_data->clean_close = false;
 			_on_connect(id, lws_get_protocol(wsi)->name);
 			break;
+		}
+
+		case LWS_CALLBACK_WS_PEER_INITIATED_CLOSE: {
+			if (peer_data == NULL)
+				return 0;
+
+			int32_t id = peer_data->peer_id;
+			if (_peer_map.has(id)) {
+				int code;
+				Ref<LWSPeer> peer = _peer_map[id];
+				String reason2 = peer->get_close_reason(in, len, code);
+				peer_data->clean_close = true;
+				_on_close_request(id, code, reason2);
+			}
+			return 0;
 		}
 
 		case LWS_CALLBACK_CLOSED: {
 			if (peer_data == NULL)
 				return 0;
 			int32_t id = peer_data->peer_id;
+			bool clean = peer_data->clean_close;
 			if (_peer_map.has(id)) {
 				_peer_map[id]->close();
 				_peer_map.erase(id);
 			}
-			peer_data->in_count = 0;
-			peer_data->out_count = 0;
-			peer_data->rbr.resize(0);
-			peer_data->rbw.resize(0);
-			_on_disconnect(id);
+			_on_disconnect(id, clean);
 			return 0; // we can end here
 		}
 
@@ -130,10 +140,15 @@ int LWSServer::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 		}
 
 		case LWS_CALLBACK_SERVER_WRITEABLE: {
-			if (peer_data->force_close)
-				return -1;
-
 			int id = peer_data->peer_id;
+			if (peer_data->force_close) {
+				if (_peer_map.has(id)) {
+					Ref<LWSPeer> peer = _peer_map[id];
+					peer->send_close_status(wsi);
+				}
+				return -1;
+			}
+
 			if (_peer_map.has(id))
 				static_cast<Ref<LWSPeer> >(_peer_map[id])->write_wsi();
 			break;
@@ -176,13 +191,17 @@ int LWSServer::get_peer_port(int p_peer_id) const {
 	return _peer_map[p_peer_id]->get_connected_port();
 }
 
-void LWSServer::disconnect_peer(int p_peer_id) {
+void LWSServer::disconnect_peer(int p_peer_id, int p_code, String p_reason) {
 	ERR_FAIL_COND(!has_peer(p_peer_id));
 
-	get_peer(p_peer_id)->close();
+	get_peer(p_peer_id)->close(p_code, p_reason);
 }
 
 LWSServer::LWSServer() {
+	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSS_IN_BUF) - 1) + 10;
+	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSS_IN_PKT) - 1);
+	_out_buf_size = nearest_shift((int)GLOBAL_GET(WSS_OUT_BUF) - 1) + 10;
+	_out_pkt_size = nearest_shift((int)GLOBAL_GET(WSS_OUT_PKT) - 1);
 	context = NULL;
 	_lws_ref = NULL;
 }

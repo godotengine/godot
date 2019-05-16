@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "image_loader_tga.h"
 
-#include "os/os.h"
-#include "print_string.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t p_pixel_size, uint8_t *p_uncompressed_buffer, size_t p_output_size) {
 	Error error;
@@ -148,9 +148,11 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 					uint8_t a = 0xff;
 
 					if (p_header.color_map_depth == 24) {
-						r = (p_palette[(index * 3) + 0]);
+						// Due to low-high byte order, the color table must be
+						// read in the same order as image data (little endian)
+						r = (p_palette[(index * 3) + 2]);
 						g = (p_palette[(index * 3) + 1]);
-						b = (p_palette[(index * 3) + 2]);
+						b = (p_palette[(index * 3) + 0]);
 					} else {
 						return ERR_INVALID_DATA;
 					}
@@ -250,8 +252,9 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	if (tga_header.image_width <= 0 || tga_header.image_height <= 0)
 		err = FAILED;
 
-	if (tga_header.pixel_depth != 8 && tga_header.pixel_depth != 24 && tga_header.pixel_depth != 32)
+	if (!(tga_header.pixel_depth == 8 || tga_header.pixel_depth == 24 || tga_header.pixel_depth == 32)) {
 		err = FAILED;
+	}
 
 	if (err == OK) {
 		f->seek(f->get_position() + tga_header.id_length);

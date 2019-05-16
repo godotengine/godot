@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,8 +48,8 @@ MainLoop *test() {
 		map.set(1337, 21);
 		map.set(42, 11880);
 
-		int value;
-		map.lookup(42, &value);
+		int value = 0;
+		map.lookup(42, value);
 
 		OS::get_singleton()->print("capacity  %d\n", map.get_capacity());
 		OS::get_singleton()->print("elements  %d\n", map.get_num_elements());
@@ -72,7 +72,7 @@ MainLoop *test() {
 		uint32_t num_elems = 0;
 		for (int i = 0; i < 500; i++) {
 			int tmp;
-			if (map.lookup(i, &tmp))
+			if (map.lookup(i, tmp) && tmp == i * 2)
 				num_elems++;
 		}
 
@@ -88,8 +88,37 @@ MainLoop *test() {
 		map.set("Godot rocks", 42);
 
 		for (OAHashMap<String, int>::Iterator it = map.iter(); it.valid; it = map.next_iter(it)) {
-			OS::get_singleton()->print("map[\"%s\"] = %d\n", it.key->utf8().get_data(), *it.data);
+			OS::get_singleton()->print("map[\"%s\"] = %d\n", it.key->utf8().get_data(), *it.value);
 		}
+	}
+
+	// stress test / test for issue #22928
+	{
+		OAHashMap<int, int> map;
+		int dummy = 0;
+		const int N = 1000;
+		uint32_t *keys = new uint32_t[N];
+
+		Math::seed(0);
+
+		// insert a couple of random keys (with a dummy value, which is ignored)
+		for (int i = 0; i < N; i++) {
+			keys[i] = Math::rand();
+			map.set(keys[i], dummy);
+
+			if (!map.lookup(keys[i], dummy))
+				OS::get_singleton()->print("could not find 0x%X despite it was just inserted!\n", unsigned(keys[i]));
+		}
+
+		// check whether the keys are still present
+		for (int i = 0; i < N; i++) {
+			if (!map.lookup(keys[i], dummy)) {
+				OS::get_singleton()->print("could not find 0x%X despite it has been inserted previously! (not checking the other keys, breaking...)\n", unsigned(keys[i]));
+				break;
+			}
+		}
+
+		delete[] keys;
 	}
 
 	return NULL;

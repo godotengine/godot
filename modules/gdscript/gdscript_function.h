@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,22 +31,125 @@
 #ifndef GDSCRIPT_FUNCTION_H
 #define GDSCRIPT_FUNCTION_H
 
-#include "os/thread.h"
-#include "pair.h"
-#include "reference.h"
-#include "script_language.h"
-#include "self_list.h"
-#include "string_db.h"
-#include "variant.h"
+#include "core/os/thread.h"
+#include "core/pair.h"
+#include "core/reference.h"
+#include "core/script_language.h"
+#include "core/self_list.h"
+#include "core/string_name.h"
+#include "core/variant.h"
 
 class GDScriptInstance;
 class GDScript;
+
+struct GDScriptDataType {
+	bool has_type;
+	enum {
+		UNINITIALIZED,
+		BUILTIN,
+		NATIVE,
+		SCRIPT,
+		GDSCRIPT,
+	} kind;
+	Variant::Type builtin_type;
+	StringName native_type;
+	Ref<Script> script_type;
+
+	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
+		if (!has_type) return true; // Can't type check
+
+		switch (kind) {
+			case UNINITIALIZED:
+				break;
+			case BUILTIN: {
+				Variant::Type var_type = p_variant.get_type();
+				bool valid = builtin_type == var_type;
+				if (!valid && p_allow_implicit_conversion) {
+					valid = Variant::can_convert_strict(var_type, builtin_type);
+				}
+				return valid;
+			} break;
+			case NATIVE: {
+				if (p_variant.get_type() == Variant::NIL) {
+					return true;
+				}
+				if (p_variant.get_type() != Variant::OBJECT) {
+					return false;
+				}
+				Object *obj = p_variant.operator Object *();
+				if (obj) {
+					if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
+						// Try with underscore prefix
+						StringName underscore_native_type = "_" + native_type;
+						if (!ClassDB::is_parent_class(obj->get_class_name(), underscore_native_type)) {
+							return false;
+						}
+					}
+				}
+				return true;
+			} break;
+			case SCRIPT:
+			case GDSCRIPT: {
+				if (p_variant.get_type() == Variant::NIL) {
+					return true;
+				}
+				if (p_variant.get_type() != Variant::OBJECT) {
+					return false;
+				}
+				Object *obj = p_variant.operator Object *();
+				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : NULL;
+				bool valid = false;
+				while (base.is_valid()) {
+					if (base == script_type) {
+						valid = true;
+						break;
+					}
+					base = base->get_base_script();
+				}
+				return valid;
+			} break;
+		}
+		return false;
+	}
+
+	operator PropertyInfo() const {
+		PropertyInfo info;
+		if (has_type) {
+			switch (kind) {
+				case UNINITIALIZED:
+					break;
+				case BUILTIN: {
+					info.type = builtin_type;
+				} break;
+				case NATIVE: {
+					info.type = Variant::OBJECT;
+					info.class_name = native_type;
+				} break;
+				case SCRIPT:
+				case GDSCRIPT: {
+					info.type = Variant::OBJECT;
+					info.class_name = script_type->get_instance_base_type();
+				} break;
+			}
+		} else {
+			info.type = Variant::NIL;
+			info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		}
+		return info;
+	}
+
+	GDScriptDataType() :
+			has_type(false),
+			kind(UNINITIALIZED),
+			builtin_type(Variant::NIL) {}
+};
 
 class GDScriptFunction {
 public:
 	enum Opcode {
 		OPCODE_OPERATOR,
 		OPCODE_EXTENDS_TEST,
+		OPCODE_IS_BUILTIN,
 		OPCODE_SET,
 		OPCODE_GET,
 		OPCODE_SET_NAMED,
@@ -56,6 +159,12 @@ public:
 		OPCODE_ASSIGN,
 		OPCODE_ASSIGN_TRUE,
 		OPCODE_ASSIGN_FALSE,
+		OPCODE_ASSIGN_TYPED_BUILTIN,
+		OPCODE_ASSIGN_TYPED_NATIVE,
+		OPCODE_ASSIGN_TYPED_SCRIPT,
+		OPCODE_CAST_TO_BUILTIN,
+		OPCODE_CAST_TO_NATIVE,
+		OPCODE_CAST_TO_SCRIPT,
 		OPCODE_CONSTRUCT, //only for basic types!!
 		OPCODE_CONSTRUCT_ARRAY,
 		OPCODE_CONSTRUCT_DICTIONARY,
@@ -92,15 +201,8 @@ public:
 		ADDR_TYPE_STACK = 5,
 		ADDR_TYPE_STACK_VARIABLE = 6,
 		ADDR_TYPE_GLOBAL = 7,
-		ADDR_TYPE_NIL = 8
-	};
-
-	enum RPCMode {
-		RPC_DISABLED,
-		RPC_ENABLED,
-		RPC_SYNC,
-		RPC_SYNC_MASTER,
-		RPC_SYNC_SLAVE
+		ADDR_TYPE_NAMED_GLOBAL = 8,
+		ADDR_TYPE_NIL = 9
 	};
 
 	struct StackDebug {
@@ -121,6 +223,10 @@ private:
 	int _constant_count;
 	const StringName *_global_names_ptr;
 	int _global_names_count;
+#ifdef TOOLS_ENABLED
+	const StringName *_named_globals_ptr;
+	int _named_globals_count;
+#endif
 	const int *_default_arg_ptr;
 	int _default_arg_count;
 	const int *_code_ptr;
@@ -130,15 +236,20 @@ private:
 	int _call_size;
 	int _initial_line;
 	bool _static;
-	ScriptInstance::RPCMode rpc_mode;
+	MultiplayerAPI::RPCMode rpc_mode;
 
 	GDScript *_script;
 
 	StringName name;
 	Vector<Variant> constants;
 	Vector<StringName> global_names;
+#ifdef TOOLS_ENABLED
+	Vector<StringName> named_globals;
+#endif
 	Vector<int> default_arguments;
 	Vector<int> code;
+	Vector<GDScriptDataType> argument_types;
+	GDScriptDataType return_type;
 
 #ifdef TOOLS_ENABLED
 	Vector<StringName> arg_names;
@@ -174,15 +285,13 @@ private:
 public:
 	struct CallState {
 
-		ObjectID instance_id; //by debug only
-		ObjectID script_id;
-
+		ObjectID instance_id;
 		GDScriptInstance *instance;
 		Vector<uint8_t> stack;
 		int stack_size;
 		Variant self;
 		uint32_t alloca_size;
-		GDScript *_class;
+		Ref<GDScript> script;
 		int ip;
 		int line;
 		int defarg;
@@ -199,6 +308,8 @@ public:
 	int get_max_stack_size() const;
 	int get_default_argument_count() const;
 	int get_default_argument_addr(int p_idx) const;
+	GDScriptDataType get_return_type() const;
+	GDScriptDataType get_argument_type(int p_idx) const;
 	GDScript *get_script() const { return _script; }
 	StringName get_source() const { return source; }
 
@@ -222,7 +333,7 @@ public:
 
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state = NULL);
 
-	_FORCE_INLINE_ ScriptInstance::RPCMode get_rpc_mode() const { return rpc_mode; }
+	_FORCE_INLINE_ MultiplayerAPI::RPCMode get_rpc_mode() const { return rpc_mode; }
 	GDScriptFunction();
 	~GDScriptFunction();
 };
@@ -234,7 +345,7 @@ class GDScriptFunctionState : public Reference {
 	GDScriptFunction *function;
 	GDScriptFunction::CallState state;
 	Variant _signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	Ref<GDScriptFunctionState> previous_state;
+	Ref<GDScriptFunctionState> first_state;
 
 protected:
 	static void _bind_methods();

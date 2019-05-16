@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "instance_placeholder.h"
 
-#include "io/resource_loader.h"
+#include "core/io/resource_loader.h"
 #include "scene/resources/packed_scene.h"
 
 bool InstancePlaceholder::_set(const StringName &p_name, const Variant &p_value) {
@@ -52,6 +52,7 @@ bool InstancePlaceholder::_get(const StringName &p_name, Variant &r_ret) const {
 	}
 	return false;
 }
+
 void InstancePlaceholder::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (const List<PropSet>::Element *E = stored_values.front(); E; E = E->next()) {
@@ -73,13 +74,14 @@ String InstancePlaceholder::get_instance_path() const {
 
 	return path;
 }
-void InstancePlaceholder::replace_by_instance(const Ref<PackedScene> &p_custom_scene) {
 
-	ERR_FAIL_COND(!is_inside_tree());
+Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene> &p_custom_scene) {
+
+	ERR_FAIL_COND_V(!is_inside_tree(), NULL);
 
 	Node *base = get_parent();
 	if (!base)
-		return;
+		return NULL;
 
 	Ref<PackedScene> ps;
 	if (p_custom_scene.is_valid())
@@ -88,7 +90,7 @@ void InstancePlaceholder::replace_by_instance(const Ref<PackedScene> &p_custom_s
 		ps = ResourceLoader::load(path, "PackedScene");
 
 	if (!ps.is_valid())
-		return;
+		return NULL;
 	Node *scene = ps->instance();
 	scene->set_name(get_name());
 	int pos = get_position_in_parent();
@@ -97,11 +99,20 @@ void InstancePlaceholder::replace_by_instance(const Ref<PackedScene> &p_custom_s
 		scene->set(E->get().name, E->get().value);
 	}
 
-	queue_delete();
+	if (p_replace) {
+		queue_delete();
+		base->remove_child(this);
+	}
 
-	base->remove_child(this);
 	base->add_child(scene);
 	base->move_child(scene, pos);
+
+	return scene;
+}
+
+void InstancePlaceholder::replace_by_instance(const Ref<PackedScene> &p_custom_scene) {
+	//Deprecated by
+	create_instance(true, p_custom_scene);
 }
 
 Dictionary InstancePlaceholder::get_stored_values(bool p_with_order) {
@@ -124,6 +135,7 @@ Dictionary InstancePlaceholder::get_stored_values(bool p_with_order) {
 void InstancePlaceholder::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_stored_values", "with_order"), &InstancePlaceholder::get_stored_values, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("create_instance", "replace", "custom_scene"), &InstancePlaceholder::create_instance, DEFVAL(false), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("replace_by_instance", "custom_scene"), &InstancePlaceholder::replace_by_instance, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("get_instance_path"), &InstancePlaceholder::get_instance_path);
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,14 +114,14 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<int> children;
 		Vector<Node *> godot_nodes;
 
-		GLTFNode() {
-			//			child_of_skeleton = -1;
-			//			skeleton_skin = -1;
-			mesh = -1;
-			camera = -1;
-			parent = -1;
-			skin = -1;
-			scale = Vector3(1, 1, 1);
+		GLTFNode() :
+				parent(-1),
+				mesh(-1),
+				camera(-1),
+				skin(-1),
+				//skeleton_skin(-1),
+				//child_of_skeleton(-1),
+				scale(Vector3(1, 1, 1)) {
 		}
 	};
 
@@ -134,12 +134,12 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		bool indices;
 		//matrices need to be transformed to this
 
-		GLTFBufferView() {
-			buffer = 0;
-			byte_offset = 0;
-			byte_length = 0;
-			byte_stride = 0;
-			indices = false;
+		GLTFBufferView() :
+				buffer(0),
+				byte_offset(0),
+				byte_length(0),
+				byte_stride(0),
+				indices(false) {
 		}
 	};
 
@@ -275,7 +275,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<GLTFAnimation> animations;
 
 		Map<int, Vector<int> > skeleton_nodes;
-		Map<Node *, Skeleton *> paths_to_skeleton;
 
 		//Map<int, Vector<int> > skin_users; //cache skin users
 
@@ -311,7 +310,8 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Vector<Basis> _decode_accessor_as_basis(GLTFState &state, int p_accessor, bool p_for_vertex);
 	Vector<Transform> _decode_accessor_as_xform(GLTFState &state, int p_accessor, bool p_for_vertex);
 
-	void _generate_bone(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, const Vector<int> &p_parent_bones, Node *p_parent_node);
+	void _reparent_skeleton(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, Node *p_parent_node);
+	void _generate_bone(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, Node *p_parent_node);
 	void _generate_node(GLTFState &state, int p_node, Node *p_parent, Node *p_owner, Vector<Skeleton *> &skeletons);
 	void _import_animation(GLTFState &state, AnimationPlayer *ap, int index, int bake_fps, Vector<Skeleton *> skeletons);
 

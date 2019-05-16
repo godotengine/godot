@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,20 +34,36 @@
 #include <mono/metadata/threads.h>
 
 #include "../mono_gc_handle.h"
+#include "../utils/macros.h"
+#include "../utils/thread_local.h"
 #include "gd_mono_header.h"
 
-#include "object.h"
-#include "reference.h"
+#include "core/object.h"
+#include "core/reference.h"
+
+#define UNLIKELY_UNHANDLED_EXCEPTION(m_exc)            \
+	if (unlikely(m_exc != NULL)) {                     \
+		GDMonoUtils::debug_unhandled_exception(m_exc); \
+		GD_UNREACHABLE();                              \
+	}
 
 namespace GDMonoUtils {
 
-typedef MonoObject *(*MarshalUtils_DictToArrays)(MonoObject *, MonoArray **, MonoArray **, MonoObject **);
-typedef MonoObject *(*MarshalUtils_ArraysToDict)(MonoArray *, MonoArray *, MonoObject **);
-typedef MonoObject *(*SignalAwaiter_SignalCallback)(MonoObject *, MonoArray *, MonoObject **);
-typedef MonoObject *(*SignalAwaiter_FailureCallback)(MonoObject *, MonoObject **);
-typedef MonoObject *(*GodotTaskScheduler_Activate)(MonoObject *, MonoObject **);
-typedef MonoArray *(*StackTrace_GetFrames)(MonoObject *, MonoObject **);
-typedef void (*DebugUtils_StackFrameInfo)(MonoObject *, MonoString **, int *, MonoString **, MonoObject **);
+typedef void (*GodotObject_Dispose)(MonoObject *, MonoException **);
+typedef Array *(*Array_GetPtr)(MonoObject *, MonoException **);
+typedef Dictionary *(*Dictionary_GetPtr)(MonoObject *, MonoException **);
+typedef MonoObject *(*SignalAwaiter_SignalCallback)(MonoObject *, MonoArray *, MonoException **);
+typedef MonoObject *(*SignalAwaiter_FailureCallback)(MonoObject *, MonoException **);
+typedef MonoObject *(*GodotTaskScheduler_Activate)(MonoObject *, MonoException **);
+typedef MonoArray *(*StackTrace_GetFrames)(MonoObject *, MonoException **);
+typedef void (*DebugUtils_StackFrameInfo)(MonoObject *, MonoString **, int *, MonoString **, MonoException **);
+
+typedef MonoBoolean (*TypeIsGenericArray)(MonoReflectionType *, MonoException **);
+typedef MonoBoolean (*TypeIsGenericDictionary)(MonoReflectionType *, MonoException **);
+typedef MonoBoolean (*ArrayGetElementType)(MonoReflectionType *, MonoReflectionType **, MonoException **);
+typedef MonoBoolean (*DictionaryGetKeyValueTypes)(MonoReflectionType *, MonoReflectionType **, MonoReflectionType **, MonoException **);
+typedef void (*EnumerableToArray)(MonoObject *, Array *, MonoException **);
+typedef void (*IDictionaryToDictionary)(MonoObject *, Dictionary *, MonoException **);
 
 struct MonoCache {
 
@@ -70,12 +86,17 @@ struct MonoCache {
 	GDMonoClass *class_String;
 	GDMonoClass *class_IntPtr;
 
+	GDMonoClass *class_System_Collections_IEnumerable;
+	GDMonoClass *class_System_Collections_IDictionary;
+
 #ifdef DEBUG_ENABLED
 	GDMonoClass *class_System_Diagnostics_StackTrace;
 	StackTrace_GetFrames methodthunk_System_Diagnostics_StackTrace_GetFrames;
 	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_bool;
 	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_Exception_bool;
 #endif
+
+	GDMonoClass *class_KeyNotFoundException;
 
 	MonoClass *rawclass_Dictionary;
 	// -----------------------------------------------
@@ -98,6 +119,8 @@ struct MonoCache {
 	GDMonoClass *class_Control;
 	GDMonoClass *class_Spatial;
 	GDMonoClass *class_WeakRef;
+	GDMonoClass *class_Array;
+	GDMonoClass *class_Dictionary;
 	GDMonoClass *class_MarshalUtils;
 
 #ifdef DEBUG_ENABLED
@@ -112,7 +135,11 @@ struct MonoCache {
 	GDMonoClass *class_ToolAttribute;
 	GDMonoClass *class_RemoteAttribute;
 	GDMonoClass *class_SyncAttribute;
+	GDMonoClass *class_RemoteSyncAttribute;
+	GDMonoClass *class_MasterSyncAttribute;
+	GDMonoClass *class_PuppetSyncAttribute;
 	GDMonoClass *class_MasterAttribute;
+	GDMonoClass *class_PuppetAttribute;
 	GDMonoClass *class_SlaveAttribute;
 	GDMonoClass *class_GodotMethodAttribute;
 	GDMonoField *field_GodotMethodAttribute_methodName;
@@ -122,11 +149,19 @@ struct MonoCache {
 	GDMonoField *field_Image_ptr;
 	GDMonoField *field_RID_ptr;
 
-	MarshalUtils_DictToArrays methodthunk_MarshalUtils_DictionaryToArrays;
-	MarshalUtils_ArraysToDict methodthunk_MarshalUtils_ArraysToDictionary;
+	GodotObject_Dispose methodthunk_GodotObject_Dispose;
+	Array_GetPtr methodthunk_Array_GetPtr;
+	Dictionary_GetPtr methodthunk_Dictionary_GetPtr;
 	SignalAwaiter_SignalCallback methodthunk_SignalAwaiter_SignalCallback;
 	SignalAwaiter_FailureCallback methodthunk_SignalAwaiter_FailureCallback;
 	GodotTaskScheduler_Activate methodthunk_GodotTaskScheduler_Activate;
+
+	TypeIsGenericArray methodthunk_MarshalUtils_TypeIsGenericArray;
+	TypeIsGenericDictionary methodthunk_MarshalUtils_TypeIsGenericDictionary;
+	ArrayGetElementType methodthunk_MarshalUtils_ArrayGetElementType;
+	DictionaryGetKeyValueTypes methodthunk_MarshalUtils_DictionaryGetKeyValueTypes;
+	EnumerableToArray methodthunk_MarshalUtils_EnumerableToArray;
+	IDictionaryToDictionary methodthunk_MarshalUtils_IDictionaryToDictionary;
 
 	Ref<MonoGCHandle> task_scheduler_handle;
 
@@ -170,6 +205,8 @@ _FORCE_INLINE_ bool is_main_thread() {
 	return mono_domain_get() != NULL && mono_thread_get_main() == mono_thread_current();
 }
 
+void runtime_object_init(MonoObject *p_this_obj);
+
 GDMonoClass *get_object_class(MonoObject *p_object);
 GDMonoClass *type_get_proxy_class(const StringName &p_type);
 GDMonoClass *get_class_native_base(GDMonoClass *p_class);
@@ -178,13 +215,46 @@ MonoObject *create_managed_for_godot_object(GDMonoClass *p_class, const StringNa
 
 MonoObject *create_managed_from(const NodePath &p_from);
 MonoObject *create_managed_from(const RID &p_from);
+MonoObject *create_managed_from(const Array &p_from, GDMonoClass *p_class);
+MonoObject *create_managed_from(const Dictionary &p_from, GDMonoClass *p_class);
 
 MonoDomain *create_domain(const String &p_friendly_name);
 
-String get_exception_name_and_message(MonoObject *p_ex);
+String get_exception_name_and_message(MonoException *p_exc);
+void set_exception_message(MonoException *p_exc, String message);
 
-void print_unhandled_exception(MonoObject *p_exc);
-void print_unhandled_exception(MonoObject *p_exc, bool p_recursion_caution);
+void debug_print_unhandled_exception(MonoException *p_exc);
+void debug_send_unhandled_exception_error(MonoException *p_exc);
+GD_NORETURN void debug_unhandled_exception(MonoException *p_exc);
+void print_unhandled_exception(MonoException *p_exc);
+
+/**
+ * Sets the exception as pending. The exception will be thrown when returning to managed code.
+ * If no managed method is being invoked by the runtime, the exception will be treated as
+ * an unhandled exception and the method will not return.
+ */
+void set_pending_exception(MonoException *p_exc);
+
+extern _THREAD_LOCAL_(int) current_invoke_count;
+
+_FORCE_INLINE_ int get_runtime_invoke_count() {
+	return current_invoke_count;
+}
+_FORCE_INLINE_ int &get_runtime_invoke_count_ref() {
+	return current_invoke_count;
+}
+
+MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **r_exc);
+MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **r_exc);
+
+MonoString *object_to_string(MonoObject *p_obj, MonoException **r_exc);
+
+void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **r_exc);
+MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **r_exc);
+
+uint64_t unbox_enum_value(MonoObject *p_boxed, MonoType *p_enum_basetype, bool &r_error);
+
+void dispose(MonoObject *p_mono_object, MonoException **r_exc);
 
 } // namespace GDMonoUtils
 
@@ -196,11 +266,108 @@ void print_unhandled_exception(MonoObject *p_exc, bool p_recursion_caution);
 #define CACHED_FIELD(m_class, m_field) (GDMonoUtils::mono_cache.field_##m_class##_##m_field)
 #define CACHED_METHOD(m_class, m_method) (GDMonoUtils::mono_cache.method_##m_class##_##m_method)
 #define CACHED_METHOD_THUNK(m_class, m_method) (GDMonoUtils::mono_cache.methodthunk_##m_class##_##m_method)
+#define CACHED_PROPERTY(m_class, m_property) (GDMonoUtils::mono_cache.property_##m_class##_##m_property)
 
 #ifdef REAL_T_IS_DOUBLE
 #define REAL_T_MONOCLASS CACHED_CLASS_RAW(double)
 #else
 #define REAL_T_MONOCLASS CACHED_CLASS_RAW(float)
 #endif
+
+#define GD_MONO_BEGIN_RUNTIME_INVOKE                                              \
+	int &_runtime_invoke_count_ref = GDMonoUtils::get_runtime_invoke_count_ref(); \
+	_runtime_invoke_count_ref += 1;
+
+#define GD_MONO_END_RUNTIME_INVOKE \
+	_runtime_invoke_count_ref -= 1;
+
+inline void invoke_method_thunk(void (*p_method_thunk)()) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk();
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R>
+R invoke_method_thunk(R (*p_method_thunk)()) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk();
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1>
+void invoke_method_thunk(void (*p_method_thunk)(P1), P1 p_arg1) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1>
+R invoke_method_thunk(R (*p_method_thunk)(P1), P1 p_arg1) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1, class P2>
+void invoke_method_thunk(void (*p_method_thunk)(P1, P2), P1 p_arg1, P2 p_arg2) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1, p_arg2);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1, class P2>
+R invoke_method_thunk(R (*p_method_thunk)(P1, P2), P1 p_arg1, P2 p_arg2) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1, p_arg2);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1, class P2, class P3>
+void invoke_method_thunk(void (*p_method_thunk)(P1, P2, P3), P1 p_arg1, P2 p_arg2, P3 p_arg3) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1, p_arg2, p_arg3);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1, class P2, class P3>
+R invoke_method_thunk(R (*p_method_thunk)(P1, P2, P3), P1 p_arg1, P2 p_arg2, P3 p_arg3) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1, p_arg2, p_arg3);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1, class P2, class P3, class P4>
+void invoke_method_thunk(void (*p_method_thunk)(P1, P2, P3, P4), P1 p_arg1, P2 p_arg2, P3 p_arg3, P4 p_arg4) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1, p_arg2, p_arg3, p_arg4);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1, class P2, class P3, class P4>
+R invoke_method_thunk(R (*p_method_thunk)(P1, P2, P3, P4), P1 p_arg1, P2 p_arg2, P3 p_arg3, P4 p_arg4) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1, p_arg2, p_arg3, p_arg4);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1, class P2, class P3, class P4, class P5>
+void invoke_method_thunk(void (*p_method_thunk)(P1, P2, P3, P4, P5), P1 p_arg1, P2 p_arg2, P3 p_arg3, P4 p_arg4, P5 p_arg5) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1, p_arg2, p_arg3, p_arg4, p_arg5);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1, class P2, class P3, class P4, class P5>
+R invoke_method_thunk(R (*p_method_thunk)(P1, P2, P3, P4, P5), P1 p_arg1, P2 p_arg2, P3 p_arg3, P4 p_arg4, P5 p_arg5) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1, p_arg2, p_arg3, p_arg4, p_arg5);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
 
 #endif // GD_MONOUTILS_H

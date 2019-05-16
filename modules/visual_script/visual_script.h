@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef VISUAL_SCRIPT_H
 #define VISUAL_SCRIPT_H
 
-#include "os/thread.h"
-#include "script_language.h"
+#include "core/os/thread.h"
+#include "core/script_language.h"
 
 class VisualScriptInstance;
 class VisualScriptNodeInstance;
@@ -78,7 +78,7 @@ public:
 	Variant get_default_input_value(int p_port) const;
 
 	virtual String get_caption() const = 0;
-	virtual String get_text() const = 0;
+	virtual String get_text() const;
 	virtual String get_category() const = 0;
 
 	//used by editor, this is not really saved
@@ -319,6 +319,7 @@ public:
 	void custom_signal_swap_argument(const StringName &p_func, int p_argidx, int p_with_argidx);
 	void remove_custom_signal(const StringName &p_name);
 	void rename_custom_signal(const StringName &p_name, const StringName &p_new_name);
+	Set<int> get_output_sequence_ports_connected(const String &edited_func, int from_node);
 
 	void get_custom_signal_list(List<StringName> *r_custom_signals) const;
 
@@ -339,6 +340,7 @@ public:
 	virtual Error reload(bool p_keep_state = false);
 
 	virtual bool is_tool() const;
+	virtual bool is_valid() const;
 
 	virtual ScriptLanguage *get_language() const;
 
@@ -374,12 +376,10 @@ class VisualScriptInstance : public ScriptInstance {
 		int node;
 		int max_stack;
 		int trash_pos;
-		int return_pos;
 		int flow_stack_size;
 		int pass_stack_size;
 		int node_count;
 		int argument_count;
-		bool valid;
 	};
 
 	Map<StringName, Function> functions;
@@ -435,8 +435,8 @@ public:
 
 	virtual ScriptLanguage *get_language();
 
-	virtual RPCMode get_rpc_mode(const StringName &p_method) const;
-	virtual RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
 
 	VisualScriptInstance();
 	~VisualScriptInstance();
@@ -565,7 +565,7 @@ public:
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
 	virtual bool is_using_templates();
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL) const;
+	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL, List<ScriptLanguage::Warning> *r_warnings = NULL, Set<int> *r_safe_lines = NULL) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;

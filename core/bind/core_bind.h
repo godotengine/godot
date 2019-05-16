@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,15 +31,15 @@
 #ifndef CORE_BIND_H
 #define CORE_BIND_H
 
-#include "image.h"
-#include "io/compression.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "os/semaphore.h"
-#include "os/thread.h"
+#include "core/image.h"
+#include "core/io/compression.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/os/semaphore.h"
+#include "core/os/thread.h"
 
 class _ResourceLoader : public Object {
 	GDCLASS(_ResourceLoader, Object);
@@ -55,7 +55,11 @@ public:
 	PoolVector<String> get_recognized_extensions_for_type(const String &p_type);
 	void set_abort_on_missing_resources(bool p_abort);
 	PoolStringArray get_dependencies(const String &p_path);
+#ifndef DISABLE_DEPRECATED
 	bool has(const String &p_path);
+#endif // DISABLE_DEPRECATED
+	bool has_cached(const String &p_path);
+	bool exists(const String &p_path, const String &p_type_hint = "");
 
 	_ResourceLoader();
 };
@@ -76,11 +80,12 @@ public:
 		FLAG_OMIT_EDITOR_PROPERTIES = 8,
 		FLAG_SAVE_BIG_ENDIAN = 16,
 		FLAG_COMPRESS = 32,
+		FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
 	};
 
 	static _ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags);
+	Error save(const String &p_path, const RES &p_resource, SaverFlags p_flags);
 	PoolVector<String> get_recognized_extensions(const RES &p_resource);
 
 	_ResourceSaver();
@@ -98,6 +103,11 @@ protected:
 	static _OS *singleton;
 
 public:
+	enum VideoDriver {
+		VIDEO_DRIVER_GLES3,
+		VIDEO_DRIVER_GLES2,
+	};
+
 	enum PowerState {
 		POWERSTATE_UNKNOWN, /**< cannot determine power status */
 		POWERSTATE_ON_BATTERY, /**< Not plugged in, running on the battery */
@@ -147,10 +157,15 @@ public:
 	Array get_fullscreen_mode_list(int p_screen = 0) const;
 
 	virtual int get_video_driver_count() const;
-	virtual String get_video_driver_name(int p_driver) const;
+	virtual String get_video_driver_name(VideoDriver p_driver) const;
+	virtual VideoDriver get_current_video_driver() const;
 
 	virtual int get_audio_driver_count() const;
 	virtual String get_audio_driver_name(int p_driver) const;
+
+	virtual PoolStringArray get_connected_midi_inputs();
+	virtual void open_midi_inputs();
+	virtual void close_midi_inputs();
 
 	virtual int get_screen_count() const;
 	virtual int get_current_screen() const;
@@ -176,11 +191,18 @@ public:
 	virtual bool is_window_always_on_top() const;
 	virtual void request_attention();
 	virtual void center_window();
+	virtual void move_window_to_foreground();
 
 	virtual void set_borderless_window(bool p_borderless);
 	virtual bool get_borderless_window() const;
 
+	virtual bool get_window_per_pixel_transparency_enabled() const;
+	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
+
+	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
+	virtual Point2 get_ime_selection() const;
+	virtual String get_ime_text() const;
 
 	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	bool native_video_is_playing();
@@ -260,19 +282,21 @@ public:
 	Dictionary get_date(bool utc) const;
 	Dictionary get_time(bool utc) const;
 	Dictionary get_datetime(bool utc) const;
-	Dictionary get_datetime_from_unix_time(uint64_t unix_time_val) const;
-	uint64_t get_unix_time_from_datetime(Dictionary datetime) const;
+	Dictionary get_datetime_from_unix_time(int64_t unix_time_val) const;
+	int64_t get_unix_time_from_datetime(Dictionary datetime) const;
 	Dictionary get_time_zone_info() const;
 	uint64_t get_unix_time() const;
 	uint64_t get_system_time_secs() const;
+	uint64_t get_system_time_msecs() const;
 
-	int get_static_memory_usage() const;
-	int get_static_memory_peak_usage() const;
-	int get_dynamic_memory_usage() const;
+	uint64_t get_static_memory_usage() const;
+	uint64_t get_static_memory_peak_usage() const;
+	uint64_t get_dynamic_memory_usage() const;
 
 	void delay_usec(uint32_t p_usec) const;
 	void delay_msec(uint32_t p_msec) const;
 	uint32_t get_ticks_msec() const;
+	uint64_t get_ticks_usec() const;
 	uint32_t get_splash_tick_msec() const;
 
 	bool can_use_threads() const;
@@ -332,11 +356,14 @@ public:
 
 	bool has_feature(const String &p_feature) const;
 
+	bool request_permission(const String &p_name);
+
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();
 };
 
+VARIANT_ENUM_CAST(_OS::VideoDriver);
 VARIANT_ENUM_CAST(_OS::PowerState);
 VARIANT_ENUM_CAST(_OS::Weekday);
 VARIANT_ENUM_CAST(_OS::Month);
@@ -358,6 +385,7 @@ public:
 	PoolVector<Plane> build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	PoolVector<Plane> build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	Variant segment_intersects_segment_2d(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b);
+	Variant line_intersects_line_2d(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b);
 	PoolVector<Vector2> get_closest_points_between_segments_2d(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2);
 	PoolVector<Vector3> get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2);
 	Vector2 get_closest_point_to_segment_2d(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b);
@@ -408,11 +436,11 @@ public:
 		COMPRESSION_GZIP = Compression::MODE_GZIP
 	};
 
-	Error open_encrypted(const String &p_path, int p_mode_flags, const Vector<uint8_t> &p_key);
-	Error open_encrypted_pass(const String &p_path, int p_mode_flags, const String &p_pass);
-	Error open_compressed(const String &p_path, int p_mode_flags, int p_compress_mode = 0);
+	Error open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
+	Error open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, const String &p_pass);
+	Error open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode = COMPRESSION_FASTLZ);
 
-	Error open(const String &p_path, int p_mode_flags); ///< open a file
+	Error open(const String &p_path, ModeFlags p_mode_flags); ///< open a file
 	void close(); ///< close a file
 	bool is_open() const; ///< true when file is open
 
@@ -435,10 +463,11 @@ public:
 	double get_double() const;
 	real_t get_real() const;
 
-	Variant get_var() const;
+	Variant get_var(bool p_allow_objects = false) const;
 
 	PoolVector<uint8_t> get_buffer(int p_length) const; ///< get an array of bytes
 	String get_line() const;
+	Vector<String> get_csv_line(const String &p_delim = ",") const;
 	String get_as_text() const;
 	String get_md5(const String &p_path) const;
 	String get_sha256(const String &p_path) const;
@@ -464,15 +493,14 @@ public:
 
 	void store_string(const String &p_string);
 	void store_line(const String &p_string);
+	void store_csv_line(const Vector<String> &p_values, const String &p_delim = ",");
 
 	virtual void store_pascal_string(const String &p_string);
 	virtual String get_pascal_string();
 
-	Vector<String> get_csv_line(String delim = ",") const;
-
 	void store_buffer(const PoolVector<uint8_t> &p_buffer); ///< store an array of bytes
 
-	void store_var(const Variant &p_var);
+	void store_var(const Variant &p_var, bool p_full_objects = false);
 
 	bool file_exists(const String &p_name) const; ///< return true if a file exists
 
@@ -541,8 +569,8 @@ protected:
 public:
 	static _Marshalls *get_singleton();
 
-	String variant_to_base64(const Variant &p_var);
-	Variant base64_to_variant(const String &p_str);
+	String variant_to_base64(const Variant &p_var, bool p_full_objects = false);
+	Variant base64_to_variant(const String &p_str, bool p_allow_objects = false);
 
 	String raw_to_base64(const PoolVector<uint8_t> &p_arr);
 	PoolVector<uint8_t> base64_to_raw(const String &p_str);
@@ -604,10 +632,11 @@ public:
 
 		PRIORITY_LOW,
 		PRIORITY_NORMAL,
-		PRIORITY_HIGH
+		PRIORITY_HIGH,
+		PRIORITY_MAX
 	};
 
-	Error start(Object *p_instance, const StringName &p_method, const Variant &p_userdata = Variant(), int p_priority = PRIORITY_NORMAL);
+	Error start(Object *p_instance, const StringName &p_method, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
 	String get_id() const;
 	bool is_active() const;
 	Variant wait_to_finish();
@@ -669,6 +698,9 @@ public:
 	void set_iterations_per_second(int p_ips);
 	int get_iterations_per_second() const;
 
+	void set_physics_jitter_fix(float p_threshold);
+	float get_physics_jitter_fix() const;
+
 	void set_target_fps(int p_fps);
 	int get_target_fps() const;
 
@@ -682,6 +714,11 @@ public:
 	MainLoop *get_main_loop() const;
 
 	Dictionary get_version_info() const;
+	Dictionary get_author_info() const;
+	Array get_copyright_info() const;
+	Dictionary get_donor_info() const;
+	Dictionary get_license_info() const;
+	String get_license_text() const;
 
 	bool is_in_physics_frame() const;
 

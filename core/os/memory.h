@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,8 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include "safe_refcount.h"
+#include "core/safe_refcount.h"
+
 #include <stddef.h>
 
 /**
@@ -115,7 +116,9 @@ void memdelete(T *p_class) {
 
 	if (!predelete_handler(p_class))
 		return; // doesn't want to be deleted
-	p_class->~T();
+	if (!__has_trivial_destructor(T))
+		p_class->~T();
+
 	Memory::free_static(p_class, false);
 }
 
@@ -124,7 +127,9 @@ void memdelete_allocator(T *p_class) {
 
 	if (!predelete_handler(p_class))
 		return; // doesn't want to be deleted
-	p_class->~T();
+	if (!__has_trivial_destructor(T))
+		p_class->~T();
+
 	A::free(p_class);
 }
 
@@ -149,11 +154,13 @@ T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
 	ERR_FAIL_COND_V(!mem, failptr);
 	*(mem - 1) = p_elements;
 
-	T *elems = (T *)mem;
+	if (!__has_trivial_constructor(T)) {
+		T *elems = (T *)mem;
 
-	/* call operator new */
-	for (size_t i = 0; i < p_elements; i++) {
-		new (&elems[i], sizeof(T), p_descr) T;
+		/* call operator new */
+		for (size_t i = 0; i < p_elements; i++) {
+			new (&elems[i], sizeof(T), p_descr) T;
+		}
 	}
 
 	return (T *)mem;
@@ -176,12 +183,14 @@ void memdelete_arr(T *p_class) {
 
 	uint64_t *ptr = (uint64_t *)p_class;
 
-	uint64_t elem_count = *(ptr - 1);
+	if (!__has_trivial_destructor(T)) {
+		uint64_t elem_count = *(ptr - 1);
 
-	for (uint64_t i = 0; i < elem_count; i++) {
+		for (uint64_t i = 0; i < elem_count; i++) {
+			p_class[i].~T();
+		}
+	}
 
-		p_class[i].~T();
-	};
 	Memory::free_static(ptr, true);
 }
 

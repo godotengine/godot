@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,6 +83,8 @@ private:
 	int rb_hover;
 	bool rb_pressing;
 
+	bool select_with_rmb;
+
 	int cb_hover;
 	bool cb_pressing;
 	CloseButtonDisplayPolicy cb_displaypolicy;
@@ -95,6 +97,8 @@ private:
 
 	int get_tab_width(int p_idx) const;
 	void _ensure_no_over_offset();
+
+	void _update_hover();
 	void _update_cache();
 
 protected:
@@ -149,6 +153,9 @@ public:
 	bool get_drag_to_rearrange_enabled() const;
 	void set_tabs_rearrange_group(int p_group_id);
 	int get_tabs_rearrange_group() const;
+
+	void set_select_with_rmb(bool p_enabled);
+	bool get_select_with_rmb() const;
 
 	void ensure_tab_visible(int p_idx);
 	void set_min_width(int p_width);

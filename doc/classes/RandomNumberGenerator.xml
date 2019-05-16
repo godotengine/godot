@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RandomNumberGenerator" inherits="Reference" category="Core" version="3.2">
+	<brief_description>
+		A class for generating pseudo-random numbers.
+	</brief_description>
+	<description>
+		RandomNumberGenerator is a class for generating pseudo-random numbers. It currently uses PCG32. The underlying algorithm is an implementation detail. As a result, it should not be depended upon for reproducible random streams across Godot versions.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="randf">
+			<return type="float">
+			</return>
+			<description>
+				Generates pseudo-random float between '0.0' and '1.0', inclusive.
+			</description>
+		</method>
+		<method name="randf_range">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<description>
+				Generates pseudo-random float between [code]from[/code] and [code]to[/code], inclusive.
+			</description>
+		</method>
+		<method name="randfn">
+			<return type="float">
+			</return>
+			<argument index="0" name="mean" type="float" default="0.0">
+			</argument>
+			<argument index="1" name="deviation" type="float" default="1.0">
+			</argument>
+			<description>
+				Generates normally(gaussian) distributed pseudo-random number, using Box-Muller transform with the specified [code]mean[/code] and a standard [code]deviation[/code].
+			</description>
+		</method>
+		<method name="randi">
+			<return type="int">
+			</return>
+			<description>
+				Generates pseudo-random 32-bit unsigned integer between '0' and '4294967295', inclusive.
+			</description>
+		</method>
+		<method name="randi_range">
+			<return type="int">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<argument index="1" name="to" type="int">
+			</argument>
+			<description>
+				Generates pseudo-random 32-bit signed integer between [code]from[/code] and [code]to[/code] (inclusive).
+			</description>
+		</method>
+		<method name="randomize">
+			<return type="void">
+			</return>
+			<description>
+				Setups a time-based seed to generator.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="seed" type="int" setter="set_seed" getter="get_seed">
+			The seed used by the random number generator. A given seed will give a reproducible sequence of pseudo-random numbers.
+			[b]Note:[/b] The RNG does not have an avalanche effect, and can output similar random streams given similar seeds. Consider using a hash function to improve your seed quality if they're sourced externally.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  stream_peer_openssl.cpp                                              */
+/*  stream_peer_mbed_tls.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,11 @@
 /*************************************************************************/
 
 #include "stream_peer_mbed_tls.h"
+
+#include "core/io/stream_peer_tcp.h"
+#include "core/os/file_access.h"
+
+#include <mbedtls/platform_util.h>
 
 static void my_debug(void *ctx, int level,
 		const char *file, int line,
@@ -81,6 +86,40 @@ int StreamPeerMbedTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 	return got;
 }
 
+void StreamPeerMbedTLS::_cleanup() {
+
+	mbedtls_ssl_free(&ssl);
+	mbedtls_ssl_config_free(&conf);
+	mbedtls_ctr_drbg_free(&ctr_drbg);
+	mbedtls_entropy_free(&entropy);
+
+	base = Ref<StreamPeer>();
+	status = STATUS_DISCONNECTED;
+}
+
+Error StreamPeerMbedTLS::_do_handshake() {
+	int ret = 0;
+	while ((ret = mbedtls_ssl_handshake(&ssl)) != 0) {
+		if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+			// An error occurred.
+			ERR_PRINTS("TLS handshake error: " + itos(ret));
+			_print_error(ret);
+			disconnect_from_stream();
+			status = STATUS_ERROR;
+			return FAILED;
+		}
+
+		// Handshake is still in progress.
+		if (!blocking_handshake) {
+			// Will retry via poll later
+			return OK;
+		}
+	}
+
+	status = STATUS_CONNECTED;
+	return OK;
+}
+
 Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs, const String &p_for_hostname) {
 
 	base = p_base;
@@ -95,6 +134,7 @@ Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 	ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0);
 	if (ret != 0) {
 		ERR_PRINTS(" failed\n  ! mbedtls_ctr_drbg_seed returned an error" + itos(ret));
+		_cleanup();
 		return FAILED;
 	}
 
@@ -112,29 +152,24 @@ Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 
 	mbedtls_ssl_set_bio(&ssl, this, bio_send, bio_recv, NULL);
 
-	while ((ret = mbedtls_ssl_handshake(&ssl)) != 0) {
-		if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
-			ERR_PRINTS("TLS handshake error: " + itos(ret));
-			_print_error(ret);
-			status = STATUS_ERROR_HOSTNAME_MISMATCH;
-			return FAILED;
-		}
-	}
+	status = STATUS_HANDSHAKING;
 
-	connected = true;
-	status = STATUS_CONNECTED;
+	if ((ret = _do_handshake()) != OK) {
+		status = STATUS_ERROR_HOSTNAME_MISMATCH;
+		return FAILED;
+	}
 
 	return OK;
 }
 
 Error StreamPeerMbedTLS::accept_stream(Ref<StreamPeer> p_base) {
 
-	return ERR_UNAVAILABLE;
+	return OK;
 }
 
 Error StreamPeerMbedTLS::put_data(const uint8_t *p_data, int p_bytes) {
 
-	ERR_FAIL_COND_V(!connected, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_UNCONFIGURED);
 
 	Error err;
 	int sent = 0;
@@ -155,7 +190,7 @@ Error StreamPeerMbedTLS::put_data(const uint8_t *p_data, int p_bytes) {
 
 Error StreamPeerMbedTLS::put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) {
 
-	ERR_FAIL_COND_V(!connected, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_UNCONFIGURED);
 
 	r_sent = 0;
 
@@ -164,7 +199,12 @@ Error StreamPeerMbedTLS::put_partial_data(const uint8_t *p_data, int p_bytes, in
 
 	int ret = mbedtls_ssl_write(&ssl, p_data, p_bytes);
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
-		ret = 0; // non blocking io
+		// Non blocking IO
+		ret = 0;
+	} else if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
+		// Clean close
+		disconnect_from_stream();
+		return ERR_FILE_EOF;
 	} else if (ret <= 0) {
 		_print_error(ret);
 		disconnect_from_stream();
@@ -177,7 +217,7 @@ Error StreamPeerMbedTLS::put_partial_data(const uint8_t *p_data, int p_bytes, in
 
 Error StreamPeerMbedTLS::get_data(uint8_t *p_buffer, int p_bytes) {
 
-	ERR_FAIL_COND_V(!connected, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_UNCONFIGURED);
 
 	Error err;
 
@@ -199,13 +239,17 @@ Error StreamPeerMbedTLS::get_data(uint8_t *p_buffer, int p_bytes) {
 
 Error StreamPeerMbedTLS::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
 
-	ERR_FAIL_COND_V(!connected, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_UNCONFIGURED);
 
 	r_received = 0;
 
 	int ret = mbedtls_ssl_read(&ssl, p_buffer, p_bytes);
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
 		ret = 0; // non blocking io
+	} else if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
+		// Clean close
+		disconnect_from_stream();
+		return ERR_FILE_EOF;
 	} else if (ret <= 0) {
 		_print_error(ret);
 		disconnect_from_stream();
@@ -218,13 +262,33 @@ Error StreamPeerMbedTLS::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r
 
 void StreamPeerMbedTLS::poll() {
 
-	ERR_FAIL_COND(!connected);
+	ERR_FAIL_COND(status != STATUS_CONNECTED && status != STATUS_HANDSHAKING);
 	ERR_FAIL_COND(!base.is_valid());
 
-	int ret = mbedtls_ssl_read(&ssl, NULL, 0);
+	if (status == STATUS_HANDSHAKING) {
+		_do_handshake();
+		return;
+	}
 
-	if (ret < 0 && ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+	// We could pass NULL as second parameter, but some behaviour sanitizers doesn't seem to like that.
+	// Passing a 1 byte buffer to workaround it.
+	uint8_t byte;
+	int ret = mbedtls_ssl_read(&ssl, &byte, 0);
+
+	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
+		// Nothing to read/write (non blocking IO)
+	} else if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
+		// Clean close (disconnect)
+		disconnect_from_stream();
+		return;
+	} else if (ret < 0) {
 		_print_error(ret);
+		disconnect_from_stream();
+		return;
+	}
+
+	Ref<StreamPeerTCP> tcp = base;
+	if (tcp.is_valid() && tcp->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
 		disconnect_from_stream();
 		return;
 	}
@@ -232,13 +296,12 @@ void StreamPeerMbedTLS::poll() {
 
 int StreamPeerMbedTLS::get_available_bytes() const {
 
-	ERR_FAIL_COND_V(!connected, 0);
+	ERR_FAIL_COND_V(status != STATUS_CONNECTED, 0);
 
 	return mbedtls_ssl_get_bytes_avail(&ssl);
 }
 StreamPeerMbedTLS::StreamPeerMbedTLS() {
 
-	connected = false;
 	status = STATUS_DISCONNECTED;
 }
 
@@ -248,17 +311,16 @@ StreamPeerMbedTLS::~StreamPeerMbedTLS() {
 
 void StreamPeerMbedTLS::disconnect_from_stream() {
 
-	if (!connected)
+	if (status != STATUS_CONNECTED && status != STATUS_HANDSHAKING)
 		return;
 
-	mbedtls_ssl_free(&ssl);
-	mbedtls_ssl_config_free(&conf);
-	mbedtls_ctr_drbg_free(&ctr_drbg);
-	mbedtls_entropy_free(&entropy);
+	Ref<StreamPeerTCP> tcp = base;
+	if (tcp.is_valid() && tcp->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
+		// We are still connected on the socket, try to send close notify.
+		mbedtls_ssl_close_notify(&ssl);
+	}
 
-	base = Ref<StreamPeer>();
-	connected = false;
-	status = STATUS_DISCONNECTED;
+	_cleanup();
 }
 
 StreamPeerMbedTLS::Status StreamPeerMbedTLS::get_status() const {
@@ -293,15 +355,13 @@ void StreamPeerMbedTLS::initialize_ssl() {
 	mbedtls_debug_set_threshold(1);
 #endif
 
-	PoolByteArray cert_array = StreamPeerSSL::get_project_cert_array();
-
-	if (cert_array.size() > 0)
-		_load_certs(cert_array);
-
 	available = true;
 }
 
 void StreamPeerMbedTLS::finalize_ssl() {
 
+	available = false;
+	_create = NULL;
+	load_certs_func = NULL;
 	mbedtls_x509_crt_free(&cacert);
 }

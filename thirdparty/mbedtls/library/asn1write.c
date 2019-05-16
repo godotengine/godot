@@ -83,7 +83,9 @@ int mbedtls_asn1_write_len( unsigned char **p, unsigned char *start, size_t len 
         return( 4 );
     }
 
+#if SIZE_MAX > 0xFFFFFFFF
     if( len <= 0xFFFFFFFF )
+#endif
     {
         if( *p - start < 5 )
             return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
@@ -96,7 +98,9 @@ int mbedtls_asn1_write_len( unsigned char **p, unsigned char *start, size_t len 
         return( 5 );
     }
 
+#if SIZE_MAX > 0xFFFFFFFF
     return( MBEDTLS_ERR_ASN1_INVALID_LENGTH );
+#endif
 }
 
 int mbedtls_asn1_write_tag( unsigned char **p, unsigned char *start, unsigned char tag )
@@ -232,10 +236,6 @@ int mbedtls_asn1_write_int( unsigned char **p, unsigned char *start, int val )
     int ret;
     size_t len = 0;
 
-    // TODO negative values and values larger than 128
-    // DER format assumes 2s complement for numbers, so the leftmost bit
-    // should be 0 for positive numbers and 1 for negative numbers.
-    //
     if( *p - start < 1 )
         return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
 
@@ -257,34 +257,37 @@ int mbedtls_asn1_write_int( unsigned char **p, unsigned char *start, int val )
     return( (int) len );
 }
 
-int mbedtls_asn1_write_printable_string( unsigned char **p, unsigned char *start,
-                                 const char *text, size_t text_len )
+int mbedtls_asn1_write_tagged_string( unsigned char **p, unsigned char *start, int tag,
+    const char *text, size_t text_len )
 {
     int ret;
     size_t len = 0;
 
     MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_raw_buffer( p, start,
-                  (const unsigned char *) text, text_len ) );
+        (const unsigned char *) text, text_len ) );
 
     MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( p, start, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start, MBEDTLS_ASN1_PRINTABLE_STRING ) );
+    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start, tag ) );
 
     return( (int) len );
+}
+
+int mbedtls_asn1_write_utf8_string( unsigned char **p, unsigned char *start,
+    const char *text, size_t text_len )
+{
+    return( mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_UTF8_STRING, text, text_len) );
+}
+
+int mbedtls_asn1_write_printable_string( unsigned char **p, unsigned char *start,
+                                 const char *text, size_t text_len )
+{
+    return( mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_PRINTABLE_STRING, text, text_len) );
 }
 
 int mbedtls_asn1_write_ia5_string( unsigned char **p, unsigned char *start,
                            const char *text, size_t text_len )
 {
-    int ret;
-    size_t len = 0;
-
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_raw_buffer( p, start,
-                  (const unsigned char *) text, text_len ) );
-
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( p, start, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start, MBEDTLS_ASN1_IA5_STRING ) );
-
-    return( (int) len );
+    return( mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_IA5_STRING, text, text_len) );
 }
 
 int mbedtls_asn1_write_bitstring( unsigned char **p, unsigned char *start,
@@ -328,14 +331,36 @@ int mbedtls_asn1_write_octet_string( unsigned char **p, unsigned char *start,
     return( (int) len );
 }
 
-mbedtls_asn1_named_data *mbedtls_asn1_store_named_data( mbedtls_asn1_named_data **head,
+
+/* This is a copy of the ASN.1 parsing function mbedtls_asn1_find_named_data(),
+ * which is replicated to avoid a dependency ASN1_WRITE_C on ASN1_PARSE_C. */
+static mbedtls_asn1_named_data *asn1_find_named_data(
+                                               mbedtls_asn1_named_data *list,
+                                               const char *oid, size_t len )
+{
+    while( list != NULL )
+    {
+        if( list->oid.len == len &&
+            memcmp( list->oid.p, oid, len ) == 0 )
+        {
+            break;
+        }
+
+        list = list->next;
+    }
+
+    return( list );
+}
+
+mbedtls_asn1_named_data *mbedtls_asn1_store_named_data(
+                                        mbedtls_asn1_named_data **head,
                                         const char *oid, size_t oid_len,
                                         const unsigned char *val,
                                         size_t val_len )
 {
     mbedtls_asn1_named_data *cur;
 
-    if( ( cur = mbedtls_asn1_find_named_data( *head, oid, oid_len ) ) == NULL )
+    if( ( cur = asn1_find_named_data( *head, oid, oid_len ) ) == NULL )
     {
         // Add new entry if not present yet based on OID
         //

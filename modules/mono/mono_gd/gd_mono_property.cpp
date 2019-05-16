@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "gd_mono_property.h"
 
 #include "gd_mono_class.h"
@@ -79,24 +80,24 @@ bool GDMonoProperty::is_static() {
 	return mono_method_get_flags(prop_method, NULL) & MONO_METHOD_ATTR_STATIC;
 }
 
-GDMonoClassMember::Visibility GDMonoProperty::get_visibility() {
+IMonoClassMember::Visibility GDMonoProperty::get_visibility() {
 	MonoMethod *prop_method = mono_property_get_get_method(mono_property);
 	if (prop_method == NULL)
 		prop_method = mono_property_get_set_method(mono_property);
 
 	switch (mono_method_get_flags(prop_method, NULL) & MONO_METHOD_ATTR_ACCESS_MASK) {
 		case MONO_METHOD_ATTR_PRIVATE:
-			return GDMonoClassMember::PRIVATE;
+			return IMonoClassMember::PRIVATE;
 		case MONO_METHOD_ATTR_FAM_AND_ASSEM:
-			return GDMonoClassMember::PROTECTED_AND_INTERNAL;
+			return IMonoClassMember::PROTECTED_AND_INTERNAL;
 		case MONO_METHOD_ATTR_ASSEM:
-			return GDMonoClassMember::INTERNAL;
+			return IMonoClassMember::INTERNAL;
 		case MONO_METHOD_ATTR_FAMILY:
-			return GDMonoClassMember::PROTECTED;
+			return IMonoClassMember::PROTECTED;
 		case MONO_METHOD_ATTR_PUBLIC:
-			return GDMonoClassMember::PUBLIC;
+			return IMonoClassMember::PUBLIC;
 		default:
-			ERR_FAIL_V(GDMonoClassMember::PRIVATE);
+			ERR_FAIL_V(IMonoClassMember::PRIVATE);
 	}
 }
 
@@ -138,47 +139,44 @@ bool GDMonoProperty::has_setter() {
 	return mono_property_get_set_method(mono_property) != NULL;
 }
 
-void GDMonoProperty::set_value(MonoObject *p_object, MonoObject *p_value, MonoObject **r_exc) {
+void GDMonoProperty::set_value(MonoObject *p_object, MonoObject *p_value, MonoException **r_exc) {
 	MonoMethod *prop_method = mono_property_get_set_method(mono_property);
-
 	MonoArray *params = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), 1);
 	mono_array_set(params, MonoObject *, 0, p_value);
+	MonoException *exc = NULL;
+	GDMonoUtils::runtime_invoke_array(prop_method, p_object, params, &exc);
+	if (exc) {
+		if (r_exc) {
+			*r_exc = exc;
+		} else {
+			GDMonoUtils::set_pending_exception(exc);
+		}
+	}
+}
 
-	MonoObject *exc = NULL;
-	mono_runtime_invoke_array(prop_method, p_object, params, &exc);
+void GDMonoProperty::set_value(MonoObject *p_object, void **p_params, MonoException **r_exc) {
+	MonoException *exc = NULL;
+	GDMonoUtils::property_set_value(mono_property, p_object, p_params, &exc);
 
 	if (exc) {
 		if (r_exc) {
 			*r_exc = exc;
 		} else {
-			GDMonoUtils::print_unhandled_exception(exc);
+			GDMonoUtils::set_pending_exception(exc);
 		}
 	}
 }
 
-void GDMonoProperty::set_value(MonoObject *p_object, void **p_params, MonoObject **r_exc) {
-	MonoObject *exc = NULL;
-	mono_property_set_value(mono_property, p_object, p_params, &exc);
-
-	if (exc) {
-		if (r_exc) {
-			*r_exc = exc;
-		} else {
-			GDMonoUtils::print_unhandled_exception(exc);
-		}
-	}
-}
-
-MonoObject *GDMonoProperty::get_value(MonoObject *p_object, MonoObject **r_exc) {
-	MonoObject *exc = NULL;
-	MonoObject *ret = mono_property_get_value(mono_property, p_object, NULL, &exc);
+MonoObject *GDMonoProperty::get_value(MonoObject *p_object, MonoException **r_exc) {
+	MonoException *exc = NULL;
+	MonoObject *ret = GDMonoUtils::property_get_value(mono_property, p_object, NULL, &exc);
 
 	if (exc) {
 		ret = NULL;
 		if (r_exc) {
 			*r_exc = exc;
 		} else {
-			GDMonoUtils::print_unhandled_exception(exc);
+			GDMonoUtils::set_pending_exception(exc);
 		}
 	}
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,6 +87,7 @@ void OutputStrings::_notification(int p_what) {
 			float h_ofs = (int)h_scroll->get_value();
 			Point2 icon_ofs = Point2(0, (font_height - (int)icon_error->get_height()) / 2);
 
+			FontDrawer drawer(font, Color(1, 1, 1));
 			while (E && ofs.y < (size_height - (int)margin.y)) {
 
 				String str = E->get().text;
@@ -104,7 +105,8 @@ void OutputStrings::_notification(int p_what) {
 					case LINE_LINK: {
 
 					} break;
-					default: {}
+					default: {
+					}
 				}
 
 				line_ofs.y += font->get_ascent();

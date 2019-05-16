@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,8 @@
 #ifndef AUDIO_STREAM_H
 #define AUDIO_STREAM_H
 
-#include "resource.h"
+#include "core/image.h"
+#include "core/resource.h"
 #include "servers/audio/audio_filter_sw.h"
 #include "servers/audio_server.h"
 
@@ -92,6 +93,61 @@ public:
 
 	virtual float get_length() const = 0; //if supported, otherwise return 0
 };
+
+// Microphone
+
+class AudioStreamPlaybackMicrophone;
+
+class AudioStreamMicrophone : public AudioStream {
+
+	GDCLASS(AudioStreamMicrophone, AudioStream)
+	friend class AudioStreamPlaybackMicrophone;
+
+	Set<AudioStreamPlaybackMicrophone *> playbacks;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual Ref<AudioStreamPlayback> instance_playback();
+	virtual String get_stream_name() const;
+
+	virtual float get_length() const; //if supported, otherwise return 0
+
+	AudioStreamMicrophone();
+};
+
+class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
+
+	GDCLASS(AudioStreamPlaybackMicrophone, AudioStreamPlayback)
+	friend class AudioStreamMicrophone;
+
+	bool active;
+	unsigned int input_ofs;
+
+	Ref<AudioStreamMicrophone> microphone;
+
+protected:
+	virtual void _mix_internal(AudioFrame *p_buffer, int p_frames);
+	virtual float get_stream_sampling_rate();
+
+public:
+	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
+
+	virtual void start(float p_from_pos = 0.0);
+	virtual void stop();
+	virtual bool is_playing() const;
+
+	virtual int get_loop_count() const; //times it looped
+
+	virtual float get_playback_position() const;
+	virtual void seek(float p_time);
+
+	~AudioStreamPlaybackMicrophone();
+	AudioStreamPlaybackMicrophone();
+};
+
+//
 
 class AudioStreamPlaybackRandomPitch;
 

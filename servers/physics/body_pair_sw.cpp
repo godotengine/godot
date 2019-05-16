@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "body_pair_sw.h"
 
 #include "collision_solver_sw.h"
-#include "os/os.h"
+#include "core/os/os.h"
 #include "space_sw.h"
 
 /*
@@ -78,6 +78,7 @@ void BodyPairSW::contact_added_callback(const Vector3 &p_point_A, const Vector3 
 	contact.local_A = local_A;
 	contact.local_B = local_B;
 	contact.normal = (p_point_A - p_point_B).normalized();
+	contact.mass_normal = 0; // will be computed in setup()
 
 	// attempt to determine if the contact will be reused
 	real_t contact_recycle_radius = space->get_contact_recycle_radius();
@@ -210,6 +211,14 @@ bool BodyPairSW::_test_ccd(real_t p_step, BodySW *p_A, int p_shape_A, const Tran
 	return true;
 }
 
+real_t combine_bounce(BodySW *A, BodySW *B) {
+	return CLAMP(A->get_bounce() + B->get_bounce(), 0, 1);
+}
+
+real_t combine_friction(BodySW *A, BodySW *B) {
+	return ABS(MIN(A->get_friction(), B->get_friction()));
+}
+
 bool BodyPairSW::setup(real_t p_step) {
 
 	//cannot collide
@@ -330,7 +339,7 @@ bool BodyPairSW::setup(real_t p_step) {
 		c.acc_bias_impulse = 0;
 		c.acc_bias_impulse_center_of_mass = 0;
 
-		c.bounce = MAX(A->get_bounce(), B->get_bounce());
+		c.bounce = combine_bounce(A, B);
 		if (c.bounce) {
 
 			Vector3 crA = A->get_angular_velocity().cross(c.rA);
@@ -420,7 +429,7 @@ void BodyPairSW::solve(real_t p_step) {
 
 		//friction impulse
 
-		real_t friction = A->get_friction() * B->get_friction();
+		real_t friction = combine_friction(A, B);
 
 		Vector3 lvA = A->get_linear_velocity() + A->get_angular_velocity().cross(c.rA);
 		Vector3 lvB = B->get_linear_velocity() + B->get_angular_velocity().cross(c.rB);

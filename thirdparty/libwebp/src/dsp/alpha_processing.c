@@ -366,6 +366,16 @@ static WEBP_INLINE uint32_t MakeARGB32(int a, int r, int g, int b) {
   return (((uint32_t)a << 24) | (r << 16) | (g << 8) | b);
 }
 
+#ifdef WORDS_BIGENDIAN
+static void PackARGB_C(const uint8_t* a, const uint8_t* r, const uint8_t* g,
+                       const uint8_t* b, int len, uint32_t* out) {
+  int i;
+  for (i = 0; i < len; ++i) {
+    out[i] = MakeARGB32(a[4 * i], r[4 * i], g[4 * i], b[4 * i]);
+  }
+}
+#endif
+
 static void PackRGB_C(const uint8_t* r, const uint8_t* g, const uint8_t* b,
                       int len, int step, uint32_t* out) {
   int i, offset = 0;
@@ -381,6 +391,10 @@ int (*WebPDispatchAlpha)(const uint8_t*, int, int, int, uint8_t*, int);
 void (*WebPDispatchAlphaToGreen)(const uint8_t*, int, int, int, uint32_t*, int);
 int (*WebPExtractAlpha)(const uint8_t*, int, int, int, uint8_t*, int);
 void (*WebPExtractGreen)(const uint32_t* argb, uint8_t* alpha, int size);
+#ifdef WORDS_BIGENDIAN
+void (*WebPPackARGB)(const uint8_t* a, const uint8_t* r, const uint8_t* g,
+                     const uint8_t* b, int, uint32_t*);
+#endif
 void (*WebPPackRGB)(const uint8_t* r, const uint8_t* g, const uint8_t* b,
                     int len, int step, uint32_t* out);
 
@@ -395,16 +409,14 @@ extern void WebPInitAlphaProcessingSSE2(void);
 extern void WebPInitAlphaProcessingSSE41(void);
 extern void WebPInitAlphaProcessingNEON(void);
 
-static volatile VP8CPUInfo alpha_processing_last_cpuinfo_used =
-    (VP8CPUInfo)&alpha_processing_last_cpuinfo_used;
-
-WEBP_TSAN_IGNORE_FUNCTION void WebPInitAlphaProcessing(void) {
-  if (alpha_processing_last_cpuinfo_used == VP8GetCPUInfo) return;
-
+WEBP_DSP_INIT_FUNC(WebPInitAlphaProcessing) {
   WebPMultARGBRow = WebPMultARGBRow_C;
   WebPMultRow = WebPMultRow_C;
   WebPApplyAlphaMultiply4444 = ApplyAlphaMultiply_16b_C;
 
+#ifdef WORDS_BIGENDIAN
+  WebPPackARGB = PackARGB_C;
+#endif
   WebPPackRGB = PackRGB_C;
 #if !WEBP_NEON_OMIT_C_CODE
   WebPApplyAlphaMultiply = ApplyAlphaMultiply_C;
@@ -451,9 +463,10 @@ WEBP_TSAN_IGNORE_FUNCTION void WebPInitAlphaProcessing(void) {
   assert(WebPDispatchAlphaToGreen != NULL);
   assert(WebPExtractAlpha != NULL);
   assert(WebPExtractGreen != NULL);
+#ifdef WORDS_BIGENDIAN
+  assert(WebPPackARGB != NULL);
+#endif
   assert(WebPPackRGB != NULL);
   assert(WebPHasAlpha8b != NULL);
   assert(WebPHasAlpha32b != NULL);
-
-  alpha_processing_last_cpuinfo_used = VP8GetCPUInfo;
 }

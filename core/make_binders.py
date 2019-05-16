@@ -1,6 +1,5 @@
 # -*- coding: ibm850 -*-
 
-
 template_typed = """
 #ifdef TYPED_METHOD_BIND
 template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
@@ -10,6 +9,12 @@ public:
 	$ifret R$ $ifnoret void$ (T::*method)($arg, P@$) $ifconst const$;
 #ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+		$ifret if (p_arg==-1) return GetTypeInfo<R>::METADATA;$
+		$arg if (p_arg==(@-1)) return GetTypeInfo<P@>::METADATA;
+		$
+		return GodotTypeInfo::METADATA_NONE;
+	}
 	Variant::Type _get_argument_type(int p_argument) const {
 		$ifret if (p_argument==-1) return (Variant::Type)GetTypeInfo<R>::VARIANT_TYPE;$
 		$arg if (p_argument==(@-1)) return (Variant::Type)GetTypeInfo<P@>::VARIANT_TYPE;
@@ -95,6 +100,12 @@ public:
 
 #ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+		$ifret if (p_arg==-1) return GetTypeInfo<R>::METADATA;$
+		$arg if (p_arg==(@-1)) return GetTypeInfo<P@>::METADATA;
+		$
+		return GodotTypeInfo::METADATA_NONE;
+	}
 
 	Variant::Type _get_argument_type(int p_argument) const {
 		$ifret if (p_argument==-1) return (Variant::Type)GetTypeInfo<R>::VARIANT_TYPE;$
@@ -265,8 +276,13 @@ def run(target, source, env):
         else:
             text += t
 
-    with open(target[0].path, "w") as f:
+    with open(target[0], "w") as f:
         f.write(text)
 
-    with open(target[1].path, "w") as f:
+    with open(target[1], "w") as f:
         f.write(text_ext)
+
+
+if __name__ == '__main__':
+    from platform_methods import subprocess_main
+    subprocess_main(globals())

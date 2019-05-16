@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,7 +114,7 @@ public:
 		TonemapShaderGLES3 tonemap_shader;
 
 		struct SceneDataUBO {
-			//this is a std140 compatible struct. Please read the OpenGL 3.3 Specificaiton spec before doing any changes
+			//this is a std140 compatible struct. Please read the OpenGL 3.3 Specification spec before doing any changes
 			float projection_matrix[16];
 			float inv_projection_matrix[16];
 			float camera_inverse_matrix[16];
@@ -140,9 +140,13 @@ public:
 			float reflection_multiplier;
 			float subsurface_scatter_width;
 			float ambient_occlusion_affect_light;
+			float ambient_occlusion_affect_ssao;
+			float opaque_prepass_threshold;
 
 			uint32_t fog_depth_enabled;
 			float fog_depth_begin;
+			float fog_depth_end;
+			float fog_density;
 			float fog_depth_curve;
 			uint32_t fog_transmit_enabled;
 			float fog_transmit_curve;
@@ -151,6 +155,7 @@ public:
 			float fog_height_max;
 			float fog_height_curve;
 			// make sure this struct is padded to be a multiple of 16 bytes for webgl
+			float pad[2];
 
 		} ubo_data;
 
@@ -199,7 +204,12 @@ public:
 		bool cull_disabled;
 		bool used_sss;
 		bool used_screen_texture;
-		bool using_contact_shadows;
+
+		bool used_depth_prepass;
+
+		bool used_depth_texture;
+		bool prepared_depth_texture;
+		bool bound_depth_texture;
 
 		VS::ViewportDebugDraw debug_draw;
 	} state;
@@ -360,6 +370,7 @@ public:
 
 		RID sky;
 		float sky_custom_fov;
+		Basis sky_orientation;
 
 		Color bg_color;
 		float bg_energy;
@@ -385,6 +396,7 @@ public:
 		float ssao_radius2;
 		float ssao_bias;
 		float ssao_light_affect;
+		float ssao_ao_channel_affect;
 		Color ssao_color;
 		VS::EnvironmentSSAOQuality ssao_quality;
 		float ssao_bilateral_sharpness;
@@ -398,6 +410,7 @@ public:
 		VS::EnvironmentGlowBlendMode glow_blend_mode;
 		float glow_hdr_bleed_threshold;
 		float glow_hdr_bleed_scale;
+		float glow_hdr_luminance_cap;
 		bool glow_bicubic_upscale;
 
 		VS::EnvironmentToneMapper tone_mapper;
@@ -434,6 +447,7 @@ public:
 
 		bool fog_depth_enabled;
 		float fog_depth_begin;
+		float fog_depth_end;
 		float fog_depth_curve;
 		bool fog_transmit_enabled;
 		float fog_transmit_curve;
@@ -442,86 +456,77 @@ public:
 		float fog_height_max;
 		float fog_height_curve;
 
-		Environment() {
-			bg_mode = VS::ENV_BG_CLEAR_COLOR;
-			sky_custom_fov = 0.0;
-			bg_energy = 1.0;
-			sky_ambient = 0;
-			ambient_energy = 1.0;
-			ambient_sky_contribution = 0.0;
-			canvas_max_layer = 0;
-
-			ssr_enabled = false;
-			ssr_max_steps = 64;
-			ssr_fade_in = 0.15;
-			ssr_fade_out = 2.0;
-			ssr_depth_tolerance = 0.2;
-			ssr_roughness = true;
-
-			ssao_enabled = false;
-			ssao_intensity = 1.0;
-			ssao_radius = 1.0;
-			ssao_intensity2 = 1.0;
-			ssao_radius2 = 0.0;
-			ssao_bias = 0.01;
-			ssao_light_affect = 0;
-			ssao_filter = VS::ENV_SSAO_BLUR_3x3;
-			ssao_quality = VS::ENV_SSAO_QUALITY_LOW;
-			ssao_bilateral_sharpness = 4;
-
-			tone_mapper = VS::ENV_TONE_MAPPER_LINEAR;
-			tone_mapper_exposure = 1.0;
-			tone_mapper_exposure_white = 1.0;
-			auto_exposure = false;
-			auto_exposure_speed = 0.5;
-			auto_exposure_min = 0.05;
-			auto_exposure_max = 8;
-			auto_exposure_grey = 0.4;
-
-			glow_enabled = false;
-			glow_levels = (1 << 2) | (1 << 4);
-			glow_intensity = 0.8;
-			glow_strength = 1.0;
-			glow_bloom = 0.0;
-			glow_blend_mode = VS::GLOW_BLEND_MODE_SOFTLIGHT;
-			glow_hdr_bleed_threshold = 1.0;
-			glow_hdr_bleed_scale = 2.0;
-			glow_bicubic_upscale = false;
-
-			dof_blur_far_enabled = false;
-			dof_blur_far_distance = 10;
-			dof_blur_far_transition = 5;
-			dof_blur_far_amount = 0.1;
-			dof_blur_far_quality = VS::ENV_DOF_BLUR_QUALITY_MEDIUM;
-
-			dof_blur_near_enabled = false;
-			dof_blur_near_distance = 2;
-			dof_blur_near_transition = 1;
-			dof_blur_near_amount = 0.1;
-			dof_blur_near_quality = VS::ENV_DOF_BLUR_QUALITY_MEDIUM;
-
-			adjustments_enabled = false;
-			adjustments_brightness = 1.0;
-			adjustments_contrast = 1.0;
-			adjustments_saturation = 1.0;
-
-			fog_enabled = false;
-			fog_color = Color(0.5, 0.5, 0.5);
-			fog_sun_color = Color(0.8, 0.8, 0.0);
-			fog_sun_amount = 0;
-
-			fog_depth_enabled = true;
-
-			fog_depth_begin = 10;
-			fog_depth_curve = 1;
-
-			fog_transmit_enabled = true;
-			fog_transmit_curve = 1;
-
-			fog_height_enabled = false;
-			fog_height_min = 0;
-			fog_height_max = 100;
-			fog_height_curve = 1;
+		Environment() :
+				bg_mode(VS::ENV_BG_CLEAR_COLOR),
+				sky_custom_fov(0.0),
+				bg_energy(1.0),
+				sky_ambient(0),
+				ambient_energy(1.0),
+				ambient_sky_contribution(0.0),
+				canvas_max_layer(0),
+				ssr_enabled(false),
+				ssr_max_steps(64),
+				ssr_fade_in(0.15),
+				ssr_fade_out(2.0),
+				ssr_depth_tolerance(0.2),
+				ssr_roughness(true),
+				ssao_enabled(false),
+				ssao_intensity(1.0),
+				ssao_radius(1.0),
+				ssao_intensity2(1.0),
+				ssao_radius2(0.0),
+				ssao_bias(0.01),
+				ssao_light_affect(0),
+				ssao_ao_channel_affect(0),
+				ssao_quality(VS::ENV_SSAO_QUALITY_LOW),
+				ssao_bilateral_sharpness(4),
+				ssao_filter(VS::ENV_SSAO_BLUR_3x3),
+				glow_enabled(false),
+				glow_levels((1 << 2) | (1 << 4)),
+				glow_intensity(0.8),
+				glow_strength(1.0),
+				glow_bloom(0.0),
+				glow_blend_mode(VS::GLOW_BLEND_MODE_SOFTLIGHT),
+				glow_hdr_bleed_threshold(1.0),
+				glow_hdr_bleed_scale(2.0),
+				glow_hdr_luminance_cap(12.0),
+				glow_bicubic_upscale(false),
+				tone_mapper(VS::ENV_TONE_MAPPER_LINEAR),
+				tone_mapper_exposure(1.0),
+				tone_mapper_exposure_white(1.0),
+				auto_exposure(false),
+				auto_exposure_speed(0.5),
+				auto_exposure_min(0.05),
+				auto_exposure_max(8),
+				auto_exposure_grey(0.4),
+				dof_blur_far_enabled(false),
+				dof_blur_far_distance(10),
+				dof_blur_far_transition(5),
+				dof_blur_far_amount(0.1),
+				dof_blur_far_quality(VS::ENV_DOF_BLUR_QUALITY_MEDIUM),
+				dof_blur_near_enabled(false),
+				dof_blur_near_distance(2),
+				dof_blur_near_transition(1),
+				dof_blur_near_amount(0.1),
+				dof_blur_near_quality(VS::ENV_DOF_BLUR_QUALITY_MEDIUM),
+				adjustments_enabled(false),
+				adjustments_brightness(1.0),
+				adjustments_contrast(1.0),
+				adjustments_saturation(1.0),
+				fog_enabled(false),
+				fog_color(Color(0.5, 0.5, 0.5)),
+				fog_sun_color(Color(0.8, 0.8, 0.0)),
+				fog_sun_amount(0),
+				fog_depth_enabled(true),
+				fog_depth_begin(10),
+				fog_depth_end(0),
+				fog_depth_curve(1),
+				fog_transmit_enabled(true),
+				fog_transmit_curve(1),
+				fog_height_enabled(false),
+				fog_height_min(0),
+				fog_height_max(100),
+				fog_height_curve(1) {
 		}
 	};
 
@@ -532,6 +537,7 @@ public:
 	virtual void environment_set_background(RID p_env, VS::EnvironmentBG p_bg);
 	virtual void environment_set_sky(RID p_env, RID p_sky);
 	virtual void environment_set_sky_custom_fov(RID p_env, float p_scale);
+	virtual void environment_set_sky_orientation(RID p_env, const Basis &p_orientation);
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color);
 	virtual void environment_set_bg_energy(RID p_env, float p_energy);
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer);
@@ -539,18 +545,18 @@ public:
 
 	virtual void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality);
 	virtual void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality);
-	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, bool p_bicubic_upscale);
+	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale);
 	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture);
 
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness);
-	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness);
+	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness);
 
 	virtual void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
 
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp);
 
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount);
-	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_curve, bool p_transmit, float p_transmit_curve);
+	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve);
 	virtual void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve);
 
 	virtual bool is_environment(RID p_env);
@@ -568,10 +574,15 @@ public:
 		float light_params[4]; //spot attenuation, spot angle, specular, shadow enabled
 		float light_clamp[4];
 		float light_shadow_color_contact[4];
-		float shadow_matrix1[16]; //up to here for spot and omni, rest is for directional
-		float shadow_matrix2[16];
-		float shadow_matrix3[16];
-		float shadow_matrix4[16];
+		union {
+			struct {
+				float matrix1[16]; //up to here for spot and omni, rest is for directional
+				float matrix2[16];
+				float matrix3[16];
+				float matrix4[16];
+			};
+			float matrix[4 * 16];
+		} shadow;
 		float shadow_split_offsets[4];
 	};
 
@@ -632,9 +643,9 @@ public:
 		Vector3 bounds;
 		Transform transform_to_data;
 
-		GIProbeInstance() {
-			probe = NULL;
-			tex_cache = 0;
+		GIProbeInstance() :
+				probe(NULL),
+				tex_cache(0) {
 		}
 	};
 
@@ -824,15 +835,14 @@ public:
 
 	_FORCE_INLINE_ void _add_geometry_with_material(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, RasterizerStorageGLES3::Material *p_material, bool p_depth_pass, bool p_shadow_pass);
 
-	void _draw_sky(RasterizerStorageGLES3::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy);
+	void _draw_sky(RasterizerStorageGLES3::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy, const Basis &p_sky_orientation);
 
-	void _setup_environment(Environment *env, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform);
+	void _setup_environment(Environment *env, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_no_fog = false);
 	void _setup_directional_light(int p_index, const Transform &p_camera_inverse_transform, bool p_use_shadows);
 	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, const CameraMatrix &p_camera_projection, RID p_shadow_atlas);
 	void _setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, const CameraMatrix &p_camera_projection, RID p_reflection_atlas, Environment *p_env);
 
 	void _copy_screen(bool p_invalidate_color = false, bool p_invalidate_depth = false);
-	void _copy_to_front_buffer(Environment *env);
 	void _copy_texture_to_front_buffer(GLuint p_texture); //used for debug
 
 	void _fill_render_list(InstanceBase **p_cull_result, int p_cull_count, bool p_depth_pass, bool p_shadow_pass);
@@ -840,6 +850,9 @@ public:
 	void _blur_effect_buffer();
 	void _render_mrts(Environment *env, const CameraMatrix &p_cam_projection);
 	void _post_process(Environment *env, const CameraMatrix &p_cam_projection);
+
+	void _prepare_depth_texture();
+	void _bind_depth_texture();
 
 	virtual void render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count);

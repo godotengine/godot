@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "navigation_polygon.h"
 
-#include "core_string_names.h"
-#include "engine.h"
-#include "navigation2d.h"
+#include "core/core_string_names.h"
+#include "core/engine.h"
+#include "navigation_2d.h"
 
 #include "thirdparty/misc/triangulator.h"
 
@@ -91,7 +91,7 @@ void NavigationPolygon::_set_polygons(const Array &p_array) {
 
 	polygons.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
-		polygons[i].indices = p_array[i];
+		polygons.write[i].indices = p_array[i];
 	}
 }
 
@@ -110,7 +110,7 @@ void NavigationPolygon::_set_outlines(const Array &p_array) {
 
 	outlines.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
-		outlines[i] = p_array[i];
+		outlines.write[i] = p_array[i];
 	}
 	rect_cache_dirty = true;
 }
@@ -166,7 +166,7 @@ int NavigationPolygon::get_outline_count() const {
 
 void NavigationPolygon::set_outline(int p_idx, const PoolVector<Vector2> &p_outline) {
 	ERR_FAIL_INDEX(p_idx, outlines.size());
-	outlines[p_idx] = p_outline;
+	outlines.write[p_idx] = p_outline;
 	rect_cache_dirty = true;
 }
 
@@ -257,7 +257,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 	TriangulatorPartition tpart;
 	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //failed!
-		print_line("convex partition failed!");
+		ERR_PRINTS("NavigationPolygon: Convex partition failed!");
 		return;
 	}
 
@@ -349,8 +349,6 @@ void NavigationPolygonInstance::set_enabled(bool p_enabled) {
 
 	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())
 		update();
-
-	//update_gizmo();
 }
 
 bool NavigationPolygonInstance::is_enabled() const {
@@ -432,8 +430,8 @@ void NavigationPolygonInstance::_notification(int p_what) {
 				{
 					PoolVector<Vector2>::Read vr = verts.read();
 					for (int i = 0; i < vsize; i++) {
-						vertices[i] = vr[i];
-						colors[i] = color;
+						vertices.write[i] = vr[i];
+						colors.write[i] = color;
 					}
 				}
 
@@ -461,26 +459,28 @@ void NavigationPolygonInstance::_notification(int p_what) {
 
 void NavigationPolygonInstance::set_navigation_polygon(const Ref<NavigationPolygon> &p_navpoly) {
 
-	if (p_navpoly == navpoly)
+	if (p_navpoly == navpoly) {
 		return;
+	}
 
 	if (navigation && nav_id != -1) {
 		navigation->navpoly_remove(nav_id);
 		nav_id = -1;
 	}
+
 	if (navpoly.is_valid()) {
 		navpoly->disconnect(CoreStringNames::get_singleton()->changed, this, "_navpoly_changed");
 	}
 	navpoly = p_navpoly;
-
 	if (navpoly.is_valid()) {
 		navpoly->connect(CoreStringNames::get_singleton()->changed, this, "_navpoly_changed");
 	}
+	_navpoly_changed();
 
 	if (navigation && navpoly.is_valid() && enabled) {
 		nav_id = navigation->navpoly_add(navpoly, get_relative_transform_to_parent(navigation), this);
 	}
-	//update_gizmo();
+
 	_change_notify("navpoly");
 	update_configuration_warning();
 }

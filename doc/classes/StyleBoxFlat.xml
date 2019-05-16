@@ -1,31 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StyleBoxFlat" inherits="StyleBox" category="Core" version="3.1">
+<class name="StyleBoxFlat" inherits="StyleBox" category="Core" version="3.2">
 	<brief_description>
 		Customizable Stylebox with a given set of parameters. (no texture required)
 	</brief_description>
 	<description>
 		This stylebox can be used to achieve all kinds of looks without the need of a texture. Those properties are customizable:
-		 - Color
-		 - Border width (individual width for each border)
-		 - Rounded corners (individual radius for each corner)
-		 - Shadow
-		 About corner radius:
-		 	Setting corner radius to high values is allowed. As soon as corners would overlap the stylebox will switch to a relative system. Example:
-			[codeblock]
-			height = 30
-			corner_radius_top_left = 50
-			corner_radius_bottom_left = 100
-			[/codeblock]
-			The relative system now would take the 1:2 ratio of the two left corners to calculate the actual corner width. Both corners added will [b]never[/b] be more than the height. Result:
-			[codeblock]
-			corner_radius_top_left: 10
-			corner_radius_bottom_left: 20
-			[/codeblock]
+		- Color
+		- Border width (individual width for each border)
+		- Rounded corners (individual radius for each corner)
+		- Shadow
+		Setting corner radius to high values is allowed. As soon as corners would overlap the stylebox will switch to a relative system. Example:
+		[codeblock]
+		height = 30
+		corner_radius_top_left = 50
+		corner_radius_bottom_left = 100
+		[/codeblock]
+		The relative system now would take the 1:2 ratio of the two left corners to calculate the actual corner width. Both corners added will [b]never[/b] be more than the height. Result:
+		[codeblock]
+		corner_radius_top_left: 10
+		corner_radius_bottom_left: 20
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_border_width_min" qualifiers="const">
 			<return type="int">
@@ -97,7 +94,7 @@
 			The background color of the stylebox.
 		</member>
 		<member name="border_blend" type="bool" setter="set_border_blend" getter="get_border_blend">
-			When set to true, the border will fade into the background color.
+			When set to [code]true[/code], the border will fade into the background color.
 		</member>
 		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color">
 			Sets the color of the border.
@@ -115,9 +112,9 @@
 			Border width for the top border.
 		</member>
 		<member name="corner_detail" type="int" setter="set_corner_detail" getter="get_corner_detail">
-			This sets the amount of vertices used for each corner. Higher values result in rounder corners but take more processing power to compute. When choosing a value you should take the corner radius ([method set_corner_radius]) into account.
-			For corner radius smaller than 10: 4-5 should be enough
-			For corner radius smaller than 30: 8-12 should be enough ...
+			This sets the amount of vertices used for each corner. Higher values result in rounder corners but take more processing power to compute. When choosing a value you should take the corner radius ([method set_corner_radius_all]) into account.
+			For corner radius smaller than 10, 4-5 should be enough.
+			For corner radius smaller than 30, 8-12 should be enough.
 		</member>
 		<member name="corner_radius_bottom_left" type="int" setter="set_corner_radius" getter="get_corner_radius">
 			The corner radius of the bottom left corner. When set to 0 the corner is not rounded.
@@ -148,6 +145,9 @@
 		</member>
 		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color">
 			The color of the shadow. (This has no effect when shadow_size &lt; 1)
+		</member>
+		<member name="shadow_offset" type="Vector2" setter="set_shadow_offset" getter="get_shadow_offset">
+			The shadow offset in pixels. Adjusts the position of the shadow relatively to the stylebox.
 		</member>
 		<member name="shadow_size" type="int" setter="set_shadow_size" getter="get_shadow_size">
 			The shadow size in pixels.

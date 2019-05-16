@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "java_class_wrapper.h"
+#include "string_android.h"
 #include "thread_jandroid.h"
 
 bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error, Variant &ret) {
@@ -553,8 +554,7 @@ void JavaClassWrapper::_bind_methods() {
 bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig) {
 
 	jstring name2 = (jstring)env->CallObjectMethod(obj, Class_getName);
-	String str_type = env->GetStringUTFChars(name2, NULL);
-	print_line("name: " + str_type);
+	String str_type = jstring_to_string(name2, env);
 	env->DeleteLocalRef(name2);
 	uint32_t t = 0;
 
@@ -698,7 +698,7 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 		} break;
 		case ARG_TYPE_STRING: {
 
-			var = String::utf8(env->GetStringUTFChars((jstring)obj, NULL));
+			var = jstring_to_string((jstring)obj, env);
 			return true;
 		} break;
 		case ARG_TYPE_CLASS: {
@@ -1031,7 +1031,7 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 				if (!o)
 					ret.push_back(Variant());
 				else {
-					String val = String::utf8(env->GetStringUTFChars((jstring)o, NULL));
+					String val = jstring_to_string((jstring)o, env);
 					ret.push_back(val);
 				}
 				env->DeleteLocalRef(o);
@@ -1076,7 +1076,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		ERR_CONTINUE(!obj);
 
 		jstring name = (jstring)env->CallObjectMethod(obj, getName);
-		String str_method = env->GetStringUTFChars(name, NULL);
+		String str_method = jstring_to_string(name, env);
 		env->DeleteLocalRef(name);
 
 		Vector<String> params;
@@ -1191,9 +1191,6 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		env->DeleteLocalRef(obj);
 		env->DeleteLocalRef(param_types);
 		env->DeleteLocalRef(return_type);
-
-		//args[i] = _jobject_to_variant(env, obj);
-		//print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
 	};
 
 	env->DeleteLocalRef(methods);
@@ -1208,9 +1205,8 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		ERR_CONTINUE(!obj);
 
 		jstring name = (jstring)env->CallObjectMethod(obj, Field_getName);
-		String str_field = env->GetStringUTFChars(name, NULL);
+		String str_field = jstring_to_string(name, env);
 		env->DeleteLocalRef(name);
-		print_line("FIELD: " + str_field);
 		int mods = env->CallIntMethod(obj, Field_getModifiers);
 		if ((mods & 0x8) && (mods & 0x10) && (mods & 0x1)) { //static final public!
 

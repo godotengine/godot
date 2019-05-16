@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,35 +31,25 @@
 #ifndef MONO_BUILD_INFO_H
 #define MONO_BUILD_INFO_H
 
-#include "../mono_gd/gd_mono_utils.h"
+#include "core/ustring.h"
+#include "core/vector.h"
 
 struct MonoBuildInfo {
 
 	struct Hasher {
-		static _FORCE_INLINE_ uint32_t hash(const MonoBuildInfo &p_key) {
-			uint32_t hash = 0;
-
-			GDMonoUtils::hash_combine(hash, p_key.solution.hash());
-			GDMonoUtils::hash_combine(hash, p_key.configuration.hash());
-
-			return hash;
-		}
+		static uint32_t hash(const MonoBuildInfo &p_key);
 	};
 
 	String solution;
 	String configuration;
 	Vector<String> custom_props;
 
-	MonoBuildInfo() {}
+	bool operator==(const MonoBuildInfo &p_b) const;
 
-	MonoBuildInfo(const String &p_solution, const String &p_config) {
-		solution = p_solution;
-		configuration = p_config;
-	}
+	String get_log_dirpath();
 
-	bool operator==(const MonoBuildInfo &p_b) const {
-		return p_b.solution == solution && p_b.configuration == configuration;
-	}
+	MonoBuildInfo();
+	MonoBuildInfo(const String &p_solution, const String &p_config);
 };
 
 #endif // MONO_BUILD_INFO_H

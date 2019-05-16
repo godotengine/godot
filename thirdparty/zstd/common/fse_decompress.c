@@ -49,7 +49,7 @@
 *  Error Management
 ****************************************************************/
 #define FSE_isError ERR_isError
-#define FSE_STATIC_ASSERT(c) { enum { FSE_static_assert = 1/(int)(!!(c)) }; }   /* use only *after* variable declarations */
+#define FSE_STATIC_ASSERT(c) DEBUG_STATIC_ASSERT(c)   /* use only *after* variable declarations */
 
 /* check and forward error code */
 #define CHECK_F(f) { size_t const e = f; if (FSE_isError(e)) return e; }
@@ -139,8 +139,8 @@ size_t FSE_buildDTable(FSE_DTable* dt, const short* normalizedCounter, unsigned 
     {   U32 u;
         for (u=0; u<tableSize; u++) {
             FSE_FUNCTION_TYPE const symbol = (FSE_FUNCTION_TYPE)(tableDecode[u].symbol);
-            U16 nextState = symbolNext[symbol]++;
-            tableDecode[u].nbBits = (BYTE) (tableLog - BIT_highbit32 ((U32)nextState) );
+            U32 const nextState = symbolNext[symbol]++;
+            tableDecode[u].nbBits = (BYTE) (tableLog - BIT_highbit32(nextState) );
             tableDecode[u].newState = (U16) ( (nextState << tableDecode[u].nbBits) - tableSize);
     }   }
 

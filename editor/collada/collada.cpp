@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -166,7 +166,8 @@ Transform Collada::Node::compute_transform(Collada &state) const {
 				}
 
 			} break;
-			default: {}
+			default: {
+			}
 		}
 
 		xform = xform * xform_step;
@@ -191,7 +192,7 @@ Transform Collada::Node::get_global_transform() const {
 		return default_transform;
 }
 
-Vector<float> Collada::AnimationTrack::get_value_at_time(float p_time) {
+Vector<float> Collada::AnimationTrack::get_value_at_time(float p_time) const {
 
 	ERR_FAIL_COND_V(keys.size() == 0, Vector<float>());
 	int i = 0;
@@ -225,22 +226,22 @@ Vector<float> Collada::AnimationTrack::get_value_at_time(float p_time) {
 				ret.resize(16);
 				Transform tr;
 				// i wonder why collada matrices are transposed, given that's opposed to opengl..
-				ret[0] = interp.basis.elements[0][0];
-				ret[1] = interp.basis.elements[0][1];
-				ret[2] = interp.basis.elements[0][2];
-				ret[4] = interp.basis.elements[1][0];
-				ret[5] = interp.basis.elements[1][1];
-				ret[6] = interp.basis.elements[1][2];
-				ret[8] = interp.basis.elements[2][0];
-				ret[9] = interp.basis.elements[2][1];
-				ret[10] = interp.basis.elements[2][2];
-				ret[3] = interp.origin.x;
-				ret[7] = interp.origin.y;
-				ret[11] = interp.origin.z;
-				ret[12] = 0;
-				ret[13] = 0;
-				ret[14] = 0;
-				ret[15] = 1;
+				ret.write[0] = interp.basis.elements[0][0];
+				ret.write[1] = interp.basis.elements[0][1];
+				ret.write[2] = interp.basis.elements[0][2];
+				ret.write[4] = interp.basis.elements[1][0];
+				ret.write[5] = interp.basis.elements[1][1];
+				ret.write[6] = interp.basis.elements[1][2];
+				ret.write[8] = interp.basis.elements[2][0];
+				ret.write[9] = interp.basis.elements[2][1];
+				ret.write[10] = interp.basis.elements[2][2];
+				ret.write[3] = interp.origin.x;
+				ret.write[7] = interp.origin.y;
+				ret.write[11] = interp.origin.z;
+				ret.write[12] = 0;
+				ret.write[13] = 0;
+				ret.write[14] = 0;
+				ret.write[15] = 1;
 
 				return ret;
 			} else {
@@ -249,7 +250,7 @@ Vector<float> Collada::AnimationTrack::get_value_at_time(float p_time) {
 				dest.resize(keys[i].data.size());
 				for (int j = 0; j < dest.size(); j++) {
 
-					dest[j] = keys[i].data[j] * c + keys[i - 1].data[j] * (1.0 - c);
+					dest.write[j] = keys[i].data[j] * c + keys[i - 1].data[j] * (1.0 - c);
 				}
 				return dest;
 				//interpolate one by one
@@ -452,7 +453,7 @@ Transform Collada::_read_transform(XMLParser &parser) {
 	Vector<float> farr;
 	farr.resize(16);
 	for (int i = 0; i < 16; i++) {
-		farr[i] = array[i].to_double();
+		farr.write[i] = array[i].to_double();
 	}
 
 	return _read_transform_from_array(farr);
@@ -1104,7 +1105,7 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 								int from = prim.indices.size();
 								prim.indices.resize(from + values.size());
 								for (int i = 0; i < values.size(); i++)
-									prim.indices[from + i] = values[i];
+									prim.indices.write[from + i] = values[i];
 
 							} else if (prim.vertex_size > 0) {
 								prim.indices = values;
@@ -1884,7 +1885,7 @@ void Collada::_parse_animation(XMLParser &parser) {
 			track.keys.resize(key_count);
 
 			for (int j = 0; j < key_count; j++) {
-				track.keys[j].time = time_keys[j];
+				track.keys.write[j].time = time_keys[j];
 				state.animation_length = MAX(state.animation_length, time_keys[j]);
 			}
 
@@ -1905,9 +1906,9 @@ void Collada::_parse_animation(XMLParser &parser) {
 			ERR_CONTINUE((output.size() / stride) != key_count);
 
 			for (int j = 0; j < key_count; j++) {
-				track.keys[j].data.resize(output_len);
+				track.keys.write[j].data.resize(output_len);
 				for (int k = 0; k < output_len; k++)
-					track.keys[j].data[k] = output[l + j * stride + k]; //super weird but should work:
+					track.keys.write[j].data.write[k] = output[l + j * stride + k]; //super weird but should work:
 			}
 
 			if (sampler.has("INTERPOLATION")) {
@@ -1919,9 +1920,9 @@ void Collada::_parse_animation(XMLParser &parser) {
 
 				for (int j = 0; j < key_count; j++) {
 					if (interps[j] == "BEZIER")
-						track.keys[j].interp_type = AnimationTrack::INTERP_BEZIER;
+						track.keys.write[j].interp_type = AnimationTrack::INTERP_BEZIER;
 					else
-						track.keys[j].interp_type = AnimationTrack::INTERP_LINEAR;
+						track.keys.write[j].interp_type = AnimationTrack::INTERP_LINEAR;
 				}
 			}
 
@@ -1939,8 +1940,8 @@ void Collada::_parse_animation(XMLParser &parser) {
 				ERR_CONTINUE(outangents.size() != key_count * 2 * names.size());
 
 				for (int j = 0; j < key_count; j++) {
-					track.keys[j].in_tangent = Vector2(intangents[j * 2 * names.size() + 0 + l * 2], intangents[j * 2 * names.size() + 1 + l * 2]);
-					track.keys[j].out_tangent = Vector2(outangents[j * 2 * names.size() + 0 + l * 2], outangents[j * 2 * names.size() + 1 + l * 2]);
+					track.keys.write[j].in_tangent = Vector2(intangents[j * 2 * names.size() + 0 + l * 2], intangents[j * 2 * names.size() + 1 + l * 2]);
+					track.keys.write[j].out_tangent = Vector2(outangents[j * 2 * names.size() + 0 + l * 2], outangents[j * 2 * names.size() + 1 + l * 2]);
 				}
 			}
 
@@ -2071,17 +2072,17 @@ void Collada::_parse_library(XMLParser &parser) {
 			} else if (name == "geometry") {
 
 				String id = parser.get_attribute_value("id");
-				String name = parser.get_attribute_value_safe("name");
+				String name2 = parser.get_attribute_value_safe("name");
 				while (parser.read() == OK) {
 
 					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
 
 						if (parser.get_node_name() == "mesh") {
-							state.mesh_name_map[id] = (name != "") ? name : id;
-							_parse_mesh_geometry(parser, id, name);
+							state.mesh_name_map[id] = (name2 != "") ? name2 : id;
+							_parse_mesh_geometry(parser, id, name2);
 						} else if (parser.get_node_name() == "spline") {
-							state.mesh_name_map[id] = (name != "") ? name : id;
-							_parse_curve_geometry(parser, id, name);
+							state.mesh_name_map[id] = (name2 != "") ? name2 : id;
+							_parse_curve_geometry(parser, id, name2);
 						} else if (!parser.is_empty())
 							parser.skip_section();
 					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "geometry")
@@ -2118,7 +2119,7 @@ void Collada::_joint_set_owner(Collada::Node *p_node, NodeSkeleton *p_owner) {
 
 		for (int i = 0; i < nj->children.size(); i++) {
 
-			_joint_set_owner(nj->children[i], p_owner);
+			_joint_set_owner(nj->children.write[i], p_owner);
 		}
 	}
 }
@@ -2147,7 +2148,7 @@ void Collada::_create_skeletons(Collada::Node **p_node, NodeSkeleton *p_skeleton
 	}
 
 	for (int i = 0; i < node->children.size(); i++) {
-		_create_skeletons(&node->children[i], p_skeleton);
+		_create_skeletons(&node->children.write[i], p_skeleton);
 	}
 }
 
@@ -2255,8 +2256,7 @@ void Collada::_merge_skeletons2(VisualScene *p_vscene) {
 
 			Node *node = state.scene_map[name];
 			ERR_CONTINUE(node->type != Node::TYPE_JOINT);
-			if (node->type != Node::TYPE_JOINT)
-				continue;
+
 			NodeSkeleton *sk = NULL;
 
 			while (node && !sk) {
@@ -2266,10 +2266,8 @@ void Collada::_merge_skeletons2(VisualScene *p_vscene) {
 				}
 				node = node->parent;
 			}
-			ERR_CONTINUE(!sk);
 
-			if (!sk)
-				continue; //bleh
+			ERR_CONTINUE(!sk);
 
 			if (!skeleton) {
 				skeleton = sk;
@@ -2316,7 +2314,7 @@ bool Collada::_optimize_skeletons(VisualScene *p_vscene, Node *p_node) {
 			for (int i = 0; i < gp->children.size(); i++) {
 
 				if (gp->children[i] == parent) {
-					gp->children[i] = node;
+					gp->children.write[i] = node;
 					found = true;
 					break;
 				}
@@ -2332,7 +2330,7 @@ bool Collada::_optimize_skeletons(VisualScene *p_vscene, Node *p_node) {
 
 				if (p_vscene->root_nodes[i] == parent) {
 
-					p_vscene->root_nodes[i] = node;
+					p_vscene->root_nodes.write[i] = node;
 					found = true;
 					break;
 				}
@@ -2358,9 +2356,8 @@ bool Collada::_optimize_skeletons(VisualScene *p_vscene, Node *p_node) {
 
 bool Collada::_move_geometry_to_skeletons(VisualScene *p_vscene, Node *p_node, List<Node *> *p_mgeom) {
 
-	// bind shape matrix escala los huesos y los hace gigantes, asi la matriz despues achica
-	// al modelo?
-	// solucion: aplicarle la bind shape matrix a los VERTICES, y si el objeto viene con escala, se la dejo me parece!
+	// Bind Shape Matrix scales the bones and makes them gigantic, so the matrix then shrinks the model?
+	// Solution: apply the Bind Shape Matrix to the VERTICES, and if the object comes scaled, it seems to be left alone!
 
 	if (p_node->type == Node::TYPE_GEOMETRY) {
 
@@ -2468,7 +2465,7 @@ void Collada::_optimize() {
 
 		VisualScene &vs = E->get();
 		for (int i = 0; i < vs.root_nodes.size(); i++) {
-			_create_skeletons(&vs.root_nodes[i]);
+			_create_skeletons(&vs.root_nodes.write[i]);
 		}
 
 		for (int i = 0; i < vs.root_nodes.size(); i++) {

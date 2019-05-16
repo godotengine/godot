@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,14 +30,15 @@
 
 package org.godotengine.godot.input;
 import android.content.Context;
-import android.util.AttributeSet;
-import android.view.KeyEvent;
-import android.widget.EditText;
-import org.godotengine.godot.*;
 import android.os.Handler;
 import android.os.Message;
-import android.view.inputmethod.InputMethodManager;
+import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import java.lang.ref.WeakReference;
+import org.godotengine.godot.*;
 
 public class GodotEditText extends EditText {
 	// ===========================================================
@@ -51,8 +52,23 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	private GodotView mView;
 	private GodotTextInputWrapper mInputWrapper;
-	private static Handler sHandler;
+	private EditHandler sHandler = new EditHandler(this);
 	private String mOriginText;
+
+	private static class EditHandler extends Handler {
+		private final WeakReference<GodotEditText> mEdit;
+		public EditHandler(GodotEditText edit) {
+			mEdit = new WeakReference<>(edit);
+		}
+
+		@Override
+		public void handleMessage(Message msg) {
+			GodotEditText edit = mEdit.get();
+			if (edit != null) {
+				edit.handleMessage(msg);
+			}
+		}
+	}
 
 	// ===========================================================
 	// Constructors
@@ -75,36 +91,33 @@ public class GodotEditText extends EditText {
 	protected void initView() {
 		this.setPadding(0, 0, 0, 0);
 		this.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+	}
 
-		sHandler = new Handler() {
-			@Override
-			public void handleMessage(final Message msg) {
-				switch (msg.what) {
-					case HANDLER_OPEN_IME_KEYBOARD: {
-						GodotEditText edit = (GodotEditText)msg.obj;
-						String text = edit.mOriginText;
-						if (edit.requestFocus()) {
-							edit.removeTextChangedListener(edit.mInputWrapper);
-							edit.setText("");
-							edit.append(text);
-							edit.mInputWrapper.setOriginText(text);
-							edit.addTextChangedListener(edit.mInputWrapper);
-							final InputMethodManager imm = (InputMethodManager)mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-							imm.showSoftInput(edit, 0);
-						}
-					} break;
-
-					case HANDLER_CLOSE_IME_KEYBOARD: {
-						GodotEditText edit = (GodotEditText)msg.obj;
-
-						edit.removeTextChangedListener(mInputWrapper);
-						final InputMethodManager imm = (InputMethodManager)mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-						imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
-						edit.mView.requestFocus();
-					} break;
+	private void handleMessage(final Message msg) {
+		switch (msg.what) {
+			case HANDLER_OPEN_IME_KEYBOARD: {
+				GodotEditText edit = (GodotEditText)msg.obj;
+				String text = edit.mOriginText;
+				if (edit.requestFocus()) {
+					edit.removeTextChangedListener(edit.mInputWrapper);
+					edit.setText("");
+					edit.append(text);
+					edit.mInputWrapper.setOriginText(text);
+					edit.addTextChangedListener(edit.mInputWrapper);
+					final InputMethodManager imm = (InputMethodManager)mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+					imm.showSoftInput(edit, 0);
 				}
-			}
-		};
+			} break;
+
+			case HANDLER_CLOSE_IME_KEYBOARD: {
+				GodotEditText edit = (GodotEditText)msg.obj;
+
+				edit.removeTextChangedListener(mInputWrapper);
+				final InputMethodManager imm = (InputMethodManager)mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+				imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
+				edit.mView.requestFocus();
+			} break;
+		}
 	}
 
 	// ===========================================================

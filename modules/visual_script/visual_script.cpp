@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "visual_script.h"
 
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "scene/main/node.h"
 #include "visual_script_nodes.h"
 
@@ -48,20 +48,12 @@ bool VisualScriptNode::is_breakpoint() const {
 void VisualScriptNode::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-
-		int dvc = get_input_value_port_count();
-		for (int i = 0; i < dvc; i++) {
-			Variant::Type expected = get_input_value_port_info(i).type;
-			Variant::CallError ce;
-			default_input_values.push_back(Variant::construct(expected, NULL, 0, ce, false));
-		}
+		validate_input_default_values();
 	}
 }
 
 void VisualScriptNode::ports_changed_notify() {
-
-	default_input_values.resize(MAX(default_input_values.size(), get_input_value_port_count())); //let it grow as big as possible, we don't want to lose values on resize
-
+	validate_input_default_values();
 	emit_signal("ports_changed");
 }
 
@@ -90,8 +82,7 @@ void VisualScriptNode::_set_default_input_values(Array p_values) {
 }
 
 void VisualScriptNode::validate_input_default_values() {
-
-	default_input_values.resize(get_input_value_port_count());
+	default_input_values.resize(MAX(default_input_values.size(), get_input_value_port_count())); //let it grow as big as possible, we don't want to lose values on resize
 
 	//actually validate on save
 	for (int i = 0; i < get_input_value_port_count(); i++) {
@@ -117,8 +108,14 @@ void VisualScriptNode::validate_input_default_values() {
 Array VisualScriptNode::_get_default_input_values() const {
 
 	//validate on save, since on load there is little info about this
+	Array values = default_input_values;
+	values.resize(get_input_value_port_count());
 
-	return default_input_values;
+	return values;
+}
+
+String VisualScriptNode::get_text() const {
+	return "";
 }
 
 void VisualScriptNode::_bind_methods() {
@@ -767,7 +764,7 @@ void VisualScript::custom_signal_set_argument_type(const StringName &p_func, int
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_func));
 	ERR_FAIL_INDEX(p_argidx, custom_signals[p_func].size());
-	custom_signals[p_func][p_argidx].type = p_type;
+	custom_signals[p_func].write[p_argidx].type = p_type;
 }
 Variant::Type VisualScript::custom_signal_get_argument_type(const StringName &p_func, int p_argidx) const {
 
@@ -779,7 +776,7 @@ void VisualScript::custom_signal_set_argument_name(const StringName &p_func, int
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_func));
 	ERR_FAIL_INDEX(p_argidx, custom_signals[p_func].size());
-	custom_signals[p_func][p_argidx].name = p_name;
+	custom_signals[p_func].write[p_argidx].name = p_name;
 }
 String VisualScript::custom_signal_get_argument_name(const StringName &p_func, int p_argidx) const {
 
@@ -807,7 +804,7 @@ void VisualScript::custom_signal_swap_argument(const StringName &p_func, int p_a
 	ERR_FAIL_INDEX(p_argidx, custom_signals[p_func].size());
 	ERR_FAIL_INDEX(p_with_argidx, custom_signals[p_func].size());
 
-	SWAP(custom_signals[p_func][p_argidx], custom_signals[p_func][p_with_argidx]);
+	SWAP(custom_signals[p_func].write[p_argidx], custom_signals[p_func].write[p_with_argidx]);
 }
 void VisualScript::remove_custom_signal(const StringName &p_name) {
 
@@ -973,6 +970,10 @@ Error VisualScript::reload(bool p_keep_state) {
 bool VisualScript::is_tool() const {
 
 	return false;
+}
+
+bool VisualScript::is_valid() const {
+	return true; //always valid
 }
 
 ScriptLanguage *VisualScript::get_language() const {
@@ -1155,9 +1156,9 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 
 		Array nodes = func["nodes"];
 
-		for (int i = 0; i < nodes.size(); i += 3) {
+		for (int j = 0; j < nodes.size(); j += 3) {
 
-			add_node(name, nodes[i], nodes[i + 2], nodes[i + 1]);
+			add_node(name, nodes[j], nodes[j + 2], nodes[j + 1]);
 		}
 
 		Array sequence_connections = func["sequence_connections"];
@@ -1327,6 +1328,19 @@ void VisualScript::_bind_methods() {
 VisualScript::VisualScript() {
 
 	base_type = "Object";
+}
+
+Set<int> VisualScript::get_output_sequence_ports_connected(const String &edited_func, int from_node) {
+	List<VisualScript::SequenceConnection> *sc = memnew(List<VisualScript::SequenceConnection>);
+	get_sequence_connection_list(edited_func, sc);
+	Set<int> connected;
+	for (List<VisualScript::SequenceConnection>::Element *E = sc->front(); E; E = E->next()) {
+		if (E->get().from_node == from_node) {
+			connected.insert(E->get().from_output);
+		}
+	}
+	memdelete(sc);
+	return connected;
 }
 
 VisualScript::~VisualScript() {
@@ -1967,11 +1981,11 @@ Ref<Script> VisualScriptInstance::get_script() const {
 	return script;
 }
 
-ScriptInstance::RPCMode VisualScriptInstance::get_rpc_mode(const StringName &p_method) const {
+MultiplayerAPI::RPCMode VisualScriptInstance::get_rpc_mode(const StringName &p_method) const {
 
 	const Map<StringName, VisualScript::Function>::Element *E = script->functions.find(p_method);
 	if (!E) {
-		return RPC_MODE_DISABLED;
+		return MultiplayerAPI::RPC_MODE_DISABLED;
 	}
 
 	if (E->get().function_id >= 0 && E->get().nodes.has(E->get().function_id)) {
@@ -1983,12 +1997,12 @@ ScriptInstance::RPCMode VisualScriptInstance::get_rpc_mode(const StringName &p_m
 		}
 	}
 
-	return RPC_MODE_DISABLED;
+	return MultiplayerAPI::RPC_MODE_DISABLED;
 }
 
-ScriptInstance::RPCMode VisualScriptInstance::get_rset_mode(const StringName &p_variable) const {
+MultiplayerAPI::RPCMode VisualScriptInstance::get_rset_mode(const StringName &p_variable) const {
 
-	return RPC_MODE_DISABLED;
+	return MultiplayerAPI::RPC_MODE_DISABLED;
 }
 
 void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_owner) {
@@ -2028,6 +2042,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 		function.flow_stack_size = 0;
 		function.pass_stack_size = 0;
 		function.node_count = 0;
+
 		Map<StringName, int> local_var_indices;
 
 		if (function.node < 0) {
@@ -2397,7 +2412,7 @@ void VisualScriptLanguage::make_template(const String &p_class_name, const Strin
 	script->set_instance_base_type(p_base_class_name);
 }
 
-bool VisualScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const {
+bool VisualScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
 
 	return false;
 }
@@ -2679,11 +2694,11 @@ VisualScriptLanguage::VisualScriptLanguage() {
 	_debug_parse_err_file = "";
 	_debug_call_stack_pos = 0;
 	int dmcs = GLOBAL_DEF("debug/settings/visual_script/max_call_stack", 1024);
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/visual_script/max_call_stack", PropertyInfo(Variant::INT, "debug/settings/visual_script/max_call_stack", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater")); //minimum is 1024
+
 	if (ScriptDebugger::get_singleton()) {
 		//debugging enabled!
 		_debug_max_call_stack = dmcs;
-		if (_debug_max_call_stack < 1024)
-			_debug_max_call_stack = 1024;
 		_call_stack = memnew_arr(CallLevel, _debug_max_call_stack + 1);
 
 	} else {

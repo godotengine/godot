@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef EDITOR_QUICK_OPEN_H
 #define EDITOR_QUICK_OPEN_H
 
+#include "core/pair.h"
 #include "editor_file_system.h"
-#include "pair.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 class EditorQuickOpen : public ConfirmationDialog {
@@ -66,7 +66,7 @@ public:
 	String get_selected() const;
 	Vector<String> get_selected_files() const;
 
-	void popup(const StringName &p_base, bool p_enable_multi = false, bool p_add_dirs = false, bool p_dontclear = false);
+	void popup_dialog(const StringName &p_base, bool p_enable_multi = false, bool p_add_dirs = false, bool p_dontclear = false);
 	EditorQuickOpen();
 };
 

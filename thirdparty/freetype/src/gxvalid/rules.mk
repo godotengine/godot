@@ -3,7 +3,7 @@
 #
 
 
-# Copyright 2004-2017 by
+# Copyright (C) 2004-2019 by
 # suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #

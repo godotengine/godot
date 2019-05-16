@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,9 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "crash_handler_osx.h"
+
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "main/main.h"
-#include "os_osx.h"
-#include "project_settings.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -68,8 +70,9 @@ static uint64_t load_address() {
 }
 
 static void handle_crash(int sig) {
-	if (OS::get_singleton() == NULL)
-		return;
+	if (OS::get_singleton() == NULL) {
+		abort();
+	}
 
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
@@ -78,6 +81,10 @@ static void handle_crash(int sig) {
 
 	// Dump the backtrace to stderr with a message to the user
 	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);
+
+	if (OS::get_singleton()->get_main_loop())
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
+
 	fprintf(stderr, "Dumping the backtrace. %ls\n", msg.c_str());
 	char **strings = backtrace_symbols(bt_buffer, size);
 	if (strings) {
@@ -147,6 +154,7 @@ CrashHandler::CrashHandler() {
 }
 
 CrashHandler::~CrashHandler() {
+	disable();
 }
 
 void CrashHandler::disable() {

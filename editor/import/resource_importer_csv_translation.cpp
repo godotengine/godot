@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "resource_importer_csv_translation.h"
 
-#include "compressed_translation.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
-#include "translation.h"
+#include "core/compressed_translation.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
+#include "core/translation.h"
 
 String ResourceImporterCSVTranslation::get_importer_name() const {
 
@@ -77,7 +77,7 @@ void ResourceImporterCSVTranslation::get_import_options(List<ImportOption> *r_op
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "delimiter", PROPERTY_HINT_ENUM, "Comma,Semicolon,Tab"), 0));
 }
 
-Error ResourceImporterCSVTranslation::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
+Error ResourceImporterCSVTranslation::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 
 	bool compress = p_options["compress"];
 
@@ -119,7 +119,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 		if (key != "") {
 
 			for (int i = 1; i < line.size(); i++) {
-				translations[i - 1]->add_message(key, line[i]);
+				translations.write[i - 1]->add_message(key, line[i].c_unescape());
 			}
 		}
 

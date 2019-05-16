@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "input_default.h"
 
-#include "default_controller_mappings.h"
-#include "input_map.h"
-#include "os/os.h"
+#include "core/input_map.h"
+#include "core/os/os.h"
+#include "main/default_controller_mappings.h"
 #include "scene/resources/texture.h"
 #include "servers/visual_server.h"
 
@@ -194,8 +194,6 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 	Joypad js;
 	js.name = p_connected ? p_name : "";
 	js.uid = p_connected ? p_guid : "";
-	js.mapping = -1;
-	js.hat_current = 0;
 
 	if (p_connected) {
 
@@ -258,13 +256,22 @@ Vector3 InputDefault::get_gyroscope() const {
 
 void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 
+	_parse_input_event_impl(p_event, false);
+}
+
+void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
+
+	// Notes on mouse-touch emulation:
+	// - Emulated mouse events are parsed, that is, re-routed to this method, so they make the same effects
+	//   as true mouse events. The only difference is the situation is flagged as emulated so they are not
+	//   emulated back to touch events in an endless loop.
+	// - Emulated touch events are handed right to the main loop (i.e., the SceneTree) because they don't
+	//   require additional handling by this class.
+
 	_THREAD_SAFE_METHOD_
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && !k->is_echo() && k->get_scancode() != 0) {
-
-		//print_line(p_event);
-
 		if (k->is_pressed())
 			keys_pressed.insert(k->get_scancode());
 		else
@@ -273,7 +280,7 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && !mb->is_doubleclick()) {
+	if (mb.is_valid()) {
 
 		if (mb->is_pressed()) {
 			mouse_button_mask |= (1 << (mb->get_button_index() - 1));
@@ -281,17 +288,17 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 			mouse_button_mask &= ~(1 << (mb->get_button_index() - 1));
 		}
 
-		if (main_loop && emulate_touch && mb->get_button_index() == 1) {
+		Point2 pos = mb->get_global_position();
+		if (mouse_pos != pos) {
+			set_mouse_position(pos);
+		}
+
+		if (main_loop && emulate_touch_from_mouse && !p_is_emulated && mb->get_button_index() == 1) {
 			Ref<InputEventScreenTouch> touch_event;
 			touch_event.instance();
 			touch_event->set_pressed(mb->is_pressed());
 			touch_event->set_position(mb->get_position());
 			main_loop->input_event(touch_event);
-		}
-
-		Point2 pos = mb->get_global_position();
-		if (mouse_pos != pos) {
-			set_mouse_position(pos);
 		}
 	}
 
@@ -299,7 +306,12 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 
 	if (mm.is_valid()) {
 
-		if (main_loop && emulate_touch && mm->get_button_mask() & 1) {
+		Point2 pos = mm->get_global_position();
+		if (mouse_pos != pos) {
+			set_mouse_position(pos);
+		}
+
+		if (main_loop && emulate_touch_from_mouse && !p_is_emulated && mm->get_button_mask() & 1) {
 			Ref<InputEventScreenDrag> drag_event;
 			drag_event.instance();
 
@@ -308,6 +320,78 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 			drag_event->set_speed(mm->get_speed());
 
 			main_loop->input_event(drag_event);
+		}
+	}
+
+	Ref<InputEventScreenTouch> st = p_event;
+
+	if (st.is_valid()) {
+
+		if (st->is_pressed()) {
+			SpeedTrack &track = touch_speed_track[st->get_index()];
+			track.reset();
+		} else {
+			// Since a pointer index may not occur again (OSs may or may not reuse them),
+			// imperatively remove it from the map to keep no fossil entries in it
+			touch_speed_track.erase(st->get_index());
+		}
+
+		if (emulate_mouse_from_touch) {
+
+			bool translate = false;
+			if (st->is_pressed()) {
+				if (mouse_from_touch_index == -1) {
+					translate = true;
+					mouse_from_touch_index = st->get_index();
+				}
+			} else {
+				if (st->get_index() == mouse_from_touch_index) {
+					translate = true;
+					mouse_from_touch_index = -1;
+				}
+			}
+
+			if (translate) {
+				Ref<InputEventMouseButton> button_event;
+				button_event.instance();
+
+				button_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
+				button_event->set_position(st->get_position());
+				button_event->set_global_position(st->get_position());
+				button_event->set_pressed(st->is_pressed());
+				button_event->set_button_index(BUTTON_LEFT);
+				if (st->is_pressed()) {
+					button_event->set_button_mask(mouse_button_mask | (1 << (BUTTON_LEFT - 1)));
+				} else {
+					button_event->set_button_mask(mouse_button_mask & ~(1 << (BUTTON_LEFT - 1)));
+				}
+
+				_parse_input_event_impl(button_event, true);
+			}
+		}
+	}
+
+	Ref<InputEventScreenDrag> sd = p_event;
+
+	if (sd.is_valid()) {
+
+		SpeedTrack &track = touch_speed_track[sd->get_index()];
+		track.update(sd->get_relative());
+		sd->set_speed(track.speed);
+
+		if (emulate_mouse_from_touch && sd->get_index() == mouse_from_touch_index) {
+
+			Ref<InputEventMouseMotion> motion_event;
+			motion_event.instance();
+
+			motion_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
+			motion_event->set_position(sd->get_position());
+			motion_event->set_global_position(sd->get_position());
+			motion_event->set_relative(sd->get_relative());
+			motion_event->set_speed(sd->get_speed());
+			motion_event->set_button_mask(mouse_button_mask);
+
+			_parse_input_event_impl(motion_event, true);
 		}
 	}
 
@@ -347,6 +431,7 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 				action.physics_frame = Engine::get_singleton()->get_physics_frames();
 				action.idle_frame = Engine::get_singleton()->get_idle_frames();
 				action.pressed = p_event->is_action_pressed(E->key());
+				action.strength = 0.f;
 				action_state[E->key()] = action;
 			}
 			action_state[E->key()].strength = p_event->get_action_strength(E->key());
@@ -473,13 +558,14 @@ Point2i InputDefault::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_moti
 void InputDefault::iteration(float p_step) {
 }
 
-void InputDefault::action_press(const StringName &p_action) {
+void InputDefault::action_press(const StringName &p_action, float p_strength) {
 
 	Action action;
 
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
 	action.idle_frame = Engine::get_singleton()->get_idle_frames();
 	action.pressed = true;
+	action.strength = p_strength;
 
 	action_state[p_action] = action;
 }
@@ -491,27 +577,71 @@ void InputDefault::action_release(const StringName &p_action) {
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
 	action.idle_frame = Engine::get_singleton()->get_idle_frames();
 	action.pressed = false;
+	action.strength = 0.f;
 
 	action_state[p_action] = action;
 }
 
-void InputDefault::set_emulate_touch(bool p_emulate) {
+void InputDefault::set_emulate_touch_from_mouse(bool p_emulate) {
 
-	emulate_touch = p_emulate;
+	emulate_touch_from_mouse = p_emulate;
 }
 
-bool InputDefault::is_emulating_touchscreen() const {
+bool InputDefault::is_emulating_touch_from_mouse() const {
 
-	return emulate_touch;
+	return emulate_touch_from_mouse;
 }
 
-Input::CursorShape InputDefault::get_default_cursor_shape() {
+// Calling this whenever the game window is focused helps unstucking the "touch mouse"
+// if the OS or its abstraction class hasn't properly reported that touch pointers raised
+void InputDefault::ensure_touch_mouse_raised() {
+
+	if (mouse_from_touch_index != -1) {
+		mouse_from_touch_index = -1;
+
+		Ref<InputEventMouseButton> button_event;
+		button_event.instance();
+
+		button_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
+		button_event->set_position(mouse_pos);
+		button_event->set_global_position(mouse_pos);
+		button_event->set_pressed(false);
+		button_event->set_button_index(BUTTON_LEFT);
+		button_event->set_button_mask(mouse_button_mask & ~(1 << (BUTTON_LEFT - 1)));
+
+		_parse_input_event_impl(button_event, true);
+	}
+}
+
+void InputDefault::set_emulate_mouse_from_touch(bool p_emulate) {
+
+	emulate_mouse_from_touch = p_emulate;
+}
+
+bool InputDefault::is_emulating_mouse_from_touch() const {
+
+	return emulate_mouse_from_touch;
+}
+
+Input::CursorShape InputDefault::get_default_cursor_shape() const {
+
 	return default_shape;
 }
 
 void InputDefault::set_default_cursor_shape(CursorShape p_shape) {
 	default_shape = p_shape;
-	OS::get_singleton()->set_cursor_shape((OS::CursorShape)p_shape);
+	// The default shape is set in Viewport::_gui_input_event. To instantly
+	// see the shape in the viewport we need to trigger a mouse motion event.
+	Ref<InputEventMouseMotion> mm;
+	mm.instance();
+	mm->set_position(mouse_pos);
+	mm->set_global_position(mouse_pos);
+	parse_input_event(mm);
+}
+
+Input::CursorShape InputDefault::get_current_cursor_shape() const {
+
+	return (Input::CursorShape)OS::get_singleton()->get_cursor_shape();
 }
 
 void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
@@ -521,26 +651,54 @@ void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_sh
 	OS::get_singleton()->set_custom_mouse_cursor(p_cursor, (OS::CursorShape)p_shape, p_hotspot);
 }
 
-void InputDefault::set_mouse_in_window(bool p_in_window) {
-	/* no longer supported, leaving this for reference to anyone who might want to implement hardware cursors
-	if (custom_cursor.is_valid()) {
+void InputDefault::accumulate_input_event(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
 
-		if (p_in_window) {
-			set_mouse_mode(MOUSE_MODE_HIDDEN);
-			VisualServer::get_singleton()->cursor_set_visible(true);
-		} else {
-			set_mouse_mode(MOUSE_MODE_VISIBLE);
-			VisualServer::get_singleton()->cursor_set_visible(false);
-		}
+	if (!use_accumulated_input) {
+		parse_input_event(p_event);
+		return;
 	}
-	*/
+	if (!accumulated_events.empty() && accumulated_events.back()->get()->accumulate(p_event)) {
+		return; //event was accumulated, exit
+	}
+
+	accumulated_events.push_back(p_event);
+}
+void InputDefault::flush_accumulated_events() {
+
+	while (accumulated_events.front()) {
+		parse_input_event(accumulated_events.front()->get());
+		accumulated_events.pop_front();
+	}
+}
+
+void InputDefault::set_use_accumulated_input(bool p_enable) {
+
+	use_accumulated_input = p_enable;
+}
+
+void InputDefault::release_pressed_events() {
+
+	flush_accumulated_events(); // this is needed to release actions strengths
+
+	keys_pressed.clear();
+	joy_buttons_pressed.clear();
+	_joy_axis.clear();
+
+	for (Map<StringName, InputDefault::Action>::Element *E = action_state.front(); E; E = E->next()) {
+		action_release(E->key());
+	}
 }
 
 InputDefault::InputDefault() {
 
+	use_accumulated_input = true;
 	mouse_button_mask = 0;
-	emulate_touch = false;
+	emulate_touch_from_mouse = false;
+	emulate_mouse_from_touch = false;
+	mouse_from_touch_index = -1;
 	main_loop = NULL;
+	default_shape = CURSOR_ARROW;
 
 	hat_map_default[HAT_UP].type = TYPE_BUTTON;
 	hat_map_default[HAT_UP].index = JOY_DPAD_UP;
@@ -592,7 +750,7 @@ void InputDefault::joy_button(int p_device, int p_button, bool p_pressed) {
 		return;
 	};
 
-	Map<int, JoyEvent>::Element *el = map_db[joy.mapping].buttons.find(p_button);
+	const Map<int, JoyEvent>::Element *el = map_db[joy.mapping].buttons.find(p_button);
 	if (!el) {
 		//don't process un-mapped events for now, it could mess things up badly for devices with additional buttons/axis
 		//return _button_event(p_last_id, p_device, p_button, p_pressed);
@@ -663,7 +821,7 @@ void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 		return;
 	};
 
-	Map<int, JoyEvent>::Element *el = map_db[joy.mapping].axis.find(p_axis);
+	const Map<int, JoyEvent>::Element *el = map_db[joy.mapping].axis.find(p_axis);
 	if (!el) {
 		//return _axis_event(p_last_id, p_device, p_axis, p_value);
 		return;
@@ -739,7 +897,7 @@ void InputDefault::joy_hat(int p_device, int p_val) {
 	_THREAD_SAFE_METHOD_;
 	const Joypad &joy = joy_names[p_device];
 
-	JoyEvent *map;
+	const JoyEvent *map;
 
 	if (joy.mapping == -1) {
 		map = hat_map_default;
@@ -797,12 +955,12 @@ InputDefault::JoyEvent InputDefault::_find_to_event(String p_to) {
 
 	JoyEvent ret;
 	ret.type = -1;
+	ret.index = 0;
 
 	int i = 0;
 	while (buttons[i]) {
 
 		if (p_to == buttons[i]) {
-			//printf("mapping button %s\n", buttons[i]);
 			ret.type = TYPE_BUTTON;
 			ret.index = i;
 			ret.value = 0;
@@ -960,7 +1118,7 @@ Array InputDefault::get_connected_joypads() {
 	return ret;
 }
 
-static const char *_buttons[] = {
+static const char *_buttons[JOY_BUTTON_MAX] = {
 	"Face Button Bottom",
 	"Face Button Right",
 	"Face Button Left",
@@ -979,7 +1137,7 @@ static const char *_buttons[] = {
 	"DPAD Right"
 };
 
-static const char *_axes[] = {
+static const char *_axes[JOY_AXIS_MAX] = {
 	"Left Stick X",
 	"Left Stick Y",
 	"Right Stick X",
@@ -987,7 +1145,9 @@ static const char *_axes[] = {
 	"",
 	"",
 	"L2",
-	"R2"
+	"R2",
+	"",
+	""
 };
 
 String InputDefault::get_joy_button_string(int p_button) {

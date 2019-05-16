@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="String" category="Built-In Types" version="3.1">
+<class name="String" category="Built-In Types" version="3.2">
 	<brief_description>
 		Built-in string class.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="String">
 			<return type="String">
@@ -339,7 +337,7 @@
 		<method name="format">
 			<return type="String">
 			</return>
-			<argument index="0" name="values" type="var">
+			<argument index="0" name="values" type="Variant">
 			</argument>
 			<argument index="1" name="placeholder" type="String" default="{_}">
 			</argument>
@@ -432,11 +430,28 @@
 				Returns [code]true[/code] if this string is a subsequence of the given string, without considering case.
 			</description>
 		</method>
+		<method name="is_valid_filename">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if this string is free from characters that aren't allowed in file names, those being:
+				[code]: / \ ? * " | % &lt; &gt;[/code]
+			</description>
+		</method>
 		<method name="is_valid_float">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if this string contains a valid float.
+			</description>
+		</method>
+		<method name="is_valid_hex_number">
+			<return type="bool">
+			</return>
+			<argument index="0" name="with_prefix" type="bool" default="False">
+			</argument>
+			<description>
+				Returns [code]true[/code] if this string contains a valid hexadecimal number. If [code]with_prefix[/code] is [code]true[/code], then a validity of the hexadecimal number is determined by [code]0x[/code] prefix, for instance: [code]0xDEADC0DE[/code].
 			</description>
 		</method>
 		<method name="is_valid_html_color">
@@ -450,7 +465,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores (_) and the first character may not be a digit.
+				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores ([code]_[/code]) and the first character may not be a digit.
 			</description>
 		</method>
 		<method name="is_valid_integer">
@@ -505,7 +520,7 @@
 			<argument index="0" name="expr" type="String">
 			</argument>
 			<description>
-				Does a simple expression match, where '*' matches zero or more arbitrary characters and '?' matches any single character except '.'.
+				Does a simple expression match, where [code]*[/code] matches zero or more arbitrary characters and [code]?[/code] matches any single character except '.'.
 			</description>
 		</method>
 		<method name="matchn">
@@ -514,7 +529,7 @@
 			<argument index="0" name="expr" type="String">
 			</argument>
 			<description>
-				Does a simple case insensitive expression match, using ? and * wildcards (see [method match]).
+				Does a simple case insensitive expression match, using [code]?[/code] and [code]*[/code] wildcards (see [method match]).
 			</description>
 		</method>
 		<method name="md5_buffer">
@@ -643,6 +658,21 @@
 				Returns the right side of the string from a given position.
 			</description>
 		</method>
+		<method name="rsplit">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="divisor" type="String">
+			</argument>
+			<argument index="1" name="allow_empty" type="bool" default="True">
+			</argument>
+			<argument index="2" name="maxsplit" type="int" default="0">
+			</argument>
+			<description>
+				Splits the string by a [code]divisor[/code] string and returns an array of the substrings, starting from right.
+				[b]Example:[/b] [code]"One,Two,Three"[/code] will return [code]["One","Two","Three"][/code] if split by [code]","[/code].
+				If [code]maxsplit[/code] is specified, then it is number of splits to do, default is 0 which splits all the items.
+			</description>
+		</method>
 		<method name="rstrip">
 			<return type="String">
 			</return>
@@ -656,6 +686,7 @@
 			<return type="PoolByteArray">
 			</return>
 			<description>
+				Returns the SHA-256 hash of the string as an array of bytes.
 			</description>
 		</method>
 		<method name="sha256_text">
@@ -684,7 +715,8 @@
 			<argument index="2" name="maxsplit" type="int" default="0">
 			</argument>
 			<description>
-				Splits the string by a divisor string and returns an array of the substrings. Example "One,Two,Three" will return ["One","Two","Three"] if split by ",".
+				Splits the string by a divisor string and returns an array of the substrings.
+				[b]Example:[/b] [code]"One,Two,Three"[/code] will return [code]["One","Two","Three"][/code] if split by [code]","[/code].
 				If [code]maxsplit[/code] is given, at most maxsplit number of splits occur, and the remainder of the string is returned as the final element of the list (thus, the list will have at most maxsplit+1 elements)
 			</description>
 		</method>
@@ -696,7 +728,8 @@
 			<argument index="1" name="allow_empty" type="bool" default="True">
 			</argument>
 			<description>
-				Splits the string in floats by using a divisor string and returns an array of the substrings. Example "1,2.5,3" will return [1,2.5,3] if split by ",".
+				Splits the string in floats by using a divisor string and returns an array of the substrings.
+				[b]Example:[/b] [code]"1,2.5,3"[/code] will return [code][1,2.5,3][/code] if split by [code]","[/code].
 			</description>
 		</method>
 		<method name="strip_edges">
@@ -725,7 +758,7 @@
 			<return type="PoolByteArray">
 			</return>
 			<description>
-				Converts the String (which is a character array) to [PoolByteArray] (which is an array of bytes). The conversion is sped up in comparison to to_utf8() with the assumption that all the characters the String contains are only ASCII characters.
+				Converts the String (which is a character array) to [PoolByteArray] (which is an array of bytes). The conversion is sped up in comparison to [method to_utf8] with the assumption that all the characters the String contains are only ASCII characters.
 			</description>
 		</method>
 		<method name="to_float">
@@ -760,7 +793,7 @@
 			<return type="PoolByteArray">
 			</return>
 			<description>
-				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes). The conversion is a bit slower than to_ascii(), but supports all UTF-8 characters. Therefore, you should prefer this function over to_ascii().
+				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii].
 			</description>
 		</method>
 		<method name="trim_prefix">

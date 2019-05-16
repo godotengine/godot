@@ -105,7 +105,7 @@ mbedtls_x509_crt;
  *
  * All lists are bitfields, built by ORing flags from MBEDTLS_X509_ID_FLAG().
  */
-typedef struct
+typedef struct mbedtls_x509_crt_profile
 {
     uint32_t allowed_mds;       /**< MDs for signatures         */
     uint32_t allowed_pks;       /**< PK algs for signatures     */
@@ -143,6 +143,63 @@ typedef struct mbedtls_x509write_cert
 }
 mbedtls_x509write_cert;
 
+/**
+ * Item in a verification chain: cert and flags for it
+ */
+typedef struct {
+    mbedtls_x509_crt *crt;
+    uint32_t flags;
+} mbedtls_x509_crt_verify_chain_item;
+
+/**
+ * Max size of verification chain: end-entity + intermediates + trusted root
+ */
+#define MBEDTLS_X509_MAX_VERIFY_CHAIN_SIZE  ( MBEDTLS_X509_MAX_INTERMEDIATE_CA + 2 )
+
+/**
+ * Verification chain as built by \c mbedtls_crt_verify_chain()
+ */
+typedef struct
+{
+    mbedtls_x509_crt_verify_chain_item items[MBEDTLS_X509_MAX_VERIFY_CHAIN_SIZE];
+    unsigned len;
+} mbedtls_x509_crt_verify_chain;
+
+#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+
+/**
+ * \brief       Context for resuming X.509 verify operations
+ */
+typedef struct
+{
+    /* for check_signature() */
+    mbedtls_pk_restart_ctx pk;
+
+    /* for find_parent_in() */
+    mbedtls_x509_crt *parent; /* non-null iff parent_in in progress */
+    mbedtls_x509_crt *fallback_parent;
+    int fallback_signature_is_good;
+
+    /* for find_parent() */
+    int parent_is_trusted; /* -1 if find_parent is not in progress */
+
+    /* for verify_chain() */
+    enum {
+        x509_crt_rs_none,
+        x509_crt_rs_find_parent,
+    } in_progress;  /* none if no operation is in progress */
+    int self_cnt;
+    mbedtls_x509_crt_verify_chain ver_chain;
+
+} mbedtls_x509_crt_restart_ctx;
+
+#else /* MBEDTLS_ECDSA_C && MBEDTLS_ECP_RESTARTABLE */
+
+/* Now we can declare functions that take a pointer to that */
+typedef void mbedtls_x509_crt_restart_ctx;
+
+#endif /* MBEDTLS_ECDSA_C && MBEDTLS_ECP_RESTARTABLE */
+
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
 /**
  * Default security profile. Should provide a good balance between security
@@ -175,19 +232,34 @@ int mbedtls_x509_crt_parse_der( mbedtls_x509_crt *chain, const unsigned char *bu
                         size_t buflen );
 
 /**
- * \brief          Parse one or more certificates and add them
- *                 to the chained list. Parses permissively. If some
- *                 certificates can be parsed, the result is the number
- *                 of failed certificates it encountered. If none complete
- *                 correctly, the first error is returned.
+ * \brief          Parse one DER-encoded or one or more concatenated PEM-encoded
+ *                 certificates and add them to the chained list.
  *
- * \param chain    points to the start of the chain
- * \param buf      buffer holding the certificate data in PEM or DER format
- * \param buflen   size of the buffer
- *                 (including the terminating null byte for PEM data)
+ *                 For CRTs in PEM encoding, the function parses permissively:
+ *                 if at least one certificate can be parsed, the function
+ *                 returns the number of certificates for which parsing failed
+ *                 (hence \c 0 if all certificates were parsed successfully).
+ *                 If no certificate could be parsed, the function returns
+ *                 the first (negative) error encountered during parsing.
  *
- * \return         0 if all certificates parsed successfully, a positive number
- *                 if partly successful or a specific X509 or PEM error code
+ *                 PEM encoded certificates may be interleaved by other data
+ *                 such as human readable descriptions of their content, as
+ *                 long as the certificates are enclosed in the PEM specific
+ *                 '-----{BEGIN/END} CERTIFICATE-----' delimiters.
+ *
+ * \param chain    The chain to which to add the parsed certificates.
+ * \param buf      The buffer holding the certificate data in PEM or DER format.
+ *                 For certificates in PEM encoding, this may be a concatenation
+ *                 of multiple certificates; for DER encoding, the buffer must
+ *                 comprise exactly one certificate.
+ * \param buflen   The size of \p buf, including the terminating \c NULL byte
+ *                 in case of PEM encoded data.
+ *
+ * \return         \c 0 if all certificates were parsed successfully.
+ * \return         The (positive) number of certificates that couldn't
+ *                 be parsed if parsing was partly successful (see above).
+ * \return         A negative X509 or PEM error code otherwise.
+ *
  */
 int mbedtls_x509_crt_parse( mbedtls_x509_crt *chain, const unsigned char *buf, size_t buflen );
 
@@ -287,8 +359,15 @@ int mbedtls_x509_crt_verify_info( char *buf, size_t size, const char *prefix,
  *                 used to sign the certificate, CRL verification is skipped
  *                 silently, that is *without* setting any flag.
  *
+ * \note           The \c trust_ca list can contain two types of certificates:
+ *                 (1) those of trusted root CAs, so that certificates
+ *                 chaining up to those CAs will be trusted, and (2)
+ *                 self-signed end-entity certificates to be trusted (for
+ *                 specific peers you know) - in that case, the self-signed
+ *                 certificate doesn't need to have the CA bit set.
+ *
  * \param crt      a certificate (chain) to be verified
- * \param trust_ca the list of trusted CAs
+ * \param trust_ca the list of trusted CAs (see note above)
  * \param ca_crl   the list of CRLs for trusted CAs (see note above)
  * \param cn       expected Common Name (can be set to
  *                 NULL if the CN must not be verified)
@@ -345,6 +424,37 @@ int mbedtls_x509_crt_verify_with_profile( mbedtls_x509_crt *crt,
                      const char *cn, uint32_t *flags,
                      int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *),
                      void *p_vrfy );
+
+/**
+ * \brief          Restartable version of \c mbedtls_crt_verify_with_profile()
+ *
+ * \note           Performs the same job as \c mbedtls_crt_verify_with_profile()
+ *                 but can return early and restart according to the limit
+ *                 set with \c mbedtls_ecp_set_max_ops() to reduce blocking.
+ *
+ * \param crt      a certificate (chain) to be verified
+ * \param trust_ca the list of trusted CAs
+ * \param ca_crl   the list of CRLs for trusted CAs
+ * \param profile  security profile for verification
+ * \param cn       expected Common Name (can be set to
+ *                 NULL if the CN must not be verified)
+ * \param flags    result of the verification
+ * \param f_vrfy   verification function
+ * \param p_vrfy   verification parameter
+ * \param rs_ctx   restart context (NULL to disable restart)
+ *
+ * \return         See \c mbedtls_crt_verify_with_profile(), or
+ * \return         #MBEDTLS_ERR_ECP_IN_PROGRESS if maximum number of
+ *                 operations was reached: see \c mbedtls_ecp_set_max_ops().
+ */
+int mbedtls_x509_crt_verify_restartable( mbedtls_x509_crt *crt,
+                     mbedtls_x509_crt *trust_ca,
+                     mbedtls_x509_crl *ca_crl,
+                     const mbedtls_x509_crt_profile *profile,
+                     const char *cn, uint32_t *flags,
+                     int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *),
+                     void *p_vrfy,
+                     mbedtls_x509_crt_restart_ctx *rs_ctx );
 
 #if defined(MBEDTLS_X509_CHECK_KEY_USAGE)
 /**
@@ -417,6 +527,18 @@ void mbedtls_x509_crt_init( mbedtls_x509_crt *crt );
  * \param crt      Certificate chain to free
  */
 void mbedtls_x509_crt_free( mbedtls_x509_crt *crt );
+
+#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+/**
+ * \brief           Initialize a restart context
+ */
+void mbedtls_x509_crt_restart_init( mbedtls_x509_crt_restart_ctx *ctx );
+
+/**
+ * \brief           Free the components of a restart context
+ */
+void mbedtls_x509_crt_restart_free( mbedtls_x509_crt_restart_ctx *ctx );
+#endif /* MBEDTLS_ECDSA_C && MBEDTLS_ECP_RESTARTABLE */
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
 /* \} name */

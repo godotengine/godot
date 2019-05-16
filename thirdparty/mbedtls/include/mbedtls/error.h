@@ -4,7 +4,7 @@
  * \brief Error to string translation
  */
 /*
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright (C) 2006-2018, ARM Limited, All Rights Reserved
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -53,7 +53,7 @@
  * GCM       3  0x0012-0x0014   0x0013-0x0013
  * BLOWFISH  3  0x0016-0x0018   0x0017-0x0017
  * THREADING 3  0x001A-0x001E
- * AES       4  0x0020-0x0022   0x0023-0x0025
+ * AES       5  0x0020-0x0022   0x0021-0x0025
  * CAMELLIA  3  0x0024-0x0026   0x0027-0x0027
  * XTEA      2  0x0028-0x0028   0x0029-0x0029
  * BASE64    2  0x002A-0x002C
@@ -62,7 +62,8 @@
  * DES       2  0x0032-0x0032   0x0033-0x0033
  * CTR_DBRG  4  0x0034-0x003A
  * ENTROPY   3  0x003C-0x0040   0x003D-0x003F
- * NET      11  0x0042-0x0052   0x0043-0x0045
+ * NET      13  0x0042-0x0052   0x0043-0x0049
+ * ARIA      4  0x0058-0x005E
  * ASN1      7  0x0060-0x006C
  * CMAC      1  0x007A-0x007A
  * PBKDF2    1  0x007C-0x007C
@@ -73,9 +74,13 @@
  * MD4       1                  0x002D-0x002D
  * MD5       1                  0x002F-0x002F
  * RIPEMD160 1                  0x0031-0x0031
- * SHA1      1                  0x0035-0x0035
- * SHA256    1                  0x0037-0x0037
- * SHA512    1                  0x0039-0x0039
+ * SHA1      1                  0x0035-0x0035 0x0073-0x0073
+ * SHA256    1                  0x0037-0x0037 0x0074-0x0074
+ * SHA512    1                  0x0039-0x0039 0x0075-0x0075
+ * CHACHA20  3                  0x0051-0x0055
+ * POLY1305  3                  0x0057-0x005B
+ * CHACHAPOLY 2 0x0054-0x0056
+ * PLATFORM  1  0x0070-0x0072
  *
  * High-level module nr (3 bits - 0x0...-0x7...)
  * Name      ID  Nr of Errors
@@ -86,11 +91,12 @@
  * DHM       3   11
  * PK        3   15 (Started from top)
  * RSA       4   11
- * ECP       4   9 (Started from top)
+ * ECP       4   10 (Started from top)
  * MD        5   5
+ * HKDF      5   1 (Started from top)
  * CIPHER    6   8
- * SSL       6   17 (Started from top)
- * SSL       7   31
+ * SSL       6   23 (Started from top)
+ * SSL       7   32
  *
  * Module dependent error code (5 bits 0x.00.-0x.F8.)
  */

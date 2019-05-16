@@ -5,61 +5,20 @@ Import('env_modules')
 
 env_mono = env_modules.Clone()
 
-from compat import byte_to_str
-
-def make_cs_files_header(src, dst):
-    with open(dst, 'w') as header:
-        header.write('/* This is an automatically generated file; DO NOT EDIT! OK THX */\n')
-        header.write('#ifndef _CS_FILES_DATA_H\n')
-        header.write('#define _CS_FILES_DATA_H\n\n')
-        header.write('#include "map.h"\n')
-        header.write('#include "ustring.h"\n')
-        inserted_files = ''
-        import os
-        for file in os.listdir(src):
-            if file.endswith('.cs'):
-                with open(os.path.join(src, file), 'rb') as f:
-                    buf = f.read()
-                    decomp_size = len(buf)
-                    import zlib
-                    buf = zlib.compress(buf)
-                    name = os.path.splitext(file)[0]
-                    header.write('\nstatic const int _cs_' + name + '_compressed_size = ' + str(len(buf)) + ';\n')
-                    header.write('static const int _cs_' + name + '_uncompressed_size = ' + str(decomp_size) + ';\n')
-                    header.write('static const unsigned char _cs_' + name + '_compressed[] = { ')
-                    for i, buf_idx in enumerate(range(len(buf))):
-                        if i > 0:
-                            header.write(', ')
-                        header.write(byte_to_str(buf[buf_idx]))
-                    inserted_files += '\tr_files.insert("' + file + '", ' \
-                                        'CompressedFile(_cs_' + name + '_compressed_size, ' \
-                                        '_cs_' + name + '_uncompressed_size, ' \
-                                        '_cs_' + name + '_compressed));\n'
-                    header.write(' };\n')
-        version_file = os.path.join(src, 'VERSION.txt')
-        with open(version_file, 'r') as content_file:
-            try:
-                glue_version = int(content_file.read()) # make sure the format is valid
-                header.write('\n#define CS_GLUE_VERSION UINT32_C(' + str(glue_version) + ')\n')
-            except ValueError:
-                raise ValueError('Invalid C# glue version in: ' + version_file)
-        header.write('\nstruct CompressedFile\n' '{\n'
-            '\tint compressed_size;\n' '\tint uncompressed_size;\n' '\tconst unsigned char* data;\n'
-            '\n\tCompressedFile(int p_comp_size, int p_uncomp_size, const unsigned char* p_data)\n'
-            '\t{\n' '\t\tcompressed_size = p_comp_size;\n' '\t\tuncompressed_size = p_uncomp_size;\n'
-            '\t\tdata = p_data;\n' '\t}\n' '\n\tCompressedFile() {}\n' '};\n'
-            '\nvoid get_compressed_files(Map<String, CompressedFile>& r_files)\n' '{\n' + inserted_files + '}\n'
-            )
-        header.write('#endif // _CS_FILES_DATA_H')
-
-
 env_mono.add_source_files(env.modules_sources, '*.cpp')
+env_mono.add_source_files(env.modules_sources, 'glue/*.cpp')
 env_mono.add_source_files(env.modules_sources, 'mono_gd/*.cpp')
 env_mono.add_source_files(env.modules_sources, 'utils/*.cpp')
 
 if env['tools']:
     env_mono.add_source_files(env.modules_sources, 'editor/*.cpp')
-    make_cs_files_header('glue/cs_files', 'glue/cs_compressed.gen.h')
+    # NOTE: It is safe to generate this file here, since this is still executed serially
+    import build_scripts.make_cs_compressed_header as make_cs_compressed_header
+    make_cs_compressed_header.generate_header(
+        'glue/Managed/Files',
+        'glue/cs_compressed.gen.h',
+        'glue/cs_glue_version.gen.h'
+    )
 
 vars = Variables()
 vars.Add(BoolVariable('mono_glue', 'Build with the mono glue sources', True))
@@ -68,157 +27,31 @@ vars.Update(env_mono)
 
 # Glue sources
 if env_mono['mono_glue']:
-    env_mono.add_source_files(env.modules_sources, 'glue/*.cpp')
-else:
-    env_mono.Append(CPPDEFINES=['MONO_GLUE_DISABLED'])
+    env_mono.Append(CPPDEFINES=['MONO_GLUE_ENABLED'])
 
-if ARGUMENTS.get('yolo_copy', False):
-    env_mono.Append(CPPDEFINES=['YOLO_COPY'])
-
-
-# Build GodotSharpTools solution
-
-
-import os
-
-
-def find_msbuild_unix(filename):
     import os.path
-    import sys
+    if not os.path.isfile('glue/mono_glue.gen.cpp'):
+        raise RuntimeError('Missing mono glue sources. Did you forget to generate them?')
 
-    hint_dirs = ['/opt/novell/mono/bin']
-    if sys.platform == 'darwin':
-        hint_dirs = ['/Library/Frameworks/Mono.framework/Versions/Current/bin'] + hint_dirs
+if env_mono['tools'] or env_mono['target'] != 'release':
+    env_mono.Append(CPPDEFINES=['GD_MONO_HOT_RELOAD'])
 
-    for hint_dir in hint_dirs:
-        hint_path = os.path.join(hint_dir, filename)
-        if os.path.isfile(hint_path):
-            return hint_path
-        elif os.path.isfile(hint_path + '.exe'):
-            return hint_path + '.exe'
+# Configure Thread Local Storage
 
-    for hint_dir in os.environ['PATH'].split(os.pathsep):
-        hint_dir = hint_dir.strip('"')
-        hint_path = os.path.join(hint_dir, filename)
-        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
-            return hint_path
-        if os.path.isfile(hint_path + '.exe') and os.access(hint_path + '.exe', os.X_OK):
-            return hint_path + '.exe'
+import build_scripts.tls_configure as tls_configure
 
-    return None
+conf = Configure(env_mono)
+tls_configure.configure(conf)
+env_mono = conf.Finish()
 
+# Configure Mono
 
-def find_msbuild_windows():
-    import mono_reg_utils as monoreg
+import build_scripts.mono_configure as mono_configure
 
-    bits = env['bits']
+mono_configure.configure(env, env_mono)
 
-    if bits == '32':
-        if os.getenv('MONO32_PREFIX'):
-            mono_root = os.getenv('MONO32_PREFIX')
-        else:
-            mono_root = monoreg.find_mono_root_dir(bits)
-    else:
-        if os.getenv('MONO64_PREFIX'):
-            mono_root = os.getenv('MONO64_PREFIX')
-        else:
-            mono_root = monoreg.find_mono_root_dir(bits)
+# Build GodotSharpTools
 
-    if not mono_root:
-        raise RuntimeError('Cannot find mono root directory')
+import build_scripts.godotsharptools_build as godotsharptools_build
 
-    msbuild_tools_path = monoreg.find_msbuild_tools_path_reg()
-
-    if msbuild_tools_path:
-        return (os.path.join(msbuild_tools_path, 'MSBuild.exe'), os.path.join(mono_root, 'lib', 'mono', '4.5'))
-    else:
-        msbuild_mono = os.path.join(mono_root, 'bin', 'msbuild.bat')
-
-        if os.path.isfile(msbuild_mono):
-            return (msbuild_mono, '')
-
-    return None
-
-
-def mono_build_solution(source, target, env):
-    import subprocess
-    import mono_reg_utils as monoreg
-    from shutil import copyfile
-
-    framework_path_override = ''
-
-    if os.name == 'nt':
-        msbuild_info = find_msbuild_windows()
-        if msbuild_info is None:
-            raise RuntimeError('Cannot find MSBuild executable')
-        msbuild_path = msbuild_info[0]
-        framework_path_override = msbuild_info[1]
-    else:
-        msbuild_path = find_msbuild_unix('msbuild')
-        if msbuild_path is None:
-            xbuild_fallback = env['xbuild_fallback']
-
-            if xbuild_fallback and os.name == 'nt':
-                print('Option \'xbuild_fallback\' not supported on Windows')
-                xbuild_fallback = False
-
-            if xbuild_fallback:
-                print('Cannot find MSBuild executable, trying with xbuild')
-                print('Warning: xbuild is deprecated')
-
-                msbuild_path = find_msbuild_unix('xbuild')
-
-                if msbuild_path is None:
-                    raise RuntimeError('Cannot find xbuild executable')
-            else:
-                raise RuntimeError('Cannot find MSBuild executable')
-
-    print('MSBuild path: ' + msbuild_path)
-
-    build_config = 'Release'
-
-    msbuild_args = [
-        msbuild_path,
-        os.path.abspath(str(source[0])),
-        '/p:Configuration=' + build_config,
-    ]
-
-    if framework_path_override:
-        msbuild_args += ['/p:FrameworkPathOverride=' + framework_path_override]
-
-    msbuild_env = os.environ.copy()
-
-    # Needed when running from Developer Command Prompt for VS
-    if 'PLATFORM' in msbuild_env:
-        del msbuild_env['PLATFORM']
-
-    try:
-        subprocess.check_call(msbuild_args, env=msbuild_env)
-    except subprocess.CalledProcessError:
-        raise RuntimeError('GodotSharpTools build failed')
-
-    src_dir = os.path.abspath(os.path.join(str(source[0]), os.pardir, 'bin', build_config))
-    dst_dir = os.path.abspath(os.path.join(str(target[0]), os.pardir))
-
-    if not os.path.isdir(dst_dir):
-        if os.path.exists(dst_dir):
-            raise RuntimeError('Target directory is a file')
-        os.makedirs(dst_dir)
-
-    asm_file = 'GodotSharpTools.dll'
-
-    copyfile(os.path.join(src_dir, asm_file), os.path.join(dst_dir, asm_file))
-
-output_dir = Dir('#bin').abspath
-assemblies_output_dir = Dir(env['mono_assemblies_output_dir']).abspath
-
-mono_sln_builder = Builder(action=mono_build_solution)
-env_mono.Append(BUILDERS={'MonoBuildSolution': mono_sln_builder})
-env_mono.MonoBuildSolution(
-    os.path.join(assemblies_output_dir, 'GodotSharpTools.dll'),
-    'editor/GodotSharpTools/GodotSharpTools.sln'
-)
-
-if os.path.normpath(output_dir) != os.path.normpath(assemblies_output_dir):
-    rel_assemblies_output_dir = os.path.relpath(assemblies_output_dir, output_dir)
-    env_mono.Append(CPPDEFINES={'GD_MONO_EDITOR_ASSEMBLIES_DIR': rel_assemblies_output_dir})
+godotsharptools_build.build(env_mono)

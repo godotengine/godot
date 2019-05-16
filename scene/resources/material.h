@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include "resource.h"
+#include "core/resource.h"
+#include "core/self_list.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
-#include "self_list.h"
 #include "servers/visual/shader_language.h"
 #include "servers/visual_server.h"
 /**
@@ -85,12 +85,16 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool property_can_revert(const String &p_name);
+	Variant property_get_revert(const String &p_name);
 
 	static void _bind_methods();
 
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
 	virtual bool _can_do_next_pass() const;
+
+	void _shader_changed();
 
 public:
 	void set_shader(const Ref<Shader> &p_shader);
@@ -181,6 +185,7 @@ public:
 		FLAG_SRGB_VERTEX_COLOR,
 		FLAG_USE_POINT_SIZE,
 		FLAG_FIXED_SIZE,
+		FLAG_BILLBOARD_KEEP_SCALE,
 		FLAG_UV1_USE_TRIPLANAR,
 		FLAG_UV2_USE_TRIPLANAR,
 		FLAG_TRIPLANAR_USE_WORLD,
@@ -188,6 +193,9 @@ public:
 		FLAG_EMISSION_ON_UV2,
 		FLAG_USE_ALPHA_SCISSOR,
 		FLAG_ALBEDO_TEXTURE_FORCE_SRGB,
+		FLAG_DONT_RECEIVE_SHADOWS,
+		FLAG_ENSURE_CORRECT_NORMALS,
+		FLAG_DISABLE_AMBIENT_LIGHT,
 		FLAG_MAX
 	};
 
@@ -227,6 +235,13 @@ public:
 		EMISSION_OP_MULTIPLY
 	};
 
+	enum DistanceFadeMode {
+		DISTANCE_FADE_DISABLED,
+		DISTANCE_FADE_PIXEL_ALPHA,
+		DISTANCE_FADE_PIXEL_DITHER,
+		DISTANCE_FADE_OBJECT_DITHER,
+	};
+
 private:
 	union MaterialKey {
 
@@ -236,7 +251,7 @@ private:
 			uint64_t blend_mode : 2;
 			uint64_t depth_draw_mode : 2;
 			uint64_t cull_mode : 2;
-			uint64_t flags : 14;
+			uint64_t flags : 18;
 			uint64_t detail_blend_mode : 2;
 			uint64_t diffuse_mode : 3;
 			uint64_t specular_mode : 2;
@@ -245,7 +260,7 @@ private:
 			uint64_t billboard_mode : 2;
 			uint64_t grow : 1;
 			uint64_t proximity_fade : 1;
-			uint64_t distance_fade : 1;
+			uint64_t distance_fade : 2;
 			uint64_t emission_op : 1;
 		};
 
@@ -271,7 +286,7 @@ private:
 		mk.key = 0;
 		for (int i = 0; i < FEATURE_MAX; i++) {
 			if (features[i]) {
-				mk.feature_mask |= (1 << i);
+				mk.feature_mask |= ((uint64_t)1 << i);
 			}
 		}
 		mk.detail_uv = detail_uv;
@@ -280,7 +295,7 @@ private:
 		mk.cull_mode = cull_mode;
 		for (int i = 0; i < FLAG_MAX; i++) {
 			if (flags[i]) {
-				mk.flags |= (1 << i);
+				mk.flags |= ((uint64_t)1 << i);
 			}
 		}
 		mk.detail_blend_mode = detail_blend_mode;
@@ -290,7 +305,7 @@ private:
 		mk.deep_parallax = deep_parallax ? 1 : 0;
 		mk.grow = grow_enabled;
 		mk.proximity_fade = proximity_fade_enabled;
-		mk.distance_fade = distance_fade_enabled;
+		mk.distance_fade = distance_fade;
 		mk.emission_op = emission_op;
 
 		return mk;
@@ -323,6 +338,7 @@ private:
 		StringName particles_anim_loop;
 		StringName depth_min_layers;
 		StringName depth_max_layers;
+		StringName depth_flip;
 		StringName uv1_blend_sharpness;
 		StringName uv2_blend_sharpness;
 		StringName grow;
@@ -344,7 +360,7 @@ private:
 	};
 
 	static Mutex *material_mutex;
-	static SelfList<SpatialMaterial>::List dirty_materials;
+	static SelfList<SpatialMaterial>::List *dirty_materials;
 	static ShaderNames *shader_names;
 
 	SelfList<SpatialMaterial> element;
@@ -392,11 +408,13 @@ private:
 	bool deep_parallax;
 	int deep_parallax_min_layers;
 	int deep_parallax_max_layers;
+	bool depth_parallax_flip_tangent;
+	bool depth_parallax_flip_binormal;
 
 	bool proximity_fade_enabled;
 	float proximity_fade_distance;
 
-	bool distance_fade_enabled;
+	DistanceFadeMode distance_fade;
 	float distance_fade_max_distance;
 	float distance_fade_min_distance;
 
@@ -426,6 +444,8 @@ private:
 	};
 
 	static Ref<SpatialMaterial> materials_for_2d[MAX_MATERIALS_FOR_2D]; //used by Sprite3D and other stuff
+
+	void _validate_high_end(const String &text, PropertyInfo &property) const;
 
 protected:
 	static void _bind_methods();
@@ -483,6 +503,12 @@ public:
 
 	void set_depth_deep_parallax_max_layers(int p_layer);
 	int get_depth_deep_parallax_max_layers() const;
+
+	void set_depth_deep_parallax_flip_tangent(bool p_flip);
+	bool get_depth_deep_parallax_flip_tangent() const;
+
+	void set_depth_deep_parallax_flip_binormal(bool p_flip);
+	bool get_depth_deep_parallax_flip_binormal() const;
 
 	void set_subsurface_scattering_strength(float p_subsurface_scattering_strength);
 	float get_subsurface_scattering_strength() const;
@@ -557,8 +583,8 @@ public:
 	void set_particles_anim_v_frames(int p_frames);
 	int get_particles_anim_v_frames() const;
 
-	void set_particles_anim_loop(int p_frames);
-	int get_particles_anim_loop() const;
+	void set_particles_anim_loop(bool p_loop);
+	bool get_particles_anim_loop() const;
 
 	void set_grow_enabled(bool p_enable);
 	bool is_grow_enabled() const;
@@ -577,8 +603,8 @@ public:
 	void set_proximity_fade_distance(float p_distance);
 	float get_proximity_fade_distance() const;
 
-	void set_distance_fade(bool p_enable);
-	bool is_distance_fade_enabled() const;
+	void set_distance_fade(DistanceFadeMode p_mode);
+	DistanceFadeMode get_distance_fade() const;
 
 	void set_distance_fade_max_distance(float p_distance);
 	float get_distance_fade_max_distance() const;
@@ -624,6 +650,7 @@ VARIANT_ENUM_CAST(SpatialMaterial::SpecularMode)
 VARIANT_ENUM_CAST(SpatialMaterial::BillboardMode)
 VARIANT_ENUM_CAST(SpatialMaterial::TextureChannel)
 VARIANT_ENUM_CAST(SpatialMaterial::EmissionOperator)
+VARIANT_ENUM_CAST(SpatialMaterial::DistanceFadeMode)
 
 //////////////////////
 

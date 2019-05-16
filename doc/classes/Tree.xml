@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tree" inherits="Control" category="Core" version="3.1">
+<class name="Tree" inherits="Control" category="Core" version="3.2">
 	<brief_description>
 		Control to show a tree of items.
 	</brief_description>
@@ -19,8 +19,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="are_column_titles_visible" qualifiers="const">
 			<return type="bool">
@@ -37,7 +35,7 @@
 			</description>
 		</method>
 		<method name="create_item">
-			<return type="Object">
+			<return type="TreeItem">
 			</return>
 			<argument index="0" name="parent" type="Object" default="null">
 			</argument>
@@ -94,6 +92,8 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
+				If [member drop_mode_flags] includes [code]DROP_MODE_INBETWEEN[/code], returns -1 if [code]position[/code] is the upper part of a tree item at that position, 1 for the lower part, and additionally 0 for the middle part if [member drop_mode_flags] includes [code]DROP_MODE_ON_ITEM[/code].
+				Otherwise, returns 0. If there are no tree item at [code]position[/code], returns -100.
 			</description>
 		</method>
 		<method name="get_edited" qualifiers="const">
@@ -182,7 +182,7 @@
 			<argument index="1" name="expand" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the column will have the "Expand" flag of [Control].
+				If [code]true[/code], the column will have the "Expand" flag of [Control].
 			</description>
 		</method>
 		<method name="set_column_min_width">
@@ -213,28 +213,28 @@
 			<argument index="0" name="visible" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] column titles are visible.
+				If [code]true[/code], column titles are visible.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect">
-			If [code]true[/code] the currently selected cell may be selected again.
+			If [code]true[/code], the currently selected cell may be selected again.
 		</member>
 		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select">
-			If [code]true[/code] a right mouse button click can select items.
+			If [code]true[/code], a right mouse button click can select items.
 		</member>
 		<member name="columns" type="int" setter="set_columns" getter="get_columns">
 			The amount of columns.
 		</member>
 		<member name="drop_mode_flags" type="int" setter="set_drop_mode_flags" getter="get_drop_mode_flags">
-			The drop mode as an OR combination of flags. See [code]DROP_MODE_*[/code] constants.
+			The drop mode as an OR combination of flags. See [code]DROP_MODE_*[/code] constants. Once dropping is done, reverts to [code]DROP_MODE_DISABLED[/code]. Setting this during [method Control.can_drop_data] is recommended.
 		</member>
 		<member name="hide_folding" type="bool" setter="set_hide_folding" getter="is_folding_hidden">
-			If [code]true[/code] the folding arrow is hidden.
+			If [code]true[/code], the folding arrow is hidden.
 		</member>
 		<member name="hide_root" type="bool" setter="set_hide_root" getter="is_root_hidden">
-			If [code]true[/code] the tree's root is hidden.
+			If [code]true[/code], the tree's root is hidden.
 		</member>
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="Tree.SelectMode">
 			Allow single or multiple selection. See the [code]SELECT_*[/code] constants.
@@ -242,7 +242,7 @@
 	</members>
 	<signals>
 		<signal name="button_pressed">
-			<argument index="0" name="item" type="Object">
+			<argument index="0" name="item" type="TreeItem">
 			</argument>
 			<argument index="1" name="column" type="int">
 			</argument>
@@ -284,7 +284,7 @@
 			</description>
 		</signal>
 		<signal name="item_collapsed">
-			<argument index="0" name="item" type="Object">
+			<argument index="0" name="item" type="TreeItem">
 			</argument>
 			<description>
 				Emitted when an item is collapsed by a click on the folding arrow.
@@ -313,16 +313,16 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Emitted when an item is selected with right mouse button.
+				Emitted when an item is selected with the right mouse button.
 			</description>
 		</signal>
 		<signal name="item_selected">
 			<description>
-				Emitted when an item is selected with right mouse button.
+				Emitted when an item is selected.
 			</description>
 		</signal>
 		<signal name="multi_selected">
-			<argument index="0" name="item" type="Object">
+			<argument index="0" name="item" type="TreeItem">
 			</argument>
 			<argument index="1" name="column" type="int">
 			</argument>
@@ -381,6 +381,8 @@
 		<theme_item name="custom_button_hover" type="StyleBox">
 		</theme_item>
 		<theme_item name="custom_button_pressed" type="StyleBox">
+		</theme_item>
+		<theme_item name="draw_guides" type="int">
 		</theme_item>
 		<theme_item name="draw_relationship_lines" type="int">
 		</theme_item>

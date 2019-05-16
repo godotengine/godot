@@ -32,6 +32,12 @@
 
 #if defined(MBEDTLS_AESNI_C)
 
+#if defined(__has_feature)
+#if __has_feature(memory_sanitizer)
+#warning "MBEDTLS_AESNI_C is known to cause spurious error reports with some memory sanitizers as they do not understand the assembly code."
+#endif
+#endif
+
 #include "mbedtls/aesni.h"
 
 #include <string.h>

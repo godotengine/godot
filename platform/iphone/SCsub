@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-import os
 
 Import('env')
 
 iphone_lib = [
     'godot_iphone.cpp',
     'os_iphone.cpp',
-    'sem_iphone.cpp',
+    'semaphore_iphone.cpp',
     'gl_view.mm',
     'main.m',
     'app_delegate.mm',
@@ -22,7 +21,7 @@ ios_lib = env_ios.add_library('iphone', iphone_lib)
 
 def combine_libs(target=None, source=None, env=None):
     lib_path = target[0].srcnode().abspath
-    if ("OSXCROSS_IOS" in os.environ):
+    if "osxcross" in env:
         libtool = '$IPHONEPATH/usr/bin/${ios_triple}libtool'
     else:
         libtool = "$IPHONEPATH/usr/bin/libtool"

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventAction" inherits="InputEvent" category="Core" version="3.1">
+<class name="InputEventAction" inherits="InputEvent" category="Core" version="3.2">
 	<brief_description>
 		Input event type for actions.
 	</brief_description>
@@ -7,10 +7,8 @@
 		Contains a generic action which can be targeted from several type of inputs. Actions can be created from the project settings menu [code]Project &gt; Project Settings &gt; Input Map[/code]. See [method Node._input].
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/inputs/inputevent.html#actions
+		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html#actions</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
@@ -18,7 +16,7 @@
 			The action's name. Actions are accessed via this [String].
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
-			If [code]true[/code] the action's state is pressed. If [code]false[/code] the action's state is released.
+			If [code]true[/code], the action's state is pressed. If [code]false[/code], the action's state is released.
 		</member>
 	</members>
 	<constants>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -113,6 +113,7 @@ public:
 	virtual void add_central_force(const Vector3 &p_force);
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos);
 	virtual void add_torque(const Vector3 &p_torque);
+	virtual void apply_central_impulse(const Vector3 &p_impulse);
 	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j);
 	virtual void apply_torque_impulse(const Vector3 &p_j);
 
@@ -123,6 +124,7 @@ public:
 
 	virtual Vector3 get_contact_local_position(int p_contact_idx) const;
 	virtual Vector3 get_contact_local_normal(int p_contact_idx) const;
+	virtual float get_contact_impulse(int p_contact_idx) const;
 	virtual int get_contact_local_shape(int p_contact_idx) const;
 
 	virtual RID get_contact_collider(int p_contact_idx) const;
@@ -149,6 +151,7 @@ public:
 		Vector3 hitLocalLocation;
 		Vector3 hitWorldLocation;
 		Vector3 hitNormal;
+		float appliedImpulse;
 	};
 
 	struct ForceIntegrationCallback {
@@ -164,7 +167,7 @@ public:
 
 		KinematicShape() :
 				shape(NULL) {}
-		const bool is_active() const { return shape; }
+		bool is_active() const { return shape; }
 	};
 
 	struct KinematicUtilities {
@@ -199,11 +202,18 @@ private:
 	real_t angularDamp;
 	bool can_sleep;
 	bool omit_forces_integration;
+	bool can_integrate_forces;
 
 	Vector<CollisionData> collisions;
+	Vector<RigidBodyBullet *> collision_traces_1;
+	Vector<RigidBodyBullet *> collision_traces_2;
+	Vector<RigidBodyBullet *> *prev_collision_traces;
+	Vector<RigidBodyBullet *> *curr_collision_traces;
+
 	// these parameters are used to avoid vector resize
 	int maxCollisionsDetection;
 	int collisionsCount;
+	int prev_collision_count;
 
 	Vector<AreaBullet *> areasWhereIam;
 	// these parameters are used to avoid vector resize
@@ -213,7 +223,6 @@ private:
 	int countGravityPointSpaces;
 	bool isScratchedSpaceOverrideModificator;
 
-	bool isTransformChanged;
 	bool previousActiveState; // Last check state
 
 	ForceIntegrationCallback *force_integration_callback;
@@ -224,31 +233,42 @@ public:
 
 	void init_kinematic_utilities();
 	void destroy_kinematic_utilities();
-	_FORCE_INLINE_ class KinematicUtilities *get_kinematic_utilities() const { return kinematic_utilities; }
+	_FORCE_INLINE_ KinematicUtilities *get_kinematic_utilities() const { return kinematic_utilities; }
 
 	_FORCE_INLINE_ btRigidBody *get_bt_rigid_body() { return btBody; }
 
+	virtual void main_shape_changed();
 	virtual void reload_body();
 	virtual void set_space(SpaceBullet *p_space);
 
 	virtual void dispatch_callbacks();
 	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
-	void scratch();
 	void scratch_space_override_modificator();
 
 	virtual void on_collision_filters_change();
 	virtual void on_collision_checker_start();
+	virtual void on_collision_checker_end();
+
 	void set_max_collisions_detection(int p_maxCollisionsDetection) {
+
+		ERR_FAIL_COND(0 > p_maxCollisionsDetection);
+
 		maxCollisionsDetection = p_maxCollisionsDetection;
+
 		collisions.resize(p_maxCollisionsDetection);
+		collision_traces_1.resize(p_maxCollisionsDetection);
+		collision_traces_2.resize(p_maxCollisionsDetection);
+
 		collisionsCount = 0;
+		prev_collision_count = MIN(prev_collision_count, p_maxCollisionsDetection);
 	}
 	int get_max_collisions_detection() {
 		return maxCollisionsDetection;
 	}
 
 	bool can_add_collision() { return collisionsCount < maxCollisionsDetection; }
-	bool add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, int p_other_shape_index, int p_local_shape_index);
+	bool add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index);
+	bool was_colliding(RigidBodyBullet *p_other_object);
 
 	void assert_no_constraints();
 
@@ -298,7 +318,7 @@ public:
 	virtual void set_transform__bullet(const btTransform &p_global_transform);
 	virtual const btTransform &get_transform__bullet() const;
 
-	virtual void on_shapes_changed();
+	virtual void reload_shapes();
 
 	virtual void on_enter_area(AreaBullet *p_area);
 	virtual void on_exit_area(AreaBullet *p_area);
@@ -306,6 +326,8 @@ public:
 
 	/// Kinematic
 	void reload_kinematic_shapes();
+
+	virtual void notify_transform_changed();
 
 private:
 	void _internal_set_mass(real_t p_mass);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,11 @@
 
 #include "engine.h"
 
-#include "version.h"
-#include "version_hash.gen.h"
+#include "core/authors.gen.h"
+#include "core/donors.gen.h"
+#include "core/license.gen.h"
+#include "core/version.h"
+#include "core/version_hash.gen.h"
 
 void Engine::set_iterations_per_second(int p_ips) {
 
@@ -40,6 +43,16 @@ void Engine::set_iterations_per_second(int p_ips) {
 int Engine::get_iterations_per_second() const {
 
 	return ips;
+}
+
+void Engine::set_physics_jitter_fix(float p_threshold) {
+	if (p_threshold < 0)
+		p_threshold = 0;
+	physics_jitter_fix = p_threshold;
+}
+
+float Engine::get_physics_jitter_fix() const {
+	return physics_jitter_fix;
 }
 
 void Engine::set_target_fps(int p_fps) {
@@ -85,6 +98,7 @@ Dictionary Engine::get_version_info() const {
 #else
 	dict["patch"] = 0;
 #endif
+	dict["hex"] = VERSION_HEX;
 	dict["status"] = VERSION_STATUS;
 	dict["build"] = VERSION_BUILD;
 	dict["year"] = VERSION_YEAR;
@@ -99,6 +113,78 @@ Dictionary Engine::get_version_info() const {
 	dict["string"] = stringver;
 
 	return dict;
+}
+
+static Array array_from_info(const char *const *info_list) {
+	Array arr;
+	for (int i = 0; info_list[i] != NULL; i++) {
+		arr.push_back(info_list[i]);
+	}
+	return arr;
+}
+
+static Array array_from_info_count(const char *const *info_list, int info_count) {
+	Array arr;
+	for (int i = 0; i < info_count; i++) {
+		arr.push_back(info_list[i]);
+	}
+	return arr;
+}
+
+Dictionary Engine::get_author_info() const {
+	Dictionary dict;
+
+	dict["lead_developers"] = array_from_info(AUTHORS_LEAD_DEVELOPERS);
+	dict["project_managers"] = array_from_info(AUTHORS_PROJECT_MANAGERS);
+	dict["founders"] = array_from_info(AUTHORS_FOUNDERS);
+	dict["developers"] = array_from_info(AUTHORS_DEVELOPERS);
+
+	return dict;
+}
+
+Array Engine::get_copyright_info() const {
+	Array components;
+	for (int component_index = 0; component_index < COPYRIGHT_INFO_COUNT; component_index++) {
+		const ComponentCopyright &cp_info = COPYRIGHT_INFO[component_index];
+		Dictionary component_dict;
+		component_dict["name"] = cp_info.name;
+		Array parts;
+		for (int i = 0; i < cp_info.part_count; i++) {
+			const ComponentCopyrightPart &cp_part = cp_info.parts[i];
+			Dictionary part_dict;
+			part_dict["files"] = array_from_info_count(cp_part.files, cp_part.file_count);
+			part_dict["copyright"] = array_from_info_count(cp_part.copyright_statements, cp_part.copyright_count);
+			part_dict["license"] = cp_part.license;
+			parts.push_back(part_dict);
+		}
+		component_dict["parts"] = parts;
+
+		components.push_back(component_dict);
+	}
+	return components;
+}
+
+Dictionary Engine::get_donor_info() const {
+	Dictionary donors;
+	donors["platinum_sponsors"] = array_from_info(DONORS_SPONSOR_PLAT);
+	donors["gold_sponsors"] = array_from_info(DONORS_SPONSOR_GOLD);
+	donors["mini_sponsors"] = array_from_info(DONORS_SPONSOR_MINI);
+	donors["gold_donors"] = array_from_info(DONORS_GOLD);
+	donors["silver_donors"] = array_from_info(DONORS_SILVER);
+	donors["bronze_donors"] = array_from_info(DONORS_BRONZE);
+	return donors;
+}
+
+Dictionary Engine::get_license_info() const {
+	Dictionary licenses;
+	for (int i = 0; i < LICENSE_COUNT; i++) {
+		licenses[LICENSE_NAMES[i]] = LICENSE_BODIES[i];
+	}
+	return licenses;
+}
+
+String Engine::get_license_text() const {
+	return String(GODOT_LICENSE_TEXT);
 }
 
 void Engine::add_singleton(const Singleton &p_singleton) {
@@ -137,6 +223,7 @@ Engine::Engine() {
 	singleton = this;
 	frames_drawn = 0;
 	ips = 60;
+	physics_jitter_fix = 0.5;
 	_frame_delay = 0;
 	_fps = 1;
 	_target_fps = 0;

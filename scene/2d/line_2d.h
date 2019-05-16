@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,8 +52,8 @@ public:
 
 	enum LineTextureMode {
 		LINE_TEXTURE_NONE = 0,
-		LINE_TEXTURE_TILE
-		// TODO STRETCH mode
+		LINE_TEXTURE_TILE,
+		LINE_TEXTURE_STRETCH
 	};
 
 	Line2D();
@@ -70,7 +70,9 @@ public:
 
 	int get_point_count() const;
 
-	void add_point(Vector2 pos);
+	void clear_points();
+
+	void add_point(Vector2 pos, int atpos = -1);
 	void remove_point(int i);
 
 	void set_width(float width);

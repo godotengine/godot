@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +31,15 @@
 #ifndef AUDIOEFFECT_H
 #define AUDIOEFFECT_H
 
-#include "audio_frame.h"
-#include "resource.h"
+#include "core/math/audio_frame.h"
+#include "core/resource.h"
 
 class AudioEffectInstance : public Reference {
 	GDCLASS(AudioEffectInstance, Reference)
 
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) = 0;
+	virtual bool process_silence() const { return false; }
 };
 
 class AudioEffect : public Resource {

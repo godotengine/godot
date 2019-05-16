@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SurfaceTool" inherits="Reference" category="Core" version="3.1">
+<class name="SurfaceTool" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		Helper tool to create geometry.
 	</brief_description>
 	<description>
-		The [code]SurfaceTool[/code] is used to construct a [Mesh] by specifying vertex attributes individually. It can be used to construct a [Mesh] from script. All properties except index need to be added before a call to [method add_vertex]. For example adding vertex colors and UVs looks like
+		The [SurfaceTool] is used to construct a [Mesh] by specifying vertex attributes individually. It can be used to construct a [Mesh] from script. All properties except index need to be added before a call to [method add_vertex]. For example adding vertex colors and UVs looks like
 		[codeblock]
 		var st = SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -12,13 +12,12 @@
 		st.add_uv(Vector2(0, 0))
 		st.add_vertex(Vector3(0, 0, 0))
 		[/codeblock]
-		The [code]SurfaceTool[/code] now contains one vertex of a triangle which has a UV coordinate and a specified [Color]. If another vertex were added without calls to [method add_uv] or [method add_color] then the last values would be used.
+		The [SurfaceTool] now contains one vertex of a triangle which has a UV coordinate and a specified [Color]. If another vertex were added without calls to [method add_uv] or [method add_color] then the last values would be used.
 		It is very important that vertex attributes are passed [b]before[/b] the call to [method add_vertex], failure to do this will result in an error when committing the vertex information to a mesh.
+		Additionally, the attributes used before the first vertex is added determine the format of the mesh. For example if you only add UVs to the first vertex, you cannot add color to any of the subsequent vertices.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_bones">
 			<return type="void">
@@ -26,7 +25,7 @@
 			<argument index="0" name="bones" type="PoolIntArray">
 			</argument>
 			<description>
-				Add an array of bones for the next Vertex to use.
+				Add an array of bones for the next Vertex to use. Array must contain 4 integers.
 			</description>
 		</method>
 		<method name="add_color">
@@ -74,18 +73,10 @@
 				Specify a Tangent for the next Vertex to use.
 			</description>
 		</method>
-		<method name="add_to_format">
-			<return type="void">
-			</return>
-			<argument index="0" name="flags" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="add_triangle_fan">
 			<return type="void">
 			</return>
-			<argument index="0" name="vertexes" type="PoolVector3Array">
+			<argument index="0" name="vertices" type="PoolVector3Array">
 			</argument>
 			<argument index="1" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
 			</argument>
@@ -99,6 +90,7 @@
 			</argument>
 			<description>
 				Insert a triangle fan made of array data into [Mesh] being constructed.
+				Requires primitive type be set to [code]PRIMITIVE_TRIANGLES[/code].
 			</description>
 		</method>
 		<method name="add_uv">
@@ -134,7 +126,7 @@
 			<argument index="0" name="weights" type="PoolRealArray">
 			</argument>
 			<description>
-				Specify weight value for next Vertex to use.
+				Specify weight values for next Vertex to use. Array must contain 4 values.
 			</description>
 		</method>
 		<method name="append_from">
@@ -147,6 +139,7 @@
 			<argument index="2" name="transform" type="Transform">
 			</argument>
 			<description>
+				Append vertices from a given [Mesh] surface onto the current vertex array with specified [Transform].
 			</description>
 		</method>
 		<method name="begin">
@@ -170,7 +163,7 @@
 			</return>
 			<argument index="0" name="existing" type="ArrayMesh" default="null">
 			</argument>
-			<argument index="1" name="flags" type="int" default="97792">
+			<argument index="1" name="flags" type="int" default="97280">
 			</argument>
 			<description>
 				Returns a constructed [ArrayMesh] from current information passed in. If an existing [ArrayMesh] is passed in as an argument, will add an extra surface to the existing [ArrayMesh].
@@ -184,6 +177,7 @@
 			<argument index="1" name="surface" type="int">
 			</argument>
 			<description>
+				Creates a vertex array from an existing [Mesh].
 			</description>
 		</method>
 		<method name="deindex">
@@ -201,12 +195,15 @@
 			<description>
 				Generates normals from Vertices so you do not have to do it manually.
 				Setting "flip" [code]true[/code] inverts resulting normals.
+				Requires primitive type to be set to [code]PRIMITIVE_TRIANGLES[/code].
 			</description>
 		</method>
 		<method name="generate_tangents">
 			<return type="void">
 			</return>
 			<description>
+				Generates a tangent vector for each vertex.
+				Requires that each vertex have UVs and normals set already.
 			</description>
 		</method>
 		<method name="index">

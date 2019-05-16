@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventScreenDrag" inherits="InputEvent" category="Core" version="3.1">
+<class name="InputEventScreenDrag" inherits="InputEvent" category="Core" version="3.2">
 	<brief_description>
 		Input event type for screen drag events.
 		(only available on mobile devices)
@@ -8,10 +8,8 @@
 		Contains screen drag information. See [method Node._input].
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/inputs/inputevent.html
+		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>

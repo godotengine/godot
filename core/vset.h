@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef VSET_H
 #define VSET_H
 
-#include "typedefs.h"
-#include "vector.h"
+#include "core/typedefs.h"
+#include "core/vector.h"
 
 template <class T>
 class VSet {
@@ -50,7 +50,7 @@ class VSet {
 		const T *a = &_data[0];
 		int middle = 0;
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 		if (low > high)
 			ERR_PRINT("low > high, this may be a bug");
 #endif
@@ -133,7 +133,7 @@ public:
 
 	inline T &operator[](int p_index) {
 
-		return _data[p_index];
+		return _data.write[p_index];
 	}
 
 	inline const T &operator[](int p_index) const {

@@ -1,7 +1,7 @@
 /*
  *    Stack-less Just-In-Time compiler
  *
- *    Copyright 2009-2012 Zoltan Herczeg (hzmester@freemail.hu). All rights reserved.
+ *    Copyright Zoltan Herczeg (hzmester@freemail.hu). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -60,7 +60,7 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 			return push_inst(compiler, SRA | D(dst) | S1(dst) | IMM(24), DR(dst));
 		}
 		else if (dst != src2)
-			SLJIT_ASSERT_STOP();
+			SLJIT_UNREACHABLE();
 		return SLJIT_SUCCESS;
 
 	case SLJIT_MOV_U16:
@@ -71,7 +71,7 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 			return push_inst(compiler, (op == SLJIT_MOV_S16 ? SRA : SRL) | D(dst) | S1(dst) | IMM(16), DR(dst));
 		}
 		else if (dst != src2)
-			SLJIT_ASSERT_STOP();
+			SLJIT_UNREACHABLE();
 		return SLJIT_SUCCESS;
 
 	case SLJIT_NOT:
@@ -80,18 +80,17 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 
 	case SLJIT_CLZ:
 		SLJIT_ASSERT(src1 == TMP_REG1 && !(flags & SRC2_IMM));
-		/* sparc 32 does not support SLJIT_KEEP_FLAGS. Not sure I can fix this. */
 		FAIL_IF(push_inst(compiler, SUB | SET_FLAGS | D(0) | S1(src2) | S2(0), SET_FLAGS));
 		FAIL_IF(push_inst(compiler, OR | D(TMP_REG1) | S1(0) | S2(src2), DR(TMP_REG1)));
 		FAIL_IF(push_inst(compiler, BICC | DA(0x1) | (7 & DISP_MASK), UNMOVABLE_INS));
-		FAIL_IF(push_inst(compiler, OR | (flags & SET_FLAGS) | D(dst) | S1(0) | IMM(32), UNMOVABLE_INS | (flags & SET_FLAGS)));
+		FAIL_IF(push_inst(compiler, OR | D(dst) | S1(0) | IMM(32), UNMOVABLE_INS));
 		FAIL_IF(push_inst(compiler, OR | D(dst) | S1(0) | IMM(-1), DR(dst)));
 
 		/* Loop. */
 		FAIL_IF(push_inst(compiler, SUB | SET_FLAGS | D(0) | S1(TMP_REG1) | S2(0), SET_FLAGS));
 		FAIL_IF(push_inst(compiler, SLL | D(TMP_REG1) | S1(TMP_REG1) | IMM(1), DR(TMP_REG1)));
 		FAIL_IF(push_inst(compiler, BICC | DA(0xe) | (-2 & DISP_MASK), UNMOVABLE_INS));
-		return push_inst(compiler, ADD | (flags & SET_FLAGS) | D(dst) | S1(dst) | IMM(1), UNMOVABLE_INS | (flags & SET_FLAGS));
+		return push_inst(compiler, ADD | D(dst) | S1(dst) | IMM(1), UNMOVABLE_INS);
 
 	case SLJIT_ADD:
 		return push_inst(compiler, ADD | (flags & SET_FLAGS) | D(dst) | S1(src1) | ARG2(flags, src2), DR(dst) | (flags & SET_FLAGS));
@@ -135,7 +134,126 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 		return !(flags & SET_FLAGS) ? SLJIT_SUCCESS : push_inst(compiler, SUB | SET_FLAGS | D(0) | S1(dst) | S2(0), SET_FLAGS);
 	}
 
-	SLJIT_ASSERT_STOP();
+	SLJIT_UNREACHABLE();
+	return SLJIT_SUCCESS;
+}
+
+static sljit_s32 call_with_args(struct sljit_compiler *compiler, sljit_s32 arg_types, sljit_s32 *src)
+{
+	sljit_s32 reg_index = 8;
+	sljit_s32 word_reg_index = 8;
+	sljit_s32 float_arg_index = 1;
+	sljit_s32 double_arg_count = 0;
+	sljit_s32 float_offset = (16 + 6) * sizeof(sljit_sw);
+	sljit_s32 types = 0;
+	sljit_s32 reg = 0;
+	sljit_s32 move_to_tmp2 = 0;
+
+	if (src)
+		reg = reg_map[*src & REG_MASK];
+
+	arg_types >>= SLJIT_DEF_SHIFT;
+
+	while (arg_types) {
+		types = (types << SLJIT_DEF_SHIFT) | (arg_types & SLJIT_DEF_MASK);
+
+		switch (arg_types & SLJIT_DEF_MASK) {
+		case SLJIT_ARG_TYPE_F32:
+			float_arg_index++;
+			if (reg_index == reg)
+				move_to_tmp2 = 1;
+			reg_index++;
+			break;
+		case SLJIT_ARG_TYPE_F64:
+			float_arg_index++;
+			double_arg_count++;
+			if (reg_index == reg || reg_index + 1 == reg)
+				move_to_tmp2 = 1;
+			reg_index += 2;
+			break;
+		default:
+			if (reg_index != word_reg_index && reg_index < 14 && reg_index == reg)
+				move_to_tmp2 = 1;
+			reg_index++;
+			word_reg_index++;
+			break;
+		}
+
+		if (move_to_tmp2) {
+			move_to_tmp2 = 0;
+			if (reg < 14)
+				FAIL_IF(push_inst(compiler, OR | D(TMP_REG1) | S1(0) | S2A(reg), DR(TMP_REG1)));
+			*src = TMP_REG1;
+		}
+
+		arg_types >>= SLJIT_DEF_SHIFT;
+	}
+
+	arg_types = types;
+
+	while (arg_types) {
+		switch (arg_types & SLJIT_DEF_MASK) {
+		case SLJIT_ARG_TYPE_F32:
+			float_arg_index--;
+			FAIL_IF(push_inst(compiler, STF | FD(float_arg_index) | S1(SLJIT_SP) | IMM(float_offset), MOVABLE_INS));
+			float_offset -= sizeof(sljit_f64);
+			break;
+		case SLJIT_ARG_TYPE_F64:
+			float_arg_index--;
+			if (float_arg_index == 4 && double_arg_count == 4) {
+				FAIL_IF(push_inst(compiler, STF | FD(float_arg_index) | S1(SLJIT_SP) | IMM((16 + 7) * sizeof(sljit_sw)), MOVABLE_INS));
+				FAIL_IF(push_inst(compiler, STF | FD(float_arg_index) | (1 << 25) | S1(SLJIT_SP) | IMM((16 + 8) * sizeof(sljit_sw)), MOVABLE_INS));
+			}
+			else
+				FAIL_IF(push_inst(compiler, STDF | FD(float_arg_index) | S1(SLJIT_SP) | IMM(float_offset), MOVABLE_INS));
+			float_offset -= sizeof(sljit_f64);
+			break;
+		default:
+			break;
+		}
+
+		arg_types >>= SLJIT_DEF_SHIFT;
+	}
+
+	float_offset = (16 + 6) * sizeof(sljit_sw);
+
+	while (types) {
+		switch (types & SLJIT_DEF_MASK) {
+		case SLJIT_ARG_TYPE_F32:
+			reg_index--;
+			if (reg_index < 14)
+				FAIL_IF(push_inst(compiler, LDUW | DA(reg_index) | S1(SLJIT_SP) | IMM(float_offset), reg_index));
+			float_offset -= sizeof(sljit_f64);
+			break;
+		case SLJIT_ARG_TYPE_F64:
+			reg_index -= 2;
+			if (reg_index < 14) {
+				if ((reg_index & 0x1) != 0) {
+					FAIL_IF(push_inst(compiler, LDUW | DA(reg_index) | S1(SLJIT_SP) | IMM(float_offset), reg_index));
+					if (reg_index < 13)
+						FAIL_IF(push_inst(compiler, LDUW | DA(reg_index + 1) | S1(SLJIT_SP) | IMM(float_offset + sizeof(sljit_sw)), reg_index + 1));
+				}
+				else 
+					FAIL_IF(push_inst(compiler, LDD | DA(reg_index) | S1(SLJIT_SP) | IMM(float_offset), reg_index));
+			}
+			float_offset -= sizeof(sljit_f64);
+			break;
+		default:
+			reg_index--;
+			word_reg_index--;
+
+			if (reg_index != word_reg_index) {
+				if (reg_index < 14)
+					FAIL_IF(push_inst(compiler, OR | DA(reg_index) | S1(0) | S2A(word_reg_index), reg_index));
+				else
+					FAIL_IF(push_inst(compiler, STW | DA(word_reg_index) | S1(SLJIT_SP) | IMM(92), word_reg_index));
+			}
+			break;
+		}
+
+		types >>= SLJIT_DEF_SHIFT;
+	}
+
 	return SLJIT_SUCCESS;
 }
 

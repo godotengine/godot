@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="KinematicBody" inherits="PhysicsBody" category="Core" version="3.1">
+<class name="KinematicBody" inherits="PhysicsBody" category="Core" version="3.2">
 	<brief_description>
 		Kinematic body 3D node.
 	</brief_description>
@@ -9,10 +9,8 @@
 		Kinematic Characters: KinematicBody also has an API for moving objects (the [method move_and_collide] and [method move_and_slide] methods) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/physics/kinematic_character_2d.html
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/kinematic_character_2d.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_floor_velocity" qualifiers="const">
 			<return type="Vector3">
@@ -65,8 +63,13 @@
 			</argument>
 			<argument index="1" name="infinite_inertia" type="bool" default="true">
 			</argument>
+			<argument index="2" name="exclude_raycast_shapes" type="bool" default="true">
+			</argument>
+			<argument index="3" name="test_only" type="bool" default="false">
+			</argument>
 			<description>
 				Moves the body along the vector [code]rel_vec[/code]. The body will stop if it collides. Returns a [KinematicCollision], which contains information about the collision.
+				If [code]test_only[/code] is [code]true[/code], the body does not move but the would-be collision information is given.
 			</description>
 		</method>
 		<method name="move_and_slide">
@@ -76,22 +79,45 @@
 			</argument>
 			<argument index="1" name="floor_normal" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
-			<argument index="2" name="infinite_inertia" type="bool" default="true">
+			<argument index="2" name="stop_on_slope" type="bool" default="false">
 			</argument>
-			<argument index="3" name="slope_stop_min_velocity" type="float" default="0.05">
+			<argument index="3" name="max_slides" type="int" default="4">
+			</argument>
+			<argument index="4" name="floor_max_angle" type="float" default="0.785398">
+			</argument>
+			<argument index="5" name="infinite_inertia" type="bool" default="true">
+			</argument>
+			<description>
+				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [KinematicBody] or [RigidBody], it will also be affected by the motion of the other body. You can use this to make moving or rotating platforms, or to make nodes push other nodes.
+				[code]linear_velocity[/code] is the velocity vector (typically meters per second). Unlike in [method move_and_collide], you should [i]not[/i] multiply it by [code]delta[/code] — the physics engine handles applying the velocity.
+				[code]floor_normal[/code] is the up direction, used to determine what is a wall and what is a floor or a ceiling. If set to the default value of [code]Vector3(0, 0, 0)[/code], everything is considered a wall. This is useful for topdown games.
+				If [code]stop_on_slope[/code] is [code]true[/code], body will not slide on slopes if you include gravity in [code]linear_velocity[/code].
+				If the body collides, it will change direction a maximum of [code]max_slides[/code] times before it stops.
+				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 45 degrees.
+				If [code]infinite_inertia[/code] is [code]true[/code], body will be able to push [RigidBody] nodes, but it won't also detect any collisions with them. If [code]false[/code] it will interact with [RigidBody] nodes like with [StaticBody].
+				Returns the [code]linear_velocity[/code] vector, rotated and/or scaled if a slide collision occurred. To get detailed information about collisions that occurred, use [method get_slide_collision].
+			</description>
+		</method>
+		<method name="move_and_slide_with_snap">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="linear_velocity" type="Vector3">
+			</argument>
+			<argument index="1" name="snap" type="Vector3">
+			</argument>
+			<argument index="2" name="floor_normal" type="Vector3" default="Vector3( 0, 0, 0 )">
+			</argument>
+			<argument index="3" name="stop_on_slope" type="bool" default="false">
 			</argument>
 			<argument index="4" name="max_slides" type="int" default="4">
 			</argument>
 			<argument index="5" name="floor_max_angle" type="float" default="0.785398">
 			</argument>
+			<argument index="6" name="infinite_inertia" type="bool" default="true">
+			</argument>
 			<description>
-				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [code]KinematicBody[/code] or [RigidBody], it will also be affected by the motion of the other body. You can use this to make moving or rotating platforms, or to make nodes push other nodes.
-				[code]linear_velocity[/code] is a value in pixels per second. Unlike in for example [method move_and_collide], you should [i]not[/i] multiply it with [code]delta[/code] — this is done by the method.
-				[code]floor_normal[/code] is the up direction, used to determine what is a wall and what is a floor or a ceiling. If set to the default value of [code]Vector3(0, 0, 0)[/code], everything is considered a wall. This is useful for topdown games.
-				If the body is standing on a slope and the horizontal speed (relative to the floor's speed) goes below [code]slope_stop_min_velocity[/code], the body will stop completely. This prevents the body from sliding down slopes when you include gravity in [code]linear_velocity[/code]. When set to lower values, the body will not be able to stand still on steep slopes.
-				If the body collides, it will change direction a maximum of [code]max_slides[/code] times before it stops.
-				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 45 degrees.
-				Returns the movement that remained when the body stopped. To get more detailed information about collisions that occurred, use [method get_slide_collision].
+				Moves the body while keeping it attached to slopes. Similar to [method move_and_slide].
+				As long as the [code]snap[/code] vector is in contact with the ground, the body will remain attached to the surface. This means you must disable snap in order to jump, for example. You can do this by setting[code]snap[/code] to[code](0, 0, 0)[/code] or by using [method move_and_slide] instead.
 			</description>
 		</method>
 		<method name="test_move">
@@ -101,7 +127,7 @@
 			</argument>
 			<argument index="1" name="rel_vec" type="Vector3">
 			</argument>
-			<argument index="2" name="infinite_inertia" type="bool">
+			<argument index="2" name="infinite_inertia" type="bool" default="true">
 			</argument>
 			<description>
 				Checks for collisions without moving the body. Virtually sets the node's position, scale and rotation to that of the given [Transform], then tries to move the body along the vector [code]rel_vec[/code]. Returns [code]true[/code] if a collision would occur.
@@ -109,20 +135,17 @@
 		</method>
 	</methods>
 	<members>
-		<member name="axis_lock_angular_x" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-		</member>
-		<member name="axis_lock_angular_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-		</member>
-		<member name="axis_lock_angular_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-		</member>
-		<member name="axis_lock_linear_x" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-		</member>
-		<member name="axis_lock_linear_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-		</member>
-		<member name="axis_lock_linear_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-		</member>
 		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin">
 			If the body is at least this close to another body, this body will consider them to be colliding.
+		</member>
+		<member name="move_lock_x" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+			Lock the body's movement in the x-axis.
+		</member>
+		<member name="move_lock_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+			Lock the body's movement in the y-axis.
+		</member>
+		<member name="move_lock_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+			Lock the body's movement in the z-axis.
 		</member>
 	</members>
 	<constants>

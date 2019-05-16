@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/control.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
@@ -59,6 +60,7 @@ class EditorAudioBus : public PanelContainer {
 	VSlider *slider;
 
 	int cc;
+	static const int CHANNELS_MAX = 4;
 
 	struct {
 		bool prev_active;
@@ -68,14 +70,18 @@ class EditorAudioBus : public PanelContainer {
 
 		TextureProgress *vu_l;
 		TextureProgress *vu_r;
-	} channel[4];
+	} channel[CHANNELS_MAX];
 
-	TextureRect *scale;
+	class EditorAudioMeterNotches *scale;
 	OptionButton *send;
 
 	PopupMenu *effect_options;
 	PopupMenu *bus_popup;
 	PopupMenu *delete_effect_popup;
+
+	Panel *audio_value_preview_box;
+	Label *audio_value_preview_label;
+	Timer *preview_timer;
 
 	Button *solo;
 	Button *mute;
@@ -92,7 +98,11 @@ class EditorAudioBus : public PanelContainer {
 
 	void _name_changed(const String &p_new_name);
 	void _name_focus_exit() { _name_changed(track_name->get_text()); }
-	void _volume_db_changed(float p_db);
+	void _volume_changed(float p_normalized);
+	float _normalized_volume_to_scaled_db(float normalized);
+	float _scaled_db_to_normalized_volume(float db);
+	void _show_value(float slider_value);
+	void _hide_value_preview();
 	void _solo_toggled();
 	void _mute_toggled();
 	void _bypass_toggled();
@@ -102,6 +112,7 @@ class EditorAudioBus : public PanelContainer {
 	void _effect_selected();
 	void _delete_effect_pressed(int p_option);
 	void _effect_rmb(const Vector2 &p_pos);
+	void _update_visible_channels();
 
 	virtual Variant get_drag_data(const Point2 &p_point);
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
@@ -196,6 +207,50 @@ public:
 	static EditorAudioBuses *register_editor();
 
 	EditorAudioBuses();
+};
+
+class EditorAudioMeterNotches : public Control {
+	GDCLASS(EditorAudioMeterNotches, Control);
+
+private:
+	struct AudioNotch {
+		float relative_position;
+		float db_value;
+		bool render_db_value;
+
+		_FORCE_INLINE_ AudioNotch(float r_pos, float db_v, bool rndr_val) {
+			relative_position = r_pos;
+			db_value = db_v;
+			render_db_value = rndr_val;
+		}
+
+		_FORCE_INLINE_ AudioNotch(const AudioNotch &n) {
+			relative_position = n.relative_position;
+			db_value = n.db_value;
+			render_db_value = n.render_db_value;
+		}
+
+		_FORCE_INLINE_ AudioNotch() {}
+	};
+
+	List<AudioNotch> notches;
+
+public:
+	float line_length;
+	float label_space;
+	float btm_padding;
+	float top_padding;
+	Color notch_color;
+
+	void add_notch(float normalized_offset, float db_value, bool render_value = false);
+
+private:
+	static void _bind_methods();
+	void _notification(int p_what);
+	void _draw_audio_notches();
+
+public:
+	EditorAudioMeterNotches();
 };
 
 class AudioBusesEditorPlugin : public EditorPlugin {

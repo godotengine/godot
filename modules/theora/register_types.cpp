@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,18 +29,21 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "resource_importer_theora.h"
+
 #include "video_stream_theora.h"
+
+static Ref<ResourceFormatLoaderTheora> resource_loader_theora;
 
 void register_theora_types() {
 
-#ifdef TOOLS_ENABLED
-	Ref<ResourceImporterTheora> theora_import;
-	theora_import.instance();
-	ResourceFormatImporter::get_singleton()->add_importer(theora_import);
-#endif
+	resource_loader_theora.instance();
+	ResourceLoader::add_resource_format_loader(resource_loader_theora, true);
+
 	ClassDB::register_class<VideoStreamTheora>();
 }
 
 void unregister_theora_types() {
+
+	ResourceLoader::remove_resource_format_loader(resource_loader_theora);
+	resource_loader_theora.unref();
 }

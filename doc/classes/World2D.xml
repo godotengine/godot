@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="World2D" inherits="Resource" category="Core" version="3.1">
+<class name="World2D" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		Class that has everything pertaining to a 2D world.
 	</brief_description>
@@ -7,10 +7,8 @@
 		Class that has everything pertaining to a 2D world. A physics space, a visual scenario and a sound space. 2D nodes register their resources into the current 2D world.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/physics/ray-casting.html
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>

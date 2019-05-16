@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ToolButton" inherits="Button" category="Core" version="3.1">
+<class name="ToolButton" inherits="Button" category="Core" version="3.2">
 	<brief_description>
 		Flat button helper class.
 	</brief_description>
 	<description>
-		This is a helper class to generate a flat [Button] (see [method Button.set_flat]), creating a ToolButton is equivalent to:
-
+		This is a helper class to generate a flat [Button] (see [member Button.flat]), creating a [ToolButton] is equivalent to:
 		[codeblock]
 		var btn = Button.new()
-		btn.set_flat(true)
+		btn.flat = true
 		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<constants>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,11 @@
 #ifndef TILE_MAP_H
 #define TILE_MAP_H
 
-#include "scene/2d/navigation2d.h"
+#include "core/self_list.h"
+#include "core/vset.h"
+#include "scene/2d/navigation_2d.h"
 #include "scene/2d/node_2d.h"
 #include "scene/resources/tile_set.h"
-#include "self_list.h"
-#include "vset.h"
 
 class TileMap : public Node2D {
 
@@ -52,6 +52,8 @@ public:
 		HALF_OFFSET_X,
 		HALF_OFFSET_Y,
 		HALF_OFFSET_DISABLED,
+		HALF_OFFSET_NEGATIVE_X,
+		HALF_OFFSET_NEGATIVE_Y,
 	};
 
 	enum TileOrigin {
@@ -188,10 +190,9 @@ private:
 
 	Map<PosKey, Quadrant>::Element *_create_quadrant(const PosKey &p_qk);
 	void _erase_quadrant(Map<PosKey, Quadrant>::Element *Q);
-	void _make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q);
+	void _make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q, bool update = true);
 	void _recreate_quadrants();
 	void _clear_quadrants();
-	void _update_dirty_quadrants();
 	void _update_quadrant_space(const RID &p_space);
 	void _update_quadrant_transform();
 	void _recompute_rect_cache();
@@ -224,6 +225,8 @@ public:
 		INVALID_CELL = -1
 	};
 
+	virtual Rect2 _edit_get_rect() const;
+
 	void set_tileset(const Ref<TileSet> &p_tileset);
 	Ref<TileSet> get_tileset() const;
 
@@ -241,17 +244,17 @@ public:
 	void set_cell_autotile_coord(int p_x, int p_y, const Vector2 &p_coord);
 	Vector2 get_cell_autotile_coord(int p_x, int p_y) const;
 
+	void _set_celld(const Vector2 &p_pos, const Dictionary &p_data);
 	void set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false);
 	int get_cellv(const Vector2 &p_pos) const;
-
-	Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
 
 	void make_bitmask_area_dirty(const Vector2 &p_pos);
 	void update_bitmask_area(const Vector2 &p_pos);
 	void update_bitmask_region(const Vector2 &p_start = Vector2(), const Vector2 &p_end = Vector2());
 	void update_cell_bitmask(int p_x, int p_y);
 	void update_dirty_bitmask();
+
+	void update_dirty_quadrants();
 
 	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;

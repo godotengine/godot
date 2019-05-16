@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,14 +30,15 @@
 
 #include "image_loader.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
+
 bool ImageFormatLoader::recognize(const String &p_extension) const {
 
 	List<String> extensions;
 	get_recognized_extensions(&extensions);
 	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
 
-		if (E->get().nocasecmp_to(p_extension.get_extension()) == 0)
+		if (E->get().nocasecmp_to(p_extension) == 0)
 			return true;
 	}
 
@@ -59,7 +60,7 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_c
 
 	String extension = p_file.get_extension();
 
-	for (int i = 0; i < loader_count; i++) {
+	for (int i = 0; i < loader.size(); i++) {
 
 		if (!loader[i]->recognize(extension))
 			continue;
@@ -82,28 +83,122 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_c
 
 void ImageLoader::get_recognized_extensions(List<String> *p_extensions) {
 
-	for (int i = 0; i < loader_count; i++) {
+	for (int i = 0; i < loader.size(); i++) {
 
 		loader[i]->get_recognized_extensions(p_extensions);
 	}
 }
 
-bool ImageLoader::recognize(const String &p_extension) {
+ImageFormatLoader *ImageLoader::recognize(const String &p_extension) {
 
-	for (int i = 0; i < loader_count; i++) {
+	for (int i = 0; i < loader.size(); i++) {
 
 		if (loader[i]->recognize(p_extension))
-			return true;
+			return loader[i];
 	}
 
-	return false;
+	return NULL;
 }
 
-ImageFormatLoader *ImageLoader::loader[MAX_LOADERS];
-int ImageLoader::loader_count = 0;
+Vector<ImageFormatLoader *> ImageLoader::loader;
 
 void ImageLoader::add_image_format_loader(ImageFormatLoader *p_loader) {
 
-	ERR_FAIL_COND(loader_count >= MAX_LOADERS);
-	loader[loader_count++] = p_loader;
+	loader.push_back(p_loader);
+}
+
+void ImageLoader::remove_image_format_loader(ImageFormatLoader *p_loader) {
+
+	loader.erase(p_loader);
+}
+
+const Vector<ImageFormatLoader *> &ImageLoader::get_image_format_loaders() {
+
+	return loader;
+}
+
+void ImageLoader::cleanup() {
+
+	while (loader.size()) {
+		remove_image_format_loader(loader[0]);
+	}
+}
+
+/////////////////
+
+RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_original_path, Error *r_error) {
+
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
+	if (!f) {
+		if (r_error) {
+			*r_error = ERR_CANT_OPEN;
+		}
+		return RES();
+	}
+
+	uint8_t header[4] = { 0, 0, 0, 0 };
+	f->get_buffer(header, 4);
+
+	bool unrecognized = header[0] != 'G' || header[1] != 'D' || header[2] != 'I' || header[3] != 'M';
+	if (unrecognized) {
+		memdelete(f);
+		if (r_error) {
+			*r_error = ERR_FILE_UNRECOGNIZED;
+		}
+		ERR_FAIL_V(RES());
+	}
+
+	String extension = f->get_pascal_string();
+
+	int idx = -1;
+
+	for (int i = 0; i < ImageLoader::loader.size(); i++) {
+		if (ImageLoader::loader[i]->recognize(extension)) {
+			idx = i;
+			break;
+		}
+	}
+
+	if (idx == -1) {
+		memdelete(f);
+		if (r_error) {
+			*r_error = ERR_FILE_UNRECOGNIZED;
+		}
+		ERR_FAIL_V(RES());
+	}
+
+	Ref<Image> image;
+	image.instance();
+
+	Error err = ImageLoader::loader[idx]->load_image(image, f, false, 1.0);
+
+	memdelete(f);
+
+	if (err != OK) {
+		if (r_error) {
+			*r_error = err;
+		}
+		return RES();
+	}
+
+	if (r_error) {
+		*r_error = OK;
+	}
+
+	return image;
+}
+
+void ResourceFormatLoaderImage::get_recognized_extensions(List<String> *p_extensions) const {
+
+	p_extensions->push_back("image");
+}
+
+bool ResourceFormatLoaderImage::handles_type(const String &p_type) const {
+
+	return p_type == "Image";
+}
+
+String ResourceFormatLoaderImage::get_resource_type(const String &p_path) const {
+
+	return p_path.get_extension().to_lower() == "image" ? "Image" : String();
 }

@@ -36,6 +36,7 @@
 #include "mbedtls/pkcs12.h"
 #include "mbedtls/asn1.h"
 #include "mbedtls/cipher.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -47,10 +48,7 @@
 #include "mbedtls/des.h"
 #endif
 
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
-}
+#if defined(MBEDTLS_ASN1_PARSE_C)
 
 static int pkcs12_parse_pbe_params( mbedtls_asn1_buf *params,
                                     mbedtls_asn1_buf *salt, int *iterations )
@@ -166,7 +164,7 @@ int mbedtls_pkcs12_pbe_sha1_rc4_128( mbedtls_asn1_buf *pbe_params, int mode,
         goto exit;
 
 exit:
-    mbedtls_zeroize( key, sizeof( key ) );
+    mbedtls_platform_zeroize( key, sizeof( key ) );
     mbedtls_arc4_free( &ctx );
 
     return( ret );
@@ -223,12 +221,14 @@ int mbedtls_pkcs12_pbe( mbedtls_asn1_buf *pbe_params, int mode,
         ret = MBEDTLS_ERR_PKCS12_PASSWORD_MISMATCH;
 
 exit:
-    mbedtls_zeroize( key, sizeof( key ) );
-    mbedtls_zeroize( iv,  sizeof( iv  ) );
+    mbedtls_platform_zeroize( key, sizeof( key ) );
+    mbedtls_platform_zeroize( iv,  sizeof( iv  ) );
     mbedtls_cipher_free( &cipher_ctx );
 
     return( ret );
 }
+
+#endif /* MBEDTLS_ASN1_PARSE_C */
 
 static void pkcs12_fill_buffer( unsigned char *data, size_t data_len,
                                 const unsigned char *filler, size_t fill_len )
@@ -352,10 +352,10 @@ int mbedtls_pkcs12_derivation( unsigned char *data, size_t datalen,
     ret = 0;
 
 exit:
-    mbedtls_zeroize( salt_block, sizeof( salt_block ) );
-    mbedtls_zeroize( pwd_block, sizeof( pwd_block ) );
-    mbedtls_zeroize( hash_block, sizeof( hash_block ) );
-    mbedtls_zeroize( hash_output, sizeof( hash_output ) );
+    mbedtls_platform_zeroize( salt_block, sizeof( salt_block ) );
+    mbedtls_platform_zeroize( pwd_block, sizeof( pwd_block ) );
+    mbedtls_platform_zeroize( hash_block, sizeof( hash_block ) );
+    mbedtls_platform_zeroize( hash_output, sizeof( hash_output ) );
 
     mbedtls_md_free( &md_ctx );
 

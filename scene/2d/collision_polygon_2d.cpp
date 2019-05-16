@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "collision_polygon_2d.h"
 
 #include "collision_object_2d.h"
-#include "engine.h"
+#include "core/engine.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 
@@ -78,40 +78,7 @@ void CollisionPolygon2D::_build_polygon() {
 }
 
 Vector<Vector<Vector2> > CollisionPolygon2D::_decompose_in_convex() {
-
-	Vector<Vector<Vector2> > decomp;
-	List<TriangulatorPoly> in_poly, out_poly;
-
-	TriangulatorPoly inp;
-	inp.Init(polygon.size());
-	for (int i = 0; i < polygon.size(); i++) {
-		inp.GetPoint(i) = polygon[i];
-	}
-	inp.SetOrientation(TRIANGULATOR_CCW);
-	in_poly.push_back(inp);
-	TriangulatorPartition tpart;
-	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //failed!
-		ERR_PRINT("Convex decomposing failed!");
-		return decomp;
-	}
-
-	decomp.resize(out_poly.size());
-	int idx = 0;
-
-	for (List<TriangulatorPoly>::Element *I = out_poly.front(); I; I = I->next()) {
-
-		TriangulatorPoly &tp = I->get();
-
-		decomp[idx].resize(tp.GetNumPoints());
-
-		for (int i = 0; i < tp.GetNumPoints(); i++) {
-
-			decomp[idx][i] = tp.GetPoint(i);
-		}
-
-		idx++;
-	}
-
+	Vector<Vector<Vector2> > decomp = Geometry::decompose_polygon_in_convex(polygon);
 	return decomp;
 }
 
@@ -122,6 +89,7 @@ void CollisionPolygon2D::_update_in_shape_owner(bool p_xform_only) {
 		return;
 	parent->shape_owner_set_disabled(owner_id, disabled);
 	parent->shape_owner_set_one_way_collision(owner_id, one_way_collision);
+	parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
 }
 
 void CollisionPolygon2D::_notification(int p_what) {
@@ -247,7 +215,7 @@ Vector<Point2> CollisionPolygon2D::get_polygon() const {
 
 void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
 
-	ERR_FAIL_INDEX(p_mode, 2);
+	ERR_FAIL_INDEX((int)p_mode, 2);
 	build_mode = p_mode;
 	if (parent) {
 		_build_polygon();
@@ -311,6 +279,16 @@ bool CollisionPolygon2D::is_one_way_collision_enabled() const {
 	return one_way_collision;
 }
 
+void CollisionPolygon2D::set_one_way_collision_margin(float p_margin) {
+	one_way_collision_margin = p_margin;
+	if (parent) {
+		parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
+	}
+}
+
+float CollisionPolygon2D::get_one_way_collision_margin() const {
+	return one_way_collision_margin;
+}
 void CollisionPolygon2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_polygon", "polygon"), &CollisionPolygon2D::set_polygon);
@@ -322,11 +300,14 @@ void CollisionPolygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionPolygon2D::is_disabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision", "enabled"), &CollisionPolygon2D::set_one_way_collision);
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionPolygon2D::is_one_way_collision_enabled);
+	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionPolygon2D::set_one_way_collision_margin);
+	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionPolygon2D::get_one_way_collision_margin);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "build_mode", PROPERTY_HINT_ENUM, "Solids,Segments"), "set_build_mode", "get_build_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1"), "set_one_way_collision_margin", "get_one_way_collision_margin");
 
 	BIND_ENUM_CONSTANT(BUILD_SOLIDS);
 	BIND_ENUM_CONSTANT(BUILD_SEGMENTS);
@@ -341,4 +322,5 @@ CollisionPolygon2D::CollisionPolygon2D() {
 	owner_id = 0;
 	disabled = false;
 	one_way_collision = false;
+	one_way_collision_margin = 1.0;
 }

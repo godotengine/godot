@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,23 +33,44 @@
 #include <mono/metadata/attrdefs.h>
 
 #include "gd_mono_assembly.h"
+#include "gd_mono_marshal.h"
 
-MonoType *GDMonoClass::get_raw_type(GDMonoClass *p_class) {
+String GDMonoClass::get_full_name(MonoClass *p_mono_class) {
+	// mono_type_get_full_name is not exposed to embedders, but this seems to do the job
+	MonoReflectionType *type_obj = mono_type_get_object(mono_domain_get(), get_mono_type(p_mono_class));
 
-	return mono_class_get_type(p_class->get_mono_ptr());
+	MonoException *exc = NULL;
+	MonoString *str = GDMonoUtils::object_to_string((MonoObject *)type_obj, &exc);
+	UNLIKELY_UNHANDLED_EXCEPTION(exc);
+
+	return GDMonoMarshal::mono_string_to_godot(str);
 }
 
-bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
-
-	return mono_class_is_assignable_from(mono_class, p_from->mono_class);
+MonoType *GDMonoClass::get_mono_type(MonoClass *p_mono_class) {
+	return mono_class_get_type(p_mono_class);
 }
 
 String GDMonoClass::get_full_name() const {
+	return get_full_name(mono_class);
+}
 
-	String res = namespace_name;
-	if (res.length())
-		res += ".";
-	return res + class_name;
+MonoType *GDMonoClass::get_mono_type() {
+	// Careful, you cannot compare two MonoType*.
+	// There is mono_metadata_type_equal, how is this different from comparing two MonoClass*?
+	return get_mono_type(mono_class);
+}
+
+uint32_t GDMonoClass::get_flags() const {
+	return mono_class_get_flags(mono_class);
+}
+
+bool GDMonoClass::is_static() const {
+	uint32_t static_class_flags = MONO_TYPE_ATTR_ABSTRACT | MONO_TYPE_ATTR_SEALED;
+	return (get_flags() & static_class_flags) == static_class_flags;
+}
+
+bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
+	return mono_class_is_assignable_from(mono_class, p_from->mono_class);
 }
 
 GDMonoClass *GDMonoClass::get_parent_class() {
@@ -139,6 +160,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 	while ((raw_method = mono_class_get_methods(get_mono_ptr(), &iter)) != NULL) {
 		StringName name = mono_method_get_name(raw_method);
 
+		// get_method implicitly fetches methods and adds them to this->methods
 		GDMonoMethod *method = get_method(raw_method, name);
 		ERR_CONTINUE(!method);
 
@@ -239,6 +261,11 @@ bool GDMonoClass::has_fetched_method_unknown_params(const StringName &p_name) {
 	return get_fetched_method_unknown_params(p_name) != NULL;
 }
 
+bool GDMonoClass::implements_interface(GDMonoClass *p_interface) {
+
+	return mono_class_implements_interface(mono_class, p_interface->get_mono_ptr());
+}
+
 GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, int p_params_count) {
 
 	MethodKey key = MethodKey(p_name, p_params_count);
@@ -306,6 +333,12 @@ GDMonoMethod *GDMonoClass::get_method_with_desc(const String &p_description, boo
 	ERR_FAIL_COND_V(mono_method_get_class(method) != mono_class, NULL);
 
 	return get_method(method);
+}
+
+void *GDMonoClass::get_method_thunk(const StringName &p_name, int p_params_count) {
+
+	GDMonoMethod *method = get_method(p_name, p_params_count);
+	return method ? method->get_thunk() : NULL;
 }
 
 GDMonoField *GDMonoClass::get_field(const StringName &p_name) {
@@ -431,6 +464,21 @@ const Vector<GDMonoClass *> &GDMonoClass::get_all_delegates() {
 	return delegates_list;
 }
 
+const Vector<GDMonoMethod *> &GDMonoClass::get_all_methods() {
+
+	if (!method_list_fetched) {
+		void *iter = NULL;
+		MonoMethod *raw_method = NULL;
+		while ((raw_method = mono_class_get_methods(get_mono_ptr(), &iter)) != NULL) {
+			method_list.push_back(memnew(GDMonoMethod(mono_method_get_name(raw_method), raw_method)));
+		}
+
+		method_list_fetched = true;
+	}
+
+	return method_list;
+}
+
 GDMonoClass::GDMonoClass(const StringName &p_namespace, const StringName &p_name, MonoClass *p_class, GDMonoAssembly *p_assembly) {
 
 	namespace_name = p_namespace;
@@ -442,6 +490,7 @@ GDMonoClass::GDMonoClass(const StringName &p_namespace, const StringName &p_name
 	attributes = NULL;
 
 	methods_fetched = false;
+	method_list_fetched = false;
 	fields_fetched = false;
 	properties_fetched = false;
 	delegates_fetched = false;
@@ -483,7 +532,7 @@ GDMonoClass::~GDMonoClass() {
 					}
 				}
 
-				deleted_methods[offset] = method;
+				deleted_methods.write[offset] = method;
 				++offset;
 
 				memdelete(method);
@@ -493,5 +542,9 @@ GDMonoClass::~GDMonoClass() {
 		}
 
 		methods.clear();
+	}
+
+	for (int i = 0; i < method_list.size(); ++i) {
+		memdelete(method_list[i]);
 	}
 }

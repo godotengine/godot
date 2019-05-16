@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define ARVR_INTERFACE_H
 
 #include "core/math/camera_matrix.h"
-#include "os/thread_safe.h"
+#include "core/os/thread_safe.h"
 #include "scene/main/viewport.h"
 #include "servers/arvr_server.h"
 
@@ -88,7 +88,7 @@ public:
 	bool is_primary();
 	void set_is_primary(bool p_is_primary);
 
-	virtual bool is_initialized() = 0; /* returns true if we've initialized this interface */
+	virtual bool is_initialized() const = 0; /* returns true if we've initialized this interface */
 	void set_is_initialized(bool p_initialized); /* helper function, will call initialize or uninitialize */
 	virtual bool initialize() = 0; /* initialize this interface, if this has an HMD it becomes the primary interface */
 	virtual void uninitialize() = 0; /* deinitialize this interface */
@@ -108,9 +108,11 @@ public:
 	virtual bool is_stereo() = 0; /* returns true if this interface requires stereo rendering (for VR HMDs) or mono rendering (for mobile AR) */
 	virtual Transform get_transform_for_eye(ARVRInterface::Eyes p_eye, const Transform &p_cam_transform) = 0; /* get each eyes camera transform, also implement EYE_MONO */
 	virtual CameraMatrix get_projection_for_eye(ARVRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) = 0; /* get each eyes projection matrix */
+	virtual unsigned int get_external_texture_for_eye(ARVRInterface::Eyes p_eye); /* if applicable return external texture to render to */
 	virtual void commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) = 0; /* output the left or right eye */
 
 	virtual void process() = 0;
+	virtual void notification(int p_what) = 0;
 
 	ARVRInterface();
 	~ARVRInterface();

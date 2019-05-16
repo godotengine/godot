@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ResourceLoader" inherits="Object" category="Core" version="3.1">
+<class name="ResourceLoader" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		Resource Loader.
 	</brief_description>
 	<description>
-		Resource Loader. This is a static object accessible as [code]ResourceLoader[/code]. GDScript has a simplified load() function, though.
+		Resource Loader. This is a static object accessible as [ResourceLoader]. GDScript has a simplified load() function, though.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
+		<method name="exists">
+			<return type="bool">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_dependencies">
 			<return type="PoolStringArray">
 			</return>
@@ -36,6 +44,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="has_cached">
+			<return type="bool">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="load">
 			<return type="Resource">
 			</return>
@@ -43,7 +59,7 @@
 			</argument>
 			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
 			</argument>
-			<argument index="2" name="p_no_cache" type="bool" default="false">
+			<argument index="2" name="no_cache" type="bool" default="false">
 			</argument>
 			<description>
 			</description>

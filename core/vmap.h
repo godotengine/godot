@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,40 +31,41 @@
 #ifndef VMAP_H
 #define VMAP_H
 
-#include "typedefs.h"
-#include "vector.h"
+#include "core/cowdata.h"
+#include "core/typedefs.h"
 
 template <class T, class V>
 class VMap {
-
-	struct _Pair {
+public:
+	struct Pair {
 
 		T key;
 		V value;
 
-		_FORCE_INLINE_ _Pair() {}
+		_FORCE_INLINE_ Pair() {}
 
-		_FORCE_INLINE_ _Pair(const T &p_key, const V &p_value) {
+		_FORCE_INLINE_ Pair(const T &p_key, const V &p_value) {
 
 			key = p_key;
 			value = p_value;
 		}
 	};
 
-	Vector<_Pair> _data;
+private:
+	CowData<Pair> _cowdata;
 
 	_FORCE_INLINE_ int _find(const T &p_val, bool &r_exact) const {
 
 		r_exact = false;
-		if (_data.empty())
+		if (_cowdata.empty())
 			return 0;
 
 		int low = 0;
-		int high = _data.size() - 1;
-		const _Pair *a = &_data[0];
+		int high = _cowdata.size() - 1;
+		const Pair *a = _cowdata.ptr();
 		int middle = 0;
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 		if (low > high)
 			ERR_PRINT("low > high, this may be a bug");
 #endif
@@ -89,13 +90,13 @@ class VMap {
 
 	_FORCE_INLINE_ int _find_exact(const T &p_val) const {
 
-		if (_data.empty())
+		if (_cowdata.empty())
 			return -1;
 
 		int low = 0;
-		int high = _data.size() - 1;
+		int high = _cowdata.size() - 1;
 		int middle;
-		const _Pair *a = &_data[0];
+		const Pair *a = _cowdata.ptr();
 
 		while (low <= high) {
 			middle = (low + high) / 2;
@@ -118,10 +119,10 @@ public:
 		bool exact;
 		int pos = _find(p_key, exact);
 		if (exact) {
-			_data[pos].value = p_val;
+			_cowdata.get_m(pos).value = p_val;
 			return pos;
 		}
-		_data.insert(pos, _Pair(p_key, p_val));
+		_cowdata.insert(pos, Pair(p_key, p_val));
 		return pos;
 	}
 
@@ -135,7 +136,7 @@ public:
 		int pos = _find_exact(p_val);
 		if (pos < 0)
 			return;
-		_data.remove(pos);
+		_cowdata.remove(pos);
 	}
 
 	int find(const T &p_val) const {
@@ -149,37 +150,37 @@ public:
 		return _find(p_val, exact);
 	}
 
-	_FORCE_INLINE_ int size() const { return _data.size(); }
-	_FORCE_INLINE_ bool empty() const { return _data.empty(); }
+	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+	_FORCE_INLINE_ bool empty() const { return _cowdata.empty(); }
 
-	const _Pair *get_array() const {
+	const Pair *get_array() const {
 
-		return _data.ptr();
+		return _cowdata.ptr();
 	}
 
-	_Pair *get_array() {
+	Pair *get_array() {
 
-		return _data.ptr();
+		return _cowdata.ptrw();
 	}
 
 	const V &getv(int p_index) const {
 
-		return _data[p_index].value;
+		return _cowdata.get(p_index).value;
 	}
 
 	V &getv(int p_index) {
 
-		return _data[p_index].value;
+		return _cowdata.get_m(p_index).value;
 	}
 
 	const T &getk(int p_index) const {
 
-		return _data[p_index].key;
+		return _cowdata.get(p_index).key;
 	}
 
 	T &getk(int p_index) {
 
-		return _data[p_index].key;
+		return _cowdata.get_m(p_index).key;
 	}
 
 	inline const V &operator[](const T &p_key) const {
@@ -188,7 +189,7 @@ public:
 
 		CRASH_COND(pos < 0);
 
-		return _data[pos].value;
+		return _cowdata.get(pos).value;
 	}
 
 	inline V &operator[](const T &p_key) {
@@ -199,7 +200,14 @@ public:
 			pos = insert(p_key, val);
 		}
 
-		return _data[pos].value;
+		return _cowdata.get_m(pos).value;
+	}
+
+	_FORCE_INLINE_ VMap(){};
+	_FORCE_INLINE_ VMap(const VMap &p_from) { _cowdata._ref(p_from._cowdata); }
+	inline VMap &operator=(const VMap &p_from) {
+		_cowdata._ref(p_from._cowdata);
+		return *this;
 	}
 };
 #endif // VMAP_H

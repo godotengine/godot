@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Font" inherits="Resource" category="Core" version="3.1">
+<class name="Font" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		Internationalized font and text drawing support.
 	</brief_description>
 	<description>
-		Font contains a unicode compatible character set, as well as the ability to draw it with variable width, ascent, descent and kerning. For creating fonts from TTF files (or other font formats), see the editor support for fonts. TODO check wikipedia for graph of ascent/baseline/descent/height/etc.
+		Font contains a unicode compatible character set, as well as the ability to draw it with variable width, ascent, descent and kerning. For creating fonts from TTF files (or other font formats), see the editor support for fonts.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="draw" qualifiers="const">
 			<return type="void">
@@ -23,6 +21,8 @@
 			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<argument index="4" name="clip_w" type="int" default="-1">
+			</argument>
+			<argument index="5" name="outline_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<description>
 				Draw "string" into a canvas item using the font at a given position, with "modulate" color, and optionally clipping the width. "position" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
@@ -40,6 +40,8 @@
 			<argument index="3" name="next" type="int" default="-1">
 			</argument>
 			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="5" name="outline" type="bool" default="false">
 			</argument>
 			<description>
 				Draw character "char" into a canvas item using the font at a given position, with "modulate" color, and optionally kerning if "next" is passed. clipping the width. "position" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis. The width used by the character is returned, making this function useful for drawing strings character by character.
@@ -73,6 +75,22 @@
 			</argument>
 			<description>
 				Return the size of a string, taking kerning and advance into account.
+			</description>
+		</method>
+		<method name="get_wordwrap_string_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<argument index="1" name="p_width" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_outline" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="is_distance_field_hint" qualifiers="const">

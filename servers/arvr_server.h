@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,11 @@
 #ifndef ARVR_SERVER_H
 #define ARVR_SERVER_H
 
-#include "os/os.h"
-#include "os/thread_safe.h"
-#include "reference.h"
-#include "rid.h"
-#include "variant.h"
+#include "core/os/os.h"
+#include "core/os/thread_safe.h"
+#include "core/reference.h"
+#include "core/rid.h"
+#include "core/variant.h"
 
 class ARVRInterface;
 class ARVRPositionalTracker;
@@ -87,7 +87,7 @@ private:
 
 	uint64_t last_process_usec; /* for frame timing, usec when we did our processing */
 	uint64_t last_commit_usec; /* for frame timing, usec when we finished committing both eyes */
-	uint64_t last_frame_usec; /* time it took between process and commiting, we should probably average this over the last x frames */
+	uint64_t last_frame_usec; /* time it took between process and committing, we should probably average this over the last x frames */
 
 protected:
 	static ARVRServer *singleton;

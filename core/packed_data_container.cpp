@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "packed_data_container.h"
 
-#include "core_string_names.h"
-#include "io/marshalls.h"
+#include "core/core_string_names.h"
+#include "core/io/marshalls.h"
 
 Variant PackedDataContainer::getvar(const Variant &p_key, bool *r_valid) const {
 
@@ -114,7 +114,7 @@ Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, b
 	} else {
 
 		Variant v;
-		Error rerr = decode_variant(v, p_buf + p_ofs, datalen - p_ofs, NULL);
+		Error rerr = decode_variant(v, p_buf + p_ofs, datalen - p_ofs, NULL, false);
 
 		if (rerr != OK) {
 
@@ -249,9 +249,9 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 
 			uint32_t pos = tmpdata.size();
 			int len;
-			encode_variant(p_data, NULL, len);
+			encode_variant(p_data, NULL, len, false);
 			tmpdata.resize(tmpdata.size() + len);
-			encode_variant(p_data, &tmpdata[pos], len);
+			encode_variant(p_data, &tmpdata.write[pos], len, false);
 			return pos;
 
 		} break;
@@ -268,8 +268,8 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 			uint32_t pos = tmpdata.size();
 			int len = d.size();
 			tmpdata.resize(tmpdata.size() + len * 12 + 8);
-			encode_uint32(TYPE_DICT, &tmpdata[pos + 0]);
-			encode_uint32(len, &tmpdata[pos + 4]);
+			encode_uint32(TYPE_DICT, &tmpdata.write[pos + 0]);
+			encode_uint32(len, &tmpdata.write[pos + 4]);
 
 			List<Variant> keys;
 			d.get_key_list(&keys);
@@ -288,11 +288,11 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 			int idx = 0;
 			for (List<DictKey>::Element *E = sortk.front(); E; E = E->next()) {
 
-				encode_uint32(E->get().hash, &tmpdata[pos + 8 + idx * 12 + 0]);
+				encode_uint32(E->get().hash, &tmpdata.write[pos + 8 + idx * 12 + 0]);
 				uint32_t ofs = _pack(E->get().key, tmpdata, string_cache);
-				encode_uint32(ofs, &tmpdata[pos + 8 + idx * 12 + 4]);
+				encode_uint32(ofs, &tmpdata.write[pos + 8 + idx * 12 + 4]);
 				ofs = _pack(d[E->get().key], tmpdata, string_cache);
-				encode_uint32(ofs, &tmpdata[pos + 8 + idx * 12 + 8]);
+				encode_uint32(ofs, &tmpdata.write[pos + 8 + idx * 12 + 8]);
 				idx++;
 			}
 
@@ -306,20 +306,21 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 			uint32_t pos = tmpdata.size();
 			int len = a.size();
 			tmpdata.resize(tmpdata.size() + len * 4 + 8);
-			encode_uint32(TYPE_ARRAY, &tmpdata[pos + 0]);
-			encode_uint32(len, &tmpdata[pos + 4]);
+			encode_uint32(TYPE_ARRAY, &tmpdata.write[pos + 0]);
+			encode_uint32(len, &tmpdata.write[pos + 4]);
 
 			for (int i = 0; i < len; i++) {
 
 				uint32_t ofs = _pack(a[i], tmpdata, string_cache);
-				encode_uint32(ofs, &tmpdata[pos + 8 + i * 4]);
+				encode_uint32(ofs, &tmpdata.write[pos + 8 + i * 4]);
 			}
 
 			return pos;
 
 		} break;
 
-		default: {}
+		default: {
+		}
 	}
 
 	return OK;

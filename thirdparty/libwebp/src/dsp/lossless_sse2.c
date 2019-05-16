@@ -453,14 +453,11 @@ static void TransformColorInverse_SSE2(const VP8LMultipliers* const m,
                                        int num_pixels, uint32_t* dst) {
 // sign-extended multiplying constants, pre-shifted by 5.
 #define CST(X)  (((int16_t)(m->X << 8)) >> 5)   // sign-extend
-  const __m128i mults_rb = _mm_set_epi16(
-      CST(green_to_red_), CST(green_to_blue_),
-      CST(green_to_red_), CST(green_to_blue_),
-      CST(green_to_red_), CST(green_to_blue_),
-      CST(green_to_red_), CST(green_to_blue_));
-  const __m128i mults_b2 = _mm_set_epi16(
-      CST(red_to_blue_), 0, CST(red_to_blue_), 0,
-      CST(red_to_blue_), 0, CST(red_to_blue_), 0);
+#define MK_CST_16(HI, LO) \
+  _mm_set1_epi32((int)(((uint32_t)(HI) << 16) | ((LO) & 0xffff)))
+  const __m128i mults_rb = MK_CST_16(CST(green_to_red_), CST(green_to_blue_));
+  const __m128i mults_b2 = MK_CST_16(CST(red_to_blue_), 0);
+#undef MK_CST_16
 #undef CST
   const __m128i mask_ag = _mm_set1_epi32(0xff00ff00);  // alpha-green masks
   int i;
@@ -503,11 +500,11 @@ static void ConvertBGRAToRGB_SSE2(const uint32_t* src, int num_pixels,
     __m128i in5 = _mm_loadu_si128(in + 5);
     __m128i in6 = _mm_loadu_si128(in + 6);
     __m128i in7 = _mm_loadu_si128(in + 7);
-    VP8L32bToPlanar(&in0, &in1, &in2, &in3);
-    VP8L32bToPlanar(&in4, &in5, &in6, &in7);
+    VP8L32bToPlanar_SSE2(&in0, &in1, &in2, &in3);
+    VP8L32bToPlanar_SSE2(&in4, &in5, &in6, &in7);
     // At this points, in1/in5 contains red only, in2/in6 green only ...
     // Pack the colors in 24b RGB.
-    VP8PlanarTo24b(&in1, &in5, &in2, &in6, &in3, &in7);
+    VP8PlanarTo24b_SSE2(&in1, &in5, &in2, &in6, &in3, &in7);
     _mm_storeu_si128(out + 0, in1);
     _mm_storeu_si128(out + 1, in5);
     _mm_storeu_si128(out + 2, in2);

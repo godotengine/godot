@@ -3,8 +3,14 @@
 Import('env')
 Import('env_modules')
 
-# Thirdparty source files
-
 env_stb_vorbis = env_modules.Clone()
 
+# Thirdparty source files
+thirdparty_sources = ["#thirdparty/misc/stb_vorbis.c"]
+
+env_thirdparty = env_stb_vorbis.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+
+# Godot's own source files
 env_stb_vorbis.add_source_files(env.modules_sources, "*.cpp")

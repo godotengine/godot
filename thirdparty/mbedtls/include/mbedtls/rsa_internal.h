@@ -2,6 +2,37 @@
  * \file rsa_internal.h
  *
  * \brief Context-independent RSA helper functions
+ *
+ *  This module declares some RSA-related helper functions useful when
+ *  implementing the RSA interface. These functions are provided in a separate
+ *  compilation unit in order to make it easy for designers of alternative RSA
+ *  implementations to use them in their own code, as it is conceived that the
+ *  functionality they provide will be necessary for most complete
+ *  implementations.
+ *
+ *  End-users of Mbed TLS who are not providing their own alternative RSA
+ *  implementations should not use these functions directly, and should instead
+ *  use only the functions declared in rsa.h.
+ *
+ *  The interface provided by this module will be maintained through LTS (Long
+ *  Term Support) branches of Mbed TLS, but may otherwise be subject to change,
+ *  and must be considered an internal interface of the library.
+ *
+ *  There are two classes of helper functions:
+ *
+ *  (1) Parameter-generating helpers. These are:
+ *      - mbedtls_rsa_deduce_primes
+ *      - mbedtls_rsa_deduce_private_exponent
+ *      - mbedtls_rsa_deduce_crt
+ *       Each of these functions takes a set of core RSA parameters and
+ *       generates some other, or CRT related parameters.
+ *
+ *  (2) Parameter-checking helpers. These are:
+ *      - mbedtls_rsa_validate_params
+ *      - mbedtls_rsa_validate_crt
+ *      They take a set of core or CRT related RSA parameters and check their
+ *      validity.
+ *
  */
 /*
  *  Copyright (C) 2006-2017, ARM Limited, All Rights Reserved
@@ -20,31 +51,6 @@
  *  limitations under the License.
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
- *
- *
- *  This file declares some RSA-related helper functions useful when
- *  implementing the RSA interface. They are public and provided in a
- *  separate compilation unit in order to make it easy for designers of
- *  alternative RSA implementations to use them in their code, as it is
- *  conceived that the functionality they provide will be necessary
- *  for most complete implementations.
- *
- *  End-users of Mbed TLS not intending to re-implement the RSA functionality
- *  are not expected to get into the need of making use of these functions directly,
- *  but instead should be able to use the functions declared in rsa.h.
- *
- *  There are two classes of helper functions:
- *  (1) Parameter-generating helpers. These are:
- *      - mbedtls_rsa_deduce_primes
- *      - mbedtls_rsa_deduce_private_exponent
- *      - mbedtls_rsa_deduce_crt
- *       Each of these functions takes a set of core RSA parameters
- *       and generates some other, or CRT related parameters.
- *  (2) Parameter-checking helpers. These are:
- *      - mbedtls_rsa_validate_params
- *      - mbedtls_rsa_validate_crt
- *      They take a set of core or CRT related RSA parameters
- *      and check their validity.
  *
  */
 
@@ -212,5 +218,9 @@ int mbedtls_rsa_validate_params( const mbedtls_mpi *N, const mbedtls_mpi *P,
 int mbedtls_rsa_validate_crt( const mbedtls_mpi *P,  const mbedtls_mpi *Q,
                               const mbedtls_mpi *D,  const mbedtls_mpi *DP,
                               const mbedtls_mpi *DQ, const mbedtls_mpi *QP );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* rsa_internal.h */

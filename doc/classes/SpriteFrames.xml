@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SpriteFrames" inherits="Resource" category="Core" version="3.1">
+<class name="SpriteFrames" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		Sprite frame library for AnimatedSprite.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_animation">
 			<return type="void">
@@ -17,7 +15,7 @@
 			<argument index="0" name="anim" type="String">
 			</argument>
 			<description>
-				Adds a new animation to the the library.
+				Adds a new animation to the library.
 			</description>
 		</method>
 		<method name="add_frame">
@@ -55,7 +53,14 @@
 			<argument index="0" name="anim" type="String">
 			</argument>
 			<description>
-				If [code]true[/code] the given animation will loop.
+				If [code]true[/code], the given animation will loop.
+			</description>
+		</method>
+		<method name="get_animation_names" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Returns an array containing the names associated to each animation. Values are placed in alphabetical order.
 			</description>
 		</method>
 		<method name="get_animation_speed" qualifiers="const">
@@ -93,7 +98,7 @@
 			<argument index="0" name="anim" type="String">
 			</argument>
 			<description>
-				If [code]true[/code] the named animation exists.
+				If [code]true[/code], the named animation exists.
 			</description>
 		</method>
 		<method name="remove_animation">
@@ -135,7 +140,7 @@
 			<argument index="1" name="loop" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the animation will loop.
+				If [code]true[/code], the animation will loop.
 			</description>
 		</method>
 		<method name="set_animation_speed">

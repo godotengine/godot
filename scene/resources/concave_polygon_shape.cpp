@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,8 +56,8 @@ Vector<Vector3> ConcavePolygonShape::_gen_debug_mesh_lines() {
 	int idx = 0;
 	for (Set<DrawEdge>::Element *E = edges.front(); E; E = E->next()) {
 
-		points[idx + 0] = E->get().a;
-		points[idx + 1] = E->get().b;
+		points.write[idx + 0] = E->get().a;
+		points.write[idx + 1] = E->get().b;
 		idx += 2;
 	}
 
@@ -65,6 +65,7 @@ Vector<Vector3> ConcavePolygonShape::_gen_debug_mesh_lines() {
 }
 
 void ConcavePolygonShape::_update_shape() {
+	Shape::_update_shape();
 }
 
 void ConcavePolygonShape::set_faces(const PoolVector<Vector3> &p_faces) {

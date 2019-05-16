@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,14 @@
 #ifndef SETTINGS_CONFIG_DIALOG_H
 #define SETTINGS_CONFIG_DIALOG_H
 
-#include "property_editor.h"
+#include "editor/editor_sectioned_inspector.h"
+#include "editor_inspector.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/gui/tool_button.h"
 
 class EditorSettingsDialog : public AcceptDialog {
 
@@ -47,9 +52,7 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	LineEdit *search_box;
 	LineEdit *shortcut_search_box;
-	ToolButton *clear_button;
-	ToolButton *shortcut_clear_button;
-	SectionedPropertyEditor *property_editor;
+	SectionedInspector *inspector;
 
 	Timer *timer;
 
@@ -88,6 +91,15 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx);
 
 	static void _undo_redo_callback(void *p_self, const String &p_name);
+
+	Label *restart_label;
+	TextureRect *restart_icon;
+	PanelContainer *restart_container;
+	ToolButton *restart_close_button;
+
+	void _editor_restart_request();
+	void _editor_restart();
+	void _editor_restart_close();
 
 protected:
 	static void _bind_methods();

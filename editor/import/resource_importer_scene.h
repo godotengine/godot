@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef RESOURCEIMPORTERSCENE_H
 #define RESOURCEIMPORTERSCENE_H
 
-#include "io/resource_import.h"
+#include "core/io/resource_importer.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/shape.h"
@@ -75,11 +75,17 @@ class EditorScenePostImport : public Reference {
 
 	GDCLASS(EditorScenePostImport, Reference);
 
+	String source_folder;
+	String source_file;
+
 protected:
 	static void _bind_methods();
 
 public:
+	String get_source_folder() const;
+	String get_source_file() const;
 	virtual Node *post_import(Node *p_scene);
+	virtual void init(const String &p_scene_folder, const String &p_scene_path);
 	EditorScenePostImport();
 };
 
@@ -110,7 +116,7 @@ class ResourceImporterScene : public ResourceImporter {
 	enum LightBakeMode {
 		LIGHT_BAKE_DISABLED,
 		LIGHT_BAKE_ENABLE,
-		//LIGHT_BAKE_LIGHTMAPS
+		LIGHT_BAKE_LIGHTMAPS
 	};
 
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
@@ -140,14 +146,14 @@ public:
 
 	void _make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_keep_animations, bool p_make_materials, bool p_keep_materials, bool p_make_meshes, Map<Ref<Animation>, Ref<Animation> > &p_animations, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes);
 
-	Node *_fix_node(Node *p_node, Node *p_root, Map<Ref<ArrayMesh>, Ref<Shape> > &collision_map, LightBakeMode p_light_bake_mode);
+	Node *_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, List<Ref<Shape> > > &collision_map, LightBakeMode p_light_bake_mode);
 
 	void _create_clips(Node *scene, const Array &p_clips, bool p_bake_all);
 	void _filter_anim_tracks(Ref<Animation> anim, Set<String> &keep);
 	void _filter_tracks(Node *scene, const String &p_text);
 	void _optimize_animations(Node *scene, float p_max_lin_error, float p_max_ang_error, float p_max_angle);
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL);
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata = NULL);
 
 	Node *import_scene_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
 	Ref<Animation> import_animation_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);

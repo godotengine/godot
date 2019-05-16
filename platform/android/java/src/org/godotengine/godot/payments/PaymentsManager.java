@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,16 +40,13 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
-
 import com.android.vending.billing.IInAppBillingService;
-
+import java.util.ArrayList;
+import java.util.Arrays;
 import org.godotengine.godot.Godot;
 import org.godotengine.godot.GodotPaymentV3;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class PaymentsManager {
 
@@ -112,8 +109,7 @@ public class PaymentsManager {
 	};
 
 	public void requestPurchase(final String sku, String transactionId) {
-		new PurchaseTask(mService, Godot.getInstance()) {
-
+		new PurchaseTask(mService, activity) {
 			@Override
 			protected void error(String message) {
 				godotPaymentV3.callbackFail(message);
@@ -128,7 +124,6 @@ public class PaymentsManager {
 			protected void alreadyOwned() {
 				godotPaymentV3.callbackAlreadyOwned(sku);
 			}
-
 		}
 				.purchase(sku, transactionId);
 	}
@@ -139,7 +134,6 @@ public class PaymentsManager {
 
 	public void consumeUnconsumedPurchases() {
 		new ReleaseAllConsumablesTask(mService, activity) {
-
 			@Override
 			protected void success(String sku, String receipt, String signature, String token) {
 				godotPaymentV3.callbackSuccessProductMassConsumed(receipt, signature, sku);
@@ -162,7 +156,7 @@ public class PaymentsManager {
 
 	public void requestPurchased() {
 		try {
-			PaymentsCache pc = new PaymentsCache(Godot.getInstance());
+			PaymentsCache pc = new PaymentsCache(activity);
 
 			String continueToken = null;
 
@@ -208,14 +202,12 @@ public class PaymentsManager {
 
 	public void processPurchaseResponse(int resultCode, Intent data) {
 		new HandlePurchaseTask(activity) {
-
 			@Override
 			protected void success(final String sku, final String signature, final String ticket) {
 				godotPaymentV3.callbackSuccess(ticket, signature, sku);
 
 				if (auto_consume) {
 					new ConsumeTask(mService, activity) {
-
 						@Override
 						protected void success(String ticket) {
 						}
@@ -245,12 +237,10 @@ public class PaymentsManager {
 	public void validatePurchase(String purchaseToken, final String sku) {
 
 		new ValidateTask(activity, godotPaymentV3) {
-
 			@Override
 			protected void success() {
 
 				new ConsumeTask(mService, activity) {
-
 					@Override
 					protected void success(String ticket) {
 						godotPaymentV3.callbackSuccess(ticket, null, sku);
@@ -283,7 +273,6 @@ public class PaymentsManager {
 
 	public void consume(final String sku) {
 		new ConsumeTask(mService, activity) {
-
 			@Override
 			protected void success(String ticket) {
 				godotPaymentV3.callbackSuccessProductMassConsumed(ticket, "", sku);

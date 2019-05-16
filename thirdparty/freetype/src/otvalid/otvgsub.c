@@ -1,33 +1,33 @@
-/***************************************************************************/
-/*                                                                         */
-/*  otvgsub.c                                                              */
-/*                                                                         */
-/*    OpenType GSUB table validation (body).                               */
-/*                                                                         */
-/*  Copyright 2004-2017 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * otvgsub.c
+ *
+ *   OpenType GSUB table validation (body).
+ *
+ * Copyright (C) 2004-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include "otvalid.h"
 #include "otvcommn.h"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_otvgsub
+#define FT_COMPONENT  otvgsub
 
 
   /*************************************************************************/
@@ -552,7 +552,11 @@
     OTV_ValidatorRec  otvalidrec;
     OTV_Validator     otvalid = &otvalidrec;
     FT_Bytes          p       = table;
+    FT_UInt           table_size;
+    FT_UShort         version;
     FT_UInt           ScriptList, FeatureList, LookupList;
+
+    OTV_OPTIONAL_TABLE32( featureVariations );
 
 
     otvalid->root = ftvalid;
@@ -560,10 +564,28 @@
     FT_TRACE3(( "validating GSUB table\n" ));
     OTV_INIT;
 
-    OTV_LIMIT_CHECK( 10 );
+    OTV_LIMIT_CHECK( 4 );
 
-    if ( FT_NEXT_ULONG( p ) != 0x10000UL )      /* Version */
+    if ( FT_NEXT_USHORT( p ) != 1 )  /* majorVersion */
       FT_INVALID_FORMAT;
+
+    version = FT_NEXT_USHORT( p );   /* minorVersion */
+
+    table_size = 10;
+    switch ( version )
+    {
+    case 0:
+      OTV_LIMIT_CHECK( 6 );
+      break;
+
+    case 1:
+      OTV_LIMIT_CHECK( 10 );
+      table_size += 4;
+      break;
+
+    default:
+      FT_INVALID_FORMAT;
+    }
 
     ScriptList  = FT_NEXT_USHORT( p );
     FeatureList = FT_NEXT_USHORT( p );
@@ -579,6 +601,14 @@
                               otvalid );
     otv_ScriptList_validate( table + ScriptList, table + FeatureList,
                              otvalid );
+
+    if ( version > 0 )
+    {
+      OTV_OPTIONAL_OFFSET32( featureVariations );
+      OTV_SIZE_CHECK32( featureVariations );
+      if ( featureVariations )
+        OTV_TRACE(( "  [omitting featureVariations validation]\n" )); /* XXX */
+    }
 
     FT_TRACE4(( "\n" ));
   }

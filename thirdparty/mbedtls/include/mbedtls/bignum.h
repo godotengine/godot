@@ -177,7 +177,7 @@ extern "C" {
 /**
  * \brief          MPI structure
  */
-typedef struct
+typedef struct mbedtls_mpi
 {
     int s;              /*!<  integer sign      */
     size_t n;           /*!<  total # of limbs  */
@@ -186,90 +186,115 @@ typedef struct
 mbedtls_mpi;
 
 /**
- * \brief           Initialize one MPI (make internal references valid)
- *                  This just makes it ready to be set or freed,
+ * \brief           Initialize an MPI context.
+ *
+ *                  This makes the MPI ready to be set or freed,
  *                  but does not define a value for the MPI.
  *
- * \param X         One MPI to initialize.
+ * \param X         The MPI context to initialize. This must not be \c NULL.
  */
 void mbedtls_mpi_init( mbedtls_mpi *X );
 
 /**
- * \brief          Unallocate one MPI
+ * \brief          This function frees the components of an MPI context.
  *
- * \param X        One MPI to unallocate.
+ * \param X        The MPI context to be cleared. This may be \c NULL,
+ *                 in which case this function is a no-op. If it is
+ *                 not \c NULL, it must point to an initialized MPI.
  */
 void mbedtls_mpi_free( mbedtls_mpi *X );
 
 /**
- * \brief          Enlarge to the specified number of limbs
+ * \brief          Enlarge an MPI to the specified number of limbs.
  *
- * \param X        MPI to grow
- * \param nblimbs  The target number of limbs
+ * \note           This function does nothing if the MPI is
+ *                 already large enough.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \param X        The MPI to grow. It must be initialized.
+ * \param nblimbs  The target number of limbs.
+ *
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
+ * \return         Another negative error code on other kinds of failure.
  */
 int mbedtls_mpi_grow( mbedtls_mpi *X, size_t nblimbs );
 
 /**
- * \brief          Resize down, keeping at least the specified number of limbs
+ * \brief          This function resizes an MPI downwards, keeping at least the
+ *                 specified number of limbs.
  *
- * \param X        MPI to shrink
- * \param nblimbs  The minimum number of limbs to keep
+ *                 If \c X is smaller than \c nblimbs, it is resized up
+ *                 instead.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \param X        The MPI to shrink. This must point to an initialized MPI.
+ * \param nblimbs  The minimum number of limbs to keep.
+ *
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ *                 (this can only happen when resizing up).
+ * \return         Another negative error code on other kinds of failure.
  */
 int mbedtls_mpi_shrink( mbedtls_mpi *X, size_t nblimbs );
 
 /**
- * \brief          Copy the contents of Y into X
+ * \brief          Make a copy of an MPI.
  *
- * \param X        Destination MPI
- * \param Y        Source MPI
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param Y        The source MPI. This must point to an initialized MPI.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \note           The limb-buffer in the destination MPI is enlarged
+ *                 if necessary to hold the value in the source MPI.
+ *
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
+ * \return         Another negative error code on other kinds of failure.
  */
 int mbedtls_mpi_copy( mbedtls_mpi *X, const mbedtls_mpi *Y );
 
 /**
- * \brief          Swap the contents of X and Y
+ * \brief          Swap the contents of two MPIs.
  *
- * \param X        First MPI value
- * \param Y        Second MPI value
+ * \param X        The first MPI. It must be initialized.
+ * \param Y        The second MPI. It must be initialized.
  */
 void mbedtls_mpi_swap( mbedtls_mpi *X, mbedtls_mpi *Y );
 
 /**
- * \brief          Safe conditional assignement X = Y if assign is 1
+ * \brief          Perform a safe conditional copy of MPI which doesn't
+ *                 reveal whether the condition was true or not.
  *
- * \param X        MPI to conditionally assign to
- * \param Y        Value to be assigned
- * \param assign   1: perform the assignment, 0: keep X's original value
- *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed,
+ * \param X        The MPI to conditionally assign to. This must point
+ *                 to an initialized MPI.
+ * \param Y        The MPI to be assigned from. This must point to an
+ *                 initialized MPI.
+ * \param assign   The condition deciding whether to perform the
+ *                 assignment or not. Possible values:
+ *                 * \c 1: Perform the assignment `X = Y`.
+ *                 * \c 0: Keep the original value of \p X.
  *
  * \note           This function is equivalent to
- *                      if( assign ) mbedtls_mpi_copy( X, Y );
+ *                      `if( assign ) mbedtls_mpi_copy( X, Y );`
  *                 except that it avoids leaking any information about whether
  *                 the assignment was done or not (the above code may leak
  *                 information through branch prediction and/or memory access
  *                 patterns analysis).
+ *
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
+ * \return         Another negative error code on other kinds of failure.
  */
 int mbedtls_mpi_safe_cond_assign( mbedtls_mpi *X, const mbedtls_mpi *Y, unsigned char assign );
 
 /**
- * \brief          Safe conditional swap X <-> Y if swap is 1
+ * \brief          Perform a safe conditional swap which doesn't
+ *                 reveal whether the condition was true or not.
  *
- * \param X        First mbedtls_mpi value
- * \param Y        Second mbedtls_mpi value
- * \param assign   1: perform the swap, 0: keep X and Y's original values
- *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed,
+ * \param X        The first MPI. This must be initialized.
+ * \param Y        The second MPI. This must be initialized.
+ * \param assign   The condition deciding whether to perform
+ *                 the swap or not. Possible values:
+ *                 * \c 1: Swap the values of \p X and \p Y.
+ *                 * \c 0: Keep the original values of \p X and \p Y.
  *
  * \note           This function is equivalent to
  *                      if( assign ) mbedtls_mpi_swap( X, Y );
@@ -277,415 +302,512 @@ int mbedtls_mpi_safe_cond_assign( mbedtls_mpi *X, const mbedtls_mpi *Y, unsigned
  *                 the assignment was done or not (the above code may leak
  *                 information through branch prediction and/or memory access
  *                 patterns analysis).
+ *
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
+ * \return         Another negative error code on other kinds of failure.
+ *
  */
 int mbedtls_mpi_safe_cond_swap( mbedtls_mpi *X, mbedtls_mpi *Y, unsigned char assign );
 
 /**
- * \brief          Set value from integer
+ * \brief          Store integer value in MPI.
  *
- * \param X        MPI to set
- * \param z        Value to use
+ * \param X        The MPI to set. This must be initialized.
+ * \param z        The value to use.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
+ * \return         Another negative error code on other kinds of failure.
  */
 int mbedtls_mpi_lset( mbedtls_mpi *X, mbedtls_mpi_sint z );
 
 /**
- * \brief          Get a specific bit from X
+ * \brief          Get a specific bit from an MPI.
  *
- * \param X        MPI to use
- * \param pos      Zero-based index of the bit in X
+ * \param X        The MPI to query. This must be initialized.
+ * \param pos      Zero-based index of the bit to query.
  *
- * \return         Either a 0 or a 1
+ * \return         \c 0 or \c 1 on success, depending on whether bit \c pos
+ *                 of \c X is unset or set.
+ * \return         A negative error code on failure.
  */
 int mbedtls_mpi_get_bit( const mbedtls_mpi *X, size_t pos );
 
 /**
- * \brief          Set a bit of X to a specific value of 0 or 1
+ * \brief          Modify a specific bit in an MPI.
  *
- * \note           Will grow X if necessary to set a bit to 1 in a not yet
- *                 existing limb. Will not grow if bit should be set to 0
+ * \note           This function will grow the target MPI if necessary to set a
+ *                 bit to \c 1 in a not yet existing limb. It will not grow if
+ *                 the bit should be set to \c 0.
  *
- * \param X        MPI to use
- * \param pos      Zero-based index of the bit in X
- * \param val      The value to set the bit to (0 or 1)
+ * \param X        The MPI to modify. This must be initialized.
+ * \param pos      Zero-based index of the bit to modify.
+ * \param val      The desired value of bit \c pos: \c 0 or \c 1.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed,
- *                 MBEDTLS_ERR_MPI_BAD_INPUT_DATA if val is not 0 or 1
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
+ * \return         Another negative error code on other kinds of failure.
  */
 int mbedtls_mpi_set_bit( mbedtls_mpi *X, size_t pos, unsigned char val );
 
 /**
- * \brief          Return the number of zero-bits before the least significant
- *                 '1' bit
+ * \brief          Return the number of bits of value \c 0 before the
+ *                 least significant bit of value \c 1.
  *
- * Note: Thus also the zero-based index of the least significant '1' bit
+ * \note           This is the same as the zero-based index of
+ *                 the least significant bit of value \c 1.
  *
- * \param X        MPI to use
+ * \param X        The MPI to query.
+ *
+ * \return         The number of bits of value \c 0 before the least significant
+ *                 bit of value \c 1 in \p X.
  */
 size_t mbedtls_mpi_lsb( const mbedtls_mpi *X );
 
 /**
  * \brief          Return the number of bits up to and including the most
- *                 significant '1' bit'
+ *                 significant bit of value \c 1.
  *
- * Note: Thus also the one-based index of the most significant '1' bit
+ * * \note         This is same as the one-based index of the most
+ *                 significant bit of value \c 1.
  *
- * \param X        MPI to use
+ * \param X        The MPI to query. This must point to an initialized MPI.
+ *
+ * \return         The number of bits up to and including the most
+ *                 significant bit of value \c 1.
  */
 size_t mbedtls_mpi_bitlen( const mbedtls_mpi *X );
 
 /**
- * \brief          Return the total size in bytes
+ * \brief          Return the total size of an MPI value in bytes.
  *
- * \param X        MPI to use
+ * \param X        The MPI to use. This must point to an initialized MPI.
+ *
+ * \note           The value returned by this function may be less than
+ *                 the number of bytes used to store \p X internally.
+ *                 This happens if and only if there are trailing bytes
+ *                 of value zero.
+ *
+ * \return         The least number of bytes capable of storing
+ *                 the absolute value of \p X.
  */
 size_t mbedtls_mpi_size( const mbedtls_mpi *X );
 
 /**
- * \brief          Import from an ASCII string
+ * \brief          Import an MPI from an ASCII string.
  *
- * \param X        Destination MPI
- * \param radix    Input numeric base
- * \param s        Null-terminated string buffer
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param radix    The numeric base of the input string.
+ * \param s        Null-terminated string buffer.
  *
- * \return         0 if successful, or a MBEDTLS_ERR_MPI_XXX error code
+ * \return         \c 0 if successful.
+ * \return         A negative error code on failure.
  */
 int mbedtls_mpi_read_string( mbedtls_mpi *X, int radix, const char *s );
 
 /**
- * \brief          Export into an ASCII string
+ * \brief          Export an MPI to an ASCII string.
  *
- * \param X        Source MPI
- * \param radix    Output numeric base
- * \param buf      Buffer to write the string to
- * \param buflen   Length of buf
- * \param olen     Length of the string written, including final NUL byte
+ * \param X        The source MPI. This must point to an initialized MPI.
+ * \param radix    The numeric base of the output string.
+ * \param buf      The buffer to write the string to. This must be writable
+ *                 buffer of length \p buflen Bytes.
+ * \param buflen   The available size in Bytes of \p buf.
+ * \param olen     The address at which to store the length of the string
+ *                 written, including the  final \c NULL byte. This must
+ *                 not be \c NULL.
  *
- * \return         0 if successful, or a MBEDTLS_ERR_MPI_XXX error code.
- *                 *olen is always updated to reflect the amount
- *                 of data that has (or would have) been written.
+ * \note           You can call this function with `buflen == 0` to obtain the
+ *                 minimum required buffer size in `*olen`.
  *
- * \note           Call this function with buflen = 0 to obtain the
- *                 minimum required buffer size in *olen.
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL if the target buffer \p buf
+ *                 is too small to hold the value of \p X in the desired base.
+ *                 In this case, `*olen` is nonetheless updated to contain the
+ *                 size of \p buf required for a successful call.
+ * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_write_string( const mbedtls_mpi *X, int radix,
                               char *buf, size_t buflen, size_t *olen );
 
 #if defined(MBEDTLS_FS_IO)
 /**
- * \brief          Read MPI from a line in an opened file
+ * \brief          Read an MPI from a line in an opened file.
  *
- * \param X        Destination MPI
- * \param radix    Input numeric base
- * \param fin      Input file handle
- *
- * \return         0 if successful, MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL if
- *                 the file read buffer is too small or a
- *                 MBEDTLS_ERR_MPI_XXX error code
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param radix    The numeric base of the string representation used
+ *                 in the source line.
+ * \param fin      The input file handle to use. This must not be \c NULL.
  *
  * \note           On success, this function advances the file stream
  *                 to the end of the current line or to EOF.
  *
- *                 The function returns 0 on an empty line.
+ *                 The function returns \c 0 on an empty line.
  *
  *                 Leading whitespaces are ignored, as is a
- *                 '0x' prefix for radix 16.
+ *                 '0x' prefix for radix \c 16.
  *
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL if the file read buffer
+ *                 is too small.
+ * \return         Another negative error code on failure.
  */
 int mbedtls_mpi_read_file( mbedtls_mpi *X, int radix, FILE *fin );
 
 /**
- * \brief          Write X into an opened file, or stdout if fout is NULL
+ * \brief          Export an MPI into an opened file.
  *
- * \param p        Prefix, can be NULL
- * \param X        Source MPI
- * \param radix    Output numeric base
- * \param fout     Output file handle (can be NULL)
+ * \param p        A string prefix to emit prior to the MPI data.
+ *                 For example, this might be a label, or "0x" when
+ *                 printing in base \c 16. This may be \c NULL if no prefix
+ *                 is needed.
+ * \param X        The source MPI. This must point to an initialized MPI.
+ * \param radix    The numeric base to be used in the emitted string.
+ * \param fout     The output file handle. This may be \c NULL, in which case
+ *                 the output is written to \c stdout.
  *
- * \return         0 if successful, or a MBEDTLS_ERR_MPI_XXX error code
- *
- * \note           Set fout == NULL to print X on the console.
+ * \return         \c 0 if successful.
+ * \return         A negative error code on failure.
  */
-int mbedtls_mpi_write_file( const char *p, const mbedtls_mpi *X, int radix, FILE *fout );
+int mbedtls_mpi_write_file( const char *p, const mbedtls_mpi *X,
+                            int radix, FILE *fout );
 #endif /* MBEDTLS_FS_IO */
 
 /**
- * \brief          Import X from unsigned binary data, big endian
+ * \brief          Import an MPI from unsigned big endian binary data.
  *
- * \param X        Destination MPI
- * \param buf      Input buffer
- * \param buflen   Input buffer size
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param buf      The input buffer. This must be a readable buffer of length
+ *                 \p buflen Bytes.
+ * \param buflen   The length of the input buffer \p p in Bytes.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
+ * \return         Another negative error code on different kinds of failure.
  */
-int mbedtls_mpi_read_binary( mbedtls_mpi *X, const unsigned char *buf, size_t buflen );
+int mbedtls_mpi_read_binary( mbedtls_mpi *X, const unsigned char *buf,
+                             size_t buflen );
 
 /**
- * \brief          Export X into unsigned binary data, big endian.
- *                 Always fills the whole buffer, which will start with zeros
- *                 if the number is smaller.
+ * \brief          Export an MPI into unsigned big endian binary data
+ *                 of fixed size.
  *
- * \param X        Source MPI
- * \param buf      Output buffer
- * \param buflen   Output buffer size
+ * \param X        The source MPI. This must point to an initialized MPI.
+ * \param buf      The output buffer. This must be a writable buffer of length
+ *                 \p buflen Bytes.
+ * \param buflen   The size of the output buffer \p buf in Bytes.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL if buf isn't large enough
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL if \p buf isn't
+ *                 large enough to hold the value of \p X.
+ * \return         Another negative error code on different kinds of failure.
  */
-int mbedtls_mpi_write_binary( const mbedtls_mpi *X, unsigned char *buf, size_t buflen );
+int mbedtls_mpi_write_binary( const mbedtls_mpi *X, unsigned char *buf,
+                              size_t buflen );
 
 /**
- * \brief          Left-shift: X <<= count
+ * \brief          Perform a left-shift on an MPI: X <<= count
  *
- * \param X        MPI to shift
- * \param count    Amount to shift
+ * \param X        The MPI to shift. This must point to an initialized MPI.
+ * \param count    The number of bits to shift by.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_shift_l( mbedtls_mpi *X, size_t count );
 
 /**
- * \brief          Right-shift: X >>= count
+ * \brief          Perform a right-shift on an MPI: X >>= count
  *
- * \param X        MPI to shift
- * \param count    Amount to shift
+ * \param X        The MPI to shift. This must point to an initialized MPI.
+ * \param count    The number of bits to shift by.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_shift_r( mbedtls_mpi *X, size_t count );
 
 /**
- * \brief          Compare unsigned values
+ * \brief          Compare the absolute values of two MPIs.
  *
- * \param X        Left-hand MPI
- * \param Y        Right-hand MPI
+ * \param X        The left-hand MPI. This must point to an initialized MPI.
+ * \param Y        The right-hand MPI. This must point to an initialized MPI.
  *
- * \return         1 if |X| is greater than |Y|,
- *                -1 if |X| is lesser  than |Y| or
- *                 0 if |X| is equal to |Y|
+ * \return         \c 1 if `|X|` is greater than `|Y|`.
+ * \return         \c -1 if `|X|` is lesser than `|Y|`.
+ * \return         \c 0 if `|X|` is equal to `|Y|`.
  */
 int mbedtls_mpi_cmp_abs( const mbedtls_mpi *X, const mbedtls_mpi *Y );
 
 /**
- * \brief          Compare signed values
+ * \brief          Compare two MPIs.
  *
- * \param X        Left-hand MPI
- * \param Y        Right-hand MPI
+ * \param X        The left-hand MPI. This must point to an initialized MPI.
+ * \param Y        The right-hand MPI. This must point to an initialized MPI.
  *
- * \return         1 if X is greater than Y,
- *                -1 if X is lesser  than Y or
- *                 0 if X is equal to Y
+ * \return         \c 1 if \p X is greater than \p Y.
+ * \return         \c -1 if \p X is lesser than \p Y.
+ * \return         \c 0 if \p X is equal to \p Y.
  */
 int mbedtls_mpi_cmp_mpi( const mbedtls_mpi *X, const mbedtls_mpi *Y );
 
 /**
- * \brief          Compare signed values
+ * \brief          Compare an MPI with an integer.
  *
- * \param X        Left-hand MPI
- * \param z        The integer value to compare to
+ * \param X        The left-hand MPI. This must point to an initialized MPI.
+ * \param z        The integer value to compare \p X to.
  *
- * \return         1 if X is greater than z,
- *                -1 if X is lesser  than z or
- *                 0 if X is equal to z
+ * \return         \c 1 if \p X is greater than \p z.
+ * \return         \c -1 if \p X is lesser than \p z.
+ * \return         \c 0 if \p X is equal to \p z.
  */
 int mbedtls_mpi_cmp_int( const mbedtls_mpi *X, mbedtls_mpi_sint z );
 
 /**
- * \brief          Unsigned addition: X = |A| + |B|
+ * \brief          Perform an unsigned addition of MPIs: X = |A| + |B|
  *
- * \param X        Destination MPI
- * \param A        Left-hand MPI
- * \param B        Right-hand MPI
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param A        The first summand. This must point to an initialized MPI.
+ * \param B        The second summand. This must point to an initialized MPI.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         Another negative error code on different kinds of failure.
  */
-int mbedtls_mpi_add_abs( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *B );
+int mbedtls_mpi_add_abs( mbedtls_mpi *X, const mbedtls_mpi *A,
+                         const mbedtls_mpi *B );
 
 /**
- * \brief          Unsigned subtraction: X = |A| - |B|
+ * \brief          Perform an unsigned subtraction of MPIs: X = |A| - |B|
  *
- * \param X        Destination MPI
- * \param A        Left-hand MPI
- * \param B        Right-hand MPI
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param A        The minuend. This must point to an initialized MPI.
+ * \param B        The subtrahend. This must point to an initialized MPI.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_NEGATIVE_VALUE if B is greater than A
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_NEGATIVE_VALUE if \p B is greater than \p A.
+ * \return         Another negative error code on different kinds of failure.
+ *
  */
-int mbedtls_mpi_sub_abs( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *B );
+int mbedtls_mpi_sub_abs( mbedtls_mpi *X, const mbedtls_mpi *A,
+                         const mbedtls_mpi *B );
 
 /**
- * \brief          Signed addition: X = A + B
+ * \brief          Perform a signed addition of MPIs: X = A + B
  *
- * \param X        Destination MPI
- * \param A        Left-hand MPI
- * \param B        Right-hand MPI
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param A        The first summand. This must point to an initialized MPI.
+ * \param B        The second summand. This must point to an initialized MPI.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         Another negative error code on different kinds of failure.
  */
-int mbedtls_mpi_add_mpi( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *B );
+int mbedtls_mpi_add_mpi( mbedtls_mpi *X, const mbedtls_mpi *A,
+                         const mbedtls_mpi *B );
 
 /**
- * \brief          Signed subtraction: X = A - B
+ * \brief          Perform a signed subtraction of MPIs: X = A - B
  *
- * \param X        Destination MPI
- * \param A        Left-hand MPI
- * \param B        Right-hand MPI
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param A        The minuend. This must point to an initialized MPI.
+ * \param B        The subtrahend. This must point to an initialized MPI.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         Another negative error code on different kinds of failure.
  */
-int mbedtls_mpi_sub_mpi( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *B );
+int mbedtls_mpi_sub_mpi( mbedtls_mpi *X, const mbedtls_mpi *A,
+                         const mbedtls_mpi *B );
 
 /**
- * \brief          Signed addition: X = A + b
+ * \brief          Perform a signed addition of an MPI and an integer: X = A + b
  *
- * \param X        Destination MPI
- * \param A        Left-hand MPI
- * \param b        The integer value to add
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param A        The first summand. This must point to an initialized MPI.
+ * \param b        The second summand.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         Another negative error code on different kinds of failure.
  */
-int mbedtls_mpi_add_int( mbedtls_mpi *X, const mbedtls_mpi *A, mbedtls_mpi_sint b );
+int mbedtls_mpi_add_int( mbedtls_mpi *X, const mbedtls_mpi *A,
+                         mbedtls_mpi_sint b );
 
 /**
- * \brief          Signed subtraction: X = A - b
+ * \brief          Perform a signed subtraction of an MPI and an integer:
+ *                 X = A - b
  *
- * \param X        Destination MPI
- * \param A        Left-hand MPI
- * \param b        The integer value to subtract
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param A        The minuend. This must point to an initialized MPI.
+ * \param b        The subtrahend.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         Another negative error code on different kinds of failure.
  */
-int mbedtls_mpi_sub_int( mbedtls_mpi *X, const mbedtls_mpi *A, mbedtls_mpi_sint b );
+int mbedtls_mpi_sub_int( mbedtls_mpi *X, const mbedtls_mpi *A,
+                         mbedtls_mpi_sint b );
 
 /**
- * \brief          Baseline multiplication: X = A * B
+ * \brief          Perform a multiplication of two MPIs: X = A * B
  *
- * \param X        Destination MPI
- * \param A        Left-hand MPI
- * \param B        Right-hand MPI
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param A        The first factor. This must point to an initialized MPI.
+ * \param B        The second factor. This must point to an initialized MPI.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         Another negative error code on different kinds of failure.
+ *
  */
-int mbedtls_mpi_mul_mpi( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *B );
+int mbedtls_mpi_mul_mpi( mbedtls_mpi *X, const mbedtls_mpi *A,
+                         const mbedtls_mpi *B );
 
 /**
- * \brief          Baseline multiplication: X = A * b
+ * \brief          Perform a multiplication of an MPI with an unsigned integer:
+ *                 X = A * b
  *
- * \param X        Destination MPI
- * \param A        Left-hand MPI
- * \param b        The unsigned integer value to multiply with
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param A        The first factor. This must point to an initialized MPI.
+ * \param b        The second factor.
  *
- * \note           b is unsigned
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         Another negative error code on different kinds of failure.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
  */
-int mbedtls_mpi_mul_int( mbedtls_mpi *X, const mbedtls_mpi *A, mbedtls_mpi_uint b );
+int mbedtls_mpi_mul_int( mbedtls_mpi *X, const mbedtls_mpi *A,
+                         mbedtls_mpi_uint b );
 
 /**
- * \brief          Division by mbedtls_mpi: A = Q * B + R
+ * \brief          Perform a division with remainder of two MPIs:
+ *                 A = Q * B + R
  *
- * \param Q        Destination MPI for the quotient
- * \param R        Destination MPI for the rest value
- * \param A        Left-hand MPI
- * \param B        Right-hand MPI
+ * \param Q        The destination MPI for the quotient.
+ *                 This may be \c NULL if the value of the
+ *                 quotient is not needed.
+ * \param R        The destination MPI for the remainder value.
+ *                 This may be \c NULL if the value of the
+ *                 remainder is not needed.
+ * \param A        The dividend. This must point to an initialized MPi.
+ * \param B        The divisor. This must point to an initialized MPI.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed,
- *                 MBEDTLS_ERR_MPI_DIVISION_BY_ZERO if B == 0
- *
- * \note           Either Q or R can be NULL.
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
+ * \return         #MBEDTLS_ERR_MPI_DIVISION_BY_ZERO if \p B equals zero.
+ * \return         Another negative error code on different kinds of failure.
  */
-int mbedtls_mpi_div_mpi( mbedtls_mpi *Q, mbedtls_mpi *R, const mbedtls_mpi *A, const mbedtls_mpi *B );
+int mbedtls_mpi_div_mpi( mbedtls_mpi *Q, mbedtls_mpi *R, const mbedtls_mpi *A,
+                         const mbedtls_mpi *B );
 
 /**
- * \brief          Division by int: A = Q * b + R
+ * \brief          Perform a division with remainder of an MPI by an integer:
+ *                 A = Q * b + R
  *
- * \param Q        Destination MPI for the quotient
- * \param R        Destination MPI for the rest value
- * \param A        Left-hand MPI
- * \param b        Integer to divide by
+ * \param Q        The destination MPI for the quotient.
+ *                 This may be \c NULL if the value of the
+ *                 quotient is not needed.
+ * \param R        The destination MPI for the remainder value.
+ *                 This may be \c NULL if the value of the
+ *                 remainder is not needed.
+ * \param A        The dividend. This must point to an initialized MPi.
+ * \param b        The divisor.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed,
- *                 MBEDTLS_ERR_MPI_DIVISION_BY_ZERO if b == 0
- *
- * \note           Either Q or R can be NULL.
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
+ * \return         #MBEDTLS_ERR_MPI_DIVISION_BY_ZERO if \p b equals zero.
+ * \return         Another negative error code on different kinds of failure.
  */
-int mbedtls_mpi_div_int( mbedtls_mpi *Q, mbedtls_mpi *R, const mbedtls_mpi *A, mbedtls_mpi_sint b );
+int mbedtls_mpi_div_int( mbedtls_mpi *Q, mbedtls_mpi *R, const mbedtls_mpi *A,
+                         mbedtls_mpi_sint b );
 
 /**
- * \brief          Modulo: R = A mod B
+ * \brief          Perform a modular reduction. R = A mod B
  *
- * \param R        Destination MPI for the rest value
- * \param A        Left-hand MPI
- * \param B        Right-hand MPI
+ * \param R        The destination MPI for the residue value.
+ *                 This must point to an initialized MPI.
+ * \param A        The MPI to compute the residue of.
+ *                 This must point to an initialized MPI.
+ * \param B        The base of the modular reduction.
+ *                 This must point to an initialized MPI.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed,
- *                 MBEDTLS_ERR_MPI_DIVISION_BY_ZERO if B == 0,
- *                 MBEDTLS_ERR_MPI_NEGATIVE_VALUE if B < 0
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         #MBEDTLS_ERR_MPI_DIVISION_BY_ZERO if \p B equals zero.
+ * \return         #MBEDTLS_ERR_MPI_NEGATIVE_VALUE if \p B is negative.
+ * \return         Another negative error code on different kinds of failure.
+ *
  */
-int mbedtls_mpi_mod_mpi( mbedtls_mpi *R, const mbedtls_mpi *A, const mbedtls_mpi *B );
+int mbedtls_mpi_mod_mpi( mbedtls_mpi *R, const mbedtls_mpi *A,
+                         const mbedtls_mpi *B );
 
 /**
- * \brief          Modulo: r = A mod b
+ * \brief          Perform a modular reduction with respect to an integer.
+ *                 r = A mod b
  *
- * \param r        Destination mbedtls_mpi_uint
- * \param A        Left-hand MPI
- * \param b        Integer to divide by
+ * \param r        The address at which to store the residue.
+ *                 This must not be \c NULL.
+ * \param A        The MPI to compute the residue of.
+ *                 This must point to an initialized MPi.
+ * \param b        The integer base of the modular reduction.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed,
- *                 MBEDTLS_ERR_MPI_DIVISION_BY_ZERO if b == 0,
- *                 MBEDTLS_ERR_MPI_NEGATIVE_VALUE if b < 0
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         #MBEDTLS_ERR_MPI_DIVISION_BY_ZERO if \p b equals zero.
+ * \return         #MBEDTLS_ERR_MPI_NEGATIVE_VALUE if \p b is negative.
+ * \return         Another negative error code on different kinds of failure.
  */
-int mbedtls_mpi_mod_int( mbedtls_mpi_uint *r, const mbedtls_mpi *A, mbedtls_mpi_sint b );
+int mbedtls_mpi_mod_int( mbedtls_mpi_uint *r, const mbedtls_mpi *A,
+                         mbedtls_mpi_sint b );
 
 /**
- * \brief          Sliding-window exponentiation: X = A^E mod N
+ * \brief          Perform a sliding-window exponentiation: X = A^E mod N
  *
- * \param X        Destination MPI
- * \param A        Left-hand MPI
- * \param E        Exponent MPI
- * \param N        Modular MPI
- * \param _RR      Speed-up MPI used for recalculations
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param A        The base of the exponentiation.
+ *                 This must point to an initialized MPI.
+ * \param E        The exponent MPI. This must point to an initialized MPI.
+ * \param N        The base for the modular reduction. This must point to an
+ *                 initialized MPI.
+ * \param _RR      A helper MPI depending solely on \p N which can be used to
+ *                 speed-up multiple modular exponentiations for the same value
+ *                 of \p N. This may be \c NULL. If it is not \c NULL, it must
+ *                 point to an initialized MPI. If it hasn't been used after
+ *                 the call to mbedtls_mpi_init(), this function will compute
+ *                 the helper value and store it in \p _RR for reuse on
+ *                 subsequent calls to this function. Otherwise, the function
+ *                 will assume that \p _RR holds the helper value set by a
+ *                 previous call to mbedtls_mpi_exp_mod(), and reuse it.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed,
- *                 MBEDTLS_ERR_MPI_BAD_INPUT_DATA if N is negative or even or
- *                 if E is negative
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         #MBEDTLS_ERR_MPI_BAD_INPUT_DATA if \c N is negative or
+ *                 even, or if \c E is negative.
+ * \return         Another negative error code on different kinds of failures.
  *
- * \note           _RR is used to avoid re-computing R*R mod N across
- *                 multiple calls, which speeds up things a bit. It can
- *                 be set to NULL if the extra performance is unneeded.
  */
-int mbedtls_mpi_exp_mod( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *E, const mbedtls_mpi *N, mbedtls_mpi *_RR );
+int mbedtls_mpi_exp_mod( mbedtls_mpi *X, const mbedtls_mpi *A,
+                         const mbedtls_mpi *E, const mbedtls_mpi *N,
+                         mbedtls_mpi *_RR );
 
 /**
- * \brief          Fill an MPI X with size bytes of random
+ * \brief          Fill an MPI with a number of random bytes.
  *
- * \param X        Destination MPI
- * \param size     Size in bytes
- * \param f_rng    RNG function
- * \param p_rng    RNG parameter
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param size     The number of random bytes to generate.
+ * \param f_rng    The RNG function to use. This must not be \c NULL.
+ * \param p_rng    The RNG parameter to be passed to \p f_rng. This may be
+ *                 \c NULL if \p f_rng doesn't need a context argument.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         Another negative error code on failure.
  *
- * \note           The bytes obtained from the PRNG are interpreted
+ * \note           The bytes obtained from the RNG are interpreted
  *                 as a big-endian representation of an MPI; this can
  *                 be relevant in applications like deterministic ECDSA.
  */
@@ -694,61 +816,130 @@ int mbedtls_mpi_fill_random( mbedtls_mpi *X, size_t size,
                      void *p_rng );
 
 /**
- * \brief          Greatest common divisor: G = gcd(A, B)
+ * \brief          Compute the greatest common divisor: G = gcd(A, B)
  *
- * \param G        Destination MPI
- * \param A        Left-hand MPI
- * \param B        Right-hand MPI
+ * \param G        The destination MPI. This must point to an initialized MPI.
+ * \param A        The first operand. This must point to an initialized MPI.
+ * \param B        The second operand. This must point to an initialized MPI.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         Another negative error code on different kinds of failure.
  */
-int mbedtls_mpi_gcd( mbedtls_mpi *G, const mbedtls_mpi *A, const mbedtls_mpi *B );
+int mbedtls_mpi_gcd( mbedtls_mpi *G, const mbedtls_mpi *A,
+                     const mbedtls_mpi *B );
 
 /**
- * \brief          Modular inverse: X = A^-1 mod N
+ * \brief          Compute the modular inverse: X = A^-1 mod N
  *
- * \param X        Destination MPI
- * \param A        Left-hand MPI
- * \param N        Right-hand MPI
+ * \param X        The destination MPI. This must point to an initialized MPI.
+ * \param A        The MPI to calculate the modular inverse of. This must point
+ *                 to an initialized MPI.
+ * \param N        The base of the modular inversion. This must point to an
+ *                 initialized MPI.
  *
- * \return         0 if successful,
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed,
- *                 MBEDTLS_ERR_MPI_BAD_INPUT_DATA if N is <= 1,
-                   MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if A has no inverse mod N.
+ * \return         \c 0 if successful.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         #MBEDTLS_ERR_MPI_BAD_INPUT_DATA if \p N is less than
+ *                 or equal to one.
+ * \return         #MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if \p has no modular inverse
+ *                 with respect to \p N.
  */
-int mbedtls_mpi_inv_mod( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *N );
+int mbedtls_mpi_inv_mod( mbedtls_mpi *X, const mbedtls_mpi *A,
+                         const mbedtls_mpi *N );
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+#if defined(MBEDTLS_DEPRECATED_WARNING)
+#define MBEDTLS_DEPRECATED      __attribute__((deprecated))
+#else
+#define MBEDTLS_DEPRECATED
+#endif
+/**
+ * \brief          Perform a Miller-Rabin primality test with error
+ *                 probability of 2<sup>-80</sup>.
+ *
+ * \deprecated     Superseded by mbedtls_mpi_is_prime_ext() which allows
+ *                 specifying the number of Miller-Rabin rounds.
+ *
+ * \param X        The MPI to check for primality.
+ *                 This must point to an initialized MPI.
+ * \param f_rng    The RNG function to use. This must not be \c NULL.
+ * \param p_rng    The RNG parameter to be passed to \p f_rng.
+ *                 This may be \c NULL if \p f_rng doesn't use a
+ *                 context parameter.
+ *
+ * \return         \c 0 if successful, i.e. \p X is probably prime.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         #MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if \p X is not prime.
+ * \return         Another negative error code on other kinds of failure.
+ */
+MBEDTLS_DEPRECATED int mbedtls_mpi_is_prime( const mbedtls_mpi *X,
+                          int (*f_rng)(void *, unsigned char *, size_t),
+                          void *p_rng );
+#undef MBEDTLS_DEPRECATED
+#endif /* !MBEDTLS_DEPRECATED_REMOVED */
 
 /**
- * \brief          Miller-Rabin primality test
+ * \brief          Miller-Rabin primality test.
  *
- * \param X        MPI to check
- * \param f_rng    RNG function
- * \param p_rng    RNG parameter
+ * \warning        If \p X is potentially generated by an adversary, for example
+ *                 when validating cryptographic parameters that you didn't
+ *                 generate yourself and that are supposed to be prime, then
+ *                 \p rounds should be at least the half of the security
+ *                 strength of the cryptographic algorithm. On the other hand,
+ *                 if \p X is chosen uniformly or non-adversially (as is the
+ *                 case when mbedtls_mpi_gen_prime calls this function), then
+ *                 \p rounds can be much lower.
  *
- * \return         0 if successful (probably prime),
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed,
- *                 MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if X is not prime
+ * \param X        The MPI to check for primality.
+ *                 This must point to an initialized MPI.
+ * \param rounds   The number of bases to perform the Miller-Rabin primality
+ *                 test for. The probability of returning 0 on a composite is
+ *                 at most 2<sup>-2*\p rounds</sup>.
+ * \param f_rng    The RNG function to use. This must not be \c NULL.
+ * \param p_rng    The RNG parameter to be passed to \p f_rng.
+ *                 This may be \c NULL if \p f_rng doesn't use
+ *                 a context parameter.
+ *
+ * \return         \c 0 if successful, i.e. \p X is probably prime.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         #MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if \p X is not prime.
+ * \return         Another negative error code on other kinds of failure.
  */
-int mbedtls_mpi_is_prime( const mbedtls_mpi *X,
-                  int (*f_rng)(void *, unsigned char *, size_t),
-                  void *p_rng );
+int mbedtls_mpi_is_prime_ext( const mbedtls_mpi *X, int rounds,
+                              int (*f_rng)(void *, unsigned char *, size_t),
+                              void *p_rng );
+/**
+ * \brief Flags for mbedtls_mpi_gen_prime()
+ *
+ * Each of these flags is a constraint on the result X returned by
+ * mbedtls_mpi_gen_prime().
+ */
+typedef enum {
+    MBEDTLS_MPI_GEN_PRIME_FLAG_DH =      0x0001, /**< (X-1)/2 is prime too */
+    MBEDTLS_MPI_GEN_PRIME_FLAG_LOW_ERR = 0x0002, /**< lower error rate from 2<sup>-80</sup> to 2<sup>-128</sup> */
+} mbedtls_mpi_gen_prime_flag_t;
 
 /**
- * \brief          Prime number generation
+ * \brief          Generate a prime number.
  *
- * \param X        Destination MPI
- * \param nbits    Required size of X in bits
- *                 ( 3 <= nbits <= MBEDTLS_MPI_MAX_BITS )
- * \param dh_flag  If 1, then (X-1)/2 will be prime too
- * \param f_rng    RNG function
- * \param p_rng    RNG parameter
+ * \param X        The destination MPI to store the generated prime in.
+ *                 This must point to an initialized MPi.
+ * \param nbits    The required size of the destination MPI in bits.
+ *                 This must be between \c 3 and #MBEDTLS_MPI_MAX_BITS.
+ * \param flags    A mask of flags of type #mbedtls_mpi_gen_prime_flag_t.
+ * \param f_rng    The RNG function to use. This must not be \c NULL.
+ * \param p_rng    The RNG parameter to be passed to \p f_rng.
+ *                 This may be \c NULL if \p f_rng doesn't use
+ *                 a context parameter.
  *
- * \return         0 if successful (probably prime),
- *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed,
- *                 MBEDTLS_ERR_MPI_BAD_INPUT_DATA if nbits is < 3
+ * \return         \c 0 if successful, in which case \p X holds a
+ *                 probably prime number.
+ * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
+ * \return         #MBEDTLS_ERR_MPI_BAD_INPUT_DATA if `nbits` is not between
+ *                 \c 3 and #MBEDTLS_MPI_MAX_BITS.
  */
-int mbedtls_mpi_gen_prime( mbedtls_mpi *X, size_t nbits, int dh_flag,
+int mbedtls_mpi_gen_prime( mbedtls_mpi *X, size_t nbits, int flags,
                    int (*f_rng)(void *, unsigned char *, size_t),
                    void *p_rng );
 

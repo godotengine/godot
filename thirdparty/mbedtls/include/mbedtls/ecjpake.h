@@ -44,8 +44,6 @@
 #include "ecp.h"
 #include "md.h"
 
-#if !defined(MBEDTLS_ECJPAKE_ALT)
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -58,6 +56,7 @@ typedef enum {
     MBEDTLS_ECJPAKE_SERVER,             /**< Server                         */
 } mbedtls_ecjpake_role;
 
+#if !defined(MBEDTLS_ECJPAKE_ALT)
 /**
  * EC J-PAKE context structure.
  *
@@ -69,7 +68,7 @@ typedef enum {
  * convetion from the Thread v1.0 spec. Correspondance is indicated in the
  * description as a pair C: client name, S: server name
  */
-typedef struct
+typedef struct mbedtls_ecjpake_context
 {
     const mbedtls_md_info_t *md_info;   /**< Hash to use                    */
     mbedtls_ecp_group grp;              /**< Elliptic curve                 */
@@ -88,29 +87,38 @@ typedef struct
     mbedtls_mpi s;                      /**< Pre-shared secret (passphrase) */
 } mbedtls_ecjpake_context;
 
+#else  /* MBEDTLS_ECJPAKE_ALT */
+#include "ecjpake_alt.h"
+#endif /* MBEDTLS_ECJPAKE_ALT */
+
 /**
- * \brief           Initialize a context
- *                  (just makes it ready for setup() or free()).
+ * \brief           Initialize an ECJPAKE context.
  *
- * \param ctx       context to initialize
+ * \param ctx       The ECJPAKE context to initialize.
+ *                  This must not be \c NULL.
  */
 void mbedtls_ecjpake_init( mbedtls_ecjpake_context *ctx );
 
 /**
- * \brief           Set up a context for use
+ * \brief           Set up an ECJPAKE context for use.
  *
  * \note            Currently the only values for hash/curve allowed by the
- *                  standard are MBEDTLS_MD_SHA256/MBEDTLS_ECP_DP_SECP256R1.
+ *                  standard are #MBEDTLS_MD_SHA256/#MBEDTLS_ECP_DP_SECP256R1.
  *
- * \param ctx       context to set up
- * \param role      Our role: client or server
- * \param hash      hash function to use (MBEDTLS_MD_XXX)
- * \param curve     elliptic curve identifier (MBEDTLS_ECP_DP_XXX)
- * \param secret    pre-shared secret (passphrase)
- * \param len       length of the shared secret
+ * \param ctx       The ECJPAKE context to set up. This must be initialized.
+ * \param role      The role of the caller. This must be either
+ *                  #MBEDTLS_ECJPAKE_CLIENT or #MBEDTLS_ECJPAKE_SERVER.
+ * \param hash      The identifier of the hash function to use,
+ *                  for example #MBEDTLS_MD_SHA256.
+ * \param curve     The identifier of the elliptic curve to use,
+ *                  for example #MBEDTLS_ECP_DP_SECP256R1.
+ * \param secret    The pre-shared secret (passphrase). This must be
+ *                  a readable buffer of length \p len Bytes. It need
+ *                  only be valid for the duration of this call.
+ * \param len       The length of the pre-shared secret \p secret.
  *
- * \return          0 if successfull,
- *                  a negative error code otherwise
+ * \return          \c 0 if successful.
+ * \return          A negative error code on failure.
  */
 int mbedtls_ecjpake_setup( mbedtls_ecjpake_context *ctx,
                            mbedtls_ecjpake_role role,
@@ -120,29 +128,34 @@ int mbedtls_ecjpake_setup( mbedtls_ecjpake_context *ctx,
                            size_t len );
 
 /**
- * \brief           Check if a context is ready for use
+ * \brief           Check if an ECJPAKE context is ready for use.
  *
- * \param ctx       Context to check
+ * \param ctx       The ECJPAKE context to check. This must be
+ *                  initialized.
  *
- * \return          0 if the context is ready for use,
- *                  MBEDTLS_ERR_ECP_BAD_INPUT_DATA otherwise
+ * \return          \c 0 if the context is ready for use.
+ * \return          #MBEDTLS_ERR_ECP_BAD_INPUT_DATA otherwise.
  */
 int mbedtls_ecjpake_check( const mbedtls_ecjpake_context *ctx );
 
 /**
  * \brief           Generate and write the first round message
  *                  (TLS: contents of the Client/ServerHello extension,
- *                  excluding extension type and length bytes)
+ *                  excluding extension type and length bytes).
  *
- * \param ctx       Context to use
- * \param buf       Buffer to write the contents to
- * \param len       Buffer size
- * \param olen      Will be updated with the number of bytes written
- * \param f_rng     RNG function
- * \param p_rng     RNG parameter
+ * \param ctx       The ECJPAKE context to use. This must be
+ *                  initialized and set up.
+ * \param buf       The buffer to write the contents to. This must be a
+ *                  writable buffer of length \p len Bytes.
+ * \param len       The length of \p buf in Bytes.
+ * \param olen      The address at which to store the total number
+ *                  of Bytes written to \p buf. This must not be \c NULL.
+ * \param f_rng     The RNG function to use. This must not be \c NULL.
+ * \param p_rng     The RNG parameter to be passed to \p f_rng. This
+ *                  may be \c NULL if \p f_rng doesn't use a context.
  *
- * \return          0 if successfull,
- *                  a negative error code otherwise
+ * \return          \c 0 if successful.
+ * \return          A negative error code on failure.
  */
 int mbedtls_ecjpake_write_round_one( mbedtls_ecjpake_context *ctx,
                             unsigned char *buf, size_t len, size_t *olen,
@@ -152,14 +165,16 @@ int mbedtls_ecjpake_write_round_one( mbedtls_ecjpake_context *ctx,
 /**
  * \brief           Read and process the first round message
  *                  (TLS: contents of the Client/ServerHello extension,
- *                  excluding extension type and length bytes)
+ *                  excluding extension type and length bytes).
  *
- * \param ctx       Context to use
- * \param buf       Pointer to extension contents
- * \param len       Extension length
+ * \param ctx       The ECJPAKE context to use. This must be initialized
+ *                  and set up.
+ * \param buf       The buffer holding the first round message. This must
+ *                  be a readable buffer of length \p len Bytes.
+ * \param len       The length in Bytes of \p buf.
  *
- * \return          0 if successfull,
- *                  a negative error code otherwise
+ * \return          \c 0 if successful.
+ * \return          A negative error code on failure.
  */
 int mbedtls_ecjpake_read_round_one( mbedtls_ecjpake_context *ctx,
                                     const unsigned char *buf,
@@ -167,17 +182,21 @@ int mbedtls_ecjpake_read_round_one( mbedtls_ecjpake_context *ctx,
 
 /**
  * \brief           Generate and write the second round message
- *                  (TLS: contents of the Client/ServerKeyExchange)
+ *                  (TLS: contents of the Client/ServerKeyExchange).
  *
- * \param ctx       Context to use
- * \param buf       Buffer to write the contents to
- * \param len       Buffer size
- * \param olen      Will be updated with the number of bytes written
- * \param f_rng     RNG function
- * \param p_rng     RNG parameter
+ * \param ctx       The ECJPAKE context to use. This must be initialized,
+ *                  set up, and already have performed round one.
+ * \param buf       The buffer to write the round two contents to.
+ *                  This must be a writable buffer of length \p len Bytes.
+ * \param len       The size of \p buf in Bytes.
+ * \param olen      The address at which to store the total number of Bytes
+ *                  written to \p buf. This must not be \c NULL.
+ * \param f_rng     The RNG function to use. This must not be \c NULL.
+ * \param p_rng     The RNG parameter to be passed to \p f_rng. This
+ *                  may be \c NULL if \p f_rng doesn't use a context.
  *
- * \return          0 if successfull,
- *                  a negative error code otherwise
+ * \return          \c 0 if successful.
+ * \return          A negative error code on failure.
  */
 int mbedtls_ecjpake_write_round_two( mbedtls_ecjpake_context *ctx,
                             unsigned char *buf, size_t len, size_t *olen,
@@ -186,14 +205,16 @@ int mbedtls_ecjpake_write_round_two( mbedtls_ecjpake_context *ctx,
 
 /**
  * \brief           Read and process the second round message
- *                  (TLS: contents of the Client/ServerKeyExchange)
+ *                  (TLS: contents of the Client/ServerKeyExchange).
  *
- * \param ctx       Context to use
- * \param buf       Pointer to the message
- * \param len       Message length
+ * \param ctx       The ECJPAKE context to use. This must be initialized
+ *                  and set up and already have performed round one.
+ * \param buf       The buffer holding the second round message. This must
+ *                  be a readable buffer of length \p len Bytes.
+ * \param len       The length in Bytes of \p buf.
  *
- * \return          0 if successfull,
- *                  a negative error code otherwise
+ * \return          \c 0 if successful.
+ * \return          A negative error code on failure.
  */
 int mbedtls_ecjpake_read_round_two( mbedtls_ecjpake_context *ctx,
                                     const unsigned char *buf,
@@ -201,17 +222,21 @@ int mbedtls_ecjpake_read_round_two( mbedtls_ecjpake_context *ctx,
 
 /**
  * \brief           Derive the shared secret
- *                  (TLS: Pre-Master Secret)
+ *                  (TLS: Pre-Master Secret).
  *
- * \param ctx       Context to use
- * \param buf       Buffer to write the contents to
- * \param len       Buffer size
- * \param olen      Will be updated with the number of bytes written
- * \param f_rng     RNG function
- * \param p_rng     RNG parameter
+ * \param ctx       The ECJPAKE context to use. This must be initialized,
+ *                  set up and have performed both round one and two.
+ * \param buf       The buffer to write the derived secret to. This must
+ *                  be a writable buffer of length \p len Bytes.
+ * \param len       The length of \p buf in Bytes.
+ * \param olen      The address at which to store the total number of Bytes
+ *                  written to \p buf. This must not be \c NULL.
+ * \param f_rng     The RNG function to use. This must not be \c NULL.
+ * \param p_rng     The RNG parameter to be passed to \p f_rng. This
+ *                  may be \c NULL if \p f_rng doesn't use a context.
  *
- * \return          0 if successfull,
- *                  a negative error code otherwise
+ * \return          \c 0 if successful.
+ * \return          A negative error code on failure.
  */
 int mbedtls_ecjpake_derive_secret( mbedtls_ecjpake_context *ctx,
                             unsigned char *buf, size_t len, size_t *olen,
@@ -219,25 +244,16 @@ int mbedtls_ecjpake_derive_secret( mbedtls_ecjpake_context *ctx,
                             void *p_rng );
 
 /**
- * \brief           Free a context's content
+ * \brief           This clears an ECJPAKE context and frees any
+ *                  embedded data structure.
  *
- * \param ctx       context to free
+ * \param ctx       The ECJPAKE context to free. This may be \c NULL,
+ *                  in which case this function does nothing. If it is not
+ *                  \c NULL, it must point to an initialized ECJPAKE context.
  */
 void mbedtls_ecjpake_free( mbedtls_ecjpake_context *ctx );
 
-#ifdef __cplusplus
-}
-#endif
-
-#else  /* MBEDTLS_ECJPAKE_ALT */
-#include "ecjpake_alt.h"
-#endif /* MBEDTLS_ECJPAKE_ALT */
-
 #if defined(MBEDTLS_SELF_TEST)
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * \brief          Checkup routine
@@ -246,10 +262,11 @@ extern "C" {
  */
 int mbedtls_ecjpake_self_test( int verbose );
 
+#endif /* MBEDTLS_SELF_TEST */
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* MBEDTLS_SELF_TEST */
 
 #endif /* ecjpake.h */

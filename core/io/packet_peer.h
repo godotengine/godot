@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,15 +31,15 @@
 #ifndef PACKET_PEER_H
 #define PACKET_PEER_H
 
-#include "io/stream_peer.h"
-#include "object.h"
-#include "ring_buffer.h"
+#include "core/io/stream_peer.h"
+#include "core/object.h"
+#include "core/ring_buffer.h"
+
 class PacketPeer : public Reference {
 
 	GDCLASS(PacketPeer, Reference);
 
-	Variant _bnd_get_var();
-	void _bnd_put_var(const Variant &p_var);
+	Variant _bnd_get_var(bool p_allow_objects = false);
 
 	static void _bind_methods();
 
@@ -63,8 +63,8 @@ public:
 	virtual Error get_packet_buffer(PoolVector<uint8_t> &r_buffer);
 	virtual Error put_packet_buffer(const PoolVector<uint8_t> &p_buffer);
 
-	virtual Error get_var(Variant &r_variant);
-	virtual Error put_var(const Variant &p_packet);
+	virtual Error get_var(Variant &r_variant, bool p_allow_objects = false);
+	virtual Error put_var(const Variant &p_packet, bool p_full_objects = false);
 
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 #include "pool_allocator.h"
 
+#include "core/error_macros.h"
+#include "core/os/copymem.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
-#include "error_macros.h"
-#include "os/copymem.h"
-#include "os/memory.h"
-#include "print_string.h"
+#include "core/print_string.h"
 
 #include <assert.h>
 
@@ -359,7 +359,7 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 	//p_new_size = align(p_new_size)
 	int _free = free_mem; // - static_area_size;
 
-	if ((_free + aligned(e->len)) - alloc_size < 0) {
+	if (uint32_t(_free + aligned(e->len)) < alloc_size) {
 		mt_unlock();
 		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
 	};

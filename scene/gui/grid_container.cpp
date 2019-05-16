@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,8 @@ void GridContainer::_notification(int p_what) {
 
 		case NOTIFICATION_SORT_CHILDREN: {
 
+			int valid_controls_index;
+
 			Map<int, int> col_minw; // max of min_width  of all controls in each col (indexed by col)
 			Map<int, int> row_minh; // max of min_height of all controls in each row (indexed by row)
 			Set<int> col_expanded; // columns which have the SIZE_EXPAND flag set
@@ -47,13 +49,15 @@ void GridContainer::_notification(int p_what) {
 			int max_row = get_child_count() / columns;
 
 			// Compute the per-column/per-row data
+			valid_controls_index = 0;
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = Object::cast_to<Control>(get_child(i));
 				if (!c || !c->is_visible_in_tree())
 					continue;
 
-				int row = i / columns;
-				int col = i % columns;
+				int row = valid_controls_index / columns;
+				int col = valid_controls_index % columns;
+				valid_controls_index++;
 
 				Size2i ms = c->get_combined_minimum_size();
 				if (col_minw.has(col))
@@ -136,12 +140,14 @@ void GridContainer::_notification(int p_what) {
 			int col_ofs = 0;
 			int row_ofs = 0;
 
+			valid_controls_index = 0;
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = Object::cast_to<Control>(get_child(i));
 				if (!c || !c->is_visible_in_tree())
 					continue;
-				int row = i / columns;
-				int col = i % columns;
+				int row = valid_controls_index / columns;
+				int col = valid_controls_index % columns;
+				valid_controls_index++;
 
 				if (col == 0) {
 					col_ofs = 0;
@@ -157,6 +163,10 @@ void GridContainer::_notification(int p_what) {
 				col_ofs += s.width + hsep;
 			}
 
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+
+			minimum_size_changed();
 		} break;
 	}
 }
@@ -190,17 +200,19 @@ Size2 GridContainer::get_minimum_size() const {
 	int hsep = get_constant("hseparation");
 	int vsep = get_constant("vseparation");
 
-	int idx = 0;
 	int max_row = 0;
 	int max_col = 0;
 
+	int valid_controls_index = 0;
 	for (int i = 0; i < get_child_count(); i++) {
 
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c || !c->is_visible_in_tree())
 			continue;
-		int row = idx / columns;
-		int col = idx % columns;
+		int row = valid_controls_index / columns;
+		int col = valid_controls_index % columns;
+		valid_controls_index++;
+
 		Size2i ms = c->get_combined_minimum_size();
 		if (col_minw.has(col))
 			col_minw[col] = MAX(col_minw[col], ms.width);
@@ -213,7 +225,6 @@ Size2 GridContainer::get_minimum_size() const {
 			row_minh[row] = ms.height;
 		max_col = MAX(col, max_col);
 		max_row = MAX(row, max_row);
-		idx++;
 	}
 
 	Size2 ms;

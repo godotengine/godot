@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,10 +50,16 @@ private:
 	bool closed;
 	CullMode cull;
 
+	mutable Rect2 item_rect;
+	mutable bool rect_cache_dirty;
+
 protected:
 	static void _bind_methods();
 
 public:
+	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
 	void set_polygon(const PoolVector<Vector2> &p_polygon);
 	PoolVector<Vector2> get_polygon() const;
 
@@ -78,15 +84,16 @@ class LightOccluder2D : public Node2D {
 	int mask;
 	Ref<OccluderPolygon2D> occluder_polygon;
 
-#ifdef DEBUG_ENABLED
 	void _poly_changed();
-#endif
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
 	void set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polygon);
 	Ref<OccluderPolygon2D> get_occluder_polygon() const;
 

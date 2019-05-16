@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,10 +54,12 @@ class CollisionObject2D : public Node2D {
 		Vector<Shape> shapes;
 		bool disabled;
 		bool one_way_collision;
+		float one_way_collision_margin;
 
 		ShapeData() {
 			disabled = false;
 			one_way_collision = false;
+			one_way_collision_margin = 0;
 			owner = NULL;
 		}
 	};
@@ -65,6 +67,8 @@ class CollisionObject2D : public Node2D {
 	int total_subshapes;
 
 	Map<uint32_t, ShapeData> shapes;
+	Transform2D last_transform;
+	bool only_update_transform_changes; //this is used for sync physics in KinematicBody
 
 protected:
 	CollisionObject2D(RID p_rid, bool p_area);
@@ -77,6 +81,8 @@ protected:
 	void _input_event(Node *p_viewport, const Ref<InputEvent> &p_input_event, int p_shape);
 	void _mouse_enter();
 	void _mouse_exit();
+
+	void set_only_update_transform_changes(bool p_enable);
 
 public:
 	uint32_t create_shape_owner(Object *p_owner);
@@ -93,6 +99,9 @@ public:
 
 	void shape_owner_set_one_way_collision(uint32_t p_owner, bool p_enable);
 	bool is_shape_owner_one_way_collision_enabled(uint32_t p_owner) const;
+
+	void shape_owner_set_one_way_collision_margin(uint32_t p_owner, float p_margin);
+	float get_shape_owner_one_way_collision_margin(uint32_t p_owner) const;
 
 	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;

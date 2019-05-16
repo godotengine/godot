@@ -125,6 +125,49 @@ static void MultARGBRow_MIPSdspR2(uint32_t* const ptr, int width,
   }
 }
 
+#ifdef WORDS_BIGENDIAN
+static void PackARGB_MIPSdspR2(const uint8_t* a, const uint8_t* r,
+                               const uint8_t* g, const uint8_t* b, int len,
+                               uint32_t* out) {
+  int temp0, temp1, temp2, temp3, offset;
+  const int rest = len & 1;
+  const uint32_t* const loop_end = out + len - rest;
+  const int step = 4;
+  __asm__ volatile (
+    "xor          %[offset],   %[offset], %[offset]    \n\t"
+    "beq          %[loop_end], %[out],    0f           \n\t"
+  "2:                                                  \n\t"
+    "lbux         %[temp0],    %[offset](%[a])         \n\t"
+    "lbux         %[temp1],    %[offset](%[r])         \n\t"
+    "lbux         %[temp2],    %[offset](%[g])         \n\t"
+    "lbux         %[temp3],    %[offset](%[b])         \n\t"
+    "ins          %[temp1],    %[temp0],  16,     16   \n\t"
+    "ins          %[temp3],    %[temp2],  16,     16   \n\t"
+    "addiu        %[out],      %[out],    4            \n\t"
+    "precr.qb.ph  %[temp0],    %[temp1],  %[temp3]     \n\t"
+    "sw           %[temp0],    -4(%[out])              \n\t"
+    "addu         %[offset],   %[offset], %[step]      \n\t"
+    "bne          %[loop_end], %[out],    2b           \n\t"
+  "0:                                                  \n\t"
+    "beq          %[rest],     $zero,     1f           \n\t"
+    "lbux         %[temp0],    %[offset](%[a])         \n\t"
+    "lbux         %[temp1],    %[offset](%[r])         \n\t"
+    "lbux         %[temp2],    %[offset](%[g])         \n\t"
+    "lbux         %[temp3],    %[offset](%[b])         \n\t"
+    "ins          %[temp1],    %[temp0],  16,     16   \n\t"
+    "ins          %[temp3],    %[temp2],  16,     16   \n\t"
+    "precr.qb.ph  %[temp0],    %[temp1],  %[temp3]     \n\t"
+    "sw           %[temp0],    0(%[out])               \n\t"
+  "1:                                                  \n\t"
+    : [temp0]"=&r"(temp0), [temp1]"=&r"(temp1), [temp2]"=&r"(temp2),
+      [temp3]"=&r"(temp3), [offset]"=&r"(offset), [out]"+&r"(out)
+    : [a]"r"(a), [r]"r"(r), [g]"r"(g), [b]"r"(b), [step]"r"(step),
+      [loop_end]"r"(loop_end), [rest]"r"(rest)
+    : "memory"
+  );
+}
+#endif  // WORDS_BIGENDIAN
+
 static void PackRGB_MIPSdspR2(const uint8_t* r, const uint8_t* g,
                               const uint8_t* b, int len, int step,
                               uint32_t* out) {
@@ -172,6 +215,9 @@ extern void WebPInitAlphaProcessingMIPSdspR2(void);
 WEBP_TSAN_IGNORE_FUNCTION void WebPInitAlphaProcessingMIPSdspR2(void) {
   WebPDispatchAlpha = DispatchAlpha_MIPSdspR2;
   WebPMultARGBRow = MultARGBRow_MIPSdspR2;
+#ifdef WORDS_BIGENDIAN
+  WebPPackARGB = PackARGB_MIPSdspR2;
+#endif
   WebPPackRGB = PackRGB_MIPSdspR2;
 }
 

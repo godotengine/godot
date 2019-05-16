@@ -37,7 +37,6 @@ email: projectileman@yahoo.com
 http://gimpact.sf.net
 */
 
-
 #ifndef BT_GENERIC_6DOF_CONSTRAINT2_H
 #define BT_GENERIC_6DOF_CONSTRAINT2_H
 
@@ -47,18 +46,17 @@ http://gimpact.sf.net
 
 class btRigidBody;
 
-
 #ifdef BT_USE_DOUBLE_PRECISION
-#define btGeneric6DofSpring2ConstraintData2		btGeneric6DofSpring2ConstraintDoubleData2
-#define btGeneric6DofSpring2ConstraintDataName	"btGeneric6DofSpring2ConstraintDoubleData2"
+#define btGeneric6DofSpring2ConstraintData2 btGeneric6DofSpring2ConstraintDoubleData2
+#define btGeneric6DofSpring2ConstraintDataName "btGeneric6DofSpring2ConstraintDoubleData2"
 #else
-#define btGeneric6DofSpring2ConstraintData2		btGeneric6DofSpring2ConstraintData
-#define btGeneric6DofSpring2ConstraintDataName	"btGeneric6DofSpring2ConstraintData"
-#endif //BT_USE_DOUBLE_PRECISION
+#define btGeneric6DofSpring2ConstraintData2 btGeneric6DofSpring2ConstraintData
+#define btGeneric6DofSpring2ConstraintDataName "btGeneric6DofSpring2ConstraintData"
+#endif  //BT_USE_DOUBLE_PRECISION
 
 enum RotateOrder
 {
-	RO_XYZ=0,
+	RO_XYZ = 0,
 	RO_XZY,
 	RO_YXZ,
 	RO_YZX,
@@ -69,9 +67,9 @@ enum RotateOrder
 class btRotationalLimitMotor2
 {
 public:
-// upper < lower means free
-// upper == lower means locked
-// upper > lower means limited
+	// upper < lower means free
+	// upper == lower means locked
+	// upper > lower means limited
 	btScalar m_loLimit;
 	btScalar m_hiLimit;
 	btScalar m_bounce;
@@ -79,95 +77,92 @@ public:
 	btScalar m_stopCFM;
 	btScalar m_motorERP;
 	btScalar m_motorCFM;
-	bool     m_enableMotor;
+	bool m_enableMotor;
 	btScalar m_targetVelocity;
 	btScalar m_maxMotorForce;
-	bool     m_servoMotor;
+	bool m_servoMotor;
 	btScalar m_servoTarget;
-	bool     m_enableSpring;
+	bool m_enableSpring;
 	btScalar m_springStiffness;
-	bool     m_springStiffnessLimited;
+	bool m_springStiffnessLimited;
 	btScalar m_springDamping;
-	bool     m_springDampingLimited;
+	bool m_springDampingLimited;
 	btScalar m_equilibriumPoint;
 
 	btScalar m_currentLimitError;
 	btScalar m_currentLimitErrorHi;
 	btScalar m_currentPosition;
-	int      m_currentLimit;
+	int m_currentLimit;
 
 	btRotationalLimitMotor2()
 	{
-		m_loLimit                = 1.0f;
-		m_hiLimit                = -1.0f;
-		m_bounce                 = 0.0f;
-		m_stopERP                = 0.2f;
-		m_stopCFM                = 0.f;
-		m_motorERP               = 0.9f;
-		m_motorCFM               = 0.f;
-		m_enableMotor            = false;
-		m_targetVelocity         = 0;
-		m_maxMotorForce          = 0.1f;
-		m_servoMotor             = false;
-		m_servoTarget            = 0;
-		m_enableSpring           = false;
-		m_springStiffness        = 0;
+		m_loLimit = 1.0f;
+		m_hiLimit = -1.0f;
+		m_bounce = 0.0f;
+		m_stopERP = 0.2f;
+		m_stopCFM = 0.f;
+		m_motorERP = 0.9f;
+		m_motorCFM = 0.f;
+		m_enableMotor = false;
+		m_targetVelocity = 0;
+		m_maxMotorForce = 6.0f;
+		m_servoMotor = false;
+		m_servoTarget = 0;
+		m_enableSpring = false;
+		m_springStiffness = 0;
 		m_springStiffnessLimited = false;
-		m_springDamping          = 0;
-		m_springDampingLimited   = false;
-		m_equilibriumPoint       = 0;
+		m_springDamping = 0;
+		m_springDampingLimited = false;
+		m_equilibriumPoint = 0;
 
-		m_currentLimitError   = 0;
+		m_currentLimitError = 0;
 		m_currentLimitErrorHi = 0;
-		m_currentPosition     = 0;
-		m_currentLimit        = 0;
+		m_currentPosition = 0;
+		m_currentLimit = 0;
 	}
 
-	btRotationalLimitMotor2(const btRotationalLimitMotor2 & limot)
+	btRotationalLimitMotor2(const btRotationalLimitMotor2& limot)
 	{
-		m_loLimit                = limot.m_loLimit;
-		m_hiLimit                = limot.m_hiLimit;
-		m_bounce                 = limot.m_bounce;
-		m_stopERP                = limot.m_stopERP;
-		m_stopCFM                = limot.m_stopCFM;
-		m_motorERP               = limot.m_motorERP;
-		m_motorCFM               = limot.m_motorCFM;
-		m_enableMotor            = limot.m_enableMotor;
-		m_targetVelocity         = limot.m_targetVelocity;
-		m_maxMotorForce          = limot.m_maxMotorForce;
-		m_servoMotor             = limot.m_servoMotor;
-		m_servoTarget            = limot.m_servoTarget;
-		m_enableSpring           = limot.m_enableSpring;
-		m_springStiffness        = limot.m_springStiffness;
+		m_loLimit = limot.m_loLimit;
+		m_hiLimit = limot.m_hiLimit;
+		m_bounce = limot.m_bounce;
+		m_stopERP = limot.m_stopERP;
+		m_stopCFM = limot.m_stopCFM;
+		m_motorERP = limot.m_motorERP;
+		m_motorCFM = limot.m_motorCFM;
+		m_enableMotor = limot.m_enableMotor;
+		m_targetVelocity = limot.m_targetVelocity;
+		m_maxMotorForce = limot.m_maxMotorForce;
+		m_servoMotor = limot.m_servoMotor;
+		m_servoTarget = limot.m_servoTarget;
+		m_enableSpring = limot.m_enableSpring;
+		m_springStiffness = limot.m_springStiffness;
 		m_springStiffnessLimited = limot.m_springStiffnessLimited;
-		m_springDamping          = limot.m_springDamping;
-		m_springDampingLimited   = limot.m_springDampingLimited;
-		m_equilibriumPoint       = limot.m_equilibriumPoint;
+		m_springDamping = limot.m_springDamping;
+		m_springDampingLimited = limot.m_springDampingLimited;
+		m_equilibriumPoint = limot.m_equilibriumPoint;
 
-		m_currentLimitError   = limot.m_currentLimitError;
+		m_currentLimitError = limot.m_currentLimitError;
 		m_currentLimitErrorHi = limot.m_currentLimitErrorHi;
-		m_currentPosition     = limot.m_currentPosition;
-		m_currentLimit        = limot.m_currentLimit;
+		m_currentPosition = limot.m_currentPosition;
+		m_currentLimit = limot.m_currentLimit;
 	}
-
 
 	bool isLimited()
 	{
-		if(m_loLimit > m_hiLimit) return false;
+		if (m_loLimit > m_hiLimit) return false;
 		return true;
 	}
 
 	void testLimitValue(btScalar test_value);
 };
 
-
-
 class btTranslationalLimitMotor2
 {
 public:
-// upper < lower means free
-// upper == lower means locked
-// upper > lower means limited
+	// upper < lower means free
+	// upper == lower means locked
+	// upper > lower means limited
 	btVector3 m_lowerLimit;
 	btVector3 m_upperLimit;
 	btVector3 m_bounce;
@@ -175,14 +170,14 @@ public:
 	btVector3 m_stopCFM;
 	btVector3 m_motorERP;
 	btVector3 m_motorCFM;
-	bool      m_enableMotor[3];
-	bool      m_servoMotor[3];
-	bool      m_enableSpring[3];
+	bool m_enableMotor[3];
+	bool m_servoMotor[3];
+	bool m_enableSpring[3];
 	btVector3 m_servoTarget;
 	btVector3 m_springStiffness;
-	bool      m_springStiffnessLimited[3];
+	bool m_springStiffnessLimited[3];
 	btVector3 m_springDamping;
-	bool      m_springDampingLimited[3];
+	bool m_springDampingLimited[3];
 	btVector3 m_equilibriumPoint;
 	btVector3 m_targetVelocity;
 	btVector3 m_maxMotorForce;
@@ -190,69 +185,69 @@ public:
 	btVector3 m_currentLimitError;
 	btVector3 m_currentLimitErrorHi;
 	btVector3 m_currentLinearDiff;
-	int       m_currentLimit[3];
+	int m_currentLimit[3];
 
 	btTranslationalLimitMotor2()
 	{
-		m_lowerLimit         .setValue(0.f , 0.f , 0.f );
-		m_upperLimit         .setValue(0.f , 0.f , 0.f );
-		m_bounce             .setValue(0.f , 0.f , 0.f );
-		m_stopERP            .setValue(0.2f, 0.2f, 0.2f);
-		m_stopCFM            .setValue(0.f , 0.f , 0.f );
-		m_motorERP           .setValue(0.9f, 0.9f, 0.9f);
-		m_motorCFM           .setValue(0.f , 0.f , 0.f );
+		m_lowerLimit.setValue(0.f, 0.f, 0.f);
+		m_upperLimit.setValue(0.f, 0.f, 0.f);
+		m_bounce.setValue(0.f, 0.f, 0.f);
+		m_stopERP.setValue(0.2f, 0.2f, 0.2f);
+		m_stopCFM.setValue(0.f, 0.f, 0.f);
+		m_motorERP.setValue(0.9f, 0.9f, 0.9f);
+		m_motorCFM.setValue(0.f, 0.f, 0.f);
 
-		m_currentLimitError  .setValue(0.f , 0.f , 0.f );
-		m_currentLimitErrorHi.setValue(0.f , 0.f , 0.f );
-		m_currentLinearDiff  .setValue(0.f , 0.f , 0.f );
+		m_currentLimitError.setValue(0.f, 0.f, 0.f);
+		m_currentLimitErrorHi.setValue(0.f, 0.f, 0.f);
+		m_currentLinearDiff.setValue(0.f, 0.f, 0.f);
 
-		for(int i=0; i < 3; i++) 
+		for (int i = 0; i < 3; i++)
 		{
-			m_enableMotor[i]            = false;
-			m_servoMotor[i]             = false;
-			m_enableSpring[i]           = false;
-			m_servoTarget[i]            = btScalar(0.f);
-			m_springStiffness[i]        = btScalar(0.f);
+			m_enableMotor[i] = false;
+			m_servoMotor[i] = false;
+			m_enableSpring[i] = false;
+			m_servoTarget[i] = btScalar(0.f);
+			m_springStiffness[i] = btScalar(0.f);
 			m_springStiffnessLimited[i] = false;
-			m_springDamping[i]          = btScalar(0.f);
-			m_springDampingLimited[i]   = false;
-			m_equilibriumPoint[i]       = btScalar(0.f);
-			m_targetVelocity[i]         = btScalar(0.f);
-			m_maxMotorForce[i]          = btScalar(0.f);
-			
-			m_currentLimit[i]     = 0;
+			m_springDamping[i] = btScalar(0.f);
+			m_springDampingLimited[i] = false;
+			m_equilibriumPoint[i] = btScalar(0.f);
+			m_targetVelocity[i] = btScalar(0.f);
+			m_maxMotorForce[i] = btScalar(0.f);
+
+			m_currentLimit[i] = 0;
 		}
 	}
 
-	btTranslationalLimitMotor2(const btTranslationalLimitMotor2 & other )
+	btTranslationalLimitMotor2(const btTranslationalLimitMotor2& other)
 	{
-		m_lowerLimit          = other.m_lowerLimit;
-		m_upperLimit          = other.m_upperLimit;
-		m_bounce              = other.m_bounce;
-		m_stopERP             = other.m_stopERP;
-		m_stopCFM             = other.m_stopCFM;
-		m_motorERP            = other.m_motorERP;
-		m_motorCFM            = other.m_motorCFM;
-		
-		m_currentLimitError   = other.m_currentLimitError;
+		m_lowerLimit = other.m_lowerLimit;
+		m_upperLimit = other.m_upperLimit;
+		m_bounce = other.m_bounce;
+		m_stopERP = other.m_stopERP;
+		m_stopCFM = other.m_stopCFM;
+		m_motorERP = other.m_motorERP;
+		m_motorCFM = other.m_motorCFM;
+
+		m_currentLimitError = other.m_currentLimitError;
 		m_currentLimitErrorHi = other.m_currentLimitErrorHi;
-		m_currentLinearDiff   = other.m_currentLinearDiff;
+		m_currentLinearDiff = other.m_currentLinearDiff;
 
-		for(int i=0; i < 3; i++) 
+		for (int i = 0; i < 3; i++)
 		{
-			m_enableMotor[i]            = other.m_enableMotor[i];
-			m_servoMotor[i]             = other.m_servoMotor[i];
-			m_enableSpring[i]           = other.m_enableSpring[i];
-			m_servoTarget[i]            = other.m_servoTarget[i];
-			m_springStiffness[i]        = other.m_springStiffness[i];
+			m_enableMotor[i] = other.m_enableMotor[i];
+			m_servoMotor[i] = other.m_servoMotor[i];
+			m_enableSpring[i] = other.m_enableSpring[i];
+			m_servoTarget[i] = other.m_servoTarget[i];
+			m_springStiffness[i] = other.m_springStiffness[i];
 			m_springStiffnessLimited[i] = other.m_springStiffnessLimited[i];
-			m_springDamping[i]          = other.m_springDamping[i];
-			m_springDampingLimited[i]   = other.m_springDampingLimited[i];
-			m_equilibriumPoint[i]       = other.m_equilibriumPoint[i];
-			m_targetVelocity[i]         = other.m_targetVelocity[i];
-			m_maxMotorForce[i]          = other.m_maxMotorForce[i];
+			m_springDamping[i] = other.m_springDamping[i];
+			m_springDampingLimited[i] = other.m_springDampingLimited[i];
+			m_equilibriumPoint[i] = other.m_equilibriumPoint[i];
+			m_targetVelocity[i] = other.m_targetVelocity[i];
+			m_maxMotorForce[i] = other.m_maxMotorForce[i];
 
-			m_currentLimit[i]     = other.m_currentLimit[i];
+			m_currentLimit[i] = other.m_currentLimit[i];
 		}
 	}
 
@@ -269,15 +264,14 @@ enum bt6DofFlags2
 	BT_6DOF_FLAGS_CFM_STOP2 = 1,
 	BT_6DOF_FLAGS_ERP_STOP2 = 2,
 	BT_6DOF_FLAGS_CFM_MOTO2 = 4,
-	BT_6DOF_FLAGS_ERP_MOTO2 = 8
+	BT_6DOF_FLAGS_ERP_MOTO2 = 8,
 };
-#define BT_6DOF_FLAGS_AXIS_SHIFT2 4 // bits per axis
+#define BT_6DOF_FLAGS_AXIS_SHIFT2 4  // bits per axis
 
-
-ATTRIBUTE_ALIGNED16(class) btGeneric6DofSpring2Constraint : public btTypedConstraint
+ATTRIBUTE_ALIGNED16(class)
+btGeneric6DofSpring2Constraint : public btTypedConstraint
 {
 protected:
-
 	btTransform m_frameInA;
 	btTransform m_frameInB;
 
@@ -290,45 +284,43 @@ protected:
 	RotateOrder m_rotateOrder;
 
 protected:
+	btTransform m_calculatedTransformA;
+	btTransform m_calculatedTransformB;
+	btVector3 m_calculatedAxisAngleDiff;
+	btVector3 m_calculatedAxis[3];
+	btVector3 m_calculatedLinearDiff;
+	btScalar m_factA;
+	btScalar m_factB;
+	bool m_hasStaticBody;
+	int m_flags;
 
-	btTransform  m_calculatedTransformA;
-	btTransform  m_calculatedTransformB;
-	btVector3    m_calculatedAxisAngleDiff;
-	btVector3    m_calculatedAxis[3];
-	btVector3    m_calculatedLinearDiff;
-	btScalar     m_factA;
-	btScalar     m_factB;
-	bool         m_hasStaticBody;
-	int          m_flags;
-
-	btGeneric6DofSpring2Constraint&	operator=(btGeneric6DofSpring2Constraint&)
+	btGeneric6DofSpring2Constraint& operator=(btGeneric6DofSpring2Constraint&)
 	{
 		btAssert(0);
 		return *this;
 	}
 
-	int setAngularLimits(btConstraintInfo2 *info, int row_offset,const btTransform& transA,const btTransform& transB,const btVector3& linVelA,const btVector3& linVelB,const btVector3& angVelA,const btVector3& angVelB);
-	int setLinearLimits(btConstraintInfo2 *info, int row, const btTransform& transA,const btTransform& transB,const btVector3& linVelA,const btVector3& linVelB,const btVector3& angVelA,const btVector3& angVelB);
+	int setAngularLimits(btConstraintInfo2 * info, int row_offset, const btTransform& transA, const btTransform& transB, const btVector3& linVelA, const btVector3& linVelB, const btVector3& angVelA, const btVector3& angVelB);
+	int setLinearLimits(btConstraintInfo2 * info, int row, const btTransform& transA, const btTransform& transB, const btVector3& linVelA, const btVector3& linVelB, const btVector3& angVelA, const btVector3& angVelB);
 
 	void calculateLinearInfo();
 	void calculateAngleInfo();
 	void testAngularLimitMotor(int axis_index);
 
-	void calculateJacobi(btRotationalLimitMotor2* limot, const btTransform& transA,const btTransform& transB, btConstraintInfo2* info, int srow, btVector3& ax1, int rotational, int rotAllowed);
-	int get_limit_motor_info2(btRotationalLimitMotor2* limot,
-		const btTransform& transA,const btTransform& transB,const btVector3& linVelA,const btVector3& linVelB,const btVector3& angVelA,const btVector3& angVelB,
-		btConstraintInfo2* info, int row, btVector3& ax1, int rotational, int rotAllowed = false);
+	void calculateJacobi(btRotationalLimitMotor2 * limot, const btTransform& transA, const btTransform& transB, btConstraintInfo2* info, int srow, btVector3& ax1, int rotational, int rotAllowed);
+	int get_limit_motor_info2(btRotationalLimitMotor2 * limot,
+							  const btTransform& transA, const btTransform& transB, const btVector3& linVelA, const btVector3& linVelB, const btVector3& angVelA, const btVector3& angVelB,
+							  btConstraintInfo2* info, int row, btVector3& ax1, int rotational, int rotAllowed = false);
 
 public:
-
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
-    btGeneric6DofSpring2Constraint(btRigidBody& rbA, btRigidBody& rbB, const btTransform& frameInA, const btTransform& frameInB, RotateOrder rotOrder = RO_XYZ);
-    btGeneric6DofSpring2Constraint(btRigidBody& rbB, const btTransform& frameInB, RotateOrder rotOrder = RO_XYZ);
+	btGeneric6DofSpring2Constraint(btRigidBody & rbA, btRigidBody & rbB, const btTransform& frameInA, const btTransform& frameInB, RotateOrder rotOrder = RO_XYZ);
+	btGeneric6DofSpring2Constraint(btRigidBody & rbB, const btTransform& frameInB, RotateOrder rotOrder = RO_XYZ);
 
 	virtual void buildJacobian() {}
-	virtual void getInfo1 (btConstraintInfo1* info);
-	virtual void getInfo2 (btConstraintInfo2* info);
+	virtual void getInfo1(btConstraintInfo1 * info);
+	virtual void getInfo2(btConstraintInfo2 * info);
 	virtual int calculateSerializeBufferSize() const;
 	virtual const char* serialize(void* dataBuffer, btSerializer* serializer) const;
 
@@ -336,19 +328,19 @@ public:
 	btTranslationalLimitMotor2* getTranslationalLimitMotor() { return &m_linearLimits; }
 
 	// Calculates the global transform for the joint offset for body A an B, and also calculates the angle differences between the bodies.
-	void calculateTransforms(const btTransform& transA,const btTransform& transB);
+	void calculateTransforms(const btTransform& transA, const btTransform& transB);
 	void calculateTransforms();
 
 	// Gets the global transform of the offset for body A
-	const btTransform & getCalculatedTransformA() const { return m_calculatedTransformA; }
+	const btTransform& getCalculatedTransformA() const { return m_calculatedTransformA; }
 	// Gets the global transform of the offset for body B
-	const btTransform & getCalculatedTransformB() const { return m_calculatedTransformB; }
+	const btTransform& getCalculatedTransformB() const { return m_calculatedTransformB; }
 
-	const btTransform & getFrameOffsetA() const { return m_frameInA; }
-	const btTransform & getFrameOffsetB() const { return m_frameInB; }
+	const btTransform& getFrameOffsetA() const { return m_frameInA; }
+	const btTransform& getFrameOffsetB() const { return m_frameInB; }
 
-	btTransform & getFrameOffsetA() { return m_frameInA; }
-	btTransform & getFrameOffsetB() { return m_frameInB; }
+	btTransform& getFrameOffsetA() { return m_frameInA; }
+	btTransform& getFrameOffsetB() { return m_frameInB; }
 
 	// Get the rotation axis in global coordinates ( btGeneric6DofSpring2Constraint::calculateTransforms() must be called previously )
 	btVector3 getAxis(int axis_index) const { return m_calculatedAxis[axis_index]; }
@@ -359,58 +351,58 @@ public:
 	// Get the relative position of the constraint pivot ( btGeneric6DofSpring2Constraint::calculateTransforms() must be called previously )
 	btScalar getRelativePivotPosition(int axis_index) const { return m_calculatedLinearDiff[axis_index]; }
 
-	void setFrames(const btTransform & frameA, const btTransform & frameB);
+	void setFrames(const btTransform& frameA, const btTransform& frameB);
 
 	void setLinearLowerLimit(const btVector3& linearLower) { m_linearLimits.m_lowerLimit = linearLower; }
-	void getLinearLowerLimit(btVector3& linearLower) { linearLower = m_linearLimits.m_lowerLimit; }
+	void getLinearLowerLimit(btVector3 & linearLower) { linearLower = m_linearLimits.m_lowerLimit; }
 	void setLinearUpperLimit(const btVector3& linearUpper) { m_linearLimits.m_upperLimit = linearUpper; }
-	void getLinearUpperLimit(btVector3& linearUpper) { linearUpper = m_linearLimits.m_upperLimit; }
+	void getLinearUpperLimit(btVector3 & linearUpper) { linearUpper = m_linearLimits.m_upperLimit; }
 
 	void setAngularLowerLimit(const btVector3& angularLower)
 	{
-		for(int i = 0; i < 3; i++) 
+		for (int i = 0; i < 3; i++)
 			m_angularLimits[i].m_loLimit = btNormalizeAngle(angularLower[i]);
 	}
 
 	void setAngularLowerLimitReversed(const btVector3& angularLower)
 	{
-		for(int i = 0; i < 3; i++) 
+		for (int i = 0; i < 3; i++)
 			m_angularLimits[i].m_hiLimit = btNormalizeAngle(-angularLower[i]);
 	}
 
-	void getAngularLowerLimit(btVector3& angularLower)
+	void getAngularLowerLimit(btVector3 & angularLower)
 	{
-		for(int i = 0; i < 3; i++) 
+		for (int i = 0; i < 3; i++)
 			angularLower[i] = m_angularLimits[i].m_loLimit;
 	}
 
-	void getAngularLowerLimitReversed(btVector3& angularLower)
+	void getAngularLowerLimitReversed(btVector3 & angularLower)
 	{
-		for(int i = 0; i < 3; i++)
+		for (int i = 0; i < 3; i++)
 			angularLower[i] = -m_angularLimits[i].m_hiLimit;
 	}
 
 	void setAngularUpperLimit(const btVector3& angularUpper)
 	{
-		for(int i = 0; i < 3; i++)
+		for (int i = 0; i < 3; i++)
 			m_angularLimits[i].m_hiLimit = btNormalizeAngle(angularUpper[i]);
 	}
 
 	void setAngularUpperLimitReversed(const btVector3& angularUpper)
 	{
-		for(int i = 0; i < 3; i++)
+		for (int i = 0; i < 3; i++)
 			m_angularLimits[i].m_loLimit = btNormalizeAngle(-angularUpper[i]);
 	}
 
-	void getAngularUpperLimit(btVector3& angularUpper)
+	void getAngularUpperLimit(btVector3 & angularUpper)
 	{
-		for(int i = 0; i < 3; i++)
+		for (int i = 0; i < 3; i++)
 			angularUpper[i] = m_angularLimits[i].m_hiLimit;
 	}
 
-	void getAngularUpperLimitReversed(btVector3& angularUpper)
+	void getAngularUpperLimitReversed(btVector3 & angularUpper)
 	{
-		for(int i = 0; i < 3; i++)
+		for (int i = 0; i < 3; i++)
 			angularUpper[i] = -m_angularLimits[i].m_loLimit;
 	}
 
@@ -418,7 +410,7 @@ public:
 
 	void setLimit(int axis, btScalar lo, btScalar hi)
 	{
-		if(axis<3)
+		if (axis < 3)
 		{
 			m_linearLimits.m_lowerLimit[axis] = lo;
 			m_linearLimits.m_upperLimit[axis] = hi;
@@ -427,14 +419,14 @@ public:
 		{
 			lo = btNormalizeAngle(lo);
 			hi = btNormalizeAngle(hi);
-			m_angularLimits[axis-3].m_loLimit = lo;
-			m_angularLimits[axis-3].m_hiLimit = hi;
+			m_angularLimits[axis - 3].m_loLimit = lo;
+			m_angularLimits[axis - 3].m_hiLimit = hi;
 		}
 	}
 
 	void setLimitReversed(int axis, btScalar lo, btScalar hi)
 	{
-		if(axis<3)
+		if (axis < 3)
 		{
 			m_linearLimits.m_lowerLimit[axis] = lo;
 			m_linearLimits.m_upperLimit[axis] = hi;
@@ -443,54 +435,53 @@ public:
 		{
 			lo = btNormalizeAngle(lo);
 			hi = btNormalizeAngle(hi);
-			m_angularLimits[axis-3].m_hiLimit = -lo;
-			m_angularLimits[axis-3].m_loLimit = -hi;
+			m_angularLimits[axis - 3].m_hiLimit = -lo;
+			m_angularLimits[axis - 3].m_loLimit = -hi;
 		}
 	}
 
 	bool isLimited(int limitIndex)
 	{
-		if(limitIndex<3)
+		if (limitIndex < 3)
 		{
 			return m_linearLimits.isLimited(limitIndex);
 		}
-		return m_angularLimits[limitIndex-3].isLimited();
+		return m_angularLimits[limitIndex - 3].isLimited();
 	}
 
 	void setRotationOrder(RotateOrder order) { m_rotateOrder = order; }
 	RotateOrder getRotationOrder() { return m_rotateOrder; }
 
-	void setAxis( const btVector3& axis1, const btVector3& axis2);
+	void setAxis(const btVector3& axis1, const btVector3& axis2);
 
 	void setBounce(int index, btScalar bounce);
 
 	void enableMotor(int index, bool onOff);
-	void setServo(int index, bool onOff); // set the type of the motor (servo or not) (the motor has to be turned on for servo also)
+	void setServo(int index, bool onOff);  // set the type of the motor (servo or not) (the motor has to be turned on for servo also)
 	void setTargetVelocity(int index, btScalar velocity);
 	void setServoTarget(int index, btScalar target);
 	void setMaxMotorForce(int index, btScalar force);
 
 	void enableSpring(int index, bool onOff);
-	void setStiffness(int index, btScalar stiffness, bool limitIfNeeded = true); // if limitIfNeeded is true the system will automatically limit the stiffness in necessary situations where otherwise the spring would move unrealistically too widely
-	void setDamping(int index, btScalar damping, bool limitIfNeeded = true); // if limitIfNeeded is true the system will automatically limit the damping in necessary situations where otherwise the spring would blow up
-	void setEquilibriumPoint(); // set the current constraint position/orientation as an equilibrium point for all DOF
-	void setEquilibriumPoint(int index);  // set the current constraint position/orientation as an equilibrium point for given DOF
+	void setStiffness(int index, btScalar stiffness, bool limitIfNeeded = true);  // if limitIfNeeded is true the system will automatically limit the stiffness in necessary situations where otherwise the spring would move unrealistically too widely
+	void setDamping(int index, btScalar damping, bool limitIfNeeded = true);      // if limitIfNeeded is true the system will automatically limit the damping in necessary situations where otherwise the spring would blow up
+	void setEquilibriumPoint();                                                   // set the current constraint position/orientation as an equilibrium point for all DOF
+	void setEquilibriumPoint(int index);                                          // set the current constraint position/orientation as an equilibrium point for given DOF
 	void setEquilibriumPoint(int index, btScalar val);
 
-	//override the default global value of a parameter (such as ERP or CFM), optionally provide the axis (0..5). 
+	//override the default global value of a parameter (such as ERP or CFM), optionally provide the axis (0..5).
 	//If no axis is provided, it uses the default axis for this constraint.
 	virtual void setParam(int num, btScalar value, int axis = -1);
 	virtual btScalar getParam(int num, int axis = -1) const;
-    
-    static btScalar btGetMatrixElem(const btMatrix3x3& mat, int index);
-    static bool matrixToEulerXYZ(const btMatrix3x3& mat,btVector3& xyz);
-    static bool matrixToEulerXZY(const btMatrix3x3& mat,btVector3& xyz);
-    static bool matrixToEulerYXZ(const btMatrix3x3& mat,btVector3& xyz);
-    static bool matrixToEulerYZX(const btMatrix3x3& mat,btVector3& xyz);
-    static bool matrixToEulerZXY(const btMatrix3x3& mat,btVector3& xyz);
-    static bool matrixToEulerZYX(const btMatrix3x3& mat,btVector3& xyz);
-};
 
+	static btScalar btGetMatrixElem(const btMatrix3x3& mat, int index);
+	static bool matrixToEulerXYZ(const btMatrix3x3& mat, btVector3& xyz);
+	static bool matrixToEulerXZY(const btMatrix3x3& mat, btVector3& xyz);
+	static bool matrixToEulerYXZ(const btMatrix3x3& mat, btVector3& xyz);
+	static bool matrixToEulerYZX(const btMatrix3x3& mat, btVector3& xyz);
+	static bool matrixToEulerZXY(const btMatrix3x3& mat, btVector3& xyz);
+	static bool matrixToEulerZYX(const btMatrix3x3& mat, btVector3& xyz);
+};
 
 struct btGeneric6DofSpring2ConstraintData
 {
@@ -511,12 +502,12 @@ struct btGeneric6DofSpring2ConstraintData
 	btVector3FloatData m_linearSpringStiffness;
 	btVector3FloatData m_linearSpringDamping;
 	btVector3FloatData m_linearEquilibriumPoint;
-	char               m_linearEnableMotor[4];
-	char               m_linearServoMotor[4];
-	char               m_linearEnableSpring[4];
-	char               m_linearSpringStiffnessLimited[4];
-	char               m_linearSpringDampingLimited[4];
-	char               m_padding1[4];
+	char m_linearEnableMotor[4];
+	char m_linearServoMotor[4];
+	char m_linearEnableSpring[4];
+	char m_linearSpringStiffnessLimited[4];
+	char m_linearSpringDampingLimited[4];
+	char m_padding1[4];
 
 	btVector3FloatData m_angularUpperLimit;
 	btVector3FloatData m_angularLowerLimit;
@@ -531,13 +522,13 @@ struct btGeneric6DofSpring2ConstraintData
 	btVector3FloatData m_angularSpringStiffness;
 	btVector3FloatData m_angularSpringDamping;
 	btVector3FloatData m_angularEquilibriumPoint;
-	char               m_angularEnableMotor[4];
-	char               m_angularServoMotor[4];
-	char               m_angularEnableSpring[4];
-	char               m_angularSpringStiffnessLimited[4];
-	char               m_angularSpringDampingLimited[4];
+	char m_angularEnableMotor[4];
+	char m_angularServoMotor[4];
+	char m_angularEnableSpring[4];
+	char m_angularSpringStiffnessLimited[4];
+	char m_angularSpringDampingLimited[4];
 
-	int                m_rotateOrder;
+	int m_rotateOrder;
 };
 
 struct btGeneric6DofSpring2ConstraintDoubleData2
@@ -559,12 +550,12 @@ struct btGeneric6DofSpring2ConstraintDoubleData2
 	btVector3DoubleData m_linearSpringStiffness;
 	btVector3DoubleData m_linearSpringDamping;
 	btVector3DoubleData m_linearEquilibriumPoint;
-	char                m_linearEnableMotor[4];
-	char                m_linearServoMotor[4];
-	char                m_linearEnableSpring[4];
-	char                m_linearSpringStiffnessLimited[4];
-	char                m_linearSpringDampingLimited[4];
-	char                m_padding1[4];
+	char m_linearEnableMotor[4];
+	char m_linearServoMotor[4];
+	char m_linearEnableSpring[4];
+	char m_linearSpringStiffnessLimited[4];
+	char m_linearSpringDampingLimited[4];
+	char m_padding1[4];
 
 	btVector3DoubleData m_angularUpperLimit;
 	btVector3DoubleData m_angularLowerLimit;
@@ -579,13 +570,13 @@ struct btGeneric6DofSpring2ConstraintDoubleData2
 	btVector3DoubleData m_angularSpringStiffness;
 	btVector3DoubleData m_angularSpringDamping;
 	btVector3DoubleData m_angularEquilibriumPoint;
-	char                m_angularEnableMotor[4];
-	char                m_angularServoMotor[4];
-	char                m_angularEnableSpring[4];
-	char                m_angularSpringStiffnessLimited[4];
-	char                m_angularSpringDampingLimited[4];
+	char m_angularEnableMotor[4];
+	char m_angularServoMotor[4];
+	char m_angularEnableSpring[4];
+	char m_angularSpringStiffnessLimited[4];
+	char m_angularSpringDampingLimited[4];
 
-	int                 m_rotateOrder;
+	int m_rotateOrder;
 };
 
 SIMD_FORCE_INLINE int btGeneric6DofSpring2Constraint::calculateSerializeBufferSize() const
@@ -596,70 +587,70 @@ SIMD_FORCE_INLINE int btGeneric6DofSpring2Constraint::calculateSerializeBufferSi
 SIMD_FORCE_INLINE const char* btGeneric6DofSpring2Constraint::serialize(void* dataBuffer, btSerializer* serializer) const
 {
 	btGeneric6DofSpring2ConstraintData2* dof = (btGeneric6DofSpring2ConstraintData2*)dataBuffer;
-	btTypedConstraint::serialize(&dof->m_typeConstraintData,serializer);
+	btTypedConstraint::serialize(&dof->m_typeConstraintData, serializer);
 
 	m_frameInA.serialize(dof->m_rbAFrame);
 	m_frameInB.serialize(dof->m_rbBFrame);
 
 	int i;
-	for (i=0;i<3;i++)
+	for (i = 0; i < 3; i++)
 	{
-		dof->m_angularLowerLimit.m_floats[i]       = m_angularLimits[i].m_loLimit;
-		dof->m_angularUpperLimit.m_floats[i]       = m_angularLimits[i].m_hiLimit;
-		dof->m_angularBounce.m_floats[i]           = m_angularLimits[i].m_bounce;
-		dof->m_angularStopERP.m_floats[i]          = m_angularLimits[i].m_stopERP;
-		dof->m_angularStopCFM.m_floats[i]          = m_angularLimits[i].m_stopCFM;
-		dof->m_angularMotorERP.m_floats[i]         = m_angularLimits[i].m_motorERP;
-		dof->m_angularMotorCFM.m_floats[i]         = m_angularLimits[i].m_motorCFM;
-		dof->m_angularTargetVelocity.m_floats[i]   = m_angularLimits[i].m_targetVelocity;
-		dof->m_angularMaxMotorForce.m_floats[i]    = m_angularLimits[i].m_maxMotorForce;
-		dof->m_angularServoTarget.m_floats[i]      = m_angularLimits[i].m_servoTarget;
-		dof->m_angularSpringStiffness.m_floats[i]  = m_angularLimits[i].m_springStiffness;
-		dof->m_angularSpringDamping.m_floats[i]    = m_angularLimits[i].m_springDamping;
+		dof->m_angularLowerLimit.m_floats[i] = m_angularLimits[i].m_loLimit;
+		dof->m_angularUpperLimit.m_floats[i] = m_angularLimits[i].m_hiLimit;
+		dof->m_angularBounce.m_floats[i] = m_angularLimits[i].m_bounce;
+		dof->m_angularStopERP.m_floats[i] = m_angularLimits[i].m_stopERP;
+		dof->m_angularStopCFM.m_floats[i] = m_angularLimits[i].m_stopCFM;
+		dof->m_angularMotorERP.m_floats[i] = m_angularLimits[i].m_motorERP;
+		dof->m_angularMotorCFM.m_floats[i] = m_angularLimits[i].m_motorCFM;
+		dof->m_angularTargetVelocity.m_floats[i] = m_angularLimits[i].m_targetVelocity;
+		dof->m_angularMaxMotorForce.m_floats[i] = m_angularLimits[i].m_maxMotorForce;
+		dof->m_angularServoTarget.m_floats[i] = m_angularLimits[i].m_servoTarget;
+		dof->m_angularSpringStiffness.m_floats[i] = m_angularLimits[i].m_springStiffness;
+		dof->m_angularSpringDamping.m_floats[i] = m_angularLimits[i].m_springDamping;
 		dof->m_angularEquilibriumPoint.m_floats[i] = m_angularLimits[i].m_equilibriumPoint;
 	}
-	dof->m_angularLowerLimit.m_floats[3]       = 0;
-	dof->m_angularUpperLimit.m_floats[3]       = 0;
-	dof->m_angularBounce.m_floats[3]           = 0;
-	dof->m_angularStopERP.m_floats[3]          = 0;
-	dof->m_angularStopCFM.m_floats[3]          = 0;
-	dof->m_angularMotorERP.m_floats[3]         = 0;
-	dof->m_angularMotorCFM.m_floats[3]         = 0;
-	dof->m_angularTargetVelocity.m_floats[3]   = 0;
-	dof->m_angularMaxMotorForce.m_floats[3]    = 0;
-	dof->m_angularServoTarget.m_floats[3]      = 0;
-	dof->m_angularSpringStiffness.m_floats[3]  = 0;
-	dof->m_angularSpringDamping.m_floats[3]    = 0;
+	dof->m_angularLowerLimit.m_floats[3] = 0;
+	dof->m_angularUpperLimit.m_floats[3] = 0;
+	dof->m_angularBounce.m_floats[3] = 0;
+	dof->m_angularStopERP.m_floats[3] = 0;
+	dof->m_angularStopCFM.m_floats[3] = 0;
+	dof->m_angularMotorERP.m_floats[3] = 0;
+	dof->m_angularMotorCFM.m_floats[3] = 0;
+	dof->m_angularTargetVelocity.m_floats[3] = 0;
+	dof->m_angularMaxMotorForce.m_floats[3] = 0;
+	dof->m_angularServoTarget.m_floats[3] = 0;
+	dof->m_angularSpringStiffness.m_floats[3] = 0;
+	dof->m_angularSpringDamping.m_floats[3] = 0;
 	dof->m_angularEquilibriumPoint.m_floats[3] = 0;
-	for (i=0;i<4;i++)
+	for (i = 0; i < 4; i++)
 	{
-		dof->m_angularEnableMotor[i]            = i < 3 ? ( m_angularLimits[i].m_enableMotor ? 1 : 0 ) : 0;
-		dof->m_angularServoMotor[i]             = i < 3 ? ( m_angularLimits[i].m_servoMotor ? 1 : 0 ) : 0;
-		dof->m_angularEnableSpring[i]           = i < 3 ? ( m_angularLimits[i].m_enableSpring ? 1 : 0 ) : 0;
-		dof->m_angularSpringStiffnessLimited[i] = i < 3 ? ( m_angularLimits[i].m_springStiffnessLimited ? 1 : 0 ) : 0;
-		dof->m_angularSpringDampingLimited[i]   = i < 3 ? ( m_angularLimits[i].m_springDampingLimited ? 1 : 0 ) : 0;
+		dof->m_angularEnableMotor[i] = i < 3 ? (m_angularLimits[i].m_enableMotor ? 1 : 0) : 0;
+		dof->m_angularServoMotor[i] = i < 3 ? (m_angularLimits[i].m_servoMotor ? 1 : 0) : 0;
+		dof->m_angularEnableSpring[i] = i < 3 ? (m_angularLimits[i].m_enableSpring ? 1 : 0) : 0;
+		dof->m_angularSpringStiffnessLimited[i] = i < 3 ? (m_angularLimits[i].m_springStiffnessLimited ? 1 : 0) : 0;
+		dof->m_angularSpringDampingLimited[i] = i < 3 ? (m_angularLimits[i].m_springDampingLimited ? 1 : 0) : 0;
 	}
 
-	m_linearLimits.m_lowerLimit.serialize( dof->m_linearLowerLimit );
-	m_linearLimits.m_upperLimit.serialize( dof->m_linearUpperLimit );
-	m_linearLimits.m_bounce.serialize( dof->m_linearBounce );
-	m_linearLimits.m_stopERP.serialize( dof->m_linearStopERP );
-	m_linearLimits.m_stopCFM.serialize( dof->m_linearStopCFM );
-	m_linearLimits.m_motorERP.serialize( dof->m_linearMotorERP );
-	m_linearLimits.m_motorCFM.serialize( dof->m_linearMotorCFM );
-	m_linearLimits.m_targetVelocity.serialize( dof->m_linearTargetVelocity );
-	m_linearLimits.m_maxMotorForce.serialize( dof->m_linearMaxMotorForce );
-	m_linearLimits.m_servoTarget.serialize( dof->m_linearServoTarget );
-	m_linearLimits.m_springStiffness.serialize( dof->m_linearSpringStiffness );
-	m_linearLimits.m_springDamping.serialize( dof->m_linearSpringDamping );
-	m_linearLimits.m_equilibriumPoint.serialize( dof->m_linearEquilibriumPoint );
-	for (i=0;i<4;i++)
+	m_linearLimits.m_lowerLimit.serialize(dof->m_linearLowerLimit);
+	m_linearLimits.m_upperLimit.serialize(dof->m_linearUpperLimit);
+	m_linearLimits.m_bounce.serialize(dof->m_linearBounce);
+	m_linearLimits.m_stopERP.serialize(dof->m_linearStopERP);
+	m_linearLimits.m_stopCFM.serialize(dof->m_linearStopCFM);
+	m_linearLimits.m_motorERP.serialize(dof->m_linearMotorERP);
+	m_linearLimits.m_motorCFM.serialize(dof->m_linearMotorCFM);
+	m_linearLimits.m_targetVelocity.serialize(dof->m_linearTargetVelocity);
+	m_linearLimits.m_maxMotorForce.serialize(dof->m_linearMaxMotorForce);
+	m_linearLimits.m_servoTarget.serialize(dof->m_linearServoTarget);
+	m_linearLimits.m_springStiffness.serialize(dof->m_linearSpringStiffness);
+	m_linearLimits.m_springDamping.serialize(dof->m_linearSpringDamping);
+	m_linearLimits.m_equilibriumPoint.serialize(dof->m_linearEquilibriumPoint);
+	for (i = 0; i < 4; i++)
 	{
-		dof->m_linearEnableMotor[i]            = i < 3 ? ( m_linearLimits.m_enableMotor[i] ? 1 : 0 ) : 0;
-		dof->m_linearServoMotor[i]             = i < 3 ? ( m_linearLimits.m_servoMotor[i] ? 1 : 0 ) : 0;
-		dof->m_linearEnableSpring[i]           = i < 3 ? ( m_linearLimits.m_enableSpring[i] ? 1 : 0 ) : 0;
-		dof->m_linearSpringStiffnessLimited[i] = i < 3 ? ( m_linearLimits.m_springStiffnessLimited[i] ? 1 : 0 ) : 0;
-		dof->m_linearSpringDampingLimited[i]   = i < 3 ? ( m_linearLimits.m_springDampingLimited[i] ? 1 : 0 ) : 0;
+		dof->m_linearEnableMotor[i] = i < 3 ? (m_linearLimits.m_enableMotor[i] ? 1 : 0) : 0;
+		dof->m_linearServoMotor[i] = i < 3 ? (m_linearLimits.m_servoMotor[i] ? 1 : 0) : 0;
+		dof->m_linearEnableSpring[i] = i < 3 ? (m_linearLimits.m_enableSpring[i] ? 1 : 0) : 0;
+		dof->m_linearSpringStiffnessLimited[i] = i < 3 ? (m_linearLimits.m_springStiffnessLimited[i] ? 1 : 0) : 0;
+		dof->m_linearSpringDampingLimited[i] = i < 3 ? (m_linearLimits.m_springDampingLimited[i] ? 1 : 0) : 0;
 	}
 
 	dof->m_rotateOrder = m_rotateOrder;
@@ -672,8 +663,4 @@ SIMD_FORCE_INLINE const char* btGeneric6DofSpring2Constraint::serialize(void* da
 	return btGeneric6DofSpring2ConstraintDataName;
 }
 
-
-
-
-
-#endif //BT_GENERIC_6DOF_CONSTRAINT_H
+#endif  //BT_GENERIC_6DOF_CONSTRAINT_H

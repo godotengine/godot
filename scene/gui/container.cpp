@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,14 +29,14 @@
 /*************************************************************************/
 
 #include "container.h"
-#include "message_queue.h"
+#include "core/message_queue.h"
 #include "scene/scene_string_names.h"
 
 void Container::_child_minsize_changed() {
 
-	Size2 ms = get_combined_minimum_size();
-	if (ms.width > get_size().width || ms.height > get_size().height)
-		minimum_size_changed();
+	//Size2 ms = get_combined_minimum_size();
+	//if (ms.width > get_size().width || ms.height > get_size().height) {
+	minimum_size_changed();
 	queue_sort();
 }
 
@@ -51,6 +51,8 @@ void Container::add_child_notify(Node *p_child) {
 	control->connect("size_flags_changed", this, "queue_sort");
 	control->connect("minimum_size_changed", this, "_child_minsize_changed");
 	control->connect("visibility_changed", this, "_child_minsize_changed");
+
+	minimum_size_changed();
 	queue_sort();
 }
 
@@ -61,6 +63,7 @@ void Container::move_child_notify(Node *p_child) {
 	if (!Object::cast_to<Control>(p_child))
 		return;
 
+	minimum_size_changed();
 	queue_sort();
 }
 
@@ -75,6 +78,8 @@ void Container::remove_child_notify(Node *p_child) {
 	control->disconnect("size_flags_changed", this, "queue_sort");
 	control->disconnect("minimum_size_changed", this, "_child_minsize_changed");
 	control->disconnect("visibility_changed", this, "_child_minsize_changed");
+
+	minimum_size_changed();
 	queue_sort();
 }
 
@@ -90,6 +95,7 @@ void Container::_sort_children() {
 
 void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 
+	ERR_FAIL_COND(!p_child);
 	ERR_FAIL_COND(p_child->get_parent() != this);
 
 	Size2 minsize = p_child->get_combined_minimum_size();
@@ -161,6 +167,19 @@ void Container::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+String Container::get_configuration_warning() const {
+
+	String warning = Control::get_configuration_warning();
+
+	if (get_class() == "Container" && get_script().is_null()) {
+		if (warning != String()) {
+			warning += "\n";
+		}
+		warning += TTR("Container by itself serves no purpose unless a script configures it's children placement behavior.\nIf you dont't intend to add a script, then please use a plain 'Control' node instead.");
+	}
+	return warning;
 }
 
 void Container::_bind_methods() {

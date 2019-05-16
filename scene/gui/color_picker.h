@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/popup.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
@@ -52,6 +53,8 @@ private:
 	Control *w_edit;
 	TextureRect *sample;
 	TextureRect *preset;
+	HBoxContainer *preset_container;
+	HSeparator *preset_separator;
 	Button *bt_add_preset;
 	List<Color> presets;
 	ToolButton *btn_pick;
@@ -67,8 +70,11 @@ private:
 
 	Color color;
 	bool raw_mode_enabled;
+	bool deferred_mode_enabled;
 	bool updating;
 	bool changing_color;
+	bool presets_enabled;
+	bool presets_visible;
 	float h, s, v;
 	Color last_hsv;
 
@@ -104,8 +110,20 @@ public:
 	Color get_pick_color() const;
 
 	void add_preset(const Color &p_color);
+	void erase_preset(const Color &p_color);
+	PoolColorArray get_presets() const;
+
 	void set_raw_mode(bool p_enabled);
 	bool is_raw_mode() const;
+
+	void set_deferred_mode(bool p_enabled);
+	bool is_deferred_mode() const;
+
+	void set_presets_enabled(bool p_enabled);
+	bool are_presets_enabled() const;
+
+	void set_presets_visible(bool p_visible);
+	bool are_presets_visible() const;
 
 	void set_focus_on_line_edit();
 
@@ -118,11 +136,15 @@ class ColorPickerButton : public Button {
 
 	PopupPanel *popup;
 	ColorPicker *picker;
+	Color color;
+	bool edit_alpha;
 
 	void _color_changed(const Color &p_color);
 	void _modal_closed();
 
 	virtual void pressed();
+
+	void _update_picker();
 
 protected:
 	void _notification(int);
@@ -135,8 +157,8 @@ public:
 	void set_edit_alpha(bool p_show);
 	bool is_editing_alpha() const;
 
-	ColorPicker *get_picker() const;
-	PopupPanel *get_popup() const;
+	ColorPicker *get_picker();
+	PopupPanel *get_popup();
 
 	ColorPickerButton();
 };

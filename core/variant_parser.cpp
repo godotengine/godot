@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "variant_parser.h"
 
+#include "core/io/resource_loader.h"
+#include "core/os/input_event.h"
+#include "core/os/keyboard.h"
 #include "core/string_buffer.h"
-#include "io/resource_loader.h"
-#include "os/input_event.h"
-#include "os/keyboard.h"
 
 CharType VariantParser::StreamFile::get_char() {
 
@@ -728,7 +728,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			bool at_key = true;
 			String key;
-			Token token;
+			Token token2;
 			bool need_comma = false;
 
 			while (true) {
@@ -740,11 +740,11 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 				if (at_key) {
 
-					Error err = get_token(p_stream, token, line, r_err_str);
+					Error err = get_token(p_stream, token2, line, r_err_str);
 					if (err != OK)
 						return err;
 
-					if (token.type == TK_PARENTHESIS_CLOSE) {
+					if (token2.type == TK_PARENTHESIS_CLOSE) {
 						Reference *reference = Object::cast_to<Reference>(obj);
 						if (reference) {
 							value = REF(reference);
@@ -756,7 +756,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 					if (need_comma) {
 
-						if (token.type != TK_COMMA) {
+						if (token2.type != TK_COMMA) {
 
 							r_err_str = "Expected '}' or ','";
 							return ERR_PARSE_ERROR;
@@ -766,18 +766,18 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 						}
 					}
 
-					if (token.type != TK_STRING) {
+					if (token2.type != TK_STRING) {
 						r_err_str = "Expected property name as string";
 						return ERR_PARSE_ERROR;
 					}
 
-					key = token.value;
+					key = token2.value;
 
-					err = get_token(p_stream, token, line, r_err_str);
+					err = get_token(p_stream, token2, line, r_err_str);
 
 					if (err != OK)
 						return err;
-					if (token.type != TK_COLON) {
+					if (token2.type != TK_COLON) {
 
 						r_err_str = "Expected ':'";
 						return ERR_PARSE_ERROR;
@@ -785,12 +785,12 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					at_key = false;
 				} else {
 
-					Error err = get_token(p_stream, token, line, r_err_str);
+					Error err = get_token(p_stream, token2, line, r_err_str);
 					if (err != OK)
 						return err;
 
 					Variant v;
-					err = parse_value(token, v, p_stream, line, r_err_str, p_res_parser);
+					err = parse_value(token2, v, p_stream, line, r_err_str, p_res_parser);
 					if (err)
 						return err;
 					obj->set(key, v);
@@ -882,11 +882,11 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			String id = token.value;
+			String id2 = token.value;
 
 			Ref<InputEvent> ie;
 
-			if (id == "NONE") {
+			if (id2 == "NONE") {
 
 				get_token(p_stream, token, line, r_err_str);
 
@@ -895,7 +895,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-			} else if (id == "KEY") {
+			} else if (id2 == "KEY") {
 
 				Ref<InputEventKey> key;
 				key.instance();
@@ -954,7 +954,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-			} else if (id == "MBUTTON") {
+			} else if (id2 == "MBUTTON") {
 
 				Ref<InputEventMouseButton> mb;
 				mb.instance();
@@ -980,7 +980,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-			} else if (id == "JBUTTON") {
+			} else if (id2 == "JBUTTON") {
 
 				Ref<InputEventJoypadButton> jb;
 				jb.instance();
@@ -1006,7 +1006,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-			} else if (id == "JAXIS") {
+			} else if (id2 == "JAXIS") {
 
 				Ref<InputEventJoypadMotion> jm;
 				jm.instance();
@@ -1429,10 +1429,10 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 			break;
 
 		if (parsing_tag && token.type == TK_PERIOD) {
-			r_tag.name += "."; //support tags such as [someprop.Anroid] for specific platforms
+			r_tag.name += "."; //support tags such as [someprop.Android] for specific platforms
 			get_token(p_stream, token, line, r_err_str);
 		} else if (parsing_tag && token.type == TK_COLON) {
-			r_tag.name += ":"; //support tags such as [someprop.Anroid] for specific platforms
+			r_tag.name += ":"; //support tags such as [someprop.Android] for specific platforms
 			get_token(p_stream, token, line, r_err_str);
 		} else {
 			parsing_tag = false;
@@ -1542,6 +1542,9 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 			} else if (c != '=') {
 				what += String::chr(c);
 			} else {
+				if (p_stream->is_utf8()) {
+					what.parse_utf8(what.ascii(true).get_data());
+				}
 				r_assign = what;
 				Token token;
 				get_token(p_stream, token, line, r_err_str);
@@ -1597,7 +1600,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::INT: {
 
-			p_store_string_func(p_store_string_ud, itos(p_variant.operator int()));
+			p_store_string_func(p_store_string_ud, itos(p_variant.operator int64_t()));
 		} break;
 		case Variant::REAL: {
 
@@ -1948,7 +1951,8 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			p_store_string_func(p_store_string_ud, " )");
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	return OK;

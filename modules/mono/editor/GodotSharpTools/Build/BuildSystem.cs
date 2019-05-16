@@ -16,24 +16,51 @@ namespace GodotSharpTools.Build
         private extern static void godot_icall_BuildInstance_ExitCallback(string solution, string config, int exitCode);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private extern static void godot_icall_BuildInstance_get_MSBuildInfo(ref string msbuildPath, ref string frameworkPath);
+        private extern static string godot_icall_BuildInstance_get_MSBuildPath();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private extern static string godot_icall_BuildInstance_get_MonoWindowsBinDir();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private extern static bool godot_icall_BuildInstance_get_UsingMonoMSBuildOnWindows();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private extern static bool godot_icall_BuildInstance_get_PrintBuildOutput();
 
-        private struct MSBuildInfo
+        private static string GetMSBuildPath()
         {
-            public string path;
-            public string frameworkPathOverride;
-        }
+            string msbuildPath = godot_icall_BuildInstance_get_MSBuildPath();
 
-        private static MSBuildInfo GetMSBuildInfo()
-        {
-            MSBuildInfo msbuildInfo = new MSBuildInfo();
-
-            godot_icall_BuildInstance_get_MSBuildInfo(ref msbuildInfo.path, ref msbuildInfo.frameworkPathOverride);
-
-            if (msbuildInfo.path == null)
+            if (msbuildPath == null)
                 throw new FileNotFoundException("Cannot find the MSBuild executable.");
 
-            return msbuildInfo;
+            return msbuildPath;
+        }
+
+        private static string MonoWindowsBinDir
+        {
+            get
+            {
+                string monoWinBinDir = godot_icall_BuildInstance_get_MonoWindowsBinDir();
+
+                if (monoWinBinDir == null)
+                    throw new FileNotFoundException("Cannot find the Windows Mono binaries directory.");
+
+                return monoWinBinDir;
+            }
+        }
+
+        private static bool UsingMonoMSBuildOnWindows
+        {
+            get
+            {
+                return godot_icall_BuildInstance_get_UsingMonoMSBuildOnWindows();
+            }
+        }
+
+        private static bool PrintBuildOutput
+        {
+            get
+            {
+                return godot_icall_BuildInstance_get_PrintBuildOutput();
+            }
         }
 
         private string solution;
@@ -54,24 +81,33 @@ namespace GodotSharpTools.Build
 
         public bool Build(string loggerAssemblyPath, string loggerOutputDir, string[] customProperties = null)
         {
-            MSBuildInfo msbuildInfo = GetMSBuildInfo();
-
             List<string> customPropertiesList = new List<string>();
 
             if (customProperties != null)
                 customPropertiesList.AddRange(customProperties);
 
-            if (msbuildInfo.frameworkPathOverride != null)
-                customPropertiesList.Add("FrameworkPathOverride=" + msbuildInfo.frameworkPathOverride);
-
             string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customPropertiesList);
 
-            ProcessStartInfo startInfo = new ProcessStartInfo(msbuildInfo.path, compilerArgs);
+            ProcessStartInfo startInfo = new ProcessStartInfo(GetMSBuildPath(), compilerArgs);
 
-            // No console output, thanks
-            startInfo.RedirectStandardOutput = true;
-            startInfo.RedirectStandardError = true;
+            bool redirectOutput = !IsDebugMSBuildRequested() && !PrintBuildOutput;
+
+            if (!redirectOutput) // TODO: or if stdout verbose
+                Console.WriteLine($"Running: \"{startInfo.FileName}\" {startInfo.Arguments}");
+
+            startInfo.RedirectStandardOutput = redirectOutput;
+            startInfo.RedirectStandardError = redirectOutput;
             startInfo.UseShellExecute = false;
+
+            if (UsingMonoMSBuildOnWindows)
+            {
+                // These environment variables are required for Mono's MSBuild to find the compilers.
+                // We use the batch files in Mono's bin directory to make sure the compilers are executed with mono.
+                string monoWinBinDir = MonoWindowsBinDir;
+                startInfo.EnvironmentVariables.Add("CscToolExe", Path.Combine(monoWinBinDir, "csc.bat"));
+                startInfo.EnvironmentVariables.Add("VbcToolExe", Path.Combine(monoWinBinDir, "vbc.bat"));
+                startInfo.EnvironmentVariables.Add("FscToolExe", Path.Combine(monoWinBinDir, "fsharpc.bat"));
+            }
 
             // Needed when running from Developer Command Prompt for VS
             RemovePlatformVariable(startInfo.EnvironmentVariables);
@@ -82,8 +118,11 @@ namespace GodotSharpTools.Build
 
                 process.Start();
 
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+                if (redirectOutput)
+                {
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                }
 
                 process.WaitForExit();
 
@@ -98,24 +137,33 @@ namespace GodotSharpTools.Build
             if (process != null)
                 throw new InvalidOperationException("Already in use");
 
-            MSBuildInfo msbuildInfo = GetMSBuildInfo();
-
             List<string> customPropertiesList = new List<string>();
 
             if (customProperties != null)
                 customPropertiesList.AddRange(customProperties);
 
-            if (msbuildInfo.frameworkPathOverride.Length > 0)
-                customPropertiesList.Add("FrameworkPathOverride=" + msbuildInfo.frameworkPathOverride);
-
             string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customPropertiesList);
 
-            ProcessStartInfo startInfo = new ProcessStartInfo(msbuildInfo.path, compilerArgs);
+            ProcessStartInfo startInfo = new ProcessStartInfo(GetMSBuildPath(), compilerArgs);
 
-            // No console output, thanks
-            startInfo.RedirectStandardOutput = true;
-            startInfo.RedirectStandardError = true;
+            bool redirectOutput = !IsDebugMSBuildRequested() && !PrintBuildOutput;
+
+            if (!redirectOutput) // TODO: or if stdout verbose
+                Console.WriteLine($"Running: \"{startInfo.FileName}\" {startInfo.Arguments}");
+
+            startInfo.RedirectStandardOutput = redirectOutput;
+            startInfo.RedirectStandardError = redirectOutput;
             startInfo.UseShellExecute = false;
+
+            if (UsingMonoMSBuildOnWindows)
+            {
+                // These environment variables are required for Mono's MSBuild to find the compilers.
+                // We use the batch files in Mono's bin directory to make sure the compilers are executed with mono.
+                string monoWinBinDir = MonoWindowsBinDir;
+                startInfo.EnvironmentVariables.Add("CscToolExe", Path.Combine(monoWinBinDir, "csc.bat"));
+                startInfo.EnvironmentVariables.Add("VbcToolExe", Path.Combine(monoWinBinDir, "vbc.bat"));
+                startInfo.EnvironmentVariables.Add("FscToolExe", Path.Combine(monoWinBinDir, "fsharpc.bat"));
+            }
 
             // Needed when running from Developer Command Prompt for VS
             RemovePlatformVariable(startInfo.EnvironmentVariables);
@@ -127,8 +175,11 @@ namespace GodotSharpTools.Build
 
             process.Start();
 
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+            if (redirectOutput)
+            {
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+            }
 
             return true;
         }
@@ -176,6 +227,11 @@ namespace GodotSharpTools.Build
             Dispose();
         }
 
+        private static bool IsDebugMSBuildRequested()
+        {
+            return Environment.GetEnvironmentVariable("GODOT_DEBUG_MSBUILD")?.Trim() == "1";
+        }
+
         public void Dispose()
         {
             if (process != null)
@@ -196,7 +252,7 @@ namespace GodotSharpTools.Build
             if (null == Parameters)
                 throw new LoggerException("Log directory was not set.");
 
-            string[] parameters = Parameters.Split(';');
+            string[] parameters = Parameters.Split(new[] { ';' });
 
             string logDir = parameters[0];
 

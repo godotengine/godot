@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,9 +41,9 @@ class MenuButton : public Button {
 	GDCLASS(MenuButton, Button);
 
 	bool clicked;
+	bool switch_on_hover;
 	bool disable_shortcuts;
 	PopupMenu *popup;
-	virtual void pressed();
 
 	void _unhandled_key_input(Ref<InputEvent> p_event);
 	Array _get_items() const;
@@ -52,10 +52,15 @@ class MenuButton : public Button {
 	void _gui_input(Ref<InputEvent> p_event);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	virtual void pressed();
+
 	PopupMenu *get_popup() const;
+	void set_switch_on_hover(bool p_enabled);
+	bool is_switch_on_hover();
 	void set_disable_shortcuts(bool p_disabled);
 
 	MenuButton();

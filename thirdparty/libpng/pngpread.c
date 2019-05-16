@@ -1,10 +1,10 @@
 
 /* pngpread.c - read a png file in push mode
  *
- * Last changed in libpng 1.6.32 [August 24, 2017]
- * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
- * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
- * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+ * Copyright (c) 2018 Cosmin Truta
+ * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
+ * Copyright (c) 1996-1997 Andreas Dilger
+ * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -34,7 +34,7 @@ if (png_ptr->buffer_size < N) \
 
 void PNGAPI
 png_process_data(png_structrp png_ptr, png_inforp info_ptr,
-    png_bytep buffer, png_size_t buffer_size)
+    png_bytep buffer, size_t buffer_size)
 {
    if (png_ptr == NULL || info_ptr == NULL)
       return;
@@ -47,7 +47,7 @@ png_process_data(png_structrp png_ptr, png_inforp info_ptr,
    }
 }
 
-png_size_t PNGAPI
+size_t PNGAPI
 png_process_data_pause(png_structrp png_ptr, int save)
 {
    if (png_ptr != NULL)
@@ -60,7 +60,7 @@ png_process_data_pause(png_structrp png_ptr, int save)
       else
       {
          /* This includes any pending saved bytes: */
-         png_size_t remaining = png_ptr->buffer_size;
+         size_t remaining = png_ptr->buffer_size;
          png_ptr->buffer_size = 0;
 
          /* So subtract the saved buffer size, unless all the data
@@ -133,8 +133,8 @@ png_process_some_data(png_structrp png_ptr, png_inforp info_ptr)
 void /* PRIVATE */
 png_push_read_sig(png_structrp png_ptr, png_inforp info_ptr)
 {
-   png_size_t num_checked = png_ptr->sig_bytes, /* SAFE, does not exceed 8 */
-       num_to_check = 8 - num_checked;
+   size_t num_checked = png_ptr->sig_bytes; /* SAFE, does not exceed 8 */
+   size_t num_to_check = 8 - num_checked;
 
    if (png_ptr->buffer_size < num_to_check)
    {
@@ -194,6 +194,106 @@ png_push_read_chunk(png_structrp png_ptr, png_inforp info_ptr)
    }
 
    chunk_name = png_ptr->chunk_name;
+
+#ifdef PNG_READ_APNG_SUPPORTED
+   if (png_ptr->num_frames_read > 0 &&
+       png_ptr->num_frames_read < info_ptr->num_frames)
+   {
+      if (chunk_name == png_IDAT)
+      {
+         /* Discard trailing IDATs for the first frame */
+         if (png_ptr->mode & PNG_HAVE_fcTL || png_ptr->num_frames_read > 1)
+            png_error(png_ptr, "out of place IDAT");
+
+         if (png_ptr->push_length + 4 > png_ptr->buffer_size)
+         {
+            png_push_save_buffer(png_ptr);
+            return;
+         }
+
+         png_ptr->mode &= ~PNG_HAVE_CHUNK_HEADER;
+         return;
+      }
+      else if (chunk_name == png_fdAT)
+      {
+         if (png_ptr->buffer_size < 4)
+         {
+            png_push_save_buffer(png_ptr);
+            return;
+         }
+
+         png_ensure_sequence_number(png_ptr, 4);
+
+         if (!(png_ptr->mode & PNG_HAVE_fcTL))
+         {
+            /* Discard trailing fdATs for frames other than the first */
+            if (png_ptr->num_frames_read < 2)
+               png_error(png_ptr, "out of place fdAT");
+
+            if (png_ptr->push_length + 4 > png_ptr->buffer_size)
+            {
+               png_push_save_buffer(png_ptr);
+               return;
+            }
+
+            png_ptr->mode &= ~PNG_HAVE_CHUNK_HEADER;
+            return;
+         }
+
+         else
+         {
+            /* frame data follows */
+            png_ptr->idat_size = png_ptr->push_length - 4;
+            png_ptr->mode |= PNG_HAVE_IDAT;
+            png_ptr->process_mode = PNG_READ_IDAT_MODE;
+
+            return;
+         }
+      }
+
+      else if (chunk_name == png_fcTL)
+      {
+         if (png_ptr->push_length + 4 > png_ptr->buffer_size)
+         {
+            png_push_save_buffer(png_ptr);
+            return;
+         }
+
+         png_read_reset(png_ptr);
+         png_ptr->mode &= ~PNG_HAVE_fcTL;
+
+         png_handle_fcTL(png_ptr, info_ptr, png_ptr->push_length);
+
+         if (!(png_ptr->mode & PNG_HAVE_fcTL))
+            png_error(png_ptr, "missing required fcTL chunk");
+
+         png_read_reinit(png_ptr, info_ptr);
+         png_progressive_read_reset(png_ptr);
+
+         if (png_ptr->frame_info_fn != NULL)
+            (*(png_ptr->frame_info_fn))(png_ptr, png_ptr->num_frames_read);
+
+         png_ptr->mode &= ~PNG_HAVE_CHUNK_HEADER;
+
+         return;
+      }
+
+      else
+      {
+         if (png_ptr->push_length + 4 > png_ptr->buffer_size)
+         {
+            png_push_save_buffer(png_ptr);
+            return;
+         }
+         png_warning(png_ptr, "Skipped (ignored) a chunk "
+                              "between APNG chunks");
+         png_ptr->mode &= ~PNG_HAVE_CHUNK_HEADER;
+         return;
+      }
+
+      return;
+   }
+#endif /* PNG_READ_APNG_SUPPORTED */
 
    if (chunk_name == png_IDAT)
    {
@@ -261,6 +361,9 @@ png_push_read_chunk(png_structrp png_ptr, png_inforp info_ptr)
 
    else if (chunk_name == png_IDAT)
    {
+#ifdef PNG_READ_APNG_SUPPORTED
+      png_have_info(png_ptr, info_ptr);
+#endif
       png_ptr->idat_size = png_ptr->push_length;
       png_ptr->process_mode = PNG_READ_IDAT_MODE;
       png_push_have_info(png_ptr, info_ptr);
@@ -406,6 +509,30 @@ png_push_read_chunk(png_structrp png_ptr, png_inforp info_ptr)
       png_handle_iTXt(png_ptr, info_ptr, png_ptr->push_length);
    }
 #endif
+#ifdef PNG_READ_APNG_SUPPORTED
+   else if (chunk_name == png_acTL)
+   {
+      if (png_ptr->push_length + 4 > png_ptr->buffer_size)
+      {
+         png_push_save_buffer(png_ptr);
+         return;
+      }
+
+      png_handle_acTL(png_ptr, info_ptr, png_ptr->push_length);
+   }
+
+   else if (chunk_name == png_fcTL)
+   {
+      if (png_ptr->push_length + 4 > png_ptr->buffer_size)
+      {
+         png_push_save_buffer(png_ptr);
+         return;
+      }
+
+      png_handle_fcTL(png_ptr, info_ptr, png_ptr->push_length);
+   }
+
+#endif /* PNG_READ_APNG_SUPPORTED */
 
    else
    {
@@ -418,7 +545,7 @@ png_push_read_chunk(png_structrp png_ptr, png_inforp info_ptr)
 }
 
 void PNGCBAPI
-png_push_fill_buffer(png_structp png_ptr, png_bytep buffer, png_size_t length)
+png_push_fill_buffer(png_structp png_ptr, png_bytep buffer, size_t length)
 {
    png_bytep ptr;
 
@@ -428,7 +555,7 @@ png_push_fill_buffer(png_structp png_ptr, png_bytep buffer, png_size_t length)
    ptr = buffer;
    if (png_ptr->save_buffer_size != 0)
    {
-      png_size_t save_size;
+      size_t save_size;
 
       if (length < png_ptr->save_buffer_size)
          save_size = length;
@@ -445,7 +572,7 @@ png_push_fill_buffer(png_structp png_ptr, png_bytep buffer, png_size_t length)
    }
    if (length != 0 && png_ptr->current_buffer_size != 0)
    {
-      png_size_t save_size;
+      size_t save_size;
 
       if (length < png_ptr->current_buffer_size)
          save_size = length;
@@ -467,7 +594,7 @@ png_push_save_buffer(png_structrp png_ptr)
    {
       if (png_ptr->save_buffer_ptr != png_ptr->save_buffer)
       {
-         png_size_t i, istop;
+         size_t i, istop;
          png_bytep sp;
          png_bytep dp;
 
@@ -482,7 +609,7 @@ png_push_save_buffer(png_structrp png_ptr)
    if (png_ptr->save_buffer_size + png_ptr->current_buffer_size >
        png_ptr->save_buffer_max)
    {
-      png_size_t new_max;
+      size_t new_max;
       png_bytep old_buffer;
 
       if (png_ptr->save_buffer_size > PNG_SIZE_MAX -
@@ -494,7 +621,7 @@ png_push_save_buffer(png_structrp png_ptr)
       new_max = png_ptr->save_buffer_size + png_ptr->current_buffer_size + 256;
       old_buffer = png_ptr->save_buffer;
       png_ptr->save_buffer = (png_bytep)png_malloc_warn(png_ptr,
-          (png_size_t)new_max);
+          (size_t)new_max);
 
       if (png_ptr->save_buffer == NULL)
       {
@@ -522,7 +649,7 @@ png_push_save_buffer(png_structrp png_ptr)
 
 void /* PRIVATE */
 png_push_restore_buffer(png_structrp png_ptr, png_bytep buffer,
-    png_size_t buffer_length)
+    size_t buffer_length)
 {
    png_ptr->current_buffer = buffer;
    png_ptr->current_buffer_size = buffer_length;
@@ -539,7 +666,11 @@ png_push_read_IDAT(png_structrp png_ptr)
       png_byte chunk_tag[4];
 
       /* TODO: this code can be commoned up with the same code in push_read */
+#ifdef PNG_READ_APNG_SUPPORTED
+      PNG_PUSH_SAVE_BUFFER_IF_LT(12)
+#else
       PNG_PUSH_SAVE_BUFFER_IF_LT(8)
+#endif
       png_push_fill_buffer(png_ptr, chunk_length, 4);
       png_ptr->push_length = png_get_uint_31(png_ptr, chunk_length);
       png_reset_crc(png_ptr);
@@ -547,22 +678,69 @@ png_push_read_IDAT(png_structrp png_ptr)
       png_ptr->chunk_name = PNG_CHUNK_FROM_STRING(chunk_tag);
       png_ptr->mode |= PNG_HAVE_CHUNK_HEADER;
 
+#ifdef PNG_READ_APNG_SUPPORTED
+      if (png_ptr->chunk_name != png_fdAT && png_ptr->num_frames_read > 0)
+      {
+          if (png_ptr->flags & PNG_FLAG_ZSTREAM_ENDED)
+          {
+              png_ptr->process_mode = PNG_READ_CHUNK_MODE;
+              if (png_ptr->frame_end_fn != NULL)
+                 (*(png_ptr->frame_end_fn))(png_ptr, png_ptr->num_frames_read);
+              png_ptr->num_frames_read++;
+              return;
+          }
+          else
+          {
+              if (png_ptr->chunk_name == png_IEND)
+                  png_error(png_ptr, "Not enough image data");
+              if (png_ptr->push_length + 4 > png_ptr->buffer_size)
+              {
+                 png_push_save_buffer(png_ptr);
+                 return;
+              }
+              png_warning(png_ptr, "Skipping (ignoring) a chunk between "
+                                   "APNG chunks");
+              png_crc_finish(png_ptr, png_ptr->push_length);
+              png_ptr->mode &= ~PNG_HAVE_CHUNK_HEADER;
+              return;
+          }
+      }
+      else
+#endif
+#ifdef PNG_READ_APNG_SUPPORTED
+      if (png_ptr->chunk_name != png_IDAT && png_ptr->num_frames_read == 0)
+#else
       if (png_ptr->chunk_name != png_IDAT)
+#endif
       {
          png_ptr->process_mode = PNG_READ_CHUNK_MODE;
 
          if ((png_ptr->flags & PNG_FLAG_ZSTREAM_ENDED) == 0)
             png_error(png_ptr, "Not enough compressed data");
 
+#ifdef PNG_READ_APNG_SUPPORTED
+         if (png_ptr->frame_end_fn != NULL)
+            (*(png_ptr->frame_end_fn))(png_ptr, png_ptr->num_frames_read);
+         png_ptr->num_frames_read++;
+#endif
+
          return;
       }
 
       png_ptr->idat_size = png_ptr->push_length;
+
+#ifdef PNG_READ_APNG_SUPPORTED
+      if (png_ptr->num_frames_read > 0)
+      {
+         png_ensure_sequence_number(png_ptr, 4);
+         png_ptr->idat_size -= 4;
+      }
+#endif
    }
 
    if (png_ptr->idat_size != 0 && png_ptr->save_buffer_size != 0)
    {
-      png_size_t save_size = png_ptr->save_buffer_size;
+      size_t save_size = png_ptr->save_buffer_size;
       png_uint_32 idat_size = png_ptr->idat_size;
 
       /* We want the smaller of 'idat_size' and 'current_buffer_size', but they
@@ -572,7 +750,7 @@ png_push_read_IDAT(png_structrp png_ptr)
        * will break on either 16-bit or 64-bit platforms.
        */
       if (idat_size < save_size)
-         save_size = (png_size_t)idat_size;
+         save_size = (size_t)idat_size;
 
       else
          idat_size = (png_uint_32)save_size;
@@ -589,7 +767,7 @@ png_push_read_IDAT(png_structrp png_ptr)
 
    if (png_ptr->idat_size != 0 && png_ptr->current_buffer_size != 0)
    {
-      png_size_t save_size = png_ptr->current_buffer_size;
+      size_t save_size = png_ptr->current_buffer_size;
       png_uint_32 idat_size = png_ptr->idat_size;
 
       /* We want the smaller of 'idat_size' and 'current_buffer_size', but they
@@ -598,7 +776,7 @@ png_push_read_IDAT(png_structrp png_ptr)
        * larger - this cannot overflow.
        */
       if (idat_size < save_size)
-         save_size = (png_size_t)idat_size;
+         save_size = (size_t)idat_size;
 
       else
          idat_size = (png_uint_32)save_size;
@@ -625,11 +803,20 @@ png_push_read_IDAT(png_structrp png_ptr)
 
 void /* PRIVATE */
 png_process_IDAT_data(png_structrp png_ptr, png_bytep buffer,
-    png_size_t buffer_length)
+    size_t buffer_length)
 {
    /* The caller checks for a non-zero buffer length. */
    if (!(buffer_length > 0) || buffer == NULL)
       png_error(png_ptr, "No IDAT data (internal error)");
+
+#ifdef PNG_READ_APNG_SUPPORTED
+   /* If the app is not APNG-aware, decode only the first frame */
+   if (!(png_ptr->apng_flags & PNG_APNG_APP) && png_ptr->num_frames_read > 0)
+   {
+     png_ptr->flags |= PNG_FLAG_ZSTREAM_ENDED;
+     return;
+   }
+#endif
 
    /* This routine must process all the data it has been given
     * before returning, calling the row callback as required to
@@ -972,20 +1159,20 @@ png_read_push_finish_row(png_structrp png_ptr)
    /* Arrays to facilitate easy interlacing - use pass (0 - 6) as index */
 
    /* Start of interlace block */
-   static PNG_CONST png_byte png_pass_start[] = {0, 4, 0, 2, 0, 1, 0};
+   static const png_byte png_pass_start[] = {0, 4, 0, 2, 0, 1, 0};
 
    /* Offset to next interlace block */
-   static PNG_CONST png_byte png_pass_inc[] = {8, 8, 4, 4, 2, 2, 1};
+   static const png_byte png_pass_inc[] = {8, 8, 4, 4, 2, 2, 1};
 
    /* Start of interlace block in the y direction */
-   static PNG_CONST png_byte png_pass_ystart[] = {0, 0, 4, 0, 2, 0, 1};
+   static const png_byte png_pass_ystart[] = {0, 0, 4, 0, 2, 0, 1};
 
    /* Offset to next interlace block in the y direction */
-   static PNG_CONST png_byte png_pass_yinc[] = {8, 8, 8, 4, 4, 2, 2};
+   static const png_byte png_pass_yinc[] = {8, 8, 8, 4, 4, 2, 2};
 
    /* Height of interlace block.  This is not currently used - if you need
     * it, uncomment it here and in png.h
-   static PNG_CONST png_byte png_pass_height[] = {8, 8, 4, 4, 2, 2, 1};
+   static const png_byte png_pass_height[] = {8, 8, 4, 4, 2, 2, 1};
    */
 #endif
 
@@ -1084,6 +1271,18 @@ png_set_progressive_read_fn(png_structrp png_ptr, png_voidp progressive_ptr,
 
    png_set_read_fn(png_ptr, progressive_ptr, png_push_fill_buffer);
 }
+
+#ifdef PNG_READ_APNG_SUPPORTED
+void PNGAPI
+png_set_progressive_frame_fn(png_structp png_ptr,
+   png_progressive_frame_ptr frame_info_fn,
+   png_progressive_frame_ptr frame_end_fn)
+{
+   png_ptr->frame_info_fn = frame_info_fn;
+   png_ptr->frame_end_fn = frame_end_fn;
+   png_ptr->apng_flags |= PNG_APNG_APP;
+}
+#endif
 
 png_voidp PNGAPI
 png_get_progressive_ptr(png_const_structrp png_ptr)

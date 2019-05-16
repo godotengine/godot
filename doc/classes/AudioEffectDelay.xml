@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectDelay" inherits="AudioEffect" category="Core" version="3.1">
+<class name="AudioEffectDelay" inherits="AudioEffect" category="Core" version="3.2">
 	<brief_description>
 		Adds a Delay audio effect to an Audio bus. Plays input signal back after a period of time.
 		Two tap delay and feedback options.
@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
@@ -18,7 +16,7 @@
 			Output percent of original sound. At 0, only delayed sounds are output. Value can range from 0 to 1. Default value: [code]1[/code].
 		</member>
 		<member name="feedback/active" type="bool" setter="set_feedback_active" getter="is_feedback_active">
-			If [code]true[/code] feedback is enabled. Default value: [code]false[/code].
+			If [code]true[/code], feedback is enabled. Default value: [code]false[/code].
 		</member>
 		<member name="feedback/delay_ms" type="float" setter="set_feedback_delay_ms" getter="get_feedback_delay_ms">
 			Feedback delay time in milliseconds. Default value: [code]340[/code].

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "audio_effect_pitch_shift.h"
 
-#include "math_funcs.h"
+#include "core/math/math_funcs.h"
 #include "servers/audio_server.h"
 
 /* Thirdparty code, so disable clang-format with Godot style */
@@ -305,9 +305,9 @@ Ref<AudioEffectInstance> AudioEffectPitchShift::instance() {
 	return ins;
 }
 
-void AudioEffectPitchShift::set_pitch_scale(float p_adjust) {
-
-	pitch_scale = p_adjust;
+void AudioEffectPitchShift::set_pitch_scale(float p_pitch_scale) {
+	ERR_FAIL_COND(p_pitch_scale <= 0.0);
+	pitch_scale = p_pitch_scale;
 }
 
 float AudioEffectPitchShift::get_pitch_scale() const {

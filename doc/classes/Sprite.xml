@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Sprite" inherits="Node2D" category="Core" version="3.1">
+<class name="Sprite" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
 		General purpose Sprite node.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_rect" qualifiers="const">
 			<return type="Rect2">
@@ -18,16 +16,24 @@
 				Returns a Rect2 representing the Sprite's boundary relative to its local coordinates.
 			</description>
 		</method>
+		<method name="is_pixel_opaque" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered">
-			If [code]true[/code] texture is centered. Default value: [code]true[/code].
+			If [code]true[/code], texture is centered. Default value: [code]true[/code].
 		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h">
-			If [code]true[/code] texture is flipped horizontally. Default value: [code]false[/code].
+			If [code]true[/code], texture is flipped horizontally. Default value: [code]false[/code].
 		</member>
 		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v">
-			If [code]true[/code] texture is flipped vertically. Default value: [code]false[/code].
+			If [code]true[/code], texture is flipped vertically. Default value: [code]false[/code].
 		</member>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame">
 			Current frame to display from sprite sheet. [member vframes] or [member hframes] must be greater than 1.
@@ -42,10 +48,10 @@
 			The texture's drawing offset.
 		</member>
 		<member name="region_enabled" type="bool" setter="set_region" getter="is_region">
-			If [code]true[/code] texture is cut from a larger atlas texture. See [code]region_rect[/code]. Default value: [code]false[/code].
+			If [code]true[/code], texture is cut from a larger atlas texture. See [code]region_rect[/code]. Default value: [code]false[/code].
 		</member>
 		<member name="region_filter_clip" type="bool" setter="set_region_filter_clip" getter="is_region_filter_clip_enabled">
-			If [code]true[/code] the outermost pixels get blurred out.
+			If [code]true[/code], the outermost pixels get blurred out.
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect">
 			The region of the atlas texture to display. [member region_enabled] must be [code]true[/code].

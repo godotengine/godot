@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,68 +30,86 @@
 
 package org.godotengine.godot.payments;
 
-import com.android.vending.billing.IInAppBillingService;
-
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.RemoteException;
 import android.util.Log;
+import com.android.vending.billing.IInAppBillingService;
+import java.lang.ref.WeakReference;
 
 abstract public class ConsumeTask {
 
 	private Context context;
-
 	private IInAppBillingService mService;
+
+	private String mSku;
+	private String mToken;
+
+	private static class ConsumeAsyncTask extends AsyncTask<String, String, String> {
+
+		private WeakReference<ConsumeTask> mTask;
+
+		ConsumeAsyncTask(ConsumeTask consume) {
+			mTask = new WeakReference<>(consume);
+		}
+
+		@Override
+		protected String doInBackground(String... strings) {
+			ConsumeTask consume = mTask.get();
+			if (consume != null) {
+				return consume.doInBackground(strings);
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(String param) {
+			ConsumeTask consume = mTask.get();
+			if (consume != null) {
+				consume.onPostExecute(param);
+			}
+		}
+	}
+
 	public ConsumeTask(IInAppBillingService mService, Context context) {
 		this.context = context;
 		this.mService = mService;
 	}
 
 	public void consume(final String sku) {
-		//Log.d("XXX", "Consuming product " + sku);
+		mSku = sku;
 		PaymentsCache pc = new PaymentsCache(context);
 		Boolean isBlocked = pc.getConsumableFlag("block", sku);
-		String _token = pc.getConsumableValue("token", sku);
-		//Log.d("XXX", "token " + _token);
-		if (!isBlocked && _token == null) {
-			//_token = "inapp:"+context.getPackageName()+":android.test.purchased";
-			//Log.d("XXX", "Consuming product " + sku + " with token " + _token);
+		mToken = pc.getConsumableValue("token", sku);
+		if (!isBlocked && mToken == null) {
+			// Consuming task is processing
 		} else if (!isBlocked) {
-			//Log.d("XXX", "It is not blocked ¿?");
 			return;
-		} else if (_token == null) {
-			//Log.d("XXX", "No token available");
+		} else if (mToken == null) {
 			this.error("No token for sku:" + sku);
 			return;
 		}
-		final String token = _token;
-		new AsyncTask<String, String, String>() {
+		new ConsumeAsyncTask(this).execute();
+	}
 
-			@Override
-			protected String doInBackground(String... params) {
-				try {
-					//Log.d("XXX", "Requesting to release item.");
-					int response = mService.consumePurchase(3, context.getPackageName(), token);
-					//Log.d("XXX", "release response code: " + response);
-					if (response == 0 || response == 8) {
-						return null;
-					}
-				} catch (RemoteException e) {
-					return e.getMessage();
-				}
-				return "Some error";
+	private String doInBackground(String... params) {
+		try {
+			int response = mService.consumePurchase(3, context.getPackageName(), mToken);
+			if (response == 0 || response == 8) {
+				return null;
 			}
-
-			protected void onPostExecute(String param) {
-				if (param == null) {
-					success(new PaymentsCache(context).getConsumableValue("ticket", sku));
-				} else {
-					error(param);
-				}
-			}
-
+		} catch (RemoteException e) {
+			return e.getMessage();
 		}
-				.execute();
+		return "Some error";
+	}
+
+	private void onPostExecute(String param) {
+		if (param == null) {
+			success(new PaymentsCache(context).getConsumableValue("ticket", mSku));
+		} else {
+			error(param);
+		}
 	}
 
 	abstract protected void success(String ticket);

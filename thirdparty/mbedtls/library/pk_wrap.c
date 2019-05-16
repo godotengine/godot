@@ -41,6 +41,10 @@
 #include "mbedtls/ecdsa.h"
 #endif
 
+#if defined(MBEDTLS_PK_RSA_ALT_SUPPORT)
+#include "mbedtls/platform_util.h"
+#endif
+
 #if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
 #else
@@ -51,13 +55,6 @@
 
 #include <limits.h>
 #include <stdint.h>
-
-#if defined(MBEDTLS_PK_RSA_ALT_SUPPORT)
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
-}
-#endif
 
 #if defined(MBEDTLS_RSA_C)
 static int rsa_can_do( mbedtls_pk_type_t type )
@@ -93,6 +90,11 @@ static int rsa_verify_wrap( void *ctx, mbedtls_md_type_t md_alg,
                                   (unsigned int) hash_len, hash, sig ) ) != 0 )
         return( ret );
 
+    /* The buffer contains a valid signature followed by extra data.
+     * We have a special error code for that so that so that callers can
+     * use mbedtls_pk_verify() to check "Does the buffer start with a
+     * valid signature?" and not just "Does the buffer contain a valid
+     * signature?". */
     if( sig_len > rsa_len )
         return( MBEDTLS_ERR_PK_SIG_LEN_MISMATCH );
 
@@ -188,11 +190,19 @@ const mbedtls_pk_info_t mbedtls_rsa_info = {
     rsa_can_do,
     rsa_verify_wrap,
     rsa_sign_wrap,
+#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+    NULL,
+    NULL,
+#endif
     rsa_decrypt_wrap,
     rsa_encrypt_wrap,
     rsa_check_pair_wrap,
     rsa_alloc_wrap,
     rsa_free_wrap,
+#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+    NULL,
+    NULL,
+#endif
     rsa_debug,
 };
 #endif /* MBEDTLS_RSA_C */
@@ -260,6 +270,110 @@ static int eckey_sign_wrap( void *ctx, mbedtls_md_type_t md_alg,
     return( ret );
 }
 
+#if defined(MBEDTLS_ECP_RESTARTABLE)
+/* Forward declarations */
+static int ecdsa_verify_rs_wrap( void *ctx, mbedtls_md_type_t md_alg,
+                       const unsigned char *hash, size_t hash_len,
+                       const unsigned char *sig, size_t sig_len,
+                       void *rs_ctx );
+
+static int ecdsa_sign_rs_wrap( void *ctx, mbedtls_md_type_t md_alg,
+                   const unsigned char *hash, size_t hash_len,
+                   unsigned char *sig, size_t *sig_len,
+                   int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
+                   void *rs_ctx );
+
+/*
+ * Restart context for ECDSA operations with ECKEY context
+ *
+ * We need to store an actual ECDSA context, as we need to pass the same to
+ * the underlying ecdsa function, so we can't create it on the fly every time.
+ */
+typedef struct
+{
+    mbedtls_ecdsa_restart_ctx ecdsa_rs;
+    mbedtls_ecdsa_context ecdsa_ctx;
+} eckey_restart_ctx;
+
+static void *eckey_rs_alloc( void )
+{
+    eckey_restart_ctx *rs_ctx;
+
+    void *ctx = mbedtls_calloc( 1, sizeof( eckey_restart_ctx ) );
+
+    if( ctx != NULL )
+    {
+        rs_ctx = ctx;
+        mbedtls_ecdsa_restart_init( &rs_ctx->ecdsa_rs );
+        mbedtls_ecdsa_init( &rs_ctx->ecdsa_ctx );
+    }
+
+    return( ctx );
+}
+
+static void eckey_rs_free( void *ctx )
+{
+    eckey_restart_ctx *rs_ctx;
+
+    if( ctx == NULL)
+        return;
+
+    rs_ctx = ctx;
+    mbedtls_ecdsa_restart_free( &rs_ctx->ecdsa_rs );
+    mbedtls_ecdsa_free( &rs_ctx->ecdsa_ctx );
+
+    mbedtls_free( ctx );
+}
+
+static int eckey_verify_rs_wrap( void *ctx, mbedtls_md_type_t md_alg,
+                       const unsigned char *hash, size_t hash_len,
+                       const unsigned char *sig, size_t sig_len,
+                       void *rs_ctx )
+{
+    int ret;
+    eckey_restart_ctx *rs = rs_ctx;
+
+    /* Should never happen */
+    if( rs == NULL )
+        return( MBEDTLS_ERR_PK_BAD_INPUT_DATA );
+
+    /* set up our own sub-context if needed (that is, on first run) */
+    if( rs->ecdsa_ctx.grp.pbits == 0 )
+        MBEDTLS_MPI_CHK( mbedtls_ecdsa_from_keypair( &rs->ecdsa_ctx, ctx ) );
+
+    MBEDTLS_MPI_CHK( ecdsa_verify_rs_wrap( &rs->ecdsa_ctx,
+                                           md_alg, hash, hash_len,
+                                           sig, sig_len, &rs->ecdsa_rs ) );
+
+cleanup:
+    return( ret );
+}
+
+static int eckey_sign_rs_wrap( void *ctx, mbedtls_md_type_t md_alg,
+                   const unsigned char *hash, size_t hash_len,
+                   unsigned char *sig, size_t *sig_len,
+                   int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
+                       void *rs_ctx )
+{
+    int ret;
+    eckey_restart_ctx *rs = rs_ctx;
+
+    /* Should never happen */
+    if( rs == NULL )
+        return( MBEDTLS_ERR_PK_BAD_INPUT_DATA );
+
+    /* set up our own sub-context if needed (that is, on first run) */
+    if( rs->ecdsa_ctx.grp.pbits == 0 )
+        MBEDTLS_MPI_CHK( mbedtls_ecdsa_from_keypair( &rs->ecdsa_ctx, ctx ) );
+
+    MBEDTLS_MPI_CHK( ecdsa_sign_rs_wrap( &rs->ecdsa_ctx, md_alg,
+                                         hash, hash_len, sig, sig_len,
+                                         f_rng, p_rng, &rs->ecdsa_rs ) );
+
+cleanup:
+    return( ret );
+}
+#endif /* MBEDTLS_ECP_RESTARTABLE */
 #endif /* MBEDTLS_ECDSA_C */
 
 static int eckey_check_pair( const void *pub, const void *prv )
@@ -299,15 +413,23 @@ const mbedtls_pk_info_t mbedtls_eckey_info = {
 #if defined(MBEDTLS_ECDSA_C)
     eckey_verify_wrap,
     eckey_sign_wrap,
-#else
-    NULL,
-    NULL,
+#if defined(MBEDTLS_ECP_RESTARTABLE)
+    eckey_verify_rs_wrap,
+    eckey_sign_rs_wrap,
 #endif
+#else /* MBEDTLS_ECDSA_C */
+    NULL,
+    NULL,
+#endif /* MBEDTLS_ECDSA_C */
     NULL,
     NULL,
     eckey_check_pair,
     eckey_alloc_wrap,
     eckey_free_wrap,
+#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+    eckey_rs_alloc,
+    eckey_rs_free,
+#endif
     eckey_debug,
 };
 
@@ -327,11 +449,19 @@ const mbedtls_pk_info_t mbedtls_eckeydh_info = {
     eckeydh_can_do,
     NULL,
     NULL,
+#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+    NULL,
+    NULL,
+#endif
     NULL,
     NULL,
     eckey_check_pair,
     eckey_alloc_wrap,       /* Same underlying key structure */
     eckey_free_wrap,        /* Same underlying key structure */
+#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+    NULL,
+    NULL,
+#endif
     eckey_debug,            /* Same underlying key structure */
 };
 #endif /* MBEDTLS_ECP_C */
@@ -367,6 +497,40 @@ static int ecdsa_sign_wrap( void *ctx, mbedtls_md_type_t md_alg,
                 md_alg, hash, hash_len, sig, sig_len, f_rng, p_rng ) );
 }
 
+#if defined(MBEDTLS_ECP_RESTARTABLE)
+static int ecdsa_verify_rs_wrap( void *ctx, mbedtls_md_type_t md_alg,
+                       const unsigned char *hash, size_t hash_len,
+                       const unsigned char *sig, size_t sig_len,
+                       void *rs_ctx )
+{
+    int ret;
+    ((void) md_alg);
+
+    ret = mbedtls_ecdsa_read_signature_restartable(
+            (mbedtls_ecdsa_context *) ctx,
+            hash, hash_len, sig, sig_len,
+            (mbedtls_ecdsa_restart_ctx *) rs_ctx );
+
+    if( ret == MBEDTLS_ERR_ECP_SIG_LEN_MISMATCH )
+        return( MBEDTLS_ERR_PK_SIG_LEN_MISMATCH );
+
+    return( ret );
+}
+
+static int ecdsa_sign_rs_wrap( void *ctx, mbedtls_md_type_t md_alg,
+                   const unsigned char *hash, size_t hash_len,
+                   unsigned char *sig, size_t *sig_len,
+                   int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
+                   void *rs_ctx )
+{
+    return( mbedtls_ecdsa_write_signature_restartable(
+                (mbedtls_ecdsa_context *) ctx,
+                md_alg, hash, hash_len, sig, sig_len, f_rng, p_rng,
+                (mbedtls_ecdsa_restart_ctx *) rs_ctx ) );
+
+}
+#endif /* MBEDTLS_ECP_RESTARTABLE */
+
 static void *ecdsa_alloc_wrap( void )
 {
     void *ctx = mbedtls_calloc( 1, sizeof( mbedtls_ecdsa_context ) );
@@ -383,6 +547,24 @@ static void ecdsa_free_wrap( void *ctx )
     mbedtls_free( ctx );
 }
 
+#if defined(MBEDTLS_ECP_RESTARTABLE)
+static void *ecdsa_rs_alloc( void )
+{
+    void *ctx = mbedtls_calloc( 1, sizeof( mbedtls_ecdsa_restart_ctx ) );
+
+    if( ctx != NULL )
+        mbedtls_ecdsa_restart_init( ctx );
+
+    return( ctx );
+}
+
+static void ecdsa_rs_free( void *ctx )
+{
+    mbedtls_ecdsa_restart_free( ctx );
+    mbedtls_free( ctx );
+}
+#endif /* MBEDTLS_ECP_RESTARTABLE */
+
 const mbedtls_pk_info_t mbedtls_ecdsa_info = {
     MBEDTLS_PK_ECDSA,
     "ECDSA",
@@ -390,11 +572,19 @@ const mbedtls_pk_info_t mbedtls_ecdsa_info = {
     ecdsa_can_do,
     ecdsa_verify_wrap,
     ecdsa_sign_wrap,
+#if defined(MBEDTLS_ECP_RESTARTABLE)
+    ecdsa_verify_rs_wrap,
+    ecdsa_sign_rs_wrap,
+#endif
     NULL,
     NULL,
     eckey_check_pair,   /* Compatible key structures */
     ecdsa_alloc_wrap,
     ecdsa_free_wrap,
+#if defined(MBEDTLS_ECP_RESTARTABLE)
+    ecdsa_rs_alloc,
+    ecdsa_rs_free,
+#endif
     eckey_debug,        /* Compatible key structures */
 };
 #endif /* MBEDTLS_ECDSA_C */
@@ -493,7 +683,7 @@ static void *rsa_alt_alloc_wrap( void )
 
 static void rsa_alt_free_wrap( void *ctx )
 {
-    mbedtls_zeroize( ctx, sizeof( mbedtls_rsa_alt_context ) );
+    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_rsa_alt_context ) );
     mbedtls_free( ctx );
 }
 
@@ -504,6 +694,10 @@ const mbedtls_pk_info_t mbedtls_rsa_alt_info = {
     rsa_alt_can_do,
     NULL,
     rsa_alt_sign_wrap,
+#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+    NULL,
+    NULL,
+#endif
     rsa_alt_decrypt_wrap,
     NULL,
 #if defined(MBEDTLS_RSA_C)
@@ -513,6 +707,10 @@ const mbedtls_pk_info_t mbedtls_rsa_alt_info = {
 #endif
     rsa_alt_alloc_wrap,
     rsa_alt_free_wrap,
+#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+    NULL,
+    NULL,
+#endif
     NULL,
 };
 

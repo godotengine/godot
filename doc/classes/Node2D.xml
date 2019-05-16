@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Node2D" inherits="CanvasItem" category="Core" version="3.1">
+<class name="Node2D" inherits="CanvasItem" category="Core" version="3.2">
 	<brief_description>
 		A 2D game object, parent of all 2D related nodes. Has a position, rotation, scale and Z-index.
 	</brief_description>
@@ -7,10 +7,8 @@
 		A 2D game object, with a position, rotation and scale. All 2D physics nodes and sprites inherit from Node2D. Use Node2D as a parent node to move, scale and rotate children in a 2D project. Also gives control on the node's render order.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/2d/custom_drawing_in_2d.html
+		<link>https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="apply_scale">
 			<return type="void">
@@ -65,7 +63,7 @@
 			<argument index="1" name="scaled" type="bool" default="false">
 			</argument>
 			<description>
-				Applies a local translation on the node's X axis based on the [method Node._process]'s [code]delta[/code]. If [code]scaled[/code] is false, normalizes the movement.
+				Applies a local translation on the node's X axis based on the [method Node._process]'s [code]delta[/code]. If [code]scaled[/code] is [code]false[/code], normalizes the movement.
 			</description>
 		</method>
 		<method name="move_local_y">
@@ -76,7 +74,7 @@
 			<argument index="1" name="scaled" type="bool" default="false">
 			</argument>
 			<description>
-				Applies a local translation on the node's Y axis based on the [method Node._process]'s [code]delta[/code]. If [code]scaled[/code] is false, normalizes the movement.
+				Applies a local translation on the node's Y axis based on the [method Node._process]'s [code]delta[/code]. If [code]scaled[/code] is [code]false[/code], normalizes the movement.
 			</description>
 		</method>
 		<method name="rotate">
@@ -148,7 +146,7 @@
 			Local [Transform2D].
 		</member>
 		<member name="z_as_relative" type="bool" setter="set_z_as_relative" getter="is_z_relative">
-			If [code]true[/code] the node's Z-index is relative to its parent's Z-index. If this node's Z-index is 2 and its parent's effective Z-index is 3, then this node's effective Z-index will be 2 + 3 = 5.
+			If [code]true[/code], the node's Z-index is relative to its parent's Z-index. If this node's Z-index is 2 and its parent's effective Z-index is 3, then this node's effective Z-index will be 2 + 3 = 5.
 		</member>
 		<member name="z_index" type="int" setter="set_z_index" getter="get_z_index">
 			Z-index. Controls the order in which the nodes render. A node with a higher Z-index will display in front of others.

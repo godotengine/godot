@@ -1,5 +1,5 @@
-def can_build(platform):
-    return platform != "android"
+def can_build(env, platform):
+    return env['tools']
 
 def configure(env):
     pass

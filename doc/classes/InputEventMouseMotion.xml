@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventMouseMotion" inherits="InputEventMouse" category="Core" version="3.1">
+<class name="InputEventMouseMotion" inherits="InputEventMouse" category="Core" version="3.2">
 	<brief_description>
 		Input event type for mouse motion events.
 	</brief_description>
@@ -7,10 +7,8 @@
 		Contains mouse motion information. Supports relative, absolute positions and speed. See [method Node._input].
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/inputs/mouse_and_input_coordinates.html
+		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/mouse_and_input_coordinates.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>

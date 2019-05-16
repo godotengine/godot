@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,6 +51,7 @@ SceneStringNames::SceneStringNames() {
 	tree_entered = StaticCString::create("tree_entered");
 	tree_exiting = StaticCString::create("tree_exiting");
 	tree_exited = StaticCString::create("tree_exited");
+	ready = StaticCString::create("ready");
 	item_rect_changed = StaticCString::create("item_rect_changed");
 	size_flags_changed = StaticCString::create("size_flags_changed");
 	minimum_size_changed = StaticCString::create("minimum_size_changed");
@@ -100,6 +101,8 @@ SceneStringNames::SceneStringNames() {
 
 	_update_scroll = StaticCString::create("_update_scroll");
 	_update_xform = StaticCString::create("_update_xform");
+
+	_clips_input = StaticCString::create("_clips_input");
 
 	_proxgroup_add = StaticCString::create("_proxgroup_add");
 	_proxgroup_remove = StaticCString::create("_proxgroup_remove");
@@ -186,6 +189,8 @@ SceneStringNames::SceneStringNames() {
 
 	node_configuration_warning_changed = StaticCString::create("node_configuration_warning_changed");
 
+	output = StaticCString::create("output");
+
 	path_pp = NodePath("..");
 
 	_default = StaticCString::create("default");
@@ -196,4 +201,8 @@ SceneStringNames::SceneStringNames() {
 	}
 
 	_mesh_changed = StaticCString::create("_mesh_changed");
+
+	parameters_base_path = "parameters/";
+
+	tracks_changed = "tracks_changed";
 }

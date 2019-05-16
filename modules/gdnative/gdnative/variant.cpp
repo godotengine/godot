@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,21 @@
 extern "C" {
 #endif
 
+// Workaround GCC ICE on armv7hl which was affected GCC 6.0 up to 8.0 (GH-16100).
+// It was fixed upstream in 8.1, and a fix was backported to 7.4.
+// This can be removed once no supported distro ships with versions older than 7.4.
+#if defined(__arm__) && defined(__GNUC__) && !defined(__clang__) && \
+		(__GNUC__ == 6 || (__GNUC__ == 7 && __GNUC_MINOR__ < 4) || (__GNUC__ == 8 && __GNUC_MINOR__ < 1))
+#pragma GCC push_options
+#pragma GCC optimize("-O0")
+#endif
+
 #define memnew_placement_custom(m_placement, m_class, m_constr) _post_initialize(new (m_placement, sizeof(m_class), "") m_constr)
+
+#if defined(__arm__) && defined(__GNUC__) && !defined(__clang__) && \
+		(__GNUC__ == 6 || (__GNUC__ == 7 && __GNUC_MINOR__ < 4) || (__GNUC__ == 8 && __GNUC_MINOR__ < 1))
+#pragma GCC pop_options
+#endif
 
 // Constructors
 
@@ -487,6 +501,24 @@ godot_bool GDAPI godot_variant_booleanize(const godot_variant *p_self) {
 void GDAPI godot_variant_destroy(godot_variant *p_self) {
 	Variant *self = (Variant *)p_self;
 	self->~Variant();
+}
+
+// GDNative core 1.1
+
+godot_string GDAPI godot_variant_get_operator_name(godot_variant_operator p_op) {
+	Variant::Operator op = (Variant::Operator)p_op;
+	godot_string raw_dest;
+	String *dest = (String *)&raw_dest;
+	memnew_placement(dest, String(Variant::get_operator_name(op))); // operator = is overloaded by String
+	return raw_dest;
+}
+
+void GDAPI godot_variant_evaluate(godot_variant_operator p_op, const godot_variant *p_a, const godot_variant *p_b, godot_variant *r_ret, godot_bool *r_valid) {
+	Variant::Operator op = (Variant::Operator)p_op;
+	const Variant *a = (const Variant *)p_a;
+	const Variant *b = (const Variant *)p_b;
+	Variant *ret = (Variant *)r_ret;
+	Variant::evaluate(op, a, b, *ret, *r_valid);
 }
 
 #ifdef __cplusplus

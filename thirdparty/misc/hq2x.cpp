@@ -16,8 +16,8 @@
 
 
 #include "hq2x.h"
-#include "math_funcs.h"
 
+#include "core/math/math_funcs.h"
 
 static const uint32_t AMASK = 0xFF000000;
 static const uint32_t YMASK = 0x00FF0000;

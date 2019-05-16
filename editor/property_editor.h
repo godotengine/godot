@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,7 +64,7 @@ protected:
 public:
 	virtual String converts_to() const;
 	virtual bool handles(const Ref<Resource> &p_resource) const;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource);
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
 };
 
 class CustomPropertyEditor : public Popup {
@@ -135,6 +135,9 @@ class CustomPropertyEditor : public Popup {
 	void _text_edit_changed();
 	void _file_selected(String p_file);
 	void _modified(String p_string);
+
+	real_t _parse_real_expression(String text);
+
 	void _range_modified(double p_value);
 	void _focus_enter();
 	void _focus_exit();
@@ -168,203 +171,9 @@ public:
 
 	void set_read_only(bool p_read_only) { read_only = p_read_only; }
 
-	void set_value_evaluator(PropertyValueEvaluator *p_evaluator) { evaluator = p_evaluator; }
-
 	bool edit(Object *p_owner, const String &p_name, Variant::Type p_type, const Variant &p_variant, int p_hint, String p_hint_text);
 
 	CustomPropertyEditor();
-};
-
-class PropertyEditor : public Control {
-
-	GDCLASS(PropertyEditor, Control);
-
-	Tree *tree;
-	Label *top_label;
-	LineEdit *search_box;
-
-	PropertyValueEvaluator *evaluator;
-
-	Object *obj;
-
-	StringName _prop_edited;
-
-	bool capitalize_paths;
-	bool changing;
-	bool update_tree_pending;
-	bool autoclear;
-	bool keying;
-	bool read_only;
-	bool show_categories;
-	bool show_type_icons;
-	float refresh_countdown;
-	bool use_doc_hints;
-	bool use_filter;
-	bool subsection_selectable;
-	bool hide_script;
-	bool use_folding;
-	bool property_selectable;
-	bool updating_folding;
-
-	List<String> foldable_property_cache;
-	HashMap<String, String> pending;
-	String selected_property;
-
-	Map<StringName, Map<StringName, String> > descr_cache;
-	Map<StringName, String> class_descr_cache;
-
-	CustomPropertyEditor *custom_editor;
-
-	void _resource_edit_request();
-	void _custom_editor_edited();
-	void _custom_editor_edited_field(const String &p_field_name);
-	void _custom_editor_request(bool p_arrow);
-
-	void _item_selected();
-	void _item_rmb_edited();
-	void _item_edited();
-	TreeItem *get_parent_node(String p_path, HashMap<String, TreeItem *> &item_paths, TreeItem *root, TreeItem *category);
-
-	void set_item_text(TreeItem *p_item, int p_type, const String &p_name, int p_hint = PROPERTY_HINT_NONE, const String &p_hint_text = "");
-
-	TreeItem *find_item(TreeItem *p_item, const String &p_name);
-
-	virtual void _changed_callback(Object *p_changed, const char *p_prop);
-	virtual void _changed_callbacks(Object *p_changed, const String &p_prop);
-
-	void _check_reload_status(const String &p_name, TreeItem *item);
-
-	void _edit_button(Object *p_item, int p_column, int p_button);
-
-	void _node_removed(Node *p_node);
-
-	friend class ProjectExportDialog;
-	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all = false, const String &p_changed_field = "");
-	void _draw_flags(Object *p_object, const Rect2 &p_rect);
-
-	bool _might_be_in_instance();
-	bool _get_instanced_node_original_property(const StringName &p_prop, Variant &value);
-	bool _is_property_different(const Variant &p_current, const Variant &p_orig, int p_usage = 0);
-	bool _is_instanced_node_with_original_property_different(const String &p_name, TreeItem *item);
-
-	void _refresh_item(TreeItem *p_item);
-	void _set_range_def(Object *p_item, String prop, float p_frame);
-
-	void _filter_changed(const String &p_text);
-
-	void _mark_drop_fields(TreeItem *p_at);
-	void _clear_drop_fields(TreeItem *p_at);
-
-	bool _is_drop_valid(const Dictionary &p_drag_data, const Dictionary &p_item_data) const;
-	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
-	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-
-	void _resource_preview_done(const String &p_path, const Ref<Texture> &p_preview, Variant p_ud);
-	void _draw_transparency(Object *t, const Rect2 &p_rect);
-	void _item_folded(Object *item_obj);
-
-	UndoRedo *undo_redo;
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
-
-	String get_selected_path() const;
-
-	Tree *get_scene_tree();
-	Label *get_top_label();
-	void hide_top_label();
-	void update_tree();
-	void update_property(const String &p_prop);
-
-	void refresh();
-
-	void edit(Object *p_object);
-
-	void set_keying(bool p_active);
-	void set_read_only(bool p_read_only) {
-		read_only = p_read_only;
-		custom_editor->set_read_only(p_read_only);
-	}
-
-	bool is_capitalize_paths_enabled() const;
-	void set_enable_capitalize_paths(bool p_capitalize);
-	void set_autoclear(bool p_enable);
-
-	void set_show_categories(bool p_show);
-	void set_use_doc_hints(bool p_enable) { use_doc_hints = p_enable; }
-	void set_hide_script(bool p_hide) { hide_script = p_hide; }
-
-	void set_use_filter(bool p_use);
-	void register_text_enter(Node *p_line_edit);
-
-	void set_subsection_selectable(bool p_selectable);
-	void set_property_selectable(bool p_selectable);
-
-	void set_use_folding(bool p_enable);
-
-	void collapse_all_folding();
-	void expand_all_folding();
-	PropertyEditor();
-	~PropertyEditor();
-};
-
-class SectionedPropertyEditorFilter;
-
-class SectionedPropertyEditor : public HSplitContainer {
-
-	GDCLASS(SectionedPropertyEditor, HSplitContainer);
-
-	ObjectID obj;
-
-	Tree *sections;
-	SectionedPropertyEditorFilter *filter;
-
-	Map<String, TreeItem *> section_map;
-	PropertyEditor *editor;
-	LineEdit *search_box;
-
-	static void _bind_methods();
-	void _section_selected();
-
-	void _search_changed(const String &p_what);
-
-public:
-	void register_search_box(LineEdit *p_box);
-	PropertyEditor *get_property_editor();
-	void edit(Object *p_object);
-	String get_full_item_path(const String &p_item);
-
-	void set_current_section(const String &p_section);
-	String get_current_section() const;
-
-	void update_category_list();
-
-	SectionedPropertyEditor();
-	~SectionedPropertyEditor();
-};
-
-class PropertyValueEvaluator : public ValueEvaluator {
-	GDCLASS(PropertyValueEvaluator, ValueEvaluator);
-
-	Object *obj;
-	ScriptLanguage *script_language;
-	String _build_script(const String &p_text);
-
-	_FORCE_INLINE_ double _default_eval(const String &p_text) {
-		return p_text.to_double();
-	}
-
-public:
-	void edit(Object *p_obj);
-	double eval(const String &p_text);
-
-	PropertyValueEvaluator();
-	~PropertyValueEvaluator();
 };
 
 #endif

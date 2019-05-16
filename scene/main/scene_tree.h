@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,19 +31,18 @@
 #ifndef SCENE_MAIN_LOOP_H
 #define SCENE_MAIN_LOOP_H
 
-#include "io/multiplayer_api.h"
-#include "os/main_loop.h"
-#include "os/thread_safe.h"
+#include "core/io/multiplayer_api.h"
+#include "core/os/main_loop.h"
+#include "core/os/thread_safe.h"
+#include "core/self_list.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
-#include "self_list.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class SceneTree;
 class PackedScene;
 class Node;
 class Viewport;
@@ -153,6 +152,7 @@ private:
 	Size2i stretch_min;
 	real_t stretch_shrink;
 
+	void _update_font_oversampling(float p_ratio);
 	void _update_root_rect();
 
 	List<ObjectID> delete_queue;
@@ -161,7 +161,7 @@ private:
 	bool ugc_locked;
 	void _flush_ugc();
 
-	_FORCE_INLINE_ void _update_group_order(Group &g);
+	_FORCE_INLINE_ void _update_group_order(Group &g, bool p_use_priority = false);
 	void _update_listener();
 
 	Array _get_nodes_in_group(const StringName &p_group);
@@ -185,7 +185,8 @@ private:
 
 	///network///
 
-	Ref<MultiplayerAPI> multiplayer_api;
+	Ref<MultiplayerAPI> multiplayer;
+	bool multiplayer_poll;
 
 	void _network_peer_connected(int p_id);
 	void _network_peer_disconnected(int p_id);
@@ -203,6 +204,7 @@ private:
 
 	Group *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);
+	void make_group_changed(const StringName &p_group);
 
 	void _notify_group_pause(const StringName &p_group, int p_notification);
 	void _call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input);
@@ -285,7 +287,7 @@ protected:
 
 public:
 	enum {
-		NOTIFICATION_TRANSFORM_CHANGED = 29
+		NOTIFICATION_TRANSFORM_CHANGED = 2000
 	};
 
 	enum GroupCallFlags {
@@ -390,10 +392,8 @@ public:
 	//void change_scene(const String& p_path);
 	//Node *get_loaded_scene();
 
-#ifdef TOOLS_ENABLED
 	void set_edited_scene_root(Node *p_node);
 	Node *get_edited_scene_root() const;
-#endif
 
 	void set_current_scene(Node *p_scene);
 	Node *get_current_scene() const;
@@ -412,8 +412,10 @@ public:
 
 	//network API
 
-	Ref<MultiplayerAPI> get_multiplayer_api() const;
-	void set_multiplayer_api(Ref<MultiplayerAPI> p_multiplayer_api);
+	Ref<MultiplayerAPI> get_multiplayer() const;
+	void set_multiplayer_poll_enabled(bool p_enabled);
+	bool is_multiplayer_poll_enabled() const;
+	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
 	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_peer);
 	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
 	bool is_network_server() const;

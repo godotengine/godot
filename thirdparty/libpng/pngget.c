@@ -1,10 +1,10 @@
 
 /* pngget.c - retrieval of values from info struct
  *
- * Last changed in libpng 1.6.32 [August 24, 2017]
- * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
- * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
- * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+ * Copyright (c) 2018 Cosmin Truta
+ * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
+ * Copyright (c) 1996-1997 Andreas Dilger
+ * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -26,7 +26,7 @@ png_get_valid(png_const_structrp png_ptr, png_const_inforp info_ptr,
    return(0);
 }
 
-png_size_t PNGAPI
+size_t PNGAPI
 png_get_rowbytes(png_const_structrp png_ptr, png_const_inforp info_ptr)
 {
    if (png_ptr != NULL && info_ptr != NULL)
@@ -367,7 +367,7 @@ png_get_y_pixels_per_inch(png_const_structrp png_ptr, png_const_inforp info_ptr)
 static png_fixed_point
 png_fixed_inches_from_microns(png_const_structrp png_ptr, png_int_32 microns)
 {
-   /* Convert from metres * 1,000,000 to inches * 100,000, meters to
+   /* Convert from meters * 1,000,000 to inches * 100,000, meters to
     * inches is simply *(100/2.54), so we want *(10/2.54) == 500/127.
     * Notice that this can overflow - a warning is output and 0 is
     * returned.
@@ -741,8 +741,7 @@ png_get_iCCP(png_const_structrp png_ptr, png_inforp info_ptr,
 
    if (png_ptr != NULL && info_ptr != NULL &&
        (info_ptr->valid & PNG_INFO_iCCP) != 0 &&
-       name != NULL && compression_type != NULL && profile != NULL &&
-           proflen != NULL)
+       name != NULL && profile != NULL && proflen != NULL)
    {
       *name = info_ptr->iccp_name;
       *profile = info_ptr->iccp_profile;
@@ -750,11 +749,13 @@ png_get_iCCP(png_const_structrp png_ptr, png_inforp info_ptr,
       /* This is somewhat irrelevant since the profile data returned has
        * actually been uncompressed.
        */
-      *compression_type = PNG_COMPRESSION_TYPE_BASE;
+      if (compression_type != NULL)
+         *compression_type = PNG_COMPRESSION_TYPE_BASE;
       return (PNG_INFO_iCCP);
    }
 
    return (0);
+
 }
 #endif
 
@@ -1164,7 +1165,7 @@ png_get_user_chunk_ptr(png_const_structrp png_ptr)
 }
 #endif
 
-png_size_t PNGAPI
+size_t PNGAPI
 png_get_compression_buffer_size(png_const_structrp png_ptr)
 {
    if (png_ptr == NULL)
@@ -1245,4 +1246,166 @@ png_get_palette_max(png_const_structp png_ptr, png_const_infop info_ptr)
 #  endif
 #endif
 
+#ifdef PNG_APNG_SUPPORTED
+png_uint_32 PNGAPI
+png_get_acTL(png_structp png_ptr, png_infop info_ptr,
+             png_uint_32 *num_frames, png_uint_32 *num_plays)
+{
+    png_debug1(1, "in %s retrieval function", "acTL");
+
+    if (png_ptr != NULL && info_ptr != NULL &&
+        (info_ptr->valid & PNG_INFO_acTL) &&
+        num_frames != NULL && num_plays != NULL)
+    {
+        *num_frames = info_ptr->num_frames;
+        *num_plays = info_ptr->num_plays;
+        return (1);
+    }
+
+    return (0);
+}
+
+png_uint_32 PNGAPI
+png_get_num_frames(png_structp png_ptr, png_infop info_ptr)
+{
+    png_debug(1, "in png_get_num_frames()");
+
+    if (png_ptr != NULL && info_ptr != NULL)
+        return (info_ptr->num_frames);
+    return (0);
+}
+
+png_uint_32 PNGAPI
+png_get_num_plays(png_structp png_ptr, png_infop info_ptr)
+{
+    png_debug(1, "in png_get_num_plays()");
+
+    if (png_ptr != NULL && info_ptr != NULL)
+        return (info_ptr->num_plays);
+    return (0);
+}
+
+png_uint_32 PNGAPI
+png_get_next_frame_fcTL(png_structp png_ptr, png_infop info_ptr,
+             png_uint_32 *width, png_uint_32 *height,
+             png_uint_32 *x_offset, png_uint_32 *y_offset,
+             png_uint_16 *delay_num, png_uint_16 *delay_den,
+             png_byte *dispose_op, png_byte *blend_op)
+{
+    png_debug1(1, "in %s retrieval function", "fcTL");
+
+    if (png_ptr != NULL && info_ptr != NULL &&
+        (info_ptr->valid & PNG_INFO_fcTL) &&
+        width != NULL && height != NULL &&
+        x_offset != NULL && y_offset != NULL &&
+        delay_num != NULL && delay_den != NULL &&
+        dispose_op != NULL && blend_op != NULL)
+    {
+        *width = info_ptr->next_frame_width;
+        *height = info_ptr->next_frame_height;
+        *x_offset = info_ptr->next_frame_x_offset;
+        *y_offset = info_ptr->next_frame_y_offset;
+        *delay_num = info_ptr->next_frame_delay_num;
+        *delay_den = info_ptr->next_frame_delay_den;
+        *dispose_op = info_ptr->next_frame_dispose_op;
+        *blend_op = info_ptr->next_frame_blend_op;
+        return (1);
+    }
+
+    return (0);
+}
+
+png_uint_32 PNGAPI
+png_get_next_frame_width(png_structp png_ptr, png_infop info_ptr)
+{
+    png_debug(1, "in png_get_next_frame_width()");
+
+    if (png_ptr != NULL && info_ptr != NULL)
+        return (info_ptr->next_frame_width);
+    return (0);
+}
+
+png_uint_32 PNGAPI
+png_get_next_frame_height(png_structp png_ptr, png_infop info_ptr)
+{
+    png_debug(1, "in png_get_next_frame_height()");
+
+    if (png_ptr != NULL && info_ptr != NULL)
+        return (info_ptr->next_frame_height);
+    return (0);
+}
+
+png_uint_32 PNGAPI
+png_get_next_frame_x_offset(png_structp png_ptr, png_infop info_ptr)
+{
+    png_debug(1, "in png_get_next_frame_x_offset()");
+
+    if (png_ptr != NULL && info_ptr != NULL)
+        return (info_ptr->next_frame_x_offset);
+    return (0);
+}
+
+png_uint_32 PNGAPI
+png_get_next_frame_y_offset(png_structp png_ptr, png_infop info_ptr)
+{
+    png_debug(1, "in png_get_next_frame_y_offset()");
+
+    if (png_ptr != NULL && info_ptr != NULL)
+        return (info_ptr->next_frame_y_offset);
+    return (0);
+}
+
+png_uint_16 PNGAPI
+png_get_next_frame_delay_num(png_structp png_ptr, png_infop info_ptr)
+{
+    png_debug(1, "in png_get_next_frame_delay_num()");
+
+    if (png_ptr != NULL && info_ptr != NULL)
+        return (info_ptr->next_frame_delay_num);
+    return (0);
+}
+
+png_uint_16 PNGAPI
+png_get_next_frame_delay_den(png_structp png_ptr, png_infop info_ptr)
+{
+    png_debug(1, "in png_get_next_frame_delay_den()");
+
+    if (png_ptr != NULL && info_ptr != NULL)
+        return (info_ptr->next_frame_delay_den);
+    return (0);
+}
+
+png_byte PNGAPI
+png_get_next_frame_dispose_op(png_structp png_ptr, png_infop info_ptr)
+{
+    png_debug(1, "in png_get_next_frame_dispose_op()");
+
+    if (png_ptr != NULL && info_ptr != NULL)
+        return (info_ptr->next_frame_dispose_op);
+    return (0);
+}
+
+png_byte PNGAPI
+png_get_next_frame_blend_op(png_structp png_ptr, png_infop info_ptr)
+{
+    png_debug(1, "in png_get_next_frame_blend_op()");
+
+    if (png_ptr != NULL && info_ptr != NULL)
+        return (info_ptr->next_frame_blend_op);
+    return (0);
+}
+
+png_byte PNGAPI
+png_get_first_frame_is_hidden(png_structp png_ptr, png_infop info_ptr)
+{
+    png_debug(1, "in png_first_frame_is_hidden()");
+
+    if (png_ptr != NULL)
+       return (png_byte)(png_ptr->apng_flags & PNG_FIRST_FRAME_HIDDEN);
+
+    PNG_UNUSED(info_ptr)
+
+    return 0;
+}
+#endif /* PNG_APNG_SUPPORTED */
 #endif /* READ || WRITE */

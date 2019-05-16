@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,9 +32,7 @@
 #define MATERIAL_EDITOR_PLUGIN_H
 
 #include "editor/property_editor.h"
-// FIXME: Disabled as (according to reduz) users were complaining that it gets in the way
-// Waiting for PropertyEditor rewrite (planned for 3.1) to be refactored.
-#if 0
+#include "scene/resources/primitive_meshes.h"
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -47,7 +45,7 @@ class MaterialEditor : public Control {
 
 	GDCLASS(MaterialEditor, Control);
 
-
+	ViewportContainer *vc;
 	Viewport *viewport;
 	MeshInstance *sphere_instance;
 	MeshInstance *box_instance;
@@ -55,8 +53,8 @@ class MaterialEditor : public Control {
 	DirectionalLight *light2;
 	Camera *camera;
 
-	Ref<Mesh> sphere_mesh;
-	Ref<Mesh> box_mesh;
+	Ref<SphereMesh> sphere_mesh;
+	Ref<CubeMesh> box_mesh;
 
 	TextureButton *sphere_switch;
 	TextureButton *box_switch;
@@ -64,52 +62,48 @@ class MaterialEditor : public Control {
 	TextureButton *light_1_switch;
 	TextureButton *light_2_switch;
 
-
 	Ref<Material> material;
 
-
-	void _button_pressed(Node* p_button);
+	void _button_pressed(Node *p_button);
 	bool first_enter;
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(InputEvent p_event);
-	static void _bind_methods();
-public:
 
-	void edit(Ref<Material> p_material);
+	static void _bind_methods();
+
+public:
+	void edit(Ref<Material> p_material, const Ref<Environment> &p_env);
 	MaterialEditor();
 };
 
+class EditorInspectorPluginMaterial : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginMaterial, EditorInspectorPlugin)
+	Ref<Environment> env;
+
+public:
+	virtual bool can_handle(Object *p_object);
+	virtual void parse_begin(Object *p_object);
+
+	EditorInspectorPluginMaterial();
+};
 
 class MaterialEditorPlugin : public EditorPlugin {
 
-	GDCLASS( MaterialEditorPlugin, EditorPlugin );
-
-	MaterialEditor *material_editor;
-	EditorNode *editor;
+	GDCLASS(MaterialEditorPlugin, EditorPlugin);
 
 public:
-
 	virtual String get_name() const { return "Material"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
-	virtual void make_visible(bool p_visible);
 
 	MaterialEditorPlugin(EditorNode *p_node);
-	~MaterialEditorPlugin();
-
 };
-
-#endif
 
 class SpatialMaterialConversionPlugin : public EditorResourceConversionPlugin {
 	GDCLASS(SpatialMaterialConversionPlugin, EditorResourceConversionPlugin)
 public:
 	virtual String converts_to() const;
 	virtual bool handles(const Ref<Resource> &p_resource) const;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource);
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
 };
 
 class ParticlesMaterialConversionPlugin : public EditorResourceConversionPlugin {
@@ -117,7 +111,7 @@ class ParticlesMaterialConversionPlugin : public EditorResourceConversionPlugin 
 public:
 	virtual String converts_to() const;
 	virtual bool handles(const Ref<Resource> &p_resource) const;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource);
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
 };
 
 class CanvasItemMaterialConversionPlugin : public EditorResourceConversionPlugin {
@@ -125,7 +119,7 @@ class CanvasItemMaterialConversionPlugin : public EditorResourceConversionPlugin
 public:
 	virtual String converts_to() const;
 	virtual bool handles(const Ref<Resource> &p_resource) const;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource);
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
 };
 
 #endif // MATERIAL_EDITOR_PLUGIN_H

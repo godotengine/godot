@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +31,80 @@
 #ifndef GDSCRIPT_PARSER_H
 #define GDSCRIPT_PARSER_H
 
+#include "core/map.h"
+#include "core/object.h"
+#include "core/script_language.h"
 #include "gdscript_functions.h"
 #include "gdscript_tokenizer.h"
-#include "map.h"
-#include "object.h"
-#include "script_language.h"
+
+struct GDScriptDataType;
+struct GDScriptWarning;
 
 class GDScriptParser {
 public:
+	struct ClassNode;
+
+	struct DataType {
+		enum {
+			BUILTIN,
+			NATIVE,
+			SCRIPT,
+			GDSCRIPT,
+			CLASS,
+			UNRESOLVED
+		} kind;
+
+		bool has_type;
+		bool is_constant;
+		bool is_meta_type; // Whether the value can be used as a type
+		bool infer_type;
+		bool may_yield; // For function calls
+
+		Variant::Type builtin_type;
+		StringName native_type;
+		Ref<Script> script_type;
+		ClassNode *class_type;
+
+		String to_string() const;
+
+		bool operator==(const DataType &other) const {
+			if (!has_type || !other.has_type) {
+				return true; // Can be considered equal for parsing purpose
+			}
+			if (kind != other.kind) {
+				return false;
+			}
+			switch (kind) {
+				case BUILTIN: {
+					return builtin_type == other.builtin_type;
+				} break;
+				case NATIVE: {
+					return native_type == other.native_type;
+				} break;
+				case GDSCRIPT:
+				case SCRIPT: {
+					return script_type == other.script_type;
+				} break;
+				case CLASS: {
+					return class_type == other.class_type;
+				} break;
+				case UNRESOLVED: {
+				} break;
+			}
+			return false;
+		}
+
+		DataType() :
+				kind(UNRESOLVED),
+				has_type(false),
+				is_constant(false),
+				is_meta_type(false),
+				infer_type(false),
+				may_yield(false),
+				builtin_type(Variant::NIL),
+				class_type(NULL) {}
+	};
+
 	struct Node {
 
 		enum Type {
@@ -55,6 +121,7 @@ public:
 			TYPE_OPERATOR,
 			TYPE_CONTROL_FLOW,
 			TYPE_LOCAL_VAR,
+			TYPE_CAST,
 			TYPE_ASSERT,
 			TYPE_BREAKPOINT,
 			TYPE_NEWLINE,
@@ -65,11 +132,17 @@ public:
 		int column;
 		Type type;
 
+		virtual DataType get_datatype() const { return DataType(); }
+		virtual void set_datatype(const DataType &p_datatype) {}
+
 		virtual ~Node() {}
 	};
 
 	struct FunctionNode;
 	struct BlockNode;
+	struct ConstantNode;
+	struct LocalVarNode;
+	struct OperatorNode;
 
 	struct ClassNode : public Node {
 
@@ -78,6 +151,8 @@ public:
 		bool extends_used;
 		StringName extends_file;
 		Vector<StringName> extends_class;
+		DataType base_type;
+		String icon_path;
 
 		struct Member {
 			PropertyInfo _export;
@@ -85,25 +160,31 @@ public:
 			Variant default_value;
 #endif
 			StringName identifier;
+			DataType data_type;
 			StringName setter;
 			StringName getter;
 			int line;
 			Node *expression;
-			ScriptInstance::RPCMode rpc_mode;
+			OperatorNode *initial_assignment;
+			MultiplayerAPI::RPCMode rpc_mode;
+			int usages;
 		};
+
 		struct Constant {
-			StringName identifier;
 			Node *expression;
+			DataType type;
 		};
 
 		struct Signal {
 			StringName name;
 			Vector<StringName> arguments;
+			int emissions;
+			int line;
 		};
 
 		Vector<ClassNode *> subclasses;
 		Vector<Member> variables;
-		Vector<Constant> constant_expressions;
+		Map<StringName, Constant> constant_expressions;
 		Vector<FunctionNode *> functions;
 		Vector<FunctionNode *> static_functions;
 		Vector<Signal> _signals;
@@ -125,16 +206,29 @@ public:
 	struct FunctionNode : public Node {
 
 		bool _static;
-		ScriptInstance::RPCMode rpc_mode;
+		MultiplayerAPI::RPCMode rpc_mode;
+		bool has_yield;
+		bool has_unreachable_code;
 		StringName name;
+		DataType return_type;
 		Vector<StringName> arguments;
+		Vector<DataType> argument_types;
 		Vector<Node *> default_values;
 		BlockNode *body;
+#ifdef DEBUG_ENABLED
+		Vector<int> arguments_usage;
+#endif // DEBUG_ENABLED
+
+		virtual DataType get_datatype() const { return return_type; }
+		virtual void set_datatype(const DataType &p_datatype) { return_type = p_datatype; }
+		int get_required_argument_count() { return arguments.size() - default_values.size(); }
 
 		FunctionNode() {
 			type = TYPE_FUNCTION;
 			_static = false;
-			rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
+			rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+			has_yield = false;
+			has_unreachable_code = false;
 		}
 	};
 
@@ -142,10 +236,9 @@ public:
 
 		ClassNode *parent_class;
 		BlockNode *parent_block;
-		Map<StringName, int> locals;
 		List<Node *> statements;
-		Vector<StringName> variables;
-		Vector<int> variable_lines;
+		Map<StringName, LocalVarNode *> variables;
+		bool has_return;
 
 		Node *if_condition; //tiny hack to improve code completion on if () blocks
 
@@ -158,6 +251,7 @@ public:
 			end_line = -1;
 			parent_block = NULL;
 			parent_class = NULL;
+			has_return = false;
 		}
 	};
 
@@ -174,28 +268,55 @@ public:
 	struct IdentifierNode : public Node {
 
 		StringName name;
-		IdentifierNode() { type = TYPE_IDENTIFIER; }
+		BlockNode *declared_block; // Simplify lookup by checking if it is declared locally
+		DataType datatype;
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
+		IdentifierNode() {
+			type = TYPE_IDENTIFIER;
+			declared_block = NULL;
+		}
 	};
 
 	struct LocalVarNode : public Node {
 
 		StringName name;
 		Node *assign;
+		OperatorNode *assign_op;
+		int assignments;
+		int usages;
+		DataType datatype;
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		LocalVarNode() {
 			type = TYPE_LOCAL_VAR;
 			assign = NULL;
+			assign_op = NULL;
+			assignments = 0;
+			usages = 0;
 		}
 	};
 
 	struct ConstantNode : public Node {
 		Variant value;
+		DataType datatype;
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		ConstantNode() { type = TYPE_CONSTANT; }
 	};
 
 	struct ArrayNode : public Node {
 
 		Vector<Node *> elements;
-		ArrayNode() { type = TYPE_ARRAY; }
+		DataType datatype;
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
+		ArrayNode() {
+			type = TYPE_ARRAY;
+			datatype.has_type = true;
+			datatype.kind = DataType::BUILTIN;
+			datatype.builtin_type = Variant::ARRAY;
+		}
 	};
 
 	struct DictionaryNode : public Node {
@@ -207,7 +328,15 @@ public:
 		};
 
 		Vector<Pair> elements;
-		DictionaryNode() { type = TYPE_DICTIONARY; }
+		DataType datatype;
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
+		DictionaryNode() {
+			type = TYPE_DICTIONARY;
+			datatype.has_type = true;
+			datatype.kind = DataType::BUILTIN;
+			datatype.builtin_type = Variant::DICTIONARY;
+		}
 	};
 
 	struct SelfNode : public Node {
@@ -221,6 +350,7 @@ public:
 			OP_PARENT_CALL,
 			OP_YIELD,
 			OP_IS,
+			OP_IS_BUILTIN,
 			//indexing operator
 			OP_INDEX,
 			OP_INDEX_NAMED,
@@ -229,10 +359,6 @@ public:
 			OP_POS,
 			OP_NOT,
 			OP_BIT_INVERT,
-			OP_PREINC,
-			OP_PREDEC,
-			OP_INC,
-			OP_DEC,
 			//binary operators (in precedence order)
 			OP_IN,
 			OP_EQUAL,
@@ -273,6 +399,9 @@ public:
 		Operator op;
 
 		Vector<Node *> arguments;
+		DataType datatype;
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		OperatorNode() { type = TYPE_OPERATOR; }
 	};
 
@@ -317,7 +446,6 @@ public:
 			CF_IF,
 			CF_FOR,
 			CF_WHILE,
-			CF_SWITCH,
 			CF_BREAK,
 			CF_CONTINUE,
 			CF_RETURN,
@@ -338,6 +466,15 @@ public:
 			body = NULL;
 			body_else = NULL;
 		}
+	};
+
+	struct CastNode : public Node {
+		Node *source_node;
+		DataType cast_type;
+		DataType return_type;
+		virtual DataType get_datatype() const { return return_type; }
+		virtual void set_datatype(const DataType &p_datatype) { return_type = p_datatype; }
+		CastNode() { type = TYPE_CAST; }
 	};
 
 	struct AssertNode : public Node {
@@ -362,76 +499,6 @@ public:
 		};
 	};
 
-	/*
-	struct OperatorNode : public Node {
-
-		DataType return_cache;
-		Operator op;
-		Vector<Node*> arguments;
-		virtual DataType get_datatype() const { return return_cache; }
-
-		OperatorNode() { type=TYPE_OPERATOR; return_cache=TYPE_VOID; }
-	};
-
-	struct VariableNode : public Node {
-
-		DataType datatype_cache;
-		StringName name;
-		virtual DataType get_datatype() const { return datatype_cache; }
-
-		VariableNode() { type=TYPE_VARIABLE; datatype_cache=TYPE_VOID; }
-	};
-
-	struct ConstantNode : public Node {
-
-		DataType datatype;
-		Variant value;
-		virtual DataType get_datatype() const { return datatype; }
-
-		ConstantNode() { type=TYPE_CONSTANT; }
-	};
-
-	struct BlockNode : public Node {
-
-		Map<StringName,DataType> variables;
-		List<Node*> statements;
-		BlockNode() { type=TYPE_BLOCK; }
-	};
-
-	struct ControlFlowNode : public Node {
-
-		FlowOperation flow_op;
-		Vector<Node*> statements;
-		ControlFlowNode() { type=TYPE_CONTROL_FLOW; flow_op=FLOW_OP_IF;}
-	};
-
-	struct MemberNode : public Node {
-
-		DataType datatype;
-		StringName name;
-		Node* owner;
-		virtual DataType get_datatype() const { return datatype; }
-		MemberNode() { type=TYPE_MEMBER; }
-	};
-
-
-	struct ProgramNode : public Node {
-
-		struct Function {
-			StringName name;
-			FunctionNode*function;
-		};
-
-		Map<StringName,DataType> builtin_variables;
-		Map<StringName,DataType> preexisting_variables;
-
-		Vector<Function> functions;
-		BlockNode *body;
-
-		ProgramNode() { type=TYPE_PROGRAM; }
-	};
-*/
-
 	enum CompletionType {
 		COMPLETION_NONE,
 		COMPLETION_BUILT_IN_TYPE_CONSTANT,
@@ -446,6 +513,8 @@ public:
 		COMPLETION_VIRTUAL_FUNC,
 		COMPLETION_YIELD,
 		COMPLETION_ASSIGN,
+		COMPLETION_TYPE_HINT,
+		COMPLETION_TYPE_HINT_INDEX,
 	};
 
 private:
@@ -463,6 +532,16 @@ private:
 	String error;
 	int error_line;
 	int error_column;
+	bool check_types;
+	bool dependencies_only;
+	List<String> dependencies;
+#ifdef DEBUG_ENABLED
+	Set<int> *safe_lines;
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+	List<GDScriptWarning> warnings;
+#endif // DEBUG_ENABLED
 
 	int pending_newline;
 
@@ -480,7 +559,6 @@ private:
 
 	CompletionType completion_type;
 	StringName completion_cursor;
-	bool completion_static;
 	Variant::Type completion_built_in_constant;
 	Node *completion_node;
 	ClassNode *completion_class;
@@ -493,9 +571,13 @@ private:
 
 	PropertyInfo current_export;
 
-	ScriptInstance::RPCMode rpc_mode;
+	MultiplayerAPI::RPCMode rpc_mode;
 
 	void _set_error(const String &p_error, int p_line = -1, int p_column = -1);
+#ifdef DEBUG_ENABLED
+	void _add_warning(int p_code, int p_line = -1, const String &p_symbol1 = String(), const String &p_symbol2 = String(), const String &p_symbol3 = String(), const String &p_symbol4 = String());
+	void _add_warning(int p_code, int p_line, const Vector<String> &p_symbols);
+#endif // DEBUG_ENABLED
 	bool _recover_from_completion();
 
 	bool _parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete = false);
@@ -507,7 +589,7 @@ private:
 
 	PatternNode *_parse_pattern(bool p_static);
 	void _parse_pattern_block(BlockNode *p_block, Vector<PatternBranchNode *> &p_branches, bool p_static);
-	void _transform_match_statment(BlockNode *p_block, MatchNode *p_match_statement);
+	void _transform_match_statment(MatchNode *p_match_statement);
 	void _generate_pattern(PatternNode *p_pattern, Node *p_node_to_match, Node *&p_resulting_node, Map<StringName, Node *> &p_bindings);
 
 	void _parse_block(BlockNode *p_block, bool p_static);
@@ -515,13 +597,46 @@ private:
 	void _parse_class(ClassNode *p_class);
 	bool _end_statement();
 
+	void _determine_inheritance(ClassNode *p_class);
+	bool _parse_type(DataType &r_type, bool p_can_be_void = false);
+	DataType _resolve_type(const DataType &p_source, int p_line);
+	DataType _type_from_variant(const Variant &p_value) const;
+	DataType _type_from_property(const PropertyInfo &p_property, bool p_nil_is_variant = true) const;
+	DataType _type_from_gdtype(const GDScriptDataType &p_gdtype) const;
+	DataType _get_operation_type(const Variant::Operator p_op, const DataType &p_a, const DataType &p_b, bool &r_valid) const;
+	Variant::Operator _get_variant_operation(const OperatorNode::Operator &p_op) const;
+	bool _get_function_signature(DataType &p_base_type, const StringName &p_function, DataType &r_return_type, List<DataType> &r_arg_types, int &r_default_arg_count, bool &r_static, bool &r_vararg) const;
+	bool _get_member_type(const DataType &p_base_type, const StringName &p_member, DataType &r_member_type) const;
+	bool _is_type_compatible(const DataType &p_container, const DataType &p_expression, bool p_allow_implicit_conversion = false) const;
+
+	DataType _reduce_node_type(Node *p_node);
+	DataType _reduce_function_call_type(const OperatorNode *p_call);
+	DataType _reduce_identifier_type(const DataType *p_base_type, const StringName &p_identifier, int p_line, bool p_is_indexing);
+	void _check_class_level_types(ClassNode *p_class);
+	void _check_class_blocks_types(ClassNode *p_class);
+	void _check_function_types(FunctionNode *p_function);
+	void _check_block_types(BlockNode *p_block);
+	_FORCE_INLINE_ void _mark_line_as_safe(int p_line) const {
+#ifdef DEBUG_ENABLED
+		if (safe_lines) safe_lines->insert(p_line);
+#endif // DEBUG_ENABLED
+	}
+	_FORCE_INLINE_ void _mark_line_as_unsafe(int p_line) const {
+#ifdef DEBUG_ENABLED
+		if (safe_lines) safe_lines->erase(p_line);
+#endif // DEBUG_ENABLED
+	}
+
 	Error _parse(const String &p_base_path);
 
 public:
 	String get_error() const;
 	int get_error_line() const;
 	int get_error_column() const;
-	Error parse(const String &p_code, const String &p_base_path = "", bool p_just_validate = false, const String &p_self_path = "", bool p_for_completion = false);
+#ifdef DEBUG_ENABLED
+	const List<GDScriptWarning> &get_warnings() const { return warnings; }
+#endif // DEBUG_ENABLED
+	Error parse(const String &p_code, const String &p_base_path = "", bool p_just_validate = false, const String &p_self_path = "", bool p_for_completion = false, Set<int> *r_safe_lines = NULL, bool p_dependencies_only = false);
 	Error parse_bytecode(const Vector<uint8_t> &p_bytecode, const String &p_base_path = "", const String &p_self_path = "");
 
 	bool is_tool_script() const;
@@ -539,6 +654,8 @@ public:
 	FunctionNode *get_completion_function();
 	int get_completion_argument_index();
 	int get_completion_identifier_is_function();
+
+	const List<String> &get_dependencies() const { return dependencies; }
 
 	void clear();
 	GDScriptParser();

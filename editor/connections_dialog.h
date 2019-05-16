@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,10 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+/**
+@author Juan Linietsky <reduzio@gmail.com>
+*/
+
 #ifndef CONNECTIONS_DIALOG_H
 #define CONNECTIONS_DIALOG_H
 
-#include "editor/property_editor.h"
+#include "core/undo_redo.h"
+#include "editor/editor_inspector.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
@@ -40,71 +45,111 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
-#include "undo_redo.h"
 
-/**
-@author Juan Linietsky <reduzio@gmail.com>
-*/
-
+class PopupMenu;
 class ConnectDialogBinds;
 
 class ConnectDialog : public ConfirmationDialog {
 
 	GDCLASS(ConnectDialog, ConfirmationDialog);
 
-	ConfirmationDialog *error;
-	LineEdit *dst_path;
+	Label *connect_to_label;
+	LineEdit *from_signal;
+	Node *source;
+	StringName signal;
 	LineEdit *dst_method;
+	ConnectDialogBinds *cdbinds;
+	bool bEditMode;
+	NodePath dst_path;
+	VBoxContainer *vbc_right;
+
 	SceneTreeEditor *tree;
+	AcceptDialog *error;
+	EditorInspector *bind_editor;
 	OptionButton *type_list;
 	CheckButton *deferred;
 	CheckButton *oneshot;
-	CheckButton *make_callback;
-	PropertyEditor *bind_editor;
-	Node *node;
-	ConnectDialogBinds *cdbinds;
+	CheckBox *advanced;
+
+	Label *error_label;
+
 	void ok_pressed();
 	void _cancel_pressed();
 	void _tree_node_selected();
 	void _add_bind();
 	void _remove_bind();
+	void _advanced_pressed();
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	bool get_make_callback() { return make_callback->is_visible() && make_callback->is_pressed(); }
+	Node *get_source() const;
+	StringName get_signal_name() const;
 	NodePath get_dst_path() const;
-	StringName get_dst_method() const;
+	void set_dst_node(Node *p_node);
+	StringName get_dst_method_name() const;
+	void set_dst_method(const StringName &p_method);
+	Vector<Variant> get_binds() const;
+
 	bool get_deferred() const;
 	bool get_oneshot() const;
-	Vector<Variant> get_binds() const;
-	void set_dst_method(const StringName &p_method);
-	void set_dst_node(Node *p_node);
+	bool is_editing() const;
 
-	void edit(Node *p_node);
+	void init(Connection c, bool bEdit = false);
 
+	void popup_dialog(const String &p_for_signal, bool p_advanced);
 	ConnectDialog();
 	~ConnectDialog();
 };
+
+//========================================
 
 class ConnectionsDock : public VBoxContainer {
 
 	GDCLASS(ConnectionsDock, VBoxContainer);
 
-	Button *connect_button;
-	EditorNode *editor;
-	Node *node;
-	Tree *tree;
-	ConfirmationDialog *remove_confirm;
-	ConnectDialog *connect_dialog;
+	//Right-click Pop-up Menu Options.
+	enum SignalMenuOption {
+		CONNECT,
+		DISCONNECT_ALL
+	};
 
-	void _close();
-	void _connect();
-	void _something_selected();
-	void _something_activated();
+	enum SlotMenuOption {
+		EDIT,
+		GO_TO_SCRIPT,
+		DISCONNECT
+	};
+
+	Node *selectedNode;
+	Tree *tree;
+	EditorNode *editor;
+
+	ConfirmationDialog *disconnect_all_dialog;
+	ConnectDialog *connect_dialog;
+	Button *connect_button;
+	PopupMenu *signal_menu;
+	PopupMenu *slot_menu;
 	UndoRedo *undo_redo;
+
+	void _make_or_edit_connection();
+	void _connect(Connection cToMake);
+	void _disconnect(TreeItem &item);
+	void _disconnect_all();
+
+	void _tree_item_selected();
+	void _tree_item_activated();
+	bool _is_item_signal(TreeItem &item);
+
+	void _open_connection_dialog(TreeItem &item);
+	void _open_connection_dialog(Connection cToEdit);
+	void _go_to_script(TreeItem &item);
+
+	void _handle_signal_menu_option(int option);
+	void _handle_slot_menu_option(int option);
+	void _rmb_pressed(Vector2 position);
+	void _close();
 
 protected:
 	void _connect_pressed();
@@ -113,9 +158,7 @@ protected:
 
 public:
 	void set_undoredo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
-
 	void set_node(Node *p_node);
-	String get_selected_type();
 	void update_tree();
 
 	ConnectionsDock(EditorNode *p_editor = NULL);

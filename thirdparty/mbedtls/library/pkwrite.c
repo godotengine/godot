@@ -30,6 +30,7 @@
 #include "mbedtls/pk.h"
 #include "mbedtls/asn1write.h"
 #include "mbedtls/oid.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -53,6 +54,12 @@
 #define mbedtls_calloc    calloc
 #define mbedtls_free       free
 #endif
+
+/* Parameter validation macros based on platform_util.h */
+#define PK_VALIDATE_RET( cond )    \
+    MBEDTLS_INTERNAL_VALIDATE_RET( cond, MBEDTLS_ERR_PK_BAD_INPUT_DATA )
+#define PK_VALIDATE( cond )        \
+    MBEDTLS_INTERNAL_VALIDATE( cond )
 
 #if defined(MBEDTLS_RSA_C)
 /*
@@ -151,6 +158,11 @@ int mbedtls_pk_write_pubkey( unsigned char **p, unsigned char *start,
     int ret;
     size_t len = 0;
 
+    PK_VALIDATE_RET( p != NULL );
+    PK_VALIDATE_RET( *p != NULL );
+    PK_VALIDATE_RET( start != NULL );
+    PK_VALIDATE_RET( key != NULL );
+
 #if defined(MBEDTLS_RSA_C)
     if( mbedtls_pk_get_type( key ) == MBEDTLS_PK_RSA )
         MBEDTLS_ASN1_CHK_ADD( len, pk_write_rsa_pubkey( p, start, mbedtls_pk_rsa( *key ) ) );
@@ -172,6 +184,11 @@ int mbedtls_pk_write_pubkey_der( mbedtls_pk_context *key, unsigned char *buf, si
     unsigned char *c;
     size_t len = 0, par_len = 0, oid_len;
     const char *oid;
+
+    PK_VALIDATE_RET( key != NULL );
+    if( size == 0 )
+        return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
+    PK_VALIDATE_RET( buf != NULL );
 
     c = buf + size;
 
@@ -217,8 +234,15 @@ int mbedtls_pk_write_pubkey_der( mbedtls_pk_context *key, unsigned char *buf, si
 int mbedtls_pk_write_key_der( mbedtls_pk_context *key, unsigned char *buf, size_t size )
 {
     int ret;
-    unsigned char *c = buf + size;
+    unsigned char *c;
     size_t len = 0;
+
+    PK_VALIDATE_RET( key != NULL );
+    if( size == 0 )
+        return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
+    PK_VALIDATE_RET( buf != NULL );
+
+    c = buf + size;
 
 #if defined(MBEDTLS_RSA_C)
     if( mbedtls_pk_get_type( key ) == MBEDTLS_PK_RSA )
@@ -457,6 +481,9 @@ int mbedtls_pk_write_pubkey_pem( mbedtls_pk_context *key, unsigned char *buf, si
     unsigned char output_buf[PUB_DER_MAX_BYTES];
     size_t olen = 0;
 
+    PK_VALIDATE_RET( key != NULL );
+    PK_VALIDATE_RET( buf != NULL || size == 0 );
+
     if( ( ret = mbedtls_pk_write_pubkey_der( key, output_buf,
                                      sizeof(output_buf) ) ) < 0 )
     {
@@ -479,6 +506,9 @@ int mbedtls_pk_write_key_pem( mbedtls_pk_context *key, unsigned char *buf, size_
     unsigned char output_buf[PRV_DER_MAX_BYTES];
     const char *begin, *end;
     size_t olen = 0;
+
+    PK_VALIDATE_RET( key != NULL );
+    PK_VALIDATE_RET( buf != NULL || size == 0 );
 
     if( ( ret = mbedtls_pk_write_key_der( key, output_buf, sizeof(output_buf) ) ) < 0 )
         return( ret );

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include "map.h"
-#include "resource.h"
+#include "core/map.h"
+#include "core/resource.h"
 #include "scene/resources/texture.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -53,15 +53,57 @@ public:
 
 	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const = 0;
 	Size2 get_string_size(const String &p_string) const;
+	Size2 get_wordwrap_string_size(const String &p_string, float p_width) const;
 
 	virtual bool is_distance_field_hint() const = 0;
 
-	void draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1) const;
-	void draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, float p_width, const String &p_text, const Color &p_modulate = Color(1, 1, 1)) const;
-	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1)) const = 0;
+	void draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1, const Color &p_outline_modulate = Color(1, 1, 1)) const;
+	void draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, float p_width, const String &p_text, const Color &p_modulate = Color(1, 1, 1), const Color &p_outline_modulate = Color(1, 1, 1)) const;
+
+	virtual bool has_outline() const { return false; }
+	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const = 0;
 
 	void update_changes();
 	Font();
+};
+
+// Helper class to that draws outlines immediately and draws characters in its destructor.
+class FontDrawer {
+	const Ref<Font> &font;
+	Color outline_color;
+	bool has_outline;
+
+	struct PendingDraw {
+		RID canvas_item;
+		Point2 pos;
+		CharType chr;
+		CharType next;
+		Color modulate;
+	};
+
+	Vector<PendingDraw> pending_draws;
+
+public:
+	FontDrawer(const Ref<Font> &p_font, const Color &p_outline_color) :
+			font(p_font),
+			outline_color(p_outline_color) {
+		has_outline = p_font->has_outline();
+	}
+
+	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1)) {
+		if (has_outline) {
+			PendingDraw draw = { p_canvas_item, p_pos, p_char, p_next, p_modulate };
+			pending_draws.push_back(draw);
+		}
+		return font->draw_char(p_canvas_item, p_pos, p_char, p_next, has_outline ? outline_color : p_modulate, has_outline);
+	}
+
+	~FontDrawer() {
+		for (int i = 0; i < pending_draws.size(); ++i) {
+			const PendingDraw &draw = pending_draws[i];
+			font->draw_char(draw.canvas_item, draw.pos, draw.chr, draw.next, draw.modulate, false);
+		}
+	}
 };
 
 class BitmapFont : public Font {
@@ -153,13 +195,14 @@ public:
 	void set_distance_field_hint(bool p_distance_field);
 	bool is_distance_field_hint() const;
 
-	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1)) const;
+	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const;
 
 	BitmapFont();
 	~BitmapFont();
 };
 
 class ResourceFormatLoaderBMFont : public ResourceFormatLoader {
+	GDCLASS(ResourceFormatLoaderBMFont, ResourceFormatLoader)
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;

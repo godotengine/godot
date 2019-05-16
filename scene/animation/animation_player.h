@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,6 +65,7 @@ public:
 	enum AnimationProcessMode {
 		ANIMATION_PROCESS_PHYSICS,
 		ANIMATION_PROCESS_IDLE,
+		ANIMATION_PROCESS_MANUAL,
 	};
 
 private:
@@ -98,6 +99,12 @@ private:
 		Vector3 scale_accum;
 		uint64_t accum_pass;
 
+		bool audio_playing;
+		float audio_start;
+		float audio_len;
+
+		bool animation_playing;
+
 		struct PropertyAnim {
 
 			TrackNodeCache *owner;
@@ -106,22 +113,46 @@ private:
 			Object *object;
 			Variant value_accum;
 			uint64_t accum_pass;
-			PropertyAnim() {
-				accum_pass = 0;
-				object = NULL;
-			}
+			Variant capture;
+
+			PropertyAnim() :
+					owner(NULL),
+					special(SP_NONE),
+					object(NULL),
+					accum_pass(0) {}
 		};
 
 		Map<StringName, PropertyAnim> property_anim;
 
-		TrackNodeCache() {
-			skeleton = NULL;
-			spatial = NULL;
-			node = NULL;
-			accum_pass = 0;
-			bone_idx = -1;
-			node_2d = NULL;
-		}
+		struct BezierAnim {
+
+			Vector<StringName> bezier_property;
+			TrackNodeCache *owner;
+			float bezier_accum;
+			Object *object;
+			uint64_t accum_pass;
+
+			BezierAnim() :
+					owner(NULL),
+					bezier_accum(0.0),
+					object(NULL),
+					accum_pass(0) {}
+		};
+
+		Map<StringName, BezierAnim> bezier_anim;
+
+		TrackNodeCache() :
+				id(0),
+				node(NULL),
+				spatial(NULL),
+				node_2d(NULL),
+				skeleton(NULL),
+				bone_idx(-1),
+				accum_pass(0),
+				audio_playing(false),
+				audio_start(0.0),
+				audio_len(0.0),
+				animation_playing(false) {}
 	};
 
 	struct TrackNodeCacheKey {
@@ -146,7 +177,9 @@ private:
 	int cache_update_size;
 	TrackNodeCache::PropertyAnim *cache_update_prop[NODE_CACHE_UPDATE_MAX];
 	int cache_update_prop_size;
-	Map<Ref<Animation>, int> used_anims;
+	TrackNodeCache::BezierAnim *cache_update_bezier[NODE_CACHE_UPDATE_MAX];
+	int cache_update_bezier_size;
+	Set<TrackNodeCache *> playing_caches;
 
 	uint64_t accum_pass;
 	float speed_scale;
@@ -202,6 +235,8 @@ private:
 		List<Blend> blend;
 		PlaybackData current;
 		StringName assigned;
+		bool seeked;
+		bool started;
 	} playback;
 
 	List<StringName> queued;
@@ -216,15 +251,16 @@ private:
 
 	NodePath root;
 
-	void _animation_process_animation(AnimationData *p_anim, float p_time, float p_delta, float p_interp, bool p_allow_discrete = true);
+	void _animation_process_animation(AnimationData *p_anim, float p_time, float p_delta, float p_interp, bool p_is_current = true, bool p_seeked = false, bool p_started = false);
 
 	void _ensure_node_caches(AnimationData *p_anim);
-	void _animation_process_data(PlaybackData &cd, float p_delta, float p_blend);
-	void _animation_process2(float p_delta);
+	void _animation_process_data(PlaybackData &cd, float p_delta, float p_blend, bool p_seeked, bool p_started);
+	void _animation_process2(float p_delta, bool p_started);
 	void _animation_update_transforms();
 	void _animation_process(float p_delta);
 
 	void _node_removed(Node *p_node);
+	void _stop_playing_caches();
 
 	// bind helpers
 	PoolVector<String> _get_animation_list() const {
@@ -279,6 +315,7 @@ public:
 	void play(const StringName &p_name = StringName(), float p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
 	void play_backwards(const StringName &p_name = StringName(), float p_custom_blend = -1);
 	void queue(const StringName &p_name);
+	PoolVector<String> get_queue();
 	void clear_queue();
 	void stop(bool p_reset = true);
 	bool is_playing() const;

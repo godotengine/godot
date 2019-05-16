@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,9 @@
 #ifndef HAIKU_DIRECT_WINDOW_H
 #define HAIKU_DIRECT_WINDOW_H
 
-#include <DirectWindow.h>
 #include <kernel/image.h> // needed for image_id
+
+#include <DirectWindow.h>
 
 #include "core/os/os.h"
 #include "main/input_default.h"
@@ -63,7 +64,7 @@ private:
 	void HandleWindowResized(BMessage *message);
 	void HandleKeyboardEvent(BMessage *message);
 	void HandleKeyboardModifierEvent(BMessage *message);
-	inline InputModifierState GetKeyModifierState(uint32 p_state);
+	inline void GetKeyModifierState(Ref<InputEventWithModifiers> event, uint32 p_state);
 	inline int GetMouseButtonState(uint32 p_state);
 
 public:
