@@ -18,6 +18,7 @@ subject to the following restrictions:
 
 #include "btConcaveShape.h"
 
+
 ///btHeightfieldTerrainShape simulates a 2D heightfield terrain
 /**
   The caller is responsible for maintaining the heightfield array; this
@@ -71,6 +72,12 @@ subject to the following restrictions:
 ATTRIBUTE_ALIGNED16(class)
 btHeightfieldTerrainShape : public btConcaveShape
 {
+public:
+	struct Range {
+		btScalar min;
+		btScalar max;
+	};
+
 protected:
 	btVector3 m_localAabbMin;
 	btVector3 m_localAabbMax;
@@ -100,9 +107,14 @@ protected:
 
 	btVector3 m_localScaling;
 
+	// Accelerator
+	Range *m_vboundsGrid;
+	int m_vboundsGridWidth;
+	int m_vboundsGridLength;
+	int m_vboundsChunkSize;
+
 	virtual btScalar getRawHeightFieldValue(int x, int y) const;
 	void quantizeWithClamp(int* out, const btVector3& point, int isMax) const;
-	void getVertex(int x, int y, btVector3& vertex) const;
 
 	/// protected initialization
 	/**
@@ -154,6 +166,13 @@ public:
 	virtual void setLocalScaling(const btVector3& scaling);
 
 	virtual const btVector3& getLocalScaling() const;
+	
+	void		getVertex(int x,int y,btVector3& vertex) const;
+
+	void performRaycast (btTriangleCallback* callback, const btVector3& raySource, const btVector3& rayTarget) const;
+
+	void buildAccelerator(int chunkSize=16);
+	void clearAccelerator();
 
 	//debugging
 	virtual const char* getName() const { return "HEIGHTFIELD"; }
