@@ -1955,6 +1955,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					_scene_tab_closed(editor_data.get_edited_scene());
 			}
 
+			if (p_confirmed)
+				_menu_option_confirm(SCENE_TAB_CLOSE, true);
+
 		} break;
 		case FILE_CLOSE_ALL_AND_QUIT:
 		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
