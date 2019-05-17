@@ -163,6 +163,7 @@ private:
 	struct Cache {
 
 		Ref<Texture> tab_icon;
+		Ref<Texture> space_icon;
 		Ref<Texture> can_fold_icon;
 		Ref<Texture> folded_icon;
 		Ref<Texture> folded_eol_icon;
@@ -290,6 +291,7 @@ private:
 	bool first_draw;
 	bool setting_row;
 	bool draw_tabs;
+	bool draw_spaces;
 	bool override_selected_font_color;
 	bool cursor_changed_dirty;
 	bool text_changed_dirty;
@@ -613,6 +615,8 @@ public:
 	int get_indent_size();
 	void set_draw_tabs(bool p_draw);
 	bool is_drawing_tabs() const;
+	void set_draw_spaces(bool p_draw);
+	bool is_drawing_spaces() const;
 	void set_override_selected_font_color(bool p_override_selected_font_color);
 	bool is_overriding_selected_font_color() const;
 
