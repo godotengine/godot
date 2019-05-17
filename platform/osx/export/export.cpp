@@ -119,7 +119,7 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/name"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/info"), "Made with Godot Engine"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.png,*.icns"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/identifier"), "org.godotengine.macgame"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), "godotmacgame"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version"), "1.0"));
@@ -542,12 +542,21 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				iconpath = ProjectSettings::get_singleton()->get("application/config/icon");
 			print_line("icon? " + iconpath);
 			if (iconpath != "") {
-				Ref<Image> icon;
-				icon.instance();
-				icon->load(iconpath);
-				if (!icon->empty()) {
-					print_line("loaded?");
-					_make_icon(icon, data);
+				if (iconpath.get_extension() == "icns") {
+					FileAccess *icon = FileAccess::open(iconpath, FileAccess::READ);
+					if (icon) {
+						data.resize(icon->get_len());
+						icon->get_buffer(&data[0], icon->get_len());
+						icon->close();
+						memdelete(icon);
+					}
+				} else {
+					Ref<Image> icon;
+					icon.instance();
+					icon->load(iconpath);
+					if (!icon->empty()) {
+						_make_icon(icon, data);
+					}
 				}
 			}
 			//bleh?
