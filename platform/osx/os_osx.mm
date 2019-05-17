@@ -1858,6 +1858,31 @@ void OS_OSX::set_window_title(const String &p_title) {
 	[window_object setTitle:[NSString stringWithUTF8String:p_title.utf8().get_data()]];
 }
 
+void OS_OSX::set_native_icon(const String &p_filename) {
+
+	FileAccess *f = FileAccess::open(p_filename, FileAccess::READ);
+	ERR_FAIL_COND(!f);
+
+	Vector<uint8_t> data;
+	uint32_t len = f->get_len();
+	data.resize(len);
+	f->get_buffer((uint8_t *)&data.write[0], len);
+	memdelete(f);
+
+	NSData *icon_data = [[[NSData alloc] initWithBytes:&data.write[0] length:len] autorelease];
+	if (!icon_data) {
+		ERR_EXPLAIN("Error reading icon data");
+		ERR_FAIL();
+	}
+	NSImage *icon = [[[NSImage alloc] initWithData:icon_data] autorelease];
+	if (!icon) {
+		ERR_EXPLAIN("Error loading icon");
+		ERR_FAIL();
+	}
+
+	[NSApp setApplicationIconImage:icon];
+}
+
 void OS_OSX::set_icon(const Ref<Image> &p_icon) {
 
 	Ref<Image> img = p_icon;

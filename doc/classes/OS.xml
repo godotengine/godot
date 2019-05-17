@@ -697,7 +697,19 @@
 			<argument index="0" name="icon" type="Image">
 			</argument>
 			<description>
-				Sets the game's icon.
+				Sets the game's icon using an [Image] resource.
+				The same image is used for window caption, taskbar/dock and window selection dialog. Image is scaled as needed.
+			</description>
+		</method>
+		<method name="set_native_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="filename" type="String">
+			</argument>
+			<description>
+				Sets the game's icon using a multi-size platform-specific icon file ([code]*.ico[/code] on Windows and [code]*.icns[/code] on macOS).
+				Appropriate size sub-icons are used for window caption, taskbar/dock and window selection dialog.
+				Note: This method is only implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="set_ime_active">
