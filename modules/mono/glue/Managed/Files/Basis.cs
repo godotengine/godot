@@ -575,31 +575,29 @@ namespace Godot
 
         public Basis(Vector3 axis, real_t phi)
         {
-            var axis_sq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
-
+            Vector3 axisSq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
             real_t cosine = Mathf.Cos(phi);
+            Row0.x = axisSq.x + cosine * (1.0f - axisSq.x);
+            Row1.y = axisSq.y + cosine * (1.0f - axisSq.y);
+            Row2.z = axisSq.z + cosine * (1.0f - axisSq.z);
+
             real_t sine = Mathf.Sin(phi);
+            real_t t = 1.0f - cosine;
 
-            Row0 = new Vector3
-            (
-                axis_sq.x + cosine * (1.0f - axis_sq.x),
-                axis.x * axis.y * (1.0f - cosine) - axis.z * sine,
-                axis.z * axis.x * (1.0f - cosine) + axis.y * sine
-            );
+            real_t xyzt = axis.x * axis.y * t;
+            real_t zyxs = axis.z * sine;
+            Row0.y = xyzt - zyxs;
+            Row1.x = xyzt + zyxs;
 
-            Row1 = new Vector3
-            (
-                axis.x * axis.y * (1.0f - cosine) + axis.z * sine,
-                axis_sq.y + cosine * (1.0f - axis_sq.y),
-                axis.y * axis.z * (1.0f - cosine) - axis.x * sine
-            );
+            xyzt = axis.x * axis.z * t;
+            zyxs = axis.y * sine;
+            Row0.z = xyzt + zyxs;
+            Row2.x = xyzt - zyxs;
 
-            Row2 = new Vector3
-            (
-                axis.z * axis.x * (1.0f - cosine) - axis.y * sine,
-                axis.y * axis.z * (1.0f - cosine) + axis.x * sine,
-                axis_sq.z + cosine * (1.0f - axis_sq.z)
-            );
+            xyzt = axis.y * axis.z * t;
+            zyxs = axis.x * sine;
+            Row1.z = xyzt - zyxs;
+            Row2.y = xyzt + zyxs;
         }
 
         public Basis(Vector3 column0, Vector3 column1, Vector3 column2)
