@@ -683,7 +683,6 @@ ThemeEditor::ThemeEditor() {
 	CheckButton *cb = memnew(CheckButton);
 	cb->set_text("CheckButton");
 	first_vb->add_child(cb);
-	cb = memnew(CheckButton);
 	CheckBox *cbx = memnew(CheckBox);
 	cbx->set_text("CheckBox");
 	first_vb->add_child(cbx);
