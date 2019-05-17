@@ -1189,6 +1189,12 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	GLOBAL_DEF("application/config/icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon", PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp"));
 
+	GLOBAL_DEF("application/config/macos_native_icon", String());
+	ProjectSettings::get_singleton()->set_custom_property_info("application/config/macos_native_icon", PropertyInfo(Variant::STRING, "application/config/macos_native_icon", PROPERTY_HINT_FILE, "*.icns"));
+
+	GLOBAL_DEF("application/config/windows_native_icon", String());
+	ProjectSettings::get_singleton()->set_custom_property_info("application/config/windows_native_icon", PropertyInfo(Variant::STRING, "application/config/windows_native_icon", PROPERTY_HINT_FILE, "*.ico"));
+
 	InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
 	if (id) {
 		if (bool(GLOBAL_DEF("input_devices/pointing/emulate_touch_from_mouse", false)) && !(editor || project_manager)) {
@@ -1739,8 +1745,24 @@ bool Main::start() {
 				ERR_FAIL_COND_V(!scene, false)
 				sml->add_current_scene(scene);
 
+#ifdef OSX_ENABLED
+				String mac_iconpath = GLOBAL_DEF("application/config/macos_native_icon", "Variant()");
+				if (mac_iconpath != "") {
+					OS::get_singleton()->set_native_icon(mac_iconpath);
+					hasicon = true;
+				}
+#endif
+
+#ifdef WINDOWS_ENABLED
+				String win_iconpath = GLOBAL_DEF("application/config/windows_native_icon", "Variant()");
+				if (win_iconpath != "") {
+					OS::get_singleton()->set_native_icon(win_iconpath);
+					hasicon = true;
+				}
+#endif
+
 				String iconpath = GLOBAL_DEF("application/config/icon", "Variant()");
-				if (iconpath != "") {
+				if ((iconpath != "") && (!hasicon)) {
 					Ref<Image> icon;
 					icon.instance();
 					if (ImageLoader::load_image(iconpath, icon) == OK) {

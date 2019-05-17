@@ -692,6 +692,10 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 	}
 
+	//add native icons to non-resource include list
+	_edit_filter_list(paths, String("*.icns"), false);
+	_edit_filter_list(paths, String("*.ico"), false);
+
 	_edit_filter_list(paths, p_preset->get_include_filter(), false);
 	_edit_filter_list(paths, p_preset->get_exclude_filter(), true);
 

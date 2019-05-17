@@ -275,6 +275,7 @@ public:
 
 	void set_use_file_access_save_and_swap(bool p_enable);
 
+	void set_native_icon(const String &p_filename);
 	void set_icon(const Ref<Image> &p_icon);
 
 	int get_exit_code() const;
