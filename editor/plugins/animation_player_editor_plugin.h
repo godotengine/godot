@@ -102,6 +102,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Button *autoplay;
 
 	MenuButton *tool_anim;
+	ToolButton *onion_toggle;
 	MenuButton *onion_skinning;
 	ToolButton *pin;
 	SpinBox *frame;
