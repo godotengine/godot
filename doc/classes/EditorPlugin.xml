@@ -471,6 +471,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Updates the overlays of the editor (2D/3D) viewport.
 			</description>
 		</method>
 	</methods>
