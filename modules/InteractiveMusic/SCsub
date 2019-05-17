@@ -1,0 +1,5 @@
+# SCsub
+Import('env')
+
+src_list = [audio_stream_transitioner.cpp, audio_stream_transitioner_playback.cpp, register_types.cpp]
+env.add_source_files(env.modules_sources, src_list)
