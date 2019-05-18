@@ -127,7 +127,8 @@ class CSharpScript : public Script {
 
 	bool _update_exports();
 #ifdef TOOLS_ENABLED
-	bool _get_member_export(GDMonoClass *p_class, IMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported);
+	bool _get_member_export(IMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported);
+	static int _try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string);
 #endif
 
 	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);
