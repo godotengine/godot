@@ -60,10 +60,41 @@ typedef void (*DebugUtils_StackFrameInfo)(MonoObject *, MonoString **, int *, Mo
 
 typedef MonoBoolean (*TypeIsGenericArray)(MonoReflectionType *, MonoException **);
 typedef MonoBoolean (*TypeIsGenericDictionary)(MonoReflectionType *, MonoException **);
-typedef MonoBoolean (*ArrayGetElementType)(MonoReflectionType *, MonoReflectionType **, MonoException **);
-typedef MonoBoolean (*DictionaryGetKeyValueTypes)(MonoReflectionType *, MonoReflectionType **, MonoReflectionType **, MonoException **);
+
+typedef void (*ArrayGetElementType)(MonoReflectionType *, MonoReflectionType **, MonoException **);
+typedef void (*DictionaryGetKeyValueTypes)(MonoReflectionType *, MonoReflectionType **, MonoReflectionType **, MonoException **);
+
+typedef MonoBoolean (*GenericIEnumerableIsAssignableFromType)(MonoReflectionType *, MonoReflectionType **, MonoException **);
+typedef MonoBoolean (*GenericIDictionaryIsAssignableFromType)(MonoReflectionType *, MonoReflectionType **, MonoReflectionType **, MonoException **);
+
+typedef MonoReflectionType *(*MakeGenericArrayType)(MonoReflectionType *, MonoException **);
+typedef MonoReflectionType *(*MakeGenericDictionaryType)(MonoReflectionType *, MonoReflectionType *, MonoException **);
+
 typedef void (*EnumerableToArray)(MonoObject *, Array *, MonoException **);
 typedef void (*IDictionaryToDictionary)(MonoObject *, Dictionary *, MonoException **);
+typedef void (*GenericIDictionaryToDictionary)(MonoObject *, Dictionary *, MonoException **);
+
+namespace Marshal {
+
+MonoBoolean type_is_generic_array(MonoReflectionType *p_reftype);
+MonoBoolean type_is_generic_dictionary(MonoReflectionType *p_reftype);
+
+void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype);
+void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
+
+MonoBoolean generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_elem_reftype);
+MonoBoolean generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
+
+GDMonoClass *make_generic_array_type(MonoReflectionType *p_elem_reftype);
+GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
+
+Array enumerable_to_array(MonoObject *p_enumerable);
+Dictionary idictionary_to_dictionary(MonoObject *p_idictionary);
+Dictionary generic_idictionary_to_dictionary(MonoObject *p_generic_idictionary);
+
+} // namespace Marshal
+
+// End of MarshalUtils methods
 
 struct MonoCache {
 
@@ -114,7 +145,7 @@ struct MonoCache {
 	GDMonoClass *class_NodePath;
 	GDMonoClass *class_RID;
 	GDMonoClass *class_GodotObject;
-	GDMonoClass *class_GodotReference;
+	GDMonoClass *class_GodotResource;
 	GDMonoClass *class_Node;
 	GDMonoClass *class_Control;
 	GDMonoClass *class_Spatial;
@@ -156,12 +187,25 @@ struct MonoCache {
 	SignalAwaiter_FailureCallback methodthunk_SignalAwaiter_FailureCallback;
 	GodotTaskScheduler_Activate methodthunk_GodotTaskScheduler_Activate;
 
+	// Start of MarshalUtils methods
+
 	TypeIsGenericArray methodthunk_MarshalUtils_TypeIsGenericArray;
 	TypeIsGenericDictionary methodthunk_MarshalUtils_TypeIsGenericDictionary;
+
 	ArrayGetElementType methodthunk_MarshalUtils_ArrayGetElementType;
 	DictionaryGetKeyValueTypes methodthunk_MarshalUtils_DictionaryGetKeyValueTypes;
+
+	GenericIEnumerableIsAssignableFromType methodthunk_MarshalUtils_GenericIEnumerableIsAssignableFromType;
+	GenericIDictionaryIsAssignableFromType methodthunk_MarshalUtils_GenericIDictionaryIsAssignableFromType;
+
+	MakeGenericArrayType methodthunk_MarshalUtils_MakeGenericArrayType;
+	MakeGenericDictionaryType methodthunk_MarshalUtils_MakeGenericDictionaryType;
+
 	EnumerableToArray methodthunk_MarshalUtils_EnumerableToArray;
 	IDictionaryToDictionary methodthunk_MarshalUtils_IDictionaryToDictionary;
+	GenericIDictionaryToDictionary methodthunk_MarshalUtils_GenericIDictionaryToDictionary;
+
+	// End of MarshalUtils methods
 
 	Ref<MonoGCHandle> task_scheduler_handle;
 

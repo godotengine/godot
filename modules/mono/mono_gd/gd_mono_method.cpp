@@ -74,6 +74,10 @@ void GDMonoMethod::_update_signature(MonoMethodSignature *p_method_sig) {
 	method_info = MethodInfo();
 }
 
+GDMonoClass *GDMonoMethod::get_enclosing_class() const {
+	return GDMono::get_singleton()->get_class(mono_method_get_class(mono_method));
+}
+
 bool GDMonoMethod::is_static() {
 	return mono_method_get_flags(mono_method, NULL) & MONO_METHOD_ATTR_STATIC;
 }
