@@ -409,7 +409,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 	String src_pkg_name;
 
-	EditorProgress ep("export", "Exporting for OSX", 3);
+	EditorProgress ep("export", "Exporting for OSX", 3, true);
 
 	if (p_debug)
 		src_pkg_name = p_preset->get("custom_package/debug");
@@ -432,7 +432,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	FileAccess *src_f = NULL;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
-	ep.step("Creating app", 0);
+	if (ep.step("Creating app", 0)) {
+		return ERR_SKIP;
+	}
 
 	unzFile src_pkg_zip = unzOpen2(src_pkg_name.utf8().get_data(), &io);
 	if (!src_pkg_zip) {
@@ -626,7 +628,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	}
 
 	if (err == OK) {
-		ep.step("Making PKG", 1);
+		if (ep.step("Making PKG", 1)) {
+			return ERR_SKIP;
+		}
 
 		if (export_format == "dmg") {
 			String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
@@ -648,7 +652,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			}
 
 			if (err == OK && identity != "") {
-				ep.step("Code signing bundle", 2);
+				if (ep.step("Code signing bundle", 2)) {
+					return ERR_SKIP;
+				}
 
 				// the order in which we code sign is important, this is a bit of a shame or we could do this in our loop that extracts the files from our ZIP
 
@@ -673,7 +679,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 			// and finally create a DMG
 			if (err == OK) {
-				ep.step("Making DMG", 3);
+				if (ep.step("Making DMG", 3)) {
+					return ERR_SKIP;
+				}
 				err = _create_dmg(p_path, pkg_name, tmp_app_path_name);
 			}
 
