@@ -656,9 +656,11 @@ protected:
 
 public:
 	PoolStringArray get_class_list() const;
+	PoolStringArray get_global_class_list() const;
 	PoolStringArray get_inheriters_from_class(const StringName &p_class) const;
 	StringName get_parent_class(const StringName &p_class) const;
 	bool class_exists(const StringName &p_class) const;
+	bool global_class_exists(const StringName &p_class) const;
 	bool is_parent_class(const StringName &p_class, const StringName &p_inherits) const;
 	bool can_instance(const StringName &p_class) const;
 	Variant instance(const StringName &p_class) const;

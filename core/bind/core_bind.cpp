@@ -2551,6 +2551,22 @@ PoolStringArray _ClassDB::get_class_list() const {
 
 	return ret;
 }
+
+PoolStringArray _ClassDB::get_global_class_list() const {
+
+	List<StringName> classes;
+	ScriptServer::get_global_class_list(&classes);
+
+	PoolStringArray ret;
+	ret.resize(classes.size());
+	int idx = 0;
+	for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
+		ret.set(idx++, E->get());
+	}
+
+	return ret;
+}
+
 PoolStringArray _ClassDB::get_inheriters_from_class(const StringName &p_class) const {
 
 	List<StringName> classes;
@@ -2573,17 +2589,39 @@ bool _ClassDB::class_exists(const StringName &p_class) const {
 
 	return ClassDB::class_exists(p_class);
 }
+bool _ClassDB::global_class_exists(const StringName &p_class) const {
+
+	return ScriptServer::is_global_class(p_class);
+}
 bool _ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inherits) const {
 
 	return ClassDB::is_parent_class(p_class, p_inherits);
 }
 bool _ClassDB::can_instance(const StringName &p_class) const {
 
+	if (ScriptServer::is_global_class(p_class)) {
+		Ref<Script> scr = ResourceLoader::load(ScriptServer::get_global_class_path(p_class));
+		return ClassDB::can_instance(scr->get_instance_base_type());
+	}
+
 	return ClassDB::can_instance(p_class);
 }
 Variant _ClassDB::instance(const StringName &p_class) const {
 
-	Object *obj = ClassDB::instance(p_class);
+	Object *obj;
+	if (ScriptServer::is_global_class(p_class)) {
+
+		Ref<Script> scr = ResourceLoader::load(ScriptServer::get_global_class_path(p_class));
+		obj = ClassDB::instance(scr->get_instance_base_type());
+
+		if (!obj)
+			return Variant();
+
+		scr->instance_create(obj);
+	} else {
+		obj = ClassDB::instance(p_class);
+	}
+
 	if (!obj)
 		return Variant();
 
@@ -2716,9 +2754,11 @@ bool _ClassDB::is_class_enabled(StringName p_class) const {
 void _ClassDB::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_class_list"), &_ClassDB::get_class_list);
+	ClassDB::bind_method(D_METHOD("get_global_class_list"), &_ClassDB::get_global_class_list);
 	ClassDB::bind_method(D_METHOD("get_inheriters_from_class", "class"), &_ClassDB::get_inheriters_from_class);
 	ClassDB::bind_method(D_METHOD("get_parent_class", "class"), &_ClassDB::get_parent_class);
 	ClassDB::bind_method(D_METHOD("class_exists", "class"), &_ClassDB::class_exists);
+	ClassDB::bind_method(D_METHOD("global_class_exists", "class"), &_ClassDB::global_class_exists);
 	ClassDB::bind_method(D_METHOD("is_parent_class", "class", "inherits"), &_ClassDB::is_parent_class);
 	ClassDB::bind_method(D_METHOD("can_instance", "class"), &_ClassDB::can_instance);
 	ClassDB::bind_method(D_METHOD("instance", "class"), &_ClassDB::instance);
