@@ -1491,6 +1491,11 @@ PoolVector<Vector3> _Geometry::segment_intersects_convex(const Vector3 &p_from, 
 	return r;
 }
 
+bool _Geometry::is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
+
+	return Geometry::is_polygon_clockwise(p_polygon);
+}
+
 Vector<int> _Geometry::triangulate_polygon(const Vector<Vector2> &p_polygon) {
 
 	return Geometry::triangulate_polygon(p_polygon);
@@ -1504,6 +1509,107 @@ Vector<Point2> _Geometry::convex_hull_2d(const Vector<Point2> &p_points) {
 Vector<Vector3> _Geometry::clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane) {
 
 	return Geometry::clip_polygon(p_points, p_plane);
+}
+
+Array _Geometry::merge_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+
+	Vector<Vector<Point2> > polys = Geometry::merge_polygons_2d(p_polygon_a, p_polygon_b);
+
+	Array ret;
+
+	for (int i = 0; i < polys.size(); ++i) {
+		ret.push_back(polys[i]);
+	}
+	return ret;
+}
+
+Array _Geometry::clip_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+
+	Vector<Vector<Point2> > polys = Geometry::clip_polygons_2d(p_polygon_a, p_polygon_b);
+
+	Array ret;
+
+	for (int i = 0; i < polys.size(); ++i) {
+		ret.push_back(polys[i]);
+	}
+	return ret;
+}
+
+Array _Geometry::intersect_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+
+	Vector<Vector<Point2> > polys = Geometry::intersect_polygons_2d(p_polygon_a, p_polygon_b);
+
+	Array ret;
+
+	for (int i = 0; i < polys.size(); ++i) {
+		ret.push_back(polys[i]);
+	}
+	return ret;
+}
+
+Array _Geometry::exclude_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+
+	Vector<Vector<Point2> > polys = Geometry::exclude_polygons_2d(p_polygon_a, p_polygon_b);
+
+	Array ret;
+
+	for (int i = 0; i < polys.size(); ++i) {
+		ret.push_back(polys[i]);
+	}
+	return ret;
+}
+
+Array _Geometry::clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+
+	Vector<Vector<Point2> > polys = Geometry::clip_polyline_with_polygon_2d(p_polyline, p_polygon);
+
+	Array ret;
+
+	for (int i = 0; i < polys.size(); ++i) {
+		ret.push_back(polys[i]);
+	}
+	return ret;
+}
+
+Array _Geometry::intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+
+	Vector<Vector<Point2> > polys = Geometry::intersect_polyline_with_polygon_2d(p_polyline, p_polygon);
+
+	Array ret;
+
+	for (int i = 0; i < polys.size(); ++i) {
+		ret.push_back(polys[i]);
+	}
+	return ret;
+}
+
+Array _Geometry::offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
+
+	Vector<Vector<Point2> > polys = Geometry::offset_polygon_2d(p_polygon, p_delta, Geometry::PolyJoinType(p_join_type));
+
+	Array ret;
+
+	for (int i = 0; i < polys.size(); ++i) {
+		ret.push_back(polys[i]);
+	}
+	return ret;
+}
+
+Array _Geometry::offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+
+	Vector<Vector<Point2> > polys = Geometry::offset_polyline_2d(p_polygon, p_delta, Geometry::PolyJoinType(p_join_type), Geometry::PolyEndType(p_end_type));
+
+	Array ret;
+
+	for (int i = 0; i < polys.size(); ++i) {
+		ret.push_back(polys[i]);
+	}
+	return ret;
+}
+
+Vector<Point2> _Geometry::transform_points_2d(const Vector<Point2> &p_points, const Transform2D &p_mat) {
+
+	return Geometry::transform_points_2d(p_points, p_mat);
 }
 
 Dictionary _Geometry::make_atlas(const Vector<Size2> &p_rects) {
@@ -1566,11 +1672,40 @@ void _Geometry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("segment_intersects_convex", "from", "to", "planes"), &_Geometry::segment_intersects_convex);
 	ClassDB::bind_method(D_METHOD("point_is_inside_triangle", "point", "a", "b", "c"), &_Geometry::point_is_inside_triangle);
 
+	ClassDB::bind_method(D_METHOD("is_polygon_clockwise", "polygon"), &_Geometry::is_polygon_clockwise);
 	ClassDB::bind_method(D_METHOD("triangulate_polygon", "polygon"), &_Geometry::triangulate_polygon);
 	ClassDB::bind_method(D_METHOD("convex_hull_2d", "points"), &_Geometry::convex_hull_2d);
 	ClassDB::bind_method(D_METHOD("clip_polygon", "points", "plane"), &_Geometry::clip_polygon);
 
+	ClassDB::bind_method(D_METHOD("merge_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::merge_polygons_2d);
+	ClassDB::bind_method(D_METHOD("clip_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::clip_polygons_2d);
+	ClassDB::bind_method(D_METHOD("intersect_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::intersect_polygons_2d);
+	ClassDB::bind_method(D_METHOD("exclude_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::exclude_polygons_2d);
+
+	ClassDB::bind_method(D_METHOD("clip_polyline_with_polygon_2d", "polyline", "polygon"), &_Geometry::clip_polyline_with_polygon_2d);
+	ClassDB::bind_method(D_METHOD("intersect_polyline_with_polygon_2d", "polyline", "polygon"), &_Geometry::intersect_polyline_with_polygon_2d);
+
+	ClassDB::bind_method(D_METHOD("offset_polygon_2d", "polygon", "delta", "join_type"), &_Geometry::offset_polygon_2d, DEFVAL(JOIN_SQUARE));
+	ClassDB::bind_method(D_METHOD("offset_polyline_2d", "polyline", "delta", "join_type", "end_type"), &_Geometry::offset_polyline_2d, DEFVAL(JOIN_SQUARE), DEFVAL(END_SQUARE));
+
+	ClassDB::bind_method(D_METHOD("transform_points_2d", "points", "transform"), &_Geometry::transform_points_2d);
+
 	ClassDB::bind_method(D_METHOD("make_atlas", "sizes"), &_Geometry::make_atlas);
+
+	BIND_ENUM_CONSTANT(OPERATION_UNION);
+	BIND_ENUM_CONSTANT(OPERATION_DIFFERENCE);
+	BIND_ENUM_CONSTANT(OPERATION_INTERSECTION);
+	BIND_ENUM_CONSTANT(OPERATION_XOR);
+
+	BIND_ENUM_CONSTANT(JOIN_SQUARE);
+	BIND_ENUM_CONSTANT(JOIN_ROUND);
+	BIND_ENUM_CONSTANT(JOIN_MITER);
+
+	BIND_ENUM_CONSTANT(END_POLYGON);
+	BIND_ENUM_CONSTANT(END_JOINED);
+	BIND_ENUM_CONSTANT(END_BUTT);
+	BIND_ENUM_CONSTANT(END_SQUARE);
+	BIND_ENUM_CONSTANT(END_ROUND);
 }
 
 _Geometry::_Geometry() {
