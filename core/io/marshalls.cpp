@@ -1231,11 +1231,15 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				buf += 4;
 				PoolVector<uint8_t>::Read r = data.read();
 				copymem(buf, &r[0], datalen * datasize);
+				buf += datalen * datasize;
 			}
 
 			r_len += 4 + datalen * datasize;
-			while (r_len % 4)
+			while (r_len % 4) {
 				r_len++;
+				if (buf)
+					*(buf++) = 0;
+			}
 
 		} break;
 		case Variant::POOL_INT_ARRAY: {
