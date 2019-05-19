@@ -1200,7 +1200,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 			// Animation reset BUT played backwards, set position to the end
 			c.current.pos = c.current.from->animation->get_length();
 		} else if (!p_from_end && c.current.pos == c.current.from->animation->get_length()) {
-			// Animation resumed but already ended, set position to the beggining
+			// Animation resumed but already ended, set position to the beginning
 			c.current.pos = 0;
 		}
 	}

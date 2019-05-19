@@ -115,7 +115,7 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 		//ensure vertices are the expected amount
 		ERR_FAIL_COND(vtx.weights.size() != vtx.bones.size());
 		if (vtx.weights.size() < expected_vertices) {
-			//less than requred, fill
+			//less than required, fill
 			for (int i = vtx.weights.size(); i < expected_vertices; i++) {
 				vtx.weights.push_back(0);
 				vtx.bones.push_back(0);

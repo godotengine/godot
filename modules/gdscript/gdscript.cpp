@@ -1064,7 +1064,7 @@ Variant::Type GDScriptInstance::get_property_type(const StringName &p_name, bool
 }
 
 void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
-	// exported members, not doen yet!
+	// exported members, not done yet!
 
 	const GDScript *sptr = script.ptr();
 	List<PropertyInfo> props;

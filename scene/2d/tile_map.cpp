@@ -491,7 +491,7 @@ void TileMap::update_dirty_quadrants() {
 									shape_idx++;
 #ifdef DEBUG_ENABLED
 								} else {
-									print_error("The TileSet asigned to the TileMap " + get_name() + " has an invalid convex shape.");
+									print_error("The TileSet assigned to the TileMap " + get_name() + " has an invalid convex shape.");
 #endif
 								}
 							}
