@@ -90,7 +90,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			String file_type = p_dir->get_file_type(i);
 
 			if (_is_file_type_disabled_by_feature_profile(file_type)) {
-				//if type is disabled, file wont be displayed.
+				//if type is disabled, file won't be displayed.
 				continue;
 			}
 			String file_name = p_dir->get_file(i);

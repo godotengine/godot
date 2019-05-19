@@ -141,7 +141,7 @@
 				This is useful mostly to check if something changed from a saved version.
 			</description>
 		</method>
-		<method name="is_commiting_action" qualifiers="const">
+		<method name="is_committing_action" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>

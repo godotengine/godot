@@ -112,7 +112,7 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 	}
 
 	//determine time of capture
-	double remainer_sec = (temporal_fft_pos / mix_rate); //substract remainder from mix time
+	double remainer_sec = (temporal_fft_pos / mix_rate); //subtract remainder from mix time
 	last_fft_time = time - uint64_t(remainer_sec * 1000000.0);
 }
 

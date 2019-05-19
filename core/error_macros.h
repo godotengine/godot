@@ -41,7 +41,7 @@
  */
 
 /**
- * Pointer to the error macro priting function. Reassign to any function to have errors printed
+ * Pointer to the error macro printing function. Reassign to any function to have errors printed
  */
 
 /** Function used by the error macros */

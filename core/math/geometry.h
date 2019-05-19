@@ -833,7 +833,7 @@ public:
 			further_away_opposite.y = MIN(p[i].y, further_away_opposite.y);
 		}
 
-		further_away += (further_away - further_away_opposite) * Vector2(1.221313, 1.512312); // make point outside that wont intersect with points in segment from p_point
+		further_away += (further_away - further_away_opposite) * Vector2(1.221313, 1.512312); // make point outside that won't intersect with points in segment from p_point
 
 		int intersections = 0;
 		for (int i = 0; i < c; i++) {

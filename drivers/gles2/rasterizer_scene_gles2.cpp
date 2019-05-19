@@ -580,7 +580,7 @@ bool RasterizerSceneGLES2::reflection_probe_instance_begin_render(RID p_instance
 
 		//the approach below is fatal for powervr
 
-		// Set the initial (empty) mipmaps, all need to be set for this to work in GLES2, even if later wont be used.
+		// Set the initial (empty) mipmaps, all need to be set for this to work in GLES2, even if they won't be used later.
 		while (size >= 1) {
 
 			for (int i = 0; i < 6; i++) {

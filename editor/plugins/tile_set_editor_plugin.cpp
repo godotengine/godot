@@ -1654,7 +1654,7 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 				edited_collision_shape = _convex;
 				_set_edited_shape_points(_get_collision_shape_points(concave));
 			} else {
-				// Shoudn't haphen
+				// Shouldn't happen
 			}
 			for (int i = 0; i < sd.size(); i++) {
 				if (sd[i].get("shape") == previous_shape) {
@@ -1892,7 +1892,7 @@ void TileSetEditor::_update_toggle_shape_button() {
 		tools[SHAPE_TOGGLE_TYPE]->set_icon(get_icon("ConcavePolygonShape2D", "EditorIcons"));
 		tools[SHAPE_TOGGLE_TYPE]->set_text("Make Concave");
 	} else {
-		// Shoudn't happen
+		// Shouldn't happen
 		separator_shape_toggle->hide();
 		tools[SHAPE_TOGGLE_TYPE]->hide();
 	}

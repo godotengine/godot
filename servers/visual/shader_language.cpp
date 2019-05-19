@@ -616,7 +616,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					else
 						tk.type = TK_INT_CONSTANT;
 
-					tk.constant = str.to_double(); //wont work with hex
+					tk.constant = str.to_double(); //won't work with hex
 					tk.line = tk_line;
 
 					return tk;

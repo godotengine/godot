@@ -1152,7 +1152,7 @@ public:
 
 bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result) {
 
-	// Calculate the cummulative AABB of all shapes of the kinematic body
+	// Calculate the cumulative AABB of all shapes of the kinematic body
 	btVector3 aabb_min, aabb_max;
 	bool shapes_found = false;
 
@@ -1347,7 +1347,7 @@ int SpaceBullet::add_separation_result(PhysicsServer::SeparationResult *r_result
 
 int SpaceBullet::recover_from_penetration_ray(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, int p_result_max, btVector3 &r_delta_recover_movement, PhysicsServer::SeparationResult *r_results) {
 
-	// Calculate the cummulative AABB of all shapes of the kinematic body
+	// Calculate the cumulative AABB of all shapes of the kinematic body
 	btVector3 aabb_min, aabb_max;
 	bool shapes_found = false;
 

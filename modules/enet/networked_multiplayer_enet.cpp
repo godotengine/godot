@@ -231,7 +231,7 @@ void NetworkedMultiplayerENet::poll() {
 					break;
 				}
 
-				// A client joined with an invalid ID (neagtive values, 0, and 1 are reserved).
+				// A client joined with an invalid ID (negative values, 0, and 1 are reserved).
 				// Probably trying to exploit us.
 				if (server && ((int)event.data < 2 || peer_map.has((int)event.data))) {
 					enet_peer_reset(event.peer);

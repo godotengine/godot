@@ -3603,7 +3603,7 @@ void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r
 	op.chain_forward = false;
 	op.chain_backward = false;
 
-	//see if it shold just be set as current op
+	//see if it should just be set as current op
 	if (current_op.type != op.type) {
 		op.prev_version = get_version();
 		_push_current_op();
@@ -3654,7 +3654,7 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, i
 	op.chain_forward = false;
 	op.chain_backward = false;
 
-	//see if it shold just be set as current op
+	//see if it should just be set as current op
 	if (current_op.type != op.type) {
 		op.prev_version = get_version();
 		_push_current_op();

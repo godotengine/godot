@@ -3520,7 +3520,7 @@ void AnimationTrackEditor::_update_tracks() {
 void AnimationTrackEditor::_animation_changed() {
 
 	if (animation_changing_awaiting_update) {
-		return; //all will be updated, dont bother with anything
+		return; //all will be updated, don't bother with anything
 	}
 
 	if (key_edit && key_edit->setting) {

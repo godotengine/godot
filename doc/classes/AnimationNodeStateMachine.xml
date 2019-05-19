@@ -3,7 +3,7 @@
 	<brief_description>
 	</brief_description>
 	<description>
-		Contains multiple root nodes as children in a graph. Each node is used as a state, and provides multiple functions to alternate between states. Retrieve the AnimationNodeStateMachinePlayback object from the [AnimationTree] node to control it programatically.
+		Contains multiple root nodes as children in a graph. Each node is used as a state, and provides multiple functions to alternate between states. Retrieve the AnimationNodeStateMachinePlayback object from the [AnimationTree] node to control it programmatically.
 		[codeblock]
 		var state_machine = anim_tree["parameters/StateMachine/playback"]
 		state_machine.travel("SomeState")

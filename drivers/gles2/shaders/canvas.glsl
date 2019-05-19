@@ -347,7 +347,7 @@ void main() {
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
 #ifdef USE_FORCE_REPEAT
-	//needs to use this to workaround GLES2/WebGL1 forcing tiling that textures that dont support it
+	//needs to use this to workaround GLES2/WebGL1 forcing tiling that textures that don't support it
 	uv = mod(uv, vec2(1.0, 1.0));
 #endif
 

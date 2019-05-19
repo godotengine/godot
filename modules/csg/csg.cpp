@@ -611,7 +611,7 @@ void CSGBrushOperation::_add_poly_points(const BuildPoly &p_poly, int p_edge, in
 
 	{
 		EdgeSort es;
-		es.angle = 0; //wont be checked here
+		es.angle = 0; //won't be checked here
 		es.edge = p_edge;
 		es.prev_point = p_from_point;
 		es.edge_point = p_to_point;
