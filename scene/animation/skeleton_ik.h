@@ -49,7 +49,7 @@ class FabrikInverseKinematic {
 
 	struct ChainItem {
 
-		Vector<ChainItem> childs;
+		Vector<ChainItem> children;
 		ChainItem *parent_item;
 
 		// Bone info

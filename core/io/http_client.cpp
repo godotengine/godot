@@ -429,7 +429,7 @@ Error HTTPClient::poll() {
 					response_num = RESPONSE_OK;
 
 					// Per the HTTP 1.1 spec, keep-alive is the default.
-					// Not following that specification breaks standard implemetations.
+					// Not following that specification breaks standard implementations.
 					// Broken web servers should be fixed.
 					bool keep_alive = true;
 

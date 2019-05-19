@@ -49,7 +49,7 @@ Node *SceneTreeEditor::get_scene_node() {
 void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
 
 	if (connect_to_script_mode) {
-		return; //dont do anything in this mode
+		return; //don't do anything in this mode
 	}
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!item);

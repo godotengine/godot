@@ -218,7 +218,7 @@ void EditorFileSystem::_scan_filesystem() {
 				if (first_scan) {
 					// only use this on first scan, afterwards it gets ignored
 					// this is so on first reimport we synchronize versions, then
-					// we dont care until editor restart. This is for usability mainly so
+					// we don't care until editor restart. This is for usability mainly so
 					// your workflow is not killed after changing a setting by forceful reimporting
 					// everything there is.
 					filesystem_settings_version_for_import = l.strip_edges();

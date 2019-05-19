@@ -404,7 +404,7 @@ bool GDNative::terminate() {
 		} else if (gdnatives->size() == 1) {
 			// we're the last one, terminate!
 			gdnatives->clear();
-			// wew this looks scary, but all it does is remove the entry completely
+			// whew this looks scary, but all it does is remove the entry completely
 			GDNativeLibrary::loaded_libraries->erase(GDNativeLibrary::loaded_libraries->find(library->get_current_library_path()));
 		}
 	}

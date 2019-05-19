@@ -35,7 +35,7 @@
 #include <jni.h>
 
 // These functions can be called from within JAVA and are the means by which our JAVA implementation calls back into our C++ code.
-// See java/src/org/godotengine/godot/GodotLib.java for the JAVA side of this (yes thats why we have the long names)
+// See java/src/org/godotengine/godot/GodotLib.java for the JAVA side of this (yes that's why we have the long names)
 extern "C" {
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jobject obj, jobject activity, jobject p_asset_manager, jboolean p_use_apk_expansion);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env);
