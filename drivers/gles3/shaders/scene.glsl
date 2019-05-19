@@ -1810,23 +1810,97 @@ FRAGMENT_SHADER_CODE
 	ambient_light *= ambient_energy;
 
 	float specular_blob_intensity = 1.0;
+
 #if defined(SPECULAR_TOON)
 	specular_blob_intensity *= specular * 2.0;
 #endif
 
-	// scales the specular reflections, needs to be be computed before lighting happens,
-	// but after environment and reflection probes are added
-	// Environment brdf approximation (Lazarov 2013)
-	// see https://www.unrealengine.com/en-US/blog/physically-based-shading-on-mobile
-	const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
-	const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
-	vec4 r = roughness * c0 + c1;
-	float ndotv = clamp(dot(normal, eye_vec), 0.0, 1.0);
-	float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
-	vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
+#ifdef USE_GI_PROBES
+	gi_probes_compute(vertex, normal, roughness, env_reflection_light, ambient_light);
 
-	vec3 f0 = F0(metallic, specular, albedo);
-	env_reflection_light *= env.x * f0 + env.y;
+#endif
+
+#ifdef USE_LIGHTMAP
+	ambient_light = texture(lightmap, uv2).rgb * lightmap_energy;
+#endif
+
+#ifdef USE_LIGHTMAP_CAPTURE
+	{
+		vec3 cone_dirs[12] = vec3[](
+				vec3(0.0, 0.0, 1.0),
+				vec3(0.866025, 0.0, 0.5),
+				vec3(0.267617, 0.823639, 0.5),
+				vec3(-0.700629, 0.509037, 0.5),
+				vec3(-0.700629, -0.509037, 0.5),
+				vec3(0.267617, -0.823639, 0.5),
+				vec3(0.0, 0.0, -1.0),
+				vec3(0.866025, 0.0, -0.5),
+				vec3(0.267617, 0.823639, -0.5),
+				vec3(-0.700629, 0.509037, -0.5),
+				vec3(-0.700629, -0.509037, -0.5),
+				vec3(0.267617, -0.823639, -0.5));
+
+		vec3 local_normal = normalize(camera_matrix * vec4(normal, 0.0)).xyz;
+		vec4 captured = vec4(0.0);
+		float sum = 0.0;
+		for (int i = 0; i < 12; i++) {
+			float amount = max(0.0, dot(local_normal, cone_dirs[i])); //not correct, but creates a nice wrap around effect
+			captured += lightmap_captures[i] * amount;
+			sum += amount;
+		}
+
+		captured /= sum;
+
+		if (lightmap_capture_sky) {
+			ambient_light = mix(ambient_light, captured.rgb, captured.a);
+		} else {
+			ambient_light = captured.rgb;
+		}
+	}
+#endif
+
+#ifdef USE_FORWARD_LIGHTING
+
+	highp vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
+	highp vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
+	for (int i = 0; i < reflection_count; i++) {
+		reflection_process(reflection_indices[i], vertex, normal, binormal, tangent, roughness, anisotropy, ambient_light, env_reflection_light, reflection_accum, ambient_accum);
+	}
+
+	if (reflection_accum.a > 0.0) {
+		specular_light += reflection_accum.rgb / reflection_accum.a;
+	} else {
+		specular_light += env_reflection_light;
+	}
+#if !defined(USE_LIGHTMAP) && !defined(USE_LIGHTMAP_CAPTURE)
+	if (ambient_accum.a > 0.0) {
+		ambient_light = ambient_accum.rgb / ambient_accum.a;
+	}
+#endif
+#endif
+
+	{
+
+#if defined(DIFFUSE_TOON)
+		//simplify for toon, as
+		specular_light *= specular * metallic * albedo * 2.0;
+#else
+
+		// scales the specular reflections, needs to be be computed before lighting happens,
+		// but after environment, GI, and reflection probes are added
+		// Environment brdf approximation (Lazarov 2013)
+		// see https://www.unrealengine.com/en-US/blog/physically-based-shading-on-mobile
+		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
+		const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
+		vec4 r = roughness * c0 + c1;
+		float ndotv = clamp(dot(normal, eye_vec), 0.0, 1.0);
+		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
+		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
+
+		vec3 f0 = F0(metallic, specular, albedo);
+		specular_light *= env.x * f0 + env.y;
+#endif
+	}
 
 #if defined(USE_LIGHT_DIRECTIONAL)
 
@@ -1975,68 +2049,7 @@ FRAGMENT_SHADER_CODE
 
 #endif //#USE_LIGHT_DIRECTIONAL
 
-#ifdef USE_GI_PROBES
-	gi_probes_compute(vertex, normal, roughness, env_reflection_light, ambient_light);
-
-#endif
-
-#ifdef USE_LIGHTMAP
-	ambient_light = texture(lightmap, uv2).rgb * lightmap_energy;
-#endif
-
-#ifdef USE_LIGHTMAP_CAPTURE
-	{
-		vec3 cone_dirs[12] = vec3[](
-				vec3(0.0, 0.0, 1.0),
-				vec3(0.866025, 0.0, 0.5),
-				vec3(0.267617, 0.823639, 0.5),
-				vec3(-0.700629, 0.509037, 0.5),
-				vec3(-0.700629, -0.509037, 0.5),
-				vec3(0.267617, -0.823639, 0.5),
-				vec3(0.0, 0.0, -1.0),
-				vec3(0.866025, 0.0, -0.5),
-				vec3(0.267617, 0.823639, -0.5),
-				vec3(-0.700629, 0.509037, -0.5),
-				vec3(-0.700629, -0.509037, -0.5),
-				vec3(0.267617, -0.823639, -0.5));
-
-		vec3 local_normal = normalize(camera_matrix * vec4(normal, 0.0)).xyz;
-		vec4 captured = vec4(0.0);
-		float sum = 0.0;
-		for (int i = 0; i < 12; i++) {
-			float amount = max(0.0, dot(local_normal, cone_dirs[i])); //not correct, but creates a nice wrap around effect
-			captured += lightmap_captures[i] * amount;
-			sum += amount;
-		}
-
-		captured /= sum;
-
-		if (lightmap_capture_sky) {
-			ambient_light = mix(ambient_light, captured.rgb, captured.a);
-		} else {
-			ambient_light = captured.rgb;
-		}
-	}
-#endif
-
 #ifdef USE_FORWARD_LIGHTING
-
-	highp vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
-	highp vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
-	for (int i = 0; i < reflection_count; i++) {
-		reflection_process(reflection_indices[i], vertex, normal, binormal, tangent, roughness, anisotropy, ambient_light, env_reflection_light, reflection_accum, ambient_accum);
-	}
-
-	if (reflection_accum.a > 0.0) {
-		specular_light += reflection_accum.rgb / reflection_accum.a;
-	} else {
-		specular_light += env_reflection_light;
-	}
-#if !defined(USE_LIGHTMAP) && !defined(USE_LIGHTMAP_CAPTURE)
-	if (ambient_accum.a > 0.0) {
-		ambient_light = ambient_accum.rgb / ambient_accum.a;
-	}
-#endif
 
 #ifdef USE_VERTEX_LIGHTING
 
@@ -2072,14 +2085,6 @@ FRAGMENT_SHADER_CODE
 	// base color remapping
 	diffuse_light *= 1.0 - metallic; // TODO: avoid all diffuse and ambient light calculations when metallic == 1 up to this point
 	ambient_light *= 1.0 - metallic;
-
-	{
-
-#if defined(DIFFUSE_TOON)
-		//simplify for toon, as
-		specular_light *= specular * metallic * albedo * 2.0;
-#endif
-	}
 
 	if (fog_color_enabled.a > 0.5) {
 
