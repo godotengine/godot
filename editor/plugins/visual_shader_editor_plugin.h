@@ -101,8 +101,9 @@ class VisualShaderEditor : public VBoxContainer {
 		int mode;
 		int return_type;
 		int func;
+		float value;
 
-		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_sub_category = String(), const String &p_type = String(), const String &p_description = String(), int p_sub_func = -1, int p_return_type = -1, int p_mode = -1, int p_func = -1) {
+		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_sub_category = String(), const String &p_type = String(), const String &p_description = String(), int p_sub_func = -1, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1) {
 			name = p_name;
 			type = p_type;
 			category = p_category;
@@ -112,9 +113,10 @@ class VisualShaderEditor : public VBoxContainer {
 			return_type = p_return_type;
 			mode = p_mode;
 			func = p_func;
+			value = p_value;
 		}
 
-		AddOption(const String &p_name, const String &p_category, const String &p_sub_category, const String &p_type, const String &p_description, const String &p_sub_func, int p_return_type = -1, int p_mode = -1, int p_func = -1) {
+		AddOption(const String &p_name, const String &p_category, const String &p_sub_category, const String &p_type, const String &p_description, const String &p_sub_func, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1) {
 			name = p_name;
 			type = p_type;
 			category = p_category;
@@ -124,6 +126,7 @@ class VisualShaderEditor : public VBoxContainer {
 			return_type = p_return_type;
 			mode = p_mode;
 			func = p_func;
+			value = p_value;
 		}
 	};
 
