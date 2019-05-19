@@ -316,9 +316,14 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = snode->uniforms.front(); E; E = E->next()) {
 				StringBuffer<> uniform_code;
 
-				uniform_code += "uniform ";
+				// use highp if no precision is specified to prevent different default values in fragment and vertex shader
+				SL::DataPrecision precision = E->get().precision;
+				if (precision == SL::PRECISION_DEFAULT) {
+					precision = SL::PRECISION_HIGHP;
+				}
 
-				uniform_code += _prestr(E->get().precision);
+				uniform_code += "uniform ";
+				uniform_code += _prestr(precision);
 				uniform_code += _typestr(E->get().type);
 				uniform_code += " ";
 				uniform_code += _mkid(E->key());
