@@ -223,18 +223,17 @@ void String::copy_from(const CharType &p_char) {
 
 bool String::operator==(const String &p_str) const {
 
-	if (length() != p_str.length())
+	const int len = length();
+	if (len != p_str.length())
 		return false;
-	if (empty())
+	if (len == 0)
 		return true;
-
-	int l = length();
 
 	const CharType *src = c_str();
 	const CharType *dst = p_str.c_str();
 
 	/* Compare char by char */
-	for (int i = 0; i < l; i++) {
+	for (int i = 0; i < len; i++) {
 
 		if (src[i] != dst[i])
 			return false;
@@ -339,11 +338,11 @@ void String::operator=(const CharType *p_str) {
 
 bool String::operator==(const StrRange &p_str_range) const {
 
-	int len = p_str_range.len;
+	const int len = p_str_range.len;
 
 	if (length() != len)
 		return false;
-	if (empty())
+	if (len == 0)
 		return true;
 
 	const CharType *c_str = p_str_range.c_str;
@@ -394,15 +393,13 @@ bool String::operator==(const CharType *p_str) const {
 
 	if (length() != len)
 		return false;
-	if (empty())
+	if (len == 0)
 		return true;
-
-	int l = length();
 
 	const CharType *dst = c_str();
 
 	/* Compare char by char */
-	for (int i = 0; i < l; i++) {
+	for (int i = 0; i < len; i++) {
 
 		if (p_str[i] != dst[i])
 			return false;
