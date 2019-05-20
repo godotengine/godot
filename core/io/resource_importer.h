@@ -126,7 +126,7 @@ public:
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata = NULL) = 0;
 
-	virtual Error import_group_file(const String& p_group_file,const Map<String,Map<StringName, Variant> >&p_source_file_options, const Map<String,String>& p_base_paths) { return ERR_UNAVAILABLE; }
+	virtual Error import_group_file(const String &p_group_file, const Map<String, Map<StringName, Variant> > &p_source_file_options, const Map<String, String> &p_base_paths) { return ERR_UNAVAILABLE; }
 	virtual bool are_import_settings_valid(const String &p_path) const { return true; }
 	virtual String get_import_settings_string() const { return String(); }
 };

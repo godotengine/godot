@@ -112,7 +112,6 @@ public:
 
 	Ref<AudioStreamPlayback> get_stream_playback();
 
-
 	AudioStreamPlayer();
 	~AudioStreamPlayer();
 };
