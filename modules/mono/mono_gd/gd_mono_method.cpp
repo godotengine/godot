@@ -109,7 +109,7 @@ MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params,
 
 		for (int i = 0; i < params_count; i++) {
 			MonoObject *boxed_param = GDMonoMarshal::variant_to_mono_object(p_params[i], param_types[i]);
-			mono_array_set(params, MonoObject *, i, boxed_param);
+			mono_array_setref(params, i, boxed_param);
 		}
 
 		MonoException *exc = NULL;

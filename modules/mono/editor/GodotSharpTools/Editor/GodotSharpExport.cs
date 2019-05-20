@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace GodotSharpTools.Editor
@@ -62,7 +63,7 @@ namespace GodotSharpTools.Editor
         {
             // OSX export templates are contained in a zip, so we place
             // our custom template inside it and let Godot do the rest.
-            return !featureSet.Contains("OSX");
+            return !featureSet.Any(f => new[] {"OSX", "Android"}.Contains(f));
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]

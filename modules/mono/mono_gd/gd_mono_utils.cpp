@@ -50,6 +50,7 @@ MonoCache mono_cache;
 
 #define CACHE_AND_CHECK(m_var, m_val)                             \
 	{                                                             \
+		CRASH_COND(m_var != NULL);                                \
 		m_var = m_val;                                            \
 		if (!m_var) {                                             \
 			ERR_EXPLAIN("Mono Cache: Member " #m_var " is null"); \
@@ -65,7 +66,9 @@ MonoCache mono_cache;
 #define CACHE_METHOD_THUNK_AND_CHECK(m_class, m_method, m_val) CACHE_AND_CHECK(GDMonoUtils::mono_cache.methodthunk_##m_class##_##m_method, m_val)
 #define CACHE_PROPERTY_AND_CHECK(m_class, m_property, m_val) CACHE_AND_CHECK(GDMonoUtils::mono_cache.property_##m_class##_##m_property, m_val)
 
-void MonoCache::clear_members() {
+void MonoCache::clear_corlib_cache() {
+
+	corlib_cache_updated = false;
 
 	class_MonoObject = NULL;
 	class_bool = NULL;
@@ -93,6 +96,11 @@ void MonoCache::clear_members() {
 #endif
 
 	class_KeyNotFoundException = NULL;
+}
+
+void MonoCache::clear_godot_api_cache() {
+
+	godot_api_cache_updated = false;
 
 	rawclass_Dictionary = NULL;
 
@@ -174,12 +182,6 @@ void MonoCache::clear_members() {
 	// End of MarshalUtils methods
 
 	task_scheduler_handle = Ref<MonoGCHandle>();
-}
-
-void MonoCache::cleanup() {
-
-	corlib_cache_updated = false;
-	godot_api_cache_updated = false;
 }
 
 #define GODOT_API_CLASS(m_class) (GDMono::get_singleton()->get_core_api_assembly()->get_class(BINDINGS_NAMESPACE, #m_class))
@@ -281,13 +283,10 @@ void update_godot_api_cache() {
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, ArrayGetElementType, (ArrayGetElementType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("ArrayGetElementType", 2));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, DictionaryGetKeyValueTypes, (DictionaryGetKeyValueTypes)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("DictionaryGetKeyValueTypes", 3));
 
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, ArrayGetElementType, (ArrayGetElementType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("ArrayGetElementType", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, DictionaryGetKeyValueTypes, (DictionaryGetKeyValueTypes)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("DictionaryGetKeyValueTypes", 3));
-
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIEnumerableIsAssignableFromType, (GenericIEnumerableIsAssignableFromType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("GenericIEnumerableIsAssignableFromType", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIDictionaryIsAssignableFromType, (GenericIDictionaryIsAssignableFromType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("GenericIDictionaryIsAssignableFromType", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIEnumerableIsAssignableFromType_with_info, (GenericIEnumerableIsAssignableFromType_with_info)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("GenericIEnumerableIsAssignableFromType", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIEnumerableIsAssignableFromType_with_info, (GenericIEnumerableIsAssignableFromType_with_info)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("GenericIDictionaryIsAssignableFromType", 3));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIDictionaryIsAssignableFromType_with_info, (GenericIDictionaryIsAssignableFromType_with_info)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("GenericIDictionaryIsAssignableFromType", 3));
 
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, MakeGenericArrayType, (MakeGenericArrayType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("MakeGenericArrayType", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, MakeGenericDictionaryType, (MakeGenericDictionaryType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("MakeGenericDictionaryType", 2));
@@ -308,11 +307,6 @@ void update_godot_api_cache() {
 	mono_cache.task_scheduler_handle = MonoGCHandle::create_strong(task_scheduler);
 
 	mono_cache.godot_api_cache_updated = true;
-}
-
-void clear_cache() {
-	mono_cache.cleanup();
-	mono_cache.clear_members();
 }
 
 MonoObject *unmanaged_get_managed(Object *unmanaged) {

@@ -46,11 +46,17 @@ bool GDMonoAssembly::in_preload = false;
 
 Vector<String> GDMonoAssembly::search_dirs;
 
-void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config) {
+void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config, const String &p_custom_bcl_dir) {
 
-	const char *rootdir = mono_assembly_getrootdir();
-	if (rootdir) {
-		String framework_dir = String::utf8(rootdir).plus_file("mono").plus_file("4.5");
+	String framework_dir;
+
+	if (!p_custom_bcl_dir.empty()) {
+		framework_dir = p_custom_bcl_dir;
+	} else if (mono_assembly_getrootdir()) {
+		framework_dir = String::utf8(mono_assembly_getrootdir()).plus_file("mono").plus_file("4.5");
+	}
+
+	if (!framework_dir.empty()) {
 		r_search_dirs.push_back(framework_dir);
 		r_search_dirs.push_back(framework_dir.plus_file("Facades"));
 	}

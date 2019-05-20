@@ -251,17 +251,19 @@ void GDMono::initialize() {
 	String bundled_config_dir = GodotSharpDirs::get_data_mono_etc_dir();
 
 #ifdef TOOLS_ENABLED
-	if (DirAccess::exists(bundled_assembly_rootdir) && DirAccess::exists(bundled_config_dir)) {
+	if (DirAccess::exists(bundled_assembly_rootdir)) {
 		assembly_rootdir = bundled_assembly_rootdir;
+	}
+
+	if (DirAccess::exists(bundled_config_dir)) {
 		config_dir = bundled_config_dir;
 	}
 
 #ifdef WINDOWS_ENABLED
 	if (assembly_rootdir.empty() || config_dir.empty()) {
+		ERR_PRINT("Cannot find Mono in the registry");
 		// Assertion: if they are not set, then they weren't found in the registry
 		CRASH_COND(mono_reg_info.assembly_dir.length() > 0 || mono_reg_info.config_dir.length() > 0);
-
-		ERR_PRINT("Cannot find Mono in the registry");
 	}
 #endif // WINDOWS_ENABLED
 
@@ -807,6 +809,8 @@ Error GDMono::_unload_scripts_domain() {
 
 	mono_gc_collect(mono_gc_max_generation());
 
+	GDMonoUtils::clear_godot_api_cache();
+
 	_domain_assemblies_cleanup(mono_domain_get_id(scripts_domain));
 
 	core_api_assembly = NULL;
@@ -926,6 +930,7 @@ Error GDMono::reload_scripts_domain() {
 Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 
 	CRASH_COND(p_domain == NULL);
+	CRASH_COND(p_domain == SCRIPTS_DOMAIN); // Should use _unload_scripts_domain() instead
 
 	String domain_name = mono_domain_get_friendly_name(p_domain);
 
@@ -1077,8 +1082,6 @@ GDMono::~GDMono() {
 			}
 		}
 		assemblies.clear();
-
-		GDMonoUtils::clear_cache();
 
 		print_verbose("Mono: Runtime cleanup...");
 

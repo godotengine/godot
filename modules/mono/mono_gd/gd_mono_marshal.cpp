@@ -1019,7 +1019,7 @@ MonoArray *PoolStringArray_to_mono_array(const PoolStringArray &p_array) {
 
 	for (int i = 0; i < p_array.size(); i++) {
 		MonoString *boxed = mono_string_from_godot(r[i]);
-		mono_array_set(ret, MonoString *, i, boxed);
+		mono_array_setref(ret, i, boxed);
 	}
 
 	return ret;
