@@ -218,14 +218,12 @@ struct MonoCache {
 	bool corlib_cache_updated;
 	bool godot_api_cache_updated;
 
-	void clear_members();
-	void cleanup();
+	void clear_corlib_cache();
+	void clear_godot_api_cache();
 
 	MonoCache() {
-		corlib_cache_updated = false;
-		godot_api_cache_updated = false;
-
-		clear_members();
+		clear_corlib_cache();
+		clear_godot_api_cache();
 	}
 };
 
@@ -233,7 +231,13 @@ extern MonoCache mono_cache;
 
 void update_corlib_cache();
 void update_godot_api_cache();
-void clear_cache();
+
+inline void clear_corlib_cache() {
+	mono_cache.clear_corlib_cache();
+}
+inline void clear_godot_api_cache() {
+	mono_cache.clear_godot_api_cache();
+}
 
 _FORCE_INLINE_ void hash_combine(uint32_t &p_hash, const uint32_t &p_with_hash) {
 	p_hash ^= p_with_hash + 0x9e3779b9 + (p_hash << 6) + (p_hash >> 2);

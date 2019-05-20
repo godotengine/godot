@@ -1,6 +1,5 @@
 # Build GodotSharpTools solution
 
-
 import os
 
 from SCons.Script import Builder, Dir
@@ -53,21 +52,9 @@ def find_nuget_windows(env):
         if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
             return hint_path
 
-    from . import mono_reg_utils as monoreg
+    from . mono_reg_utils import find_mono_root_dir
 
-    mono_root = ''
-    bits = env['bits']
-
-    if bits == '32':
-        if os.getenv('MONO32_PREFIX'):
-            mono_root = os.getenv('MONO32_PREFIX')
-        else:
-            mono_root = monoreg.find_mono_root_dir(bits)
-    else:
-        if os.getenv('MONO64_PREFIX'):
-            mono_root = os.getenv('MONO64_PREFIX')
-        else:
-            mono_root = monoreg.find_mono_root_dir(bits)
+    mono_root = env['mono_prefix'] or find_mono_root_dir(env['bits'])
 
     if mono_root:
         mono_bin_dir = os.path.join(mono_root, 'bin')
@@ -114,21 +101,9 @@ def find_msbuild_unix(filename):
 
 
 def find_msbuild_windows(env):
-    from . import mono_reg_utils as monoreg
+    from . mono_reg_utils import find_mono_root_dir, find_msbuild_tools_path_reg
 
-    mono_root = ''
-    bits = env['bits']
-
-    if bits == '32':
-        if os.getenv('MONO32_PREFIX'):
-            mono_root = os.getenv('MONO32_PREFIX')
-        else:
-            mono_root = monoreg.find_mono_root_dir(bits)
-    else:
-        if os.getenv('MONO64_PREFIX'):
-            mono_root = os.getenv('MONO64_PREFIX')
-        else:
-            mono_root = monoreg.find_mono_root_dir(bits)
+    mono_root = env['mono_prefix'] or find_mono_root_dir(env['bits'])
 
     if not mono_root:
         raise RuntimeError('Cannot find mono root directory')
@@ -148,7 +123,7 @@ def find_msbuild_windows(env):
         }
         return (msbuild_mono, framework_path, mono_msbuild_env)
 
-    msbuild_tools_path = monoreg.find_msbuild_tools_path_reg()
+    msbuild_tools_path = find_msbuild_tools_path_reg()
 
     if msbuild_tools_path:
         return (os.path.join(msbuild_tools_path, 'MSBuild.exe'), framework_path, {})
