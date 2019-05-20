@@ -3903,6 +3903,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			show_rulers = !show_rulers;
 			int idx = view_menu->get_popup()->get_item_index(SHOW_RULERS);
 			view_menu->get_popup()->set_item_checked(idx, show_rulers);
+			_update_scrollbars();
 			viewport->update();
 		} break;
 		case SHOW_GUIDES: {
@@ -4381,6 +4382,7 @@ Dictionary CanvasItemEditor::get_state() const {
 
 void CanvasItemEditor::set_state(const Dictionary &p_state) {
 
+	bool update_scrollbars = false;
 	Dictionary state = p_state;
 	if (state.has("zoom")) {
 		zoom = p_state["zoom"];
@@ -4389,7 +4391,7 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	if (state.has("ofs")) {
 		view_offset = p_state["ofs"];
 		previous_update_view_offset = view_offset;
-		_update_scrollbars();
+		update_scrollbars = true;
 	}
 
 	if (state.has("grid_offset")) {
@@ -4477,6 +4479,7 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		show_rulers = state["show_rulers"];
 		int idx = view_menu->get_popup()->get_item_index(SHOW_RULERS);
 		view_menu->get_popup()->set_item_checked(idx, show_rulers);
+		update_scrollbars = true;
 	}
 
 	if (state.has("show_guides")) {
@@ -4521,6 +4524,9 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		skeleton_menu->get_popup()->set_item_checked(idx, skeleton_show_bones);
 	}
 
+	if (update_scrollbars) {
+		_update_scrollbars();
+	}
 	viewport->update();
 }
 
