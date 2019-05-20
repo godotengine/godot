@@ -212,13 +212,15 @@ def configure(env):
     lib_sysroot = env["ANDROID_NDK_ROOT"] + "/platforms/" + env['ndk_platform'] + "/" + env['ARCH']
 
     ## Compile flags
-
-    if env['android_stl']:
+    # Disable exceptions and rtti on non-tools (template) builds
+    if env['tools'] or env['android_stl']:
         env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/include"])
         env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++abi/include"])
         env.Append(CXXFLAGS=['-frtti',"-std=gnu++14"])
     else:
-        env.Append(CXXFLAGS=['-fno-rtti', '-fno-exceptions', '-DNO_SAFE_CAST'])
+        env.Append(CXXFLAGS=['-fno-rtti', '-fno-exceptions'])
+        # Don't use dynamic_cast, necessary with no-rtti.
+        env.Append(CPPFLAGS=['-DNO_SAFE_CAST'])
 
     ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
     if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("15.0.4075724"):
