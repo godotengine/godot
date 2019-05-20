@@ -249,7 +249,7 @@ _FORCE_INLINE_ bool is_main_thread() {
 	return mono_domain_get() != NULL && mono_thread_get_main() == mono_thread_current();
 }
 
-void runtime_object_init(MonoObject *p_this_obj);
+void runtime_object_init(MonoObject *p_this_obj, GDMonoClass *p_class, MonoException **r_exc = NULL);
 
 GDMonoClass *get_object_class(MonoObject *p_object);
 GDMonoClass *type_get_proxy_class(const StringName &p_type);
