@@ -314,8 +314,9 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 
 		if (start_request_travel) {
 			if (!playing) {
+				String node_name = start_request;
 				start_request = StringName();
-				ERR_EXPLAIN("Can't travel to '" + String(start_request) + "' if state machine is not active.");
+				ERR_EXPLAIN("Can't travel to '" + node_name + "' if state machine is not playing.");
 				ERR_FAIL_V(0);
 			}
 
