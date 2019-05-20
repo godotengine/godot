@@ -32,7 +32,7 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
-				Returns an individual bit on the collision mask.
+				Returns an individual bit on the [member collision_layer].
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
@@ -41,7 +41,7 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
-				Returns an individual bit on the collision mask.
+				Returns an individual bit on the [member collision_mask].
 			</description>
 		</method>
 		<method name="remove_collision_exception_with">
@@ -61,7 +61,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
-				Sets individual bits on the layer mask. Use this if you only need to change one layer's value.
+				Sets individual bits on the [member collision_layer] bitmask. Use this if you only need to change one layer's value.
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">
@@ -72,18 +72,20 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
-				Sets individual bits on the collision mask. Use this if you only need to change one layer's value.
+				Sets individual bits on the [member collision_mask] bitmask. Use this if you only need to change one layer's value.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
 			The physics layers this area is in.
-			Collidable objects can exist in any of 32 different layers. These layers work like a tagging system, and are not visual. A collidable can use these layers to select with which objects it can collide, using the collision_mask property.
+			Collidable objects can exist in any of 32 different layers. These layers work like a tagging system, and are not visual. A collidable can use these layers to select with which objects it can collide, using the [member collision_mask] property.
 			A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
+			Default value: 1 (the first layer/bit is enabled).
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
 			The physics layers this area scans for collisions.
+			Default value: 1 (the first layer/bit is enabled).
 		</member>
 		<member name="layers" type="int" setter="_set_layers" getter="_get_layers">
 			Both [member collision_layer] and [member collision_mask]. Returns [member collision_layer] when accessed. Updates [member collision_layer] and [member collision_mask] when modified.
