@@ -79,9 +79,6 @@ if env['tools']:
     env.CommandNoCache('#editor/builtin_fonts.gen.h', flist, run_in_subprocess(editor_builders.make_fonts_header))
 
     env.add_source_files(env.editor_sources, "*.cpp")
-    env_thirdparty = env.Clone()
-    env_thirdparty.disable_warnings()
-    env_thirdparty.add_source_files(env.editor_sources, ["#thirdparty/misc/clipper.cpp"])
 
     SConscript('collada/SCsub')
     SConscript('doc/SCsub')
