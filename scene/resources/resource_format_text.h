@@ -172,10 +172,9 @@ class ResourceFormatSaverTextInstance {
 	struct ResourceSort {
 		RES resource;
 		int index;
-		bool operator<(const ResourceSort& p_right) const {
+		bool operator<(const ResourceSort &p_right) const {
 			return index < p_right.index;
 		}
-
 	};
 
 	void _find_resources(const Variant &p_variant, bool p_main = false);
