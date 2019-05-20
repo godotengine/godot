@@ -751,7 +751,6 @@ void FindInFilesPanel::_on_replace_text_changed(String text) {
 void FindInFilesPanel::_on_replace_all_clicked() {
 
 	String replace_text = get_replace_text();
-	ERR_FAIL_COND(replace_text.empty());
 
 	PoolStringArray modified_files;
 
@@ -887,7 +886,7 @@ String FindInFilesPanel::get_replace_text() {
 void FindInFilesPanel::update_replace_buttons() {
 
 	String text = get_replace_text();
-	bool disabled = text.empty() || _finder->is_searching();
+	bool disabled = _finder->is_searching();
 
 	_replace_all_button->set_disabled(disabled);
 }
