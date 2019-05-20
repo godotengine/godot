@@ -4515,6 +4515,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["show_rulers"] = show_rulers;
 	state["show_guides"] = show_guides;
 	state["show_helpers"] = show_helpers;
+	state["show_zoom_control"] = zoom_hb->is_visible();
 	state["show_edit_locks"] = show_edit_locks;
 	state["snap_rotation"] = snap_rotation;
 	state["snap_relative"] = snap_relative;
@@ -4641,6 +4642,11 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		show_edit_locks = state["show_edit_locks"];
 		int idx = view_menu->get_popup()->get_item_index(SHOW_EDIT_LOCKS);
 		view_menu->get_popup()->set_item_checked(idx, show_edit_locks);
+	}
+
+	if (state.has("show_zoom_control")) {
+		// This one is not user-controllable, but instrumentable
+		zoom_hb->set_visible(state["show_zoom_control"]);
 	}
 
 	if (state.has("snap_rotation")) {
