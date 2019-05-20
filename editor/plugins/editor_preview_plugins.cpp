@@ -78,7 +78,7 @@ bool EditorTexturePreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "Texture");
 }
 
-bool EditorTexturePreviewPlugin::should_generate_small_preview() const {
+bool EditorTexturePreviewPlugin::generate_small_preview_automatically() const {
 	return true;
 }
 
@@ -186,7 +186,7 @@ Ref<Texture> EditorImagePreviewPlugin::generate(const RES &p_from, const Size2 p
 EditorImagePreviewPlugin::EditorImagePreviewPlugin() {
 }
 
-bool EditorImagePreviewPlugin::should_generate_small_preview() const {
+bool EditorImagePreviewPlugin::generate_small_preview_automatically() const {
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////
@@ -250,7 +250,7 @@ Ref<Texture> EditorBitmapPreviewPlugin::generate(const RES &p_from, const Size2 
 	return ptex;
 }
 
-bool EditorBitmapPreviewPlugin::should_generate_small_preview() const {
+bool EditorBitmapPreviewPlugin::generate_small_preview_automatically() const {
 	return true;
 }
 
@@ -317,7 +317,7 @@ bool EditorMaterialPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "Material"); //any material
 }
 
-bool EditorMaterialPreviewPlugin::should_generate_small_preview() const {
+bool EditorMaterialPreviewPlugin::generate_small_preview_automatically() const {
 	return true;
 }
 
