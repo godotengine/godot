@@ -369,15 +369,13 @@ bool String::operator==(const char *p_str) const {
 
 	if (length() != len)
 		return false;
-	if (empty())
+	if (len == 0)
 		return true;
-
-	int l = length();
 
 	const CharType *dst = c_str();
 
 	/* Compare char by char */
-	for (int i = 0; i < l; i++) {
+	for (int i = 0; i < len; i++) {
 
 		if (p_str[i] != dst[i])
 			return false;
