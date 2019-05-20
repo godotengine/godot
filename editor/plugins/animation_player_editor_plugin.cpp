@@ -1431,6 +1431,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 		new_state["show_rulers"] = false;
 		new_state["show_guides"] = false;
 		new_state["show_helpers"] = false;
+		new_state["show_zoom_control"] = false;
 		// TODO: Save/restore only affected entries
 		CanvasItemEditor::get_singleton()->set_state(new_state);
 	}
