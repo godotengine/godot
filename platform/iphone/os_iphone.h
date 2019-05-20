@@ -174,7 +174,7 @@ public:
 
 	void set_data_dir(String p_dir);
 
-	virtual String get_name();
+	virtual String get_name() const;
 
 	Error shell_open(String p_uri);
 

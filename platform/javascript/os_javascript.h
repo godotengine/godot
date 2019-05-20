@@ -146,7 +146,7 @@ public:
 	virtual void set_icon(const Ref<Image> &p_icon);
 	String get_executable_path() const;
 	virtual Error shell_open(String p_uri);
-	virtual String get_name();
+	virtual String get_name() const;
 	virtual bool can_draw() const;
 
 	virtual String get_resource_dir() const;

@@ -277,7 +277,7 @@ Size2 OS_Android::get_window_size() const {
 	return Vector2(default_videomode.width, default_videomode.height);
 }
 
-String OS_Android::get_name() {
+String OS_Android::get_name() const {
 
 	return "Android";
 }
