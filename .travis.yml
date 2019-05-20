@@ -23,9 +23,9 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-xenial-6.0
+            - llvm-toolchain-xenial-8
           packages:
-            - clang-format-6.0
+            - clang-format-8
 
     - env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no warnings=extra werror=yes"
       os: linux
