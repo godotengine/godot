@@ -110,10 +110,12 @@ def configure(env):
     # once feasible also consider memory buffer size issues.
     env.Append(CPPDEFINES=['NO_THREADS'])
 
-    # These flags help keep the file size down.
-    env.Append(CCFLAGS=['-fno-exceptions', '-fno-rtti'])
-    # Don't use dynamic_cast, necessary with no-rtti.
-    env.Append(CPPDEFINES=['NO_SAFE_CAST'])
+    # Disable exceptions and rtti on non-tools (template) builds
+    if not env['tools']:
+        # These flags help keep the file size down.
+        env.Append(CCFLAGS=['-fno-exceptions', '-fno-rtti'])
+        # Don't use dynamic_cast, necessary with no-rtti.
+        env.Append(CPPDEFINES=['NO_SAFE_CAST'])
 
     if env['javascript_eval']:
         env.Append(CPPDEFINES=['JAVASCRIPT_EVAL_ENABLED'])
