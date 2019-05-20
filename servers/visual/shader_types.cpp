@@ -147,6 +147,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].functions["light"].built_ins["DIFFUSE_LIGHT"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[VS::SHADER_SPATIAL].functions["light"].built_ins["SPECULAR_LIGHT"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[VS::SHADER_SPATIAL].functions["light"].built_ins["OUTPUT_IS_SRGB"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[VS::SHADER_SPATIAL].functions["light"].built_ins["ALPHA"] = ShaderLanguage::TYPE_FLOAT;
 
 	shader_modes[VS::SHADER_SPATIAL].functions["light"].can_discard = true;
 
@@ -187,6 +188,7 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("shadows_disabled");
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("ambient_light_disabled");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("shadow_to_opacity");
 
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("vertex_lighting");
 
