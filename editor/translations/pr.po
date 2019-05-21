@@ -168,11 +168,16 @@ msgid "Animation Playback Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Yer unique name be evil."
+
+#: editor/animation_track_editor.cpp
+msgid "Animation length (seconds)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+msgid "Add Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp

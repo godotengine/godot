@@ -162,12 +162,18 @@ msgstr "एनिमेशन प्लेबैक ट्रैक"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "ट्रैक जोड़ें"
+msgid "Animation length (frames)"
+msgstr "ऐनिमेशन लंबाई समय (सेकंड्स)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "ऐनिमेशन लंबाई समय (सेकंड्स)"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "ट्रैक जोड़ें"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

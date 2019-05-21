@@ -159,13 +159,17 @@ msgid "Animation Playback Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+msgid "Animation length (frames)"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Animation length (seconds)"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Add Track"
 msgstr "Anim bæta við lag"
-
-#: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
-msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

@@ -170,12 +170,18 @@ msgid "Animation Playback Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "ترک را اضافه کن"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "طول انیمیشن (به ثانیه)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "طول انیمیشن (به ثانیه)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "ترک را اضافه کن"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

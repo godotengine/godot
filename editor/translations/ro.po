@@ -163,13 +163,18 @@ msgstr "Oprește rularea animației. (S)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "Anim Adăugați Pistă"
+msgid "Animation length (frames)"
+msgstr "Lungime Animație (în secunde)."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "Lungime Animație (în secunde)."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Anim Adăugați Pistă"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy

@@ -159,12 +159,18 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "Animacija Dodaj Kanal"
+msgid "Animation length (frames)"
+msgstr "Optimizuj Animaciju"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
-msgstr ""
+#, fuzzy
+msgid "Animation length (seconds)"
+msgstr "Promijeni Dužinu Animacije"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Animacija Dodaj Kanal"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

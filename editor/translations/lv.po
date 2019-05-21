@@ -157,12 +157,18 @@ msgid "Animation Playback Track"
 msgstr "Animācijas atskaņošanas celiņs"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Pievienot celiņu"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Animācijas Garums (sekundes)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Animācijas Garums (sekundes)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Pievienot celiņu"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

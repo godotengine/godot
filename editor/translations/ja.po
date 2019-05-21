@@ -171,12 +171,18 @@ msgid "Animation Playback Track"
 msgstr "アニメーション再生トラック"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "トラックを追加"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "アニメーションの長さ (秒)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "アニメーションの長さ (秒)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "トラックを追加"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

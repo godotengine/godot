@@ -178,12 +178,18 @@ msgid "Animation Playback Track"
 msgstr "Animasyon Oynatıcı İzi"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "İz Ekle"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Animasyon Uzunluğu (saniye)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Animasyon Uzunluğu (saniye)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "İz Ekle"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

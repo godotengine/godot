@@ -186,12 +186,18 @@ msgid "Animation Playback Track"
 msgstr "Ścieżka animacji"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Dodaj ścieżkę"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Długość animacji (sekundy)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Długość animacji (sekundy)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Dodaj ścieżkę"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

@@ -195,12 +195,18 @@ msgid "Animation Playback Track"
 msgstr "动画回放轨道"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "添加轨道"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "动画时长（秒）"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "动画时长（秒）"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "添加轨道"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

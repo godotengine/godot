@@ -164,12 +164,18 @@ msgid "Animation Playback Track"
 msgstr "Animation-afspilningsspor"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Tilføj Spor"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Animations længde (i sekunder)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Animations længde (i sekunder)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Tilføj Spor"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

@@ -163,12 +163,18 @@ msgid "Animation Playback Track"
 msgstr "Доріжка відтворення анімації"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Додати доріжку"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Тривалість анімації (у секундах)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Тривалість анімації (у секундах)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Додати доріжку"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

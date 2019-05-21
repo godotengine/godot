@@ -166,12 +166,18 @@ msgstr "שקופיות ההנפשה"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "הוספת רצועות חדשות."
+msgid "Animation length (frames)"
+msgstr "משך ההנפשה (בשניות)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "משך ההנפשה (בשניות)"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "הוספת רצועות חדשות."
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

@@ -206,12 +206,16 @@ msgid "Animation Playback Track"
 msgstr "Piste de lecture d'animation"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Ajouter une piste"
+msgid "Animation length (frames)"
+msgstr "Durée de l'animation (en images)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "Durée de l'animation (en secondes)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Ajouter une piste"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -6833,7 +6837,7 @@ msgstr "Le presse-papiers des ressources est vide ou n'est pas une texture !"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Paste Frame"
-msgstr "Coller Frame"
+msgstr "Coller une image"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
@@ -6841,7 +6845,7 @@ msgstr "Ajouter vide"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation FPS"
-msgstr "Modifier le taux d'IPS de l'animation"
+msgstr "Modifier le nombre d'images par seconde de l'animation"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "(empty)"
@@ -6857,7 +6861,7 @@ msgstr "Nouvelle animation"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
-msgstr "Vitesse (FPS) :"
+msgstr "Vitesse (IPS) :"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Loop"
@@ -6877,11 +6881,11 @@ msgstr "Insérer vide (après)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Move (Before)"
-msgstr "Déplacer (Avant)"
+msgstr "Déplacer (avant)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Move (After)"
-msgstr "Déplacer (Après)"
+msgstr "Déplacer (après)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "SpriteFrames"

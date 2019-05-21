@@ -162,13 +162,18 @@ msgid "Animation Playback Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "ანიმაციის თრექის დამატება"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "ანიმაციის ხანგრძლივობა (წამებში)."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "ანიმაციის ხანგრძლივობა (წამებში)."
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "ანიმაციის თრექის დამატება"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
