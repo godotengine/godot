@@ -631,12 +631,14 @@ ThemeEditor::ThemeEditor() {
 
 	scroll = memnew(ScrollContainer);
 	add_child(scroll);
+	scroll->set_theme(Theme::get_default());
 	scroll->set_enable_v_scroll(true);
 	scroll->set_enable_h_scroll(false);
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	main_container = memnew(MarginContainer);
 	scroll->add_child(main_container);
+	main_container->set_theme(Theme::get_default());
 	main_container->set_clip_contents(true);
 	main_container->set_custom_minimum_size(Size2(700, 0) * EDSCALE);
 	main_container->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -646,11 +648,9 @@ ThemeEditor::ThemeEditor() {
 
 	Panel *panel = memnew(Panel);
 	main_container->add_child(panel);
-	panel->set_theme(Theme::get_default());
 
 	MarginContainer *mc = memnew(MarginContainer);
 	main_container->add_child(mc);
-	mc->set_theme(Theme::get_default());
 	mc->add_constant_override("margin_right", 4 * EDSCALE);
 	mc->add_constant_override("margin_top", 4 * EDSCALE);
 	mc->add_constant_override("margin_left", 4 * EDSCALE);
