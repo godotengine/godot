@@ -470,6 +470,8 @@ Size2 ItemList::Item::get_icon_size() const {
 
 void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
+	double prev_scroll = scroll_bar->get_value();
+
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (defer_select_single >= 0 && mm.is_valid()) {
 		defer_select_single = -1;
@@ -767,6 +769,9 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 		scroll_bar->set_value(scroll_bar->get_value() + scroll_bar->get_page() * pan_gesture->get_delta().y / 8);
 	}
+
+	if (scroll_bar->get_value() != prev_scroll)
+		accept_event(); //accept event if scroll changed
 }
 
 void ItemList::ensure_current_is_visible() {
