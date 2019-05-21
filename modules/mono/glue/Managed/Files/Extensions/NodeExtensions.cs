@@ -24,12 +24,12 @@ namespace Godot
 
         public T GetOwner<T>() where T : class
         {
-            return (T)(object)GetOwner();
+            return (T)(object)Owner;
         }
 
         public T GetOwnerOrNull<T>() where T : class
         {
-            return GetOwner() as T;
+            return Owner as T;
         }
 
         public T GetParent<T>() where T : class
