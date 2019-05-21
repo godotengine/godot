@@ -161,8 +161,7 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 
 			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type_class->get_mono_type());
 
-			MonoReflectionType *key_reftype, *value_reftype;
-			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype, &key_reftype, &value_reftype)) {
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype)) {
 				return Variant::DICTIONARY;
 			}
 
@@ -170,8 +169,7 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 				return Variant::DICTIONARY;
 			}
 
-			MonoReflectionType *elem_reftype;
-			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype, &elem_reftype)) {
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype)) {
 				return Variant::ARRAY;
 			}
 
@@ -193,16 +191,14 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 
 			// The order in which we check the following interfaces is very important (dictionaries and generics first)
 
-			MonoReflectionType *key_reftype, *value_reftype;
-			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype, &key_reftype, &value_reftype))
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype))
 				return Variant::DICTIONARY;
 
 			if (p_type.type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
 				return Variant::DICTIONARY;
 			}
 
-			MonoReflectionType *elem_reftype;
-			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype, &elem_reftype))
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype))
 				return Variant::ARRAY;
 
 			if (p_type.type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
@@ -850,8 +846,7 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 
 			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type_class->get_mono_type());
 
-			MonoReflectionType *key_reftype, *value_reftype;
-			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype, &key_reftype, &value_reftype)) {
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype)) {
 				return GDMonoUtils::Marshal::generic_idictionary_to_dictionary(p_obj);
 			}
 
@@ -859,8 +854,7 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 				return GDMonoUtils::Marshal::idictionary_to_dictionary(p_obj);
 			}
 
-			MonoReflectionType *elem_reftype;
-			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype, &elem_reftype)) {
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype)) {
 				return GDMonoUtils::Marshal::enumerable_to_array(p_obj);
 			}
 
@@ -888,8 +882,7 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 
 			// The order in which we check the following interfaces is very important (dictionaries and generics first)
 
-			MonoReflectionType *key_reftype, *value_reftype;
-			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype, &key_reftype, &value_reftype)) {
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype)) {
 				return GDMonoUtils::Marshal::generic_idictionary_to_dictionary(p_obj);
 			}
 
@@ -897,8 +890,7 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 				return GDMonoUtils::Marshal::idictionary_to_dictionary(p_obj);
 			}
 
-			MonoReflectionType *elem_reftype;
-			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype, &elem_reftype)) {
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype)) {
 				return GDMonoUtils::Marshal::enumerable_to_array(p_obj);
 			}
 
