@@ -277,6 +277,7 @@ SpinBox::SpinBox() {
 	add_child(line_edit);
 
 	line_edit->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	//connect("value_changed",this,"_value_changed");
 	line_edit->connect("text_entered", this, "_text_entered", Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("focus_exited", this, "_line_edit_focus_exit", Vector<Variant>(), CONNECT_DEFERRED);
