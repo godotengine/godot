@@ -2202,6 +2202,7 @@ String VisualShaderNodeExpression::generate_code(Shader::Mode p_mode, VisualShad
 
 	static Vector<String> post_symbols;
 	if (post_symbols.empty()) {
+		post_symbols.push_back("\0");
 		post_symbols.push_back("\t");
 		post_symbols.push_back("\n");
 		post_symbols.push_back(";");
