@@ -170,7 +170,7 @@ String OS_Unix::get_stdin_string(bool p_block) {
 	return "";
 }
 
-String OS_Unix::get_name() {
+String OS_Unix::get_name() const {
 
 	return "Unix";
 }

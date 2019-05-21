@@ -74,7 +74,7 @@ public:
 	OS_Haiku();
 	void run();
 
-	virtual String get_name();
+	virtual String get_name() const;
 
 	virtual MainLoop *get_main_loop() const;
 
