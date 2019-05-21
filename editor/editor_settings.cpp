@@ -268,6 +268,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		String host_lang = OS::get_singleton()->get_locale();
 		host_lang = TranslationServer::standardize_locale(host_lang);
 
+		// Some locales are not properly supported currently in Godot due to lack of font shaping
+		// (e.g. Arabic or Hindi), so even though we have work in progress translations for them,
+		// we skip them as they don't render properly. (GH-28577)
+		const Vector<String> locales_to_skip = String("ar,bn,fa,he,hi,ml,si,ta,te,ur").split(",");
+
 		String best;
 
 		EditorTranslationList *etl = _editor_translations;
@@ -275,6 +280,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		while (etl->data) {
 
 			const String &locale = etl->lang;
+
+			// Skip locales which we can't render properly (see above comment).
+			// Test against language code without regional variants (e.g. ur_PK).
+			String lang_code = locale.get_slice("_", 0);
+			if (locales_to_skip.find(lang_code) != -1) {
+				etl++;
+				continue;
+			}
+
 			lang_hint += ",";
 			lang_hint += locale;
 
