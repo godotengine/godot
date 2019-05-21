@@ -115,10 +115,12 @@ def configure(env):
         env.Append(CPPFLAGS=['-DNEED_LONG_INT'])
         env.Append(CPPFLAGS=['-DLIBYUV_DISABLE_NEON'])
 
-    if env['ios_exceptions']:
-        env.Append(CCFLAGS=['-fexceptions'])
-    else:
-        env.Append(CCFLAGS=['-fno-exceptions'])
+    # Disable exceptions on non-tools (template) builds
+    if not env['tools']:
+        if env['ios_exceptions']:
+            env.Append(CCFLAGS=['-fexceptions'])
+        else:
+            env.Append(CCFLAGS=['-fno-exceptions'])
 
     ## Link flags
 
