@@ -168,13 +168,18 @@ msgstr "Ustavi predvajanje animacije. (S)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "Animacija Dodaj sled"
+msgid "Animation length (frames)"
+msgstr "Dolžina animacije (v sekundah)."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "Dolžina animacije (v sekundah)."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Animacija Dodaj sled"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy

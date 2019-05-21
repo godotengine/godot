@@ -164,13 +164,18 @@ msgstr "Ngưng chạy animation. (S)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "Thêm Track Animation"
+msgid "Animation length (frames)"
+msgstr "Độ dài Animation (giây)."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "Độ dài Animation (giây)."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Thêm Track Animation"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy

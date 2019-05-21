@@ -154,12 +154,18 @@ msgid "Animation Playback Track"
 msgstr "Binari i Rishikimit të Animacionit"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Shto Binarë"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Kohëzgjatja e Animacionit (sekonda)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Kohëzgjatja e Animacionit (sekonda)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Shto Binarë"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

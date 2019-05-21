@@ -175,12 +175,18 @@ msgid "Animation Playback Track"
 msgstr "شريط ضبط الحركة"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "إضافة مسار"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "مدة الحركة (بالثواني)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "مدة الحركة (بالثواني)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "إضافة مسار"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

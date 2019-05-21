@@ -163,13 +163,18 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "Anim Voeg Baan By"
+msgid "Animation length (frames)"
+msgstr "Animasie lengte (in sekondes)."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "Animasie lengte (in sekondes)."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Anim Voeg Baan By"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy

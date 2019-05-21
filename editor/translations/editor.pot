@@ -146,11 +146,15 @@ msgid "Animation Playback Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
+msgid "Animation length (frames)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp

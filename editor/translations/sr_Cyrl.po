@@ -165,13 +165,18 @@ msgstr "Заустави анимацију. (S)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "Додај нову траку"
+msgid "Animation length (frames)"
+msgstr "Дужина анимације (у секундама)."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "Дужина анимације (у секундама)."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Додај нову траку"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy

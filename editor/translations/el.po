@@ -157,12 +157,18 @@ msgid "Animation Playback Track"
 msgstr "Κομμάτι αναπαραγωγής κίνησης"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Προσθήκη κομματιού"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Μήκος κίνησης (δευτερόλεπτα)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Μήκος κίνησης (δευτερόλεπτα)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Προσθήκη κομματιού"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
