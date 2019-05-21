@@ -65,7 +65,6 @@ private:
 		bool pressing_inside;
 
 		bool disabled;
-		int pressing_button;
 
 	} status;
 
