@@ -879,11 +879,9 @@ ThemeEditor::ThemeEditor() {
 void ThemeEditorPlugin::edit(Object *p_node) {
 
 	if (Object::cast_to<Theme>(p_node)) {
-		theme_editor->show();
 		theme_editor->edit(Object::cast_to<Theme>(p_node));
 	} else {
 		theme_editor->edit(Ref<Theme>());
-		theme_editor->hide();
 	}
 }
 
@@ -898,11 +896,11 @@ void ThemeEditorPlugin::make_visible(bool p_visible) {
 		theme_editor->set_process(true);
 		button->show();
 		editor->make_bottom_panel_item_visible(theme_editor);
-
 	} else {
 		theme_editor->set_process(false);
 		if (theme_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
+
 		button->hide();
 	}
 }
