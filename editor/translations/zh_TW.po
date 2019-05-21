@@ -166,12 +166,18 @@ msgstr "動畫回放軌道"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "添加動畫軌"
+msgid "Animation length (frames)"
+msgstr "動畫長度（秒）"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "動畫長度（秒）"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "添加動畫軌"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy

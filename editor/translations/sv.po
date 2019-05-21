@@ -161,13 +161,18 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "Anim Lägg till spår"
+msgid "Animation length (frames)"
+msgstr "Animation längd (i sekunder)."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "Animation längd (i sekunder)."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Anim Lägg till spår"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

@@ -163,12 +163,18 @@ msgid "Animation Playback Track"
 msgstr "애니메이션 재생 트랙"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "트랙 추가"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "애니메이션 길이 시간 (초)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "애니메이션 길이 시간 (초)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "트랙 추가"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

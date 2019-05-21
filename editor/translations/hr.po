@@ -152,12 +152,18 @@ msgid "Animation Playback Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Dodati stazu"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Trajanje animacije (u sekundama)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Trajanje animacije (u sekundama)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Dodati stazu"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

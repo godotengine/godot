@@ -157,12 +157,18 @@ msgid "Animation Playback Track"
 msgstr "Pista de reproducció d'Animacions"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Afegeix una Pista"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Durada de l'Animació (en segons)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Durada de l'Animació (en segons)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Afegeix una Pista"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
