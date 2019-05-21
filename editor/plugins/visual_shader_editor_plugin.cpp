@@ -984,9 +984,9 @@ void VisualShaderEditor::_set_node_size(int p_type, int p_node, const Vector2 &p
 				box_size.x = gn->get_size().x;
 			}
 		}
-		box_size.x -= text_box->get_margin(Margin::MARGIN_LEFT);
+		box_size.x -= text_box->get_margin(MARGIN_LEFT);
 		box_size.x -= 28 * EDSCALE;
-		box_size.y -= text_box->get_margin(Margin::MARGIN_TOP);
+		box_size.y -= text_box->get_margin(MARGIN_TOP);
 		box_size.y -= 28 * EDSCALE;
 		text_box->set_custom_minimum_size(Size2(box_size.x, box_size.y));
 		text_box->set_size(Size2(1, 1));
