@@ -1812,6 +1812,9 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 
 void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
+	double prev_v_scroll = v_scroll->get_value();
+	double prev_h_scroll = h_scroll->get_value();
+
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
 	if (mb.is_valid()) {
@@ -2066,6 +2069,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			_scroll_down(delta);
 		}
 		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x * 100);
+		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll)
+			accept_event(); //accept event if scroll changed
+
 		return;
 	}
 
@@ -2108,6 +2114,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		}
 	}
+
+	if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll)
+		accept_event(); //accept event if scroll changed
 
 	Ref<InputEventKey> k = p_gui_input;
 

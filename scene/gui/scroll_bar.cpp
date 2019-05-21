@@ -53,29 +53,19 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 	if (b.is_valid()) {
 		accept_event();
 
-		if (b->get_button_index() == 5 && b->is_pressed()) {
+		if (b->get_button_index() == BUTTON_WHEEL_DOWN && b->is_pressed()) {
 
-			/*
-			if (orientation==VERTICAL)
-				set_val( get_val() + get_page() / 4.0 );
-			else
-			*/
 			set_value(get_value() + get_page() / 4.0);
 			accept_event();
 		}
 
-		if (b->get_button_index() == 4 && b->is_pressed()) {
+		if (b->get_button_index() == BUTTON_WHEEL_UP && b->is_pressed()) {
 
-			/*
-			if (orientation==HORIZONTAL)
-				set_val( get_val() - get_page() / 4.0 );
-			else
-			*/
 			set_value(get_value() - get_page() / 4.0);
 			accept_event();
 		}
 
-		if (b->get_button_index() != 1)
+		if (b->get_button_index() != BUTTON_LEFT)
 			return;
 
 		if (b->is_pressed()) {
