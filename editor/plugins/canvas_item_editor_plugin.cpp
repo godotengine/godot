@@ -4321,6 +4321,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 			Map<Node *, Object *> &selection = editor_selection->get_selection();
 
+			undo_redo->create_action(TTR("Create Custom Bone(s) from Node(s)"));
 			for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
 
 				Node2D *n2d = Object::cast_to<Node2D>(E->key());
@@ -4330,19 +4331,24 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				if (!n2d->get_parent_item())
 					continue;
+				if (n2d->has_meta("_edit_bone_") && (bool)n2d->get_meta("_edit_bone_") == true)
+					continue;
 
-				n2d->set_meta("_edit_bone_", true);
-				if (!skeleton_show_bones)
-					skeleton_menu->get_popup()->activate_item(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES));
+				undo_redo->add_do_method(n2d, "set_meta", "_edit_bone_", true);
+				undo_redo->add_undo_method(n2d, "remove_meta", "_edit_bone_");
 			}
-			_queue_update_bone_list();
-			viewport->update();
+			undo_redo->add_do_method(this, "_queue_update_bone_list");
+			undo_redo->add_undo_method(this, "_queue_update_bone_list");
+			undo_redo->add_do_method(viewport, "update");
+			undo_redo->add_undo_method(viewport, "update");
+			undo_redo->commit_action();
 
 		} break;
 		case SKELETON_CLEAR_BONES: {
 
 			Map<Node *, Object *> &selection = editor_selection->get_selection();
 
+			undo_redo->create_action(TTR("Clear Bones"));
 			for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
 
 				Node2D *n2d = Object::cast_to<Node2D>(E->key());
@@ -4350,40 +4356,47 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				if (!n2d->is_visible_in_tree())
 					continue;
+				if (!n2d->has_meta("_edit_bone_"))
+					continue;
 
-				n2d->set_meta("_edit_bone_", Variant());
-				if (!skeleton_show_bones)
-					skeleton_menu->get_popup()->activate_item(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES));
+				undo_redo->add_do_method(n2d, "remove_meta", "_edit_bone_");
+				undo_redo->add_undo_method(n2d, "set_meta", "_edit_bone_", n2d->get_meta("_edit_bone_"));
 			}
-			_queue_update_bone_list();
-			viewport->update();
+			undo_redo->add_do_method(this, "_queue_update_bone_list");
+			undo_redo->add_undo_method(this, "_queue_update_bone_list");
+			undo_redo->add_do_method(viewport, "update");
+			undo_redo->add_undo_method(viewport, "update");
+			undo_redo->commit_action();
 
 		} break;
 		case SKELETON_SET_IK_CHAIN: {
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
+			undo_redo->create_action(TTR("Make IK Chain"));
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
 				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->get());
 				if (!canvas_item || !canvas_item->is_visible_in_tree())
 					continue;
-
 				if (canvas_item->get_viewport() != EditorNode::get_singleton()->get_scene_root())
 					continue;
+				if (canvas_item->has_meta("_edit_ik_") && (bool)canvas_item->get_meta("_edit_ik_") == true)
+					continue;
 
-				canvas_item->set_meta("_edit_ik_", true);
-				if (!skeleton_show_bones)
-					skeleton_menu->get_popup()->activate_item(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES));
+				undo_redo->add_do_method(canvas_item, "set_meta", "_edit_ik_", true);
+				undo_redo->add_undo_method(canvas_item, "remove_meta", "_edit_ik_");
 			}
-
-			viewport->update();
+			undo_redo->add_do_method(viewport, "update");
+			undo_redo->add_undo_method(viewport, "update");
+			undo_redo->commit_action();
 
 		} break;
 		case SKELETON_CLEAR_IK_CHAIN: {
 
 			Map<Node *, Object *> &selection = editor_selection->get_selection();
 
+			undo_redo->create_action(TTR("Clear IK Chain"));
 			for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
 
 				CanvasItem *n2d = Object::cast_to<CanvasItem>(E->key());
@@ -4391,12 +4404,15 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				if (!n2d->is_visible_in_tree())
 					continue;
+				if (!n2d->has_meta("_edit_ik_"))
+					continue;
 
-				n2d->set_meta("_edit_ik_", Variant());
-				if (!skeleton_show_bones)
-					skeleton_menu->get_popup()->activate_item(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES));
+				undo_redo->add_do_method(n2d, "remove_meta", "_edit_ik_");
+				undo_redo->add_undo_method(n2d, "set_meta", "_edit_ik_", n2d->get_meta("_edit_ik_"));
 			}
-			viewport->update();
+			undo_redo->add_do_method(viewport, "update");
+			undo_redo->add_undo_method(viewport, "update");
+			undo_redo->commit_action();
 
 		} break;
 	}
@@ -4478,6 +4494,7 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_draw_viewport", &CanvasItemEditor::_draw_viewport);
 	ClassDB::bind_method("_gui_input_viewport", &CanvasItemEditor::_gui_input_viewport);
 	ClassDB::bind_method("_snap_changed", &CanvasItemEditor::_snap_changed);
+	ClassDB::bind_method("_queue_update_bone_list", &CanvasItemEditor::_update_bone_list);
 	ClassDB::bind_method("_update_bone_list", &CanvasItemEditor::_update_bone_list);
 	ClassDB::bind_method("_tree_changed", &CanvasItemEditor::_tree_changed);
 	ClassDB::bind_method("_selection_changed", &CanvasItemEditor::_selection_changed);
