@@ -23,7 +23,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if the generic type definition of <paramref name="type"/>
-        /// is <see cref="Godot.Collections.Dictionary{T}"/>; otherwise returns <see langword="false"/>.
+        /// is <see cref="Godot.Collections.Dictionary{TKey, TValue}"/>; otherwise returns <see langword="false"/>.
         /// </summary>
         /// <exception cref="System.InvalidOperationException">
         /// <paramref name="type"/> is not a generic type. That is, IsGenericType returns false.
@@ -43,6 +43,44 @@ namespace Godot
             var genericArgs = dictionaryType.GetGenericArguments();
             keyType = genericArgs[0];
             valueType = genericArgs[1];
+        }
+
+        static bool GenericIEnumerableIsAssignableFromType(Type type)
+        {
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                return true;
+
+            foreach (var interfaceType in type.GetInterfaces())
+            {
+                if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                    return true;
+            }
+
+            Type baseType = type.BaseType;
+
+            if (baseType == null)
+                return false;
+
+            return GenericIEnumerableIsAssignableFromType(baseType);
+        }
+
+        static bool GenericIDictionaryIsAssignableFromType(Type type)
+        {
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IDictionary<,>))
+                return true;
+
+            foreach (var interfaceType in type.GetInterfaces())
+            {
+                if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IDictionary<,>))
+                    return true;
+            }
+
+            Type baseType = type.BaseType;
+
+            if (baseType == null)
+                return false;
+
+            return GenericIDictionaryIsAssignableFromType(baseType);
         }
 
         static bool GenericIEnumerableIsAssignableFromType(Type type, out Type elementType)
