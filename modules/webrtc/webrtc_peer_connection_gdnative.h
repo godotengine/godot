@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  webrtc_peer_js.h                                                     */
+/*  webrtc_peer_connection_gdnative.h                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,61 +28,46 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBRTC_PEER_JS_H
-#define WEBRTC_PEER_JS_H
+#ifdef WEBRTC_GDNATIVE_ENABLED
 
-#ifdef JAVASCRIPT_ENABLED
+#ifndef WEBRTC_PEER_CONNECTION_GDNATIVE_H
+#define WEBRTC_PEER_CONNECTION_GDNATIVE_H
 
-#include "webrtc_peer.h"
+#include "modules/gdnative/include/net/godot_net.h"
+#include "webrtc_peer_connection.h"
 
-class WebRTCPeerJS : public WebRTCPeer {
+class WebRTCPeerConnectionGDNative : public WebRTCPeerConnection {
+	GDCLASS(WebRTCPeerConnectionGDNative, WebRTCPeerConnection);
+
+protected:
+	static void _bind_methods();
+	static WebRTCPeerConnection *_create();
 
 private:
-	enum {
-		PACKET_BUFFER_SIZE = 65536 - 5 // 4 bytes for the size, 1 for for type
-	};
-
-	bool _was_string;
-	WriteMode _write_mode;
-
-	int _js_id;
-	RingBuffer<uint8_t> in_buffer;
-	int queue_count;
-	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
-	ConnectionState _conn_state;
+	static const godot_net_webrtc_library *default_library;
+	const godot_net_webrtc_peer_connection *interface;
 
 public:
-	static WebRTCPeer *_create() { return memnew(WebRTCPeerJS); }
-	static void make_default() { WebRTCPeer::_create = WebRTCPeerJS::_create; }
+	static Error set_default_library(const godot_net_webrtc_library *p_library);
+	static void make_default() { WebRTCPeerConnection::_create = WebRTCPeerConnectionGDNative::_create; }
 
-	virtual void set_write_mode(WriteMode mode);
-	virtual WriteMode get_write_mode() const;
-	virtual bool was_string_packet() const;
+	void set_native_webrtc_peer_connection(const godot_net_webrtc_peer_connection *p_impl);
+
 	virtual ConnectionState get_connection_state() const;
 
+	virtual Error initialize(Dictionary p_config = Dictionary());
+	virtual Ref<WebRTCDataChannel> create_data_channel(String p_label, Dictionary p_options = Dictionary());
 	virtual Error create_offer();
 	virtual Error set_remote_description(String type, String sdp);
 	virtual Error set_local_description(String type, String sdp);
 	virtual Error add_ice_candidate(String sdpMidName, int sdpMlineIndexName, String sdpName);
 	virtual Error poll();
+	virtual void close();
 
-	/** Inherited from PacketPeer: **/
-	virtual int get_available_packet_count() const;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size); ///< buffer is GONE after next get_packet
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
-
-	virtual int get_max_packet_size() const;
-
-	void close();
-	void _on_open();
-	void _on_close();
-	void _on_error();
-	void _on_message(uint8_t *p_data, uint32_t p_size, bool p_is_string);
-
-	WebRTCPeerJS();
-	~WebRTCPeerJS();
+	WebRTCPeerConnectionGDNative();
+	~WebRTCPeerConnectionGDNative();
 };
 
-#endif
+#endif // WEBRTC_PEER_CONNECTION_GDNATIVE_H
 
-#endif // WEBRTC_PEER_JS_H
+#endif // WEBRTC_GDNATIVE_ENABLED

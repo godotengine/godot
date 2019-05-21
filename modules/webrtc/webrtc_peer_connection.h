@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  webrtc_peer_connection.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,32 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-#include "webrtc_data_channel.h"
-#include "webrtc_peer_connection.h"
+#ifndef WEBRTC_PEER_CONNECTION_H
+#define WEBRTC_PEER_CONNECTION_H
 
-#ifdef JAVASCRIPT_ENABLED
-#include "emscripten.h"
-#include "webrtc_peer_connection_js.h"
-#endif
-#ifdef WEBRTC_GDNATIVE_ENABLED
-#include "webrtc_data_channel_gdnative.h"
-#include "webrtc_peer_connection_gdnative.h"
-#endif
+#include "core/io/packet_peer.h"
+#include "modules/webrtc/webrtc_data_channel.h"
 
-void register_webrtc_types() {
-#ifdef JAVASCRIPT_ENABLED
-	WebRTCPeerConnectionJS::make_default();
-#elif defined(WEBRTC_GDNATIVE_ENABLED)
-	WebRTCPeerConnectionGDNative::make_default();
-#endif
+class WebRTCPeerConnection : public Reference {
+	GDCLASS(WebRTCPeerConnection, Reference);
 
-	ClassDB::register_custom_instance_class<WebRTCPeerConnection>();
-#ifdef WEBRTC_GDNATIVE_ENABLED
-	ClassDB::register_class<WebRTCPeerConnectionGDNative>();
-	ClassDB::register_class<WebRTCDataChannelGDNative>();
-#endif
-	ClassDB::register_virtual_class<WebRTCDataChannel>();
-}
+public:
+	enum ConnectionState {
+		STATE_NEW,
+		STATE_CONNECTING,
+		STATE_CONNECTED,
+		STATE_DISCONNECTED,
+		STATE_FAILED,
+		STATE_CLOSED
+	};
 
-void unregister_webrtc_types() {}
+protected:
+	static void _bind_methods();
+	static WebRTCPeerConnection *(*_create)();
+
+public:
+	virtual ConnectionState get_connection_state() const = 0;
+
+	virtual Error initialize(Dictionary p_config = Dictionary()) = 0;
+	virtual Ref<WebRTCDataChannel> create_data_channel(String p_label, Dictionary p_options = Dictionary()) = 0;
+	virtual Error create_offer() = 0;
+	virtual Error set_remote_description(String type, String sdp) = 0;
+	virtual Error set_local_description(String type, String sdp) = 0;
+	virtual Error add_ice_candidate(String sdpMidName, int sdpMlineIndexName, String sdpName) = 0;
+	virtual Error poll() = 0;
+	virtual void close() = 0;
+
+	static Ref<WebRTCPeerConnection> create_ref();
+	static WebRTCPeerConnection *create();
+
+	WebRTCPeerConnection();
+	~WebRTCPeerConnection();
+};
+
+VARIANT_ENUM_CAST(WebRTCPeerConnection::ConnectionState);
+#endif // WEBRTC_PEER_CONNECTION_H
