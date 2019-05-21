@@ -55,12 +55,9 @@ class ThemeEditor : public VBoxContainer {
 
 	MenuButton *theme_menu;
 	ConfirmationDialog *add_del_dialog;
-	HBoxContainer *type_hbc;
-	MenuButton *type_menu;
-	LineEdit *type_edit;
-	HBoxContainer *name_hbc;
-	MenuButton *name_menu;
-	LineEdit *name_edit;
+	OptionButton *type_menu;
+	OptionButton *name_menu;
+	LineEdit *custom_name_edit;
 	OptionButton *type_select;
 	Label *type_select_label;
 	Label *name_select_label;
@@ -81,9 +78,8 @@ class ThemeEditor : public VBoxContainer {
 
 	void _save_template_cbk(String fname);
 	void _dialog_cbk();
-	void _type_menu_cbk(int p_option);
 	void _name_menu_about_to_show();
-	void _name_menu_cbk(int p_option);
+	void _name_selected();
 	void _theme_menu_cbk(int p_option);
 	void _propagate_redraw(Control *p_at);
 	void _refresh_interval();

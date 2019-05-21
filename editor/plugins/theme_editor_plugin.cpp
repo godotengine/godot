@@ -56,14 +56,9 @@ void ThemeEditor::_refresh_interval() {
 	_propagate_redraw(main_container);
 }
 
-void ThemeEditor::_type_menu_cbk(int p_option) {
-
-	type_edit->set_text(type_menu->get_popup()->get_item_text(p_option));
-}
-
 void ThemeEditor::_name_menu_about_to_show() {
 
-	String fromtype = type_edit->get_text();
+	String fromtype = type_menu->get_text();
 	List<StringName> names;
 
 	if (popup_mode == POPUP_ADD) {
@@ -85,17 +80,14 @@ void ThemeEditor::_name_menu_about_to_show() {
 		theme->get_constant_list(fromtype, &names);
 	}
 
-	name_menu->get_popup()->clear();
-	name_menu->get_popup()->set_size(Size2());
+	name_menu->clear();
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-
-		name_menu->get_popup()->add_item(E->get());
+		name_menu->add_item(E->get());
 	}
-}
-
-void ThemeEditor::_name_menu_cbk(int p_option) {
-
-	name_edit->set_text(name_menu->get_popup()->get_item_text(p_option));
+	if (popup_mode == POPUP_ADD) {
+		name_menu->add_item("Custom");
+	}
+	_name_selected();
 }
 
 struct _TECategory {
@@ -319,20 +311,27 @@ void ThemeEditor::_dialog_cbk() {
 
 	switch (popup_mode) {
 		case POPUP_ADD: {
-
-			switch (type_select->get_selected()) {
-
-				case 0: theme->set_icon(name_edit->get_text(), type_edit->get_text(), Ref<Texture>()); break;
-				case 1: theme->set_stylebox(name_edit->get_text(), type_edit->get_text(), Ref<StyleBox>()); break;
-				case 2: theme->set_font(name_edit->get_text(), type_edit->get_text(), Ref<Font>()); break;
-				case 3: theme->set_color(name_edit->get_text(), type_edit->get_text(), Color()); break;
-				case 4: theme->set_constant(name_edit->get_text(), type_edit->get_text(), 0); break;
+			if (name_menu->get_text() == "Custom") {
+				switch (type_select->get_selected()) {
+					case 0: theme->set_icon(custom_name_edit->get_text(), type_menu->get_text(), Ref<Texture>()); break;
+					case 1: theme->set_stylebox(custom_name_edit->get_text(), type_menu->get_text(), Ref<StyleBox>()); break;
+					case 2: theme->set_font(custom_name_edit->get_text(), type_menu->get_text(), Ref<Font>()); break;
+					case 3: theme->set_color(custom_name_edit->get_text(), type_menu->get_text(), Color()); break;
+					case 4: theme->set_constant(custom_name_edit->get_text(), type_menu->get_text(), 0); break;
+				}
+			} else {
+				switch (type_select->get_selected()) {
+					case 0: theme->set_icon(name_menu->get_text(), type_menu->get_text(), Ref<Texture>()); break;
+					case 1: theme->set_stylebox(name_menu->get_text(), type_menu->get_text(), Ref<StyleBox>()); break;
+					case 2: theme->set_font(name_menu->get_text(), type_menu->get_text(), Ref<Font>()); break;
+					case 3: theme->set_color(name_menu->get_text(), type_menu->get_text(), Color()); break;
+					case 4: theme->set_constant(name_menu->get_text(), type_menu->get_text(), 0); break;
+				}
 			}
-
 		} break;
 		case POPUP_CLASS_ADD: {
 
-			StringName fromtype = type_edit->get_text();
+			StringName fromtype = type_menu->get_text();
 			List<StringName> names;
 
 			{
@@ -374,16 +373,16 @@ void ThemeEditor::_dialog_cbk() {
 		case POPUP_REMOVE: {
 			switch (type_select->get_selected()) {
 
-				case 0: theme->clear_icon(name_edit->get_text(), type_edit->get_text()); break;
-				case 1: theme->clear_stylebox(name_edit->get_text(), type_edit->get_text()); break;
-				case 2: theme->clear_font(name_edit->get_text(), type_edit->get_text()); break;
-				case 3: theme->clear_color(name_edit->get_text(), type_edit->get_text()); break;
-				case 4: theme->clear_constant(name_edit->get_text(), type_edit->get_text()); break;
+				case 0: theme->clear_icon(name_menu->get_text(), type_menu->get_text()); break;
+				case 1: theme->clear_stylebox(name_menu->get_text(), type_menu->get_text()); break;
+				case 2: theme->clear_font(name_menu->get_text(), type_menu->get_text()); break;
+				case 3: theme->clear_color(name_menu->get_text(), type_menu->get_text()); break;
+				case 4: theme->clear_constant(name_menu->get_text(), type_menu->get_text()); break;
 			}
 
 		} break;
 		case POPUP_CLASS_REMOVE: {
-			StringName fromtype = type_edit->get_text();
+			StringName fromtype = type_menu->get_text();
 			List<StringName> names;
 
 			{
@@ -497,7 +496,8 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 	Ref<Theme> base_theme;
 
 	name_select_label->show();
-	name_hbc->show();
+	name_menu->show();
+	custom_name_edit->show();
 	type_select_label->show();
 	type_select->show();
 
@@ -505,7 +505,8 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 		add_del_dialog->set_title(TTR("Add Item"));
 		add_del_dialog->get_ok()->set_text(TTR("Add"));
-		add_del_dialog->popup_centered(Size2(490, 85) * EDSCALE);
+		add_del_dialog->popup_centered(Size2(490, 200) * EDSCALE);
+		custom_name_edit->hide();
 
 		base_theme = Theme::get_default();
 
@@ -513,17 +514,20 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 		add_del_dialog->set_title(TTR("Add All Items"));
 		add_del_dialog->get_ok()->set_text(TTR("Add All"));
-		add_del_dialog->popup_centered(Size2(240, 85) * EDSCALE);
-
-		base_theme = Theme::get_default();
 
 		name_select_label->hide();
-		name_hbc->hide();
+		name_menu->hide();
+		custom_name_edit->hide();
 		type_select_label->hide();
 		type_select->hide();
 
+		add_del_dialog->popup_centered(Size2(240, 50) * EDSCALE);
+
+		base_theme = Theme::get_default();
+
 	} else if (p_option == POPUP_REMOVE) {
 
+		custom_name_edit->hide();
 		add_del_dialog->set_title(TTR("Remove Item"));
 		add_del_dialog->get_ok()->set_text(TTR("Remove"));
 		add_del_dialog->popup_centered(Size2(490, 85) * EDSCALE);
@@ -532,16 +536,18 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 	} else if (p_option == POPUP_CLASS_REMOVE) {
 
+		custom_name_edit->hide();
 		add_del_dialog->set_title(TTR("Remove All Items"));
 		add_del_dialog->get_ok()->set_text(TTR("Remove All"));
-		add_del_dialog->popup_centered(Size2(240, 85) * EDSCALE);
-
-		base_theme = Theme::get_default();
 
 		name_select_label->hide();
-		name_hbc->hide();
+		name_menu->hide();
 		type_select_label->hide();
 		type_select->hide();
+
+		add_del_dialog->popup_centered(Size2(240, 50) * EDSCALE);
+
+		base_theme = Theme::get_default();
 	}
 	popup_mode = p_option;
 
@@ -550,7 +556,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 	List<StringName> types;
 	base_theme->get_type_list(&types);
 
-	type_menu->get_popup()->clear();
+	type_menu->clear();
 
 	if (p_option == 0 || p_option == 1) { //add
 
@@ -577,7 +583,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 	types.sort_custom<StringName::AlphCompare>();
 	for (List<StringName>::Element *E = types.front(); E; E = E->next()) {
 
-		type_menu->get_popup()->add_item(E->get());
+		type_menu->add_item(E->get());
 	}
 }
 
@@ -595,11 +601,18 @@ void ThemeEditor::_notification(int p_what) {
 	}
 }
 
+void ThemeEditor::_name_selected() {
+	if (name_menu->get_text() == "Custom") {
+		custom_name_edit->show();
+	} else {
+		custom_name_edit->hide();
+	}
+}
+
 void ThemeEditor::_bind_methods() {
 
-	ClassDB::bind_method("_type_menu_cbk", &ThemeEditor::_type_menu_cbk);
 	ClassDB::bind_method("_name_menu_about_to_show", &ThemeEditor::_name_menu_about_to_show);
-	ClassDB::bind_method("_name_menu_cbk", &ThemeEditor::_name_menu_cbk);
+	ClassDB::bind_method("_name_selected", &ThemeEditor::_name_selected);
 	ClassDB::bind_method("_theme_menu_cbk", &ThemeEditor::_theme_menu_cbk);
 	ClassDB::bind_method("_dialog_cbk", &ThemeEditor::_dialog_cbk);
 	ClassDB::bind_method("_save_template_cbk", &ThemeEditor::_save_template_cbk);
@@ -823,37 +836,10 @@ ThemeEditor::ThemeEditor() {
 	l->set_text(TTR("Type:"));
 	dialog_vbc->add_child(l);
 
-	type_hbc = memnew(HBoxContainer);
-	dialog_vbc->add_child(type_hbc);
+	type_menu = memnew(OptionButton);
+	dialog_vbc->add_child(type_menu);
 
-	type_edit = memnew(LineEdit);
-	type_edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	type_hbc->add_child(type_edit);
-	type_menu = memnew(MenuButton);
-	type_menu->set_flat(false);
-	type_menu->set_text("..");
-	type_hbc->add_child(type_menu);
-
-	type_menu->get_popup()->connect("id_pressed", this, "_type_menu_cbk");
-
-	l = memnew(Label);
-	l->set_text(TTR("Name:"));
-	dialog_vbc->add_child(l);
-	name_select_label = l;
-
-	name_hbc = memnew(HBoxContainer);
-	dialog_vbc->add_child(name_hbc);
-
-	name_edit = memnew(LineEdit);
-	name_edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	name_hbc->add_child(name_edit);
-	name_menu = memnew(MenuButton);
-	type_menu->set_flat(false);
-	name_menu->set_text("..");
-	name_hbc->add_child(name_menu);
-
-	name_menu->get_popup()->connect("about_to_show", this, "_name_menu_about_to_show");
-	name_menu->get_popup()->connect("id_pressed", this, "_name_menu_cbk");
+	type_menu->get_popup()->connect("popup_hide", this, "_name_menu_about_to_show");
 
 	type_select_label = memnew(Label);
 	type_select_label->set_text(TTR("Data Type:"));
@@ -866,7 +852,24 @@ ThemeEditor::ThemeEditor() {
 	type_select->add_item(TTR("Color"));
 	type_select->add_item(TTR("Constant"));
 
+	type_select->get_popup()->connect("popup_hide", this, "_name_menu_about_to_show");
+
 	dialog_vbc->add_child(type_select);
+
+	// "name" depends on both "data type" and "type" so it should be placed after
+	name_select_label = memnew(Label);
+	name_select_label->set_text(TTR("Name:"));
+	dialog_vbc->add_child(name_select_label);
+
+	name_menu = memnew(OptionButton);
+	dialog_vbc->add_child(name_menu);
+
+	custom_name_edit = memnew(LineEdit);
+	custom_name_edit->set_text("name");
+	dialog_vbc->add_child(custom_name_edit);
+
+	name_menu->get_popup()->connect("about_to_show", this, "_name_menu_about_to_show");
+	name_menu->get_popup()->connect("popup_hide", this, "_name_selected");
 
 	add_del_dialog->get_ok()->connect("pressed", this, "_dialog_cbk");
 
