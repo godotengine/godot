@@ -1840,53 +1840,72 @@ Rect2 Control::get_anchorable_rect() const {
 
 void Control::add_icon_override(const StringName &p_name, const Ref<Texture> &p_icon) {
 
-	ERR_FAIL_COND(p_icon.is_null());
 	if (data.icon_override.has(p_name)) {
 		data.icon_override[p_name]->disconnect("changed", this, "_override_changed");
 	}
-	data.icon_override[p_name] = p_icon;
-	if (data.icon_override[p_name].is_valid()) {
-		data.icon_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+
+	// clear if "null" is passed instead of a icon
+	if (p_icon.is_null()) {
+		data.icon_override.erase(p_name);
+	} else {
+		data.icon_override[p_name] = p_icon;
+		if (data.icon_override[p_name].is_valid()) {
+			data.icon_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
 void Control::add_shader_override(const StringName &p_name, const Ref<Shader> &p_shader) {
-	ERR_FAIL_COND(p_shader.is_null());
+
 	if (data.shader_override.has(p_name)) {
 		data.shader_override[p_name]->disconnect("changed", this, "_override_changed");
 	}
-	data.shader_override[p_name] = p_shader;
-	if (data.shader_override[p_name].is_valid()) {
-		data.shader_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+
+	// clear if "null" is passed instead of a shader
+	if (p_shader.is_null()) {
+		data.shader_override.erase(p_name);
+	} else {
+		data.shader_override[p_name] = p_shader;
+		if (data.shader_override[p_name].is_valid()) {
+			data.shader_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 void Control::add_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
 
-	ERR_FAIL_COND(p_style.is_null());
 	if (data.style_override.has(p_name)) {
 		data.style_override[p_name]->disconnect("changed", this, "_override_changed");
 	}
-	data.style_override[p_name] = p_style;
-	if (data.style_override[p_name].is_valid()) {
-		data.style_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
-	}
 
+	// clear if "null" is passed instead of a style
+	if (p_style.is_null()) {
+		data.style_override.erase(p_name);
+	} else {
+		data.style_override[p_name] = p_style;
+		if (data.style_override[p_name].is_valid()) {
+			data.style_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+		}
+	}
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
 void Control::add_font_override(const StringName &p_name, const Ref<Font> &p_font) {
 
-	ERR_FAIL_COND(p_font.is_null());
 	if (data.font_override.has(p_name)) {
 		data.font_override[p_name]->disconnect("changed", this, "_override_changed");
 	}
-	data.font_override[p_name] = p_font;
-	if (data.font_override[p_name].is_valid()) {
-		data.font_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
-	}
 
+	// clear if "null" is passed instead of a font
+	if (p_font.is_null()) {
+		data.font_override.erase(p_name);
+	} else {
+		data.font_override[p_name] = p_font;
+		if (data.font_override[p_name].is_valid()) {
+			data.font_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+		}
+	}
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 void Control::add_color_override(const StringName &p_name, const Color &p_color) {
