@@ -512,7 +512,7 @@
 			</return>
 			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
 			</argument>
-			<argument index="1" name="keep_margin" type="bool" default="false">
+			<argument index="1" name="keep_margins" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -574,6 +574,16 @@
 				Sets [member margin_right] and [member margin_bottom] at the same time.
 			</description>
 		</method>
+		<method name="set_global_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="keep_margins" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_margins_preset">
 			<return type="void">
 			</return>
@@ -586,6 +596,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="keep_margins" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_rotation">
 			<return type="void">
 			</return>
@@ -593,6 +613,16 @@
 			</argument>
 			<description>
 				Sets the rotation (in radians).
+			</description>
+		</method>
+		<method name="set_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="Vector2">
+			</argument>
+			<argument index="1" name="keep_margins" type="bool" default="false">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="show_modal">

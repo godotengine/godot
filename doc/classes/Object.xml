@@ -65,14 +65,6 @@
 				Override this method to customize the [String] representation of the object when it's being converted to a string, for example: [code]print(obj)[/code].
 			</description>
 		</method>
-		<method name="to_string">
-			<return type="String">
-			</return>
-			<description>
-				Returns a [String] representing the object. Default is [code]"[ClassName:RID]"[/code].
-				Override the method [method _to_string] to customize the [String] representation.
-			</description>
-		</method>
 		<method name="add_user_signal">
 			<return type="void">
 			</return>
@@ -418,6 +410,14 @@
 			</argument>
 			<description>
 				Set a script into the object, scripts extend the object functionality.
+			</description>
+		</method>
+		<method name="to_string">
+			<return type="String">
+			</return>
+			<description>
+				Returns a [String] representing the object. Default is [code]"[ClassName:RID]"[/code].
+				Override the method [method _to_string] to customize the [String] representation.
 			</description>
 		</method>
 		<method name="tr" qualifiers="const">
