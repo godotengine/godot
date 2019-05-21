@@ -6661,6 +6661,7 @@ TextEdit::TextEdit() {
 	context_menu_enabled = true;
 	menu = memnew(PopupMenu);
 	add_child(menu);
+	readonly = true; // initialise to opposite first, so we get past the early-out in set_readonly
 	set_readonly(false);
 	menu->connect("id_pressed", this, "menu_option");
 	first_draw = true;

@@ -1656,6 +1656,7 @@ LineEdit::LineEdit() {
 	context_menu_enabled = true;
 	menu = memnew(PopupMenu);
 	add_child(menu);
+	editable = false; // initialise to opposite first, so we get past the early-out in set_editable
 	set_editable(true);
 	menu->connect("id_pressed", this, "menu_option");
 	expand_to_text_length = false;
