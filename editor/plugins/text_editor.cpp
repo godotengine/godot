@@ -219,6 +219,43 @@ void TextEditor::_validate_script() {
 	emit_signal("edited_script_changed");
 }
 
+void TextEditor::_update_bookmark_list() {
+
+	bookmarks_menu->get_popup()->clear();
+
+	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
+	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_bookmarks"), BOOKMARK_REMOVE_ALL);
+	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
+	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
+
+	Array bookmark_list = code_editor->get_text_edit()->get_bookmarks_array();
+	if (bookmark_list.size() == 0) {
+		return;
+	}
+
+	bookmarks_menu->get_popup()->add_separator();
+
+	for (int i = 0; i < bookmark_list.size(); i++) {
+		String line = code_editor->get_text_edit()->get_line(bookmark_list[i]).strip_edges();
+		// Limit the size of the line if too big.
+		if (line.length() > 50) {
+			line = line.substr(0, 50);
+		}
+
+		bookmarks_menu->get_popup()->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");
+		bookmarks_menu->get_popup()->set_item_metadata(bookmarks_menu->get_popup()->get_item_count() - 1, bookmark_list[i]);
+	}
+}
+
+void TextEditor::_bookmark_item_pressed(int p_idx) {
+
+	if (p_idx < 4) { // Any item before the separator.
+		_edit_option(bookmarks_menu->get_popup()->get_item_id(p_idx));
+	} else {
+		code_editor->goto_line(bookmarks_menu->get_popup()->get_item_metadata(p_idx));
+	}
+}
+
 void TextEditor::apply_code() {
 	text_file->set_text(code_editor->get_text_edit()->get_text());
 }
@@ -466,6 +503,8 @@ void TextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 void TextEditor::_bind_methods() {
 
 	ClassDB::bind_method("_validate_script", &TextEditor::_validate_script);
+	ClassDB::bind_method("_update_bookmark_list", &TextEditor::_update_bookmark_list);
+	ClassDB::bind_method("_bookmark_item_pressed", &TextEditor::_bookmark_item_pressed);
 	ClassDB::bind_method("_load_theme_settings", &TextEditor::_load_theme_settings);
 	ClassDB::bind_method("_edit_option", &TextEditor::_edit_option);
 	ClassDB::bind_method("_change_syntax_highlighter", &TextEditor::_change_syntax_highlighter);
@@ -542,6 +581,7 @@ void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is
 	context_menu->add_separator();
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_left"), EDIT_INDENT_LEFT);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_right"), EDIT_INDENT_RIGHT);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
 
 	if (p_selection) {
 		context_menu->add_separator();
@@ -579,6 +619,7 @@ TextEditor::TextEditor() {
 	search_menu = memnew(MenuButton);
 	edit_hb->add_child(search_menu);
 	search_menu->set_text(TTR("Search"));
+	search_menu->set_switch_on_hover(true);
 	search_menu->get_popup()->connect("id_pressed", this, "_edit_option");
 
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
@@ -593,6 +634,7 @@ TextEditor::TextEditor() {
 
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_text(TTR("Edit"));
+	edit_menu->set_switch_on_hover(true);
 	edit_menu->get_popup()->connect("id_pressed", this, "_edit_option");
 
 	edit_hb->add_child(edit_menu);
@@ -637,15 +679,13 @@ TextEditor::TextEditor() {
 	highlighter_menu->add_radio_check_item(TTR("Standard"));
 	highlighter_menu->connect("id_pressed", this, "_change_syntax_highlighter");
 
-	PopupMenu *bookmarks = memnew(PopupMenu);
-	bookmarks->set_name("bookmarks");
-	edit_menu->get_popup()->add_child(bookmarks);
-	edit_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "bookmarks");
-	bookmarks->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
-	bookmarks->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_bookmarks"), BOOKMARK_REMOVE_ALL);
-	bookmarks->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
-	bookmarks->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
-	bookmarks->connect("id_pressed", this, "_edit_option");
+	bookmarks_menu = memnew(MenuButton);
+	edit_hb->add_child(bookmarks_menu);
+	bookmarks_menu->set_text(TTR("Bookmarks"));
+	bookmarks_menu->set_switch_on_hover(true);
+	_update_bookmark_list();
+	bookmarks_menu->connect("about_to_show", this, "_update_bookmark_list");
+	bookmarks_menu->get_popup()->connect("index_pressed", this, "_bookmark_item_pressed");
 
 	code_editor->get_text_edit()->set_drag_forwarding(this);
 }

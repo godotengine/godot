@@ -70,6 +70,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
+	MenuButton *bookmarks_menu;
 	PopupMenu *highlighter_menu;
 	PopupMenu *context_menu;
 
@@ -144,8 +145,9 @@ protected:
 	static void _code_complete_scripts(void *p_ud, const String &p_code, List<String> *r_options, bool &r_force);
 	void _breakpoint_toggled(int p_row);
 
-	//no longer virtual
-	void _validate_script();
+	void _validate_script(); // No longer virtual.
+	void _update_bookmark_list();
+	void _bookmark_item_pressed(int p_idx);
 	void _code_complete_script(const String &p_code, List<String> *r_options, bool &r_force);
 	void _load_theme_settings();
 	void _set_theme_for_script();
