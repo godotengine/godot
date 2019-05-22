@@ -1484,7 +1484,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 		if (valid) {
 			player->seek(pos, true);
 			get_tree()->flush_transform_notifications(); // Needed for transforms of Spatials
-			values_backup.update_skeletons(); // Needed for Skeletons
+			values_backup.update_skeletons(); // Needed for Skeletons (2D & 3D)
 
 			VS::get_singleton()->viewport_set_active(onion.captures[cidx], true);
 			VS::get_singleton()->viewport_set_parent_viewport(root_vp, onion.captures[cidx]);
