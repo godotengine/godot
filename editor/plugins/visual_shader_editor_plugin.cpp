@@ -701,7 +701,7 @@ void VisualShaderEditor::_update_graph() {
 			expression_box->set_context_menu_enabled(false);
 			expression_box->set_show_line_numbers(true);
 
-			expression_box->connect("text_changed", this, "_set_expression", varray(nodes[n_i]), CONNECT_DEFERRED);
+			expression_box->connect("focus_exited", this, "_expression_focus_out", varray(expression_box, nodes[n_i]));
 		}
 
 		if (!uniform.is_valid()) {
@@ -915,7 +915,7 @@ void VisualShaderEditor::_remove_output_port(int p_node, int p_port) {
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_set_expression(int p_node) {
+void VisualShaderEditor::_expression_focus_out(Object *text_edit, int p_node) {
 
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
 	Ref<VisualShaderNodeExpression> node = visual_shader->get_node(type, p_node);
@@ -923,22 +923,17 @@ void VisualShaderEditor::_set_expression(int p_node) {
 		return;
 	}
 
-	TextEdit *expression_box = Object::cast_to<TextEdit>(node->get_control(0));
+	TextEdit *expression_box = Object::cast_to<TextEdit>(text_edit);
+
+	if (node->get_expression() == expression_box->get_text())
+		return;
 
 	undo_redo->create_action(TTR("Set expression"));
 	undo_redo->add_do_method(node.ptr(), "set_expression", expression_box->get_text());
 	undo_redo->add_undo_method(node.ptr(), "set_expression", node->get_expression());
-	undo_redo->add_do_method(this, "_start_rebuild_timer", 1.0);
+	undo_redo->add_do_method(this, "_rebuild");
 	undo_redo->add_undo_method(this, "_rebuild");
 	undo_redo->commit_action();
-}
-
-void VisualShaderEditor::_start_rebuild_timer(int p_delay) {
-	build_timer->start(p_delay);
-}
-
-void VisualShaderEditor::_rebuild_timeout() {
-	_rebuild();
 }
 
 void VisualShaderEditor::_rebuild() {
@@ -1797,9 +1792,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_rebuild", &VisualShaderEditor::_rebuild);
 	ClassDB::bind_method("_update_graph", &VisualShaderEditor::_update_graph);
 	ClassDB::bind_method("_update_options_menu", &VisualShaderEditor::_update_options_menu);
-	ClassDB::bind_method("_start_rebuild_timer", &VisualShaderEditor::_start_rebuild_timer);
-	ClassDB::bind_method("_set_expression", &VisualShaderEditor::_set_expression);
-	ClassDB::bind_method("_rebuild_timeout", &VisualShaderEditor::_rebuild_timeout);
+	ClassDB::bind_method("_expression_focus_out", &VisualShaderEditor::_expression_focus_out);
 	ClassDB::bind_method("_add_node", &VisualShaderEditor::_add_node);
 	ClassDB::bind_method("_node_dragged", &VisualShaderEditor::_node_dragged);
 	ClassDB::bind_method("_connection_request", &VisualShaderEditor::_connection_request);
@@ -2287,13 +2280,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_child(property_editor);
 
 	property_editor->connect("variant_changed", this, "_port_edited");
-
-	// BUILD TIMER FOR EXPRESSION NODES
-
-	build_timer = memnew(Timer);
-	add_child(build_timer);
-	build_timer->connect("timeout", this, "_rebuild_timeout");
-	build_timer->set_one_shot(true);
 }
 
 void VisualShaderEditorPlugin::edit(Object *p_object) {

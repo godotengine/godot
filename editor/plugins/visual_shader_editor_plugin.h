@@ -84,8 +84,6 @@ class VisualShaderEditor : public VBoxContainer {
 	LineEdit *node_filter;
 	RichTextLabel *node_desc;
 
-	Timer *build_timer;
-
 	void _tools_menu_option(int p_idx);
 	void _show_members_dialog(bool at_mouse_pos);
 
@@ -184,10 +182,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _change_output_port_type(int p_type, int p_node, int p_port);
 	void _change_output_port_name(const String &p_text, Object *line_edit, int p_node, int p_port);
 
-	void _start_rebuild_timer(int p_delay);
-
-	void _set_expression(int p_node);
-	void _rebuild_timeout();
+	void _expression_focus_out(Object *text_edit, int p_node);
 
 	void _set_node_size(int p_type, int p_node, const Size2 &p_size);
 	void _node_resized(const Vector2 &p_new_size, int p_type, int p_node);
