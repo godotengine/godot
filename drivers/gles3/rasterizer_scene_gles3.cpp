@@ -4447,6 +4447,17 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glDisable(GL_BLEND);
 	}
 
+	if (env && env->bg_mode == VS::ENV_BG_SKY && (!storage->frame.current_rt || (!storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW))) {
+
+		/*
+		if (use_mrt) {
+			glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->buffers.fbo); //switch to alpha fbo for sky, only diffuse/ambient matters
+		*/
+
+		if (sky && sky->panorama.is_valid())
+			_draw_sky(sky, p_cam_projection, p_cam_transform, false, env->sky_custom_fov, env->bg_energy, env->sky_orientation);
+	}
+
 	render_list.sort_by_key(false);
 
 	if (state.directional_light_count == 0) {
@@ -4468,17 +4479,6 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	if (use_mrt) {
 		GLenum gldb = GL_COLOR_ATTACHMENT0;
 		glDrawBuffers(1, &gldb);
-	}
-
-	if (env && env->bg_mode == VS::ENV_BG_SKY && (!storage->frame.current_rt || (!storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW))) {
-
-		/*
-		if (use_mrt) {
-			glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->buffers.fbo); //switch to alpha fbo for sky, only diffuse/ambient matters
-		*/
-
-		if (sky && sky->panorama.is_valid())
-			_draw_sky(sky, p_cam_projection, p_cam_transform, false, env->sky_custom_fov, env->bg_energy, env->sky_orientation);
 	}
 
 	//_render_list_forward(&alpha_render_list,camera_transform,camera_transform_inverse,camera_projection,false,fragment_lighting,true);
