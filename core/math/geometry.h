@@ -946,7 +946,7 @@ public:
 
 	_FORCE_INLINE_ static int get_uv84_normal_bit(const Vector3 &p_vector) {
 
-		int lat = Math::fast_ftoi(Math::floor(Math::acos(p_vector.dot(Vector3(0, 1, 0))) * 4.0 / Math_PI + 0.5));
+		int lat = Math::fast_ftoi_val(Math::floor(Math::acos(p_vector.dot(Vector3(0, 1, 0))) * 4.0 / Math_PI + 0.5));
 
 		if (lat == 0) {
 			return 24;
@@ -954,7 +954,7 @@ public:
 			return 25;
 		}
 
-		int lon = Math::fast_ftoi(Math::floor((Math_PI + Math::atan2(p_vector.x, p_vector.z)) * 8.0 / (Math_PI * 2.0) + 0.5)) % 8;
+		int lon = Math::fast_ftoi_val(Math::floor((Math_PI + Math::atan2(p_vector.x, p_vector.z)) * 8.0 / (Math_PI * 2.0) + 0.5)) % 8;
 
 		return lon + (lat - 1) * 8;
 	}

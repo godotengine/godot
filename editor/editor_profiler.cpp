@@ -313,9 +313,9 @@ void EditorProfiler::_update_plot() {
 
 				for (int j = prev_plot; j <= plot_pos; j++) {
 
-					column[j * 4 + 0] += Math::fast_ftoi(CLAMP(col.r * 255, 0, 255));
-					column[j * 4 + 1] += Math::fast_ftoi(CLAMP(col.g * 255, 0, 255));
-					column[j * 4 + 2] += Math::fast_ftoi(CLAMP(col.b * 255, 0, 255));
+					column[j * 4 + 0] += Math::fast_ftoi_val(CLAMP(col.r * 255, 0, 255));
+					column[j * 4 + 1] += Math::fast_ftoi_val(CLAMP(col.g * 255, 0, 255));
+					column[j * 4 + 2] += Math::fast_ftoi_val(CLAMP(col.b * 255, 0, 255));
 					column[j * 4 + 3] += 1;
 				}
 			}

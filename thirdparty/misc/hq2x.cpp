@@ -34,9 +34,9 @@ _FORCE_INLINE_ static uint32_t ARGBtoAYUV(
     G = (value >> 8) & 0xFF;
     B = value & 0xFF;
 
-    Y = Math::fast_ftoi( 0.299 * R + 0.587 * G + 0.114 * B);
-    U = Math::fast_ftoi(-0.169 * R - 0.331 * G +   0.5 * B) + 128;
-    V = Math::fast_ftoi(   0.5 * R - 0.419 * G - 0.081 * B) + 128;
+    Y = Math::fast_ftoi_val( 0.299 * R + 0.587 * G + 0.114 * B);
+    U = Math::fast_ftoi_val(-0.169 * R - 0.331 * G +   0.5 * B) + 128;
+    V = Math::fast_ftoi_val( 0.5 * R - 0.419 * G - 0.081 * B) + 128;
     return (A << 24) + (Y << 16) + (U << 8) + V;
 }
 
