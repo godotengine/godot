@@ -603,12 +603,10 @@ public:
 		struct SortByReverseDepthAndPriority {
 
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
-				uint32_t layer_A = uint32_t(A->sort_key >> SORT_KEY_PRIORITY_SHIFT);
-				uint32_t layer_B = uint32_t(B->sort_key >> SORT_KEY_PRIORITY_SHIFT);
-				if (layer_A == layer_B) {
+				if (A->priority == B->priority) {
 					return A->instance->depth > B->instance->depth;
 				} else {
-					return layer_A < layer_B;
+					return A->priority < B->priority;
 				}
 			}
 		};
