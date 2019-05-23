@@ -70,7 +70,7 @@ void CanvasModulate::_bind_methods() {
 void CanvasModulate::set_color(const Color &p_color) {
 
 	color = p_color;
-	if (is_inside_tree()) {
+	if (is_visible_in_tree()) {
 		VS::get_singleton()->canvas_set_modulate(get_canvas(), color);
 	}
 }
