@@ -123,6 +123,7 @@ private:
 	void _load_defaults(Ref<ConfigFile> p_extra_config = NULL);
 	void _load_default_text_editor_theme();
 	bool _save_text_editor_theme(String p_file);
+	bool _is_default_text_editor_theme(String p_file);
 
 protected:
 	static void _bind_methods();
@@ -187,6 +188,7 @@ public:
 	bool import_text_editor_theme(String p_file);
 	bool save_text_editor_theme();
 	bool save_text_editor_theme_as(String p_file);
+	bool is_default_text_editor_theme();
 
 	Vector<String> get_script_templates(const String &p_extension);
 	String get_editor_layouts_config() const;
