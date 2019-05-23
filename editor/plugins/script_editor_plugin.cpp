@@ -1296,21 +1296,27 @@ void ScriptEditor::_theme_option(int p_option) {
 			EditorSettings::get_singleton()->load_text_editor_theme();
 		} break;
 		case THEME_SAVE: {
-			if (!EditorSettings::get_singleton()->save_text_editor_theme()) {
+			if (EditorSettings::get_singleton()->is_default_text_editor_theme()) {
+				ScriptEditor::_show_save_theme_as_dialog();
+			} else if (!EditorSettings::get_singleton()->save_text_editor_theme()) {
 				editor->show_warning(TTR("Error while saving theme"), TTR("Error saving"));
 			}
 		} break;
 		case THEME_SAVE_AS: {
-			file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-			file_dialog_option = THEME_SAVE_AS;
-			file_dialog->clear_filters();
-			file_dialog->add_filter("*.tet");
-			file_dialog->set_current_path(EditorSettings::get_singleton()->get_text_editor_themes_dir().plus_file(EditorSettings::get_singleton()->get("text_editor/theme/color_theme")));
-			file_dialog->popup_centered_ratio();
-			file_dialog->set_title(TTR("Save Theme As..."));
+			ScriptEditor::_show_save_theme_as_dialog();
 		} break;
 	}
+}
+
+void ScriptEditor::_show_save_theme_as_dialog() {
+	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_dialog_option = THEME_SAVE_AS;
+	file_dialog->clear_filters();
+	file_dialog->add_filter("*.tet");
+	file_dialog->set_current_path(EditorSettings::get_singleton()->get_text_editor_themes_dir().plus_file(EditorSettings::get_singleton()->get("text_editor/theme/color_theme")));
+	file_dialog->popup_centered_ratio();
+	file_dialog->set_title(TTR("Save Theme As..."));
 }
 
 void ScriptEditor::_tab_changed(int p_which) {
