@@ -1011,7 +1011,7 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 		has_alpha = false;
 	}
 
-	RenderList::Element *e = has_alpha ? render_list.add_alpha_element() : render_list.add_element();
+	RenderList::Element *e = (has_alpha || p_material->shader->spatial.no_depth_test) ? render_list.add_alpha_element() : render_list.add_element();
 
 	if (!e) {
 		return;
@@ -2860,13 +2860,6 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		}
 	}
 
-	if (env && env->bg_mode == VS::ENV_BG_SKY && (!storage->frame.current_rt || !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT])) {
-
-		if (sky && sky->panorama.is_valid()) {
-			_draw_sky(sky, p_cam_projection, cam_transform, false, env->sky_custom_fov, env->bg_energy, env->sky_orientation);
-		}
-	}
-
 	if (probe_interior) {
 		env_radiance_tex = 0; //do not use radiance texture on interiors
 		state.default_ambient = Color(0, 0, 0, 1); //black as default ambient for interior
@@ -2876,6 +2869,14 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	// render opaque things first
 	render_list.sort_by_key(false);
 	_render_render_list(render_list.elements, render_list.element_count, cam_transform, p_cam_projection, p_shadow_atlas, env, env_radiance_tex, 0.0, 0.0, reverse_cull, false, false);
+
+	// then draw the sky after
+	if (env && env->bg_mode == VS::ENV_BG_SKY && (!storage->frame.current_rt || !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT])) {
+
+		if (sky && sky->panorama.is_valid()) {
+			_draw_sky(sky, p_cam_projection, cam_transform, false, env->sky_custom_fov, env->bg_energy, env->sky_orientation);
+		}
+	}
 
 	if (storage->frame.current_rt && state.used_screen_texture) {
 		//copy screen texture
