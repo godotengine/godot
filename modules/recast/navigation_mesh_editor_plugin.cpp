@@ -54,26 +54,28 @@ void NavigationMeshEditor::_notification(int p_option) {
 }
 
 void NavigationMeshEditor::_bake_pressed() {
+	button_bake->set_pressed(false);
 
 	ERR_FAIL_COND(!node);
 	const String conf_warning = node->get_configuration_warning();
 	if (!conf_warning.empty()) {
 		err_dialog->set_text(conf_warning);
 		err_dialog->popup_centered_minsize();
-		button_bake->set_pressed(false);
 		return;
 	}
 
-	NavigationMeshGenerator::clear(node->get_navigation_mesh());
-	NavigationMeshGenerator::bake(node->get_navigation_mesh(), node);
+	EditorNavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
+	EditorNavigationMeshGenerator::get_singleton()->bake(node->get_navigation_mesh(), node);
 
-	node->update_gizmo();
+	if (node) {
+		node->update_gizmo();
+	}
 }
 
 void NavigationMeshEditor::_clear_pressed() {
 
 	if (node)
-		NavigationMeshGenerator::clear(node->get_navigation_mesh());
+		EditorNavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
 
 	button_bake->set_pressed(false);
 	bake_info->set_text("");
