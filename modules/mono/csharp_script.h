@@ -261,6 +261,8 @@ public:
 	virtual void notification(int p_notification);
 	void _call_notification(int p_notification);
 
+	virtual String to_string(bool *r_valid);
+
 	virtual Ref<Script> get_script() const;
 
 	virtual ScriptLanguage *get_language();

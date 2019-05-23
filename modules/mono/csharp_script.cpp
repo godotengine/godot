@@ -1855,6 +1855,34 @@ void CSharpInstance::_call_notification(int p_notification) {
 	}
 }
 
+String CSharpInstance::to_string(bool *r_valid) {
+	MonoObject *mono_object = get_mono_object();
+
+	if (mono_object == NULL) {
+		if (r_valid)
+			*r_valid = false;
+		return String();
+	}
+
+	MonoException *exc = NULL;
+	MonoString *result = GDMonoUtils::object_to_string(mono_object, &exc);
+
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
+		if (r_valid)
+			*r_valid = false;
+		return String();
+	}
+
+	if (result == NULL) {
+		if (r_valid)
+			*r_valid = false;
+		return String();
+	}
+
+	return GDMonoMarshal::mono_string_to_godot(result);
+}
+
 Ref<Script> CSharpInstance::get_script() const {
 
 	return script;

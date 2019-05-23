@@ -2300,9 +2300,14 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			if (method_info.name.empty())
 				continue;
 
+			String cname = method_info.name;
+
+			if (blacklisted_methods.find(itype.cname) && blacklisted_methods[itype.cname].find(cname))
+				continue;
+
 			MethodInterface imethod;
 			imethod.name = method_info.name;
-			imethod.cname = imethod.name;
+			imethod.cname = cname;
 
 			if (method_info.flags & METHOD_FLAG_VIRTUAL)
 				imethod.is_virtual = true;
@@ -2975,6 +2980,13 @@ void BindingsGenerator::_populate_global_constants() {
 	}
 }
 
+void BindingsGenerator::_initialize_blacklisted_methods() {
+
+	blacklisted_methods["Object"].push_back("to_string"); // there is already ToString
+	blacklisted_methods["Object"].push_back("_to_string"); // override ToString instead
+	blacklisted_methods["Object"].push_back("_init"); // never called in C# (TODO: implement it)
+}
+
 void BindingsGenerator::_log(const char *p_format, ...) {
 
 	if (log_print_enabled) {
@@ -2991,6 +3003,8 @@ void BindingsGenerator::_initialize() {
 	EditorHelp::generate_doc();
 
 	enum_types.clear();
+
+	_initialize_blacklisted_methods();
 
 	_populate_object_type_interfaces();
 	_populate_builtin_type_interfaces();

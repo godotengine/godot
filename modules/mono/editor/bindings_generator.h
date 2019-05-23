@@ -491,6 +491,10 @@ class BindingsGenerator {
 	List<InternalCall> core_custom_icalls;
 	List<InternalCall> editor_custom_icalls;
 
+	Map<StringName, List<StringName> > blacklisted_methods;
+
+	void _initialize_blacklisted_methods();
+
 	struct NameCache {
 		StringName type_void;
 		StringName type_Array;
