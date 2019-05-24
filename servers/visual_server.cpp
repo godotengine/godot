@@ -1876,6 +1876,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_active", "viewport", "active"), &VisualServer::viewport_set_active);
 	ClassDB::bind_method(D_METHOD("viewport_set_parent_viewport", "viewport", "parent_viewport"), &VisualServer::viewport_set_parent_viewport);
 	ClassDB::bind_method(D_METHOD("viewport_attach_to_screen", "viewport", "rect", "screen"), &VisualServer::viewport_attach_to_screen, DEFVAL(Rect2()), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("viewport_set_render_direct_to_screen", "viewport", "enabled"), &VisualServer::viewport_set_render_direct_to_screen);
 	ClassDB::bind_method(D_METHOD("viewport_detach", "viewport"), &VisualServer::viewport_detach);
 	ClassDB::bind_method(D_METHOD("viewport_set_update_mode", "viewport", "update_mode"), &VisualServer::viewport_set_update_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_vflip", "viewport", "enabled"), &VisualServer::viewport_set_vflip);
