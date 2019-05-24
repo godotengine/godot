@@ -1,0 +1,25 @@
+spv.bufferhandle_Error.frag
+ERROR: 0:7: 'buffer_reference' : can only be used with buffer 
+ERROR: 0:9: 'buffer_reference' : cannot declare a default, can only be used on a block 
+ERROR: 0:10: 'buffer_reference' : can only be used with buffer 
+ERROR: 0:10: 'buffer_reference' : cannot declare a default, can only be used on a block 
+ERROR: 0:11: 'buffer_reference' : can only be used with buffer 
+ERROR: 0:11: 'buffer_reference' : cannot declare a default, can only be used on a block 
+ERROR: 0:12: 'buffer_reference' : can only be used with buffer 
+ERROR: 0:12: 'buffer_reference' : cannot declare a default, can only be used on a block 
+ERROR: 0:13: 'buffer_reference' : can only be used with buffer 
+ERROR: 0:13: 'buffer_reference' : can only be used with buffer 
+ERROR: 0:14: 'output block' : not supported in this stage: fragment
+ERROR: 0:14: 'buffer_reference' : can only be used with buffer 
+ERROR: 0:14: 'buffer_reference' : can only be used with buffer 
+ERROR: 0:30: 'length' :  array must be declared with a size before using this method
+ERROR: 0:31: 'length' :  array must be declared with a size before using this method
+ERROR: 0:35: '=' :  cannot convert from 'layout( column_major std430) buffer reference' to ' temp reference'
+ERROR: 0:40: 'assign' :  cannot convert from 'layout( column_major std430) buffer reference' to 'layout( column_major std430) buffer reference'
+ERROR: 0:41: 'assign' :  cannot convert from 'layout( column_major std430) buffer reference' to 'layout( column_major std430) buffer reference'
+ERROR: 0:42: 'assign' :  cannot convert from 'layout( column_major std430) buffer reference' to 'layout( column_major std430) buffer reference'
+ERROR: 0:45: '' :  syntax error, unexpected LEFT_BRACE, expecting COMMA or SEMICOLON
+ERROR: 20 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

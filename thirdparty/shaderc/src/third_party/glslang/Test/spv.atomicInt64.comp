@@ -1,0 +1,79 @@
+#version 450 core
+
+#extension GL_ARB_gpu_shader_int64: enable
+#extension GL_NV_shader_atomic_int64: enable
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(binding = 0) buffer Buffer
+{
+    int64_t  i64;
+    uint64_t u64;
+} buf;
+
+struct Struct
+{
+    int64_t  i64;
+    uint64_t u64;
+};
+
+shared Struct s;
+
+void main()
+{
+    const int64_t  i64c = -24;
+    const uint64_t u64c = 0xF00000000Ful; 
+
+    // Test shader storage block
+    int64_t  i64 = 0;
+    uint64_t u64 = 0;
+
+    i64 += atomicMin(buf.i64, i64c);
+    u64 += atomicMin(buf.u64, u64c);
+
+    i64 += atomicMax(buf.i64, i64c);
+    u64 += atomicMax(buf.u64, u64c);
+
+    i64 += atomicAnd(buf.i64, i64c);
+    u64 += atomicAnd(buf.u64, u64c);
+
+    i64 += atomicOr(buf.i64, i64c);
+    u64 += atomicOr(buf.u64, u64c);
+
+    i64 += atomicXor(buf.i64, i64c);
+    u64 += atomicXor(buf.u64, u64c);
+
+    i64 += atomicAdd(buf.i64, i64c);
+    i64 += atomicExchange(buf.i64, i64c);
+    i64 += atomicCompSwap(buf.i64, i64c, i64);
+
+    buf.i64 = i64;
+    buf.u64 = u64;
+
+    // Test shared variable
+    i64 = 0;
+    u64 = 0;
+
+    i64 += atomicMin(s.i64, i64c);
+    u64 += atomicMin(s.u64, u64c);
+
+    i64 += atomicMax(s.i64, i64c);
+    u64 += atomicMax(s.u64, u64c);
+
+    i64 += atomicAnd(s.i64, i64c);
+    u64 += atomicAnd(s.u64, u64c);
+
+    i64 += atomicOr(s.i64, i64c);
+    u64 += atomicOr(s.u64, u64c);
+
+    i64 += atomicXor(s.i64, i64c);
+    u64 += atomicXor(s.u64, u64c);
+
+    i64 += atomicAdd(s.i64, i64c);
+    i64 += atomicExchange(s.i64, i64c);
+    i64 += atomicCompSwap(s.i64, i64c, i64);
+
+    s.i64 = i64;
+    s.u64 = u64;
+}
+

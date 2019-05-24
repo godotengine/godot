@@ -1,0 +1,33 @@
+sample.frag
+Shader version: 110
+0:? Sequence
+0:38  Function Definition: main( ( global void)
+0:38    Function Parameters: 
+0:40    Sequence
+0:40      move second child to first child ( temp 4-component vector of float)
+0:40        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:40        Construct vec4 ( temp 4-component vector of float)
+0:40          'color' ( smooth in 3-component vector of float)
+0:40          Constant:
+0:40            1.000000
+0:?   Linker Objects
+0:?     'color' ( smooth in 3-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 110
+0:? Sequence
+0:38  Function Definition: main( ( global void)
+0:38    Function Parameters: 
+0:40    Sequence
+0:40      move second child to first child ( temp 4-component vector of float)
+0:40        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:40        Construct vec4 ( temp 4-component vector of float)
+0:40          'color' ( smooth in 3-component vector of float)
+0:40          Constant:
+0:40            1.000000
+0:?   Linker Objects
+0:?     'color' ( smooth in 3-component vector of float)
+

@@ -1,0 +1,774 @@
+430AofA.frag
+ERROR: 0:6: '[]' : only outermost dimension of an array of arrays can be implicitly sized 
+ERROR: 0:14: 'constructor' : constructing non-array constituent from array argument 
+ERROR: 0:15: 'constructor' : array constructor argument not correct type to construct array element 
+ERROR: 0:28: '[' :  array index out of range '4'
+ERROR: 0:56: 'constructor' :  cannot convert parameter 2 from ' const 3-element array of 4-component vector of float' to ' temp 2-element array of 4-component vector of float'
+ERROR: 0:60: 'constructor' :  cannot convert parameter 2 from ' const 2-element array of 4-component vector of float' to ' temp 3-element array of 4-component vector of float'
+ERROR: 0:64: '=' :  cannot convert from ' const 3-element array of 2-element array of 4-component vector of float' to ' temp 4-element array of 2-element array of 4-component vector of float'
+ERROR: 0:70: 'assign' :  cannot convert from ' global 4-element array of 7-element array of float' to ' global 5-element array of 7-element array of float'
+ERROR: 0:71: 'assign' :  cannot convert from ' global 4-element array of 7-element array of float' to ' global unsized 1-element array of 7-element array of float'
+ERROR: 0:73: 'foo' : no matching overloaded function found 
+ERROR: 0:78: '==' :  wrong operand types: no operation '==' exists that takes a left-hand operand of type ' global 4-element array of 7-element array of float' and a right operand of type ' global 5-element array of 7-element array of float' (or there is no acceptable conversion)
+ERROR: 0:84: '[' :  array index out of range '5'
+ERROR: 0:91: 'length' :  array must be declared with a size before using this method
+ERROR: 0:93: 'length' :  array must be declared with a size before using this method
+ERROR: 0:98: 'length' : does not operate on this type:  temp float
+ERROR: 0:98: '' : function call, method, or subroutine call expected 
+ERROR: 0:98: '' : no matching overloaded function found 
+ERROR: 0:101: 'resize2' : redeclaration of array with a different array dimensions or sizes 
+ERROR: 0:104: 'resize3' : redeclaration of array with a different array dimensions or sizes 
+ERROR: 0:107: 'resize4' : redeclaration of array with a different element type 
+ERROR: 20 compilation errors.  No code generated.
+
+
+Shader version: 430
+ERROR: node is still EOpNull!
+0:10  Function Definition: foo(f1[5][7]; ( global 4-element array of 7-element array of float)
+0:10    Function Parameters: 
+0:10      'a' ( in 5-element array of 7-element array of float)
+0:?     Sequence
+0:13      move second child to first child ( temp 7-element array of float)
+0:13        'r' ( temp 7-element array of float)
+0:13        direct index ( temp 7-element array of float)
+0:13          'a' ( in 5-element array of 7-element array of float)
+0:13          Constant:
+0:13            2 (const int)
+0:14      Constant:
+0:14        0.000000
+0:15      Constant:
+0:15        0.000000
+0:16      Branch: Return with expression
+0:16        Construct float ( temp 4-element array of 7-element array of float)
+0:16          direct index ( temp 7-element array of float)
+0:16            'a' ( in 5-element array of 7-element array of float)
+0:16            Constant:
+0:16              0 (const int)
+0:16          direct index ( temp 7-element array of float)
+0:16            'a' ( in 5-element array of 7-element array of float)
+0:16            Constant:
+0:16              1 (const int)
+0:16          'r' ( temp 7-element array of float)
+0:16          direct index ( temp 7-element array of float)
+0:16            'a' ( in 5-element array of 7-element array of float)
+0:16            Constant:
+0:16              3 (const int)
+0:17      Branch: Return with expression
+0:17        Construct float ( temp 4-element array of 7-element array of float)
+0:17          direct index ( temp 7-element array of float)
+0:17            'a' ( in 5-element array of 7-element array of float)
+0:17            Constant:
+0:17              0 (const int)
+0:17          direct index ( temp 7-element array of float)
+0:17            'a' ( in 5-element array of 7-element array of float)
+0:17            Constant:
+0:17              1 (const int)
+0:17          'r' ( temp 7-element array of float)
+0:17          direct index ( temp 7-element array of float)
+0:17            'a' ( in 5-element array of 7-element array of float)
+0:17            Constant:
+0:17              3 (const int)
+0:18      Branch: Return with expression
+0:18        Construct float ( temp 4-element array of 7-element array of float)
+0:18          direct index ( temp 7-element array of float)
+0:18            'a' ( in 5-element array of 7-element array of float)
+0:18            Constant:
+0:18              0 (const int)
+0:18          direct index ( temp 7-element array of float)
+0:18            'a' ( in 5-element array of 7-element array of float)
+0:18            Constant:
+0:18              1 (const int)
+0:18          direct index ( temp 7-element array of float)
+0:18            'a' ( in 5-element array of 7-element array of float)
+0:18            Constant:
+0:18              2 (const int)
+0:18          direct index ( temp 7-element array of float)
+0:18            'a' ( in 5-element array of 7-element array of float)
+0:18            Constant:
+0:18              3 (const int)
+0:21  Function Definition: bar(f1[5][7]; ( global void)
+0:21    Function Parameters: 
+0:21      '' ( in 5-element array of 7-element array of float)
+0:23  Function Definition: main( ( global void)
+0:23    Function Parameters: 
+0:?     Sequence
+0:?       Sequence
+0:28        move second child to first child ( temp float)
+0:28          direct index ( temp float)
+0:28            direct index ( temp 2-element array of float)
+0:28              direct index ( temp 4-element array of 2-element array of float)
+0:28                'gu' ( temp 3-element array of 4-element array of 2-element array of float)
+0:28                Constant:
+0:28                  2 (const int)
+0:28              Constant:
+0:28                4 (const int)
+0:28            Constant:
+0:28              1 (const int)
+0:28          Constant:
+0:28            4.000000
+0:30      Sequence
+0:30        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:30          'ca4' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:32          Constant:
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            1.000000
+0:32            1.000000
+0:32            1.000000
+0:32            1.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            1.000000
+0:32            1.000000
+0:32            1.000000
+0:32            1.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            1.000000
+0:32            1.000000
+0:32            1.000000
+0:32            1.000000
+0:33      Sequence
+0:33        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:33          'caim' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:35          Constant:
+0:35            4.000000
+0:35            4.000000
+0:35            4.000000
+0:35            4.000000
+0:35            2.000000
+0:35            2.000000
+0:35            2.000000
+0:35            2.000000
+0:35            4.000000
+0:35            4.000000
+0:35            4.000000
+0:35            4.000000
+0:35            2.000000
+0:35            2.000000
+0:35            2.000000
+0:35            2.000000
+0:35            4.000000
+0:35            4.000000
+0:35            4.000000
+0:35            4.000000
+0:35            2.000000
+0:35            2.000000
+0:35            2.000000
+0:35            2.000000
+0:36      Sequence
+0:36        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:36          'caim2' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:38          Constant:
+0:38            4.000000
+0:38            4.000000
+0:38            4.000000
+0:38            4.000000
+0:38            2.000000
+0:38            2.000000
+0:38            2.000000
+0:38            2.000000
+0:38            4.000000
+0:38            4.000000
+0:38            4.000000
+0:38            4.000000
+0:38            2.000000
+0:38            2.000000
+0:38            2.000000
+0:38            2.000000
+0:38            4.000000
+0:38            4.000000
+0:38            4.000000
+0:38            4.000000
+0:38            2.000000
+0:38            2.000000
+0:38            2.000000
+0:38            2.000000
+0:39      Sequence
+0:39        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:39          'caim3' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:41          Constant:
+0:41            4.000000
+0:41            4.000000
+0:41            4.000000
+0:41            4.000000
+0:41            2.000000
+0:41            2.000000
+0:41            2.000000
+0:41            2.000000
+0:41            4.000000
+0:41            4.000000
+0:41            4.000000
+0:41            4.000000
+0:41            2.000000
+0:41            2.000000
+0:41            2.000000
+0:41            2.000000
+0:41            4.000000
+0:41            4.000000
+0:41            4.000000
+0:41            4.000000
+0:41            2.000000
+0:41            2.000000
+0:41            2.000000
+0:41            2.000000
+0:43      Sequence
+0:43        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:43          'a4' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:43          Constant:
+0:43            0.000000
+0:43            0.000000
+0:43            0.000000
+0:43            0.000000
+0:43            1.000000
+0:43            1.000000
+0:43            1.000000
+0:43            1.000000
+0:43            0.000000
+0:43            0.000000
+0:43            0.000000
+0:43            0.000000
+0:43            1.000000
+0:43            1.000000
+0:43            1.000000
+0:43            1.000000
+0:43            0.000000
+0:43            0.000000
+0:43            0.000000
+0:43            0.000000
+0:43            1.000000
+0:43            1.000000
+0:43            1.000000
+0:43            1.000000
+0:46      Sequence
+0:46        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:46          'aim' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:46          Constant:
+0:46            4.000000
+0:46            4.000000
+0:46            4.000000
+0:46            4.000000
+0:46            2.000000
+0:46            2.000000
+0:46            2.000000
+0:46            2.000000
+0:46            4.000000
+0:46            4.000000
+0:46            4.000000
+0:46            4.000000
+0:46            2.000000
+0:46            2.000000
+0:46            2.000000
+0:46            2.000000
+0:46            4.000000
+0:46            4.000000
+0:46            4.000000
+0:46            4.000000
+0:46            2.000000
+0:46            2.000000
+0:46            2.000000
+0:46            2.000000
+0:49      Sequence
+0:49        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:49          'aim2' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:49          Constant:
+0:49            4.000000
+0:49            4.000000
+0:49            4.000000
+0:49            4.000000
+0:49            2.000000
+0:49            2.000000
+0:49            2.000000
+0:49            2.000000
+0:49            4.000000
+0:49            4.000000
+0:49            4.000000
+0:49            4.000000
+0:49            2.000000
+0:49            2.000000
+0:49            2.000000
+0:49            2.000000
+0:49            4.000000
+0:49            4.000000
+0:49            4.000000
+0:49            4.000000
+0:49            2.000000
+0:49            2.000000
+0:49            2.000000
+0:49            2.000000
+0:52      Sequence
+0:52        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:52          'aim3' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:52          Constant:
+0:52            4.000000
+0:52            4.000000
+0:52            4.000000
+0:52            4.000000
+0:52            2.000000
+0:52            2.000000
+0:52            2.000000
+0:52            2.000000
+0:52            4.000000
+0:52            4.000000
+0:52            4.000000
+0:52            4.000000
+0:52            2.000000
+0:52            2.000000
+0:52            2.000000
+0:52            2.000000
+0:52            4.000000
+0:52            4.000000
+0:52            4.000000
+0:52            4.000000
+0:52            2.000000
+0:52            2.000000
+0:52            2.000000
+0:52            2.000000
+0:69      move second child to first child ( temp 4-element array of 7-element array of float)
+0:69        'g4' ( global 4-element array of 7-element array of float)
+0:69        Function Call: foo(f1[5][7]; ( global 4-element array of 7-element array of float)
+0:69          'g5' ( global 5-element array of 7-element array of float)
+0:70      'g5' ( global 5-element array of 7-element array of float)
+0:71      'gu' ( global unsized 1-element array of 7-element array of float)
+0:73      Constant:
+0:73        0.000000
+0:74      Function Call: bar(f1[5][7]; ( global void)
+0:74        'g5' ( global 5-element array of 7-element array of float)
+0:76      Test condition and select ( temp void)
+0:76        Condition
+0:76        Compare Equal ( temp bool)
+0:76          Function Call: foo(f1[5][7]; ( global 4-element array of 7-element array of float)
+0:76            'g5' ( global 5-element array of 7-element array of float)
+0:76          'g4' ( global 4-element array of 7-element array of float)
+0:76        true case is null
+0:78      Test condition and select ( temp void)
+0:78        Condition
+0:78        Constant:
+0:78          false (const bool)
+0:78        true case is null
+0:82      move second child to first child ( temp float)
+0:82        direct index ( temp float)
+0:82          direct index ( temp 7-element array of float)
+0:82            'u' ( temp 5-element array of 7-element array of float)
+0:82            Constant:
+0:82              2 (const int)
+0:82          Constant:
+0:82            2 (const int)
+0:82        Constant:
+0:82          3.000000
+0:84      move second child to first child ( temp float)
+0:84        direct index ( temp float)
+0:84          direct index ( temp 7-element array of float)
+0:84            'u' ( temp 5-element array of 7-element array of float)
+0:84            Constant:
+0:84              5 (const int)
+0:84          Constant:
+0:84            2 (const int)
+0:84        Constant:
+0:84          5.000000
+0:85      Function Call: foo(f1[5][7]; ( global 4-element array of 7-element array of float)
+0:85        'u' ( temp 5-element array of 7-element array of float)
+0:88  Function Definition: foo3( ( global void)
+0:88    Function Parameters: 
+0:?     Sequence
+0:91      Constant:
+0:91        1 (const int)
+0:92      move second child to first child ( temp float)
+0:92        direct index ( temp float)
+0:92          direct index ( temp 7-element array of float)
+0:92            direct index ( temp 5-element array of 7-element array of float)
+0:92              'resize1' ( temp 3-element array of 5-element array of 7-element array of float)
+0:92              Constant:
+0:92                1 (const int)
+0:92            Constant:
+0:92              4 (const int)
+0:92          Constant:
+0:92            5 (const int)
+0:92        Constant:
+0:92          2.000000
+0:93      Constant:
+0:93        1 (const int)
+0:95      Constant:
+0:95        3 (const int)
+0:96      Constant:
+0:96        5 (const int)
+0:97      Constant:
+0:97        7 (const int)
+0:98      Constant:
+0:98        0.000000
+0:?   Linker Objects
+0:?     'many' ( global 1-element array of 2-element array of 3-element array of 4-element array of 5-element array of 6-element array of float)
+0:?     'gu' ( global unsized 1-element array of 7-element array of float)
+0:?     'gimp' ( global unsized 1-element array of 1-element array of float)
+0:?     'g4' ( global 4-element array of 7-element array of float)
+0:?     'g5' ( global 5-element array of 7-element array of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 430
+ERROR: node is still EOpNull!
+0:10  Function Definition: foo(f1[5][7]; ( global 4-element array of 7-element array of float)
+0:10    Function Parameters: 
+0:10      'a' ( in 5-element array of 7-element array of float)
+0:?     Sequence
+0:13      move second child to first child ( temp 7-element array of float)
+0:13        'r' ( temp 7-element array of float)
+0:13        direct index ( temp 7-element array of float)
+0:13          'a' ( in 5-element array of 7-element array of float)
+0:13          Constant:
+0:13            2 (const int)
+0:14      Constant:
+0:14        0.000000
+0:15      Constant:
+0:15        0.000000
+0:16      Branch: Return with expression
+0:16        Construct float ( temp 4-element array of 7-element array of float)
+0:16          direct index ( temp 7-element array of float)
+0:16            'a' ( in 5-element array of 7-element array of float)
+0:16            Constant:
+0:16              0 (const int)
+0:16          direct index ( temp 7-element array of float)
+0:16            'a' ( in 5-element array of 7-element array of float)
+0:16            Constant:
+0:16              1 (const int)
+0:16          'r' ( temp 7-element array of float)
+0:16          direct index ( temp 7-element array of float)
+0:16            'a' ( in 5-element array of 7-element array of float)
+0:16            Constant:
+0:16              3 (const int)
+0:17      Branch: Return with expression
+0:17        Construct float ( temp 4-element array of 7-element array of float)
+0:17          direct index ( temp 7-element array of float)
+0:17            'a' ( in 5-element array of 7-element array of float)
+0:17            Constant:
+0:17              0 (const int)
+0:17          direct index ( temp 7-element array of float)
+0:17            'a' ( in 5-element array of 7-element array of float)
+0:17            Constant:
+0:17              1 (const int)
+0:17          'r' ( temp 7-element array of float)
+0:17          direct index ( temp 7-element array of float)
+0:17            'a' ( in 5-element array of 7-element array of float)
+0:17            Constant:
+0:17              3 (const int)
+0:18      Branch: Return with expression
+0:18        Construct float ( temp 4-element array of 7-element array of float)
+0:18          direct index ( temp 7-element array of float)
+0:18            'a' ( in 5-element array of 7-element array of float)
+0:18            Constant:
+0:18              0 (const int)
+0:18          direct index ( temp 7-element array of float)
+0:18            'a' ( in 5-element array of 7-element array of float)
+0:18            Constant:
+0:18              1 (const int)
+0:18          direct index ( temp 7-element array of float)
+0:18            'a' ( in 5-element array of 7-element array of float)
+0:18            Constant:
+0:18              2 (const int)
+0:18          direct index ( temp 7-element array of float)
+0:18            'a' ( in 5-element array of 7-element array of float)
+0:18            Constant:
+0:18              3 (const int)
+0:21  Function Definition: bar(f1[5][7]; ( global void)
+0:21    Function Parameters: 
+0:21      '' ( in 5-element array of 7-element array of float)
+0:23  Function Definition: main( ( global void)
+0:23    Function Parameters: 
+0:?     Sequence
+0:?       Sequence
+0:28        move second child to first child ( temp float)
+0:28          direct index ( temp float)
+0:28            direct index ( temp 2-element array of float)
+0:28              direct index ( temp 4-element array of 2-element array of float)
+0:28                'gu' ( temp 3-element array of 4-element array of 2-element array of float)
+0:28                Constant:
+0:28                  2 (const int)
+0:28              Constant:
+0:28                4 (const int)
+0:28            Constant:
+0:28              1 (const int)
+0:28          Constant:
+0:28            4.000000
+0:30      Sequence
+0:30        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:30          'ca4' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:32          Constant:
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            1.000000
+0:32            1.000000
+0:32            1.000000
+0:32            1.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            1.000000
+0:32            1.000000
+0:32            1.000000
+0:32            1.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            1.000000
+0:32            1.000000
+0:32            1.000000
+0:32            1.000000
+0:33      Sequence
+0:33        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:33          'caim' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:35          Constant:
+0:35            4.000000
+0:35            4.000000
+0:35            4.000000
+0:35            4.000000
+0:35            2.000000
+0:35            2.000000
+0:35            2.000000
+0:35            2.000000
+0:35            4.000000
+0:35            4.000000
+0:35            4.000000
+0:35            4.000000
+0:35            2.000000
+0:35            2.000000
+0:35            2.000000
+0:35            2.000000
+0:35            4.000000
+0:35            4.000000
+0:35            4.000000
+0:35            4.000000
+0:35            2.000000
+0:35            2.000000
+0:35            2.000000
+0:35            2.000000
+0:36      Sequence
+0:36        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:36          'caim2' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:38          Constant:
+0:38            4.000000
+0:38            4.000000
+0:38            4.000000
+0:38            4.000000
+0:38            2.000000
+0:38            2.000000
+0:38            2.000000
+0:38            2.000000
+0:38            4.000000
+0:38            4.000000
+0:38            4.000000
+0:38            4.000000
+0:38            2.000000
+0:38            2.000000
+0:38            2.000000
+0:38            2.000000
+0:38            4.000000
+0:38            4.000000
+0:38            4.000000
+0:38            4.000000
+0:38            2.000000
+0:38            2.000000
+0:38            2.000000
+0:38            2.000000
+0:39      Sequence
+0:39        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:39          'caim3' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:41          Constant:
+0:41            4.000000
+0:41            4.000000
+0:41            4.000000
+0:41            4.000000
+0:41            2.000000
+0:41            2.000000
+0:41            2.000000
+0:41            2.000000
+0:41            4.000000
+0:41            4.000000
+0:41            4.000000
+0:41            4.000000
+0:41            2.000000
+0:41            2.000000
+0:41            2.000000
+0:41            2.000000
+0:41            4.000000
+0:41            4.000000
+0:41            4.000000
+0:41            4.000000
+0:41            2.000000
+0:41            2.000000
+0:41            2.000000
+0:41            2.000000
+0:43      Sequence
+0:43        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:43          'a4' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:43          Constant:
+0:43            0.000000
+0:43            0.000000
+0:43            0.000000
+0:43            0.000000
+0:43            1.000000
+0:43            1.000000
+0:43            1.000000
+0:43            1.000000
+0:43            0.000000
+0:43            0.000000
+0:43            0.000000
+0:43            0.000000
+0:43            1.000000
+0:43            1.000000
+0:43            1.000000
+0:43            1.000000
+0:43            0.000000
+0:43            0.000000
+0:43            0.000000
+0:43            0.000000
+0:43            1.000000
+0:43            1.000000
+0:43            1.000000
+0:43            1.000000
+0:46      Sequence
+0:46        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:46          'aim' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:46          Constant:
+0:46            4.000000
+0:46            4.000000
+0:46            4.000000
+0:46            4.000000
+0:46            2.000000
+0:46            2.000000
+0:46            2.000000
+0:46            2.000000
+0:46            4.000000
+0:46            4.000000
+0:46            4.000000
+0:46            4.000000
+0:46            2.000000
+0:46            2.000000
+0:46            2.000000
+0:46            2.000000
+0:46            4.000000
+0:46            4.000000
+0:46            4.000000
+0:46            4.000000
+0:46            2.000000
+0:46            2.000000
+0:46            2.000000
+0:46            2.000000
+0:49      Sequence
+0:49        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:49          'aim2' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:49          Constant:
+0:49            4.000000
+0:49            4.000000
+0:49            4.000000
+0:49            4.000000
+0:49            2.000000
+0:49            2.000000
+0:49            2.000000
+0:49            2.000000
+0:49            4.000000
+0:49            4.000000
+0:49            4.000000
+0:49            4.000000
+0:49            2.000000
+0:49            2.000000
+0:49            2.000000
+0:49            2.000000
+0:49            4.000000
+0:49            4.000000
+0:49            4.000000
+0:49            4.000000
+0:49            2.000000
+0:49            2.000000
+0:49            2.000000
+0:49            2.000000
+0:52      Sequence
+0:52        move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:52          'aim3' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:52          Constant:
+0:52            4.000000
+0:52            4.000000
+0:52            4.000000
+0:52            4.000000
+0:52            2.000000
+0:52            2.000000
+0:52            2.000000
+0:52            2.000000
+0:52            4.000000
+0:52            4.000000
+0:52            4.000000
+0:52            4.000000
+0:52            2.000000
+0:52            2.000000
+0:52            2.000000
+0:52            2.000000
+0:52            4.000000
+0:52            4.000000
+0:52            4.000000
+0:52            4.000000
+0:52            2.000000
+0:52            2.000000
+0:52            2.000000
+0:52            2.000000
+0:69      move second child to first child ( temp 4-element array of 7-element array of float)
+0:69        'g4' ( global 4-element array of 7-element array of float)
+0:69        Function Call: foo(f1[5][7]; ( global 4-element array of 7-element array of float)
+0:69          'g5' ( global 5-element array of 7-element array of float)
+0:70      'g5' ( global 5-element array of 7-element array of float)
+0:71      'gu' ( global 1-element array of 7-element array of float)
+0:73      Constant:
+0:73        0.000000
+0:74      Function Call: bar(f1[5][7]; ( global void)
+0:74        'g5' ( global 5-element array of 7-element array of float)
+0:76      Test condition and select ( temp void)
+0:76        Condition
+0:76        Compare Equal ( temp bool)
+0:76          Function Call: foo(f1[5][7]; ( global 4-element array of 7-element array of float)
+0:76            'g5' ( global 5-element array of 7-element array of float)
+0:76          'g4' ( global 4-element array of 7-element array of float)
+0:76        true case is null
+0:78      Test condition and select ( temp void)
+0:78        Condition
+0:78        Constant:
+0:78          false (const bool)
+0:78        true case is null
+0:82      move second child to first child ( temp float)
+0:82        direct index ( temp float)
+0:82          direct index ( temp 7-element array of float)
+0:82            'u' ( temp 5-element array of 7-element array of float)
+0:82            Constant:
+0:82              2 (const int)
+0:82          Constant:
+0:82            2 (const int)
+0:82        Constant:
+0:82          3.000000
+0:84      move second child to first child ( temp float)
+0:84        direct index ( temp float)
+0:84          direct index ( temp 7-element array of float)
+0:84            'u' ( temp 5-element array of 7-element array of float)
+0:84            Constant:
+0:84              5 (const int)
+0:84          Constant:
+0:84            2 (const int)
+0:84        Constant:
+0:84          5.000000
+0:85      Function Call: foo(f1[5][7]; ( global 4-element array of 7-element array of float)
+0:85        'u' ( temp 5-element array of 7-element array of float)
+0:?   Linker Objects
+0:?     'many' ( global 1-element array of 2-element array of 3-element array of 4-element array of 5-element array of 6-element array of float)
+0:?     'gu' ( global 1-element array of 7-element array of float)
+0:?     'gimp' ( global 1-element array of 1-element array of float)
+0:?     'g4' ( global 4-element array of 7-element array of float)
+0:?     'g5' ( global 5-element array of 7-element array of float)
+

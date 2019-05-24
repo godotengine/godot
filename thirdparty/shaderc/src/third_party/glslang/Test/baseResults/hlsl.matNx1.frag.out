@@ -1,0 +1,276 @@
+hlsl.matNx1.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:3  Function Definition: TestMatNx1( ( temp void)
+0:3    Function Parameters: 
+0:?     Sequence
+0:13      Sequence
+0:13        move second child to first child ( temp 1X1 matrix of float)
+0:13          'r00' ( temp 1X1 matrix of float)
+0:13          transpose ( temp 1X1 matrix of float)
+0:13            'f1x1' ( temp 1X1 matrix of float)
+0:14      Sequence
+0:14        move second child to first child ( temp 1X2 matrix of float)
+0:14          'r01' ( temp 1X2 matrix of float)
+0:14          transpose ( temp 1X2 matrix of float)
+0:14            'f2x1' ( temp 2X1 matrix of float)
+0:15      Sequence
+0:15        move second child to first child ( temp 1X3 matrix of float)
+0:15          'r02' ( temp 1X3 matrix of float)
+0:15          transpose ( temp 1X3 matrix of float)
+0:15            'f3x1' ( temp 3X1 matrix of float)
+0:16      Sequence
+0:16        move second child to first child ( temp 1X4 matrix of float)
+0:16          'r03' ( temp 1X4 matrix of float)
+0:16          transpose ( temp 1X4 matrix of float)
+0:16            'f4x1' ( temp 4X1 matrix of float)
+0:18      Sequence
+0:18        move second child to first child ( temp 1X1 matrix of float)
+0:18          'r10' ( temp 1X1 matrix of float)
+0:18          transpose ( temp 1X1 matrix of float)
+0:18            'f1x1' ( temp 1X1 matrix of float)
+0:19      Sequence
+0:19        move second child to first child ( temp 2X1 matrix of float)
+0:19          'r11' ( temp 2X1 matrix of float)
+0:19          transpose ( temp 2X1 matrix of float)
+0:19            'f1x2' ( temp 1X2 matrix of float)
+0:20      Sequence
+0:20        move second child to first child ( temp 3X1 matrix of float)
+0:20          'r12' ( temp 3X1 matrix of float)
+0:20          transpose ( temp 3X1 matrix of float)
+0:20            'f1x3' ( temp 1X3 matrix of float)
+0:21      Sequence
+0:21        move second child to first child ( temp 4X1 matrix of float)
+0:21          'r13' ( temp 4X1 matrix of float)
+0:21          transpose ( temp 4X1 matrix of float)
+0:21            'f1x4' ( temp 1X4 matrix of float)
+0:27  Function Definition: @main( ( temp structure{ temp 4-component vector of float color})
+0:27    Function Parameters: 
+0:?     Sequence
+0:29      move second child to first child ( temp 4-component vector of float)
+0:29        color: direct index for structure ( temp 4-component vector of float)
+0:29          'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:29          Constant:
+0:29            0 (const int)
+0:29        Constant:
+0:29          1.000000
+0:29          1.000000
+0:29          1.000000
+0:29          1.000000
+0:30      Branch: Return with expression
+0:30        'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:27  Function Definition: main( ( temp void)
+0:27    Function Parameters: 
+0:?     Sequence
+0:27      Sequence
+0:27        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:27          color: direct index for structure ( temp 4-component vector of float)
+0:27            Function Call: @main( ( temp structure{ temp 4-component vector of float color})
+0:27            Constant:
+0:27              0 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:3  Function Definition: TestMatNx1( ( temp void)
+0:3    Function Parameters: 
+0:?     Sequence
+0:13      Sequence
+0:13        move second child to first child ( temp 1X1 matrix of float)
+0:13          'r00' ( temp 1X1 matrix of float)
+0:13          transpose ( temp 1X1 matrix of float)
+0:13            'f1x1' ( temp 1X1 matrix of float)
+0:14      Sequence
+0:14        move second child to first child ( temp 1X2 matrix of float)
+0:14          'r01' ( temp 1X2 matrix of float)
+0:14          transpose ( temp 1X2 matrix of float)
+0:14            'f2x1' ( temp 2X1 matrix of float)
+0:15      Sequence
+0:15        move second child to first child ( temp 1X3 matrix of float)
+0:15          'r02' ( temp 1X3 matrix of float)
+0:15          transpose ( temp 1X3 matrix of float)
+0:15            'f3x1' ( temp 3X1 matrix of float)
+0:16      Sequence
+0:16        move second child to first child ( temp 1X4 matrix of float)
+0:16          'r03' ( temp 1X4 matrix of float)
+0:16          transpose ( temp 1X4 matrix of float)
+0:16            'f4x1' ( temp 4X1 matrix of float)
+0:18      Sequence
+0:18        move second child to first child ( temp 1X1 matrix of float)
+0:18          'r10' ( temp 1X1 matrix of float)
+0:18          transpose ( temp 1X1 matrix of float)
+0:18            'f1x1' ( temp 1X1 matrix of float)
+0:19      Sequence
+0:19        move second child to first child ( temp 2X1 matrix of float)
+0:19          'r11' ( temp 2X1 matrix of float)
+0:19          transpose ( temp 2X1 matrix of float)
+0:19            'f1x2' ( temp 1X2 matrix of float)
+0:20      Sequence
+0:20        move second child to first child ( temp 3X1 matrix of float)
+0:20          'r12' ( temp 3X1 matrix of float)
+0:20          transpose ( temp 3X1 matrix of float)
+0:20            'f1x3' ( temp 1X3 matrix of float)
+0:21      Sequence
+0:21        move second child to first child ( temp 4X1 matrix of float)
+0:21          'r13' ( temp 4X1 matrix of float)
+0:21          transpose ( temp 4X1 matrix of float)
+0:21            'f1x4' ( temp 1X4 matrix of float)
+0:27  Function Definition: @main( ( temp structure{ temp 4-component vector of float color})
+0:27    Function Parameters: 
+0:?     Sequence
+0:29      move second child to first child ( temp 4-component vector of float)
+0:29        color: direct index for structure ( temp 4-component vector of float)
+0:29          'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:29          Constant:
+0:29            0 (const int)
+0:29        Constant:
+0:29          1.000000
+0:29          1.000000
+0:29          1.000000
+0:29          1.000000
+0:30      Branch: Return with expression
+0:30        'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:27  Function Definition: main( ( temp void)
+0:27    Function Parameters: 
+0:?     Sequence
+0:27      Sequence
+0:27        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:27          color: direct index for structure ( temp 4-component vector of float)
+0:27            Function Call: @main( ( temp structure{ temp 4-component vector of float color})
+0:27            Constant:
+0:27              0 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+
+Validation failed
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 77
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 74
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 6  "TestMatNx1("
+                              Name 10  "PS_OUTPUT"
+                              MemberName 10(PS_OUTPUT) 0  "color"
+                              Name 12  "@main("
+                              Name 17  "r00"
+                              Name 18  "f1x1"
+                              Name 24  "r01"
+                              Name 27  "f2x1"
+                              Name 33  "r02"
+                              Name 36  "f3x1"
+                              Name 41  "r03"
+                              Name 44  "f4x1"
+                              Name 47  "r10"
+                              Name 50  "r11"
+                              Name 51  "f1x2"
+                              Name 54  "r12"
+                              Name 55  "f1x3"
+                              Name 58  "r13"
+                              Name 59  "f1x4"
+                              Name 63  "ps_output"
+                              Name 74  "@entryPointOutput.color"
+                              Decorate 74(@entryPointOutput.color) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               8:             TypeFloat 32
+               9:             TypeVector 8(float) 4
+   10(PS_OUTPUT):             TypeStruct 9(fvec4)
+              11:             TypeFunction 10(PS_OUTPUT)
+              14:             TypeVector 8(float) 1
+              15:             TypeMatrix 14(fvec) 1
+              16:             TypePointer Function 15
+              21:             TypeVector 8(float) 2
+              22:             TypeMatrix 21(fvec2) 1
+              23:             TypePointer Function 22
+              25:             TypeMatrix 14(fvec) 2
+              26:             TypePointer Function 25
+              30:             TypeVector 8(float) 3
+              31:             TypeMatrix 30(fvec3) 1
+              32:             TypePointer Function 31
+              34:             TypeMatrix 14(fvec) 3
+              35:             TypePointer Function 34
+              39:             TypeMatrix 9(fvec4) 1
+              40:             TypePointer Function 39
+              42:             TypeMatrix 14(fvec) 4
+              43:             TypePointer Function 42
+              62:             TypePointer Function 10(PS_OUTPUT)
+              64:             TypeInt 32 1
+              65:     64(int) Constant 0
+              66:    8(float) Constant 1065353216
+              67:    9(fvec4) ConstantComposite 66 66 66 66
+              68:             TypePointer Function 9(fvec4)
+              73:             TypePointer Output 9(fvec4)
+74(@entryPointOutput.color):     73(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              75:10(PS_OUTPUT) FunctionCall 12(@main()
+              76:    9(fvec4) CompositeExtract 75 0
+                              Store 74(@entryPointOutput.color) 76
+                              Return
+                              FunctionEnd
+  6(TestMatNx1():           2 Function None 3
+               7:             Label
+         17(r00):     16(ptr) Variable Function
+        18(f1x1):     16(ptr) Variable Function
+         24(r01):     23(ptr) Variable Function
+        27(f2x1):     26(ptr) Variable Function
+         33(r02):     32(ptr) Variable Function
+        36(f3x1):     35(ptr) Variable Function
+         41(r03):     40(ptr) Variable Function
+        44(f4x1):     43(ptr) Variable Function
+         47(r10):     16(ptr) Variable Function
+         50(r11):     26(ptr) Variable Function
+        51(f1x2):     23(ptr) Variable Function
+         54(r12):     35(ptr) Variable Function
+        55(f1x3):     32(ptr) Variable Function
+         58(r13):     43(ptr) Variable Function
+        59(f1x4):     40(ptr) Variable Function
+              19:          15 Load 18(f1x1)
+              20:          15 Transpose 19
+                              Store 17(r00) 20
+              28:          25 Load 27(f2x1)
+              29:          22 Transpose 28
+                              Store 24(r01) 29
+              37:          34 Load 36(f3x1)
+              38:          31 Transpose 37
+                              Store 33(r02) 38
+              45:          42 Load 44(f4x1)
+              46:          39 Transpose 45
+                              Store 41(r03) 46
+              48:          15 Load 18(f1x1)
+              49:          15 Transpose 48
+                              Store 47(r10) 49
+              52:          22 Load 51(f1x2)
+              53:          25 Transpose 52
+                              Store 50(r11) 53
+              56:          31 Load 55(f1x3)
+              57:          34 Transpose 56
+                              Store 54(r12) 57
+              60:          39 Load 59(f1x4)
+              61:          42 Transpose 60
+                              Store 58(r13) 61
+                              Return
+                              FunctionEnd
+      12(@main():10(PS_OUTPUT) Function None 11
+              13:             Label
+   63(ps_output):     62(ptr) Variable Function
+              69:     68(ptr) AccessChain 63(ps_output) 65
+                              Store 69 67
+              70:10(PS_OUTPUT) Load 63(ps_output)
+                              ReturnValue 70
+                              FunctionEnd

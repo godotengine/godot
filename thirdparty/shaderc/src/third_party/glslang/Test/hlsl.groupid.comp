@@ -1,0 +1,9 @@
+RWTexture2D < float4 > OutputTexture;
+
+// Test conversion between SPIR-V required uint3 group id, and sub-vec3 shader declaration.
+
+[ numthreads ( 8 , 8 , 1 ) ] 
+void main ( uint2 vGroupId : SV_GroupID ) 
+{ 
+    OutputTexture[ vGroupId . xy ] = float4(1.0, 0.0, 0.0, 1.0); 
+}

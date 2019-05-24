@@ -1,0 +1,36 @@
+hlsl.automap.frag
+Uniform reflection:
+t1: offset -1, type 8b5d, size 1, index -1, binding 11, stages 16
+t2: offset -1, type 8b5e, size 1, index -1, binding 12, stages 16
+t3: offset -1, type 8b5f, size 1, index -1, binding 13, stages 16
+t4.@data: offset 0, type 8b52, size 1, index 0, binding -1, stages 16, arrayStride 16, topLevelArrayStride 16
+t5.@data: offset 0, type 1405, size 0, index 1, binding -1, stages 16, arrayStride 4, topLevelArrayStride 4
+t6: offset -1, type 8dc2, size 1, index -1, binding 16, stages 16
+s1: offset -1, type 0, size 1, index -1, binding 31, stages 16
+s2: offset -1, type 0, size 1, index -1, binding 32, stages 16
+u1: offset -1, type 904c, size 1, index -1, binding 41, stages 16
+u2: offset -1, type 904d, size 1, index -1, binding 42, stages 16
+u3: offset -1, type 904e, size 1, index -1, binding 43, stages 16
+u4: offset -1, type 9051, size 1, index -1, binding 44, stages 16
+u5.@data: offset 0, type 1405, size 0, index 2, binding -1, stages 16, arrayStride 4, topLevelArrayStride 4
+u6.@data: offset 0, type 1406, size 1, index 3, binding -1, stages 16, arrayStride 4, topLevelArrayStride 4
+cb1: offset 0, type 1404, size 1, index 4, binding -1, stages 16
+tb1: offset 0, type 1404, size 1, index 5, binding -1, stages 16
+
+Uniform block reflection:
+t4: offset -1, type ffffffff, size 0, index -1, binding 14, stages 16, numMembers 1
+t5: offset -1, type ffffffff, size 0, index -1, binding 15, stages 16, numMembers 1
+u5: offset -1, type ffffffff, size 0, index -1, binding 45, stages 16, numMembers 1
+u6: offset -1, type ffffffff, size 0, index -1, binding 46, stages 16, numMembers 1
+cb: offset -1, type ffffffff, size 4, index -1, binding 51, stages 16, numMembers 1
+tb: offset -1, type ffffffff, size 4, index -1, binding 17, stages 16, numMembers 1
+
+Buffer variable reflection:
+
+Buffer block reflection:
+
+Pipeline input reflection:
+
+Pipeline output reflection:
+@entryPointOutput: offset 0, type 8b52, size 1, index 0, binding -1, stages 16
+

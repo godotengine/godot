@@ -1,0 +1,87 @@
+#version 430 core
+
+layout(local_size_x = 2) in;
+layout(local_size_x = 16) in;     // ERROR, changing
+layout(local_size_z = 4096) in;   // ERROR, too large
+layout(local_size_x = 2) in;
+
+const int total = gl_MaxComputeWorkGroupCount.y 
+                + gl_MaxComputeUniformComponents
+                + gl_MaxComputeTextureImageUnits
+                + gl_MaxComputeImageUniforms
+                + gl_MaxComputeAtomicCounters
+                + gl_MaxComputeAtomicCounterBuffers;
+
+buffer ShaderStorageBlock
+{
+    int value;
+    float values[];
+};
+
+buffer InvalidShaderStorageBlock
+{
+    float values[];
+    int value;
+} invalid;
+
+void main()
+{
+    barrier();
+    memoryBarrier();
+    memoryBarrierAtomicCounter();
+    memoryBarrierBuffer();
+    memoryBarrierShared();
+    memoryBarrierImage();
+    groupMemoryBarrier();
+    value = int(values[gl_LocalInvocationIndex]);
+
+    int a;
+    if (a > 10)
+        barrier();
+}
+
+layout(location = 2) in vec3 v3;      // ERROR
+in float f;                           // ERROR
+out float fo;                         // ERROR
+
+shared vec4 s;
+layout(location = 2) shared vec4 sl;  // ERROR
+shared float fs = 4.2;                // ERROR
+
+layout(local_size_x = 2, local_size_y = 3, local_size_z = 4) out;  // ERROR
+
+int arrX[gl_WorkGroupSize.x];
+int arrY[gl_WorkGroupSize.y];
+int arrZ[gl_WorkGroupSize.z];
+
+readonly buffer roblock
+{
+    int value;
+    float values[];
+} ro;
+
+void foo()
+{
+    ro.values[2] = 4.7;             // ERROR, readonly
+    ro.values.length();
+    barrier();
+}
+
+uniform double roll;
+uniform writeonly image2D destTex;
+void fooaoeu() {
+     ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
+     double localCoef = length(vec2(ivec2(gl_LocalInvocationID.xy)-8)/8.0);
+     dvec4 aa = dvec4(0.4, 0.2, 0.3, 0.4);
+     double globalCoef = 1.0;
+     int i = globalCoef;            // ERROR, can't convert from double to int
+     double di = i;
+}
+
+in inb {     // ERROR
+    int a;
+} inbi;
+
+out outb {     // ERROR
+    int a;
+} outbi;

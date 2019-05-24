@@ -1,0 +1,285 @@
+450.frag
+ERROR: 0:63: 'location' : cannot use in a block array where new locations are needed for each block element 
+ERROR: 0:68: 'early_fragment_tests' : can only apply to a standalone qualifier 
+ERROR: 2 compilation errors.  No code generated.
+
+
+Shader version: 450
+ERROR: node is still EOpNull!
+0:8  Function Definition: main( ( global void)
+0:8    Function Parameters: 
+0:10    Sequence
+0:10      Sequence
+0:10        move second child to first child ( temp 2-component vector of float)
+0:10          'v2' ( temp 2-component vector of float)
+0:10          dPdxFine ( global 2-component vector of float)
+0:10            'in2' ( smooth in 2-component vector of float)
+0:11      Sequence
+0:11        move second child to first child ( temp 3-component vector of float)
+0:11          'v3' ( temp 3-component vector of float)
+0:11          dPdyCoarse ( global 3-component vector of float)
+0:11            'in3' ( smooth in 3-component vector of float)
+0:12      Sequence
+0:12        move second child to first child ( temp 4-component vector of float)
+0:12          'v4' ( temp 4-component vector of float)
+0:12          fwidth ( global 4-component vector of float)
+0:12            'in4' ( smooth in 4-component vector of float)
+0:13      move second child to first child ( temp 4-component vector of float)
+0:13        'v4' ( temp 4-component vector of float)
+0:13        dPdyFine ( global 4-component vector of float)
+0:13          'in4' ( smooth in 4-component vector of float)
+0:14      move second child to first child ( temp 3-component vector of float)
+0:14        'v3' ( temp 3-component vector of float)
+0:14        dPdyFine ( global 3-component vector of float)
+0:14          'in3' ( smooth in 3-component vector of float)
+0:15      Sequence
+0:15        move second child to first child ( temp float)
+0:15          'f' ( temp float)
+0:15          add ( temp float)
+0:15            add ( temp float)
+0:15              dPdx ( global float)
+0:15                'in1' ( smooth in float)
+0:15              dPdxFine ( global float)
+0:15                'in1' ( smooth in float)
+0:15            dPdxCoarse ( global float)
+0:15              'in1' ( smooth in float)
+0:16      move second child to first child ( temp 4-component vector of float)
+0:16        'v4' ( temp 4-component vector of float)
+0:16        add ( temp 4-component vector of float)
+0:16          fwidthCoarse ( global 4-component vector of float)
+0:16            'in4' ( smooth in 4-component vector of float)
+0:16          fwidthFine ( global 4-component vector of float)
+0:16            'in4' ( smooth in 4-component vector of float)
+0:18      Sequence
+0:18        move second child to first child ( temp float)
+0:18          'cull' ( temp float)
+0:18          direct index ( smooth temp float CullDistance)
+0:18            'gl_CullDistance' ( smooth in 6-element array of float CullDistance)
+0:18            Constant:
+0:18              2 (const int)
+0:19      Sequence
+0:19        move second child to first child ( temp float)
+0:19          'consts' ( temp float)
+0:19          Constant:
+0:19            20.000000
+0:21      Test condition and select ( temp void)
+0:21        Condition
+0:21        'gl_HelperInvocation' ( in bool HelperInvocation)
+0:21        true case
+0:22        Pre-Increment ( temp 4-component vector of float)
+0:22          'v4' ( temp 4-component vector of float)
+0:24      Sequence
+0:24        move second child to first child ( temp int)
+0:24          'sum' ( temp int)
+0:24          Constant:
+0:24            32 (const int)
+0:32      Sequence
+0:32        move second child to first child ( temp 2-component vector of bool)
+0:32          'b2' ( temp 2-component vector of bool)
+0:32          mix ( global 2-component vector of bool)
+0:32            Construct bvec2 ( temp 2-component vector of bool)
+0:32              'b1' ( temp bool)
+0:32            Construct bvec2 ( temp 2-component vector of bool)
+0:32              'b3' ( temp bool)
+0:32            Construct bvec2 ( temp 2-component vector of bool)
+0:32              'b' ( temp bool)
+0:33      Sequence
+0:33        move second child to first child ( temp uint)
+0:33          'um' ( temp uint)
+0:33          mix ( global uint)
+0:33            'uin' ( temp uint)
+0:33            'uin' ( temp uint)
+0:33            'b' ( temp bool)
+0:34      Sequence
+0:34        move second child to first child ( temp 3-component vector of int)
+0:34          'im3' ( temp 3-component vector of int)
+0:34          mix ( global 3-component vector of int)
+0:34            Construct ivec3 ( temp 3-component vector of int)
+0:34              Convert uint to int ( temp int)
+0:34                'uin' ( temp uint)
+0:34            Construct ivec3 ( temp 3-component vector of int)
+0:34              Convert uint to int ( temp int)
+0:34                'uin' ( temp uint)
+0:34            Construct bvec3 ( temp 3-component vector of bool)
+0:34              'b' ( temp bool)
+0:42  Function Definition: foo( ( global void)
+0:42    Function Parameters: 
+0:44    Sequence
+0:44      Sequence
+0:44        move second child to first child ( temp int)
+0:44          's' ( temp int)
+0:44          textureSamples ( global int)
+0:44            's2dms' ( uniform sampler2DMS)
+0:45      add second child into first child ( temp int)
+0:45        's' ( temp int)
+0:45        textureSamples ( global int)
+0:45          'us2dmsa' ( uniform usampler2DMSArray)
+0:46      add second child into first child ( temp int)
+0:46        's' ( temp int)
+0:46        imageQuerySamples ( global int)
+0:46          'ii2dms' (layout( rgba32i) uniform iimage2DMS)
+0:47      add second child into first child ( temp int)
+0:47        's' ( temp int)
+0:47        imageQuerySamples ( global int)
+0:47          'i2dmsa' (layout( rgba32f) uniform image2DMSArray)
+0:48      Sequence
+0:48        move second child to first child ( temp float)
+0:48          'f' ( temp float)
+0:48          imageAtomicExchange ( global float)
+0:48            'i2dmsa' (layout( rgba32f) uniform image2DMSArray)
+0:48            Convert float to int ( temp 3-component vector of int)
+0:48              'in3' ( smooth in 3-component vector of float)
+0:48            Constant:
+0:48              2 (const int)
+0:48            Constant:
+0:48              4.500000
+0:53  Function Definition: cull(i1; ( global float)
+0:53    Function Parameters: 
+0:53      'i' ( in int)
+0:55    Sequence
+0:55      Branch: Return with expression
+0:55        Test condition and select ( temp float)
+0:55          Condition
+0:55          Compare Greater Than or Equal ( temp bool)
+0:55            'i' ( in int)
+0:55            Constant:
+0:55              6 (const int)
+0:55          true case
+0:55          direct index ( smooth temp float CullDistance)
+0:55            'gl_CullDistance' ( smooth in 6-element array of float CullDistance)
+0:55            Constant:
+0:55              5 (const int)
+0:55          false case
+0:55          indirect index ( smooth temp float CullDistance)
+0:55            'gl_CullDistance' ( smooth in 6-element array of float CullDistance)
+0:55            'i' ( in int)
+0:?   Linker Objects
+0:?     'in1' ( smooth in float)
+0:?     'in2' ( smooth in 2-component vector of float)
+0:?     'in3' ( smooth in 3-component vector of float)
+0:?     'in4' ( smooth in 4-component vector of float)
+0:?     'gl_CullDistance' ( smooth in 6-element array of float CullDistance)
+0:?     's2dms' ( uniform sampler2DMS)
+0:?     'us2dmsa' ( uniform usampler2DMSArray)
+0:?     'ii2dms' (layout( rgba32i) uniform iimage2DMS)
+0:?     'i2dmsa' (layout( rgba32f) uniform image2DMSArray)
+0:?     'bInst1' ( in block{layout( location=6) in float f, layout( location=7) in float g, layout( location=8) in 4X4 matrix of float m})
+0:?     'bInst2' ( in 3-element array of block{layout( location=12) in float f, layout( location=13) in float g})
+0:?     'f' ( smooth in float)
+
+
+Linked fragment stage:
+
+
+Shader version: 450
+ERROR: node is still EOpNull!
+0:8  Function Definition: main( ( global void)
+0:8    Function Parameters: 
+0:10    Sequence
+0:10      Sequence
+0:10        move second child to first child ( temp 2-component vector of float)
+0:10          'v2' ( temp 2-component vector of float)
+0:10          dPdxFine ( global 2-component vector of float)
+0:10            'in2' ( smooth in 2-component vector of float)
+0:11      Sequence
+0:11        move second child to first child ( temp 3-component vector of float)
+0:11          'v3' ( temp 3-component vector of float)
+0:11          dPdyCoarse ( global 3-component vector of float)
+0:11            'in3' ( smooth in 3-component vector of float)
+0:12      Sequence
+0:12        move second child to first child ( temp 4-component vector of float)
+0:12          'v4' ( temp 4-component vector of float)
+0:12          fwidth ( global 4-component vector of float)
+0:12            'in4' ( smooth in 4-component vector of float)
+0:13      move second child to first child ( temp 4-component vector of float)
+0:13        'v4' ( temp 4-component vector of float)
+0:13        dPdyFine ( global 4-component vector of float)
+0:13          'in4' ( smooth in 4-component vector of float)
+0:14      move second child to first child ( temp 3-component vector of float)
+0:14        'v3' ( temp 3-component vector of float)
+0:14        dPdyFine ( global 3-component vector of float)
+0:14          'in3' ( smooth in 3-component vector of float)
+0:15      Sequence
+0:15        move second child to first child ( temp float)
+0:15          'f' ( temp float)
+0:15          add ( temp float)
+0:15            add ( temp float)
+0:15              dPdx ( global float)
+0:15                'in1' ( smooth in float)
+0:15              dPdxFine ( global float)
+0:15                'in1' ( smooth in float)
+0:15            dPdxCoarse ( global float)
+0:15              'in1' ( smooth in float)
+0:16      move second child to first child ( temp 4-component vector of float)
+0:16        'v4' ( temp 4-component vector of float)
+0:16        add ( temp 4-component vector of float)
+0:16          fwidthCoarse ( global 4-component vector of float)
+0:16            'in4' ( smooth in 4-component vector of float)
+0:16          fwidthFine ( global 4-component vector of float)
+0:16            'in4' ( smooth in 4-component vector of float)
+0:18      Sequence
+0:18        move second child to first child ( temp float)
+0:18          'cull' ( temp float)
+0:18          direct index ( smooth temp float CullDistance)
+0:18            'gl_CullDistance' ( smooth in 6-element array of float CullDistance)
+0:18            Constant:
+0:18              2 (const int)
+0:19      Sequence
+0:19        move second child to first child ( temp float)
+0:19          'consts' ( temp float)
+0:19          Constant:
+0:19            20.000000
+0:21      Test condition and select ( temp void)
+0:21        Condition
+0:21        'gl_HelperInvocation' ( in bool HelperInvocation)
+0:21        true case
+0:22        Pre-Increment ( temp 4-component vector of float)
+0:22          'v4' ( temp 4-component vector of float)
+0:24      Sequence
+0:24        move second child to first child ( temp int)
+0:24          'sum' ( temp int)
+0:24          Constant:
+0:24            32 (const int)
+0:32      Sequence
+0:32        move second child to first child ( temp 2-component vector of bool)
+0:32          'b2' ( temp 2-component vector of bool)
+0:32          mix ( global 2-component vector of bool)
+0:32            Construct bvec2 ( temp 2-component vector of bool)
+0:32              'b1' ( temp bool)
+0:32            Construct bvec2 ( temp 2-component vector of bool)
+0:32              'b3' ( temp bool)
+0:32            Construct bvec2 ( temp 2-component vector of bool)
+0:32              'b' ( temp bool)
+0:33      Sequence
+0:33        move second child to first child ( temp uint)
+0:33          'um' ( temp uint)
+0:33          mix ( global uint)
+0:33            'uin' ( temp uint)
+0:33            'uin' ( temp uint)
+0:33            'b' ( temp bool)
+0:34      Sequence
+0:34        move second child to first child ( temp 3-component vector of int)
+0:34          'im3' ( temp 3-component vector of int)
+0:34          mix ( global 3-component vector of int)
+0:34            Construct ivec3 ( temp 3-component vector of int)
+0:34              Convert uint to int ( temp int)
+0:34                'uin' ( temp uint)
+0:34            Construct ivec3 ( temp 3-component vector of int)
+0:34              Convert uint to int ( temp int)
+0:34                'uin' ( temp uint)
+0:34            Construct bvec3 ( temp 3-component vector of bool)
+0:34              'b' ( temp bool)
+0:?   Linker Objects
+0:?     'in1' ( smooth in float)
+0:?     'in2' ( smooth in 2-component vector of float)
+0:?     'in3' ( smooth in 3-component vector of float)
+0:?     'in4' ( smooth in 4-component vector of float)
+0:?     'gl_CullDistance' ( smooth in 6-element array of float CullDistance)
+0:?     's2dms' ( uniform sampler2DMS)
+0:?     'us2dmsa' ( uniform usampler2DMSArray)
+0:?     'ii2dms' (layout( rgba32i) uniform iimage2DMS)
+0:?     'i2dmsa' (layout( rgba32f) uniform image2DMSArray)
+0:?     'bInst1' ( in block{layout( location=6) in float f, layout( location=7) in float g, layout( location=8) in 4X4 matrix of float m})
+0:?     'bInst2' ( in 3-element array of block{layout( location=12) in float f, layout( location=13) in float g})
+0:?     'f' ( smooth in float)
+

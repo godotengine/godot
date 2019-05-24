@@ -1,0 +1,99 @@
+precision.vert
+ERROR: 0:7: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:8: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:14: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 3 compilation errors.  No code generated.
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:18  Function Definition: main( ( global void)
+0:18    Function Parameters: 
+0:20    Sequence
+0:20      Sequence
+0:20        move second child to first child ( temp highp 4-component vector of float)
+0:20          't' ( temp highp 4-component vector of float)
+0:20          texture ( global lowp 4-component vector of float)
+0:20            's2D' ( uniform lowp sampler2D)
+0:20            Constant:
+0:20              0.100000
+0:20              0.200000
+0:21      add second child into first child ( temp highp 4-component vector of float)
+0:21        't' ( temp highp 4-component vector of float)
+0:21        texture ( global highp 4-component vector of float)
+0:21          's2Dhigh' ( uniform highp sampler2D)
+0:21          Constant:
+0:21            0.100000
+0:21            0.200000
+0:22      add second child into first child ( temp highp 4-component vector of float)
+0:22        't' ( temp highp 4-component vector of float)
+0:22        texture ( global mediump float)
+0:22          's2dAS' ( uniform mediump sampler2DArrayShadow)
+0:22          Constant:
+0:22            0.500000
+0:22            0.500000
+0:22            0.500000
+0:22            0.500000
+0:24      move second child to first child ( temp highp 4-component vector of float)
+0:24        'gl_Position' ( gl_Position highp 4-component vector of float Position)
+0:24        'pos' ( in highp 4-component vector of float)
+0:?   Linker Objects
+0:?     'pos' ( in highp 4-component vector of float)
+0:?     's2D' ( uniform lowp sampler2D)
+0:?     'sCube' ( uniform lowp samplerCube)
+0:?     'is2DAbad' ( uniform mediump isampler2DArray)
+0:?     's2dASbad' ( uniform mediump sampler2DArrayShadow)
+0:?     's2dAS' ( uniform mediump sampler2DArrayShadow)
+0:?     'is2DAbad2' ( uniform mediump isampler2DArray)
+0:?     's2Dhigh' ( uniform highp sampler2D)
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:18  Function Definition: main( ( global void)
+0:18    Function Parameters: 
+0:20    Sequence
+0:20      Sequence
+0:20        move second child to first child ( temp highp 4-component vector of float)
+0:20          't' ( temp highp 4-component vector of float)
+0:20          texture ( global lowp 4-component vector of float)
+0:20            's2D' ( uniform lowp sampler2D)
+0:20            Constant:
+0:20              0.100000
+0:20              0.200000
+0:21      add second child into first child ( temp highp 4-component vector of float)
+0:21        't' ( temp highp 4-component vector of float)
+0:21        texture ( global highp 4-component vector of float)
+0:21          's2Dhigh' ( uniform highp sampler2D)
+0:21          Constant:
+0:21            0.100000
+0:21            0.200000
+0:22      add second child into first child ( temp highp 4-component vector of float)
+0:22        't' ( temp highp 4-component vector of float)
+0:22        texture ( global mediump float)
+0:22          's2dAS' ( uniform mediump sampler2DArrayShadow)
+0:22          Constant:
+0:22            0.500000
+0:22            0.500000
+0:22            0.500000
+0:22            0.500000
+0:24      move second child to first child ( temp highp 4-component vector of float)
+0:24        'gl_Position' ( gl_Position highp 4-component vector of float Position)
+0:24        'pos' ( in highp 4-component vector of float)
+0:?   Linker Objects
+0:?     'pos' ( in highp 4-component vector of float)
+0:?     's2D' ( uniform lowp sampler2D)
+0:?     'sCube' ( uniform lowp samplerCube)
+0:?     'is2DAbad' ( uniform mediump isampler2DArray)
+0:?     's2dASbad' ( uniform mediump sampler2DArrayShadow)
+0:?     's2dAS' ( uniform mediump sampler2DArrayShadow)
+0:?     'is2DAbad2' ( uniform mediump isampler2DArray)
+0:?     's2Dhigh' ( uniform highp sampler2D)
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+

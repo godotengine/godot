@@ -1,0 +1,21 @@
+#version 460
+#extension GL_NV_ray_tracing : enable
+hitAttributeNV vec4 iAttr;
+void main()
+{
+	uvec3 v0 = gl_LaunchIDNV;
+	uvec3 v1 = gl_LaunchSizeNV;
+	int v2 = gl_PrimitiveID;
+	int v3 = gl_InstanceID;
+	int v4 = gl_InstanceCustomIndexNV;
+	vec3 v5 = gl_WorldRayOriginNV;
+	vec3 v6 = gl_WorldRayDirectionNV;
+	vec3 v7 = gl_ObjectRayOriginNV;
+	vec3 v8 = gl_ObjectRayDirectionNV;
+	float v9 = gl_RayTminNV;
+	float v10 = gl_RayTmaxNV;
+	mat4x3 v11 = gl_ObjectToWorldNV;
+	mat4x3 v12 = gl_WorldToObjectNV;
+	iAttr = vec4(0.5f,0.5f,0.0f,1.0f);
+	reportIntersectionNV(0.5, 1U);
+}

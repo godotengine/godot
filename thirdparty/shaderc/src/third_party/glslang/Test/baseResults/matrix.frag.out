@@ -1,0 +1,507 @@
+matrix.frag
+WARNING: 0:6: varying deprecated in version 130; may be removed in future release
+WARNING: 0:17: varying deprecated in version 130; may be removed in future release
+WARNING: 0:22: varying deprecated in version 130; may be removed in future release
+
+Shader version: 130
+0:? Sequence
+0:25  Function Definition: main( ( global void)
+0:25    Function Parameters: 
+0:27    Sequence
+0:27      move second child to first child ( temp 4-component vector of float)
+0:27        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:27        Construct vec4 ( temp 4-component vector of float)
+0:27          direct index ( temp 4-component vector of float)
+0:27            'un34' ( uniform 4X4 matrix of float)
+0:27            Constant:
+0:27              1 (const int)
+0:28      add second child into first child ( temp 4-component vector of float)
+0:28        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:28        Construct vec4 ( temp 4-component vector of float)
+0:28          vector-times-matrix ( temp 3-component vector of float)
+0:28            'Color' ( smooth in 3-component vector of float)
+0:28            'colorTransform' ( uniform 3X3 matrix of float)
+0:28          Constant:
+0:28            1.000000
+0:30      Test condition and select ( temp void)
+0:30        Condition
+0:30        Compare Not Equal ( temp bool)
+0:30          'm' ( uniform 4X4 matrix of float)
+0:30          'n' ( uniform 4X4 matrix of float)
+0:30        true case
+0:31        add second child into first child ( temp 4-component vector of float)
+0:31          'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:31          'v' ( smooth in 4-component vector of float)
+0:30        false case
+0:33        Sequence
+0:33          add second child into first child ( temp 4-component vector of float)
+0:33            'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:33            matrix-times-vector ( temp 4-component vector of float)
+0:33              'm' ( uniform 4X4 matrix of float)
+0:33              'v' ( smooth in 4-component vector of float)
+0:34          add second child into first child ( temp 4-component vector of float)
+0:34            'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:34            vector-times-matrix ( temp 4-component vector of float)
+0:34              'v' ( smooth in 4-component vector of float)
+0:34              subtract ( temp 4X4 matrix of float)
+0:34                'm' ( uniform 4X4 matrix of float)
+0:34                'n' ( uniform 4X4 matrix of float)
+0:42      Sequence
+0:42        move second child to first child ( temp 4X4 matrix of float)
+0:42          'm34' ( temp 4X4 matrix of float)
+0:45          Construct mat4 ( temp 4X4 matrix of float)
+0:42            component-wise multiply ( temp float)
+0:42              direct index ( temp float)
+0:42                'v' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  0 (const int)
+0:42              direct index ( temp float)
+0:42                'u' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  0 (const int)
+0:42            component-wise multiply ( temp float)
+0:42              direct index ( temp float)
+0:42                'v' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  0 (const int)
+0:42              direct index ( temp float)
+0:42                'u' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  1 (const int)
+0:42            component-wise multiply ( temp float)
+0:42              direct index ( temp float)
+0:42                'v' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  0 (const int)
+0:42              direct index ( temp float)
+0:42                'u' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  2 (const int)
+0:42            component-wise multiply ( temp float)
+0:42              direct index ( temp float)
+0:42                'v' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  0 (const int)
+0:42              direct index ( temp float)
+0:42                'u' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  3 (const int)
+0:43            component-wise multiply ( temp float)
+0:43              direct index ( temp float)
+0:43                'v' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  1 (const int)
+0:43              direct index ( temp float)
+0:43                'u' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  0 (const int)
+0:43            component-wise multiply ( temp float)
+0:43              direct index ( temp float)
+0:43                'v' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  1 (const int)
+0:43              direct index ( temp float)
+0:43                'u' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  1 (const int)
+0:43            component-wise multiply ( temp float)
+0:43              direct index ( temp float)
+0:43                'v' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  1 (const int)
+0:43              direct index ( temp float)
+0:43                'u' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  2 (const int)
+0:43            component-wise multiply ( temp float)
+0:43              direct index ( temp float)
+0:43                'v' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  1 (const int)
+0:43              direct index ( temp float)
+0:43                'u' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  3 (const int)
+0:44            component-wise multiply ( temp float)
+0:44              direct index ( temp float)
+0:44                'v' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  2 (const int)
+0:44              direct index ( temp float)
+0:44                'u' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  0 (const int)
+0:44            component-wise multiply ( temp float)
+0:44              direct index ( temp float)
+0:44                'v' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  2 (const int)
+0:44              direct index ( temp float)
+0:44                'u' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  1 (const int)
+0:44            component-wise multiply ( temp float)
+0:44              direct index ( temp float)
+0:44                'v' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  2 (const int)
+0:44              direct index ( temp float)
+0:44                'u' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  2 (const int)
+0:44            component-wise multiply ( temp float)
+0:44              direct index ( temp float)
+0:44                'v' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  2 (const int)
+0:44              direct index ( temp float)
+0:44                'u' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  3 (const int)
+0:45            component-wise multiply ( temp float)
+0:45              direct index ( temp float)
+0:45                'v' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  3 (const int)
+0:45              direct index ( temp float)
+0:45                'u' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  0 (const int)
+0:45            component-wise multiply ( temp float)
+0:45              direct index ( temp float)
+0:45                'v' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  3 (const int)
+0:45              direct index ( temp float)
+0:45                'u' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  1 (const int)
+0:45            component-wise multiply ( temp float)
+0:45              direct index ( temp float)
+0:45                'v' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  3 (const int)
+0:45              direct index ( temp float)
+0:45                'u' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  2 (const int)
+0:45            component-wise multiply ( temp float)
+0:45              direct index ( temp float)
+0:45                'v' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  3 (const int)
+0:45              direct index ( temp float)
+0:45                'u' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  3 (const int)
+0:46      add second child into first child ( temp 4X4 matrix of float)
+0:46        'm34' ( temp 4X4 matrix of float)
+0:46        Construct mat4 ( temp 4X4 matrix of float)
+0:46          direct index ( temp float)
+0:46            'v' ( smooth in 4-component vector of float)
+0:46            Constant:
+0:46              0 (const int)
+0:47      add second child into first child ( temp 4X4 matrix of float)
+0:47        'm34' ( temp 4X4 matrix of float)
+0:47        Construct mat4 ( temp 4X4 matrix of float)
+0:47          'u' ( smooth in 4-component vector of float)
+0:47          direct index ( temp float)
+0:47            'u' ( smooth in 4-component vector of float)
+0:47            Constant:
+0:47              0 (const int)
+0:47          'u' ( smooth in 4-component vector of float)
+0:47          direct index ( temp float)
+0:47            'u' ( smooth in 4-component vector of float)
+0:47            Constant:
+0:47              0 (const int)
+0:47          'u' ( smooth in 4-component vector of float)
+0:47          direct index ( temp float)
+0:47            'u' ( smooth in 4-component vector of float)
+0:47            Constant:
+0:47              0 (const int)
+0:47          direct index ( temp float)
+0:47            'u' ( smooth in 4-component vector of float)
+0:47            Constant:
+0:47              0 (const int)
+0:51      Test condition and select ( temp void)
+0:51        Condition
+0:51        Compare Equal ( temp bool)
+0:51          'm34' ( temp 4X4 matrix of float)
+0:51          'un34' ( uniform 4X4 matrix of float)
+0:51        true case
+0:52        add second child into first child ( temp 4-component vector of float)
+0:52          'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:52          matrix-times-vector ( temp 4-component vector of float)
+0:52            'm34' ( temp 4X4 matrix of float)
+0:52            'u' ( smooth in 4-component vector of float)
+0:51        false case
+0:54        add second child into first child ( temp 4-component vector of float)
+0:54          'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:54          matrix-times-vector ( temp 4-component vector of float)
+0:54            matrix-multiply ( temp 4X4 matrix of float)
+0:54              'un34' ( uniform 4X4 matrix of float)
+0:54              'um43' ( uniform 4X4 matrix of float)
+0:54            'v' ( smooth in 4-component vector of float)
+0:?   Linker Objects
+0:?     'colorTransform' ( uniform 3X3 matrix of float)
+0:?     'Color' ( smooth in 3-component vector of float)
+0:?     'm' ( uniform 4X4 matrix of float)
+0:?     'n' ( uniform 4X4 matrix of float)
+0:?     'um43' ( uniform 4X4 matrix of float)
+0:?     'un34' ( uniform 4X4 matrix of float)
+0:?     'v' ( smooth in 4-component vector of float)
+0:?     'u' ( smooth in 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 130
+0:? Sequence
+0:25  Function Definition: main( ( global void)
+0:25    Function Parameters: 
+0:27    Sequence
+0:27      move second child to first child ( temp 4-component vector of float)
+0:27        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:27        Construct vec4 ( temp 4-component vector of float)
+0:27          direct index ( temp 4-component vector of float)
+0:27            'un34' ( uniform 4X4 matrix of float)
+0:27            Constant:
+0:27              1 (const int)
+0:28      add second child into first child ( temp 4-component vector of float)
+0:28        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:28        Construct vec4 ( temp 4-component vector of float)
+0:28          vector-times-matrix ( temp 3-component vector of float)
+0:28            'Color' ( smooth in 3-component vector of float)
+0:28            'colorTransform' ( uniform 3X3 matrix of float)
+0:28          Constant:
+0:28            1.000000
+0:30      Test condition and select ( temp void)
+0:30        Condition
+0:30        Compare Not Equal ( temp bool)
+0:30          'm' ( uniform 4X4 matrix of float)
+0:30          'n' ( uniform 4X4 matrix of float)
+0:30        true case
+0:31        add second child into first child ( temp 4-component vector of float)
+0:31          'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:31          'v' ( smooth in 4-component vector of float)
+0:30        false case
+0:33        Sequence
+0:33          add second child into first child ( temp 4-component vector of float)
+0:33            'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:33            matrix-times-vector ( temp 4-component vector of float)
+0:33              'm' ( uniform 4X4 matrix of float)
+0:33              'v' ( smooth in 4-component vector of float)
+0:34          add second child into first child ( temp 4-component vector of float)
+0:34            'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:34            vector-times-matrix ( temp 4-component vector of float)
+0:34              'v' ( smooth in 4-component vector of float)
+0:34              subtract ( temp 4X4 matrix of float)
+0:34                'm' ( uniform 4X4 matrix of float)
+0:34                'n' ( uniform 4X4 matrix of float)
+0:42      Sequence
+0:42        move second child to first child ( temp 4X4 matrix of float)
+0:42          'm34' ( temp 4X4 matrix of float)
+0:45          Construct mat4 ( temp 4X4 matrix of float)
+0:42            component-wise multiply ( temp float)
+0:42              direct index ( temp float)
+0:42                'v' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  0 (const int)
+0:42              direct index ( temp float)
+0:42                'u' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  0 (const int)
+0:42            component-wise multiply ( temp float)
+0:42              direct index ( temp float)
+0:42                'v' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  0 (const int)
+0:42              direct index ( temp float)
+0:42                'u' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  1 (const int)
+0:42            component-wise multiply ( temp float)
+0:42              direct index ( temp float)
+0:42                'v' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  0 (const int)
+0:42              direct index ( temp float)
+0:42                'u' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  2 (const int)
+0:42            component-wise multiply ( temp float)
+0:42              direct index ( temp float)
+0:42                'v' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  0 (const int)
+0:42              direct index ( temp float)
+0:42                'u' ( smooth in 4-component vector of float)
+0:42                Constant:
+0:42                  3 (const int)
+0:43            component-wise multiply ( temp float)
+0:43              direct index ( temp float)
+0:43                'v' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  1 (const int)
+0:43              direct index ( temp float)
+0:43                'u' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  0 (const int)
+0:43            component-wise multiply ( temp float)
+0:43              direct index ( temp float)
+0:43                'v' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  1 (const int)
+0:43              direct index ( temp float)
+0:43                'u' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  1 (const int)
+0:43            component-wise multiply ( temp float)
+0:43              direct index ( temp float)
+0:43                'v' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  1 (const int)
+0:43              direct index ( temp float)
+0:43                'u' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  2 (const int)
+0:43            component-wise multiply ( temp float)
+0:43              direct index ( temp float)
+0:43                'v' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  1 (const int)
+0:43              direct index ( temp float)
+0:43                'u' ( smooth in 4-component vector of float)
+0:43                Constant:
+0:43                  3 (const int)
+0:44            component-wise multiply ( temp float)
+0:44              direct index ( temp float)
+0:44                'v' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  2 (const int)
+0:44              direct index ( temp float)
+0:44                'u' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  0 (const int)
+0:44            component-wise multiply ( temp float)
+0:44              direct index ( temp float)
+0:44                'v' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  2 (const int)
+0:44              direct index ( temp float)
+0:44                'u' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  1 (const int)
+0:44            component-wise multiply ( temp float)
+0:44              direct index ( temp float)
+0:44                'v' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  2 (const int)
+0:44              direct index ( temp float)
+0:44                'u' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  2 (const int)
+0:44            component-wise multiply ( temp float)
+0:44              direct index ( temp float)
+0:44                'v' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  2 (const int)
+0:44              direct index ( temp float)
+0:44                'u' ( smooth in 4-component vector of float)
+0:44                Constant:
+0:44                  3 (const int)
+0:45            component-wise multiply ( temp float)
+0:45              direct index ( temp float)
+0:45                'v' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  3 (const int)
+0:45              direct index ( temp float)
+0:45                'u' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  0 (const int)
+0:45            component-wise multiply ( temp float)
+0:45              direct index ( temp float)
+0:45                'v' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  3 (const int)
+0:45              direct index ( temp float)
+0:45                'u' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  1 (const int)
+0:45            component-wise multiply ( temp float)
+0:45              direct index ( temp float)
+0:45                'v' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  3 (const int)
+0:45              direct index ( temp float)
+0:45                'u' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  2 (const int)
+0:45            component-wise multiply ( temp float)
+0:45              direct index ( temp float)
+0:45                'v' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  3 (const int)
+0:45              direct index ( temp float)
+0:45                'u' ( smooth in 4-component vector of float)
+0:45                Constant:
+0:45                  3 (const int)
+0:46      add second child into first child ( temp 4X4 matrix of float)
+0:46        'm34' ( temp 4X4 matrix of float)
+0:46        Construct mat4 ( temp 4X4 matrix of float)
+0:46          direct index ( temp float)
+0:46            'v' ( smooth in 4-component vector of float)
+0:46            Constant:
+0:46              0 (const int)
+0:47      add second child into first child ( temp 4X4 matrix of float)
+0:47        'm34' ( temp 4X4 matrix of float)
+0:47        Construct mat4 ( temp 4X4 matrix of float)
+0:47          'u' ( smooth in 4-component vector of float)
+0:47          direct index ( temp float)
+0:47            'u' ( smooth in 4-component vector of float)
+0:47            Constant:
+0:47              0 (const int)
+0:47          'u' ( smooth in 4-component vector of float)
+0:47          direct index ( temp float)
+0:47            'u' ( smooth in 4-component vector of float)
+0:47            Constant:
+0:47              0 (const int)
+0:47          'u' ( smooth in 4-component vector of float)
+0:47          direct index ( temp float)
+0:47            'u' ( smooth in 4-component vector of float)
+0:47            Constant:
+0:47              0 (const int)
+0:47          direct index ( temp float)
+0:47            'u' ( smooth in 4-component vector of float)
+0:47            Constant:
+0:47              0 (const int)
+0:51      Test condition and select ( temp void)
+0:51        Condition
+0:51        Compare Equal ( temp bool)
+0:51          'm34' ( temp 4X4 matrix of float)
+0:51          'un34' ( uniform 4X4 matrix of float)
+0:51        true case
+0:52        add second child into first child ( temp 4-component vector of float)
+0:52          'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:52          matrix-times-vector ( temp 4-component vector of float)
+0:52            'm34' ( temp 4X4 matrix of float)
+0:52            'u' ( smooth in 4-component vector of float)
+0:51        false case
+0:54        add second child into first child ( temp 4-component vector of float)
+0:54          'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:54          matrix-times-vector ( temp 4-component vector of float)
+0:54            matrix-multiply ( temp 4X4 matrix of float)
+0:54              'un34' ( uniform 4X4 matrix of float)
+0:54              'um43' ( uniform 4X4 matrix of float)
+0:54            'v' ( smooth in 4-component vector of float)
+0:?   Linker Objects
+0:?     'colorTransform' ( uniform 3X3 matrix of float)
+0:?     'Color' ( smooth in 3-component vector of float)
+0:?     'm' ( uniform 4X4 matrix of float)
+0:?     'n' ( uniform 4X4 matrix of float)
+0:?     'um43' ( uniform 4X4 matrix of float)
+0:?     'un34' ( uniform 4X4 matrix of float)
+0:?     'v' ( smooth in 4-component vector of float)
+0:?     'u' ( smooth in 4-component vector of float)
+

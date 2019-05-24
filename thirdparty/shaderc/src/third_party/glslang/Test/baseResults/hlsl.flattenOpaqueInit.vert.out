@@ -1,0 +1,293 @@
+hlsl.flattenOpaqueInit.vert
+WARNING: AST will form illegal SPIR-V; need to transform to legalize
+Shader version: 500
+0:? Sequence
+0:5  Function Definition: lookUp(struct-FxaaTex-p1-t211; ( temp 4-component vector of float)
+0:5    Function Parameters: 
+0:5      'tex' ( in structure{ temp sampler smpl,  temp texture2D tex})
+0:?     Sequence
+0:6      Branch: Return with expression
+0:6        texture ( temp 4-component vector of float)
+0:6          Construct combined texture-sampler ( temp sampler2D)
+0:6            tex: direct index for structure ( temp texture2D)
+0:6              'tex' ( in structure{ temp sampler smpl,  temp texture2D tex})
+0:6              Constant:
+0:6                1 (const int)
+0:6            smpl: direct index for structure ( temp sampler)
+0:6              'tex' ( in structure{ temp sampler smpl,  temp texture2D tex})
+0:6              Constant:
+0:6                0 (const int)
+0:?           Constant:
+0:?             0.300000
+0:?             0.400000
+0:10  Function Definition: fillOpaque( ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:10    Function Parameters: 
+0:?     Sequence
+0:12      move second child to first child ( temp sampler)
+0:12        smpl: direct index for structure ( temp sampler)
+0:12          't' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:12          Constant:
+0:12            0 (const int)
+0:12        'g_tInputTexture_sampler' ( uniform sampler)
+0:13      move second child to first child ( temp texture2D)
+0:13        tex: direct index for structure ( temp texture2D)
+0:13          't' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:13          Constant:
+0:13            1 (const int)
+0:13        'g_tInputTexture' ( uniform texture2D)
+0:14      Branch: Return with expression
+0:14        't' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:18  Function Definition: @main( ( temp 4-component vector of float)
+0:18    Function Parameters: 
+0:?     Sequence
+0:19      Sequence
+0:19        move second child to first child ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:19          'tex1' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:19          Construct structure ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:19            'g_tInputTexture_sampler' ( uniform sampler)
+0:19            'g_tInputTexture' ( uniform texture2D)
+0:20      Sequence
+0:20        move second child to first child ( temp 4-component vector of float)
+0:20          'res' ( temp 4-component vector of float)
+0:20          Function Call: lookUp(struct-FxaaTex-p1-t211; ( temp 4-component vector of float)
+0:20            'tex1' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:21      Sequence
+0:21        move second child to first child ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:21          'tex2' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:21          Function Call: fillOpaque( ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:22      add second child into first child ( temp 4-component vector of float)
+0:22        'res' ( temp 4-component vector of float)
+0:22        Function Call: lookUp(struct-FxaaTex-p1-t211; ( temp 4-component vector of float)
+0:22          'tex2' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:23      Sequence
+0:23        move second child to first child ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:23          'tex3' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:23          'tex1' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:24      add second child into first child ( temp 4-component vector of float)
+0:24        'res' ( temp 4-component vector of float)
+0:24        Function Call: lookUp(struct-FxaaTex-p1-t211; ( temp 4-component vector of float)
+0:24          'tex3' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:26      Branch: Return with expression
+0:26        'res' ( temp 4-component vector of float)
+0:18  Function Definition: main( ( temp void)
+0:18    Function Parameters: 
+0:?     Sequence
+0:18      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:18        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'g_tInputTexture_sampler' ( uniform sampler)
+0:?     'g_tInputTexture' ( uniform texture2D)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked vertex stage:
+
+
+Shader version: 500
+0:? Sequence
+0:5  Function Definition: lookUp(struct-FxaaTex-p1-t211; ( temp 4-component vector of float)
+0:5    Function Parameters: 
+0:5      'tex' ( in structure{ temp sampler smpl,  temp texture2D tex})
+0:?     Sequence
+0:6      Branch: Return with expression
+0:6        texture ( temp 4-component vector of float)
+0:6          Construct combined texture-sampler ( temp sampler2D)
+0:6            tex: direct index for structure ( temp texture2D)
+0:6              'tex' ( in structure{ temp sampler smpl,  temp texture2D tex})
+0:6              Constant:
+0:6                1 (const int)
+0:6            smpl: direct index for structure ( temp sampler)
+0:6              'tex' ( in structure{ temp sampler smpl,  temp texture2D tex})
+0:6              Constant:
+0:6                0 (const int)
+0:?           Constant:
+0:?             0.300000
+0:?             0.400000
+0:10  Function Definition: fillOpaque( ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:10    Function Parameters: 
+0:?     Sequence
+0:12      move second child to first child ( temp sampler)
+0:12        smpl: direct index for structure ( temp sampler)
+0:12          't' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:12          Constant:
+0:12            0 (const int)
+0:12        'g_tInputTexture_sampler' ( uniform sampler)
+0:13      move second child to first child ( temp texture2D)
+0:13        tex: direct index for structure ( temp texture2D)
+0:13          't' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:13          Constant:
+0:13            1 (const int)
+0:13        'g_tInputTexture' ( uniform texture2D)
+0:14      Branch: Return with expression
+0:14        't' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:18  Function Definition: @main( ( temp 4-component vector of float)
+0:18    Function Parameters: 
+0:?     Sequence
+0:19      Sequence
+0:19        move second child to first child ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:19          'tex1' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:19          Construct structure ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:19            'g_tInputTexture_sampler' ( uniform sampler)
+0:19            'g_tInputTexture' ( uniform texture2D)
+0:20      Sequence
+0:20        move second child to first child ( temp 4-component vector of float)
+0:20          'res' ( temp 4-component vector of float)
+0:20          Function Call: lookUp(struct-FxaaTex-p1-t211; ( temp 4-component vector of float)
+0:20            'tex1' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:21      Sequence
+0:21        move second child to first child ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:21          'tex2' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:21          Function Call: fillOpaque( ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:22      add second child into first child ( temp 4-component vector of float)
+0:22        'res' ( temp 4-component vector of float)
+0:22        Function Call: lookUp(struct-FxaaTex-p1-t211; ( temp 4-component vector of float)
+0:22          'tex2' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:23      Sequence
+0:23        move second child to first child ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:23          'tex3' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:23          'tex1' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:24      add second child into first child ( temp 4-component vector of float)
+0:24        'res' ( temp 4-component vector of float)
+0:24        Function Call: lookUp(struct-FxaaTex-p1-t211; ( temp 4-component vector of float)
+0:24          'tex3' ( temp structure{ temp sampler smpl,  temp texture2D tex})
+0:26      Branch: Return with expression
+0:26        'res' ( temp 4-component vector of float)
+0:18  Function Definition: main( ( temp void)
+0:18    Function Parameters: 
+0:?     Sequence
+0:18      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:18        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'g_tInputTexture_sampler' ( uniform sampler)
+0:?     'g_tInputTexture' ( uniform texture2D)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 82
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Vertex 4  "main" 80
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "FxaaTex"
+                              MemberName 9(FxaaTex) 0  "smpl"
+                              MemberName 9(FxaaTex) 1  "tex"
+                              Name 14  "lookUp(struct-FxaaTex-p1-t211;"
+                              Name 13  "tex"
+                              Name 17  "fillOpaque("
+                              Name 20  "@main("
+                              Name 41  "t"
+                              Name 43  "g_tInputTexture_sampler"
+                              Name 47  "g_tInputTexture"
+                              Name 53  "tex1"
+                              Name 58  "res"
+                              Name 59  "param"
+                              Name 62  "tex2"
+                              Name 64  "param"
+                              Name 69  "tex3"
+                              Name 71  "param"
+                              Name 80  "@entryPointOutput"
+                              Decorate 43(g_tInputTexture_sampler) DescriptorSet 0
+                              Decorate 43(g_tInputTexture_sampler) Binding 0
+                              Decorate 47(g_tInputTexture) DescriptorSet 0
+                              Decorate 47(g_tInputTexture) Binding 0
+                              Decorate 80(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeSampler
+               7:             TypeFloat 32
+               8:             TypeImage 7(float) 2D sampled format:Unknown
+      9(FxaaTex):             TypeStruct 6 8
+              10:             TypePointer Function 9(FxaaTex)
+              11:             TypeVector 7(float) 4
+              12:             TypeFunction 11(fvec4) 10(ptr)
+              16:             TypeFunction 9(FxaaTex)
+              19:             TypeFunction 11(fvec4)
+              22:             TypeInt 32 1
+              23:     22(int) Constant 1
+              24:             TypePointer Function 8
+              27:     22(int) Constant 0
+              28:             TypePointer Function 6
+              31:             TypeSampledImage 8
+              33:             TypeVector 7(float) 2
+              34:    7(float) Constant 1050253722
+              35:    7(float) Constant 1053609165
+              36:   33(fvec2) ConstantComposite 34 35
+              37:    7(float) Constant 0
+              42:             TypePointer UniformConstant 6
+43(g_tInputTexture_sampler):     42(ptr) Variable UniformConstant
+              46:             TypePointer UniformConstant 8
+47(g_tInputTexture):     46(ptr) Variable UniformConstant
+              57:             TypePointer Function 11(fvec4)
+              79:             TypePointer Output 11(fvec4)
+80(@entryPointOutput):     79(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              81:   11(fvec4) FunctionCall 20(@main()
+                              Store 80(@entryPointOutput) 81
+                              Return
+                              FunctionEnd
+14(lookUp(struct-FxaaTex-p1-t211;):   11(fvec4) Function None 12
+         13(tex):     10(ptr) FunctionParameter
+              15:             Label
+              25:     24(ptr) AccessChain 13(tex) 23
+              26:           8 Load 25
+              29:     28(ptr) AccessChain 13(tex) 27
+              30:           6 Load 29
+              32:          31 SampledImage 26 30
+              38:   11(fvec4) ImageSampleExplicitLod 32 36 Lod 37
+                              ReturnValue 38
+                              FunctionEnd
+ 17(fillOpaque():  9(FxaaTex) Function None 16
+              18:             Label
+           41(t):     10(ptr) Variable Function
+              44:           6 Load 43(g_tInputTexture_sampler)
+              45:     28(ptr) AccessChain 41(t) 27
+                              Store 45 44
+              48:           8 Load 47(g_tInputTexture)
+              49:     24(ptr) AccessChain 41(t) 23
+                              Store 49 48
+              50:  9(FxaaTex) Load 41(t)
+                              ReturnValue 50
+                              FunctionEnd
+      20(@main():   11(fvec4) Function None 19
+              21:             Label
+        53(tex1):     10(ptr) Variable Function
+         58(res):     57(ptr) Variable Function
+       59(param):     10(ptr) Variable Function
+        62(tex2):     10(ptr) Variable Function
+       64(param):     10(ptr) Variable Function
+        69(tex3):     10(ptr) Variable Function
+       71(param):     10(ptr) Variable Function
+              54:           6 Load 43(g_tInputTexture_sampler)
+              55:           8 Load 47(g_tInputTexture)
+              56:  9(FxaaTex) CompositeConstruct 54 55
+                              Store 53(tex1) 56
+              60:  9(FxaaTex) Load 53(tex1)
+                              Store 59(param) 60
+              61:   11(fvec4) FunctionCall 14(lookUp(struct-FxaaTex-p1-t211;) 59(param)
+                              Store 58(res) 61
+              63:  9(FxaaTex) FunctionCall 17(fillOpaque()
+                              Store 62(tex2) 63
+              65:  9(FxaaTex) Load 62(tex2)
+                              Store 64(param) 65
+              66:   11(fvec4) FunctionCall 14(lookUp(struct-FxaaTex-p1-t211;) 64(param)
+              67:   11(fvec4) Load 58(res)
+              68:   11(fvec4) FAdd 67 66
+                              Store 58(res) 68
+              70:  9(FxaaTex) Load 53(tex1)
+                              Store 69(tex3) 70
+              72:  9(FxaaTex) Load 69(tex3)
+                              Store 71(param) 72
+              73:   11(fvec4) FunctionCall 14(lookUp(struct-FxaaTex-p1-t211;) 71(param)
+              74:   11(fvec4) Load 58(res)
+              75:   11(fvec4) FAdd 74 73
+                              Store 58(res) 75
+              76:   11(fvec4) Load 58(res)
+                              ReturnValue 76
+                              FunctionEnd

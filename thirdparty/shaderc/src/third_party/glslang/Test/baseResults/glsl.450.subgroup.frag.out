@@ -1,0 +1,41 @@
+glsl.450.subgroup.frag
+Shader version: 450
+Requested GL_KHR_shader_subgroup_basic
+0:? Sequence
+0:4  Function Definition: main( ( global void)
+0:4    Function Parameters: 
+0:6    Sequence
+0:6      move second child to first child ( temp 4-component vector of uint)
+0:6        'data' (layout( location=0) out 4-component vector of uint)
+0:6        Construct uvec4 ( temp 4-component vector of uint)
+0:6          'gl_SubgroupSize' ( flat in uint unknown built-in variable)
+0:6          'gl_SubgroupInvocationID' ( flat in uint unknown built-in variable)
+0:6          Constant:
+0:6            0 (const uint)
+0:6          Constant:
+0:6            0 (const uint)
+0:?   Linker Objects
+0:?     'data' (layout( location=0) out 4-component vector of uint)
+
+
+Linked fragment stage:
+
+
+Shader version: 450
+Requested GL_KHR_shader_subgroup_basic
+0:? Sequence
+0:4  Function Definition: main( ( global void)
+0:4    Function Parameters: 
+0:6    Sequence
+0:6      move second child to first child ( temp 4-component vector of uint)
+0:6        'data' (layout( location=0) out 4-component vector of uint)
+0:6        Construct uvec4 ( temp 4-component vector of uint)
+0:6          'gl_SubgroupSize' ( flat in uint unknown built-in variable)
+0:6          'gl_SubgroupInvocationID' ( flat in uint unknown built-in variable)
+0:6          Constant:
+0:6            0 (const uint)
+0:6          Constant:
+0:6            0 (const uint)
+0:?   Linker Objects
+0:?     'data' (layout( location=0) out 4-component vector of uint)
+

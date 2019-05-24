@@ -1,0 +1,269 @@
+hlsl.matpack-pragma.frag
+WARNING: 0:19: 'random_string_foo' : unknown pack_matrix pragma value 
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:29  Function Definition: @main( ( temp 4-component vector of float)
+0:29    Function Parameters: 
+0:?     Sequence
+0:32      Branch: Return with expression
+0:32        add ( temp 4-component vector of float)
+0:32          add ( temp 4-component vector of float)
+0:31            add ( temp 4-component vector of float)
+0:31              add ( temp 4-component vector of float)
+0:31                add ( temp 4-component vector of float)
+0:31                  direct index (layout( row_major) temp 4-component vector of float)
+0:31                    mat1: direct index for structure (layout( row_major) temp 4X4 matrix of float)
+0:31                      g_MyBuffer1: direct index for structure (layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3})
+0:31                        'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3} g_MyBuffer1, layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3} g_MyBuffer2, layout( row_major std140) uniform 4X4 matrix of float mat1a})
+0:31                        Constant:
+0:31                          0 (const uint)
+0:31                      Constant:
+0:31                        0 (const int)
+0:31                    Constant:
+0:31                      0 (const int)
+0:31                  direct index (layout( column_major) temp 4-component vector of float)
+0:31                    mat2: direct index for structure (layout( column_major) temp 4X4 matrix of float)
+0:31                      g_MyBuffer1: direct index for structure (layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3})
+0:31                        'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3} g_MyBuffer1, layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3} g_MyBuffer2, layout( row_major std140) uniform 4X4 matrix of float mat1a})
+0:31                        Constant:
+0:31                          0 (const uint)
+0:31                      Constant:
+0:31                        1 (const int)
+0:31                    Constant:
+0:31                      0 (const int)
+0:31                direct index (layout( column_major) temp 4-component vector of float)
+0:31                  mat3: direct index for structure (layout( column_major) temp 4X4 matrix of float)
+0:31                    g_MyBuffer1: direct index for structure (layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3})
+0:31                      'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3} g_MyBuffer1, layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3} g_MyBuffer2, layout( row_major std140) uniform 4X4 matrix of float mat1a})
+0:31                      Constant:
+0:31                        0 (const uint)
+0:31                    Constant:
+0:31                      2 (const int)
+0:31                  Constant:
+0:31                    0 (const int)
+0:32              direct index (layout( row_major) temp 4-component vector of float)
+0:32                mat1: direct index for structure (layout( row_major) temp 4X4 matrix of float)
+0:32                  g_MyBuffer2: direct index for structure (layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3})
+0:32                    'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3} g_MyBuffer1, layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3} g_MyBuffer2, layout( row_major std140) uniform 4X4 matrix of float mat1a})
+0:32                    Constant:
+0:32                      1 (const uint)
+0:32                  Constant:
+0:32                    0 (const int)
+0:32                Constant:
+0:32                  0 (const int)
+0:32            direct index (layout( column_major) temp 4-component vector of float)
+0:32              mat2: direct index for structure (layout( column_major) temp 4X4 matrix of float)
+0:32                g_MyBuffer2: direct index for structure (layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3})
+0:32                  'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3} g_MyBuffer1, layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3} g_MyBuffer2, layout( row_major std140) uniform 4X4 matrix of float mat1a})
+0:32                  Constant:
+0:32                    1 (const uint)
+0:32                Constant:
+0:32                  1 (const int)
+0:32              Constant:
+0:32                0 (const int)
+0:32          direct index (layout( row_major) temp 4-component vector of float)
+0:32            mat3: direct index for structure (layout( row_major) temp 4X4 matrix of float)
+0:32              g_MyBuffer2: direct index for structure (layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3})
+0:32                'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3} g_MyBuffer1, layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3} g_MyBuffer2, layout( row_major std140) uniform 4X4 matrix of float mat1a})
+0:32                Constant:
+0:32                  1 (const uint)
+0:32              Constant:
+0:32                2 (const int)
+0:32            Constant:
+0:32              0 (const int)
+0:29  Function Definition: main( ( temp void)
+0:29    Function Parameters: 
+0:?     Sequence
+0:29      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:29        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3} g_MyBuffer1, layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3} g_MyBuffer2, layout( row_major std140) uniform 4X4 matrix of float mat1a})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:29  Function Definition: @main( ( temp 4-component vector of float)
+0:29    Function Parameters: 
+0:?     Sequence
+0:32      Branch: Return with expression
+0:32        add ( temp 4-component vector of float)
+0:32          add ( temp 4-component vector of float)
+0:31            add ( temp 4-component vector of float)
+0:31              add ( temp 4-component vector of float)
+0:31                add ( temp 4-component vector of float)
+0:31                  direct index (layout( row_major) temp 4-component vector of float)
+0:31                    mat1: direct index for structure (layout( row_major) temp 4X4 matrix of float)
+0:31                      g_MyBuffer1: direct index for structure (layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3})
+0:31                        'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3} g_MyBuffer1, layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3} g_MyBuffer2, layout( row_major std140) uniform 4X4 matrix of float mat1a})
+0:31                        Constant:
+0:31                          0 (const uint)
+0:31                      Constant:
+0:31                        0 (const int)
+0:31                    Constant:
+0:31                      0 (const int)
+0:31                  direct index (layout( column_major) temp 4-component vector of float)
+0:31                    mat2: direct index for structure (layout( column_major) temp 4X4 matrix of float)
+0:31                      g_MyBuffer1: direct index for structure (layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3})
+0:31                        'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3} g_MyBuffer1, layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3} g_MyBuffer2, layout( row_major std140) uniform 4X4 matrix of float mat1a})
+0:31                        Constant:
+0:31                          0 (const uint)
+0:31                      Constant:
+0:31                        1 (const int)
+0:31                    Constant:
+0:31                      0 (const int)
+0:31                direct index (layout( column_major) temp 4-component vector of float)
+0:31                  mat3: direct index for structure (layout( column_major) temp 4X4 matrix of float)
+0:31                    g_MyBuffer1: direct index for structure (layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3})
+0:31                      'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3} g_MyBuffer1, layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3} g_MyBuffer2, layout( row_major std140) uniform 4X4 matrix of float mat1a})
+0:31                      Constant:
+0:31                        0 (const uint)
+0:31                    Constant:
+0:31                      2 (const int)
+0:31                  Constant:
+0:31                    0 (const int)
+0:32              direct index (layout( row_major) temp 4-component vector of float)
+0:32                mat1: direct index for structure (layout( row_major) temp 4X4 matrix of float)
+0:32                  g_MyBuffer2: direct index for structure (layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3})
+0:32                    'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3} g_MyBuffer1, layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3} g_MyBuffer2, layout( row_major std140) uniform 4X4 matrix of float mat1a})
+0:32                    Constant:
+0:32                      1 (const uint)
+0:32                  Constant:
+0:32                    0 (const int)
+0:32                Constant:
+0:32                  0 (const int)
+0:32            direct index (layout( column_major) temp 4-component vector of float)
+0:32              mat2: direct index for structure (layout( column_major) temp 4X4 matrix of float)
+0:32                g_MyBuffer2: direct index for structure (layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3})
+0:32                  'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3} g_MyBuffer1, layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3} g_MyBuffer2, layout( row_major std140) uniform 4X4 matrix of float mat1a})
+0:32                  Constant:
+0:32                    1 (const uint)
+0:32                Constant:
+0:32                  1 (const int)
+0:32              Constant:
+0:32                0 (const int)
+0:32          direct index (layout( row_major) temp 4-component vector of float)
+0:32            mat3: direct index for structure (layout( row_major) temp 4X4 matrix of float)
+0:32              g_MyBuffer2: direct index for structure (layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3})
+0:32                'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3} g_MyBuffer1, layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3} g_MyBuffer2, layout( row_major std140) uniform 4X4 matrix of float mat1a})
+0:32                Constant:
+0:32                  1 (const uint)
+0:32              Constant:
+0:32                2 (const int)
+0:32            Constant:
+0:32              0 (const int)
+0:29  Function Definition: main( ( temp void)
+0:29    Function Parameters: 
+0:?     Sequence
+0:29      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:29        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( column_major) temp 4X4 matrix of float mat3} g_MyBuffer1, layout( row_major std140) uniform structure{layout( row_major) temp 4X4 matrix of float mat1, layout( column_major) temp 4X4 matrix of float mat2, layout( row_major) temp 4X4 matrix of float mat3} g_MyBuffer2, layout( row_major std140) uniform 4X4 matrix of float mat1a})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 44
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 42
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "@main("
+                              Name 12  "MyBuffer1"
+                              MemberName 12(MyBuffer1) 0  "mat1"
+                              MemberName 12(MyBuffer1) 1  "mat2"
+                              MemberName 12(MyBuffer1) 2  "mat3"
+                              Name 13  "MyBuffer2"
+                              MemberName 13(MyBuffer2) 0  "mat1"
+                              MemberName 13(MyBuffer2) 1  "mat2"
+                              MemberName 13(MyBuffer2) 2  "mat3"
+                              Name 14  "Example"
+                              MemberName 14(Example) 0  "g_MyBuffer1"
+                              MemberName 14(Example) 1  "g_MyBuffer2"
+                              MemberName 14(Example) 2  "mat1a"
+                              Name 16  ""
+                              Name 42  "@entryPointOutput"
+                              MemberDecorate 12(MyBuffer1) 0 RowMajor
+                              MemberDecorate 12(MyBuffer1) 0 Offset 0
+                              MemberDecorate 12(MyBuffer1) 0 MatrixStride 16
+                              MemberDecorate 12(MyBuffer1) 1 ColMajor
+                              MemberDecorate 12(MyBuffer1) 1 Offset 64
+                              MemberDecorate 12(MyBuffer1) 1 MatrixStride 16
+                              MemberDecorate 12(MyBuffer1) 2 ColMajor
+                              MemberDecorate 12(MyBuffer1) 2 Offset 128
+                              MemberDecorate 12(MyBuffer1) 2 MatrixStride 16
+                              MemberDecorate 13(MyBuffer2) 0 RowMajor
+                              MemberDecorate 13(MyBuffer2) 0 Offset 0
+                              MemberDecorate 13(MyBuffer2) 0 MatrixStride 16
+                              MemberDecorate 13(MyBuffer2) 1 ColMajor
+                              MemberDecorate 13(MyBuffer2) 1 Offset 64
+                              MemberDecorate 13(MyBuffer2) 1 MatrixStride 16
+                              MemberDecorate 13(MyBuffer2) 2 RowMajor
+                              MemberDecorate 13(MyBuffer2) 2 Offset 128
+                              MemberDecorate 13(MyBuffer2) 2 MatrixStride 16
+                              MemberDecorate 14(Example) 0 Offset 0
+                              MemberDecorate 14(Example) 1 Offset 192
+                              MemberDecorate 14(Example) 2 RowMajor
+                              MemberDecorate 14(Example) 2 Offset 384
+                              MemberDecorate 14(Example) 2 MatrixStride 16
+                              Decorate 14(Example) Block
+                              Decorate 16 DescriptorSet 0
+                              Decorate 16 Binding 0
+                              Decorate 42(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeFunction 7(fvec4)
+              11:             TypeMatrix 7(fvec4) 4
+   12(MyBuffer1):             TypeStruct 11 11 11
+   13(MyBuffer2):             TypeStruct 11 11 11
+     14(Example):             TypeStruct 12(MyBuffer1) 13(MyBuffer2) 11
+              15:             TypePointer Uniform 14(Example)
+              16:     15(ptr) Variable Uniform
+              17:             TypeInt 32 1
+              18:     17(int) Constant 0
+              19:             TypePointer Uniform 7(fvec4)
+              22:     17(int) Constant 1
+              26:     17(int) Constant 2
+              41:             TypePointer Output 7(fvec4)
+42(@entryPointOutput):     41(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              43:    7(fvec4) FunctionCall 9(@main()
+                              Store 42(@entryPointOutput) 43
+                              Return
+                              FunctionEnd
+       9(@main():    7(fvec4) Function None 8
+              10:             Label
+              20:     19(ptr) AccessChain 16 18 18 18
+              21:    7(fvec4) Load 20
+              23:     19(ptr) AccessChain 16 18 22 18
+              24:    7(fvec4) Load 23
+              25:    7(fvec4) FAdd 21 24
+              27:     19(ptr) AccessChain 16 18 26 18
+              28:    7(fvec4) Load 27
+              29:    7(fvec4) FAdd 25 28
+              30:     19(ptr) AccessChain 16 22 18 18
+              31:    7(fvec4) Load 30
+              32:    7(fvec4) FAdd 29 31
+              33:     19(ptr) AccessChain 16 22 22 18
+              34:    7(fvec4) Load 33
+              35:    7(fvec4) FAdd 32 34
+              36:     19(ptr) AccessChain 16 22 26 18
+              37:    7(fvec4) Load 36
+              38:    7(fvec4) FAdd 35 37
+                              ReturnValue 38
+                              FunctionEnd

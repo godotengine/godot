@@ -1,0 +1,1158 @@
+hlsl.gatherRGBA.basic.dx10.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+using depth_any
+0:? Sequence
+0:34  Function Definition: @main( ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:34    Function Parameters: 
+0:?     Sequence
+0:39      Sequence
+0:39        move second child to first child ( temp 4-component vector of float)
+0:39          'txval00' ( temp 4-component vector of float)
+0:39          textureGather ( temp 4-component vector of float)
+0:39            Construct combined texture-sampler ( temp sampler2D)
+0:39              'g_tTex2df4' ( uniform texture2D)
+0:39              'g_sSamp' (layout( binding=0) uniform sampler)
+0:39            c2: direct index for structure ( uniform 2-component vector of float)
+0:39              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:39              Constant:
+0:39                1 (const uint)
+0:39            Constant:
+0:39              0 (const int)
+0:40      Sequence
+0:40        move second child to first child ( temp 4-component vector of int)
+0:40          'txval01' ( temp 4-component vector of int)
+0:40          textureGather ( temp 4-component vector of int)
+0:40            Construct combined texture-sampler ( temp isampler2D)
+0:40              'g_tTex2di4' ( uniform itexture2D)
+0:40              'g_sSamp' (layout( binding=0) uniform sampler)
+0:40            c2: direct index for structure ( uniform 2-component vector of float)
+0:40              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:40              Constant:
+0:40                1 (const uint)
+0:40            Constant:
+0:40              0 (const int)
+0:41      Sequence
+0:41        move second child to first child ( temp 4-component vector of uint)
+0:41          'txval02' ( temp 4-component vector of uint)
+0:41          textureGather ( temp 4-component vector of uint)
+0:41            Construct combined texture-sampler ( temp usampler2D)
+0:41              'g_tTex2du4' ( uniform utexture2D)
+0:41              'g_sSamp' (layout( binding=0) uniform sampler)
+0:41            c2: direct index for structure ( uniform 2-component vector of float)
+0:41              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:41              Constant:
+0:41                1 (const uint)
+0:41            Constant:
+0:41              0 (const int)
+0:43      Sequence
+0:43        move second child to first child ( temp 4-component vector of float)
+0:43          'txval10' ( temp 4-component vector of float)
+0:43          textureGather ( temp 4-component vector of float)
+0:43            Construct combined texture-sampler ( temp sampler2D)
+0:43              'g_tTex2df4' ( uniform texture2D)
+0:43              'g_sSamp' (layout( binding=0) uniform sampler)
+0:43            c2: direct index for structure ( uniform 2-component vector of float)
+0:43              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:43              Constant:
+0:43                1 (const uint)
+0:43            Constant:
+0:43              1 (const int)
+0:44      Sequence
+0:44        move second child to first child ( temp 4-component vector of int)
+0:44          'txval11' ( temp 4-component vector of int)
+0:44          textureGather ( temp 4-component vector of int)
+0:44            Construct combined texture-sampler ( temp isampler2D)
+0:44              'g_tTex2di4' ( uniform itexture2D)
+0:44              'g_sSamp' (layout( binding=0) uniform sampler)
+0:44            c2: direct index for structure ( uniform 2-component vector of float)
+0:44              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:44              Constant:
+0:44                1 (const uint)
+0:44            Constant:
+0:44              1 (const int)
+0:45      Sequence
+0:45        move second child to first child ( temp 4-component vector of uint)
+0:45          'txval12' ( temp 4-component vector of uint)
+0:45          textureGather ( temp 4-component vector of uint)
+0:45            Construct combined texture-sampler ( temp usampler2D)
+0:45              'g_tTex2du4' ( uniform utexture2D)
+0:45              'g_sSamp' (layout( binding=0) uniform sampler)
+0:45            c2: direct index for structure ( uniform 2-component vector of float)
+0:45              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:45              Constant:
+0:45                1 (const uint)
+0:45            Constant:
+0:45              1 (const int)
+0:47      Sequence
+0:47        move second child to first child ( temp 4-component vector of float)
+0:47          'txval20' ( temp 4-component vector of float)
+0:47          textureGather ( temp 4-component vector of float)
+0:47            Construct combined texture-sampler ( temp sampler2D)
+0:47              'g_tTex2df4' ( uniform texture2D)
+0:47              'g_sSamp' (layout( binding=0) uniform sampler)
+0:47            c2: direct index for structure ( uniform 2-component vector of float)
+0:47              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:47              Constant:
+0:47                1 (const uint)
+0:47            Constant:
+0:47              2 (const int)
+0:48      Sequence
+0:48        move second child to first child ( temp 4-component vector of int)
+0:48          'txval21' ( temp 4-component vector of int)
+0:48          textureGather ( temp 4-component vector of int)
+0:48            Construct combined texture-sampler ( temp isampler2D)
+0:48              'g_tTex2di4' ( uniform itexture2D)
+0:48              'g_sSamp' (layout( binding=0) uniform sampler)
+0:48            c2: direct index for structure ( uniform 2-component vector of float)
+0:48              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:48              Constant:
+0:48                1 (const uint)
+0:48            Constant:
+0:48              2 (const int)
+0:49      Sequence
+0:49        move second child to first child ( temp 4-component vector of uint)
+0:49          'txval22' ( temp 4-component vector of uint)
+0:49          textureGather ( temp 4-component vector of uint)
+0:49            Construct combined texture-sampler ( temp usampler2D)
+0:49              'g_tTex2du4' ( uniform utexture2D)
+0:49              'g_sSamp' (layout( binding=0) uniform sampler)
+0:49            c2: direct index for structure ( uniform 2-component vector of float)
+0:49              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:49              Constant:
+0:49                1 (const uint)
+0:49            Constant:
+0:49              2 (const int)
+0:51      Sequence
+0:51        move second child to first child ( temp 4-component vector of float)
+0:51          'txval30' ( temp 4-component vector of float)
+0:51          textureGather ( temp 4-component vector of float)
+0:51            Construct combined texture-sampler ( temp sampler2D)
+0:51              'g_tTex2df4' ( uniform texture2D)
+0:51              'g_sSamp' (layout( binding=0) uniform sampler)
+0:51            c2: direct index for structure ( uniform 2-component vector of float)
+0:51              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:51              Constant:
+0:51                1 (const uint)
+0:51            Constant:
+0:51              3 (const int)
+0:52      Sequence
+0:52        move second child to first child ( temp 4-component vector of int)
+0:52          'txval31' ( temp 4-component vector of int)
+0:52          textureGather ( temp 4-component vector of int)
+0:52            Construct combined texture-sampler ( temp isampler2D)
+0:52              'g_tTex2di4' ( uniform itexture2D)
+0:52              'g_sSamp' (layout( binding=0) uniform sampler)
+0:52            c2: direct index for structure ( uniform 2-component vector of float)
+0:52              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:52              Constant:
+0:52                1 (const uint)
+0:52            Constant:
+0:52              3 (const int)
+0:53      Sequence
+0:53        move second child to first child ( temp 4-component vector of uint)
+0:53          'txval32' ( temp 4-component vector of uint)
+0:53          textureGather ( temp 4-component vector of uint)
+0:53            Construct combined texture-sampler ( temp usampler2D)
+0:53              'g_tTex2du4' ( uniform utexture2D)
+0:53              'g_sSamp' (layout( binding=0) uniform sampler)
+0:53            c2: direct index for structure ( uniform 2-component vector of float)
+0:53              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:53              Constant:
+0:53                1 (const uint)
+0:53            Constant:
+0:53              3 (const int)
+0:57      Sequence
+0:57        move second child to first child ( temp 4-component vector of float)
+0:57          'txval40' ( temp 4-component vector of float)
+0:57          textureGather ( temp 4-component vector of float)
+0:57            Construct combined texture-sampler ( temp samplerCube)
+0:57              'g_tTexcdf4' ( uniform textureCube)
+0:57              'g_sSamp' (layout( binding=0) uniform sampler)
+0:57            c3: direct index for structure ( uniform 3-component vector of float)
+0:57              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:57              Constant:
+0:57                2 (const uint)
+0:57            Constant:
+0:57              0 (const int)
+0:58      Sequence
+0:58        move second child to first child ( temp 4-component vector of int)
+0:58          'txval41' ( temp 4-component vector of int)
+0:58          textureGather ( temp 4-component vector of int)
+0:58            Construct combined texture-sampler ( temp isamplerCube)
+0:58              'g_tTexcdi4' ( uniform itextureCube)
+0:58              'g_sSamp' (layout( binding=0) uniform sampler)
+0:58            c3: direct index for structure ( uniform 3-component vector of float)
+0:58              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:58              Constant:
+0:58                2 (const uint)
+0:58            Constant:
+0:58              0 (const int)
+0:59      Sequence
+0:59        move second child to first child ( temp 4-component vector of uint)
+0:59          'txval42' ( temp 4-component vector of uint)
+0:59          textureGather ( temp 4-component vector of uint)
+0:59            Construct combined texture-sampler ( temp usamplerCube)
+0:59              'g_tTexcdu4' ( uniform utextureCube)
+0:59              'g_sSamp' (layout( binding=0) uniform sampler)
+0:59            c3: direct index for structure ( uniform 3-component vector of float)
+0:59              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:59              Constant:
+0:59                2 (const uint)
+0:59            Constant:
+0:59              0 (const int)
+0:61      Sequence
+0:61        move second child to first child ( temp 4-component vector of float)
+0:61          'txval50' ( temp 4-component vector of float)
+0:61          textureGather ( temp 4-component vector of float)
+0:61            Construct combined texture-sampler ( temp samplerCube)
+0:61              'g_tTexcdf4' ( uniform textureCube)
+0:61              'g_sSamp' (layout( binding=0) uniform sampler)
+0:61            c3: direct index for structure ( uniform 3-component vector of float)
+0:61              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:61              Constant:
+0:61                2 (const uint)
+0:61            Constant:
+0:61              1 (const int)
+0:62      Sequence
+0:62        move second child to first child ( temp 4-component vector of int)
+0:62          'txval51' ( temp 4-component vector of int)
+0:62          textureGather ( temp 4-component vector of int)
+0:62            Construct combined texture-sampler ( temp isamplerCube)
+0:62              'g_tTexcdi4' ( uniform itextureCube)
+0:62              'g_sSamp' (layout( binding=0) uniform sampler)
+0:62            c3: direct index for structure ( uniform 3-component vector of float)
+0:62              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:62              Constant:
+0:62                2 (const uint)
+0:62            Constant:
+0:62              1 (const int)
+0:63      Sequence
+0:63        move second child to first child ( temp 4-component vector of uint)
+0:63          'txval52' ( temp 4-component vector of uint)
+0:63          textureGather ( temp 4-component vector of uint)
+0:63            Construct combined texture-sampler ( temp usamplerCube)
+0:63              'g_tTexcdu4' ( uniform utextureCube)
+0:63              'g_sSamp' (layout( binding=0) uniform sampler)
+0:63            c3: direct index for structure ( uniform 3-component vector of float)
+0:63              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:63              Constant:
+0:63                2 (const uint)
+0:63            Constant:
+0:63              1 (const int)
+0:65      Sequence
+0:65        move second child to first child ( temp 4-component vector of float)
+0:65          'txval60' ( temp 4-component vector of float)
+0:65          textureGather ( temp 4-component vector of float)
+0:65            Construct combined texture-sampler ( temp samplerCube)
+0:65              'g_tTexcdf4' ( uniform textureCube)
+0:65              'g_sSamp' (layout( binding=0) uniform sampler)
+0:65            c3: direct index for structure ( uniform 3-component vector of float)
+0:65              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:65              Constant:
+0:65                2 (const uint)
+0:65            Constant:
+0:65              2 (const int)
+0:66      Sequence
+0:66        move second child to first child ( temp 4-component vector of int)
+0:66          'txval61' ( temp 4-component vector of int)
+0:66          textureGather ( temp 4-component vector of int)
+0:66            Construct combined texture-sampler ( temp isamplerCube)
+0:66              'g_tTexcdi4' ( uniform itextureCube)
+0:66              'g_sSamp' (layout( binding=0) uniform sampler)
+0:66            c3: direct index for structure ( uniform 3-component vector of float)
+0:66              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:66              Constant:
+0:66                2 (const uint)
+0:66            Constant:
+0:66              2 (const int)
+0:67      Sequence
+0:67        move second child to first child ( temp 4-component vector of uint)
+0:67          'txval62' ( temp 4-component vector of uint)
+0:67          textureGather ( temp 4-component vector of uint)
+0:67            Construct combined texture-sampler ( temp usamplerCube)
+0:67              'g_tTexcdu4' ( uniform utextureCube)
+0:67              'g_sSamp' (layout( binding=0) uniform sampler)
+0:67            c3: direct index for structure ( uniform 3-component vector of float)
+0:67              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:67              Constant:
+0:67                2 (const uint)
+0:67            Constant:
+0:67              2 (const int)
+0:69      Sequence
+0:69        move second child to first child ( temp 4-component vector of float)
+0:69          'txval70' ( temp 4-component vector of float)
+0:69          textureGather ( temp 4-component vector of float)
+0:69            Construct combined texture-sampler ( temp samplerCube)
+0:69              'g_tTexcdf4' ( uniform textureCube)
+0:69              'g_sSamp' (layout( binding=0) uniform sampler)
+0:69            c3: direct index for structure ( uniform 3-component vector of float)
+0:69              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:69              Constant:
+0:69                2 (const uint)
+0:69            Constant:
+0:69              3 (const int)
+0:70      Sequence
+0:70        move second child to first child ( temp 4-component vector of int)
+0:70          'txval71' ( temp 4-component vector of int)
+0:70          textureGather ( temp 4-component vector of int)
+0:70            Construct combined texture-sampler ( temp isamplerCube)
+0:70              'g_tTexcdi4' ( uniform itextureCube)
+0:70              'g_sSamp' (layout( binding=0) uniform sampler)
+0:70            c3: direct index for structure ( uniform 3-component vector of float)
+0:70              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:70              Constant:
+0:70                2 (const uint)
+0:70            Constant:
+0:70              3 (const int)
+0:71      Sequence
+0:71        move second child to first child ( temp 4-component vector of uint)
+0:71          'txval72' ( temp 4-component vector of uint)
+0:71          textureGather ( temp 4-component vector of uint)
+0:71            Construct combined texture-sampler ( temp usamplerCube)
+0:71              'g_tTexcdu4' ( uniform utextureCube)
+0:71              'g_sSamp' (layout( binding=0) uniform sampler)
+0:71            c3: direct index for structure ( uniform 3-component vector of float)
+0:71              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:71              Constant:
+0:71                2 (const uint)
+0:71            Constant:
+0:71              3 (const int)
+0:73      move second child to first child ( temp 4-component vector of float)
+0:73        Color: direct index for structure ( temp 4-component vector of float)
+0:73          'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:73          Constant:
+0:73            0 (const int)
+0:73        Constant:
+0:73          1.000000
+0:73          1.000000
+0:73          1.000000
+0:73          1.000000
+0:74      move second child to first child ( temp float)
+0:74        Depth: direct index for structure ( temp float)
+0:74          'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:74          Constant:
+0:74            1 (const int)
+0:74        Constant:
+0:74          1.000000
+0:76      Branch: Return with expression
+0:76        'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:34  Function Definition: main( ( temp void)
+0:34    Function Parameters: 
+0:?     Sequence
+0:34      Sequence
+0:34        move second child to first child ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:34          'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:34          Function Call: @main( ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:34        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+0:34          Color: direct index for structure ( temp 4-component vector of float)
+0:34            'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:34            Constant:
+0:34              0 (const int)
+0:34        move second child to first child ( temp float)
+0:?           '@entryPointOutput.Depth' ( out float FragDepth)
+0:34          Depth: direct index for structure ( temp float)
+0:34            'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:34            Constant:
+0:34              1 (const int)
+0:?   Linker Objects
+0:?     'g_sSamp' (layout( binding=0) uniform sampler)
+0:?     'g_sSamp2d' ( uniform sampler)
+0:?     'g_tTex1df4a' (layout( binding=1) uniform texture1D)
+0:?     'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:?     'g_tTex1di4' ( uniform itexture1D)
+0:?     'g_tTex1du4' ( uniform utexture1D)
+0:?     'g_tTex2df4' ( uniform texture2D)
+0:?     'g_tTex2di4' ( uniform itexture2D)
+0:?     'g_tTex2du4' ( uniform utexture2D)
+0:?     'g_tTex3df4' ( uniform texture3D)
+0:?     'g_tTex3di4' ( uniform itexture3D)
+0:?     'g_tTex3du4' ( uniform utexture3D)
+0:?     'g_tTexcdf4' ( uniform textureCube)
+0:?     'g_tTexcdi4' ( uniform itextureCube)
+0:?     'g_tTexcdu4' ( uniform utextureCube)
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:?     '@entryPointOutput.Depth' ( out float FragDepth)
+0:?     '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+using depth_any
+0:? Sequence
+0:34  Function Definition: @main( ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:34    Function Parameters: 
+0:?     Sequence
+0:39      Sequence
+0:39        move second child to first child ( temp 4-component vector of float)
+0:39          'txval00' ( temp 4-component vector of float)
+0:39          textureGather ( temp 4-component vector of float)
+0:39            Construct combined texture-sampler ( temp sampler2D)
+0:39              'g_tTex2df4' ( uniform texture2D)
+0:39              'g_sSamp' (layout( binding=0) uniform sampler)
+0:39            c2: direct index for structure ( uniform 2-component vector of float)
+0:39              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:39              Constant:
+0:39                1 (const uint)
+0:39            Constant:
+0:39              0 (const int)
+0:40      Sequence
+0:40        move second child to first child ( temp 4-component vector of int)
+0:40          'txval01' ( temp 4-component vector of int)
+0:40          textureGather ( temp 4-component vector of int)
+0:40            Construct combined texture-sampler ( temp isampler2D)
+0:40              'g_tTex2di4' ( uniform itexture2D)
+0:40              'g_sSamp' (layout( binding=0) uniform sampler)
+0:40            c2: direct index for structure ( uniform 2-component vector of float)
+0:40              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:40              Constant:
+0:40                1 (const uint)
+0:40            Constant:
+0:40              0 (const int)
+0:41      Sequence
+0:41        move second child to first child ( temp 4-component vector of uint)
+0:41          'txval02' ( temp 4-component vector of uint)
+0:41          textureGather ( temp 4-component vector of uint)
+0:41            Construct combined texture-sampler ( temp usampler2D)
+0:41              'g_tTex2du4' ( uniform utexture2D)
+0:41              'g_sSamp' (layout( binding=0) uniform sampler)
+0:41            c2: direct index for structure ( uniform 2-component vector of float)
+0:41              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:41              Constant:
+0:41                1 (const uint)
+0:41            Constant:
+0:41              0 (const int)
+0:43      Sequence
+0:43        move second child to first child ( temp 4-component vector of float)
+0:43          'txval10' ( temp 4-component vector of float)
+0:43          textureGather ( temp 4-component vector of float)
+0:43            Construct combined texture-sampler ( temp sampler2D)
+0:43              'g_tTex2df4' ( uniform texture2D)
+0:43              'g_sSamp' (layout( binding=0) uniform sampler)
+0:43            c2: direct index for structure ( uniform 2-component vector of float)
+0:43              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:43              Constant:
+0:43                1 (const uint)
+0:43            Constant:
+0:43              1 (const int)
+0:44      Sequence
+0:44        move second child to first child ( temp 4-component vector of int)
+0:44          'txval11' ( temp 4-component vector of int)
+0:44          textureGather ( temp 4-component vector of int)
+0:44            Construct combined texture-sampler ( temp isampler2D)
+0:44              'g_tTex2di4' ( uniform itexture2D)
+0:44              'g_sSamp' (layout( binding=0) uniform sampler)
+0:44            c2: direct index for structure ( uniform 2-component vector of float)
+0:44              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:44              Constant:
+0:44                1 (const uint)
+0:44            Constant:
+0:44              1 (const int)
+0:45      Sequence
+0:45        move second child to first child ( temp 4-component vector of uint)
+0:45          'txval12' ( temp 4-component vector of uint)
+0:45          textureGather ( temp 4-component vector of uint)
+0:45            Construct combined texture-sampler ( temp usampler2D)
+0:45              'g_tTex2du4' ( uniform utexture2D)
+0:45              'g_sSamp' (layout( binding=0) uniform sampler)
+0:45            c2: direct index for structure ( uniform 2-component vector of float)
+0:45              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:45              Constant:
+0:45                1 (const uint)
+0:45            Constant:
+0:45              1 (const int)
+0:47      Sequence
+0:47        move second child to first child ( temp 4-component vector of float)
+0:47          'txval20' ( temp 4-component vector of float)
+0:47          textureGather ( temp 4-component vector of float)
+0:47            Construct combined texture-sampler ( temp sampler2D)
+0:47              'g_tTex2df4' ( uniform texture2D)
+0:47              'g_sSamp' (layout( binding=0) uniform sampler)
+0:47            c2: direct index for structure ( uniform 2-component vector of float)
+0:47              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:47              Constant:
+0:47                1 (const uint)
+0:47            Constant:
+0:47              2 (const int)
+0:48      Sequence
+0:48        move second child to first child ( temp 4-component vector of int)
+0:48          'txval21' ( temp 4-component vector of int)
+0:48          textureGather ( temp 4-component vector of int)
+0:48            Construct combined texture-sampler ( temp isampler2D)
+0:48              'g_tTex2di4' ( uniform itexture2D)
+0:48              'g_sSamp' (layout( binding=0) uniform sampler)
+0:48            c2: direct index for structure ( uniform 2-component vector of float)
+0:48              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:48              Constant:
+0:48                1 (const uint)
+0:48            Constant:
+0:48              2 (const int)
+0:49      Sequence
+0:49        move second child to first child ( temp 4-component vector of uint)
+0:49          'txval22' ( temp 4-component vector of uint)
+0:49          textureGather ( temp 4-component vector of uint)
+0:49            Construct combined texture-sampler ( temp usampler2D)
+0:49              'g_tTex2du4' ( uniform utexture2D)
+0:49              'g_sSamp' (layout( binding=0) uniform sampler)
+0:49            c2: direct index for structure ( uniform 2-component vector of float)
+0:49              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:49              Constant:
+0:49                1 (const uint)
+0:49            Constant:
+0:49              2 (const int)
+0:51      Sequence
+0:51        move second child to first child ( temp 4-component vector of float)
+0:51          'txval30' ( temp 4-component vector of float)
+0:51          textureGather ( temp 4-component vector of float)
+0:51            Construct combined texture-sampler ( temp sampler2D)
+0:51              'g_tTex2df4' ( uniform texture2D)
+0:51              'g_sSamp' (layout( binding=0) uniform sampler)
+0:51            c2: direct index for structure ( uniform 2-component vector of float)
+0:51              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:51              Constant:
+0:51                1 (const uint)
+0:51            Constant:
+0:51              3 (const int)
+0:52      Sequence
+0:52        move second child to first child ( temp 4-component vector of int)
+0:52          'txval31' ( temp 4-component vector of int)
+0:52          textureGather ( temp 4-component vector of int)
+0:52            Construct combined texture-sampler ( temp isampler2D)
+0:52              'g_tTex2di4' ( uniform itexture2D)
+0:52              'g_sSamp' (layout( binding=0) uniform sampler)
+0:52            c2: direct index for structure ( uniform 2-component vector of float)
+0:52              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:52              Constant:
+0:52                1 (const uint)
+0:52            Constant:
+0:52              3 (const int)
+0:53      Sequence
+0:53        move second child to first child ( temp 4-component vector of uint)
+0:53          'txval32' ( temp 4-component vector of uint)
+0:53          textureGather ( temp 4-component vector of uint)
+0:53            Construct combined texture-sampler ( temp usampler2D)
+0:53              'g_tTex2du4' ( uniform utexture2D)
+0:53              'g_sSamp' (layout( binding=0) uniform sampler)
+0:53            c2: direct index for structure ( uniform 2-component vector of float)
+0:53              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:53              Constant:
+0:53                1 (const uint)
+0:53            Constant:
+0:53              3 (const int)
+0:57      Sequence
+0:57        move second child to first child ( temp 4-component vector of float)
+0:57          'txval40' ( temp 4-component vector of float)
+0:57          textureGather ( temp 4-component vector of float)
+0:57            Construct combined texture-sampler ( temp samplerCube)
+0:57              'g_tTexcdf4' ( uniform textureCube)
+0:57              'g_sSamp' (layout( binding=0) uniform sampler)
+0:57            c3: direct index for structure ( uniform 3-component vector of float)
+0:57              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:57              Constant:
+0:57                2 (const uint)
+0:57            Constant:
+0:57              0 (const int)
+0:58      Sequence
+0:58        move second child to first child ( temp 4-component vector of int)
+0:58          'txval41' ( temp 4-component vector of int)
+0:58          textureGather ( temp 4-component vector of int)
+0:58            Construct combined texture-sampler ( temp isamplerCube)
+0:58              'g_tTexcdi4' ( uniform itextureCube)
+0:58              'g_sSamp' (layout( binding=0) uniform sampler)
+0:58            c3: direct index for structure ( uniform 3-component vector of float)
+0:58              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:58              Constant:
+0:58                2 (const uint)
+0:58            Constant:
+0:58              0 (const int)
+0:59      Sequence
+0:59        move second child to first child ( temp 4-component vector of uint)
+0:59          'txval42' ( temp 4-component vector of uint)
+0:59          textureGather ( temp 4-component vector of uint)
+0:59            Construct combined texture-sampler ( temp usamplerCube)
+0:59              'g_tTexcdu4' ( uniform utextureCube)
+0:59              'g_sSamp' (layout( binding=0) uniform sampler)
+0:59            c3: direct index for structure ( uniform 3-component vector of float)
+0:59              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:59              Constant:
+0:59                2 (const uint)
+0:59            Constant:
+0:59              0 (const int)
+0:61      Sequence
+0:61        move second child to first child ( temp 4-component vector of float)
+0:61          'txval50' ( temp 4-component vector of float)
+0:61          textureGather ( temp 4-component vector of float)
+0:61            Construct combined texture-sampler ( temp samplerCube)
+0:61              'g_tTexcdf4' ( uniform textureCube)
+0:61              'g_sSamp' (layout( binding=0) uniform sampler)
+0:61            c3: direct index for structure ( uniform 3-component vector of float)
+0:61              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:61              Constant:
+0:61                2 (const uint)
+0:61            Constant:
+0:61              1 (const int)
+0:62      Sequence
+0:62        move second child to first child ( temp 4-component vector of int)
+0:62          'txval51' ( temp 4-component vector of int)
+0:62          textureGather ( temp 4-component vector of int)
+0:62            Construct combined texture-sampler ( temp isamplerCube)
+0:62              'g_tTexcdi4' ( uniform itextureCube)
+0:62              'g_sSamp' (layout( binding=0) uniform sampler)
+0:62            c3: direct index for structure ( uniform 3-component vector of float)
+0:62              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:62              Constant:
+0:62                2 (const uint)
+0:62            Constant:
+0:62              1 (const int)
+0:63      Sequence
+0:63        move second child to first child ( temp 4-component vector of uint)
+0:63          'txval52' ( temp 4-component vector of uint)
+0:63          textureGather ( temp 4-component vector of uint)
+0:63            Construct combined texture-sampler ( temp usamplerCube)
+0:63              'g_tTexcdu4' ( uniform utextureCube)
+0:63              'g_sSamp' (layout( binding=0) uniform sampler)
+0:63            c3: direct index for structure ( uniform 3-component vector of float)
+0:63              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:63              Constant:
+0:63                2 (const uint)
+0:63            Constant:
+0:63              1 (const int)
+0:65      Sequence
+0:65        move second child to first child ( temp 4-component vector of float)
+0:65          'txval60' ( temp 4-component vector of float)
+0:65          textureGather ( temp 4-component vector of float)
+0:65            Construct combined texture-sampler ( temp samplerCube)
+0:65              'g_tTexcdf4' ( uniform textureCube)
+0:65              'g_sSamp' (layout( binding=0) uniform sampler)
+0:65            c3: direct index for structure ( uniform 3-component vector of float)
+0:65              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:65              Constant:
+0:65                2 (const uint)
+0:65            Constant:
+0:65              2 (const int)
+0:66      Sequence
+0:66        move second child to first child ( temp 4-component vector of int)
+0:66          'txval61' ( temp 4-component vector of int)
+0:66          textureGather ( temp 4-component vector of int)
+0:66            Construct combined texture-sampler ( temp isamplerCube)
+0:66              'g_tTexcdi4' ( uniform itextureCube)
+0:66              'g_sSamp' (layout( binding=0) uniform sampler)
+0:66            c3: direct index for structure ( uniform 3-component vector of float)
+0:66              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:66              Constant:
+0:66                2 (const uint)
+0:66            Constant:
+0:66              2 (const int)
+0:67      Sequence
+0:67        move second child to first child ( temp 4-component vector of uint)
+0:67          'txval62' ( temp 4-component vector of uint)
+0:67          textureGather ( temp 4-component vector of uint)
+0:67            Construct combined texture-sampler ( temp usamplerCube)
+0:67              'g_tTexcdu4' ( uniform utextureCube)
+0:67              'g_sSamp' (layout( binding=0) uniform sampler)
+0:67            c3: direct index for structure ( uniform 3-component vector of float)
+0:67              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:67              Constant:
+0:67                2 (const uint)
+0:67            Constant:
+0:67              2 (const int)
+0:69      Sequence
+0:69        move second child to first child ( temp 4-component vector of float)
+0:69          'txval70' ( temp 4-component vector of float)
+0:69          textureGather ( temp 4-component vector of float)
+0:69            Construct combined texture-sampler ( temp samplerCube)
+0:69              'g_tTexcdf4' ( uniform textureCube)
+0:69              'g_sSamp' (layout( binding=0) uniform sampler)
+0:69            c3: direct index for structure ( uniform 3-component vector of float)
+0:69              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:69              Constant:
+0:69                2 (const uint)
+0:69            Constant:
+0:69              3 (const int)
+0:70      Sequence
+0:70        move second child to first child ( temp 4-component vector of int)
+0:70          'txval71' ( temp 4-component vector of int)
+0:70          textureGather ( temp 4-component vector of int)
+0:70            Construct combined texture-sampler ( temp isamplerCube)
+0:70              'g_tTexcdi4' ( uniform itextureCube)
+0:70              'g_sSamp' (layout( binding=0) uniform sampler)
+0:70            c3: direct index for structure ( uniform 3-component vector of float)
+0:70              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:70              Constant:
+0:70                2 (const uint)
+0:70            Constant:
+0:70              3 (const int)
+0:71      Sequence
+0:71        move second child to first child ( temp 4-component vector of uint)
+0:71          'txval72' ( temp 4-component vector of uint)
+0:71          textureGather ( temp 4-component vector of uint)
+0:71            Construct combined texture-sampler ( temp usamplerCube)
+0:71              'g_tTexcdu4' ( uniform utextureCube)
+0:71              'g_sSamp' (layout( binding=0) uniform sampler)
+0:71            c3: direct index for structure ( uniform 3-component vector of float)
+0:71              'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:71              Constant:
+0:71                2 (const uint)
+0:71            Constant:
+0:71              3 (const int)
+0:73      move second child to first child ( temp 4-component vector of float)
+0:73        Color: direct index for structure ( temp 4-component vector of float)
+0:73          'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:73          Constant:
+0:73            0 (const int)
+0:73        Constant:
+0:73          1.000000
+0:73          1.000000
+0:73          1.000000
+0:73          1.000000
+0:74      move second child to first child ( temp float)
+0:74        Depth: direct index for structure ( temp float)
+0:74          'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:74          Constant:
+0:74            1 (const int)
+0:74        Constant:
+0:74          1.000000
+0:76      Branch: Return with expression
+0:76        'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:34  Function Definition: main( ( temp void)
+0:34    Function Parameters: 
+0:?     Sequence
+0:34      Sequence
+0:34        move second child to first child ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:34          'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:34          Function Call: @main( ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:34        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+0:34          Color: direct index for structure ( temp 4-component vector of float)
+0:34            'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:34            Constant:
+0:34              0 (const int)
+0:34        move second child to first child ( temp float)
+0:?           '@entryPointOutput.Depth' ( out float FragDepth)
+0:34          Depth: direct index for structure ( temp float)
+0:34            'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:34            Constant:
+0:34              1 (const int)
+0:?   Linker Objects
+0:?     'g_sSamp' (layout( binding=0) uniform sampler)
+0:?     'g_sSamp2d' ( uniform sampler)
+0:?     'g_tTex1df4a' (layout( binding=1) uniform texture1D)
+0:?     'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:?     'g_tTex1di4' ( uniform itexture1D)
+0:?     'g_tTex1du4' ( uniform utexture1D)
+0:?     'g_tTex2df4' ( uniform texture2D)
+0:?     'g_tTex2di4' ( uniform itexture2D)
+0:?     'g_tTex2du4' ( uniform utexture2D)
+0:?     'g_tTex3df4' ( uniform texture3D)
+0:?     'g_tTex3di4' ( uniform itexture3D)
+0:?     'g_tTex3du4' ( uniform utexture3D)
+0:?     'g_tTexcdf4' ( uniform textureCube)
+0:?     'g_tTexcdi4' ( uniform itextureCube)
+0:?     'g_tTexcdu4' ( uniform utextureCube)
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform float c1,  uniform 2-component vector of float c2,  uniform 3-component vector of float c3,  uniform 4-component vector of float c4})
+0:?     '@entryPointOutput.Depth' ( out float FragDepth)
+0:?     '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 265
+
+                              Capability Shader
+                              Capability Sampled1D
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 238 242
+                              ExecutionMode 4 OriginUpperLeft
+                              ExecutionMode 4 DepthReplacing
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "PS_OUTPUT"
+                              MemberName 8(PS_OUTPUT) 0  "Color"
+                              MemberName 8(PS_OUTPUT) 1  "Depth"
+                              Name 10  "@main("
+                              Name 13  "txval00"
+                              Name 16  "g_tTex2df4"
+                              Name 20  "g_sSamp"
+                              Name 26  "$Global"
+                              MemberName 26($Global) 0  "c1"
+                              MemberName 26($Global) 1  "c2"
+                              MemberName 26($Global) 2  "c3"
+                              MemberName 26($Global) 3  "c4"
+                              Name 28  ""
+                              Name 38  "txval01"
+                              Name 41  "g_tTex2di4"
+                              Name 52  "txval02"
+                              Name 55  "g_tTex2du4"
+                              Name 63  "txval10"
+                              Name 70  "txval11"
+                              Name 77  "txval12"
+                              Name 84  "txval20"
+                              Name 92  "txval21"
+                              Name 99  "txval22"
+                              Name 106  "txval30"
+                              Name 114  "txval31"
+                              Name 121  "txval32"
+                              Name 128  "txval40"
+                              Name 131  "g_tTexcdf4"
+                              Name 140  "txval41"
+                              Name 143  "g_tTexcdi4"
+                              Name 151  "txval42"
+                              Name 154  "g_tTexcdu4"
+                              Name 162  "txval50"
+                              Name 169  "txval51"
+                              Name 176  "txval52"
+                              Name 183  "txval60"
+                              Name 190  "txval61"
+                              Name 197  "txval62"
+                              Name 204  "txval70"
+                              Name 211  "txval71"
+                              Name 218  "txval72"
+                              Name 226  "psout"
+                              Name 235  "flattenTemp"
+                              Name 238  "@entryPointOutput.Color"
+                              Name 242  "@entryPointOutput.Depth"
+                              Name 245  "g_sSamp2d"
+                              Name 248  "g_tTex1df4a"
+                              Name 249  "g_tTex1df4"
+                              Name 252  "g_tTex1di4"
+                              Name 255  "g_tTex1du4"
+                              Name 258  "g_tTex3df4"
+                              Name 261  "g_tTex3di4"
+                              Name 264  "g_tTex3du4"
+                              Decorate 16(g_tTex2df4) DescriptorSet 0
+                              Decorate 16(g_tTex2df4) Binding 0
+                              Decorate 20(g_sSamp) DescriptorSet 0
+                              Decorate 20(g_sSamp) Binding 0
+                              MemberDecorate 26($Global) 0 Offset 0
+                              MemberDecorate 26($Global) 1 Offset 8
+                              MemberDecorate 26($Global) 2 Offset 16
+                              MemberDecorate 26($Global) 3 Offset 32
+                              Decorate 26($Global) Block
+                              Decorate 28 DescriptorSet 0
+                              Decorate 28 Binding 0
+                              Decorate 41(g_tTex2di4) DescriptorSet 0
+                              Decorate 41(g_tTex2di4) Binding 0
+                              Decorate 55(g_tTex2du4) DescriptorSet 0
+                              Decorate 55(g_tTex2du4) Binding 0
+                              Decorate 131(g_tTexcdf4) DescriptorSet 0
+                              Decorate 131(g_tTexcdf4) Binding 0
+                              Decorate 143(g_tTexcdi4) DescriptorSet 0
+                              Decorate 143(g_tTexcdi4) Binding 0
+                              Decorate 154(g_tTexcdu4) DescriptorSet 0
+                              Decorate 154(g_tTexcdu4) Binding 0
+                              Decorate 238(@entryPointOutput.Color) Location 0
+                              Decorate 242(@entryPointOutput.Depth) BuiltIn FragDepth
+                              Decorate 245(g_sSamp2d) DescriptorSet 0
+                              Decorate 245(g_sSamp2d) Binding 0
+                              Decorate 248(g_tTex1df4a) DescriptorSet 0
+                              Decorate 248(g_tTex1df4a) Binding 1
+                              Decorate 249(g_tTex1df4) DescriptorSet 0
+                              Decorate 249(g_tTex1df4) Binding 0
+                              Decorate 252(g_tTex1di4) DescriptorSet 0
+                              Decorate 252(g_tTex1di4) Binding 0
+                              Decorate 255(g_tTex1du4) DescriptorSet 0
+                              Decorate 255(g_tTex1du4) Binding 0
+                              Decorate 258(g_tTex3df4) DescriptorSet 0
+                              Decorate 258(g_tTex3df4) Binding 0
+                              Decorate 261(g_tTex3di4) DescriptorSet 0
+                              Decorate 261(g_tTex3di4) Binding 0
+                              Decorate 264(g_tTex3du4) DescriptorSet 0
+                              Decorate 264(g_tTex3du4) Binding 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+    8(PS_OUTPUT):             TypeStruct 7(fvec4) 6(float)
+               9:             TypeFunction 8(PS_OUTPUT)
+              12:             TypePointer Function 7(fvec4)
+              14:             TypeImage 6(float) 2D sampled format:Unknown
+              15:             TypePointer UniformConstant 14
+  16(g_tTex2df4):     15(ptr) Variable UniformConstant
+              18:             TypeSampler
+              19:             TypePointer UniformConstant 18
+     20(g_sSamp):     19(ptr) Variable UniformConstant
+              22:             TypeSampledImage 14
+              24:             TypeVector 6(float) 2
+              25:             TypeVector 6(float) 3
+     26($Global):             TypeStruct 6(float) 24(fvec2) 25(fvec3) 7(fvec4)
+              27:             TypePointer Uniform 26($Global)
+              28:     27(ptr) Variable Uniform
+              29:             TypeInt 32 1
+              30:     29(int) Constant 1
+              31:             TypePointer Uniform 24(fvec2)
+              34:     29(int) Constant 0
+              36:             TypeVector 29(int) 4
+              37:             TypePointer Function 36(ivec4)
+              39:             TypeImage 29(int) 2D sampled format:Unknown
+              40:             TypePointer UniformConstant 39
+  41(g_tTex2di4):     40(ptr) Variable UniformConstant
+              44:             TypeSampledImage 39
+              49:             TypeInt 32 0
+              50:             TypeVector 49(int) 4
+              51:             TypePointer Function 50(ivec4)
+              53:             TypeImage 49(int) 2D sampled format:Unknown
+              54:             TypePointer UniformConstant 53
+  55(g_tTex2du4):     54(ptr) Variable UniformConstant
+              58:             TypeSampledImage 53
+              90:     29(int) Constant 2
+             112:     29(int) Constant 3
+             129:             TypeImage 6(float) Cube sampled format:Unknown
+             130:             TypePointer UniformConstant 129
+ 131(g_tTexcdf4):    130(ptr) Variable UniformConstant
+             134:             TypeSampledImage 129
+             136:             TypePointer Uniform 25(fvec3)
+             141:             TypeImage 29(int) Cube sampled format:Unknown
+             142:             TypePointer UniformConstant 141
+ 143(g_tTexcdi4):    142(ptr) Variable UniformConstant
+             146:             TypeSampledImage 141
+             152:             TypeImage 49(int) Cube sampled format:Unknown
+             153:             TypePointer UniformConstant 152
+ 154(g_tTexcdu4):    153(ptr) Variable UniformConstant
+             157:             TypeSampledImage 152
+             225:             TypePointer Function 8(PS_OUTPUT)
+             227:    6(float) Constant 1065353216
+             228:    7(fvec4) ConstantComposite 227 227 227 227
+             230:             TypePointer Function 6(float)
+             237:             TypePointer Output 7(fvec4)
+238(@entryPointOutput.Color):    237(ptr) Variable Output
+             241:             TypePointer Output 6(float)
+242(@entryPointOutput.Depth):    241(ptr) Variable Output
+  245(g_sSamp2d):     19(ptr) Variable UniformConstant
+             246:             TypeImage 6(float) 1D sampled format:Unknown
+             247:             TypePointer UniformConstant 246
+248(g_tTex1df4a):    247(ptr) Variable UniformConstant
+ 249(g_tTex1df4):    247(ptr) Variable UniformConstant
+             250:             TypeImage 29(int) 1D sampled format:Unknown
+             251:             TypePointer UniformConstant 250
+ 252(g_tTex1di4):    251(ptr) Variable UniformConstant
+             253:             TypeImage 49(int) 1D sampled format:Unknown
+             254:             TypePointer UniformConstant 253
+ 255(g_tTex1du4):    254(ptr) Variable UniformConstant
+             256:             TypeImage 6(float) 3D sampled format:Unknown
+             257:             TypePointer UniformConstant 256
+ 258(g_tTex3df4):    257(ptr) Variable UniformConstant
+             259:             TypeImage 29(int) 3D sampled format:Unknown
+             260:             TypePointer UniformConstant 259
+ 261(g_tTex3di4):    260(ptr) Variable UniformConstant
+             262:             TypeImage 49(int) 3D sampled format:Unknown
+             263:             TypePointer UniformConstant 262
+ 264(g_tTex3du4):    263(ptr) Variable UniformConstant
+         4(main):           2 Function None 3
+               5:             Label
+235(flattenTemp):    225(ptr) Variable Function
+             236:8(PS_OUTPUT) FunctionCall 10(@main()
+                              Store 235(flattenTemp) 236
+             239:     12(ptr) AccessChain 235(flattenTemp) 34
+             240:    7(fvec4) Load 239
+                              Store 238(@entryPointOutput.Color) 240
+             243:    230(ptr) AccessChain 235(flattenTemp) 30
+             244:    6(float) Load 243
+                              Store 242(@entryPointOutput.Depth) 244
+                              Return
+                              FunctionEnd
+      10(@main():8(PS_OUTPUT) Function None 9
+              11:             Label
+     13(txval00):     12(ptr) Variable Function
+     38(txval01):     37(ptr) Variable Function
+     52(txval02):     51(ptr) Variable Function
+     63(txval10):     12(ptr) Variable Function
+     70(txval11):     37(ptr) Variable Function
+     77(txval12):     51(ptr) Variable Function
+     84(txval20):     12(ptr) Variable Function
+     92(txval21):     37(ptr) Variable Function
+     99(txval22):     51(ptr) Variable Function
+    106(txval30):     12(ptr) Variable Function
+    114(txval31):     37(ptr) Variable Function
+    121(txval32):     51(ptr) Variable Function
+    128(txval40):     12(ptr) Variable Function
+    140(txval41):     37(ptr) Variable Function
+    151(txval42):     51(ptr) Variable Function
+    162(txval50):     12(ptr) Variable Function
+    169(txval51):     37(ptr) Variable Function
+    176(txval52):     51(ptr) Variable Function
+    183(txval60):     12(ptr) Variable Function
+    190(txval61):     37(ptr) Variable Function
+    197(txval62):     51(ptr) Variable Function
+    204(txval70):     12(ptr) Variable Function
+    211(txval71):     37(ptr) Variable Function
+    218(txval72):     51(ptr) Variable Function
+      226(psout):    225(ptr) Variable Function
+              17:          14 Load 16(g_tTex2df4)
+              21:          18 Load 20(g_sSamp)
+              23:          22 SampledImage 17 21
+              32:     31(ptr) AccessChain 28 30
+              33:   24(fvec2) Load 32
+              35:    7(fvec4) ImageGather 23 33 34
+                              Store 13(txval00) 35
+              42:          39 Load 41(g_tTex2di4)
+              43:          18 Load 20(g_sSamp)
+              45:          44 SampledImage 42 43
+              46:     31(ptr) AccessChain 28 30
+              47:   24(fvec2) Load 46
+              48:   36(ivec4) ImageGather 45 47 34
+                              Store 38(txval01) 48
+              56:          53 Load 55(g_tTex2du4)
+              57:          18 Load 20(g_sSamp)
+              59:          58 SampledImage 56 57
+              60:     31(ptr) AccessChain 28 30
+              61:   24(fvec2) Load 60
+              62:   50(ivec4) ImageGather 59 61 34
+                              Store 52(txval02) 62
+              64:          14 Load 16(g_tTex2df4)
+              65:          18 Load 20(g_sSamp)
+              66:          22 SampledImage 64 65
+              67:     31(ptr) AccessChain 28 30
+              68:   24(fvec2) Load 67
+              69:    7(fvec4) ImageGather 66 68 30
+                              Store 63(txval10) 69
+              71:          39 Load 41(g_tTex2di4)
+              72:          18 Load 20(g_sSamp)
+              73:          44 SampledImage 71 72
+              74:     31(ptr) AccessChain 28 30
+              75:   24(fvec2) Load 74
+              76:   36(ivec4) ImageGather 73 75 30
+                              Store 70(txval11) 76
+              78:          53 Load 55(g_tTex2du4)
+              79:          18 Load 20(g_sSamp)
+              80:          58 SampledImage 78 79
+              81:     31(ptr) AccessChain 28 30
+              82:   24(fvec2) Load 81
+              83:   50(ivec4) ImageGather 80 82 30
+                              Store 77(txval12) 83
+              85:          14 Load 16(g_tTex2df4)
+              86:          18 Load 20(g_sSamp)
+              87:          22 SampledImage 85 86
+              88:     31(ptr) AccessChain 28 30
+              89:   24(fvec2) Load 88
+              91:    7(fvec4) ImageGather 87 89 90
+                              Store 84(txval20) 91
+              93:          39 Load 41(g_tTex2di4)
+              94:          18 Load 20(g_sSamp)
+              95:          44 SampledImage 93 94
+              96:     31(ptr) AccessChain 28 30
+              97:   24(fvec2) Load 96
+              98:   36(ivec4) ImageGather 95 97 90
+                              Store 92(txval21) 98
+             100:          53 Load 55(g_tTex2du4)
+             101:          18 Load 20(g_sSamp)
+             102:          58 SampledImage 100 101
+             103:     31(ptr) AccessChain 28 30
+             104:   24(fvec2) Load 103
+             105:   50(ivec4) ImageGather 102 104 90
+                              Store 99(txval22) 105
+             107:          14 Load 16(g_tTex2df4)
+             108:          18 Load 20(g_sSamp)
+             109:          22 SampledImage 107 108
+             110:     31(ptr) AccessChain 28 30
+             111:   24(fvec2) Load 110
+             113:    7(fvec4) ImageGather 109 111 112
+                              Store 106(txval30) 113
+             115:          39 Load 41(g_tTex2di4)
+             116:          18 Load 20(g_sSamp)
+             117:          44 SampledImage 115 116
+             118:     31(ptr) AccessChain 28 30
+             119:   24(fvec2) Load 118
+             120:   36(ivec4) ImageGather 117 119 112
+                              Store 114(txval31) 120
+             122:          53 Load 55(g_tTex2du4)
+             123:          18 Load 20(g_sSamp)
+             124:          58 SampledImage 122 123
+             125:     31(ptr) AccessChain 28 30
+             126:   24(fvec2) Load 125
+             127:   50(ivec4) ImageGather 124 126 112
+                              Store 121(txval32) 127
+             132:         129 Load 131(g_tTexcdf4)
+             133:          18 Load 20(g_sSamp)
+             135:         134 SampledImage 132 133
+             137:    136(ptr) AccessChain 28 90
+             138:   25(fvec3) Load 137
+             139:    7(fvec4) ImageGather 135 138 34
+                              Store 128(txval40) 139
+             144:         141 Load 143(g_tTexcdi4)
+             145:          18 Load 20(g_sSamp)
+             147:         146 SampledImage 144 145
+             148:    136(ptr) AccessChain 28 90
+             149:   25(fvec3) Load 148
+             150:   36(ivec4) ImageGather 147 149 34
+                              Store 140(txval41) 150
+             155:         152 Load 154(g_tTexcdu4)
+             156:          18 Load 20(g_sSamp)
+             158:         157 SampledImage 155 156
+             159:    136(ptr) AccessChain 28 90
+             160:   25(fvec3) Load 159
+             161:   50(ivec4) ImageGather 158 160 34
+                              Store 151(txval42) 161
+             163:         129 Load 131(g_tTexcdf4)
+             164:          18 Load 20(g_sSamp)
+             165:         134 SampledImage 163 164
+             166:    136(ptr) AccessChain 28 90
+             167:   25(fvec3) Load 166
+             168:    7(fvec4) ImageGather 165 167 30
+                              Store 162(txval50) 168
+             170:         141 Load 143(g_tTexcdi4)
+             171:          18 Load 20(g_sSamp)
+             172:         146 SampledImage 170 171
+             173:    136(ptr) AccessChain 28 90
+             174:   25(fvec3) Load 173
+             175:   36(ivec4) ImageGather 172 174 30
+                              Store 169(txval51) 175
+             177:         152 Load 154(g_tTexcdu4)
+             178:          18 Load 20(g_sSamp)
+             179:         157 SampledImage 177 178
+             180:    136(ptr) AccessChain 28 90
+             181:   25(fvec3) Load 180
+             182:   50(ivec4) ImageGather 179 181 30
+                              Store 176(txval52) 182
+             184:         129 Load 131(g_tTexcdf4)
+             185:          18 Load 20(g_sSamp)
+             186:         134 SampledImage 184 185
+             187:    136(ptr) AccessChain 28 90
+             188:   25(fvec3) Load 187
+             189:    7(fvec4) ImageGather 186 188 90
+                              Store 183(txval60) 189
+             191:         141 Load 143(g_tTexcdi4)
+             192:          18 Load 20(g_sSamp)
+             193:         146 SampledImage 191 192
+             194:    136(ptr) AccessChain 28 90
+             195:   25(fvec3) Load 194
+             196:   36(ivec4) ImageGather 193 195 90
+                              Store 190(txval61) 196
+             198:         152 Load 154(g_tTexcdu4)
+             199:          18 Load 20(g_sSamp)
+             200:         157 SampledImage 198 199
+             201:    136(ptr) AccessChain 28 90
+             202:   25(fvec3) Load 201
+             203:   50(ivec4) ImageGather 200 202 90
+                              Store 197(txval62) 203
+             205:         129 Load 131(g_tTexcdf4)
+             206:          18 Load 20(g_sSamp)
+             207:         134 SampledImage 205 206
+             208:    136(ptr) AccessChain 28 90
+             209:   25(fvec3) Load 208
+             210:    7(fvec4) ImageGather 207 209 112
+                              Store 204(txval70) 210
+             212:         141 Load 143(g_tTexcdi4)
+             213:          18 Load 20(g_sSamp)
+             214:         146 SampledImage 212 213
+             215:    136(ptr) AccessChain 28 90
+             216:   25(fvec3) Load 215
+             217:   36(ivec4) ImageGather 214 216 112
+                              Store 211(txval71) 217
+             219:         152 Load 154(g_tTexcdu4)
+             220:          18 Load 20(g_sSamp)
+             221:         157 SampledImage 219 220
+             222:    136(ptr) AccessChain 28 90
+             223:   25(fvec3) Load 222
+             224:   50(ivec4) ImageGather 221 223 112
+                              Store 218(txval72) 224
+             229:     12(ptr) AccessChain 226(psout) 34
+                              Store 229 228
+             231:    230(ptr) AccessChain 226(psout) 30
+                              Store 231 227
+             232:8(PS_OUTPUT) Load 226(psout)
+                              ReturnValue 232
+                              FunctionEnd

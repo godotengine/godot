@@ -1,0 +1,165 @@
+440.frag
+ERROR: 0:11: 'location' : overlapping use of location 4
+ERROR: 0:13: 'component' : type overflows the available 4 components 
+ERROR: 0:22: 'location' : fragment outputs sharing the same location must be the same basic type 30
+ERROR: 0:24: 'qualifier' : cannot use auxiliary, memory, interpolation, or precision qualifier in a default qualifier declaration (declaration with no type) 
+ERROR: 0:25: 'qualifier' : cannot use auxiliary, memory, interpolation, or precision qualifier in a default qualifier declaration (declaration with no type) 
+ERROR: 0:26: 'qualifier' : cannot use auxiliary, memory, interpolation, or precision qualifier in a default qualifier declaration (declaration with no type) 
+ERROR: 0:29: 'layout qualifier' : cannot use offset or align qualifiers in a default qualifier declaration (declaration with no type) 
+ERROR: 0:30: 'layout qualifier' : cannot use offset or align qualifiers in a default qualifier declaration (declaration with no type) 
+ERROR: 0:30: 'layout' : offset/align can only be used on a uniform or buffer 
+ERROR: 0:31: 'layout qualifier' : cannot use offset or align qualifiers in a default qualifier declaration (declaration with no type) 
+ERROR: 0:31: 'layout' : offset/align can only be used on a uniform or buffer 
+ERROR: 0:33: 'layout qualifier' : cannot use offset or align qualifiers in a default qualifier declaration (declaration with no type) 
+ERROR: 0:34: 'layout qualifier' : cannot use offset or align qualifiers in a default qualifier declaration (declaration with no type) 
+ERROR: 0:34: 'layout' : offset/align can only be used on a uniform or buffer 
+ERROR: 0:35: 'layout qualifier' : cannot use offset or align qualifiers in a default qualifier declaration (declaration with no type) 
+ERROR: 0:35: 'layout' : offset/align can only be used on a uniform or buffer 
+ERROR: 0:37: 'offset' : only applies to block members, not blocks 
+ERROR: 0:38: 'layout' : offset/align can only be used on a uniform or buffer 
+ERROR: 0:38: 'offset' : only applies to block members, not blocks 
+ERROR: 0:39: 'output block' : not supported in this stage: fragment
+ERROR: 0:39: 'layout' : offset/align can only be used on a uniform or buffer 
+ERROR: 0:39: 'offset' : only applies to block members, not blocks 
+ERROR: 0:42: 'align' : can only be used with std140, std430, or scalar layout packing 
+ERROR: 0:43: 'align' : can only be used with std140, std430, or scalar layout packing 
+ERROR: 0:43: 'layout' : offset/align can only be used on a uniform or buffer 
+ERROR: 0:44: 'output block' : not supported in this stage: fragment
+ERROR: 0:44: 'align' : can only be used with std140, std430, or scalar layout packing 
+ERROR: 0:44: 'layout' : offset/align can only be used on a uniform or buffer 
+ERROR: 0:46: 'offset' : cannot specify on a variable declaration 
+ERROR: 0:47: 'layout' : offset/align can only be used on a uniform or buffer 
+ERROR: 0:48: 'layout' : offset/align can only be used on a uniform or buffer 
+ERROR: 0:50: 'align' : cannot specify on a variable declaration 
+ERROR: 0:51: 'layout' : offset/align can only be used on a uniform or buffer 
+ERROR: 0:52: 'layout' : offset/align can only be used on a uniform or buffer 
+ERROR: 0:54: 'layout' : matrix or packing qualifiers can only be used on a uniform or buffer 
+ERROR: 0:55: 'layout' : cannot specify packing on a variable declaration 
+ERROR: 0:57: 'align' : must be a power of 2 
+ERROR: 0:58: 'offset/align' : can only be used with std140, std430, or scalar layout packing 
+ERROR: 0:62: 'offset/align' : can only be used with std140, std430, or scalar layout packing 
+ERROR: 0:63: 'offset/align' : can only be used with std140, std430, or scalar layout packing 
+ERROR: 0:62: 'layout' : offset/align can only be used on a uniform or buffer 
+ERROR: 0:63: 'layout' : offset/align can only be used on a uniform or buffer 
+ERROR: 0:84: 'align' : must be a power of 2 
+ERROR: 0:83: 'offset' : cannot lie in previous members 
+ERROR: 0:85: 'offset' : must be a multiple of the member's alignment 
+ERROR: 0:103: 'align' : must be a power of 2 
+ERROR: 0:105: 'align' : must be a power of 2 
+ERROR: 0:102: 'offset' : cannot lie in previous members 
+ERROR: 0:104: 'offset' : must be a multiple of the member's alignment 
+ERROR: 49 compilation errors.  No code generated.
+
+
+Shader version: 440
+ERROR: node is still EOpNull!
+0:144  Function Definition: interp( ( global void)
+0:144    Function Parameters: 
+0:146    Sequence
+0:146      interpolateAtCentroid ( global 2-component vector of float)
+0:146        vector swizzle ( temp 2-component vector of float)
+0:146          direct index ( smooth sample temp 3-component vector of float)
+0:146            'sampInArray' ( smooth sample in 4-element array of 3-component vector of float)
+0:146            Constant:
+0:146              2 (const int)
+0:146          Sequence
+0:146            Constant:
+0:146              0 (const int)
+0:146            Constant:
+0:146              1 (const int)
+0:147      interpolateAtSample ( global float)
+0:147        direct index ( temp float)
+0:147          direct index ( smooth sample temp 3-component vector of float)
+0:147            'sampInArray' ( smooth sample in 4-element array of 3-component vector of float)
+0:147            Constant:
+0:147              2 (const int)
+0:147          Constant:
+0:147            0 (const int)
+0:147        Constant:
+0:147          2 (const int)
+0:150  Function Definition: layer( ( global int)
+0:150    Function Parameters: 
+0:152    Sequence
+0:152      Branch: Return with expression
+0:152        'gl_Layer' ( flat in int Layer)
+0:?   Linker Objects
+0:?     'a' (layout( location=4 component=2) smooth in 2-component vector of float)
+0:?     'b' (layout( location=4 component=1) smooth in float)
+0:?     'h' (layout( location=4 component=2) smooth in 2-component vector of float)
+0:?     'c' (layout( location=3 component=2) smooth in 3-component vector of float)
+0:?     'e' (layout( location=20 component=0) smooth in 6-element array of 3-component vector of float)
+0:?     'f' (layout( location=20 component=3) smooth in 6-element array of float)
+0:?     'be' (layout( location=30 component=3) out int)
+0:?     'bf' (layout( location=30 component=0) out 3-component vector of float)
+0:?     'inst1' (layout( column_major shared offset=12) uniform block{layout( column_major shared) uniform int a})
+0:?     'inst2' (layout( offset=12) in block{ in int a})
+0:?     'inst3' (layout( offset=12) out block{ out int a})
+0:?     'inst4' (layout( column_major std140 align=16) uniform block{layout( column_major std140 offset=0 align=16) uniform int a})
+0:?     'inst8' (layout( column_major shared align=16) uniform block{layout( column_major shared) uniform int a})
+0:?     'inst5' (layout( align=16) in block{ in int a})
+0:?     'inst6' (layout( align=16) out block{ out int a})
+0:?     'v1' (layout( offset=12) uniform 4-component vector of float)
+0:?     'v2' (layout( offset=12) smooth in 4-component vector of float)
+0:?     'v3' (layout( offset=12) out 4-component vector of float)
+0:?     'v4' (layout( align=16) uniform 4-component vector of float)
+0:?     'v5' (layout( align=16) smooth in 4-component vector of float)
+0:?     'v6' (layout( align=16) out 4-component vector of float)
+0:?     'v7' (layout( std140) uniform 4-component vector of float)
+0:?     'inst7' (layout( column_major shared) uniform block{layout( column_major shared offset=12 align=4) uniform float f})
+0:?     'inst10' ( in block{layout( offset=12) in float f, layout( align=4) in float g})
+0:?     'inst9' (layout( column_major std430 align=32) uniform block{layout( column_major std430 align=32) uniform float e, layout( column_major std430 offset=12 align=4) uniform float f, layout( column_major std430 offset=20 align=32) uniform float g, layout( column_major std430 align=32) uniform float h})
+0:?     'inst11' (layout( column_major std430) uniform block{layout( column_major std430 offset=12 align=4) uniform float f, layout( column_major std430) uniform float g})
+0:?     'specExampleErrors' (layout( column_major std140) uniform block{layout( column_major std140 offset=0) uniform 4-component vector of float a, layout( column_major std140 offset=32) uniform 3-component vector of float b, layout( column_major std140 offset=48) uniform 2-component vector of float c, layout( column_major std140 offset=56) uniform double g, layout( column_major std140 offset=72) uniform double h})
+0:?     'specExample' (layout( column_major std140) uniform block{layout( column_major std140 offset=0) uniform 4-component vector of float a, layout( column_major std140 offset=32) uniform 3-component vector of float b, layout( column_major std140 offset=48) uniform 2-component vector of float d, layout( column_major std140 offset=64 align=16) uniform float e, layout( column_major std140 offset=72 align=2) uniform double f, layout( column_major std140 offset=80) uniform float h, layout( column_major std140 offset=128 align=64) uniform 3-component vector of double i, layout( column_major std140 offset=168 align=8) uniform float j})
+0:?     'specExampleErrors430' (layout( column_major std430) buffer block{layout( column_major std430 offset=0) buffer 4-component vector of float a, layout( column_major std430 offset=32) buffer 3-component vector of float b, layout( column_major std430 offset=48) buffer 2-component vector of float c, layout( column_major std430 offset=56) buffer double g, layout( column_major std430 offset=72) buffer double h, layout( column_major std430 offset=80) buffer double i})
+0:?     'specExample430' (layout( column_major std430) buffer block{layout( column_major std430 offset=0) buffer 4-component vector of float a, layout( column_major std430 offset=32) buffer 3-component vector of float b, layout( column_major std430 offset=48) buffer 2-component vector of float d, layout( column_major std430 offset=64 align=16) buffer float e, layout( column_major std430 offset=72 align=2) buffer double f, layout( column_major std430 offset=80) buffer float h, layout( column_major std430 offset=128 align=64) buffer 3-component vector of double i, layout( column_major std430 offset=168 align=8) buffer float j})
+0:?     'specExample4300' (layout( column_major std430 align=128) buffer block{layout( column_major std430 offset=0 align=128) buffer 4-component vector of float a, layout( column_major std430 offset=128 align=128) buffer 3-component vector of float b, layout( column_major std430 offset=256 align=128) buffer 2-component vector of float d, layout( column_major std430 offset=384 align=128) buffer float e, layout( column_major std430 offset=512 align=128) buffer double f, layout( column_major std430 offset=640 align=128) buffer float h, layout( column_major std430 offset=768 align=128) buffer 3-component vector of double i})
+0:?     'specExample4301' (layout( column_major std430 align=128) buffer block{layout( column_major std430 offset=0 align=128) buffer 4-component vector of float a, layout( column_major std430 offset=128 align=128) buffer 3-component vector of float b, layout( column_major std430 offset=256 align=128) buffer 2-component vector of float d, layout( column_major std430 offset=512 align=128) buffer float e, layout( column_major std430 offset=520 align=8) buffer double f, layout( column_major std430 offset=640 align=128) buffer float h, layout( column_major std430 offset=768 align=128) buffer 3-component vector of double i})
+0:?     'aconst' ( global 4-element array of int)
+0:?     'bconst' ( global 64-element array of int)
+0:?     'sampInArray' ( smooth sample in 4-element array of 3-component vector of float)
+
+
+Linked fragment stage:
+
+ERROR: Linking fragment stage: Missing entry point: Each stage requires one entry point
+
+Shader version: 440
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+0:?     'a' (layout( location=4 component=2) smooth in 2-component vector of float)
+0:?     'b' (layout( location=4 component=1) smooth in float)
+0:?     'h' (layout( location=4 component=2) smooth in 2-component vector of float)
+0:?     'c' (layout( location=3 component=2) smooth in 3-component vector of float)
+0:?     'e' (layout( location=20 component=0) smooth in 6-element array of 3-component vector of float)
+0:?     'f' (layout( location=20 component=3) smooth in 6-element array of float)
+0:?     'be' (layout( location=30 component=3) out int)
+0:?     'bf' (layout( location=30 component=0) out 3-component vector of float)
+0:?     'inst1' (layout( column_major shared offset=12) uniform block{layout( column_major shared) uniform int a})
+0:?     'inst2' (layout( offset=12) in block{ in int a})
+0:?     'inst3' (layout( offset=12) out block{ out int a})
+0:?     'inst4' (layout( column_major std140 align=16) uniform block{layout( column_major std140 offset=0 align=16) uniform int a})
+0:?     'inst8' (layout( column_major shared align=16) uniform block{layout( column_major shared) uniform int a})
+0:?     'inst5' (layout( align=16) in block{ in int a})
+0:?     'inst6' (layout( align=16) out block{ out int a})
+0:?     'v1' (layout( offset=12) uniform 4-component vector of float)
+0:?     'v2' (layout( offset=12) smooth in 4-component vector of float)
+0:?     'v3' (layout( offset=12) out 4-component vector of float)
+0:?     'v4' (layout( align=16) uniform 4-component vector of float)
+0:?     'v5' (layout( align=16) smooth in 4-component vector of float)
+0:?     'v6' (layout( align=16) out 4-component vector of float)
+0:?     'v7' (layout( std140) uniform 4-component vector of float)
+0:?     'inst7' (layout( column_major shared) uniform block{layout( column_major shared offset=12 align=4) uniform float f})
+0:?     'inst10' ( in block{layout( offset=12) in float f, layout( align=4) in float g})
+0:?     'inst9' (layout( column_major std430 align=32) uniform block{layout( column_major std430 align=32) uniform float e, layout( column_major std430 offset=12 align=4) uniform float f, layout( column_major std430 offset=20 align=32) uniform float g, layout( column_major std430 align=32) uniform float h})
+0:?     'inst11' (layout( column_major std430) uniform block{layout( column_major std430 offset=12 align=4) uniform float f, layout( column_major std430) uniform float g})
+0:?     'specExampleErrors' (layout( column_major std140) uniform block{layout( column_major std140 offset=0) uniform 4-component vector of float a, layout( column_major std140 offset=32) uniform 3-component vector of float b, layout( column_major std140 offset=48) uniform 2-component vector of float c, layout( column_major std140 offset=56) uniform double g, layout( column_major std140 offset=72) uniform double h})
+0:?     'specExample' (layout( column_major std140) uniform block{layout( column_major std140 offset=0) uniform 4-component vector of float a, layout( column_major std140 offset=32) uniform 3-component vector of float b, layout( column_major std140 offset=48) uniform 2-component vector of float d, layout( column_major std140 offset=64 align=16) uniform float e, layout( column_major std140 offset=72 align=2) uniform double f, layout( column_major std140 offset=80) uniform float h, layout( column_major std140 offset=128 align=64) uniform 3-component vector of double i, layout( column_major std140 offset=168 align=8) uniform float j})
+0:?     'specExampleErrors430' (layout( column_major std430) buffer block{layout( column_major std430 offset=0) buffer 4-component vector of float a, layout( column_major std430 offset=32) buffer 3-component vector of float b, layout( column_major std430 offset=48) buffer 2-component vector of float c, layout( column_major std430 offset=56) buffer double g, layout( column_major std430 offset=72) buffer double h, layout( column_major std430 offset=80) buffer double i})
+0:?     'specExample430' (layout( column_major std430) buffer block{layout( column_major std430 offset=0) buffer 4-component vector of float a, layout( column_major std430 offset=32) buffer 3-component vector of float b, layout( column_major std430 offset=48) buffer 2-component vector of float d, layout( column_major std430 offset=64 align=16) buffer float e, layout( column_major std430 offset=72 align=2) buffer double f, layout( column_major std430 offset=80) buffer float h, layout( column_major std430 offset=128 align=64) buffer 3-component vector of double i, layout( column_major std430 offset=168 align=8) buffer float j})
+0:?     'specExample4300' (layout( column_major std430 align=128) buffer block{layout( column_major std430 offset=0 align=128) buffer 4-component vector of float a, layout( column_major std430 offset=128 align=128) buffer 3-component vector of float b, layout( column_major std430 offset=256 align=128) buffer 2-component vector of float d, layout( column_major std430 offset=384 align=128) buffer float e, layout( column_major std430 offset=512 align=128) buffer double f, layout( column_major std430 offset=640 align=128) buffer float h, layout( column_major std430 offset=768 align=128) buffer 3-component vector of double i})
+0:?     'specExample4301' (layout( column_major std430 align=128) buffer block{layout( column_major std430 offset=0 align=128) buffer 4-component vector of float a, layout( column_major std430 offset=128 align=128) buffer 3-component vector of float b, layout( column_major std430 offset=256 align=128) buffer 2-component vector of float d, layout( column_major std430 offset=512 align=128) buffer float e, layout( column_major std430 offset=520 align=8) buffer double f, layout( column_major std430 offset=640 align=128) buffer float h, layout( column_major std430 offset=768 align=128) buffer 3-component vector of double i})
+0:?     'aconst' ( global 4-element array of int)
+0:?     'bconst' ( global 64-element array of int)
+0:?     'sampInArray' ( smooth sample in 4-element array of 3-component vector of float)
+

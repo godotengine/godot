@@ -1,0 +1,303 @@
+cppSimple.vert
+ERROR: 0:77: '#error' : good1  
+ERROR: 0:81: '#error' : good2  
+ERROR: 0:85: '#error' : good3  
+ERROR: 0:89: '#error' : good4  
+ERROR: 0:93: '#error' : good5  
+ERROR: 0:97: '#error' : good6  
+ERROR: 0:100: 'preprocessor evaluation' : expected ')' 
+ERROR: 0:101: '#error' : bad1  
+ERROR: 0:104: '#if' : unexpected tokens following directive 
+ERROR: 0:105: '#error' : bad2  
+ERROR: 0:108: 'preprocessor evaluation' : expected ')' 
+ERROR: 0:109: '#error' : bad3  
+ERROR: 0:112: '#if' : unexpected tokens following directive 
+ERROR: 0:113: '#error' : bad4  
+ERROR: 0:116: 'preprocessor evaluation' : expected ')' 
+ERROR: 0:117: '#error' : bad5  
+ERROR: 0:120: '#if' : unexpected tokens following directive 
+ERROR: 0:121: '#error' : bad6  
+ERROR: 0:122: '#endif' : unexpected tokens following directive 
+ERROR: 0:135: '""' : string literals not supported 
+ERROR: 0:136: '""' : string literals not supported 
+ERROR: 0:136: 'length' : no matching overloaded function found 
+ERROR: 0:136: '=' :  cannot convert from ' const float' to ' global int'
+ERROR: 0:138: ''' : character literals not supported 
+ERROR: 0:138: ''' : character literals not supported 
+ERROR: 0:141: '#define' : names beginning with "GL_" can't be (un)defined: GL_
+ERROR: 0:142: '#define' : names beginning with "GL_" can't be (un)defined: GL_Macro
+WARNING: 0:143: '#define' : names containing consecutive underscores are reserved: __M
+WARNING: 0:144: '#define' : names containing consecutive underscores are reserved: M__
+WARNING: 0:145: '#define' : names containing consecutive underscores are reserved: ABC__DE
+ERROR: 0:148: '#else' : unexpected tokens following directive 
+ERROR: 0:149: '#elif' : #elif after #else 
+ERROR: 0:155: '#else' : unexpected tokens following directive 
+ERROR: 0:158: '#else' : #else after #else 
+ERROR: 0:160: '#endif' : unexpected tokens following directive 
+ERROR: 0:164: '#define' : duplicate macro parameter 
+ERROR: 0:173: '#define' : Macro redefined; function-like versus object-like: m4
+ERROR: 0:177: '#define' : Macro redefined; function-like versus object-like: m5
+ERROR: 0:181: '#define' : Macro redefined; different number of arguments: m6
+ERROR: 0:185: '#define' : Macro redefined; different substitutions: m7
+ERROR: 0:192: '#define' : Macro redefined; different substitutions: m8
+ERROR: 0:196: '#define' : Macro redefined; different argument names: m9
+WARNING: 0:204: '#undef' : names containing consecutive underscores are reserved: __VERSION__
+ERROR: 0:205: '#undef' : names beginning with "GL_" can't be (un)defined: GL_ARB_texture_rectangle
+ERROR: 0:210: '#' : invalid directive 
+ERROR: 0:211: '#' : invalid directive 
+ERROR: 0:212: '#' : invalid directive 
+ERROR: 0:213: '#' : invalid directive 
+ERROR: 0:214: '#' : invalid directive 
+ERROR: 0:215: '#' : invalid directive 
+ERROR: 0:224: '#pragma' : optimize pragma syntax is incorrect 
+ERROR: 0:225: '#pragma' : optimize pragma syntax is incorrect 
+ERROR: 0:226: '#pragma' : debug pragma syntax is incorrect 
+ERROR: 0:227: '#pragma' : debug pragma syntax is incorrect 
+ERROR: 0:229: '#pragma' : optimize pragma syntax is incorrect 
+ERROR: 0:230: '#pragma' : debug pragma syntax is incorrect 
+ERROR: 0:233: 'line continuation' : not supported for this version or the enabled extensions 
+ERROR: 0:235: 'line continuation' : not supported for this version or the enabled extensions 
+ERROR: 0:236: '#error' : good continuation  
+ERROR: 0:238: '#' : invalid directive: flizbit
+ERROR: 0:242: '#' : invalid directive: directive
+ERROR: 0:12000: '#error' : line should be 12000  
+ERROR: 7:13000: '#error' : line should be 13000 , string 7  
+ERROR: 7:14013: '#error' : line should be 14013 , string 7  
+ERROR: 12:14013: '#error' : line should be 14013 , string 12  
+ERROR: 12:14025: '#error' : line should be 14025 , string 12  
+ERROR: 12:1233: '#line' : unexpected tokens following directive 
+ERROR: 12:1236: '#line' : unexpected tokens following directive 
+ERROR: 12:20000: '#error' : line should be 20000  
+ERROR: 12:20010: '#error' : line should be 20010  
+ERROR: 12:20020: '#error' : line should be 20020  
+ERROR: 12:20045: '#define' : Macro redefined; different substitutions: SPACE_IN_MIDDLE
+ERROR: 12:20051: '#error' : good evaluation 1  
+ERROR: 12:20055: '#error' : good evaluation 2  
+ERROR: 12:9000: 'preprocessor evaluation' : expected ')' 
+ERROR: 12:9002: '#if' : unexpected tokens following directive 
+ERROR: 12:9014: 'FOOOM' : undeclared identifier 
+ERROR: 12:9014: '=' :  cannot convert from ' temp float' to ' global int'
+ERROR: 12:9015: 'preprocessor evaluation' : can't evaluate expression 
+ERROR: 12:9016: 'preprocessor evaluation' : bad expression 
+ERROR: 12:9500: 'preprocessor evaluation' : bad expression 
+ERROR: 12:9500: '#if' : unexpected tokens following directive 
+ERROR: 12:9502: 'preprocessor evaluation' : bad expression 
+ERROR: 12:9502: '#if' : unexpected tokens following directive 
+ERROR: 12:9504: 'preprocessor evaluation' : bad expression 
+ERROR: 12:9504: '#if' : unexpected tokens following directive 
+ERROR: 12:9506: '#error' : \ 377  
+ERROR: 12:9507: '#error' : \ 376  
+ERROR: 12:9508: '#error' : \ 377  
+ERROR: 12:9602: 'defined' : cannot use in preprocessor expression when expanded from macros 
+ERROR: 12:9603: '#error' : DEF_DEFINED then  
+ERROR: 12:10002: '' : missing #endif 
+ERROR: 88 compilation errors.  No code generated.
+
+
+Shader version: 400
+ERROR: node is still EOpNull!
+0:5  Sequence
+0:5    move second child to first child ( temp float)
+0:5      'sum' ( global float)
+0:5      Constant:
+0:5        0.000000
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:12    Sequence
+0:12      add second child into first child ( temp float)
+0:12        'sum' ( global float)
+0:12        Constant:
+0:12          1.000000
+0:22      add second child into first child ( temp float)
+0:22        'sum' ( global float)
+0:22        Constant:
+0:22          300.000000
+0:37      add second child into first child ( temp float)
+0:37        'sum' ( global float)
+0:37        Constant:
+0:37          600000.000000
+0:48      add second child into first child ( temp float)
+0:48        'sum' ( global float)
+0:48        Constant:
+0:48          7000000.000000
+0:53      add second child into first child ( temp float)
+0:53        'sum' ( global float)
+0:53        Constant:
+0:53          80000000.000000
+0:58      add second child into first child ( temp float)
+0:58        'sum' ( global float)
+0:58        Constant:
+0:58          900000000.000000
+0:65      add second child into first child ( temp float)
+0:65        'sum' ( global float)
+0:65        Constant:
+0:65          0.050000
+0:69      move second child to first child ( temp 4-component vector of float)
+0:69        gl_Position: direct index for structure ( gl_Position 4-component vector of float Position)
+0:69          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out unsized 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:69          Constant:
+0:69            0 (const uint)
+0:69        Construct vec4 ( temp 4-component vector of float)
+0:69          'sum' ( global float)
+0:124  Sequence
+0:124    move second child to first child ( temp int)
+0:124      'linenumber' ( global int)
+0:124      Constant:
+0:124        124 (const int)
+0:125  Sequence
+0:125    move second child to first child ( temp int)
+0:125      'filenumber' ( global int)
+0:125      Constant:
+0:125        0 (const int)
+0:126  Sequence
+0:126    move second child to first child ( temp int)
+0:126      'version' ( global int)
+0:126      Constant:
+0:126        400 (const int)
+0:130  Sequence
+0:130    move second child to first child ( temp float)
+0:130      'twoPi' ( global float)
+0:130      Constant:
+0:130        6.280000
+0:199  Sequence
+0:199    move second child to first child ( temp int)
+0:199      'n' ( global int)
+0:199      Constant:
+0:199        15 (const int)
+0:202  Sequence
+0:202    move second child to first child ( temp double)
+0:202      'f' ( global double)
+0:202      Constant:
+0:202        0.000800
+12:20031  Function Definition: foo234( ( global void)
+12:20031    Function Parameters: 
+12:20033    Sequence
+12:20033      move second child to first child ( temp 4-component vector of float)
+12:20033        gl_Position: direct index for structure ( gl_Position 4-component vector of float Position)
+12:20033          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out unsized 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+12:20033          Constant:
+12:20033            0 (const uint)
+12:20033        Constant:
+12:20033          6.000000
+12:20033          6.000000
+12:20033          6.000000
+12:20033          6.000000
+12:9011  Sequence
+12:9011    move second child to first child ( temp int)
+12:9011      'R1' ( global int)
+12:9011      'RECURSE' ( global int)
+0:?   Linker Objects
+0:?     'sum' ( global float)
+0:?     'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out unsized 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:?     'linenumber' ( global int)
+0:?     'filenumber' ( global int)
+0:?     'version' ( global int)
+0:?     'twoPi' ( global float)
+0:?     'a' ( global int)
+0:?     'n' ( global int)
+0:?     'f' ( global double)
+0:?     'RECURSE' ( global int)
+0:?     'R1' ( global int)
+0:?     'aoeua' ( global int)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 400
+ERROR: node is still EOpNull!
+0:5  Sequence
+0:5    move second child to first child ( temp float)
+0:5      'sum' ( global float)
+0:5      Constant:
+0:5        0.000000
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:12    Sequence
+0:12      add second child into first child ( temp float)
+0:12        'sum' ( global float)
+0:12        Constant:
+0:12          1.000000
+0:22      add second child into first child ( temp float)
+0:22        'sum' ( global float)
+0:22        Constant:
+0:22          300.000000
+0:37      add second child into first child ( temp float)
+0:37        'sum' ( global float)
+0:37        Constant:
+0:37          600000.000000
+0:48      add second child into first child ( temp float)
+0:48        'sum' ( global float)
+0:48        Constant:
+0:48          7000000.000000
+0:53      add second child into first child ( temp float)
+0:53        'sum' ( global float)
+0:53        Constant:
+0:53          80000000.000000
+0:58      add second child into first child ( temp float)
+0:58        'sum' ( global float)
+0:58        Constant:
+0:58          900000000.000000
+0:65      add second child into first child ( temp float)
+0:65        'sum' ( global float)
+0:65        Constant:
+0:65          0.050000
+0:69      move second child to first child ( temp 4-component vector of float)
+0:69        gl_Position: direct index for structure ( gl_Position 4-component vector of float Position)
+0:69          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:69          Constant:
+0:69            0 (const uint)
+0:69        Construct vec4 ( temp 4-component vector of float)
+0:69          'sum' ( global float)
+0:124  Sequence
+0:124    move second child to first child ( temp int)
+0:124      'linenumber' ( global int)
+0:124      Constant:
+0:124        124 (const int)
+0:125  Sequence
+0:125    move second child to first child ( temp int)
+0:125      'filenumber' ( global int)
+0:125      Constant:
+0:125        0 (const int)
+0:126  Sequence
+0:126    move second child to first child ( temp int)
+0:126      'version' ( global int)
+0:126      Constant:
+0:126        400 (const int)
+0:130  Sequence
+0:130    move second child to first child ( temp float)
+0:130      'twoPi' ( global float)
+0:130      Constant:
+0:130        6.280000
+0:199  Sequence
+0:199    move second child to first child ( temp int)
+0:199      'n' ( global int)
+0:199      Constant:
+0:199        15 (const int)
+0:202  Sequence
+0:202    move second child to first child ( temp double)
+0:202      'f' ( global double)
+0:202      Constant:
+0:202        0.000800
+12:9011  Sequence
+12:9011    move second child to first child ( temp int)
+12:9011      'R1' ( global int)
+12:9011      'RECURSE' ( global int)
+0:?   Linker Objects
+0:?     'sum' ( global float)
+0:?     'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:?     'linenumber' ( global int)
+0:?     'filenumber' ( global int)
+0:?     'version' ( global int)
+0:?     'twoPi' ( global float)
+0:?     'a' ( global int)
+0:?     'n' ( global int)
+0:?     'f' ( global double)
+0:?     'RECURSE' ( global int)
+0:?     'R1' ( global int)
+0:?     'aoeua' ( global int)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

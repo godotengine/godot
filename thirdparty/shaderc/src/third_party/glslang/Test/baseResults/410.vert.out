@@ -1,0 +1,27 @@
+410.vert
+Shader version: 410
+0:? Sequence
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:?   Linker Objects
+0:?     'd' ( in double)
+0:?     'd3' ( in 3-component vector of double)
+0:?     'dm4' ( in 4X4 matrix of double)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 410
+0:? Sequence
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:?   Linker Objects
+0:?     'd' ( in double)
+0:?     'd3' ( in 3-component vector of double)
+0:?     'dm4' ( in 4X4 matrix of double)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

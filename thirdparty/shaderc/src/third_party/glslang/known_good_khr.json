@@ -1,0 +1,18 @@
+{
+  "commits" : [
+    {
+      "name" : "spirv-tools",
+      "site" : "gitlab",
+      "subrepo" : "spirv/spirv-tools",
+      "subdir" : "External/spirv-tools",
+      "commit" : "d4e2c2eaa6fd2e9f9cd218ea9add9b0c8ae759ba"
+    },
+    {
+      "name" : "spirv-tools/external/spirv-headers",
+      "site" : "gitlab",
+      "subrepo" : "spirv/SPIRV-Headers",
+      "subdir" : "External/spirv-tools/external/spirv-headers",
+      "commit" : "gitlab-prelim-rc4"
+    }
+  ]
+}

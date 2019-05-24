@@ -1,0 +1,56 @@
+420_size_gl_in.geom
+ERROR: 0:19: 'gl_PerVertex' : can only redeclare a built-in block once, and before any use 
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 420
+invocations = -1
+max_vertices = -1
+input primitive = triangles
+output primitive = none
+ERROR: node is still EOpNull!
+0:11  Function Definition: foo( ( global void)
+0:11    Function Parameters: 
+0:13    Sequence
+0:13      Constant:
+0:13        3 (const int)
+0:14      gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:14        direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 1-element array of float ClipDistance gl_ClipDistance})
+0:14          'gl_in' ( in 3-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 1-element array of float ClipDistance gl_ClipDistance})
+0:14          Constant:
+0:14            1 (const int)
+0:14        Constant:
+0:14          0 (const int)
+0:15      Constant:
+0:15        3 (const int)
+0:16      gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:16        indirect index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 1-element array of float ClipDistance gl_ClipDistance})
+0:16          'gl_in' ( in 3-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 1-element array of float ClipDistance gl_ClipDistance})
+0:16          'i' ( global int)
+0:16        Constant:
+0:16          0 (const int)
+0:?   Linker Objects
+0:?     'i' ( global int)
+0:?     'colorun' ( in 3-element array of 4-component vector of float)
+0:?     'color3' ( in 3-element array of 4-component vector of float)
+0:?     'gl_in' ( in 3-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 1-element array of float ClipDistance gl_ClipDistance})
+
+
+Linked geometry stage:
+
+ERROR: Linking geometry stage: Missing entry point: Each stage requires one entry point
+ERROR: Linking geometry stage: At least one shader must specify an output layout primitive
+ERROR: Linking geometry stage: At least one shader must specify a layout(max_vertices = value)
+
+Shader version: 420
+invocations = 1
+max_vertices = -1
+input primitive = triangles
+output primitive = none
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+0:?     'i' ( global int)
+0:?     'colorun' ( in 3-element array of 4-component vector of float)
+0:?     'color3' ( in 3-element array of 4-component vector of float)
+0:?     'gl_in' ( in 3-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 1-element array of float ClipDistance gl_ClipDistance})
+

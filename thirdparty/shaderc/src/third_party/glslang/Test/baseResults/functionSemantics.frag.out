@@ -1,0 +1,401 @@
+functionSemantics.frag
+ERROR: 0:74: 'return' : cannot convert return value to function return type 
+WARNING: 0:74: 'return' : type conversion on return values was not explicitly allowed until version 420 
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 400
+ERROR: node is still EOpNull!
+0:5  Function Definition: foo(i1;i1;i1;i1;i1;i1; ( global int)
+0:5    Function Parameters: 
+0:5      'a' ( in int)
+0:5      'b' ( const (read only) int)
+0:5      'c' ( in int)
+0:5      'd' ( const (read only) int)
+0:5      'e' ( out int)
+0:5      'f' ( inout int)
+0:7    Sequence
+0:7      Sequence
+0:7        move second child to first child ( temp int)
+0:7          'sum' ( temp int)
+0:7          add ( temp int)
+0:7            add ( temp int)
+0:7              add ( temp int)
+0:7                add ( temp int)
+0:7                  'a' ( in int)
+0:7                  'b' ( const (read only) int)
+0:7                'c' ( in int)
+0:7              'd' ( const (read only) int)
+0:7            'f' ( inout int)
+0:10      multiply second child into first child ( temp int)
+0:10        'a' ( in int)
+0:10        Constant:
+0:10          64 (const int)
+0:12      multiply second child into first child ( temp int)
+0:12        'c' ( in int)
+0:12        Constant:
+0:12          64 (const int)
+0:14      move second child to first child ( temp int)
+0:14        'e' ( out int)
+0:14        Constant:
+0:14          1024 (const int)
+0:15      multiply second child into first child ( temp int)
+0:15        'f' ( inout int)
+0:15        Constant:
+0:15          64 (const int)
+0:17      add second child into first child ( temp int)
+0:17        'sum' ( temp int)
+0:17        add ( temp int)
+0:17          add ( temp int)
+0:17            add ( temp int)
+0:17              add ( temp int)
+0:17                add ( temp int)
+0:17                  'a' ( in int)
+0:17                  component-wise multiply ( temp int)
+0:17                    Constant:
+0:17                      64 (const int)
+0:17                    'b' ( const (read only) int)
+0:17                'c' ( in int)
+0:17              component-wise multiply ( temp int)
+0:17                Constant:
+0:17                  64 (const int)
+0:17                'd' ( const (read only) int)
+0:17            'e' ( out int)
+0:17          'f' ( inout int)
+0:20      Branch: Return with expression
+0:20        'sum' ( temp int)
+0:23  Function Definition: foo2(f1;vf3;i1; ( global int)
+0:23    Function Parameters: 
+0:23      'a' ( in float)
+0:23      'b' ( in 3-component vector of float)
+0:23      'r' ( out int)
+0:25    Sequence
+0:25      move second child to first child ( temp int)
+0:25        'r' ( out int)
+0:25        Convert float to int ( temp int)
+0:25          component-wise multiply ( temp float)
+0:25            Constant:
+0:25              3.000000
+0:25            'a' ( in float)
+0:26      Branch: Return with expression
+0:26        Convert float to int ( temp int)
+0:26          component-wise multiply ( temp float)
+0:26            Constant:
+0:26              5.000000
+0:26            direct index ( temp float)
+0:26              'b' ( in 3-component vector of float)
+0:26              Constant:
+0:26                1 (const int)
+0:29  Function Definition: foo3( ( global int)
+0:29    Function Parameters: 
+0:31    Sequence
+0:31      Test condition and select ( temp void)
+0:31        Condition
+0:31        Compare Greater Than ( temp bool)
+0:31          'u' ( uniform float)
+0:31          Constant:
+0:31            3.200000
+0:31        true case
+0:32        Sequence
+0:32          Branch: Kill
+0:33          Branch: Return with expression
+0:33            Constant:
+0:33              1000000 (const int)
+0:36      Branch: Return with expression
+0:36        Constant:
+0:36          2000000 (const int)
+0:39  Function Definition: main( ( global void)
+0:39    Function Parameters: 
+0:?     Sequence
+0:42      Sequence
+0:42        move second child to first child ( temp int)
+0:42          't' ( temp int)
+0:42          Constant:
+0:42            2 (const int)
+0:46      move second child to first child ( temp int)
+0:46        direct index ( temp int)
+0:46          t: direct index for structure ( temp 4-component vector of int)
+0:46            'f' ( temp structure{ temp 4-component vector of int t})
+0:46            Constant:
+0:46              0 (const int)
+0:46          Constant:
+0:46            1 (const int)
+0:46        Constant:
+0:46          32 (const int)
+0:49      Sequence
+0:49        move second child to first child ( temp int)
+0:49          'color' ( temp int)
+0:49          Function Call: foo(i1;i1;i1;i1;i1;i1; ( global int)
+0:49            Constant:
+0:49              1 (const int)
+0:49            Constant:
+0:49              2 (const int)
+0:49            add ( temp int)
+0:49              't' ( temp int)
+0:49              't' ( temp int)
+0:49            Constant:
+0:49              8 (const int)
+0:49            'e' ( temp int)
+0:49            direct index ( temp int)
+0:49              t: direct index for structure ( temp 4-component vector of int)
+0:49                'f' ( temp structure{ temp 4-component vector of int t})
+0:49                Constant:
+0:49                  0 (const int)
+0:49              Constant:
+0:49                1 (const int)
+0:51      add second child into first child ( temp int)
+0:51        'color' ( temp int)
+0:51        component-wise multiply ( temp int)
+0:51          Constant:
+0:51            128 (const int)
+0:51          add ( temp int)
+0:51            'e' ( temp int)
+0:51            direct index ( temp int)
+0:51              t: direct index for structure ( temp 4-component vector of int)
+0:51                'f' ( temp structure{ temp 4-component vector of int t})
+0:51                Constant:
+0:51                  0 (const int)
+0:51              Constant:
+0:51                1 (const int)
+0:57      move second child to first child ( temp float)
+0:57        'ret' ( temp float)
+0:57        Convert int to float ( temp float)
+0:57          Comma ( global int)
+0:57            move second child to first child ( temp int)
+0:57              'tempReturn' ( global int)
+0:57              Function Call: foo2(f1;vf3;i1; ( global int)
+0:57                Constant:
+0:57                  4.000000
+0:57                Constant:
+0:57                  1.000000
+0:57                  2.000000
+0:57                  3.000000
+0:57                'tempArg' ( temp int)
+0:57            move second child to first child ( temp float)
+0:57              'arg' ( temp float)
+0:57              Convert int to float ( temp float)
+0:57                'tempArg' ( temp int)
+0:57            'tempReturn' ( global int)
+0:58      add second child into first child ( temp int)
+0:58        'color' ( temp int)
+0:58        Convert float to int ( temp int)
+0:58          add ( temp float)
+0:58            'ret' ( temp float)
+0:58            'arg' ( temp float)
+0:60      add second child into first child ( temp int)
+0:60        'color' ( temp int)
+0:60        Function Call: foo3( ( global int)
+0:62      move second child to first child ( temp 4-component vector of float)
+0:62        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:62        Construct vec4 ( temp 4-component vector of float)
+0:62          Convert int to float ( temp float)
+0:62            'color' ( temp int)
+0:66  Function Definition: aggCall( ( global void)
+0:66    Function Parameters: 
+0:?     Sequence
+0:69      Function Call: m(vf2; ( global 3-component vector of float)
+0:69        Convert int to float ( temp 2-component vector of float)
+0:69          Construct ivec2 ( temp 2-component vector of int)
+0:69            Convert float to int ( temp int)
+0:69              'F' ( temp float)
+0:72  Function Definition: badConv( ( global 4-component vector of float)
+0:72    Function Parameters: 
+0:74    Sequence
+0:74      Branch: Return with expression
+0:74        'u' ( uniform float)
+0:?   Linker Objects
+0:?     'u' ( uniform float)
+
+
+Linked fragment stage:
+
+
+Shader version: 400
+ERROR: node is still EOpNull!
+0:5  Function Definition: foo(i1;i1;i1;i1;i1;i1; ( global int)
+0:5    Function Parameters: 
+0:5      'a' ( in int)
+0:5      'b' ( const (read only) int)
+0:5      'c' ( in int)
+0:5      'd' ( const (read only) int)
+0:5      'e' ( out int)
+0:5      'f' ( inout int)
+0:7    Sequence
+0:7      Sequence
+0:7        move second child to first child ( temp int)
+0:7          'sum' ( temp int)
+0:7          add ( temp int)
+0:7            add ( temp int)
+0:7              add ( temp int)
+0:7                add ( temp int)
+0:7                  'a' ( in int)
+0:7                  'b' ( const (read only) int)
+0:7                'c' ( in int)
+0:7              'd' ( const (read only) int)
+0:7            'f' ( inout int)
+0:10      multiply second child into first child ( temp int)
+0:10        'a' ( in int)
+0:10        Constant:
+0:10          64 (const int)
+0:12      multiply second child into first child ( temp int)
+0:12        'c' ( in int)
+0:12        Constant:
+0:12          64 (const int)
+0:14      move second child to first child ( temp int)
+0:14        'e' ( out int)
+0:14        Constant:
+0:14          1024 (const int)
+0:15      multiply second child into first child ( temp int)
+0:15        'f' ( inout int)
+0:15        Constant:
+0:15          64 (const int)
+0:17      add second child into first child ( temp int)
+0:17        'sum' ( temp int)
+0:17        add ( temp int)
+0:17          add ( temp int)
+0:17            add ( temp int)
+0:17              add ( temp int)
+0:17                add ( temp int)
+0:17                  'a' ( in int)
+0:17                  component-wise multiply ( temp int)
+0:17                    Constant:
+0:17                      64 (const int)
+0:17                    'b' ( const (read only) int)
+0:17                'c' ( in int)
+0:17              component-wise multiply ( temp int)
+0:17                Constant:
+0:17                  64 (const int)
+0:17                'd' ( const (read only) int)
+0:17            'e' ( out int)
+0:17          'f' ( inout int)
+0:20      Branch: Return with expression
+0:20        'sum' ( temp int)
+0:23  Function Definition: foo2(f1;vf3;i1; ( global int)
+0:23    Function Parameters: 
+0:23      'a' ( in float)
+0:23      'b' ( in 3-component vector of float)
+0:23      'r' ( out int)
+0:25    Sequence
+0:25      move second child to first child ( temp int)
+0:25        'r' ( out int)
+0:25        Convert float to int ( temp int)
+0:25          component-wise multiply ( temp float)
+0:25            Constant:
+0:25              3.000000
+0:25            'a' ( in float)
+0:26      Branch: Return with expression
+0:26        Convert float to int ( temp int)
+0:26          component-wise multiply ( temp float)
+0:26            Constant:
+0:26              5.000000
+0:26            direct index ( temp float)
+0:26              'b' ( in 3-component vector of float)
+0:26              Constant:
+0:26                1 (const int)
+0:29  Function Definition: foo3( ( global int)
+0:29    Function Parameters: 
+0:31    Sequence
+0:31      Test condition and select ( temp void)
+0:31        Condition
+0:31        Compare Greater Than ( temp bool)
+0:31          'u' ( uniform float)
+0:31          Constant:
+0:31            3.200000
+0:31        true case
+0:32        Sequence
+0:32          Branch: Kill
+0:33          Branch: Return with expression
+0:33            Constant:
+0:33              1000000 (const int)
+0:36      Branch: Return with expression
+0:36        Constant:
+0:36          2000000 (const int)
+0:39  Function Definition: main( ( global void)
+0:39    Function Parameters: 
+0:?     Sequence
+0:42      Sequence
+0:42        move second child to first child ( temp int)
+0:42          't' ( temp int)
+0:42          Constant:
+0:42            2 (const int)
+0:46      move second child to first child ( temp int)
+0:46        direct index ( temp int)
+0:46          t: direct index for structure ( temp 4-component vector of int)
+0:46            'f' ( temp structure{ temp 4-component vector of int t})
+0:46            Constant:
+0:46              0 (const int)
+0:46          Constant:
+0:46            1 (const int)
+0:46        Constant:
+0:46          32 (const int)
+0:49      Sequence
+0:49        move second child to first child ( temp int)
+0:49          'color' ( temp int)
+0:49          Function Call: foo(i1;i1;i1;i1;i1;i1; ( global int)
+0:49            Constant:
+0:49              1 (const int)
+0:49            Constant:
+0:49              2 (const int)
+0:49            add ( temp int)
+0:49              't' ( temp int)
+0:49              't' ( temp int)
+0:49            Constant:
+0:49              8 (const int)
+0:49            'e' ( temp int)
+0:49            direct index ( temp int)
+0:49              t: direct index for structure ( temp 4-component vector of int)
+0:49                'f' ( temp structure{ temp 4-component vector of int t})
+0:49                Constant:
+0:49                  0 (const int)
+0:49              Constant:
+0:49                1 (const int)
+0:51      add second child into first child ( temp int)
+0:51        'color' ( temp int)
+0:51        component-wise multiply ( temp int)
+0:51          Constant:
+0:51            128 (const int)
+0:51          add ( temp int)
+0:51            'e' ( temp int)
+0:51            direct index ( temp int)
+0:51              t: direct index for structure ( temp 4-component vector of int)
+0:51                'f' ( temp structure{ temp 4-component vector of int t})
+0:51                Constant:
+0:51                  0 (const int)
+0:51              Constant:
+0:51                1 (const int)
+0:57      move second child to first child ( temp float)
+0:57        'ret' ( temp float)
+0:57        Convert int to float ( temp float)
+0:57          Comma ( global int)
+0:57            move second child to first child ( temp int)
+0:57              'tempReturn' ( global int)
+0:57              Function Call: foo2(f1;vf3;i1; ( global int)
+0:57                Constant:
+0:57                  4.000000
+0:57                Constant:
+0:57                  1.000000
+0:57                  2.000000
+0:57                  3.000000
+0:57                'tempArg' ( temp int)
+0:57            move second child to first child ( temp float)
+0:57              'arg' ( temp float)
+0:57              Convert int to float ( temp float)
+0:57                'tempArg' ( temp int)
+0:57            'tempReturn' ( global int)
+0:58      add second child into first child ( temp int)
+0:58        'color' ( temp int)
+0:58        Convert float to int ( temp int)
+0:58          add ( temp float)
+0:58            'ret' ( temp float)
+0:58            'arg' ( temp float)
+0:60      add second child into first child ( temp int)
+0:60        'color' ( temp int)
+0:60        Function Call: foo3( ( global int)
+0:62      move second child to first child ( temp 4-component vector of float)
+0:62        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:62        Construct vec4 ( temp 4-component vector of float)
+0:62          Convert int to float ( temp float)
+0:62            'color' ( temp int)
+0:?   Linker Objects
+0:?     'u' ( uniform float)
+

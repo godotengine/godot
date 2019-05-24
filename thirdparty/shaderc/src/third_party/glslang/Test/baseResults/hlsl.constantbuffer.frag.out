@@ -1,0 +1,245 @@
+hlsl.constantbuffer.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:20  Function Definition: @main( ( temp 4-component vector of float)
+0:20    Function Parameters: 
+0:?     Sequence
+0:21      Test condition and select ( temp void)
+0:21        Condition
+0:21        x: direct index for structure (layout( row_major std140) uniform bool)
+0:21          direct index (layout( row_major std140) temp block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:21            direct index (layout( row_major std140) temp 4-element array of block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:21              'cb3' (layout( row_major std140) uniform 2-element array of 4-element array of block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:21              Constant:
+0:21                1 (const int)
+0:21            Constant:
+0:21              2 (const int)
+0:21          Constant:
+0:21            0 (const int)
+0:21        true case
+0:22        Branch: Return with expression
+0:22          add ( temp 4-component vector of float)
+0:22            add ( temp 4-component vector of float)
+0:22              x: direct index for structure (layout( row_major std140) uniform 4-component vector of float)
+0:22                'cb1' (layout( binding=12 row_major std140) uniform block{layout( row_major std140) uniform 4-component vector of float x})
+0:22                Constant:
+0:22                  0 (const int)
+0:22              y: direct index for structure (layout( row_major std140) uniform float)
+0:22                direct index (layout( row_major std140) temp block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:22                  'cb2' (layout( row_major std140) uniform 3-element array of block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:22                  Constant:
+0:22                    1 (const int)
+0:22                Constant:
+0:22                  1 (const int)
+0:22            Convert int to float ( temp float)
+0:22              c1: direct index for structure (layout( row_major std140) uniform int)
+0:22                'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform int c1})
+0:22                Constant:
+0:22                  0 (const uint)
+0:21        false case
+0:24        Branch: Return with expression
+0:24          Construct vec4 ( temp 4-component vector of float)
+0:24            y: direct index for structure (layout( row_major std140) uniform float)
+0:24              direct index (layout( row_major std140) temp block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:24                direct index (layout( row_major std140) temp 4-element array of block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:24                  'cb3' (layout( row_major std140) uniform 2-element array of 4-element array of block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:24                  Constant:
+0:24                    1 (const int)
+0:24                Constant:
+0:24                  3 (const int)
+0:24              Constant:
+0:24                1 (const int)
+0:20  Function Definition: main( ( temp void)
+0:20    Function Parameters: 
+0:?     Sequence
+0:20      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:20        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'cb1' (layout( binding=12 row_major std140) uniform block{layout( row_major std140) uniform 4-component vector of float x})
+0:?     'cb2' (layout( row_major std140) uniform 3-element array of block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:?     'cb3' (layout( row_major std140) uniform 2-element array of 4-element array of block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:?     'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform int c1})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:20  Function Definition: @main( ( temp 4-component vector of float)
+0:20    Function Parameters: 
+0:?     Sequence
+0:21      Test condition and select ( temp void)
+0:21        Condition
+0:21        x: direct index for structure (layout( row_major std140) uniform bool)
+0:21          direct index (layout( row_major std140) temp block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:21            direct index (layout( row_major std140) temp 4-element array of block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:21              'cb3' (layout( row_major std140) uniform 2-element array of 4-element array of block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:21              Constant:
+0:21                1 (const int)
+0:21            Constant:
+0:21              2 (const int)
+0:21          Constant:
+0:21            0 (const int)
+0:21        true case
+0:22        Branch: Return with expression
+0:22          add ( temp 4-component vector of float)
+0:22            add ( temp 4-component vector of float)
+0:22              x: direct index for structure (layout( row_major std140) uniform 4-component vector of float)
+0:22                'cb1' (layout( binding=12 row_major std140) uniform block{layout( row_major std140) uniform 4-component vector of float x})
+0:22                Constant:
+0:22                  0 (const int)
+0:22              y: direct index for structure (layout( row_major std140) uniform float)
+0:22                direct index (layout( row_major std140) temp block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:22                  'cb2' (layout( row_major std140) uniform 3-element array of block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:22                  Constant:
+0:22                    1 (const int)
+0:22                Constant:
+0:22                  1 (const int)
+0:22            Convert int to float ( temp float)
+0:22              c1: direct index for structure (layout( row_major std140) uniform int)
+0:22                'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform int c1})
+0:22                Constant:
+0:22                  0 (const uint)
+0:21        false case
+0:24        Branch: Return with expression
+0:24          Construct vec4 ( temp 4-component vector of float)
+0:24            y: direct index for structure (layout( row_major std140) uniform float)
+0:24              direct index (layout( row_major std140) temp block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:24                direct index (layout( row_major std140) temp 4-element array of block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:24                  'cb3' (layout( row_major std140) uniform 2-element array of 4-element array of block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:24                  Constant:
+0:24                    1 (const int)
+0:24                Constant:
+0:24                  3 (const int)
+0:24              Constant:
+0:24                1 (const int)
+0:20  Function Definition: main( ( temp void)
+0:20    Function Parameters: 
+0:?     Sequence
+0:20      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:20        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'cb1' (layout( binding=12 row_major std140) uniform block{layout( row_major std140) uniform 4-component vector of float x})
+0:?     'cb2' (layout( row_major std140) uniform 3-element array of block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:?     'cb3' (layout( row_major std140) uniform 2-element array of 4-element array of block{layout( row_major std140) uniform bool x, layout( row_major std140) uniform float y})
+0:?     'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform int c1})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+Validation failed
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 66
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 64
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "@main("
+                              Name 12  "cb3"
+                              MemberName 12(cb3) 0  "x"
+                              MemberName 12(cb3) 1  "y"
+                              Name 18  "cb3"
+                              Name 31  "cb1"
+                              MemberName 31(cb1) 0  "x"
+                              Name 33  "cb1"
+                              Name 40  "cb2"
+                              Name 46  "cbuff"
+                              MemberName 46(cbuff) 0  "c1"
+                              Name 48  ""
+                              Name 64  "@entryPointOutput"
+                              MemberDecorate 12(cb3) 0 Offset 0
+                              MemberDecorate 12(cb3) 1 Offset 4
+                              Decorate 12(cb3) Block
+                              Decorate 18(cb3) DescriptorSet 0
+                              Decorate 18(cb3) Binding 0
+                              MemberDecorate 31(cb1) 0 Offset 0
+                              Decorate 31(cb1) Block
+                              Decorate 33(cb1) DescriptorSet 0
+                              Decorate 33(cb1) Binding 12
+                              Decorate 40(cb2) DescriptorSet 0
+                              Decorate 40(cb2) Binding 0
+                              MemberDecorate 46(cbuff) 0 Offset 0
+                              Decorate 46(cbuff) Block
+                              Decorate 48 DescriptorSet 0
+                              Decorate 48 Binding 0
+                              Decorate 64(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeFunction 7(fvec4)
+              11:             TypeInt 32 0
+         12(cb3):             TypeStruct 11(int) 6(float)
+              13:     11(int) Constant 4
+              14:             TypeArray 12(cb3) 13
+              15:     11(int) Constant 2
+              16:             TypeArray 14 15
+              17:             TypePointer Uniform 16
+         18(cb3):     17(ptr) Variable Uniform
+              19:             TypeInt 32 1
+              20:     19(int) Constant 1
+              21:     19(int) Constant 2
+              22:     19(int) Constant 0
+              23:             TypePointer Uniform 11(int)
+              26:             TypeBool
+              27:     11(int) Constant 0
+         31(cb1):             TypeStruct 7(fvec4)
+              32:             TypePointer Uniform 31(cb1)
+         33(cb1):     32(ptr) Variable Uniform
+              34:             TypePointer Uniform 7(fvec4)
+              37:     11(int) Constant 3
+              38:             TypeArray 12(cb3) 37
+              39:             TypePointer Uniform 38
+         40(cb2):     39(ptr) Variable Uniform
+              41:             TypePointer Uniform 6(float)
+       46(cbuff):             TypeStruct 19(int)
+              47:             TypePointer Uniform 46(cbuff)
+              48:     47(ptr) Variable Uniform
+              49:             TypePointer Uniform 19(int)
+              57:     19(int) Constant 3
+              63:             TypePointer Output 7(fvec4)
+64(@entryPointOutput):     63(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              65:    7(fvec4) FunctionCall 9(@main()
+                              Store 64(@entryPointOutput) 65
+                              Return
+                              FunctionEnd
+       9(@main():    7(fvec4) Function None 8
+              10:             Label
+              24:     23(ptr) AccessChain 18(cb3) 20 21 22
+              25:     11(int) Load 24
+              28:    26(bool) INotEqual 25 27
+                              SelectionMerge 30 None
+                              BranchConditional 28 29 56
+              29:               Label
+              35:     34(ptr)   AccessChain 33(cb1) 22
+              36:    7(fvec4)   Load 35
+              42:     41(ptr)   AccessChain 40(cb2) 20 20
+              43:    6(float)   Load 42
+              44:    7(fvec4)   CompositeConstruct 43 43 43 43
+              45:    7(fvec4)   FAdd 36 44
+              50:     49(ptr)   AccessChain 48 22
+              51:     19(int)   Load 50
+              52:    6(float)   ConvertSToF 51
+              53:    7(fvec4)   CompositeConstruct 52 52 52 52
+              54:    7(fvec4)   FAdd 45 53
+                                ReturnValue 54
+              56:               Label
+              58:     41(ptr)   AccessChain 18(cb3) 20 57 20
+              59:    6(float)   Load 58
+              60:    7(fvec4)   CompositeConstruct 59 59 59 59
+                                ReturnValue 60
+              30:             Label
+              62:    7(fvec4) Undef
+                              ReturnValue 62
+                              FunctionEnd

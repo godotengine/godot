@@ -1,0 +1,54 @@
+#version 450
+
+#define MAX_VIEWS gl_MaxMeshViewCountNV
+
+#define BARRIER() \
+    memoryBarrierShared(); \
+    barrier();
+
+#extension GL_NV_mesh_shader : enable
+
+layout(local_size_x = 32) in;
+
+// test use of shared memory in task shaders:
+layout(binding=0) writeonly uniform image2D uni_image;
+uniform block0 {
+    uint uni_value;
+};
+shared vec4 mem[10];
+
+// test use of task memory in task shaders:
+taskNV out Task {
+    vec2 dummy;
+    vec2 submesh[3];
+    uint viewID;
+} mytask;
+
+void main()
+{
+    uint iid = gl_LocalInvocationID.x;
+    uint gid = gl_WorkGroupID.x;
+    uint viewID = gl_MeshViewIndicesNV[gl_MeshViewCountNV%MAX_VIEWS];
+
+    // 1. shared memory load and stores
+    for (uint i = 0; i < 10; ++i) {
+        mem[i] = vec4(i + uni_value);
+    }
+    imageStore(uni_image, ivec2(iid), mem[gid]);
+    imageStore(uni_image, ivec2(iid), mem[gid+1]);
+
+    BARRIER();
+
+    // 2. task memory stores
+
+    mytask.dummy      = vec2(30.0, 31.0);
+    mytask.submesh[0] = vec2(32.0, 33.0);
+    mytask.submesh[1] = vec2(34.0, 35.0);
+    mytask.submesh[2] = mytask.submesh[gid%2];
+    mytask.viewID     = viewID;
+
+    BARRIER();
+
+    // 3. set task count
+    gl_TaskCountNV = 3;
+}

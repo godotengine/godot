@@ -1,0 +1,12 @@
+Language: Cpp
+IndentWidth: 4
+BreakBeforeBraces: Custom
+BraceWrapping: { AfterFunction: true, AfterControlStatement: true }
+IndentCaseLabels: false
+ReflowComments: false
+ColumnLimit: 120
+AccessModifierOffset: -4
+AlignTrailingComments: true
+AllowShortBlocksOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false

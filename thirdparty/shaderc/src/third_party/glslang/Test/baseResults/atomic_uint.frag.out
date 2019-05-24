@@ -1,0 +1,107 @@
+atomic_uint.frag
+ERROR: 0:10: 'atomic_uint' : samplers and atomic_uints cannot be output parameters 
+ERROR: 0:12: 'return' : type does not match, or is not convertible to, the function's return type 
+ERROR: 0:18: 'atomic_uint' : atomic_uints can only be used in uniform variables or function parameters: non_uniform_counter
+ERROR: 0:23: 'binding' : atomic_uint binding is too large; see gl_MaxAtomicCounterBindings 
+ERROR: 0:28: '+' :  wrong operand types: no operation '+' exists that takes a left-hand operand of type 'layout( binding=0 offset=0) uniform atomic_uint' and a right operand of type 'layout( binding=0 offset=0) uniform atomic_uint' (or there is no acceptable conversion)
+ERROR: 0:29: '-' :  wrong operand type no operation '-' exists that takes an operand of type layout( binding=0 offset=0) uniform atomic_uint (or there is no acceptable conversion)
+ERROR: 0:31: '[]' : scalar integer expression required 
+ERROR: 0:34: 'assign' :  l-value required "counter" (can't modify a uniform)
+ERROR: 0:34: 'assign' :  cannot convert from ' const int' to 'layout( binding=0 offset=0) uniform atomic_uint'
+ERROR: 0:37: 'atomic_uint' : atomic_uints can only be used in uniform variables or function parameters: acin
+ERROR: 0:38: 'atomic_uint' : atomic_uints can only be used in uniform variables or function parameters: acg
+ERROR: 0:47: 'offset' : atomic counters sharing the same offset: 12
+ERROR: 0:48: 'binding' : atomic_uint binding is too large; see gl_MaxAtomicCounterBindings 
+ERROR: 13 compilation errors.  No code generated.
+
+
+Shader version: 420
+ERROR: node is still EOpNull!
+0:5  Function Definition: func(au1; ( global uint)
+0:5    Function Parameters: 
+0:5      'c' ( in atomic_uint)
+0:7    Sequence
+0:7      Branch: Return with expression
+0:7        AtomicCounterIncrement ( global uint)
+0:7          'c' ( in atomic_uint)
+0:10  Function Definition: func2(au1; ( global uint)
+0:10    Function Parameters: 
+0:10      'c' ( out atomic_uint)
+0:12    Sequence
+0:12      Branch: Return with expression
+0:12        'counter' (layout( binding=0 offset=0) uniform atomic_uint)
+0:13      Branch: Return with expression
+0:13        AtomicCounter ( global uint)
+0:13          'counter' (layout( binding=0 offset=0) uniform atomic_uint)
+0:16  Function Definition: main( ( global void)
+0:16    Function Parameters: 
+0:?     Sequence
+0:19      Sequence
+0:19        move second child to first child ( temp uint)
+0:19          'val' ( temp uint)
+0:19          AtomicCounter ( global uint)
+0:19            'counter' (layout( binding=0 offset=0) uniform atomic_uint)
+0:20      AtomicCounterDecrement ( global uint)
+0:20        'counter' (layout( binding=0 offset=0) uniform atomic_uint)
+0:26  Function Definition: opac( ( global void)
+0:26    Function Parameters: 
+0:28    Sequence
+0:28      'counter' (layout( binding=0 offset=0) uniform atomic_uint)
+0:29      'counter' (layout( binding=0 offset=0) uniform atomic_uint)
+0:31      indirect index ( temp int)
+0:31        'a' ( temp 3-element array of int)
+0:31        'counter' (layout( binding=0 offset=0) uniform atomic_uint)
+0:32      direct index (layout( binding=1 offset=3) temp atomic_uint)
+0:32        'countArr' (layout( binding=1 offset=3) uniform 4-element array of atomic_uint)
+0:32        Constant:
+0:32          2 (const int)
+0:33      indirect index (layout( binding=1 offset=3) temp atomic_uint)
+0:33        'countArr' (layout( binding=1 offset=3) uniform 4-element array of atomic_uint)
+0:33        'i' ( uniform int)
+0:34      'counter' (layout( binding=0 offset=0) uniform atomic_uint)
+0:?   Linker Objects
+0:?     'counter' (layout( binding=0 offset=0) uniform atomic_uint)
+0:?     'countArr' (layout( binding=1 offset=3) uniform 4-element array of atomic_uint)
+0:?     'i' ( uniform int)
+0:?     'acin' ( smooth in atomic_uint)
+0:?     'acg' ( global atomic_uint)
+0:?     'aNoBind' ( uniform atomic_uint)
+0:?     'aOffset' (layout( binding=0 offset=32) uniform atomic_uint)
+0:?     'bar3' (layout( binding=0 offset=4) uniform atomic_uint)
+0:?     'ac' (layout( binding=0 offset=8) uniform 3-element array of atomic_uint)
+0:?     'ad' (layout( binding=0 offset=20) uniform atomic_uint)
+0:?     'bar4' (layout( offset=8) uniform atomic_uint)
+0:?     'overlap' (layout( binding=0 offset=12) uniform atomic_uint)
+0:?     'bigBind' (layout( binding=20) uniform atomic_uint)
+
+
+Linked fragment stage:
+
+
+Shader version: 420
+ERROR: node is still EOpNull!
+0:16  Function Definition: main( ( global void)
+0:16    Function Parameters: 
+0:?     Sequence
+0:19      Sequence
+0:19        move second child to first child ( temp uint)
+0:19          'val' ( temp uint)
+0:19          AtomicCounter ( global uint)
+0:19            'counter' (layout( binding=0 offset=0) uniform atomic_uint)
+0:20      AtomicCounterDecrement ( global uint)
+0:20        'counter' (layout( binding=0 offset=0) uniform atomic_uint)
+0:?   Linker Objects
+0:?     'counter' (layout( binding=0 offset=0) uniform atomic_uint)
+0:?     'countArr' (layout( binding=1 offset=3) uniform 4-element array of atomic_uint)
+0:?     'i' ( uniform int)
+0:?     'acin' ( smooth in atomic_uint)
+0:?     'acg' ( global atomic_uint)
+0:?     'aNoBind' ( uniform atomic_uint)
+0:?     'aOffset' (layout( binding=0 offset=32) uniform atomic_uint)
+0:?     'bar3' (layout( binding=0 offset=4) uniform atomic_uint)
+0:?     'ac' (layout( binding=0 offset=8) uniform 3-element array of atomic_uint)
+0:?     'ad' (layout( binding=0 offset=20) uniform atomic_uint)
+0:?     'bar4' (layout( offset=8) uniform atomic_uint)
+0:?     'overlap' (layout( binding=0 offset=12) uniform atomic_uint)
+0:?     'bigBind' (layout( binding=20) uniform atomic_uint)
+

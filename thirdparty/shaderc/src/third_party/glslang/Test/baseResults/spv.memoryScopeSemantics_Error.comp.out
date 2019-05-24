@@ -1,0 +1,17 @@
+spv.memoryScopeSemantics_Error.comp
+ERROR: 0:15: 'atomicStore' : gl_SemanticsAcquire must not be used with (image) atomic store 
+ERROR: 0:16: 'imageAtomicLoad' : gl_SemanticsRelease must not be used with (image) atomic load 
+ERROR: 0:17: 'atomicStore' : gl_SemanticsAcquireRelease must not be used with (image) atomic load/store 
+ERROR: 0:18: 'atomicStore' : Invalid semantics value 
+ERROR: 0:19: 'imageAtomicLoad' : Invalid storage class semantics value 
+ERROR: 0:20: 'memoryBarrier' : Semantics must include exactly one of gl_SemanticsRelease, gl_SemanticsAcquire, or gl_SemanticsAcquireRelease 
+ERROR: 0:21: 'memoryBarrier' : Storage class semantics must not be zero 
+ERROR: 0:22: 'memoryBarrier' : Semantics must include exactly one of gl_SemanticsRelease, gl_SemanticsAcquire, or gl_SemanticsAcquireRelease 
+ERROR: 0:23: 'atomicAdd' : Semantics must not include multiple of gl_SemanticsRelease, gl_SemanticsAcquire, or gl_SemanticsAcquireRelease 
+ERROR: 0:24: 'atomicCompSwap' : semUnequal must not be gl_SemanticsRelease or gl_SemanticsAcquireRelease 
+ERROR: 0:25: 'memoryBarrier' : gl_SemanticsMakeVisible requires gl_SemanticsAcquire or gl_SemanticsAcquireRelease 
+ERROR: 0:26: 'memoryBarrier' : gl_SemanticsMakeAvailable requires gl_SemanticsRelease or gl_SemanticsAcquireRelease 
+ERROR: 12 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

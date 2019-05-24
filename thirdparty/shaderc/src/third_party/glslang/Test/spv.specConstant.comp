@@ -1,0 +1,13 @@
+#version 450
+
+layout(local_size_x_id = 18, local_size_z_id = 19) in;
+layout(local_size_x = 32, local_size_y = 32) in;
+
+buffer bn {
+    uint a;
+} bi;
+
+void main()
+{
+    bi.a = gl_WorkGroupSize.x * gl_WorkGroupSize.y * gl_WorkGroupSize.z;
+}

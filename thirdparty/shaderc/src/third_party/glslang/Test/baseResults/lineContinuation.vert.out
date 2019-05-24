@@ -1,0 +1,280 @@
+lineContinuation.vert
+WARNING: 0:3: 'line continuation' : used at end of comment; the following line is still part of the comment 
+ERROR: 0:6: '#error' : e1  
+ERROR: 0:11: '#error' : e2  
+ERROR: 0:18: '#error' : e3  
+ERROR: 0:42: '\' : illegal use of escape character 
+ERROR: 0:43: '@' : unexpected token 
+ERROR: 0:44: '$' : unexpected token 
+ERROR: 0:45: '\' : illegal use of escape character 
+ERROR: 0:47: '\' : illegal use of escape character 
+ERROR: 0:48: '\' : illegal use of escape character 
+ERROR: 0:49: '$' : unexpected token 
+ERROR: 0:50: '@' : unexpected token 
+ERROR: 0:55: '#error' : good continuation  
+WARNING: 0:62: 'line continuation' : used at end of comment; the following line is still part of the comment 
+ERROR: 0:111: 'macro expansion' : End of line in macro substitution: FOOM
+ERROR: 0:112: 'preprocessor evaluation' : can't evaluate expression 
+ERROR: 0:112: '#if' : unexpected tokens following directive 
+ERROR: 0:117: 'macro expansion' : End of line in macro substitution: FOOM
+ERROR: 0:118: 'preprocessor evaluation' : can't evaluate expression 
+ERROR: 0:118: '#if' : unexpected tokens following directive 
+ERROR: 0:150: '' :  syntax error, unexpected EQUAL
+ERROR: 19 compilation errors.  No code generated.
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:20  Function Definition: main( ( global void)
+0:20    Function Parameters: 
+0:20    Sequence
+0:20      move second child to first child ( temp highp 4-component vector of float)
+0:20        'gl_Position' ( gl_Position highp 4-component vector of float Position)
+0:20        Construct vec4 ( temp highp 4-component vector of float)
+0:20          'foo' ( global highp float)
+0:22  Function Definition: foo2(vf4; ( global highp 4-component vector of float)
+0:22    Function Parameters: 
+0:22      'a' ( in highp 4-component vector of float)
+0:24    Sequence
+0:24      Sequence
+0:24        move second child to first child ( temp highp 4-component vector of float)
+0:24          'b' ( temp highp 4-component vector of float)
+0:24          'a' ( in highp 4-component vector of float)
+0:25      Branch: Return with expression
+0:25        'b' ( temp highp 4-component vector of float)
+0:47  Sequence
+0:47    move second child to first child ( temp highp int)
+0:47      'q1' ( global highp int)
+0:47      Constant:
+0:47        1 (const int)
+0:48  Sequence
+0:48    move second child to first child ( temp highp int)
+0:48      'q2' ( global highp int)
+0:48      Constant:
+0:48        1 (const int)
+0:49  Sequence
+0:49    move second child to first child ( temp highp int)
+0:49      'q3' ( global highp int)
+0:49      Constant:
+0:49        1 (const int)
+0:50  Sequence
+0:50    move second child to first child ( temp highp int)
+0:50      'q4' ( global highp int)
+0:50      Constant:
+0:50        1 (const int)
+0:74  Sequence
+0:74    move second child to first child ( temp highp float)
+0:74      'funkyf' ( global highp float)
+0:75      Constant:
+0:75        1.2300000000000e+16
+0:85  Sequence
+0:84    move second child to first child ( temp highp int)
+0:84      'funkyh' ( global highp int)
+0:86      Constant:
+0:86        244 (const int)
+0:91  Sequence
+0:91    move second child to first child ( temp highp int)
+0:91      'funkyo' ( global highp int)
+0:92      Constant:
+0:92        34 (const int)
+0:96  Sequence
+0:96    move second child to first child ( temp highp int)
+0:96      'c' ( global highp int)
+0:97      Constant:
+0:97        11 (const int)
+0:98  Sequence
+0:98    move second child to first child ( temp highp int)
+0:98      'd' ( global highp int)
+0:98      Constant:
+0:98        12 (const int)
+0:107  Sequence
+0:107    move second child to first child ( temp highp int)
+0:107      'bar103' ( global highp int)
+0:107      Constant:
+0:107        17 (const int)
+0:113  Sequence
+0:113    move second child to first child ( temp highp int)
+0:113      'bar104' ( global highp int)
+0:113      Constant:
+0:113        19 (const int)
+0:119  Sequence
+0:119    move second child to first child ( temp highp int)
+0:119      'bar105' ( global highp int)
+0:119      Constant:
+0:119        19 (const int)
+0:122  Sequence
+0:122    move second child to first child ( temp highp int)
+0:122      'bar106' ( global highp int)
+0:122      Constant:
+0:122        12 (const int)
+0:123  Sequence
+0:123    move second child to first child ( temp highp int)
+0:123      'bar107' ( global highp int)
+0:128      Constant:
+0:128        5 (const int)
+0:131  Function Definition: foo203209409( ( global void)
+0:131    Function Parameters: 
+0:134    Sequence
+0:134      add second child into first child ( temp highp int)
+0:133        'bar107' ( global highp int)
+0:134        Constant:
+0:134          37 (const int)
+0:135      multiply second child into first child ( temp highp int)
+0:135        'bar107' ( global highp int)
+0:136        Constant:
+0:136          38 (const int)
+0:137      divide second child into first child ( temp highp int)
+0:137        'bar107' ( global highp int)
+0:138        Constant:
+0:138          39 (const int)
+0:139      add ( temp highp int)
+0:139        'bar107' ( global highp int)
+0:140        Constant:
+0:140          41 (const int)
+0:?   Linker Objects
+0:?     'foo' ( global highp float)
+0:?     'goodDecl' ( global highp int)
+0:?     'a1' ( const highp int)
+0:?       4 (const int)
+0:?     'a2' ( const highp int)
+0:?       3 (const int)
+0:?     'a3' ( const highp int)
+0:?       4 (const int)
+0:?     'a4' ( const highp int)
+0:?       3 (const int)
+0:?     'q1' ( global highp int)
+0:?     'q2' ( global highp int)
+0:?     'q3' ( global highp int)
+0:?     'q4' ( global highp int)
+0:?     'abdece' ( const highp int)
+0:?       10 (const int)
+0:?     'aoeuntaoehu' ( const highp int)
+0:?       10 (const int)
+0:?     'funkyf' ( global highp float)
+0:?     'funkyh' ( global highp int)
+0:?     'funkyo' ( global highp int)
+0:?     'c' ( global highp int)
+0:?     'd' ( global highp int)
+0:?     'bar103' ( global highp int)
+0:?     'bar104' ( global highp int)
+0:?     'bar105' ( global highp int)
+0:?     'bar106' ( global highp int)
+0:?     'bar107' ( global highp int)
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:20  Function Definition: main( ( global void)
+0:20    Function Parameters: 
+0:20    Sequence
+0:20      move second child to first child ( temp highp 4-component vector of float)
+0:20        'gl_Position' ( gl_Position highp 4-component vector of float Position)
+0:20        Construct vec4 ( temp highp 4-component vector of float)
+0:20          'foo' ( global highp float)
+0:47  Sequence
+0:47    move second child to first child ( temp highp int)
+0:47      'q1' ( global highp int)
+0:47      Constant:
+0:47        1 (const int)
+0:48  Sequence
+0:48    move second child to first child ( temp highp int)
+0:48      'q2' ( global highp int)
+0:48      Constant:
+0:48        1 (const int)
+0:49  Sequence
+0:49    move second child to first child ( temp highp int)
+0:49      'q3' ( global highp int)
+0:49      Constant:
+0:49        1 (const int)
+0:50  Sequence
+0:50    move second child to first child ( temp highp int)
+0:50      'q4' ( global highp int)
+0:50      Constant:
+0:50        1 (const int)
+0:74  Sequence
+0:74    move second child to first child ( temp highp float)
+0:74      'funkyf' ( global highp float)
+0:75      Constant:
+0:75        1.2300000000000e+16
+0:85  Sequence
+0:84    move second child to first child ( temp highp int)
+0:84      'funkyh' ( global highp int)
+0:86      Constant:
+0:86        244 (const int)
+0:91  Sequence
+0:91    move second child to first child ( temp highp int)
+0:91      'funkyo' ( global highp int)
+0:92      Constant:
+0:92        34 (const int)
+0:96  Sequence
+0:96    move second child to first child ( temp highp int)
+0:96      'c' ( global highp int)
+0:97      Constant:
+0:97        11 (const int)
+0:98  Sequence
+0:98    move second child to first child ( temp highp int)
+0:98      'd' ( global highp int)
+0:98      Constant:
+0:98        12 (const int)
+0:107  Sequence
+0:107    move second child to first child ( temp highp int)
+0:107      'bar103' ( global highp int)
+0:107      Constant:
+0:107        17 (const int)
+0:113  Sequence
+0:113    move second child to first child ( temp highp int)
+0:113      'bar104' ( global highp int)
+0:113      Constant:
+0:113        19 (const int)
+0:119  Sequence
+0:119    move second child to first child ( temp highp int)
+0:119      'bar105' ( global highp int)
+0:119      Constant:
+0:119        19 (const int)
+0:122  Sequence
+0:122    move second child to first child ( temp highp int)
+0:122      'bar106' ( global highp int)
+0:122      Constant:
+0:122        12 (const int)
+0:123  Sequence
+0:123    move second child to first child ( temp highp int)
+0:123      'bar107' ( global highp int)
+0:128      Constant:
+0:128        5 (const int)
+0:?   Linker Objects
+0:?     'foo' ( global highp float)
+0:?     'goodDecl' ( global highp int)
+0:?     'a1' ( const highp int)
+0:?       4 (const int)
+0:?     'a2' ( const highp int)
+0:?       3 (const int)
+0:?     'a3' ( const highp int)
+0:?       4 (const int)
+0:?     'a4' ( const highp int)
+0:?       3 (const int)
+0:?     'q1' ( global highp int)
+0:?     'q2' ( global highp int)
+0:?     'q3' ( global highp int)
+0:?     'q4' ( global highp int)
+0:?     'abdece' ( const highp int)
+0:?       10 (const int)
+0:?     'aoeuntaoehu' ( const highp int)
+0:?       10 (const int)
+0:?     'funkyf' ( global highp float)
+0:?     'funkyh' ( global highp int)
+0:?     'funkyo' ( global highp int)
+0:?     'c' ( global highp int)
+0:?     'd' ( global highp int)
+0:?     'bar103' ( global highp int)
+0:?     'bar104' ( global highp int)
+0:?     'bar105' ( global highp int)
+0:?     'bar106' ( global highp int)
+0:?     'bar107' ( global highp int)
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+

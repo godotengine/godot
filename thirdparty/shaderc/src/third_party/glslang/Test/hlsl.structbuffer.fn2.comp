@@ -1,0 +1,15 @@
+ByteAddressBuffer g_input: register(t0);
+RWBuffer<uint2> g_output : register(u1);
+
+uint2 testLoad(uint loc, ByteAddressBuffer buffer)
+{
+    uint2 result = buffer.Load2(loc);
+    return result;
+}
+
+[numthreads(256, 1, 1)]
+void main(uint dispatchId : SV_DispatchThreadID)
+{
+    uint2 result = testLoad(dispatchId, g_input);
+    g_output[dispatchId] = result;
+}

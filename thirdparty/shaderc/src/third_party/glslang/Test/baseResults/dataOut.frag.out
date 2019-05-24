@@ -1,0 +1,35 @@
+dataOut.frag
+WARNING: 0:3: varying deprecated in version 130; may be removed in future release
+
+Shader version: 130
+0:? Sequence
+0:5  Function Definition: main( ( global void)
+0:5    Function Parameters: 
+0:7    Sequence
+0:7      move second child to first child ( temp 4-component vector of float)
+0:7        direct index ( temp 4-component vector of float FragData)
+0:7          'gl_FragData' ( fragColor 32-element array of 4-component vector of float FragData)
+0:7          Constant:
+0:7            1 (const int)
+0:7        'Color' ( smooth in 4-component vector of float)
+0:?   Linker Objects
+0:?     'Color' ( smooth in 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 130
+0:? Sequence
+0:5  Function Definition: main( ( global void)
+0:5    Function Parameters: 
+0:7    Sequence
+0:7      move second child to first child ( temp 4-component vector of float)
+0:7        direct index ( temp 4-component vector of float FragData)
+0:7          'gl_FragData' ( fragColor 32-element array of 4-component vector of float FragData)
+0:7          Constant:
+0:7            1 (const int)
+0:7        'Color' ( smooth in 4-component vector of float)
+0:?   Linker Objects
+0:?     'Color' ( smooth in 4-component vector of float)
+

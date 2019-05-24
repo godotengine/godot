@@ -1,0 +1,67 @@
+# Linux Build Configuration for Travis
+
+language: cpp
+
+os:
+  - linux
+  - osx
+
+# Use Ubuntu 14.04 LTS (Trusty) as the Linux testing environment.
+sudo: required
+dist: trusty
+
+env:
+  - EFFCEE_BUILD_TYPE=Release
+  - EFFCEE_BUILD_TYPE=Debug
+
+compiler:
+  - clang
+  - gcc
+
+matrix:
+  fast_finish: true # Show final status immediately if a test fails.
+  exclude:
+    # Skip GCC builds on macOS.
+    - os: osx
+      compiler: gcc
+
+cache:
+  apt: true
+
+branches:
+  only:
+    - master
+
+addons:
+  apt:
+    packages:
+      - clang
+      - ninja-build
+
+before_install:
+  # Install ninja on macOS.
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ninja; fi
+
+install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$CC" == "clang" ]]; then
+      export CC=clang CXX=clang++;
+    fi
+
+before_script:
+  - git clone --depth=1 https://github.com/google/googletest  third_party/googletest
+  - git clone --depth=1 https://github.com/google/re2         third_party/re2
+
+script:
+  - mkdir build && cd build
+  - cmake -DCMAKE_BUILD_TYPE=${EFFCEE_BUILD_TYPE:-Debug}
+          -DRE2_BUILD_TESTING=OFF
+          -GNinja ..;
+  - ninja
+  - ctest
+
+notifications:
+  email:
+    recipients:
+      - dneto@google.com
+    on_success: change
+    on_failure: always

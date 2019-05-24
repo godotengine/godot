@@ -1,0 +1,56 @@
+#version 450
+
+#define MAX_VER  81
+#define MAX_PRIM 32
+#define MAX_VIEWS gl_MaxMeshViewCountNV
+
+#define BARRIER() \
+    memoryBarrierShared(); \
+    barrier();
+
+#extension GL_NV_mesh_shader : enable
+
+layout(local_size_x = 32) in;
+
+layout(max_vertices=MAX_VER) out;
+layout(max_primitives=MAX_PRIM) out;
+layout(triangles) out;
+
+// test use of user-defined per-view attributes
+
+// mix of single-view and per-view attributes
+layout(location=0) out block {
+    perprimitiveNV perviewNV vec4 color1[][3];  // Implicitly sized
+    perprimitiveNV vec4 color2[3];
+    perviewNV vec4 color3[MAX_VIEWS][3];          // Explicitly sized
+    vec4 color4;
+} b[];
+
+// per-view block
+perviewNV layout(location=10) out perviewBlock {
+    perprimitiveNV vec4 color5[];              // Implicitly sized
+    perprimitiveNV vec4 color6[MAX_VIEWS][3];  // Explicitly sized
+    vec4 color7[][3];                            // Implicitly sized
+    vec4 color8[MAX_VIEWS];                      // Explicitly sized
+} b2[];
+
+void main()
+{
+    uint iid = gl_LocalInvocationID.x;
+    uint viewID = gl_MeshViewIndicesNV[gl_MeshViewCountNV%MAX_VIEWS];
+
+    b[iid].color1[viewID][2] = vec4(1.0);
+    b[iid].color2[1]         = vec4(2.0);
+    b[iid].color3[viewID][2] = vec4(3.0);
+    b[iid].color4            = vec4(4.0);
+
+    BARRIER();
+
+    b2[iid].color5[viewID]    = vec4(5.0);
+    b2[iid].color6[viewID][1] = vec4(6.0);
+    b2[iid].color7[viewID][2] = vec4(7.0);
+    b2[iid].color8[viewID]    = vec4(8.0);
+
+    BARRIER();
+}
+

@@ -1,0 +1,39 @@
+#line 300
+
+#line 2
+
+
+
+
+
+#line 10
+
+
+#line 2
+
+#line 0
+
+
+
+#line 4
+
+
+
+
+
+#line 8
+
+void main(){
+  gl_Position = vec4(10);
+}
+
+#line 8 4
+
+
+
+
+#line 12 3
+
+#line 1
+
+

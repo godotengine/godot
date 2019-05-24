@@ -1,0 +1,396 @@
+precise.tesc
+Shader version: 450
+Requested GL_EXT_gpu_shader5
+Requested GL_EXT_shader_io_blocks
+Requested GL_EXT_tessellation_shader
+vertices = -1
+0:? Sequence
+0:5  Function Definition: minimal( ( global float)
+0:5    Function Parameters: 
+0:6    Sequence
+0:6      Sequence
+0:6        move second child to first child ( temp float)
+0:6          'result' ( noContraction temp float)
+0:6          Constant:
+0:6            5.000000
+0:7      Sequence
+0:7        move second child to first child ( temp float)
+0:7          'a' ( noContraction temp float)
+0:7          Constant:
+0:7            10.000000
+0:8      Sequence
+0:8        move second child to first child ( temp float)
+0:8          'b' ( noContraction temp float)
+0:8          Constant:
+0:8            20.000000
+0:9      Sequence
+0:9        move second child to first child ( temp float)
+0:9          'c' ( noContraction temp float)
+0:9          Constant:
+0:9            30.000000
+0:10      Sequence
+0:10        move second child to first child ( temp float)
+0:10          'd' ( noContraction temp float)
+0:10          Constant:
+0:10            40.000000
+0:11      move second child to first child ( temp float)
+0:11        'result' ( noContraction temp float)
+0:11        add ( noContraction temp float)
+0:11          component-wise multiply ( noContraction temp float)
+0:11            'a' ( noContraction temp float)
+0:11            'b' ( noContraction temp float)
+0:11          component-wise multiply ( noContraction temp float)
+0:11            'c' ( noContraction temp float)
+0:11            'd' ( noContraction temp float)
+0:12      Branch: Return with expression
+0:12        'result' ( noContraction temp float)
+0:15  Function Definition: continuous_assignment( ( global void)
+0:15    Function Parameters: 
+0:16    Sequence
+0:16      Sequence
+0:16        move second child to first child ( temp float)
+0:16          'result' ( noContraction temp float)
+0:16          Constant:
+0:16            5.000000
+0:17      Sequence
+0:17        move second child to first child ( temp float)
+0:17          'a' ( noContraction temp float)
+0:17          Constant:
+0:17            10.000000
+0:18      Sequence
+0:18        move second child to first child ( temp float)
+0:18          'b' ( noContraction temp float)
+0:18          Constant:
+0:18            20.000000
+0:19      move second child to first child ( temp float)
+0:19        'result' ( noContraction temp float)
+0:19        move second child to first child ( temp float)
+0:19          'a' ( noContraction temp float)
+0:19          add ( noContraction temp float)
+0:19            'b' ( noContraction temp float)
+0:19            Constant:
+0:19              4.000000
+0:22  Function Definition: convert( ( global void)
+0:22    Function Parameters: 
+0:?     Sequence
+0:24      Sequence
+0:24        move second child to first child ( temp float)
+0:24          'a' ( noContraction temp float)
+0:24          Constant:
+0:24            10.000000
+0:25      Sequence
+0:25        move second child to first child ( temp float)
+0:25          'b' ( noContraction temp float)
+0:25          Constant:
+0:25            20.000000
+0:26      move second child to first child ( temp float)
+0:26        'b' ( noContraction temp float)
+0:26        add ( noContraction temp float)
+0:26          'a' ( noContraction temp float)
+0:26          'b' ( noContraction temp float)
+0:27      move second child to first child ( temp double)
+0:27        'result' ( noContraction temp double)
+0:27        Convert float to double ( temp double)
+0:27          'b' ( noContraction temp float)
+0:30  Function Definition: loop_for( ( global float)
+0:30    Function Parameters: 
+0:31    Sequence
+0:31      Sequence
+0:31        move second child to first child ( temp float)
+0:31          'r1' ( noContraction temp float)
+0:31          Constant:
+0:31            5.000000
+0:32      Sequence
+0:32        move second child to first child ( temp float)
+0:32          'r2' ( noContraction temp float)
+0:32          Constant:
+0:32            10.000000
+0:33      Sequence
+0:33        move second child to first child ( temp int)
+0:33          'a' ( temp int)
+0:33          Constant:
+0:33            10 (const int)
+0:34      Sequence
+0:34        move second child to first child ( temp int)
+0:34          'b' ( noContraction temp int)
+0:34          Constant:
+0:34            20 (const int)
+0:35      Sequence
+0:35        move second child to first child ( temp int)
+0:35          'c' ( noContraction temp int)
+0:35          Constant:
+0:35            30 (const int)
+0:36      Sequence
+0:36        Sequence
+0:36          move second child to first child ( temp int)
+0:36            'i' ( noContraction temp int)
+0:36            Constant:
+0:36              0 (const int)
+0:36        Loop with condition tested first
+0:36          Loop Condition
+0:36          Compare Less Than ( temp bool)
+0:36            'i' ( temp int)
+0:36            'a' ( temp int)
+0:36          Loop Body
+0:37          Sequence
+0:37            add second child into first child ( noContraction temp float)
+0:37              'r1' ( noContraction temp float)
+0:37              add ( noContraction temp float)
+0:37                add ( noContraction temp float)
+0:37                  Constant:
+0:37                    3.120000
+0:37                  Convert int to float ( temp float)
+0:37                    'b' ( noContraction temp int)
+0:37                Convert int to float ( temp float)
+0:37                  'i' ( noContraction temp int)
+0:38            add second child into first child ( noContraction temp int)
+0:38              'c' ( noContraction temp int)
+0:38              Constant:
+0:38                1 (const int)
+0:36          Loop Terminal Expression
+0:36          Post-Increment ( noContraction temp int)
+0:36            'i' ( noContraction temp int)
+0:40      add second child into first child ( temp int)
+0:40        'a' ( temp int)
+0:40        Constant:
+0:40          1 (const int)
+0:41      move second child to first child ( temp float)
+0:41        'r2' ( noContraction temp float)
+0:41        Convert int to float ( temp float)
+0:41          'c' ( noContraction temp int)
+0:42      Branch: Return with expression
+0:42        Construct float ( temp float)
+0:42          add ( temp float)
+0:42            'r1' ( noContraction temp float)
+0:42            'r2' ( noContraction temp float)
+0:45  Function Definition: loop_array( ( global void)
+0:45    Function Parameters: 
+0:?     Sequence
+0:48      Sequence
+0:48        move second child to first child ( temp int)
+0:48          'x' ( noContraction temp int)
+0:48          Constant:
+0:48            22 (const int)
+0:49      Sequence
+0:49        move second child to first child ( temp int)
+0:49          'y' ( noContraction temp int)
+0:49          Constant:
+0:49            33 (const int)
+0:52      add second child into first child ( noContraction temp float)
+0:52        'result' ( noContraction temp float)
+0:52        add ( noContraction temp float)
+0:52          Convert int to float ( temp float)
+0:52            'x' ( noContraction temp int)
+0:52          Convert int to float ( temp float)
+0:52            'y' ( noContraction temp int)
+0:54      Sequence
+0:54        Sequence
+0:54          move second child to first child ( temp int)
+0:54            'i' ( temp int)
+0:54            Constant:
+0:54              0 (const int)
+0:54        Loop with condition tested first
+0:54          Loop Condition
+0:54          Compare Less Than ( temp bool)
+0:54            'i' ( temp int)
+0:54            Constant:
+0:54              3 (const int)
+0:54          Loop Body
+0:56          Sequence
+0:56            add second child into first child ( noContraction temp float)
+0:56              'result' ( noContraction temp float)
+0:56              add ( noContraction temp float)
+0:56                indirect index ( noContraction temp float)
+0:56                  'a0' ( temp 3-element array of float)
+0:56                  'i' ( temp int)
+0:56                Constant:
+0:56                  2.000000
+0:58            move second child to first child ( temp float)
+0:58              indirect index ( noContraction temp float)
+0:58                'a0' ( noContraction temp 3-element array of float)
+0:58                'i' ( temp int)
+0:58              subtract ( noContraction temp float)
+0:58                Constant:
+0:58                  3.000000
+0:58                Post-Increment ( noContraction temp float)
+0:58                  'result' ( noContraction temp float)
+0:54          Loop Terminal Expression
+0:54          Pre-Increment ( temp int)
+0:54            'i' ( temp int)
+0:62  Function Definition: loop_while( ( global void)
+0:62    Function Parameters: 
+0:63    Sequence
+0:63      Sequence
+0:63        move second child to first child ( temp float)
+0:63          'result' ( noContraction temp float)
+0:63          Constant:
+0:63            5.000000
+0:64      Sequence
+0:64        move second child to first child ( temp int)
+0:64          'a' ( noContraction temp int)
+0:64          Constant:
+0:64            10 (const int)
+0:65      Sequence
+0:65        move second child to first child ( temp int)
+0:65          'b' ( noContraction temp int)
+0:65          Constant:
+0:65            20 (const int)
+0:66      Loop with condition tested first
+0:66        Loop Condition
+0:66        Compare Less Than ( temp bool)
+0:66          'result' ( noContraction temp float)
+0:66          Constant:
+0:66            10.000000
+0:66        Loop Body
+0:67        Sequence
+0:67          add second child into first child ( noContraction temp float)
+0:67            'result' ( noContraction temp float)
+0:67            add ( noContraction temp float)
+0:67              Constant:
+0:67                3.120000
+0:67              Convert int to float ( temp float)
+0:67                'b' ( noContraction temp int)
+0:69      move second child to first child ( temp float)
+0:69        'result' ( noContraction temp float)
+0:69        Convert int to float ( temp float)
+0:69          add ( temp int)
+0:69            add ( temp int)
+0:69              'a' ( noContraction temp int)
+0:69              'b' ( noContraction temp int)
+0:69            Constant:
+0:69              5 (const int)
+0:70      move second child to first child ( temp float)
+0:70        'result' ( noContraction temp float)
+0:70        Constant:
+0:70          11.100000
+0:73  Function Definition: fma_not_decorated( ( global float)
+0:73    Function Parameters: 
+0:?     Sequence
+0:75      Sequence
+0:75        move second child to first child ( temp float)
+0:75          'a' ( noContraction temp float)
+0:75          Constant:
+0:75            1.000000
+0:76      Sequence
+0:76        move second child to first child ( temp float)
+0:76          'b' ( noContraction temp float)
+0:76          Constant:
+0:76            2.000000
+0:77      Sequence
+0:77        move second child to first child ( temp float)
+0:77          'c' ( noContraction temp float)
+0:77          Constant:
+0:77            3.000000
+0:78      move second child to first child ( temp float)
+0:78        'b' ( noContraction temp float)
+0:78        add ( noContraction temp float)
+0:78          'b' ( noContraction temp float)
+0:78          'c' ( noContraction temp float)
+0:79      move second child to first child ( temp float)
+0:79        'result' ( noContraction temp float)
+0:79        fma ( global float)
+0:79          'a' ( noContraction temp float)
+0:79          'b' ( noContraction temp float)
+0:79          'c' ( noContraction temp float)
+0:80      Branch: Return with expression
+0:80        'result' ( noContraction temp float)
+0:83  Function Definition: precise_return_exp_func( ( noContraction temp float)
+0:83    Function Parameters: 
+0:84    Sequence
+0:84      Sequence
+0:84        move second child to first child ( temp float)
+0:84          'a' ( noContraction temp float)
+0:84          Constant:
+0:84            1.000000
+0:85      Sequence
+0:85        move second child to first child ( temp float)
+0:85          'b' ( noContraction temp float)
+0:85          Constant:
+0:85            2.000000
+0:86      Branch: Return with expression
+0:86        add ( noContraction temp float)
+0:86          'a' ( noContraction temp float)
+0:86          'b' ( noContraction temp float)
+0:89  Function Definition: precise_return_val_func( ( noContraction temp float)
+0:89    Function Parameters: 
+0:90    Sequence
+0:90      Sequence
+0:90        move second child to first child ( temp float)
+0:90          'a' ( noContraction temp float)
+0:90          Constant:
+0:90            1.000000
+0:91      Sequence
+0:91        move second child to first child ( temp float)
+0:91          'b' ( noContraction temp float)
+0:91          Constant:
+0:91            2.000000
+0:92      Sequence
+0:92        move second child to first child ( temp float)
+0:92          'result' ( noContraction temp float)
+0:92          add ( noContraction temp float)
+0:92            'a' ( noContraction temp float)
+0:92            'b' ( noContraction temp float)
+0:93      Branch: Return with expression
+0:93        'result' ( noContraction temp float)
+0:96  Function Definition: precise_func_parameter(f1;f1; ( global float)
+0:96    Function Parameters: 
+0:96      'b' ( in float)
+0:96      'c' ( noContraction out float)
+0:97    Sequence
+0:97      Sequence
+0:97        move second child to first child ( temp float)
+0:97          'a' ( noContraction temp float)
+0:97          Constant:
+0:97            0.500000
+0:98      move second child to first child ( temp float)
+0:98        'c' ( noContraction out float)
+0:98        add ( noContraction temp float)
+0:98          'a' ( noContraction temp float)
+0:98          'b' ( noContraction in float)
+0:99      Branch: Return with expression
+0:99        subtract ( temp float)
+0:99          'a' ( temp float)
+0:99          'b' ( in float)
+0:102  Function Definition: matrix(mf23;mf32; ( global 3X3 matrix of float)
+0:102    Function Parameters: 
+0:102      'a' ( in 2X3 matrix of float)
+0:102      'b' ( in 3X2 matrix of float)
+0:103    Sequence
+0:103      Sequence
+0:103        move second child to first child ( temp 2X3 matrix of float)
+0:103          'c' ( noContraction temp 2X3 matrix of float)
+0:103          Constant:
+0:103            1.000000
+0:103            2.000000
+0:103            3.000000
+0:103            4.000000
+0:103            5.000000
+0:103            6.000000
+0:105      move second child to first child ( temp 3X3 matrix of float)
+0:105        'result' ( noContraction temp 3X3 matrix of float)
+0:105        matrix-multiply ( noContraction temp 3X3 matrix of float)
+0:105          add ( noContraction temp 2X3 matrix of float)
+0:105            'a' ( noContraction in 2X3 matrix of float)
+0:105            'c' ( noContraction temp 2X3 matrix of float)
+0:105          'b' ( noContraction in 3X2 matrix of float)
+0:106      Branch: Return with expression
+0:106        'result' ( noContraction temp 3X3 matrix of float)
+0:109  Function Definition: main( ( global void)
+0:109    Function Parameters: 
+0:?   Linker Objects
+
+
+Linked tessellation control stage:
+
+ERROR: Linking tessellation control stage: At least one shader must specify an output layout(vertices=...)
+
+Shader version: 450
+Requested GL_EXT_gpu_shader5
+Requested GL_EXT_shader_io_blocks
+Requested GL_EXT_tessellation_shader
+vertices = -1
+0:? Sequence
+0:109  Function Definition: main( ( global void)
+0:109    Function Parameters: 
+0:?   Linker Objects
+

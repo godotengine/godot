@@ -1,0 +1,889 @@
+100Limits.vert
+Shader version: 100
+0:? Sequence
+0:15  Function Definition: foo(f1; ( global void)
+0:15    Function Parameters: 
+0:15      'a' ( inout highp float)
+0:17  Function Definition: bar( ( global highp int)
+0:17    Function Parameters: 
+0:19    Sequence
+0:19      Branch: Return with expression
+0:19        Constant:
+0:19          1 (const int)
+0:22  Function Definition: main( ( global void)
+0:22    Function Parameters: 
+0:24    Sequence
+0:24      Loop with condition tested first
+0:24        Loop Condition
+0:24        Compare Less Than ( temp bool)
+0:24          'ga' ( global highp int)
+0:24          'gb' ( global highp int)
+0:24        No loop body
+0:26      Loop with condition not tested first
+0:26        Loop Condition
+0:26        Constant:
+0:26          false (const bool)
+0:26        No loop body
+0:28      Sequence
+0:28        Loop with condition tested first
+0:28          No loop condition
+0:28          No loop body
+0:29      Sequence
+0:29        Loop with condition tested first
+0:29          Loop Condition
+0:29          Compare Equal ( temp bool)
+0:29            'ga' ( global highp int)
+0:29            'gb' ( global highp int)
+0:29          No loop body
+0:30      Sequence
+0:30        Loop with condition tested first
+0:30          No loop condition
+0:30          No loop body
+0:30          Loop Terminal Expression
+0:30          Post-Increment ( temp highp float)
+0:30            'f' ( global highp float)
+0:31      Sequence
+0:31        move second child to first child ( temp highp int)
+0:31          'ga' ( global highp int)
+0:31          Constant:
+0:31            0 (const int)
+0:31        Loop with condition tested first
+0:31          No loop condition
+0:31          No loop body
+0:32      Sequence
+0:32        Sequence
+0:32          move second child to first child ( temp bool)
+0:32            'a' ( temp bool)
+0:32            Constant:
+0:32              false (const bool)
+0:32        Loop with condition tested first
+0:32          No loop condition
+0:32          No loop body
+0:33      Sequence
+0:33        Sequence
+0:33          move second child to first child ( temp highp float)
+0:33            'a' ( temp highp float)
+0:33            Constant:
+0:33              0.000000
+0:33        Loop with condition tested first
+0:33          Loop Condition
+0:33          Compare Equal ( temp bool)
+0:33            'a' ( temp highp float)
+0:33            sine ( global highp float)
+0:33              'f' ( global highp float)
+0:33          No loop body
+0:34      Sequence
+0:34        Sequence
+0:34          move second child to first child ( temp highp int)
+0:34            'a' ( temp highp int)
+0:34            Constant:
+0:34              0 (const int)
+0:34        Loop with condition tested first
+0:34          Loop Condition
+0:34          Compare Less Than ( temp bool)
+0:34            'a' ( temp highp int)
+0:34            Constant:
+0:34              10 (const int)
+0:34          No loop body
+0:34          Loop Terminal Expression
+0:34          multiply second child into first child ( temp highp int)
+0:34            'a' ( temp highp int)
+0:34            Constant:
+0:34              2 (const int)
+0:35      Sequence
+0:35        Sequence
+0:35          move second child to first child ( temp highp int)
+0:35            'a' ( temp highp int)
+0:35            Constant:
+0:35              0 (const int)
+0:35        Loop with condition tested first
+0:35          Loop Condition
+0:35          Compare Less Than or Equal ( temp bool)
+0:35            'a' ( temp highp int)
+0:35            Constant:
+0:35              20 (const int)
+0:35          Loop Body
+0:35          Pre-Decrement ( temp highp int)
+0:35            'a' ( temp highp int)
+0:35          Loop Terminal Expression
+0:35          Post-Increment ( temp highp int)
+0:35            'a' ( temp highp int)
+0:36      Sequence
+0:36        Sequence
+0:36          move second child to first child ( temp highp int)
+0:36            'a' ( temp highp int)
+0:36            Constant:
+0:36              0 (const int)
+0:36        Loop with condition tested first
+0:36          Loop Condition
+0:36          Compare Less Than or Equal ( temp bool)
+0:36            'a' ( temp highp int)
+0:36            Constant:
+0:36              20 (const int)
+0:36          Loop Body
+0:36          Sequence
+0:36            Test condition and select ( temp void)
+0:36              Condition
+0:36              Compare Equal ( temp bool)
+0:36                'ga' ( global highp int)
+0:36                Constant:
+0:36                  0 (const int)
+0:36              true case
+0:36              move second child to first child ( temp highp int)
+0:36                'a' ( temp highp int)
+0:36                Constant:
+0:36                  4 (const int)
+0:36          Loop Terminal Expression
+0:36          Post-Increment ( temp highp int)
+0:36            'a' ( temp highp int)
+0:37      Sequence
+0:37        Sequence
+0:37          move second child to first child ( temp highp float)
+0:37            'a' ( temp highp float)
+0:37            Constant:
+0:37              0.000000
+0:37        Loop with condition tested first
+0:37          Loop Condition
+0:37          Compare Less Than or Equal ( temp bool)
+0:37            'a' ( temp highp float)
+0:37            Constant:
+0:37              20.000000
+0:37          No loop body
+0:37          Loop Terminal Expression
+0:37          add second child into first child ( temp highp float)
+0:37            'a' ( temp highp float)
+0:37            Constant:
+0:37              2.000000
+0:38      Sequence
+0:38        Sequence
+0:38          move second child to first child ( temp highp float)
+0:38            'a' ( temp highp float)
+0:38            Constant:
+0:38              0.000000
+0:38        Loop with condition tested first
+0:38          Loop Condition
+0:38          Compare Not Equal ( temp bool)
+0:38            'a' ( temp highp float)
+0:38            Constant:
+0:38              20.000000
+0:38          Loop Body
+0:38          Sequence
+0:38            Test condition and select ( temp void)
+0:38              Condition
+0:38              Compare Equal ( temp bool)
+0:38                'ga' ( global highp int)
+0:38                Constant:
+0:38                  0 (const int)
+0:38              true case
+0:38              move second child to first child ( temp highp int)
+0:38                'ga' ( global highp int)
+0:38                Constant:
+0:38                  4 (const int)
+0:38          Loop Terminal Expression
+0:38          subtract second child into first child ( temp highp float)
+0:38            'a' ( temp highp float)
+0:38            Constant:
+0:38              2.000000
+0:39      Sequence
+0:39        Sequence
+0:39          move second child to first child ( temp highp float)
+0:39            'a' ( temp highp float)
+0:39            Constant:
+0:39              0.000000
+0:39        Loop with condition tested first
+0:39          Loop Condition
+0:39          Compare Equal ( temp bool)
+0:39            'a' ( temp highp float)
+0:39            Constant:
+0:39              20.000000
+0:39          Loop Body
+0:39          Sequence
+0:39            Sequence
+0:39              move second child to first child ( temp highp float)
+0:39                'a' ( temp highp float)
+0:39                Constant:
+0:39                  0.000000
+0:39            Loop with condition tested first
+0:39              Loop Condition
+0:39              Compare Equal ( temp bool)
+0:39                'a' ( temp highp float)
+0:39                Constant:
+0:39                  20.000000
+0:39              No loop body
+0:39              Loop Terminal Expression
+0:39              Post-Decrement ( temp highp float)
+0:39                'a' ( temp highp float)
+0:39          Loop Terminal Expression
+0:39          Post-Decrement ( temp highp float)
+0:39            'a' ( temp highp float)
+0:40      Sequence
+0:40        Sequence
+0:40          move second child to first child ( temp highp float)
+0:40            'a' ( temp highp float)
+0:40            Constant:
+0:40              0.000000
+0:40        Loop with condition tested first
+0:40          Loop Condition
+0:40          Compare Less Than or Equal ( temp bool)
+0:40            'a' ( temp highp float)
+0:40            Constant:
+0:40              20.000000
+0:40          No loop body
+0:40          Loop Terminal Expression
+0:40          add second child into first child ( temp highp float)
+0:40            'a' ( temp highp float)
+0:40            Constant:
+0:40              2.000000
+0:41      Sequence
+0:41        Sequence
+0:41          move second child to first child ( temp highp float)
+0:41            'a' ( temp highp float)
+0:41            Constant:
+0:41              0.000000
+0:41        Loop with condition tested first
+0:41          Loop Condition
+0:41          Compare Less Than or Equal ( temp bool)
+0:41            'a' ( temp highp float)
+0:41            Constant:
+0:41              20.000000
+0:41          No loop body
+0:41          Loop Terminal Expression
+0:41          add second child into first child ( temp highp float)
+0:41            'a' ( temp highp float)
+0:41            Constant:
+0:41              2.000000
+0:42      Sequence
+0:42        Sequence
+0:42          move second child to first child ( temp highp float)
+0:42            'a' ( temp highp float)
+0:42            Constant:
+0:42              0.000000
+0:42        Loop with condition tested first
+0:42          Loop Condition
+0:42          Compare Greater Than ( temp bool)
+0:42            'a' ( temp highp float)
+0:42            Constant:
+0:42              40.000000
+0:42          No loop body
+0:42          Loop Terminal Expression
+0:42          add second child into first child ( temp highp float)
+0:42            'a' ( temp highp float)
+0:42            Constant:
+0:42              2.000000
+0:43      Sequence
+0:43        Sequence
+0:43          move second child to first child ( temp highp float)
+0:43            'a' ( temp highp float)
+0:43            Constant:
+0:43              0.000000
+0:43        Loop with condition tested first
+0:43          Loop Condition
+0:43          Compare Greater Than or Equal ( temp bool)
+0:43            'a' ( temp highp float)
+0:43            Constant:
+0:43              20.000000
+0:43          Loop Body
+0:43          Function Call: foo(f1; ( global void)
+0:43            'a' ( temp highp float)
+0:43          Loop Terminal Expression
+0:43          add second child into first child ( temp highp float)
+0:43            'a' ( temp highp float)
+0:43            Constant:
+0:43              2.000000
+0:47      indirect index ( temp lowp sampler2D)
+0:47        'fsa' ( uniform 3-element array of lowp sampler2D)
+0:47        'ga' ( global highp int)
+0:48      indirect index ( temp highp float)
+0:48        'fua' ( uniform 10-element array of highp float)
+0:48        'ga' ( global highp int)
+0:49      indirect index ( temp highp 3-component vector of float)
+0:49        'am3' ( in highp 3X3 matrix of float)
+0:49        'ga' ( global highp int)
+0:50      indirect index ( temp highp float)
+0:50        'av2' ( in highp 2-component vector of float)
+0:50        'ga' ( global highp int)
+0:51      indirect index ( smooth temp highp 4-component vector of float)
+0:51        'va' ( smooth out 4-element array of highp 4-component vector of float)
+0:51        add ( temp highp int)
+0:51          Constant:
+0:51            2 (const int)
+0:51          'ga' ( global highp int)
+0:52      indirect index ( temp highp 2-component vector of float)
+0:52        Constant:
+0:52          1.000000
+0:52          0.000000
+0:52          0.000000
+0:52          1.000000
+0:52        'ga' ( global highp int)
+0:53      indirect index ( temp highp float)
+0:53        Constant:
+0:53          2.000000
+0:53          2.000000
+0:53          2.000000
+0:53        divide ( temp highp int)
+0:53          'ga' ( global highp int)
+0:53          Constant:
+0:53            2 (const int)
+0:54      indirect index ( temp highp int)
+0:54        'ia' ( temp 9-element array of highp int)
+0:54        'ga' ( global highp int)
+0:56      Sequence
+0:56        Sequence
+0:56          move second child to first child ( temp highp int)
+0:56            'a' ( temp highp int)
+0:56            Constant:
+0:56              3 (const int)
+0:56        Loop with condition tested first
+0:56          Loop Condition
+0:56          Compare Greater Than or Equal ( temp bool)
+0:56            'a' ( temp highp int)
+0:56            Constant:
+0:56              0 (const int)
+0:56          Loop Body
+0:57          Sequence
+0:57            indirect index ( temp lowp sampler2D)
+0:57              'fsa' ( uniform 3-element array of lowp sampler2D)
+0:57              'a' ( temp highp int)
+0:58            indirect index ( temp highp float)
+0:58              'fua' ( uniform 10-element array of highp float)
+0:58              add ( temp highp int)
+0:58                'a' ( temp highp int)
+0:58                Constant:
+0:58                  2 (const int)
+0:59            indirect index ( temp highp 3-component vector of float)
+0:59              'am3' ( in highp 3X3 matrix of float)
+0:59              component-wise multiply ( temp highp int)
+0:59                Constant:
+0:59                  3 (const int)
+0:59                'a' ( temp highp int)
+0:60            indirect index ( temp highp float)
+0:60              'av2' ( in highp 2-component vector of float)
+0:60              component-wise multiply ( temp highp int)
+0:60                Constant:
+0:60                  3 (const int)
+0:60                'a' ( temp highp int)
+0:61            indirect index ( smooth temp highp 4-component vector of float)
+0:61              'va' ( smooth out 4-element array of highp 4-component vector of float)
+0:61              subtract ( temp highp int)
+0:61                'a' ( temp highp int)
+0:61                Constant:
+0:61                  1 (const int)
+0:62            indirect index ( temp highp 2-component vector of float)
+0:62              Constant:
+0:62                1.000000
+0:62                0.000000
+0:62                0.000000
+0:62                1.000000
+0:62              divide ( temp highp int)
+0:62                'a' ( temp highp int)
+0:62                Constant:
+0:62                  2 (const int)
+0:63            indirect index ( temp highp float)
+0:63              Constant:
+0:63                2.000000
+0:63                2.000000
+0:63                2.000000
+0:63              'a' ( temp highp int)
+0:64            indirect index ( temp highp int)
+0:64              'ia' ( temp 9-element array of highp int)
+0:64              'a' ( temp highp int)
+0:65            indirect index ( temp highp int)
+0:65              'ia' ( temp 9-element array of highp int)
+0:65              Function Call: bar( ( global highp int)
+0:56          Loop Terminal Expression
+0:56          Post-Decrement ( temp highp int)
+0:56            'a' ( temp highp int)
+0:68      direct index ( temp lowp sampler2D)
+0:68        'fsa' ( uniform 3-element array of lowp sampler2D)
+0:68        Constant:
+0:68          2 (const int)
+0:69      direct index ( temp highp float)
+0:69        'fua' ( uniform 10-element array of highp float)
+0:69        Constant:
+0:69          3 (const int)
+0:70      direct index ( temp highp 3-component vector of float)
+0:70        'am3' ( in highp 3X3 matrix of float)
+0:70        Constant:
+0:70          2 (const int)
+0:71      direct index ( temp highp float)
+0:71        'av2' ( in highp 2-component vector of float)
+0:71        Constant:
+0:71          1 (const int)
+0:72      direct index ( smooth temp highp 4-component vector of float)
+0:72        'va' ( smooth out 4-element array of highp 4-component vector of float)
+0:72        Constant:
+0:72          1 (const int)
+0:73      Constant:
+0:73        0.000000
+0:73        1.000000
+0:74      Constant:
+0:74        2.000000
+0:75      direct index ( temp highp int)
+0:75        'ia' ( temp 9-element array of highp int)
+0:75        Constant:
+0:75          3 (const int)
+0:?   Linker Objects
+0:?     'ga' ( global highp int)
+0:?     'gb' ( global highp int)
+0:?     'f' ( global highp float)
+0:?     'fsa' ( uniform 3-element array of lowp sampler2D)
+0:?     'fua' ( uniform 10-element array of highp float)
+0:?     'am3' ( in highp 3X3 matrix of float)
+0:?     'av2' ( in highp 2-component vector of float)
+0:?     'va' ( smooth out 4-element array of highp 4-component vector of float)
+0:?     'm2' ( const highp 2X2 matrix of float)
+0:?       1.000000
+0:?       0.000000
+0:?       0.000000
+0:?       1.000000
+0:?     'v3' ( const highp 3-component vector of float)
+0:?       2.000000
+0:?       2.000000
+0:?       2.000000
+
+
+Linked vertex stage:
+
+
+Shader version: 100
+0:? Sequence
+0:15  Function Definition: foo(f1; ( global void)
+0:15    Function Parameters: 
+0:15      'a' ( inout highp float)
+0:17  Function Definition: bar( ( global highp int)
+0:17    Function Parameters: 
+0:19    Sequence
+0:19      Branch: Return with expression
+0:19        Constant:
+0:19          1 (const int)
+0:22  Function Definition: main( ( global void)
+0:22    Function Parameters: 
+0:24    Sequence
+0:24      Loop with condition tested first
+0:24        Loop Condition
+0:24        Compare Less Than ( temp bool)
+0:24          'ga' ( global highp int)
+0:24          'gb' ( global highp int)
+0:24        No loop body
+0:26      Loop with condition not tested first
+0:26        Loop Condition
+0:26        Constant:
+0:26          false (const bool)
+0:26        No loop body
+0:28      Sequence
+0:28        Loop with condition tested first
+0:28          No loop condition
+0:28          No loop body
+0:29      Sequence
+0:29        Loop with condition tested first
+0:29          Loop Condition
+0:29          Compare Equal ( temp bool)
+0:29            'ga' ( global highp int)
+0:29            'gb' ( global highp int)
+0:29          No loop body
+0:30      Sequence
+0:30        Loop with condition tested first
+0:30          No loop condition
+0:30          No loop body
+0:30          Loop Terminal Expression
+0:30          Post-Increment ( temp highp float)
+0:30            'f' ( global highp float)
+0:31      Sequence
+0:31        move second child to first child ( temp highp int)
+0:31          'ga' ( global highp int)
+0:31          Constant:
+0:31            0 (const int)
+0:31        Loop with condition tested first
+0:31          No loop condition
+0:31          No loop body
+0:32      Sequence
+0:32        Sequence
+0:32          move second child to first child ( temp bool)
+0:32            'a' ( temp bool)
+0:32            Constant:
+0:32              false (const bool)
+0:32        Loop with condition tested first
+0:32          No loop condition
+0:32          No loop body
+0:33      Sequence
+0:33        Sequence
+0:33          move second child to first child ( temp highp float)
+0:33            'a' ( temp highp float)
+0:33            Constant:
+0:33              0.000000
+0:33        Loop with condition tested first
+0:33          Loop Condition
+0:33          Compare Equal ( temp bool)
+0:33            'a' ( temp highp float)
+0:33            sine ( global highp float)
+0:33              'f' ( global highp float)
+0:33          No loop body
+0:34      Sequence
+0:34        Sequence
+0:34          move second child to first child ( temp highp int)
+0:34            'a' ( temp highp int)
+0:34            Constant:
+0:34              0 (const int)
+0:34        Loop with condition tested first
+0:34          Loop Condition
+0:34          Compare Less Than ( temp bool)
+0:34            'a' ( temp highp int)
+0:34            Constant:
+0:34              10 (const int)
+0:34          No loop body
+0:34          Loop Terminal Expression
+0:34          multiply second child into first child ( temp highp int)
+0:34            'a' ( temp highp int)
+0:34            Constant:
+0:34              2 (const int)
+0:35      Sequence
+0:35        Sequence
+0:35          move second child to first child ( temp highp int)
+0:35            'a' ( temp highp int)
+0:35            Constant:
+0:35              0 (const int)
+0:35        Loop with condition tested first
+0:35          Loop Condition
+0:35          Compare Less Than or Equal ( temp bool)
+0:35            'a' ( temp highp int)
+0:35            Constant:
+0:35              20 (const int)
+0:35          Loop Body
+0:35          Pre-Decrement ( temp highp int)
+0:35            'a' ( temp highp int)
+0:35          Loop Terminal Expression
+0:35          Post-Increment ( temp highp int)
+0:35            'a' ( temp highp int)
+0:36      Sequence
+0:36        Sequence
+0:36          move second child to first child ( temp highp int)
+0:36            'a' ( temp highp int)
+0:36            Constant:
+0:36              0 (const int)
+0:36        Loop with condition tested first
+0:36          Loop Condition
+0:36          Compare Less Than or Equal ( temp bool)
+0:36            'a' ( temp highp int)
+0:36            Constant:
+0:36              20 (const int)
+0:36          Loop Body
+0:36          Sequence
+0:36            Test condition and select ( temp void)
+0:36              Condition
+0:36              Compare Equal ( temp bool)
+0:36                'ga' ( global highp int)
+0:36                Constant:
+0:36                  0 (const int)
+0:36              true case
+0:36              move second child to first child ( temp highp int)
+0:36                'a' ( temp highp int)
+0:36                Constant:
+0:36                  4 (const int)
+0:36          Loop Terminal Expression
+0:36          Post-Increment ( temp highp int)
+0:36            'a' ( temp highp int)
+0:37      Sequence
+0:37        Sequence
+0:37          move second child to first child ( temp highp float)
+0:37            'a' ( temp highp float)
+0:37            Constant:
+0:37              0.000000
+0:37        Loop with condition tested first
+0:37          Loop Condition
+0:37          Compare Less Than or Equal ( temp bool)
+0:37            'a' ( temp highp float)
+0:37            Constant:
+0:37              20.000000
+0:37          No loop body
+0:37          Loop Terminal Expression
+0:37          add second child into first child ( temp highp float)
+0:37            'a' ( temp highp float)
+0:37            Constant:
+0:37              2.000000
+0:38      Sequence
+0:38        Sequence
+0:38          move second child to first child ( temp highp float)
+0:38            'a' ( temp highp float)
+0:38            Constant:
+0:38              0.000000
+0:38        Loop with condition tested first
+0:38          Loop Condition
+0:38          Compare Not Equal ( temp bool)
+0:38            'a' ( temp highp float)
+0:38            Constant:
+0:38              20.000000
+0:38          Loop Body
+0:38          Sequence
+0:38            Test condition and select ( temp void)
+0:38              Condition
+0:38              Compare Equal ( temp bool)
+0:38                'ga' ( global highp int)
+0:38                Constant:
+0:38                  0 (const int)
+0:38              true case
+0:38              move second child to first child ( temp highp int)
+0:38                'ga' ( global highp int)
+0:38                Constant:
+0:38                  4 (const int)
+0:38          Loop Terminal Expression
+0:38          subtract second child into first child ( temp highp float)
+0:38            'a' ( temp highp float)
+0:38            Constant:
+0:38              2.000000
+0:39      Sequence
+0:39        Sequence
+0:39          move second child to first child ( temp highp float)
+0:39            'a' ( temp highp float)
+0:39            Constant:
+0:39              0.000000
+0:39        Loop with condition tested first
+0:39          Loop Condition
+0:39          Compare Equal ( temp bool)
+0:39            'a' ( temp highp float)
+0:39            Constant:
+0:39              20.000000
+0:39          Loop Body
+0:39          Sequence
+0:39            Sequence
+0:39              move second child to first child ( temp highp float)
+0:39                'a' ( temp highp float)
+0:39                Constant:
+0:39                  0.000000
+0:39            Loop with condition tested first
+0:39              Loop Condition
+0:39              Compare Equal ( temp bool)
+0:39                'a' ( temp highp float)
+0:39                Constant:
+0:39                  20.000000
+0:39              No loop body
+0:39              Loop Terminal Expression
+0:39              Post-Decrement ( temp highp float)
+0:39                'a' ( temp highp float)
+0:39          Loop Terminal Expression
+0:39          Post-Decrement ( temp highp float)
+0:39            'a' ( temp highp float)
+0:40      Sequence
+0:40        Sequence
+0:40          move second child to first child ( temp highp float)
+0:40            'a' ( temp highp float)
+0:40            Constant:
+0:40              0.000000
+0:40        Loop with condition tested first
+0:40          Loop Condition
+0:40          Compare Less Than or Equal ( temp bool)
+0:40            'a' ( temp highp float)
+0:40            Constant:
+0:40              20.000000
+0:40          No loop body
+0:40          Loop Terminal Expression
+0:40          add second child into first child ( temp highp float)
+0:40            'a' ( temp highp float)
+0:40            Constant:
+0:40              2.000000
+0:41      Sequence
+0:41        Sequence
+0:41          move second child to first child ( temp highp float)
+0:41            'a' ( temp highp float)
+0:41            Constant:
+0:41              0.000000
+0:41        Loop with condition tested first
+0:41          Loop Condition
+0:41          Compare Less Than or Equal ( temp bool)
+0:41            'a' ( temp highp float)
+0:41            Constant:
+0:41              20.000000
+0:41          No loop body
+0:41          Loop Terminal Expression
+0:41          add second child into first child ( temp highp float)
+0:41            'a' ( temp highp float)
+0:41            Constant:
+0:41              2.000000
+0:42      Sequence
+0:42        Sequence
+0:42          move second child to first child ( temp highp float)
+0:42            'a' ( temp highp float)
+0:42            Constant:
+0:42              0.000000
+0:42        Loop with condition tested first
+0:42          Loop Condition
+0:42          Compare Greater Than ( temp bool)
+0:42            'a' ( temp highp float)
+0:42            Constant:
+0:42              40.000000
+0:42          No loop body
+0:42          Loop Terminal Expression
+0:42          add second child into first child ( temp highp float)
+0:42            'a' ( temp highp float)
+0:42            Constant:
+0:42              2.000000
+0:43      Sequence
+0:43        Sequence
+0:43          move second child to first child ( temp highp float)
+0:43            'a' ( temp highp float)
+0:43            Constant:
+0:43              0.000000
+0:43        Loop with condition tested first
+0:43          Loop Condition
+0:43          Compare Greater Than or Equal ( temp bool)
+0:43            'a' ( temp highp float)
+0:43            Constant:
+0:43              20.000000
+0:43          Loop Body
+0:43          Function Call: foo(f1; ( global void)
+0:43            'a' ( temp highp float)
+0:43          Loop Terminal Expression
+0:43          add second child into first child ( temp highp float)
+0:43            'a' ( temp highp float)
+0:43            Constant:
+0:43              2.000000
+0:47      indirect index ( temp lowp sampler2D)
+0:47        'fsa' ( uniform 3-element array of lowp sampler2D)
+0:47        'ga' ( global highp int)
+0:48      indirect index ( temp highp float)
+0:48        'fua' ( uniform 10-element array of highp float)
+0:48        'ga' ( global highp int)
+0:49      indirect index ( temp highp 3-component vector of float)
+0:49        'am3' ( in highp 3X3 matrix of float)
+0:49        'ga' ( global highp int)
+0:50      indirect index ( temp highp float)
+0:50        'av2' ( in highp 2-component vector of float)
+0:50        'ga' ( global highp int)
+0:51      indirect index ( smooth temp highp 4-component vector of float)
+0:51        'va' ( smooth out 4-element array of highp 4-component vector of float)
+0:51        add ( temp highp int)
+0:51          Constant:
+0:51            2 (const int)
+0:51          'ga' ( global highp int)
+0:52      indirect index ( temp highp 2-component vector of float)
+0:52        Constant:
+0:52          1.000000
+0:52          0.000000
+0:52          0.000000
+0:52          1.000000
+0:52        'ga' ( global highp int)
+0:53      indirect index ( temp highp float)
+0:53        Constant:
+0:53          2.000000
+0:53          2.000000
+0:53          2.000000
+0:53        divide ( temp highp int)
+0:53          'ga' ( global highp int)
+0:53          Constant:
+0:53            2 (const int)
+0:54      indirect index ( temp highp int)
+0:54        'ia' ( temp 9-element array of highp int)
+0:54        'ga' ( global highp int)
+0:56      Sequence
+0:56        Sequence
+0:56          move second child to first child ( temp highp int)
+0:56            'a' ( temp highp int)
+0:56            Constant:
+0:56              3 (const int)
+0:56        Loop with condition tested first
+0:56          Loop Condition
+0:56          Compare Greater Than or Equal ( temp bool)
+0:56            'a' ( temp highp int)
+0:56            Constant:
+0:56              0 (const int)
+0:56          Loop Body
+0:57          Sequence
+0:57            indirect index ( temp lowp sampler2D)
+0:57              'fsa' ( uniform 3-element array of lowp sampler2D)
+0:57              'a' ( temp highp int)
+0:58            indirect index ( temp highp float)
+0:58              'fua' ( uniform 10-element array of highp float)
+0:58              add ( temp highp int)
+0:58                'a' ( temp highp int)
+0:58                Constant:
+0:58                  2 (const int)
+0:59            indirect index ( temp highp 3-component vector of float)
+0:59              'am3' ( in highp 3X3 matrix of float)
+0:59              component-wise multiply ( temp highp int)
+0:59                Constant:
+0:59                  3 (const int)
+0:59                'a' ( temp highp int)
+0:60            indirect index ( temp highp float)
+0:60              'av2' ( in highp 2-component vector of float)
+0:60              component-wise multiply ( temp highp int)
+0:60                Constant:
+0:60                  3 (const int)
+0:60                'a' ( temp highp int)
+0:61            indirect index ( smooth temp highp 4-component vector of float)
+0:61              'va' ( smooth out 4-element array of highp 4-component vector of float)
+0:61              subtract ( temp highp int)
+0:61                'a' ( temp highp int)
+0:61                Constant:
+0:61                  1 (const int)
+0:62            indirect index ( temp highp 2-component vector of float)
+0:62              Constant:
+0:62                1.000000
+0:62                0.000000
+0:62                0.000000
+0:62                1.000000
+0:62              divide ( temp highp int)
+0:62                'a' ( temp highp int)
+0:62                Constant:
+0:62                  2 (const int)
+0:63            indirect index ( temp highp float)
+0:63              Constant:
+0:63                2.000000
+0:63                2.000000
+0:63                2.000000
+0:63              'a' ( temp highp int)
+0:64            indirect index ( temp highp int)
+0:64              'ia' ( temp 9-element array of highp int)
+0:64              'a' ( temp highp int)
+0:65            indirect index ( temp highp int)
+0:65              'ia' ( temp 9-element array of highp int)
+0:65              Function Call: bar( ( global highp int)
+0:56          Loop Terminal Expression
+0:56          Post-Decrement ( temp highp int)
+0:56            'a' ( temp highp int)
+0:68      direct index ( temp lowp sampler2D)
+0:68        'fsa' ( uniform 3-element array of lowp sampler2D)
+0:68        Constant:
+0:68          2 (const int)
+0:69      direct index ( temp highp float)
+0:69        'fua' ( uniform 10-element array of highp float)
+0:69        Constant:
+0:69          3 (const int)
+0:70      direct index ( temp highp 3-component vector of float)
+0:70        'am3' ( in highp 3X3 matrix of float)
+0:70        Constant:
+0:70          2 (const int)
+0:71      direct index ( temp highp float)
+0:71        'av2' ( in highp 2-component vector of float)
+0:71        Constant:
+0:71          1 (const int)
+0:72      direct index ( smooth temp highp 4-component vector of float)
+0:72        'va' ( smooth out 4-element array of highp 4-component vector of float)
+0:72        Constant:
+0:72          1 (const int)
+0:73      Constant:
+0:73        0.000000
+0:73        1.000000
+0:74      Constant:
+0:74        2.000000
+0:75      direct index ( temp highp int)
+0:75        'ia' ( temp 9-element array of highp int)
+0:75        Constant:
+0:75          3 (const int)
+0:?   Linker Objects
+0:?     'ga' ( global highp int)
+0:?     'gb' ( global highp int)
+0:?     'f' ( global highp float)
+0:?     'fsa' ( uniform 3-element array of lowp sampler2D)
+0:?     'fua' ( uniform 10-element array of highp float)
+0:?     'am3' ( in highp 3X3 matrix of float)
+0:?     'av2' ( in highp 2-component vector of float)
+0:?     'va' ( smooth out 4-element array of highp 4-component vector of float)
+0:?     'm2' ( const highp 2X2 matrix of float)
+0:?       1.000000
+0:?       0.000000
+0:?       0.000000
+0:?       1.000000
+0:?     'v3' ( const highp 3-component vector of float)
+0:?       2.000000
+0:?       2.000000
+0:?       2.000000
+

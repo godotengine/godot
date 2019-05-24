@@ -1,0 +1,257 @@
+earlyReturnDiscard.frag
+Shader version: 110
+0:? Sequence
+0:19  Function Definition: main( ( global void)
+0:19    Function Parameters: 
+0:21    Sequence
+0:21      Sequence
+0:21        move second child to first child ( temp 4-component vector of float)
+0:21          'color' ( temp 4-component vector of float)
+0:21          'BaseColor' ( smooth in 4-component vector of float)
+0:24      move second child to first child ( temp 4-component vector of float)
+0:24        'color2' ( temp 4-component vector of float)
+0:24        'otherColor' ( uniform 4-component vector of float)
+0:26      Test condition and select ( temp void)
+0:26        Condition
+0:26        Compare Greater Than ( temp bool)
+0:26          'c' ( smooth in float)
+0:26          'd' ( uniform float)
+0:26        true case
+0:27        add second child into first child ( temp 4-component vector of float)
+0:27          'color' ( temp 4-component vector of float)
+0:27          'bigColor' ( uniform 4-component vector of float)
+0:26        false case
+0:29        add second child into first child ( temp 4-component vector of float)
+0:29          'color' ( temp 4-component vector of float)
+0:29          'smallColor' ( uniform 4-component vector of float)
+0:31      Test condition and select ( temp void)
+0:31        Condition
+0:31        Compare Less Than ( temp bool)
+0:31          direct index ( temp float)
+0:31            'color' ( temp 4-component vector of float)
+0:31            Constant:
+0:31              2 (const int)
+0:31          'minimum' ( uniform float)
+0:31        true case
+0:32        Branch: Return
+0:34      Post-Increment ( temp float)
+0:34        direct index ( temp float)
+0:34          'color' ( temp 4-component vector of float)
+0:34          Constant:
+0:34            2 (const int)
+0:36      Test condition and select ( temp void)
+0:36        Condition
+0:36        Compare Greater Than ( temp bool)
+0:36          direct index ( temp float)
+0:36            'color' ( temp 4-component vector of float)
+0:36            Constant:
+0:36              2 (const int)
+0:36          'threshhold' ( uniform float)
+0:36        true case
+0:37        Branch: Kill
+0:39      Post-Increment ( temp 4-component vector of float)
+0:39        'color' ( temp 4-component vector of float)
+0:42      Test condition and select ( temp void)
+0:42        Condition
+0:42        Compare Greater Than ( temp bool)
+0:42          direct index ( temp float)
+0:42            'color' ( temp 4-component vector of float)
+0:42            Constant:
+0:42              3 (const int)
+0:42          'threshhold2' ( uniform float)
+0:42        true case
+0:43        Sequence
+0:43          Test condition and select ( temp void)
+0:43            Condition
+0:43            Compare Greater Than ( temp bool)
+0:43              direct index ( temp float)
+0:43                'color' ( temp 4-component vector of float)
+0:43                Constant:
+0:43                  2 (const int)
+0:43              'threshhold2' ( uniform float)
+0:43            true case
+0:44            Branch: Return
+0:43            false case
+0:45            Test condition and select ( temp void)
+0:45              Condition
+0:45              'b' ( uniform bool)
+0:45              true case
+0:46              Post-Increment ( temp float)
+0:46                direct index ( temp float)
+0:46                  'color' ( temp 4-component vector of float)
+0:46                  Constant:
+0:46                    2 (const int)
+0:45              false case
+0:48              Sequence
+0:48                Test condition and select ( temp void)
+0:48                  Condition
+0:48                  Compare Less Than ( temp bool)
+0:48                    direct index ( temp float)
+0:48                      'color' ( temp 4-component vector of float)
+0:48                      Constant:
+0:48                        0 (const int)
+0:48                    'minimum' ( uniform float)
+0:48                  true case
+0:49                  Sequence
+0:49                    Branch: Kill
+0:48                  false case
+0:51                  Sequence
+0:51                    Post-Increment ( temp 4-component vector of float)
+0:51                      'color' ( temp 4-component vector of float)
+0:42        false case
+0:55        Sequence
+0:55          Test condition and select ( temp void)
+0:55            Condition
+0:55            'b' ( uniform bool)
+0:55            true case
+0:56            Branch: Kill
+0:55            false case
+0:58            Branch: Return
+0:101      move second child to first child ( temp 4-component vector of float)
+0:101        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:101        component-wise multiply ( temp 4-component vector of float)
+0:101          'color' ( temp 4-component vector of float)
+0:101          'color2' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'd' ( uniform float)
+0:?     'bigColor' ( uniform 4-component vector of float)
+0:?     'smallColor' ( uniform 4-component vector of float)
+0:?     'otherColor' ( uniform 4-component vector of float)
+0:?     'c' ( smooth in float)
+0:?     'threshhold' ( uniform float)
+0:?     'threshhold2' ( uniform float)
+0:?     'threshhold3' ( uniform float)
+0:?     'minimum' ( uniform float)
+0:?     'BaseColor' ( smooth in 4-component vector of float)
+0:?     'b' ( uniform bool)
+
+
+Linked fragment stage:
+
+
+Shader version: 110
+0:? Sequence
+0:19  Function Definition: main( ( global void)
+0:19    Function Parameters: 
+0:21    Sequence
+0:21      Sequence
+0:21        move second child to first child ( temp 4-component vector of float)
+0:21          'color' ( temp 4-component vector of float)
+0:21          'BaseColor' ( smooth in 4-component vector of float)
+0:24      move second child to first child ( temp 4-component vector of float)
+0:24        'color2' ( temp 4-component vector of float)
+0:24        'otherColor' ( uniform 4-component vector of float)
+0:26      Test condition and select ( temp void)
+0:26        Condition
+0:26        Compare Greater Than ( temp bool)
+0:26          'c' ( smooth in float)
+0:26          'd' ( uniform float)
+0:26        true case
+0:27        add second child into first child ( temp 4-component vector of float)
+0:27          'color' ( temp 4-component vector of float)
+0:27          'bigColor' ( uniform 4-component vector of float)
+0:26        false case
+0:29        add second child into first child ( temp 4-component vector of float)
+0:29          'color' ( temp 4-component vector of float)
+0:29          'smallColor' ( uniform 4-component vector of float)
+0:31      Test condition and select ( temp void)
+0:31        Condition
+0:31        Compare Less Than ( temp bool)
+0:31          direct index ( temp float)
+0:31            'color' ( temp 4-component vector of float)
+0:31            Constant:
+0:31              2 (const int)
+0:31          'minimum' ( uniform float)
+0:31        true case
+0:32        Branch: Return
+0:34      Post-Increment ( temp float)
+0:34        direct index ( temp float)
+0:34          'color' ( temp 4-component vector of float)
+0:34          Constant:
+0:34            2 (const int)
+0:36      Test condition and select ( temp void)
+0:36        Condition
+0:36        Compare Greater Than ( temp bool)
+0:36          direct index ( temp float)
+0:36            'color' ( temp 4-component vector of float)
+0:36            Constant:
+0:36              2 (const int)
+0:36          'threshhold' ( uniform float)
+0:36        true case
+0:37        Branch: Kill
+0:39      Post-Increment ( temp 4-component vector of float)
+0:39        'color' ( temp 4-component vector of float)
+0:42      Test condition and select ( temp void)
+0:42        Condition
+0:42        Compare Greater Than ( temp bool)
+0:42          direct index ( temp float)
+0:42            'color' ( temp 4-component vector of float)
+0:42            Constant:
+0:42              3 (const int)
+0:42          'threshhold2' ( uniform float)
+0:42        true case
+0:43        Sequence
+0:43          Test condition and select ( temp void)
+0:43            Condition
+0:43            Compare Greater Than ( temp bool)
+0:43              direct index ( temp float)
+0:43                'color' ( temp 4-component vector of float)
+0:43                Constant:
+0:43                  2 (const int)
+0:43              'threshhold2' ( uniform float)
+0:43            true case
+0:44            Branch: Return
+0:43            false case
+0:45            Test condition and select ( temp void)
+0:45              Condition
+0:45              'b' ( uniform bool)
+0:45              true case
+0:46              Post-Increment ( temp float)
+0:46                direct index ( temp float)
+0:46                  'color' ( temp 4-component vector of float)
+0:46                  Constant:
+0:46                    2 (const int)
+0:45              false case
+0:48              Sequence
+0:48                Test condition and select ( temp void)
+0:48                  Condition
+0:48                  Compare Less Than ( temp bool)
+0:48                    direct index ( temp float)
+0:48                      'color' ( temp 4-component vector of float)
+0:48                      Constant:
+0:48                        0 (const int)
+0:48                    'minimum' ( uniform float)
+0:48                  true case
+0:49                  Sequence
+0:49                    Branch: Kill
+0:48                  false case
+0:51                  Sequence
+0:51                    Post-Increment ( temp 4-component vector of float)
+0:51                      'color' ( temp 4-component vector of float)
+0:42        false case
+0:55        Sequence
+0:55          Test condition and select ( temp void)
+0:55            Condition
+0:55            'b' ( uniform bool)
+0:55            true case
+0:56            Branch: Kill
+0:55            false case
+0:58            Branch: Return
+0:101      move second child to first child ( temp 4-component vector of float)
+0:101        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:101        component-wise multiply ( temp 4-component vector of float)
+0:101          'color' ( temp 4-component vector of float)
+0:101          'color2' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'd' ( uniform float)
+0:?     'bigColor' ( uniform 4-component vector of float)
+0:?     'smallColor' ( uniform 4-component vector of float)
+0:?     'otherColor' ( uniform 4-component vector of float)
+0:?     'c' ( smooth in float)
+0:?     'threshhold' ( uniform float)
+0:?     'threshhold2' ( uniform float)
+0:?     'threshhold3' ( uniform float)
+0:?     'minimum' ( uniform float)
+0:?     'BaseColor' ( smooth in 4-component vector of float)
+0:?     'b' ( uniform bool)
+

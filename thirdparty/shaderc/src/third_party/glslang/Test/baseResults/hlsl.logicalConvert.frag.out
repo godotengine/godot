@@ -1,0 +1,342 @@
+hlsl.logicalConvert.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:2  Function Definition: @main( ( temp 4-component vector of float)
+0:2    Function Parameters: 
+0:?     Sequence
+0:3      Test condition and select ( temp void)
+0:3        Condition
+0:3        Constant:
+0:3          false (const bool)
+0:3        true case
+0:4        Branch: Return with expression
+0:4          Constant:
+0:4            0.000000
+0:4            0.000000
+0:4            0.000000
+0:4            0.000000
+0:5      Test condition and select ( temp void)
+0:5        Condition
+0:5        Constant:
+0:5          false (const bool)
+0:5        true case
+0:6        Branch: Return with expression
+0:6          Constant:
+0:6            0.000000
+0:6            0.000000
+0:6            0.000000
+0:6            0.000000
+0:7      Test condition and select ( temp void)
+0:7        Condition
+0:7        Constant:
+0:7          true (const bool)
+0:7        true case
+0:8        Branch: Return with expression
+0:8          Constant:
+0:8            0.000000
+0:8            0.000000
+0:8            0.000000
+0:8            0.000000
+0:9      Test condition and select ( temp void)
+0:9        Condition
+0:9        Constant:
+0:9          true (const bool)
+0:9        true case
+0:10        Branch: Return with expression
+0:10          Constant:
+0:10            0.000000
+0:10            0.000000
+0:10            0.000000
+0:10            0.000000
+0:11      Test condition and select ( temp void)
+0:11        Condition
+0:11        Constant:
+0:11          false (const bool)
+0:11        true case
+0:12        Branch: Return with expression
+0:12          Constant:
+0:12            0.000000
+0:12            0.000000
+0:12            0.000000
+0:12            0.000000
+0:13      Test condition and select ( temp void)
+0:13        Condition
+0:13        Constant:
+0:13          false (const bool)
+0:13        true case
+0:14        Branch: Return with expression
+0:14          Constant:
+0:14            0.000000
+0:14            0.000000
+0:14            0.000000
+0:14            0.000000
+0:15      Test condition and select ( temp void)
+0:15        Condition
+0:15        Constant:
+0:15          true (const bool)
+0:15        true case
+0:16        Branch: Return with expression
+0:16          Constant:
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:17      Test condition and select ( temp void)
+0:17        Condition
+0:17        Constant:
+0:17          false (const bool)
+0:17        true case
+0:18        Branch: Return with expression
+0:18          Constant:
+0:18            0.000000
+0:18            0.000000
+0:18            0.000000
+0:18            0.000000
+0:19      Test condition and select ( temp void)
+0:19        Condition
+0:19        Constant:
+0:19          true (const bool)
+0:19        true case
+0:20        Branch: Return with expression
+0:20          Constant:
+0:20            0.000000
+0:20            0.000000
+0:20            0.000000
+0:20            0.000000
+0:21      Test condition and select ( temp void)
+0:21        Condition
+0:21        Constant:
+0:21          true (const bool)
+0:21        true case
+0:22        Branch: Return with expression
+0:22          Constant:
+0:22            0.000000
+0:22            0.000000
+0:22            0.000000
+0:22            0.000000
+0:2  Function Definition: main( ( temp void)
+0:2    Function Parameters: 
+0:?     Sequence
+0:2      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:2        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:2  Function Definition: @main( ( temp 4-component vector of float)
+0:2    Function Parameters: 
+0:?     Sequence
+0:3      Test condition and select ( temp void)
+0:3        Condition
+0:3        Constant:
+0:3          false (const bool)
+0:3        true case
+0:4        Branch: Return with expression
+0:4          Constant:
+0:4            0.000000
+0:4            0.000000
+0:4            0.000000
+0:4            0.000000
+0:5      Test condition and select ( temp void)
+0:5        Condition
+0:5        Constant:
+0:5          false (const bool)
+0:5        true case
+0:6        Branch: Return with expression
+0:6          Constant:
+0:6            0.000000
+0:6            0.000000
+0:6            0.000000
+0:6            0.000000
+0:7      Test condition and select ( temp void)
+0:7        Condition
+0:7        Constant:
+0:7          true (const bool)
+0:7        true case
+0:8        Branch: Return with expression
+0:8          Constant:
+0:8            0.000000
+0:8            0.000000
+0:8            0.000000
+0:8            0.000000
+0:9      Test condition and select ( temp void)
+0:9        Condition
+0:9        Constant:
+0:9          true (const bool)
+0:9        true case
+0:10        Branch: Return with expression
+0:10          Constant:
+0:10            0.000000
+0:10            0.000000
+0:10            0.000000
+0:10            0.000000
+0:11      Test condition and select ( temp void)
+0:11        Condition
+0:11        Constant:
+0:11          false (const bool)
+0:11        true case
+0:12        Branch: Return with expression
+0:12          Constant:
+0:12            0.000000
+0:12            0.000000
+0:12            0.000000
+0:12            0.000000
+0:13      Test condition and select ( temp void)
+0:13        Condition
+0:13        Constant:
+0:13          false (const bool)
+0:13        true case
+0:14        Branch: Return with expression
+0:14          Constant:
+0:14            0.000000
+0:14            0.000000
+0:14            0.000000
+0:14            0.000000
+0:15      Test condition and select ( temp void)
+0:15        Condition
+0:15        Constant:
+0:15          true (const bool)
+0:15        true case
+0:16        Branch: Return with expression
+0:16          Constant:
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:17      Test condition and select ( temp void)
+0:17        Condition
+0:17        Constant:
+0:17          false (const bool)
+0:17        true case
+0:18        Branch: Return with expression
+0:18          Constant:
+0:18            0.000000
+0:18            0.000000
+0:18            0.000000
+0:18            0.000000
+0:19      Test condition and select ( temp void)
+0:19        Condition
+0:19        Constant:
+0:19          true (const bool)
+0:19        true case
+0:20        Branch: Return with expression
+0:20          Constant:
+0:20            0.000000
+0:20            0.000000
+0:20            0.000000
+0:20            0.000000
+0:21      Test condition and select ( temp void)
+0:21        Condition
+0:21        Constant:
+0:21          true (const bool)
+0:21        true case
+0:22        Branch: Return with expression
+0:22          Constant:
+0:22            0.000000
+0:22            0.000000
+0:22            0.000000
+0:22            0.000000
+0:2  Function Definition: main( ( temp void)
+0:2    Function Parameters: 
+0:?     Sequence
+0:2      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:2        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 50
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 48
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "@main("
+                              Name 48  "@entryPointOutput"
+                              Decorate 48(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeFunction 7(fvec4)
+              11:             TypeBool
+              12:    11(bool) ConstantFalse
+              15:    6(float) Constant 0
+              16:    7(fvec4) ConstantComposite 15 15 15 15
+              21:    11(bool) ConstantTrue
+              47:             TypePointer Output 7(fvec4)
+48(@entryPointOutput):     47(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              49:    7(fvec4) FunctionCall 9(@main()
+                              Store 48(@entryPointOutput) 49
+                              Return
+                              FunctionEnd
+       9(@main():    7(fvec4) Function None 8
+              10:             Label
+                              SelectionMerge 14 None
+                              BranchConditional 12 13 14
+              13:               Label
+                                ReturnValue 16
+              14:             Label
+                              SelectionMerge 19 None
+                              BranchConditional 12 18 19
+              18:               Label
+                                ReturnValue 16
+              19:             Label
+                              SelectionMerge 23 None
+                              BranchConditional 21 22 23
+              22:               Label
+                                ReturnValue 16
+              23:             Label
+                              SelectionMerge 26 None
+                              BranchConditional 21 25 26
+              25:               Label
+                                ReturnValue 16
+              26:             Label
+                              SelectionMerge 29 None
+                              BranchConditional 12 28 29
+              28:               Label
+                                ReturnValue 16
+              29:             Label
+                              SelectionMerge 32 None
+                              BranchConditional 12 31 32
+              31:               Label
+                                ReturnValue 16
+              32:             Label
+                              SelectionMerge 35 None
+                              BranchConditional 21 34 35
+              34:               Label
+                                ReturnValue 16
+              35:             Label
+                              SelectionMerge 38 None
+                              BranchConditional 12 37 38
+              37:               Label
+                                ReturnValue 16
+              38:             Label
+                              SelectionMerge 41 None
+                              BranchConditional 21 40 41
+              40:               Label
+                                ReturnValue 16
+              41:             Label
+                              SelectionMerge 44 None
+                              BranchConditional 21 43 44
+              43:               Label
+                                ReturnValue 16
+              44:             Label
+              46:    7(fvec4) Undef
+                              ReturnValue 46
+                              FunctionEnd

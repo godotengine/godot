@@ -1,0 +1,379 @@
+hlsl.this.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:1  Sequence
+0:1    move second child to first child ( temp 2-component vector of float)
+0:1      'var' ( global 2-component vector of float)
+0:?       Constant:
+0:?         1.000000
+0:?         2.000000
+0:6  Function Definition: type1::memFun1(vi3; ( temp int)
+0:6    Function Parameters: 
+0:6      '@this' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:6      'var' ( in 3-component vector of int)
+0:?     Sequence
+0:7      Branch: Return with expression
+0:7        add ( temp int)
+0:7          add ( temp int)
+0:7            direct index ( temp int)
+0:7              'var' ( in 3-component vector of int)
+0:7              Constant:
+0:7                2 (const int)
+0:7            var: direct index for structure ( temp int)
+0:7              '@this' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:7              Constant:
+0:7                1 (const int)
+0:7          var2: direct index for structure ( temp int)
+0:7            '@this' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:7            Constant:
+0:7              2 (const uint)
+0:10  Function Definition: type1::memFun2(i1; ( temp int)
+0:10    Function Parameters: 
+0:10      '@this' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:10      'a' ( in int)
+0:?     Sequence
+0:11      Sequence
+0:11        move second child to first child ( temp 3-component vector of int)
+0:11          'var' ( temp 3-component vector of int)
+0:?           Constant:
+0:?             1 (const int)
+0:?             2 (const int)
+0:?             3 (const int)
+0:12      Branch: Return with expression
+0:12        add ( temp int)
+0:12          add ( temp int)
+0:12            direct index ( temp int)
+0:12              'var' ( temp 3-component vector of int)
+0:12              Constant:
+0:12                2 (const int)
+0:12            Convert float to int ( temp int)
+0:12              direct index ( temp float)
+0:12                bar: direct index for structure ( temp 2-component vector of float)
+0:12                  '@this' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:12                  Constant:
+0:12                    0 (const uint)
+0:12                Constant:
+0:12                  1 (const int)
+0:12          var2: direct index for structure ( temp int)
+0:12            '@this' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:12            Constant:
+0:12              2 (const int)
+0:20  Function Definition: @main( ( temp 4-component vector of float)
+0:20    Function Parameters: 
+0:?     Sequence
+0:22      move second child to first child ( temp 2-component vector of float)
+0:22        bar: direct index for structure ( temp 2-component vector of float)
+0:22          'T' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:22          Constant:
+0:22            0 (const int)
+0:22        'var' ( global 2-component vector of float)
+0:23      move second child to first child ( temp int)
+0:23        var: direct index for structure ( temp int)
+0:23          'T' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:23          Constant:
+0:23            1 (const int)
+0:23        Constant:
+0:23          7 (const int)
+0:24      move second child to first child ( temp int)
+0:24        var2: direct index for structure ( temp int)
+0:24          'T' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:24          Constant:
+0:24            2 (const int)
+0:24        Constant:
+0:24          9 (const int)
+0:25      Sequence
+0:25        move second child to first child ( temp int)
+0:25          'i' ( temp int)
+0:25          Function Call: type1::memFun1(vi3; ( temp int)
+0:25            'T' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:?             Constant:
+0:?               10 (const int)
+0:?               11 (const int)
+0:?               12 (const int)
+0:26      add second child into first child ( temp int)
+0:26        'i' ( temp int)
+0:26        Function Call: type1::memFun2(i1; ( temp int)
+0:26          'T' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:26          Constant:
+0:26            17 (const int)
+0:28      Branch: Return with expression
+0:?         Construct vec4 ( temp 4-component vector of float)
+0:28          Convert int to float ( temp float)
+0:28            'i' ( temp int)
+0:28          Convert int to float ( temp float)
+0:28            'i' ( temp int)
+0:28          Convert int to float ( temp float)
+0:28            'i' ( temp int)
+0:28          Convert int to float ( temp float)
+0:28            'i' ( temp int)
+0:20  Function Definition: main( ( temp void)
+0:20    Function Parameters: 
+0:?     Sequence
+0:20      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:20        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'var' ( global 2-component vector of float)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:1  Sequence
+0:1    move second child to first child ( temp 2-component vector of float)
+0:1      'var' ( global 2-component vector of float)
+0:?       Constant:
+0:?         1.000000
+0:?         2.000000
+0:6  Function Definition: type1::memFun1(vi3; ( temp int)
+0:6    Function Parameters: 
+0:6      '@this' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:6      'var' ( in 3-component vector of int)
+0:?     Sequence
+0:7      Branch: Return with expression
+0:7        add ( temp int)
+0:7          add ( temp int)
+0:7            direct index ( temp int)
+0:7              'var' ( in 3-component vector of int)
+0:7              Constant:
+0:7                2 (const int)
+0:7            var: direct index for structure ( temp int)
+0:7              '@this' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:7              Constant:
+0:7                1 (const int)
+0:7          var2: direct index for structure ( temp int)
+0:7            '@this' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:7            Constant:
+0:7              2 (const uint)
+0:10  Function Definition: type1::memFun2(i1; ( temp int)
+0:10    Function Parameters: 
+0:10      '@this' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:10      'a' ( in int)
+0:?     Sequence
+0:11      Sequence
+0:11        move second child to first child ( temp 3-component vector of int)
+0:11          'var' ( temp 3-component vector of int)
+0:?           Constant:
+0:?             1 (const int)
+0:?             2 (const int)
+0:?             3 (const int)
+0:12      Branch: Return with expression
+0:12        add ( temp int)
+0:12          add ( temp int)
+0:12            direct index ( temp int)
+0:12              'var' ( temp 3-component vector of int)
+0:12              Constant:
+0:12                2 (const int)
+0:12            Convert float to int ( temp int)
+0:12              direct index ( temp float)
+0:12                bar: direct index for structure ( temp 2-component vector of float)
+0:12                  '@this' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:12                  Constant:
+0:12                    0 (const uint)
+0:12                Constant:
+0:12                  1 (const int)
+0:12          var2: direct index for structure ( temp int)
+0:12            '@this' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:12            Constant:
+0:12              2 (const int)
+0:20  Function Definition: @main( ( temp 4-component vector of float)
+0:20    Function Parameters: 
+0:?     Sequence
+0:22      move second child to first child ( temp 2-component vector of float)
+0:22        bar: direct index for structure ( temp 2-component vector of float)
+0:22          'T' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:22          Constant:
+0:22            0 (const int)
+0:22        'var' ( global 2-component vector of float)
+0:23      move second child to first child ( temp int)
+0:23        var: direct index for structure ( temp int)
+0:23          'T' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:23          Constant:
+0:23            1 (const int)
+0:23        Constant:
+0:23          7 (const int)
+0:24      move second child to first child ( temp int)
+0:24        var2: direct index for structure ( temp int)
+0:24          'T' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:24          Constant:
+0:24            2 (const int)
+0:24        Constant:
+0:24          9 (const int)
+0:25      Sequence
+0:25        move second child to first child ( temp int)
+0:25          'i' ( temp int)
+0:25          Function Call: type1::memFun1(vi3; ( temp int)
+0:25            'T' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:?             Constant:
+0:?               10 (const int)
+0:?               11 (const int)
+0:?               12 (const int)
+0:26      add second child into first child ( temp int)
+0:26        'i' ( temp int)
+0:26        Function Call: type1::memFun2(i1; ( temp int)
+0:26          'T' ( temp structure{ temp 2-component vector of float bar,  temp int var,  temp int var2})
+0:26          Constant:
+0:26            17 (const int)
+0:28      Branch: Return with expression
+0:?         Construct vec4 ( temp 4-component vector of float)
+0:28          Convert int to float ( temp float)
+0:28            'i' ( temp int)
+0:28          Convert int to float ( temp float)
+0:28            'i' ( temp int)
+0:28          Convert int to float ( temp float)
+0:28            'i' ( temp int)
+0:28          Convert int to float ( temp float)
+0:28            'i' ( temp int)
+0:20  Function Definition: main( ( temp void)
+0:20    Function Parameters: 
+0:?     Sequence
+0:20      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:20        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'var' ( global 2-component vector of float)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 98
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 96
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "type1"
+                              MemberName 9(type1) 0  "bar"
+                              MemberName 9(type1) 1  "var"
+                              MemberName 9(type1) 2  "var2"
+                              Name 16  "type1::memFun1(vi3;"
+                              Name 14  "@this"
+                              Name 15  "var"
+                              Name 22  "type1::memFun2(i1;"
+                              Name 20  "@this"
+                              Name 21  "a"
+                              Name 26  "@main("
+                              Name 29  "var"
+                              Name 47  "var"
+                              Name 64  "T"
+                              Name 72  "i"
+                              Name 77  "param"
+                              Name 80  "param"
+                              Name 96  "@entryPointOutput"
+                              Decorate 96(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 2
+               8:             TypeInt 32 1
+        9(type1):             TypeStruct 7(fvec2) 8(int) 8(int)
+              10:             TypePointer Function 9(type1)
+              11:             TypeVector 8(int) 3
+              12:             TypePointer Function 11(ivec3)
+              13:             TypeFunction 8(int) 10(ptr) 12(ptr)
+              18:             TypePointer Function 8(int)
+              19:             TypeFunction 8(int) 10(ptr) 18(ptr)
+              24:             TypeVector 6(float) 4
+              25:             TypeFunction 24(fvec4)
+              28:             TypePointer Private 7(fvec2)
+         29(var):     28(ptr) Variable Private
+              30:    6(float) Constant 1065353216
+              31:    6(float) Constant 1073741824
+              32:    7(fvec2) ConstantComposite 30 31
+              33:             TypeInt 32 0
+              34:     33(int) Constant 2
+              37:      8(int) Constant 1
+              41:      8(int) Constant 2
+              48:      8(int) Constant 3
+              49:   11(ivec3) ConstantComposite 37 41 48
+              52:      8(int) Constant 0
+              53:     33(int) Constant 1
+              54:             TypePointer Function 6(float)
+              66:             TypePointer Function 7(fvec2)
+              68:      8(int) Constant 7
+              70:      8(int) Constant 9
+              73:      8(int) Constant 10
+              74:      8(int) Constant 11
+              75:      8(int) Constant 12
+              76:   11(ivec3) ConstantComposite 73 74 75
+              79:      8(int) Constant 17
+              95:             TypePointer Output 24(fvec4)
+96(@entryPointOutput):     95(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+                              Store 29(var) 32
+              97:   24(fvec4) FunctionCall 26(@main()
+                              Store 96(@entryPointOutput) 97
+                              Return
+                              FunctionEnd
+16(type1::memFun1(vi3;):      8(int) Function None 13
+       14(@this):     10(ptr) FunctionParameter
+         15(var):     12(ptr) FunctionParameter
+              17:             Label
+              35:     18(ptr) AccessChain 15(var) 34
+              36:      8(int) Load 35
+              38:     18(ptr) AccessChain 14(@this) 37
+              39:      8(int) Load 38
+              40:      8(int) IAdd 36 39
+              42:     18(ptr) AccessChain 14(@this) 41
+              43:      8(int) Load 42
+              44:      8(int) IAdd 40 43
+                              ReturnValue 44
+                              FunctionEnd
+22(type1::memFun2(i1;):      8(int) Function None 19
+       20(@this):     10(ptr) FunctionParameter
+           21(a):     18(ptr) FunctionParameter
+              23:             Label
+         47(var):     12(ptr) Variable Function
+                              Store 47(var) 49
+              50:     18(ptr) AccessChain 47(var) 34
+              51:      8(int) Load 50
+              55:     54(ptr) AccessChain 20(@this) 52 53
+              56:    6(float) Load 55
+              57:      8(int) ConvertFToS 56
+              58:      8(int) IAdd 51 57
+              59:     18(ptr) AccessChain 20(@this) 41
+              60:      8(int) Load 59
+              61:      8(int) IAdd 58 60
+                              ReturnValue 61
+                              FunctionEnd
+      26(@main():   24(fvec4) Function None 25
+              27:             Label
+           64(T):     10(ptr) Variable Function
+           72(i):     18(ptr) Variable Function
+       77(param):     12(ptr) Variable Function
+       80(param):     18(ptr) Variable Function
+              65:    7(fvec2) Load 29(var)
+              67:     66(ptr) AccessChain 64(T) 52
+                              Store 67 65
+              69:     18(ptr) AccessChain 64(T) 37
+                              Store 69 68
+              71:     18(ptr) AccessChain 64(T) 41
+                              Store 71 70
+                              Store 77(param) 76
+              78:      8(int) FunctionCall 16(type1::memFun1(vi3;) 64(T) 77(param)
+                              Store 72(i) 78
+                              Store 80(param) 79
+              81:      8(int) FunctionCall 22(type1::memFun2(i1;) 64(T) 80(param)
+              82:      8(int) Load 72(i)
+              83:      8(int) IAdd 82 81
+                              Store 72(i) 83
+              84:      8(int) Load 72(i)
+              85:    6(float) ConvertSToF 84
+              86:      8(int) Load 72(i)
+              87:    6(float) ConvertSToF 86
+              88:      8(int) Load 72(i)
+              89:    6(float) ConvertSToF 88
+              90:      8(int) Load 72(i)
+              91:    6(float) ConvertSToF 90
+              92:   24(fvec4) CompositeConstruct 85 87 89 91
+                              ReturnValue 92
+                              FunctionEnd

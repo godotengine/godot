@@ -1,0 +1,121 @@
+420.comp
+ERROR: 0:3: 'gl_WorkGroupSize' : not supported for this version or the enabled extensions 
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 420
+Requested GL_ARB_compute_shader
+local_size = (2, 4, 6)
+ERROR: node is still EOpNull!
+0:11  Function Definition: main( ( global void)
+0:11    Function Parameters: 
+0:13    Sequence
+0:13      move second child to first child ( temp 3-component vector of float)
+0:13        'sfoo' ( shared 3-component vector of float)
+0:13        Constant:
+0:13          2.000000
+0:13          4.000000
+0:13          6.000000
+0:14      add second child into first child ( temp 3-component vector of float)
+0:14        'sfoo' ( shared 3-component vector of float)
+0:14        Convert uint to float ( temp 3-component vector of float)
+0:14          add ( temp 3-component vector of uint)
+0:14            add ( temp 3-component vector of uint)
+0:14              add ( temp 3-component vector of uint)
+0:14                add ( temp 3-component vector of uint)
+0:14                  Constant:
+0:14                    2 (const uint)
+0:14                    4 (const uint)
+0:14                    6 (const uint)
+0:14                  'gl_NumWorkGroups' ( in 3-component vector of uint NumWorkGroups)
+0:14                'gl_WorkGroupID' ( in 3-component vector of uint WorkGroupID)
+0:14              'gl_LocalInvocationID' ( in 3-component vector of uint LocalInvocationID)
+0:14            'gl_GlobalInvocationID' ( in 3-component vector of uint GlobalInvocationID)
+0:15      vector scale second child into first child ( temp 3-component vector of float)
+0:15        'sfoo' ( shared 3-component vector of float)
+0:15        Convert uint to float ( temp float)
+0:15          'gl_LocalInvocationIndex' ( in uint LocalInvocationIndex)
+0:16      add second child into first child ( temp 3-component vector of float)
+0:16        'sfoo' ( shared 3-component vector of float)
+0:16        Constant:
+0:16          66559.000000
+0:16          66559.000000
+0:16          65599.000000
+0:17      vector scale second child into first child ( temp 3-component vector of float)
+0:17        'sfoo' ( shared 3-component vector of float)
+0:17        Constant:
+0:17          1057.000000
+0:23      Barrier ( global void)
+0:24      MemoryBarrier ( global void)
+0:25      MemoryBarrierAtomicCounter ( global void)
+0:26      MemoryBarrierBuffer ( global void)
+0:27      MemoryBarrierImage ( global void)
+0:28      MemoryBarrierShared ( global void)
+0:29      GroupMemoryBarrier ( global void)
+0:?   Linker Objects
+0:?     'gl_WorkGroupSize' ( const 3-component vector of uint WorkGroupSize)
+0:?       2 (const uint)
+0:?       4 (const uint)
+0:?       6 (const uint)
+0:?     'sfoo' ( shared 3-component vector of float)
+
+
+Linked compute stage:
+
+
+Shader version: 420
+Requested GL_ARB_compute_shader
+local_size = (2, 4, 6)
+ERROR: node is still EOpNull!
+0:11  Function Definition: main( ( global void)
+0:11    Function Parameters: 
+0:13    Sequence
+0:13      move second child to first child ( temp 3-component vector of float)
+0:13        'sfoo' ( shared 3-component vector of float)
+0:13        Constant:
+0:13          2.000000
+0:13          4.000000
+0:13          6.000000
+0:14      add second child into first child ( temp 3-component vector of float)
+0:14        'sfoo' ( shared 3-component vector of float)
+0:14        Convert uint to float ( temp 3-component vector of float)
+0:14          add ( temp 3-component vector of uint)
+0:14            add ( temp 3-component vector of uint)
+0:14              add ( temp 3-component vector of uint)
+0:14                add ( temp 3-component vector of uint)
+0:14                  Constant:
+0:14                    2 (const uint)
+0:14                    4 (const uint)
+0:14                    6 (const uint)
+0:14                  'gl_NumWorkGroups' ( in 3-component vector of uint NumWorkGroups)
+0:14                'gl_WorkGroupID' ( in 3-component vector of uint WorkGroupID)
+0:14              'gl_LocalInvocationID' ( in 3-component vector of uint LocalInvocationID)
+0:14            'gl_GlobalInvocationID' ( in 3-component vector of uint GlobalInvocationID)
+0:15      vector scale second child into first child ( temp 3-component vector of float)
+0:15        'sfoo' ( shared 3-component vector of float)
+0:15        Convert uint to float ( temp float)
+0:15          'gl_LocalInvocationIndex' ( in uint LocalInvocationIndex)
+0:16      add second child into first child ( temp 3-component vector of float)
+0:16        'sfoo' ( shared 3-component vector of float)
+0:16        Constant:
+0:16          66559.000000
+0:16          66559.000000
+0:16          65599.000000
+0:17      vector scale second child into first child ( temp 3-component vector of float)
+0:17        'sfoo' ( shared 3-component vector of float)
+0:17        Constant:
+0:17          1057.000000
+0:23      Barrier ( global void)
+0:24      MemoryBarrier ( global void)
+0:25      MemoryBarrierAtomicCounter ( global void)
+0:26      MemoryBarrierBuffer ( global void)
+0:27      MemoryBarrierImage ( global void)
+0:28      MemoryBarrierShared ( global void)
+0:29      GroupMemoryBarrier ( global void)
+0:?   Linker Objects
+0:?     'gl_WorkGroupSize' ( const 3-component vector of uint WorkGroupSize)
+0:?       2 (const uint)
+0:?       4 (const uint)
+0:?       6 (const uint)
+0:?     'sfoo' ( shared 3-component vector of float)
+

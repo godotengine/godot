@@ -1,0 +1,61 @@
+length.frag
+Shader version: 120
+0:? Sequence
+0:11  Function Definition: main( ( global void)
+0:11    Function Parameters: 
+0:?     Sequence
+0:15      Sequence
+0:15        move second child to first child ( temp 2-component vector of float)
+0:15          't' ( temp 2-component vector of float)
+0:15          add ( temp 2-component vector of float)
+0:15            direct index ( smooth temp 2-component vector of float)
+0:15              'v' ( smooth in 2-element array of 2-component vector of float)
+0:15              Constant:
+0:15                0 (const int)
+0:15            direct index ( smooth temp 2-component vector of float)
+0:15              'v' ( smooth in 2-element array of 2-component vector of float)
+0:15              Constant:
+0:15                1 (const int)
+0:17      move second child to first child ( temp 4-component vector of float)
+0:17        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:17        Constant:
+0:17          30.000000
+0:17          30.000000
+0:17          30.000000
+0:17          30.000000
+0:?   Linker Objects
+0:?     'u' ( uniform 3-element array of 4-component vector of float)
+0:?     'v' ( smooth in 2-element array of 2-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 120
+0:? Sequence
+0:11  Function Definition: main( ( global void)
+0:11    Function Parameters: 
+0:?     Sequence
+0:15      Sequence
+0:15        move second child to first child ( temp 2-component vector of float)
+0:15          't' ( temp 2-component vector of float)
+0:15          add ( temp 2-component vector of float)
+0:15            direct index ( smooth temp 2-component vector of float)
+0:15              'v' ( smooth in 2-element array of 2-component vector of float)
+0:15              Constant:
+0:15                0 (const int)
+0:15            direct index ( smooth temp 2-component vector of float)
+0:15              'v' ( smooth in 2-element array of 2-component vector of float)
+0:15              Constant:
+0:15                1 (const int)
+0:17      move second child to first child ( temp 4-component vector of float)
+0:17        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:17        Constant:
+0:17          30.000000
+0:17          30.000000
+0:17          30.000000
+0:17          30.000000
+0:?   Linker Objects
+0:?     'u' ( uniform 3-element array of 4-component vector of float)
+0:?     'v' ( smooth in 2-element array of 2-component vector of float)
+

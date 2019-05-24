@@ -1,0 +1,147 @@
+300layout.vert
+ERROR: 0:7: 'vertex input arrays' : not supported with this profile: es
+ERROR: 0:8: 'in' : cannot be a structure or array 
+ERROR: 0:8: 'vertex input arrays' : not supported with this profile: es
+ERROR: 0:8: 'location' : overlapping use of location 10
+ERROR: 0:12: 'layout' : cannot specify matrix layout on a variable declaration 
+ERROR: 0:12: 'layout' : cannot specify packing on a variable declaration 
+ERROR: 0:19: 'badf' : member of uniform or buffer block cannot have an auxiliary or interpolation qualifier 
+ERROR: 0:20: 'badg' : member storage qualifier cannot contradict block storage qualifier 
+ERROR: 0:21: 'bad1' : member of block cannot have a packing layout qualifier 
+ERROR: 0:22: 'bad2' : member of block cannot have a packing layout qualifier 
+ERROR: 0:23: 'bad3' : member of block cannot have a packing layout qualifier 
+ERROR: 0:31: 'T3' : nameless block contains a member that already has a name at global scope 
+ERROR: 0:38: 'vertex output block' : not supported for this version or the enabled extensions 
+ERROR: 0:42: 'location qualifier on output' : not supported in this stage: vertex
+ERROR: 0:42: 'location qualifier on output' : not supported for this version or the enabled extensions 
+ERROR: 0:50: 'shared' : not supported for this version or the enabled extensions 
+ERROR: 0:50: 'shared' : not supported in this stage: vertex
+ERROR: 0:54: 'layout' : cannot specify packing on a variable declaration 
+ERROR: 0:57: 'location' : overlapping use of location 40
+ERROR: 19 compilation errors.  No code generated.
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:44  Function Definition: main( ( global void)
+0:44    Function Parameters: 
+0:46    Sequence
+0:46      move second child to first child ( temp highp 4-component vector of float)
+0:46        'pos' ( smooth out highp 4-component vector of float)
+0:46        vector-times-matrix ( temp highp 4-component vector of float)
+0:46          'p' (layout( location=3) in highp 4-component vector of float)
+0:46          add ( temp highp 4X4 matrix of float)
+0:46            add ( temp highp 4X4 matrix of float)
+0:46              add ( temp highp 4X4 matrix of float)
+0:46                add ( temp highp 4X4 matrix of float)
+0:46                  M1: direct index for structure (layout( row_major std140 offset=0) uniform highp 4X4 matrix of float)
+0:46                    'tblock' (layout( row_major std140) uniform block{layout( row_major std140 offset=0) uniform highp 4X4 matrix of float M1, layout( column_major std140 offset=64) uniform highp 4X4 matrix of float M2, layout( row_major std140 offset=128) uniform highp 3X3 matrix of float N1, layout( row_major std140 offset=176) centroid uniform highp float badf, layout( row_major std140 offset=180) uniform highp float badg, layout( row_major std140 offset=184) uniform highp float bad1, layout( row_major shared offset=188) uniform highp float bad2, layout( row_major packed offset=192) uniform highp float bad3})
+0:46                    Constant:
+0:46                      0 (const int)
+0:46                  M2: direct index for structure (layout( column_major std140 offset=64) uniform highp 4X4 matrix of float)
+0:46                    'tblock' (layout( row_major std140) uniform block{layout( row_major std140 offset=0) uniform highp 4X4 matrix of float M1, layout( column_major std140 offset=64) uniform highp 4X4 matrix of float M2, layout( row_major std140 offset=128) uniform highp 3X3 matrix of float N1, layout( row_major std140 offset=176) centroid uniform highp float badf, layout( row_major std140 offset=180) uniform highp float badg, layout( row_major std140 offset=184) uniform highp float bad1, layout( row_major shared offset=188) uniform highp float bad2, layout( row_major packed offset=192) uniform highp float bad3})
+0:46                    Constant:
+0:46                      1 (const int)
+0:46                M4: direct index for structure (layout( row_major shared) uniform highp 4X4 matrix of float)
+0:46                  'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform highp 4X4 matrix of float M3, layout( row_major shared) uniform highp 4X4 matrix of float M4, layout( column_major shared) uniform highp 3X3 matrix of float N2, layout( column_major shared) uniform highp int b})
+0:46                  Constant:
+0:46                    1 (const uint)
+0:46              M3: direct index for structure (layout( column_major shared) uniform highp 4X4 matrix of float)
+0:46                'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform highp 4X4 matrix of float M3, layout( row_major shared) uniform highp 4X4 matrix of float M4, layout( column_major shared) uniform highp 3X3 matrix of float N2, layout( column_major shared) uniform highp int b})
+0:46                Constant:
+0:46                  0 (const uint)
+0:46            t2m: direct index for structure (layout( row_major shared) uniform highp 4X4 matrix of float)
+0:46              'anon@0' (layout( row_major shared) uniform block{layout( row_major shared) uniform bool b, layout( row_major shared) uniform highp 4X4 matrix of float t2m})
+0:46              Constant:
+0:46                1 (const uint)
+0:47      move second child to first child ( temp highp 3-component vector of float)
+0:47        'color' ( smooth out highp 3-component vector of float)
+0:47        vector-times-matrix ( temp highp 3-component vector of float)
+0:47          'c' (layout( location=7) in highp 3-component vector of float)
+0:47          N1: direct index for structure (layout( row_major std140 offset=128) uniform highp 3X3 matrix of float)
+0:47            'tblock' (layout( row_major std140) uniform block{layout( row_major std140 offset=0) uniform highp 4X4 matrix of float M1, layout( column_major std140 offset=64) uniform highp 4X4 matrix of float M2, layout( row_major std140 offset=128) uniform highp 3X3 matrix of float N1, layout( row_major std140 offset=176) centroid uniform highp float badf, layout( row_major std140 offset=180) uniform highp float badg, layout( row_major std140 offset=184) uniform highp float bad1, layout( row_major shared offset=188) uniform highp float bad2, layout( row_major packed offset=192) uniform highp float bad3})
+0:47            Constant:
+0:47              2 (const int)
+0:?   Linker Objects
+0:?     'c' (layout( location=7) in highp 3-component vector of float)
+0:?     'p' (layout( location=3) in highp 4-component vector of float)
+0:?     'q' (layout( location=9) in 4-element array of highp 4-component vector of float)
+0:?     'r' (layout( location=10) in 4-element array of structure{ global highp 4-component vector of float v})
+0:?     'pos' ( smooth out highp 4-component vector of float)
+0:?     'color' ( smooth out highp 3-component vector of float)
+0:?     'badm4' (layout( column_major shared) uniform highp 4X4 matrix of float)
+0:?     'tblock' (layout( row_major std140) uniform block{layout( row_major std140 offset=0) uniform highp 4X4 matrix of float M1, layout( column_major std140 offset=64) uniform highp 4X4 matrix of float M2, layout( row_major std140 offset=128) uniform highp 3X3 matrix of float N1, layout( row_major std140 offset=176) centroid uniform highp float badf, layout( row_major std140 offset=180) uniform highp float badg, layout( row_major std140 offset=184) uniform highp float bad1, layout( row_major shared offset=188) uniform highp float bad2, layout( row_major packed offset=192) uniform highp float bad3})
+0:?     'anon@0' (layout( row_major shared) uniform block{layout( row_major shared) uniform bool b, layout( row_major shared) uniform highp 4X4 matrix of float t2m})
+0:?     'anon@2' ( out block{ out highp float f})
+0:?     'badoutA' (layout( location=10) smooth out highp 4-component vector of float)
+0:?     'compute_only' ( shared highp 4-component vector of float)
+0:?     'aoeuntaoeu' (layout( packed) uniform highp float)
+0:?     'cd' (layout( location=40) in highp float)
+0:?     'ce' (layout( location=37) in highp 4X3 matrix of float)
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:44  Function Definition: main( ( global void)
+0:44    Function Parameters: 
+0:46    Sequence
+0:46      move second child to first child ( temp highp 4-component vector of float)
+0:46        'pos' ( smooth out highp 4-component vector of float)
+0:46        vector-times-matrix ( temp highp 4-component vector of float)
+0:46          'p' (layout( location=3) in highp 4-component vector of float)
+0:46          add ( temp highp 4X4 matrix of float)
+0:46            add ( temp highp 4X4 matrix of float)
+0:46              add ( temp highp 4X4 matrix of float)
+0:46                add ( temp highp 4X4 matrix of float)
+0:46                  M1: direct index for structure (layout( row_major std140 offset=0) uniform highp 4X4 matrix of float)
+0:46                    'tblock' (layout( row_major std140) uniform block{layout( row_major std140 offset=0) uniform highp 4X4 matrix of float M1, layout( column_major std140 offset=64) uniform highp 4X4 matrix of float M2, layout( row_major std140 offset=128) uniform highp 3X3 matrix of float N1, layout( row_major std140 offset=176) centroid uniform highp float badf, layout( row_major std140 offset=180) uniform highp float badg, layout( row_major std140 offset=184) uniform highp float bad1, layout( row_major shared offset=188) uniform highp float bad2, layout( row_major packed offset=192) uniform highp float bad3})
+0:46                    Constant:
+0:46                      0 (const int)
+0:46                  M2: direct index for structure (layout( column_major std140 offset=64) uniform highp 4X4 matrix of float)
+0:46                    'tblock' (layout( row_major std140) uniform block{layout( row_major std140 offset=0) uniform highp 4X4 matrix of float M1, layout( column_major std140 offset=64) uniform highp 4X4 matrix of float M2, layout( row_major std140 offset=128) uniform highp 3X3 matrix of float N1, layout( row_major std140 offset=176) centroid uniform highp float badf, layout( row_major std140 offset=180) uniform highp float badg, layout( row_major std140 offset=184) uniform highp float bad1, layout( row_major shared offset=188) uniform highp float bad2, layout( row_major packed offset=192) uniform highp float bad3})
+0:46                    Constant:
+0:46                      1 (const int)
+0:46                M4: direct index for structure (layout( row_major shared) uniform highp 4X4 matrix of float)
+0:46                  'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform highp 4X4 matrix of float M3, layout( row_major shared) uniform highp 4X4 matrix of float M4, layout( column_major shared) uniform highp 3X3 matrix of float N2, layout( column_major shared) uniform highp int b})
+0:46                  Constant:
+0:46                    1 (const uint)
+0:46              M3: direct index for structure (layout( column_major shared) uniform highp 4X4 matrix of float)
+0:46                'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform highp 4X4 matrix of float M3, layout( row_major shared) uniform highp 4X4 matrix of float M4, layout( column_major shared) uniform highp 3X3 matrix of float N2, layout( column_major shared) uniform highp int b})
+0:46                Constant:
+0:46                  0 (const uint)
+0:46            t2m: direct index for structure (layout( row_major shared) uniform highp 4X4 matrix of float)
+0:46              'anon@0' (layout( row_major shared) uniform block{layout( row_major shared) uniform bool b, layout( row_major shared) uniform highp 4X4 matrix of float t2m})
+0:46              Constant:
+0:46                1 (const uint)
+0:47      move second child to first child ( temp highp 3-component vector of float)
+0:47        'color' ( smooth out highp 3-component vector of float)
+0:47        vector-times-matrix ( temp highp 3-component vector of float)
+0:47          'c' (layout( location=7) in highp 3-component vector of float)
+0:47          N1: direct index for structure (layout( row_major std140 offset=128) uniform highp 3X3 matrix of float)
+0:47            'tblock' (layout( row_major std140) uniform block{layout( row_major std140 offset=0) uniform highp 4X4 matrix of float M1, layout( column_major std140 offset=64) uniform highp 4X4 matrix of float M2, layout( row_major std140 offset=128) uniform highp 3X3 matrix of float N1, layout( row_major std140 offset=176) centroid uniform highp float badf, layout( row_major std140 offset=180) uniform highp float badg, layout( row_major std140 offset=184) uniform highp float bad1, layout( row_major shared offset=188) uniform highp float bad2, layout( row_major packed offset=192) uniform highp float bad3})
+0:47            Constant:
+0:47              2 (const int)
+0:?   Linker Objects
+0:?     'c' (layout( location=7) in highp 3-component vector of float)
+0:?     'p' (layout( location=3) in highp 4-component vector of float)
+0:?     'q' (layout( location=9) in 4-element array of highp 4-component vector of float)
+0:?     'r' (layout( location=10) in 4-element array of structure{ global highp 4-component vector of float v})
+0:?     'pos' ( smooth out highp 4-component vector of float)
+0:?     'color' ( smooth out highp 3-component vector of float)
+0:?     'badm4' (layout( column_major shared) uniform highp 4X4 matrix of float)
+0:?     'tblock' (layout( row_major std140) uniform block{layout( row_major std140 offset=0) uniform highp 4X4 matrix of float M1, layout( column_major std140 offset=64) uniform highp 4X4 matrix of float M2, layout( row_major std140 offset=128) uniform highp 3X3 matrix of float N1, layout( row_major std140 offset=176) centroid uniform highp float badf, layout( row_major std140 offset=180) uniform highp float badg, layout( row_major std140 offset=184) uniform highp float bad1, layout( row_major shared offset=188) uniform highp float bad2, layout( row_major packed offset=192) uniform highp float bad3})
+0:?     'anon@0' (layout( row_major shared) uniform block{layout( row_major shared) uniform bool b, layout( row_major shared) uniform highp 4X4 matrix of float t2m})
+0:?     'anon@2' ( out block{ out highp float f})
+0:?     'badoutA' (layout( location=10) smooth out highp 4-component vector of float)
+0:?     'compute_only' ( shared highp 4-component vector of float)
+0:?     'aoeuntaoeu' (layout( packed) uniform highp float)
+0:?     'cd' (layout( location=40) in highp float)
+0:?     'ce' (layout( location=37) in highp 4X3 matrix of float)
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+

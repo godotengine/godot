@@ -1,0 +1,7 @@
+spv.fragmentDensity-neg.frag
+ERROR: 0:10: 'gl_FragSizeEXT' : required extension not requested: GL_EXT_fragment_invocation_density
+ERROR: 0:11: 'gl_FragInvocationCountEXT' : required extension not requested: GL_EXT_fragment_invocation_density
+ERROR: 2 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

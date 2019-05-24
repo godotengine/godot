@@ -1,0 +1,194 @@
+330.frag
+ERROR: 0:27: 'block declaration' : cannot redeclare block:  gl_block
+ERROR: 0:31: 'gl_name' : identifiers starting with "gl_" are reserved 
+ERROR: 0:32: 'gl_i' : identifiers starting with "gl_" are reserved 
+ERROR: 0:35: 'gl_in' : no declaration found for redeclaration 
+ERROR: 0:39: 'gl_FragCoord' : cannot redeclare a non block as a block 
+ERROR: 0:44: 'non-literal layout-id value' : not supported for this version or the enabled extensions 
+ERROR: 0:44: 'layout-id value' : cannot be negative 
+ERROR: 0:45: 'non-literal layout-id value' : not supported for this version or the enabled extensions 
+ERROR: 0:46: 'layout-id value' : scalar integer expression required 
+ERROR: 0:46: 'location' : location is too large 
+ERROR: 0:47: 'non-literal layout-id value' : not supported for this version or the enabled extensions 
+ERROR: 0:48: 'non-literal layout-id value' : not supported for this version or the enabled extensions 
+ERROR: 0:52: 'f2' : cannot use layout qualifiers on structure members 
+ERROR: 0:57: 'location on block member' : not supported for this version or the enabled extensions 
+ERROR: 0:62: 'location on block member' : can only use in an in/out block 
+ERROR: 0:62: 'location qualifier on uniform or buffer' : not supported for this version or the enabled extensions 
+ERROR: 0:60: 'location qualifier on uniform or buffer' : not supported for this version or the enabled extensions 
+ERROR: 0:60: 'location' : cannot apply to uniform or buffer block 
+ERROR: 0:68: 'layout-id value' : cannot be negative 
+ERROR: 0:69: 'layout-id value' : cannot be negative 
+ERROR: 0:76: 'f2' : cannot use layout qualifiers on structure members 
+ERROR: 0:91: 'location on block member' : can only use in an in/out block 
+ERROR: 0:91: 'location qualifier on uniform or buffer' : not supported for this version or the enabled extensions 
+ERROR: 0:91: 'location' : overlapping use of location 3
+ERROR: 0:89: 'location qualifier on uniform or buffer' : not supported for this version or the enabled extensions 
+ERROR: 0:89: 'location' : cannot apply to uniform or buffer block 
+ERROR: 0:94: 'location' : either the block needs a location, or all members need a location, or no members have a location 
+ERROR: 0:108: 'A' : cannot use layout qualifiers on structure members 
+ERROR: 0:119: 'location' : overlapping use of location 44
+ERROR: 0:122: 'index' : can only be used with an explicit location 
+ERROR: 0:124: 'location' : overlapping use of location 0
+ERROR: 0:125: 'index' : can only be used on an output 
+ERROR: 0:126: 'index' : can only be used on an output 
+ERROR: 0:126: 'location/component/index' : cannot declare a default, use a full declaration 
+ERROR: 0:127: 'location/component/index' : cannot declare a default, use a full declaration 
+ERROR: 0:128: 'output block' : not supported in this stage: fragment
+ERROR: 0:140: 'textureQueryLod' : no matching overloaded function found 
+ERROR: 0:140: 'assign' :  cannot convert from ' const float' to ' temp 2-component vector of float'
+ERROR: 0:141: 'textureQueryLod' : no matching overloaded function found 
+ERROR: 0:141: 'assign' :  cannot convert from ' const float' to ' temp 2-component vector of float'
+ERROR: 0:152: 'index' : value must be 0 or 1 
+ERROR: 41 compilation errors.  No code generated.
+
+
+Shader version: 330
+Requested GL_ARB_enhanced_layouts
+Requested GL_ARB_separate_shader_objects
+ERROR: node is still EOpNull!
+0:8  Function Definition: main( ( global void)
+0:8    Function Parameters: 
+0:10    Sequence
+0:10      move second child to first child ( temp 4-component vector of float)
+0:10        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:10        'varyingVar' ( smooth in 4-component vector of float)
+0:11      move second child to first child ( temp 4-component vector of float)
+0:11        direct index ( temp 4-component vector of float FragData)
+0:11          'gl_FragData' ( fragColor 32-element array of 4-component vector of float FragData)
+0:11          Constant:
+0:11            1 (const int)
+0:11        'inVar' ( smooth in 4-component vector of float)
+0:12      Sequence
+0:12        move second child to first child ( temp int)
+0:12          'buffer' ( temp int)
+0:12          Constant:
+0:12            4 (const int)
+0:21  Function Definition: foo( ( global void)
+0:21    Function Parameters: 
+0:23    Sequence
+0:23      Sequence
+0:23        move second child to first child ( temp 4-component vector of float)
+0:23          'c' ( temp 4-component vector of float)
+0:23          gl_Color: direct index for structure ( in 4-component vector of float Color)
+0:23            'anon@0' ( in block{ in 4-component vector of float Color gl_Color, })
+0:23            Constant:
+0:23              2 (const uint)
+0:24      move second child to first child ( temp 4-component vector of float)
+0:24        'outVar' (layout( location=0 index=0) out 4-component vector of float)
+0:24        'inVar' ( smooth in 4-component vector of float)
+0:133  Function Definition: qlod( ( global void)
+0:133    Function Parameters: 
+0:?     Sequence
+0:140      'lod' ( temp 2-component vector of float)
+0:141      'lod' ( temp 2-component vector of float)
+0:147  Function Definition: fooKeyMem( ( global void)
+0:147    Function Parameters: 
+0:149    Sequence
+0:149      precise: direct index for structure ( global int)
+0:149        'KeyMem' ( global structure{ global int precise})
+0:149        Constant:
+0:149          0 (const int)
+0:?   Linker Objects
+0:?     'inVar' ( smooth in 4-component vector of float)
+0:?     'outVar' (layout( location=0 index=0) out 4-component vector of float)
+0:?     'varyingVar' ( smooth in 4-component vector of float)
+0:?     'anon@0' ( in block{ in 4-component vector of float Color gl_Color, })
+0:?     'gl_name' ( in block{ in int gl_i})
+0:?     'start' ( const int)
+0:?       6 (const int)
+0:?     'v1' ( smooth in 4-component vector of float)
+0:?     'v2' (layout( location=8) smooth in 4-component vector of float)
+0:?     'v20' ( smooth in 4-component vector of float)
+0:?     'v21' (layout( location=60) smooth in float)
+0:?     'v22' (layout( location=2) smooth in float)
+0:?     'anon@1' ( in block{layout( location=1) in float f1, layout( location=3) in float f2})
+0:?     'uinst' (layout( location=1 column_major shared) uniform block{layout( column_major shared) uniform float f1, layout( location=3 column_major shared) uniform float f2})
+0:?     'v3' (layout( location=6) smooth in 4-component vector of float)
+0:?     'v4' ( smooth in 4-component vector of float)
+0:?     'v5' ( smooth in 4-component vector of float)
+0:?     'v6' (layout( location=30) smooth in 4-component vector of float)
+0:?     'v23' (layout( location=61) smooth in float)
+0:?     'v24' (layout( location=62) smooth in float)
+0:?     'ininst2' ( in block{layout( location=28) in bool b1, layout( location=29) in float f1, layout( location=25) in float f2, layout( location=26) in 4-component vector of float f3, layout( location=21) in structure{ global float f1,  temp float f2} s2, layout( location=23) in 4-component vector of float f4, layout( location=24) in 4-component vector of float f5})
+0:?     'uinst2' (layout( location=13 column_major shared) uniform block{layout( column_major shared) uniform float f1, layout( location=3 column_major shared) uniform float f2})
+0:?     'in3' ( in block{ in float f1, layout( location=40) in float f2})
+0:?     'in4' ( in block{layout( location=50) in float f1, layout( location=51) in float f2})
+0:?     's' (layout( location=33) smooth in structure{ global 3-component vector of float a,  global 2X2 matrix of float b,  global 2-element array of 4-component vector of float c,  temp 2-component vector of float A})
+0:?     'anon@2' ( in block{layout( location=44) in 4-component vector of float d, layout( location=45) in 4-component vector of float e, layout( location=47) in 4-component vector of float f, layout( location=48) in 4-component vector of float g, layout( location=41) in 4-component vector of float h, layout( location=42) in 4-component vector of float i, layout( location=43) in 4-component vector of float j, layout( location=44) in 4-component vector of float k})
+0:?     'outVar2' (layout( location=4095 index=0) out 4-component vector of float)
+0:?     'outVar3' (layout( location=0 index=1) out 4-component vector of float)
+0:?     'outVar4' (layout( location=0 index=1) out 4-component vector of float)
+0:?     'indexIn' (layout( location=27 index=0) smooth in 4-component vector of float)
+0:?     'indexBlockI' (layout( location=26 index=0) out block{ out int a})
+0:?     'samp1D' ( uniform sampler1D)
+0:?     'samp2Ds' ( uniform sampler2DShadow)
+0:?     'precise' ( global int)
+0:?     'KeyMem' ( global structure{ global int precise})
+0:?     'outIndex2' (layout( location=28 index=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+ERROR: Linking fragment stage: Cannot use gl_FragColor or gl_FragData when using user-defined outputs
+ERROR: Linking fragment stage: Cannot use both gl_FragColor and gl_FragData
+
+Shader version: 330
+Requested GL_ARB_enhanced_layouts
+Requested GL_ARB_separate_shader_objects
+ERROR: node is still EOpNull!
+0:8  Function Definition: main( ( global void)
+0:8    Function Parameters: 
+0:10    Sequence
+0:10      move second child to first child ( temp 4-component vector of float)
+0:10        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:10        'varyingVar' ( smooth in 4-component vector of float)
+0:11      move second child to first child ( temp 4-component vector of float)
+0:11        direct index ( temp 4-component vector of float FragData)
+0:11          'gl_FragData' ( fragColor 32-element array of 4-component vector of float FragData)
+0:11          Constant:
+0:11            1 (const int)
+0:11        'inVar' ( smooth in 4-component vector of float)
+0:12      Sequence
+0:12        move second child to first child ( temp int)
+0:12          'buffer' ( temp int)
+0:12          Constant:
+0:12            4 (const int)
+0:?   Linker Objects
+0:?     'inVar' ( smooth in 4-component vector of float)
+0:?     'outVar' (layout( location=0 index=0) out 4-component vector of float)
+0:?     'varyingVar' ( smooth in 4-component vector of float)
+0:?     'anon@0' ( in block{ in 4-component vector of float Color gl_Color, })
+0:?     'gl_name' ( in block{ in int gl_i})
+0:?     'start' ( const int)
+0:?       6 (const int)
+0:?     'v1' ( smooth in 4-component vector of float)
+0:?     'v2' (layout( location=8) smooth in 4-component vector of float)
+0:?     'v20' ( smooth in 4-component vector of float)
+0:?     'v21' (layout( location=60) smooth in float)
+0:?     'v22' (layout( location=2) smooth in float)
+0:?     'anon@1' ( in block{layout( location=1) in float f1, layout( location=3) in float f2})
+0:?     'uinst' (layout( location=1 column_major shared) uniform block{layout( column_major shared) uniform float f1, layout( location=3 column_major shared) uniform float f2})
+0:?     'v3' (layout( location=6) smooth in 4-component vector of float)
+0:?     'v4' ( smooth in 4-component vector of float)
+0:?     'v5' ( smooth in 4-component vector of float)
+0:?     'v6' (layout( location=30) smooth in 4-component vector of float)
+0:?     'v23' (layout( location=61) smooth in float)
+0:?     'v24' (layout( location=62) smooth in float)
+0:?     'ininst2' ( in block{layout( location=28) in bool b1, layout( location=29) in float f1, layout( location=25) in float f2, layout( location=26) in 4-component vector of float f3, layout( location=21) in structure{ global float f1,  temp float f2} s2, layout( location=23) in 4-component vector of float f4, layout( location=24) in 4-component vector of float f5})
+0:?     'uinst2' (layout( location=13 column_major shared) uniform block{layout( column_major shared) uniform float f1, layout( location=3 column_major shared) uniform float f2})
+0:?     'in3' ( in block{ in float f1, layout( location=40) in float f2})
+0:?     'in4' ( in block{layout( location=50) in float f1, layout( location=51) in float f2})
+0:?     's' (layout( location=33) smooth in structure{ global 3-component vector of float a,  global 2X2 matrix of float b,  global 2-element array of 4-component vector of float c,  temp 2-component vector of float A})
+0:?     'anon@2' ( in block{layout( location=44) in 4-component vector of float d, layout( location=45) in 4-component vector of float e, layout( location=47) in 4-component vector of float f, layout( location=48) in 4-component vector of float g, layout( location=41) in 4-component vector of float h, layout( location=42) in 4-component vector of float i, layout( location=43) in 4-component vector of float j, layout( location=44) in 4-component vector of float k})
+0:?     'outVar2' (layout( location=4095 index=0) out 4-component vector of float)
+0:?     'outVar3' (layout( location=0 index=1) out 4-component vector of float)
+0:?     'outVar4' (layout( location=0 index=1) out 4-component vector of float)
+0:?     'indexIn' (layout( location=27 index=0) smooth in 4-component vector of float)
+0:?     'indexBlockI' (layout( location=26 index=0) out block{ out int a})
+0:?     'samp1D' ( uniform sampler1D)
+0:?     'samp2Ds' ( uniform sampler2DShadow)
+0:?     'precise' ( global int)
+0:?     'KeyMem' ( global structure{ global int precise})
+0:?     'outIndex2' (layout( location=28 index=0) out 4-component vector of float)
+

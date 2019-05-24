@@ -1,0 +1,251 @@
+hlsl.tx.overload.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:8  Function Definition: Func(t211; ( temp float)
+0:8    Function Parameters: 
+0:8      'DummyTex' ( in texture2D)
+0:?     Sequence
+0:8      Branch: Return with expression
+0:8        Constant:
+0:8          1.000000
+0:9  Function Definition: Func(t21; ( temp 4-component vector of float)
+0:9    Function Parameters: 
+0:9      'DummyTex' ( in texture2D)
+0:?     Sequence
+0:9      Branch: Return with expression
+0:?         Constant:
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:11  Function Definition: Func(I211; ( temp float)
+0:11    Function Parameters: 
+0:11      'DummyTex' (layout( r32f) in image2D)
+0:?     Sequence
+0:11      Branch: Return with expression
+0:11        Constant:
+0:11          1.000000
+0:12  Function Definition: Func(I21; ( temp 4-component vector of float)
+0:12    Function Parameters: 
+0:12      'DummyTex' (layout( rgba32f) in image2D)
+0:?     Sequence
+0:12      Branch: Return with expression
+0:?         Constant:
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:15  Function Definition: @main( ( temp 4-component vector of float)
+0:15    Function Parameters: 
+0:?     Sequence
+0:16      Branch: Return with expression
+0:16        add ( temp 4-component vector of float)
+0:16          add ( temp 4-component vector of float)
+0:16            add ( temp 4-component vector of float)
+0:16              Function Call: Func(t211; ( temp float)
+0:16                'tf1' ( uniform texture2D)
+0:16              Function Call: Func(t21; ( temp 4-component vector of float)
+0:16                'tf4' ( uniform texture2D)
+0:16            Function Call: Func(I211; ( temp float)
+0:16              'twf1' (layout( r32f) uniform image2D)
+0:16          Function Call: Func(I21; ( temp 4-component vector of float)
+0:16            'twf4' (layout( rgba32f) uniform image2D)
+0:15  Function Definition: main( ( temp void)
+0:15    Function Parameters: 
+0:?     Sequence
+0:15      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:15        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'tf1' ( uniform texture2D)
+0:?     'tf4' ( uniform texture2D)
+0:?     'twf1' (layout( r32f) uniform image2D)
+0:?     'twf4' (layout( rgba32f) uniform image2D)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:8  Function Definition: Func(t211; ( temp float)
+0:8    Function Parameters: 
+0:8      'DummyTex' ( in texture2D)
+0:?     Sequence
+0:8      Branch: Return with expression
+0:8        Constant:
+0:8          1.000000
+0:9  Function Definition: Func(t21; ( temp 4-component vector of float)
+0:9    Function Parameters: 
+0:9      'DummyTex' ( in texture2D)
+0:?     Sequence
+0:9      Branch: Return with expression
+0:?         Constant:
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:11  Function Definition: Func(I211; ( temp float)
+0:11    Function Parameters: 
+0:11      'DummyTex' (layout( r32f) in image2D)
+0:?     Sequence
+0:11      Branch: Return with expression
+0:11        Constant:
+0:11          1.000000
+0:12  Function Definition: Func(I21; ( temp 4-component vector of float)
+0:12    Function Parameters: 
+0:12      'DummyTex' (layout( rgba32f) in image2D)
+0:?     Sequence
+0:12      Branch: Return with expression
+0:?         Constant:
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:15  Function Definition: @main( ( temp 4-component vector of float)
+0:15    Function Parameters: 
+0:?     Sequence
+0:16      Branch: Return with expression
+0:16        add ( temp 4-component vector of float)
+0:16          add ( temp 4-component vector of float)
+0:16            add ( temp 4-component vector of float)
+0:16              Function Call: Func(t211; ( temp float)
+0:16                'tf1' ( uniform texture2D)
+0:16              Function Call: Func(t21; ( temp 4-component vector of float)
+0:16                'tf4' ( uniform texture2D)
+0:16            Function Call: Func(I211; ( temp float)
+0:16              'twf1' (layout( r32f) uniform image2D)
+0:16          Function Call: Func(I21; ( temp 4-component vector of float)
+0:16            'twf4' (layout( rgba32f) uniform image2D)
+0:15  Function Definition: main( ( temp void)
+0:15    Function Parameters: 
+0:?     Sequence
+0:15      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:15        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'tf1' ( uniform texture2D)
+0:?     'tf4' ( uniform texture2D)
+0:?     'twf1' (layout( r32f) uniform image2D)
+0:?     'twf4' (layout( rgba32f) uniform image2D)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 73
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 71
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 11  "Func(t211;"
+                              Name 10  "DummyTex"
+                              Name 16  "Func(t21;"
+                              Name 15  "DummyTex"
+                              Name 22  "Func(I211;"
+                              Name 21  "DummyTex"
+                              Name 28  "Func(I21;"
+                              Name 27  "DummyTex"
+                              Name 31  "@main("
+                              Name 45  "tf1"
+                              Name 46  "param"
+                              Name 49  "tf4"
+                              Name 50  "param"
+                              Name 56  "twf1"
+                              Name 57  "param"
+                              Name 63  "twf4"
+                              Name 64  "param"
+                              Name 71  "@entryPointOutput"
+                              Decorate 45(tf1) DescriptorSet 0
+                              Decorate 45(tf1) Binding 0
+                              Decorate 49(tf4) DescriptorSet 0
+                              Decorate 49(tf4) Binding 0
+                              Decorate 56(twf1) DescriptorSet 0
+                              Decorate 56(twf1) Binding 0
+                              Decorate 63(twf4) DescriptorSet 0
+                              Decorate 63(twf4) Binding 0
+                              Decorate 71(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeImage 6(float) 2D sampled format:Unknown
+               8:             TypePointer Function 7
+               9:             TypeFunction 6(float) 8(ptr)
+              13:             TypeVector 6(float) 4
+              14:             TypeFunction 13(fvec4) 8(ptr)
+              18:             TypeImage 6(float) 2D nonsampled format:R32f
+              19:             TypePointer Function 18
+              20:             TypeFunction 6(float) 19(ptr)
+              24:             TypeImage 6(float) 2D nonsampled format:Rgba32f
+              25:             TypePointer Function 24
+              26:             TypeFunction 13(fvec4) 25(ptr)
+              30:             TypeFunction 13(fvec4)
+              33:    6(float) Constant 1065353216
+              36:    6(float) Constant 0
+              37:   13(fvec4) ConstantComposite 36 36 36 36
+              44:             TypePointer UniformConstant 7
+         45(tf1):     44(ptr) Variable UniformConstant
+         49(tf4):     44(ptr) Variable UniformConstant
+              55:             TypePointer UniformConstant 18
+        56(twf1):     55(ptr) Variable UniformConstant
+              62:             TypePointer UniformConstant 24
+        63(twf4):     62(ptr) Variable UniformConstant
+              70:             TypePointer Output 13(fvec4)
+71(@entryPointOutput):     70(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              72:   13(fvec4) FunctionCall 31(@main()
+                              Store 71(@entryPointOutput) 72
+                              Return
+                              FunctionEnd
+  11(Func(t211;):    6(float) Function None 9
+    10(DummyTex):      8(ptr) FunctionParameter
+              12:             Label
+                              ReturnValue 33
+                              FunctionEnd
+   16(Func(t21;):   13(fvec4) Function None 14
+    15(DummyTex):      8(ptr) FunctionParameter
+              17:             Label
+                              ReturnValue 37
+                              FunctionEnd
+  22(Func(I211;):    6(float) Function None 20
+    21(DummyTex):     19(ptr) FunctionParameter
+              23:             Label
+                              ReturnValue 33
+                              FunctionEnd
+   28(Func(I21;):   13(fvec4) Function None 26
+    27(DummyTex):     25(ptr) FunctionParameter
+              29:             Label
+                              ReturnValue 37
+                              FunctionEnd
+      31(@main():   13(fvec4) Function None 30
+              32:             Label
+       46(param):      8(ptr) Variable Function
+       50(param):      8(ptr) Variable Function
+       57(param):     19(ptr) Variable Function
+       64(param):     25(ptr) Variable Function
+              47:           7 Load 45(tf1)
+                              Store 46(param) 47
+              48:    6(float) FunctionCall 11(Func(t211;) 46(param)
+              51:           7 Load 49(tf4)
+                              Store 50(param) 51
+              52:   13(fvec4) FunctionCall 16(Func(t21;) 50(param)
+              53:   13(fvec4) CompositeConstruct 48 48 48 48
+              54:   13(fvec4) FAdd 53 52
+              58:          18 Load 56(twf1)
+                              Store 57(param) 58
+              59:    6(float) FunctionCall 22(Func(I211;) 57(param)
+              60:   13(fvec4) CompositeConstruct 59 59 59 59
+              61:   13(fvec4) FAdd 54 60
+              65:          24 Load 63(twf4)
+                              Store 64(param) 65
+              66:   13(fvec4) FunctionCall 28(Func(I21;) 64(param)
+              67:   13(fvec4) FAdd 61 66
+                              ReturnValue 67
+                              FunctionEnd

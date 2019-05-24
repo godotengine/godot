@@ -1,0 +1,298 @@
+spv.unit1.frag
+Shader version: 460
+gl_FragCoord origin is upper left
+0:? Sequence
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      move second child to first child ( temp highp float)
+0:12        'f' ( global highp float)
+0:12        Constant:
+0:12          10.000000
+0:13      Sequence
+0:13        move second child to first child ( temp highp float)
+0:13          'g' ( temp highp float)
+0:13          Function Call: foo( ( global highp float)
+0:14      add second child into first child ( temp highp float)
+0:14        'f' ( global highp float)
+0:14        'g' ( temp highp float)
+0:15      add second child into first child ( temp highp float)
+0:15        'f' ( global highp float)
+0:15        direct index ( temp highp float)
+0:15          'gl_FragCoord' ( gl_FragCoord highp 4-component vector of float FragCoord)
+0:15          Constant:
+0:15            1 (const int)
+0:?   Linker Objects
+0:?     'f' ( global highp float)
+0:?     'a1' ( global highp float)
+0:?     'cout' ( out highp float)
+
+spv.unit2.frag
+Shader version: 410
+gl_FragCoord origin is upper left
+0:? Sequence
+0:12  Function Definition: foo( ( global highp float)
+0:12    Function Parameters: 
+0:14    Sequence
+0:14      Sequence
+0:14        move second child to first child ( temp highp float)
+0:14          'h2' ( temp highp float)
+0:14          add ( temp highp float)
+0:14            component-wise multiply ( temp highp float)
+0:14              Constant:
+0:14                2.000000
+0:14              'f' ( global highp float)
+0:14            'cin' ( smooth in highp float)
+0:15      Sequence
+0:15        move second child to first child ( temp highp float)
+0:15          'g2' ( temp highp float)
+0:15          Function Call: bar( ( global highp float)
+0:16      Branch: Return with expression
+0:16        add ( temp highp float)
+0:16          add ( temp highp float)
+0:16            'h2' ( temp highp float)
+0:16            'g2' ( temp highp float)
+0:16          direct index ( temp highp float)
+0:16            'gl_FragCoord' ( gl_FragCoord highp 4-component vector of float FragCoord)
+0:16            Constant:
+0:16              1 (const int)
+0:?   Linker Objects
+0:?     'a2' ( global highp float)
+0:?     'f' ( global highp float)
+0:?     'cout' ( out highp float)
+0:?     'cin' ( smooth in highp float)
+
+spv.unit3.frag
+Shader version: 460
+gl_FragCoord origin is upper left
+0:? Sequence
+0:4  Sequence
+0:4    move second child to first child ( temp highp float)
+0:4      'h3' ( global highp float)
+0:4      Constant:
+0:4        3.000000
+0:9  Function Definition: bar( ( global highp float)
+0:9    Function Parameters: 
+0:11    Sequence
+0:11      multiply second child into first child ( temp highp float)
+0:11        'h3' ( global highp float)
+0:11        'f' ( global highp float)
+0:12      Sequence
+0:12        move second child to first child ( temp highp float)
+0:12          'g3' ( temp highp float)
+0:12          component-wise multiply ( temp highp float)
+0:12            Constant:
+0:12              2.000000
+0:12            'h3' ( global highp float)
+0:13      move second child to first child ( temp highp float)
+0:13        'cout' ( out highp float)
+0:13        'g3' ( temp highp float)
+0:14      Branch: Return with expression
+0:14        add ( temp highp float)
+0:14          add ( temp highp float)
+0:14            'h3' ( global highp float)
+0:14            'g3' ( temp highp float)
+0:14          direct index ( temp highp float)
+0:14            'gl_FragCoord' ( gl_FragCoord highp 4-component vector of float FragCoord)
+0:14            Constant:
+0:14              1 (const int)
+0:?   Linker Objects
+0:?     'f' ( global highp float)
+0:?     'h3' ( global highp float)
+0:?     'cout' ( out highp float)
+0:?     'cin' ( smooth in highp float)
+
+
+Linked fragment stage:
+
+
+Shader version: 460
+gl_FragCoord origin is upper left
+0:? Sequence
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      move second child to first child ( temp highp float)
+0:12        'f' ( global highp float)
+0:12        Constant:
+0:12          10.000000
+0:13      Sequence
+0:13        move second child to first child ( temp highp float)
+0:13          'g' ( temp highp float)
+0:13          Function Call: foo( ( global highp float)
+0:14      add second child into first child ( temp highp float)
+0:14        'f' ( global highp float)
+0:14        'g' ( temp highp float)
+0:15      add second child into first child ( temp highp float)
+0:15        'f' ( global highp float)
+0:15        direct index ( temp highp float)
+0:15          'gl_FragCoord' ( gl_FragCoord highp 4-component vector of float FragCoord)
+0:15          Constant:
+0:15            1 (const int)
+0:12  Function Definition: foo( ( global highp float)
+0:12    Function Parameters: 
+0:14    Sequence
+0:14      Sequence
+0:14        move second child to first child ( temp highp float)
+0:14          'h2' ( temp highp float)
+0:14          add ( temp highp float)
+0:14            component-wise multiply ( temp highp float)
+0:14              Constant:
+0:14                2.000000
+0:14              'f' ( global highp float)
+0:14            'cin' ( smooth in highp float)
+0:15      Sequence
+0:15        move second child to first child ( temp highp float)
+0:15          'g2' ( temp highp float)
+0:15          Function Call: bar( ( global highp float)
+0:16      Branch: Return with expression
+0:16        add ( temp highp float)
+0:16          add ( temp highp float)
+0:16            'h2' ( temp highp float)
+0:16            'g2' ( temp highp float)
+0:16          direct index ( temp highp float)
+0:16            'gl_FragCoord' ( gl_FragCoord highp 4-component vector of float FragCoord)
+0:16            Constant:
+0:16              1 (const int)
+0:4  Sequence
+0:4    move second child to first child ( temp highp float)
+0:4      'h3' ( global highp float)
+0:4      Constant:
+0:4        3.000000
+0:9  Function Definition: bar( ( global highp float)
+0:9    Function Parameters: 
+0:11    Sequence
+0:11      multiply second child into first child ( temp highp float)
+0:11        'h3' ( global highp float)
+0:11        'f' ( global highp float)
+0:12      Sequence
+0:12        move second child to first child ( temp highp float)
+0:12          'g3' ( temp highp float)
+0:12          component-wise multiply ( temp highp float)
+0:12            Constant:
+0:12              2.000000
+0:12            'h3' ( global highp float)
+0:13      move second child to first child ( temp highp float)
+0:13        'cout' ( out highp float)
+0:13        'g3' ( temp highp float)
+0:14      Branch: Return with expression
+0:14        add ( temp highp float)
+0:14          add ( temp highp float)
+0:14            'h3' ( global highp float)
+0:14            'g3' ( temp highp float)
+0:14          direct index ( temp highp float)
+0:14            'gl_FragCoord' ( gl_FragCoord highp 4-component vector of float FragCoord)
+0:14            Constant:
+0:14              1 (const int)
+0:?   Linker Objects
+0:?     'f' ( global highp float)
+0:?     'a1' ( global highp float)
+0:?     'cout' ( out highp float)
+0:?     'a2' ( global highp float)
+0:?     'cin' ( smooth in highp float)
+0:?     'h3' ( global highp float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 69
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 25 37 57
+                              ExecutionMode 4 OriginUpperLeft
+                              Source GLSL 460
+                              Name 4  "main"
+                              Name 8  "foo("
+                              Name 10  "bar("
+                              Name 13  "h3"
+                              Name 15  "f"
+                              Name 18  "g"
+                              Name 25  "gl_FragCoord"
+                              Name 33  "h2"
+                              Name 37  "cin"
+                              Name 40  "g2"
+                              Name 53  "g3"
+                              Name 57  "cout"
+                              Name 67  "a1"
+                              Name 68  "a2"
+                              Decorate 25(gl_FragCoord) BuiltIn FragCoord
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeFunction 6(float)
+              12:             TypePointer Private 6(float)
+          13(h3):     12(ptr) Variable Private
+              14:    6(float) Constant 1077936128
+           15(f):     12(ptr) Variable Private
+              16:    6(float) Constant 1092616192
+              17:             TypePointer Function 6(float)
+              23:             TypeVector 6(float) 4
+              24:             TypePointer Input 23(fvec4)
+25(gl_FragCoord):     24(ptr) Variable Input
+              26:             TypeInt 32 0
+              27:     26(int) Constant 1
+              28:             TypePointer Input 6(float)
+              34:    6(float) Constant 1073741824
+         37(cin):     28(ptr) Variable Input
+              56:             TypePointer Output 6(float)
+        57(cout):     56(ptr) Variable Output
+          67(a1):     12(ptr) Variable Private
+          68(a2):     12(ptr) Variable Private
+         4(main):           2 Function None 3
+               5:             Label
+           18(g):     17(ptr) Variable Function
+                              Store 13(h3) 14
+                              Store 15(f) 16
+              19:    6(float) FunctionCall 8(foo()
+                              Store 18(g) 19
+              20:    6(float) Load 18(g)
+              21:    6(float) Load 15(f)
+              22:    6(float) FAdd 21 20
+                              Store 15(f) 22
+              29:     28(ptr) AccessChain 25(gl_FragCoord) 27
+              30:    6(float) Load 29
+              31:    6(float) Load 15(f)
+              32:    6(float) FAdd 31 30
+                              Store 15(f) 32
+                              Return
+                              FunctionEnd
+         8(foo():    6(float) Function None 7
+               9:             Label
+          33(h2):     17(ptr) Variable Function
+          40(g2):     17(ptr) Variable Function
+              35:    6(float) Load 15(f)
+              36:    6(float) FMul 34 35
+              38:    6(float) Load 37(cin)
+              39:    6(float) FAdd 36 38
+                              Store 33(h2) 39
+              41:    6(float) FunctionCall 10(bar()
+                              Store 40(g2) 41
+              42:    6(float) Load 33(h2)
+              43:    6(float) Load 40(g2)
+              44:    6(float) FAdd 42 43
+              45:     28(ptr) AccessChain 25(gl_FragCoord) 27
+              46:    6(float) Load 45
+              47:    6(float) FAdd 44 46
+                              ReturnValue 47
+                              FunctionEnd
+        10(bar():    6(float) Function None 7
+              11:             Label
+          53(g3):     17(ptr) Variable Function
+              50:    6(float) Load 15(f)
+              51:    6(float) Load 13(h3)
+              52:    6(float) FMul 51 50
+                              Store 13(h3) 52
+              54:    6(float) Load 13(h3)
+              55:    6(float) FMul 34 54
+                              Store 53(g3) 55
+              58:    6(float) Load 53(g3)
+                              Store 57(cout) 58
+              59:    6(float) Load 13(h3)
+              60:    6(float) Load 53(g3)
+              61:    6(float) FAdd 59 60
+              62:     28(ptr) AccessChain 25(gl_FragCoord) 27
+              63:    6(float) Load 62
+              64:    6(float) FAdd 61 63
+                              ReturnValue 64
+                              FunctionEnd

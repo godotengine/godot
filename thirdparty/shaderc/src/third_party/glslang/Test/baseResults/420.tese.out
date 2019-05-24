@@ -1,0 +1,364 @@
+420.tese
+ERROR: 0:7: '=' :  cannot convert from ' const 3-element array of float' to ' global 2-element array of float'
+ERROR: 0:8: 'initializer list' : wrong vector size (or rows in a matrix column):  temp 2-component vector of float
+ERROR: 0:9: 'initializer list' : wrong number of matrix columns:  temp 3X3 matrix of float
+ERROR: 0:10: 'initializer list' : wrong number of matrix columns:  temp 2X2 matrix of float
+ERROR: 0:25: 'initializer list' : wrong number of structure members 
+ERROR: 0:27: '=' :  cannot convert from ' const bool' to ' global int'
+ERROR: 0:28: 'constructor' :  cannot convert parameter 2 from ' const float' to ' temp 4-component vector of float'
+ERROR: 0:29: 'constructor' :  cannot convert parameter 2 from ' const 2X2 matrix of float' to ' const 4-component vector of float'
+ERROR: 0:29: ' const 2-element array of 4-component vector of float' : cannot construct with these arguments 
+ERROR: 0:29: '=' :  cannot convert from ' const float' to ' global 2-element array of 4-component vector of float'
+ERROR: 0:30: 'initializer list' : wrong number of matrix columns:  temp 4X2 matrix of float
+ERROR: 0:40: 'constructor' :  cannot convert parameter 1 from ' const structure{ global 4-component vector of float a,  global 4-component vector of float b}' to ' temp structure{ global float s,  global float t}'
+ERROR: 0:70: 'initializer list' : wrong number of structure members 
+ERROR: 13 compilation errors.  No code generated.
+
+
+Shader version: 420
+input primitive = none
+vertex spacing = none
+triangle order = none
+ERROR: node is still EOpNull!
+0:4  Sequence
+0:4    move second child to first child ( temp 2X2 matrix of float)
+0:4      'b' ( global 2X2 matrix of float)
+0:4      Constant:
+0:4        1.000000
+0:4        0.000000
+0:4        0.000000
+0:4        1.000000
+0:15  Sequence
+0:15    move second child to first child ( temp structure{ global float a,  global int b})
+0:15      'e' ( global structure{ global float a,  global int b})
+0:15      Constant:
+0:15        1.200000
+0:15        2 (const int)
+0:20  Sequence
+0:20    move second child to first child ( temp structure{ global float a,  global int b})
+0:20      'e2' ( global structure{ global float a,  global int b})
+0:20      Constant:
+0:20        1.000000
+0:20        3 (const int)
+0:42  Sequence
+0:42    move second child to first child ( temp 5-element array of float)
+0:42      'b5' ( global 5-element array of float)
+0:42      Constant:
+0:42        3.400000
+0:42        4.200000
+0:42        5.000000
+0:42        5.200000
+0:42        1.100000
+0:55  Sequence
+0:55    move second child to first child ( temp structure{ global int f})
+0:55      'single1' ( global structure{ global int f})
+0:55      Constant:
+0:55        10 (const int)
+0:58  Sequence
+0:58    move second child to first child ( temp structure{ global 2-component vector of uint v})
+0:58      'single2' ( global structure{ global 2-component vector of uint v})
+0:58      Constant:
+0:58        1 (const uint)
+0:58        2 (const uint)
+0:61  Sequence
+0:61    move second child to first child ( temp structure{ global structure{ global int f} s1})
+0:61      'single3' ( global structure{ global structure{ global int f} s1})
+0:61      Constant:
+0:61        3 (const int)
+0:64  Sequence
+0:64    move second child to first child ( temp structure{ global structure{ global 2-component vector of uint v} s1})
+0:64      'single4' ( global structure{ global structure{ global 2-component vector of uint v} s1})
+0:64      Constant:
+0:64        4 (const uint)
+0:64        5 (const uint)
+0:79  Sequence
+0:79    move second child to first child ( temp 3-component vector of float)
+0:79      'av3' ( global 3-component vector of float)
+0:79      Construct vec3 ( global 3-component vector of float)
+0:79        'vc1' ( global float)
+0:79        'vc2' ( global float)
+0:79        'vc3' ( global float)
+0:80  Sequence
+0:80    move second child to first child ( temp 3-component vector of float)
+0:80      'bv3' ( global 3-component vector of float)
+0:80      Construct vec3 ( temp 3-component vector of float)
+0:80        'vc1' ( global float)
+0:80        'vc2' ( global float)
+0:80        'vc3' ( global float)
+0:82  Function Definition: main( ( global void)
+0:82    Function Parameters: 
+0:84    Sequence
+0:84      MemoryBarrier ( global void)
+0:86      Test condition and select ( temp void)
+0:86        Condition
+0:86        Compare Equal ( temp bool)
+0:86          Constant:
+0:86            1 (const uint)
+0:86            2 (const uint)
+0:86            3.000000
+0:86            4.000000
+0:86            0.000000
+0:86            0.000000
+0:86            0.000000
+0:86            4.000000
+0:86            0.000000
+0:86            5.000000
+0:86            6.000000
+0:86            0.000000
+0:86            0.000000
+0:86            0.000000
+0:86            6.000000
+0:86            0.000000
+0:86          'curlybad1' ( temp structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:86        true case is null
+0:88      Test condition and select ( temp void)
+0:88        Condition
+0:88        Constant:
+0:88          true (const bool)
+0:88        true case is null
+0:?   Linker Objects
+0:?     'a' ( const 2X2 matrix of float)
+0:?       1.000000
+0:?       0.000000
+0:?       0.000000
+0:?       1.000000
+0:?     'b' ( global 2X2 matrix of float)
+0:?     'c' ( const 2X2 matrix of float)
+0:?       1.000000
+0:?       0.000000
+0:?       0.000000
+0:?       1.000000
+0:?     'a2' ( global 2-element array of float)
+0:?     'b2' ( global 2-component vector of float)
+0:?     'c2' ( global 3X3 matrix of float)
+0:?     'd' ( global 2X2 matrix of float)
+0:?     'e' ( global structure{ global float a,  global int b})
+0:?     'e2' ( global structure{ global float a,  global int b})
+0:?     'e3' ( global structure{ global float a,  global int b})
+0:?     'a3' ( global int)
+0:?     'b3' ( global 2-element array of 4-component vector of float)
+0:?     'b4' ( global 2-element array of 4-component vector of float)
+0:?     'c3' ( global 4X2 matrix of float)
+0:?     'd2' ( global unsized 1-element array of structure{ global float s,  global float t})
+0:?     'b5' ( global 5-element array of float)
+0:?     'single1' ( global structure{ global int f})
+0:?     'single2' ( global structure{ global 2-component vector of uint v})
+0:?     'single3' ( global structure{ global structure{ global int f} s1})
+0:?     'single4' ( global structure{ global structure{ global 2-component vector of uint v} s1})
+0:?     'constructed' ( const structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:?       1 (const uint)
+0:?       2 (const uint)
+0:?       3.000000
+0:?       4.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       4.000000
+0:?       0.000000
+0:?       5.000000
+0:?       6.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       6.000000
+0:?       0.000000
+0:?     'curlybad1' ( temp structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:?     'curlyInit' ( const structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:?       1 (const uint)
+0:?       2 (const uint)
+0:?       3.000000
+0:?       4.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       4.000000
+0:?       0.000000
+0:?       5.000000
+0:?       6.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       6.000000
+0:?       0.000000
+0:?     'vc1' ( global float)
+0:?     'vc2' ( global float)
+0:?     'vc3' ( global float)
+0:?     'av3' ( global 3-component vector of float)
+0:?     'bv3' ( global 3-component vector of float)
+
+
+Linked tessellation evaluation stage:
+
+ERROR: Linking tessellation evaluation stage: At least one shader must specify an input layout primitive
+
+Shader version: 420
+input primitive = none
+vertex spacing = equal_spacing
+triangle order = ccw
+ERROR: node is still EOpNull!
+0:4  Sequence
+0:4    move second child to first child ( temp 2X2 matrix of float)
+0:4      'b' ( global 2X2 matrix of float)
+0:4      Constant:
+0:4        1.000000
+0:4        0.000000
+0:4        0.000000
+0:4        1.000000
+0:15  Sequence
+0:15    move second child to first child ( temp structure{ global float a,  global int b})
+0:15      'e' ( global structure{ global float a,  global int b})
+0:15      Constant:
+0:15        1.200000
+0:15        2 (const int)
+0:20  Sequence
+0:20    move second child to first child ( temp structure{ global float a,  global int b})
+0:20      'e2' ( global structure{ global float a,  global int b})
+0:20      Constant:
+0:20        1.000000
+0:20        3 (const int)
+0:42  Sequence
+0:42    move second child to first child ( temp 5-element array of float)
+0:42      'b5' ( global 5-element array of float)
+0:42      Constant:
+0:42        3.400000
+0:42        4.200000
+0:42        5.000000
+0:42        5.200000
+0:42        1.100000
+0:55  Sequence
+0:55    move second child to first child ( temp structure{ global int f})
+0:55      'single1' ( global structure{ global int f})
+0:55      Constant:
+0:55        10 (const int)
+0:58  Sequence
+0:58    move second child to first child ( temp structure{ global 2-component vector of uint v})
+0:58      'single2' ( global structure{ global 2-component vector of uint v})
+0:58      Constant:
+0:58        1 (const uint)
+0:58        2 (const uint)
+0:61  Sequence
+0:61    move second child to first child ( temp structure{ global structure{ global int f} s1})
+0:61      'single3' ( global structure{ global structure{ global int f} s1})
+0:61      Constant:
+0:61        3 (const int)
+0:64  Sequence
+0:64    move second child to first child ( temp structure{ global structure{ global 2-component vector of uint v} s1})
+0:64      'single4' ( global structure{ global structure{ global 2-component vector of uint v} s1})
+0:64      Constant:
+0:64        4 (const uint)
+0:64        5 (const uint)
+0:79  Sequence
+0:79    move second child to first child ( temp 3-component vector of float)
+0:79      'av3' ( global 3-component vector of float)
+0:79      Construct vec3 ( global 3-component vector of float)
+0:79        'vc1' ( global float)
+0:79        'vc2' ( global float)
+0:79        'vc3' ( global float)
+0:80  Sequence
+0:80    move second child to first child ( temp 3-component vector of float)
+0:80      'bv3' ( global 3-component vector of float)
+0:80      Construct vec3 ( temp 3-component vector of float)
+0:80        'vc1' ( global float)
+0:80        'vc2' ( global float)
+0:80        'vc3' ( global float)
+0:82  Function Definition: main( ( global void)
+0:82    Function Parameters: 
+0:84    Sequence
+0:84      MemoryBarrier ( global void)
+0:86      Test condition and select ( temp void)
+0:86        Condition
+0:86        Compare Equal ( temp bool)
+0:86          Constant:
+0:86            1 (const uint)
+0:86            2 (const uint)
+0:86            3.000000
+0:86            4.000000
+0:86            0.000000
+0:86            0.000000
+0:86            0.000000
+0:86            4.000000
+0:86            0.000000
+0:86            5.000000
+0:86            6.000000
+0:86            0.000000
+0:86            0.000000
+0:86            0.000000
+0:86            6.000000
+0:86            0.000000
+0:86          'curlybad1' ( temp structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:86        true case is null
+0:88      Test condition and select ( temp void)
+0:88        Condition
+0:88        Constant:
+0:88          true (const bool)
+0:88        true case is null
+0:?   Linker Objects
+0:?     'a' ( const 2X2 matrix of float)
+0:?       1.000000
+0:?       0.000000
+0:?       0.000000
+0:?       1.000000
+0:?     'b' ( global 2X2 matrix of float)
+0:?     'c' ( const 2X2 matrix of float)
+0:?       1.000000
+0:?       0.000000
+0:?       0.000000
+0:?       1.000000
+0:?     'a2' ( global 2-element array of float)
+0:?     'b2' ( global 2-component vector of float)
+0:?     'c2' ( global 3X3 matrix of float)
+0:?     'd' ( global 2X2 matrix of float)
+0:?     'e' ( global structure{ global float a,  global int b})
+0:?     'e2' ( global structure{ global float a,  global int b})
+0:?     'e3' ( global structure{ global float a,  global int b})
+0:?     'a3' ( global int)
+0:?     'b3' ( global 2-element array of 4-component vector of float)
+0:?     'b4' ( global 2-element array of 4-component vector of float)
+0:?     'c3' ( global 4X2 matrix of float)
+0:?     'd2' ( global 1-element array of structure{ global float s,  global float t})
+0:?     'b5' ( global 5-element array of float)
+0:?     'single1' ( global structure{ global int f})
+0:?     'single2' ( global structure{ global 2-component vector of uint v})
+0:?     'single3' ( global structure{ global structure{ global int f} s1})
+0:?     'single4' ( global structure{ global structure{ global 2-component vector of uint v} s1})
+0:?     'constructed' ( const structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:?       1 (const uint)
+0:?       2 (const uint)
+0:?       3.000000
+0:?       4.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       4.000000
+0:?       0.000000
+0:?       5.000000
+0:?       6.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       6.000000
+0:?       0.000000
+0:?     'curlybad1' ( temp structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:?     'curlyInit' ( const structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:?       1 (const uint)
+0:?       2 (const uint)
+0:?       3.000000
+0:?       4.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       4.000000
+0:?       0.000000
+0:?       5.000000
+0:?       6.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       6.000000
+0:?       0.000000
+0:?     'vc1' ( global float)
+0:?     'vc2' ( global float)
+0:?     'vc3' ( global float)
+0:?     'av3' ( global 3-component vector of float)
+0:?     'bv3' ( global 3-component vector of float)
+

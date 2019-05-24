@@ -1,0 +1,599 @@
+specExamples.frag
+ERROR: 0:6: '=' :  cannot convert from ' const uint' to ' global int'
+ERROR: 0:20: '' : numeric literal too big 
+ERROR: 0:21: '' : hexadecimal literal too big 
+ERROR: 0:37: 'view' : redefinition 
+ERROR: 0:63: 'invariant' : can only apply to an output 
+ERROR: 0:68: 'lightPosition' : redefinition 
+ERROR: 0:75: 'Atten' : member storage qualifier cannot contradict block storage qualifier 
+ERROR: 0:87: 'Color' : redefinition 
+ERROR: 0:92: 'redeclaration' : cannot redeclare with different qualification: gl_FragCoord
+ERROR: 0:93: 'redeclaration' : cannot redeclare with different qualification: gl_FragCoord
+ERROR: 0:99: 'local_size_x' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:99: 'local_size_y' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:100: 'local_size_x' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:102: 'color' : redefinition 
+ERROR: 0:112: 'redeclaration' : all redeclarations must use the same depth layout on gl_FragDepth
+ERROR: 0:118: 'redeclaration' : all redeclarations must use the same depth layout on gl_FragDepth
+ERROR: 0:121: 'redeclaration' : all redeclarations must use the same depth layout on gl_FragDepth
+ERROR: 0:172: 'x' : undeclared identifier 
+ERROR: 0:172: '[]' : scalar integer expression required 
+ERROR: 0:175: 'x' : undeclared identifier 
+ERROR: 0:175: '[]' : scalar integer expression required 
+ERROR: 0:175: 'b' :  left of '[' is not of type array, matrix, or vector  
+ERROR: 0:175: 'a' : vector swizzle selection out of range 
+ERROR: 0:175: 'length' : does not operate on this type:  const float
+ERROR: 0:175: '' : function call, method, or subroutine call expected 
+ERROR: 0:175: '' : no matching overloaded function found 
+ERROR: 0:178: '[]' : scalar integer expression required 
+ERROR: 0:178: 's' : undeclared identifier 
+ERROR: 0:178: 's' :  left of '[' is not of type array, matrix, or vector  
+ERROR: 0:178: 'a' : vector swizzle selection out of range 
+ERROR: 0:178: 'length' : does not operate on this type:  const float
+ERROR: 0:178: '' : function call, method, or subroutine call expected 
+ERROR: 0:178: '' : no matching overloaded function found 
+ERROR: 0:198: 'e' : redefinition 
+ERROR: 0:226: 'in' : not allowed in nested scope 
+ERROR: 0:227: 'in' : not allowed in nested scope 
+ERROR: 0:228: 'in' : not allowed in nested scope 
+ERROR: 0:232: 'out' : not allowed in nested scope 
+ERROR: 38 compilation errors.  No code generated.
+
+
+Shader version: 430
+Requested GL_3DL_array_objects
+gl_FragCoord pixel center is integer
+gl_FragCoord origin is upper left
+using early_fragment_tests
+using depth_greater
+ERROR: node is still EOpNull!
+0:5  Sequence
+0:5    move second child to first child ( temp int)
+0:5      'a' ( global int)
+0:5      Constant:
+0:5        -1 (const int)
+0:7  Sequence
+0:7    move second child to first child ( temp uint)
+0:7      'c' ( global uint)
+0:7      Constant:
+0:7        4294967295 (const uint)
+0:8  Sequence
+0:8    move second child to first child ( temp uint)
+0:8      'd' ( global uint)
+0:8      Constant:
+0:8        4294967295 (const uint)
+0:9  Sequence
+0:9    move second child to first child ( temp int)
+0:9      'e' ( global int)
+0:9      Constant:
+0:9        -1 (const int)
+0:13  Sequence
+0:13    move second child to first child ( temp uint)
+0:13      'f' ( global uint)
+0:13      Constant:
+0:13        4294967295 (const uint)
+0:17  Sequence
+0:17    move second child to first child ( temp int)
+0:17      'g' ( global int)
+0:17      Constant:
+0:17        -1294967296 (const int)
+0:19  Sequence
+0:19    move second child to first child ( temp int)
+0:19      'h' ( global int)
+0:19      Constant:
+0:19        -1610612736 (const int)
+0:20  Sequence
+0:20    move second child to first child ( temp int)
+0:20      'i' ( global int)
+0:20      Constant:
+0:20        -1 (const int)
+0:21  Sequence
+0:21    move second child to first child ( temp int)
+0:21      'j' ( global int)
+0:21      Constant:
+0:21        -1 (const int)
+0:22  Sequence
+0:22    move second child to first child ( temp int)
+0:22      'k' ( global int)
+0:22      Constant:
+0:22        -2147483648 (const int)
+0:23  Sequence
+0:23    move second child to first child ( temp int)
+0:23      'l' ( global int)
+0:23      Constant:
+0:23        -2147483648 (const int)
+0:25  Sequence
+0:25    move second child to first child ( temp float)
+0:25      'fb' ( global float)
+0:25      Constant:
+0:25        1.500000
+0:26  Sequence
+0:26    move second child to first child ( temp double)
+0:26      'fd' ( global double)
+0:26      Constant:
+0:26        2.000000
+0:127  Function Definition: foo(f1[5]; ( global 5-element array of float)
+0:127    Function Parameters: 
+0:127      '' ( in 5-element array of float)
+0:129    Sequence
+0:129      Branch: Return with expression
+0:129        Constant:
+0:129          3.400000
+0:129          4.200000
+0:129          5.000000
+0:129          5.200000
+0:129          1.100000
+0:137  Function Definition: main( ( global void)
+0:137    Function Parameters: 
+0:140    Sequence
+0:140      Sequence
+0:140        Sequence
+0:140          move second child to first child ( temp 5-element array of float)
+0:140            'a' ( temp 5-element array of float)
+0:140            Constant:
+0:140              3.400000
+0:140              4.200000
+0:140              5.000000
+0:140              5.200000
+0:140              1.100000
+0:143      Sequence
+0:143        Sequence
+0:143          move second child to first child ( temp 5-element array of float)
+0:143            'a' ( temp 5-element array of float)
+0:143            Constant:
+0:143              3.400000
+0:143              4.200000
+0:143              5.000000
+0:143              5.200000
+0:143              1.100000
+0:?       Sequence
+0:149        Sequence
+0:149          move second child to first child ( temp 2-element array of 4-component vector of float)
+0:149            'b' ( temp 2-element array of 4-component vector of float)
+0:149            Constant:
+0:149              0.000000
+0:149              0.000000
+0:149              0.000000
+0:149              0.000000
+0:149              0.100000
+0:149              0.100000
+0:149              0.100000
+0:149              0.100000
+0:150        Sequence
+0:150          move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:150            'a3' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:150            Construct vec4 ( temp 3-element array of 2-element array of 4-component vector of float)
+0:150              'b' ( temp 2-element array of 4-component vector of float)
+0:150              'b' ( temp 2-element array of 4-component vector of float)
+0:150              'b' ( temp 2-element array of 4-component vector of float)
+0:152        Sequence
+0:152          move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:152            'a4' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:152            Constant:
+0:152              0.000000
+0:152              0.000000
+0:152              0.000000
+0:152              0.000000
+0:152              1.000000
+0:152              1.000000
+0:152              1.000000
+0:152              1.000000
+0:152              0.000000
+0:152              0.000000
+0:152              0.000000
+0:152              0.000000
+0:152              1.000000
+0:152              1.000000
+0:152              1.000000
+0:152              1.000000
+0:152              0.000000
+0:152              0.000000
+0:152              0.000000
+0:152              0.000000
+0:152              1.000000
+0:152              1.000000
+0:152              1.000000
+0:152              1.000000
+0:?       Sequence
+0:159        Sequence
+0:159          Sequence
+0:159            move second child to first child ( temp 5-element array of float)
+0:159              'b' ( temp 5-element array of float)
+0:159              'a' ( temp 5-element array of float)
+0:162        Sequence
+0:162          Sequence
+0:162            move second child to first child ( temp 5-element array of float)
+0:162              'b' ( temp 5-element array of float)
+0:162              'a' ( temp 5-element array of float)
+0:165        Sequence
+0:165          Sequence
+0:165            move second child to first child ( temp 5-element array of float)
+0:165              'b' ( temp 5-element array of float)
+0:165              Constant:
+0:165                1.000000
+0:165                2.000000
+0:165                3.000000
+0:165                4.000000
+0:165                5.000000
+0:167        Constant:
+0:167          5 (const int)
+0:?       Sequence
+0:171        Constant:
+0:171          3 (const int)
+0:172        Constant:
+0:172          2 (const int)
+0:175      Constant:
+0:175        0.000000
+0:178      Constant:
+0:178        0.000000
+0:193      Sequence
+0:193        move second child to first child ( temp structure{ temp float a,  temp int b})
+0:193          'e' ( temp structure{ temp float a,  temp int b})
+0:193          Constant:
+0:193            1.200000
+0:193            2 (const int)
+0:216      Sequence
+0:216        Sequence
+0:216          move second child to first child ( temp 5-element array of float)
+0:216            'a' ( temp 5-element array of float)
+0:216            Constant:
+0:216              3.400000
+0:216              4.200000
+0:216              5.000000
+0:216              5.200000
+0:216              1.100000
+0:217        Sequence
+0:217          move second child to first child ( temp 5-element array of float)
+0:217            'b' ( temp 5-element array of float)
+0:217            Constant:
+0:217              3.400000
+0:217              4.200000
+0:217              5.000000
+0:217              5.200000
+0:217              1.100000
+0:218        Sequence
+0:218          move second child to first child ( temp 5-element array of float)
+0:218            'c' ( temp 5-element array of float)
+0:218            'a' ( temp 5-element array of float)
+0:219        Sequence
+0:219          move second child to first child ( temp 5-element array of float)
+0:219            'd' ( temp 5-element array of float)
+0:219            'b' ( temp 5-element array of float)
+0:?       Sequence
+0:223        Sequence
+0:223          move second child to first child ( temp float)
+0:223            'ceiling' ( const (read only) float)
+0:223            Convert int to float ( temp float)
+0:223              add ( temp int)
+0:223                'a' ( global int)
+0:223                'b' ( global int)
+0:?   Linker Objects
+0:?     'a' ( global int)
+0:?     'b' ( global int)
+0:?     'c' ( global uint)
+0:?     'd' ( global uint)
+0:?     'e' ( global int)
+0:?     'f' ( global uint)
+0:?     'g' ( global int)
+0:?     'h' ( global int)
+0:?     'i' ( global int)
+0:?     'j' ( global int)
+0:?     'k' ( global int)
+0:?     'l' ( global int)
+0:?     'fa' ( global float)
+0:?     'fb' ( global float)
+0:?     'fc' ( global double)
+0:?     'fd' ( global double)
+0:?     'texcoord1' ( global 2-component vector of float)
+0:?     'texcoord2' ( global 2-component vector of float)
+0:?     'position' ( global 3-component vector of float)
+0:?     'myRGBA' ( global 4-component vector of float)
+0:?     'textureLookup' ( global 2-component vector of int)
+0:?     'less' ( global 3-component vector of bool)
+0:?     'mat2D' ( global 2X2 matrix of float)
+0:?     'optMatrix' ( global 3X3 matrix of float)
+0:?     'view' ( global 4X4 matrix of float)
+0:?     'projection' ( global 4X4 matrix of float)
+0:?     'm' ( global 3X2 matrix of float)
+0:?     'highPrecisionMVP' ( global 4X4 matrix of double)
+0:?     'dm' ( global 2X4 matrix of double)
+0:?     'lightVar' ( global structure{ global float intensity,  global 3-component vector of float position})
+0:?     'frequencies' ( global 3-element array of float)
+0:?     'lightPosition' ( uniform 4-element array of 4-component vector of float)
+0:?     'lights' ( global 2-element array of structure{ global float intensity,  global 3-component vector of float position})
+0:?     'numLights' ( const int)
+0:?       2 (const int)
+0:?     'normal' ( smooth in 3-component vector of float)
+0:?     'TexCoord' ( centroid smooth in 2-component vector of float)
+0:?     'Color' ( invariant centroid smooth in 4-component vector of float)
+0:?     'temperature' ( noperspective in float)
+0:?     'myColor' ( flat in 3-component vector of float)
+0:?     'myTexCoord' ( centroid noperspective in 2-component vector of float)
+0:?     'color' ( uniform 3-component vector of float)
+0:?       0.700000
+0:?       0.700000
+0:?       0.200000
+0:?     'anon@0' ( in block{ smooth in 4-component vector of float Color1,  smooth in 4-component vector of float Color2,  in 2-component vector of float TexCoordA,  in float Atten})
+0:?     'anon@1' ( in block{ in 4-component vector of float LightPos,  in 3-component vector of float LightColor})
+0:?     'Materiala' ( in block{ in 4-component vector of float Color,  in 2-component vector of float TexCoord})
+0:?     'gl_FragCoord' ( gl_FragCoord 4-component vector of float FragCoord)
+0:?     'factor' (layout( location=3 index=1) out 4-component vector of float)
+0:?     'colors' (layout( location=2) out 3-element array of 4-component vector of float)
+0:?     'gl_FragDepth' ( gl_FragDepth float FragDepth)
+0:?     'anon@2' ( in block{ in float FogFragCoord gl_FogFragCoord,  in unsized 1-element array of 4-component vector of float TexCoord gl_TexCoord,  flat in 4-component vector of float Color gl_Color,  in 4-component vector of float SecondaryColor gl_SecondaryColor})
+
+
+Linked fragment stage:
+
+
+Shader version: 430
+Requested GL_3DL_array_objects
+gl_FragCoord pixel center is integer
+gl_FragCoord origin is upper left
+using early_fragment_tests
+using depth_greater
+ERROR: node is still EOpNull!
+0:5  Sequence
+0:5    move second child to first child ( temp int)
+0:5      'a' ( global int)
+0:5      Constant:
+0:5        -1 (const int)
+0:7  Sequence
+0:7    move second child to first child ( temp uint)
+0:7      'c' ( global uint)
+0:7      Constant:
+0:7        4294967295 (const uint)
+0:8  Sequence
+0:8    move second child to first child ( temp uint)
+0:8      'd' ( global uint)
+0:8      Constant:
+0:8        4294967295 (const uint)
+0:9  Sequence
+0:9    move second child to first child ( temp int)
+0:9      'e' ( global int)
+0:9      Constant:
+0:9        -1 (const int)
+0:13  Sequence
+0:13    move second child to first child ( temp uint)
+0:13      'f' ( global uint)
+0:13      Constant:
+0:13        4294967295 (const uint)
+0:17  Sequence
+0:17    move second child to first child ( temp int)
+0:17      'g' ( global int)
+0:17      Constant:
+0:17        -1294967296 (const int)
+0:19  Sequence
+0:19    move second child to first child ( temp int)
+0:19      'h' ( global int)
+0:19      Constant:
+0:19        -1610612736 (const int)
+0:20  Sequence
+0:20    move second child to first child ( temp int)
+0:20      'i' ( global int)
+0:20      Constant:
+0:20        -1 (const int)
+0:21  Sequence
+0:21    move second child to first child ( temp int)
+0:21      'j' ( global int)
+0:21      Constant:
+0:21        -1 (const int)
+0:22  Sequence
+0:22    move second child to first child ( temp int)
+0:22      'k' ( global int)
+0:22      Constant:
+0:22        -2147483648 (const int)
+0:23  Sequence
+0:23    move second child to first child ( temp int)
+0:23      'l' ( global int)
+0:23      Constant:
+0:23        -2147483648 (const int)
+0:25  Sequence
+0:25    move second child to first child ( temp float)
+0:25      'fb' ( global float)
+0:25      Constant:
+0:25        1.500000
+0:26  Sequence
+0:26    move second child to first child ( temp double)
+0:26      'fd' ( global double)
+0:26      Constant:
+0:26        2.000000
+0:137  Function Definition: main( ( global void)
+0:137    Function Parameters: 
+0:140    Sequence
+0:140      Sequence
+0:140        Sequence
+0:140          move second child to first child ( temp 5-element array of float)
+0:140            'a' ( temp 5-element array of float)
+0:140            Constant:
+0:140              3.400000
+0:140              4.200000
+0:140              5.000000
+0:140              5.200000
+0:140              1.100000
+0:143      Sequence
+0:143        Sequence
+0:143          move second child to first child ( temp 5-element array of float)
+0:143            'a' ( temp 5-element array of float)
+0:143            Constant:
+0:143              3.400000
+0:143              4.200000
+0:143              5.000000
+0:143              5.200000
+0:143              1.100000
+0:?       Sequence
+0:149        Sequence
+0:149          move second child to first child ( temp 2-element array of 4-component vector of float)
+0:149            'b' ( temp 2-element array of 4-component vector of float)
+0:149            Constant:
+0:149              0.000000
+0:149              0.000000
+0:149              0.000000
+0:149              0.000000
+0:149              0.100000
+0:149              0.100000
+0:149              0.100000
+0:149              0.100000
+0:150        Sequence
+0:150          move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:150            'a3' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:150            Construct vec4 ( temp 3-element array of 2-element array of 4-component vector of float)
+0:150              'b' ( temp 2-element array of 4-component vector of float)
+0:150              'b' ( temp 2-element array of 4-component vector of float)
+0:150              'b' ( temp 2-element array of 4-component vector of float)
+0:152        Sequence
+0:152          move second child to first child ( temp 3-element array of 2-element array of 4-component vector of float)
+0:152            'a4' ( temp 3-element array of 2-element array of 4-component vector of float)
+0:152            Constant:
+0:152              0.000000
+0:152              0.000000
+0:152              0.000000
+0:152              0.000000
+0:152              1.000000
+0:152              1.000000
+0:152              1.000000
+0:152              1.000000
+0:152              0.000000
+0:152              0.000000
+0:152              0.000000
+0:152              0.000000
+0:152              1.000000
+0:152              1.000000
+0:152              1.000000
+0:152              1.000000
+0:152              0.000000
+0:152              0.000000
+0:152              0.000000
+0:152              0.000000
+0:152              1.000000
+0:152              1.000000
+0:152              1.000000
+0:152              1.000000
+0:?       Sequence
+0:159        Sequence
+0:159          Sequence
+0:159            move second child to first child ( temp 5-element array of float)
+0:159              'b' ( temp 5-element array of float)
+0:159              'a' ( temp 5-element array of float)
+0:162        Sequence
+0:162          Sequence
+0:162            move second child to first child ( temp 5-element array of float)
+0:162              'b' ( temp 5-element array of float)
+0:162              'a' ( temp 5-element array of float)
+0:165        Sequence
+0:165          Sequence
+0:165            move second child to first child ( temp 5-element array of float)
+0:165              'b' ( temp 5-element array of float)
+0:165              Constant:
+0:165                1.000000
+0:165                2.000000
+0:165                3.000000
+0:165                4.000000
+0:165                5.000000
+0:167        Constant:
+0:167          5 (const int)
+0:?       Sequence
+0:171        Constant:
+0:171          3 (const int)
+0:172        Constant:
+0:172          2 (const int)
+0:175      Constant:
+0:175        0.000000
+0:178      Constant:
+0:178        0.000000
+0:193      Sequence
+0:193        move second child to first child ( temp structure{ temp float a,  temp int b})
+0:193          'e' ( temp structure{ temp float a,  temp int b})
+0:193          Constant:
+0:193            1.200000
+0:193            2 (const int)
+0:216      Sequence
+0:216        Sequence
+0:216          move second child to first child ( temp 5-element array of float)
+0:216            'a' ( temp 5-element array of float)
+0:216            Constant:
+0:216              3.400000
+0:216              4.200000
+0:216              5.000000
+0:216              5.200000
+0:216              1.100000
+0:217        Sequence
+0:217          move second child to first child ( temp 5-element array of float)
+0:217            'b' ( temp 5-element array of float)
+0:217            Constant:
+0:217              3.400000
+0:217              4.200000
+0:217              5.000000
+0:217              5.200000
+0:217              1.100000
+0:218        Sequence
+0:218          move second child to first child ( temp 5-element array of float)
+0:218            'c' ( temp 5-element array of float)
+0:218            'a' ( temp 5-element array of float)
+0:219        Sequence
+0:219          move second child to first child ( temp 5-element array of float)
+0:219            'd' ( temp 5-element array of float)
+0:219            'b' ( temp 5-element array of float)
+0:?       Sequence
+0:223        Sequence
+0:223          move second child to first child ( temp float)
+0:223            'ceiling' ( const (read only) float)
+0:223            Convert int to float ( temp float)
+0:223              add ( temp int)
+0:223                'a' ( global int)
+0:223                'b' ( global int)
+0:?   Linker Objects
+0:?     'a' ( global int)
+0:?     'b' ( global int)
+0:?     'c' ( global uint)
+0:?     'd' ( global uint)
+0:?     'e' ( global int)
+0:?     'f' ( global uint)
+0:?     'g' ( global int)
+0:?     'h' ( global int)
+0:?     'i' ( global int)
+0:?     'j' ( global int)
+0:?     'k' ( global int)
+0:?     'l' ( global int)
+0:?     'fa' ( global float)
+0:?     'fb' ( global float)
+0:?     'fc' ( global double)
+0:?     'fd' ( global double)
+0:?     'texcoord1' ( global 2-component vector of float)
+0:?     'texcoord2' ( global 2-component vector of float)
+0:?     'position' ( global 3-component vector of float)
+0:?     'myRGBA' ( global 4-component vector of float)
+0:?     'textureLookup' ( global 2-component vector of int)
+0:?     'less' ( global 3-component vector of bool)
+0:?     'mat2D' ( global 2X2 matrix of float)
+0:?     'optMatrix' ( global 3X3 matrix of float)
+0:?     'view' ( global 4X4 matrix of float)
+0:?     'projection' ( global 4X4 matrix of float)
+0:?     'm' ( global 3X2 matrix of float)
+0:?     'highPrecisionMVP' ( global 4X4 matrix of double)
+0:?     'dm' ( global 2X4 matrix of double)
+0:?     'lightVar' ( global structure{ global float intensity,  global 3-component vector of float position})
+0:?     'frequencies' ( global 3-element array of float)
+0:?     'lightPosition' ( uniform 4-element array of 4-component vector of float)
+0:?     'lights' ( global 2-element array of structure{ global float intensity,  global 3-component vector of float position})
+0:?     'numLights' ( const int)
+0:?       2 (const int)
+0:?     'normal' ( smooth in 3-component vector of float)
+0:?     'TexCoord' ( centroid smooth in 2-component vector of float)
+0:?     'Color' ( invariant centroid smooth in 4-component vector of float)
+0:?     'temperature' ( noperspective in float)
+0:?     'myColor' ( flat in 3-component vector of float)
+0:?     'myTexCoord' ( centroid noperspective in 2-component vector of float)
+0:?     'color' ( uniform 3-component vector of float)
+0:?       0.700000
+0:?       0.700000
+0:?       0.200000
+0:?     'anon@0' ( in block{ smooth in 4-component vector of float Color1,  smooth in 4-component vector of float Color2,  in 2-component vector of float TexCoordA,  in float Atten})
+0:?     'anon@1' ( in block{ in 4-component vector of float LightPos,  in 3-component vector of float LightColor})
+0:?     'Materiala' ( in block{ in 4-component vector of float Color,  in 2-component vector of float TexCoord})
+0:?     'gl_FragCoord' ( gl_FragCoord 4-component vector of float FragCoord)
+0:?     'factor' (layout( location=3 index=1) out 4-component vector of float)
+0:?     'colors' (layout( location=2) out 3-element array of 4-component vector of float)
+0:?     'gl_FragDepth' ( gl_FragDepth float FragDepth)
+0:?     'anon@2' ( in block{ in float FogFragCoord gl_FogFragCoord,  in 1-element array of 4-component vector of float TexCoord gl_TexCoord,  flat in 4-component vector of float Color gl_Color,  in 4-component vector of float SecondaryColor gl_SecondaryColor})
+

@@ -1,0 +1,125 @@
+struct Types
+{
+	uint4 u;
+	int4 i;
+	float4 f;
+	double4 d;
+};
+
+RWStructuredBuffer<Types> data;
+
+[numthreads(32, 16, 1)]
+void CSMain(uint3 dti : SV_DispatchThreadID)
+{
+	data[dti.x].u = WaveActiveSum(data[dti.x].u);
+	data[dti.x].u.x = WaveActiveSum(data[dti.x].u.x);
+	data[dti.x].u.xy = WaveActiveSum(data[dti.x].u.xy);
+	data[dti.x].u.xyz = WaveActiveSum(data[dti.x].u.xyz);
+
+	data[dti.x].i = WaveActiveSum(data[dti.x].i);
+	data[dti.x].i.x = WaveActiveSum(data[dti.x].i.x);
+	data[dti.x].i.xy = WaveActiveSum(data[dti.x].i.xy);
+	data[dti.x].i.xyz = WaveActiveSum(data[dti.x].i.xyz);
+
+	data[dti.x].f = WaveActiveSum(data[dti.x].f);
+	data[dti.x].f.x = WaveActiveSum(data[dti.x].f.x);
+	data[dti.x].f.xy = WaveActiveSum(data[dti.x].f.xy);
+	data[dti.x].f.xyz = WaveActiveSum(data[dti.x].f.xyz);
+
+	data[dti.x].d = WaveActiveSum(data[dti.x].d);
+	data[dti.x].d.x = WaveActiveSum(data[dti.x].d.x);
+	data[dti.x].d.xy = WaveActiveSum(data[dti.x].d.xy);
+	data[dti.x].d.xyz = WaveActiveSum(data[dti.x].d.xyz);
+
+	data[dti.x].u = WaveActiveProduct(data[dti.x].u);
+	data[dti.x].u.x = WaveActiveProduct(data[dti.x].u.x);
+	data[dti.x].u.xy = WaveActiveProduct(data[dti.x].u.xy);
+	data[dti.x].u.xyz = WaveActiveProduct(data[dti.x].u.xyz);
+
+	data[dti.x].i = WaveActiveProduct(data[dti.x].i);
+	data[dti.x].i.x = WaveActiveProduct(data[dti.x].i.x);
+	data[dti.x].i.xy = WaveActiveProduct(data[dti.x].i.xy);
+	data[dti.x].i.xyz = WaveActiveProduct(data[dti.x].i.xyz);
+
+	data[dti.x].f = WaveActiveProduct(data[dti.x].f);
+	data[dti.x].f.x = WaveActiveProduct(data[dti.x].f.x);
+	data[dti.x].f.xy = WaveActiveProduct(data[dti.x].f.xy);
+	data[dti.x].f.xyz = WaveActiveProduct(data[dti.x].f.xyz);
+
+	data[dti.x].d = WaveActiveProduct(data[dti.x].d);
+	data[dti.x].d.x = WaveActiveProduct(data[dti.x].d.x);
+	data[dti.x].d.xy = WaveActiveProduct(data[dti.x].d.xy);
+	data[dti.x].d.xyz = WaveActiveProduct(data[dti.x].d.xyz);
+
+	data[dti.x].u = WaveActiveMin(data[dti.x].u);
+	data[dti.x].u.x = WaveActiveMin(data[dti.x].u.x);
+	data[dti.x].u.xy = WaveActiveMin(data[dti.x].u.xy);
+	data[dti.x].u.xyz = WaveActiveMin(data[dti.x].u.xyz);
+
+	data[dti.x].i = WaveActiveMin(data[dti.x].i);
+	data[dti.x].i.x = WaveActiveMin(data[dti.x].i.x);
+	data[dti.x].i.xy = WaveActiveMin(data[dti.x].i.xy);
+	data[dti.x].i.xyz = WaveActiveMin(data[dti.x].i.xyz);
+
+	data[dti.x].f = WaveActiveMin(data[dti.x].f);
+	data[dti.x].f.x = WaveActiveMin(data[dti.x].f.x);
+	data[dti.x].f.xy = WaveActiveMin(data[dti.x].f.xy);
+	data[dti.x].f.xyz = WaveActiveMin(data[dti.x].f.xyz);
+
+	data[dti.x].d = WaveActiveMin(data[dti.x].d);
+	data[dti.x].d.x = WaveActiveMin(data[dti.x].d.x);
+	data[dti.x].d.xy = WaveActiveMin(data[dti.x].d.xy);
+	data[dti.x].d.xyz = WaveActiveMin(data[dti.x].d.xyz);
+
+	data[dti.x].u = WaveActiveMax(data[dti.x].u);
+	data[dti.x].u.x = WaveActiveMax(data[dti.x].u.x);
+	data[dti.x].u.xy = WaveActiveMax(data[dti.x].u.xy);
+	data[dti.x].u.xyz = WaveActiveMax(data[dti.x].u.xyz);
+
+	data[dti.x].i = WaveActiveMax(data[dti.x].i);
+	data[dti.x].i.x = WaveActiveMax(data[dti.x].i.x);
+	data[dti.x].i.xy = WaveActiveMax(data[dti.x].i.xy);
+	data[dti.x].i.xyz = WaveActiveMax(data[dti.x].i.xyz);
+
+	data[dti.x].f = WaveActiveMax(data[dti.x].f);
+	data[dti.x].f.x = WaveActiveMax(data[dti.x].f.x);
+	data[dti.x].f.xy = WaveActiveMax(data[dti.x].f.xy);
+	data[dti.x].f.xyz = WaveActiveMax(data[dti.x].f.xyz);
+
+	data[dti.x].d = WaveActiveMax(data[dti.x].d);
+	data[dti.x].d.x = WaveActiveMax(data[dti.x].d.x);
+	data[dti.x].d.xy = WaveActiveMax(data[dti.x].d.xy);
+	data[dti.x].d.xyz = WaveActiveMax(data[dti.x].d.xyz);
+
+	data[dti.x].u = WaveActiveBitAnd(data[dti.x].u);
+	data[dti.x].u.x = WaveActiveBitAnd(data[dti.x].u.x);
+	data[dti.x].u.xy = WaveActiveBitAnd(data[dti.x].u.xy);
+	data[dti.x].u.xyz = WaveActiveBitAnd(data[dti.x].u.xyz);
+
+	data[dti.x].i = WaveActiveBitAnd(data[dti.x].i);
+	data[dti.x].i.x = WaveActiveBitAnd(data[dti.x].i.x);
+	data[dti.x].i.xy = WaveActiveBitAnd(data[dti.x].i.xy);
+	data[dti.x].i.xyz = WaveActiveBitAnd(data[dti.x].i.xyz);
+
+	data[dti.x].u = WaveActiveBitOr(data[dti.x].u);
+	data[dti.x].u.x = WaveActiveBitOr(data[dti.x].u.x);
+	data[dti.x].u.xy = WaveActiveBitOr(data[dti.x].u.xy);
+	data[dti.x].u.xyz = WaveActiveBitOr(data[dti.x].u.xyz);
+
+	data[dti.x].i = WaveActiveBitOr(data[dti.x].i);
+	data[dti.x].i.x = WaveActiveBitOr(data[dti.x].i.x);
+	data[dti.x].i.xy = WaveActiveBitOr(data[dti.x].i.xy);
+	data[dti.x].i.xyz = WaveActiveBitOr(data[dti.x].i.xyz);
+
+	data[dti.x].u = WaveActiveBitXor(data[dti.x].u);
+	data[dti.x].u.x = WaveActiveBitXor(data[dti.x].u.x);
+	data[dti.x].u.xy = WaveActiveBitXor(data[dti.x].u.xy);
+	data[dti.x].u.xyz = WaveActiveBitXor(data[dti.x].u.xyz);
+
+	data[dti.x].i = WaveActiveBitXor(data[dti.x].i);
+	data[dti.x].i.x = WaveActiveBitXor(data[dti.x].i.x);
+	data[dti.x].i.xy = WaveActiveBitXor(data[dti.x].i.xy);
+	data[dti.x].i.xyz = WaveActiveBitXor(data[dti.x].i.xyz);
+
+	data[dti.x].u.x = WaveActiveCountBits(data[dti.x].u.x == 0);
+}

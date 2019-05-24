@@ -1,0 +1,276 @@
+110scope.vert
+ERROR: 0:5: 'a' : redefinition 
+ERROR: 0:57: 'z' : undeclared identifier 
+ERROR: 0:57: 'z' : redefinition 
+ERROR: 0:83: 'S' : redefinition struct
+ERROR: 4 compilation errors.  No code generated.
+
+
+Shader version: 110
+ERROR: node is still EOpNull!
+0:3  Function Definition: f(i1;i1;i1; ( global int)
+0:3    Function Parameters: 
+0:3      'a' ( in int)
+0:3      'b' ( in int)
+0:3      'c' ( in int)
+0:?     Sequence
+0:8      Sequence
+0:8        Sequence
+0:8          move second child to first child ( temp float)
+0:8            'a' ( temp float)
+0:8            add ( temp float)
+0:8              Convert int to float ( temp float)
+0:8                'a' ( in int)
+0:8              Constant:
+0:8                1.000000
+0:11      Branch: Return with expression
+0:11        'a' ( in int)
+0:25  Function Definition: cos(f1; ( global float)
+0:25    Function Parameters: 
+0:25      'x' ( in float)
+0:27    Sequence
+0:27      Branch: Return with expression
+0:27        Constant:
+0:27          1.000000
+0:29  Function Definition: radians(b1; ( global bool)
+0:29    Function Parameters: 
+0:29      'x' ( in bool)
+0:31    Sequence
+0:31      Branch: Return with expression
+0:31        Constant:
+0:31          true (const bool)
+0:34  Sequence
+0:34    move second child to first child ( temp int)
+0:34      'gi' ( global int)
+0:34      Function Call: f(i1;i1;i1; ( global int)
+0:34        Constant:
+0:34          1 (const int)
+0:34        Constant:
+0:34          2 (const int)
+0:34        Constant:
+0:34          3 (const int)
+0:36  Function Definition: main( ( global void)
+0:36    Function Parameters: 
+0:?     Sequence
+0:39      Function Call: g( ( temp int)
+0:42      'sin' ( temp float)
+0:43      Function Call: sin(f1; ( global float)
+0:43        Constant:
+0:43          0.700000
+0:44      Function Call: f(i1;i1;i1; ( global int)
+0:44        Constant:
+0:44          1 (const int)
+0:44        Constant:
+0:44          2 (const int)
+0:44        Constant:
+0:44          3 (const int)
+0:47      move second child to first child ( temp float)
+0:47        'f' ( temp float)
+0:47        Constant:
+0:47          3.000000
+0:49      move second child to first child ( temp 4-component vector of float)
+0:49        'gl_Position' ( gl_Position 4-component vector of float Position)
+0:49        Construct vec4 ( temp 4-component vector of float)
+0:49          'f' ( temp float)
+0:51      Sequence
+0:51        Sequence
+0:51          move second child to first child ( temp int)
+0:51            'f' ( temp int)
+0:51            Constant:
+0:51              0 (const int)
+0:51        Loop with condition tested first
+0:51          Loop Condition
+0:51          Compare Less Than ( temp bool)
+0:51            'f' ( temp int)
+0:51            Constant:
+0:51              10 (const int)
+0:51          Loop Body
+0:52          Pre-Increment ( temp int)
+0:52            'f' ( temp int)
+0:51          Loop Terminal Expression
+0:51          Pre-Increment ( temp int)
+0:51            'f' ( temp int)
+0:54      Sequence
+0:54        move second child to first child ( temp int)
+0:54          'x' ( temp int)
+0:54          Constant:
+0:54            1 (const int)
+0:56      Sequence
+0:56        Sequence
+0:56          move second child to first child ( temp float)
+0:56            'x' ( temp float)
+0:56            Constant:
+0:56              2.000000
+0:56          move second child to first child ( temp float)
+0:56            'y' ( temp float)
+0:56            'x' ( temp float)
+0:60      Sequence
+0:60        Sequence
+0:60          move second child to first child ( temp int)
+0:60            'x' ( temp int)
+0:60            'x' ( temp int)
+0:68      Sequence
+0:68        Sequence
+0:68          move second child to first child ( temp structure{ temp int x})
+0:68            'S' ( temp structure{ temp int x})
+0:68            Constant:
+0:68              0 (const int)
+0:69        x: direct index for structure ( temp int)
+0:69          'S' ( temp structure{ temp int x})
+0:69          Constant:
+0:69            0 (const int)
+0:73      Constant:
+0:73        183.346494
+0:?       Sequence
+0:77        move second child to first child ( temp int)
+0:77          x: direct index for structure ( temp int)
+0:77            's' ( temp structure{ temp int x})
+0:77            Constant:
+0:77              0 (const int)
+0:77          Constant:
+0:77            3 (const int)
+0:82        move second child to first child ( temp bool)
+0:82          b: direct index for structure ( temp bool)
+0:82            't' ( temp structure{ temp bool b})
+0:82            Constant:
+0:82              0 (const int)
+0:82          Constant:
+0:82            true (const bool)
+0:?   Linker Objects
+0:?     'b' ( global bool)
+0:?     'c' ( global bool)
+0:?     'f' ( global float)
+0:?     'tan' ( global float)
+0:?     'gi' ( global int)
+
+
+Linked vertex stage:
+
+ERROR: Linking vertex stage: No function definition (body) found: 
+    sin(f1;
+ERROR: Linking vertex stage: No function definition (body) found: 
+    g(
+
+Shader version: 110
+ERROR: node is still EOpNull!
+0:3  Function Definition: f(i1;i1;i1; ( global int)
+0:3    Function Parameters: 
+0:3      'a' ( in int)
+0:3      'b' ( in int)
+0:3      'c' ( in int)
+0:?     Sequence
+0:8      Sequence
+0:8        Sequence
+0:8          move second child to first child ( temp float)
+0:8            'a' ( temp float)
+0:8            add ( temp float)
+0:8              Convert int to float ( temp float)
+0:8                'a' ( in int)
+0:8              Constant:
+0:8                1.000000
+0:11      Branch: Return with expression
+0:11        'a' ( in int)
+0:34  Sequence
+0:34    move second child to first child ( temp int)
+0:34      'gi' ( global int)
+0:34      Function Call: f(i1;i1;i1; ( global int)
+0:34        Constant:
+0:34          1 (const int)
+0:34        Constant:
+0:34          2 (const int)
+0:34        Constant:
+0:34          3 (const int)
+0:36  Function Definition: main( ( global void)
+0:36    Function Parameters: 
+0:?     Sequence
+0:39      Function Call: g( ( temp int)
+0:42      'sin' ( temp float)
+0:43      Function Call: sin(f1; ( global float)
+0:43        Constant:
+0:43          0.700000
+0:44      Function Call: f(i1;i1;i1; ( global int)
+0:44        Constant:
+0:44          1 (const int)
+0:44        Constant:
+0:44          2 (const int)
+0:44        Constant:
+0:44          3 (const int)
+0:47      move second child to first child ( temp float)
+0:47        'f' ( temp float)
+0:47        Constant:
+0:47          3.000000
+0:49      move second child to first child ( temp 4-component vector of float)
+0:49        'gl_Position' ( gl_Position 4-component vector of float Position)
+0:49        Construct vec4 ( temp 4-component vector of float)
+0:49          'f' ( temp float)
+0:51      Sequence
+0:51        Sequence
+0:51          move second child to first child ( temp int)
+0:51            'f' ( temp int)
+0:51            Constant:
+0:51              0 (const int)
+0:51        Loop with condition tested first
+0:51          Loop Condition
+0:51          Compare Less Than ( temp bool)
+0:51            'f' ( temp int)
+0:51            Constant:
+0:51              10 (const int)
+0:51          Loop Body
+0:52          Pre-Increment ( temp int)
+0:52            'f' ( temp int)
+0:51          Loop Terminal Expression
+0:51          Pre-Increment ( temp int)
+0:51            'f' ( temp int)
+0:54      Sequence
+0:54        move second child to first child ( temp int)
+0:54          'x' ( temp int)
+0:54          Constant:
+0:54            1 (const int)
+0:56      Sequence
+0:56        Sequence
+0:56          move second child to first child ( temp float)
+0:56            'x' ( temp float)
+0:56            Constant:
+0:56              2.000000
+0:56          move second child to first child ( temp float)
+0:56            'y' ( temp float)
+0:56            'x' ( temp float)
+0:60      Sequence
+0:60        Sequence
+0:60          move second child to first child ( temp int)
+0:60            'x' ( temp int)
+0:60            'x' ( temp int)
+0:68      Sequence
+0:68        Sequence
+0:68          move second child to first child ( temp structure{ temp int x})
+0:68            'S' ( temp structure{ temp int x})
+0:68            Constant:
+0:68              0 (const int)
+0:69        x: direct index for structure ( temp int)
+0:69          'S' ( temp structure{ temp int x})
+0:69          Constant:
+0:69            0 (const int)
+0:73      Constant:
+0:73        183.346494
+0:?       Sequence
+0:77        move second child to first child ( temp int)
+0:77          x: direct index for structure ( temp int)
+0:77            's' ( temp structure{ temp int x})
+0:77            Constant:
+0:77              0 (const int)
+0:77          Constant:
+0:77            3 (const int)
+0:82        move second child to first child ( temp bool)
+0:82          b: direct index for structure ( temp bool)
+0:82            't' ( temp structure{ temp bool b})
+0:82            Constant:
+0:82              0 (const int)
+0:82          Constant:
+0:82            true (const bool)
+0:?   Linker Objects
+0:?     'b' ( global bool)
+0:?     'c' ( global bool)
+0:?     'f' ( global float)
+0:?     'tan' ( global float)
+0:?     'gi' ( global int)
+

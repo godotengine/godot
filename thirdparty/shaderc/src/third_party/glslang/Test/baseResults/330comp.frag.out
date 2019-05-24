@@ -1,0 +1,48 @@
+330comp.frag
+Shader version: 330
+0:? Sequence
+0:8  Function Definition: main( ( global void)
+0:8    Function Parameters: 
+0:10    Sequence
+0:10      move second child to first child ( temp 4-component vector of float)
+0:10        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:10        'varyingVar' ( smooth in 4-component vector of float)
+0:11      move second child to first child ( temp 4-component vector of float)
+0:11        direct index ( temp 4-component vector of float FragData)
+0:11          'gl_FragData' ( fragColor 32-element array of 4-component vector of float FragData)
+0:11          Constant:
+0:11            1 (const int)
+0:11        vector-times-matrix ( temp 4-component vector of float)
+0:11          'inVar' ( smooth in 4-component vector of float)
+0:11          'gl_ModelViewMatrix' ( uniform 4X4 matrix of float)
+0:?   Linker Objects
+0:?     'inVar' ( smooth in 4-component vector of float)
+0:?     'outVar' ( out 4-component vector of float)
+0:?     'varyingVar' ( smooth in 4-component vector of float)
+
+
+Linked fragment stage:
+
+ERROR: Linking fragment stage: Cannot use both gl_FragColor and gl_FragData
+
+Shader version: 330
+0:? Sequence
+0:8  Function Definition: main( ( global void)
+0:8    Function Parameters: 
+0:10    Sequence
+0:10      move second child to first child ( temp 4-component vector of float)
+0:10        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:10        'varyingVar' ( smooth in 4-component vector of float)
+0:11      move second child to first child ( temp 4-component vector of float)
+0:11        direct index ( temp 4-component vector of float FragData)
+0:11          'gl_FragData' ( fragColor 32-element array of 4-component vector of float FragData)
+0:11          Constant:
+0:11            1 (const int)
+0:11        vector-times-matrix ( temp 4-component vector of float)
+0:11          'inVar' ( smooth in 4-component vector of float)
+0:11          'gl_ModelViewMatrix' ( uniform 4X4 matrix of float)
+0:?   Linker Objects
+0:?     'inVar' ( smooth in 4-component vector of float)
+0:?     'outVar' ( out 4-component vector of float)
+0:?     'varyingVar' ( smooth in 4-component vector of float)
+

@@ -1,0 +1,77 @@
+cppPassMacroName.frag
+Shader version: 100
+0:? Sequence
+0:9  Function Definition: main( ( global void)
+0:9    Function Parameters: 
+0:11    Sequence
+0:11      Sequence
+0:11        move second child to first child ( temp mediump int)
+0:11          'f1' ( temp mediump int)
+0:11          Constant:
+0:11            4 (const int)
+0:12      Sequence
+0:12        move second child to first child ( temp mediump int)
+0:12          'f2' ( temp mediump int)
+0:12          'f1' ( temp mediump int)
+0:13      Sequence
+0:13        move second child to first child ( temp mediump int)
+0:13          'f3' ( temp mediump int)
+0:13          Constant:
+0:13            9 (const int)
+0:14      Sequence
+0:14        move second child to first child ( temp mediump int)
+0:14          'f4' ( temp mediump int)
+0:14          Constant:
+0:14            1 (const int)
+0:15      Sequence
+0:15        move second child to first child ( temp mediump int)
+0:15          'f5' ( temp mediump int)
+0:15          Constant:
+0:15            5 (const int)
+0:17      Sequence
+0:17        move second child to first child ( temp highp float)
+0:17          'fl_f5' ( temp highp float)
+0:17          Constant:
+0:17            0.460000
+0:?   Linker Objects
+
+
+Linked fragment stage:
+
+
+Shader version: 100
+0:? Sequence
+0:9  Function Definition: main( ( global void)
+0:9    Function Parameters: 
+0:11    Sequence
+0:11      Sequence
+0:11        move second child to first child ( temp mediump int)
+0:11          'f1' ( temp mediump int)
+0:11          Constant:
+0:11            4 (const int)
+0:12      Sequence
+0:12        move second child to first child ( temp mediump int)
+0:12          'f2' ( temp mediump int)
+0:12          'f1' ( temp mediump int)
+0:13      Sequence
+0:13        move second child to first child ( temp mediump int)
+0:13          'f3' ( temp mediump int)
+0:13          Constant:
+0:13            9 (const int)
+0:14      Sequence
+0:14        move second child to first child ( temp mediump int)
+0:14          'f4' ( temp mediump int)
+0:14          Constant:
+0:14            1 (const int)
+0:15      Sequence
+0:15        move second child to first child ( temp mediump int)
+0:15          'f5' ( temp mediump int)
+0:15          Constant:
+0:15            5 (const int)
+0:17      Sequence
+0:17        move second child to first child ( temp highp float)
+0:17          'fl_f5' ( temp highp float)
+0:17          Constant:
+0:17            0.460000
+0:?   Linker Objects
+

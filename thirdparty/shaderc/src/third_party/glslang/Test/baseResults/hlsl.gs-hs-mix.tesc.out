@@ -1,0 +1,1158 @@
+hlsl.gs-hs-mix.tesc
+Shader version: 500
+vertices = 3
+input primitive = triangles
+vertex spacing = fractional_odd_spacing
+triangle order = ccw
+0:? Sequence
+0:31  Function Definition: HSPatchConstant(struct-HSInput-vf3-vf31[3]; ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:31    Function Parameters: 
+0:31      'patch' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:?     Sequence
+0:32      Sequence
+0:32        move second child to first child ( temp 3-component vector of float)
+0:32          'roundedEdgeTessFactor' ( temp 3-component vector of float)
+0:32          tess_factor: direct index for structure (layout( row_major std140) uniform 3-component vector of float)
+0:32            'anon@0' (layout( binding=0 row_major std140) uniform block{layout( row_major std140) uniform 4X4 matrix of float model_view_matrix, layout( row_major std140) uniform 4X4 matrix of float proj_matrix, layout( row_major std140) uniform 4X4 matrix of float model_view_proj_matrix, layout( row_major std140) uniform 3X3 matrix of float normal_matrix, layout( row_major std140) uniform 3-component vector of float color, layout( row_major std140) uniform 3-component vector of float view_dir, layout( row_major std140) uniform 3-component vector of float tess_factor})
+0:32            Constant:
+0:32              6 (const uint)
+0:33      Sequence
+0:33        move second child to first child ( temp float)
+0:33          'roundedInsideTessFactor' ( temp float)
+0:33          Constant:
+0:33            3.000000
+0:34      Sequence
+0:34        move second child to first child ( temp float)
+0:34          'insideTessFactor' ( temp float)
+0:34          Constant:
+0:34            1.000000
+0:39      move second child to first child ( temp float)
+0:39        direct index ( temp float)
+0:39          EdgeTessFactor: direct index for structure ( temp 3-element array of float)
+0:39            'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:39            Constant:
+0:39              0 (const int)
+0:39          Constant:
+0:39            0 (const int)
+0:39        direct index ( temp float)
+0:39          'roundedEdgeTessFactor' ( temp 3-component vector of float)
+0:39          Constant:
+0:39            0 (const int)
+0:40      move second child to first child ( temp float)
+0:40        direct index ( temp float)
+0:40          EdgeTessFactor: direct index for structure ( temp 3-element array of float)
+0:40            'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:40            Constant:
+0:40              0 (const int)
+0:40          Constant:
+0:40            1 (const int)
+0:40        direct index ( temp float)
+0:40          'roundedEdgeTessFactor' ( temp 3-component vector of float)
+0:40          Constant:
+0:40            1 (const int)
+0:41      move second child to first child ( temp float)
+0:41        direct index ( temp float)
+0:41          EdgeTessFactor: direct index for structure ( temp 3-element array of float)
+0:41            'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:41            Constant:
+0:41              0 (const int)
+0:41          Constant:
+0:41            2 (const int)
+0:41        direct index ( temp float)
+0:41          'roundedEdgeTessFactor' ( temp 3-component vector of float)
+0:41          Constant:
+0:41            2 (const int)
+0:42      move second child to first child ( temp float)
+0:42        InsideTessFactor: direct index for structure ( temp float)
+0:42          'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:42          Constant:
+0:42            1 (const int)
+0:42        'roundedInsideTessFactor' ( temp float)
+0:45      move second child to first child ( temp 3-component vector of float)
+0:45        direct index ( temp 3-component vector of float)
+0:45          NormalWS: direct index for structure ( temp 3-element array of 3-component vector of float)
+0:45            'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:45            Constant:
+0:45              2 (const int)
+0:45          Constant:
+0:45            0 (const int)
+0:45        NormalWS: direct index for structure ( temp 3-component vector of float)
+0:45          direct index ( temp structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:45            'patch' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:45            Constant:
+0:45              0 (const int)
+0:45          Constant:
+0:45            1 (const int)
+0:46      move second child to first child ( temp 3-component vector of float)
+0:46        direct index ( temp 3-component vector of float)
+0:46          NormalWS: direct index for structure ( temp 3-element array of 3-component vector of float)
+0:46            'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:46            Constant:
+0:46              2 (const int)
+0:46          Constant:
+0:46            1 (const int)
+0:46        NormalWS: direct index for structure ( temp 3-component vector of float)
+0:46          direct index ( temp structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:46            'patch' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:46            Constant:
+0:46              1 (const int)
+0:46          Constant:
+0:46            1 (const int)
+0:47      move second child to first child ( temp 3-component vector of float)
+0:47        direct index ( temp 3-component vector of float)
+0:47          NormalWS: direct index for structure ( temp 3-element array of 3-component vector of float)
+0:47            'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:47            Constant:
+0:47              2 (const int)
+0:47          Constant:
+0:47            2 (const int)
+0:47        NormalWS: direct index for structure ( temp 3-component vector of float)
+0:47          direct index ( temp structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:47            'patch' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:47            Constant:
+0:47              2 (const int)
+0:47          Constant:
+0:47            1 (const int)
+0:49      Branch: Return with expression
+0:49        'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:61  Function Definition: @HSMain(struct-HSInput-vf3-vf31[3];u1; ( temp structure{ temp 3-component vector of float PositionWS})
+0:61    Function Parameters: 
+0:61      'patch' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:61      'id' ( in uint)
+0:?     Sequence
+0:63      move second child to first child ( temp 3-component vector of float)
+0:63        PositionWS: direct index for structure ( temp 3-component vector of float)
+0:63          'output' ( temp structure{ temp 3-component vector of float PositionWS})
+0:63          Constant:
+0:63            0 (const int)
+0:63        PositionWS: direct index for structure ( temp 3-component vector of float)
+0:63          indirect index ( temp structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:63            'patch' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:63            'id' ( in uint)
+0:63          Constant:
+0:63            0 (const int)
+0:64      Branch: Return with expression
+0:64        'output' ( temp structure{ temp 3-component vector of float PositionWS})
+0:61  Function Definition: HSMain( ( temp void)
+0:61    Function Parameters: 
+0:?     Sequence
+0:61      move second child to first child ( temp 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:?         'patch' ( temp 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:?         'patch' (layout( location=0) in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:61      move second child to first child ( temp uint)
+0:?         'id' ( temp uint)
+0:?         'id' ( in uint InvocationID)
+0:61      move second child to first child ( temp structure{ temp 3-component vector of float PositionWS})
+0:61        indirect index (layout( location=0) out structure{ temp 3-component vector of float PositionWS})
+0:?           '@entryPointOutput' (layout( location=0) out 3-element array of structure{ temp 3-component vector of float PositionWS})
+0:?           'id' ( in uint InvocationID)
+0:61        Function Call: @HSMain(struct-HSInput-vf3-vf31[3];u1; ( temp structure{ temp 3-component vector of float PositionWS})
+0:?           'patch' ( temp 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:?           'id' ( temp uint)
+0:?       Barrier ( temp void)
+0:?       Test condition and select ( temp void)
+0:?         Condition
+0:?         Compare Equal ( temp bool)
+0:?           'id' ( in uint InvocationID)
+0:?           Constant:
+0:?             0 (const int)
+0:?         true case
+0:?         Sequence
+0:?           move second child to first child ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?             '@patchConstantResult' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?             Function Call: HSPatchConstant(struct-HSInput-vf3-vf31[3]; ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?               'patch' ( temp 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:?           Sequence
+0:?             move second child to first child ( temp float)
+0:?               direct index ( patch out float TessLevelOuter)
+0:?                 '@patchConstantOutput.EdgeTessFactor' ( patch out 4-element array of float TessLevelOuter)
+0:?                 Constant:
+0:?                   0 (const int)
+0:?               direct index ( temp float)
+0:?                 EdgeTessFactor: direct index for structure ( temp 3-element array of float)
+0:?                   '@patchConstantResult' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?                   Constant:
+0:?                     0 (const int)
+0:?                 Constant:
+0:?                   0 (const int)
+0:?             move second child to first child ( temp float)
+0:?               direct index ( patch out float TessLevelOuter)
+0:?                 '@patchConstantOutput.EdgeTessFactor' ( patch out 4-element array of float TessLevelOuter)
+0:?                 Constant:
+0:?                   1 (const int)
+0:?               direct index ( temp float)
+0:?                 EdgeTessFactor: direct index for structure ( temp 3-element array of float)
+0:?                   '@patchConstantResult' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?                   Constant:
+0:?                     0 (const int)
+0:?                 Constant:
+0:?                   1 (const int)
+0:?             move second child to first child ( temp float)
+0:?               direct index ( patch out float TessLevelOuter)
+0:?                 '@patchConstantOutput.EdgeTessFactor' ( patch out 4-element array of float TessLevelOuter)
+0:?                 Constant:
+0:?                   2 (const int)
+0:?               direct index ( temp float)
+0:?                 EdgeTessFactor: direct index for structure ( temp 3-element array of float)
+0:?                   '@patchConstantResult' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?                   Constant:
+0:?                     0 (const int)
+0:?                 Constant:
+0:?                   2 (const int)
+0:?             move second child to first child ( temp float)
+0:?               direct index ( patch out float TessLevelInner)
+0:?                 '@patchConstantOutput.InsideTessFactor' ( patch out 2-element array of float TessLevelInner)
+0:?                 Constant:
+0:?                   0 (const int)
+0:?               InsideTessFactor: direct index for structure ( temp float)
+0:?                 '@patchConstantResult' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?                 Constant:
+0:?                   1 (const int)
+0:?             move second child to first child ( temp 3-element array of 3-component vector of float)
+0:?               NormalWS: direct index for structure ( temp 3-element array of 3-component vector of float)
+0:?                 '@patchConstantOutput' (layout( location=1) patch out structure{ temp 3-element array of 3-component vector of float NormalWS})
+0:?                 Constant:
+0:?                   0 (const int)
+0:?               NormalWS: direct index for structure ( temp 3-element array of 3-component vector of float)
+0:?                 '@patchConstantResult' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?                 Constant:
+0:?                   2 (const int)
+0:84  Function Definition: GSMain(struct-GSVertexInput-vf3-vf31[3];struct-GSVertexOutput-vf41; ( temp void)
+0:84    Function Parameters: 
+0:84      'input' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:84      'output' ( out structure{ temp 4-component vector of float PositionCS})
+0:?     Sequence
+0:86      Sequence
+0:86        move second child to first child ( temp 3-component vector of float)
+0:86          'P0' ( temp 3-component vector of float)
+0:86          vector swizzle ( temp 3-component vector of float)
+0:86            PositionWS: direct index for structure ( temp 3-component vector of float)
+0:86              direct index ( temp structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:86                'input' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:86                Constant:
+0:86                  0 (const int)
+0:86              Constant:
+0:86                0 (const int)
+0:86            Sequence
+0:86              Constant:
+0:86                0 (const int)
+0:86              Constant:
+0:86                1 (const int)
+0:86              Constant:
+0:86                2 (const int)
+0:87      Sequence
+0:87        move second child to first child ( temp 3-component vector of float)
+0:87          'P1' ( temp 3-component vector of float)
+0:87          vector swizzle ( temp 3-component vector of float)
+0:87            PositionWS: direct index for structure ( temp 3-component vector of float)
+0:87              direct index ( temp structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:87                'input' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:87                Constant:
+0:87                  1 (const int)
+0:87              Constant:
+0:87                0 (const int)
+0:87            Sequence
+0:87              Constant:
+0:87                0 (const int)
+0:87              Constant:
+0:87                1 (const int)
+0:87              Constant:
+0:87                2 (const int)
+0:88      Sequence
+0:88        move second child to first child ( temp 3-component vector of float)
+0:88          'P2' ( temp 3-component vector of float)
+0:88          vector swizzle ( temp 3-component vector of float)
+0:88            PositionWS: direct index for structure ( temp 3-component vector of float)
+0:88              direct index ( temp structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:88                'input' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:88                Constant:
+0:88                  2 (const int)
+0:88              Constant:
+0:88                0 (const int)
+0:88            Sequence
+0:88              Constant:
+0:88                0 (const int)
+0:88              Constant:
+0:88                1 (const int)
+0:88              Constant:
+0:88                2 (const int)
+0:92      add second child into first child ( temp float)
+0:92        direct index ( temp float)
+0:92          'P0' ( temp 3-component vector of float)
+0:92          Constant:
+0:92            2 (const int)
+0:92        Constant:
+0:92          0.001000
+0:93      add second child into first child ( temp float)
+0:93        direct index ( temp float)
+0:93          'P1' ( temp 3-component vector of float)
+0:93          Constant:
+0:93            2 (const int)
+0:93        Constant:
+0:93          0.001000
+0:94      add second child into first child ( temp float)
+0:94        direct index ( temp float)
+0:94          'P2' ( temp 3-component vector of float)
+0:94          Constant:
+0:94            2 (const int)
+0:94        Constant:
+0:94          0.001000
+0:95      Sequence
+0:95        move second child to first child ( temp 4-component vector of float)
+0:95          'Q0' ( temp 4-component vector of float)
+0:95          vector-times-matrix ( temp 4-component vector of float)
+0:?             Construct vec4 ( temp 4-component vector of float)
+0:95              'P0' ( temp 3-component vector of float)
+0:95              Constant:
+0:95                1.000000
+0:95            proj_matrix: direct index for structure (layout( row_major std140) uniform 4X4 matrix of float)
+0:95              'anon@0' (layout( binding=0 row_major std140) uniform block{layout( row_major std140) uniform 4X4 matrix of float model_view_matrix, layout( row_major std140) uniform 4X4 matrix of float proj_matrix, layout( row_major std140) uniform 4X4 matrix of float model_view_proj_matrix, layout( row_major std140) uniform 3X3 matrix of float normal_matrix, layout( row_major std140) uniform 3-component vector of float color, layout( row_major std140) uniform 3-component vector of float view_dir, layout( row_major std140) uniform 3-component vector of float tess_factor})
+0:95              Constant:
+0:95                1 (const uint)
+0:96      Sequence
+0:96        move second child to first child ( temp 4-component vector of float)
+0:96          'Q1' ( temp 4-component vector of float)
+0:96          vector-times-matrix ( temp 4-component vector of float)
+0:?             Construct vec4 ( temp 4-component vector of float)
+0:96              'P1' ( temp 3-component vector of float)
+0:96              Constant:
+0:96                1.000000
+0:96            proj_matrix: direct index for structure (layout( row_major std140) uniform 4X4 matrix of float)
+0:96              'anon@0' (layout( binding=0 row_major std140) uniform block{layout( row_major std140) uniform 4X4 matrix of float model_view_matrix, layout( row_major std140) uniform 4X4 matrix of float proj_matrix, layout( row_major std140) uniform 4X4 matrix of float model_view_proj_matrix, layout( row_major std140) uniform 3X3 matrix of float normal_matrix, layout( row_major std140) uniform 3-component vector of float color, layout( row_major std140) uniform 3-component vector of float view_dir, layout( row_major std140) uniform 3-component vector of float tess_factor})
+0:96              Constant:
+0:96                1 (const uint)
+0:97      Sequence
+0:97        move second child to first child ( temp 4-component vector of float)
+0:97          'Q2' ( temp 4-component vector of float)
+0:97          vector-times-matrix ( temp 4-component vector of float)
+0:?             Construct vec4 ( temp 4-component vector of float)
+0:97              'P2' ( temp 3-component vector of float)
+0:97              Constant:
+0:97                1.000000
+0:97            proj_matrix: direct index for structure (layout( row_major std140) uniform 4X4 matrix of float)
+0:97              'anon@0' (layout( binding=0 row_major std140) uniform block{layout( row_major std140) uniform 4X4 matrix of float model_view_matrix, layout( row_major std140) uniform 4X4 matrix of float proj_matrix, layout( row_major std140) uniform 4X4 matrix of float model_view_proj_matrix, layout( row_major std140) uniform 3X3 matrix of float normal_matrix, layout( row_major std140) uniform 3-component vector of float color, layout( row_major std140) uniform 3-component vector of float view_dir, layout( row_major std140) uniform 3-component vector of float tess_factor})
+0:97              Constant:
+0:97                1 (const uint)
+0:100      move second child to first child ( temp 4-component vector of float)
+0:100        PositionCS: direct index for structure ( temp 4-component vector of float)
+0:100          'vertex' ( temp structure{ temp 4-component vector of float PositionCS})
+0:100          Constant:
+0:100            0 (const int)
+0:100        'Q0' ( temp 4-component vector of float)
+0:101      Constant:
+0:101        0.000000
+0:102      move second child to first child ( temp 4-component vector of float)
+0:102        PositionCS: direct index for structure ( temp 4-component vector of float)
+0:102          'vertex' ( temp structure{ temp 4-component vector of float PositionCS})
+0:102          Constant:
+0:102            0 (const int)
+0:102        'Q1' ( temp 4-component vector of float)
+0:103      Constant:
+0:103        0.000000
+0:104      Constant:
+0:104        0.000000
+0:107      move second child to first child ( temp 4-component vector of float)
+0:107        PositionCS: direct index for structure ( temp 4-component vector of float)
+0:107          'vertex' ( temp structure{ temp 4-component vector of float PositionCS})
+0:107          Constant:
+0:107            0 (const int)
+0:107        'Q1' ( temp 4-component vector of float)
+0:108      Constant:
+0:108        0.000000
+0:109      move second child to first child ( temp 4-component vector of float)
+0:109        PositionCS: direct index for structure ( temp 4-component vector of float)
+0:109          'vertex' ( temp structure{ temp 4-component vector of float PositionCS})
+0:109          Constant:
+0:109            0 (const int)
+0:109        'Q2' ( temp 4-component vector of float)
+0:110      Constant:
+0:110        0.000000
+0:111      Constant:
+0:111        0.000000
+0:114      move second child to first child ( temp 4-component vector of float)
+0:114        PositionCS: direct index for structure ( temp 4-component vector of float)
+0:114          'vertex' ( temp structure{ temp 4-component vector of float PositionCS})
+0:114          Constant:
+0:114            0 (const int)
+0:114        'Q2' ( temp 4-component vector of float)
+0:115      Constant:
+0:115        0.000000
+0:116      move second child to first child ( temp 4-component vector of float)
+0:116        PositionCS: direct index for structure ( temp 4-component vector of float)
+0:116          'vertex' ( temp structure{ temp 4-component vector of float PositionCS})
+0:116          Constant:
+0:116            0 (const int)
+0:116        'Q0' ( temp 4-component vector of float)
+0:117      Constant:
+0:117        0.000000
+0:118      Constant:
+0:118        0.000000
+0:?   Linker Objects
+0:?     'anon@0' (layout( binding=0 row_major std140) uniform block{layout( row_major std140) uniform 4X4 matrix of float model_view_matrix, layout( row_major std140) uniform 4X4 matrix of float proj_matrix, layout( row_major std140) uniform 4X4 matrix of float model_view_proj_matrix, layout( row_major std140) uniform 3X3 matrix of float normal_matrix, layout( row_major std140) uniform 3-component vector of float color, layout( row_major std140) uniform 3-component vector of float view_dir, layout( row_major std140) uniform 3-component vector of float tess_factor})
+0:?     '@entryPointOutput' (layout( location=0) out 3-element array of structure{ temp 3-component vector of float PositionWS})
+0:?     'patch' (layout( location=0) in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:?     'id' ( in uint InvocationID)
+0:?     '@patchConstantOutput.EdgeTessFactor' ( patch out 4-element array of float TessLevelOuter)
+0:?     '@patchConstantOutput.InsideTessFactor' ( patch out 2-element array of float TessLevelInner)
+0:?     '@patchConstantOutput' (layout( location=1) patch out structure{ temp 3-element array of 3-component vector of float NormalWS})
+
+
+Linked tessellation control stage:
+
+
+Shader version: 500
+vertices = 3
+input primitive = triangles
+vertex spacing = fractional_odd_spacing
+triangle order = ccw
+0:? Sequence
+0:31  Function Definition: HSPatchConstant(struct-HSInput-vf3-vf31[3]; ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:31    Function Parameters: 
+0:31      'patch' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:?     Sequence
+0:32      Sequence
+0:32        move second child to first child ( temp 3-component vector of float)
+0:32          'roundedEdgeTessFactor' ( temp 3-component vector of float)
+0:32          tess_factor: direct index for structure (layout( row_major std140) uniform 3-component vector of float)
+0:32            'anon@0' (layout( binding=0 row_major std140) uniform block{layout( row_major std140) uniform 4X4 matrix of float model_view_matrix, layout( row_major std140) uniform 4X4 matrix of float proj_matrix, layout( row_major std140) uniform 4X4 matrix of float model_view_proj_matrix, layout( row_major std140) uniform 3X3 matrix of float normal_matrix, layout( row_major std140) uniform 3-component vector of float color, layout( row_major std140) uniform 3-component vector of float view_dir, layout( row_major std140) uniform 3-component vector of float tess_factor})
+0:32            Constant:
+0:32              6 (const uint)
+0:33      Sequence
+0:33        move second child to first child ( temp float)
+0:33          'roundedInsideTessFactor' ( temp float)
+0:33          Constant:
+0:33            3.000000
+0:34      Sequence
+0:34        move second child to first child ( temp float)
+0:34          'insideTessFactor' ( temp float)
+0:34          Constant:
+0:34            1.000000
+0:39      move second child to first child ( temp float)
+0:39        direct index ( temp float)
+0:39          EdgeTessFactor: direct index for structure ( temp 3-element array of float)
+0:39            'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:39            Constant:
+0:39              0 (const int)
+0:39          Constant:
+0:39            0 (const int)
+0:39        direct index ( temp float)
+0:39          'roundedEdgeTessFactor' ( temp 3-component vector of float)
+0:39          Constant:
+0:39            0 (const int)
+0:40      move second child to first child ( temp float)
+0:40        direct index ( temp float)
+0:40          EdgeTessFactor: direct index for structure ( temp 3-element array of float)
+0:40            'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:40            Constant:
+0:40              0 (const int)
+0:40          Constant:
+0:40            1 (const int)
+0:40        direct index ( temp float)
+0:40          'roundedEdgeTessFactor' ( temp 3-component vector of float)
+0:40          Constant:
+0:40            1 (const int)
+0:41      move second child to first child ( temp float)
+0:41        direct index ( temp float)
+0:41          EdgeTessFactor: direct index for structure ( temp 3-element array of float)
+0:41            'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:41            Constant:
+0:41              0 (const int)
+0:41          Constant:
+0:41            2 (const int)
+0:41        direct index ( temp float)
+0:41          'roundedEdgeTessFactor' ( temp 3-component vector of float)
+0:41          Constant:
+0:41            2 (const int)
+0:42      move second child to first child ( temp float)
+0:42        InsideTessFactor: direct index for structure ( temp float)
+0:42          'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:42          Constant:
+0:42            1 (const int)
+0:42        'roundedInsideTessFactor' ( temp float)
+0:45      move second child to first child ( temp 3-component vector of float)
+0:45        direct index ( temp 3-component vector of float)
+0:45          NormalWS: direct index for structure ( temp 3-element array of 3-component vector of float)
+0:45            'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:45            Constant:
+0:45              2 (const int)
+0:45          Constant:
+0:45            0 (const int)
+0:45        NormalWS: direct index for structure ( temp 3-component vector of float)
+0:45          direct index ( temp structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:45            'patch' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:45            Constant:
+0:45              0 (const int)
+0:45          Constant:
+0:45            1 (const int)
+0:46      move second child to first child ( temp 3-component vector of float)
+0:46        direct index ( temp 3-component vector of float)
+0:46          NormalWS: direct index for structure ( temp 3-element array of 3-component vector of float)
+0:46            'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:46            Constant:
+0:46              2 (const int)
+0:46          Constant:
+0:46            1 (const int)
+0:46        NormalWS: direct index for structure ( temp 3-component vector of float)
+0:46          direct index ( temp structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:46            'patch' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:46            Constant:
+0:46              1 (const int)
+0:46          Constant:
+0:46            1 (const int)
+0:47      move second child to first child ( temp 3-component vector of float)
+0:47        direct index ( temp 3-component vector of float)
+0:47          NormalWS: direct index for structure ( temp 3-element array of 3-component vector of float)
+0:47            'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:47            Constant:
+0:47              2 (const int)
+0:47          Constant:
+0:47            2 (const int)
+0:47        NormalWS: direct index for structure ( temp 3-component vector of float)
+0:47          direct index ( temp structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:47            'patch' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:47            Constant:
+0:47              2 (const int)
+0:47          Constant:
+0:47            1 (const int)
+0:49      Branch: Return with expression
+0:49        'result' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:61  Function Definition: @HSMain(struct-HSInput-vf3-vf31[3];u1; ( temp structure{ temp 3-component vector of float PositionWS})
+0:61    Function Parameters: 
+0:61      'patch' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:61      'id' ( in uint)
+0:?     Sequence
+0:63      move second child to first child ( temp 3-component vector of float)
+0:63        PositionWS: direct index for structure ( temp 3-component vector of float)
+0:63          'output' ( temp structure{ temp 3-component vector of float PositionWS})
+0:63          Constant:
+0:63            0 (const int)
+0:63        PositionWS: direct index for structure ( temp 3-component vector of float)
+0:63          indirect index ( temp structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:63            'patch' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:63            'id' ( in uint)
+0:63          Constant:
+0:63            0 (const int)
+0:64      Branch: Return with expression
+0:64        'output' ( temp structure{ temp 3-component vector of float PositionWS})
+0:61  Function Definition: HSMain( ( temp void)
+0:61    Function Parameters: 
+0:?     Sequence
+0:61      move second child to first child ( temp 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:?         'patch' ( temp 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:?         'patch' (layout( location=0) in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:61      move second child to first child ( temp uint)
+0:?         'id' ( temp uint)
+0:?         'id' ( in uint InvocationID)
+0:61      move second child to first child ( temp structure{ temp 3-component vector of float PositionWS})
+0:61        indirect index (layout( location=0) out structure{ temp 3-component vector of float PositionWS})
+0:?           '@entryPointOutput' (layout( location=0) out 3-element array of structure{ temp 3-component vector of float PositionWS})
+0:?           'id' ( in uint InvocationID)
+0:61        Function Call: @HSMain(struct-HSInput-vf3-vf31[3];u1; ( temp structure{ temp 3-component vector of float PositionWS})
+0:?           'patch' ( temp 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:?           'id' ( temp uint)
+0:?       Barrier ( temp void)
+0:?       Test condition and select ( temp void)
+0:?         Condition
+0:?         Compare Equal ( temp bool)
+0:?           'id' ( in uint InvocationID)
+0:?           Constant:
+0:?             0 (const int)
+0:?         true case
+0:?         Sequence
+0:?           move second child to first child ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?             '@patchConstantResult' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?             Function Call: HSPatchConstant(struct-HSInput-vf3-vf31[3]; ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?               'patch' ( temp 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:?           Sequence
+0:?             move second child to first child ( temp float)
+0:?               direct index ( patch out float TessLevelOuter)
+0:?                 '@patchConstantOutput.EdgeTessFactor' ( patch out 4-element array of float TessLevelOuter)
+0:?                 Constant:
+0:?                   0 (const int)
+0:?               direct index ( temp float)
+0:?                 EdgeTessFactor: direct index for structure ( temp 3-element array of float)
+0:?                   '@patchConstantResult' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?                   Constant:
+0:?                     0 (const int)
+0:?                 Constant:
+0:?                   0 (const int)
+0:?             move second child to first child ( temp float)
+0:?               direct index ( patch out float TessLevelOuter)
+0:?                 '@patchConstantOutput.EdgeTessFactor' ( patch out 4-element array of float TessLevelOuter)
+0:?                 Constant:
+0:?                   1 (const int)
+0:?               direct index ( temp float)
+0:?                 EdgeTessFactor: direct index for structure ( temp 3-element array of float)
+0:?                   '@patchConstantResult' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?                   Constant:
+0:?                     0 (const int)
+0:?                 Constant:
+0:?                   1 (const int)
+0:?             move second child to first child ( temp float)
+0:?               direct index ( patch out float TessLevelOuter)
+0:?                 '@patchConstantOutput.EdgeTessFactor' ( patch out 4-element array of float TessLevelOuter)
+0:?                 Constant:
+0:?                   2 (const int)
+0:?               direct index ( temp float)
+0:?                 EdgeTessFactor: direct index for structure ( temp 3-element array of float)
+0:?                   '@patchConstantResult' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?                   Constant:
+0:?                     0 (const int)
+0:?                 Constant:
+0:?                   2 (const int)
+0:?             move second child to first child ( temp float)
+0:?               direct index ( patch out float TessLevelInner)
+0:?                 '@patchConstantOutput.InsideTessFactor' ( patch out 2-element array of float TessLevelInner)
+0:?                 Constant:
+0:?                   0 (const int)
+0:?               InsideTessFactor: direct index for structure ( temp float)
+0:?                 '@patchConstantResult' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?                 Constant:
+0:?                   1 (const int)
+0:?             move second child to first child ( temp 3-element array of 3-component vector of float)
+0:?               NormalWS: direct index for structure ( temp 3-element array of 3-component vector of float)
+0:?                 '@patchConstantOutput' (layout( location=1) patch out structure{ temp 3-element array of 3-component vector of float NormalWS})
+0:?                 Constant:
+0:?                   0 (const int)
+0:?               NormalWS: direct index for structure ( temp 3-element array of 3-component vector of float)
+0:?                 '@patchConstantResult' ( temp structure{ temp 3-element array of float EdgeTessFactor,  temp float InsideTessFactor,  temp 3-element array of 3-component vector of float NormalWS})
+0:?                 Constant:
+0:?                   2 (const int)
+0:84  Function Definition: GSMain(struct-GSVertexInput-vf3-vf31[3];struct-GSVertexOutput-vf41; ( temp void)
+0:84    Function Parameters: 
+0:84      'input' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:84      'output' ( out structure{ temp 4-component vector of float PositionCS})
+0:?     Sequence
+0:86      Sequence
+0:86        move second child to first child ( temp 3-component vector of float)
+0:86          'P0' ( temp 3-component vector of float)
+0:86          vector swizzle ( temp 3-component vector of float)
+0:86            PositionWS: direct index for structure ( temp 3-component vector of float)
+0:86              direct index ( temp structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:86                'input' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:86                Constant:
+0:86                  0 (const int)
+0:86              Constant:
+0:86                0 (const int)
+0:86            Sequence
+0:86              Constant:
+0:86                0 (const int)
+0:86              Constant:
+0:86                1 (const int)
+0:86              Constant:
+0:86                2 (const int)
+0:87      Sequence
+0:87        move second child to first child ( temp 3-component vector of float)
+0:87          'P1' ( temp 3-component vector of float)
+0:87          vector swizzle ( temp 3-component vector of float)
+0:87            PositionWS: direct index for structure ( temp 3-component vector of float)
+0:87              direct index ( temp structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:87                'input' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:87                Constant:
+0:87                  1 (const int)
+0:87              Constant:
+0:87                0 (const int)
+0:87            Sequence
+0:87              Constant:
+0:87                0 (const int)
+0:87              Constant:
+0:87                1 (const int)
+0:87              Constant:
+0:87                2 (const int)
+0:88      Sequence
+0:88        move second child to first child ( temp 3-component vector of float)
+0:88          'P2' ( temp 3-component vector of float)
+0:88          vector swizzle ( temp 3-component vector of float)
+0:88            PositionWS: direct index for structure ( temp 3-component vector of float)
+0:88              direct index ( temp structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:88                'input' ( in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:88                Constant:
+0:88                  2 (const int)
+0:88              Constant:
+0:88                0 (const int)
+0:88            Sequence
+0:88              Constant:
+0:88                0 (const int)
+0:88              Constant:
+0:88                1 (const int)
+0:88              Constant:
+0:88                2 (const int)
+0:92      add second child into first child ( temp float)
+0:92        direct index ( temp float)
+0:92          'P0' ( temp 3-component vector of float)
+0:92          Constant:
+0:92            2 (const int)
+0:92        Constant:
+0:92          0.001000
+0:93      add second child into first child ( temp float)
+0:93        direct index ( temp float)
+0:93          'P1' ( temp 3-component vector of float)
+0:93          Constant:
+0:93            2 (const int)
+0:93        Constant:
+0:93          0.001000
+0:94      add second child into first child ( temp float)
+0:94        direct index ( temp float)
+0:94          'P2' ( temp 3-component vector of float)
+0:94          Constant:
+0:94            2 (const int)
+0:94        Constant:
+0:94          0.001000
+0:95      Sequence
+0:95        move second child to first child ( temp 4-component vector of float)
+0:95          'Q0' ( temp 4-component vector of float)
+0:95          vector-times-matrix ( temp 4-component vector of float)
+0:?             Construct vec4 ( temp 4-component vector of float)
+0:95              'P0' ( temp 3-component vector of float)
+0:95              Constant:
+0:95                1.000000
+0:95            proj_matrix: direct index for structure (layout( row_major std140) uniform 4X4 matrix of float)
+0:95              'anon@0' (layout( binding=0 row_major std140) uniform block{layout( row_major std140) uniform 4X4 matrix of float model_view_matrix, layout( row_major std140) uniform 4X4 matrix of float proj_matrix, layout( row_major std140) uniform 4X4 matrix of float model_view_proj_matrix, layout( row_major std140) uniform 3X3 matrix of float normal_matrix, layout( row_major std140) uniform 3-component vector of float color, layout( row_major std140) uniform 3-component vector of float view_dir, layout( row_major std140) uniform 3-component vector of float tess_factor})
+0:95              Constant:
+0:95                1 (const uint)
+0:96      Sequence
+0:96        move second child to first child ( temp 4-component vector of float)
+0:96          'Q1' ( temp 4-component vector of float)
+0:96          vector-times-matrix ( temp 4-component vector of float)
+0:?             Construct vec4 ( temp 4-component vector of float)
+0:96              'P1' ( temp 3-component vector of float)
+0:96              Constant:
+0:96                1.000000
+0:96            proj_matrix: direct index for structure (layout( row_major std140) uniform 4X4 matrix of float)
+0:96              'anon@0' (layout( binding=0 row_major std140) uniform block{layout( row_major std140) uniform 4X4 matrix of float model_view_matrix, layout( row_major std140) uniform 4X4 matrix of float proj_matrix, layout( row_major std140) uniform 4X4 matrix of float model_view_proj_matrix, layout( row_major std140) uniform 3X3 matrix of float normal_matrix, layout( row_major std140) uniform 3-component vector of float color, layout( row_major std140) uniform 3-component vector of float view_dir, layout( row_major std140) uniform 3-component vector of float tess_factor})
+0:96              Constant:
+0:96                1 (const uint)
+0:97      Sequence
+0:97        move second child to first child ( temp 4-component vector of float)
+0:97          'Q2' ( temp 4-component vector of float)
+0:97          vector-times-matrix ( temp 4-component vector of float)
+0:?             Construct vec4 ( temp 4-component vector of float)
+0:97              'P2' ( temp 3-component vector of float)
+0:97              Constant:
+0:97                1.000000
+0:97            proj_matrix: direct index for structure (layout( row_major std140) uniform 4X4 matrix of float)
+0:97              'anon@0' (layout( binding=0 row_major std140) uniform block{layout( row_major std140) uniform 4X4 matrix of float model_view_matrix, layout( row_major std140) uniform 4X4 matrix of float proj_matrix, layout( row_major std140) uniform 4X4 matrix of float model_view_proj_matrix, layout( row_major std140) uniform 3X3 matrix of float normal_matrix, layout( row_major std140) uniform 3-component vector of float color, layout( row_major std140) uniform 3-component vector of float view_dir, layout( row_major std140) uniform 3-component vector of float tess_factor})
+0:97              Constant:
+0:97                1 (const uint)
+0:100      move second child to first child ( temp 4-component vector of float)
+0:100        PositionCS: direct index for structure ( temp 4-component vector of float)
+0:100          'vertex' ( temp structure{ temp 4-component vector of float PositionCS})
+0:100          Constant:
+0:100            0 (const int)
+0:100        'Q0' ( temp 4-component vector of float)
+0:101      Constant:
+0:101        0.000000
+0:102      move second child to first child ( temp 4-component vector of float)
+0:102        PositionCS: direct index for structure ( temp 4-component vector of float)
+0:102          'vertex' ( temp structure{ temp 4-component vector of float PositionCS})
+0:102          Constant:
+0:102            0 (const int)
+0:102        'Q1' ( temp 4-component vector of float)
+0:103      Constant:
+0:103        0.000000
+0:104      Constant:
+0:104        0.000000
+0:107      move second child to first child ( temp 4-component vector of float)
+0:107        PositionCS: direct index for structure ( temp 4-component vector of float)
+0:107          'vertex' ( temp structure{ temp 4-component vector of float PositionCS})
+0:107          Constant:
+0:107            0 (const int)
+0:107        'Q1' ( temp 4-component vector of float)
+0:108      Constant:
+0:108        0.000000
+0:109      move second child to first child ( temp 4-component vector of float)
+0:109        PositionCS: direct index for structure ( temp 4-component vector of float)
+0:109          'vertex' ( temp structure{ temp 4-component vector of float PositionCS})
+0:109          Constant:
+0:109            0 (const int)
+0:109        'Q2' ( temp 4-component vector of float)
+0:110      Constant:
+0:110        0.000000
+0:111      Constant:
+0:111        0.000000
+0:114      move second child to first child ( temp 4-component vector of float)
+0:114        PositionCS: direct index for structure ( temp 4-component vector of float)
+0:114          'vertex' ( temp structure{ temp 4-component vector of float PositionCS})
+0:114          Constant:
+0:114            0 (const int)
+0:114        'Q2' ( temp 4-component vector of float)
+0:115      Constant:
+0:115        0.000000
+0:116      move second child to first child ( temp 4-component vector of float)
+0:116        PositionCS: direct index for structure ( temp 4-component vector of float)
+0:116          'vertex' ( temp structure{ temp 4-component vector of float PositionCS})
+0:116          Constant:
+0:116            0 (const int)
+0:116        'Q0' ( temp 4-component vector of float)
+0:117      Constant:
+0:117        0.000000
+0:118      Constant:
+0:118        0.000000
+0:?   Linker Objects
+0:?     'anon@0' (layout( binding=0 row_major std140) uniform block{layout( row_major std140) uniform 4X4 matrix of float model_view_matrix, layout( row_major std140) uniform 4X4 matrix of float proj_matrix, layout( row_major std140) uniform 4X4 matrix of float model_view_proj_matrix, layout( row_major std140) uniform 3X3 matrix of float normal_matrix, layout( row_major std140) uniform 3-component vector of float color, layout( row_major std140) uniform 3-component vector of float view_dir, layout( row_major std140) uniform 3-component vector of float tess_factor})
+0:?     '@entryPointOutput' (layout( location=0) out 3-element array of structure{ temp 3-component vector of float PositionWS})
+0:?     'patch' (layout( location=0) in 3-element array of structure{ temp 3-component vector of float PositionWS,  temp 3-component vector of float NormalWS})
+0:?     'id' ( in uint InvocationID)
+0:?     '@patchConstantOutput.EdgeTessFactor' ( patch out 4-element array of float TessLevelOuter)
+0:?     '@patchConstantOutput.InsideTessFactor' ( patch out 2-element array of float TessLevelInner)
+0:?     '@patchConstantOutput' (layout( location=1) patch out structure{ temp 3-element array of 3-component vector of float NormalWS})
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 216
+
+                              Capability Tessellation
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint TessellationControl 4  "HSMain" 97 101 105 126 139 145
+                              ExecutionMode 4 OutputVertices 3
+                              ExecutionMode 4 Triangles
+                              ExecutionMode 4 SpacingFractionalOdd
+                              ExecutionMode 4 VertexOrderCcw
+                              Source HLSL 500
+                              Name 4  "HSMain"
+                              Name 8  "HSInput"
+                              MemberName 8(HSInput) 0  "PositionWS"
+                              MemberName 8(HSInput) 1  "NormalWS"
+                              Name 15  "HSTrianglePatchConstant"
+                              MemberName 15(HSTrianglePatchConstant) 0  "EdgeTessFactor"
+                              MemberName 15(HSTrianglePatchConstant) 1  "InsideTessFactor"
+                              MemberName 15(HSTrianglePatchConstant) 2  "NormalWS"
+                              Name 18  "HSPatchConstant(struct-HSInput-vf3-vf31[3];"
+                              Name 17  "patch"
+                              Name 21  "HSOutput"
+                              MemberName 21(HSOutput) 0  "PositionWS"
+                              Name 25  "@HSMain(struct-HSInput-vf3-vf31[3];u1;"
+                              Name 23  "patch"
+                              Name 24  "id"
+                              Name 27  "GSVertexInput"
+                              MemberName 27(GSVertexInput) 0  "PositionWS"
+                              MemberName 27(GSVertexInput) 1  "NormalWS"
+                              Name 31  "GSVertexOutput"
+                              MemberName 31(GSVertexOutput) 0  "PositionCS"
+                              Name 36  "GSMain(struct-GSVertexInput-vf3-vf31[3];struct-GSVertexOutput-vf41;"
+                              Name 34  "input"
+                              Name 35  "output"
+                              Name 39  "roundedEdgeTessFactor"
+                              Name 42  "UniformBlock0"
+                              MemberName 42(UniformBlock0) 0  "model_view_matrix"
+                              MemberName 42(UniformBlock0) 1  "proj_matrix"
+                              MemberName 42(UniformBlock0) 2  "model_view_proj_matrix"
+                              MemberName 42(UniformBlock0) 3  "normal_matrix"
+                              MemberName 42(UniformBlock0) 4  "color"
+                              MemberName 42(UniformBlock0) 5  "view_dir"
+                              MemberName 42(UniformBlock0) 6  "tess_factor"
+                              Name 44  ""
+                              Name 51  "roundedInsideTessFactor"
+                              Name 53  "insideTessFactor"
+                              Name 56  "result"
+                              Name 87  "output"
+                              Name 95  "patch"
+                              Name 97  "patch"
+                              Name 99  "id"
+                              Name 101  "id"
+                              Name 105  "@entryPointOutput"
+                              Name 107  "param"
+                              Name 109  "param"
+                              Name 120  "@patchConstantResult"
+                              Name 121  "param"
+                              Name 126  "@patchConstantOutput.EdgeTessFactor"
+                              Name 139  "@patchConstantOutput.InsideTessFactor"
+                              Name 143  "HSTrianglePatchConstant"
+                              MemberName 143(HSTrianglePatchConstant) 0  "NormalWS"
+                              Name 145  "@patchConstantOutput"
+                              Name 151  "P0"
+                              Name 154  "P1"
+                              Name 157  "P2"
+                              Name 174  "Q0"
+                              Name 184  "Q1"
+                              Name 193  "Q2"
+                              Name 202  "vertex"
+                              MemberDecorate 42(UniformBlock0) 0 RowMajor
+                              MemberDecorate 42(UniformBlock0) 0 Offset 0
+                              MemberDecorate 42(UniformBlock0) 0 MatrixStride 16
+                              MemberDecorate 42(UniformBlock0) 1 RowMajor
+                              MemberDecorate 42(UniformBlock0) 1 Offset 64
+                              MemberDecorate 42(UniformBlock0) 1 MatrixStride 16
+                              MemberDecorate 42(UniformBlock0) 2 RowMajor
+                              MemberDecorate 42(UniformBlock0) 2 Offset 128
+                              MemberDecorate 42(UniformBlock0) 2 MatrixStride 16
+                              MemberDecorate 42(UniformBlock0) 3 RowMajor
+                              MemberDecorate 42(UniformBlock0) 3 Offset 192
+                              MemberDecorate 42(UniformBlock0) 3 MatrixStride 16
+                              MemberDecorate 42(UniformBlock0) 4 Offset 240
+                              MemberDecorate 42(UniformBlock0) 5 Offset 256
+                              MemberDecorate 42(UniformBlock0) 6 Offset 272
+                              Decorate 42(UniformBlock0) Block
+                              Decorate 44 DescriptorSet 0
+                              Decorate 44 Binding 0
+                              Decorate 97(patch) Location 0
+                              Decorate 101(id) BuiltIn InvocationId
+                              Decorate 105(@entryPointOutput) Location 0
+                              Decorate 126(@patchConstantOutput.EdgeTessFactor) Patch
+                              Decorate 126(@patchConstantOutput.EdgeTessFactor) BuiltIn TessLevelOuter
+                              Decorate 139(@patchConstantOutput.InsideTessFactor) Patch
+                              Decorate 139(@patchConstantOutput.InsideTessFactor) BuiltIn TessLevelInner
+                              MemberDecorate 143(HSTrianglePatchConstant) 0 Patch
+                              Decorate 145(@patchConstantOutput) Patch
+                              Decorate 145(@patchConstantOutput) Location 1
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 3
+      8(HSInput):             TypeStruct 7(fvec3) 7(fvec3)
+               9:             TypeInt 32 0
+              10:      9(int) Constant 3
+              11:             TypeArray 8(HSInput) 10
+              12:             TypePointer Function 11
+              13:             TypeArray 6(float) 10
+              14:             TypeArray 7(fvec3) 10
+15(HSTrianglePatchConstant):             TypeStruct 13 6(float) 14
+              16:             TypeFunction 15(HSTrianglePatchConstant) 12(ptr)
+              20:             TypePointer Function 9(int)
+    21(HSOutput):             TypeStruct 7(fvec3)
+              22:             TypeFunction 21(HSOutput) 12(ptr) 20(ptr)
+27(GSVertexInput):             TypeStruct 7(fvec3) 7(fvec3)
+              28:             TypeArray 27(GSVertexInput) 10
+              29:             TypePointer Function 28
+              30:             TypeVector 6(float) 4
+31(GSVertexOutput):             TypeStruct 30(fvec4)
+              32:             TypePointer Function 31(GSVertexOutput)
+              33:             TypeFunction 2 29(ptr) 32(ptr)
+              38:             TypePointer Function 7(fvec3)
+              40:             TypeMatrix 30(fvec4) 4
+              41:             TypeMatrix 7(fvec3) 3
+42(UniformBlock0):             TypeStruct 40 40 40 41 7(fvec3) 7(fvec3) 7(fvec3)
+              43:             TypePointer Uniform 42(UniformBlock0)
+              44:     43(ptr) Variable Uniform
+              45:             TypeInt 32 1
+              46:     45(int) Constant 6
+              47:             TypePointer Uniform 7(fvec3)
+              50:             TypePointer Function 6(float)
+              52:    6(float) Constant 1077936128
+              54:    6(float) Constant 1065353216
+              55:             TypePointer Function 15(HSTrianglePatchConstant)
+              57:     45(int) Constant 0
+              58:      9(int) Constant 0
+              62:     45(int) Constant 1
+              63:      9(int) Constant 1
+              67:     45(int) Constant 2
+              68:      9(int) Constant 2
+              86:             TypePointer Function 21(HSOutput)
+              96:             TypePointer Input 11
+       97(patch):     96(ptr) Variable Input
+             100:             TypePointer Input 9(int)
+         101(id):    100(ptr) Variable Input
+             103:             TypeArray 21(HSOutput) 10
+             104:             TypePointer Output 103
+105(@entryPointOutput):    104(ptr) Variable Output
+             112:             TypePointer Output 21(HSOutput)
+             114:      9(int) Constant 4
+             116:             TypeBool
+             124:             TypeArray 6(float) 114
+             125:             TypePointer Output 124
+126(@patchConstantOutput.EdgeTessFactor):    125(ptr) Variable Output
+             129:             TypePointer Output 6(float)
+             137:             TypeArray 6(float) 68
+             138:             TypePointer Output 137
+139(@patchConstantOutput.InsideTessFactor):    138(ptr) Variable Output
+143(HSTrianglePatchConstant):             TypeStruct 14
+             144:             TypePointer Output 143(HSTrianglePatchConstant)
+145(@patchConstantOutput):    144(ptr) Variable Output
+             146:             TypePointer Function 14
+             149:             TypePointer Output 14
+             160:    6(float) Constant 981668463
+             173:             TypePointer Function 30(fvec4)
+             180:             TypePointer Uniform 40
+             205:    6(float) Constant 0
+       4(HSMain):           2 Function None 3
+               5:             Label
+       95(patch):     12(ptr) Variable Function
+          99(id):     20(ptr) Variable Function
+      107(param):     12(ptr) Variable Function
+      109(param):     20(ptr) Variable Function
+120(@patchConstantResult):     55(ptr) Variable Function
+      121(param):     12(ptr) Variable Function
+              98:          11 Load 97(patch)
+                              Store 95(patch) 98
+             102:      9(int) Load 101(id)
+                              Store 99(id) 102
+             106:      9(int) Load 101(id)
+             108:          11 Load 95(patch)
+                              Store 107(param) 108
+             110:      9(int) Load 99(id)
+                              Store 109(param) 110
+             111:21(HSOutput) FunctionCall 25(@HSMain(struct-HSInput-vf3-vf31[3];u1;) 107(param) 109(param)
+             113:    112(ptr) AccessChain 105(@entryPointOutput) 106
+                              Store 113 111
+                              ControlBarrier 68 114 58
+             115:      9(int) Load 101(id)
+             117:   116(bool) IEqual 115 57
+                              SelectionMerge 119 None
+                              BranchConditional 117 118 119
+             118:               Label
+             122:          11   Load 95(patch)
+                                Store 121(param) 122
+             123:15(HSTrianglePatchConstant)   FunctionCall 18(HSPatchConstant(struct-HSInput-vf3-vf31[3];) 121(param)
+                                Store 120(@patchConstantResult) 123
+             127:     50(ptr)   AccessChain 120(@patchConstantResult) 57 57
+             128:    6(float)   Load 127
+             130:    129(ptr)   AccessChain 126(@patchConstantOutput.EdgeTessFactor) 57
+                                Store 130 128
+             131:     50(ptr)   AccessChain 120(@patchConstantResult) 57 62
+             132:    6(float)   Load 131
+             133:    129(ptr)   AccessChain 126(@patchConstantOutput.EdgeTessFactor) 62
+                                Store 133 132
+             134:     50(ptr)   AccessChain 120(@patchConstantResult) 57 67
+             135:    6(float)   Load 134
+             136:    129(ptr)   AccessChain 126(@patchConstantOutput.EdgeTessFactor) 67
+                                Store 136 135
+             140:     50(ptr)   AccessChain 120(@patchConstantResult) 62
+             141:    6(float)   Load 140
+             142:    129(ptr)   AccessChain 139(@patchConstantOutput.InsideTessFactor) 57
+                                Store 142 141
+             147:    146(ptr)   AccessChain 120(@patchConstantResult) 67
+             148:          14   Load 147
+             150:    149(ptr)   AccessChain 145(@patchConstantOutput) 57
+                                Store 150 148
+                                Branch 119
+             119:             Label
+                              Return
+                              FunctionEnd
+18(HSPatchConstant(struct-HSInput-vf3-vf31[3];):15(HSTrianglePatchConstant) Function None 16
+       17(patch):     12(ptr) FunctionParameter
+              19:             Label
+39(roundedEdgeTessFactor):     38(ptr) Variable Function
+51(roundedInsideTessFactor):     50(ptr) Variable Function
+53(insideTessFactor):     50(ptr) Variable Function
+      56(result):     55(ptr) Variable Function
+              48:     47(ptr) AccessChain 44 46
+              49:    7(fvec3) Load 48
+                              Store 39(roundedEdgeTessFactor) 49
+                              Store 51(roundedInsideTessFactor) 52
+                              Store 53(insideTessFactor) 54
+              59:     50(ptr) AccessChain 39(roundedEdgeTessFactor) 58
+              60:    6(float) Load 59
+              61:     50(ptr) AccessChain 56(result) 57 57
+                              Store 61 60
+              64:     50(ptr) AccessChain 39(roundedEdgeTessFactor) 63
+              65:    6(float) Load 64
+              66:     50(ptr) AccessChain 56(result) 57 62
+                              Store 66 65
+              69:     50(ptr) AccessChain 39(roundedEdgeTessFactor) 68
+              70:    6(float) Load 69
+              71:     50(ptr) AccessChain 56(result) 57 67
+                              Store 71 70
+              72:    6(float) Load 51(roundedInsideTessFactor)
+              73:     50(ptr) AccessChain 56(result) 62
+                              Store 73 72
+              74:     38(ptr) AccessChain 17(patch) 57 62
+              75:    7(fvec3) Load 74
+              76:     38(ptr) AccessChain 56(result) 67 57
+                              Store 76 75
+              77:     38(ptr) AccessChain 17(patch) 62 62
+              78:    7(fvec3) Load 77
+              79:     38(ptr) AccessChain 56(result) 67 62
+                              Store 79 78
+              80:     38(ptr) AccessChain 17(patch) 67 62
+              81:    7(fvec3) Load 80
+              82:     38(ptr) AccessChain 56(result) 67 67
+                              Store 82 81
+              83:15(HSTrianglePatchConstant) Load 56(result)
+                              ReturnValue 83
+                              FunctionEnd
+25(@HSMain(struct-HSInput-vf3-vf31[3];u1;):21(HSOutput) Function None 22
+       23(patch):     12(ptr) FunctionParameter
+          24(id):     20(ptr) FunctionParameter
+              26:             Label
+      87(output):     86(ptr) Variable Function
+              88:      9(int) Load 24(id)
+              89:     38(ptr) AccessChain 23(patch) 88 57
+              90:    7(fvec3) Load 89
+              91:     38(ptr) AccessChain 87(output) 57
+                              Store 91 90
+              92:21(HSOutput) Load 87(output)
+                              ReturnValue 92
+                              FunctionEnd
+36(GSMain(struct-GSVertexInput-vf3-vf31[3];struct-GSVertexOutput-vf41;):           2 Function None 33
+       34(input):     29(ptr) FunctionParameter
+      35(output):     32(ptr) FunctionParameter
+              37:             Label
+         151(P0):     38(ptr) Variable Function
+         154(P1):     38(ptr) Variable Function
+         157(P2):     38(ptr) Variable Function
+         174(Q0):    173(ptr) Variable Function
+         184(Q1):    173(ptr) Variable Function
+         193(Q2):    173(ptr) Variable Function
+     202(vertex):     32(ptr) Variable Function
+             152:     38(ptr) AccessChain 34(input) 57 57
+             153:    7(fvec3) Load 152
+                              Store 151(P0) 153
+             155:     38(ptr) AccessChain 34(input) 62 57
+             156:    7(fvec3) Load 155
+                              Store 154(P1) 156
+             158:     38(ptr) AccessChain 34(input) 67 57
+             159:    7(fvec3) Load 158
+                              Store 157(P2) 159
+             161:     50(ptr) AccessChain 151(P0) 68
+             162:    6(float) Load 161
+             163:    6(float) FAdd 162 160
+             164:     50(ptr) AccessChain 151(P0) 68
+                              Store 164 163
+             165:     50(ptr) AccessChain 154(P1) 68
+             166:    6(float) Load 165
+             167:    6(float) FAdd 166 160
+             168:     50(ptr) AccessChain 154(P1) 68
+                              Store 168 167
+             169:     50(ptr) AccessChain 157(P2) 68
+             170:    6(float) Load 169
+             171:    6(float) FAdd 170 160
+             172:     50(ptr) AccessChain 157(P2) 68
+                              Store 172 171
+             175:    7(fvec3) Load 151(P0)
+             176:    6(float) CompositeExtract 175 0
+             177:    6(float) CompositeExtract 175 1
+             178:    6(float) CompositeExtract 175 2
+             179:   30(fvec4) CompositeConstruct 176 177 178 54
+             181:    180(ptr) AccessChain 44 62
+             182:          40 Load 181
+             183:   30(fvec4) VectorTimesMatrix 179 182
+                              Store 174(Q0) 183
+             185:    7(fvec3) Load 154(P1)
+             186:    6(float) CompositeExtract 185 0
+             187:    6(float) CompositeExtract 185 1
+             188:    6(float) CompositeExtract 185 2
+             189:   30(fvec4) CompositeConstruct 186 187 188 54
+             190:    180(ptr) AccessChain 44 62
+             191:          40 Load 190
+             192:   30(fvec4) VectorTimesMatrix 189 191
+                              Store 184(Q1) 192
+             194:    7(fvec3) Load 157(P2)
+             195:    6(float) CompositeExtract 194 0
+             196:    6(float) CompositeExtract 194 1
+             197:    6(float) CompositeExtract 194 2
+             198:   30(fvec4) CompositeConstruct 195 196 197 54
+             199:    180(ptr) AccessChain 44 62
+             200:          40 Load 199
+             201:   30(fvec4) VectorTimesMatrix 198 200
+                              Store 193(Q2) 201
+             203:   30(fvec4) Load 174(Q0)
+             204:    173(ptr) AccessChain 202(vertex) 57
+                              Store 204 203
+             206:   30(fvec4) Load 184(Q1)
+             207:    173(ptr) AccessChain 202(vertex) 57
+                              Store 207 206
+             208:   30(fvec4) Load 184(Q1)
+             209:    173(ptr) AccessChain 202(vertex) 57
+                              Store 209 208
+             210:   30(fvec4) Load 193(Q2)
+             211:    173(ptr) AccessChain 202(vertex) 57
+                              Store 211 210
+             212:   30(fvec4) Load 193(Q2)
+             213:    173(ptr) AccessChain 202(vertex) 57
+                              Store 213 212
+             214:   30(fvec4) Load 174(Q0)
+             215:    173(ptr) AccessChain 202(vertex) 57
+                              Store 215 214
+                              Return
+                              FunctionEnd

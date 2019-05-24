@@ -1,0 +1,63 @@
+conditionalDiscard.frag
+Shader version: 110
+0:? Sequence
+0:6  Function Definition: main( ( global void)
+0:6    Function Parameters: 
+0:8    Sequence
+0:8      Sequence
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          'v' ( temp 4-component vector of float)
+0:8          texture ( global 4-component vector of float)
+0:8            'tex' ( uniform sampler2D)
+0:8            'coord' ( smooth in 2-component vector of float)
+0:10      Test condition and select ( temp void)
+0:10        Condition
+0:10        Compare Equal ( temp bool)
+0:10          'v' ( temp 4-component vector of float)
+0:10          Constant:
+0:10            0.100000
+0:10            0.200000
+0:10            0.300000
+0:10            0.400000
+0:10        true case
+0:11        Branch: Kill
+0:13      move second child to first child ( temp 4-component vector of float)
+0:13        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:13        'v' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'tex' ( uniform sampler2D)
+0:?     'coord' ( smooth in 2-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 110
+0:? Sequence
+0:6  Function Definition: main( ( global void)
+0:6    Function Parameters: 
+0:8    Sequence
+0:8      Sequence
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          'v' ( temp 4-component vector of float)
+0:8          texture ( global 4-component vector of float)
+0:8            'tex' ( uniform sampler2D)
+0:8            'coord' ( smooth in 2-component vector of float)
+0:10      Test condition and select ( temp void)
+0:10        Condition
+0:10        Compare Equal ( temp bool)
+0:10          'v' ( temp 4-component vector of float)
+0:10          Constant:
+0:10            0.100000
+0:10            0.200000
+0:10            0.300000
+0:10            0.400000
+0:10        true case
+0:11        Branch: Kill
+0:13      move second child to first child ( temp 4-component vector of float)
+0:13        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:13        'v' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'tex' ( uniform sampler2D)
+0:?     'coord' ( smooth in 2-component vector of float)
+

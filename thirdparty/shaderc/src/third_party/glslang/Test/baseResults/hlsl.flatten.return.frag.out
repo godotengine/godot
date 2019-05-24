@@ -1,0 +1,200 @@
+hlsl.flatten.return.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:11  Function Definition: Func1( ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:11    Function Parameters: 
+0:?     Sequence
+0:12      Branch: Return with expression
+0:?         Constant:
+0:?           1.000000
+0:?           1.000000
+0:?           1.000000
+0:?           1.000000
+0:?           2.000000
+0:?           3.000000
+0:?           4.000000
+0:16  Function Definition: @main( ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16    Function Parameters: 
+0:?     Sequence
+0:17      Branch: Return with expression
+0:17        Function Call: Func1( ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16  Function Definition: main( ( temp void)
+0:16    Function Parameters: 
+0:?     Sequence
+0:16      Sequence
+0:16        move second child to first child ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16          'flattenTemp' ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16          Function Call: @main( ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:16          color: direct index for structure ( temp 4-component vector of float)
+0:16            'flattenTemp' ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16            Constant:
+0:16              0 (const int)
+0:16        move second child to first child ( temp float)
+0:?           '@entryPointOutput.other_struct_member1' (layout( location=1) out float)
+0:16          other_struct_member1: direct index for structure ( temp float)
+0:16            'flattenTemp' ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16            Constant:
+0:16              1 (const int)
+0:16        move second child to first child ( temp float)
+0:?           '@entryPointOutput.other_struct_member2' (layout( location=2) out float)
+0:16          other_struct_member2: direct index for structure ( temp float)
+0:16            'flattenTemp' ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16            Constant:
+0:16              2 (const int)
+0:16        move second child to first child ( temp float)
+0:?           '@entryPointOutput.other_struct_member3' (layout( location=3) out float)
+0:16          other_struct_member3: direct index for structure ( temp float)
+0:16            'flattenTemp' ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16            Constant:
+0:16              3 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:?     '@entryPointOutput.other_struct_member1' (layout( location=1) out float)
+0:?     '@entryPointOutput.other_struct_member2' (layout( location=2) out float)
+0:?     '@entryPointOutput.other_struct_member3' (layout( location=3) out float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:11  Function Definition: Func1( ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:11    Function Parameters: 
+0:?     Sequence
+0:12      Branch: Return with expression
+0:?         Constant:
+0:?           1.000000
+0:?           1.000000
+0:?           1.000000
+0:?           1.000000
+0:?           2.000000
+0:?           3.000000
+0:?           4.000000
+0:16  Function Definition: @main( ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16    Function Parameters: 
+0:?     Sequence
+0:17      Branch: Return with expression
+0:17        Function Call: Func1( ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16  Function Definition: main( ( temp void)
+0:16    Function Parameters: 
+0:?     Sequence
+0:16      Sequence
+0:16        move second child to first child ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16          'flattenTemp' ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16          Function Call: @main( ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:16          color: direct index for structure ( temp 4-component vector of float)
+0:16            'flattenTemp' ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16            Constant:
+0:16              0 (const int)
+0:16        move second child to first child ( temp float)
+0:?           '@entryPointOutput.other_struct_member1' (layout( location=1) out float)
+0:16          other_struct_member1: direct index for structure ( temp float)
+0:16            'flattenTemp' ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16            Constant:
+0:16              1 (const int)
+0:16        move second child to first child ( temp float)
+0:?           '@entryPointOutput.other_struct_member2' (layout( location=2) out float)
+0:16          other_struct_member2: direct index for structure ( temp float)
+0:16            'flattenTemp' ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16            Constant:
+0:16              2 (const int)
+0:16        move second child to first child ( temp float)
+0:?           '@entryPointOutput.other_struct_member3' (layout( location=3) out float)
+0:16          other_struct_member3: direct index for structure ( temp float)
+0:16            'flattenTemp' ( temp structure{ temp 4-component vector of float color,  temp float other_struct_member1,  temp float other_struct_member2,  temp float other_struct_member3})
+0:16            Constant:
+0:16              3 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:?     '@entryPointOutput.other_struct_member1' (layout( location=1) out float)
+0:?     '@entryPointOutput.other_struct_member2' (layout( location=2) out float)
+0:?     '@entryPointOutput.other_struct_member3' (layout( location=3) out float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 49
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 29 36 41 45
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "PS_OUTPUT"
+                              MemberName 8(PS_OUTPUT) 0  "color"
+                              MemberName 8(PS_OUTPUT) 1  "other_struct_member1"
+                              MemberName 8(PS_OUTPUT) 2  "other_struct_member2"
+                              MemberName 8(PS_OUTPUT) 3  "other_struct_member3"
+                              Name 10  "Func1("
+                              Name 12  "@main("
+                              Name 26  "flattenTemp"
+                              Name 29  "@entryPointOutput.color"
+                              Name 36  "@entryPointOutput.other_struct_member1"
+                              Name 41  "@entryPointOutput.other_struct_member2"
+                              Name 45  "@entryPointOutput.other_struct_member3"
+                              Decorate 29(@entryPointOutput.color) Location 0
+                              Decorate 36(@entryPointOutput.other_struct_member1) Location 1
+                              Decorate 41(@entryPointOutput.other_struct_member2) Location 2
+                              Decorate 45(@entryPointOutput.other_struct_member3) Location 3
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+    8(PS_OUTPUT):             TypeStruct 7(fvec4) 6(float) 6(float) 6(float)
+               9:             TypeFunction 8(PS_OUTPUT)
+              14:    6(float) Constant 1065353216
+              15:    7(fvec4) ConstantComposite 14 14 14 14
+              16:    6(float) Constant 1073741824
+              17:    6(float) Constant 1077936128
+              18:    6(float) Constant 1082130432
+              19:8(PS_OUTPUT) ConstantComposite 15 16 17 18
+              25:             TypePointer Function 8(PS_OUTPUT)
+              28:             TypePointer Output 7(fvec4)
+29(@entryPointOutput.color):     28(ptr) Variable Output
+              30:             TypeInt 32 1
+              31:     30(int) Constant 0
+              32:             TypePointer Function 7(fvec4)
+              35:             TypePointer Output 6(float)
+36(@entryPointOutput.other_struct_member1):     35(ptr) Variable Output
+              37:     30(int) Constant 1
+              38:             TypePointer Function 6(float)
+41(@entryPointOutput.other_struct_member2):     35(ptr) Variable Output
+              42:     30(int) Constant 2
+45(@entryPointOutput.other_struct_member3):     35(ptr) Variable Output
+              46:     30(int) Constant 3
+         4(main):           2 Function None 3
+               5:             Label
+ 26(flattenTemp):     25(ptr) Variable Function
+              27:8(PS_OUTPUT) FunctionCall 12(@main()
+                              Store 26(flattenTemp) 27
+              33:     32(ptr) AccessChain 26(flattenTemp) 31
+              34:    7(fvec4) Load 33
+                              Store 29(@entryPointOutput.color) 34
+              39:     38(ptr) AccessChain 26(flattenTemp) 37
+              40:    6(float) Load 39
+                              Store 36(@entryPointOutput.other_struct_member1) 40
+              43:     38(ptr) AccessChain 26(flattenTemp) 42
+              44:    6(float) Load 43
+                              Store 41(@entryPointOutput.other_struct_member2) 44
+              47:     38(ptr) AccessChain 26(flattenTemp) 46
+              48:    6(float) Load 47
+                              Store 45(@entryPointOutput.other_struct_member3) 48
+                              Return
+                              FunctionEnd
+      10(Func1():8(PS_OUTPUT) Function None 9
+              11:             Label
+                              ReturnValue 19
+                              FunctionEnd
+      12(@main():8(PS_OUTPUT) Function None 9
+              13:             Label
+              22:8(PS_OUTPUT) FunctionCall 10(Func1()
+                              ReturnValue 22
+                              FunctionEnd

@@ -1,0 +1,1469 @@
+hlsl.type.type.conversion.all.frag
+ERROR: 0:88: '=' :  cannot convert from ' const 2X2 matrix of float' to ' temp 2-component vector of float'
+ERROR: 0:89: '=' :  cannot convert from ' const 2X3 matrix of float' to ' temp 2-component vector of float'
+ERROR: 0:90: '=' :  cannot convert from ' const 2X4 matrix of float' to ' temp 2-component vector of float'
+ERROR: 0:91: '=' :  cannot convert from ' const 3X2 matrix of float' to ' temp 2-component vector of float'
+ERROR: 0:92: '=' :  cannot convert from ' const 3X3 matrix of float' to ' temp 2-component vector of float'
+ERROR: 0:93: '=' :  cannot convert from ' const 3X4 matrix of float' to ' temp 2-component vector of float'
+ERROR: 0:94: '=' :  cannot convert from ' const 4X2 matrix of float' to ' temp 2-component vector of float'
+ERROR: 0:95: '=' :  cannot convert from ' const 4X3 matrix of float' to ' temp 2-component vector of float'
+ERROR: 0:96: '=' :  cannot convert from ' const 4X4 matrix of float' to ' temp 2-component vector of float'
+ERROR: 0:97: '=' :  cannot convert from ' const 2-component vector of float' to ' temp 3-component vector of float'
+ERROR: 0:98: '=' :  cannot convert from ' const 2X2 matrix of float' to ' temp 3-component vector of float'
+ERROR: 0:99: '=' :  cannot convert from ' const 2X3 matrix of float' to ' temp 3-component vector of float'
+ERROR: 0:100: '=' :  cannot convert from ' const 2X4 matrix of float' to ' temp 3-component vector of float'
+ERROR: 0:101: '=' :  cannot convert from ' const 3X2 matrix of float' to ' temp 3-component vector of float'
+ERROR: 0:102: '=' :  cannot convert from ' const 3X3 matrix of float' to ' temp 3-component vector of float'
+ERROR: 0:103: '=' :  cannot convert from ' const 3X4 matrix of float' to ' temp 3-component vector of float'
+ERROR: 0:104: '=' :  cannot convert from ' const 4X2 matrix of float' to ' temp 3-component vector of float'
+ERROR: 0:105: '=' :  cannot convert from ' const 4X3 matrix of float' to ' temp 3-component vector of float'
+ERROR: 0:106: '=' :  cannot convert from ' const 4X4 matrix of float' to ' temp 3-component vector of float'
+ERROR: 0:107: '=' :  cannot convert from ' const 2-component vector of float' to ' temp 4-component vector of float'
+ERROR: 0:108: '=' :  cannot convert from ' const 3-component vector of float' to ' temp 4-component vector of float'
+ERROR: 0:109: '=' :  cannot convert from ' const 2X3 matrix of float' to ' temp 4-component vector of float'
+ERROR: 0:110: '=' :  cannot convert from ' const 2X4 matrix of float' to ' temp 4-component vector of float'
+ERROR: 0:111: '=' :  cannot convert from ' const 3X2 matrix of float' to ' temp 4-component vector of float'
+ERROR: 0:112: '=' :  cannot convert from ' const 3X3 matrix of float' to ' temp 4-component vector of float'
+ERROR: 0:113: '=' :  cannot convert from ' const 3X4 matrix of float' to ' temp 4-component vector of float'
+ERROR: 0:114: '=' :  cannot convert from ' const 4X2 matrix of float' to ' temp 4-component vector of float'
+ERROR: 0:115: '=' :  cannot convert from ' const 4X3 matrix of float' to ' temp 4-component vector of float'
+ERROR: 0:116: '=' :  cannot convert from ' const 4X4 matrix of float' to ' temp 4-component vector of float'
+ERROR: 0:117: '=' :  cannot convert from ' const 2-component vector of float' to ' temp 2X2 matrix of float'
+ERROR: 0:118: '=' :  cannot convert from ' const 3-component vector of float' to ' temp 2X2 matrix of float'
+ERROR: 0:119: '=' :  cannot convert from ' const 2-component vector of float' to ' temp 2X3 matrix of float'
+ERROR: 0:120: '=' :  cannot convert from ' const 3-component vector of float' to ' temp 2X3 matrix of float'
+ERROR: 0:121: '=' :  cannot convert from ' const 4-component vector of float' to ' temp 2X3 matrix of float'
+ERROR: 0:122: '=' :  cannot convert from ' const 2X2 matrix of float' to ' temp 2X3 matrix of float'
+ERROR: 0:123: '=' :  cannot convert from ' const 3X2 matrix of float' to ' temp 2X3 matrix of float'
+ERROR: 0:124: '=' :  cannot convert from ' const 4X2 matrix of float' to ' temp 2X3 matrix of float'
+ERROR: 0:125: '=' :  cannot convert from ' const 2-component vector of float' to ' temp 2X4 matrix of float'
+ERROR: 0:126: '=' :  cannot convert from ' const 3-component vector of float' to ' temp 2X4 matrix of float'
+ERROR: 0:127: '=' :  cannot convert from ' const 4-component vector of float' to ' temp 2X4 matrix of float'
+ERROR: 0:128: '=' :  cannot convert from ' const 2X2 matrix of float' to ' temp 2X4 matrix of float'
+ERROR: 0:129: '=' :  cannot convert from ' const 2X3 matrix of float' to ' temp 2X4 matrix of float'
+ERROR: 0:130: '=' :  cannot convert from ' const 3X2 matrix of float' to ' temp 2X4 matrix of float'
+ERROR: 0:131: '=' :  cannot convert from ' const 3X3 matrix of float' to ' temp 2X4 matrix of float'
+ERROR: 0:132: '=' :  cannot convert from ' const 4X2 matrix of float' to ' temp 2X4 matrix of float'
+ERROR: 0:133: '=' :  cannot convert from ' const 4X3 matrix of float' to ' temp 2X4 matrix of float'
+ERROR: 0:134: '=' :  cannot convert from ' const 2-component vector of float' to ' temp 3X2 matrix of float'
+ERROR: 0:135: '=' :  cannot convert from ' const 3-component vector of float' to ' temp 3X2 matrix of float'
+ERROR: 0:136: '=' :  cannot convert from ' const 4-component vector of float' to ' temp 3X2 matrix of float'
+ERROR: 0:137: '=' :  cannot convert from ' const 2X2 matrix of float' to ' temp 3X2 matrix of float'
+ERROR: 0:138: '=' :  cannot convert from ' const 2X3 matrix of float' to ' temp 3X2 matrix of float'
+ERROR: 0:139: '=' :  cannot convert from ' const 2X4 matrix of float' to ' temp 3X2 matrix of float'
+ERROR: 0:140: '=' :  cannot convert from ' const 2-component vector of float' to ' temp 3X3 matrix of float'
+ERROR: 0:141: '=' :  cannot convert from ' const 3-component vector of float' to ' temp 3X3 matrix of float'
+ERROR: 0:142: '=' :  cannot convert from ' const 4-component vector of float' to ' temp 3X3 matrix of float'
+ERROR: 0:143: '=' :  cannot convert from ' const 2X2 matrix of float' to ' temp 3X3 matrix of float'
+ERROR: 0:144: '=' :  cannot convert from ' const 2X3 matrix of float' to ' temp 3X3 matrix of float'
+ERROR: 0:145: '=' :  cannot convert from ' const 2X4 matrix of float' to ' temp 3X3 matrix of float'
+ERROR: 0:146: '=' :  cannot convert from ' const 3X2 matrix of float' to ' temp 3X3 matrix of float'
+ERROR: 0:147: '=' :  cannot convert from ' const 4X2 matrix of float' to ' temp 3X3 matrix of float'
+ERROR: 0:148: '=' :  cannot convert from ' const 2-component vector of float' to ' temp 3X4 matrix of float'
+ERROR: 0:149: '=' :  cannot convert from ' const 3-component vector of float' to ' temp 3X4 matrix of float'
+ERROR: 0:150: '=' :  cannot convert from ' const 4-component vector of float' to ' temp 3X4 matrix of float'
+ERROR: 0:151: '=' :  cannot convert from ' const 2X2 matrix of float' to ' temp 3X4 matrix of float'
+ERROR: 0:152: '=' :  cannot convert from ' const 2X3 matrix of float' to ' temp 3X4 matrix of float'
+ERROR: 0:153: '=' :  cannot convert from ' const 2X4 matrix of float' to ' temp 3X4 matrix of float'
+ERROR: 0:154: '=' :  cannot convert from ' const 3X2 matrix of float' to ' temp 3X4 matrix of float'
+ERROR: 0:155: '=' :  cannot convert from ' const 3X3 matrix of float' to ' temp 3X4 matrix of float'
+ERROR: 0:156: '=' :  cannot convert from ' const 4X2 matrix of float' to ' temp 3X4 matrix of float'
+ERROR: 0:157: '=' :  cannot convert from ' const 4X3 matrix of float' to ' temp 3X4 matrix of float'
+ERROR: 0:158: '=' :  cannot convert from ' const 2-component vector of float' to ' temp 4X2 matrix of float'
+ERROR: 0:159: '=' :  cannot convert from ' const 3-component vector of float' to ' temp 4X2 matrix of float'
+ERROR: 0:160: '=' :  cannot convert from ' const 4-component vector of float' to ' temp 4X2 matrix of float'
+ERROR: 0:161: '=' :  cannot convert from ' const 2X2 matrix of float' to ' temp 4X2 matrix of float'
+ERROR: 0:162: '=' :  cannot convert from ' const 2X3 matrix of float' to ' temp 4X2 matrix of float'
+ERROR: 0:163: '=' :  cannot convert from ' const 2X4 matrix of float' to ' temp 4X2 matrix of float'
+ERROR: 0:164: '=' :  cannot convert from ' const 3X2 matrix of float' to ' temp 4X2 matrix of float'
+ERROR: 0:165: '=' :  cannot convert from ' const 3X3 matrix of float' to ' temp 4X2 matrix of float'
+ERROR: 0:166: '=' :  cannot convert from ' const 3X4 matrix of float' to ' temp 4X2 matrix of float'
+ERROR: 0:167: '=' :  cannot convert from ' const 2-component vector of float' to ' temp 4X3 matrix of float'
+ERROR: 0:168: '=' :  cannot convert from ' const 3-component vector of float' to ' temp 4X3 matrix of float'
+ERROR: 0:169: '=' :  cannot convert from ' const 4-component vector of float' to ' temp 4X3 matrix of float'
+ERROR: 0:170: '=' :  cannot convert from ' const 2X2 matrix of float' to ' temp 4X3 matrix of float'
+ERROR: 0:171: '=' :  cannot convert from ' const 2X3 matrix of float' to ' temp 4X3 matrix of float'
+ERROR: 0:172: '=' :  cannot convert from ' const 2X4 matrix of float' to ' temp 4X3 matrix of float'
+ERROR: 0:173: '=' :  cannot convert from ' const 3X2 matrix of float' to ' temp 4X3 matrix of float'
+ERROR: 0:174: '=' :  cannot convert from ' const 3X3 matrix of float' to ' temp 4X3 matrix of float'
+ERROR: 0:175: '=' :  cannot convert from ' const 3X4 matrix of float' to ' temp 4X3 matrix of float'
+ERROR: 0:176: '=' :  cannot convert from ' const 4X2 matrix of float' to ' temp 4X3 matrix of float'
+ERROR: 0:177: '=' :  cannot convert from ' const 2-component vector of float' to ' temp 4X4 matrix of float'
+ERROR: 0:178: '=' :  cannot convert from ' const 3-component vector of float' to ' temp 4X4 matrix of float'
+ERROR: 0:179: '=' :  cannot convert from ' const 4-component vector of float' to ' temp 4X4 matrix of float'
+ERROR: 0:180: '=' :  cannot convert from ' const 2X2 matrix of float' to ' temp 4X4 matrix of float'
+ERROR: 0:181: '=' :  cannot convert from ' const 2X3 matrix of float' to ' temp 4X4 matrix of float'
+ERROR: 0:182: '=' :  cannot convert from ' const 2X4 matrix of float' to ' temp 4X4 matrix of float'
+ERROR: 0:183: '=' :  cannot convert from ' const 3X2 matrix of float' to ' temp 4X4 matrix of float'
+ERROR: 0:184: '=' :  cannot convert from ' const 3X3 matrix of float' to ' temp 4X4 matrix of float'
+ERROR: 0:185: '=' :  cannot convert from ' const 3X4 matrix of float' to ' temp 4X4 matrix of float'
+ERROR: 0:186: '=' :  cannot convert from ' const 4X2 matrix of float' to ' temp 4X4 matrix of float'
+ERROR: 0:187: '=' :  cannot convert from ' const 4X3 matrix of float' to ' temp 4X4 matrix of float'
+ERROR: 100 compilation errors.  No code generated.
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+ERROR: node is still EOpNull!
+0:18  Function Definition: @main( ( temp 4-component vector of float)
+0:18    Function Parameters: 
+0:?     Sequence
+0:19      Sequence
+0:19        move second child to first child ( temp float)
+0:19          'var0' ( temp float)
+0:19          Constant:
+0:19            0.000000
+0:20      Sequence
+0:20        move second child to first child ( temp 2-component vector of float)
+0:20          'var13' ( temp 2-component vector of float)
+0:20          Constant:
+0:20            0.000000
+0:20            0.000000
+0:21      Sequence
+0:21        move second child to first child ( temp 2-component vector of float)
+0:21          'var14' ( temp 2-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:22      Sequence
+0:22        move second child to first child ( temp 3-component vector of float)
+0:22          'var26' ( temp 3-component vector of float)
+0:22          Constant:
+0:22            0.000000
+0:22            0.000000
+0:22            0.000000
+0:23      Sequence
+0:23        move second child to first child ( temp 3-component vector of float)
+0:23          'var28' ( temp 3-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:24      Sequence
+0:24        move second child to first child ( temp 4-component vector of float)
+0:24          'var39' ( temp 4-component vector of float)
+0:24          Constant:
+0:24            0.000000
+0:24            0.000000
+0:24            0.000000
+0:24            0.000000
+0:25      Sequence
+0:25        move second child to first child ( temp 4-component vector of float)
+0:25          'var42' ( temp 4-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:26      Sequence
+0:26        move second child to first child ( temp 4-component vector of float)
+0:26          'var43' ( temp 4-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:27      Sequence
+0:27        move second child to first child ( temp 2X2 matrix of float)
+0:27          'var52' ( temp 2X2 matrix of float)
+0:27          Constant:
+0:27            0.000000
+0:27            0.000000
+0:27            0.000000
+0:27            0.000000
+0:28      Sequence
+0:28        move second child to first child ( temp 2X2 matrix of float)
+0:28          'var55' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:29      Sequence
+0:29        move second child to first child ( temp 2X2 matrix of float)
+0:29          'var56' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:30      Sequence
+0:30        move second child to first child ( temp 2X3 matrix of float)
+0:30          'var65' ( temp 2X3 matrix of float)
+0:30          Constant:
+0:30            0.000000
+0:30            0.000000
+0:30            0.000000
+0:30            0.000000
+0:30            0.000000
+0:30            0.000000
+0:31      Sequence
+0:31        move second child to first child ( temp 2X3 matrix of float)
+0:31          'var70' ( temp 2X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:32      Sequence
+0:32        move second child to first child ( temp 2X4 matrix of float)
+0:32          'var78' ( temp 2X4 matrix of float)
+0:32          Constant:
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:33      Sequence
+0:33        move second child to first child ( temp 2X4 matrix of float)
+0:33          'var84' ( temp 2X4 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:34      Sequence
+0:34        move second child to first child ( temp 3X2 matrix of float)
+0:34          'var91' ( temp 3X2 matrix of float)
+0:34          Constant:
+0:34            0.000000
+0:34            0.000000
+0:34            0.000000
+0:34            0.000000
+0:34            0.000000
+0:34            0.000000
+0:35      Sequence
+0:35        move second child to first child ( temp 3X2 matrix of float)
+0:35          'var98' ( temp 3X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:36      Sequence
+0:36        move second child to first child ( temp 3X3 matrix of float)
+0:36          'var104' ( temp 3X3 matrix of float)
+0:36          Constant:
+0:36            0.000000
+0:36            0.000000
+0:36            0.000000
+0:36            0.000000
+0:36            0.000000
+0:36            0.000000
+0:36            0.000000
+0:36            0.000000
+0:36            0.000000
+0:37      Sequence
+0:37        move second child to first child ( temp 3X3 matrix of float)
+0:37          'var112' ( temp 3X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:38      Sequence
+0:38        move second child to first child ( temp 3X4 matrix of float)
+0:38          'var117' ( temp 3X4 matrix of float)
+0:38          Constant:
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:39      Sequence
+0:39        move second child to first child ( temp 3X4 matrix of float)
+0:39          'var126' ( temp 3X4 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:40      Sequence
+0:40        move second child to first child ( temp 4X2 matrix of float)
+0:40          'var130' ( temp 4X2 matrix of float)
+0:40          Constant:
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:41      Sequence
+0:41        move second child to first child ( temp 4X2 matrix of float)
+0:41          'var140' ( temp 4X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:42      Sequence
+0:42        move second child to first child ( temp 4X3 matrix of float)
+0:42          'var143' ( temp 4X3 matrix of float)
+0:42          Constant:
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:43      Sequence
+0:43        move second child to first child ( temp 4X3 matrix of float)
+0:43          'var154' ( temp 4X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:44      Sequence
+0:44        move second child to first child ( temp 4X4 matrix of float)
+0:44          'var156' ( temp 4X4 matrix of float)
+0:44          Constant:
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:45      Sequence
+0:45        move second child to first child ( temp 4X4 matrix of float)
+0:45          'var168' ( temp 4X4 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:46      Sequence
+0:46        move second child to first child ( temp float)
+0:46          'var1' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:47      Sequence
+0:47        move second child to first child ( temp float)
+0:47          'var2' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:48      Sequence
+0:48        move second child to first child ( temp float)
+0:48          'var3' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:49      Sequence
+0:49        move second child to first child ( temp float)
+0:49          'var4' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:50      Sequence
+0:50        move second child to first child ( temp float)
+0:50          'var5' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:51      Sequence
+0:51        move second child to first child ( temp float)
+0:51          'var6' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:52      Sequence
+0:52        move second child to first child ( temp float)
+0:52          'var7' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:53      Sequence
+0:53        move second child to first child ( temp float)
+0:53          'var8' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:54      Sequence
+0:54        move second child to first child ( temp float)
+0:54          'var9' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:55      Sequence
+0:55        move second child to first child ( temp float)
+0:55          'var10' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:56      Sequence
+0:56        move second child to first child ( temp float)
+0:56          'var11' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:57      Sequence
+0:57        move second child to first child ( temp float)
+0:57          'var12' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:58      Sequence
+0:58        move second child to first child ( temp 2-component vector of float)
+0:58          'var15' ( temp 2-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:59      Sequence
+0:59        move second child to first child ( temp 2-component vector of float)
+0:59          'var16' ( temp 2-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:60      Sequence
+0:60        move second child to first child ( temp 3-component vector of float)
+0:60          'var29' ( temp 3-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:61      Sequence
+0:61        move second child to first child ( temp 2X2 matrix of float)
+0:61          'var57' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:62      Sequence
+0:62        move second child to first child ( temp 2X2 matrix of float)
+0:62          'var58' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:63      Sequence
+0:63        move second child to first child ( temp 2X2 matrix of float)
+0:63          'var59' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:64      Sequence
+0:64        move second child to first child ( temp 2X2 matrix of float)
+0:64          'var60' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:65      Sequence
+0:65        move second child to first child ( temp 2X2 matrix of float)
+0:65          'var61' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:66      Sequence
+0:66        move second child to first child ( temp 2X2 matrix of float)
+0:66          'var62' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:67      Sequence
+0:67        move second child to first child ( temp 2X2 matrix of float)
+0:67          'var63' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:68      Sequence
+0:68        move second child to first child ( temp 2X2 matrix of float)
+0:68          'var64' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:69      Sequence
+0:69        move second child to first child ( temp 2X3 matrix of float)
+0:69          'var71' ( temp 2X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:70      Sequence
+0:70        move second child to first child ( temp 2X3 matrix of float)
+0:70          'var73' ( temp 2X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:71      Sequence
+0:71        move second child to first child ( temp 2X3 matrix of float)
+0:71          'var74' ( temp 2X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:72      Sequence
+0:72        move second child to first child ( temp 2X3 matrix of float)
+0:72          'var76' ( temp 2X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:73      Sequence
+0:73        move second child to first child ( temp 2X3 matrix of float)
+0:73          'var77' ( temp 2X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:74      Sequence
+0:74        move second child to first child ( temp 2X4 matrix of float)
+0:74          'var87' ( temp 2X4 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:75      Sequence
+0:75        move second child to first child ( temp 2X4 matrix of float)
+0:75          'var90' ( temp 2X4 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:76      Sequence
+0:76        move second child to first child ( temp 3X2 matrix of float)
+0:76          'var99' ( temp 3X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:77      Sequence
+0:77        move second child to first child ( temp 3X2 matrix of float)
+0:77          'var100' ( temp 3X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:78      Sequence
+0:78        move second child to first child ( temp 3X2 matrix of float)
+0:78          'var101' ( temp 3X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:79      Sequence
+0:79        move second child to first child ( temp 3X2 matrix of float)
+0:79          'var102' ( temp 3X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:80      Sequence
+0:80        move second child to first child ( temp 3X2 matrix of float)
+0:80          'var103' ( temp 3X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:81      Sequence
+0:81        move second child to first child ( temp 3X3 matrix of float)
+0:81          'var113' ( temp 3X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:82      Sequence
+0:82        move second child to first child ( temp 3X3 matrix of float)
+0:82          'var115' ( temp 3X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:83      Sequence
+0:83        move second child to first child ( temp 3X3 matrix of float)
+0:83          'var116' ( temp 3X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:84      Sequence
+0:84        move second child to first child ( temp 3X4 matrix of float)
+0:84          'var129' ( temp 3X4 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:85      Sequence
+0:85        move second child to first child ( temp 4X2 matrix of float)
+0:85          'var141' ( temp 4X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:86      Sequence
+0:86        move second child to first child ( temp 4X2 matrix of float)
+0:86          'var142' ( temp 4X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:87      Sequence
+0:87        move second child to first child ( temp 4X3 matrix of float)
+0:87          'var155' ( temp 4X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:188      Branch: Return with expression
+0:188        Constant:
+0:188          0.000000
+0:188          0.000000
+0:188          0.000000
+0:188          0.000000
+0:18  Function Definition: main( ( temp void)
+0:18    Function Parameters: 
+0:?     Sequence
+0:18      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:18        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+ERROR: node is still EOpNull!
+0:18  Function Definition: @main( ( temp 4-component vector of float)
+0:18    Function Parameters: 
+0:?     Sequence
+0:19      Sequence
+0:19        move second child to first child ( temp float)
+0:19          'var0' ( temp float)
+0:19          Constant:
+0:19            0.000000
+0:20      Sequence
+0:20        move second child to first child ( temp 2-component vector of float)
+0:20          'var13' ( temp 2-component vector of float)
+0:20          Constant:
+0:20            0.000000
+0:20            0.000000
+0:21      Sequence
+0:21        move second child to first child ( temp 2-component vector of float)
+0:21          'var14' ( temp 2-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:22      Sequence
+0:22        move second child to first child ( temp 3-component vector of float)
+0:22          'var26' ( temp 3-component vector of float)
+0:22          Constant:
+0:22            0.000000
+0:22            0.000000
+0:22            0.000000
+0:23      Sequence
+0:23        move second child to first child ( temp 3-component vector of float)
+0:23          'var28' ( temp 3-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:24      Sequence
+0:24        move second child to first child ( temp 4-component vector of float)
+0:24          'var39' ( temp 4-component vector of float)
+0:24          Constant:
+0:24            0.000000
+0:24            0.000000
+0:24            0.000000
+0:24            0.000000
+0:25      Sequence
+0:25        move second child to first child ( temp 4-component vector of float)
+0:25          'var42' ( temp 4-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:26      Sequence
+0:26        move second child to first child ( temp 4-component vector of float)
+0:26          'var43' ( temp 4-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:27      Sequence
+0:27        move second child to first child ( temp 2X2 matrix of float)
+0:27          'var52' ( temp 2X2 matrix of float)
+0:27          Constant:
+0:27            0.000000
+0:27            0.000000
+0:27            0.000000
+0:27            0.000000
+0:28      Sequence
+0:28        move second child to first child ( temp 2X2 matrix of float)
+0:28          'var55' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:29      Sequence
+0:29        move second child to first child ( temp 2X2 matrix of float)
+0:29          'var56' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:30      Sequence
+0:30        move second child to first child ( temp 2X3 matrix of float)
+0:30          'var65' ( temp 2X3 matrix of float)
+0:30          Constant:
+0:30            0.000000
+0:30            0.000000
+0:30            0.000000
+0:30            0.000000
+0:30            0.000000
+0:30            0.000000
+0:31      Sequence
+0:31        move second child to first child ( temp 2X3 matrix of float)
+0:31          'var70' ( temp 2X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:32      Sequence
+0:32        move second child to first child ( temp 2X4 matrix of float)
+0:32          'var78' ( temp 2X4 matrix of float)
+0:32          Constant:
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:32            0.000000
+0:33      Sequence
+0:33        move second child to first child ( temp 2X4 matrix of float)
+0:33          'var84' ( temp 2X4 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:34      Sequence
+0:34        move second child to first child ( temp 3X2 matrix of float)
+0:34          'var91' ( temp 3X2 matrix of float)
+0:34          Constant:
+0:34            0.000000
+0:34            0.000000
+0:34            0.000000
+0:34            0.000000
+0:34            0.000000
+0:34            0.000000
+0:35      Sequence
+0:35        move second child to first child ( temp 3X2 matrix of float)
+0:35          'var98' ( temp 3X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:36      Sequence
+0:36        move second child to first child ( temp 3X3 matrix of float)
+0:36          'var104' ( temp 3X3 matrix of float)
+0:36          Constant:
+0:36            0.000000
+0:36            0.000000
+0:36            0.000000
+0:36            0.000000
+0:36            0.000000
+0:36            0.000000
+0:36            0.000000
+0:36            0.000000
+0:36            0.000000
+0:37      Sequence
+0:37        move second child to first child ( temp 3X3 matrix of float)
+0:37          'var112' ( temp 3X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:38      Sequence
+0:38        move second child to first child ( temp 3X4 matrix of float)
+0:38          'var117' ( temp 3X4 matrix of float)
+0:38          Constant:
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:38            0.000000
+0:39      Sequence
+0:39        move second child to first child ( temp 3X4 matrix of float)
+0:39          'var126' ( temp 3X4 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:40      Sequence
+0:40        move second child to first child ( temp 4X2 matrix of float)
+0:40          'var130' ( temp 4X2 matrix of float)
+0:40          Constant:
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:41      Sequence
+0:41        move second child to first child ( temp 4X2 matrix of float)
+0:41          'var140' ( temp 4X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:42      Sequence
+0:42        move second child to first child ( temp 4X3 matrix of float)
+0:42          'var143' ( temp 4X3 matrix of float)
+0:42          Constant:
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:42            0.000000
+0:43      Sequence
+0:43        move second child to first child ( temp 4X3 matrix of float)
+0:43          'var154' ( temp 4X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:44      Sequence
+0:44        move second child to first child ( temp 4X4 matrix of float)
+0:44          'var156' ( temp 4X4 matrix of float)
+0:44          Constant:
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:44            0.000000
+0:45      Sequence
+0:45        move second child to first child ( temp 4X4 matrix of float)
+0:45          'var168' ( temp 4X4 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:46      Sequence
+0:46        move second child to first child ( temp float)
+0:46          'var1' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:47      Sequence
+0:47        move second child to first child ( temp float)
+0:47          'var2' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:48      Sequence
+0:48        move second child to first child ( temp float)
+0:48          'var3' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:49      Sequence
+0:49        move second child to first child ( temp float)
+0:49          'var4' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:50      Sequence
+0:50        move second child to first child ( temp float)
+0:50          'var5' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:51      Sequence
+0:51        move second child to first child ( temp float)
+0:51          'var6' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:52      Sequence
+0:52        move second child to first child ( temp float)
+0:52          'var7' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:53      Sequence
+0:53        move second child to first child ( temp float)
+0:53          'var8' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:54      Sequence
+0:54        move second child to first child ( temp float)
+0:54          'var9' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:55      Sequence
+0:55        move second child to first child ( temp float)
+0:55          'var10' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:56      Sequence
+0:56        move second child to first child ( temp float)
+0:56          'var11' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:57      Sequence
+0:57        move second child to first child ( temp float)
+0:57          'var12' ( temp float)
+0:?           Constant:
+0:?             0.000000
+0:58      Sequence
+0:58        move second child to first child ( temp 2-component vector of float)
+0:58          'var15' ( temp 2-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:59      Sequence
+0:59        move second child to first child ( temp 2-component vector of float)
+0:59          'var16' ( temp 2-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:60      Sequence
+0:60        move second child to first child ( temp 3-component vector of float)
+0:60          'var29' ( temp 3-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:61      Sequence
+0:61        move second child to first child ( temp 2X2 matrix of float)
+0:61          'var57' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:62      Sequence
+0:62        move second child to first child ( temp 2X2 matrix of float)
+0:62          'var58' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:63      Sequence
+0:63        move second child to first child ( temp 2X2 matrix of float)
+0:63          'var59' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:64      Sequence
+0:64        move second child to first child ( temp 2X2 matrix of float)
+0:64          'var60' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:65      Sequence
+0:65        move second child to first child ( temp 2X2 matrix of float)
+0:65          'var61' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:66      Sequence
+0:66        move second child to first child ( temp 2X2 matrix of float)
+0:66          'var62' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:67      Sequence
+0:67        move second child to first child ( temp 2X2 matrix of float)
+0:67          'var63' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:68      Sequence
+0:68        move second child to first child ( temp 2X2 matrix of float)
+0:68          'var64' ( temp 2X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:69      Sequence
+0:69        move second child to first child ( temp 2X3 matrix of float)
+0:69          'var71' ( temp 2X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:70      Sequence
+0:70        move second child to first child ( temp 2X3 matrix of float)
+0:70          'var73' ( temp 2X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:71      Sequence
+0:71        move second child to first child ( temp 2X3 matrix of float)
+0:71          'var74' ( temp 2X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:72      Sequence
+0:72        move second child to first child ( temp 2X3 matrix of float)
+0:72          'var76' ( temp 2X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:73      Sequence
+0:73        move second child to first child ( temp 2X3 matrix of float)
+0:73          'var77' ( temp 2X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:74      Sequence
+0:74        move second child to first child ( temp 2X4 matrix of float)
+0:74          'var87' ( temp 2X4 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:75      Sequence
+0:75        move second child to first child ( temp 2X4 matrix of float)
+0:75          'var90' ( temp 2X4 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:76      Sequence
+0:76        move second child to first child ( temp 3X2 matrix of float)
+0:76          'var99' ( temp 3X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:77      Sequence
+0:77        move second child to first child ( temp 3X2 matrix of float)
+0:77          'var100' ( temp 3X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:78      Sequence
+0:78        move second child to first child ( temp 3X2 matrix of float)
+0:78          'var101' ( temp 3X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:79      Sequence
+0:79        move second child to first child ( temp 3X2 matrix of float)
+0:79          'var102' ( temp 3X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:80      Sequence
+0:80        move second child to first child ( temp 3X2 matrix of float)
+0:80          'var103' ( temp 3X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:81      Sequence
+0:81        move second child to first child ( temp 3X3 matrix of float)
+0:81          'var113' ( temp 3X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:82      Sequence
+0:82        move second child to first child ( temp 3X3 matrix of float)
+0:82          'var115' ( temp 3X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:83      Sequence
+0:83        move second child to first child ( temp 3X3 matrix of float)
+0:83          'var116' ( temp 3X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:84      Sequence
+0:84        move second child to first child ( temp 3X4 matrix of float)
+0:84          'var129' ( temp 3X4 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:85      Sequence
+0:85        move second child to first child ( temp 4X2 matrix of float)
+0:85          'var141' ( temp 4X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:86      Sequence
+0:86        move second child to first child ( temp 4X2 matrix of float)
+0:86          'var142' ( temp 4X2 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:87      Sequence
+0:87        move second child to first child ( temp 4X3 matrix of float)
+0:87          'var155' ( temp 4X3 matrix of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:?             0.000000
+0:188      Branch: Return with expression
+0:188        Constant:
+0:188          0.000000
+0:188          0.000000
+0:188          0.000000
+0:188          0.000000
+0:18  Function Definition: main( ( temp void)
+0:18    Function Parameters: 
+0:?     Sequence
+0:18      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:18        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+SPIR-V is not generated for failed compile or link

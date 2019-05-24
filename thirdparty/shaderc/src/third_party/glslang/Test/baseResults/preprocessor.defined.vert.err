@@ -1,0 +1,4 @@
+ERROR: 0:2: '#define' : "defined" can't be (un)defined: defined
+ERROR: 1 compilation errors.  No code generated.
+
+

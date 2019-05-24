@@ -1,0 +1,21 @@
+#version 450
+
+#extension GL_ARB_shader_group_vote : enable
+
+layout(local_size_x = 4, local_size_y = 4) in;
+
+layout(std430, binding = 0) buffer Buffers
+{
+    bool b;
+};
+
+void main()
+{
+    bool b1 = b;
+
+    b1 = anyInvocationARB(b1);
+    b1 = allInvocationsARB(b1);
+    b1 = allInvocationsEqualARB(b1);
+
+    b = b1;
+}

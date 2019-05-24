@@ -1,0 +1,7 @@
+ERROR: 0:9: '#error' : This should show up in pp output .  
+ERROR: 0:14: '#' : invalid directive: def
+ERROR: 0:15: 'preprocessor evaluation' : undefined macro in expression not allowed in es profile Y
+ERROR: 0:21: '' : missing #endif 
+ERROR: 4 compilation errors.  No code generated.
+
+

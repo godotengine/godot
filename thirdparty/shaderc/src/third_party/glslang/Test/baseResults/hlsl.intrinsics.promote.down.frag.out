@@ -1,0 +1,199 @@
+hlsl.intrinsics.promote.down.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:15  Function Definition: @main( ( temp structure{ temp 4-component vector of float color})
+0:15    Function Parameters: 
+0:?     Sequence
+0:16      Sequence
+0:16        move second child to first child ( temp uint)
+0:16          'r00' ( temp uint)
+0:16          bitCount ( temp uint)
+0:16            Convert float to uint ( temp uint)
+0:16              f: direct index for structure ( uniform float)
+0:16                'anon@0' (layout( row_major std140) uniform block{ uniform int i,  uniform uint u,  uniform float f,  uniform bool b,  uniform 2-component vector of int i2,  uniform 2-component vector of uint u2,  uniform 2-component vector of float f2,  uniform 2-component vector of bool b2})
+0:16                Constant:
+0:16                  2 (const uint)
+0:17      Sequence
+0:17        move second child to first child ( temp 2-component vector of uint)
+0:17          'r01' ( temp 2-component vector of uint)
+0:17          bitFieldReverse ( temp 2-component vector of uint)
+0:17            Convert float to uint ( temp 2-component vector of uint)
+0:17              f2: direct index for structure ( uniform 2-component vector of float)
+0:17                'anon@0' (layout( row_major std140) uniform block{ uniform int i,  uniform uint u,  uniform float f,  uniform bool b,  uniform 2-component vector of int i2,  uniform 2-component vector of uint u2,  uniform 2-component vector of float f2,  uniform 2-component vector of bool b2})
+0:17                Constant:
+0:17                  6 (const uint)
+0:20      move second child to first child ( temp 4-component vector of float)
+0:20        color: direct index for structure ( temp 4-component vector of float)
+0:20          'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:20          Constant:
+0:20            0 (const int)
+0:?         Constant:
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:21      Branch: Return with expression
+0:21        'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:15  Function Definition: main( ( temp void)
+0:15    Function Parameters: 
+0:?     Sequence
+0:15      Sequence
+0:15        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:15          color: direct index for structure ( temp 4-component vector of float)
+0:15            Function Call: @main( ( temp structure{ temp 4-component vector of float color})
+0:15            Constant:
+0:15              0 (const int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform int i,  uniform uint u,  uniform float f,  uniform bool b,  uniform 2-component vector of int i2,  uniform 2-component vector of uint u2,  uniform 2-component vector of float f2,  uniform 2-component vector of bool b2})
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:15  Function Definition: @main( ( temp structure{ temp 4-component vector of float color})
+0:15    Function Parameters: 
+0:?     Sequence
+0:16      Sequence
+0:16        move second child to first child ( temp uint)
+0:16          'r00' ( temp uint)
+0:16          bitCount ( temp uint)
+0:16            Convert float to uint ( temp uint)
+0:16              f: direct index for structure ( uniform float)
+0:16                'anon@0' (layout( row_major std140) uniform block{ uniform int i,  uniform uint u,  uniform float f,  uniform bool b,  uniform 2-component vector of int i2,  uniform 2-component vector of uint u2,  uniform 2-component vector of float f2,  uniform 2-component vector of bool b2})
+0:16                Constant:
+0:16                  2 (const uint)
+0:17      Sequence
+0:17        move second child to first child ( temp 2-component vector of uint)
+0:17          'r01' ( temp 2-component vector of uint)
+0:17          bitFieldReverse ( temp 2-component vector of uint)
+0:17            Convert float to uint ( temp 2-component vector of uint)
+0:17              f2: direct index for structure ( uniform 2-component vector of float)
+0:17                'anon@0' (layout( row_major std140) uniform block{ uniform int i,  uniform uint u,  uniform float f,  uniform bool b,  uniform 2-component vector of int i2,  uniform 2-component vector of uint u2,  uniform 2-component vector of float f2,  uniform 2-component vector of bool b2})
+0:17                Constant:
+0:17                  6 (const uint)
+0:20      move second child to first child ( temp 4-component vector of float)
+0:20        color: direct index for structure ( temp 4-component vector of float)
+0:20          'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:20          Constant:
+0:20            0 (const int)
+0:?         Constant:
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:21      Branch: Return with expression
+0:21        'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:15  Function Definition: main( ( temp void)
+0:15    Function Parameters: 
+0:?     Sequence
+0:15      Sequence
+0:15        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:15          color: direct index for structure ( temp 4-component vector of float)
+0:15            Function Call: @main( ( temp structure{ temp 4-component vector of float color})
+0:15            Constant:
+0:15              0 (const int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform int i,  uniform uint u,  uniform float f,  uniform bool b,  uniform 2-component vector of int i2,  uniform 2-component vector of uint u2,  uniform 2-component vector of float f2,  uniform 2-component vector of bool b2})
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 50
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 47
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "PS_OUTPUT"
+                              MemberName 8(PS_OUTPUT) 0  "color"
+                              Name 10  "@main("
+                              Name 14  "r00"
+                              Name 19  "$Global"
+                              MemberName 19($Global) 0  "i"
+                              MemberName 19($Global) 1  "u"
+                              MemberName 19($Global) 2  "f"
+                              MemberName 19($Global) 3  "b"
+                              MemberName 19($Global) 4  "i2"
+                              MemberName 19($Global) 5  "u2"
+                              MemberName 19($Global) 6  "f2"
+                              MemberName 19($Global) 7  "b2"
+                              Name 21  ""
+                              Name 29  "r01"
+                              Name 37  "ps_output"
+                              Name 47  "@entryPointOutput.color"
+                              MemberDecorate 19($Global) 0 Offset 0
+                              MemberDecorate 19($Global) 1 Offset 4
+                              MemberDecorate 19($Global) 2 Offset 8
+                              MemberDecorate 19($Global) 3 Offset 12
+                              MemberDecorate 19($Global) 4 Offset 16
+                              MemberDecorate 19($Global) 5 Offset 24
+                              MemberDecorate 19($Global) 6 Offset 32
+                              MemberDecorate 19($Global) 7 Offset 40
+                              Decorate 19($Global) Block
+                              Decorate 21 DescriptorSet 0
+                              Decorate 21 Binding 0
+                              Decorate 47(@entryPointOutput.color) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+    8(PS_OUTPUT):             TypeStruct 7(fvec4)
+               9:             TypeFunction 8(PS_OUTPUT)
+              12:             TypeInt 32 0
+              13:             TypePointer Function 12(int)
+              15:             TypeInt 32 1
+              16:             TypeVector 15(int) 2
+              17:             TypeVector 12(int) 2
+              18:             TypeVector 6(float) 2
+     19($Global):             TypeStruct 15(int) 12(int) 6(float) 12(int) 16(ivec2) 17(ivec2) 18(fvec2) 17(ivec2)
+              20:             TypePointer Uniform 19($Global)
+              21:     20(ptr) Variable Uniform
+              22:     15(int) Constant 2
+              23:             TypePointer Uniform 6(float)
+              28:             TypePointer Function 17(ivec2)
+              30:     15(int) Constant 6
+              31:             TypePointer Uniform 18(fvec2)
+              36:             TypePointer Function 8(PS_OUTPUT)
+              38:     15(int) Constant 0
+              39:    6(float) Constant 0
+              40:    7(fvec4) ConstantComposite 39 39 39 39
+              41:             TypePointer Function 7(fvec4)
+              46:             TypePointer Output 7(fvec4)
+47(@entryPointOutput.color):     46(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              48:8(PS_OUTPUT) FunctionCall 10(@main()
+              49:    7(fvec4) CompositeExtract 48 0
+                              Store 47(@entryPointOutput.color) 49
+                              Return
+                              FunctionEnd
+      10(@main():8(PS_OUTPUT) Function None 9
+              11:             Label
+         14(r00):     13(ptr) Variable Function
+         29(r01):     28(ptr) Variable Function
+   37(ps_output):     36(ptr) Variable Function
+              24:     23(ptr) AccessChain 21 22
+              25:    6(float) Load 24
+              26:     12(int) ConvertFToU 25
+              27:     12(int) BitCount 26
+                              Store 14(r00) 27
+              32:     31(ptr) AccessChain 21 30
+              33:   18(fvec2) Load 32
+              34:   17(ivec2) ConvertFToU 33
+              35:   17(ivec2) BitReverse 34
+                              Store 29(r01) 35
+              42:     41(ptr) AccessChain 37(ps_output) 38
+                              Store 42 40
+              43:8(PS_OUTPUT) Load 37(ps_output)
+                              ReturnValue 43
+                              FunctionEnd

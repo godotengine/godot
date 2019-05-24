@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+bison --defines=MachineIndependent/glslang_tab.cpp.h -t MachineIndependent/glslang.y -o MachineIndependent/glslang_tab.cpp

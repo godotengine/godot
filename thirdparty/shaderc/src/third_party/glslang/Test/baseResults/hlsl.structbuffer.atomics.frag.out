@@ -1,0 +1,603 @@
+hlsl.structbuffer.atomics.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:5  Function Definition: @main(u1; ( temp 4-component vector of float)
+0:5    Function Parameters: 
+0:5      'pos' ( in uint)
+0:?     Sequence
+0:8      AtomicAdd ( temp uint)
+0:8        indirect index (layout( row_major std430) buffer uint)
+0:8          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:8            'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:8            Constant:
+0:8              0 (const uint)
+0:8          right-shift ( temp int)
+0:8            Constant:
+0:8              8 (const int)
+0:8            Constant:
+0:8              2 (const int)
+0:8        Constant:
+0:8          1 (const int)
+0:9      move second child to first child ( temp uint)
+0:9        'u' ( temp uint)
+0:9        AtomicAdd ( temp uint)
+0:9          indirect index (layout( row_major std430) buffer uint)
+0:9            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:9              'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:9              Constant:
+0:9                0 (const uint)
+0:9            right-shift ( temp int)
+0:9              Constant:
+0:9                8 (const int)
+0:9              Constant:
+0:9                2 (const int)
+0:9          Constant:
+0:9            1 (const int)
+0:10      AtomicAnd ( temp uint)
+0:10        indirect index (layout( row_major std430) buffer uint)
+0:10          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:10            'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:10            Constant:
+0:10              0 (const uint)
+0:10          right-shift ( temp int)
+0:10            Constant:
+0:10              8 (const int)
+0:10            Constant:
+0:10              2 (const int)
+0:10        Constant:
+0:10          1 (const int)
+0:11      move second child to first child ( temp uint)
+0:11        'u' ( temp uint)
+0:11        AtomicAnd ( temp uint)
+0:11          indirect index (layout( row_major std430) buffer uint)
+0:11            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:11              'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:11              Constant:
+0:11                0 (const uint)
+0:11            right-shift ( temp int)
+0:11              Constant:
+0:11                8 (const int)
+0:11              Constant:
+0:11                2 (const int)
+0:11          Constant:
+0:11            1 (const int)
+0:12      move second child to first child ( temp uint)
+0:12        'u' ( temp uint)
+0:12        Convert int to uint ( temp uint)
+0:12          AtomicCompSwap ( temp int)
+0:12            indirect index (layout( row_major std430) buffer uint)
+0:12              @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:12                'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:12                Constant:
+0:12                  0 (const uint)
+0:12              right-shift ( temp int)
+0:12                Constant:
+0:12                  8 (const int)
+0:12                Constant:
+0:12                  2 (const int)
+0:12            Constant:
+0:12              1 (const int)
+0:12            Constant:
+0:12              2 (const int)
+0:14      move second child to first child ( temp uint)
+0:14        'u' ( temp uint)
+0:14        AtomicExchange ( temp uint)
+0:14          indirect index (layout( row_major std430) buffer uint)
+0:14            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:14              'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:14              Constant:
+0:14                0 (const uint)
+0:14            right-shift ( temp int)
+0:14              Constant:
+0:14                8 (const int)
+0:14              Constant:
+0:14                2 (const int)
+0:14          Constant:
+0:14            1 (const int)
+0:15      AtomicMax ( temp uint)
+0:15        indirect index (layout( row_major std430) buffer uint)
+0:15          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:15            'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:15            Constant:
+0:15              0 (const uint)
+0:15          right-shift ( temp int)
+0:15            Constant:
+0:15              8 (const int)
+0:15            Constant:
+0:15              2 (const int)
+0:15        Constant:
+0:15          1 (const int)
+0:16      move second child to first child ( temp uint)
+0:16        'u' ( temp uint)
+0:16        AtomicMax ( temp uint)
+0:16          indirect index (layout( row_major std430) buffer uint)
+0:16            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:16              'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:16              Constant:
+0:16                0 (const uint)
+0:16            right-shift ( temp int)
+0:16              Constant:
+0:16                8 (const int)
+0:16              Constant:
+0:16                2 (const int)
+0:16          Constant:
+0:16            1 (const int)
+0:17      AtomicMin ( temp uint)
+0:17        indirect index (layout( row_major std430) buffer uint)
+0:17          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:17            'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:17            Constant:
+0:17              0 (const uint)
+0:17          right-shift ( temp int)
+0:17            Constant:
+0:17              8 (const int)
+0:17            Constant:
+0:17              2 (const int)
+0:17        Constant:
+0:17          1 (const int)
+0:18      move second child to first child ( temp uint)
+0:18        'u' ( temp uint)
+0:18        AtomicMin ( temp uint)
+0:18          indirect index (layout( row_major std430) buffer uint)
+0:18            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:18              'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:18              Constant:
+0:18                0 (const uint)
+0:18            right-shift ( temp int)
+0:18              Constant:
+0:18                8 (const int)
+0:18              Constant:
+0:18                2 (const int)
+0:18          Constant:
+0:18            1 (const int)
+0:19      AtomicOr ( temp uint)
+0:19        indirect index (layout( row_major std430) buffer uint)
+0:19          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:19            'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:19            Constant:
+0:19              0 (const uint)
+0:19          right-shift ( temp int)
+0:19            Constant:
+0:19              8 (const int)
+0:19            Constant:
+0:19              2 (const int)
+0:19        Constant:
+0:19          1 (const int)
+0:20      move second child to first child ( temp uint)
+0:20        'u' ( temp uint)
+0:20        AtomicOr ( temp uint)
+0:20          indirect index (layout( row_major std430) buffer uint)
+0:20            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:20              'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:20              Constant:
+0:20                0 (const uint)
+0:20            right-shift ( temp int)
+0:20              Constant:
+0:20                8 (const int)
+0:20              Constant:
+0:20                2 (const int)
+0:20          Constant:
+0:20            1 (const int)
+0:21      AtomicXor ( temp uint)
+0:21        indirect index (layout( row_major std430) buffer uint)
+0:21          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:21            'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:21            Constant:
+0:21              0 (const uint)
+0:21          right-shift ( temp int)
+0:21            Constant:
+0:21              8 (const int)
+0:21            Constant:
+0:21              2 (const int)
+0:21        Constant:
+0:21          1 (const int)
+0:22      move second child to first child ( temp uint)
+0:22        'u' ( temp uint)
+0:22        AtomicXor ( temp uint)
+0:22          indirect index (layout( row_major std430) buffer uint)
+0:22            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:22              'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:22              Constant:
+0:22                0 (const uint)
+0:22            right-shift ( temp int)
+0:22              Constant:
+0:22                8 (const int)
+0:22              Constant:
+0:22                2 (const int)
+0:22          Constant:
+0:22            1 (const int)
+0:24      Branch: Return with expression
+0:24        Construct vec4 ( temp 4-component vector of float)
+0:24          Convert uint to float ( temp float)
+0:24            indirect index (layout( row_major std430) buffer uint)
+0:24              @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:24                'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:24                Constant:
+0:24                  0 (const uint)
+0:24              right-shift ( temp int)
+0:24                'pos' ( in uint)
+0:24                Constant:
+0:24                  2 (const int)
+0:5  Function Definition: main( ( temp void)
+0:5    Function Parameters: 
+0:?     Sequence
+0:5      move second child to first child ( temp uint)
+0:?         'pos' ( temp uint)
+0:?         'pos' (layout( location=0) flat in uint)
+0:5      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:5        Function Call: @main(u1; ( temp 4-component vector of float)
+0:?           'pos' ( temp uint)
+0:?   Linker Objects
+0:?     'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'pos' (layout( location=0) flat in uint)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:5  Function Definition: @main(u1; ( temp 4-component vector of float)
+0:5    Function Parameters: 
+0:5      'pos' ( in uint)
+0:?     Sequence
+0:8      AtomicAdd ( temp uint)
+0:8        indirect index (layout( row_major std430) buffer uint)
+0:8          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:8            'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:8            Constant:
+0:8              0 (const uint)
+0:8          right-shift ( temp int)
+0:8            Constant:
+0:8              8 (const int)
+0:8            Constant:
+0:8              2 (const int)
+0:8        Constant:
+0:8          1 (const int)
+0:9      move second child to first child ( temp uint)
+0:9        'u' ( temp uint)
+0:9        AtomicAdd ( temp uint)
+0:9          indirect index (layout( row_major std430) buffer uint)
+0:9            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:9              'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:9              Constant:
+0:9                0 (const uint)
+0:9            right-shift ( temp int)
+0:9              Constant:
+0:9                8 (const int)
+0:9              Constant:
+0:9                2 (const int)
+0:9          Constant:
+0:9            1 (const int)
+0:10      AtomicAnd ( temp uint)
+0:10        indirect index (layout( row_major std430) buffer uint)
+0:10          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:10            'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:10            Constant:
+0:10              0 (const uint)
+0:10          right-shift ( temp int)
+0:10            Constant:
+0:10              8 (const int)
+0:10            Constant:
+0:10              2 (const int)
+0:10        Constant:
+0:10          1 (const int)
+0:11      move second child to first child ( temp uint)
+0:11        'u' ( temp uint)
+0:11        AtomicAnd ( temp uint)
+0:11          indirect index (layout( row_major std430) buffer uint)
+0:11            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:11              'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:11              Constant:
+0:11                0 (const uint)
+0:11            right-shift ( temp int)
+0:11              Constant:
+0:11                8 (const int)
+0:11              Constant:
+0:11                2 (const int)
+0:11          Constant:
+0:11            1 (const int)
+0:12      move second child to first child ( temp uint)
+0:12        'u' ( temp uint)
+0:12        Convert int to uint ( temp uint)
+0:12          AtomicCompSwap ( temp int)
+0:12            indirect index (layout( row_major std430) buffer uint)
+0:12              @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:12                'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:12                Constant:
+0:12                  0 (const uint)
+0:12              right-shift ( temp int)
+0:12                Constant:
+0:12                  8 (const int)
+0:12                Constant:
+0:12                  2 (const int)
+0:12            Constant:
+0:12              1 (const int)
+0:12            Constant:
+0:12              2 (const int)
+0:14      move second child to first child ( temp uint)
+0:14        'u' ( temp uint)
+0:14        AtomicExchange ( temp uint)
+0:14          indirect index (layout( row_major std430) buffer uint)
+0:14            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:14              'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:14              Constant:
+0:14                0 (const uint)
+0:14            right-shift ( temp int)
+0:14              Constant:
+0:14                8 (const int)
+0:14              Constant:
+0:14                2 (const int)
+0:14          Constant:
+0:14            1 (const int)
+0:15      AtomicMax ( temp uint)
+0:15        indirect index (layout( row_major std430) buffer uint)
+0:15          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:15            'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:15            Constant:
+0:15              0 (const uint)
+0:15          right-shift ( temp int)
+0:15            Constant:
+0:15              8 (const int)
+0:15            Constant:
+0:15              2 (const int)
+0:15        Constant:
+0:15          1 (const int)
+0:16      move second child to first child ( temp uint)
+0:16        'u' ( temp uint)
+0:16        AtomicMax ( temp uint)
+0:16          indirect index (layout( row_major std430) buffer uint)
+0:16            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:16              'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:16              Constant:
+0:16                0 (const uint)
+0:16            right-shift ( temp int)
+0:16              Constant:
+0:16                8 (const int)
+0:16              Constant:
+0:16                2 (const int)
+0:16          Constant:
+0:16            1 (const int)
+0:17      AtomicMin ( temp uint)
+0:17        indirect index (layout( row_major std430) buffer uint)
+0:17          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:17            'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:17            Constant:
+0:17              0 (const uint)
+0:17          right-shift ( temp int)
+0:17            Constant:
+0:17              8 (const int)
+0:17            Constant:
+0:17              2 (const int)
+0:17        Constant:
+0:17          1 (const int)
+0:18      move second child to first child ( temp uint)
+0:18        'u' ( temp uint)
+0:18        AtomicMin ( temp uint)
+0:18          indirect index (layout( row_major std430) buffer uint)
+0:18            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:18              'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:18              Constant:
+0:18                0 (const uint)
+0:18            right-shift ( temp int)
+0:18              Constant:
+0:18                8 (const int)
+0:18              Constant:
+0:18                2 (const int)
+0:18          Constant:
+0:18            1 (const int)
+0:19      AtomicOr ( temp uint)
+0:19        indirect index (layout( row_major std430) buffer uint)
+0:19          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:19            'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:19            Constant:
+0:19              0 (const uint)
+0:19          right-shift ( temp int)
+0:19            Constant:
+0:19              8 (const int)
+0:19            Constant:
+0:19              2 (const int)
+0:19        Constant:
+0:19          1 (const int)
+0:20      move second child to first child ( temp uint)
+0:20        'u' ( temp uint)
+0:20        AtomicOr ( temp uint)
+0:20          indirect index (layout( row_major std430) buffer uint)
+0:20            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:20              'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:20              Constant:
+0:20                0 (const uint)
+0:20            right-shift ( temp int)
+0:20              Constant:
+0:20                8 (const int)
+0:20              Constant:
+0:20                2 (const int)
+0:20          Constant:
+0:20            1 (const int)
+0:21      AtomicXor ( temp uint)
+0:21        indirect index (layout( row_major std430) buffer uint)
+0:21          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:21            'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:21            Constant:
+0:21              0 (const uint)
+0:21          right-shift ( temp int)
+0:21            Constant:
+0:21              8 (const int)
+0:21            Constant:
+0:21              2 (const int)
+0:21        Constant:
+0:21          1 (const int)
+0:22      move second child to first child ( temp uint)
+0:22        'u' ( temp uint)
+0:22        AtomicXor ( temp uint)
+0:22          indirect index (layout( row_major std430) buffer uint)
+0:22            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:22              'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:22              Constant:
+0:22                0 (const uint)
+0:22            right-shift ( temp int)
+0:22              Constant:
+0:22                8 (const int)
+0:22              Constant:
+0:22                2 (const int)
+0:22          Constant:
+0:22            1 (const int)
+0:24      Branch: Return with expression
+0:24        Construct vec4 ( temp 4-component vector of float)
+0:24          Convert uint to float ( temp float)
+0:24            indirect index (layout( row_major std430) buffer uint)
+0:24              @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:24                'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:24                Constant:
+0:24                  0 (const uint)
+0:24              right-shift ( temp int)
+0:24                'pos' ( in uint)
+0:24                Constant:
+0:24                  2 (const int)
+0:5  Function Definition: main( ( temp void)
+0:5    Function Parameters: 
+0:?     Sequence
+0:5      move second child to first child ( temp uint)
+0:?         'pos' ( temp uint)
+0:?         'pos' (layout( location=0) flat in uint)
+0:5      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:5        Function Call: @main(u1; ( temp 4-component vector of float)
+0:?           'pos' ( temp uint)
+0:?   Linker Objects
+0:?     'sbuf' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'pos' (layout( location=0) flat in uint)
+
+Validation failed
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 87
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 80 83
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 12  "@main(u1;"
+                              Name 11  "pos"
+                              Name 15  "sbuf"
+                              MemberName 15(sbuf) 0  "@data"
+                              Name 17  "sbuf"
+                              Name 29  "u"
+                              Name 78  "pos"
+                              Name 80  "pos"
+                              Name 83  "@entryPointOutput"
+                              Name 84  "param"
+                              Decorate 14 ArrayStride 4
+                              MemberDecorate 15(sbuf) 0 Offset 0
+                              Decorate 15(sbuf) BufferBlock
+                              Decorate 17(sbuf) DescriptorSet 0
+                              Decorate 17(sbuf) Binding 0
+                              Decorate 80(pos) Flat
+                              Decorate 80(pos) Location 0
+                              Decorate 83(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeInt 32 0
+               7:             TypePointer Function 6(int)
+               8:             TypeFloat 32
+               9:             TypeVector 8(float) 4
+              10:             TypeFunction 9(fvec4) 7(ptr)
+              14:             TypeRuntimeArray 6(int)
+        15(sbuf):             TypeStruct 14
+              16:             TypePointer Uniform 15(sbuf)
+        17(sbuf):     16(ptr) Variable Uniform
+              18:             TypeInt 32 1
+              19:     18(int) Constant 0
+              20:     18(int) Constant 8
+              21:     18(int) Constant 2
+              23:             TypePointer Uniform 6(int)
+              25:     18(int) Constant 1
+              26:      6(int) Constant 1
+              27:      6(int) Constant 0
+              79:             TypePointer Input 6(int)
+         80(pos):     79(ptr) Variable Input
+              82:             TypePointer Output 9(fvec4)
+83(@entryPointOutput):     82(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+         78(pos):      7(ptr) Variable Function
+       84(param):      7(ptr) Variable Function
+              81:      6(int) Load 80(pos)
+                              Store 78(pos) 81
+              85:      6(int) Load 78(pos)
+                              Store 84(param) 85
+              86:    9(fvec4) FunctionCall 12(@main(u1;) 84(param)
+                              Store 83(@entryPointOutput) 86
+                              Return
+                              FunctionEnd
+   12(@main(u1;):    9(fvec4) Function None 10
+         11(pos):      7(ptr) FunctionParameter
+              13:             Label
+           29(u):      7(ptr) Variable Function
+              22:     18(int) ShiftRightArithmetic 20 21
+              24:     23(ptr) AccessChain 17(sbuf) 19 22
+              28:      6(int) AtomicIAdd 24 26 27 25
+              30:     18(int) ShiftRightArithmetic 20 21
+              31:     23(ptr) AccessChain 17(sbuf) 19 30
+              32:      6(int) AtomicIAdd 31 26 27 25
+                              Store 29(u) 32
+              33:     18(int) ShiftRightArithmetic 20 21
+              34:     23(ptr) AccessChain 17(sbuf) 19 33
+              35:      6(int) AtomicAnd 34 26 27 25
+              36:     18(int) ShiftRightArithmetic 20 21
+              37:     23(ptr) AccessChain 17(sbuf) 19 36
+              38:      6(int) AtomicAnd 37 26 27 25
+                              Store 29(u) 38
+              39:     18(int) ShiftRightArithmetic 20 21
+              40:     23(ptr) AccessChain 17(sbuf) 19 39
+              41:     18(int) AtomicCompareExchange 40 26 27 27 21 25
+              42:      6(int) Bitcast 41
+                              Store 29(u) 42
+              43:     18(int) ShiftRightArithmetic 20 21
+              44:     23(ptr) AccessChain 17(sbuf) 19 43
+              45:      6(int) AtomicExchange 44 26 27 25
+                              Store 29(u) 45
+              46:     18(int) ShiftRightArithmetic 20 21
+              47:     23(ptr) AccessChain 17(sbuf) 19 46
+              48:      6(int) AtomicUMax 47 26 27 25
+              49:     18(int) ShiftRightArithmetic 20 21
+              50:     23(ptr) AccessChain 17(sbuf) 19 49
+              51:      6(int) AtomicUMax 50 26 27 25
+                              Store 29(u) 51
+              52:     18(int) ShiftRightArithmetic 20 21
+              53:     23(ptr) AccessChain 17(sbuf) 19 52
+              54:      6(int) AtomicUMin 53 26 27 25
+              55:     18(int) ShiftRightArithmetic 20 21
+              56:     23(ptr) AccessChain 17(sbuf) 19 55
+              57:      6(int) AtomicUMin 56 26 27 25
+                              Store 29(u) 57
+              58:     18(int) ShiftRightArithmetic 20 21
+              59:     23(ptr) AccessChain 17(sbuf) 19 58
+              60:      6(int) AtomicOr 59 26 27 25
+              61:     18(int) ShiftRightArithmetic 20 21
+              62:     23(ptr) AccessChain 17(sbuf) 19 61
+              63:      6(int) AtomicOr 62 26 27 25
+                              Store 29(u) 63
+              64:     18(int) ShiftRightArithmetic 20 21
+              65:     23(ptr) AccessChain 17(sbuf) 19 64
+              66:      6(int) AtomicXor 65 26 27 25
+              67:     18(int) ShiftRightArithmetic 20 21
+              68:     23(ptr) AccessChain 17(sbuf) 19 67
+              69:      6(int) AtomicXor 68 26 27 25
+                              Store 29(u) 69
+              70:      6(int) Load 11(pos)
+              71:     18(int) ShiftRightLogical 70 21
+              72:     23(ptr) AccessChain 17(sbuf) 19 71
+              73:      6(int) Load 72
+              74:    8(float) ConvertUToF 73
+              75:    9(fvec4) CompositeConstruct 74 74 74 74
+                              ReturnValue 75
+                              FunctionEnd

@@ -1,0 +1,390 @@
+420.vert
+ERROR: 0:2: '#version' : must occur first in shader 
+WARNING: 0:3: varying deprecated in version 130; may be removed in future release
+ERROR: 0:3: 'varying' : no longer supported in core profile; removed in version 420
+ERROR: 0:7: '' : vertex input cannot be further qualified 
+ERROR: 0:11: '' : can only have one interpolation qualifier (flat, smooth, noperspective, __explicitInterpAMD) 
+ERROR: 0:12: '' : can only have one auxiliary qualifier (centroid, patch, and sample) 
+ERROR: 0:13: 'uniform' : too many storage qualifiers 
+ERROR: 0:18: '=' : global const initializers must be constant ' const int'
+ERROR: 0:20: 'const' : no qualifiers allowed for function return 
+ERROR: 0:27: '' : array size must be a constant integer expression
+ERROR: 0:38: 'j' : undeclared identifier 
+ERROR: 0:38: '=' :  cannot convert from ' temp float' to ' temp int'
+ERROR: 0:39: 'k' : undeclared identifier 
+ERROR: 0:39: '=' :  cannot convert from ' temp float' to ' temp int'
+ERROR: 0:40: 'j' : undeclared identifier 
+ERROR: 0:40: '=' :  cannot convert from ' temp float' to ' temp int'
+ERROR: 0:44: 'jj' : undeclared identifier 
+ERROR: 0:44: '=' :  cannot convert from ' temp float' to ' temp int'
+ERROR: 0:54: 'y' : vector swizzle selection out of range 
+ERROR: 0:62: 'xxxxx' : vector swizzle too long 
+ERROR: 0:63: 'xxy' : vector swizzle selection out of range 
+ERROR: 0:66: 'binding' : cannot declare a default, include a type or full declaration 
+ERROR: 0:69: 'location/component/index' : cannot declare a default, use a full declaration 
+ERROR: 0:70: 'input block' : not supported in this stage: vertex
+ERROR: 0:70: 'binding' : requires uniform or buffer storage qualifier 
+ERROR: 0:71: 'binding' : binding is too large 
+ERROR: 0:74: 'binding' : sampler binding not less than gl_MaxCombinedTextureImageUnits 
+ERROR: 0:76: 'binding' : sampler binding not less than gl_MaxCombinedTextureImageUnits (using array)
+ERROR: 0:85: 'patch' : not supported in this stage: vertex
+ERROR: 0:85: '' : vertex input cannot be further qualified 
+ERROR: 0:86: 'patch' : not supported in this stage: vertex
+ERROR: 0:100: '=' : global const initializers must be constant ' const int'
+ERROR: 0:101: '' : array size must be a constant integer expression
+ERROR: 0:107: 'image variables not declared 'writeonly' and without a format layout qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:114: 'imageAtomicMin' : only supported on image with format r32i or r32ui 
+ERROR: 0:115: 'imageAtomicMax' : no matching overloaded function found 
+ERROR: 0:119: 'writeonly' : argument cannot drop memory qualifier when passed to formal parameter 
+ERROR: 0:122: '' : memory qualifiers cannot be used on this type 
+ERROR: 0:123: '' : memory qualifiers cannot be used on this type 
+ERROR: 0:135: 'volatile' : argument cannot drop memory qualifier when passed to formal parameter 
+ERROR: 0:139: 'rg8i' : does not apply to unsigned integer images 
+ERROR: 0:140: 'rgba32i' : does not apply to floating point images 
+ERROR: 0:141: 'rgba32f' : does not apply to unsigned integer images 
+ERROR: 0:142: 'r8_snorm' : does not apply to signed integer images 
+ERROR: 0:143: 'rgba32ui' : does not apply to signed integer images 
+ERROR: 0:144: 'r8ui' : does not apply to signed integer images 
+ERROR: 0:147: 'offset on block member' : not supported for this version or the enabled extensions 
+ERROR: 0:147: 'offset/align' : can only be used with std140, std430, or scalar layout packing 
+ERROR: 0:157: 'textureQueryLevels' : no matching overloaded function found 
+ERROR: 0:157: 'assign' :  cannot convert from ' const float' to ' temp int'
+ERROR: 0:158: 'textureQueryLevels' : no matching overloaded function found 
+ERROR: 0:158: 'assign' :  cannot convert from ' const float' to ' temp int'
+WARNING: 0:161: '[]' : assuming binding count of one for compile-time checking of binding numbers for unsized array 
+ERROR: 51 compilation errors.  No code generated.
+
+
+Shader version: 420
+ERROR: node is still EOpNull!
+0:20  Function Definition: foo( ( const int)
+0:20    Function Parameters: 
+0:?     Sequence
+0:23      Sequence
+0:23        move second child to first child ( temp int)
+0:23          'b' ( const (read only) int)
+0:23          'anonconst' ( global int)
+0:25      Sequence
+0:25        move second child to first child ( temp int)
+0:25          'd' ( const (read only) int)
+0:25          'b' ( const (read only) int)
+0:29      Branch: Return with expression
+0:29        'b' ( const (read only) int)
+0:32  Function Definition: main( ( global void)
+0:32    Function Parameters: 
+0:?     Sequence
+0:35      Test condition and select ( temp void)
+0:35        Condition
+0:35        Compare Equal ( temp bool)
+0:35          'i' ( temp int)
+0:35          Constant:
+0:35            3 (const int)
+0:35        true case
+0:36        Sequence
+0:36          move second child to first child ( temp int)
+0:36            'j' ( temp int)
+0:36            'i' ( temp int)
+0:42      Loop with condition tested first
+0:42        Loop Condition
+0:42        Constant:
+0:42          true (const bool)
+0:42        No loop body
+0:50  Function Definition: bar(vf4; ( global void)
+0:50    Function Parameters: 
+0:50      'v' ( volatile in 4-component vector of float)
+0:?     Sequence
+0:53      's' ( temp int)
+0:54      's' ( temp int)
+0:55      Test condition and select ( temp void)
+0:55        Condition
+0:55        Compare Equal ( temp bool)
+0:55          direct index ( temp float)
+0:55            direct index ( temp 4-component vector of float)
+0:55              'bad' ( in 10-element array of 4-component vector of float)
+0:55              Constant:
+0:55                0 (const int)
+0:55            Constant:
+0:55              0 (const int)
+0:55          Constant:
+0:55            4.200000
+0:55        true case is null
+0:57      Test condition and select ( temp void)
+0:57        Condition
+0:57        Constant:
+0:57          true (const bool)
+0:57        true case
+0:58        move second child to first child ( temp 4-component vector of float)
+0:58          'badorder3' ( flat out 4-component vector of float)
+0:58          direct index ( temp 4-component vector of float)
+0:58            'bad' ( in 10-element array of 4-component vector of float)
+0:58            Constant:
+0:58              0 (const int)
+0:61      Sequence
+0:61        move second child to first child ( temp 3-component vector of float)
+0:61          'smeared' ( temp 3-component vector of float)
+0:61          Construct vec3 ( temp 3-component vector of float)
+0:61            'f' ( temp float)
+0:62      Construct vec4 ( temp 4-component vector of float)
+0:62        'f' ( temp float)
+0:63      Construct vec2 ( temp 2-component vector of float)
+0:63        'f' ( temp float)
+0:88  Function Definition: bar23444( ( global void)
+0:88    Function Parameters: 
+0:?     Sequence
+0:91      Sequence
+0:91        move second child to first child ( temp float)
+0:91          'a1' ( temp float)
+0:91          direct index ( temp float)
+0:91            direct index ( temp 3-component vector of float)
+0:91              'm43' ( temp 4X3 matrix of float)
+0:91              Constant:
+0:91                3 (const int)
+0:91            Constant:
+0:91              1 (const int)
+0:93      Sequence
+0:93        move second child to first child ( temp int)
+0:93          'a2' ( temp int)
+0:93          Constant:
+0:93            4 (const int)
+0:94      add second child into first child ( temp int)
+0:94        'a2' ( temp int)
+0:94        Constant:
+0:94          3 (const int)
+0:95      add second child into first child ( temp int)
+0:95        'a2' ( temp int)
+0:95        Constant:
+0:95          3 (const int)
+0:96      Sequence
+0:96        move second child to first child ( temp float)
+0:96          'b' ( const (read only) float)
+0:96          component-wise multiply ( temp float)
+0:96            Constant:
+0:96              2.000000
+0:96            'a1' ( temp float)
+0:97      Sequence
+0:97        move second child to first child ( temp int)
+0:97          'a' ( temp int)
+0:97          Constant:
+0:97            -1 (const int)
+0:109  Function Definition: qux( ( global void)
+0:109    Function Parameters: 
+0:111    Sequence
+0:111      Sequence
+0:111        move second child to first child ( temp int)
+0:111          'i' ( temp int)
+0:111          aoeu: direct index for structure (layout( column_major shared) uniform int)
+0:111            'anon@0' (layout( binding=7 column_major shared) uniform block{layout( column_major shared) uniform int aoeu})
+0:111            Constant:
+0:111              0 (const uint)
+0:112      imageAtomicCompSwap ( global int)
+0:112        'iimg2D' (layout( r32i) uniform iimage2D)
+0:112        Construct ivec2 ( temp 2-component vector of int)
+0:112          'i' ( temp int)
+0:112          'i' ( temp int)
+0:112        'i' ( temp int)
+0:112        'i' ( temp int)
+0:113      imageAtomicAdd ( global uint)
+0:113        'uimg2D' (layout( r32ui) uniform uimage2D)
+0:113        Construct ivec2 ( temp 2-component vector of int)
+0:113          'i' ( temp int)
+0:113          'i' ( temp int)
+0:113        Convert int to uint ( temp uint)
+0:113          'i' ( temp int)
+0:114      imageAtomicMin ( global int)
+0:114        'iimg2Drgba' (layout( rgba32i) uniform iimage2D)
+0:114        Construct ivec2 ( temp 2-component vector of int)
+0:114          'i' ( temp int)
+0:114          'i' ( temp int)
+0:114        'i' ( temp int)
+0:115      Constant:
+0:115        0.000000
+0:116      Sequence
+0:116        move second child to first child ( temp 4-component vector of int)
+0:116          'pos' ( temp 4-component vector of int)
+0:116          imageLoad ( global 4-component vector of int)
+0:116            'iimg2D' (layout( r32i) uniform iimage2D)
+0:116            Construct ivec2 ( temp 2-component vector of int)
+0:116              'i' ( temp int)
+0:116              'i' ( temp int)
+0:117      Sequence
+0:117        move second child to first child ( temp 4-component vector of float)
+0:117          'col' ( temp 4-component vector of float)
+0:117          imageLoad ( global 4-component vector of float)
+0:117            'img2DMS' ( uniform image2DMS)
+0:117            Construct ivec2 ( temp 2-component vector of int)
+0:117              'i' ( temp int)
+0:117              'i' ( temp int)
+0:117            'i' ( temp int)
+0:118      imageStore ( global void)
+0:118        'img2DMSWO' ( writeonly uniform image2DMS)
+0:118        Construct ivec2 ( temp 2-component vector of int)
+0:118          'i' ( temp int)
+0:118          'i' ( temp int)
+0:118        'i' ( temp int)
+0:118        Constant:
+0:118          0.000000
+0:118          0.000000
+0:118          0.000000
+0:118          0.000000
+0:119      imageLoad ( global 4-component vector of float)
+0:119        'img2DMSWO' ( writeonly uniform image2DMS)
+0:119        Construct ivec2 ( temp 2-component vector of int)
+0:119          'i' ( temp int)
+0:119          'i' ( temp int)
+0:119        'i' ( temp int)
+0:125  Function Definition: passr(iI21; ( global void)
+0:125    Function Parameters: 
+0:125      'image' ( coherent readonly in iimage2D)
+0:132  Function Definition: passrc( ( global void)
+0:132    Function Parameters: 
+0:134    Sequence
+0:134      Function Call: passr(iI21; ( global void)
+0:134        'qualim1' (layout( r32i) coherent readonly uniform iimage2D)
+0:135      Function Call: passr(iI21; ( global void)
+0:135        'qualim2' (layout( r32i) coherent volatile readonly uniform iimage2D)
+0:136      Function Call: passr(iI21; ( global void)
+0:136        'iimg2D' (layout( r32i) uniform iimage2D)
+0:153  Function Definition: qlod( ( global void)
+0:153    Function Parameters: 
+0:?     Sequence
+0:157      'levels' ( temp int)
+0:158      'levels' ( temp int)
+0:?   Linker Objects
+0:?     'v2' ( smooth out 2-component vector of float)
+0:?     'bad' ( in 10-element array of 4-component vector of float)
+0:?     'badorder' ( in 4-component vector of float)
+0:?     'badorder2' ( invariant smooth out 4-component vector of float)
+0:?     'badorder4' ( centroid in 4-component vector of float)
+0:?     'badorder3' ( flat out 4-component vector of float)
+0:?     'rep' ( smooth flat out 4-component vector of float)
+0:?     'rep2' ( centroid smooth sample out 4-component vector of float)
+0:?     'rep3' ( in 4-component vector of float)
+0:?     'anonconst' ( global int)
+0:?     'aconst' ( const int)
+0:?       5 (const int)
+0:?     'a' ( const int)
+0:?       5 (const int)
+0:?     'b' ( temp int)
+0:?     'cx' ( const float)
+0:?       4.200000
+0:?     'dx' ( const float)
+0:?       4.200000
+0:?     'boundInst' (layout( binding=3 column_major shared) uniform block{layout( column_major shared) uniform int aoeu})
+0:?     'anon@0' (layout( binding=7 column_major shared) uniform block{layout( column_major shared) uniform int aoeu})
+0:?     'anon@1' (layout( binding=1) in block{ in int aoeua})
+0:?     'anon@2' (layout( column_major shared) uniform block{layout( column_major shared) uniform int aooeu})
+0:?     'sampb1' (layout( binding=4) uniform sampler2D)
+0:?     'sampb2' (layout( binding=5) uniform 10-element array of sampler2D)
+0:?     'sampb3' (layout( binding=80) uniform sampler2D)
+0:?     'sampb4' (layout( binding=31) uniform sampler2D)
+0:?     'sampb5' (layout( binding=79) uniform 2-element array of sampler2D)
+0:?     'anon@3' ( out block{ out 4-element array of float ClipDistance gl_ClipDistance, })
+0:?     'patchIn' ( patch in 4-component vector of float)
+0:?     'patchOut' ( smooth patch out 4-component vector of float)
+0:?     'comma0' ( temp int)
+0:?     'comma1' ( global 1-element array of int)
+0:?     'iimg2D' (layout( r32i) uniform iimage2D)
+0:?     'iimg2Drgba' (layout( rgba32i) uniform iimage2D)
+0:?     'img2Drgba' (layout( rgba32f) uniform image2D)
+0:?     'uimg2D' (layout( r32ui) uniform uimage2D)
+0:?     'img2DMS' ( uniform image2DMS)
+0:?     'img2DMSWO' ( writeonly uniform image2DMS)
+0:?     'vol' ( volatile temp float)
+0:?     'vol2' ( readonly temp int)
+0:?     'qualim1' (layout( r32i) coherent readonly uniform iimage2D)
+0:?     'qualim2' (layout( r32i) coherent volatile readonly uniform iimage2D)
+0:?     'i1bad' (layout( rg8i) uniform uimage2D)
+0:?     'i2bad' (layout( rgba32i) uniform image2D)
+0:?     'i3bad' (layout( rgba32f) uniform uimage2D)
+0:?     'i4bad' (layout( r8_snorm) uniform iimage2D)
+0:?     'i5bad' (layout( rgba32ui) uniform iimage2D)
+0:?     'i6bad' (layout( r8ui) uniform iimage2D)
+0:?     'offcheckI' (layout( column_major shared) uniform block{layout( column_major shared offset=16) uniform int foo})
+0:?     'samp1D' ( uniform sampler1D)
+0:?     'samp1Ds' ( uniform sampler1DShadow)
+0:?     'badArray' (layout( binding=0) writeonly uniform unsized 1-element array of image1D)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 420
+ERROR: node is still EOpNull!
+0:32  Function Definition: main( ( global void)
+0:32    Function Parameters: 
+0:?     Sequence
+0:35      Test condition and select ( temp void)
+0:35        Condition
+0:35        Compare Equal ( temp bool)
+0:35          'i' ( temp int)
+0:35          Constant:
+0:35            3 (const int)
+0:35        true case
+0:36        Sequence
+0:36          move second child to first child ( temp int)
+0:36            'j' ( temp int)
+0:36            'i' ( temp int)
+0:42      Loop with condition tested first
+0:42        Loop Condition
+0:42        Constant:
+0:42          true (const bool)
+0:42        No loop body
+0:?   Linker Objects
+0:?     'v2' ( smooth out 2-component vector of float)
+0:?     'bad' ( in 10-element array of 4-component vector of float)
+0:?     'badorder' ( in 4-component vector of float)
+0:?     'badorder2' ( invariant smooth out 4-component vector of float)
+0:?     'badorder4' ( centroid in 4-component vector of float)
+0:?     'badorder3' ( flat out 4-component vector of float)
+0:?     'rep' ( smooth flat out 4-component vector of float)
+0:?     'rep2' ( centroid smooth sample out 4-component vector of float)
+0:?     'rep3' ( in 4-component vector of float)
+0:?     'anonconst' ( global int)
+0:?     'aconst' ( const int)
+0:?       5 (const int)
+0:?     'a' ( const int)
+0:?       5 (const int)
+0:?     'b' ( temp int)
+0:?     'cx' ( const float)
+0:?       4.200000
+0:?     'dx' ( const float)
+0:?       4.200000
+0:?     'boundInst' (layout( binding=3 column_major shared) uniform block{layout( column_major shared) uniform int aoeu})
+0:?     'anon@0' (layout( binding=7 column_major shared) uniform block{layout( column_major shared) uniform int aoeu})
+0:?     'anon@1' (layout( binding=1) in block{ in int aoeua})
+0:?     'anon@2' (layout( column_major shared) uniform block{layout( column_major shared) uniform int aooeu})
+0:?     'sampb1' (layout( binding=4) uniform sampler2D)
+0:?     'sampb2' (layout( binding=5) uniform 10-element array of sampler2D)
+0:?     'sampb3' (layout( binding=80) uniform sampler2D)
+0:?     'sampb4' (layout( binding=31) uniform sampler2D)
+0:?     'sampb5' (layout( binding=79) uniform 2-element array of sampler2D)
+0:?     'anon@3' ( out block{ out 4-element array of float ClipDistance gl_ClipDistance, })
+0:?     'patchIn' ( patch in 4-component vector of float)
+0:?     'patchOut' ( smooth patch out 4-component vector of float)
+0:?     'comma0' ( temp int)
+0:?     'comma1' ( global 1-element array of int)
+0:?     'iimg2D' (layout( r32i) uniform iimage2D)
+0:?     'iimg2Drgba' (layout( rgba32i) uniform iimage2D)
+0:?     'img2Drgba' (layout( rgba32f) uniform image2D)
+0:?     'uimg2D' (layout( r32ui) uniform uimage2D)
+0:?     'img2DMS' ( uniform image2DMS)
+0:?     'img2DMSWO' ( writeonly uniform image2DMS)
+0:?     'vol' ( volatile temp float)
+0:?     'vol2' ( readonly temp int)
+0:?     'qualim1' (layout( r32i) coherent readonly uniform iimage2D)
+0:?     'qualim2' (layout( r32i) coherent volatile readonly uniform iimage2D)
+0:?     'i1bad' (layout( rg8i) uniform uimage2D)
+0:?     'i2bad' (layout( rgba32i) uniform image2D)
+0:?     'i3bad' (layout( rgba32f) uniform uimage2D)
+0:?     'i4bad' (layout( r8_snorm) uniform iimage2D)
+0:?     'i5bad' (layout( rgba32ui) uniform iimage2D)
+0:?     'i6bad' (layout( r8ui) uniform iimage2D)
+0:?     'offcheckI' (layout( column_major shared) uniform block{layout( column_major shared offset=16) uniform int foo})
+0:?     'samp1D' ( uniform sampler1D)
+0:?     'samp1Ds' ( uniform sampler1DShadow)
+0:?     'badArray' (layout( binding=0) writeonly uniform 1-element array of image1D)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

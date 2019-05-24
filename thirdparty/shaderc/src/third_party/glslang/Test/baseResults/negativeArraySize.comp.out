@@ -1,0 +1,23 @@
+negativeArraySize.comp
+ERROR: 0:9: '' : array size must be a positive integer
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 310
+local_size = (1, 1, 1)
+ERROR: node is still EOpNull!
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:?   Linker Objects
+
+
+Linked compute stage:
+
+
+Shader version: 310
+local_size = (1, 1, 1)
+ERROR: node is still EOpNull!
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:?   Linker Objects
+

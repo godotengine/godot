@@ -1,0 +1,698 @@
+120.frag
+ERROR: 0:9: 'in for stage inputs' : not supported for this version or the enabled extensions 
+ERROR: 0:10: 'out for stage outputs' : not supported for this version or the enabled extensions 
+ERROR: 0:54: '+' :  wrong operand types: no operation '+' exists that takes a left-hand operand of type ' temp 2-component vector of float' and a right operand of type ' temp 3-component vector of float' (or there is no acceptable conversion)
+ERROR: 0:55: '*' :  wrong operand types: no operation '*' exists that takes a left-hand operand of type ' uniform 4X2 matrix of float' and a right operand of type ' temp 3-component vector of float' (or there is no acceptable conversion)
+ERROR: 0:56: '+' :  wrong operand types: no operation '+' exists that takes a left-hand operand of type ' uniform 4X2 matrix of float' and a right operand of type ' smooth in 4-component vector of float' (or there is no acceptable conversion)
+ERROR: 0:57: '=' :  cannot convert from ' const float' to ' temp int'
+ERROR: 0:58: 'assign' :  cannot convert from ' temp bool' to ' temp float'
+ERROR: 0:59: '+' :  wrong operand types: no operation '+' exists that takes a left-hand operand of type ' temp int' and a right operand of type ' temp bool' (or there is no acceptable conversion)
+ERROR: 0:60: '*' :  wrong operand types: no operation '*' exists that takes a left-hand operand of type ' temp bool' and a right operand of type ' temp int' (or there is no acceptable conversion)
+ERROR: 0:60: 'assign' :  cannot convert from ' temp bool' to ' temp float'
+ERROR: 0:61: 'assign' :  cannot convert from ' temp int' to ' temp bool'
+ERROR: 0:62: '+' :  wrong operand types: no operation '+' exists that takes a left-hand operand of type ' temp bool' and a right operand of type ' temp float' (or there is no acceptable conversion)
+ERROR: 0:63: 'bitwise-or assign' : not supported for this version or the enabled extensions 
+ERROR: 0:63: 'assign' :  cannot convert from ' temp bool' to ' temp float'
+ERROR: 0:79: ':' :  wrong operand types: no operation ':' exists that takes a left-hand operand of type ' temp 4-component vector of float' and a right operand of type ' temp 4X4 matrix of float' (or there is no acceptable conversion)
+ERROR: 0:79: 'assign' :  cannot convert from ' temp 4X4 matrix of float' to ' fragColor 4-component vector of float FragColor'
+ERROR: 0:82: 'xr' : vector swizzle selectors not from the same set 
+ERROR: 0:83: 'xyxyx' : vector swizzle too long 
+ERROR: 0:84: 'z' : vector swizzle selection out of range 
+ERROR: 0:85: 'assign' :  l-value required 
+ERROR: 0:91: 'main' : overloaded functions must have the same return type 
+ERROR: 0:91: 'main' : function already has a body 
+ERROR: 0:91: 'int' :  entry point cannot return a value
+ERROR: 0:92: 'main' : function cannot take any parameter(s) 
+ERROR: 0:94: 'a' : variables with qualifier 'const' must be initialized 
+ERROR: 0:97: 'out' : overloaded functions must have the same parameter storage qualifiers for argument 1
+ERROR: 0:99: 'return' : type does not match, or is not convertible to, the function's return type 
+ERROR: 0:115: 'return' : void function cannot return a value 
+ERROR: 0:125: 'gl_TexCoord' : redeclaration of array with size 
+ERROR: 0:152: 'matrixCompMult' : no matching overloaded function found 
+ERROR: 0:152: '=' :  cannot convert from ' const float' to ' temp 3X2 matrix of float'
+ERROR: 0:153: 'matrixCompMult' : no matching overloaded function found 
+ERROR: 0:153: '=' :  cannot convert from ' const float' to ' temp 3X4 matrix of float'
+ERROR: 0:160: 'constructor' : not enough data provided for construction 
+ERROR: 0:160: '=' :  cannot convert from ' const float' to ' temp 4X4 matrix of float'
+ERROR: 0:161: 'constructor' : too many arguments 
+ERROR: 0:161: '=' :  cannot convert from ' const float' to ' temp 4X4 matrix of float'
+ERROR: 0:165: 'constructor' : matrix constructed from matrix can only have one argument 
+ERROR: 0:166: 'constructor' : matrix constructed from matrix can only have one argument 
+ERROR: 0:172: 'constructor' : array constructor needs one argument per array element 
+ERROR: 0:172: '=' :  cannot convert from ' const float' to ' temp 2-element array of 3X3 matrix of float'
+ERROR: 0:184: 'texture2DLod' : required extension not requested: GL_ARB_shader_texture_lod
+ERROR: 0:185: 'texture3DProjLod' : required extension not requested: GL_ARB_shader_texture_lod
+ERROR: 0:186: 'texture1DProjLod' : required extension not requested: GL_ARB_shader_texture_lod
+ERROR: 0:187: 'shadow2DProjLod' : required extension not requested: GL_ARB_shader_texture_lod
+ERROR: 0:189: 'texture1DGradARB' : required extension not requested: GL_ARB_shader_texture_lod
+ERROR: 0:190: 'texture2DProjGradARB' : required extension not requested: GL_ARB_shader_texture_lod
+ERROR: 0:191: 'shadow2DProjGradARB' : required extension not requested: GL_ARB_shader_texture_lod
+ERROR: 0:209: 'shadow2DRectProjGradARB' : no matching overloaded function found 
+ERROR: 0:209: 'assign' :  cannot convert from ' const float' to ' temp 4-component vector of float'
+ERROR: 0:212: 'sampler2DRect' : Reserved word. 
+ERROR: 0:244: ':' :  wrong operand types: no operation ':' exists that takes a left-hand operand of type ' global void' and a right operand of type ' const int' (or there is no acceptable conversion)
+ERROR: 0:245: ':' :  wrong operand types: no operation ':' exists that takes a left-hand operand of type ' const int' and a right operand of type ' global void' (or there is no acceptable conversion)
+ERROR: 0:248: 'half floating-point suffix' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_half_float
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_float16
+ERROR: 0:248: '' :  syntax error, unexpected IDENTIFIER, expecting COMMA or SEMICOLON
+ERROR: 55 compilation errors.  No code generated.
+
+
+Shader version: 120
+Requested GL_ARB_shader_texture_lod
+Requested GL_ARB_texture_rectangle
+ERROR: node is still EOpNull!
+0:21  Function Definition: main( ( global void)
+0:21    Function Parameters: 
+0:23    Sequence
+0:23      Sequence
+0:23        move second child to first child ( temp 2X3 matrix of float)
+0:23          'm23' ( temp 2X3 matrix of float)
+0:23          Construct mat2x3 ( temp 2X3 matrix of float)
+0:23            'm' ( uniform 4X2 matrix of float)
+0:27      Sequence
+0:27        move second child to first child ( temp structure{ global float f})
+0:27          'sv' ( temp structure{ global float f})
+0:27          Construct structure ( temp structure{ global float f})
+0:27            Convert int to float ( temp float)
+0:27              'a' ( temp int)
+0:28      Sequence
+0:28        move second child to first child ( temp 2-element array of float)
+0:28          'ia' ( temp 2-element array of float)
+0:28          Construct float ( temp 2-element array of float)
+0:28            Constant:
+0:28              3.000000
+0:28            direct index ( temp float)
+0:28              'i' ( smooth in 4-component vector of float)
+0:28              Constant:
+0:28                1 (const int)
+0:29      Sequence
+0:29        move second child to first child ( temp float)
+0:29          'f1' ( temp float)
+0:29          Constant:
+0:29            1.000000
+0:30      Sequence
+0:30        move second child to first child ( temp float)
+0:30          'f' ( temp float)
+0:30          Convert int to float ( temp float)
+0:30            'a' ( temp int)
+0:31      move second child to first child ( temp float)
+0:31        'f' ( temp float)
+0:31        Convert int to float ( temp float)
+0:31          'a' ( temp int)
+0:33      Sequence
+0:33        move second child to first child ( temp 3-component vector of float)
+0:33          'v3' ( temp 3-component vector of float)
+0:33          Convert int to float ( temp 3-component vector of float)
+0:33            'iv3' ( temp 3-component vector of int)
+0:34      move second child to first child ( temp float)
+0:34        'f' ( temp float)
+0:34        add ( temp float)
+0:34          'f' ( temp float)
+0:34          Convert int to float ( temp float)
+0:34            'a' ( temp int)
+0:35      move second child to first child ( temp float)
+0:35        'f' ( temp float)
+0:35        subtract ( temp float)
+0:35          Convert int to float ( temp float)
+0:35            'a' ( temp int)
+0:35          'f' ( temp float)
+0:36      add second child into first child ( temp float)
+0:36        'f' ( temp float)
+0:36        Convert int to float ( temp float)
+0:36          'a' ( temp int)
+0:37      move second child to first child ( temp float)
+0:37        'f' ( temp float)
+0:37        subtract ( temp float)
+0:37          Convert int to float ( temp float)
+0:37            'a' ( temp int)
+0:37          'f' ( temp float)
+0:38      multiply second child into first child ( temp 3-component vector of float)
+0:38        'v3' ( temp 3-component vector of float)
+0:38        Convert int to float ( temp 3-component vector of float)
+0:38          'iv3' ( temp 3-component vector of int)
+0:39      move second child to first child ( temp 3-component vector of float)
+0:39        'v3' ( temp 3-component vector of float)
+0:39        divide ( temp 3-component vector of float)
+0:39          Convert int to float ( temp 3-component vector of float)
+0:39            'iv3' ( temp 3-component vector of int)
+0:39          Constant:
+0:39            2.000000
+0:40      move second child to first child ( temp 3-component vector of float)
+0:40        'v3' ( temp 3-component vector of float)
+0:40        vector-scale ( temp 3-component vector of float)
+0:40          Constant:
+0:40            3.000000
+0:40          Convert int to float ( temp 3-component vector of float)
+0:40            'iv3' ( temp 3-component vector of int)
+0:41      move second child to first child ( temp 3-component vector of float)
+0:41        'v3' ( temp 3-component vector of float)
+0:41        vector-scale ( temp 3-component vector of float)
+0:41          Constant:
+0:41            2.000000
+0:41          'v3' ( temp 3-component vector of float)
+0:42      move second child to first child ( temp 3-component vector of float)
+0:42        'v3' ( temp 3-component vector of float)
+0:42        subtract ( temp 3-component vector of float)
+0:42          'v3' ( temp 3-component vector of float)
+0:42          Constant:
+0:42            2.000000
+0:43      Test condition and select ( temp void)
+0:43        Condition
+0:47        logical-or ( temp bool)
+0:46          logical-or ( temp bool)
+0:45            logical-or ( temp bool)
+0:44              logical-or ( temp bool)
+0:43                logical-or ( temp bool)
+0:43                  Compare Less Than ( temp bool)
+0:43                    'f' ( temp float)
+0:43                    Convert int to float ( temp float)
+0:43                      'a' ( temp int)
+0:44                  Compare Less Than or Equal ( temp bool)
+0:44                    Convert int to float ( temp float)
+0:44                      'a' ( temp int)
+0:44                    'f' ( temp float)
+0:45                Compare Greater Than ( temp bool)
+0:45                  'f' ( temp float)
+0:45                  Convert int to float ( temp float)
+0:45                    'a' ( temp int)
+0:46              Compare Greater Than or Equal ( temp bool)
+0:46                'f' ( temp float)
+0:46                Convert int to float ( temp float)
+0:46                  'a' ( temp int)
+0:47            Compare Equal ( temp bool)
+0:47              Convert int to float ( temp float)
+0:47                'a' ( temp int)
+0:47              'f' ( temp float)
+0:48          Compare Not Equal ( temp bool)
+0:48            'f' ( temp float)
+0:48            Convert int to float ( temp float)
+0:48              'a' ( temp int)
+0:43        true case is null
+0:49      move second child to first child ( temp float)
+0:49        'f' ( temp float)
+0:49        Test condition and select ( temp float)
+0:49          Condition
+0:49          'b' ( temp bool)
+0:49          true case
+0:49          Convert int to float ( temp float)
+0:49            'a' ( temp int)
+0:49          false case
+0:49          'f' ( temp float)
+0:50      move second child to first child ( temp float)
+0:50        'f' ( temp float)
+0:50        Test condition and select ( temp float)
+0:50          Condition
+0:50          'b' ( temp bool)
+0:50          true case
+0:50          'f' ( temp float)
+0:50          false case
+0:50          Convert int to float ( temp float)
+0:50            'a' ( temp int)
+0:51      move second child to first child ( temp float)
+0:51        'f' ( temp float)
+0:51        Convert int to float ( temp float)
+0:51          Test condition and select ( temp int)
+0:51            Condition
+0:51            'b' ( temp bool)
+0:51            true case
+0:51            'a' ( temp int)
+0:51            false case
+0:51            'a' ( temp int)
+0:52      Sequence
+0:52        move second child to first child ( temp structure{ global float f})
+0:52          'news' ( temp structure{ global float f})
+0:52          'sv' ( temp structure{ global float f})
+0:54      vector swizzle ( temp 2-component vector of float)
+0:54        'i' ( smooth in 4-component vector of float)
+0:54        Sequence
+0:54          Constant:
+0:54            0 (const int)
+0:54          Constant:
+0:54            1 (const int)
+0:55      'm' ( uniform 4X2 matrix of float)
+0:56      'm' ( uniform 4X2 matrix of float)
+0:58      'f' ( temp float)
+0:59      move second child to first child ( temp float)
+0:59        'f' ( temp float)
+0:59        Convert int to float ( temp float)
+0:59          'a' ( temp int)
+0:60      'f' ( temp float)
+0:61      'b' ( temp bool)
+0:62      move second child to first child ( temp bool)
+0:62        'b' ( temp bool)
+0:62        'b' ( temp bool)
+0:63      'f' ( temp float)
+0:65      move second child to first child ( temp 4-component vector of float)
+0:65        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:65        texture ( global 4-component vector of float)
+0:65          's2D' ( uniform sampler2D)
+0:65          'centTexCoord' ( centroid smooth in 2-component vector of float)
+0:?       Sequence
+0:79        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:82      direct index ( temp float)
+0:82        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:82        Constant:
+0:82          0 (const int)
+0:83      vector swizzle ( temp 2-component vector of float)
+0:83        vector swizzle ( temp 4-component vector of float)
+0:83          'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:83          Sequence
+0:83            Constant:
+0:83              0 (const int)
+0:83            Constant:
+0:83              1 (const int)
+0:83            Constant:
+0:83              0 (const int)
+0:83            Constant:
+0:83              1 (const int)
+0:83        Sequence
+0:83          Constant:
+0:83            0 (const int)
+0:83          Constant:
+0:83            1 (const int)
+0:84      direct index ( temp float)
+0:84        'centTexCoord' ( centroid smooth in 2-component vector of float)
+0:84        Constant:
+0:84          0 (const int)
+0:85      move second child to first child ( temp bool)
+0:85        Comma ( temp bool)
+0:85          'a' ( temp int)
+0:85          'b' ( temp bool)
+0:85        Constant:
+0:85          true (const bool)
+0:91  Function Definition: main( ( global int)
+0:91    Function Parameters: 
+0:92  Function Definition: main(i1; ( global void)
+0:92    Function Parameters: 
+0:92      'a' ( in int)
+0:97  Function Definition: foo(f1; ( global int)
+0:97    Function Parameters: 
+0:97      'a' ( out float)
+0:99    Sequence
+0:99      Branch: Return with expression
+0:99        Constant:
+0:99          3.200000
+0:100      Function Call: foo(f1; ( global int)
+0:100        'a' ( out float)
+0:103  Function Definition: gen(vf3; ( global bool)
+0:103    Function Parameters: 
+0:103      'v' ( in 3-component vector of float)
+0:105    Sequence
+0:105      Test condition and select ( temp void)
+0:105        Condition
+0:105        logical-and ( temp bool)
+0:105          Compare Less Than ( temp bool)
+0:105            Absolute value ( global float)
+0:105              direct index ( temp float)
+0:105                'v' ( in 3-component vector of float)
+0:105                Constant:
+0:105                  0 (const int)
+0:105            Constant:
+0:105              0.000100
+0:105          Compare Less Than ( temp bool)
+0:105            Absolute value ( global float)
+0:105              direct index ( temp float)
+0:105                'v' ( in 3-component vector of float)
+0:105                Constant:
+0:105                  1 (const int)
+0:105            Constant:
+0:105              0.000100
+0:105        true case
+0:106        Branch: Return with expression
+0:106          Constant:
+0:106            true (const bool)
+0:109  Function Definition: v1( ( global void)
+0:109    Function Parameters: 
+0:113  Function Definition: v2( ( global void)
+0:113    Function Parameters: 
+0:115    Sequence
+0:115      Branch: Return
+0:118  Function Definition: atest( ( global void)
+0:118    Function Parameters: 
+0:120    Sequence
+0:120      Sequence
+0:120        move second child to first child ( temp 4-component vector of float)
+0:120          'v' ( temp 4-component vector of float)
+0:120          direct index ( smooth temp 4-component vector of float TexCoord)
+0:120            'gl_TexCoord' ( smooth in 6-element array of 4-component vector of float TexCoord)
+0:120            Constant:
+0:120              1 (const int)
+0:121      add second child into first child ( temp 4-component vector of float)
+0:121        'v' ( temp 4-component vector of float)
+0:121        direct index ( smooth temp 4-component vector of float TexCoord)
+0:121          'gl_TexCoord' ( smooth in 6-element array of 4-component vector of float TexCoord)
+0:121          Constant:
+0:121            3 (const int)
+0:139  Function Definition: foo123( ( global void)
+0:139    Function Parameters: 
+0:141    Sequence
+0:141      Sequence
+0:141        move second child to first child ( temp 2X2 matrix of float)
+0:141          'r2' ( temp 2X2 matrix of float)
+0:141          component-wise multiply ( global 2X2 matrix of float)
+0:141            'm22' ( global 2X2 matrix of float)
+0:141            'm22' ( global 2X2 matrix of float)
+0:142      Sequence
+0:142        move second child to first child ( temp 3X3 matrix of float)
+0:142          'r3' ( temp 3X3 matrix of float)
+0:142          component-wise multiply ( global 3X3 matrix of float)
+0:142            'm33' ( global 3X3 matrix of float)
+0:142            'm33' ( global 3X3 matrix of float)
+0:143      Sequence
+0:143        move second child to first child ( temp 4X4 matrix of float)
+0:143          'r4' ( temp 4X4 matrix of float)
+0:143          component-wise multiply ( global 4X4 matrix of float)
+0:143            'm44' ( global 4X4 matrix of float)
+0:143            'm44' ( global 4X4 matrix of float)
+0:145      Sequence
+0:145        move second child to first child ( temp 2X3 matrix of float)
+0:145          'r23' ( temp 2X3 matrix of float)
+0:145          component-wise multiply ( global 2X3 matrix of float)
+0:145            'm23' ( global 2X3 matrix of float)
+0:145            'm23' ( global 2X3 matrix of float)
+0:146      Sequence
+0:146        move second child to first child ( temp 2X4 matrix of float)
+0:146          'r24' ( temp 2X4 matrix of float)
+0:146          component-wise multiply ( global 2X4 matrix of float)
+0:146            'm24' ( global 2X4 matrix of float)
+0:146            'm24' ( global 2X4 matrix of float)
+0:147      Sequence
+0:147        move second child to first child ( temp 3X2 matrix of float)
+0:147          'r32' ( temp 3X2 matrix of float)
+0:147          component-wise multiply ( global 3X2 matrix of float)
+0:147            'm32' ( global 3X2 matrix of float)
+0:147            'm32' ( global 3X2 matrix of float)
+0:148      Sequence
+0:148        move second child to first child ( temp 3X4 matrix of float)
+0:148          'r34' ( temp 3X4 matrix of float)
+0:148          component-wise multiply ( global 3X4 matrix of float)
+0:148            'm34' ( global 3X4 matrix of float)
+0:148            'm34' ( global 3X4 matrix of float)
+0:149      Sequence
+0:149        move second child to first child ( temp 4X2 matrix of float)
+0:149          'r42' ( temp 4X2 matrix of float)
+0:149          component-wise multiply ( global 4X2 matrix of float)
+0:149            'm42' ( global 4X2 matrix of float)
+0:149            'm42' ( global 4X2 matrix of float)
+0:150      Sequence
+0:150        move second child to first child ( temp 4X3 matrix of float)
+0:150          'r43' ( temp 4X3 matrix of float)
+0:150          component-wise multiply ( global 4X3 matrix of float)
+0:150            'm43' ( global 4X3 matrix of float)
+0:150            'm43' ( global 4X3 matrix of float)
+0:156  Function Definition: matConst( ( global void)
+0:156    Function Parameters: 
+0:?     Sequence
+0:162      Sequence
+0:162        move second child to first child ( temp 4X4 matrix of float)
+0:162          'm4g' ( temp 4X4 matrix of float)
+0:162          Construct mat4 ( temp 4X4 matrix of float)
+0:162            'v2' ( temp 2-component vector of float)
+0:162            'v3' ( temp 3-component vector of float)
+0:162            'v3' ( temp 3-component vector of float)
+0:162            'v3' ( temp 3-component vector of float)
+0:162            'v3' ( temp 3-component vector of float)
+0:162            'v3' ( temp 3-component vector of float)
+0:163      Sequence
+0:163        move second child to first child ( temp 4X4 matrix of float)
+0:163          'm4' ( temp 4X4 matrix of float)
+0:163          Construct mat4 ( temp 4X4 matrix of float)
+0:163            'v2' ( temp 2-component vector of float)
+0:163            'v3' ( temp 3-component vector of float)
+0:163            'v3' ( temp 3-component vector of float)
+0:163            'v3' ( temp 3-component vector of float)
+0:163            'v3' ( temp 3-component vector of float)
+0:163            'v2' ( temp 2-component vector of float)
+0:164      Sequence
+0:164        move second child to first child ( temp 3X3 matrix of float)
+0:164          'm3' ( temp 3X3 matrix of float)
+0:164          Construct mat3 ( temp 3X3 matrix of float)
+0:164            'm4' ( temp 4X4 matrix of float)
+0:165      Sequence
+0:165        move second child to first child ( temp 3X3 matrix of float)
+0:165          'm3b1' ( temp 3X3 matrix of float)
+0:165          Construct mat3 ( temp 3X3 matrix of float)
+0:165            'm4' ( temp 4X4 matrix of float)
+0:165            'v2' ( temp 2-component vector of float)
+0:166      Sequence
+0:166        move second child to first child ( temp 3X3 matrix of float)
+0:166          'm3b2' ( temp 3X3 matrix of float)
+0:166          Construct mat3 ( temp 3X3 matrix of float)
+0:166            'm4' ( temp 4X4 matrix of float)
+0:166            'm4' ( temp 4X4 matrix of float)
+0:167      Sequence
+0:167        move second child to first child ( temp 3X2 matrix of float)
+0:167          'm32' ( temp 3X2 matrix of float)
+0:167          Construct mat3x2 ( temp 3X2 matrix of float)
+0:167            'm4' ( temp 4X4 matrix of float)
+0:168      Sequence
+0:168        move second child to first child ( temp 4X4 matrix of float)
+0:168          'm4c' ( temp 4X4 matrix of float)
+0:168          Construct mat4 ( temp 4X4 matrix of float)
+0:168            'm32' ( temp 3X2 matrix of float)
+0:169      Sequence
+0:169        move second child to first child ( temp 3X3 matrix of float)
+0:169          'm3s' ( temp 3X3 matrix of float)
+0:169          Construct mat3 ( temp 3X3 matrix of float)
+0:169            direct index ( temp float)
+0:169              'v2' ( temp 2-component vector of float)
+0:169              Constant:
+0:169                0 (const int)
+0:171      Sequence
+0:171        move second child to first child ( temp 2-element array of 3X3 matrix of float)
+0:171          'm3a1' ( temp 2-element array of 3X3 matrix of float)
+0:171          Construct mat3 ( temp 2-element array of 3X3 matrix of float)
+0:171            'm3s' ( temp 3X3 matrix of float)
+0:171            'm3s' ( temp 3X3 matrix of float)
+0:179  Function Definition: foo2323( ( global void)
+0:179    Function Parameters: 
+0:?     Sequence
+0:184      move second child to first child ( temp 4-component vector of float)
+0:184        'v' ( temp 4-component vector of float)
+0:184        textureLod ( global 4-component vector of float)
+0:184          's2D' ( uniform sampler2D)
+0:184          'v2' ( temp 2-component vector of float)
+0:184          'f' ( temp float)
+0:185      move second child to first child ( temp 4-component vector of float)
+0:185        'v' ( temp 4-component vector of float)
+0:185        textureProjLod ( global 4-component vector of float)
+0:185          's3D' ( uniform sampler3D)
+0:185          'v' ( temp 4-component vector of float)
+0:185          'f' ( temp float)
+0:186      move second child to first child ( temp 4-component vector of float)
+0:186        'v' ( temp 4-component vector of float)
+0:186        textureProjLod ( global 4-component vector of float)
+0:186          's1D' ( uniform sampler1D)
+0:186          'v' ( temp 4-component vector of float)
+0:186          'f' ( temp float)
+0:187      move second child to first child ( temp 4-component vector of float)
+0:187        'v' ( temp 4-component vector of float)
+0:187        textureProjLod ( global 4-component vector of float)
+0:187          's2DS' ( uniform sampler2DShadow)
+0:187          'v' ( temp 4-component vector of float)
+0:187          'f' ( temp float)
+0:189      move second child to first child ( temp 4-component vector of float)
+0:189        'v' ( temp 4-component vector of float)
+0:189        textureGrad ( global 4-component vector of float)
+0:189          's1D' ( uniform sampler1D)
+0:189          'f' ( temp float)
+0:189          'f' ( temp float)
+0:189          'f' ( temp float)
+0:190      move second child to first child ( temp 4-component vector of float)
+0:190        'v' ( temp 4-component vector of float)
+0:190        textureProjGrad ( global 4-component vector of float)
+0:190          's2D' ( uniform sampler2D)
+0:190          'v' ( temp 4-component vector of float)
+0:190          'v2' ( temp 2-component vector of float)
+0:190          'v2' ( temp 2-component vector of float)
+0:191      move second child to first child ( temp 4-component vector of float)
+0:191        'v' ( temp 4-component vector of float)
+0:191        textureProjGrad ( global 4-component vector of float)
+0:191          's2DS' ( uniform sampler2DShadow)
+0:191          'v' ( temp 4-component vector of float)
+0:191          'v2' ( temp 2-component vector of float)
+0:191          'v2' ( temp 2-component vector of float)
+0:196  Function Definition: foo2324( ( global void)
+0:196    Function Parameters: 
+0:?     Sequence
+0:201      move second child to first child ( temp 4-component vector of float)
+0:201        'v' ( temp 4-component vector of float)
+0:201        textureLod ( global 4-component vector of float)
+0:201          's2D' ( uniform sampler2D)
+0:201          'v2' ( temp 2-component vector of float)
+0:201          'f' ( temp float)
+0:202      move second child to first child ( temp 4-component vector of float)
+0:202        'v' ( temp 4-component vector of float)
+0:202        textureProjLod ( global 4-component vector of float)
+0:202          's3D' ( uniform sampler3D)
+0:202          'v' ( temp 4-component vector of float)
+0:202          'f' ( temp float)
+0:203      move second child to first child ( temp 4-component vector of float)
+0:203        'v' ( temp 4-component vector of float)
+0:203        textureProjLod ( global 4-component vector of float)
+0:203          's1D' ( uniform sampler1D)
+0:203          'v' ( temp 4-component vector of float)
+0:203          'f' ( temp float)
+0:204      move second child to first child ( temp 4-component vector of float)
+0:204        'v' ( temp 4-component vector of float)
+0:204        textureProjLod ( global 4-component vector of float)
+0:204          's2DS' ( uniform sampler2DShadow)
+0:204          'v' ( temp 4-component vector of float)
+0:204          'f' ( temp float)
+0:206      move second child to first child ( temp 4-component vector of float)
+0:206        'v' ( temp 4-component vector of float)
+0:206        textureGrad ( global 4-component vector of float)
+0:206          's1D' ( uniform sampler1D)
+0:206          'f' ( temp float)
+0:206          'f' ( temp float)
+0:206          'f' ( temp float)
+0:207      move second child to first child ( temp 4-component vector of float)
+0:207        'v' ( temp 4-component vector of float)
+0:207        textureProjGrad ( global 4-component vector of float)
+0:207          's2D' ( uniform sampler2D)
+0:207          'v' ( temp 4-component vector of float)
+0:207          'v2' ( temp 2-component vector of float)
+0:207          'v2' ( temp 2-component vector of float)
+0:208      move second child to first child ( temp 4-component vector of float)
+0:208        'v' ( temp 4-component vector of float)
+0:208        textureProjGrad ( global 4-component vector of float)
+0:208          's2DS' ( uniform sampler2DShadow)
+0:208          'v' ( temp 4-component vector of float)
+0:208          'v2' ( temp 2-component vector of float)
+0:208          'v2' ( temp 2-component vector of float)
+0:209      'v' ( temp 4-component vector of float)
+0:214  Function Definition: foo121111( ( global void)
+0:214    Function Parameters: 
+0:?     Sequence
+0:217      Sequence
+0:217        move second child to first child ( temp 4-component vector of float)
+0:217          'v' ( temp 4-component vector of float)
+0:217          texture ( global 4-component vector of float)
+0:217            's2DRbad' ( uniform sampler2DRect)
+0:217            'v2' ( temp 2-component vector of float)
+0:225  Function Definition: foo12111( ( global void)
+0:225    Function Parameters: 
+0:?     Sequence
+0:231      move second child to first child ( temp 4-component vector of float)
+0:231        'v' ( temp 4-component vector of float)
+0:231        texture ( global 4-component vector of float)
+0:231          's2DR' ( uniform sampler2DRect)
+0:231          'v2' ( temp 2-component vector of float)
+0:232      move second child to first child ( temp 4-component vector of float)
+0:232        'v' ( temp 4-component vector of float)
+0:232        textureProj ( global 4-component vector of float)
+0:232          's2DR' ( uniform sampler2DRect)
+0:232          'v3' ( temp 3-component vector of float)
+0:233      move second child to first child ( temp 4-component vector of float)
+0:233        'v' ( temp 4-component vector of float)
+0:233        textureProj ( global 4-component vector of float)
+0:233          's2DR' ( uniform sampler2DRect)
+0:233          'v4' ( temp 4-component vector of float)
+0:234      move second child to first child ( temp 4-component vector of float)
+0:234        'v' ( temp 4-component vector of float)
+0:234        texture ( global 4-component vector of float)
+0:234          's2DRS' ( uniform sampler2DRectShadow)
+0:234          'v3' ( temp 3-component vector of float)
+0:235      move second child to first child ( temp 4-component vector of float)
+0:235        'v' ( temp 4-component vector of float)
+0:235        textureProj ( global 4-component vector of float)
+0:235          's2DRS' ( uniform sampler2DRectShadow)
+0:235          'v4' ( temp 4-component vector of float)
+0:237      move second child to first child ( temp 4-component vector of float)
+0:237        'v' ( temp 4-component vector of float)
+0:237        textureProjGrad ( global 4-component vector of float)
+0:237          's2DRS' ( uniform sampler2DRectShadow)
+0:237          'v' ( temp 4-component vector of float)
+0:237          'v2' ( temp 2-component vector of float)
+0:237          'v2' ( temp 2-component vector of float)
+0:240  Function Definition: voidTernary( ( global void)
+0:240    Function Parameters: 
+0:?     Sequence
+0:243      Test condition and select ( temp void)
+0:243        Condition
+0:243        'b' ( temp bool)
+0:243        true case
+0:243        Function Call: foo121111( ( global void)
+0:243        false case
+0:243        Function Call: foo12111( ( global void)
+0:244      Constant:
+0:244        4 (const int)
+0:245      Function Call: foo12111( ( global void)
+0:?   Linker Objects
+0:?     'lowp' ( global float)
+0:?     'mediump' ( global float)
+0:?     'highp' ( global float)
+0:?     'precision' ( global float)
+0:?     'i' ( smooth in 4-component vector of float)
+0:?     'o' ( out 4-component vector of float)
+0:?     's2D' ( uniform sampler2D)
+0:?     'centTexCoord' ( centroid smooth in 2-component vector of float)
+0:?     'm' ( uniform 4X2 matrix of float)
+0:?     'imageBuffer' ( global float)
+0:?     'uimage2DRect' ( global float)
+0:?     'a' ( temp int)
+0:?     'gl_TexCoord' ( smooth in 6-element array of 4-component vector of float TexCoord)
+0:?     'm22' ( global 2X2 matrix of float)
+0:?     'm23' ( global 2X3 matrix of float)
+0:?     'm24' ( global 2X4 matrix of float)
+0:?     'm32' ( global 3X2 matrix of float)
+0:?     'm33' ( global 3X3 matrix of float)
+0:?     'm34' ( global 3X4 matrix of float)
+0:?     'm42' ( global 4X2 matrix of float)
+0:?     'm43' ( global 4X3 matrix of float)
+0:?     'm44' ( global 4X4 matrix of float)
+0:?     's3D' ( uniform sampler3D)
+0:?     's1D' ( uniform sampler1D)
+0:?     's2DS' ( uniform sampler2DShadow)
+0:?     's2DRbad' ( uniform sampler2DRect)
+0:?     's2DR' ( uniform sampler2DRect)
+0:?     's2DRS' ( uniform sampler2DRectShadow)
+0:?     'halfFloat1' ( global float)
+
+
+Linked fragment stage:
+
+ERROR: Linking fragment stage: Recursion detected:
+    foo(f1; calling foo(f1;
+
+Shader version: 120
+Requested GL_ARB_shader_texture_lod
+Requested GL_ARB_texture_rectangle
+ERROR: node is still EOpNull!
+0:92  Function Definition: main(i1; ( global void)
+0:92    Function Parameters: 
+0:92      'a' ( in int)
+0:?   Linker Objects
+0:?     'lowp' ( global float)
+0:?     'mediump' ( global float)
+0:?     'highp' ( global float)
+0:?     'precision' ( global float)
+0:?     'i' ( smooth in 4-component vector of float)
+0:?     'o' ( out 4-component vector of float)
+0:?     's2D' ( uniform sampler2D)
+0:?     'centTexCoord' ( centroid smooth in 2-component vector of float)
+0:?     'm' ( uniform 4X2 matrix of float)
+0:?     'imageBuffer' ( global float)
+0:?     'uimage2DRect' ( global float)
+0:?     'a' ( temp int)
+0:?     'gl_TexCoord' ( smooth in 6-element array of 4-component vector of float TexCoord)
+0:?     'm22' ( global 2X2 matrix of float)
+0:?     'm23' ( global 2X3 matrix of float)
+0:?     'm24' ( global 2X4 matrix of float)
+0:?     'm32' ( global 3X2 matrix of float)
+0:?     'm33' ( global 3X3 matrix of float)
+0:?     'm34' ( global 3X4 matrix of float)
+0:?     'm42' ( global 4X2 matrix of float)
+0:?     'm43' ( global 4X3 matrix of float)
+0:?     'm44' ( global 4X4 matrix of float)
+0:?     's3D' ( uniform sampler3D)
+0:?     's1D' ( uniform sampler1D)
+0:?     's2DS' ( uniform sampler2DShadow)
+0:?     's2DRbad' ( uniform sampler2DRect)
+0:?     's2DR' ( uniform sampler2DRect)
+0:?     's2DRS' ( uniform sampler2DRectShadow)
+0:?     'halfFloat1' ( global float)
+

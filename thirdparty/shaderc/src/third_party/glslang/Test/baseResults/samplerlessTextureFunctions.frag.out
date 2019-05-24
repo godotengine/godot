@@ -1,0 +1,13 @@
+samplerlessTextureFunctions.frag
+ERROR: 0:9: 'texelFetch' : required extension not requested: GL_EXT_samplerless_texture_functions
+ERROR: 0:10: 'texelFetch' : required extension not requested: GL_EXT_samplerless_texture_functions
+ERROR: 0:16: 'texelFetchOffset' : required extension not requested: GL_EXT_samplerless_texture_functions
+ERROR: 0:18: 'textureSize' : required extension not requested: GL_EXT_samplerless_texture_functions
+ERROR: 0:19: 'textureSize' : required extension not requested: GL_EXT_samplerless_texture_functions
+ERROR: 0:20: 'textureSize' : required extension not requested: GL_EXT_samplerless_texture_functions
+ERROR: 0:22: 'textureQueryLevels' : required extension not requested: GL_EXT_samplerless_texture_functions
+ERROR: 0:24: 'textureSamples' : required extension not requested: GL_EXT_samplerless_texture_functions
+ERROR: 8 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

@@ -1,0 +1,845 @@
+glsl.es320.subgroupVote.comp
+Shader version: 320
+Requested GL_KHR_shader_subgroup_basic
+Requested GL_KHR_shader_subgroup_vote
+local_size = (8, 8, 1)
+0:? Sequence
+0:15  Function Definition: main( ( global void)
+0:15    Function Parameters: 
+0:17    Sequence
+0:17      Sequence
+0:17        move second child to first child ( temp highp uint)
+0:17          'invocation' ( temp highp uint)
+0:17          mod ( temp mediump uint)
+0:17            add ( temp mediump uint)
+0:17              'gl_SubgroupInvocationID' ( in mediump uint unknown built-in variable)
+0:17              'gl_SubgroupSize' ( in mediump uint unknown built-in variable)
+0:17            Constant:
+0:17              4 (const uint)
+0:19      Test condition and select ( temp void)
+0:19        Condition
+0:19        subgroupAll ( global bool)
+0:19          Compare Less Than ( temp bool)
+0:19            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:19              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:19                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:19                Constant:
+0:19                  0 (const int)
+0:19              Constant:
+0:19                3 (const int)
+0:19            Constant:
+0:19              0 (const int)
+0:19        true case
+0:21        Sequence
+0:21          move second child to first child ( temp highp int)
+0:21            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:21              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:21                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:21                Constant:
+0:21                  0 (const int)
+0:21              Constant:
+0:21                3 (const int)
+0:21            Convert bool to int ( temp highp int)
+0:21              subgroupAllEqual ( global bool, operation at highp)
+0:21                direct index ( temp highp float)
+0:21                  f4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of float)
+0:21                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:21                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:21                      Constant:
+0:21                        0 (const int)
+0:21                    Constant:
+0:21                      0 (const int)
+0:21                  Constant:
+0:21                    0 (const int)
+0:22          move second child to first child ( temp highp int)
+0:22            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:22              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:22                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:22                Constant:
+0:22                  0 (const int)
+0:22              Constant:
+0:22                3 (const int)
+0:22            Convert bool to int ( temp highp int)
+0:22              subgroupAllEqual ( global bool, operation at highp)
+0:22                vector swizzle ( temp highp 2-component vector of float)
+0:22                  f4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of float)
+0:22                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:22                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:22                      Constant:
+0:22                        1 (const int)
+0:22                    Constant:
+0:22                      0 (const int)
+0:22                  Sequence
+0:22                    Constant:
+0:22                      0 (const int)
+0:22                    Constant:
+0:22                      1 (const int)
+0:23          move second child to first child ( temp highp int)
+0:23            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:23              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:23                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:23                Constant:
+0:23                  0 (const int)
+0:23              Constant:
+0:23                3 (const int)
+0:23            Convert bool to int ( temp highp int)
+0:23              subgroupAllEqual ( global bool, operation at highp)
+0:23                vector swizzle ( temp highp 3-component vector of float)
+0:23                  f4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of float)
+0:23                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:23                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:23                      Constant:
+0:23                        2 (const int)
+0:23                    Constant:
+0:23                      0 (const int)
+0:23                  Sequence
+0:23                    Constant:
+0:23                      0 (const int)
+0:23                    Constant:
+0:23                      1 (const int)
+0:23                    Constant:
+0:23                      2 (const int)
+0:24          move second child to first child ( temp highp int)
+0:24            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:24              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:24                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:24                Constant:
+0:24                  0 (const int)
+0:24              Constant:
+0:24                3 (const int)
+0:24            Convert bool to int ( temp highp int)
+0:24              subgroupAllEqual ( global bool, operation at highp)
+0:24                f4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of float)
+0:24                  direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:24                    'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:24                    Constant:
+0:24                      3 (const int)
+0:24                  Constant:
+0:24                    0 (const int)
+0:26          move second child to first child ( temp highp int)
+0:26            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:26              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:26                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:26                Constant:
+0:26                  0 (const int)
+0:26              Constant:
+0:26                3 (const int)
+0:26            Convert bool to int ( temp highp int)
+0:26              subgroupAllEqual ( global bool, operation at highp)
+0:26                direct index ( temp highp int)
+0:26                  i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:26                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:26                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:26                      Constant:
+0:26                        0 (const int)
+0:26                    Constant:
+0:26                      1 (const int)
+0:26                  Constant:
+0:26                    0 (const int)
+0:27          move second child to first child ( temp highp int)
+0:27            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:27              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:27                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:27                Constant:
+0:27                  0 (const int)
+0:27              Constant:
+0:27                3 (const int)
+0:27            Convert bool to int ( temp highp int)
+0:27              subgroupAllEqual ( global bool, operation at highp)
+0:27                vector swizzle ( temp highp 2-component vector of int)
+0:27                  i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:27                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:27                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:27                      Constant:
+0:27                        1 (const int)
+0:27                    Constant:
+0:27                      1 (const int)
+0:27                  Sequence
+0:27                    Constant:
+0:27                      0 (const int)
+0:27                    Constant:
+0:27                      1 (const int)
+0:28          move second child to first child ( temp highp int)
+0:28            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:28              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:28                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:28                Constant:
+0:28                  0 (const int)
+0:28              Constant:
+0:28                3 (const int)
+0:28            Convert bool to int ( temp highp int)
+0:28              subgroupAllEqual ( global bool, operation at highp)
+0:28                vector swizzle ( temp highp 3-component vector of int)
+0:28                  i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:28                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:28                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:28                      Constant:
+0:28                        2 (const int)
+0:28                    Constant:
+0:28                      1 (const int)
+0:28                  Sequence
+0:28                    Constant:
+0:28                      0 (const int)
+0:28                    Constant:
+0:28                      1 (const int)
+0:28                    Constant:
+0:28                      2 (const int)
+0:29          move second child to first child ( temp highp int)
+0:29            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:29              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:29                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:29                Constant:
+0:29                  0 (const int)
+0:29              Constant:
+0:29                3 (const int)
+0:29            Convert bool to int ( temp highp int)
+0:29              subgroupAllEqual ( global bool, operation at highp)
+0:29                i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:29                  direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:29                    'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:29                    Constant:
+0:29                      3 (const int)
+0:29                  Constant:
+0:29                    1 (const int)
+0:31          move second child to first child ( temp highp int)
+0:31            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:31              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:31                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:31                Constant:
+0:31                  0 (const int)
+0:31              Constant:
+0:31                3 (const int)
+0:31            Convert bool to int ( temp highp int)
+0:31              subgroupAllEqual ( global bool, operation at highp)
+0:31                direct index ( temp highp uint)
+0:31                  u4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of uint)
+0:31                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:31                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:31                      Constant:
+0:31                        0 (const int)
+0:31                    Constant:
+0:31                      2 (const int)
+0:31                  Constant:
+0:31                    0 (const int)
+0:32          move second child to first child ( temp highp int)
+0:32            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:32              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:32                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:32                Constant:
+0:32                  0 (const int)
+0:32              Constant:
+0:32                3 (const int)
+0:32            Convert bool to int ( temp highp int)
+0:32              subgroupAllEqual ( global bool, operation at highp)
+0:32                vector swizzle ( temp highp 2-component vector of uint)
+0:32                  u4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of uint)
+0:32                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:32                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:32                      Constant:
+0:32                        1 (const int)
+0:32                    Constant:
+0:32                      2 (const int)
+0:32                  Sequence
+0:32                    Constant:
+0:32                      0 (const int)
+0:32                    Constant:
+0:32                      1 (const int)
+0:33          move second child to first child ( temp highp int)
+0:33            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:33              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:33                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:33                Constant:
+0:33                  0 (const int)
+0:33              Constant:
+0:33                3 (const int)
+0:33            Convert bool to int ( temp highp int)
+0:33              subgroupAllEqual ( global bool, operation at highp)
+0:33                vector swizzle ( temp highp 3-component vector of uint)
+0:33                  u4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of uint)
+0:33                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:33                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:33                      Constant:
+0:33                        2 (const int)
+0:33                    Constant:
+0:33                      2 (const int)
+0:33                  Sequence
+0:33                    Constant:
+0:33                      0 (const int)
+0:33                    Constant:
+0:33                      1 (const int)
+0:33                    Constant:
+0:33                      2 (const int)
+0:34          move second child to first child ( temp highp int)
+0:34            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:34              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:34                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:34                Constant:
+0:34                  0 (const int)
+0:34              Constant:
+0:34                3 (const int)
+0:34            Convert bool to int ( temp highp int)
+0:34              subgroupAllEqual ( global bool, operation at highp)
+0:34                u4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of uint)
+0:34                  direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:34                    'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:34                    Constant:
+0:34                      3 (const int)
+0:34                  Constant:
+0:34                    2 (const int)
+0:19        false case
+0:36        Test condition and select ( temp void)
+0:36          Condition
+0:36          subgroupAny ( global bool)
+0:36            Compare Less Than ( temp bool)
+0:36              r: direct index for structure (layout( column_major shared) buffer highp int)
+0:36                direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:36                  'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:36                  Constant:
+0:36                    1 (const int)
+0:36                Constant:
+0:36                  3 (const int)
+0:36              Constant:
+0:36                0 (const int)
+0:36          true case
+0:38          Sequence
+0:38            move second child to first child ( temp highp int)
+0:38              r: direct index for structure (layout( column_major shared) buffer highp int)
+0:38                direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:38                  'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:38                  Constant:
+0:38                    1 (const int)
+0:38                Constant:
+0:38                  3 (const int)
+0:38              Construct int ( temp highp int)
+0:38                Convert bool to int ( temp highp int)
+0:38                  subgroupAllEqual ( global bool)
+0:38                    Compare Less Than ( temp bool)
+0:38                      direct index ( temp highp int)
+0:38                        i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:38                          direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:38                            'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:38                            Constant:
+0:38                              0 (const int)
+0:38                          Constant:
+0:38                            1 (const int)
+0:38                        Constant:
+0:38                          0 (const int)
+0:38                      Constant:
+0:38                        0 (const int)
+0:39            move second child to first child ( temp highp int)
+0:39              r: direct index for structure (layout( column_major shared) buffer highp int)
+0:39                direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:39                  'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:39                  Constant:
+0:39                    1 (const int)
+0:39                Constant:
+0:39                  3 (const int)
+0:39              Construct int ( temp highp int)
+0:39                Construct ivec2 ( temp highp 2-component vector of int)
+0:39                  Convert bool to int ( temp highp int)
+0:39                    subgroupAllEqual ( global bool)
+0:39                      Compare Less Than ( global 2-component vector of bool, operation at highp)
+0:39                        vector swizzle ( temp highp 2-component vector of int)
+0:39                          i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:39                            direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:39                              'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:39                              Constant:
+0:39                                1 (const int)
+0:39                            Constant:
+0:39                              1 (const int)
+0:39                          Sequence
+0:39                            Constant:
+0:39                              0 (const int)
+0:39                            Constant:
+0:39                              1 (const int)
+0:39                        Constant:
+0:39                          0 (const int)
+0:39                          0 (const int)
+0:40            move second child to first child ( temp highp int)
+0:40              r: direct index for structure (layout( column_major shared) buffer highp int)
+0:40                direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:40                  'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:40                  Constant:
+0:40                    1 (const int)
+0:40                Constant:
+0:40                  3 (const int)
+0:40              Construct int ( temp highp int)
+0:40                Construct ivec3 ( temp highp 3-component vector of int)
+0:40                  Convert bool to int ( temp highp int)
+0:40                    subgroupAllEqual ( global bool)
+0:40                      Compare Less Than ( global 3-component vector of bool, operation at highp)
+0:40                        vector swizzle ( temp highp 3-component vector of int)
+0:40                          i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:40                            direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:40                              'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:40                              Constant:
+0:40                                1 (const int)
+0:40                            Constant:
+0:40                              1 (const int)
+0:40                          Sequence
+0:40                            Constant:
+0:40                              0 (const int)
+0:40                            Constant:
+0:40                              1 (const int)
+0:40                            Constant:
+0:40                              2 (const int)
+0:40                        Constant:
+0:40                          0 (const int)
+0:40                          0 (const int)
+0:40                          0 (const int)
+0:41            move second child to first child ( temp highp int)
+0:41              r: direct index for structure (layout( column_major shared) buffer highp int)
+0:41                direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:41                  'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:41                  Constant:
+0:41                    1 (const int)
+0:41                Constant:
+0:41                  3 (const int)
+0:41              Construct int ( temp highp int)
+0:41                Construct ivec4 ( temp highp 4-component vector of int)
+0:41                  Convert bool to int ( temp highp int)
+0:41                    subgroupAllEqual ( global bool)
+0:41                      Compare Less Than ( global 4-component vector of bool, operation at highp)
+0:41                        i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:41                          direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:41                            'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:41                            Constant:
+0:41                              1 (const int)
+0:41                          Constant:
+0:41                            1 (const int)
+0:41                        Constant:
+0:41                          0 (const int)
+0:41                          0 (const int)
+0:41                          0 (const int)
+0:41                          0 (const int)
+0:?   Linker Objects
+0:?     'gl_WorkGroupSize' ( const highp 3-component vector of uint WorkGroupSize)
+0:?       8 (const uint)
+0:?       8 (const uint)
+0:?       1 (const uint)
+0:?     'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+
+
+Linked compute stage:
+
+
+Shader version: 320
+Requested GL_KHR_shader_subgroup_basic
+Requested GL_KHR_shader_subgroup_vote
+local_size = (8, 8, 1)
+0:? Sequence
+0:15  Function Definition: main( ( global void)
+0:15    Function Parameters: 
+0:17    Sequence
+0:17      Sequence
+0:17        move second child to first child ( temp highp uint)
+0:17          'invocation' ( temp highp uint)
+0:17          mod ( temp mediump uint)
+0:17            add ( temp mediump uint)
+0:17              'gl_SubgroupInvocationID' ( in mediump uint unknown built-in variable)
+0:17              'gl_SubgroupSize' ( in mediump uint unknown built-in variable)
+0:17            Constant:
+0:17              4 (const uint)
+0:19      Test condition and select ( temp void)
+0:19        Condition
+0:19        subgroupAll ( global bool)
+0:19          Compare Less Than ( temp bool)
+0:19            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:19              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:19                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:19                Constant:
+0:19                  0 (const int)
+0:19              Constant:
+0:19                3 (const int)
+0:19            Constant:
+0:19              0 (const int)
+0:19        true case
+0:21        Sequence
+0:21          move second child to first child ( temp highp int)
+0:21            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:21              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:21                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:21                Constant:
+0:21                  0 (const int)
+0:21              Constant:
+0:21                3 (const int)
+0:21            Convert bool to int ( temp highp int)
+0:21              subgroupAllEqual ( global bool, operation at highp)
+0:21                direct index ( temp highp float)
+0:21                  f4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of float)
+0:21                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:21                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:21                      Constant:
+0:21                        0 (const int)
+0:21                    Constant:
+0:21                      0 (const int)
+0:21                  Constant:
+0:21                    0 (const int)
+0:22          move second child to first child ( temp highp int)
+0:22            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:22              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:22                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:22                Constant:
+0:22                  0 (const int)
+0:22              Constant:
+0:22                3 (const int)
+0:22            Convert bool to int ( temp highp int)
+0:22              subgroupAllEqual ( global bool, operation at highp)
+0:22                vector swizzle ( temp highp 2-component vector of float)
+0:22                  f4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of float)
+0:22                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:22                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:22                      Constant:
+0:22                        1 (const int)
+0:22                    Constant:
+0:22                      0 (const int)
+0:22                  Sequence
+0:22                    Constant:
+0:22                      0 (const int)
+0:22                    Constant:
+0:22                      1 (const int)
+0:23          move second child to first child ( temp highp int)
+0:23            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:23              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:23                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:23                Constant:
+0:23                  0 (const int)
+0:23              Constant:
+0:23                3 (const int)
+0:23            Convert bool to int ( temp highp int)
+0:23              subgroupAllEqual ( global bool, operation at highp)
+0:23                vector swizzle ( temp highp 3-component vector of float)
+0:23                  f4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of float)
+0:23                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:23                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:23                      Constant:
+0:23                        2 (const int)
+0:23                    Constant:
+0:23                      0 (const int)
+0:23                  Sequence
+0:23                    Constant:
+0:23                      0 (const int)
+0:23                    Constant:
+0:23                      1 (const int)
+0:23                    Constant:
+0:23                      2 (const int)
+0:24          move second child to first child ( temp highp int)
+0:24            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:24              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:24                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:24                Constant:
+0:24                  0 (const int)
+0:24              Constant:
+0:24                3 (const int)
+0:24            Convert bool to int ( temp highp int)
+0:24              subgroupAllEqual ( global bool, operation at highp)
+0:24                f4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of float)
+0:24                  direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:24                    'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:24                    Constant:
+0:24                      3 (const int)
+0:24                  Constant:
+0:24                    0 (const int)
+0:26          move second child to first child ( temp highp int)
+0:26            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:26              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:26                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:26                Constant:
+0:26                  0 (const int)
+0:26              Constant:
+0:26                3 (const int)
+0:26            Convert bool to int ( temp highp int)
+0:26              subgroupAllEqual ( global bool, operation at highp)
+0:26                direct index ( temp highp int)
+0:26                  i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:26                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:26                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:26                      Constant:
+0:26                        0 (const int)
+0:26                    Constant:
+0:26                      1 (const int)
+0:26                  Constant:
+0:26                    0 (const int)
+0:27          move second child to first child ( temp highp int)
+0:27            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:27              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:27                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:27                Constant:
+0:27                  0 (const int)
+0:27              Constant:
+0:27                3 (const int)
+0:27            Convert bool to int ( temp highp int)
+0:27              subgroupAllEqual ( global bool, operation at highp)
+0:27                vector swizzle ( temp highp 2-component vector of int)
+0:27                  i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:27                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:27                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:27                      Constant:
+0:27                        1 (const int)
+0:27                    Constant:
+0:27                      1 (const int)
+0:27                  Sequence
+0:27                    Constant:
+0:27                      0 (const int)
+0:27                    Constant:
+0:27                      1 (const int)
+0:28          move second child to first child ( temp highp int)
+0:28            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:28              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:28                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:28                Constant:
+0:28                  0 (const int)
+0:28              Constant:
+0:28                3 (const int)
+0:28            Convert bool to int ( temp highp int)
+0:28              subgroupAllEqual ( global bool, operation at highp)
+0:28                vector swizzle ( temp highp 3-component vector of int)
+0:28                  i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:28                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:28                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:28                      Constant:
+0:28                        2 (const int)
+0:28                    Constant:
+0:28                      1 (const int)
+0:28                  Sequence
+0:28                    Constant:
+0:28                      0 (const int)
+0:28                    Constant:
+0:28                      1 (const int)
+0:28                    Constant:
+0:28                      2 (const int)
+0:29          move second child to first child ( temp highp int)
+0:29            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:29              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:29                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:29                Constant:
+0:29                  0 (const int)
+0:29              Constant:
+0:29                3 (const int)
+0:29            Convert bool to int ( temp highp int)
+0:29              subgroupAllEqual ( global bool, operation at highp)
+0:29                i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:29                  direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:29                    'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:29                    Constant:
+0:29                      3 (const int)
+0:29                  Constant:
+0:29                    1 (const int)
+0:31          move second child to first child ( temp highp int)
+0:31            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:31              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:31                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:31                Constant:
+0:31                  0 (const int)
+0:31              Constant:
+0:31                3 (const int)
+0:31            Convert bool to int ( temp highp int)
+0:31              subgroupAllEqual ( global bool, operation at highp)
+0:31                direct index ( temp highp uint)
+0:31                  u4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of uint)
+0:31                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:31                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:31                      Constant:
+0:31                        0 (const int)
+0:31                    Constant:
+0:31                      2 (const int)
+0:31                  Constant:
+0:31                    0 (const int)
+0:32          move second child to first child ( temp highp int)
+0:32            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:32              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:32                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:32                Constant:
+0:32                  0 (const int)
+0:32              Constant:
+0:32                3 (const int)
+0:32            Convert bool to int ( temp highp int)
+0:32              subgroupAllEqual ( global bool, operation at highp)
+0:32                vector swizzle ( temp highp 2-component vector of uint)
+0:32                  u4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of uint)
+0:32                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:32                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:32                      Constant:
+0:32                        1 (const int)
+0:32                    Constant:
+0:32                      2 (const int)
+0:32                  Sequence
+0:32                    Constant:
+0:32                      0 (const int)
+0:32                    Constant:
+0:32                      1 (const int)
+0:33          move second child to first child ( temp highp int)
+0:33            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:33              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:33                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:33                Constant:
+0:33                  0 (const int)
+0:33              Constant:
+0:33                3 (const int)
+0:33            Convert bool to int ( temp highp int)
+0:33              subgroupAllEqual ( global bool, operation at highp)
+0:33                vector swizzle ( temp highp 3-component vector of uint)
+0:33                  u4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of uint)
+0:33                    direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:33                      'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:33                      Constant:
+0:33                        2 (const int)
+0:33                    Constant:
+0:33                      2 (const int)
+0:33                  Sequence
+0:33                    Constant:
+0:33                      0 (const int)
+0:33                    Constant:
+0:33                      1 (const int)
+0:33                    Constant:
+0:33                      2 (const int)
+0:34          move second child to first child ( temp highp int)
+0:34            r: direct index for structure (layout( column_major shared) buffer highp int)
+0:34              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:34                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:34                Constant:
+0:34                  0 (const int)
+0:34              Constant:
+0:34                3 (const int)
+0:34            Convert bool to int ( temp highp int)
+0:34              subgroupAllEqual ( global bool, operation at highp)
+0:34                u4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of uint)
+0:34                  direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:34                    'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:34                    Constant:
+0:34                      3 (const int)
+0:34                  Constant:
+0:34                    2 (const int)
+0:19        false case
+0:36        Test condition and select ( temp void)
+0:36          Condition
+0:36          subgroupAny ( global bool)
+0:36            Compare Less Than ( temp bool)
+0:36              r: direct index for structure (layout( column_major shared) buffer highp int)
+0:36                direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:36                  'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:36                  Constant:
+0:36                    1 (const int)
+0:36                Constant:
+0:36                  3 (const int)
+0:36              Constant:
+0:36                0 (const int)
+0:36          true case
+0:38          Sequence
+0:38            move second child to first child ( temp highp int)
+0:38              r: direct index for structure (layout( column_major shared) buffer highp int)
+0:38                direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:38                  'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:38                  Constant:
+0:38                    1 (const int)
+0:38                Constant:
+0:38                  3 (const int)
+0:38              Construct int ( temp highp int)
+0:38                Convert bool to int ( temp highp int)
+0:38                  subgroupAllEqual ( global bool)
+0:38                    Compare Less Than ( temp bool)
+0:38                      direct index ( temp highp int)
+0:38                        i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:38                          direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:38                            'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:38                            Constant:
+0:38                              0 (const int)
+0:38                          Constant:
+0:38                            1 (const int)
+0:38                        Constant:
+0:38                          0 (const int)
+0:38                      Constant:
+0:38                        0 (const int)
+0:39            move second child to first child ( temp highp int)
+0:39              r: direct index for structure (layout( column_major shared) buffer highp int)
+0:39                direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:39                  'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:39                  Constant:
+0:39                    1 (const int)
+0:39                Constant:
+0:39                  3 (const int)
+0:39              Construct int ( temp highp int)
+0:39                Construct ivec2 ( temp highp 2-component vector of int)
+0:39                  Convert bool to int ( temp highp int)
+0:39                    subgroupAllEqual ( global bool)
+0:39                      Compare Less Than ( global 2-component vector of bool, operation at highp)
+0:39                        vector swizzle ( temp highp 2-component vector of int)
+0:39                          i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:39                            direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:39                              'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:39                              Constant:
+0:39                                1 (const int)
+0:39                            Constant:
+0:39                              1 (const int)
+0:39                          Sequence
+0:39                            Constant:
+0:39                              0 (const int)
+0:39                            Constant:
+0:39                              1 (const int)
+0:39                        Constant:
+0:39                          0 (const int)
+0:39                          0 (const int)
+0:40            move second child to first child ( temp highp int)
+0:40              r: direct index for structure (layout( column_major shared) buffer highp int)
+0:40                direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:40                  'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:40                  Constant:
+0:40                    1 (const int)
+0:40                Constant:
+0:40                  3 (const int)
+0:40              Construct int ( temp highp int)
+0:40                Construct ivec3 ( temp highp 3-component vector of int)
+0:40                  Convert bool to int ( temp highp int)
+0:40                    subgroupAllEqual ( global bool)
+0:40                      Compare Less Than ( global 3-component vector of bool, operation at highp)
+0:40                        vector swizzle ( temp highp 3-component vector of int)
+0:40                          i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:40                            direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:40                              'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:40                              Constant:
+0:40                                1 (const int)
+0:40                            Constant:
+0:40                              1 (const int)
+0:40                          Sequence
+0:40                            Constant:
+0:40                              0 (const int)
+0:40                            Constant:
+0:40                              1 (const int)
+0:40                            Constant:
+0:40                              2 (const int)
+0:40                        Constant:
+0:40                          0 (const int)
+0:40                          0 (const int)
+0:40                          0 (const int)
+0:41            move second child to first child ( temp highp int)
+0:41              r: direct index for structure (layout( column_major shared) buffer highp int)
+0:41                direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:41                  'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:41                  Constant:
+0:41                    1 (const int)
+0:41                Constant:
+0:41                  3 (const int)
+0:41              Construct int ( temp highp int)
+0:41                Construct ivec4 ( temp highp 4-component vector of int)
+0:41                  Convert bool to int ( temp highp int)
+0:41                    subgroupAllEqual ( global bool)
+0:41                      Compare Less Than ( global 4-component vector of bool, operation at highp)
+0:41                        i4: direct index for structure (layout( column_major shared) buffer highp 4-component vector of int)
+0:41                          direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:41                            'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+0:41                            Constant:
+0:41                              1 (const int)
+0:41                          Constant:
+0:41                            1 (const int)
+0:41                        Constant:
+0:41                          0 (const int)
+0:41                          0 (const int)
+0:41                          0 (const int)
+0:41                          0 (const int)
+0:?   Linker Objects
+0:?     'gl_WorkGroupSize' ( const highp 3-component vector of uint WorkGroupSize)
+0:?       8 (const uint)
+0:?       8 (const uint)
+0:?       1 (const uint)
+0:?     'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp 4-component vector of float f4, layout( column_major shared) buffer highp 4-component vector of int i4, layout( column_major shared) buffer highp 4-component vector of uint u4, layout( column_major shared) buffer highp int r})
+

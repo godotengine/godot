@@ -1,0 +1,33 @@
+#!/usr/bin/env sh
+
+# System Integrity Protection on Darwin complicated these matters somewhat.
+# See https://github.com/google/re2/issues/175 for details.
+if [ "x$1" = "x-shared-library-path" ]; then
+	if [ "x$(uname)" = "xDarwin" ]; then
+		DYLD_LIBRARY_PATH="$2:$DYLD_LIBRARY_PATH"
+		export DYLD_LIBRARY_PATH
+	else
+		LD_LIBRARY_PATH="$2:$LD_LIBRARY_PATH"
+		export LD_LIBRARY_PATH
+	fi
+	shift 2
+fi
+
+success=true
+for i; do
+	printf "%-40s" $i
+	if $($i >$i.log 2>&1) 2>/dev/null; then
+		echo PASS
+	else
+		echo FAIL';' output in $i.log
+		success=false
+	fi
+done
+
+if $success; then
+	echo 'ALL TESTS PASSED.'
+	exit 0
+else
+	echo 'TESTS FAILED.'
+	exit 1
+fi

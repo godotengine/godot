@@ -1,0 +1,27 @@
+es-link1.frag
+Shader version: 100
+0:? Sequence
+0:5  Function Definition: main( ( global void)
+0:5    Function Parameters: 
+0:7    Sequence
+0:7      move second child to first child ( temp mediump 4-component vector of float)
+0:7        'gl_FragColor' ( fragColor mediump 4-component vector of float FragColor)
+0:7        Function Call: calculateColor( ( global mediump 4-component vector of float)
+0:?   Linker Objects
+
+es-link2.frag
+Shader version: 100
+0:? Sequence
+0:5  Function Definition: calculateColor( ( global mediump 4-component vector of float)
+0:5    Function Parameters: 
+0:7    Sequence
+0:7      Branch: Return with expression
+0:7        vector-scale ( temp mediump 4-component vector of float)
+0:7          'varyingColor' ( smooth in mediump 4-component vector of float)
+0:7          Constant:
+0:7            0.500000
+0:?   Linker Objects
+0:?     'varyingColor' ( smooth in mediump 4-component vector of float)
+
+ERROR: Cannot attach multiple ES shaders of the same type to a single program
+

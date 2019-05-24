@@ -1,0 +1,309 @@
+hlsl.struct.split.trivial.geom
+Shader version: 500
+invocations = -1
+max_vertices = 3
+input primitive = triangles
+output primitive = triangle_strip
+0:? Sequence
+0:14  Function Definition: @main(struct-PS_IN-vf41[3];struct-GS_OUT-vf41; ( temp void)
+0:14    Function Parameters: 
+0:14      'i' ( in 3-element array of structure{ temp 4-component vector of float pos})
+0:14      'ts' ( out structure{ temp 4-component vector of float pos})
+0:?     Sequence
+0:17      Sequence
+0:17        move second child to first child ( temp int)
+0:17          'x' ( temp int)
+0:17          Constant:
+0:17            0 (const int)
+0:17        Loop with condition tested first
+0:17          Loop Condition
+0:17          Compare Less Than ( temp bool)
+0:17            'x' ( temp int)
+0:17            Constant:
+0:17              3 (const int)
+0:17          Loop Body
+0:?           Sequence
+0:18            move second child to first child ( temp 4-component vector of float)
+0:18              pos: direct index for structure ( temp 4-component vector of float)
+0:18                'o' ( temp structure{ temp 4-component vector of float pos})
+0:18                Constant:
+0:18                  0 (const int)
+0:18              pos: direct index for structure ( temp 4-component vector of float)
+0:18                indirect index ( temp structure{ temp 4-component vector of float pos})
+0:18                  'i' ( in 3-element array of structure{ temp 4-component vector of float pos})
+0:18                  'x' ( temp int)
+0:18                Constant:
+0:18                  0 (const int)
+0:19            Sequence
+0:19              Sequence
+0:19                move second child to first child ( temp 4-component vector of float)
+0:?                   'ts.pos' ( out 4-component vector of float Position)
+0:19                  pos: direct index for structure ( temp 4-component vector of float)
+0:19                    'o' ( temp structure{ temp 4-component vector of float pos})
+0:19                    Constant:
+0:19                      0 (const int)
+0:19              EmitVertex ( temp void)
+0:17          Loop Terminal Expression
+0:17          Pre-Increment ( temp int)
+0:17            'x' ( temp int)
+0:14  Function Definition: main( ( temp void)
+0:14    Function Parameters: 
+0:?     Sequence
+0:14      Sequence
+0:14        move second child to first child ( temp 4-component vector of float)
+0:14          pos: direct index for structure ( temp 4-component vector of float)
+0:14            direct index ( temp structure{ temp 4-component vector of float pos})
+0:?               'i' ( temp 3-element array of structure{ temp 4-component vector of float pos})
+0:14              Constant:
+0:14                0 (const int)
+0:14            Constant:
+0:14              0 (const int)
+0:14          direct index ( in 4-component vector of float Position)
+0:?             'i.pos' ( in 3-element array of 4-component vector of float Position)
+0:14            Constant:
+0:14              0 (const int)
+0:14        move second child to first child ( temp 4-component vector of float)
+0:14          pos: direct index for structure ( temp 4-component vector of float)
+0:14            direct index ( temp structure{ temp 4-component vector of float pos})
+0:?               'i' ( temp 3-element array of structure{ temp 4-component vector of float pos})
+0:14              Constant:
+0:14                1 (const int)
+0:14            Constant:
+0:14              0 (const int)
+0:14          direct index ( in 4-component vector of float Position)
+0:?             'i.pos' ( in 3-element array of 4-component vector of float Position)
+0:14            Constant:
+0:14              1 (const int)
+0:14        move second child to first child ( temp 4-component vector of float)
+0:14          pos: direct index for structure ( temp 4-component vector of float)
+0:14            direct index ( temp structure{ temp 4-component vector of float pos})
+0:?               'i' ( temp 3-element array of structure{ temp 4-component vector of float pos})
+0:14              Constant:
+0:14                2 (const int)
+0:14            Constant:
+0:14              0 (const int)
+0:14          direct index ( in 4-component vector of float Position)
+0:?             'i.pos' ( in 3-element array of 4-component vector of float Position)
+0:14            Constant:
+0:14              2 (const int)
+0:14      Function Call: @main(struct-PS_IN-vf41[3];struct-GS_OUT-vf41; ( temp void)
+0:?         'i' ( temp 3-element array of structure{ temp 4-component vector of float pos})
+0:?         'ts' ( temp structure{ temp 4-component vector of float pos})
+0:?   Linker Objects
+0:?     'i.pos' ( in 3-element array of 4-component vector of float Position)
+0:?     'ts.pos' ( out 4-component vector of float Position)
+
+
+Linked geometry stage:
+
+
+Shader version: 500
+invocations = 1
+max_vertices = 3
+input primitive = triangles
+output primitive = triangle_strip
+0:? Sequence
+0:14  Function Definition: @main(struct-PS_IN-vf41[3];struct-GS_OUT-vf41; ( temp void)
+0:14    Function Parameters: 
+0:14      'i' ( in 3-element array of structure{ temp 4-component vector of float pos})
+0:14      'ts' ( out structure{ temp 4-component vector of float pos})
+0:?     Sequence
+0:17      Sequence
+0:17        move second child to first child ( temp int)
+0:17          'x' ( temp int)
+0:17          Constant:
+0:17            0 (const int)
+0:17        Loop with condition tested first
+0:17          Loop Condition
+0:17          Compare Less Than ( temp bool)
+0:17            'x' ( temp int)
+0:17            Constant:
+0:17              3 (const int)
+0:17          Loop Body
+0:?           Sequence
+0:18            move second child to first child ( temp 4-component vector of float)
+0:18              pos: direct index for structure ( temp 4-component vector of float)
+0:18                'o' ( temp structure{ temp 4-component vector of float pos})
+0:18                Constant:
+0:18                  0 (const int)
+0:18              pos: direct index for structure ( temp 4-component vector of float)
+0:18                indirect index ( temp structure{ temp 4-component vector of float pos})
+0:18                  'i' ( in 3-element array of structure{ temp 4-component vector of float pos})
+0:18                  'x' ( temp int)
+0:18                Constant:
+0:18                  0 (const int)
+0:19            Sequence
+0:19              Sequence
+0:19                move second child to first child ( temp 4-component vector of float)
+0:?                   'ts.pos' ( out 4-component vector of float Position)
+0:19                  pos: direct index for structure ( temp 4-component vector of float)
+0:19                    'o' ( temp structure{ temp 4-component vector of float pos})
+0:19                    Constant:
+0:19                      0 (const int)
+0:19              EmitVertex ( temp void)
+0:17          Loop Terminal Expression
+0:17          Pre-Increment ( temp int)
+0:17            'x' ( temp int)
+0:14  Function Definition: main( ( temp void)
+0:14    Function Parameters: 
+0:?     Sequence
+0:14      Sequence
+0:14        move second child to first child ( temp 4-component vector of float)
+0:14          pos: direct index for structure ( temp 4-component vector of float)
+0:14            direct index ( temp structure{ temp 4-component vector of float pos})
+0:?               'i' ( temp 3-element array of structure{ temp 4-component vector of float pos})
+0:14              Constant:
+0:14                0 (const int)
+0:14            Constant:
+0:14              0 (const int)
+0:14          direct index ( in 4-component vector of float Position)
+0:?             'i.pos' ( in 3-element array of 4-component vector of float Position)
+0:14            Constant:
+0:14              0 (const int)
+0:14        move second child to first child ( temp 4-component vector of float)
+0:14          pos: direct index for structure ( temp 4-component vector of float)
+0:14            direct index ( temp structure{ temp 4-component vector of float pos})
+0:?               'i' ( temp 3-element array of structure{ temp 4-component vector of float pos})
+0:14              Constant:
+0:14                1 (const int)
+0:14            Constant:
+0:14              0 (const int)
+0:14          direct index ( in 4-component vector of float Position)
+0:?             'i.pos' ( in 3-element array of 4-component vector of float Position)
+0:14            Constant:
+0:14              1 (const int)
+0:14        move second child to first child ( temp 4-component vector of float)
+0:14          pos: direct index for structure ( temp 4-component vector of float)
+0:14            direct index ( temp structure{ temp 4-component vector of float pos})
+0:?               'i' ( temp 3-element array of structure{ temp 4-component vector of float pos})
+0:14              Constant:
+0:14                2 (const int)
+0:14            Constant:
+0:14              0 (const int)
+0:14          direct index ( in 4-component vector of float Position)
+0:?             'i.pos' ( in 3-element array of 4-component vector of float Position)
+0:14            Constant:
+0:14              2 (const int)
+0:14      Function Call: @main(struct-PS_IN-vf41[3];struct-GS_OUT-vf41; ( temp void)
+0:?         'i' ( temp 3-element array of structure{ temp 4-component vector of float pos})
+0:?         'ts' ( temp structure{ temp 4-component vector of float pos})
+0:?   Linker Objects
+0:?     'i.pos' ( in 3-element array of 4-component vector of float Position)
+0:?     'ts.pos' ( out 4-component vector of float Position)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 67
+
+                              Capability Geometry
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Geometry 4  "main" 40 49
+                              ExecutionMode 4 Triangles
+                              ExecutionMode 4 Invocations 1
+                              ExecutionMode 4 OutputTriangleStrip
+                              ExecutionMode 4 OutputVertices 3
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "PS_IN"
+                              MemberName 8(PS_IN) 0  "pos"
+                              Name 13  "GS_OUT"
+                              MemberName 13(GS_OUT) 0  "pos"
+                              Name 18  "@main(struct-PS_IN-vf41[3];struct-GS_OUT-vf41;"
+                              Name 16  "i"
+                              Name 17  "ts"
+                              Name 22  "x"
+                              Name 33  "o"
+                              Name 40  "ts.pos"
+                              Name 46  "i"
+                              Name 49  "i.pos"
+                              Name 61  "ts"
+                              Name 62  "param"
+                              Name 64  "param"
+                              Decorate 40(ts.pos) BuiltIn Position
+                              Decorate 49(i.pos) BuiltIn Position
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+        8(PS_IN):             TypeStruct 7(fvec4)
+               9:             TypeInt 32 0
+              10:      9(int) Constant 3
+              11:             TypeArray 8(PS_IN) 10
+              12:             TypePointer Function 11
+      13(GS_OUT):             TypeStruct 7(fvec4)
+              14:             TypePointer Function 13(GS_OUT)
+              15:             TypeFunction 2 12(ptr) 14(ptr)
+              20:             TypeInt 32 1
+              21:             TypePointer Function 20(int)
+              23:     20(int) Constant 0
+              30:     20(int) Constant 3
+              31:             TypeBool
+              35:             TypePointer Function 7(fvec4)
+              39:             TypePointer Output 7(fvec4)
+      40(ts.pos):     39(ptr) Variable Output
+              44:     20(int) Constant 1
+              47:             TypeArray 7(fvec4) 10
+              48:             TypePointer Input 47
+       49(i.pos):     48(ptr) Variable Input
+              50:             TypePointer Input 7(fvec4)
+              57:     20(int) Constant 2
+         4(main):           2 Function None 3
+               5:             Label
+           46(i):     12(ptr) Variable Function
+          61(ts):     14(ptr) Variable Function
+       62(param):     12(ptr) Variable Function
+       64(param):     14(ptr) Variable Function
+              51:     50(ptr) AccessChain 49(i.pos) 23
+              52:    7(fvec4) Load 51
+              53:     35(ptr) AccessChain 46(i) 23 23
+                              Store 53 52
+              54:     50(ptr) AccessChain 49(i.pos) 44
+              55:    7(fvec4) Load 54
+              56:     35(ptr) AccessChain 46(i) 44 23
+                              Store 56 55
+              58:     50(ptr) AccessChain 49(i.pos) 57
+              59:    7(fvec4) Load 58
+              60:     35(ptr) AccessChain 46(i) 57 23
+                              Store 60 59
+              63:          11 Load 46(i)
+                              Store 62(param) 63
+              65:           2 FunctionCall 18(@main(struct-PS_IN-vf41[3];struct-GS_OUT-vf41;) 62(param) 64(param)
+              66:  13(GS_OUT) Load 64(param)
+                              Store 61(ts) 66
+                              Return
+                              FunctionEnd
+18(@main(struct-PS_IN-vf41[3];struct-GS_OUT-vf41;):           2 Function None 15
+           16(i):     12(ptr) FunctionParameter
+          17(ts):     14(ptr) FunctionParameter
+              19:             Label
+           22(x):     21(ptr) Variable Function
+           33(o):     14(ptr) Variable Function
+                              Store 22(x) 23
+                              Branch 24
+              24:             Label
+                              LoopMerge 26 27 None
+                              Branch 28
+              28:             Label
+              29:     20(int) Load 22(x)
+              32:    31(bool) SLessThan 29 30
+                              BranchConditional 32 25 26
+              25:               Label
+              34:     20(int)   Load 22(x)
+              36:     35(ptr)   AccessChain 16(i) 34 23
+              37:    7(fvec4)   Load 36
+              38:     35(ptr)   AccessChain 33(o) 23
+                                Store 38 37
+              41:     35(ptr)   AccessChain 33(o) 23
+              42:    7(fvec4)   Load 41
+                                Store 40(ts.pos) 42
+                                EmitVertex
+                                Branch 27
+              27:               Label
+              43:     20(int)   Load 22(x)
+              45:     20(int)   IAdd 43 44
+                                Store 22(x) 45
+                                Branch 24
+              26:             Label
+                              Return
+                              FunctionEnd

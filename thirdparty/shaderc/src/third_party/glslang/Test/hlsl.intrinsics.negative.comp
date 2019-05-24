@@ -1,0 +1,201 @@
+float ComputeShaderFunctionS(float inF0, float inF1, float inF2, int inI0)
+{
+    uint out_u1;
+
+    // AllMemoryBarrier();              // invalid in fragment stage  TODO: parser currently crashes on empty arg list
+    // AllMemoryBarrierWithGroupSync(); // invalid in fragment stage  TODO: parser currently crashes on empty arg list
+    // asdouble(inF0, inF1);                     // expected error: only integer inputs
+    // CheckAccessFullyMapped(3.0);              // expected error: only valid on integers
+    // clip(inF0);                               // expected error: only valid in pixel stage
+    // countbits(inF0);                          // expected error: only integer inputs
+    // cross(inF0, inF1);                        // expected error: only on float3 inputs
+    // D3DCOLORtoUBYTE4(inF0);                   // expected error: only on float4 inputs
+    // ddx(inF0);                                // expected error: only valid in pixel stage
+    // ddx_coarse(inF0);                         // expected error: only valid in pixel stage
+    // ddx_fine(inF0);                           // expected error: only valid in pixel stage
+    // ddy(inF0);                                // expected error: only valid in pixel stage
+    // ddy_coarse(inF0);                         // expected error: only valid in pixel stage
+    // ddy_fine(inF0);                           // expected error: only valid in pixel stage
+    // determinant(inF0);                        // expected error: only valid on mats
+    // EvaluateAttributeAtCentroid(inF0);        // expected error: only interpolant
+    // EvaluateAttributeAtSample(inF0, 2);       // expected error: only interpolant
+    // EvaluateAttributeSnapped(inF0, int2(2));  // expected error: only interpolant
+    // f16tof32(inF0);                           // expected error: only integer inputs
+    // firstbithigh(inF0);                       // expected error: only integer inputs
+    // firstbitlow(inF0);                        // expected error: only integer inputs
+    // fma(inF0, inF1, inF2); // TODO: this might auto-promote: need to check against FXC
+    // fwidth(inF0);                             // expected error: only valid in pixel stage
+    // InterlockedAdd(gs_ua, gs_ub);             // expected error: only valid in pixel stage
+    // InterlockedAdd(gs_ua, gs_ub, out_u1);     // expected error: only valid in pixel stage
+    // InterlockedAnd(gs_ua, gs_ub);             // expected error: only valid in pixel stage
+    // InterlockedAnd(gs_ua, gs_ub, out_u1);     // expected error: only valid in pixel stage
+    // InterlockedCompareExchange(gs_ua, gs_ub, gs_uc, out_u1); // expected error: only valid in pixel stage
+    // InterlockedExchange(gs_ua, gs_ub, out_u1);// expected error: only valid in pixel stage
+    // InterlockedMax(gs_ua, gs_ub);             // expected error: only valid in pixel stage
+    // InterlockedMax(gs_ua, gs_ub, out_u1);     // expected error: only valid in pixel stage
+    // InterlockedMin(gs_ua, gs_ub);             // expected error: only valid in pixel stage
+    // InterlockedMin(gs_ua, gs_ub, out_u1);     // expected error: only valid in pixel stage
+    // InterlockedOr(gs_ua, gs_ub);              // expected error: only valid in pixel stage
+    // InterlockedOr(gs_ua, gs_ub, out_u1);      // expected error: only valid in pixel stage
+    // InterlockedXor(gs_ua, gs_ub);             // expected error: only valid in pixel stage
+    // InterlockedXor(gs_ua, gs_ub, out_u1);     // expected error: only valid in pixel stage
+    // length(inF0);                             // expect error: invalid on scalars
+    // msad4(inF0, float2(0), float4(0));        // expected error: only integer inputs
+    // normalize(inF0);                          // expect error: invalid on scalars
+    // reflect(inF0, inF1);                      // expect error: invalid on scalars
+    // refract(inF0, inF1, inF2);                // expect error: invalid on scalars
+    // refract(float2(0), float2(0), float2(0)); // expected error: last parameter only scalar
+    // reversebits(inF0);                        // expected error: only integer inputs
+    // transpose(inF0);                          // expect error: only valid on mats
+
+    // TODO: texture intrinsics, when we can declare samplers.
+
+    return 0.0;
+}
+
+float1 ComputeShaderFunction1(float1 inF0, float1 inF1, float1 inF2, int1 inI0)
+{
+    // TODO: ... add when float1 prototypes are generated
+
+    // GetRenderTargetSamplePosition(inF0); // expected error: only integer inputs
+
+    return 0.0;
+}
+
+float2 ComputeShaderFunction2(float2 inF0, float2 inF1, float2 inF2, int2 inI0)
+{
+    uint2 out_u2;
+
+    // asdouble(inF0, inF1);         // expected error: only integer inputs
+    // CheckAccessFullyMapped(inF0); // expect error: only valid on scalars
+    // countbits(inF0);              // expected error: only integer inputs
+    // cross(inF0, inF1);            // expected error: only on float3 inputs
+    // D3DCOLORtoUBYTE4(inF0);       // expected error: only on float4 inputs
+    // ddx(inF0);                                // only valid in pixel stage
+    // ddx_coarse(inF0);                         // only valid in pixel stage
+    // ddx_fine(inF0);                           // only valid in pixel stage
+    // ddy(inF0);                                // only valid in pixel stage
+    // ddy_coarse(inF0);                         // only valid in pixel stage
+    // ddy_fine(inF0);                           // only valid in pixel stage
+    // determinant(inF0);            // expect error: only valid on mats
+    // EvaluateAttributeAtCentroid(inF0);        // expected error: only interpolant
+    // EvaluateAttributeAtSample(inF0, 2);       // expected error: only interpolant
+    // EvaluateAttributeSnapped(inF0, int2(2));  // expected error: only interpolant
+    // f16tof32(inF0);               // expected error: only integer inputs
+    // firstbithigh(inF0);           // expected error: only integer inputs
+    // firstbitlow(inF0);            // expected error: only integer inputs
+    // fma(inF0, inF1, inF2); // TODO: this might auto-promote: need to check against FXC
+    // fwidth(inF0);                 // expected error: only valid in pixel stage
+    // InterlockedAdd(gs_ua2, gs_ub2);         // expected error: only valid in pixel stage
+    // InterlockedAdd(gs_ua2, gs_ub2, out_u2); // expected error: only valid in pixel stage
+    // InterlockedAnd(gs_ua2, gs_ub2);         // expected error: only valid in pixel stage
+    // InterlockedAnd(gs_ua2, gs_ub2, out_u2); // expected error: only valid in pixel stage
+    // InterlockedCompareExchange(gs_ua2, gs_ub2, gs_uc2, out_u2); // expected error: only valid in pixel stage
+    // InterlockedExchange(gs_ua2, gs_ub2, out_u2);// expected error: only valid in pixel stage
+    // InterlockedMax(gs_ua2, gs_ub2);         // expected error: only valid in pixel stage
+    // InterlockedMax(gs_ua2, gs_ub2, out_u2); // expected error: only valid in pixel stage
+    // InterlockedMin(gs_ua2, gs_ub2);         // expected error: only valid in pixel stage
+    // InterlockedMin(gs_ua2, gs_ub2, out_u2); // expected error: only valid in pixel stage
+    // InterlockedOr(gs_ua2, gs_ub2);          // expected error: only valid in pixel stage
+    // InterlockedOr(gs_ua2, gs_ub2, out_u2);  // expected error: only valid in pixel stage
+    // InterlockedXor(gs_ua2, gs_ub2);         // expected error: only valid in pixel stage
+    // InterlockedXor(gs_ua2, gs_ub2, out_u2); // expected error: only valid in pixel stage
+    // noise(inF0);                  // expected error: only valid in pixel stage
+    // reversebits(inF0);            // expected error: only integer inputs
+    // transpose(inF0);              // expect error: only valid on mats
+
+    // TODO: texture intrinsics, when we can declare samplers.
+
+    return float2(1,2);
+}
+
+float3 ComputeShaderFunction3(float3 inF0, float3 inF1, float3 inF2, int3 inI0)
+{
+    uint3 out_u3;
+
+    // CheckAccessFullyMapped(inF0);                               // expect error: only valid on scalars
+    // countbits(inF0);                                            // expected error: only integer inputs
+    // ddx(inF0);                                                  // only valid in pixel stage
+    // ddx_coarse(inF0);                                           // only valid in pixel stage
+    // ddx_fine(inF0);                                             // only valid in pixel stage
+    // ddy(inF0);                                                  // only valid in pixel stage
+    // ddy_coarse(inF0);                                           // only valid in pixel stage
+    // ddy_fine(inF0);                                             // only valid in pixel stage
+    // D3DCOLORtoUBYTE4(inF0);                                     // expected error: only on float4 inputs
+    // determinant(inF0);                                          // expect error: only valid on mats
+    // EvaluateAttributeAtCentroid(inF0);                          // expected error: only interpolant
+    // EvaluateAttributeAtSample(inF0, 2);                         // expected error: only interpolant
+    // EvaluateAttributeSnapped(inF0, int2(2));                    // expected error: only interpolant
+    // f16tof32(inF0);                                             // expected error: only integer inputs
+    // firstbithigh(inF0);                                         // expected error: only integer inputs
+    // firstbitlow(inF0);                                          // expected error: only integer inputs
+    // fma(inF0, inF1, inF2); // TODO: this might auto-promote: need to check against FXC
+    // fwidth(inF0);                                               // expected error: only valid in pixel stage
+    // InterlockedAdd(gs_ua3, gs_ub3);                             // expected error: only valid in pixel stage
+    // InterlockedAdd(gs_ua3, gs_ub3, out_u3);                     // expected error: only valid in pixel stage
+    // InterlockedAnd(gs_ua3, gs_ub3);                             // expected error: only valid in pixel stage
+    // InterlockedAnd(gs_ua3, gs_ub3, out_u3);                     // expected error: only valid in pixel stage
+    // InterlockedCompareExchange(gs_ua3, gs_ub3, gs_uc3, out_u3); // expected error: only valid in pixel stage
+    // InterlockedExchange(gs_ua3, gs_ub3, out_u3);                // expected error: only valid in pixel stage
+    // InterlockedMax(gs_ua3, gs_ub3);                             // expected error: only valid in pixel stage
+    // InterlockedMax(gs_ua3, gs_ub3, out_u3);                     // expected error: only valid in pixel stage
+    // InterlockedMin(gs_ua3, gs_ub3);                             // expected error: only valid in pixel stage
+    // InterlockedMin(gs_ua3, gs_ub3, out_u3);                     // expected error: only valid in pixel stage
+    // InterlockedOr(gs_ua3, gs_ub3);                              // expected error: only valid in pixel stage
+    // InterlockedOr(gs_ua3, gs_ub3, out_u3);                      // expected error: only valid in pixel stage
+    // InterlockedXor(gs_ua3, gs_ub3);                             // expected error: only valid in pixel stage
+    // InterlockedXor(gs_ua3, gs_ub3, out_u3);                     // expected error: only valid in pixel stage
+    // noise(inF0);                                                // expected error: only valid in pixel stage
+    // reversebits(inF0);                                          // expected error: only integer inputs
+    // transpose(inF0);                                            // expect error: only valid on mats
+
+    // TODO: texture intrinsics, when we can declare samplers.
+
+    return float3(1,2,3);
+}
+
+float4 ComputeShaderFunction(float4 inF0, float4 inF1, float4 inF2, int4 inI0)
+{
+    uint4 out_u4;
+
+    // CheckAccessFullyMapped(inF0);                               // expect error: only valid on scalars
+    // countbits(inF0);                                            // expected error: only integer inputs
+    // cross(inF0, inF1);                                          // expected error: only on float3 inputs
+    // determinant(inF0);                                          // expect error: only valid on mats
+    // ddx(inF0);                                                  // only valid in pixel stage
+    // ddx_coarse(inF0);                                           // only valid in pixel stage
+    // ddx_fine(inF0);                                             // only valid in pixel stage
+    // ddy(inF0);                                                  // only valid in pixel stage
+    // ddy_coarse(inF0);                                           // only valid in pixel stage
+    // ddy_fine(inF0);                                             // only valid in pixel stage
+    // EvaluateAttributeAtCentroid(inF0);                          // expected error: only valid in pixel stage
+    // EvaluateAttributeAtSample(inF0, 2);                         // expected error: only valid in pixel stage
+    // EvaluateAttributeSnapped(inF0, int2(2));                    // expected error: only valid in pixel stage
+    // f16tof32(inF0);                                             // expected error: only integer inputs
+    // firstbithigh(inF0);                                         // expected error: only integer inputs
+    // firstbitlow(inF0);                                          // expected error: only integer inputs
+    // fma(inF0, inF1, inF2); // TODO: this might auto-promote: need to check against FXC
+    // fwidth(inF0);                                               // expected error: only valid in pixel stage
+    // InterlockedAdd(gs_ua4, gs_ub4);                             // expected error: only valid in pixel stage
+    // InterlockedAdd(gs_ua4, gs_ub4, out_u4);                     // expected error: only valid in pixel stage
+    // InterlockedAnd(gs_ua4, gs_ub4);                             // expected error: only valid in pixel stage
+    // InterlockedAnd(gs_ua4, gs_ub4, out_u4);                     // expected error: only valid in pixel stage
+    // InterlockedCompareExchange(gs_ua4, gs_ub4, gs_uc4, out_u4); // expected error: only valid in pixel stage
+    // InterlockedExchange(gs_ua4, gs_ub4, out_u4);                // expected error: only valid in pixel stage
+    // InterlockedMax(gs_ua4, gs_ub4);                             // expected error: only valid in pixel stage
+    // InterlockedMax(gs_ua4, gs_ub4, out_u4);                     // expected error: only valid in pixel stage
+    // InterlockedMin(gs_ua4, gs_ub4);                             // expected error: only valid in pixel stage
+    // InterlockedMin(gs_ua4, gs_ub4, out_u4);                     // expected error: only valid in pixel stage
+    // InterlockedOr(gs_ua4, gs_ub4);                              // expected error: only valid in pixel stage
+    // InterlockedOr(gs_ua4, gs_ub4, out_u4);                      // expected error: only valid in pixel stage
+    // InterlockedXor(gs_ua4, gs_ub4);                             // expected error: only valid in pixel stage
+    // InterlockedXor(gs_ua4, gs_ub4, out_u4);                     // expected error: only valid in pixel stage
+    // noise(inF0);                                                // expected error: only valid in pixel stage
+    // reversebits(inF0);                                          // expected error: only integer inputs
+    // transpose(inF0);                                            // expect error: only valid on mats
+
+    // TODO: texture intrinsics, when we can declare samplers.
+
+    return float4(1,2,3,4);
+}
+

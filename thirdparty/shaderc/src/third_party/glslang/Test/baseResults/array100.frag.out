@@ -1,0 +1,273 @@
+array100.frag
+ERROR: 0:3: 'float' : type requires declaration of default precision qualifier 
+ERROR: 0:3: '' : array size required 
+ERROR: 0:9: 'arrayed type' : not supported for this version or the enabled extensions 
+ERROR: 0:9: 'arrayed type' : not supported for this version or the enabled extensions 
+ERROR: 0:9: 'array in function return type' : not supported for this version or the enabled extensions 
+ERROR: 0:11: 'arrayed constructor' : not supported for this version or the enabled extensions 
+ERROR: 0:21: '[' :  array index out of range '2'
+ERROR: 0:24: 'array assignment' : not supported for this version or the enabled extensions 
+ERROR: 0:25: 'array assignment' : not supported for this version or the enabled extensions 
+ERROR: 0:25: 'assign' :  cannot convert from ' global 4-element array of mediump float' to ' global 5-element array of mediump float'
+ERROR: 0:26: 'array assignment' : not supported for this version or the enabled extensions 
+ERROR: 0:26: 'assign' :  cannot convert from ' global 4-element array of mediump float' to ' global unsized 1-element array of mediump float'
+ERROR: 0:28: 'foo' : no matching overloaded function found 
+ERROR: 0:31: 'arrayed constructor' : not supported for this version or the enabled extensions 
+ERROR: 0:31: 'array comparison' : not supported for this version or the enabled extensions 
+ERROR: 0:35: '[' :  array index out of range '5'
+ERROR: 0:38: '[' :  array index out of range '1000'
+ERROR: 0:39: '[' :  index out of range '-1'
+ERROR: 0:53: 'array in function return type' : not supported for this version or the enabled extensions 
+ERROR: 0:66: 'array assignment' : not supported for this version or the enabled extensions 
+ERROR: 0:68: 'array assignment' : not supported for this version or the enabled extensions 
+ERROR: 0:69: 'array initializer' : not supported for this version or the enabled extensions 
+ERROR: 22 compilation errors.  No code generated.
+
+
+Shader version: 100
+ERROR: node is still EOpNull!
+0:9  Function Definition: foo(f1[5]; ( global 4-element array of mediump float)
+0:9    Function Parameters: 
+0:9      'a' ( in 5-element array of mediump float)
+0:11    Sequence
+0:11      Branch: Return with expression
+0:11        Construct float ( temp 4-element array of float)
+0:11          direct index ( temp mediump float)
+0:11            'a' ( in 5-element array of mediump float)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( temp mediump float)
+0:11            'a' ( in 5-element array of mediump float)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( temp mediump float)
+0:11            'a' ( in 5-element array of mediump float)
+0:11            Constant:
+0:11              2 (const int)
+0:11          direct index ( temp mediump float)
+0:11            'a' ( in 5-element array of mediump float)
+0:11            Constant:
+0:11              3 (const int)
+0:14  Function Definition: bar(f1[5]; ( global void)
+0:14    Function Parameters: 
+0:14      '' ( in 5-element array of mediump float)
+0:16  Function Definition: main( ( global void)
+0:16    Function Parameters: 
+0:?     Sequence
+0:?       Sequence
+0:21        move second child to first child ( temp mediump float)
+0:21          direct index ( temp mediump float)
+0:21            'gu' ( temp 2-element array of mediump float)
+0:21            Constant:
+0:21              2 (const int)
+0:21          Constant:
+0:21            4.000000
+0:24      move second child to first child ( temp 4-element array of mediump float)
+0:24        'g4' ( global 4-element array of mediump float)
+0:24        Function Call: foo(f1[5]; ( global 4-element array of mediump float)
+0:24          'g5' ( global 5-element array of mediump float)
+0:25      'g5' ( global 5-element array of mediump float)
+0:26      'gu' ( global unsized 1-element array of mediump float)
+0:28      Constant:
+0:28        0.000000
+0:29      Function Call: bar(f1[5]; ( global void)
+0:29        'g5' ( global 5-element array of mediump float)
+0:31      Test condition and select ( temp void)
+0:31        Condition
+0:31        Compare Equal ( temp bool)
+0:31          Constant:
+0:31            1.000000
+0:31            2.000000
+0:31            3.000000
+0:31            4.000000
+0:31          'g4' ( global 4-element array of mediump float)
+0:31        true case
+0:32        move second child to first child ( temp mediump float)
+0:32          direct index ( temp mediump float)
+0:32            'gu' ( global unsized 1-element array of mediump float)
+0:32            Constant:
+0:32              0 (const int)
+0:32          Constant:
+0:32            2.000000
+0:35      move second child to first child ( temp mediump float)
+0:35        direct index ( temp mediump float)
+0:35          'u' ( temp 5-element array of mediump float)
+0:35          Constant:
+0:35            5 (const int)
+0:35        Constant:
+0:35          5.000000
+0:36      Function Call: foo(f1[5]; ( global 4-element array of mediump float)
+0:36        'u' ( temp 5-element array of mediump float)
+0:38      move second child to first child ( temp mediump 4-component vector of float)
+0:38        direct index ( temp mediump 4-component vector of float FragData)
+0:38          'gl_FragData' ( fragColor 32-element array of mediump 4-component vector of float FragData)
+0:38          Constant:
+0:38            1000 (const int)
+0:38        Constant:
+0:38          1.000000
+0:38          1.000000
+0:38          1.000000
+0:38          1.000000
+0:39      move second child to first child ( temp mediump 4-component vector of float)
+0:39        direct index ( temp mediump 4-component vector of float FragData)
+0:39          'gl_FragData' ( fragColor 32-element array of mediump 4-component vector of float FragData)
+0:39          Constant:
+0:39            -1 (const int)
+0:39        Constant:
+0:39          1.000000
+0:39          1.000000
+0:39          1.000000
+0:39          1.000000
+0:40      move second child to first child ( temp mediump 4-component vector of float)
+0:40        direct index ( temp mediump 4-component vector of float FragData)
+0:40          'gl_FragData' ( fragColor 32-element array of mediump 4-component vector of float FragData)
+0:40          Constant:
+0:40            3 (const int)
+0:40        Constant:
+0:40          1.000000
+0:40          1.000000
+0:40          1.000000
+0:40          1.000000
+0:53  Function Definition: bar9( ( global structure{ global mediump 4-component vector of float v4,  global structure{ global mediump 3-component vector of float v3,  global 4-element array of mediump 2-component vector of float v2} sa})
+0:53    Function Parameters: 
+0:?     Sequence
+0:56      Branch: Return with expression
+0:56        's' ( temp structure{ global mediump 4-component vector of float v4,  global structure{ global mediump 3-component vector of float v3,  global 4-element array of mediump 2-component vector of float v2} sa})
+0:59  Function Definition: bar10(struct-SB-vf4-struct-SA-vf3-vf2[4]11; ( global void)
+0:59    Function Parameters: 
+0:59      's' ( in structure{ global mediump 4-component vector of float v4,  global structure{ global mediump 3-component vector of float v3,  global 4-element array of mediump 2-component vector of float v2} sa})
+0:63  Function Definition: bar11( ( global void)
+0:63    Function Parameters: 
+0:?     Sequence
+0:66      move second child to first child ( temp structure{ global mediump 4-component vector of float v4,  global structure{ global mediump 3-component vector of float v3,  global 4-element array of mediump 2-component vector of float v2} sa})
+0:66        's1' ( temp structure{ global mediump 4-component vector of float v4,  global structure{ global mediump 3-component vector of float v3,  global 4-element array of mediump 2-component vector of float v2} sa})
+0:66        's2' ( temp structure{ global mediump 4-component vector of float v4,  global structure{ global mediump 3-component vector of float v3,  global 4-element array of mediump 2-component vector of float v2} sa})
+0:67      Function Call: bar10(struct-SB-vf4-struct-SA-vf3-vf2[4]11; ( global void)
+0:67        's1' ( temp structure{ global mediump 4-component vector of float v4,  global structure{ global mediump 3-component vector of float v3,  global 4-element array of mediump 2-component vector of float v2} sa})
+0:68      move second child to first child ( temp structure{ global mediump 4-component vector of float v4,  global structure{ global mediump 3-component vector of float v3,  global 4-element array of mediump 2-component vector of float v2} sa})
+0:68        's2' ( temp structure{ global mediump 4-component vector of float v4,  global structure{ global mediump 3-component vector of float v3,  global 4-element array of mediump 2-component vector of float v2} sa})
+0:68        Function Call: bar9( ( global structure{ global mediump 4-component vector of float v4,  global structure{ global mediump 3-component vector of float v3,  global 4-element array of mediump 2-component vector of float v2} sa})
+0:69      Sequence
+0:69        move second child to first child ( temp structure{ global mediump 4-component vector of float v4,  global structure{ global mediump 3-component vector of float v3,  global 4-element array of mediump 2-component vector of float v2} sa})
+0:69          'initSb' ( temp structure{ global mediump 4-component vector of float v4,  global structure{ global mediump 3-component vector of float v3,  global 4-element array of mediump 2-component vector of float v2} sa})
+0:69          's1' ( temp structure{ global mediump 4-component vector of float v4,  global structure{ global mediump 3-component vector of float v3,  global 4-element array of mediump 2-component vector of float v2} sa})
+0:?   Linker Objects
+0:?     'gu' ( global unsized 1-element array of mediump float)
+0:?     'g4' ( global 4-element array of mediump float)
+0:?     'g5' ( global 5-element array of mediump float)
+0:?     'a' ( uniform mediump int)
+
+
+Linked fragment stage:
+
+
+Shader version: 100
+ERROR: node is still EOpNull!
+0:9  Function Definition: foo(f1[5]; ( global 4-element array of mediump float)
+0:9    Function Parameters: 
+0:9      'a' ( in 5-element array of mediump float)
+0:11    Sequence
+0:11      Branch: Return with expression
+0:11        Construct float ( temp 4-element array of float)
+0:11          direct index ( temp mediump float)
+0:11            'a' ( in 5-element array of mediump float)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( temp mediump float)
+0:11            'a' ( in 5-element array of mediump float)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( temp mediump float)
+0:11            'a' ( in 5-element array of mediump float)
+0:11            Constant:
+0:11              2 (const int)
+0:11          direct index ( temp mediump float)
+0:11            'a' ( in 5-element array of mediump float)
+0:11            Constant:
+0:11              3 (const int)
+0:14  Function Definition: bar(f1[5]; ( global void)
+0:14    Function Parameters: 
+0:14      '' ( in 5-element array of mediump float)
+0:16  Function Definition: main( ( global void)
+0:16    Function Parameters: 
+0:?     Sequence
+0:?       Sequence
+0:21        move second child to first child ( temp mediump float)
+0:21          direct index ( temp mediump float)
+0:21            'gu' ( temp 2-element array of mediump float)
+0:21            Constant:
+0:21              2 (const int)
+0:21          Constant:
+0:21            4.000000
+0:24      move second child to first child ( temp 4-element array of mediump float)
+0:24        'g4' ( global 4-element array of mediump float)
+0:24        Function Call: foo(f1[5]; ( global 4-element array of mediump float)
+0:24          'g5' ( global 5-element array of mediump float)
+0:25      'g5' ( global 5-element array of mediump float)
+0:26      'gu' ( global 1-element array of mediump float)
+0:28      Constant:
+0:28        0.000000
+0:29      Function Call: bar(f1[5]; ( global void)
+0:29        'g5' ( global 5-element array of mediump float)
+0:31      Test condition and select ( temp void)
+0:31        Condition
+0:31        Compare Equal ( temp bool)
+0:31          Constant:
+0:31            1.000000
+0:31            2.000000
+0:31            3.000000
+0:31            4.000000
+0:31          'g4' ( global 4-element array of mediump float)
+0:31        true case
+0:32        move second child to first child ( temp mediump float)
+0:32          direct index ( temp mediump float)
+0:32            'gu' ( global 1-element array of mediump float)
+0:32            Constant:
+0:32              0 (const int)
+0:32          Constant:
+0:32            2.000000
+0:35      move second child to first child ( temp mediump float)
+0:35        direct index ( temp mediump float)
+0:35          'u' ( temp 5-element array of mediump float)
+0:35          Constant:
+0:35            5 (const int)
+0:35        Constant:
+0:35          5.000000
+0:36      Function Call: foo(f1[5]; ( global 4-element array of mediump float)
+0:36        'u' ( temp 5-element array of mediump float)
+0:38      move second child to first child ( temp mediump 4-component vector of float)
+0:38        direct index ( temp mediump 4-component vector of float FragData)
+0:38          'gl_FragData' ( fragColor 32-element array of mediump 4-component vector of float FragData)
+0:38          Constant:
+0:38            1000 (const int)
+0:38        Constant:
+0:38          1.000000
+0:38          1.000000
+0:38          1.000000
+0:38          1.000000
+0:39      move second child to first child ( temp mediump 4-component vector of float)
+0:39        direct index ( temp mediump 4-component vector of float FragData)
+0:39          'gl_FragData' ( fragColor 32-element array of mediump 4-component vector of float FragData)
+0:39          Constant:
+0:39            -1 (const int)
+0:39        Constant:
+0:39          1.000000
+0:39          1.000000
+0:39          1.000000
+0:39          1.000000
+0:40      move second child to first child ( temp mediump 4-component vector of float)
+0:40        direct index ( temp mediump 4-component vector of float FragData)
+0:40          'gl_FragData' ( fragColor 32-element array of mediump 4-component vector of float FragData)
+0:40          Constant:
+0:40            3 (const int)
+0:40        Constant:
+0:40          1.000000
+0:40          1.000000
+0:40          1.000000
+0:40          1.000000
+0:?   Linker Objects
+0:?     'gu' ( global 1-element array of mediump float)
+0:?     'g4' ( global 4-element array of mediump float)
+0:?     'g5' ( global 5-element array of mediump float)
+0:?     'a' ( uniform mediump int)
+

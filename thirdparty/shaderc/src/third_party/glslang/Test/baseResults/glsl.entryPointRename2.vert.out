@@ -1,0 +1,4 @@
+glsl.entryPointRename2.vert
+ERROR: Linking vertex stage: Missing entry point: Each stage requires one entry point
+
+SPIR-V is not generated for failed compile or link

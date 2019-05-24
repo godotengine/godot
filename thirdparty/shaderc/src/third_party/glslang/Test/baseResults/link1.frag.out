@@ -1,0 +1,162 @@
+link1.frag
+Shader version: 130
+0:? Sequence
+0:8  Sequence
+0:8    move second child to first child ( temp 4-component vector of float)
+0:8      'a' ( global 4-component vector of float)
+0:8      vector-scale ( temp 4-component vector of float)
+0:8        Constant:
+0:8          8.000000
+0:8        'uv4' ( uniform 4-component vector of float)
+0:13  Function Definition: main( ( global void)
+0:13    Function Parameters: 
+0:17  Sequence
+0:17    move second child to first child ( temp 4-component vector of float)
+0:17      'b' ( global 4-component vector of float)
+0:17      vector-scale ( temp 4-component vector of float)
+0:17        Constant:
+0:17          8.000000
+0:17        'a' ( global 4-component vector of float)
+0:19  Function Definition: foo(mf22; ( global 2-component vector of int)
+0:19    Function Parameters: 
+0:19      'm' ( in 2X2 matrix of float)
+0:21    Sequence
+0:21      Branch: Return with expression
+0:21        Convert float to int ( temp 2-component vector of int)
+0:21          direct index ( temp 2-component vector of float)
+0:21            'm' ( in 2X2 matrix of float)
+0:21            Constant:
+0:21              0 (const int)
+0:24  Sequence
+0:24    move second child to first child ( temp 4-component vector of float)
+0:24      'c' ( global 4-component vector of float)
+0:24      component-wise multiply ( temp 4-component vector of float)
+0:24        'b' ( global 4-component vector of float)
+0:24        'b' ( global 4-component vector of float)
+0:?   Linker Objects
+0:?     'uv4' ( uniform 4-component vector of float)
+0:?     'glass' ( uniform 3-component vector of float)
+0:?     'ci' ( const int)
+0:?       8 (const int)
+0:?     'a' ( global 4-component vector of float)
+0:?     'iv3' ( smooth in 3-component vector of float)
+0:?     'cup' ( smooth in 4-component vector of float)
+0:?     'b' ( global 4-component vector of float)
+0:?     'c' ( global 4-component vector of float)
+0:?     'cv3' ( const 3-component vector of float)
+0:?       43.000000
+0:?       0.340000
+0:?       9.900000
+0:?     'cv3n' ( const 3-component vector of float)
+0:?       43.000000
+0:?       0.340000
+0:?       9.900000
+0:?     'cv3e' ( const 3-component vector of float)
+0:?       43.000000
+0:?       0.340000
+0:?       9.900000
+0:?     'um2' ( uniform 2X2 matrix of float)
+0:?       4.000000
+0:?       0.000000
+0:?       0.000000
+0:?       4.000000
+0:?     'um2n' ( uniform 2X2 matrix of float)
+0:?       4.000000
+0:?       0.000000
+0:?       0.000000
+0:?       4.000000
+0:?     'um2e' ( uniform 2X2 matrix of float)
+0:?       4.000000
+0:?       0.000000
+0:?       0.000000
+0:?       4.000000
+0:?     's' ( uniform structure{ global int a,  global float b})
+0:?       82 (const int)
+0:?       3.900000
+0:?     'sn' ( uniform structure{ global int a,  global float b})
+0:?     'se' ( uniform structure{ global int a,  global float b})
+0:?       82 (const int)
+0:?       3.900000
+
+link2.frag
+Shader version: 130
+Requested GL_OES_standard_derivatives
+Requested GL_OES_texture_3D
+0:? Sequence
+0:8  Sequence
+0:8    move second child to first child ( temp 4-component vector of float)
+0:8      'd' ( global 4-component vector of float)
+0:8      vector-scale ( temp 4-component vector of float)
+0:8        Constant:
+0:8          8.000000
+0:8        'uv4' ( uniform 4-component vector of float)
+0:13  Sequence
+0:13    move second child to first child ( temp 4-component vector of float)
+0:13      'e' ( global 4-component vector of float)
+0:13      vector-scale ( temp 4-component vector of float)
+0:13        Constant:
+0:13          8.000000
+0:13        'd' ( global 4-component vector of float)
+0:15  Function Definition: foo( ( global 2-component vector of int)
+0:15    Function Parameters: 
+0:17    Sequence
+0:17      Branch: Return with expression
+0:17        Constant:
+0:17          2 (const int)
+0:17          2 (const int)
+0:20  Sequence
+0:20    move second child to first child ( temp 4-component vector of float)
+0:20      'f' ( global 4-component vector of float)
+0:20      component-wise multiply ( temp 4-component vector of float)
+0:20        'e' ( global 4-component vector of float)
+0:20        'e' ( global 4-component vector of float)
+0:?   Linker Objects
+0:?     'uv4' ( uniform 4-component vector of float)
+0:?     'glass' ( uniform 2-component vector of float)
+0:?     'ci' ( const int)
+0:?       8 (const int)
+0:?     'd' ( global 4-component vector of float)
+0:?     'iv3' ( smooth in 3-component vector of float)
+0:?     'cup' ( flat in 4-component vector of float)
+0:?     'e' ( global 4-component vector of float)
+0:?     'f' ( global 4-component vector of float)
+0:?     'cv3' ( const 3-component vector of float)
+0:?       43.000000
+0:?       0.340000
+0:?       9.900000
+0:?     'cv3e' ( const 3-component vector of float)
+0:?       43.000000
+0:?       0.340000
+0:?       2.900000
+0:?     'um2' ( uniform 2X2 matrix of float)
+0:?       4.000000
+0:?       0.000000
+0:?       0.000000
+0:?       4.000000
+0:?     'um2n' ( uniform 2X2 matrix of float)
+0:?     'um2e' ( uniform 2X2 matrix of float)
+0:?       3.000000
+0:?       0.000000
+0:?       0.000000
+0:?       3.000000
+0:?     's' ( uniform structure{ global int a,  global float b})
+0:?       82 (const int)
+0:?       3.900000
+0:?     'sn' ( uniform structure{ global int a,  global float b})
+0:?       82 (const int)
+0:?       3.900000
+0:?     'se' ( uniform structure{ global int a,  global float b})
+0:?       81 (const int)
+0:?       3.900000
+
+link3.frag
+Shader version: 300
+Requested GL_OES_EGL_image_external
+Requested GL_OES_standard_derivatives
+Requested GL_OES_texture_3D
+0:? Sequence
+0:?   Linker Objects
+0:?     'iv3' ( smooth in highp 2-component vector of float)
+
+ERROR: Cannot mix ES profile with non-ES profile shaders
+

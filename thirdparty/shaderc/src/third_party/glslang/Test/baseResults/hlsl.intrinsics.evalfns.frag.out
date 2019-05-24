@@ -1,0 +1,287 @@
+hlsl.intrinsics.evalfns.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:3  Function Definition: @main(f1;vf2;vf3;vf4;vi2; ( temp void)
+0:3    Function Parameters: 
+0:3      'inF1' ( in float)
+0:3      'inF2' ( in 2-component vector of float)
+0:3      'inF3' ( in 3-component vector of float)
+0:3      'inF4' ( in 4-component vector of float)
+0:3      'inI2' ( in 2-component vector of int)
+0:?     Sequence
+0:4      interpolateAtOffset ( temp float)
+0:4        'inF1' ( in float)
+0:?         Constant:
+0:?           -0.500000
+0:?           -0.062500
+0:5      interpolateAtOffset ( temp 2-component vector of float)
+0:5        'inF2' ( in 2-component vector of float)
+0:?         Constant:
+0:?           0.000000
+0:?           0.062500
+0:6      interpolateAtOffset ( temp 3-component vector of float)
+0:6        'inF3' ( in 3-component vector of float)
+0:?         Constant:
+0:?           0.187500
+0:?           -0.375000
+0:7      interpolateAtOffset ( temp 4-component vector of float)
+0:7        'inF4' ( in 4-component vector of float)
+0:?         Constant:
+0:?           0.437500
+0:?           -0.500000
+0:9      interpolateAtOffset ( temp float)
+0:9        'inF1' ( in float)
+0:9        vector-scale ( temp 2-component vector of float)
+0:9          Convert int to float ( temp 2-component vector of float)
+0:9            right-shift ( temp 2-component vector of int)
+0:9              left-shift ( temp 2-component vector of int)
+0:9                'inI2' ( in 2-component vector of int)
+0:9                Constant:
+0:9                  28 (const int)
+0:9              Constant:
+0:9                28 (const int)
+0:9          Constant:
+0:9            0.062500
+0:3  Function Definition: main( ( temp void)
+0:3    Function Parameters: 
+0:?     Sequence
+0:3      move second child to first child ( temp float)
+0:?         'inF1' ( temp float)
+0:?         'inF1' (layout( location=0) in float)
+0:3      move second child to first child ( temp 2-component vector of float)
+0:?         'inF2' ( temp 2-component vector of float)
+0:?         'inF2' (layout( location=1) in 2-component vector of float)
+0:3      move second child to first child ( temp 3-component vector of float)
+0:?         'inF3' ( temp 3-component vector of float)
+0:?         'inF3' (layout( location=2) in 3-component vector of float)
+0:3      move second child to first child ( temp 4-component vector of float)
+0:?         'inF4' ( temp 4-component vector of float)
+0:?         'inF4' (layout( location=3) in 4-component vector of float)
+0:3      move second child to first child ( temp 2-component vector of int)
+0:?         'inI2' ( temp 2-component vector of int)
+0:?         'inI2' (layout( location=4) flat in 2-component vector of int)
+0:3      Function Call: @main(f1;vf2;vf3;vf4;vi2; ( temp void)
+0:?         'inF1' ( temp float)
+0:?         'inF2' ( temp 2-component vector of float)
+0:?         'inF3' ( temp 3-component vector of float)
+0:?         'inF4' ( temp 4-component vector of float)
+0:?         'inI2' ( temp 2-component vector of int)
+0:?   Linker Objects
+0:?     'inF1' (layout( location=0) in float)
+0:?     'inF2' (layout( location=1) in 2-component vector of float)
+0:?     'inF3' (layout( location=2) in 3-component vector of float)
+0:?     'inF4' (layout( location=3) in 4-component vector of float)
+0:?     'inI2' (layout( location=4) flat in 2-component vector of int)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:3  Function Definition: @main(f1;vf2;vf3;vf4;vi2; ( temp void)
+0:3    Function Parameters: 
+0:3      'inF1' ( in float)
+0:3      'inF2' ( in 2-component vector of float)
+0:3      'inF3' ( in 3-component vector of float)
+0:3      'inF4' ( in 4-component vector of float)
+0:3      'inI2' ( in 2-component vector of int)
+0:?     Sequence
+0:4      interpolateAtOffset ( temp float)
+0:4        'inF1' ( in float)
+0:?         Constant:
+0:?           -0.500000
+0:?           -0.062500
+0:5      interpolateAtOffset ( temp 2-component vector of float)
+0:5        'inF2' ( in 2-component vector of float)
+0:?         Constant:
+0:?           0.000000
+0:?           0.062500
+0:6      interpolateAtOffset ( temp 3-component vector of float)
+0:6        'inF3' ( in 3-component vector of float)
+0:?         Constant:
+0:?           0.187500
+0:?           -0.375000
+0:7      interpolateAtOffset ( temp 4-component vector of float)
+0:7        'inF4' ( in 4-component vector of float)
+0:?         Constant:
+0:?           0.437500
+0:?           -0.500000
+0:9      interpolateAtOffset ( temp float)
+0:9        'inF1' ( in float)
+0:9        vector-scale ( temp 2-component vector of float)
+0:9          Convert int to float ( temp 2-component vector of float)
+0:9            right-shift ( temp 2-component vector of int)
+0:9              left-shift ( temp 2-component vector of int)
+0:9                'inI2' ( in 2-component vector of int)
+0:9                Constant:
+0:9                  28 (const int)
+0:9              Constant:
+0:9                28 (const int)
+0:9          Constant:
+0:9            0.062500
+0:3  Function Definition: main( ( temp void)
+0:3    Function Parameters: 
+0:?     Sequence
+0:3      move second child to first child ( temp float)
+0:?         'inF1' ( temp float)
+0:?         'inF1' (layout( location=0) in float)
+0:3      move second child to first child ( temp 2-component vector of float)
+0:?         'inF2' ( temp 2-component vector of float)
+0:?         'inF2' (layout( location=1) in 2-component vector of float)
+0:3      move second child to first child ( temp 3-component vector of float)
+0:?         'inF3' ( temp 3-component vector of float)
+0:?         'inF3' (layout( location=2) in 3-component vector of float)
+0:3      move second child to first child ( temp 4-component vector of float)
+0:?         'inF4' ( temp 4-component vector of float)
+0:?         'inF4' (layout( location=3) in 4-component vector of float)
+0:3      move second child to first child ( temp 2-component vector of int)
+0:?         'inI2' ( temp 2-component vector of int)
+0:?         'inI2' (layout( location=4) flat in 2-component vector of int)
+0:3      Function Call: @main(f1;vf2;vf3;vf4;vi2; ( temp void)
+0:?         'inF1' ( temp float)
+0:?         'inF2' ( temp 2-component vector of float)
+0:?         'inF3' ( temp 3-component vector of float)
+0:?         'inF4' ( temp 4-component vector of float)
+0:?         'inI2' ( temp 2-component vector of int)
+0:?   Linker Objects
+0:?     'inF1' (layout( location=0) in float)
+0:?     'inF2' (layout( location=1) in 2-component vector of float)
+0:?     'inF3' (layout( location=2) in 3-component vector of float)
+0:?     'inF4' (layout( location=3) in 4-component vector of float)
+0:?     'inI2' (layout( location=4) flat in 2-component vector of int)
+
+Validation failed
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 80
+
+                              Capability Shader
+                              Capability InterpolationFunction
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 51 55 59 63 67
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 23  "@main(f1;vf2;vf3;vf4;vi2;"
+                              Name 18  "inF1"
+                              Name 19  "inF2"
+                              Name 20  "inF3"
+                              Name 21  "inF4"
+                              Name 22  "inI2"
+                              Name 49  "inF1"
+                              Name 51  "inF1"
+                              Name 53  "inF2"
+                              Name 55  "inF2"
+                              Name 57  "inF3"
+                              Name 59  "inF3"
+                              Name 61  "inF4"
+                              Name 63  "inF4"
+                              Name 65  "inI2"
+                              Name 67  "inI2"
+                              Name 69  "param"
+                              Name 71  "param"
+                              Name 73  "param"
+                              Name 75  "param"
+                              Name 77  "param"
+                              Decorate 51(inF1) Location 0
+                              Decorate 55(inF2) Location 1
+                              Decorate 59(inF3) Location 2
+                              Decorate 63(inF4) Location 3
+                              Decorate 67(inI2) Flat
+                              Decorate 67(inI2) Location 4
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypePointer Function 6(float)
+               8:             TypeVector 6(float) 2
+               9:             TypePointer Function 8(fvec2)
+              10:             TypeVector 6(float) 3
+              11:             TypePointer Function 10(fvec3)
+              12:             TypeVector 6(float) 4
+              13:             TypePointer Function 12(fvec4)
+              14:             TypeInt 32 1
+              15:             TypeVector 14(int) 2
+              16:             TypePointer Function 15(ivec2)
+              17:             TypeFunction 2 7(ptr) 9(ptr) 11(ptr) 13(ptr) 16(ptr)
+              25:    6(float) Constant 3204448256
+              26:    6(float) Constant 3179282432
+              27:    8(fvec2) ConstantComposite 25 26
+              29:    6(float) Constant 0
+              30:    6(float) Constant 1031798784
+              31:    8(fvec2) ConstantComposite 29 30
+              33:    6(float) Constant 1044381696
+              34:    6(float) Constant 3200253952
+              35:    8(fvec2) ConstantComposite 33 34
+              37:    6(float) Constant 1054867456
+              38:    8(fvec2) ConstantComposite 37 25
+              41:     14(int) Constant 28
+              50:             TypePointer Input 6(float)
+        51(inF1):     50(ptr) Variable Input
+              54:             TypePointer Input 8(fvec2)
+        55(inF2):     54(ptr) Variable Input
+              58:             TypePointer Input 10(fvec3)
+        59(inF3):     58(ptr) Variable Input
+              62:             TypePointer Input 12(fvec4)
+        63(inF4):     62(ptr) Variable Input
+              66:             TypePointer Input 15(ivec2)
+        67(inI2):     66(ptr) Variable Input
+         4(main):           2 Function None 3
+               5:             Label
+        49(inF1):      7(ptr) Variable Function
+        53(inF2):      9(ptr) Variable Function
+        57(inF3):     11(ptr) Variable Function
+        61(inF4):     13(ptr) Variable Function
+        65(inI2):     16(ptr) Variable Function
+       69(param):      7(ptr) Variable Function
+       71(param):      9(ptr) Variable Function
+       73(param):     11(ptr) Variable Function
+       75(param):     13(ptr) Variable Function
+       77(param):     16(ptr) Variable Function
+              52:    6(float) Load 51(inF1)
+                              Store 49(inF1) 52
+              56:    8(fvec2) Load 55(inF2)
+                              Store 53(inF2) 56
+              60:   10(fvec3) Load 59(inF3)
+                              Store 57(inF3) 60
+              64:   12(fvec4) Load 63(inF4)
+                              Store 61(inF4) 64
+              68:   15(ivec2) Load 67(inI2)
+                              Store 65(inI2) 68
+              70:    6(float) Load 49(inF1)
+                              Store 69(param) 70
+              72:    8(fvec2) Load 53(inF2)
+                              Store 71(param) 72
+              74:   10(fvec3) Load 57(inF3)
+                              Store 73(param) 74
+              76:   12(fvec4) Load 61(inF4)
+                              Store 75(param) 76
+              78:   15(ivec2) Load 65(inI2)
+                              Store 77(param) 78
+              79:           2 FunctionCall 23(@main(f1;vf2;vf3;vf4;vi2;) 69(param) 71(param) 73(param) 75(param) 77(param)
+                              Return
+                              FunctionEnd
+23(@main(f1;vf2;vf3;vf4;vi2;):           2 Function None 17
+        18(inF1):      7(ptr) FunctionParameter
+        19(inF2):      9(ptr) FunctionParameter
+        20(inF3):     11(ptr) FunctionParameter
+        21(inF4):     13(ptr) FunctionParameter
+        22(inI2):     16(ptr) FunctionParameter
+              24:             Label
+              28:    6(float) ExtInst 1(GLSL.std.450) 78(InterpolateAtOffset) 18(inF1) 27
+              32:    8(fvec2) ExtInst 1(GLSL.std.450) 78(InterpolateAtOffset) 19(inF2) 31
+              36:   10(fvec3) ExtInst 1(GLSL.std.450) 78(InterpolateAtOffset) 20(inF3) 35
+              39:   12(fvec4) ExtInst 1(GLSL.std.450) 78(InterpolateAtOffset) 21(inF4) 38
+              40:   15(ivec2) Load 22(inI2)
+              42:   15(ivec2) CompositeConstruct 41 41
+              43:   15(ivec2) ShiftLeftLogical 40 42
+              44:   15(ivec2) CompositeConstruct 41 41
+              45:   15(ivec2) ShiftRightArithmetic 43 44
+              46:    8(fvec2) ConvertSToF 45
+              47:    8(fvec2) VectorTimesScalar 46 30
+              48:    6(float) ExtInst 1(GLSL.std.450) 78(InterpolateAtOffset) 18(inF1) 47
+                              Return
+                              FunctionEnd

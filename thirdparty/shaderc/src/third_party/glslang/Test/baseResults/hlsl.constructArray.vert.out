@@ -1,0 +1,381 @@
+hlsl.constructArray.vert
+Shader version: 500
+0:? Sequence
+0:2  Function Definition: @main( ( temp 4-component vector of float)
+0:2    Function Parameters: 
+0:?     Sequence
+0:4      Sequence
+0:4        move second child to first child ( temp 2-element array of 4-component vector of float)
+0:4          'float4_array_times' ( temp 2-element array of 4-component vector of float)
+0:4          Construct structure ( temp 2-element array of 4-component vector of float)
+0:4            Convert int to float ( temp 4-component vector of float)
+0:4              direct index ( temp 4-component vector of int)
+0:4                'int4_array' ( temp 3-element array of 4-component vector of int)
+0:4                Constant:
+0:4                  0 (const int)
+0:4            Convert int to float ( temp 4-component vector of float)
+0:4              direct index ( temp 4-component vector of int)
+0:4                'int4_array' ( temp 3-element array of 4-component vector of int)
+0:4                Constant:
+0:4                  1 (const int)
+0:5      Sequence
+0:5        move second child to first child ( temp 4-element array of 2-component vector of float)
+0:5          'float2_array_times2' ( temp 4-element array of 2-component vector of float)
+0:5          Construct structure ( temp 4-element array of 2-component vector of float)
+0:5            Convert int to float ( temp 2-component vector of float)
+0:5              Construct ivec2 ( temp 2-component vector of int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      0 (const int)
+0:5                  Constant:
+0:5                    0 (const int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      0 (const int)
+0:5                  Constant:
+0:5                    1 (const int)
+0:5            Convert int to float ( temp 2-component vector of float)
+0:5              Construct ivec2 ( temp 2-component vector of int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      0 (const int)
+0:5                  Constant:
+0:5                    2 (const int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      0 (const int)
+0:5                  Constant:
+0:5                    3 (const int)
+0:5            Convert int to float ( temp 2-component vector of float)
+0:5              Construct ivec2 ( temp 2-component vector of int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      1 (const int)
+0:5                  Constant:
+0:5                    0 (const int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      1 (const int)
+0:5                  Constant:
+0:5                    1 (const int)
+0:5            Convert int to float ( temp 2-component vector of float)
+0:5              Construct ivec2 ( temp 2-component vector of int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      1 (const int)
+0:5                  Constant:
+0:5                    2 (const int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      1 (const int)
+0:5                  Constant:
+0:5                    3 (const int)
+0:6      Sequence
+0:6        move second child to first child ( temp 2-element array of 4-component vector of int)
+0:6          'int4_array2' ( temp 2-element array of 4-component vector of int)
+0:6          Construct structure ( temp 2-element array of 4-component vector of int)
+0:6            direct index ( temp 4-component vector of int)
+0:6              'int4_array' ( temp 3-element array of 4-component vector of int)
+0:6              Constant:
+0:6                0 (const int)
+0:6            direct index ( temp 4-component vector of int)
+0:6              'int4_array' ( temp 3-element array of 4-component vector of int)
+0:6              Constant:
+0:6                1 (const int)
+0:7      Sequence
+0:7        move second child to first child ( temp 2-element array of int)
+0:7          'int1_array' ( temp 2-element array of int)
+0:7          Construct structure ( temp 2-element array of int)
+0:7            direct index ( temp int)
+0:7              direct index ( temp 4-component vector of int)
+0:7                'int4_array' ( temp 3-element array of 4-component vector of int)
+0:7                Constant:
+0:7                  0 (const int)
+0:7              Constant:
+0:7                0 (const int)
+0:7            direct index ( temp int)
+0:7              direct index ( temp 4-component vector of int)
+0:7                'int4_array' ( temp 3-element array of 4-component vector of int)
+0:7                Constant:
+0:7                  0 (const int)
+0:7              Constant:
+0:7                1 (const int)
+0:9      Branch: Return with expression
+0:9        Constant:
+0:9          0.000000
+0:9          0.000000
+0:9          0.000000
+0:9          0.000000
+0:2  Function Definition: main( ( temp void)
+0:2    Function Parameters: 
+0:?     Sequence
+0:2      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' ( out 4-component vector of float Position)
+0:2        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' ( out 4-component vector of float Position)
+
+
+Linked vertex stage:
+
+
+Shader version: 500
+0:? Sequence
+0:2  Function Definition: @main( ( temp 4-component vector of float)
+0:2    Function Parameters: 
+0:?     Sequence
+0:4      Sequence
+0:4        move second child to first child ( temp 2-element array of 4-component vector of float)
+0:4          'float4_array_times' ( temp 2-element array of 4-component vector of float)
+0:4          Construct structure ( temp 2-element array of 4-component vector of float)
+0:4            Convert int to float ( temp 4-component vector of float)
+0:4              direct index ( temp 4-component vector of int)
+0:4                'int4_array' ( temp 3-element array of 4-component vector of int)
+0:4                Constant:
+0:4                  0 (const int)
+0:4            Convert int to float ( temp 4-component vector of float)
+0:4              direct index ( temp 4-component vector of int)
+0:4                'int4_array' ( temp 3-element array of 4-component vector of int)
+0:4                Constant:
+0:4                  1 (const int)
+0:5      Sequence
+0:5        move second child to first child ( temp 4-element array of 2-component vector of float)
+0:5          'float2_array_times2' ( temp 4-element array of 2-component vector of float)
+0:5          Construct structure ( temp 4-element array of 2-component vector of float)
+0:5            Convert int to float ( temp 2-component vector of float)
+0:5              Construct ivec2 ( temp 2-component vector of int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      0 (const int)
+0:5                  Constant:
+0:5                    0 (const int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      0 (const int)
+0:5                  Constant:
+0:5                    1 (const int)
+0:5            Convert int to float ( temp 2-component vector of float)
+0:5              Construct ivec2 ( temp 2-component vector of int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      0 (const int)
+0:5                  Constant:
+0:5                    2 (const int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      0 (const int)
+0:5                  Constant:
+0:5                    3 (const int)
+0:5            Convert int to float ( temp 2-component vector of float)
+0:5              Construct ivec2 ( temp 2-component vector of int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      1 (const int)
+0:5                  Constant:
+0:5                    0 (const int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      1 (const int)
+0:5                  Constant:
+0:5                    1 (const int)
+0:5            Convert int to float ( temp 2-component vector of float)
+0:5              Construct ivec2 ( temp 2-component vector of int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      1 (const int)
+0:5                  Constant:
+0:5                    2 (const int)
+0:5                direct index ( temp int)
+0:5                  direct index ( temp 4-component vector of int)
+0:5                    'int4_array' ( temp 3-element array of 4-component vector of int)
+0:5                    Constant:
+0:5                      1 (const int)
+0:5                  Constant:
+0:5                    3 (const int)
+0:6      Sequence
+0:6        move second child to first child ( temp 2-element array of 4-component vector of int)
+0:6          'int4_array2' ( temp 2-element array of 4-component vector of int)
+0:6          Construct structure ( temp 2-element array of 4-component vector of int)
+0:6            direct index ( temp 4-component vector of int)
+0:6              'int4_array' ( temp 3-element array of 4-component vector of int)
+0:6              Constant:
+0:6                0 (const int)
+0:6            direct index ( temp 4-component vector of int)
+0:6              'int4_array' ( temp 3-element array of 4-component vector of int)
+0:6              Constant:
+0:6                1 (const int)
+0:7      Sequence
+0:7        move second child to first child ( temp 2-element array of int)
+0:7          'int1_array' ( temp 2-element array of int)
+0:7          Construct structure ( temp 2-element array of int)
+0:7            direct index ( temp int)
+0:7              direct index ( temp 4-component vector of int)
+0:7                'int4_array' ( temp 3-element array of 4-component vector of int)
+0:7                Constant:
+0:7                  0 (const int)
+0:7              Constant:
+0:7                0 (const int)
+0:7            direct index ( temp int)
+0:7              direct index ( temp 4-component vector of int)
+0:7                'int4_array' ( temp 3-element array of 4-component vector of int)
+0:7                Constant:
+0:7                  0 (const int)
+0:7              Constant:
+0:7                1 (const int)
+0:9      Branch: Return with expression
+0:9        Constant:
+0:9          0.000000
+0:9          0.000000
+0:9          0.000000
+0:9          0.000000
+0:2  Function Definition: main( ( temp void)
+0:2    Function Parameters: 
+0:?     Sequence
+0:2      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' ( out 4-component vector of float Position)
+0:2        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' ( out 4-component vector of float Position)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 89
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Vertex 4  "main" 87
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "@main("
+                              Name 15  "float4_array_times"
+                              Name 21  "int4_array"
+                              Name 36  "float2_array_times2"
+                              Name 68  "int4_array2"
+                              Name 76  "int1_array"
+                              Name 87  "@entryPointOutput"
+                              Decorate 87(@entryPointOutput) BuiltIn Position
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeFunction 7(fvec4)
+              11:             TypeInt 32 0
+              12:     11(int) Constant 2
+              13:             TypeArray 7(fvec4) 12
+              14:             TypePointer Function 13
+              16:             TypeInt 32 1
+              17:             TypeVector 16(int) 4
+              18:     11(int) Constant 3
+              19:             TypeArray 17(ivec4) 18
+              20:             TypePointer Function 19
+              22:     16(int) Constant 0
+              23:             TypePointer Function 17(ivec4)
+              27:     16(int) Constant 1
+              32:             TypeVector 6(float) 2
+              33:     11(int) Constant 4
+              34:             TypeArray 32(fvec2) 33
+              35:             TypePointer Function 34
+              37:     11(int) Constant 0
+              38:             TypePointer Function 16(int)
+              41:     11(int) Constant 1
+              44:             TypeVector 16(int) 2
+              66:             TypeArray 17(ivec4) 12
+              67:             TypePointer Function 66
+              74:             TypeArray 16(int) 12
+              75:             TypePointer Function 74
+              82:    6(float) Constant 0
+              83:    7(fvec4) ConstantComposite 82 82 82 82
+              86:             TypePointer Output 7(fvec4)
+87(@entryPointOutput):     86(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              88:    7(fvec4) FunctionCall 9(@main()
+                              Store 87(@entryPointOutput) 88
+                              Return
+                              FunctionEnd
+       9(@main():    7(fvec4) Function None 8
+              10:             Label
+15(float4_array_times):     14(ptr) Variable Function
+  21(int4_array):     20(ptr) Variable Function
+36(float2_array_times2):     35(ptr) Variable Function
+ 68(int4_array2):     67(ptr) Variable Function
+  76(int1_array):     75(ptr) Variable Function
+              24:     23(ptr) AccessChain 21(int4_array) 22
+              25:   17(ivec4) Load 24
+              26:    7(fvec4) ConvertSToF 25
+              28:     23(ptr) AccessChain 21(int4_array) 27
+              29:   17(ivec4) Load 28
+              30:    7(fvec4) ConvertSToF 29
+              31:          13 CompositeConstruct 26 30
+                              Store 15(float4_array_times) 31
+              39:     38(ptr) AccessChain 21(int4_array) 22 37
+              40:     16(int) Load 39
+              42:     38(ptr) AccessChain 21(int4_array) 22 41
+              43:     16(int) Load 42
+              45:   44(ivec2) CompositeConstruct 40 43
+              46:   32(fvec2) ConvertSToF 45
+              47:     38(ptr) AccessChain 21(int4_array) 22 12
+              48:     16(int) Load 47
+              49:     38(ptr) AccessChain 21(int4_array) 22 18
+              50:     16(int) Load 49
+              51:   44(ivec2) CompositeConstruct 48 50
+              52:   32(fvec2) ConvertSToF 51
+              53:     38(ptr) AccessChain 21(int4_array) 27 37
+              54:     16(int) Load 53
+              55:     38(ptr) AccessChain 21(int4_array) 27 41
+              56:     16(int) Load 55
+              57:   44(ivec2) CompositeConstruct 54 56
+              58:   32(fvec2) ConvertSToF 57
+              59:     38(ptr) AccessChain 21(int4_array) 27 12
+              60:     16(int) Load 59
+              61:     38(ptr) AccessChain 21(int4_array) 27 18
+              62:     16(int) Load 61
+              63:   44(ivec2) CompositeConstruct 60 62
+              64:   32(fvec2) ConvertSToF 63
+              65:          34 CompositeConstruct 46 52 58 64
+                              Store 36(float2_array_times2) 65
+              69:     23(ptr) AccessChain 21(int4_array) 22
+              70:   17(ivec4) Load 69
+              71:     23(ptr) AccessChain 21(int4_array) 27
+              72:   17(ivec4) Load 71
+              73:          66 CompositeConstruct 70 72
+                              Store 68(int4_array2) 73
+              77:     38(ptr) AccessChain 21(int4_array) 22 37
+              78:     16(int) Load 77
+              79:     38(ptr) AccessChain 21(int4_array) 22 41
+              80:     16(int) Load 79
+              81:          74 CompositeConstruct 78 80
+                              Store 76(int1_array) 81
+                              ReturnValue 83
+                              FunctionEnd

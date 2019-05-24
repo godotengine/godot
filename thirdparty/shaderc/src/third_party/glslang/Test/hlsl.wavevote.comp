@@ -1,0 +1,10 @@
+RWStructuredBuffer<uint64_t> data;
+
+[numthreads(32, 16, 1)]
+void CSMain(uint3 dti : SV_DispatchThreadID)
+{
+	data[dti.x] = WaveActiveBallot(WaveActiveAnyTrue(dti.x == 0));
+	data[dti.y] = WaveActiveBallot(WaveActiveAllTrue(dti.y == 0));
+	data[dti.z] = WaveActiveBallot(WaveActiveAllEqualBool(dti.z == 0));
+	data[dti.z] = WaveActiveBallot(WaveActiveAllEqual(dti.z));
+}

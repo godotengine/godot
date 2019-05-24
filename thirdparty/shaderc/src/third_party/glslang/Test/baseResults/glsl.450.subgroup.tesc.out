@@ -1,0 +1,53 @@
+glsl.450.subgroup.tesc
+Shader version: 450
+Requested GL_KHR_shader_subgroup_basic
+vertices = 1
+0:? Sequence
+0:9  Function Definition: main( ( global void)
+0:9    Function Parameters: 
+0:11    Sequence
+0:11      move second child to first child ( temp 4-component vector of uint)
+0:11        indirect index (layout( column_major std430 offset=0) temp 4-component vector of uint)
+0:11          result: direct index for structure (layout( column_major std430 offset=0) buffer runtime-sized array of 4-component vector of uint)
+0:11            'anon@0' (layout( set=0 binding=0 column_major std430) buffer block{layout( column_major std430 offset=0) buffer runtime-sized array of 4-component vector of uint result})
+0:11            Constant:
+0:11              0 (const uint)
+0:11          'gl_PrimitiveID' ( in int PrimitiveID)
+0:11        Construct uvec4 ( temp 4-component vector of uint)
+0:11          'gl_SubgroupSize' ( in uint unknown built-in variable)
+0:11          'gl_SubgroupInvocationID' ( in uint unknown built-in variable)
+0:11          Constant:
+0:11            0 (const uint)
+0:11          Constant:
+0:11            0 (const uint)
+0:?   Linker Objects
+0:?     'anon@0' (layout( set=0 binding=0 column_major std430) buffer block{layout( column_major std430 offset=0) buffer runtime-sized array of 4-component vector of uint result})
+
+
+Linked tessellation control stage:
+
+
+Shader version: 450
+Requested GL_KHR_shader_subgroup_basic
+vertices = 1
+0:? Sequence
+0:9  Function Definition: main( ( global void)
+0:9    Function Parameters: 
+0:11    Sequence
+0:11      move second child to first child ( temp 4-component vector of uint)
+0:11        indirect index (layout( column_major std430 offset=0) temp 4-component vector of uint)
+0:11          result: direct index for structure (layout( column_major std430 offset=0) buffer runtime-sized array of 4-component vector of uint)
+0:11            'anon@0' (layout( set=0 binding=0 column_major std430) buffer block{layout( column_major std430 offset=0) buffer runtime-sized array of 4-component vector of uint result})
+0:11            Constant:
+0:11              0 (const uint)
+0:11          'gl_PrimitiveID' ( in int PrimitiveID)
+0:11        Construct uvec4 ( temp 4-component vector of uint)
+0:11          'gl_SubgroupSize' ( in uint unknown built-in variable)
+0:11          'gl_SubgroupInvocationID' ( in uint unknown built-in variable)
+0:11          Constant:
+0:11            0 (const uint)
+0:11          Constant:
+0:11            0 (const uint)
+0:?   Linker Objects
+0:?     'anon@0' (layout( set=0 binding=0 column_major std430) buffer block{layout( column_major std430 offset=0) buffer runtime-sized array of 4-component vector of uint result})
+

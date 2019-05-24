@@ -1,0 +1,124 @@
+varyingArrayIndirect.frag
+WARNING: 0:3: varying deprecated in version 130; may be removed in future release
+WARNING: 0:4: varying deprecated in version 130; may be removed in future release
+WARNING: 0:6: varying deprecated in version 130; may be removed in future release
+WARNING: 0:8: varying deprecated in version 130; may be removed in future release
+
+Shader version: 130
+0:? Sequence
+0:12  Function Definition: main( ( global void)
+0:12    Function Parameters: 
+0:14    Sequence
+0:14      Sequence
+0:14        move second child to first child ( temp 4-component vector of float)
+0:14          'texColor' ( temp 4-component vector of float)
+0:14          texture ( global 4-component vector of float)
+0:14            'texSampler2D' ( uniform sampler2D)
+0:14            Construct vec2 ( temp 2-component vector of float)
+0:14              add ( temp 4-component vector of float)
+0:14                add ( temp 4-component vector of float)
+0:14                  indirect index ( smooth temp 4-component vector of float)
+0:14                    'userIn' ( smooth in 2-element array of 4-component vector of float)
+0:14                    'b' ( uniform int)
+0:14                  indirect index ( smooth temp 4-component vector of float TexCoord)
+0:14                    'gl_TexCoord' ( smooth in 6-element array of 4-component vector of float TexCoord)
+0:14                    'a' ( uniform int)
+0:14                direct index ( smooth temp 4-component vector of float TexCoord)
+0:14                  'gl_TexCoord' ( smooth in 6-element array of 4-component vector of float TexCoord)
+0:14                  Constant:
+0:14                    5 (const int)
+0:16      add second child into first child ( temp 4-component vector of float)
+0:16        'texColor' ( temp 4-component vector of float)
+0:16        'color' ( smooth in 4-component vector of float)
+0:18      move second child to first child ( temp float)
+0:18        direct index ( temp float)
+0:18          'texColor' ( temp 4-component vector of float)
+0:18          Constant:
+0:18            3 (const int)
+0:18        'alpha' ( smooth in float)
+0:20      move second child to first child ( temp 4-component vector of float)
+0:20        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:20        add ( temp 4-component vector of float)
+0:20          add ( temp 4-component vector of float)
+0:20            add ( temp 4-component vector of float)
+0:20              direct index ( smooth temp 4-component vector of float TexCoord)
+0:20                'gl_TexCoord' ( smooth in 6-element array of 4-component vector of float TexCoord)
+0:20                Constant:
+0:20                  0 (const int)
+0:20              indirect index ( smooth temp 4-component vector of float TexCoord)
+0:20                'gl_TexCoord' ( smooth in 6-element array of 4-component vector of float TexCoord)
+0:20                'b' ( uniform int)
+0:20            'texColor' ( temp 4-component vector of float)
+0:20          indirect index ( smooth temp 4-component vector of float)
+0:20            'userIn' ( smooth in 2-element array of 4-component vector of float)
+0:20            'a' ( uniform int)
+0:?   Linker Objects
+0:?     'texSampler2D' ( uniform sampler2D)
+0:?     'color' ( smooth in 4-component vector of float)
+0:?     'alpha' ( smooth in float)
+0:?     'gl_TexCoord' ( smooth in 6-element array of 4-component vector of float TexCoord)
+0:?     'userIn' ( smooth in 2-element array of 4-component vector of float)
+0:?     'a' ( uniform int)
+0:?     'b' ( uniform int)
+
+
+Linked fragment stage:
+
+
+Shader version: 130
+0:? Sequence
+0:12  Function Definition: main( ( global void)
+0:12    Function Parameters: 
+0:14    Sequence
+0:14      Sequence
+0:14        move second child to first child ( temp 4-component vector of float)
+0:14          'texColor' ( temp 4-component vector of float)
+0:14          texture ( global 4-component vector of float)
+0:14            'texSampler2D' ( uniform sampler2D)
+0:14            Construct vec2 ( temp 2-component vector of float)
+0:14              add ( temp 4-component vector of float)
+0:14                add ( temp 4-component vector of float)
+0:14                  indirect index ( smooth temp 4-component vector of float)
+0:14                    'userIn' ( smooth in 2-element array of 4-component vector of float)
+0:14                    'b' ( uniform int)
+0:14                  indirect index ( smooth temp 4-component vector of float TexCoord)
+0:14                    'gl_TexCoord' ( smooth in 6-element array of 4-component vector of float TexCoord)
+0:14                    'a' ( uniform int)
+0:14                direct index ( smooth temp 4-component vector of float TexCoord)
+0:14                  'gl_TexCoord' ( smooth in 6-element array of 4-component vector of float TexCoord)
+0:14                  Constant:
+0:14                    5 (const int)
+0:16      add second child into first child ( temp 4-component vector of float)
+0:16        'texColor' ( temp 4-component vector of float)
+0:16        'color' ( smooth in 4-component vector of float)
+0:18      move second child to first child ( temp float)
+0:18        direct index ( temp float)
+0:18          'texColor' ( temp 4-component vector of float)
+0:18          Constant:
+0:18            3 (const int)
+0:18        'alpha' ( smooth in float)
+0:20      move second child to first child ( temp 4-component vector of float)
+0:20        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:20        add ( temp 4-component vector of float)
+0:20          add ( temp 4-component vector of float)
+0:20            add ( temp 4-component vector of float)
+0:20              direct index ( smooth temp 4-component vector of float TexCoord)
+0:20                'gl_TexCoord' ( smooth in 6-element array of 4-component vector of float TexCoord)
+0:20                Constant:
+0:20                  0 (const int)
+0:20              indirect index ( smooth temp 4-component vector of float TexCoord)
+0:20                'gl_TexCoord' ( smooth in 6-element array of 4-component vector of float TexCoord)
+0:20                'b' ( uniform int)
+0:20            'texColor' ( temp 4-component vector of float)
+0:20          indirect index ( smooth temp 4-component vector of float)
+0:20            'userIn' ( smooth in 2-element array of 4-component vector of float)
+0:20            'a' ( uniform int)
+0:?   Linker Objects
+0:?     'texSampler2D' ( uniform sampler2D)
+0:?     'color' ( smooth in 4-component vector of float)
+0:?     'alpha' ( smooth in float)
+0:?     'gl_TexCoord' ( smooth in 6-element array of 4-component vector of float TexCoord)
+0:?     'userIn' ( smooth in 2-element array of 4-component vector of float)
+0:?     'a' ( uniform int)
+0:?     'b' ( uniform int)
+

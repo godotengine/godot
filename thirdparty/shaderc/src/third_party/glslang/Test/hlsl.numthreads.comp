@@ -1,0 +1,11 @@
+
+[numthreads(8,8,1)]
+void main(uint3 tid : SV_DispatchThreadID )
+{
+}
+
+[numthreads(1,4,8)]
+void main_aux2(uint3 tid : SV_DispatchThreadID )
+{
+}
+

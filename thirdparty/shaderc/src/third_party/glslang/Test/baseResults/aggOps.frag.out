@@ -1,0 +1,298 @@
+aggOps.frag
+WARNING: 0:4: varying deprecated in version 130; may be removed in future release
+WARNING: 0:6: varying deprecated in version 130; may be removed in future release
+
+Shader version: 130
+0:? Sequence
+0:23  Function Definition: main( ( global void)
+0:23    Function Parameters: 
+0:?     Sequence
+0:27      move second child to first child ( temp 3-element array of structure{ global int i,  global float f})
+0:27        'a' ( temp 3-element array of structure{ global int i,  global float f})
+0:27        Construct structure ( temp 3-element array of structure{ global int i,  global float f})
+0:27          Construct structure ( temp structure{ global int i,  global float f})
+0:27            Convert float to int ( temp int)
+0:27              direct index ( temp float)
+0:27                'u' ( smooth in 4-component vector of float)
+0:27                Constant:
+0:27                  0 (const int)
+0:27            direct index ( temp float)
+0:27              'u' ( smooth in 4-component vector of float)
+0:27              Constant:
+0:27                1 (const int)
+0:27          Construct structure ( temp structure{ global int i,  global float f})
+0:27            Convert float to int ( temp int)
+0:27              direct index ( temp float)
+0:27                'u' ( smooth in 4-component vector of float)
+0:27                Constant:
+0:27                  2 (const int)
+0:27            direct index ( temp float)
+0:27              'u' ( smooth in 4-component vector of float)
+0:27              Constant:
+0:27                3 (const int)
+0:27          Constant:
+0:27            14 (const int)
+0:27            14.000000
+0:28      move second child to first child ( temp 3-element array of structure{ global int i,  global float f})
+0:28        'b' ( temp 3-element array of structure{ global int i,  global float f})
+0:28        Construct structure ( temp 3-element array of structure{ global int i,  global float f})
+0:28          Constant:
+0:28            17 (const int)
+0:28            17.000000
+0:28          Construct structure ( temp structure{ global int i,  global float f})
+0:28            Convert float to int ( temp int)
+0:28              direct index ( temp float)
+0:28                'w' ( smooth in 4-component vector of float)
+0:28                Constant:
+0:28                  0 (const int)
+0:28            direct index ( temp float)
+0:28              'w' ( smooth in 4-component vector of float)
+0:28              Constant:
+0:28                1 (const int)
+0:28          Construct structure ( temp structure{ global int i,  global float f})
+0:28            Convert float to int ( temp int)
+0:28              direct index ( temp float)
+0:28                'w' ( smooth in 4-component vector of float)
+0:28                Constant:
+0:28                  2 (const int)
+0:28            direct index ( temp float)
+0:28              'w' ( smooth in 4-component vector of float)
+0:28              Constant:
+0:28                3 (const int)
+0:30      Test condition and select ( temp void)
+0:30        Condition
+0:30        Compare Equal ( temp bool)
+0:30          'foo2a' ( uniform structure{ global int i,  global float f,  global structure{ global int i,  global float f} s1_1})
+0:30          'foo2b' ( uniform structure{ global int i,  global float f,  global structure{ global int i,  global float f} s1_1})
+0:30        true case
+0:31        move second child to first child ( temp 4-component vector of float)
+0:31          'v' ( temp 4-component vector of float)
+0:31          texture ( global 4-component vector of float)
+0:31            'sampler' ( uniform sampler2D)
+0:31            'coord' ( smooth in 2-component vector of float)
+0:30        false case
+0:33        move second child to first child ( temp 4-component vector of float)
+0:33          'v' ( temp 4-component vector of float)
+0:33          texture ( global 4-component vector of float)
+0:33            'sampler' ( uniform sampler2D)
+0:33            vector-scale ( temp 2-component vector of float)
+0:33              Constant:
+0:33                2.000000
+0:33              'coord' ( smooth in 2-component vector of float)
+0:35      Test condition and select ( temp void)
+0:35        Condition
+0:35        Compare Equal ( temp bool)
+0:35          'u' ( smooth in 4-component vector of float)
+0:35          'v' ( temp 4-component vector of float)
+0:35        true case
+0:36        vector scale second child into first child ( temp 4-component vector of float)
+0:36          'v' ( temp 4-component vector of float)
+0:36          Constant:
+0:36            3.000000
+0:38      Test condition and select ( temp void)
+0:38        Condition
+0:38        Compare Not Equal ( temp bool)
+0:38          'u' ( smooth in 4-component vector of float)
+0:38          'v' ( temp 4-component vector of float)
+0:38        true case
+0:39        vector scale second child into first child ( temp 4-component vector of float)
+0:39          'v' ( temp 4-component vector of float)
+0:39          Constant:
+0:39            4.000000
+0:41      Test condition and select ( temp void)
+0:41        Condition
+0:41        Compare Equal ( temp bool)
+0:41          'coord' ( smooth in 2-component vector of float)
+0:41          vector swizzle ( temp 2-component vector of float)
+0:41            'v' ( temp 4-component vector of float)
+0:41            Sequence
+0:41              Constant:
+0:41                1 (const int)
+0:41              Constant:
+0:41                3 (const int)
+0:41        true case
+0:42        vector scale second child into first child ( temp 4-component vector of float)
+0:42          'v' ( temp 4-component vector of float)
+0:42          Constant:
+0:42            5.000000
+0:44      Test condition and select ( temp void)
+0:44        Condition
+0:44        Compare Equal ( temp bool)
+0:44          'a' ( temp 3-element array of structure{ global int i,  global float f})
+0:44          'b' ( temp 3-element array of structure{ global int i,  global float f})
+0:44        true case
+0:45        vector scale second child into first child ( temp 4-component vector of float)
+0:45          'v' ( temp 4-component vector of float)
+0:45          Constant:
+0:45            6.000000
+0:47      Test condition and select ( temp void)
+0:47        Condition
+0:47        Compare Not Equal ( temp bool)
+0:47          'a' ( temp 3-element array of structure{ global int i,  global float f})
+0:47          'b' ( temp 3-element array of structure{ global int i,  global float f})
+0:47        true case
+0:48        vector scale second child into first child ( temp 4-component vector of float)
+0:48          'v' ( temp 4-component vector of float)
+0:48          Constant:
+0:48            7.000000
+0:50      move second child to first child ( temp 4-component vector of float)
+0:50        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:50        'v' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'sampler' ( uniform sampler2D)
+0:?     'coord' ( smooth in 2-component vector of float)
+0:?     'u' ( smooth in 4-component vector of float)
+0:?     'w' ( smooth in 4-component vector of float)
+0:?     'foo1' ( uniform structure{ global int i,  global float f})
+0:?     'foo2a' ( uniform structure{ global int i,  global float f,  global structure{ global int i,  global float f} s1_1})
+0:?     'foo2b' ( uniform structure{ global int i,  global float f,  global structure{ global int i,  global float f} s1_1})
+
+
+Linked fragment stage:
+
+
+Shader version: 130
+0:? Sequence
+0:23  Function Definition: main( ( global void)
+0:23    Function Parameters: 
+0:?     Sequence
+0:27      move second child to first child ( temp 3-element array of structure{ global int i,  global float f})
+0:27        'a' ( temp 3-element array of structure{ global int i,  global float f})
+0:27        Construct structure ( temp 3-element array of structure{ global int i,  global float f})
+0:27          Construct structure ( temp structure{ global int i,  global float f})
+0:27            Convert float to int ( temp int)
+0:27              direct index ( temp float)
+0:27                'u' ( smooth in 4-component vector of float)
+0:27                Constant:
+0:27                  0 (const int)
+0:27            direct index ( temp float)
+0:27              'u' ( smooth in 4-component vector of float)
+0:27              Constant:
+0:27                1 (const int)
+0:27          Construct structure ( temp structure{ global int i,  global float f})
+0:27            Convert float to int ( temp int)
+0:27              direct index ( temp float)
+0:27                'u' ( smooth in 4-component vector of float)
+0:27                Constant:
+0:27                  2 (const int)
+0:27            direct index ( temp float)
+0:27              'u' ( smooth in 4-component vector of float)
+0:27              Constant:
+0:27                3 (const int)
+0:27          Constant:
+0:27            14 (const int)
+0:27            14.000000
+0:28      move second child to first child ( temp 3-element array of structure{ global int i,  global float f})
+0:28        'b' ( temp 3-element array of structure{ global int i,  global float f})
+0:28        Construct structure ( temp 3-element array of structure{ global int i,  global float f})
+0:28          Constant:
+0:28            17 (const int)
+0:28            17.000000
+0:28          Construct structure ( temp structure{ global int i,  global float f})
+0:28            Convert float to int ( temp int)
+0:28              direct index ( temp float)
+0:28                'w' ( smooth in 4-component vector of float)
+0:28                Constant:
+0:28                  0 (const int)
+0:28            direct index ( temp float)
+0:28              'w' ( smooth in 4-component vector of float)
+0:28              Constant:
+0:28                1 (const int)
+0:28          Construct structure ( temp structure{ global int i,  global float f})
+0:28            Convert float to int ( temp int)
+0:28              direct index ( temp float)
+0:28                'w' ( smooth in 4-component vector of float)
+0:28                Constant:
+0:28                  2 (const int)
+0:28            direct index ( temp float)
+0:28              'w' ( smooth in 4-component vector of float)
+0:28              Constant:
+0:28                3 (const int)
+0:30      Test condition and select ( temp void)
+0:30        Condition
+0:30        Compare Equal ( temp bool)
+0:30          'foo2a' ( uniform structure{ global int i,  global float f,  global structure{ global int i,  global float f} s1_1})
+0:30          'foo2b' ( uniform structure{ global int i,  global float f,  global structure{ global int i,  global float f} s1_1})
+0:30        true case
+0:31        move second child to first child ( temp 4-component vector of float)
+0:31          'v' ( temp 4-component vector of float)
+0:31          texture ( global 4-component vector of float)
+0:31            'sampler' ( uniform sampler2D)
+0:31            'coord' ( smooth in 2-component vector of float)
+0:30        false case
+0:33        move second child to first child ( temp 4-component vector of float)
+0:33          'v' ( temp 4-component vector of float)
+0:33          texture ( global 4-component vector of float)
+0:33            'sampler' ( uniform sampler2D)
+0:33            vector-scale ( temp 2-component vector of float)
+0:33              Constant:
+0:33                2.000000
+0:33              'coord' ( smooth in 2-component vector of float)
+0:35      Test condition and select ( temp void)
+0:35        Condition
+0:35        Compare Equal ( temp bool)
+0:35          'u' ( smooth in 4-component vector of float)
+0:35          'v' ( temp 4-component vector of float)
+0:35        true case
+0:36        vector scale second child into first child ( temp 4-component vector of float)
+0:36          'v' ( temp 4-component vector of float)
+0:36          Constant:
+0:36            3.000000
+0:38      Test condition and select ( temp void)
+0:38        Condition
+0:38        Compare Not Equal ( temp bool)
+0:38          'u' ( smooth in 4-component vector of float)
+0:38          'v' ( temp 4-component vector of float)
+0:38        true case
+0:39        vector scale second child into first child ( temp 4-component vector of float)
+0:39          'v' ( temp 4-component vector of float)
+0:39          Constant:
+0:39            4.000000
+0:41      Test condition and select ( temp void)
+0:41        Condition
+0:41        Compare Equal ( temp bool)
+0:41          'coord' ( smooth in 2-component vector of float)
+0:41          vector swizzle ( temp 2-component vector of float)
+0:41            'v' ( temp 4-component vector of float)
+0:41            Sequence
+0:41              Constant:
+0:41                1 (const int)
+0:41              Constant:
+0:41                3 (const int)
+0:41        true case
+0:42        vector scale second child into first child ( temp 4-component vector of float)
+0:42          'v' ( temp 4-component vector of float)
+0:42          Constant:
+0:42            5.000000
+0:44      Test condition and select ( temp void)
+0:44        Condition
+0:44        Compare Equal ( temp bool)
+0:44          'a' ( temp 3-element array of structure{ global int i,  global float f})
+0:44          'b' ( temp 3-element array of structure{ global int i,  global float f})
+0:44        true case
+0:45        vector scale second child into first child ( temp 4-component vector of float)
+0:45          'v' ( temp 4-component vector of float)
+0:45          Constant:
+0:45            6.000000
+0:47      Test condition and select ( temp void)
+0:47        Condition
+0:47        Compare Not Equal ( temp bool)
+0:47          'a' ( temp 3-element array of structure{ global int i,  global float f})
+0:47          'b' ( temp 3-element array of structure{ global int i,  global float f})
+0:47        true case
+0:48        vector scale second child into first child ( temp 4-component vector of float)
+0:48          'v' ( temp 4-component vector of float)
+0:48          Constant:
+0:48            7.000000
+0:50      move second child to first child ( temp 4-component vector of float)
+0:50        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:50        'v' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'sampler' ( uniform sampler2D)
+0:?     'coord' ( smooth in 2-component vector of float)
+0:?     'u' ( smooth in 4-component vector of float)
+0:?     'w' ( smooth in 4-component vector of float)
+0:?     'foo1' ( uniform structure{ global int i,  global float f})
+0:?     'foo2a' ( uniform structure{ global int i,  global float f,  global structure{ global int i,  global float f} s1_1})
+0:?     'foo2b' ( uniform structure{ global int i,  global float f,  global structure{ global int i,  global float f} s1_1})
+

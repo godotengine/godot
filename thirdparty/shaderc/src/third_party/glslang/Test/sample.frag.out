@@ -1,0 +1,15 @@
+#### BEGIN COMPILER 0 INFO LOG ####
+0:? Sequence
+0:37  Function Definition: main( (void)
+0:37    Function Parameters: 
+0:39    Sequence
+0:39      move second child to first child (4-component vector of float)
+0:39        'gl_FragColor' (FragColor 4-component vector of float)
+0:39        Construct vec4 (4-component vector of float)
+0:39          'color' (varying in 3-component vector of float)
+0:39          1.000000 (const float)
+
+#### END COMPILER 0 INFO LOG ####
+#### BEGIN LINKER INFO LOG ####
+
+#### END LINKER INFO LOG ####

@@ -1,0 +1,299 @@
+hlsl.clipdistance-9.vert
+Shader version: 500
+0:? Sequence
+0:7  Function Definition: @main(vf3;f1; ( temp structure{ temp 4-component vector of float Position})
+0:7    Function Parameters: 
+0:7      'clip0' ( out 3-component vector of float)
+0:7      'clip1' ( out float)
+0:?     Sequence
+0:9      move second child to first child ( temp 4-component vector of float)
+0:9        Position: direct index for structure ( temp 4-component vector of float)
+0:9          'Output' ( temp structure{ temp 4-component vector of float Position})
+0:9          Constant:
+0:9            0 (const int)
+0:9        Constant:
+0:9          0.000000
+0:9          0.000000
+0:9          0.000000
+0:9          0.000000
+0:11      move second child to first child ( temp float)
+0:11        direct index ( temp float)
+0:11          'clip0' ( out 3-component vector of float)
+0:11          Constant:
+0:11            0 (const int)
+0:11        Constant:
+0:11          0.000000
+0:12      move second child to first child ( temp float)
+0:12        direct index ( temp float)
+0:12          'clip0' ( out 3-component vector of float)
+0:12          Constant:
+0:12            1 (const int)
+0:12        Constant:
+0:12          1.000000
+0:13      move second child to first child ( temp float)
+0:13        direct index ( temp float)
+0:13          'clip0' ( out 3-component vector of float)
+0:13          Constant:
+0:13            2 (const int)
+0:13        Constant:
+0:13          2.000000
+0:16      move second child to first child ( temp float)
+0:16        'clip1' ( out float)
+0:16        Constant:
+0:16          3.000000
+0:18      Branch: Return with expression
+0:18        'Output' ( temp structure{ temp 4-component vector of float Position})
+0:7  Function Definition: main( ( temp void)
+0:7    Function Parameters: 
+0:?     Sequence
+0:7      Sequence
+0:7        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Position' ( out 4-component vector of float Position)
+0:7          Position: direct index for structure ( temp 4-component vector of float)
+0:7            Function Call: @main(vf3;f1; ( temp structure{ temp 4-component vector of float Position})
+0:?               'clip0' ( temp 3-component vector of float)
+0:?               'clip1' ( temp float)
+0:7            Constant:
+0:7              0 (const int)
+0:?       Sequence
+0:7        move second child to first child ( temp float)
+0:7          direct index ( out float ClipDistance)
+0:?             'clip0' ( out 4-element array of float ClipDistance)
+0:7            Constant:
+0:7              0 (const int)
+0:7          direct index ( temp float)
+0:?             'clip0' ( temp 3-component vector of float)
+0:7            Constant:
+0:7              0 (const int)
+0:7        move second child to first child ( temp float)
+0:7          direct index ( out float ClipDistance)
+0:?             'clip0' ( out 4-element array of float ClipDistance)
+0:7            Constant:
+0:7              1 (const int)
+0:7          direct index ( temp float)
+0:?             'clip0' ( temp 3-component vector of float)
+0:7            Constant:
+0:7              1 (const int)
+0:7        move second child to first child ( temp float)
+0:7          direct index ( out float ClipDistance)
+0:?             'clip0' ( out 4-element array of float ClipDistance)
+0:7            Constant:
+0:7              2 (const int)
+0:7          direct index ( temp float)
+0:?             'clip0' ( temp 3-component vector of float)
+0:7            Constant:
+0:7              2 (const int)
+0:?       Sequence
+0:7        move second child to first child ( temp float)
+0:7          direct index ( out float ClipDistance)
+0:?             'clip0' ( out 4-element array of float ClipDistance)
+0:7            Constant:
+0:7              3 (const int)
+0:?           'clip1' ( temp float)
+0:?   Linker Objects
+0:?     '@entryPointOutput.Position' ( out 4-component vector of float Position)
+0:?     'clip0' ( out 4-element array of float ClipDistance)
+
+
+Linked vertex stage:
+
+
+Shader version: 500
+0:? Sequence
+0:7  Function Definition: @main(vf3;f1; ( temp structure{ temp 4-component vector of float Position})
+0:7    Function Parameters: 
+0:7      'clip0' ( out 3-component vector of float)
+0:7      'clip1' ( out float)
+0:?     Sequence
+0:9      move second child to first child ( temp 4-component vector of float)
+0:9        Position: direct index for structure ( temp 4-component vector of float)
+0:9          'Output' ( temp structure{ temp 4-component vector of float Position})
+0:9          Constant:
+0:9            0 (const int)
+0:9        Constant:
+0:9          0.000000
+0:9          0.000000
+0:9          0.000000
+0:9          0.000000
+0:11      move second child to first child ( temp float)
+0:11        direct index ( temp float)
+0:11          'clip0' ( out 3-component vector of float)
+0:11          Constant:
+0:11            0 (const int)
+0:11        Constant:
+0:11          0.000000
+0:12      move second child to first child ( temp float)
+0:12        direct index ( temp float)
+0:12          'clip0' ( out 3-component vector of float)
+0:12          Constant:
+0:12            1 (const int)
+0:12        Constant:
+0:12          1.000000
+0:13      move second child to first child ( temp float)
+0:13        direct index ( temp float)
+0:13          'clip0' ( out 3-component vector of float)
+0:13          Constant:
+0:13            2 (const int)
+0:13        Constant:
+0:13          2.000000
+0:16      move second child to first child ( temp float)
+0:16        'clip1' ( out float)
+0:16        Constant:
+0:16          3.000000
+0:18      Branch: Return with expression
+0:18        'Output' ( temp structure{ temp 4-component vector of float Position})
+0:7  Function Definition: main( ( temp void)
+0:7    Function Parameters: 
+0:?     Sequence
+0:7      Sequence
+0:7        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Position' ( out 4-component vector of float Position)
+0:7          Position: direct index for structure ( temp 4-component vector of float)
+0:7            Function Call: @main(vf3;f1; ( temp structure{ temp 4-component vector of float Position})
+0:?               'clip0' ( temp 3-component vector of float)
+0:?               'clip1' ( temp float)
+0:7            Constant:
+0:7              0 (const int)
+0:?       Sequence
+0:7        move second child to first child ( temp float)
+0:7          direct index ( out float ClipDistance)
+0:?             'clip0' ( out 4-element array of float ClipDistance)
+0:7            Constant:
+0:7              0 (const int)
+0:7          direct index ( temp float)
+0:?             'clip0' ( temp 3-component vector of float)
+0:7            Constant:
+0:7              0 (const int)
+0:7        move second child to first child ( temp float)
+0:7          direct index ( out float ClipDistance)
+0:?             'clip0' ( out 4-element array of float ClipDistance)
+0:7            Constant:
+0:7              1 (const int)
+0:7          direct index ( temp float)
+0:?             'clip0' ( temp 3-component vector of float)
+0:7            Constant:
+0:7              1 (const int)
+0:7        move second child to first child ( temp float)
+0:7          direct index ( out float ClipDistance)
+0:?             'clip0' ( out 4-element array of float ClipDistance)
+0:7            Constant:
+0:7              2 (const int)
+0:7          direct index ( temp float)
+0:?             'clip0' ( temp 3-component vector of float)
+0:7            Constant:
+0:7              2 (const int)
+0:?       Sequence
+0:7        move second child to first child ( temp float)
+0:7          direct index ( out float ClipDistance)
+0:?             'clip0' ( out 4-element array of float ClipDistance)
+0:7            Constant:
+0:7              3 (const int)
+0:?           'clip1' ( temp float)
+0:?   Linker Objects
+0:?     '@entryPointOutput.Position' ( out 4-component vector of float Position)
+0:?     'clip0' ( out 4-element array of float ClipDistance)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 67
+
+                              Capability Shader
+                              Capability ClipDistance
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Vertex 4  "main" 39 51
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 11  "VS_OUTPUT"
+                              MemberName 11(VS_OUTPUT) 0  "Position"
+                              Name 15  "@main(vf3;f1;"
+                              Name 13  "clip0"
+                              Name 14  "clip1"
+                              Name 18  "Output"
+                              Name 39  "@entryPointOutput.Position"
+                              Name 40  "clip0"
+                              Name 41  "clip1"
+                              Name 42  "param"
+                              Name 43  "param"
+                              Name 51  "clip0"
+                              Decorate 39(@entryPointOutput.Position) BuiltIn Position
+                              Decorate 51(clip0) BuiltIn ClipDistance
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 3
+               8:             TypePointer Function 7(fvec3)
+               9:             TypePointer Function 6(float)
+              10:             TypeVector 6(float) 4
+   11(VS_OUTPUT):             TypeStruct 10(fvec4)
+              12:             TypeFunction 11(VS_OUTPUT) 8(ptr) 9(ptr)
+              17:             TypePointer Function 11(VS_OUTPUT)
+              19:             TypeInt 32 1
+              20:     19(int) Constant 0
+              21:    6(float) Constant 0
+              22:   10(fvec4) ConstantComposite 21 21 21 21
+              23:             TypePointer Function 10(fvec4)
+              25:             TypeInt 32 0
+              26:     25(int) Constant 0
+              28:    6(float) Constant 1065353216
+              29:     25(int) Constant 1
+              31:    6(float) Constant 1073741824
+              32:     25(int) Constant 2
+              34:    6(float) Constant 1077936128
+              38:             TypePointer Output 10(fvec4)
+39(@entryPointOutput.Position):     38(ptr) Variable Output
+              48:     25(int) Constant 4
+              49:             TypeArray 6(float) 48
+              50:             TypePointer Output 49
+       51(clip0):     50(ptr) Variable Output
+              54:             TypePointer Output 6(float)
+              56:     19(int) Constant 1
+              60:     19(int) Constant 2
+              64:     19(int) Constant 3
+         4(main):           2 Function None 3
+               5:             Label
+       40(clip0):      8(ptr) Variable Function
+       41(clip1):      9(ptr) Variable Function
+       42(param):      8(ptr) Variable Function
+       43(param):      9(ptr) Variable Function
+              44:11(VS_OUTPUT) FunctionCall 15(@main(vf3;f1;) 42(param) 43(param)
+              45:    7(fvec3) Load 42(param)
+                              Store 40(clip0) 45
+              46:    6(float) Load 43(param)
+                              Store 41(clip1) 46
+              47:   10(fvec4) CompositeExtract 44 0
+                              Store 39(@entryPointOutput.Position) 47
+              52:      9(ptr) AccessChain 40(clip0) 26
+              53:    6(float) Load 52
+              55:     54(ptr) AccessChain 51(clip0) 20
+                              Store 55 53
+              57:      9(ptr) AccessChain 40(clip0) 29
+              58:    6(float) Load 57
+              59:     54(ptr) AccessChain 51(clip0) 56
+                              Store 59 58
+              61:      9(ptr) AccessChain 40(clip0) 32
+              62:    6(float) Load 61
+              63:     54(ptr) AccessChain 51(clip0) 60
+                              Store 63 62
+              65:    6(float) Load 41(clip1)
+              66:     54(ptr) AccessChain 51(clip0) 64
+                              Store 66 65
+                              Return
+                              FunctionEnd
+15(@main(vf3;f1;):11(VS_OUTPUT) Function None 12
+       13(clip0):      8(ptr) FunctionParameter
+       14(clip1):      9(ptr) FunctionParameter
+              16:             Label
+      18(Output):     17(ptr) Variable Function
+              24:     23(ptr) AccessChain 18(Output) 20
+                              Store 24 22
+              27:      9(ptr) AccessChain 13(clip0) 26
+                              Store 27 21
+              30:      9(ptr) AccessChain 13(clip0) 29
+                              Store 30 28
+              33:      9(ptr) AccessChain 13(clip0) 32
+                              Store 33 31
+                              Store 14(clip1) 34
+              35:11(VS_OUTPUT) Load 18(Output)
+                              ReturnValue 35
+                              FunctionEnd

@@ -1,0 +1,13 @@
+Revision history for Effcee
+
+v2018.2-dev 2018-10-05
+ - Fixes:
+   #23: Avoid StringPiece::as_string to enhance portability.
+
+v2018.1 2018-10-05
+ - Require CMake 3.1 or later
+ - Require C++11
+ - Travis-CI testing uses stock clang, instead of clang-3.6 (which is old by now)
+
+v2018.0 2018-10-05
+ - Mature enough for production use by third party projects such as DXC and SPIRV-Tools.

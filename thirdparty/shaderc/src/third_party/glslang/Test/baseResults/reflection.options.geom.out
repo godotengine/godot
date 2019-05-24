@@ -1,0 +1,25 @@
+reflection.options.geom
+Uniform reflection:
+
+Uniform block reflection:
+
+Buffer variable reflection:
+
+Buffer block reflection:
+
+Pipeline input reflection:
+gl_PerVertex.gl_Position: offset 0, type 8b52, size 1, index 0, binding -1, stages 8
+gl_PerVertex.gl_PointSize: offset 0, type 1406, size 1, index 0, binding -1, stages 8
+gl_PerVertex.gl_ClipDistance[0]: offset 0, type 1406, size 1, index 0, binding -1, stages 8
+block.Color: offset 0, type 8b50, size 1, index 0, binding -1, stages 8
+block.Texcoord: offset 0, type 8b50, size 1, index 0, binding -1, stages 8
+block.in_a: offset 0, type 8b54, size 1, index 0, binding -1, stages 8
+
+Pipeline output reflection:
+gl_Position: offset 0, type 8b52, size 1, index 0, binding -1, stages 8
+gl_PointSize: offset 0, type 1406, size 1, index 0, binding -1, stages 8
+gl_ClipDistance[0]: offset 0, type 1406, size 1, index 0, binding -1, stages 8
+block.Color: offset 0, type 8b52, size 1, index 0, binding -1, stages 8
+block.a: offset 0, type 8b52, size 1, index 0, binding -1, stages 8
+block.b[0]: offset 0, type 8b50, size 3, index 0, binding -1, stages 8
+

@@ -1,0 +1,153 @@
+300block.frag
+ERROR: 0:10: '' : cannot nest a structure definition inside a structure or block 
+ERROR: 0:21: '' : cannot nest a structure definition inside a structure or block 
+ERROR: 0:20: 'sampler' : member of block cannot be or contain a sampler, image, or atomic_uint type 
+ERROR: 0:24: 'fbs' : member of block cannot be or contain a sampler, image, or atomic_uint type 
+ERROR: 0:45: 'variable indexing uniform block array' : not supported for this version or the enabled extensions 
+ERROR: 0:46: 'fooBlock' : cannot be used (maybe an instance name is needed) 
+ERROR: 0:46: 'fooBlock' : undeclared identifier 
+ERROR: 0:47: 'constructor' : not enough data provided for construction 
+ERROR: 0:51: 'unreferenced' : cannot be used (maybe an instance name is needed) 
+ERROR: 0:51: 'unreferenced' : undeclared identifier 
+ERROR: 0:52: '++' :  l-value required "s" (can't modify a uniform)
+ERROR: 0:52: '++' :  wrong operand type no operation '++' exists that takes an operand of type  uniform structure{ global mediump 4-component vector of float u,  global mediump 4-component vector of uint v,  global lowp isampler3D sampler,  global mediump 3-component vector of float w,  global structure{ global mediump int a} t} (or there is no acceptable conversion)
+ERROR: 0:53: '-' :  wrong operand types: no operation '-' exists that takes a left-hand operand of type 'layout( column_major shared) uniform block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni}' and a right operand of type ' const int' (or there is no acceptable conversion)
+ERROR: 0:55: 'barBlockArray' : cannot be used (maybe an instance name is needed) 
+ERROR: 0:55: 'barBlockArray' : undeclared identifier 
+ERROR: 0:55: '*' :  wrong operand types: no operation '*' exists that takes a left-hand operand of type ' const int' and a right operand of type ' temp float' (or there is no acceptable conversion)
+ERROR: 0:58: 'fooBlock' : redefinition 
+ERROR: 17 compilation errors.  No code generated.
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:42  Function Definition: main( ( global void)
+0:42    Function Parameters: 
+0:44    Sequence
+0:44      texture ( global lowp 4-component vector of int)
+0:44        sampler: direct index for structure ( global lowp isampler3D)
+0:44          's' ( uniform structure{ global mediump 4-component vector of float u,  global mediump 4-component vector of uint v,  global lowp isampler3D sampler,  global mediump 3-component vector of float w,  global structure{ global mediump int a} t})
+0:44          Constant:
+0:44            2 (const int)
+0:44        Construct vec3 ( temp lowp 3-component vector of float)
+0:44          Convert int to float ( temp lowp float)
+0:44            ni: direct index for structure (layout( column_major shared) uniform mediump int)
+0:44              'inst' (layout( column_major shared) uniform block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:44              Constant:
+0:44                1 (const int)
+0:44          Convert uint to float ( temp lowp float)
+0:44            direct index ( temp mediump uint)
+0:44              bv: direct index for structure (layout( column_major shared) uniform mediump 4-component vector of uint)
+0:44                'anon@0' (layout( column_major shared) uniform block{layout( column_major shared) uniform mediump 4-component vector of uint bv, layout( column_major shared) uniform mediump 2X2 matrix of float bm2, layout( column_major shared) uniform lowp isampler2D sampler, layout( column_major shared) uniform structure{ global mediump int a} t, layout( column_major shared) uniform structure{ global mediump 4-component vector of float u,  global mediump 4-component vector of uint v,  global lowp isampler3D sampler,  global mediump 3-component vector of float w,  global structure{ global mediump int a} t} fbs})
+0:44                Constant:
+0:44                  0 (const uint)
+0:44              Constant:
+0:44                1 (const int)
+0:44          Convert uint to float ( temp lowp float)
+0:44            direct index ( temp mediump uint)
+0:44              nbv: direct index for structure (layout( column_major shared) uniform mediump 4-component vector of uint)
+0:44                direct index (layout( column_major shared) temp block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:44                  'insts' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:44                  Constant:
+0:44                    2 (const int)
+0:44                Constant:
+0:44                  0 (const int)
+0:44              Constant:
+0:44                2 (const int)
+0:45      indirect index (layout( column_major shared) temp block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:45        'insts' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:45        direct index ( temp mediump uint)
+0:45          v: direct index for structure ( global mediump 4-component vector of uint)
+0:45            's' ( uniform structure{ global mediump 4-component vector of float u,  global mediump 4-component vector of uint v,  global lowp isampler3D sampler,  global mediump 3-component vector of float w,  global structure{ global mediump int a} t})
+0:45            Constant:
+0:45              1 (const int)
+0:45          Constant:
+0:45            0 (const int)
+0:46      'fooBlock' ( temp float)
+0:47      Constant:
+0:47        0.000000
+0:50      Construct mat4 ( temp 4X4 matrix of float)
+0:50        'barBlock' ( temp mediump float)
+0:51      Construct mat4 ( temp 4X4 matrix of float)
+0:51        'unreferenced' ( temp float)
+0:52      's' ( uniform structure{ global mediump 4-component vector of float u,  global mediump 4-component vector of uint v,  global lowp isampler3D sampler,  global mediump 3-component vector of float w,  global structure{ global mediump int a} t})
+0:53      'inst' (layout( column_major shared) uniform block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:54      Pre-Increment ( temp mediump float)
+0:54        'barBlock' ( temp mediump float)
+0:55      Constant:
+0:55        2 (const int)
+0:?   Linker Objects
+0:?     's' ( uniform structure{ global mediump 4-component vector of float u,  global mediump 4-component vector of uint v,  global lowp isampler3D sampler,  global mediump 3-component vector of float w,  global structure{ global mediump int a} t})
+0:?     'anon@0' (layout( column_major shared) uniform block{layout( column_major shared) uniform mediump 4-component vector of uint bv, layout( column_major shared) uniform mediump 2X2 matrix of float bm2, layout( column_major shared) uniform lowp isampler2D sampler, layout( column_major shared) uniform structure{ global mediump int a} t, layout( column_major shared) uniform structure{ global mediump 4-component vector of float u,  global mediump 4-component vector of uint v,  global lowp isampler3D sampler,  global mediump 3-component vector of float w,  global structure{ global mediump int a} t} fbs})
+0:?     'inst' (layout( column_major shared) uniform block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:?     'insts' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:?     'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform mediump float f, layout( column_major shared) uniform mediump uint u})
+
+
+Linked fragment stage:
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:42  Function Definition: main( ( global void)
+0:42    Function Parameters: 
+0:44    Sequence
+0:44      texture ( global lowp 4-component vector of int)
+0:44        sampler: direct index for structure ( global lowp isampler3D)
+0:44          's' ( uniform structure{ global mediump 4-component vector of float u,  global mediump 4-component vector of uint v,  global lowp isampler3D sampler,  global mediump 3-component vector of float w,  global structure{ global mediump int a} t})
+0:44          Constant:
+0:44            2 (const int)
+0:44        Construct vec3 ( temp lowp 3-component vector of float)
+0:44          Convert int to float ( temp lowp float)
+0:44            ni: direct index for structure (layout( column_major shared) uniform mediump int)
+0:44              'inst' (layout( column_major shared) uniform block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:44              Constant:
+0:44                1 (const int)
+0:44          Convert uint to float ( temp lowp float)
+0:44            direct index ( temp mediump uint)
+0:44              bv: direct index for structure (layout( column_major shared) uniform mediump 4-component vector of uint)
+0:44                'anon@0' (layout( column_major shared) uniform block{layout( column_major shared) uniform mediump 4-component vector of uint bv, layout( column_major shared) uniform mediump 2X2 matrix of float bm2, layout( column_major shared) uniform lowp isampler2D sampler, layout( column_major shared) uniform structure{ global mediump int a} t, layout( column_major shared) uniform structure{ global mediump 4-component vector of float u,  global mediump 4-component vector of uint v,  global lowp isampler3D sampler,  global mediump 3-component vector of float w,  global structure{ global mediump int a} t} fbs})
+0:44                Constant:
+0:44                  0 (const uint)
+0:44              Constant:
+0:44                1 (const int)
+0:44          Convert uint to float ( temp lowp float)
+0:44            direct index ( temp mediump uint)
+0:44              nbv: direct index for structure (layout( column_major shared) uniform mediump 4-component vector of uint)
+0:44                direct index (layout( column_major shared) temp block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:44                  'insts' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:44                  Constant:
+0:44                    2 (const int)
+0:44                Constant:
+0:44                  0 (const int)
+0:44              Constant:
+0:44                2 (const int)
+0:45      indirect index (layout( column_major shared) temp block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:45        'insts' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:45        direct index ( temp mediump uint)
+0:45          v: direct index for structure ( global mediump 4-component vector of uint)
+0:45            's' ( uniform structure{ global mediump 4-component vector of float u,  global mediump 4-component vector of uint v,  global lowp isampler3D sampler,  global mediump 3-component vector of float w,  global structure{ global mediump int a} t})
+0:45            Constant:
+0:45              1 (const int)
+0:45          Constant:
+0:45            0 (const int)
+0:46      'fooBlock' ( temp float)
+0:47      Constant:
+0:47        0.000000
+0:50      Construct mat4 ( temp 4X4 matrix of float)
+0:50        'barBlock' ( temp mediump float)
+0:51      Construct mat4 ( temp 4X4 matrix of float)
+0:51        'unreferenced' ( temp float)
+0:52      's' ( uniform structure{ global mediump 4-component vector of float u,  global mediump 4-component vector of uint v,  global lowp isampler3D sampler,  global mediump 3-component vector of float w,  global structure{ global mediump int a} t})
+0:53      'inst' (layout( column_major shared) uniform block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:54      Pre-Increment ( temp mediump float)
+0:54        'barBlock' ( temp mediump float)
+0:55      Constant:
+0:55        2 (const int)
+0:?   Linker Objects
+0:?     's' ( uniform structure{ global mediump 4-component vector of float u,  global mediump 4-component vector of uint v,  global lowp isampler3D sampler,  global mediump 3-component vector of float w,  global structure{ global mediump int a} t})
+0:?     'anon@0' (layout( column_major shared) uniform block{layout( column_major shared) uniform mediump 4-component vector of uint bv, layout( column_major shared) uniform mediump 2X2 matrix of float bm2, layout( column_major shared) uniform lowp isampler2D sampler, layout( column_major shared) uniform structure{ global mediump int a} t, layout( column_major shared) uniform structure{ global mediump 4-component vector of float u,  global mediump 4-component vector of uint v,  global lowp isampler3D sampler,  global mediump 3-component vector of float w,  global structure{ global mediump int a} t} fbs})
+0:?     'inst' (layout( column_major shared) uniform block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:?     'insts' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform mediump 4-component vector of uint nbv, layout( column_major shared) uniform mediump int ni})
+0:?     'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform mediump float f, layout( column_major shared) uniform mediump uint u})
+

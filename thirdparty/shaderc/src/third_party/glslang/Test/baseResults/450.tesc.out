@@ -1,0 +1,74 @@
+450.tesc
+ERROR: 0:20: 'location' : cannot use in a block array where new locations are needed for each block element 
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 450
+vertices = -1
+ERROR: node is still EOpNull!
+0:11  Function Definition: main( ( global void)
+0:11    Function Parameters: 
+0:13    Sequence
+0:13      move second child to first child ( temp float)
+0:13        direct index ( temp float CullDistance)
+0:13          gl_CullDistance: direct index for structure ( out 3-element array of float CullDistance)
+0:13            indirect index ( temp block{ out 3-element array of float CullDistance gl_CullDistance})
+0:13              'gl_out' ( out 4-element array of block{ out 3-element array of float CullDistance gl_CullDistance})
+0:13              'gl_InvocationID' ( in int InvocationID)
+0:13            Constant:
+0:13              0 (const int)
+0:13          Constant:
+0:13            2 (const int)
+0:13        direct index ( temp float CullDistance)
+0:13          gl_CullDistance: direct index for structure ( in 3-element array of float CullDistance)
+0:13            direct index ( temp block{ in 3-element array of float CullDistance gl_CullDistance})
+0:13              'gl_in' ( in 32-element array of block{ in 3-element array of float CullDistance gl_CullDistance})
+0:13              Constant:
+0:13                1 (const int)
+0:13            Constant:
+0:13              0 (const int)
+0:13          Constant:
+0:13            2 (const int)
+0:?   Linker Objects
+0:?     'gl_in' ( in 32-element array of block{ in 3-element array of float CullDistance gl_CullDistance})
+0:?     'gl_out' ( out 4-element array of block{ out 3-element array of float CullDistance gl_CullDistance})
+0:?     'bInst1' ( out 2-element array of block{layout( location=4) out float f, layout( location=5) out float g})
+0:?     'bInst2' ( out 2-element array of 3-element array of block{layout( location=6) out float f, layout( location=7) out float g})
+
+
+Linked tessellation control stage:
+
+ERROR: Linking tessellation control stage: At least one shader must specify an output layout(vertices=...)
+
+Shader version: 450
+vertices = -1
+ERROR: node is still EOpNull!
+0:11  Function Definition: main( ( global void)
+0:11    Function Parameters: 
+0:13    Sequence
+0:13      move second child to first child ( temp float)
+0:13        direct index ( temp float CullDistance)
+0:13          gl_CullDistance: direct index for structure ( out 3-element array of float CullDistance)
+0:13            indirect index ( temp block{ out 3-element array of float CullDistance gl_CullDistance})
+0:13              'gl_out' ( out 4-element array of block{ out 3-element array of float CullDistance gl_CullDistance})
+0:13              'gl_InvocationID' ( in int InvocationID)
+0:13            Constant:
+0:13              0 (const int)
+0:13          Constant:
+0:13            2 (const int)
+0:13        direct index ( temp float CullDistance)
+0:13          gl_CullDistance: direct index for structure ( in 3-element array of float CullDistance)
+0:13            direct index ( temp block{ in 3-element array of float CullDistance gl_CullDistance})
+0:13              'gl_in' ( in 32-element array of block{ in 3-element array of float CullDistance gl_CullDistance})
+0:13              Constant:
+0:13                1 (const int)
+0:13            Constant:
+0:13              0 (const int)
+0:13          Constant:
+0:13            2 (const int)
+0:?   Linker Objects
+0:?     'gl_in' ( in 32-element array of block{ in 3-element array of float CullDistance gl_CullDistance})
+0:?     'gl_out' ( out 4-element array of block{ out 3-element array of float CullDistance gl_CullDistance})
+0:?     'bInst1' ( out 2-element array of block{layout( location=4) out float f, layout( location=5) out float g})
+0:?     'bInst2' ( out 2-element array of 3-element array of block{layout( location=6) out float f, layout( location=7) out float g})
+

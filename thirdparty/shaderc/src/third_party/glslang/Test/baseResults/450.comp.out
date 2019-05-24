@@ -1,0 +1,24 @@
+450.comp
+ERROR: 0:2: 'local_size_x' : must be at least 1 
+ERROR: 0:5: 'shared' : not allowed in nested scope 
+ERROR: 2 compilation errors.  No code generated.
+
+
+Shader version: 450
+local_size = (1, 1, 1)
+ERROR: node is still EOpNull!
+0:3  Function Definition: main( ( global void)
+0:3    Function Parameters: 
+0:?   Linker Objects
+
+
+Linked compute stage:
+
+
+Shader version: 450
+local_size = (1, 1, 1)
+ERROR: node is still EOpNull!
+0:3  Function Definition: main( ( global void)
+0:3    Function Parameters: 
+0:?   Linker Objects
+

@@ -1,0 +1,394 @@
+310AofA.vert
+ERROR: 0:17: '' : array size required 
+ERROR: 0:23: '' : array size required 
+ERROR: 0:28: '[]' : only outermost dimension of an array of arrays can be implicitly sized 
+ERROR: 0:40: '' : array size required 
+ERROR: 0:48: 'constructor' : constructing non-array constituent from array argument 
+ERROR: 0:49: 'constructor' : array constructor argument not correct type to construct array element 
+ERROR: 0:62: '[' :  array index out of range '4'
+ERROR: 0:78: 'assign' :  cannot convert from ' global 4-element array of 7-element array of highp float' to ' global 5-element array of 7-element array of highp float'
+ERROR: 0:79: 'assign' :  cannot convert from ' global 4-element array of 7-element array of highp float' to ' global unsized 1-element array of 7-element array of highp float'
+ERROR: 0:81: 'foo' : no matching overloaded function found 
+ERROR: 0:86: '==' :  wrong operand types: no operation '==' exists that takes a left-hand operand of type ' global 4-element array of 7-element array of highp float' and a right operand of type ' global 5-element array of 7-element array of highp float' (or there is no acceptable conversion)
+ERROR: 0:90: '[' :  array index out of range '5'
+ERROR: 0:94: '[' :  index out of range '-1'
+ERROR: 0:96: 'assign' :  cannot convert from ' temp 3-element array of highp 4-component vector of float' to 'layout( column_major shared) buffer unsized 2-element array of highp 4-component vector of float'
+ERROR: 0:103: '' : array size required 
+ERROR: 0:104: '' : array size required 
+ERROR: 0:105: '' : array size required 
+ERROR: 0:106: '' : array size required 
+ERROR: 0:107: '' : array size required 
+ERROR: 0:110: 'vertex input arrays' : not supported with this profile: es
+ERROR: 0:111: 'vertex-shader array-of-array output' : not supported with this profile: es
+ERROR: 0:113: 'array-of-array of block' : not supported with this profile: es
+ERROR: 22 compilation errors.  No code generated.
+
+
+Shader version: 310
+ERROR: node is still EOpNull!
+0:8  Function Definition: f(b1;f1;u1[4];i1[3][2]; ( global void)
+0:8    Function Parameters: 
+0:8      'a' ( in bool)
+0:8      'b' ( in highp float)
+0:8      'c' ( in 4-element array of highp uint)
+0:8      'd' ( in 3-element array of 2-element array of highp int)
+0:11  Function Definition: main( ( global void)
+0:11    Function Parameters: 
+0:?     Sequence
+0:13      Function Call: f(b1;f1;u1[4];i1[3][2]; ( global void)
+0:13        Constant:
+0:13          false (const bool)
+0:13        Constant:
+0:13          12.100000
+0:13        Constant:
+0:13          0 (const uint)
+0:13          1 (const uint)
+0:13          1 (const uint)
+0:13          2 (const uint)
+0:13        'd' ( temp 3-element array of 2-element array of highp int)
+0:44  Function Definition: foo(f1[5][7]; ( global 4-element array of 7-element array of highp float)
+0:44    Function Parameters: 
+0:44      'a' ( in 5-element array of 7-element array of highp float)
+0:?     Sequence
+0:47      move second child to first child ( temp 7-element array of highp float)
+0:47        'r' ( temp 7-element array of highp float)
+0:47        direct index ( temp 7-element array of highp float)
+0:47          'a' ( in 5-element array of 7-element array of highp float)
+0:47          Constant:
+0:47            2 (const int)
+0:48      Constant:
+0:48        0.000000
+0:49      Constant:
+0:49        0.000000
+0:50      Branch: Return with expression
+0:50        Construct float ( temp 4-element array of 7-element array of float)
+0:50          direct index ( temp 7-element array of highp float)
+0:50            'a' ( in 5-element array of 7-element array of highp float)
+0:50            Constant:
+0:50              0 (const int)
+0:50          direct index ( temp 7-element array of highp float)
+0:50            'a' ( in 5-element array of 7-element array of highp float)
+0:50            Constant:
+0:50              1 (const int)
+0:50          'r' ( temp 7-element array of highp float)
+0:50          direct index ( temp 7-element array of highp float)
+0:50            'a' ( in 5-element array of 7-element array of highp float)
+0:50            Constant:
+0:50              3 (const int)
+0:51      Branch: Return with expression
+0:51        Construct float ( temp 4-element array of 7-element array of float)
+0:51          direct index ( temp 7-element array of highp float)
+0:51            'a' ( in 5-element array of 7-element array of highp float)
+0:51            Constant:
+0:51              0 (const int)
+0:51          direct index ( temp 7-element array of highp float)
+0:51            'a' ( in 5-element array of 7-element array of highp float)
+0:51            Constant:
+0:51              1 (const int)
+0:51          'r' ( temp 7-element array of highp float)
+0:51          direct index ( temp 7-element array of highp float)
+0:51            'a' ( in 5-element array of 7-element array of highp float)
+0:51            Constant:
+0:51              3 (const int)
+0:52      Branch: Return with expression
+0:52        Construct float ( temp 4-element array of 7-element array of float)
+0:52          direct index ( temp 7-element array of highp float)
+0:52            'a' ( in 5-element array of 7-element array of highp float)
+0:52            Constant:
+0:52              0 (const int)
+0:52          direct index ( temp 7-element array of highp float)
+0:52            'a' ( in 5-element array of 7-element array of highp float)
+0:52            Constant:
+0:52              1 (const int)
+0:52          direct index ( temp 7-element array of highp float)
+0:52            'a' ( in 5-element array of 7-element array of highp float)
+0:52            Constant:
+0:52              2 (const int)
+0:52          direct index ( temp 7-element array of highp float)
+0:52            'a' ( in 5-element array of 7-element array of highp float)
+0:52            Constant:
+0:52              3 (const int)
+0:55  Function Definition: bar(f1[5][7]; ( global void)
+0:55    Function Parameters: 
+0:55      '' ( in 5-element array of 7-element array of highp float)
+0:57  Function Definition: foo2( ( global void)
+0:57    Function Parameters: 
+0:?     Sequence
+0:?       Sequence
+0:62        move second child to first child ( temp highp float)
+0:62          direct index ( temp highp float)
+0:62            direct index ( temp 2-element array of highp float)
+0:62              direct index ( temp 4-element array of 2-element array of highp float)
+0:62                'gu' ( temp 3-element array of 4-element array of 2-element array of highp float)
+0:62                Constant:
+0:62                  2 (const int)
+0:62              Constant:
+0:62                4 (const int)
+0:62            Constant:
+0:62              1 (const int)
+0:62          Constant:
+0:62            4.000000
+0:64      Sequence
+0:64        move second child to first child ( temp 3-element array of 2-element array of highp 4-component vector of float)
+0:64          'ca4' ( temp 3-element array of 2-element array of highp 4-component vector of float)
+0:66          Constant:
+0:66            0.000000
+0:66            0.000000
+0:66            0.000000
+0:66            0.000000
+0:66            1.000000
+0:66            1.000000
+0:66            1.000000
+0:66            1.000000
+0:66            0.000000
+0:66            0.000000
+0:66            0.000000
+0:66            0.000000
+0:66            1.000000
+0:66            1.000000
+0:66            1.000000
+0:66            1.000000
+0:66            0.000000
+0:66            0.000000
+0:66            0.000000
+0:66            0.000000
+0:66            1.000000
+0:66            1.000000
+0:66            1.000000
+0:66            1.000000
+0:67      Sequence
+0:67        move second child to first child ( temp 3-element array of 2-element array of highp 4-component vector of float)
+0:67          'caim' ( temp 3-element array of 2-element array of highp 4-component vector of float)
+0:69          Constant:
+0:69            4.000000
+0:69            4.000000
+0:69            4.000000
+0:69            4.000000
+0:69            2.000000
+0:69            2.000000
+0:69            2.000000
+0:69            2.000000
+0:69            4.000000
+0:69            4.000000
+0:69            4.000000
+0:69            4.000000
+0:69            2.000000
+0:69            2.000000
+0:69            2.000000
+0:69            2.000000
+0:69            4.000000
+0:69            4.000000
+0:69            4.000000
+0:69            4.000000
+0:69            2.000000
+0:69            2.000000
+0:69            2.000000
+0:69            2.000000
+0:70      Sequence
+0:70        move second child to first child ( temp 3-element array of 2-element array of highp 4-component vector of float)
+0:70          'caim2' ( temp 3-element array of 2-element array of highp 4-component vector of float)
+0:72          Constant:
+0:72            4.000000
+0:72            4.000000
+0:72            4.000000
+0:72            4.000000
+0:72            2.000000
+0:72            2.000000
+0:72            2.000000
+0:72            2.000000
+0:72            4.000000
+0:72            4.000000
+0:72            4.000000
+0:72            4.000000
+0:72            2.000000
+0:72            2.000000
+0:72            2.000000
+0:72            2.000000
+0:72            4.000000
+0:72            4.000000
+0:72            4.000000
+0:72            4.000000
+0:72            2.000000
+0:72            2.000000
+0:72            2.000000
+0:72            2.000000
+0:73      Sequence
+0:73        move second child to first child ( temp 3-element array of 2-element array of highp 4-component vector of float)
+0:73          'caim3' ( temp 3-element array of 2-element array of highp 4-component vector of float)
+0:75          Constant:
+0:75            4.000000
+0:75            4.000000
+0:75            4.000000
+0:75            4.000000
+0:75            2.000000
+0:75            2.000000
+0:75            2.000000
+0:75            2.000000
+0:75            4.000000
+0:75            4.000000
+0:75            4.000000
+0:75            4.000000
+0:75            2.000000
+0:75            2.000000
+0:75            2.000000
+0:75            2.000000
+0:75            4.000000
+0:75            4.000000
+0:75            4.000000
+0:75            4.000000
+0:75            2.000000
+0:75            2.000000
+0:75            2.000000
+0:75            2.000000
+0:77      move second child to first child ( temp 4-element array of 7-element array of highp float)
+0:77        'g4' ( global 4-element array of 7-element array of highp float)
+0:77        Function Call: foo(f1[5][7]; ( global 4-element array of 7-element array of highp float)
+0:77          'g5' ( global 5-element array of 7-element array of highp float)
+0:78      'g5' ( global 5-element array of 7-element array of highp float)
+0:79      'gu' ( global unsized 1-element array of 7-element array of highp float)
+0:81      Constant:
+0:81        0.000000
+0:82      Function Call: bar(f1[5][7]; ( global void)
+0:82        'g5' ( global 5-element array of 7-element array of highp float)
+0:84      Test condition and select ( temp void)
+0:84        Condition
+0:84        Compare Equal ( temp bool)
+0:84          Function Call: foo(f1[5][7]; ( global 4-element array of 7-element array of highp float)
+0:84            'g5' ( global 5-element array of 7-element array of highp float)
+0:84          'g4' ( global 4-element array of 7-element array of highp float)
+0:84        true case is null
+0:86      Test condition and select ( temp void)
+0:86        Condition
+0:86        Constant:
+0:86          false (const bool)
+0:86        true case is null
+0:90      move second child to first child ( temp highp float)
+0:90        direct index ( temp highp float)
+0:90          direct index ( temp 7-element array of highp float)
+0:90            'u' ( temp 5-element array of 7-element array of highp float)
+0:90            Constant:
+0:90              5 (const int)
+0:90          Constant:
+0:90            2 (const int)
+0:90        Constant:
+0:90          5.000000
+0:91      Function Call: foo(f1[5][7]; ( global 4-element array of 7-element array of highp float)
+0:91        'u' ( temp 5-element array of 7-element array of highp float)
+0:94      direct index (layout( column_major shared) temp highp 4-component vector of float)
+0:94        v: direct index for structure (layout( column_major shared) buffer unsized 2-element array of highp 4-component vector of float)
+0:94          direct index (layout( column_major shared) temp block{layout( column_major shared) buffer unsized 1-element array of highp float u, layout( column_major shared) buffer unsized 2-element array of highp 4-component vector of float v})
+0:94            'name' (layout( column_major shared) buffer 3-element array of block{layout( column_major shared) buffer unsized 1-element array of highp float u, layout( column_major shared) buffer unsized 2-element array of highp 4-component vector of float v})
+0:94            Constant:
+0:94              1 (const int)
+0:94          Constant:
+0:94            1 (const int)
+0:94        Constant:
+0:94          -1 (const int)
+0:95      move second child to first child ( temp highp 4-component vector of float)
+0:95        direct index (layout( column_major shared) temp highp 4-component vector of float)
+0:95          v: direct index for structure (layout( column_major shared) buffer unsized 2-element array of highp 4-component vector of float)
+0:95            direct index (layout( column_major shared) temp block{layout( column_major shared) buffer unsized 1-element array of highp float u, layout( column_major shared) buffer unsized 2-element array of highp 4-component vector of float v})
+0:95              'name' (layout( column_major shared) buffer 3-element array of block{layout( column_major shared) buffer unsized 1-element array of highp float u, layout( column_major shared) buffer unsized 2-element array of highp 4-component vector of float v})
+0:95              Constant:
+0:95                1 (const int)
+0:95            Constant:
+0:95              1 (const int)
+0:95          Constant:
+0:95            1 (const int)
+0:95        Constant:
+0:95          4.300000
+0:95          4.300000
+0:95          4.300000
+0:95          4.300000
+0:96      v: direct index for structure (layout( column_major shared) buffer unsized 2-element array of highp 4-component vector of float)
+0:96        direct index (layout( column_major shared) temp block{layout( column_major shared) buffer unsized 1-element array of highp float u, layout( column_major shared) buffer unsized 2-element array of highp 4-component vector of float v})
+0:96          'name' (layout( column_major shared) buffer 3-element array of block{layout( column_major shared) buffer unsized 1-element array of highp float u, layout( column_major shared) buffer unsized 2-element array of highp 4-component vector of float v})
+0:96          Constant:
+0:96            1 (const int)
+0:96        Constant:
+0:96          1 (const int)
+0:98      Constant:
+0:98        7 (const int)
+0:99      array length ( temp int)
+0:99        v: direct index for structure (layout( column_major shared) buffer unsized 2-element array of 7-element array of highp 4-component vector of float)
+0:99          direct index (layout( column_major shared) temp block{layout( column_major shared) buffer highp float u, layout( column_major shared) buffer unsized 2-element array of 7-element array of highp 4-component vector of float v})
+0:99            'name3' (layout( column_major shared) buffer 3-element array of block{layout( column_major shared) buffer highp float u, layout( column_major shared) buffer unsized 2-element array of 7-element array of highp 4-component vector of float v})
+0:99            Constant:
+0:99              0 (const int)
+0:99          Constant:
+0:99            1 (const int)
+0:117  Function Definition: func(mf33[3][2]; ( global highp 3-component vector of float)
+0:117    Function Parameters: 
+0:117      'x' ( in 3-element array of 2-element array of highp 3X3 matrix of float)
+0:119    Sequence
+0:119      Sequence
+0:119        move second child to first child ( temp highp 3X3 matrix of float)
+0:119          'a0' ( temp highp 3X3 matrix of float)
+0:119          direct index ( temp highp 3X3 matrix of float)
+0:119            direct index ( temp 2-element array of highp 3X3 matrix of float)
+0:119              'x' ( in 3-element array of 2-element array of highp 3X3 matrix of float)
+0:119              Constant:
+0:119                2 (const int)
+0:119            Constant:
+0:119              1 (const int)
+0:120      Branch: Return with expression
+0:120        direct index ( temp highp 3-component vector of float)
+0:120          'a0' ( temp highp 3X3 matrix of float)
+0:120          Constant:
+0:120            2 (const int)
+0:?   Linker Objects
+0:?     'name' (layout( column_major shared) buffer 3-element array of block{layout( column_major shared) buffer unsized 1-element array of highp float u, layout( column_major shared) buffer unsized 2-element array of highp 4-component vector of float v})
+0:?     'uname' (layout( column_major shared) uniform 3-element array of block{layout( column_major shared) uniform highp float u, layout( column_major shared) uniform unsized 1-element array of highp 4-component vector of float v})
+0:?     'name2' (layout( column_major shared) buffer 3-element array of block{layout( column_major shared) buffer highp float u, layout( column_major shared) buffer unsized 1-element array of 1-element array of highp 4-component vector of float v})
+0:?     'name3' (layout( column_major shared) buffer 3-element array of block{layout( column_major shared) buffer highp float u, layout( column_major shared) buffer unsized 2-element array of 7-element array of highp 4-component vector of float v})
+0:?     'many' ( global 1-element array of 2-element array of 3-element array of 4-element array of 5-element array of 6-element array of highp float)
+0:?     'gu' ( global unsized 1-element array of 7-element array of highp float)
+0:?     'g4' ( global 4-element array of 7-element array of highp float)
+0:?     'g5' ( global 5-element array of 7-element array of highp float)
+0:?     'inArray' ( in 2-element array of 3-element array of highp float)
+0:?     'outArray' ( smooth out 2-element array of 3-element array of highp float)
+0:?     'ubaaname' (layout( column_major shared) uniform 2-element array of 3-element array of block{layout( column_major shared) uniform highp int a})
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 310
+ERROR: node is still EOpNull!
+0:8  Function Definition: f(b1;f1;u1[4];i1[3][2]; ( global void)
+0:8    Function Parameters: 
+0:8      'a' ( in bool)
+0:8      'b' ( in highp float)
+0:8      'c' ( in 4-element array of highp uint)
+0:8      'd' ( in 3-element array of 2-element array of highp int)
+0:11  Function Definition: main( ( global void)
+0:11    Function Parameters: 
+0:?     Sequence
+0:13      Function Call: f(b1;f1;u1[4];i1[3][2]; ( global void)
+0:13        Constant:
+0:13          false (const bool)
+0:13        Constant:
+0:13          12.100000
+0:13        Constant:
+0:13          0 (const uint)
+0:13          1 (const uint)
+0:13          1 (const uint)
+0:13          2 (const uint)
+0:13        'd' ( temp 3-element array of 2-element array of highp int)
+0:?   Linker Objects
+0:?     'name' (layout( column_major shared) buffer 3-element array of block{layout( column_major shared) buffer 1-element array of highp float u, layout( column_major shared) buffer unsized 2-element array of highp 4-component vector of float v})
+0:?     'uname' (layout( column_major shared) uniform 3-element array of block{layout( column_major shared) uniform highp float u, layout( column_major shared) uniform 1-element array of highp 4-component vector of float v})
+0:?     'name2' (layout( column_major shared) buffer 3-element array of block{layout( column_major shared) buffer highp float u, layout( column_major shared) buffer unsized 1-element array of 1-element array of highp 4-component vector of float v})
+0:?     'name3' (layout( column_major shared) buffer 3-element array of block{layout( column_major shared) buffer highp float u, layout( column_major shared) buffer unsized 2-element array of 7-element array of highp 4-component vector of float v})
+0:?     'many' ( global 1-element array of 2-element array of 3-element array of 4-element array of 5-element array of 6-element array of highp float)
+0:?     'gu' ( global 1-element array of 7-element array of highp float)
+0:?     'g4' ( global 4-element array of 7-element array of highp float)
+0:?     'g5' ( global 5-element array of 7-element array of highp float)
+0:?     'inArray' ( in 2-element array of 3-element array of highp float)
+0:?     'outArray' ( smooth out 2-element array of 3-element array of highp float)
+0:?     'ubaaname' (layout( column_major shared) uniform 2-element array of 3-element array of block{layout( column_major shared) uniform highp int a})
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+

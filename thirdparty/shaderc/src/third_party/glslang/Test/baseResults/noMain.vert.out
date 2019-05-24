@@ -1,0 +1,43 @@
+noMain.vert
+Shader version: 300
+0:? Sequence
+0:3  Function Definition: foo( ( global void)
+0:3    Function Parameters: 
+0:?   Linker Objects
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+
+mains.frag
+ERROR: 0:7: 'main' : function already has a body 
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:3  Function Definition: main( ( global void)
+0:3    Function Parameters: 
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:?   Linker Objects
+
+
+Linked vertex stage:
+
+ERROR: Linking vertex stage: Missing entry point: Each stage requires one entry point
+
+Linked fragment stage:
+
+
+Shader version: 300
+0:? Sequence
+0:?   Linker Objects
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+Shader version: 300
+ERROR: node is still EOpNull!
+0:3  Function Definition: main( ( global void)
+0:3    Function Parameters: 
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:?   Linker Objects
+

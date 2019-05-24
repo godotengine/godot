@@ -1,0 +1,20 @@
+#### BEGIN COMPILER 0 INFO LOG ####
+0:? Sequence
+0:37  Function Definition: main( (void)
+0:37    Function Parameters: 
+0:39    Sequence
+0:39      move second child to first child (3-component vector of float)
+0:39        'color' (varying out 3-component vector of float)
+0:39        1.000000 (const float)
+0:39        1.000000 (const float)
+0:39        1.000000 (const float)
+0:41      move second child to first child (4-component vector of float)
+0:41        'gl_Position' (Position 4-component vector of float)
+0:41        matrix-times-vector (4-component vector of float)
+0:41          'gl_ModelViewProjectionMatrix' (uniform 4X4 matrix of float)
+0:41          'gl_Vertex' (attribute 4-component vector of float)
+
+#### END COMPILER 0 INFO LOG ####
+#### BEGIN LINKER INFO LOG ####
+
+#### END LINKER INFO LOG ####

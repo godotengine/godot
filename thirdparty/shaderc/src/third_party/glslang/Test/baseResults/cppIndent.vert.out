@@ -1,0 +1,84 @@
+cppIndent.vert
+ERROR: 0:61: 'macro expansion' : Too few args in Macro FUNC
+ERROR: 0:61: '' :  syntax error, unexpected COMMA
+ERROR: 2 compilation errors.  No code generated.
+
+
+Shader version: 110
+ERROR: node is still EOpNull!
+0:5  Sequence
+0:5    move second child to first child ( temp float)
+0:5      'sum' ( global float)
+0:5      Constant:
+0:5        0.000000
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:12    Sequence
+0:12      add second child into first child ( temp float)
+0:12        'sum' ( global float)
+0:12        Constant:
+0:12          1.000000
+0:22      add second child into first child ( temp float)
+0:22        'sum' ( global float)
+0:22        Constant:
+0:22          300.000000
+0:37      add second child into first child ( temp float)
+0:37        'sum' ( global float)
+0:37        Constant:
+0:37          600000.000000
+0:47      add second child into first child ( temp float)
+0:47        'sum' ( global float)
+0:47        Constant:
+0:47          80000000.000000
+0:52      add second child into first child ( temp float)
+0:52        'sum' ( global float)
+0:52        Constant:
+0:52          900000000.000000
+0:56      move second child to first child ( temp 4-component vector of float)
+0:56        'gl_Position' ( gl_Position 4-component vector of float Position)
+0:56        Construct vec4 ( temp 4-component vector of float)
+0:56          'sum' ( global float)
+0:?   Linker Objects
+0:?     'sum' ( global float)
+
+
+Linked vertex stage:
+
+
+Shader version: 110
+ERROR: node is still EOpNull!
+0:5  Sequence
+0:5    move second child to first child ( temp float)
+0:5      'sum' ( global float)
+0:5      Constant:
+0:5        0.000000
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:12    Sequence
+0:12      add second child into first child ( temp float)
+0:12        'sum' ( global float)
+0:12        Constant:
+0:12          1.000000
+0:22      add second child into first child ( temp float)
+0:22        'sum' ( global float)
+0:22        Constant:
+0:22          300.000000
+0:37      add second child into first child ( temp float)
+0:37        'sum' ( global float)
+0:37        Constant:
+0:37          600000.000000
+0:47      add second child into first child ( temp float)
+0:47        'sum' ( global float)
+0:47        Constant:
+0:47          80000000.000000
+0:52      add second child into first child ( temp float)
+0:52        'sum' ( global float)
+0:52        Constant:
+0:52          900000000.000000
+0:56      move second child to first child ( temp 4-component vector of float)
+0:56        'gl_Position' ( gl_Position 4-component vector of float Position)
+0:56        Construct vec4 ( temp 4-component vector of float)
+0:56          'sum' ( global float)
+0:?   Linker Objects
+0:?     'sum' ( global float)
+

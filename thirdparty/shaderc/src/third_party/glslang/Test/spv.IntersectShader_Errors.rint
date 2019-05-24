@@ -1,0 +1,11 @@
+#version 460
+#extension GL_NV_ray_tracing : enable
+rayPayloadInNV vec4 payloadIn;                             // ERROR, rayPayloadIn unsupported in this stage
+rayPayloadNV vec4 payload;                                 // ERROR, rayPayload unsuppoted in this stage
+uniform accelerationStructureNV accNV;
+void main()
+{
+    float e12 = gl_HitTNV;                                 // ERROR, unsupported builtin in stage
+    float e13 = gl_HitKindNV;                              // ERROR, unsupported builtin in stage
+    traceNV(accNV, 0, 0, 1, 1, 0, vec3(0.0f), 0.5f, vec3(1.0f), 0.75f, 0); // ERROR, unsupported
+}

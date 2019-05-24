@@ -1,0 +1,119 @@
+hlsl.function.frag
+ERROR: 0:24: 'fun1' : unknown variable 
+ERROR: 0:24: 'return' : type does not match, or is not convertible to, the function's return type 
+ERROR: 2 compilation errors.  No code generated.
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+ERROR: node is still EOpNull!
+0:2  Function Definition: fun0( ( temp 4-component vector of float)
+0:2    Function Parameters: 
+0:?     Sequence
+0:3      Branch: Return with expression
+0:3        Constant:
+0:3          1.000000
+0:3          1.000000
+0:3          1.000000
+0:3          1.000000
+0:7  Function Definition: fun2(vf4; ( temp uint)
+0:7    Function Parameters: 
+0:7      'col' ( in 4-component vector of float)
+0:?     Sequence
+0:8      Branch: Return with expression
+0:8        Constant:
+0:8          7 (const uint)
+0:12  Function Definition: fun4(u1;u1; ( temp 4-component vector of float)
+0:12    Function Parameters: 
+0:12      'id1' ( in uint)
+0:12      'id2' ( in uint)
+0:?     Sequence
+0:13      Branch: Return with expression
+0:13        Construct vec4 ( temp 4-component vector of float)
+0:13          Convert uint to float ( temp float)
+0:13            component-wise multiply ( temp uint)
+0:13              'id1' ( in uint)
+0:13              'id2' ( in uint)
+0:17  Function Definition: fun1(i1; ( temp 4-component vector of float)
+0:17    Function Parameters: 
+0:17      'index' ( in int)
+0:?     Sequence
+0:18      Sequence
+0:18        move second child to first child ( temp uint)
+0:18          'entityId' ( temp uint)
+0:18          Function Call: fun2(vf4; ( temp uint)
+0:18            Function Call: fun0( ( temp 4-component vector of float)
+0:19      Branch: Return with expression
+0:19        Function Call: fun4(u1;u1; ( temp 4-component vector of float)
+0:19          'entityId' ( temp uint)
+0:19          'entityId' ( temp uint)
+0:23  Function Definition: @main( ( temp int)
+0:23    Function Parameters: 
+0:23  Function Definition: main( ( temp void)
+0:23    Function Parameters: 
+0:?     Sequence
+0:23      move second child to first child ( temp int)
+0:?         '@entryPointOutput' (layout( location=0) out int)
+0:23        Function Call: @main( ( temp int)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out int)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+ERROR: node is still EOpNull!
+0:2  Function Definition: fun0( ( temp 4-component vector of float)
+0:2    Function Parameters: 
+0:?     Sequence
+0:3      Branch: Return with expression
+0:3        Constant:
+0:3          1.000000
+0:3          1.000000
+0:3          1.000000
+0:3          1.000000
+0:7  Function Definition: fun2(vf4; ( temp uint)
+0:7    Function Parameters: 
+0:7      'col' ( in 4-component vector of float)
+0:?     Sequence
+0:8      Branch: Return with expression
+0:8        Constant:
+0:8          7 (const uint)
+0:12  Function Definition: fun4(u1;u1; ( temp 4-component vector of float)
+0:12    Function Parameters: 
+0:12      'id1' ( in uint)
+0:12      'id2' ( in uint)
+0:?     Sequence
+0:13      Branch: Return with expression
+0:13        Construct vec4 ( temp 4-component vector of float)
+0:13          Convert uint to float ( temp float)
+0:13            component-wise multiply ( temp uint)
+0:13              'id1' ( in uint)
+0:13              'id2' ( in uint)
+0:17  Function Definition: fun1(i1; ( temp 4-component vector of float)
+0:17    Function Parameters: 
+0:17      'index' ( in int)
+0:?     Sequence
+0:18      Sequence
+0:18        move second child to first child ( temp uint)
+0:18          'entityId' ( temp uint)
+0:18          Function Call: fun2(vf4; ( temp uint)
+0:18            Function Call: fun0( ( temp 4-component vector of float)
+0:19      Branch: Return with expression
+0:19        Function Call: fun4(u1;u1; ( temp 4-component vector of float)
+0:19          'entityId' ( temp uint)
+0:19          'entityId' ( temp uint)
+0:23  Function Definition: @main( ( temp int)
+0:23    Function Parameters: 
+0:23  Function Definition: main( ( temp void)
+0:23    Function Parameters: 
+0:?     Sequence
+0:23      move second child to first child ( temp int)
+0:?         '@entryPointOutput' (layout( location=0) out int)
+0:23        Function Call: @main( ( temp int)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out int)
+
+SPIR-V is not generated for failed compile or link

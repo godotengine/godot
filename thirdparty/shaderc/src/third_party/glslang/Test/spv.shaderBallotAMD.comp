@@ -1,0 +1,204 @@
+#version 450
+
+#extension GL_ARB_gpu_shader_int64: enable
+#extension GL_AMD_gpu_shader_half_float: enable
+#extension GL_AMD_gpu_shader_int16: enable
+#extension GL_AMD_shader_ballot: enable
+
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+layout(binding = 0) buffer Buffers
+{
+    int     i;
+    uvec2   uv;
+    vec3    fv;
+    dvec4   dv;
+    int64_t i64;
+    u64vec2 u64v;
+    f16vec3 f16v;
+    i16vec4 i16v;
+    uint16_t u16;
+};
+
+void main()
+{
+    i    = minInvocationsAMD(i);
+    uv   = minInvocationsAMD(uv);
+    fv   = minInvocationsAMD(fv);
+    dv   = minInvocationsAMD(dv);
+    i64  = minInvocationsAMD(i64);
+    u64v = minInvocationsAMD(u64v);
+    f16v = minInvocationsAMD(f16v);
+    i16v = minInvocationsAMD(i16v);
+    u16  = minInvocationsAMD(u16);
+
+    i    = maxInvocationsAMD(i);
+    uv   = maxInvocationsAMD(uv);
+    fv   = maxInvocationsAMD(fv);
+    dv   = maxInvocationsAMD(dv);
+    i64  = maxInvocationsAMD(i64);
+    u64v = maxInvocationsAMD(u64v);
+    f16v = maxInvocationsAMD(f16v);
+    i16v = maxInvocationsAMD(i16v);
+    u16  = maxInvocationsAMD(u16);
+
+    i    = addInvocationsAMD(i);
+    uv   = addInvocationsAMD(uv);
+    fv   = addInvocationsAMD(fv);
+    dv   = addInvocationsAMD(dv);
+    i64  = addInvocationsAMD(i64);
+    u64v = addInvocationsAMD(u64v);
+    f16v = addInvocationsAMD(f16v);
+    i16v = addInvocationsAMD(i16v);
+    u16  = addInvocationsAMD(u16);
+
+	i    = minInvocationsNonUniformAMD(i);
+    uv   = minInvocationsNonUniformAMD(uv);
+    fv   = minInvocationsNonUniformAMD(fv);
+    dv   = minInvocationsNonUniformAMD(dv);
+    i64  = minInvocationsNonUniformAMD(i64);
+    u64v = minInvocationsNonUniformAMD(u64v);
+    f16v = minInvocationsNonUniformAMD(f16v);
+    i16v = minInvocationsNonUniformAMD(i16v);
+    u16  = minInvocationsNonUniformAMD(u16);
+
+    i    = maxInvocationsNonUniformAMD(i);
+    uv   = maxInvocationsNonUniformAMD(uv);
+    fv   = maxInvocationsNonUniformAMD(fv);
+    dv   = maxInvocationsNonUniformAMD(dv);
+    i64  = maxInvocationsNonUniformAMD(i64);
+    u64v = maxInvocationsNonUniformAMD(u64v);
+    f16v = maxInvocationsNonUniformAMD(f16v);
+    i16v = maxInvocationsNonUniformAMD(i16v);
+    u16  = maxInvocationsNonUniformAMD(u16);
+
+    i    = addInvocationsNonUniformAMD(i);
+    uv   = addInvocationsNonUniformAMD(uv);
+    fv   = addInvocationsNonUniformAMD(fv);
+    dv   = addInvocationsNonUniformAMD(dv);
+    i64  = addInvocationsNonUniformAMD(i64);
+    u64v = addInvocationsNonUniformAMD(u64v);
+    f16v = addInvocationsNonUniformAMD(f16v);
+    i16v = addInvocationsNonUniformAMD(i16v);
+    u16  = addInvocationsNonUniformAMD(u16);
+
+    i    = minInvocationsInclusiveScanAMD(i);
+    uv   = minInvocationsInclusiveScanAMD(uv);
+    fv   = minInvocationsInclusiveScanAMD(fv);
+    dv   = minInvocationsInclusiveScanAMD(dv);
+    i64  = minInvocationsInclusiveScanAMD(i64);
+    u64v = minInvocationsInclusiveScanAMD(u64v);
+    f16v = minInvocationsInclusiveScanAMD(f16v);
+    i16v = minInvocationsInclusiveScanAMD(i16v);
+    u16  = minInvocationsInclusiveScanAMD(u16);
+
+    i    = maxInvocationsInclusiveScanAMD(i);
+    uv   = maxInvocationsInclusiveScanAMD(uv);
+    fv   = maxInvocationsInclusiveScanAMD(fv);
+    dv   = maxInvocationsInclusiveScanAMD(dv);
+    i64  = maxInvocationsInclusiveScanAMD(i64);
+    u64v = maxInvocationsInclusiveScanAMD(u64v);
+    f16v = maxInvocationsInclusiveScanAMD(f16v);
+    i16v = maxInvocationsInclusiveScanAMD(i16v);
+    u16  = maxInvocationsInclusiveScanAMD(u16);
+
+    i    = addInvocationsInclusiveScanAMD(i);
+    uv   = addInvocationsInclusiveScanAMD(uv);
+    fv   = addInvocationsInclusiveScanAMD(fv);
+    dv   = addInvocationsInclusiveScanAMD(dv);
+    i64  = addInvocationsInclusiveScanAMD(i64);
+    u64v = addInvocationsInclusiveScanAMD(u64v);
+    f16v = addInvocationsInclusiveScanAMD(f16v);
+    i16v = addInvocationsInclusiveScanAMD(i16v);
+    u16  = addInvocationsInclusiveScanAMD(u16);
+
+    i    = minInvocationsExclusiveScanAMD(i);
+    uv   = minInvocationsExclusiveScanAMD(uv);
+    fv   = minInvocationsExclusiveScanAMD(fv);
+    dv   = minInvocationsExclusiveScanAMD(dv);
+    i64  = minInvocationsExclusiveScanAMD(i64);
+    u64v = minInvocationsExclusiveScanAMD(u64v);
+    f16v = minInvocationsExclusiveScanAMD(f16v);
+    i16v = minInvocationsExclusiveScanAMD(i16v);
+    u16  = minInvocationsExclusiveScanAMD(u16);
+
+    i    = maxInvocationsExclusiveScanAMD(i);
+    uv   = maxInvocationsExclusiveScanAMD(uv);
+    fv   = maxInvocationsExclusiveScanAMD(fv);
+    dv   = maxInvocationsExclusiveScanAMD(dv);
+    i64  = maxInvocationsExclusiveScanAMD(i64);
+    u64v = maxInvocationsExclusiveScanAMD(u64v);
+    f16v = maxInvocationsExclusiveScanAMD(f16v);
+    i16v = maxInvocationsExclusiveScanAMD(i16v);
+    u16  = maxInvocationsExclusiveScanAMD(u16);
+
+    i    = addInvocationsExclusiveScanAMD(i);
+    uv   = addInvocationsExclusiveScanAMD(uv);
+    fv   = addInvocationsExclusiveScanAMD(fv);
+    dv   = addInvocationsExclusiveScanAMD(dv);
+    i64  = addInvocationsExclusiveScanAMD(i64);
+    u64v = addInvocationsExclusiveScanAMD(u64v);
+    f16v = addInvocationsExclusiveScanAMD(f16v);
+    i16v = addInvocationsExclusiveScanAMD(i16v);
+    u16  = addInvocationsExclusiveScanAMD(u16);
+
+    i    = minInvocationsInclusiveScanNonUniformAMD(i);
+    uv   = minInvocationsInclusiveScanNonUniformAMD(uv);
+    fv   = minInvocationsInclusiveScanNonUniformAMD(fv);
+    dv   = minInvocationsInclusiveScanNonUniformAMD(dv);
+    i64  = minInvocationsInclusiveScanNonUniformAMD(i64);
+    u64v = minInvocationsInclusiveScanNonUniformAMD(u64v);
+    f16v = minInvocationsInclusiveScanNonUniformAMD(f16v);
+    i16v = minInvocationsInclusiveScanNonUniformAMD(i16v);
+    u16  = minInvocationsInclusiveScanNonUniformAMD(u16);
+
+    i    = maxInvocationsInclusiveScanNonUniformAMD(i);
+    uv   = maxInvocationsInclusiveScanNonUniformAMD(uv);
+    fv   = maxInvocationsInclusiveScanNonUniformAMD(fv);
+    dv   = maxInvocationsInclusiveScanNonUniformAMD(dv);
+    i64  = maxInvocationsInclusiveScanNonUniformAMD(i64);
+    u64v = maxInvocationsInclusiveScanNonUniformAMD(u64v);
+    f16v = maxInvocationsInclusiveScanNonUniformAMD(f16v);
+    i16v = maxInvocationsInclusiveScanNonUniformAMD(i16v);
+    u16  = maxInvocationsInclusiveScanNonUniformAMD(u16);
+
+    i    = addInvocationsInclusiveScanNonUniformAMD(i);
+    uv   = addInvocationsInclusiveScanNonUniformAMD(uv);
+    fv   = addInvocationsInclusiveScanNonUniformAMD(fv);
+    dv   = addInvocationsInclusiveScanNonUniformAMD(dv);
+    i64  = addInvocationsInclusiveScanNonUniformAMD(i64);
+    u64v = addInvocationsInclusiveScanNonUniformAMD(u64v);
+    f16v = addInvocationsInclusiveScanNonUniformAMD(f16v);
+    i16v = addInvocationsInclusiveScanNonUniformAMD(i16v);
+    u16  = addInvocationsInclusiveScanNonUniformAMD(u16);
+
+    i    = minInvocationsExclusiveScanNonUniformAMD(i);
+    uv   = minInvocationsExclusiveScanNonUniformAMD(uv);
+    fv   = minInvocationsExclusiveScanNonUniformAMD(fv);
+    dv   = minInvocationsExclusiveScanNonUniformAMD(dv);
+    i64  = minInvocationsExclusiveScanNonUniformAMD(i64);
+    u64v = minInvocationsExclusiveScanNonUniformAMD(u64v);
+    f16v = minInvocationsExclusiveScanNonUniformAMD(f16v);
+    i16v = minInvocationsExclusiveScanNonUniformAMD(i16v);
+    u16  = minInvocationsExclusiveScanNonUniformAMD(u16);
+
+    i    = maxInvocationsExclusiveScanNonUniformAMD(i);
+    uv   = maxInvocationsExclusiveScanNonUniformAMD(uv);
+    fv   = maxInvocationsExclusiveScanNonUniformAMD(fv);
+    dv   = maxInvocationsExclusiveScanNonUniformAMD(dv);
+    i64  = maxInvocationsExclusiveScanNonUniformAMD(i64);
+    u64v = maxInvocationsExclusiveScanNonUniformAMD(u64v);
+    f16v = maxInvocationsExclusiveScanNonUniformAMD(f16v);
+    i16v = maxInvocationsExclusiveScanNonUniformAMD(i16v);
+    u16  = maxInvocationsExclusiveScanNonUniformAMD(u16);
+
+    i    = addInvocationsExclusiveScanNonUniformAMD(i);
+    uv   = addInvocationsExclusiveScanNonUniformAMD(uv);
+    fv   = addInvocationsExclusiveScanNonUniformAMD(fv);
+    dv   = addInvocationsExclusiveScanNonUniformAMD(dv);
+    i64  = addInvocationsExclusiveScanNonUniformAMD(i64);
+    u64v = addInvocationsExclusiveScanNonUniformAMD(u64v);
+    f16v = addInvocationsExclusiveScanNonUniformAMD(f16v);
+    i16v = addInvocationsExclusiveScanNonUniformAMD(i16v);
+    u16  = addInvocationsExclusiveScanNonUniformAMD(u16);
+}

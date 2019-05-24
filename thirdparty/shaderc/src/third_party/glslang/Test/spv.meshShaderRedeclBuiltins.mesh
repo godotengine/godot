@@ -1,0 +1,73 @@
+#version 460
+
+#define MAX_VER  81
+#define MAX_PRIM 32
+
+#define BARRIER() \
+    memoryBarrierShared(); \
+    barrier();
+
+#extension GL_NV_mesh_shader : enable
+
+layout(local_size_x = 32) in;
+
+layout(max_vertices=MAX_VER) out;
+layout(max_primitives=MAX_PRIM) out;
+layout(triangles) out;
+
+// test use of redeclared single-view builtins in mesh shaders:
+
+out gl_MeshPerVertexNV {
+    vec4 gl_Position;
+    float gl_PointSize;
+    float gl_ClipDistance[4];
+    float gl_CullDistance[4];
+} gl_MeshVerticesNV[MAX_VER];                   // explicitly sized to MAX_VER
+
+perprimitiveNV out gl_MeshPerPrimitiveNV {
+    int gl_PrimitiveID;
+    int gl_Layer;
+    int gl_ViewportIndex;
+    int gl_ViewportMask[];
+} gl_MeshPrimitivesNV[];                        // implicitly sized to MAX_PRIM
+
+out uint gl_PrimitiveIndicesNV[MAX_PRIM*3];     // explicitly sized to MAX_PRIM * 3
+
+void main()
+{
+    uint iid = gl_LocalInvocationID.x;
+    uint gid = gl_WorkGroupID.x;
+
+    gl_MeshVerticesNV[iid].gl_Position = vec4(1.0);
+    gl_MeshVerticesNV[iid].gl_PointSize = 2.0;
+    gl_MeshVerticesNV[iid].gl_ClipDistance[3] = 3.0;
+    gl_MeshVerticesNV[iid].gl_CullDistance[2] = 4.0;
+
+    BARRIER();
+
+    gl_MeshVerticesNV[iid+1].gl_Position = gl_MeshVerticesNV[iid].gl_Position;
+    gl_MeshVerticesNV[iid+1].gl_PointSize = gl_MeshVerticesNV[iid].gl_PointSize;
+    gl_MeshVerticesNV[iid+1].gl_ClipDistance[3] = gl_MeshVerticesNV[iid].gl_ClipDistance[3];
+    gl_MeshVerticesNV[iid+1].gl_CullDistance[2] = gl_MeshVerticesNV[iid].gl_CullDistance[2];
+
+    BARRIER();
+
+    gl_MeshPrimitivesNV[iid].gl_PrimitiveID = 6;
+    gl_MeshPrimitivesNV[iid].gl_Layer = 7;
+    gl_MeshPrimitivesNV[iid].gl_ViewportIndex = 8;
+    gl_MeshPrimitivesNV[iid].gl_ViewportMask[0] = 9;
+
+    BARRIER();
+
+    gl_MeshPrimitivesNV[iid+1].gl_PrimitiveID = gl_MeshPrimitivesNV[iid].gl_PrimitiveID;
+    gl_MeshPrimitivesNV[iid+1].gl_Layer = gl_MeshPrimitivesNV[iid].gl_Layer;
+    gl_MeshPrimitivesNV[iid+1].gl_ViewportIndex = gl_MeshPrimitivesNV[iid].gl_ViewportIndex;
+    gl_MeshPrimitivesNV[iid+1].gl_ViewportMask[0] = gl_MeshPrimitivesNV[iid].gl_ViewportMask[0];
+
+    BARRIER();
+
+    // check bound limits
+    gl_PrimitiveIndicesNV[0] = 1;
+    gl_PrimitiveIndicesNV[(MAX_PRIM * 3) - 1] = 2;
+    gl_PrimitiveCountNV = MAX_PRIM * 3;
+}

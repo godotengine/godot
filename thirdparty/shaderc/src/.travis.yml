@@ -1,0 +1,125 @@
+# Linux Build Configuration for Travis
+
+language: cpp
+
+os:
+  - linux
+  - osx
+
+# Use Ubuntu 14.04 LTS (Trusty) as the Linux testing environment.
+sudo: required
+dist: trusty
+
+env:
+  - SHADERC_BUILD_TYPE=Release
+  - SHADERC_BUILD_TYPE=Debug
+
+compiler:
+  - clang
+  - gcc
+
+matrix:
+  fast_finish: true # Show final status immediately if a test fails.
+  exclude:
+    # Skip GCC builds on macOS.
+    - os: osx
+      compiler: gcc
+  include:
+    # Additional GCC builds for code coverage.
+    - os: linux
+      compiler: gcc
+      env: SHADERC_CODE_COVERAGE=ON
+    # Additional build using Android NDK
+    - env: BUILD_NDK=ON
+
+
+cache:
+  apt: true
+
+git:
+  depth: 1
+
+branches:
+  only:
+    - master
+
+addons:
+  apt:
+    packages:
+      - clang-3.6
+      - lcov
+
+before_install:
+  - if [[ "$BUILD_NDK" == "ON" ]]; then
+      git clone --depth=1 https://github.com/urho3d/android-ndk.git $HOME/android-ndk;
+      export ANDROID_NDK=$HOME/android-ndk;
+      git clone --depth=1 https://github.com/taka-no-me/android-cmake.git $HOME/android-cmake;
+      export TOOLCHAIN_PATH=$HOME/android-cmake/android.toolchain.cmake;
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py;
+      sudo python /tmp/get-pip.py;
+    fi
+
+install:
+  - pip install --user nose
+  - pip install --user cpp-coveralls
+
+  - export PATH=$HOME/.local/bin:$PATH # Make sure we can find the above Python packages
+    # Make sure that clang-3.6 is selected.
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$CC" == "clang" ]]; then
+      export CC=clang-3.6 CXX=clang++-3.6;
+    fi
+
+before_script:
+  - git clone --depth=1 https://github.com/google/googletest          third_party/googletest
+  - git clone --depth=1 https://github.com/google/glslang             third_party/glslang
+  - git clone --depth=1 https://github.com/KhronosGroup/SPIRV-Tools   third_party/spirv-tools
+  - git clone --depth=1 https://github.com/KhronosGroup/SPIRV-Headers third_party/spirv-headers
+
+script:
+  - mkdir build && cd build
+  - if [[ "$BUILD_NDK" == "ON" ]]; then
+      cmake -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_PATH}
+            -DANDROID_NATIVE_API_LEVEL=android-9
+            -DCMAKE_BUILD_TYPE=Release
+            -DANDROID_ABI="armeabi-v7a with NEON"
+            -DSHADERC_SKIP_TESTS=ON ..;
+    else
+      cmake -DCMAKE_BUILD_TYPE=${SHADERC_BUILD_TYPE:-Debug}
+            -DENABLE_CODE_COVERAGE=${SHADERC_CODE_COVERAGE:-OFF} ..;
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      export NPROC=`nproc`;
+    else
+      export NPROC=`sysctl -n hw.ncpu`;
+    fi
+  - make -j${NPROC}
+  - if [[ "$BUILD_NDK" != "ON" ]]; then ctest -j${NPROC} --output-on-failure; fi
+
+after_success:
+  # Collect coverage and push to coveralls.info.
+  # Ignore third party source code and tests.
+  - if [[ "$CC" == "gcc" && "$SHADERC_CODE_COVERAGE" == "ON" ]]; then
+      coveralls
+        --root ../
+        --build-root ./
+        --exclude-pattern '.+/third_party/'
+        --exclude-pattern '.+/.+_test\.cc'
+        --exclude-pattern '.+/CMakeFiles/'
+        --gcov /usr/bin/gcov
+        --gcov-options '\--long-file-names --preserve-paths'
+        --verbose;
+    fi
+
+
+notifications:
+  email:
+    recipients:
+      - antiagainst@google.com
+      - awoloszyn@google.com
+      - deki@google.com
+      - dneto@google.com
+      - qining@google.com
+    on_success: change
+    on_failure: always

@@ -1,0 +1,35 @@
+spv.RayCallable_Errors.rcall
+ERROR: 0:3: 'hitAttributeNV' : not supported in this stage: callable
+ERROR: 0:4: 'rayPayloadNV' : not supported in this stage: callable
+ERROR: 0:5: 'rayPayloadInNV' : not supported in this stage: callable
+ERROR: 0:9: 'gl_PrimitiveID' : undeclared identifier 
+ERROR: 0:9: '=' :  cannot convert from ' temp float' to ' temp highp int'
+ERROR: 0:10: 'gl_InstanceID' : undeclared identifier (Did you mean gl_InstanceIndex?)
+ERROR: 0:10: '=' :  cannot convert from ' temp float' to ' temp highp int'
+ERROR: 0:11: 'gl_InstanceCustomIndexNV' : undeclared identifier 
+ERROR: 0:11: '=' :  cannot convert from ' temp float' to ' temp highp int'
+ERROR: 0:12: 'gl_WorldRayOriginNV' : undeclared identifier 
+ERROR: 0:12: '=' :  cannot convert from ' temp float' to ' temp highp 3-component vector of float'
+ERROR: 0:13: 'gl_WorldRayDirectionNV' : undeclared identifier 
+ERROR: 0:13: '=' :  cannot convert from ' temp float' to ' temp highp 3-component vector of float'
+ERROR: 0:14: 'gl_ObjectRayOriginNV' : undeclared identifier 
+ERROR: 0:14: '=' :  cannot convert from ' temp float' to ' temp highp 3-component vector of float'
+ERROR: 0:15: 'gl_ObjectRayDirectionNV' : undeclared identifier 
+ERROR: 0:15: '=' :  cannot convert from ' temp float' to ' temp highp 3-component vector of float'
+ERROR: 0:16: 'gl_RayTminNV' : undeclared identifier 
+ERROR: 0:17: 'gl_RayTmaxNV' : undeclared identifier 
+ERROR: 0:18: 'gl_ObjectToWorldNV' : undeclared identifier 
+ERROR: 0:18: '=' :  cannot convert from ' temp float' to ' temp highp 4X3 matrix of float'
+ERROR: 0:19: 'gl_WorldToObjectNV' : undeclared identifier 
+ERROR: 0:19: '=' :  cannot convert from ' temp float' to ' temp highp 4X3 matrix of float'
+ERROR: 0:20: 'gl_HitTNV' : undeclared identifier 
+ERROR: 0:21: 'gl_HitKindNV' : undeclared identifier 
+ERROR: 0:22: 'gl_IncomingRayFlagsNV' : undeclared identifier 
+ERROR: 0:22: '=' :  cannot convert from ' temp float' to ' temp highp uint'
+ERROR: 0:23: 'reportIntersectionNV' : no matching overloaded function found 
+ERROR: 0:24: 'ignoreIntersectionNV' : no matching overloaded function found 
+ERROR: 0:25: 'terminateRayNV' : no matching overloaded function found 
+ERROR: 30 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

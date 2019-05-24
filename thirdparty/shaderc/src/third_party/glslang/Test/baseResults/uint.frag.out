@@ -1,0 +1,607 @@
+uint.frag
+ERROR: 0:2: 'uint' : must be qualified as flat in
+ERROR: 0:6: 'in' : cannot be bool 
+ERROR: 0:20: 'const' : non-matching or non-convertible constant type for const initializer 
+ERROR: 0:24: 'const' : non-matching or non-convertible constant type for const initializer 
+ERROR: 0:34: 'const' : non-matching or non-convertible constant type for const initializer 
+ERROR: 0:37: 'const' : non-matching or non-convertible constant type for const initializer 
+ERROR: 0:48: '=' :  cannot convert from ' const int' to ' temp mediump uint'
+ERROR: 0:51: '=' :  cannot convert from ' const int' to ' temp mediump uint'
+ERROR: 0:63: 'float' : type requires declaration of default precision qualifier 
+ERROR: 9 compilation errors.  No code generated.
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:15  Function Definition: main( ( global void)
+0:15    Function Parameters: 
+0:17    Sequence
+0:17      Sequence
+0:17        move second child to first child ( temp mediump int)
+0:17          'count' ( temp mediump int)
+0:17          Constant:
+0:17            1 (const int)
+0:19      Sequence
+0:19        move second child to first child ( temp mediump uint)
+0:19          'u' ( temp mediump uint)
+0:19          add ( temp mediump uint)
+0:19            direct index ( temp mediump uint)
+0:19              't' ( flat in mediump 2-component vector of uint)
+0:19              Constant:
+0:19                1 (const int)
+0:19            Constant:
+0:19              3 (const uint)
+0:27      Test condition and select ( temp void)
+0:27        Condition
+0:27        Constant:
+0:27          true (const bool)
+0:27        true case
+0:28        multiply second child into first child ( temp mediump int)
+0:28          'count' ( temp mediump int)
+0:28          Constant:
+0:28            2 (const int)
+0:29      Test condition and select ( temp void)
+0:29        Condition
+0:29        Constant:
+0:29          true (const bool)
+0:29        true case
+0:30        multiply second child into first child ( temp mediump int)
+0:30          'count' ( temp mediump int)
+0:30          Constant:
+0:30            3 (const int)
+0:31      Test condition and select ( temp void)
+0:31        Condition
+0:31        Constant:
+0:31          false (const bool)
+0:31        true case
+0:32        multiply second child into first child ( temp mediump int)
+0:32          'count' ( temp mediump int)
+0:32          Constant:
+0:32            5 (const int)
+0:41      Test condition and select ( temp void)
+0:41        Condition
+0:41        Constant:
+0:41          true (const bool)
+0:41        true case
+0:42        multiply second child into first child ( temp mediump int)
+0:42          'count' ( temp mediump int)
+0:42          Constant:
+0:42            7 (const int)
+0:43      Test condition and select ( temp void)
+0:43        Condition
+0:43        Constant:
+0:43          true (const bool)
+0:43        true case
+0:44        multiply second child into first child ( temp mediump int)
+0:44          'count' ( temp mediump int)
+0:44          Constant:
+0:44            11 (const int)
+0:45      Test condition and select ( temp void)
+0:45        Condition
+0:45        Constant:
+0:45          false (const bool)
+0:45        true case
+0:46        multiply second child into first child ( temp mediump int)
+0:46          'count' ( temp mediump int)
+0:46          Constant:
+0:46            13 (const int)
+0:49      Sequence
+0:49        move second child to first child ( temp mediump int)
+0:49          'shiftedii' ( temp mediump int)
+0:49          Constant:
+0:49            -1 (const int)
+0:50      Sequence
+0:50        move second child to first child ( temp mediump uint)
+0:50          'shiftedui' ( temp mediump uint)
+0:50          Constant:
+0:50            4194303 (const uint)
+0:52      Sequence
+0:52        move second child to first child ( temp mediump int)
+0:52          'shiftediu' ( temp mediump int)
+0:52          Constant:
+0:52            -1 (const int)
+0:53      Sequence
+0:53        move second child to first child ( temp mediump uint)
+0:53          'shifteduu' ( temp mediump uint)
+0:53          Constant:
+0:53            4194303 (const uint)
+0:55      Test condition and select ( temp void)
+0:55        Condition
+0:55        Compare Equal ( temp bool)
+0:55          'shiftedii' ( temp mediump int)
+0:55          'shiftediu' ( temp mediump int)
+0:55        true case
+0:56        move second child to first child ( temp mediump 4-component vector of uint)
+0:56          'c' ( out mediump 4-component vector of uint)
+0:56          texture ( global lowp 4-component vector of uint, operation at highp)
+0:56            'usampler' ( uniform lowp usampler2D)
+0:56            'tc' ( smooth in highp 2-component vector of float)
+0:57      Test condition and select ( temp void)
+0:57        Condition
+0:57        Compare Equal ( temp bool)
+0:57          'shiftedui' ( temp mediump uint)
+0:57          'shifteduu' ( temp mediump uint)
+0:57        true case
+0:58        move second child to first child ( temp mediump 4-component vector of uint)
+0:58          'c' ( out mediump 4-component vector of uint)
+0:58          texture ( global lowp 4-component vector of uint, operation at highp)
+0:58            'usampler' ( uniform lowp usampler2D)
+0:58            add ( temp highp 2-component vector of float)
+0:58              'tc' ( smooth in highp 2-component vector of float)
+0:58              Constant:
+0:58                1.000000
+0:59      Test condition and select ( temp void)
+0:59        Condition
+0:59        Compare Equal ( temp bool)
+0:59          'shiftedii' ( temp mediump int)
+0:59          Convert uint to int ( temp int)
+0:59            'shiftedui' ( temp mediump uint)
+0:59        true case
+0:60        move second child to first child ( temp mediump 4-component vector of uint)
+0:60          'c' ( out mediump 4-component vector of uint)
+0:60          texture ( global lowp 4-component vector of uint, operation at highp)
+0:60            'usampler' ( uniform lowp usampler2D)
+0:60            subtract ( temp highp 2-component vector of float)
+0:60              'tc' ( smooth in highp 2-component vector of float)
+0:60              Constant:
+0:60                2.000000
+0:60                2.000000
+0:62      Test condition and select ( temp void)
+0:62        Condition
+0:62        Compare Greater Than ( temp bool)
+0:62          direct index ( temp mediump uint)
+0:62            't' ( flat in mediump 2-component vector of uint)
+0:62            Constant:
+0:62              0 (const int)
+0:62          Constant:
+0:62            4 (const uint)
+0:62        true case
+0:63        Sequence
+0:63          Sequence
+0:63            move second child to first child ( temp mediump float)
+0:63              'af' ( temp mediump float)
+0:63              Convert uint to float ( temp mediump float)
+0:63                'u' ( temp mediump uint)
+0:64          Sequence
+0:64            move second child to first child ( temp bool)
+0:64              'ab' ( temp bool)
+0:64              Convert uint to bool ( temp bool)
+0:64                'u' ( temp mediump uint)
+0:65          Sequence
+0:65            move second child to first child ( temp mediump int)
+0:65              'ai' ( temp mediump int)
+0:65              Convert uint to int ( temp mediump int)
+0:65                'u' ( temp mediump uint)
+0:67          add second child into first child ( temp mediump 4-component vector of uint)
+0:67            'c' ( out mediump 4-component vector of uint)
+0:67            Construct uvec4 ( temp mediump 4-component vector of uint)
+0:67              Convert float to uint ( temp mediump uint)
+0:67                'af' ( temp mediump float)
+0:67              Convert bool to uint ( temp mediump uint)
+0:67                'ab' ( temp bool)
+0:67              Convert int to uint ( temp mediump uint)
+0:67                'ai' ( temp mediump int)
+0:67              Convert int to uint ( temp mediump uint)
+0:67                'count' ( temp mediump int)
+0:75      Test condition and select ( temp void)
+0:75        Condition
+0:75        Constant:
+0:75          true (const bool)
+0:75        true case
+0:76        multiply second child into first child ( temp mediump int)
+0:76          'count' ( temp mediump int)
+0:76          Constant:
+0:76            17 (const int)
+0:78      Test condition and select ( temp void)
+0:78        Condition
+0:78        Constant:
+0:78          false (const bool)
+0:78        true case
+0:79        multiply second child into first child ( temp mediump int)
+0:79          'count' ( temp mediump int)
+0:79          Constant:
+0:79            19 (const int)
+0:81      Test condition and select ( temp void)
+0:81        Condition
+0:81        Constant:
+0:81          true (const bool)
+0:81        true case
+0:82        multiply second child into first child ( temp mediump int)
+0:82          'count' ( temp mediump int)
+0:82          Constant:
+0:82            23 (const int)
+0:84      Test condition and select ( temp void)
+0:84        Condition
+0:84        Constant:
+0:84          true (const bool)
+0:84        true case
+0:85        multiply second child into first child ( temp mediump int)
+0:85          'count' ( temp mediump int)
+0:85          Constant:
+0:85            27 (const int)
+0:87      Sequence
+0:87        move second child to first child ( temp mediump uint)
+0:87          'mask1' ( temp mediump uint)
+0:87          Constant:
+0:87            161 (const uint)
+0:88      Sequence
+0:88        move second child to first child ( temp mediump uint)
+0:88          'mask2' ( temp mediump uint)
+0:88          Constant:
+0:88            2576 (const uint)
+0:89      Sequence
+0:89        move second child to first child ( temp mediump uint)
+0:89          'mask3' ( temp mediump uint)
+0:89          left-shift ( temp mediump uint)
+0:89            'mask1' ( temp mediump uint)
+0:89            Constant:
+0:89              4 (const int)
+0:90      Sequence
+0:90        move second child to first child ( temp mediump uint)
+0:90          'mask4' ( temp mediump uint)
+0:90          Constant:
+0:90            2737 (const uint)
+0:92      Test condition and select ( temp void)
+0:92        Condition
+0:92        Compare Equal ( temp bool)
+0:92          'mask3' ( temp mediump uint)
+0:92          'mask2' ( temp mediump uint)
+0:92        true case
+0:93        multiply second child into first child ( temp mediump int)
+0:93          'count' ( temp mediump int)
+0:93          Constant:
+0:93            100 (const int)
+0:95      Test condition and select ( temp void)
+0:95        Condition
+0:95        Compare Not Equal ( temp bool)
+0:95          bitwise and ( temp mediump uint)
+0:95            'mask3' ( temp mediump uint)
+0:95            'mask1' ( temp mediump uint)
+0:95          Constant:
+0:95            0 (const uint)
+0:95        true case
+0:96        multiply second child into first child ( temp mediump int)
+0:96          'count' ( temp mediump int)
+0:96          Constant:
+0:96            101 (const int)
+0:98      Test condition and select ( temp void)
+0:98        Condition
+0:98        Compare Equal ( temp bool)
+0:98          inclusive-or ( temp mediump uint)
+0:98            'mask1' ( temp mediump uint)
+0:98            'mask3' ( temp mediump uint)
+0:98          'mask4' ( temp mediump uint)
+0:98        true case
+0:99        multiply second child into first child ( temp mediump int)
+0:99          'count' ( temp mediump int)
+0:99          Constant:
+0:99            102 (const int)
+0:101      Test condition and select ( temp void)
+0:101        Condition
+0:101        Compare Equal ( temp bool)
+0:101          exclusive-or ( temp mediump uint)
+0:101            'mask1' ( temp mediump uint)
+0:101            'mask4' ( temp mediump uint)
+0:101          Constant:
+0:101            2576 (const uint)
+0:101        true case
+0:102        multiply second child into first child ( temp mediump int)
+0:102          'count' ( temp mediump int)
+0:102          Constant:
+0:102            103 (const int)
+0:104      add second child into first child ( temp mediump 4-component vector of uint)
+0:104        'c' ( out mediump 4-component vector of uint)
+0:104        Construct uvec4 ( temp mediump 4-component vector of uint)
+0:104          Convert int to uint ( temp mediump uint)
+0:104            'count' ( temp mediump int)
+0:?   Linker Objects
+0:?     'badu' ( smooth in mediump 2-component vector of uint)
+0:?     't' ( flat in mediump 2-component vector of uint)
+0:?     'f' ( smooth in highp float)
+0:?     'tc' ( smooth in highp 2-component vector of float)
+0:?     'bad' ( smooth in bool)
+0:?     'v' ( uniform mediump 4-component vector of uint)
+0:?     'i' ( uniform mediump int)
+0:?     'b' ( uniform bool)
+0:?     'c' ( out mediump 4-component vector of uint)
+0:?     'usampler' ( uniform lowp usampler2D)
+
+
+Linked fragment stage:
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:15  Function Definition: main( ( global void)
+0:15    Function Parameters: 
+0:17    Sequence
+0:17      Sequence
+0:17        move second child to first child ( temp mediump int)
+0:17          'count' ( temp mediump int)
+0:17          Constant:
+0:17            1 (const int)
+0:19      Sequence
+0:19        move second child to first child ( temp mediump uint)
+0:19          'u' ( temp mediump uint)
+0:19          add ( temp mediump uint)
+0:19            direct index ( temp mediump uint)
+0:19              't' ( flat in mediump 2-component vector of uint)
+0:19              Constant:
+0:19                1 (const int)
+0:19            Constant:
+0:19              3 (const uint)
+0:27      Test condition and select ( temp void)
+0:27        Condition
+0:27        Constant:
+0:27          true (const bool)
+0:27        true case
+0:28        multiply second child into first child ( temp mediump int)
+0:28          'count' ( temp mediump int)
+0:28          Constant:
+0:28            2 (const int)
+0:29      Test condition and select ( temp void)
+0:29        Condition
+0:29        Constant:
+0:29          true (const bool)
+0:29        true case
+0:30        multiply second child into first child ( temp mediump int)
+0:30          'count' ( temp mediump int)
+0:30          Constant:
+0:30            3 (const int)
+0:31      Test condition and select ( temp void)
+0:31        Condition
+0:31        Constant:
+0:31          false (const bool)
+0:31        true case
+0:32        multiply second child into first child ( temp mediump int)
+0:32          'count' ( temp mediump int)
+0:32          Constant:
+0:32            5 (const int)
+0:41      Test condition and select ( temp void)
+0:41        Condition
+0:41        Constant:
+0:41          true (const bool)
+0:41        true case
+0:42        multiply second child into first child ( temp mediump int)
+0:42          'count' ( temp mediump int)
+0:42          Constant:
+0:42            7 (const int)
+0:43      Test condition and select ( temp void)
+0:43        Condition
+0:43        Constant:
+0:43          true (const bool)
+0:43        true case
+0:44        multiply second child into first child ( temp mediump int)
+0:44          'count' ( temp mediump int)
+0:44          Constant:
+0:44            11 (const int)
+0:45      Test condition and select ( temp void)
+0:45        Condition
+0:45        Constant:
+0:45          false (const bool)
+0:45        true case
+0:46        multiply second child into first child ( temp mediump int)
+0:46          'count' ( temp mediump int)
+0:46          Constant:
+0:46            13 (const int)
+0:49      Sequence
+0:49        move second child to first child ( temp mediump int)
+0:49          'shiftedii' ( temp mediump int)
+0:49          Constant:
+0:49            -1 (const int)
+0:50      Sequence
+0:50        move second child to first child ( temp mediump uint)
+0:50          'shiftedui' ( temp mediump uint)
+0:50          Constant:
+0:50            4194303 (const uint)
+0:52      Sequence
+0:52        move second child to first child ( temp mediump int)
+0:52          'shiftediu' ( temp mediump int)
+0:52          Constant:
+0:52            -1 (const int)
+0:53      Sequence
+0:53        move second child to first child ( temp mediump uint)
+0:53          'shifteduu' ( temp mediump uint)
+0:53          Constant:
+0:53            4194303 (const uint)
+0:55      Test condition and select ( temp void)
+0:55        Condition
+0:55        Compare Equal ( temp bool)
+0:55          'shiftedii' ( temp mediump int)
+0:55          'shiftediu' ( temp mediump int)
+0:55        true case
+0:56        move second child to first child ( temp mediump 4-component vector of uint)
+0:56          'c' ( out mediump 4-component vector of uint)
+0:56          texture ( global lowp 4-component vector of uint, operation at highp)
+0:56            'usampler' ( uniform lowp usampler2D)
+0:56            'tc' ( smooth in highp 2-component vector of float)
+0:57      Test condition and select ( temp void)
+0:57        Condition
+0:57        Compare Equal ( temp bool)
+0:57          'shiftedui' ( temp mediump uint)
+0:57          'shifteduu' ( temp mediump uint)
+0:57        true case
+0:58        move second child to first child ( temp mediump 4-component vector of uint)
+0:58          'c' ( out mediump 4-component vector of uint)
+0:58          texture ( global lowp 4-component vector of uint, operation at highp)
+0:58            'usampler' ( uniform lowp usampler2D)
+0:58            add ( temp highp 2-component vector of float)
+0:58              'tc' ( smooth in highp 2-component vector of float)
+0:58              Constant:
+0:58                1.000000
+0:59      Test condition and select ( temp void)
+0:59        Condition
+0:59        Compare Equal ( temp bool)
+0:59          'shiftedii' ( temp mediump int)
+0:59          Convert uint to int ( temp int)
+0:59            'shiftedui' ( temp mediump uint)
+0:59        true case
+0:60        move second child to first child ( temp mediump 4-component vector of uint)
+0:60          'c' ( out mediump 4-component vector of uint)
+0:60          texture ( global lowp 4-component vector of uint, operation at highp)
+0:60            'usampler' ( uniform lowp usampler2D)
+0:60            subtract ( temp highp 2-component vector of float)
+0:60              'tc' ( smooth in highp 2-component vector of float)
+0:60              Constant:
+0:60                2.000000
+0:60                2.000000
+0:62      Test condition and select ( temp void)
+0:62        Condition
+0:62        Compare Greater Than ( temp bool)
+0:62          direct index ( temp mediump uint)
+0:62            't' ( flat in mediump 2-component vector of uint)
+0:62            Constant:
+0:62              0 (const int)
+0:62          Constant:
+0:62            4 (const uint)
+0:62        true case
+0:63        Sequence
+0:63          Sequence
+0:63            move second child to first child ( temp mediump float)
+0:63              'af' ( temp mediump float)
+0:63              Convert uint to float ( temp mediump float)
+0:63                'u' ( temp mediump uint)
+0:64          Sequence
+0:64            move second child to first child ( temp bool)
+0:64              'ab' ( temp bool)
+0:64              Convert uint to bool ( temp bool)
+0:64                'u' ( temp mediump uint)
+0:65          Sequence
+0:65            move second child to first child ( temp mediump int)
+0:65              'ai' ( temp mediump int)
+0:65              Convert uint to int ( temp mediump int)
+0:65                'u' ( temp mediump uint)
+0:67          add second child into first child ( temp mediump 4-component vector of uint)
+0:67            'c' ( out mediump 4-component vector of uint)
+0:67            Construct uvec4 ( temp mediump 4-component vector of uint)
+0:67              Convert float to uint ( temp mediump uint)
+0:67                'af' ( temp mediump float)
+0:67              Convert bool to uint ( temp mediump uint)
+0:67                'ab' ( temp bool)
+0:67              Convert int to uint ( temp mediump uint)
+0:67                'ai' ( temp mediump int)
+0:67              Convert int to uint ( temp mediump uint)
+0:67                'count' ( temp mediump int)
+0:75      Test condition and select ( temp void)
+0:75        Condition
+0:75        Constant:
+0:75          true (const bool)
+0:75        true case
+0:76        multiply second child into first child ( temp mediump int)
+0:76          'count' ( temp mediump int)
+0:76          Constant:
+0:76            17 (const int)
+0:78      Test condition and select ( temp void)
+0:78        Condition
+0:78        Constant:
+0:78          false (const bool)
+0:78        true case
+0:79        multiply second child into first child ( temp mediump int)
+0:79          'count' ( temp mediump int)
+0:79          Constant:
+0:79            19 (const int)
+0:81      Test condition and select ( temp void)
+0:81        Condition
+0:81        Constant:
+0:81          true (const bool)
+0:81        true case
+0:82        multiply second child into first child ( temp mediump int)
+0:82          'count' ( temp mediump int)
+0:82          Constant:
+0:82            23 (const int)
+0:84      Test condition and select ( temp void)
+0:84        Condition
+0:84        Constant:
+0:84          true (const bool)
+0:84        true case
+0:85        multiply second child into first child ( temp mediump int)
+0:85          'count' ( temp mediump int)
+0:85          Constant:
+0:85            27 (const int)
+0:87      Sequence
+0:87        move second child to first child ( temp mediump uint)
+0:87          'mask1' ( temp mediump uint)
+0:87          Constant:
+0:87            161 (const uint)
+0:88      Sequence
+0:88        move second child to first child ( temp mediump uint)
+0:88          'mask2' ( temp mediump uint)
+0:88          Constant:
+0:88            2576 (const uint)
+0:89      Sequence
+0:89        move second child to first child ( temp mediump uint)
+0:89          'mask3' ( temp mediump uint)
+0:89          left-shift ( temp mediump uint)
+0:89            'mask1' ( temp mediump uint)
+0:89            Constant:
+0:89              4 (const int)
+0:90      Sequence
+0:90        move second child to first child ( temp mediump uint)
+0:90          'mask4' ( temp mediump uint)
+0:90          Constant:
+0:90            2737 (const uint)
+0:92      Test condition and select ( temp void)
+0:92        Condition
+0:92        Compare Equal ( temp bool)
+0:92          'mask3' ( temp mediump uint)
+0:92          'mask2' ( temp mediump uint)
+0:92        true case
+0:93        multiply second child into first child ( temp mediump int)
+0:93          'count' ( temp mediump int)
+0:93          Constant:
+0:93            100 (const int)
+0:95      Test condition and select ( temp void)
+0:95        Condition
+0:95        Compare Not Equal ( temp bool)
+0:95          bitwise and ( temp mediump uint)
+0:95            'mask3' ( temp mediump uint)
+0:95            'mask1' ( temp mediump uint)
+0:95          Constant:
+0:95            0 (const uint)
+0:95        true case
+0:96        multiply second child into first child ( temp mediump int)
+0:96          'count' ( temp mediump int)
+0:96          Constant:
+0:96            101 (const int)
+0:98      Test condition and select ( temp void)
+0:98        Condition
+0:98        Compare Equal ( temp bool)
+0:98          inclusive-or ( temp mediump uint)
+0:98            'mask1' ( temp mediump uint)
+0:98            'mask3' ( temp mediump uint)
+0:98          'mask4' ( temp mediump uint)
+0:98        true case
+0:99        multiply second child into first child ( temp mediump int)
+0:99          'count' ( temp mediump int)
+0:99          Constant:
+0:99            102 (const int)
+0:101      Test condition and select ( temp void)
+0:101        Condition
+0:101        Compare Equal ( temp bool)
+0:101          exclusive-or ( temp mediump uint)
+0:101            'mask1' ( temp mediump uint)
+0:101            'mask4' ( temp mediump uint)
+0:101          Constant:
+0:101            2576 (const uint)
+0:101        true case
+0:102        multiply second child into first child ( temp mediump int)
+0:102          'count' ( temp mediump int)
+0:102          Constant:
+0:102            103 (const int)
+0:104      add second child into first child ( temp mediump 4-component vector of uint)
+0:104        'c' ( out mediump 4-component vector of uint)
+0:104        Construct uvec4 ( temp mediump 4-component vector of uint)
+0:104          Convert int to uint ( temp mediump uint)
+0:104            'count' ( temp mediump int)
+0:?   Linker Objects
+0:?     'badu' ( smooth in mediump 2-component vector of uint)
+0:?     't' ( flat in mediump 2-component vector of uint)
+0:?     'f' ( smooth in highp float)
+0:?     'tc' ( smooth in highp 2-component vector of float)
+0:?     'bad' ( smooth in bool)
+0:?     'v' ( uniform mediump 4-component vector of uint)
+0:?     'i' ( uniform mediump int)
+0:?     'b' ( uniform bool)
+0:?     'c' ( out mediump 4-component vector of uint)
+0:?     'usampler' ( uniform lowp usampler2D)
+

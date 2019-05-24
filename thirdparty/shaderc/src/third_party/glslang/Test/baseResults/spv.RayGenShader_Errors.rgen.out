@@ -1,0 +1,40 @@
+spv.RayGenShader_Errors.rgen
+ERROR: 0:3: 'hitAttributeNV' : not supported in this stage: ray-generation
+ERROR: 0:4: 'rayPayloadInNV' : not supported in this stage: ray-generation
+ERROR: 0:5: 'shaderRecordNV' : can only be used with a buffer 
+ERROR: 0:9: 'binding' : cannot be used with shaderRecordNV 
+ERROR: 0:12: 'set' : cannot be used with shaderRecordNV 
+ERROR: 0:23: 'accelerationStructureNV' : accelerationStructureNV can only be used in uniform variables or function parameters: a
+ERROR: 0:23: '=' :  cannot convert from ' const int' to ' temp accelerationStructureNV'
+ERROR: 0:24: 'gl_PrimitiveID' : undeclared identifier 
+ERROR: 0:24: '=' :  cannot convert from ' temp float' to ' temp highp int'
+ERROR: 0:25: 'gl_InstanceID' : undeclared identifier (Did you mean gl_InstanceIndex?)
+ERROR: 0:25: '=' :  cannot convert from ' temp float' to ' temp highp int'
+ERROR: 0:26: 'gl_InstanceCustomIndexNV' : undeclared identifier 
+ERROR: 0:26: '=' :  cannot convert from ' temp float' to ' temp highp int'
+ERROR: 0:27: 'gl_WorldRayOriginNV' : undeclared identifier 
+ERROR: 0:27: '=' :  cannot convert from ' temp float' to ' temp highp 3-component vector of float'
+ERROR: 0:28: 'gl_WorldRayDirectionNV' : undeclared identifier 
+ERROR: 0:28: '=' :  cannot convert from ' temp float' to ' temp highp 3-component vector of float'
+ERROR: 0:29: 'gl_ObjectRayOriginNV' : undeclared identifier 
+ERROR: 0:29: '=' :  cannot convert from ' temp float' to ' temp highp 3-component vector of float'
+ERROR: 0:30: 'gl_ObjectRayDirectionNV' : undeclared identifier 
+ERROR: 0:30: '=' :  cannot convert from ' temp float' to ' temp highp 3-component vector of float'
+ERROR: 0:31: 'gl_RayTminNV' : undeclared identifier 
+ERROR: 0:32: 'gl_RayTmaxNV' : undeclared identifier 
+ERROR: 0:33: 'gl_ObjectToWorldNV' : undeclared identifier 
+ERROR: 0:33: '=' :  cannot convert from ' temp float' to ' temp highp 4X3 matrix of float'
+ERROR: 0:34: 'gl_WorldToObjectNV' : undeclared identifier 
+ERROR: 0:34: '=' :  cannot convert from ' temp float' to ' temp highp 4X3 matrix of float'
+ERROR: 0:35: 'gl_HitTNV' : undeclared identifier 
+ERROR: 0:36: 'gl_HitKindNV' : undeclared identifier 
+ERROR: 0:37: 'reportIntersectionNV' : no matching overloaded function found 
+ERROR: 0:38: 'ignoreIntersectionNV' : no matching overloaded function found 
+ERROR: 0:39: 'terminateRayNV' : no matching overloaded function found 
+ERROR: 0:40: 'assign' :  l-value required "anon@3" (can't modify a shaderrecordnv qualified buffer)
+ERROR: 33 compilation errors.  No code generated.
+
+
+ERROR: Linking ray-generation stage: Only one shaderRecordNV buffer block is allowed per stage
+
+SPIR-V is not generated for failed compile or link

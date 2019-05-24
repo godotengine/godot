@@ -1,0 +1,233 @@
+precision.frag
+ERROR: 0:3: 'float' : type requires declaration of default precision qualifier 
+ERROR: 0:18: 'int' : cannot apply precision statement to this type; use 'float', 'int' or a sampler type 
+ERROR: 0:19: 'int' : cannot apply precision statement to this type; use 'float', 'int' or a sampler type 
+ERROR: 0:21: 'float' : cannot apply precision statement to this type; use 'float', 'int' or a sampler type 
+ERROR: 0:72: 'bool' : cannot apply precision statement to this type; use 'float', 'int' or a sampler type 
+ERROR: 0:75: 'structure' : cannot apply precision statement to this type; use 'float', 'int' or a sampler type 
+ERROR: 0:76: 'bool' : type cannot have precision qualifier 
+ERROR: 7 compilation errors.  No code generated.
+
+
+Shader version: 100
+ERROR: node is still EOpNull!
+0:5  Function Definition: foo(vf3; ( global lowp 2-component vector of float)
+0:5    Function Parameters: 
+0:5      'mv3' ( in mediump 3-component vector of float)
+0:?     Sequence
+0:8      Branch: Return with expression
+0:8        vector swizzle ( temp highp 2-component vector of float)
+0:8          'hv4' ( temp highp 4-component vector of float)
+0:8          Sequence
+0:8            Constant:
+0:8              0 (const int)
+0:8            Constant:
+0:8              1 (const int)
+0:25  Function Definition: main( ( global void)
+0:25    Function Parameters: 
+0:27    Sequence
+0:27      Sequence
+0:27        move second child to first child ( temp highp int)
+0:27          'sum' ( temp lowp int)
+0:27          add ( temp highp int)
+0:27            'global_medium' ( global mediump int)
+0:27            'global_high' ( global highp int)
+0:29      move second child to first child ( temp mediump 4-component vector of float)
+0:29        'gl_FragColor' ( fragColor mediump 4-component vector of float FragColor)
+0:29        Construct vec4 ( temp mediump 4-component vector of float)
+0:29          'color' ( smooth in mediump 3-component vector of float)
+0:29          Constant:
+0:29            1.000000
+0:32      add second child into first child ( temp highp int)
+0:32        'sum' ( temp lowp int)
+0:32        'level1_high' ( temp highp int)
+0:36      add second child into first child ( temp lowp int)
+0:36        'sum' ( temp lowp int)
+0:36        'level1_low' ( temp lowp int)
+0:41      Sequence
+0:41        move second child to first child ( temp mediump float)
+0:41          'd' ( temp lowp float)
+0:41          distance ( global mediump float)
+0:41            'arg1' ( temp lowp float)
+0:41            'arg2' ( temp mediump float)
+0:?       Sequence
+0:45        add second child into first child ( temp lowp int)
+0:45          'sum' ( temp lowp int)
+0:45          'level2_low' ( temp lowp int)
+0:49        add second child into first child ( temp highp int)
+0:49          'sum' ( temp lowp int)
+0:49          'level2_high' ( temp highp int)
+0:58        Loop with condition not tested first
+0:58          Loop Condition
+0:58          Constant:
+0:58            true (const bool)
+0:58          Loop Body
+0:51          Sequence
+0:51            Test condition and select ( temp void)
+0:51              Condition
+0:51              Constant:
+0:51                true (const bool)
+0:51              true case
+0:?               Sequence
+0:54                add second child into first child ( temp mediump int)
+0:54                  'sum' ( temp lowp int)
+0:54                  'level4_medium' ( temp mediump int)
+0:57            add second child into first child ( temp highp int)
+0:57              'sum' ( temp lowp int)
+0:57              'level3_high' ( temp highp int)
+0:60        add second child into first child ( temp highp int)
+0:60          'sum' ( temp lowp int)
+0:60          'level2_high2' ( temp highp int)
+0:63      add second child into first child ( temp lowp int)
+0:63        'sum' ( temp lowp int)
+0:63        'level1_low3' ( temp lowp int)
+0:65      add second child into first child ( temp lowp int)
+0:65        'sum' ( temp lowp int)
+0:65        add ( temp lowp int)
+0:65          Constant:
+0:65            4 (const int)
+0:65          direct index ( temp lowp int)
+0:65            add ( temp lowp 2-component vector of int)
+0:65              component-wise multiply ( temp lowp 2-component vector of int)
+0:65                Construct ivec2 ( temp lowp 2-component vector of int)
+0:65                  'level1_low3' ( temp lowp int)
+0:65                Construct ivec2 ( temp lowp 2-component vector of int)
+0:65                  'level1_high' ( temp highp int)
+0:65              Construct ivec2 ( temp lowp 2-component vector of int)
+0:65                Comma ( temp highp int)
+0:65                  'level1_low3' ( temp lowp int)
+0:65                  'level1_high' ( temp highp int)
+0:65            Constant:
+0:65              0 (const int)
+0:67      texture ( global lowp 4-component vector of float)
+0:67        'samplerLow' ( uniform lowp sampler2D)
+0:67        Constant:
+0:67          0.100000
+0:67          0.200000
+0:68      texture ( global mediump 4-component vector of float)
+0:68        'samplerMed' ( uniform mediump sampler2D)
+0:68        Constant:
+0:68          0.100000
+0:68          0.200000
+0:69      texture ( global highp 4-component vector of float)
+0:69        'samplerHigh' ( uniform highp sampler2D)
+0:69        Constant:
+0:69          0.100000
+0:69          0.200000
+0:?   Linker Objects
+0:?     'color' ( smooth in mediump 3-component vector of float)
+0:?     'global_medium' ( global mediump int)
+0:?     'samplerLow' ( uniform lowp sampler2D)
+0:?     'samplerMed' ( uniform mediump sampler2D)
+0:?     'samplerHigh' ( uniform highp sampler2D)
+0:?     'uint' ( global mediump 4-component vector of float)
+0:?     'global_high' ( global highp int)
+0:?     'b2' ( global mediump 2-component vector of bool)
+
+
+Linked fragment stage:
+
+
+Shader version: 100
+ERROR: node is still EOpNull!
+0:25  Function Definition: main( ( global void)
+0:25    Function Parameters: 
+0:27    Sequence
+0:27      Sequence
+0:27        move second child to first child ( temp highp int)
+0:27          'sum' ( temp lowp int)
+0:27          add ( temp highp int)
+0:27            'global_medium' ( global mediump int)
+0:27            'global_high' ( global highp int)
+0:29      move second child to first child ( temp mediump 4-component vector of float)
+0:29        'gl_FragColor' ( fragColor mediump 4-component vector of float FragColor)
+0:29        Construct vec4 ( temp mediump 4-component vector of float)
+0:29          'color' ( smooth in mediump 3-component vector of float)
+0:29          Constant:
+0:29            1.000000
+0:32      add second child into first child ( temp highp int)
+0:32        'sum' ( temp lowp int)
+0:32        'level1_high' ( temp highp int)
+0:36      add second child into first child ( temp lowp int)
+0:36        'sum' ( temp lowp int)
+0:36        'level1_low' ( temp lowp int)
+0:41      Sequence
+0:41        move second child to first child ( temp mediump float)
+0:41          'd' ( temp lowp float)
+0:41          distance ( global mediump float)
+0:41            'arg1' ( temp lowp float)
+0:41            'arg2' ( temp mediump float)
+0:?       Sequence
+0:45        add second child into first child ( temp lowp int)
+0:45          'sum' ( temp lowp int)
+0:45          'level2_low' ( temp lowp int)
+0:49        add second child into first child ( temp highp int)
+0:49          'sum' ( temp lowp int)
+0:49          'level2_high' ( temp highp int)
+0:58        Loop with condition not tested first
+0:58          Loop Condition
+0:58          Constant:
+0:58            true (const bool)
+0:58          Loop Body
+0:51          Sequence
+0:51            Test condition and select ( temp void)
+0:51              Condition
+0:51              Constant:
+0:51                true (const bool)
+0:51              true case
+0:?               Sequence
+0:54                add second child into first child ( temp mediump int)
+0:54                  'sum' ( temp lowp int)
+0:54                  'level4_medium' ( temp mediump int)
+0:57            add second child into first child ( temp highp int)
+0:57              'sum' ( temp lowp int)
+0:57              'level3_high' ( temp highp int)
+0:60        add second child into first child ( temp highp int)
+0:60          'sum' ( temp lowp int)
+0:60          'level2_high2' ( temp highp int)
+0:63      add second child into first child ( temp lowp int)
+0:63        'sum' ( temp lowp int)
+0:63        'level1_low3' ( temp lowp int)
+0:65      add second child into first child ( temp lowp int)
+0:65        'sum' ( temp lowp int)
+0:65        add ( temp lowp int)
+0:65          Constant:
+0:65            4 (const int)
+0:65          direct index ( temp lowp int)
+0:65            add ( temp lowp 2-component vector of int)
+0:65              component-wise multiply ( temp lowp 2-component vector of int)
+0:65                Construct ivec2 ( temp lowp 2-component vector of int)
+0:65                  'level1_low3' ( temp lowp int)
+0:65                Construct ivec2 ( temp lowp 2-component vector of int)
+0:65                  'level1_high' ( temp highp int)
+0:65              Construct ivec2 ( temp lowp 2-component vector of int)
+0:65                Comma ( temp highp int)
+0:65                  'level1_low3' ( temp lowp int)
+0:65                  'level1_high' ( temp highp int)
+0:65            Constant:
+0:65              0 (const int)
+0:67      texture ( global lowp 4-component vector of float)
+0:67        'samplerLow' ( uniform lowp sampler2D)
+0:67        Constant:
+0:67          0.100000
+0:67          0.200000
+0:68      texture ( global mediump 4-component vector of float)
+0:68        'samplerMed' ( uniform mediump sampler2D)
+0:68        Constant:
+0:68          0.100000
+0:68          0.200000
+0:69      texture ( global highp 4-component vector of float)
+0:69        'samplerHigh' ( uniform highp sampler2D)
+0:69        Constant:
+0:69          0.100000
+0:69          0.200000
+0:?   Linker Objects
+0:?     'color' ( smooth in mediump 3-component vector of float)
+0:?     'global_medium' ( global mediump int)
+0:?     'samplerLow' ( uniform lowp sampler2D)
+0:?     'samplerMed' ( uniform mediump sampler2D)
+0:?     'samplerHigh' ( uniform highp sampler2D)
+0:?     'uint' ( global mediump 4-component vector of float)
+0:?     'global_high' ( global highp int)
+0:?     'b2' ( global mediump 2-component vector of bool)
+

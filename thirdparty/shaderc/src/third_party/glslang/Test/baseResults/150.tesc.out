@@ -1,0 +1,1676 @@
+150.tesc
+Shader version: 150
+Requested GL_ARB_tessellation_shader
+vertices = 4
+0:? Sequence
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      Barrier ( global void)
+0:14      Sequence
+0:14        move second child to first child ( temp int)
+0:14          'a' ( temp int)
+0:14          Constant:
+0:14            5392 (const int)
+0:20      Sequence
+0:20        move second child to first child ( temp 4-component vector of float)
+0:20          'p' ( temp 4-component vector of float)
+0:20          gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:20            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:20              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:20              Constant:
+0:20                1 (const int)
+0:20            Constant:
+0:20              0 (const int)
+0:21      Sequence
+0:21        move second child to first child ( temp float)
+0:21          'ps' ( temp float)
+0:21          gl_PointSize: direct index for structure ( in float PointSize)
+0:21            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:21              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:21              Constant:
+0:21                1 (const int)
+0:21            Constant:
+0:21              1 (const int)
+0:22      Sequence
+0:22        move second child to first child ( temp float)
+0:22          'cd' ( temp float)
+0:22          direct index ( temp float ClipDistance)
+0:22            gl_ClipDistance: direct index for structure ( in unsized 3-element array of float ClipDistance)
+0:22              direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:22                'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:22                Constant:
+0:22                  1 (const int)
+0:22              Constant:
+0:22                2 (const int)
+0:22            Constant:
+0:22              2 (const int)
+0:24      Sequence
+0:24        move second child to first child ( temp int)
+0:24          'pvi' ( temp int)
+0:24          'gl_PatchVerticesIn' ( in int PatchVertices)
+0:25      Sequence
+0:25        move second child to first child ( temp int)
+0:25          'pid' ( temp int)
+0:25          'gl_PrimitiveID' ( in int PrimitiveID)
+0:26      Sequence
+0:26        move second child to first child ( temp int)
+0:26          'iid' ( temp int)
+0:26          'gl_InvocationID' ( in int InvocationID)
+0:28      move second child to first child ( temp 4-component vector of float)
+0:28        gl_Position: direct index for structure ( out 4-component vector of float Position)
+0:28          indirect index ( temp block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:28            'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:28            'gl_InvocationID' ( in int InvocationID)
+0:28          Constant:
+0:28            0 (const int)
+0:28        'p' ( temp 4-component vector of float)
+0:29      move second child to first child ( temp float)
+0:29        gl_PointSize: direct index for structure ( out float PointSize)
+0:29          indirect index ( temp block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:29            'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:29            'gl_InvocationID' ( in int InvocationID)
+0:29          Constant:
+0:29            1 (const int)
+0:29        'ps' ( temp float)
+0:30      move second child to first child ( temp float)
+0:30        direct index ( temp float ClipDistance)
+0:30          gl_ClipDistance: direct index for structure ( out unsized 2-element array of float ClipDistance)
+0:30            indirect index ( temp block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:30              'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:30              'gl_InvocationID' ( in int InvocationID)
+0:30            Constant:
+0:30              2 (const int)
+0:30          Constant:
+0:30            1 (const int)
+0:30        'cd' ( temp float)
+0:32      move second child to first child ( temp float)
+0:32        direct index ( patch temp float TessLevelOuter)
+0:32          'gl_TessLevelOuter' ( patch out 4-element array of float TessLevelOuter)
+0:32          Constant:
+0:32            3 (const int)
+0:32        Constant:
+0:32          3.200000
+0:33      move second child to first child ( temp float)
+0:33        direct index ( patch temp float TessLevelInner)
+0:33          'gl_TessLevelInner' ( patch out 2-element array of float TessLevelInner)
+0:33          Constant:
+0:33            1 (const int)
+0:33        Constant:
+0:33          1.300000
+0:?   Linker Objects
+0:?     'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:?     'outa' ( global 4-element array of int)
+0:?     'patchOut' ( patch out 4-component vector of float)
+
+150.tese
+ERROR: 0:12: 'barrier' : no matching overloaded function found 
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 150
+Requested GL_ARB_tessellation_shader
+input primitive = quads
+vertex spacing = fractional_odd_spacing
+triangle order = cw
+using point mode
+ERROR: node is still EOpNull!
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      Constant:
+0:12        0.000000
+0:14      Sequence
+0:14        move second child to first child ( temp int)
+0:14          'a' ( temp int)
+0:14          Constant:
+0:14            1512 (const int)
+0:22      Sequence
+0:22        move second child to first child ( temp 4-component vector of float)
+0:22          'p' ( temp 4-component vector of float)
+0:22          gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:22            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:22              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:22              Constant:
+0:22                1 (const int)
+0:22            Constant:
+0:22              0 (const int)
+0:23      Sequence
+0:23        move second child to first child ( temp float)
+0:23          'ps' ( temp float)
+0:23          gl_PointSize: direct index for structure ( in float PointSize)
+0:23            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:23              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:23              Constant:
+0:23                1 (const int)
+0:23            Constant:
+0:23              1 (const int)
+0:24      Sequence
+0:24        move second child to first child ( temp float)
+0:24          'cd' ( temp float)
+0:24          direct index ( temp float ClipDistance)
+0:24            gl_ClipDistance: direct index for structure ( in unsized 3-element array of float ClipDistance)
+0:24              direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:24                'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:24                Constant:
+0:24                  1 (const int)
+0:24              Constant:
+0:24                2 (const int)
+0:24            Constant:
+0:24              2 (const int)
+0:26      Sequence
+0:26        move second child to first child ( temp int)
+0:26          'pvi' ( temp int)
+0:26          'gl_PatchVerticesIn' ( in int PatchVertices)
+0:27      Sequence
+0:27        move second child to first child ( temp int)
+0:27          'pid' ( temp int)
+0:27          'gl_PrimitiveID' ( in int PrimitiveID)
+0:28      Sequence
+0:28        move second child to first child ( temp 3-component vector of float)
+0:28          'tc' ( temp 3-component vector of float)
+0:28          'gl_TessCoord' ( in 3-component vector of float TessCoord)
+0:29      Sequence
+0:29        move second child to first child ( temp float)
+0:29          'tlo' ( temp float)
+0:29          direct index ( patch temp float TessLevelOuter)
+0:29            'gl_TessLevelOuter' ( patch in 4-element array of float TessLevelOuter)
+0:29            Constant:
+0:29              3 (const int)
+0:30      Sequence
+0:30        move second child to first child ( temp float)
+0:30          'tli' ( temp float)
+0:30          direct index ( patch temp float TessLevelInner)
+0:30            'gl_TessLevelInner' ( patch in 2-element array of float TessLevelInner)
+0:30            Constant:
+0:30              1 (const int)
+0:32      move second child to first child ( temp 4-component vector of float)
+0:32        gl_Position: direct index for structure ( gl_Position 4-component vector of float Position)
+0:32          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:32          Constant:
+0:32            0 (const uint)
+0:32        'p' ( temp 4-component vector of float)
+0:33      move second child to first child ( temp float)
+0:33        gl_PointSize: direct index for structure ( gl_PointSize float PointSize)
+0:33          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:33          Constant:
+0:33            1 (const uint)
+0:33        'ps' ( temp float)
+0:34      move second child to first child ( temp float)
+0:34        direct index ( temp float ClipDistance)
+0:34          gl_ClipDistance: direct index for structure ( out unsized 3-element array of float ClipDistance)
+0:34            'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:34            Constant:
+0:34              2 (const uint)
+0:34          Constant:
+0:34            2 (const int)
+0:34        'cd' ( temp float)
+0:?   Linker Objects
+0:?     'patchIn' ( patch in 4-component vector of float)
+0:?     'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 3-element array of float ClipDistance gl_ClipDistance})
+
+400.tesc
+ERROR: 0:6: 'quads' : unrecognized layout identifier, or qualifier requires assignment (e.g., binding = 4) 
+ERROR: 0:7: 'ccw' : unrecognized layout identifier, or qualifier requires assignment (e.g., binding = 4) 
+ERROR: 0:8: 'fractional_even_spacing' : unrecognized layout identifier, or qualifier requires assignment (e.g., binding = 4) 
+ERROR: 0:10: 'patch' : can only use on output in tessellation-control shader 
+ERROR: 0:39: '' : tessellation control barrier() cannot be placed within flow control 
+ERROR: 0:41: '' : tessellation control barrier() cannot be placed within flow control 
+ERROR: 0:46: '' : tessellation control barrier() cannot be placed within flow control 
+ERROR: 0:51: '' : tessellation control barrier() cannot be placed within flow control 
+ERROR: 0:54: '' : tessellation control barrier() cannot be placed within flow control 
+ERROR: 0:61: '' : tessellation control barrier() cannot be placed after a return from main() 
+ERROR: 0:64: 'vertices' : can only apply to 'out' 
+ERROR: 0:65: 'vertices' : cannot change previously set layout value 
+ERROR: 0:69: '[' :  array index out of range '4'
+ERROR: 0:71: '' : tessellation control barrier() must be in main() 
+ERROR: 0:74: 'in' : type must be an array: ina
+ERROR: 0:76: '[]' : tessellation input array size must be gl_MaxPatchVertices or implicitly sized 
+ERROR: 0:83: 'location' : overlapping use of location 4
+ERROR: 0:87: 'location' : overlapping use of location 4
+ERROR: 0:104: '' : precise qualifier must appear first 
+ERROR: 0:105: '' : precise qualifier must appear first 
+ERROR: 0:105: '' : precise qualifier must appear first 
+ERROR: 0:109: 'gl_DeviceIndex' : required extension not requested: GL_EXT_device_group
+ERROR: 0:110: 'gl_ViewIndex' : required extension not requested: GL_EXT_multiview
+ERROR: 23 compilation errors.  No code generated.
+
+
+Shader version: 400
+Requested GL_ARB_separate_shader_objects
+Requested GL_EXT_device_group
+Requested GL_EXT_multiview
+vertices = 4
+ERROR: node is still EOpNull!
+0:13  Function Definition: main( ( global void)
+0:13    Function Parameters: 
+0:15    Sequence
+0:15      Barrier ( global void)
+0:17      Sequence
+0:17        move second child to first child ( temp int)
+0:17          'a' ( temp int)
+0:17          Constant:
+0:17            5392 (const int)
+0:23      Sequence
+0:23        move second child to first child ( temp 4-component vector of float)
+0:23          'p' ( temp 4-component vector of float)
+0:23          gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:23            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:23              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:23              Constant:
+0:23                1 (const int)
+0:23            Constant:
+0:23              0 (const int)
+0:24      Sequence
+0:24        move second child to first child ( temp float)
+0:24          'ps' ( temp float)
+0:24          gl_PointSize: direct index for structure ( in float PointSize)
+0:24            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:24              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:24              Constant:
+0:24                1 (const int)
+0:24            Constant:
+0:24              1 (const int)
+0:25      Sequence
+0:25        move second child to first child ( temp float)
+0:25          'cd' ( temp float)
+0:25          direct index ( temp float ClipDistance)
+0:25            gl_ClipDistance: direct index for structure ( in unsized 3-element array of float ClipDistance)
+0:25              direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:25                'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:25                Constant:
+0:25                  1 (const int)
+0:25              Constant:
+0:25                2 (const int)
+0:25            Constant:
+0:25              2 (const int)
+0:27      Sequence
+0:27        move second child to first child ( temp int)
+0:27          'pvi' ( temp int)
+0:27          'gl_PatchVerticesIn' ( in int PatchVertices)
+0:28      Sequence
+0:28        move second child to first child ( temp int)
+0:28          'pid' ( temp int)
+0:28          'gl_PrimitiveID' ( in int PrimitiveID)
+0:29      Sequence
+0:29        move second child to first child ( temp int)
+0:29          'iid' ( temp int)
+0:29          'gl_InvocationID' ( in int InvocationID)
+0:31      move second child to first child ( temp 4-component vector of float)
+0:31        gl_Position: direct index for structure ( out 4-component vector of float Position)
+0:31          indirect index ( temp block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:31            'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:31            'gl_InvocationID' ( in int InvocationID)
+0:31          Constant:
+0:31            0 (const int)
+0:31        'p' ( temp 4-component vector of float)
+0:32      move second child to first child ( temp float)
+0:32        gl_PointSize: direct index for structure ( out float PointSize)
+0:32          indirect index ( temp block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:32            'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:32            'gl_InvocationID' ( in int InvocationID)
+0:32          Constant:
+0:32            1 (const int)
+0:32        'ps' ( temp float)
+0:33      move second child to first child ( temp float)
+0:33        direct index ( temp float ClipDistance)
+0:33          gl_ClipDistance: direct index for structure ( out unsized 2-element array of float ClipDistance)
+0:33            indirect index ( temp block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:33              'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:33              'gl_InvocationID' ( in int InvocationID)
+0:33            Constant:
+0:33              2 (const int)
+0:33          Constant:
+0:33            1 (const int)
+0:33        'cd' ( temp float)
+0:35      move second child to first child ( temp float)
+0:35        direct index ( patch temp float TessLevelOuter)
+0:35          'gl_TessLevelOuter' ( patch out 4-element array of float TessLevelOuter)
+0:35          Constant:
+0:35            3 (const int)
+0:35        Constant:
+0:35          3.200000
+0:36      move second child to first child ( temp float)
+0:36        direct index ( patch temp float TessLevelInner)
+0:36          'gl_TessLevelInner' ( patch out 2-element array of float TessLevelInner)
+0:36          Constant:
+0:36            1 (const int)
+0:36        Constant:
+0:36          1.300000
+0:38      Test condition and select ( temp void)
+0:38        Condition
+0:38        Compare Greater Than ( temp bool)
+0:38          'a' ( temp int)
+0:38          Constant:
+0:38            10 (const int)
+0:38        true case
+0:39        Barrier ( global void)
+0:38        false case
+0:41        Barrier ( global void)
+0:43      Barrier ( global void)
+0:47      Loop with condition not tested first
+0:47        Loop Condition
+0:47        Compare Greater Than ( temp bool)
+0:47          'a' ( temp int)
+0:47          Constant:
+0:47            10 (const int)
+0:47        Loop Body
+0:46        Sequence
+0:46          Barrier ( global void)
+0:49      switch
+0:49      condition
+0:49        'a' ( temp int)
+0:49      body
+0:49        Sequence
+0:50          default: 
+0:?           Sequence
+0:51            Barrier ( global void)
+0:52            Branch: Break
+0:54      Test condition and select ( temp int)
+0:54        Condition
+0:54        Compare Less Than ( temp bool)
+0:54          'a' ( temp int)
+0:54          Constant:
+0:54            12 (const int)
+0:54        true case
+0:54        'a' ( temp int)
+0:54        false case
+0:54        Comma ( temp int)
+0:54          Barrier ( global void)
+0:54          'a' ( temp int)
+0:56      Sequence
+0:56        Barrier ( global void)
+0:59      Branch: Return
+0:61      Barrier ( global void)
+0:67  Function Definition: foo( ( global void)
+0:67    Function Parameters: 
+0:69    Sequence
+0:69      gl_PointSize: direct index for structure ( out float PointSize)
+0:69        direct index ( temp block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:69          'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:69          Constant:
+0:69            4 (const int)
+0:69        Constant:
+0:69          1 (const int)
+0:71      Barrier ( global void)
+0:91  Function Definition: foop( ( global void)
+0:91    Function Parameters: 
+0:?     Sequence
+0:95      multiply second child into first child ( temp 3-component vector of float)
+0:95        'pv3' ( noContraction temp 3-component vector of float)
+0:95        'pv3' ( noContraction temp 3-component vector of float)
+0:96      move second child to first child ( temp 3-component vector of float)
+0:96        'pv3' ( noContraction temp 3-component vector of float)
+0:96        fma ( global 3-component vector of float)
+0:96          'pv3' ( noContraction temp 3-component vector of float)
+0:96          'pv3' ( noContraction temp 3-component vector of float)
+0:96          'pv3' ( noContraction temp 3-component vector of float)
+0:97      move second child to first child ( temp double)
+0:97        'd' ( noContraction temp double)
+0:97        fma ( global double)
+0:97          'd' ( noContraction temp double)
+0:97          'd' ( noContraction temp double)
+0:97          'd' ( noContraction temp double)
+0:107  Function Definition: devi( ( global void)
+0:107    Function Parameters: 
+0:109    Sequence
+0:109      'gl_DeviceIndex' ( in int DeviceIndex)
+0:110      'gl_ViewIndex' ( in int ViewIndex)
+0:121  Function Definition: devie( ( global void)
+0:121    Function Parameters: 
+0:123    Sequence
+0:123      'gl_DeviceIndex' ( in int DeviceIndex)
+0:124      'gl_ViewIndex' ( in int ViewIndex)
+0:?   Linker Objects
+0:?     'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance})
+0:?     'outa' ( global 4-element array of int)
+0:?     'patchIn' ( patch in 4-component vector of float)
+0:?     'patchOut' ( patch out 4-component vector of float)
+0:?     'ina' ( in 2-component vector of float)
+0:?     'inb' ( in 32-element array of 2-component vector of float)
+0:?     'inc' ( in 32-element array of 2-component vector of float)
+0:?     'ind' ( in 32-element array of 2-component vector of float)
+0:?     'ivla' (layout( location=3) in 32-element array of 4-component vector of float)
+0:?     'ivlb' (layout( location=4) in 32-element array of 4-component vector of float)
+0:?     'ivlc' (layout( location=4) in 32-element array of 4-component vector of float)
+0:?     'ovla' (layout( location=3) out 4-element array of 4-component vector of float)
+0:?     'ovlb' (layout( location=4) out 4-element array of 4-component vector of float)
+0:?     'ovlc' (layout( location=4) out 4-element array of 4-component vector of float)
+0:?     'pv3' ( noContraction temp 3-component vector of float)
+0:?     'pinbi' ( patch out block{ out int a})
+0:?     'badOrder' ( invariant noContraction out 4-element array of 4-component vector of float)
+
+400.tese
+ERROR: 0:3: 'vertices' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:5: 'triangles' : cannot change previously set input primitive 
+ERROR: 0:6: 'isolines' : cannot change previously set input primitive 
+ERROR: 0:8: 'ccw' : cannot change previously set vertex order 
+ERROR: 0:12: 'equal_spacing' : cannot change previously set vertex spacing 
+ERROR: 0:13: 'fractional_even_spacing' : cannot change previously set vertex spacing 
+ERROR: 0:18: 'patch' : can only use on input in tessellation-evaluation shader 
+ERROR: 0:22: 'barrier' : no matching overloaded function found 
+ERROR: 0:47: 'patch' : cannot use interpolation qualifiers with patch 
+ERROR: 0:48: 'patch' : cannot use interpolation qualifiers with patch 
+ERROR: 0:49: 'patch' : cannot use interpolation qualifiers with patch 
+ERROR: 0:50: '' : can only have one auxiliary qualifier (centroid, patch, and sample) 
+ERROR: 0:59: 'gl_PerVertex' : can only redeclare a built-in block once, and before any use 
+ERROR: 0:64: 'quads' : cannot apply to 'out' 
+ERROR: 0:64: 'cw' : can only apply to 'in' 
+ERROR: 0:65: 'triangles' : cannot apply to 'out' 
+ERROR: 0:66: 'isolines' : cannot apply to 'out' 
+ERROR: 0:67: 'cw' : can only apply to 'in' 
+ERROR: 0:68: 'fractional_odd_spacing' : can only apply to 'in' 
+ERROR: 0:69: 'equal_spacing' : can only apply to 'in' 
+ERROR: 0:70: 'fractional_even_spacing' : can only apply to 'in' 
+ERROR: 0:71: 'point_mode' : can only apply to 'in' 
+ERROR: 0:73: 'in' : type must be an array: ina
+ERROR: 0:75: '[]' : tessellation input array size must be gl_MaxPatchVertices or implicitly sized 
+ERROR: 0:78: 'in' : type must be an array: bla
+ERROR: 0:86: '[]' : tessellation input array size must be gl_MaxPatchVertices or implicitly sized 
+ERROR: 0:96: 'location' : overlapping use of location 24
+ERROR: 0:99: 'location' : overlapping use of location 24
+ERROR: 0:101: 'gl_TessLevelOuter' : identifiers starting with "gl_" are reserved 
+ERROR: 0:109: 'gl_DeviceIndex' : required extension not requested: GL_EXT_device_group
+ERROR: 0:110: 'gl_ViewIndex' : required extension not requested: GL_EXT_multiview
+ERROR: 31 compilation errors.  No code generated.
+
+
+Shader version: 400
+Requested GL_ARB_separate_shader_objects
+Requested GL_EXT_device_group
+Requested GL_EXT_multiview
+input primitive = quads
+vertex spacing = fractional_odd_spacing
+triangle order = cw
+using point mode
+ERROR: node is still EOpNull!
+0:20  Function Definition: main( ( global void)
+0:20    Function Parameters: 
+0:22    Sequence
+0:22      Constant:
+0:22        0.000000
+0:24      Sequence
+0:24        move second child to first child ( temp int)
+0:24          'a' ( temp int)
+0:24          Constant:
+0:24            1512 (const int)
+0:32      Sequence
+0:32        move second child to first child ( temp 4-component vector of float)
+0:32          'p' ( temp 4-component vector of float)
+0:32          gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:32            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:32              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:32              Constant:
+0:32                1 (const int)
+0:32            Constant:
+0:32              0 (const int)
+0:33      Sequence
+0:33        move second child to first child ( temp float)
+0:33          'ps' ( temp float)
+0:33          gl_PointSize: direct index for structure ( in float PointSize)
+0:33            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:33              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:33              Constant:
+0:33                1 (const int)
+0:33            Constant:
+0:33              1 (const int)
+0:34      Sequence
+0:34        move second child to first child ( temp float)
+0:34          'cd' ( temp float)
+0:34          direct index ( temp float ClipDistance)
+0:34            gl_ClipDistance: direct index for structure ( in unsized 3-element array of float ClipDistance)
+0:34              direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:34                'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:34                Constant:
+0:34                  1 (const int)
+0:34              Constant:
+0:34                2 (const int)
+0:34            Constant:
+0:34              2 (const int)
+0:36      Sequence
+0:36        move second child to first child ( temp int)
+0:36          'pvi' ( temp int)
+0:36          'gl_PatchVerticesIn' ( in int PatchVertices)
+0:37      Sequence
+0:37        move second child to first child ( temp int)
+0:37          'pid' ( temp int)
+0:37          'gl_PrimitiveID' ( in int PrimitiveID)
+0:38      Sequence
+0:38        move second child to first child ( temp 3-component vector of float)
+0:38          'tc' ( temp 3-component vector of float)
+0:38          'gl_TessCoord' ( in 3-component vector of float TessCoord)
+0:39      Sequence
+0:39        move second child to first child ( temp float)
+0:39          'tlo' ( temp float)
+0:39          direct index ( patch temp float TessLevelOuter)
+0:39            'gl_TessLevelOuter' ( patch in 4-element array of float TessLevelOuter)
+0:39            Constant:
+0:39              3 (const int)
+0:40      Sequence
+0:40        move second child to first child ( temp float)
+0:40          'tli' ( temp float)
+0:40          direct index ( patch temp float TessLevelInner)
+0:40            'gl_TessLevelInner' ( patch in 2-element array of float TessLevelInner)
+0:40            Constant:
+0:40              1 (const int)
+0:42      move second child to first child ( temp 4-component vector of float)
+0:42        gl_Position: direct index for structure ( gl_Position 4-component vector of float Position)
+0:42          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:42          Constant:
+0:42            0 (const uint)
+0:42        'p' ( temp 4-component vector of float)
+0:43      move second child to first child ( temp float)
+0:43        gl_PointSize: direct index for structure ( gl_PointSize float PointSize)
+0:43          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:43          Constant:
+0:43            1 (const uint)
+0:43        'ps' ( temp float)
+0:44      move second child to first child ( temp float)
+0:44        direct index ( temp float ClipDistance)
+0:44          gl_ClipDistance: direct index for structure ( out unsized 3-element array of float ClipDistance)
+0:44            'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:44            Constant:
+0:44              2 (const uint)
+0:44          Constant:
+0:44            2 (const int)
+0:44        'cd' ( temp float)
+0:107  Function Definition: devi( ( global void)
+0:107    Function Parameters: 
+0:109    Sequence
+0:109      'gl_DeviceIndex' ( in int DeviceIndex)
+0:110      'gl_ViewIndex' ( in int ViewIndex)
+0:121  Function Definition: devie( ( global void)
+0:121    Function Parameters: 
+0:123    Sequence
+0:123      'gl_DeviceIndex' ( in int DeviceIndex)
+0:124      'gl_ViewIndex' ( in int ViewIndex)
+0:?   Linker Objects
+0:?     'patchIn' ( patch in 4-component vector of float)
+0:?     'patchOut' ( patch out 4-component vector of float)
+0:?     'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:?     'badp1' ( smooth patch in 4-component vector of float)
+0:?     'badp2' ( flat patch in 4-component vector of float)
+0:?     'badp3' ( noperspective patch in 4-component vector of float)
+0:?     'badp4' ( patch sample in 3-component vector of float)
+0:?     'gl_in' ( in 32-element array of block{ in 1-element array of float ClipDistance gl_ClipDistance})
+0:?     'ina' ( in 2-component vector of float)
+0:?     'inb' ( in 32-element array of 2-component vector of float)
+0:?     'inc' ( in 32-element array of 2-component vector of float)
+0:?     'ind' ( in 32-element array of 2-component vector of float)
+0:?     'bla' ( in block{ in int f})
+0:?     'blb' ( in 32-element array of block{ in int f})
+0:?     'blc' ( in 32-element array of block{ in int f})
+0:?     'bld' ( in 32-element array of block{ in int f})
+0:?     'ivla' (layout( location=23) in 32-element array of 4-component vector of float)
+0:?     'ivlb' (layout( location=24) in 32-element array of 4-component vector of float)
+0:?     'ivlc' (layout( location=24) in 32-element array of 4-component vector of float)
+0:?     'ovla' (layout( location=23) out 2-element array of 4-component vector of float)
+0:?     'ovlb' (layout( location=24) out 2-element array of 4-component vector of float)
+0:?     'pinbi' ( patch in block{ in int a})
+
+410.tesc
+ERROR: 0:4: 'length' :  array must first be sized by a redeclaration or layout qualifier
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 400
+vertices = -1
+ERROR: node is still EOpNull!
+0:8  Function Definition: main( ( global void)
+0:8    Function Parameters: 
+0:?   Linker Objects
+0:?     'gl_out' ( out unsized 1-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 1-element array of float ClipDistance gl_ClipDistance})
+0:?     'outa' ( global 1-element array of int)
+0:?     'patchOut' ( patch out 4-component vector of float)
+
+420.tesc
+ERROR: 0:7: 'vertices' : inconsistent output number of vertices for array size of gl_out
+ERROR: 0:11: 'vertices' : inconsistent output number of vertices for array size of a
+ERROR: 0:12: 'vertices' : inconsistent output number of vertices for array size of outb
+ERROR: 0:26: 'gl_PointSize' : no such field in structure 
+ERROR: 0:26: 'assign' :  cannot convert from ' temp float' to ' temp block{ out 4-component vector of float Position gl_Position}'
+ERROR: 0:29: 'out' : type must be an array: outf
+ERROR: 0:43: 'vertices' : must be greater than 0 
+ERROR: 7 compilation errors.  No code generated.
+
+
+Shader version: 420
+Requested GL_ARB_separate_shader_objects
+vertices = 4
+ERROR: node is still EOpNull!
+0:15  Function Definition: main( ( global void)
+0:15    Function Parameters: 
+0:17    Sequence
+0:17      Sequence
+0:17        move second child to first child ( temp 4-component vector of float)
+0:17          'p' ( temp 4-component vector of float)
+0:17          gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:17            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:17              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:17              Constant:
+0:17                1 (const int)
+0:17            Constant:
+0:17              0 (const int)
+0:18      Sequence
+0:18        move second child to first child ( temp float)
+0:18          'ps' ( temp float)
+0:18          gl_PointSize: direct index for structure ( in float PointSize)
+0:18            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:18              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:18              Constant:
+0:18                1 (const int)
+0:18            Constant:
+0:18              1 (const int)
+0:19      Sequence
+0:19        move second child to first child ( temp float)
+0:19          'cd' ( temp float)
+0:19          direct index ( temp float ClipDistance)
+0:19            gl_ClipDistance: direct index for structure ( in unsized 3-element array of float ClipDistance)
+0:19              direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:19                'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:19                Constant:
+0:19                  1 (const int)
+0:19              Constant:
+0:19                2 (const int)
+0:19            Constant:
+0:19              2 (const int)
+0:21      Sequence
+0:21        move second child to first child ( temp int)
+0:21          'pvi' ( temp int)
+0:21          'gl_PatchVerticesIn' ( in int PatchVertices)
+0:22      Sequence
+0:22        move second child to first child ( temp int)
+0:22          'pid' ( temp int)
+0:22          'gl_PrimitiveID' ( in int PrimitiveID)
+0:23      Sequence
+0:23        move second child to first child ( temp int)
+0:23          'iid' ( temp int)
+0:23          'gl_InvocationID' ( in int InvocationID)
+0:25      move second child to first child ( temp 4-component vector of float)
+0:25        gl_Position: direct index for structure ( out 4-component vector of float Position)
+0:25          indirect index ( temp block{ out 4-component vector of float Position gl_Position})
+0:25            'gl_out' ( out 3-element array of block{ out 4-component vector of float Position gl_Position})
+0:25            'gl_InvocationID' ( in int InvocationID)
+0:25          Constant:
+0:25            0 (const int)
+0:25        'p' ( temp 4-component vector of float)
+0:26      indirect index ( temp block{ out 4-component vector of float Position gl_Position})
+0:26        'gl_out' ( out 3-element array of block{ out 4-component vector of float Position gl_Position})
+0:26        'gl_InvocationID' ( in int InvocationID)
+0:34  Function Definition: foo( ( global void)
+0:34    Function Parameters: 
+0:36    Sequence
+0:36      Test condition and select ( temp void)
+0:36        Condition
+0:36        logical-or ( temp bool)
+0:36          Compare Not Equal ( temp bool)
+0:36            Constant:
+0:36              -0.625000
+0:36              -0.500000
+0:36              -0.375000
+0:36              -0.250000
+0:36              -0.375000
+0:36              -0.250000
+0:36              -0.125000
+0:36              0.000000
+0:36            direct index (layout( location=0) temp 2X4 matrix of double)
+0:36              'vs_tcs_first' (layout( location=0) in 32-element array of 2X4 matrix of double)
+0:36              Constant:
+0:36                0 (const int)
+0:37          Compare Not Equal ( temp bool)
+0:37            Constant:
+0:37              0.375000
+0:37              0.500000
+0:37              0.625000
+0:37              0.750000
+0:37              0.625000
+0:37              0.750000
+0:37              0.875000
+0:37              -0.625000
+0:37            direct index (layout( location=12) temp 2X4 matrix of double)
+0:37              'vs_tcs_last' (layout( location=12) in 32-element array of 2X4 matrix of double)
+0:37              Constant:
+0:37                0 (const int)
+0:36        true case is null
+0:?   Linker Objects
+0:?     'gl_out' ( out 3-element array of block{ out 4-component vector of float Position gl_Position})
+0:?     'a' ( out 3-element array of int)
+0:?     'outb' ( out 5-element array of int)
+0:?     'outc' ( out 4-element array of int)
+0:?     'outf' ( out float)
+0:?     'vs_tcs_first' (layout( location=0) in 32-element array of 2X4 matrix of double)
+0:?     'vs_tcs_last' (layout( location=12) in 32-element array of 2X4 matrix of double)
+
+420.tese
+ERROR: 0:7: '=' :  cannot convert from ' const 3-element array of float' to ' global 2-element array of float'
+ERROR: 0:8: 'initializer list' : wrong vector size (or rows in a matrix column):  temp 2-component vector of float
+ERROR: 0:9: 'initializer list' : wrong number of matrix columns:  temp 3X3 matrix of float
+ERROR: 0:10: 'initializer list' : wrong number of matrix columns:  temp 2X2 matrix of float
+ERROR: 0:25: 'initializer list' : wrong number of structure members 
+ERROR: 0:27: '=' :  cannot convert from ' const bool' to ' global int'
+ERROR: 0:28: 'constructor' :  cannot convert parameter 2 from ' const float' to ' temp 4-component vector of float'
+ERROR: 0:29: 'constructor' :  cannot convert parameter 2 from ' const 2X2 matrix of float' to ' const 4-component vector of float'
+ERROR: 0:29: ' const 2-element array of 4-component vector of float' : cannot construct with these arguments 
+ERROR: 0:29: '=' :  cannot convert from ' const float' to ' global 2-element array of 4-component vector of float'
+ERROR: 0:30: 'initializer list' : wrong number of matrix columns:  temp 4X2 matrix of float
+ERROR: 0:40: 'constructor' :  cannot convert parameter 1 from ' const structure{ global 4-component vector of float a,  global 4-component vector of float b}' to ' temp structure{ global float s,  global float t}'
+ERROR: 0:70: 'initializer list' : wrong number of structure members 
+ERROR: 13 compilation errors.  No code generated.
+
+
+Shader version: 420
+input primitive = none
+vertex spacing = none
+triangle order = none
+ERROR: node is still EOpNull!
+0:4  Sequence
+0:4    move second child to first child ( temp 2X2 matrix of float)
+0:4      'b' ( global 2X2 matrix of float)
+0:4      Constant:
+0:4        1.000000
+0:4        0.000000
+0:4        0.000000
+0:4        1.000000
+0:15  Sequence
+0:15    move second child to first child ( temp structure{ global float a,  global int b})
+0:15      'e' ( global structure{ global float a,  global int b})
+0:15      Constant:
+0:15        1.200000
+0:15        2 (const int)
+0:20  Sequence
+0:20    move second child to first child ( temp structure{ global float a,  global int b})
+0:20      'e2' ( global structure{ global float a,  global int b})
+0:20      Constant:
+0:20        1.000000
+0:20        3 (const int)
+0:42  Sequence
+0:42    move second child to first child ( temp 5-element array of float)
+0:42      'b5' ( global 5-element array of float)
+0:42      Constant:
+0:42        3.400000
+0:42        4.200000
+0:42        5.000000
+0:42        5.200000
+0:42        1.100000
+0:55  Sequence
+0:55    move second child to first child ( temp structure{ global int f})
+0:55      'single1' ( global structure{ global int f})
+0:55      Constant:
+0:55        10 (const int)
+0:58  Sequence
+0:58    move second child to first child ( temp structure{ global 2-component vector of uint v})
+0:58      'single2' ( global structure{ global 2-component vector of uint v})
+0:58      Constant:
+0:58        1 (const uint)
+0:58        2 (const uint)
+0:61  Sequence
+0:61    move second child to first child ( temp structure{ global structure{ global int f} s1})
+0:61      'single3' ( global structure{ global structure{ global int f} s1})
+0:61      Constant:
+0:61        3 (const int)
+0:64  Sequence
+0:64    move second child to first child ( temp structure{ global structure{ global 2-component vector of uint v} s1})
+0:64      'single4' ( global structure{ global structure{ global 2-component vector of uint v} s1})
+0:64      Constant:
+0:64        4 (const uint)
+0:64        5 (const uint)
+0:79  Sequence
+0:79    move second child to first child ( temp 3-component vector of float)
+0:79      'av3' ( global 3-component vector of float)
+0:79      Construct vec3 ( global 3-component vector of float)
+0:79        'vc1' ( global float)
+0:79        'vc2' ( global float)
+0:79        'vc3' ( global float)
+0:80  Sequence
+0:80    move second child to first child ( temp 3-component vector of float)
+0:80      'bv3' ( global 3-component vector of float)
+0:80      Construct vec3 ( temp 3-component vector of float)
+0:80        'vc1' ( global float)
+0:80        'vc2' ( global float)
+0:80        'vc3' ( global float)
+0:82  Function Definition: main( ( global void)
+0:82    Function Parameters: 
+0:84    Sequence
+0:84      MemoryBarrier ( global void)
+0:86      Test condition and select ( temp void)
+0:86        Condition
+0:86        Compare Equal ( temp bool)
+0:86          Constant:
+0:86            1 (const uint)
+0:86            2 (const uint)
+0:86            3.000000
+0:86            4.000000
+0:86            0.000000
+0:86            0.000000
+0:86            0.000000
+0:86            4.000000
+0:86            0.000000
+0:86            5.000000
+0:86            6.000000
+0:86            0.000000
+0:86            0.000000
+0:86            0.000000
+0:86            6.000000
+0:86            0.000000
+0:86          'curlybad1' ( temp structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:86        true case is null
+0:88      Test condition and select ( temp void)
+0:88        Condition
+0:88        Constant:
+0:88          true (const bool)
+0:88        true case is null
+0:?   Linker Objects
+0:?     'a' ( const 2X2 matrix of float)
+0:?       1.000000
+0:?       0.000000
+0:?       0.000000
+0:?       1.000000
+0:?     'b' ( global 2X2 matrix of float)
+0:?     'c' ( const 2X2 matrix of float)
+0:?       1.000000
+0:?       0.000000
+0:?       0.000000
+0:?       1.000000
+0:?     'a2' ( global 2-element array of float)
+0:?     'b2' ( global 2-component vector of float)
+0:?     'c2' ( global 3X3 matrix of float)
+0:?     'd' ( global 2X2 matrix of float)
+0:?     'e' ( global structure{ global float a,  global int b})
+0:?     'e2' ( global structure{ global float a,  global int b})
+0:?     'e3' ( global structure{ global float a,  global int b})
+0:?     'a3' ( global int)
+0:?     'b3' ( global 2-element array of 4-component vector of float)
+0:?     'b4' ( global 2-element array of 4-component vector of float)
+0:?     'c3' ( global 4X2 matrix of float)
+0:?     'd2' ( global unsized 1-element array of structure{ global float s,  global float t})
+0:?     'b5' ( global 5-element array of float)
+0:?     'single1' ( global structure{ global int f})
+0:?     'single2' ( global structure{ global 2-component vector of uint v})
+0:?     'single3' ( global structure{ global structure{ global int f} s1})
+0:?     'single4' ( global structure{ global structure{ global 2-component vector of uint v} s1})
+0:?     'constructed' ( const structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:?       1 (const uint)
+0:?       2 (const uint)
+0:?       3.000000
+0:?       4.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       4.000000
+0:?       0.000000
+0:?       5.000000
+0:?       6.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       6.000000
+0:?       0.000000
+0:?     'curlybad1' ( temp structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:?     'curlyInit' ( const structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:?       1 (const uint)
+0:?       2 (const uint)
+0:?       3.000000
+0:?       4.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       4.000000
+0:?       0.000000
+0:?       5.000000
+0:?       6.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       6.000000
+0:?       0.000000
+0:?     'vc1' ( global float)
+0:?     'vc2' ( global float)
+0:?     'vc3' ( global float)
+0:?     'av3' ( global 3-component vector of float)
+0:?     'bv3' ( global 3-component vector of float)
+
+
+Linked tessellation control stage:
+
+ERROR: Linking tessellation control stage: can't handle multiple entry points per stage
+ERROR: Linking tessellation control stage: Multiple function bodies in multiple compilation units for the same signature in the same stage:
+    main(
+ERROR: Linking tessellation control stage: can't handle multiple entry points per stage
+ERROR: Linking tessellation control stage: Contradictory layout vertices values
+ERROR: Linking tessellation control stage: Multiple function bodies in multiple compilation units for the same signature in the same stage:
+    main(
+ERROR: Linking tessellation control stage: Multiple function bodies in multiple compilation units for the same signature in the same stage:
+    main(
+ERROR: Linking tessellation control stage: Types must match:
+    outa: " global 4-element array of int" versus " global 1-element array of int"
+ERROR: Linking tessellation control stage: can't handle multiple entry points per stage
+ERROR: Linking tessellation control stage: Multiple function bodies in multiple compilation units for the same signature in the same stage:
+    main(
+ERROR: Linking tessellation control stage: Multiple function bodies in multiple compilation units for the same signature in the same stage:
+    main(
+ERROR: Linking tessellation control stage: Multiple function bodies in multiple compilation units for the same signature in the same stage:
+    foo(
+ERROR: Linking tessellation control stage: Multiple function bodies in multiple compilation units for the same signature in the same stage:
+    main(
+ERROR: Linking tessellation control stage: Types must match:
+    gl_out: " out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 2-element array of float ClipDistance gl_ClipDistance}" versus " out 3-element array of block{ out 4-component vector of float Position gl_Position}"
+
+Linked tessellation evaluation stage:
+
+ERROR: Linking tessellation evaluation stage: can't handle multiple entry points per stage
+ERROR: Linking tessellation evaluation stage: Multiple function bodies in multiple compilation units for the same signature in the same stage:
+    main(
+ERROR: Linking tessellation evaluation stage: can't handle multiple entry points per stage
+ERROR: Linking tessellation evaluation stage: Contradictory input layout primitives
+ERROR: Linking tessellation evaluation stage: Contradictory input vertex spacing
+ERROR: Linking tessellation evaluation stage: Contradictory triangle ordering
+ERROR: Linking tessellation evaluation stage: Multiple function bodies in multiple compilation units for the same signature in the same stage:
+    main(
+ERROR: Linking tessellation evaluation stage: Multiple function bodies in multiple compilation units for the same signature in the same stage:
+    main(
+
+Shader version: 420
+Requested GL_ARB_separate_shader_objects
+Requested GL_ARB_tessellation_shader
+Requested GL_EXT_device_group
+Requested GL_EXT_multiview
+vertices = 4
+0:? Sequence
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      Barrier ( global void)
+0:14      Sequence
+0:14        move second child to first child ( temp int)
+0:14          'a' ( temp int)
+0:14          Constant:
+0:14            5392 (const int)
+0:20      Sequence
+0:20        move second child to first child ( temp 4-component vector of float)
+0:20          'p' ( temp 4-component vector of float)
+0:20          gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:20            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:20              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:20              Constant:
+0:20                1 (const int)
+0:20            Constant:
+0:20              0 (const int)
+0:21      Sequence
+0:21        move second child to first child ( temp float)
+0:21          'ps' ( temp float)
+0:21          gl_PointSize: direct index for structure ( in float PointSize)
+0:21            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:21              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:21              Constant:
+0:21                1 (const int)
+0:21            Constant:
+0:21              1 (const int)
+0:22      Sequence
+0:22        move second child to first child ( temp float)
+0:22          'cd' ( temp float)
+0:22          direct index ( temp float ClipDistance)
+0:22            gl_ClipDistance: direct index for structure ( in 3-element array of float ClipDistance)
+0:22              direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:22                'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:22                Constant:
+0:22                  1 (const int)
+0:22              Constant:
+0:22                2 (const int)
+0:22            Constant:
+0:22              2 (const int)
+0:24      Sequence
+0:24        move second child to first child ( temp int)
+0:24          'pvi' ( temp int)
+0:24          'gl_PatchVerticesIn' ( in int PatchVertices)
+0:25      Sequence
+0:25        move second child to first child ( temp int)
+0:25          'pid' ( temp int)
+0:25          'gl_PrimitiveID' ( in int PrimitiveID)
+0:26      Sequence
+0:26        move second child to first child ( temp int)
+0:26          'iid' ( temp int)
+0:26          'gl_InvocationID' ( in int InvocationID)
+0:28      move second child to first child ( temp 4-component vector of float)
+0:28        gl_Position: direct index for structure ( out 4-component vector of float Position)
+0:28          indirect index ( temp block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out 2-element array of float ClipDistance gl_ClipDistance})
+0:28            'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out 2-element array of float ClipDistance gl_ClipDistance})
+0:28            'gl_InvocationID' ( in int InvocationID)
+0:28          Constant:
+0:28            0 (const int)
+0:28        'p' ( temp 4-component vector of float)
+0:29      move second child to first child ( temp float)
+0:29        gl_PointSize: direct index for structure ( out float PointSize)
+0:29          indirect index ( temp block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out 2-element array of float ClipDistance gl_ClipDistance})
+0:29            'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out 2-element array of float ClipDistance gl_ClipDistance})
+0:29            'gl_InvocationID' ( in int InvocationID)
+0:29          Constant:
+0:29            1 (const int)
+0:29        'ps' ( temp float)
+0:30      move second child to first child ( temp float)
+0:30        direct index ( temp float ClipDistance)
+0:30          gl_ClipDistance: direct index for structure ( out 2-element array of float ClipDistance)
+0:30            indirect index ( temp block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out 2-element array of float ClipDistance gl_ClipDistance})
+0:30              'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out 2-element array of float ClipDistance gl_ClipDistance})
+0:30              'gl_InvocationID' ( in int InvocationID)
+0:30            Constant:
+0:30              2 (const int)
+0:30          Constant:
+0:30            1 (const int)
+0:30        'cd' ( temp float)
+0:32      move second child to first child ( temp float)
+0:32        direct index ( patch temp float TessLevelOuter)
+0:32          'gl_TessLevelOuter' ( patch out 4-element array of float TessLevelOuter)
+0:32          Constant:
+0:32            3 (const int)
+0:32        Constant:
+0:32          3.200000
+0:33      move second child to first child ( temp float)
+0:33        direct index ( patch temp float TessLevelInner)
+0:33          'gl_TessLevelInner' ( patch out 2-element array of float TessLevelInner)
+0:33          Constant:
+0:33            1 (const int)
+0:33        Constant:
+0:33          1.300000
+0:13  Function Definition: main( ( global void)
+0:13    Function Parameters: 
+0:15    Sequence
+0:15      Barrier ( global void)
+0:17      Sequence
+0:17        move second child to first child ( temp int)
+0:17          'a' ( temp int)
+0:17          Constant:
+0:17            5392 (const int)
+0:23      Sequence
+0:23        move second child to first child ( temp 4-component vector of float)
+0:23          'p' ( temp 4-component vector of float)
+0:23          gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:23            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:23              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:23              Constant:
+0:23                1 (const int)
+0:23            Constant:
+0:23              0 (const int)
+0:24      Sequence
+0:24        move second child to first child ( temp float)
+0:24          'ps' ( temp float)
+0:24          gl_PointSize: direct index for structure ( in float PointSize)
+0:24            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:24              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:24              Constant:
+0:24                1 (const int)
+0:24            Constant:
+0:24              1 (const int)
+0:25      Sequence
+0:25        move second child to first child ( temp float)
+0:25          'cd' ( temp float)
+0:25          direct index ( temp float ClipDistance)
+0:25            gl_ClipDistance: direct index for structure ( in 3-element array of float ClipDistance)
+0:25              direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:25                'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:25                Constant:
+0:25                  1 (const int)
+0:25              Constant:
+0:25                2 (const int)
+0:25            Constant:
+0:25              2 (const int)
+0:27      Sequence
+0:27        move second child to first child ( temp int)
+0:27          'pvi' ( temp int)
+0:27          'gl_PatchVerticesIn' ( in int PatchVertices)
+0:28      Sequence
+0:28        move second child to first child ( temp int)
+0:28          'pid' ( temp int)
+0:28          'gl_PrimitiveID' ( in int PrimitiveID)
+0:29      Sequence
+0:29        move second child to first child ( temp int)
+0:29          'iid' ( temp int)
+0:29          'gl_InvocationID' ( in int InvocationID)
+0:31      move second child to first child ( temp 4-component vector of float)
+0:31        gl_Position: direct index for structure ( out 4-component vector of float Position)
+0:31          indirect index ( temp block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out 2-element array of float ClipDistance gl_ClipDistance})
+0:31            'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out 2-element array of float ClipDistance gl_ClipDistance})
+0:31            'gl_InvocationID' ( in int InvocationID)
+0:31          Constant:
+0:31            0 (const int)
+0:31        'p' ( temp 4-component vector of float)
+0:32      move second child to first child ( temp float)
+0:32        gl_PointSize: direct index for structure ( out float PointSize)
+0:32          indirect index ( temp block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out 2-element array of float ClipDistance gl_ClipDistance})
+0:32            'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out 2-element array of float ClipDistance gl_ClipDistance})
+0:32            'gl_InvocationID' ( in int InvocationID)
+0:32          Constant:
+0:32            1 (const int)
+0:32        'ps' ( temp float)
+0:33      move second child to first child ( temp float)
+0:33        direct index ( temp float ClipDistance)
+0:33          gl_ClipDistance: direct index for structure ( out 2-element array of float ClipDistance)
+0:33            indirect index ( temp block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out 2-element array of float ClipDistance gl_ClipDistance})
+0:33              'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out 2-element array of float ClipDistance gl_ClipDistance})
+0:33              'gl_InvocationID' ( in int InvocationID)
+0:33            Constant:
+0:33              2 (const int)
+0:33          Constant:
+0:33            1 (const int)
+0:33        'cd' ( temp float)
+0:35      move second child to first child ( temp float)
+0:35        direct index ( patch temp float TessLevelOuter)
+0:35          'gl_TessLevelOuter' ( patch out 4-element array of float TessLevelOuter)
+0:35          Constant:
+0:35            3 (const int)
+0:35        Constant:
+0:35          3.200000
+0:36      move second child to first child ( temp float)
+0:36        direct index ( patch temp float TessLevelInner)
+0:36          'gl_TessLevelInner' ( patch out 2-element array of float TessLevelInner)
+0:36          Constant:
+0:36            1 (const int)
+0:36        Constant:
+0:36          1.300000
+0:38      Test condition and select ( temp void)
+0:38        Condition
+0:38        Compare Greater Than ( temp bool)
+0:38          'a' ( temp int)
+0:38          Constant:
+0:38            10 (const int)
+0:38        true case
+0:39        Barrier ( global void)
+0:38        false case
+0:41        Barrier ( global void)
+0:43      Barrier ( global void)
+0:47      Loop with condition not tested first
+0:47        Loop Condition
+0:47        Compare Greater Than ( temp bool)
+0:47          'a' ( temp int)
+0:47          Constant:
+0:47            10 (const int)
+0:47        Loop Body
+0:46        Sequence
+0:46          Barrier ( global void)
+0:49      switch
+0:49      condition
+0:49        'a' ( temp int)
+0:49      body
+0:49        Sequence
+0:50          default: 
+0:?           Sequence
+0:51            Barrier ( global void)
+0:52            Branch: Break
+0:54      Test condition and select ( temp int)
+0:54        Condition
+0:54        Compare Less Than ( temp bool)
+0:54          'a' ( temp int)
+0:54          Constant:
+0:54            12 (const int)
+0:54        true case
+0:54        'a' ( temp int)
+0:54        false case
+0:54        Comma ( temp int)
+0:54          Barrier ( global void)
+0:54          'a' ( temp int)
+0:56      Sequence
+0:56        Barrier ( global void)
+0:59      Branch: Return
+0:61      Barrier ( global void)
+0:8  Function Definition: main( ( global void)
+0:8    Function Parameters: 
+0:15  Function Definition: main( ( global void)
+0:15    Function Parameters: 
+0:17    Sequence
+0:17      Sequence
+0:17        move second child to first child ( temp 4-component vector of float)
+0:17          'p' ( temp 4-component vector of float)
+0:17          gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:17            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:17              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:17              Constant:
+0:17                1 (const int)
+0:17            Constant:
+0:17              0 (const int)
+0:18      Sequence
+0:18        move second child to first child ( temp float)
+0:18          'ps' ( temp float)
+0:18          gl_PointSize: direct index for structure ( in float PointSize)
+0:18            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:18              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:18              Constant:
+0:18                1 (const int)
+0:18            Constant:
+0:18              1 (const int)
+0:19      Sequence
+0:19        move second child to first child ( temp float)
+0:19          'cd' ( temp float)
+0:19          direct index ( temp float ClipDistance)
+0:19            gl_ClipDistance: direct index for structure ( in 3-element array of float ClipDistance)
+0:19              direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:19                'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:19                Constant:
+0:19                  1 (const int)
+0:19              Constant:
+0:19                2 (const int)
+0:19            Constant:
+0:19              2 (const int)
+0:21      Sequence
+0:21        move second child to first child ( temp int)
+0:21          'pvi' ( temp int)
+0:21          'gl_PatchVerticesIn' ( in int PatchVertices)
+0:22      Sequence
+0:22        move second child to first child ( temp int)
+0:22          'pid' ( temp int)
+0:22          'gl_PrimitiveID' ( in int PrimitiveID)
+0:23      Sequence
+0:23        move second child to first child ( temp int)
+0:23          'iid' ( temp int)
+0:23          'gl_InvocationID' ( in int InvocationID)
+0:25      move second child to first child ( temp 4-component vector of float)
+0:25        gl_Position: direct index for structure ( out 4-component vector of float Position)
+0:25          indirect index ( temp block{ out 4-component vector of float Position gl_Position})
+0:25            'gl_out' ( out 3-element array of block{ out 4-component vector of float Position gl_Position})
+0:25            'gl_InvocationID' ( in int InvocationID)
+0:25          Constant:
+0:25            0 (const int)
+0:25        'p' ( temp 4-component vector of float)
+0:26      indirect index ( temp block{ out 4-component vector of float Position gl_Position})
+0:26        'gl_out' ( out 3-element array of block{ out 4-component vector of float Position gl_Position})
+0:26        'gl_InvocationID' ( in int InvocationID)
+0:?   Linker Objects
+0:?     'gl_out' ( out 4-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out 2-element array of float ClipDistance gl_ClipDistance})
+0:?     'outa' ( global 4-element array of int)
+0:?     'patchOut' ( patch out 4-component vector of float)
+0:?     'patchIn' ( patch in 4-component vector of float)
+0:?     'ina' ( in 2-component vector of float)
+0:?     'inb' ( in 32-element array of 2-component vector of float)
+0:?     'inc' ( in 32-element array of 2-component vector of float)
+0:?     'ind' ( in 32-element array of 2-component vector of float)
+0:?     'ivla' (layout( location=3) in 32-element array of 4-component vector of float)
+0:?     'ivlb' (layout( location=4) in 32-element array of 4-component vector of float)
+0:?     'ivlc' (layout( location=4) in 32-element array of 4-component vector of float)
+0:?     'ovla' (layout( location=3) out 4-element array of 4-component vector of float)
+0:?     'ovlb' (layout( location=4) out 4-element array of 4-component vector of float)
+0:?     'ovlc' (layout( location=4) out 4-element array of 4-component vector of float)
+0:?     'pv3' ( noContraction temp 3-component vector of float)
+0:?     'pinbi' ( patch out block{ out int a})
+0:?     'badOrder' ( invariant noContraction out 4-element array of 4-component vector of float)
+0:?     'a' ( out 3-element array of int)
+0:?     'outb' ( out 5-element array of int)
+0:?     'outc' ( out 4-element array of int)
+0:?     'outf' ( out float)
+0:?     'vs_tcs_first' (layout( location=0) in 32-element array of 2X4 matrix of double)
+0:?     'vs_tcs_last' (layout( location=12) in 32-element array of 2X4 matrix of double)
+Shader version: 420
+Requested GL_ARB_separate_shader_objects
+Requested GL_ARB_tessellation_shader
+Requested GL_EXT_device_group
+Requested GL_EXT_multiview
+input primitive = quads
+vertex spacing = fractional_odd_spacing
+triangle order = cw
+using point mode
+ERROR: node is still EOpNull!
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      Constant:
+0:12        0.000000
+0:14      Sequence
+0:14        move second child to first child ( temp int)
+0:14          'a' ( temp int)
+0:14          Constant:
+0:14            1512 (const int)
+0:22      Sequence
+0:22        move second child to first child ( temp 4-component vector of float)
+0:22          'p' ( temp 4-component vector of float)
+0:22          gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:22            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:22              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:22              Constant:
+0:22                1 (const int)
+0:22            Constant:
+0:22              0 (const int)
+0:23      Sequence
+0:23        move second child to first child ( temp float)
+0:23          'ps' ( temp float)
+0:23          gl_PointSize: direct index for structure ( in float PointSize)
+0:23            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:23              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:23              Constant:
+0:23                1 (const int)
+0:23            Constant:
+0:23              1 (const int)
+0:24      Sequence
+0:24        move second child to first child ( temp float)
+0:24          'cd' ( temp float)
+0:24          direct index ( temp float ClipDistance)
+0:24            gl_ClipDistance: direct index for structure ( in 3-element array of float ClipDistance)
+0:24              direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:24                'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:24                Constant:
+0:24                  1 (const int)
+0:24              Constant:
+0:24                2 (const int)
+0:24            Constant:
+0:24              2 (const int)
+0:26      Sequence
+0:26        move second child to first child ( temp int)
+0:26          'pvi' ( temp int)
+0:26          'gl_PatchVerticesIn' ( in int PatchVertices)
+0:27      Sequence
+0:27        move second child to first child ( temp int)
+0:27          'pid' ( temp int)
+0:27          'gl_PrimitiveID' ( in int PrimitiveID)
+0:28      Sequence
+0:28        move second child to first child ( temp 3-component vector of float)
+0:28          'tc' ( temp 3-component vector of float)
+0:28          'gl_TessCoord' ( in 3-component vector of float TessCoord)
+0:29      Sequence
+0:29        move second child to first child ( temp float)
+0:29          'tlo' ( temp float)
+0:29          direct index ( patch temp float TessLevelOuter)
+0:29            'gl_TessLevelOuter' ( patch in 4-element array of float TessLevelOuter)
+0:29            Constant:
+0:29              3 (const int)
+0:30      Sequence
+0:30        move second child to first child ( temp float)
+0:30          'tli' ( temp float)
+0:30          direct index ( patch temp float TessLevelInner)
+0:30            'gl_TessLevelInner' ( patch in 2-element array of float TessLevelInner)
+0:30            Constant:
+0:30              1 (const int)
+0:32      move second child to first child ( temp 4-component vector of float)
+0:32        gl_Position: direct index for structure ( gl_Position 4-component vector of float Position)
+0:32          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 3-element array of float ClipDistance gl_ClipDistance})
+0:32          Constant:
+0:32            0 (const uint)
+0:32        'p' ( temp 4-component vector of float)
+0:33      move second child to first child ( temp float)
+0:33        gl_PointSize: direct index for structure ( gl_PointSize float PointSize)
+0:33          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 3-element array of float ClipDistance gl_ClipDistance})
+0:33          Constant:
+0:33            1 (const uint)
+0:33        'ps' ( temp float)
+0:34      move second child to first child ( temp float)
+0:34        direct index ( temp float ClipDistance)
+0:34          gl_ClipDistance: direct index for structure ( out 3-element array of float ClipDistance)
+0:34            'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 3-element array of float ClipDistance gl_ClipDistance})
+0:34            Constant:
+0:34              2 (const uint)
+0:34          Constant:
+0:34            2 (const int)
+0:34        'cd' ( temp float)
+0:20  Function Definition: main( ( global void)
+0:20    Function Parameters: 
+0:22    Sequence
+0:22      Constant:
+0:22        0.000000
+0:24      Sequence
+0:24        move second child to first child ( temp int)
+0:24          'a' ( temp int)
+0:24          Constant:
+0:24            1512 (const int)
+0:32      Sequence
+0:32        move second child to first child ( temp 4-component vector of float)
+0:32          'p' ( temp 4-component vector of float)
+0:32          gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:32            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:32              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:32              Constant:
+0:32                1 (const int)
+0:32            Constant:
+0:32              0 (const int)
+0:33      Sequence
+0:33        move second child to first child ( temp float)
+0:33          'ps' ( temp float)
+0:33          gl_PointSize: direct index for structure ( in float PointSize)
+0:33            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:33              'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:33              Constant:
+0:33                1 (const int)
+0:33            Constant:
+0:33              1 (const int)
+0:34      Sequence
+0:34        move second child to first child ( temp float)
+0:34          'cd' ( temp float)
+0:34          direct index ( temp float ClipDistance)
+0:34            gl_ClipDistance: direct index for structure ( in 3-element array of float ClipDistance)
+0:34              direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:34                'gl_in' ( in 32-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:34                Constant:
+0:34                  1 (const int)
+0:34              Constant:
+0:34                2 (const int)
+0:34            Constant:
+0:34              2 (const int)
+0:36      Sequence
+0:36        move second child to first child ( temp int)
+0:36          'pvi' ( temp int)
+0:36          'gl_PatchVerticesIn' ( in int PatchVertices)
+0:37      Sequence
+0:37        move second child to first child ( temp int)
+0:37          'pid' ( temp int)
+0:37          'gl_PrimitiveID' ( in int PrimitiveID)
+0:38      Sequence
+0:38        move second child to first child ( temp 3-component vector of float)
+0:38          'tc' ( temp 3-component vector of float)
+0:38          'gl_TessCoord' ( in 3-component vector of float TessCoord)
+0:39      Sequence
+0:39        move second child to first child ( temp float)
+0:39          'tlo' ( temp float)
+0:39          direct index ( patch temp float TessLevelOuter)
+0:39            'gl_TessLevelOuter' ( patch in 4-element array of float TessLevelOuter)
+0:39            Constant:
+0:39              3 (const int)
+0:40      Sequence
+0:40        move second child to first child ( temp float)
+0:40          'tli' ( temp float)
+0:40          direct index ( patch temp float TessLevelInner)
+0:40            'gl_TessLevelInner' ( patch in 2-element array of float TessLevelInner)
+0:40            Constant:
+0:40              1 (const int)
+0:42      move second child to first child ( temp 4-component vector of float)
+0:42        gl_Position: direct index for structure ( gl_Position 4-component vector of float Position)
+0:42          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 3-element array of float ClipDistance gl_ClipDistance})
+0:42          Constant:
+0:42            0 (const uint)
+0:42        'p' ( temp 4-component vector of float)
+0:43      move second child to first child ( temp float)
+0:43        gl_PointSize: direct index for structure ( gl_PointSize float PointSize)
+0:43          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 3-element array of float ClipDistance gl_ClipDistance})
+0:43          Constant:
+0:43            1 (const uint)
+0:43        'ps' ( temp float)
+0:44      move second child to first child ( temp float)
+0:44        direct index ( temp float ClipDistance)
+0:44          gl_ClipDistance: direct index for structure ( out 3-element array of float ClipDistance)
+0:44            'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 3-element array of float ClipDistance gl_ClipDistance})
+0:44            Constant:
+0:44              2 (const uint)
+0:44          Constant:
+0:44            2 (const int)
+0:44        'cd' ( temp float)
+0:4  Sequence
+0:4    move second child to first child ( temp 2X2 matrix of float)
+0:4      'b' ( global 2X2 matrix of float)
+0:4      Constant:
+0:4        1.000000
+0:4        0.000000
+0:4        0.000000
+0:4        1.000000
+0:15  Sequence
+0:15    move second child to first child ( temp structure{ global float a,  global int b})
+0:15      'e' ( global structure{ global float a,  global int b})
+0:15      Constant:
+0:15        1.200000
+0:15        2 (const int)
+0:20  Sequence
+0:20    move second child to first child ( temp structure{ global float a,  global int b})
+0:20      'e2' ( global structure{ global float a,  global int b})
+0:20      Constant:
+0:20        1.000000
+0:20        3 (const int)
+0:42  Sequence
+0:42    move second child to first child ( temp 5-element array of float)
+0:42      'b5' ( global 5-element array of float)
+0:42      Constant:
+0:42        3.400000
+0:42        4.200000
+0:42        5.000000
+0:42        5.200000
+0:42        1.100000
+0:55  Sequence
+0:55    move second child to first child ( temp structure{ global int f})
+0:55      'single1' ( global structure{ global int f})
+0:55      Constant:
+0:55        10 (const int)
+0:58  Sequence
+0:58    move second child to first child ( temp structure{ global 2-component vector of uint v})
+0:58      'single2' ( global structure{ global 2-component vector of uint v})
+0:58      Constant:
+0:58        1 (const uint)
+0:58        2 (const uint)
+0:61  Sequence
+0:61    move second child to first child ( temp structure{ global structure{ global int f} s1})
+0:61      'single3' ( global structure{ global structure{ global int f} s1})
+0:61      Constant:
+0:61        3 (const int)
+0:64  Sequence
+0:64    move second child to first child ( temp structure{ global structure{ global 2-component vector of uint v} s1})
+0:64      'single4' ( global structure{ global structure{ global 2-component vector of uint v} s1})
+0:64      Constant:
+0:64        4 (const uint)
+0:64        5 (const uint)
+0:79  Sequence
+0:79    move second child to first child ( temp 3-component vector of float)
+0:79      'av3' ( global 3-component vector of float)
+0:79      Construct vec3 ( global 3-component vector of float)
+0:79        'vc1' ( global float)
+0:79        'vc2' ( global float)
+0:79        'vc3' ( global float)
+0:80  Sequence
+0:80    move second child to first child ( temp 3-component vector of float)
+0:80      'bv3' ( global 3-component vector of float)
+0:80      Construct vec3 ( temp 3-component vector of float)
+0:80        'vc1' ( global float)
+0:80        'vc2' ( global float)
+0:80        'vc3' ( global float)
+0:82  Function Definition: main( ( global void)
+0:82    Function Parameters: 
+0:84    Sequence
+0:84      MemoryBarrier ( global void)
+0:86      Test condition and select ( temp void)
+0:86        Condition
+0:86        Compare Equal ( temp bool)
+0:86          Constant:
+0:86            1 (const uint)
+0:86            2 (const uint)
+0:86            3.000000
+0:86            4.000000
+0:86            0.000000
+0:86            0.000000
+0:86            0.000000
+0:86            4.000000
+0:86            0.000000
+0:86            5.000000
+0:86            6.000000
+0:86            0.000000
+0:86            0.000000
+0:86            0.000000
+0:86            6.000000
+0:86            0.000000
+0:86          'curlybad1' ( temp structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:86        true case is null
+0:88      Test condition and select ( temp void)
+0:88        Condition
+0:88        Constant:
+0:88          true (const bool)
+0:88        true case is null
+0:?   Linker Objects
+0:?     'patchIn' ( patch in 4-component vector of float)
+0:?     'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 3-element array of float ClipDistance gl_ClipDistance})
+0:?     'patchOut' ( patch out 4-component vector of float)
+0:?     'badp1' ( smooth patch in 4-component vector of float)
+0:?     'badp2' ( flat patch in 4-component vector of float)
+0:?     'badp3' ( noperspective patch in 4-component vector of float)
+0:?     'badp4' ( patch sample in 3-component vector of float)
+0:?     'gl_in' ( in 32-element array of block{ in 1-element array of float ClipDistance gl_ClipDistance})
+0:?     'ina' ( in 2-component vector of float)
+0:?     'inb' ( in 32-element array of 2-component vector of float)
+0:?     'inc' ( in 32-element array of 2-component vector of float)
+0:?     'ind' ( in 32-element array of 2-component vector of float)
+0:?     'bla' ( in block{ in int f})
+0:?     'blb' ( in 32-element array of block{ in int f})
+0:?     'blc' ( in 32-element array of block{ in int f})
+0:?     'bld' ( in 32-element array of block{ in int f})
+0:?     'ivla' (layout( location=23) in 32-element array of 4-component vector of float)
+0:?     'ivlb' (layout( location=24) in 32-element array of 4-component vector of float)
+0:?     'ivlc' (layout( location=24) in 32-element array of 4-component vector of float)
+0:?     'ovla' (layout( location=23) out 2-element array of 4-component vector of float)
+0:?     'ovlb' (layout( location=24) out 2-element array of 4-component vector of float)
+0:?     'pinbi' ( patch in block{ in int a})
+0:?     'a' ( const 2X2 matrix of float)
+0:?       1.000000
+0:?       0.000000
+0:?       0.000000
+0:?       1.000000
+0:?     'b' ( global 2X2 matrix of float)
+0:?     'c' ( const 2X2 matrix of float)
+0:?       1.000000
+0:?       0.000000
+0:?       0.000000
+0:?       1.000000
+0:?     'a2' ( global 2-element array of float)
+0:?     'b2' ( global 2-component vector of float)
+0:?     'c2' ( global 3X3 matrix of float)
+0:?     'd' ( global 2X2 matrix of float)
+0:?     'e' ( global structure{ global float a,  global int b})
+0:?     'e2' ( global structure{ global float a,  global int b})
+0:?     'e3' ( global structure{ global float a,  global int b})
+0:?     'a3' ( global int)
+0:?     'b3' ( global 2-element array of 4-component vector of float)
+0:?     'b4' ( global 2-element array of 4-component vector of float)
+0:?     'c3' ( global 4X2 matrix of float)
+0:?     'd2' ( global 1-element array of structure{ global float s,  global float t})
+0:?     'b5' ( global 5-element array of float)
+0:?     'single1' ( global structure{ global int f})
+0:?     'single2' ( global structure{ global 2-component vector of uint v})
+0:?     'single3' ( global structure{ global structure{ global int f} s1})
+0:?     'single4' ( global structure{ global structure{ global 2-component vector of uint v} s1})
+0:?     'constructed' ( const structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:?       1 (const uint)
+0:?       2 (const uint)
+0:?       3.000000
+0:?       4.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       4.000000
+0:?       0.000000
+0:?       5.000000
+0:?       6.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       6.000000
+0:?       0.000000
+0:?     'curlybad1' ( temp structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:?     'curlyInit' ( const structure{ global 2-component vector of uint uv2,  global 2-element array of structure{ global float f,  global 2X3 matrix of float m23} s})
+0:?       1 (const uint)
+0:?       2 (const uint)
+0:?       3.000000
+0:?       4.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       4.000000
+0:?       0.000000
+0:?       5.000000
+0:?       6.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       6.000000
+0:?       0.000000
+0:?     'vc1' ( global float)
+0:?     'vc2' ( global float)
+0:?     'vc3' ( global float)
+0:?     'av3' ( global 3-component vector of float)
+0:?     'bv3' ( global 3-component vector of float)
+

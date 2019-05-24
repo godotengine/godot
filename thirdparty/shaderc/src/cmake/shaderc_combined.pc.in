@@ -1,0 +1,12 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: shaderc
+Description: Tools and libraries for Vulkan shader compilation
+Version: @CURRENT_VERSION@
+URL: https://github.com/google/shaderc
+
+Libs: -L${libdir} @LIBS@
+Cflags: -I${includedir}

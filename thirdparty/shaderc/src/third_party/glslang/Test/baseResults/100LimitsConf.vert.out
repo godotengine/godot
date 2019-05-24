@@ -1,0 +1,24 @@
+100Limits.vert
+ERROR: 0:24: 'limitation' : while loops not available 
+ERROR: 0:26: 'limitation' : do-while loops not available 
+ERROR: 0:28: 'limitations' : inductive-loop init-declaration requires the form "type-specifier loop-index = constant-expression" 
+ERROR: 0:29: 'limitations' : inductive-loop init-declaration requires the form "type-specifier loop-index = constant-expression" 
+ERROR: 0:30: 'limitations' : inductive-loop init-declaration requires the form "type-specifier loop-index = constant-expression" 
+ERROR: 0:31: 'limitations' : inductive-loop init-declaration requires the form "type-specifier loop-index = constant-expression" 
+ERROR: 0:32: 'limitations' : inductive loop requires a scalar 'int' or 'float' loop index 
+ERROR: 0:33: 'limitations' : inductive-loop condition requires the form "loop-index <comparison-op> constant-expression" 
+ERROR: 0:34: 'limitations' : inductive-loop termination requires the form "loop-index++, loop-index--, loop-index += constant-expression, or loop-index -= constant-expression" 
+ERROR: 0:35: 'limitations' : inductive loop index modified 
+ERROR: 0:36: 'limitations' : inductive loop index modified 
+ERROR: 0:43: 'limitations' : inductive loop index modified 
+ERROR: 0:47: 'limitations' : Non-constant-index-expression 
+ERROR: 0:49: 'limitations' : Non-constant-index-expression 
+ERROR: 0:50: 'limitations' : Non-constant-index-expression 
+ERROR: 0:51: 'limitations' : Non-constant-index-expression 
+ERROR: 0:52: 'limitations' : Non-constant-index-expression 
+ERROR: 0:53: 'limitations' : Non-constant-index-expression 
+ERROR: 0:54: 'limitations' : Non-constant-index-expression 
+ERROR: 0:65: 'limitations' : Non-constant-index-expression 
+ERROR: 20 compilation errors.  No code generated.
+
+

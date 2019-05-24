@@ -1,0 +1,48 @@
+#version 450 core
+
+struct MyStruct
+{
+    vec2 foo[2];
+    bool sb;
+};
+
+layout(binding = 0, std430) buffer SSBO0
+{
+    MyStruct a;
+} inBuf;
+
+layout(binding = 1, std430) buffer SSBO1
+{
+    MyStruct b;
+} outBuf;
+
+layout(binding = 2, std140) uniform UBO
+{
+    MyStruct c;
+} uBuf;
+
+struct Nested {
+    float f;
+    MyStruct S[2];
+};
+
+layout(binding = 2, std140) uniform UBON
+{
+    Nested N1;
+} uBufN;
+
+layout(binding = 1, std430) buffer SSBO1N
+{
+    Nested N2;
+} outBufN;
+
+void main()
+{
+    MyStruct t = inBuf.a;
+    outBuf.b = t;
+    t = uBuf.c;
+    outBuf.b = t;
+
+    Nested n = uBufN.N1;
+    outBufN.N2 = n;
+}

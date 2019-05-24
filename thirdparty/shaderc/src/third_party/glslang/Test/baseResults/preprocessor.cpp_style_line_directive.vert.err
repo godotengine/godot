@@ -1,0 +1,15 @@
+ERROR: 0:3: '#error' : at 0:3  
+ERROR: a.h:150: '#error' : at a.h:150  
+ERROR: a.h:24: '#error' : at a.h:24  
+ERROR: a.h:42: '#error' : at a.h:42  
+ERROR: b.cc:30: '#error' : at b.cc:30  
+ERROR: 3:10: '#error' : at 3:10  
+ERROR: 3:48: '#error' : at 3:48  
+ERROR: 3:4: '#error' : at 3:4  
+ERROR: 100:55: '#error' : at 100:55  
+ERROR: c:1000: '#error' : at c:1000  
+ERROR: 1:42: '#error' : at 1:42  
+ERROR: this-is-a-quite-long-name-maybe-i-should-shorten-it:42: '#error' : at this-is-a-quite-long-name-maybe-i-should-shorten-it:42  
+ERROR: 12 compilation errors.  No code generated.
+
+

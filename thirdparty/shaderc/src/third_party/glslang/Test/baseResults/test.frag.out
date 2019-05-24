@@ -1,0 +1,115 @@
+test.frag
+Shader version: 110
+0:? Sequence
+0:13  Function Definition: main( ( global void)
+0:13    Function Parameters: 
+0:15    Sequence
+0:15      Sequence
+0:15        move second child to first child ( temp float)
+0:15          'blendscale' ( temp float)
+0:15          Constant:
+0:15            1.789000
+0:17      Sequence
+0:17        move second child to first child ( temp 4-component vector of float)
+0:17          'v' ( temp 4-component vector of float)
+0:17          vector swizzle ( temp 4-component vector of float)
+0:17            texture ( global 4-component vector of float)
+0:17              'texSampler2D' ( uniform sampler2D)
+0:17              divide ( temp 2-component vector of float)
+0:17                add ( temp 2-component vector of float)
+0:17                  't' ( smooth in 2-component vector of float)
+0:17                  'scale' ( uniform 2-component vector of float)
+0:17                'scale' ( uniform 2-component vector of float)
+0:17            Sequence
+0:17              Constant:
+0:17                3 (const int)
+0:17              Constant:
+0:17                2 (const int)
+0:17              Constant:
+0:17                1 (const int)
+0:17              Constant:
+0:17                0 (const int)
+0:19      Sequence
+0:19        move second child to first child ( temp 4-component vector of float)
+0:19          'w' ( temp 4-component vector of float)
+0:19          add ( temp 4-component vector of float)
+0:19            texture ( global 4-component vector of float)
+0:19              'texSampler3D' ( uniform sampler3D)
+0:19              'coords' ( smooth in 3-component vector of float)
+0:19            'v' ( temp 4-component vector of float)
+0:21      move second child to first child ( temp 4-component vector of float)
+0:21        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:21        mix ( global 4-component vector of float)
+0:21          'w' ( temp 4-component vector of float)
+0:21          'u' ( uniform 4-component vector of float)
+0:21          component-wise multiply ( temp float)
+0:21            'blend' ( uniform float)
+0:21            'blendscale' ( temp float)
+0:?   Linker Objects
+0:?     'texSampler2D' ( uniform sampler2D)
+0:?     'texSampler3D' ( uniform sampler3D)
+0:?     'blend' ( uniform float)
+0:?     'scale' ( uniform 2-component vector of float)
+0:?     'u' ( uniform 4-component vector of float)
+0:?     't' ( smooth in 2-component vector of float)
+0:?     'coords' ( smooth in 3-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 110
+0:? Sequence
+0:13  Function Definition: main( ( global void)
+0:13    Function Parameters: 
+0:15    Sequence
+0:15      Sequence
+0:15        move second child to first child ( temp float)
+0:15          'blendscale' ( temp float)
+0:15          Constant:
+0:15            1.789000
+0:17      Sequence
+0:17        move second child to first child ( temp 4-component vector of float)
+0:17          'v' ( temp 4-component vector of float)
+0:17          vector swizzle ( temp 4-component vector of float)
+0:17            texture ( global 4-component vector of float)
+0:17              'texSampler2D' ( uniform sampler2D)
+0:17              divide ( temp 2-component vector of float)
+0:17                add ( temp 2-component vector of float)
+0:17                  't' ( smooth in 2-component vector of float)
+0:17                  'scale' ( uniform 2-component vector of float)
+0:17                'scale' ( uniform 2-component vector of float)
+0:17            Sequence
+0:17              Constant:
+0:17                3 (const int)
+0:17              Constant:
+0:17                2 (const int)
+0:17              Constant:
+0:17                1 (const int)
+0:17              Constant:
+0:17                0 (const int)
+0:19      Sequence
+0:19        move second child to first child ( temp 4-component vector of float)
+0:19          'w' ( temp 4-component vector of float)
+0:19          add ( temp 4-component vector of float)
+0:19            texture ( global 4-component vector of float)
+0:19              'texSampler3D' ( uniform sampler3D)
+0:19              'coords' ( smooth in 3-component vector of float)
+0:19            'v' ( temp 4-component vector of float)
+0:21      move second child to first child ( temp 4-component vector of float)
+0:21        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:21        mix ( global 4-component vector of float)
+0:21          'w' ( temp 4-component vector of float)
+0:21          'u' ( uniform 4-component vector of float)
+0:21          component-wise multiply ( temp float)
+0:21            'blend' ( uniform float)
+0:21            'blendscale' ( temp float)
+0:?   Linker Objects
+0:?     'texSampler2D' ( uniform sampler2D)
+0:?     'texSampler3D' ( uniform sampler3D)
+0:?     'blend' ( uniform float)
+0:?     'scale' ( uniform 2-component vector of float)
+0:?     'u' ( uniform 4-component vector of float)
+0:?     't' ( smooth in 2-component vector of float)
+0:?     'coords' ( smooth in 3-component vector of float)
+

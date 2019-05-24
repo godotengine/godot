@@ -1,0 +1,91 @@
+voidFunction.frag
+Shader version: 120
+0:? Sequence
+0:7  Sequence
+0:7    move second child to first child ( temp float)
+0:7      'bar' ( global float)
+0:7      Constant:
+0:7        2.000000
+0:9  Function Definition: foo( ( global void)
+0:9    Function Parameters: 
+0:11    Sequence
+0:11      Post-Increment ( temp float)
+0:11        'bar' ( global float)
+0:13      Branch: Return
+0:16  Function Definition: foo2( ( global void)
+0:16    Function Parameters: 
+0:18    Sequence
+0:18      Post-Increment ( temp float)
+0:18        'bar' ( global float)
+0:21  Function Definition: main( ( global void)
+0:21    Function Parameters: 
+0:23    Sequence
+0:23      Sequence
+0:23        move second child to first child ( temp 4-component vector of float)
+0:23          'outColor' ( temp 4-component vector of float)
+0:23          'bigColor' ( uniform 4-component vector of float)
+0:25      Function Call: foo( ( global void)
+0:27      Function Call: foo2( ( global void)
+0:29      add second child into first child ( temp float)
+0:29        direct index ( temp float)
+0:29          'outColor' ( temp 4-component vector of float)
+0:29          Constant:
+0:29            0 (const int)
+0:29        'bar' ( global float)
+0:31      move second child to first child ( temp 4-component vector of float)
+0:31        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:31        'outColor' ( temp 4-component vector of float)
+0:33      Branch: Return
+0:?   Linker Objects
+0:?     'bigColor' ( uniform 4-component vector of float)
+0:?     'BaseColor' ( smooth in 4-component vector of float)
+0:?     'd' ( uniform float)
+0:?     'bar' ( global float)
+
+
+Linked fragment stage:
+
+
+Shader version: 120
+0:? Sequence
+0:7  Sequence
+0:7    move second child to first child ( temp float)
+0:7      'bar' ( global float)
+0:7      Constant:
+0:7        2.000000
+0:9  Function Definition: foo( ( global void)
+0:9    Function Parameters: 
+0:11    Sequence
+0:11      Post-Increment ( temp float)
+0:11        'bar' ( global float)
+0:13      Branch: Return
+0:16  Function Definition: foo2( ( global void)
+0:16    Function Parameters: 
+0:18    Sequence
+0:18      Post-Increment ( temp float)
+0:18        'bar' ( global float)
+0:21  Function Definition: main( ( global void)
+0:21    Function Parameters: 
+0:23    Sequence
+0:23      Sequence
+0:23        move second child to first child ( temp 4-component vector of float)
+0:23          'outColor' ( temp 4-component vector of float)
+0:23          'bigColor' ( uniform 4-component vector of float)
+0:25      Function Call: foo( ( global void)
+0:27      Function Call: foo2( ( global void)
+0:29      add second child into first child ( temp float)
+0:29        direct index ( temp float)
+0:29          'outColor' ( temp 4-component vector of float)
+0:29          Constant:
+0:29            0 (const int)
+0:29        'bar' ( global float)
+0:31      move second child to first child ( temp 4-component vector of float)
+0:31        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:31        'outColor' ( temp 4-component vector of float)
+0:33      Branch: Return
+0:?   Linker Objects
+0:?     'bigColor' ( uniform 4-component vector of float)
+0:?     'BaseColor' ( smooth in 4-component vector of float)
+0:?     'd' ( uniform float)
+0:?     'bar' ( global float)
+

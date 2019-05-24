@@ -1,0 +1,25 @@
+300link2.frag
+Shader version: 300
+0:? Sequence
+0:9  Function Definition: main( ( global void)
+0:9    Function Parameters: 
+0:?   Linker Objects
+0:?     'pos' ( smooth in mediump 4-component vector of float)
+0:?     'c' (layout( location=1) out mediump 4-component vector of float)
+0:?     'p' (layout( location=5) out mediump 4-component vector of float)
+0:?     'q' (layout( location=9) out 2-element array of mediump 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 300
+0:? Sequence
+0:9  Function Definition: main( ( global void)
+0:9    Function Parameters: 
+0:?   Linker Objects
+0:?     'pos' ( smooth in mediump 4-component vector of float)
+0:?     'c' (layout( location=1) out mediump 4-component vector of float)
+0:?     'p' (layout( location=5) out mediump 4-component vector of float)
+0:?     'q' (layout( location=9) out 2-element array of mediump 4-component vector of float)
+

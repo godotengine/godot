@@ -1,0 +1,145 @@
+310runtimeArray.vert
+ERROR: 0:9: '' : array size required 
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 310
+ERROR: node is still EOpNull!
+0:12  Function Definition: main( ( global void)
+0:12    Function Parameters: 
+0:14    Sequence
+0:14      move second child to first child ( temp highp float)
+0:14        'o' (layout( location=0) smooth out highp float)
+0:14        f: direct index for structure ( global highp float)
+0:14          direct index (layout( column_major shared) temp structure{ global highp float f})
+0:14            s: direct index for structure (layout( column_major shared) buffer unsized 6-element array of structure{ global highp float f})
+0:14              'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer unsized 6-element array of structure{ global highp float f} s})
+0:14              Constant:
+0:14                0 (const uint)
+0:14            Constant:
+0:14              5 (const int)
+0:14          Constant:
+0:14            0 (const int)
+0:15      add second child into first child ( temp highp float)
+0:15        'o' (layout( location=0) smooth out highp float)
+0:15        f: direct index for structure ( global highp float)
+0:15          direct index (layout( column_major shared) temp structure{ global highp float f})
+0:15            s: direct index for structure (layout( column_major shared) buffer unsized 7-element array of structure{ global highp float f})
+0:15              'b2name' (layout( column_major shared) buffer block{layout( column_major shared) buffer unsized 7-element array of structure{ global highp float f} s})
+0:15              Constant:
+0:15                0 (const int)
+0:15            Constant:
+0:15              6 (const int)
+0:15          Constant:
+0:15            0 (const int)
+0:16      add second child into first child ( temp highp float)
+0:16        'o' (layout( location=0) smooth out highp float)
+0:16        f: direct index for structure ( global highp float)
+0:16          direct index (layout( column_major shared) temp structure{ global highp float f})
+0:16            s: direct index for structure (layout( column_major shared) buffer unsized 8-element array of structure{ global highp float f})
+0:16              direct index (layout( column_major shared) temp block{layout( column_major shared) buffer unsized 8-element array of structure{ global highp float f} s})
+0:16                'b3name' (layout( column_major shared) buffer unsized 4-element array of block{layout( column_major shared) buffer unsized 8-element array of structure{ global highp float f} s})
+0:16                Constant:
+0:16                  3 (const int)
+0:16              Constant:
+0:16                0 (const int)
+0:16            Constant:
+0:16              7 (const int)
+0:16          Constant:
+0:16            0 (const int)
+0:17      add second child into first child ( temp highp float)
+0:17        'o' (layout( location=0) smooth out highp float)
+0:17        f: direct index for structure ( global highp float)
+0:17          direct index (layout( column_major shared) temp structure{ global highp float f})
+0:17            s: direct index for structure (layout( column_major shared) buffer unsized 9-element array of structure{ global highp float f})
+0:17              direct index (layout( column_major shared) temp block{layout( column_major shared) buffer unsized 9-element array of structure{ global highp float f} s})
+0:17                'b4name' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer unsized 9-element array of structure{ global highp float f} s})
+0:17                Constant:
+0:17                  2 (const int)
+0:17              Constant:
+0:17                0 (const int)
+0:17            Constant:
+0:17              8 (const int)
+0:17          Constant:
+0:17            0 (const int)
+0:?   Linker Objects
+0:?     'o' (layout( location=0) smooth out highp float)
+0:?     'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer unsized 6-element array of structure{ global highp float f} s})
+0:?     'b2name' (layout( column_major shared) buffer block{layout( column_major shared) buffer unsized 7-element array of structure{ global highp float f} s})
+0:?     'b3name' (layout( column_major shared) buffer unsized 4-element array of block{layout( column_major shared) buffer unsized 8-element array of structure{ global highp float f} s})
+0:?     'b4name' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer unsized 9-element array of structure{ global highp float f} s})
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 310
+ERROR: node is still EOpNull!
+0:12  Function Definition: main( ( global void)
+0:12    Function Parameters: 
+0:14    Sequence
+0:14      move second child to first child ( temp highp float)
+0:14        'o' (layout( location=0) smooth out highp float)
+0:14        f: direct index for structure ( global highp float)
+0:14          direct index (layout( column_major shared) temp structure{ global highp float f})
+0:14            s: direct index for structure (layout( column_major shared) buffer unsized 6-element array of structure{ global highp float f})
+0:14              'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer unsized 6-element array of structure{ global highp float f} s})
+0:14              Constant:
+0:14                0 (const uint)
+0:14            Constant:
+0:14              5 (const int)
+0:14          Constant:
+0:14            0 (const int)
+0:15      add second child into first child ( temp highp float)
+0:15        'o' (layout( location=0) smooth out highp float)
+0:15        f: direct index for structure ( global highp float)
+0:15          direct index (layout( column_major shared) temp structure{ global highp float f})
+0:15            s: direct index for structure (layout( column_major shared) buffer unsized 7-element array of structure{ global highp float f})
+0:15              'b2name' (layout( column_major shared) buffer block{layout( column_major shared) buffer unsized 7-element array of structure{ global highp float f} s})
+0:15              Constant:
+0:15                0 (const int)
+0:15            Constant:
+0:15              6 (const int)
+0:15          Constant:
+0:15            0 (const int)
+0:16      add second child into first child ( temp highp float)
+0:16        'o' (layout( location=0) smooth out highp float)
+0:16        f: direct index for structure ( global highp float)
+0:16          direct index (layout( column_major shared) temp structure{ global highp float f})
+0:16            s: direct index for structure (layout( column_major shared) buffer unsized 8-element array of structure{ global highp float f})
+0:16              direct index (layout( column_major shared) temp block{layout( column_major shared) buffer unsized 8-element array of structure{ global highp float f} s})
+0:16                'b3name' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer unsized 8-element array of structure{ global highp float f} s})
+0:16                Constant:
+0:16                  3 (const int)
+0:16              Constant:
+0:16                0 (const int)
+0:16            Constant:
+0:16              7 (const int)
+0:16          Constant:
+0:16            0 (const int)
+0:17      add second child into first child ( temp highp float)
+0:17        'o' (layout( location=0) smooth out highp float)
+0:17        f: direct index for structure ( global highp float)
+0:17          direct index (layout( column_major shared) temp structure{ global highp float f})
+0:17            s: direct index for structure (layout( column_major shared) buffer unsized 9-element array of structure{ global highp float f})
+0:17              direct index (layout( column_major shared) temp block{layout( column_major shared) buffer unsized 9-element array of structure{ global highp float f} s})
+0:17                'b4name' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer unsized 9-element array of structure{ global highp float f} s})
+0:17                Constant:
+0:17                  2 (const int)
+0:17              Constant:
+0:17                0 (const int)
+0:17            Constant:
+0:17              8 (const int)
+0:17          Constant:
+0:17            0 (const int)
+0:?   Linker Objects
+0:?     'o' (layout( location=0) smooth out highp float)
+0:?     'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer unsized 6-element array of structure{ global highp float f} s})
+0:?     'b2name' (layout( column_major shared) buffer block{layout( column_major shared) buffer unsized 7-element array of structure{ global highp float f} s})
+0:?     'b3name' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer unsized 8-element array of structure{ global highp float f} s})
+0:?     'b4name' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer unsized 9-element array of structure{ global highp float f} s})
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+

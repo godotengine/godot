@@ -1,0 +1,123 @@
+450.vert
+ERROR: 0:12: 'out' : cannot be bool 
+ERROR: 0:13: 'sampler2D' : sampler/image types can only be used in uniform variables or function parameters: outo
+ERROR: 0:30: '::' : not supported 
+ERROR: 0:31: 'atomicCounterAdd' : no matching overloaded function found 
+ERROR: 0:32: 'atomicCounterSubtract' : no matching overloaded function found 
+ERROR: 0:33: 'atomicCounterMin' : no matching overloaded function found 
+ERROR: 0:34: 'atomicCounterMax' : no matching overloaded function found 
+ERROR: 0:35: 'atomicCounterAnd' : no matching overloaded function found 
+ERROR: 0:36: 'atomicCounterOr' : no matching overloaded function found 
+ERROR: 0:37: 'atomicCounterXor' : no matching overloaded function found 
+ERROR: 0:38: 'atomicCounterExchange' : no matching overloaded function found 
+ERROR: 0:39: 'atomicCounterCompSwap' : no matching overloaded function found 
+ERROR: 0:41: 'gl_BaseVertex' : undeclared identifier 
+ERROR: 0:41: 'gl_BaseInstance' : undeclared identifier 
+ERROR: 0:41: 'gl_DrawID' : undeclared identifier 
+ERROR: 0:41: '=' :  cannot convert from ' temp float' to ' temp int'
+ERROR: 0:44: 'anyInvocation' : no matching overloaded function found 
+ERROR: 0:45: 'allInvocations' : no matching overloaded function found 
+ERROR: 0:46: 'allInvocationsEqual' : no matching overloaded function found 
+ERROR: 0:48: 'extraneous semicolon' : not supported for this version or the enabled extensions 
+ERROR: 0:50: 'location' : cannot apply to uniform or buffer block 
+ERROR: 0:54: 'location' : cannot apply to uniform or buffer block 
+ERROR: 22 compilation errors.  No code generated.
+
+
+Shader version: 450
+ERROR: node is still EOpNull!
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:9    Sequence
+0:9      move second child to first child ( temp float)
+0:9        direct index ( temp float CullDistance)
+0:9          gl_CullDistance: direct index for structure ( out 3-element array of float CullDistance)
+0:9            'anon@0' ( out block{ out 3-element array of float CullDistance gl_CullDistance})
+0:9            Constant:
+0:9              10 (const uint)
+0:9          Constant:
+0:9            2 (const int)
+0:9        Constant:
+0:9          4.500000
+0:28  Function Definition: foo( ( global void)
+0:28    Function Parameters: 
+0:?     Sequence
+0:31      Constant:
+0:31        0.000000
+0:32      Constant:
+0:32        0.000000
+0:33      Constant:
+0:33        0.000000
+0:34      Constant:
+0:34        0.000000
+0:35      Constant:
+0:35        0.000000
+0:36      Constant:
+0:36        0.000000
+0:37      Constant:
+0:37        0.000000
+0:38      Constant:
+0:38        0.000000
+0:39      Constant:
+0:39        0.000000
+0:44      Constant:
+0:44        0.000000
+0:45      Constant:
+0:45        0.000000
+0:46      Constant:
+0:46        0.000000
+0:?   Linker Objects
+0:?     'anon@0' ( out block{ out 3-element array of float CullDistance gl_CullDistance})
+0:?     'outb' ( smooth out bool)
+0:?     'outo' ( smooth out sampler2D)
+0:?     'outa' ( smooth out 4-element array of float)
+0:?     'outaa' ( smooth out 4-element array of 2-element array of float)
+0:?     'outs' ( smooth out structure{ global float f})
+0:?     'outasa' ( smooth out 4-element array of structure{ global float f})
+0:?     'outsa' ( smooth out 4-element array of structure{ global float f})
+0:?     'outSA' ( smooth out structure{ global 4-element array of float f})
+0:?     'outSS' ( smooth out structure{ global float f,  global structure{ global float f} s})
+0:?     'aui' (layout( binding=0 offset=0) uniform atomic_uint)
+0:?     'ui' ( global uint)
+0:?     'anon@1' (layout( location=0 column_major shared) uniform block{layout( column_major shared) uniform int a})
+0:?     'anon@2' (layout( location=0 column_major shared) buffer block{layout( column_major shared) buffer int b})
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 450
+ERROR: node is still EOpNull!
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:9    Sequence
+0:9      move second child to first child ( temp float)
+0:9        direct index ( temp float CullDistance)
+0:9          gl_CullDistance: direct index for structure ( out 3-element array of float CullDistance)
+0:9            'anon@0' ( out block{ out 3-element array of float CullDistance gl_CullDistance})
+0:9            Constant:
+0:9              10 (const uint)
+0:9          Constant:
+0:9            2 (const int)
+0:9        Constant:
+0:9          4.500000
+0:?   Linker Objects
+0:?     'anon@0' ( out block{ out 3-element array of float CullDistance gl_CullDistance})
+0:?     'outb' ( smooth out bool)
+0:?     'outo' ( smooth out sampler2D)
+0:?     'outa' ( smooth out 4-element array of float)
+0:?     'outaa' ( smooth out 4-element array of 2-element array of float)
+0:?     'outs' ( smooth out structure{ global float f})
+0:?     'outasa' ( smooth out 4-element array of structure{ global float f})
+0:?     'outsa' ( smooth out 4-element array of structure{ global float f})
+0:?     'outSA' ( smooth out structure{ global 4-element array of float f})
+0:?     'outSS' ( smooth out structure{ global float f,  global structure{ global float f} s})
+0:?     'aui' (layout( binding=0 offset=0) uniform atomic_uint)
+0:?     'ui' ( global uint)
+0:?     'anon@1' (layout( location=0 column_major shared) uniform block{layout( column_major shared) uniform int a})
+0:?     'anon@2' (layout( location=0 column_major shared) buffer block{layout( column_major shared) buffer int b})
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

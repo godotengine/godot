@@ -1,0 +1,801 @@
+hlsl.subpass.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:68  Function Definition: @main( ( temp 4-component vector of float)
+0:68    Function Parameters: 
+0:?     Sequence
+0:69      Sequence
+0:69        move second child to first child ( temp 4-component vector of float)
+0:69          'result00' ( temp 4-component vector of float)
+0:69          subpassLoad ( temp 4-component vector of float)
+0:69            'subpass_f4' (layout( binding=1 input_attachment_index=1) uniform subpassInput)
+0:70      Sequence
+0:70        move second child to first child ( temp 4-component vector of int)
+0:70          'result01' ( temp 4-component vector of int)
+0:70          subpassLoad ( temp 4-component vector of int)
+0:70            'subpass_i4' ( uniform isubpassInput)
+0:71      Sequence
+0:71        move second child to first child ( temp 4-component vector of uint)
+0:71          'result02' ( temp 4-component vector of uint)
+0:71          subpassLoad ( temp 4-component vector of uint)
+0:71            'subpass_u4' ( uniform usubpassInput)
+0:73      Sequence
+0:73        move second child to first child ( temp 4-component vector of float)
+0:73          'result10' ( temp 4-component vector of float)
+0:73          subpassLoadMS ( temp 4-component vector of float)
+0:73            'subpass_ms_f4' ( uniform subpassInputMS)
+0:73            Constant:
+0:73              3 (const int)
+0:74      Sequence
+0:74        move second child to first child ( temp 4-component vector of int)
+0:74          'result11' ( temp 4-component vector of int)
+0:74          subpassLoadMS ( temp 4-component vector of int)
+0:74            'subpass_ms_i4' ( uniform isubpassInputMS)
+0:74            Constant:
+0:74              3 (const int)
+0:75      Sequence
+0:75        move second child to first child ( temp 4-component vector of uint)
+0:75          'result12' ( temp 4-component vector of uint)
+0:75          subpassLoadMS ( temp 4-component vector of uint)
+0:75            'subpass_ms_u4' ( uniform usubpassInputMS)
+0:75            Constant:
+0:75              3 (const int)
+0:77      Sequence
+0:77        move second child to first child ( temp 3-component vector of float)
+0:77          'result20' ( temp 3-component vector of float)
+0:77          Construct vec3 ( temp 3-component vector of float)
+0:77            subpassLoad ( temp 4-component vector of float)
+0:77              'subpass_f3' ( uniform subpassInput)
+0:78      Sequence
+0:78        move second child to first child ( temp 3-component vector of int)
+0:78          'result21' ( temp 3-component vector of int)
+0:78          Construct ivec3 ( temp 3-component vector of int)
+0:78            subpassLoad ( temp 4-component vector of int)
+0:78              'subpass_i3' ( uniform isubpassInput)
+0:79      Sequence
+0:79        move second child to first child ( temp 3-component vector of uint)
+0:79          'result22' ( temp 3-component vector of uint)
+0:79          Construct uvec3 ( temp 3-component vector of uint)
+0:79            subpassLoad ( temp 4-component vector of uint)
+0:79              'subpass_u3' ( uniform usubpassInput)
+0:81      Sequence
+0:81        move second child to first child ( temp 3-component vector of float)
+0:81          'result30' ( temp 3-component vector of float)
+0:81          Construct vec3 ( temp 3-component vector of float)
+0:81            subpassLoadMS ( temp 4-component vector of float)
+0:81              'subpass_ms_f3' ( uniform subpassInputMS)
+0:81              Constant:
+0:81                3 (const int)
+0:82      Sequence
+0:82        move second child to first child ( temp 3-component vector of int)
+0:82          'result31' ( temp 3-component vector of int)
+0:82          Construct ivec3 ( temp 3-component vector of int)
+0:82            subpassLoadMS ( temp 4-component vector of int)
+0:82              'subpass_ms_i3' ( uniform isubpassInputMS)
+0:82              Constant:
+0:82                3 (const int)
+0:83      Sequence
+0:83        move second child to first child ( temp 3-component vector of uint)
+0:83          'result32' ( temp 3-component vector of uint)
+0:83          Construct uvec3 ( temp 3-component vector of uint)
+0:83            subpassLoadMS ( temp 4-component vector of uint)
+0:83              'subpass_ms_u3' ( uniform usubpassInputMS)
+0:83              Constant:
+0:83                3 (const int)
+0:85      Sequence
+0:85        move second child to first child ( temp 2-component vector of float)
+0:85          'result40' ( temp 2-component vector of float)
+0:85          Construct vec2 ( temp 2-component vector of float)
+0:85            subpassLoad ( temp 4-component vector of float)
+0:85              'subpass_f2' ( uniform subpassInput)
+0:86      Sequence
+0:86        move second child to first child ( temp 2-component vector of int)
+0:86          'result41' ( temp 2-component vector of int)
+0:86          Construct ivec2 ( temp 2-component vector of int)
+0:86            subpassLoad ( temp 4-component vector of int)
+0:86              'subpass_i2' ( uniform isubpassInput)
+0:87      Sequence
+0:87        move second child to first child ( temp 2-component vector of uint)
+0:87          'result42' ( temp 2-component vector of uint)
+0:87          Construct uvec2 ( temp 2-component vector of uint)
+0:87            subpassLoad ( temp 4-component vector of uint)
+0:87              'subpass_u2' ( uniform usubpassInput)
+0:89      Sequence
+0:89        move second child to first child ( temp 2-component vector of float)
+0:89          'result50' ( temp 2-component vector of float)
+0:89          Construct vec2 ( temp 2-component vector of float)
+0:89            subpassLoadMS ( temp 4-component vector of float)
+0:89              'subpass_ms_f2' ( uniform subpassInputMS)
+0:89              Constant:
+0:89                2 (const int)
+0:90      Sequence
+0:90        move second child to first child ( temp 2-component vector of int)
+0:90          'result51' ( temp 2-component vector of int)
+0:90          Construct ivec2 ( temp 2-component vector of int)
+0:90            subpassLoadMS ( temp 4-component vector of int)
+0:90              'subpass_ms_i2' ( uniform isubpassInputMS)
+0:90              Constant:
+0:90                2 (const int)
+0:91      Sequence
+0:91        move second child to first child ( temp 2-component vector of uint)
+0:91          'result52' ( temp 2-component vector of uint)
+0:91          Construct uvec2 ( temp 2-component vector of uint)
+0:91            subpassLoadMS ( temp 4-component vector of uint)
+0:91              'subpass_ms_u2' ( uniform usubpassInputMS)
+0:91              Constant:
+0:91                2 (const int)
+0:93      Sequence
+0:93        move second child to first child ( temp float)
+0:93          'result60' ( temp float)
+0:93          Construct float ( temp float)
+0:93            subpassLoad ( temp 4-component vector of float)
+0:93              'subpass_f' ( uniform subpassInput)
+0:94      Sequence
+0:94        move second child to first child ( temp int)
+0:94          'result61' ( temp int)
+0:94          Construct int ( temp int)
+0:94            subpassLoad ( temp 4-component vector of int)
+0:94              'subpass_i' ( uniform isubpassInput)
+0:95      Sequence
+0:95        move second child to first child ( temp uint)
+0:95          'result62' ( temp uint)
+0:95          Construct uint ( temp uint)
+0:95            subpassLoad ( temp 4-component vector of uint)
+0:95              'subpass_u' ( uniform usubpassInput)
+0:97      Sequence
+0:97        move second child to first child ( temp float)
+0:97          'result70' ( temp float)
+0:97          Construct float ( temp float)
+0:97            subpassLoadMS ( temp 4-component vector of float)
+0:97              'subpass_ms_f' ( uniform subpassInputMS)
+0:97              Constant:
+0:97                2 (const int)
+0:98      Sequence
+0:98        move second child to first child ( temp int)
+0:98          'result71' ( temp int)
+0:98          Construct int ( temp int)
+0:98            subpassLoadMS ( temp 4-component vector of int)
+0:98              'subpass_ms_i' ( uniform isubpassInputMS)
+0:98              Constant:
+0:98                2 (const int)
+0:99      Sequence
+0:99        move second child to first child ( temp uint)
+0:99          'result72' ( temp uint)
+0:99          Construct uint ( temp uint)
+0:99            subpassLoadMS ( temp 4-component vector of uint)
+0:99              'subpass_ms_u' ( uniform usubpassInputMS)
+0:99              Constant:
+0:99                2 (const int)
+0:101      Sequence
+0:101        move second child to first child ( temp 4-component vector of float)
+0:101          'result73' ( temp 4-component vector of float)
+0:101          subpassLoad ( temp 4-component vector of float)
+0:101            'subpass_2' ( uniform subpassInput)
+0:112      Branch: Return with expression
+0:112        Constant:
+0:112          0.000000
+0:112          0.000000
+0:112          0.000000
+0:112          0.000000
+0:68  Function Definition: main( ( temp void)
+0:68    Function Parameters: 
+0:?     Sequence
+0:68      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:68        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'subpass_f4' (layout( binding=1 input_attachment_index=1) uniform subpassInput)
+0:?     'subpass_i4' ( uniform isubpassInput)
+0:?     'subpass_u4' ( uniform usubpassInput)
+0:?     'subpass_ms_f4' ( uniform subpassInputMS)
+0:?     'subpass_ms_i4' ( uniform isubpassInputMS)
+0:?     'subpass_ms_u4' ( uniform usubpassInputMS)
+0:?     'subpass_f3' ( uniform subpassInput)
+0:?     'subpass_i3' ( uniform isubpassInput)
+0:?     'subpass_u3' ( uniform usubpassInput)
+0:?     'subpass_ms_f3' ( uniform subpassInputMS)
+0:?     'subpass_ms_i3' ( uniform isubpassInputMS)
+0:?     'subpass_ms_u3' ( uniform usubpassInputMS)
+0:?     'subpass_f2' ( uniform subpassInput)
+0:?     'subpass_i2' ( uniform isubpassInput)
+0:?     'subpass_u2' ( uniform usubpassInput)
+0:?     'subpass_ms_f2' ( uniform subpassInputMS)
+0:?     'subpass_ms_i2' ( uniform isubpassInputMS)
+0:?     'subpass_ms_u2' ( uniform usubpassInputMS)
+0:?     'subpass_f' ( uniform subpassInput)
+0:?     'subpass_i' ( uniform isubpassInput)
+0:?     'subpass_u' ( uniform usubpassInput)
+0:?     'subpass_ms_f' ( uniform subpassInputMS)
+0:?     'subpass_ms_i' ( uniform isubpassInputMS)
+0:?     'subpass_ms_u' ( uniform usubpassInputMS)
+0:?     'subpass_2' ( uniform subpassInput)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:68  Function Definition: @main( ( temp 4-component vector of float)
+0:68    Function Parameters: 
+0:?     Sequence
+0:69      Sequence
+0:69        move second child to first child ( temp 4-component vector of float)
+0:69          'result00' ( temp 4-component vector of float)
+0:69          subpassLoad ( temp 4-component vector of float)
+0:69            'subpass_f4' (layout( binding=1 input_attachment_index=1) uniform subpassInput)
+0:70      Sequence
+0:70        move second child to first child ( temp 4-component vector of int)
+0:70          'result01' ( temp 4-component vector of int)
+0:70          subpassLoad ( temp 4-component vector of int)
+0:70            'subpass_i4' ( uniform isubpassInput)
+0:71      Sequence
+0:71        move second child to first child ( temp 4-component vector of uint)
+0:71          'result02' ( temp 4-component vector of uint)
+0:71          subpassLoad ( temp 4-component vector of uint)
+0:71            'subpass_u4' ( uniform usubpassInput)
+0:73      Sequence
+0:73        move second child to first child ( temp 4-component vector of float)
+0:73          'result10' ( temp 4-component vector of float)
+0:73          subpassLoadMS ( temp 4-component vector of float)
+0:73            'subpass_ms_f4' ( uniform subpassInputMS)
+0:73            Constant:
+0:73              3 (const int)
+0:74      Sequence
+0:74        move second child to first child ( temp 4-component vector of int)
+0:74          'result11' ( temp 4-component vector of int)
+0:74          subpassLoadMS ( temp 4-component vector of int)
+0:74            'subpass_ms_i4' ( uniform isubpassInputMS)
+0:74            Constant:
+0:74              3 (const int)
+0:75      Sequence
+0:75        move second child to first child ( temp 4-component vector of uint)
+0:75          'result12' ( temp 4-component vector of uint)
+0:75          subpassLoadMS ( temp 4-component vector of uint)
+0:75            'subpass_ms_u4' ( uniform usubpassInputMS)
+0:75            Constant:
+0:75              3 (const int)
+0:77      Sequence
+0:77        move second child to first child ( temp 3-component vector of float)
+0:77          'result20' ( temp 3-component vector of float)
+0:77          Construct vec3 ( temp 3-component vector of float)
+0:77            subpassLoad ( temp 4-component vector of float)
+0:77              'subpass_f3' ( uniform subpassInput)
+0:78      Sequence
+0:78        move second child to first child ( temp 3-component vector of int)
+0:78          'result21' ( temp 3-component vector of int)
+0:78          Construct ivec3 ( temp 3-component vector of int)
+0:78            subpassLoad ( temp 4-component vector of int)
+0:78              'subpass_i3' ( uniform isubpassInput)
+0:79      Sequence
+0:79        move second child to first child ( temp 3-component vector of uint)
+0:79          'result22' ( temp 3-component vector of uint)
+0:79          Construct uvec3 ( temp 3-component vector of uint)
+0:79            subpassLoad ( temp 4-component vector of uint)
+0:79              'subpass_u3' ( uniform usubpassInput)
+0:81      Sequence
+0:81        move second child to first child ( temp 3-component vector of float)
+0:81          'result30' ( temp 3-component vector of float)
+0:81          Construct vec3 ( temp 3-component vector of float)
+0:81            subpassLoadMS ( temp 4-component vector of float)
+0:81              'subpass_ms_f3' ( uniform subpassInputMS)
+0:81              Constant:
+0:81                3 (const int)
+0:82      Sequence
+0:82        move second child to first child ( temp 3-component vector of int)
+0:82          'result31' ( temp 3-component vector of int)
+0:82          Construct ivec3 ( temp 3-component vector of int)
+0:82            subpassLoadMS ( temp 4-component vector of int)
+0:82              'subpass_ms_i3' ( uniform isubpassInputMS)
+0:82              Constant:
+0:82                3 (const int)
+0:83      Sequence
+0:83        move second child to first child ( temp 3-component vector of uint)
+0:83          'result32' ( temp 3-component vector of uint)
+0:83          Construct uvec3 ( temp 3-component vector of uint)
+0:83            subpassLoadMS ( temp 4-component vector of uint)
+0:83              'subpass_ms_u3' ( uniform usubpassInputMS)
+0:83              Constant:
+0:83                3 (const int)
+0:85      Sequence
+0:85        move second child to first child ( temp 2-component vector of float)
+0:85          'result40' ( temp 2-component vector of float)
+0:85          Construct vec2 ( temp 2-component vector of float)
+0:85            subpassLoad ( temp 4-component vector of float)
+0:85              'subpass_f2' ( uniform subpassInput)
+0:86      Sequence
+0:86        move second child to first child ( temp 2-component vector of int)
+0:86          'result41' ( temp 2-component vector of int)
+0:86          Construct ivec2 ( temp 2-component vector of int)
+0:86            subpassLoad ( temp 4-component vector of int)
+0:86              'subpass_i2' ( uniform isubpassInput)
+0:87      Sequence
+0:87        move second child to first child ( temp 2-component vector of uint)
+0:87          'result42' ( temp 2-component vector of uint)
+0:87          Construct uvec2 ( temp 2-component vector of uint)
+0:87            subpassLoad ( temp 4-component vector of uint)
+0:87              'subpass_u2' ( uniform usubpassInput)
+0:89      Sequence
+0:89        move second child to first child ( temp 2-component vector of float)
+0:89          'result50' ( temp 2-component vector of float)
+0:89          Construct vec2 ( temp 2-component vector of float)
+0:89            subpassLoadMS ( temp 4-component vector of float)
+0:89              'subpass_ms_f2' ( uniform subpassInputMS)
+0:89              Constant:
+0:89                2 (const int)
+0:90      Sequence
+0:90        move second child to first child ( temp 2-component vector of int)
+0:90          'result51' ( temp 2-component vector of int)
+0:90          Construct ivec2 ( temp 2-component vector of int)
+0:90            subpassLoadMS ( temp 4-component vector of int)
+0:90              'subpass_ms_i2' ( uniform isubpassInputMS)
+0:90              Constant:
+0:90                2 (const int)
+0:91      Sequence
+0:91        move second child to first child ( temp 2-component vector of uint)
+0:91          'result52' ( temp 2-component vector of uint)
+0:91          Construct uvec2 ( temp 2-component vector of uint)
+0:91            subpassLoadMS ( temp 4-component vector of uint)
+0:91              'subpass_ms_u2' ( uniform usubpassInputMS)
+0:91              Constant:
+0:91                2 (const int)
+0:93      Sequence
+0:93        move second child to first child ( temp float)
+0:93          'result60' ( temp float)
+0:93          Construct float ( temp float)
+0:93            subpassLoad ( temp 4-component vector of float)
+0:93              'subpass_f' ( uniform subpassInput)
+0:94      Sequence
+0:94        move second child to first child ( temp int)
+0:94          'result61' ( temp int)
+0:94          Construct int ( temp int)
+0:94            subpassLoad ( temp 4-component vector of int)
+0:94              'subpass_i' ( uniform isubpassInput)
+0:95      Sequence
+0:95        move second child to first child ( temp uint)
+0:95          'result62' ( temp uint)
+0:95          Construct uint ( temp uint)
+0:95            subpassLoad ( temp 4-component vector of uint)
+0:95              'subpass_u' ( uniform usubpassInput)
+0:97      Sequence
+0:97        move second child to first child ( temp float)
+0:97          'result70' ( temp float)
+0:97          Construct float ( temp float)
+0:97            subpassLoadMS ( temp 4-component vector of float)
+0:97              'subpass_ms_f' ( uniform subpassInputMS)
+0:97              Constant:
+0:97                2 (const int)
+0:98      Sequence
+0:98        move second child to first child ( temp int)
+0:98          'result71' ( temp int)
+0:98          Construct int ( temp int)
+0:98            subpassLoadMS ( temp 4-component vector of int)
+0:98              'subpass_ms_i' ( uniform isubpassInputMS)
+0:98              Constant:
+0:98                2 (const int)
+0:99      Sequence
+0:99        move second child to first child ( temp uint)
+0:99          'result72' ( temp uint)
+0:99          Construct uint ( temp uint)
+0:99            subpassLoadMS ( temp 4-component vector of uint)
+0:99              'subpass_ms_u' ( uniform usubpassInputMS)
+0:99              Constant:
+0:99                2 (const int)
+0:101      Sequence
+0:101        move second child to first child ( temp 4-component vector of float)
+0:101          'result73' ( temp 4-component vector of float)
+0:101          subpassLoad ( temp 4-component vector of float)
+0:101            'subpass_2' ( uniform subpassInput)
+0:112      Branch: Return with expression
+0:112        Constant:
+0:112          0.000000
+0:112          0.000000
+0:112          0.000000
+0:112          0.000000
+0:68  Function Definition: main( ( temp void)
+0:68    Function Parameters: 
+0:?     Sequence
+0:68      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:68        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'subpass_f4' (layout( binding=1 input_attachment_index=1) uniform subpassInput)
+0:?     'subpass_i4' ( uniform isubpassInput)
+0:?     'subpass_u4' ( uniform usubpassInput)
+0:?     'subpass_ms_f4' ( uniform subpassInputMS)
+0:?     'subpass_ms_i4' ( uniform isubpassInputMS)
+0:?     'subpass_ms_u4' ( uniform usubpassInputMS)
+0:?     'subpass_f3' ( uniform subpassInput)
+0:?     'subpass_i3' ( uniform isubpassInput)
+0:?     'subpass_u3' ( uniform usubpassInput)
+0:?     'subpass_ms_f3' ( uniform subpassInputMS)
+0:?     'subpass_ms_i3' ( uniform isubpassInputMS)
+0:?     'subpass_ms_u3' ( uniform usubpassInputMS)
+0:?     'subpass_f2' ( uniform subpassInput)
+0:?     'subpass_i2' ( uniform isubpassInput)
+0:?     'subpass_u2' ( uniform usubpassInput)
+0:?     'subpass_ms_f2' ( uniform subpassInputMS)
+0:?     'subpass_ms_i2' ( uniform isubpassInputMS)
+0:?     'subpass_ms_u2' ( uniform usubpassInputMS)
+0:?     'subpass_f' ( uniform subpassInput)
+0:?     'subpass_i' ( uniform isubpassInput)
+0:?     'subpass_u' ( uniform usubpassInput)
+0:?     'subpass_ms_f' ( uniform subpassInputMS)
+0:?     'subpass_ms_i' ( uniform isubpassInputMS)
+0:?     'subpass_ms_u' ( uniform usubpassInputMS)
+0:?     'subpass_2' ( uniform subpassInput)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 204
+
+                              Capability Shader
+                              Capability InputAttachment
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 202
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "@main("
+                              Name 12  "result00"
+                              Name 15  "subpass_f4"
+                              Name 24  "result01"
+                              Name 27  "subpass_i4"
+                              Name 33  "result02"
+                              Name 36  "subpass_u4"
+                              Name 39  "result10"
+                              Name 42  "subpass_ms_f4"
+                              Name 46  "result11"
+                              Name 49  "subpass_ms_i4"
+                              Name 52  "result12"
+                              Name 55  "subpass_ms_u4"
+                              Name 60  "result20"
+                              Name 61  "subpass_f3"
+                              Name 70  "result21"
+                              Name 71  "subpass_i3"
+                              Name 80  "result22"
+                              Name 81  "subpass_u3"
+                              Name 88  "result30"
+                              Name 89  "subpass_ms_f3"
+                              Name 96  "result31"
+                              Name 97  "subpass_ms_i3"
+                              Name 104  "result32"
+                              Name 105  "subpass_ms_u3"
+                              Name 114  "result40"
+                              Name 115  "subpass_f2"
+                              Name 122  "result41"
+                              Name 123  "subpass_i2"
+                              Name 131  "result42"
+                              Name 132  "subpass_u2"
+                              Name 138  "result50"
+                              Name 139  "subpass_ms_f2"
+                              Name 146  "result51"
+                              Name 147  "subpass_ms_i2"
+                              Name 153  "result52"
+                              Name 154  "subpass_ms_u2"
+                              Name 161  "result60"
+                              Name 162  "subpass_f"
+                              Name 167  "result61"
+                              Name 168  "subpass_i"
+                              Name 173  "result62"
+                              Name 174  "subpass_u"
+                              Name 178  "result70"
+                              Name 179  "subpass_ms_f"
+                              Name 183  "result71"
+                              Name 184  "subpass_ms_i"
+                              Name 188  "result72"
+                              Name 189  "subpass_ms_u"
+                              Name 193  "result73"
+                              Name 194  "subpass_2"
+                              Name 202  "@entryPointOutput"
+                              Decorate 15(subpass_f4) DescriptorSet 0
+                              Decorate 15(subpass_f4) Binding 1
+                              Decorate 15(subpass_f4) InputAttachmentIndex 1
+                              Decorate 27(subpass_i4) DescriptorSet 0
+                              Decorate 27(subpass_i4) Binding 0
+                              Decorate 27(subpass_i4) InputAttachmentIndex 2
+                              Decorate 36(subpass_u4) DescriptorSet 0
+                              Decorate 36(subpass_u4) Binding 0
+                              Decorate 36(subpass_u4) InputAttachmentIndex 3
+                              Decorate 42(subpass_ms_f4) DescriptorSet 0
+                              Decorate 42(subpass_ms_f4) Binding 0
+                              Decorate 42(subpass_ms_f4) InputAttachmentIndex 4
+                              Decorate 49(subpass_ms_i4) DescriptorSet 0
+                              Decorate 49(subpass_ms_i4) Binding 0
+                              Decorate 49(subpass_ms_i4) InputAttachmentIndex 5
+                              Decorate 55(subpass_ms_u4) DescriptorSet 0
+                              Decorate 55(subpass_ms_u4) Binding 0
+                              Decorate 55(subpass_ms_u4) InputAttachmentIndex 6
+                              Decorate 61(subpass_f3) DescriptorSet 0
+                              Decorate 61(subpass_f3) Binding 0
+                              Decorate 61(subpass_f3) InputAttachmentIndex 1
+                              Decorate 71(subpass_i3) DescriptorSet 0
+                              Decorate 71(subpass_i3) Binding 0
+                              Decorate 71(subpass_i3) InputAttachmentIndex 2
+                              Decorate 81(subpass_u3) DescriptorSet 0
+                              Decorate 81(subpass_u3) Binding 0
+                              Decorate 81(subpass_u3) InputAttachmentIndex 3
+                              Decorate 89(subpass_ms_f3) DescriptorSet 0
+                              Decorate 89(subpass_ms_f3) Binding 0
+                              Decorate 89(subpass_ms_f3) InputAttachmentIndex 4
+                              Decorate 97(subpass_ms_i3) DescriptorSet 0
+                              Decorate 97(subpass_ms_i3) Binding 0
+                              Decorate 97(subpass_ms_i3) InputAttachmentIndex 5
+                              Decorate 105(subpass_ms_u3) DescriptorSet 0
+                              Decorate 105(subpass_ms_u3) Binding 0
+                              Decorate 105(subpass_ms_u3) InputAttachmentIndex 6
+                              Decorate 115(subpass_f2) DescriptorSet 0
+                              Decorate 115(subpass_f2) Binding 0
+                              Decorate 115(subpass_f2) InputAttachmentIndex 1
+                              Decorate 123(subpass_i2) DescriptorSet 0
+                              Decorate 123(subpass_i2) Binding 0
+                              Decorate 123(subpass_i2) InputAttachmentIndex 2
+                              Decorate 132(subpass_u2) DescriptorSet 0
+                              Decorate 132(subpass_u2) Binding 0
+                              Decorate 132(subpass_u2) InputAttachmentIndex 3
+                              Decorate 139(subpass_ms_f2) DescriptorSet 0
+                              Decorate 139(subpass_ms_f2) Binding 0
+                              Decorate 139(subpass_ms_f2) InputAttachmentIndex 4
+                              Decorate 147(subpass_ms_i2) DescriptorSet 0
+                              Decorate 147(subpass_ms_i2) Binding 0
+                              Decorate 147(subpass_ms_i2) InputAttachmentIndex 5
+                              Decorate 154(subpass_ms_u2) DescriptorSet 0
+                              Decorate 154(subpass_ms_u2) Binding 0
+                              Decorate 154(subpass_ms_u2) InputAttachmentIndex 6
+                              Decorate 162(subpass_f) DescriptorSet 0
+                              Decorate 162(subpass_f) Binding 0
+                              Decorate 162(subpass_f) InputAttachmentIndex 1
+                              Decorate 168(subpass_i) DescriptorSet 0
+                              Decorate 168(subpass_i) Binding 0
+                              Decorate 168(subpass_i) InputAttachmentIndex 2
+                              Decorate 174(subpass_u) DescriptorSet 0
+                              Decorate 174(subpass_u) Binding 0
+                              Decorate 174(subpass_u) InputAttachmentIndex 3
+                              Decorate 179(subpass_ms_f) DescriptorSet 0
+                              Decorate 179(subpass_ms_f) Binding 0
+                              Decorate 179(subpass_ms_f) InputAttachmentIndex 4
+                              Decorate 184(subpass_ms_i) DescriptorSet 0
+                              Decorate 184(subpass_ms_i) Binding 0
+                              Decorate 184(subpass_ms_i) InputAttachmentIndex 5
+                              Decorate 189(subpass_ms_u) DescriptorSet 0
+                              Decorate 189(subpass_ms_u) Binding 0
+                              Decorate 189(subpass_ms_u) InputAttachmentIndex 6
+                              Decorate 194(subpass_2) DescriptorSet 0
+                              Decorate 194(subpass_2) Binding 0
+                              Decorate 194(subpass_2) InputAttachmentIndex 7
+                              Decorate 202(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeFunction 7(fvec4)
+              11:             TypePointer Function 7(fvec4)
+              13:             TypeImage 6(float) SubpassData nonsampled format:Unknown
+              14:             TypePointer UniformConstant 13
+  15(subpass_f4):     14(ptr) Variable UniformConstant
+              17:             TypeInt 32 1
+              18:     17(int) Constant 0
+              19:             TypeVector 17(int) 2
+              20:   19(ivec2) ConstantComposite 18 18
+              22:             TypeVector 17(int) 4
+              23:             TypePointer Function 22(ivec4)
+              25:             TypeImage 17(int) SubpassData nonsampled format:Unknown
+              26:             TypePointer UniformConstant 25
+  27(subpass_i4):     26(ptr) Variable UniformConstant
+              30:             TypeInt 32 0
+              31:             TypeVector 30(int) 4
+              32:             TypePointer Function 31(ivec4)
+              34:             TypeImage 30(int) SubpassData nonsampled format:Unknown
+              35:             TypePointer UniformConstant 34
+  36(subpass_u4):     35(ptr) Variable UniformConstant
+              40:             TypeImage 6(float) SubpassData multi-sampled nonsampled format:Unknown
+              41:             TypePointer UniformConstant 40
+42(subpass_ms_f4):     41(ptr) Variable UniformConstant
+              44:     17(int) Constant 3
+              47:             TypeImage 17(int) SubpassData multi-sampled nonsampled format:Unknown
+              48:             TypePointer UniformConstant 47
+49(subpass_ms_i4):     48(ptr) Variable UniformConstant
+              53:             TypeImage 30(int) SubpassData multi-sampled nonsampled format:Unknown
+              54:             TypePointer UniformConstant 53
+55(subpass_ms_u4):     54(ptr) Variable UniformConstant
+              58:             TypeVector 6(float) 3
+              59:             TypePointer Function 58(fvec3)
+  61(subpass_f3):     14(ptr) Variable UniformConstant
+              68:             TypeVector 17(int) 3
+              69:             TypePointer Function 68(ivec3)
+  71(subpass_i3):     26(ptr) Variable UniformConstant
+              78:             TypeVector 30(int) 3
+              79:             TypePointer Function 78(ivec3)
+  81(subpass_u3):     35(ptr) Variable UniformConstant
+89(subpass_ms_f3):     41(ptr) Variable UniformConstant
+97(subpass_ms_i3):     48(ptr) Variable UniformConstant
+105(subpass_ms_u3):     54(ptr) Variable UniformConstant
+             112:             TypeVector 6(float) 2
+             113:             TypePointer Function 112(fvec2)
+ 115(subpass_f2):     14(ptr) Variable UniformConstant
+             121:             TypePointer Function 19(ivec2)
+ 123(subpass_i2):     26(ptr) Variable UniformConstant
+             129:             TypeVector 30(int) 2
+             130:             TypePointer Function 129(ivec2)
+ 132(subpass_u2):     35(ptr) Variable UniformConstant
+139(subpass_ms_f2):     41(ptr) Variable UniformConstant
+             141:     17(int) Constant 2
+147(subpass_ms_i2):     48(ptr) Variable UniformConstant
+154(subpass_ms_u2):     54(ptr) Variable UniformConstant
+             160:             TypePointer Function 6(float)
+  162(subpass_f):     14(ptr) Variable UniformConstant
+             166:             TypePointer Function 17(int)
+  168(subpass_i):     26(ptr) Variable UniformConstant
+             172:             TypePointer Function 30(int)
+  174(subpass_u):     35(ptr) Variable UniformConstant
+179(subpass_ms_f):     41(ptr) Variable UniformConstant
+184(subpass_ms_i):     48(ptr) Variable UniformConstant
+189(subpass_ms_u):     54(ptr) Variable UniformConstant
+  194(subpass_2):     14(ptr) Variable UniformConstant
+             197:    6(float) Constant 0
+             198:    7(fvec4) ConstantComposite 197 197 197 197
+             201:             TypePointer Output 7(fvec4)
+202(@entryPointOutput):    201(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+             203:    7(fvec4) FunctionCall 9(@main()
+                              Store 202(@entryPointOutput) 203
+                              Return
+                              FunctionEnd
+       9(@main():    7(fvec4) Function None 8
+              10:             Label
+    12(result00):     11(ptr) Variable Function
+    24(result01):     23(ptr) Variable Function
+    33(result02):     32(ptr) Variable Function
+    39(result10):     11(ptr) Variable Function
+    46(result11):     23(ptr) Variable Function
+    52(result12):     32(ptr) Variable Function
+    60(result20):     59(ptr) Variable Function
+    70(result21):     69(ptr) Variable Function
+    80(result22):     79(ptr) Variable Function
+    88(result30):     59(ptr) Variable Function
+    96(result31):     69(ptr) Variable Function
+   104(result32):     79(ptr) Variable Function
+   114(result40):    113(ptr) Variable Function
+   122(result41):    121(ptr) Variable Function
+   131(result42):    130(ptr) Variable Function
+   138(result50):    113(ptr) Variable Function
+   146(result51):    121(ptr) Variable Function
+   153(result52):    130(ptr) Variable Function
+   161(result60):    160(ptr) Variable Function
+   167(result61):    166(ptr) Variable Function
+   173(result62):    172(ptr) Variable Function
+   178(result70):    160(ptr) Variable Function
+   183(result71):    166(ptr) Variable Function
+   188(result72):    172(ptr) Variable Function
+   193(result73):     11(ptr) Variable Function
+              16:          13 Load 15(subpass_f4)
+              21:    7(fvec4) ImageRead 16 20
+                              Store 12(result00) 21
+              28:          25 Load 27(subpass_i4)
+              29:   22(ivec4) ImageRead 28 20
+                              Store 24(result01) 29
+              37:          34 Load 36(subpass_u4)
+              38:   31(ivec4) ImageRead 37 20
+                              Store 33(result02) 38
+              43:          40 Load 42(subpass_ms_f4)
+              45:    7(fvec4) ImageRead 43 20 Sample 44
+                              Store 39(result10) 45
+              50:          47 Load 49(subpass_ms_i4)
+              51:   22(ivec4) ImageRead 50 20 Sample 44
+                              Store 46(result11) 51
+              56:          53 Load 55(subpass_ms_u4)
+              57:   31(ivec4) ImageRead 56 20 Sample 44
+                              Store 52(result12) 57
+              62:          13 Load 61(subpass_f3)
+              63:    7(fvec4) ImageRead 62 20
+              64:    6(float) CompositeExtract 63 0
+              65:    6(float) CompositeExtract 63 1
+              66:    6(float) CompositeExtract 63 2
+              67:   58(fvec3) CompositeConstruct 64 65 66
+                              Store 60(result20) 67
+              72:          25 Load 71(subpass_i3)
+              73:   22(ivec4) ImageRead 72 20
+              74:     17(int) CompositeExtract 73 0
+              75:     17(int) CompositeExtract 73 1
+              76:     17(int) CompositeExtract 73 2
+              77:   68(ivec3) CompositeConstruct 74 75 76
+                              Store 70(result21) 77
+              82:          34 Load 81(subpass_u3)
+              83:   31(ivec4) ImageRead 82 20
+              84:     30(int) CompositeExtract 83 0
+              85:     30(int) CompositeExtract 83 1
+              86:     30(int) CompositeExtract 83 2
+              87:   78(ivec3) CompositeConstruct 84 85 86
+                              Store 80(result22) 87
+              90:          40 Load 89(subpass_ms_f3)
+              91:    7(fvec4) ImageRead 90 20 Sample 44
+              92:    6(float) CompositeExtract 91 0
+              93:    6(float) CompositeExtract 91 1
+              94:    6(float) CompositeExtract 91 2
+              95:   58(fvec3) CompositeConstruct 92 93 94
+                              Store 88(result30) 95
+              98:          47 Load 97(subpass_ms_i3)
+              99:   22(ivec4) ImageRead 98 20 Sample 44
+             100:     17(int) CompositeExtract 99 0
+             101:     17(int) CompositeExtract 99 1
+             102:     17(int) CompositeExtract 99 2
+             103:   68(ivec3) CompositeConstruct 100 101 102
+                              Store 96(result31) 103
+             106:          53 Load 105(subpass_ms_u3)
+             107:   31(ivec4) ImageRead 106 20 Sample 44
+             108:     30(int) CompositeExtract 107 0
+             109:     30(int) CompositeExtract 107 1
+             110:     30(int) CompositeExtract 107 2
+             111:   78(ivec3) CompositeConstruct 108 109 110
+                              Store 104(result32) 111
+             116:          13 Load 115(subpass_f2)
+             117:    7(fvec4) ImageRead 116 20
+             118:    6(float) CompositeExtract 117 0
+             119:    6(float) CompositeExtract 117 1
+             120:  112(fvec2) CompositeConstruct 118 119
+                              Store 114(result40) 120
+             124:          25 Load 123(subpass_i2)
+             125:   22(ivec4) ImageRead 124 20
+             126:     17(int) CompositeExtract 125 0
+             127:     17(int) CompositeExtract 125 1
+             128:   19(ivec2) CompositeConstruct 126 127
+                              Store 122(result41) 128
+             133:          34 Load 132(subpass_u2)
+             134:   31(ivec4) ImageRead 133 20
+             135:     30(int) CompositeExtract 134 0
+             136:     30(int) CompositeExtract 134 1
+             137:  129(ivec2) CompositeConstruct 135 136
+                              Store 131(result42) 137
+             140:          40 Load 139(subpass_ms_f2)
+             142:    7(fvec4) ImageRead 140 20 Sample 141
+             143:    6(float) CompositeExtract 142 0
+             144:    6(float) CompositeExtract 142 1
+             145:  112(fvec2) CompositeConstruct 143 144
+                              Store 138(result50) 145
+             148:          47 Load 147(subpass_ms_i2)
+             149:   22(ivec4) ImageRead 148 20 Sample 141
+             150:     17(int) CompositeExtract 149 0
+             151:     17(int) CompositeExtract 149 1
+             152:   19(ivec2) CompositeConstruct 150 151
+                              Store 146(result51) 152
+             155:          53 Load 154(subpass_ms_u2)
+             156:   31(ivec4) ImageRead 155 20 Sample 141
+             157:     30(int) CompositeExtract 156 0
+             158:     30(int) CompositeExtract 156 1
+             159:  129(ivec2) CompositeConstruct 157 158
+                              Store 153(result52) 159
+             163:          13 Load 162(subpass_f)
+             164:    7(fvec4) ImageRead 163 20
+             165:    6(float) CompositeExtract 164 0
+                              Store 161(result60) 165
+             169:          25 Load 168(subpass_i)
+             170:   22(ivec4) ImageRead 169 20
+             171:     17(int) CompositeExtract 170 0
+                              Store 167(result61) 171
+             175:          34 Load 174(subpass_u)
+             176:   31(ivec4) ImageRead 175 20
+             177:     30(int) CompositeExtract 176 0
+                              Store 173(result62) 177
+             180:          40 Load 179(subpass_ms_f)
+             181:    7(fvec4) ImageRead 180 20 Sample 141
+             182:    6(float) CompositeExtract 181 0
+                              Store 178(result70) 182
+             185:          47 Load 184(subpass_ms_i)
+             186:   22(ivec4) ImageRead 185 20 Sample 141
+             187:     17(int) CompositeExtract 186 0
+                              Store 183(result71) 187
+             190:          53 Load 189(subpass_ms_u)
+             191:   31(ivec4) ImageRead 190 20 Sample 141
+             192:     30(int) CompositeExtract 191 0
+                              Store 188(result72) 192
+             195:          13 Load 194(subpass_2)
+             196:    7(fvec4) ImageRead 195 20
+                              Store 193(result73) 196
+                              ReturnValue 198
+                              FunctionEnd

@@ -1,0 +1,561 @@
+hlsl.clipdistance-2.vert
+Shader version: 500
+0:? Sequence
+0:4  Function Definition: @main(vf4;vf2[2];vf2[2]; ( temp void)
+0:4    Function Parameters: 
+0:4      'pos' ( out 4-component vector of float)
+0:4      'clip' ( out 2-element array of 2-component vector of float)
+0:4      'cull' ( out 2-element array of 2-component vector of float)
+0:?     Sequence
+0:5      move second child to first child ( temp 4-component vector of float)
+0:5        'pos' ( out 4-component vector of float)
+0:5        Constant:
+0:5          1.000000
+0:5          1.000000
+0:5          1.000000
+0:5          1.000000
+0:6      move second child to first child ( temp float)
+0:6        direct index ( temp float)
+0:6          direct index ( temp 2-component vector of float)
+0:6            'clip' ( out 2-element array of 2-component vector of float)
+0:6            Constant:
+0:6              0 (const int)
+0:6          Constant:
+0:6            0 (const int)
+0:6        Constant:
+0:6          0.500000
+0:7      move second child to first child ( temp float)
+0:7        direct index ( temp float)
+0:7          direct index ( temp 2-component vector of float)
+0:7            'clip' ( out 2-element array of 2-component vector of float)
+0:7            Constant:
+0:7              0 (const int)
+0:7          Constant:
+0:7            1 (const int)
+0:7        Constant:
+0:7          0.600000
+0:8      move second child to first child ( temp float)
+0:8        direct index ( temp float)
+0:8          direct index ( temp 2-component vector of float)
+0:8            'clip' ( out 2-element array of 2-component vector of float)
+0:8            Constant:
+0:8              1 (const int)
+0:8          Constant:
+0:8            0 (const int)
+0:8        Constant:
+0:8          0.700000
+0:9      move second child to first child ( temp float)
+0:9        direct index ( temp float)
+0:9          direct index ( temp 2-component vector of float)
+0:9            'clip' ( out 2-element array of 2-component vector of float)
+0:9            Constant:
+0:9              1 (const int)
+0:9          Constant:
+0:9            1 (const int)
+0:9        Constant:
+0:9          0.800000
+0:11      move second child to first child ( temp float)
+0:11        direct index ( temp float)
+0:11          direct index ( temp 2-component vector of float)
+0:11            'cull' ( out 2-element array of 2-component vector of float)
+0:11            Constant:
+0:11              0 (const int)
+0:11          Constant:
+0:11            0 (const int)
+0:11        Constant:
+0:11          0.525000
+0:12      move second child to first child ( temp float)
+0:12        direct index ( temp float)
+0:12          direct index ( temp 2-component vector of float)
+0:12            'cull' ( out 2-element array of 2-component vector of float)
+0:12            Constant:
+0:12              0 (const int)
+0:12          Constant:
+0:12            1 (const int)
+0:12        Constant:
+0:12          0.625000
+0:13      move second child to first child ( temp float)
+0:13        direct index ( temp float)
+0:13          direct index ( temp 2-component vector of float)
+0:13            'cull' ( out 2-element array of 2-component vector of float)
+0:13            Constant:
+0:13              1 (const int)
+0:13          Constant:
+0:13            0 (const int)
+0:13        Constant:
+0:13          0.725000
+0:14      move second child to first child ( temp float)
+0:14        direct index ( temp float)
+0:14          direct index ( temp 2-component vector of float)
+0:14            'cull' ( out 2-element array of 2-component vector of float)
+0:14            Constant:
+0:14              1 (const int)
+0:14          Constant:
+0:14            1 (const int)
+0:14        Constant:
+0:14          0.825000
+0:4  Function Definition: main( ( temp void)
+0:4    Function Parameters: 
+0:?     Sequence
+0:4      Function Call: @main(vf4;vf2[2];vf2[2]; ( temp void)
+0:?         'pos' ( temp 4-component vector of float)
+0:?         'clip' ( temp 2-element array of 2-component vector of float)
+0:?         'cull' ( temp 2-element array of 2-component vector of float)
+0:4      move second child to first child ( temp 4-component vector of float)
+0:?         'pos' ( out 4-component vector of float Position)
+0:?         'pos' ( temp 4-component vector of float)
+0:?       Sequence
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float ClipDistance)
+0:?             'clip' ( out 4-element array of float ClipDistance)
+0:4            Constant:
+0:4              0 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'clip' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                0 (const int)
+0:4            Constant:
+0:4              0 (const int)
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float ClipDistance)
+0:?             'clip' ( out 4-element array of float ClipDistance)
+0:4            Constant:
+0:4              1 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'clip' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                0 (const int)
+0:4            Constant:
+0:4              1 (const int)
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float ClipDistance)
+0:?             'clip' ( out 4-element array of float ClipDistance)
+0:4            Constant:
+0:4              2 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'clip' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                1 (const int)
+0:4            Constant:
+0:4              0 (const int)
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float ClipDistance)
+0:?             'clip' ( out 4-element array of float ClipDistance)
+0:4            Constant:
+0:4              3 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'clip' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                1 (const int)
+0:4            Constant:
+0:4              1 (const int)
+0:?       Sequence
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float CullDistance)
+0:?             'cull' ( out 4-element array of float CullDistance)
+0:4            Constant:
+0:4              0 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'cull' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                0 (const int)
+0:4            Constant:
+0:4              0 (const int)
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float CullDistance)
+0:?             'cull' ( out 4-element array of float CullDistance)
+0:4            Constant:
+0:4              1 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'cull' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                0 (const int)
+0:4            Constant:
+0:4              1 (const int)
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float CullDistance)
+0:?             'cull' ( out 4-element array of float CullDistance)
+0:4            Constant:
+0:4              2 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'cull' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                1 (const int)
+0:4            Constant:
+0:4              0 (const int)
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float CullDistance)
+0:?             'cull' ( out 4-element array of float CullDistance)
+0:4            Constant:
+0:4              3 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'cull' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                1 (const int)
+0:4            Constant:
+0:4              1 (const int)
+0:?   Linker Objects
+0:?     'pos' ( out 4-component vector of float Position)
+0:?     'clip' ( out 4-element array of float ClipDistance)
+0:?     'cull' ( out 4-element array of float CullDistance)
+
+
+Linked vertex stage:
+
+
+Shader version: 500
+0:? Sequence
+0:4  Function Definition: @main(vf4;vf2[2];vf2[2]; ( temp void)
+0:4    Function Parameters: 
+0:4      'pos' ( out 4-component vector of float)
+0:4      'clip' ( out 2-element array of 2-component vector of float)
+0:4      'cull' ( out 2-element array of 2-component vector of float)
+0:?     Sequence
+0:5      move second child to first child ( temp 4-component vector of float)
+0:5        'pos' ( out 4-component vector of float)
+0:5        Constant:
+0:5          1.000000
+0:5          1.000000
+0:5          1.000000
+0:5          1.000000
+0:6      move second child to first child ( temp float)
+0:6        direct index ( temp float)
+0:6          direct index ( temp 2-component vector of float)
+0:6            'clip' ( out 2-element array of 2-component vector of float)
+0:6            Constant:
+0:6              0 (const int)
+0:6          Constant:
+0:6            0 (const int)
+0:6        Constant:
+0:6          0.500000
+0:7      move second child to first child ( temp float)
+0:7        direct index ( temp float)
+0:7          direct index ( temp 2-component vector of float)
+0:7            'clip' ( out 2-element array of 2-component vector of float)
+0:7            Constant:
+0:7              0 (const int)
+0:7          Constant:
+0:7            1 (const int)
+0:7        Constant:
+0:7          0.600000
+0:8      move second child to first child ( temp float)
+0:8        direct index ( temp float)
+0:8          direct index ( temp 2-component vector of float)
+0:8            'clip' ( out 2-element array of 2-component vector of float)
+0:8            Constant:
+0:8              1 (const int)
+0:8          Constant:
+0:8            0 (const int)
+0:8        Constant:
+0:8          0.700000
+0:9      move second child to first child ( temp float)
+0:9        direct index ( temp float)
+0:9          direct index ( temp 2-component vector of float)
+0:9            'clip' ( out 2-element array of 2-component vector of float)
+0:9            Constant:
+0:9              1 (const int)
+0:9          Constant:
+0:9            1 (const int)
+0:9        Constant:
+0:9          0.800000
+0:11      move second child to first child ( temp float)
+0:11        direct index ( temp float)
+0:11          direct index ( temp 2-component vector of float)
+0:11            'cull' ( out 2-element array of 2-component vector of float)
+0:11            Constant:
+0:11              0 (const int)
+0:11          Constant:
+0:11            0 (const int)
+0:11        Constant:
+0:11          0.525000
+0:12      move second child to first child ( temp float)
+0:12        direct index ( temp float)
+0:12          direct index ( temp 2-component vector of float)
+0:12            'cull' ( out 2-element array of 2-component vector of float)
+0:12            Constant:
+0:12              0 (const int)
+0:12          Constant:
+0:12            1 (const int)
+0:12        Constant:
+0:12          0.625000
+0:13      move second child to first child ( temp float)
+0:13        direct index ( temp float)
+0:13          direct index ( temp 2-component vector of float)
+0:13            'cull' ( out 2-element array of 2-component vector of float)
+0:13            Constant:
+0:13              1 (const int)
+0:13          Constant:
+0:13            0 (const int)
+0:13        Constant:
+0:13          0.725000
+0:14      move second child to first child ( temp float)
+0:14        direct index ( temp float)
+0:14          direct index ( temp 2-component vector of float)
+0:14            'cull' ( out 2-element array of 2-component vector of float)
+0:14            Constant:
+0:14              1 (const int)
+0:14          Constant:
+0:14            1 (const int)
+0:14        Constant:
+0:14          0.825000
+0:4  Function Definition: main( ( temp void)
+0:4    Function Parameters: 
+0:?     Sequence
+0:4      Function Call: @main(vf4;vf2[2];vf2[2]; ( temp void)
+0:?         'pos' ( temp 4-component vector of float)
+0:?         'clip' ( temp 2-element array of 2-component vector of float)
+0:?         'cull' ( temp 2-element array of 2-component vector of float)
+0:4      move second child to first child ( temp 4-component vector of float)
+0:?         'pos' ( out 4-component vector of float Position)
+0:?         'pos' ( temp 4-component vector of float)
+0:?       Sequence
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float ClipDistance)
+0:?             'clip' ( out 4-element array of float ClipDistance)
+0:4            Constant:
+0:4              0 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'clip' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                0 (const int)
+0:4            Constant:
+0:4              0 (const int)
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float ClipDistance)
+0:?             'clip' ( out 4-element array of float ClipDistance)
+0:4            Constant:
+0:4              1 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'clip' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                0 (const int)
+0:4            Constant:
+0:4              1 (const int)
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float ClipDistance)
+0:?             'clip' ( out 4-element array of float ClipDistance)
+0:4            Constant:
+0:4              2 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'clip' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                1 (const int)
+0:4            Constant:
+0:4              0 (const int)
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float ClipDistance)
+0:?             'clip' ( out 4-element array of float ClipDistance)
+0:4            Constant:
+0:4              3 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'clip' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                1 (const int)
+0:4            Constant:
+0:4              1 (const int)
+0:?       Sequence
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float CullDistance)
+0:?             'cull' ( out 4-element array of float CullDistance)
+0:4            Constant:
+0:4              0 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'cull' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                0 (const int)
+0:4            Constant:
+0:4              0 (const int)
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float CullDistance)
+0:?             'cull' ( out 4-element array of float CullDistance)
+0:4            Constant:
+0:4              1 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'cull' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                0 (const int)
+0:4            Constant:
+0:4              1 (const int)
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float CullDistance)
+0:?             'cull' ( out 4-element array of float CullDistance)
+0:4            Constant:
+0:4              2 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'cull' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                1 (const int)
+0:4            Constant:
+0:4              0 (const int)
+0:4        move second child to first child ( temp float)
+0:4          direct index ( out float CullDistance)
+0:?             'cull' ( out 4-element array of float CullDistance)
+0:4            Constant:
+0:4              3 (const int)
+0:4          direct index ( temp float)
+0:4            direct index ( temp 2-component vector of float)
+0:?               'cull' ( temp 2-element array of 2-component vector of float)
+0:4              Constant:
+0:4                1 (const int)
+0:4            Constant:
+0:4              1 (const int)
+0:?   Linker Objects
+0:?     'pos' ( out 4-component vector of float Position)
+0:?     'clip' ( out 4-element array of float ClipDistance)
+0:?     'cull' ( out 4-element array of float CullDistance)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 89
+
+                              Capability Shader
+                              Capability ClipDistance
+                              Capability CullDistance
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Vertex 4  "main" 55 60 76
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 18  "@main(vf4;vf2[2];vf2[2];"
+                              Name 15  "pos"
+                              Name 16  "clip"
+                              Name 17  "cull"
+                              Name 44  "pos"
+                              Name 45  "clip"
+                              Name 46  "cull"
+                              Name 47  "param"
+                              Name 48  "param"
+                              Name 49  "param"
+                              Name 55  "pos"
+                              Name 60  "clip"
+                              Name 76  "cull"
+                              Decorate 55(pos) BuiltIn Position
+                              Decorate 60(clip) BuiltIn ClipDistance
+                              Decorate 76(cull) BuiltIn CullDistance
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypePointer Function 7(fvec4)
+               9:             TypeVector 6(float) 2
+              10:             TypeInt 32 0
+              11:     10(int) Constant 2
+              12:             TypeArray 9(fvec2) 11
+              13:             TypePointer Function 12
+              14:             TypeFunction 2 8(ptr) 13(ptr) 13(ptr)
+              20:    6(float) Constant 1065353216
+              21:    7(fvec4) ConstantComposite 20 20 20 20
+              22:             TypeInt 32 1
+              23:     22(int) Constant 0
+              24:    6(float) Constant 1056964608
+              25:     10(int) Constant 0
+              26:             TypePointer Function 6(float)
+              28:    6(float) Constant 1058642330
+              29:     10(int) Constant 1
+              31:     22(int) Constant 1
+              32:    6(float) Constant 1060320051
+              34:    6(float) Constant 1061997773
+              36:    6(float) Constant 1057384038
+              38:    6(float) Constant 1059061760
+              40:    6(float) Constant 1060739482
+              42:    6(float) Constant 1062417203
+              54:             TypePointer Output 7(fvec4)
+         55(pos):     54(ptr) Variable Output
+              57:     10(int) Constant 4
+              58:             TypeArray 6(float) 57
+              59:             TypePointer Output 58
+        60(clip):     59(ptr) Variable Output
+              63:             TypePointer Output 6(float)
+              68:     22(int) Constant 2
+              72:     22(int) Constant 3
+        76(cull):     59(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+         44(pos):      8(ptr) Variable Function
+        45(clip):     13(ptr) Variable Function
+        46(cull):     13(ptr) Variable Function
+       47(param):      8(ptr) Variable Function
+       48(param):     13(ptr) Variable Function
+       49(param):     13(ptr) Variable Function
+              50:           2 FunctionCall 18(@main(vf4;vf2[2];vf2[2];) 47(param) 48(param) 49(param)
+              51:    7(fvec4) Load 47(param)
+                              Store 44(pos) 51
+              52:          12 Load 48(param)
+                              Store 45(clip) 52
+              53:          12 Load 49(param)
+                              Store 46(cull) 53
+              56:    7(fvec4) Load 44(pos)
+                              Store 55(pos) 56
+              61:     26(ptr) AccessChain 45(clip) 23 25
+              62:    6(float) Load 61
+              64:     63(ptr) AccessChain 60(clip) 23
+                              Store 64 62
+              65:     26(ptr) AccessChain 45(clip) 23 29
+              66:    6(float) Load 65
+              67:     63(ptr) AccessChain 60(clip) 31
+                              Store 67 66
+              69:     26(ptr) AccessChain 45(clip) 31 25
+              70:    6(float) Load 69
+              71:     63(ptr) AccessChain 60(clip) 68
+                              Store 71 70
+              73:     26(ptr) AccessChain 45(clip) 31 29
+              74:    6(float) Load 73
+              75:     63(ptr) AccessChain 60(clip) 72
+                              Store 75 74
+              77:     26(ptr) AccessChain 46(cull) 23 25
+              78:    6(float) Load 77
+              79:     63(ptr) AccessChain 76(cull) 23
+                              Store 79 78
+              80:     26(ptr) AccessChain 46(cull) 23 29
+              81:    6(float) Load 80
+              82:     63(ptr) AccessChain 76(cull) 31
+                              Store 82 81
+              83:     26(ptr) AccessChain 46(cull) 31 25
+              84:    6(float) Load 83
+              85:     63(ptr) AccessChain 76(cull) 68
+                              Store 85 84
+              86:     26(ptr) AccessChain 46(cull) 31 29
+              87:    6(float) Load 86
+              88:     63(ptr) AccessChain 76(cull) 72
+                              Store 88 87
+                              Return
+                              FunctionEnd
+18(@main(vf4;vf2[2];vf2[2];):           2 Function None 14
+         15(pos):      8(ptr) FunctionParameter
+        16(clip):     13(ptr) FunctionParameter
+        17(cull):     13(ptr) FunctionParameter
+              19:             Label
+                              Store 15(pos) 21
+              27:     26(ptr) AccessChain 16(clip) 23 25
+                              Store 27 24
+              30:     26(ptr) AccessChain 16(clip) 23 29
+                              Store 30 28
+              33:     26(ptr) AccessChain 16(clip) 31 25
+                              Store 33 32
+              35:     26(ptr) AccessChain 16(clip) 31 29
+                              Store 35 34
+              37:     26(ptr) AccessChain 17(cull) 23 25
+                              Store 37 36
+              39:     26(ptr) AccessChain 17(cull) 23 29
+                              Store 39 38
+              41:     26(ptr) AccessChain 17(cull) 31 25
+                              Store 41 40
+              43:     26(ptr) AccessChain 17(cull) 31 29
+                              Store 43 42
+                              Return
+                              FunctionEnd

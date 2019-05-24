@@ -1,0 +1,4 @@
+spv.extPostDepthCoverage_Error.frag
+ERROR: Linking fragment stage: post_depth_coverage requires early_fragment_tests
+
+SPIR-V is not generated for failed compile or link

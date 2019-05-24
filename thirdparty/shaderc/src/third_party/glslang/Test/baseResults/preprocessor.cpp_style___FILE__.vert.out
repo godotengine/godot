@@ -1,0 +1,37 @@
+#extension GL_GOOGLE_cpp_style_line_directive : enable
+
+0
+
+#line 150 "a.h"
+ "a.h"
+
+#line 24
+ "a.h"
+
+#line 42
+ "a.h"
+
+#line 30 "b.cc"
+ "b.cc"
+
+#line 10 3
+ 3
+
+#line 48
+ 3
+
+#line 4
+ 3
+
+#line 55 100
+ 100
+
+#line 1000 "c"
+ "c"
+
+#line 42 1
+ 1
+
+#line 42 "this-is-a-quite-long-name-maybe-i-should-shorten-it"
+ "this-is-a-quite-long-name-maybe-i-should-shorten-it"
+

@@ -1,0 +1,385 @@
+hlsl.params.default.negative.frag
+ERROR: 0:27: '' : invalid default parameter value 
+ERROR: 0:32: 'p1' : invalid parameter after default value parameters 
+ERROR: 0:40: 'fn1' : ambiguous best function under implicit type conversion 
+ERROR: 0:47: 'fn2' : ambiguous best function under implicit type conversion 
+ERROR: 4 compilation errors.  No code generated.
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+ERROR: node is still EOpNull!
+0:7  Function Definition: fn1(vi4; ( temp 4-component vector of int)
+0:7    Function Parameters: 
+0:7      'p0' ( in 4-component vector of int)
+0:?     Sequence
+0:7      Branch: Return with expression
+0:?         Constant:
+0:?           1 (const int)
+0:?           2 (const int)
+0:?           3 (const int)
+0:?           4 (const int)
+0:9  Function Definition: fn1(vi4;b1;b1; ( temp 4-component vector of int)
+0:9    Function Parameters: 
+0:9      'p0' ( in 4-component vector of int)
+0:9      'b1' ( in bool)
+0:9      'b2' ( in bool)
+0:?     Sequence
+0:10      Branch: Return with expression
+0:10        'p0' ( in 4-component vector of int)
+0:17  Function Definition: fn1(vi4;vi4;i1[2];i1; ( temp 4-component vector of int)
+0:17    Function Parameters: 
+0:17      'p0' ( in 4-component vector of int)
+0:17      'p1' ( in 4-component vector of int)
+0:17      'p2' ( in 2-element array of int)
+0:17      'p3' ( in int)
+0:?     Sequence
+0:18      Branch: Return with expression
+0:18        add ( temp 4-component vector of int)
+0:18          add ( temp 4-component vector of int)
+0:18            add ( temp 4-component vector of int)
+0:18              'p0' ( in 4-component vector of int)
+0:18              'p1' ( in 4-component vector of int)
+0:18            direct index ( temp int)
+0:18              'p2' ( in 2-element array of int)
+0:18              Constant:
+0:18                0 (const int)
+0:18          'p3' ( in int)
+0:23  Function Definition: fn2(vi4;i1; ( temp 4-component vector of int)
+0:23    Function Parameters: 
+0:23      'p0' ( in 4-component vector of int)
+0:23      'x' ( in int)
+0:?     Sequence
+0:24      Branch: Return with expression
+0:?         Constant:
+0:?           10 (const int)
+0:?           11 (const int)
+0:?           12 (const int)
+0:?           13 (const int)
+0:28  Function Definition: fn2(vi4; ( temp 4-component vector of int)
+0:28    Function Parameters: 
+0:28      'p0' ( in 4-component vector of int)
+0:?     Sequence
+0:29      Branch: Return with expression
+0:29        add ( temp 4-component vector of int)
+0:29          'p0' ( in 4-component vector of int)
+0:?           Constant:
+0:?             20 (const int)
+0:?             21 (const int)
+0:?             22 (const int)
+0:?             23 (const int)
+0:33  Function Definition: fn3(i1; ( temp void)
+0:33    Function Parameters: 
+0:33      'p0' ( in int)
+0:37  Function Definition: @main( ( temp 4-component vector of int)
+0:37    Function Parameters: 
+0:?     Sequence
+0:38      Sequence
+0:38        move second child to first child ( temp 2-element array of int)
+0:38          'myarray' ( temp 2-element array of int)
+0:38          Constant:
+0:38            30 (const int)
+0:38            31 (const int)
+0:49      Branch: Return with expression
+0:48        add ( temp 4-component vector of int)
+0:47          add ( temp 4-component vector of int)
+0:45            add ( temp 4-component vector of int)
+0:44              add ( temp 4-component vector of int)
+0:43                add ( temp 4-component vector of int)
+0:42                  add ( temp 4-component vector of int)
+0:41                    add ( temp 4-component vector of int)
+0:40                      add ( temp 4-component vector of int)
+0:40                        Function Call: fn1(vi4; ( temp 4-component vector of int)
+0:40                          Constant:
+0:40                            100 (const int)
+0:40                            100 (const int)
+0:40                            100 (const int)
+0:40                            100 (const int)
+0:41                        Function Call: fn1(vi4;vi4;i1[2];i1; ( temp 4-component vector of int)
+0:41                          Constant:
+0:41                            101 (const int)
+0:41                            101 (const int)
+0:41                            101 (const int)
+0:41                            101 (const int)
+0:41                          ui4: direct index for structure ( uniform 4-component vector of int)
+0:41                            'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of int ui4,  uniform float ufvar})
+0:41                            Constant:
+0:41                              0 (const uint)
+0:15                          Constant:
+0:15                            1 (const int)
+0:15                            2 (const int)
+0:16                          Constant:
+0:16                            42 (const int)
+0:42                      Function Call: fn1(vi4;vi4;i1[2];i1; ( temp 4-component vector of int)
+0:42                        Constant:
+0:42                          102 (const int)
+0:42                          102 (const int)
+0:42                          102 (const int)
+0:42                          102 (const int)
+0:42                        ui4: direct index for structure ( uniform 4-component vector of int)
+0:42                          'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of int ui4,  uniform float ufvar})
+0:42                          Constant:
+0:42                            0 (const uint)
+0:42                        'myarray' ( temp 2-element array of int)
+0:16                        Constant:
+0:16                          42 (const int)
+0:43                    Function Call: fn1(vi4;vi4;i1[2];i1; ( temp 4-component vector of int)
+0:43                      Constant:
+0:43                        103 (const int)
+0:43                        103 (const int)
+0:43                        103 (const int)
+0:43                        103 (const int)
+0:43                      ui4: direct index for structure ( uniform 4-component vector of int)
+0:43                        'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of int ui4,  uniform float ufvar})
+0:43                        Constant:
+0:43                          0 (const uint)
+0:43                      'myarray' ( temp 2-element array of int)
+0:43                      Constant:
+0:43                        99 (const int)
+0:44                  Function Call: fn1(vi4;b1;b1; ( temp 4-component vector of int)
+0:44                    Constant:
+0:44                      104 (const int)
+0:44                      104 (const int)
+0:44                      104 (const int)
+0:44                      104 (const int)
+0:44                    Constant:
+0:44                      false (const bool)
+0:9                    Constant:
+0:9                      false (const bool)
+0:45                Function Call: fn1(vi4;b1;b1; ( temp 4-component vector of int)
+0:45                  Constant:
+0:45                    105 (const int)
+0:45                    105 (const int)
+0:45                    105 (const int)
+0:45                    105 (const int)
+0:45                  Constant:
+0:45                    false (const bool)
+0:45                  Constant:
+0:45                    true (const bool)
+0:47              Function Call: fn2(vi4; ( temp 4-component vector of int)
+0:47                Constant:
+0:47                  112 (const int)
+0:47                  112 (const int)
+0:47                  112 (const int)
+0:47                  112 (const int)
+0:48            Function Call: fn2(vi4;i1; ( temp 4-component vector of int)
+0:48              Constant:
+0:48                110 (const int)
+0:48                110 (const int)
+0:48                110 (const int)
+0:48                110 (const int)
+0:48              Constant:
+0:48                11 (const int)
+0:49          Function Call: fn2(vi4;i1; ( temp 4-component vector of int)
+0:49            Constant:
+0:49              111 (const int)
+0:49              111 (const int)
+0:49              111 (const int)
+0:49              111 (const int)
+0:49            Constant:
+0:49              12 (const int)
+0:37  Function Definition: main( ( temp void)
+0:37    Function Parameters: 
+0:?     Sequence
+0:37      move second child to first child ( temp 4-component vector of int)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of int)
+0:37        Function Call: @main( ( temp 4-component vector of int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of int ui4,  uniform float ufvar})
+0:?     'cia' ( const int)
+0:?       -4 (const int)
+0:?     'cib' ( const int)
+0:?       -42 (const int)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of int)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+ERROR: node is still EOpNull!
+0:7  Function Definition: fn1(vi4; ( temp 4-component vector of int)
+0:7    Function Parameters: 
+0:7      'p0' ( in 4-component vector of int)
+0:?     Sequence
+0:7      Branch: Return with expression
+0:?         Constant:
+0:?           1 (const int)
+0:?           2 (const int)
+0:?           3 (const int)
+0:?           4 (const int)
+0:9  Function Definition: fn1(vi4;b1;b1; ( temp 4-component vector of int)
+0:9    Function Parameters: 
+0:9      'p0' ( in 4-component vector of int)
+0:9      'b1' ( in bool)
+0:9      'b2' ( in bool)
+0:?     Sequence
+0:10      Branch: Return with expression
+0:10        'p0' ( in 4-component vector of int)
+0:17  Function Definition: fn1(vi4;vi4;i1[2];i1; ( temp 4-component vector of int)
+0:17    Function Parameters: 
+0:17      'p0' ( in 4-component vector of int)
+0:17      'p1' ( in 4-component vector of int)
+0:17      'p2' ( in 2-element array of int)
+0:17      'p3' ( in int)
+0:?     Sequence
+0:18      Branch: Return with expression
+0:18        add ( temp 4-component vector of int)
+0:18          add ( temp 4-component vector of int)
+0:18            add ( temp 4-component vector of int)
+0:18              'p0' ( in 4-component vector of int)
+0:18              'p1' ( in 4-component vector of int)
+0:18            direct index ( temp int)
+0:18              'p2' ( in 2-element array of int)
+0:18              Constant:
+0:18                0 (const int)
+0:18          'p3' ( in int)
+0:23  Function Definition: fn2(vi4;i1; ( temp 4-component vector of int)
+0:23    Function Parameters: 
+0:23      'p0' ( in 4-component vector of int)
+0:23      'x' ( in int)
+0:?     Sequence
+0:24      Branch: Return with expression
+0:?         Constant:
+0:?           10 (const int)
+0:?           11 (const int)
+0:?           12 (const int)
+0:?           13 (const int)
+0:28  Function Definition: fn2(vi4; ( temp 4-component vector of int)
+0:28    Function Parameters: 
+0:28      'p0' ( in 4-component vector of int)
+0:?     Sequence
+0:29      Branch: Return with expression
+0:29        add ( temp 4-component vector of int)
+0:29          'p0' ( in 4-component vector of int)
+0:?           Constant:
+0:?             20 (const int)
+0:?             21 (const int)
+0:?             22 (const int)
+0:?             23 (const int)
+0:33  Function Definition: fn3(i1; ( temp void)
+0:33    Function Parameters: 
+0:33      'p0' ( in int)
+0:37  Function Definition: @main( ( temp 4-component vector of int)
+0:37    Function Parameters: 
+0:?     Sequence
+0:38      Sequence
+0:38        move second child to first child ( temp 2-element array of int)
+0:38          'myarray' ( temp 2-element array of int)
+0:38          Constant:
+0:38            30 (const int)
+0:38            31 (const int)
+0:49      Branch: Return with expression
+0:48        add ( temp 4-component vector of int)
+0:47          add ( temp 4-component vector of int)
+0:45            add ( temp 4-component vector of int)
+0:44              add ( temp 4-component vector of int)
+0:43                add ( temp 4-component vector of int)
+0:42                  add ( temp 4-component vector of int)
+0:41                    add ( temp 4-component vector of int)
+0:40                      add ( temp 4-component vector of int)
+0:40                        Function Call: fn1(vi4; ( temp 4-component vector of int)
+0:40                          Constant:
+0:40                            100 (const int)
+0:40                            100 (const int)
+0:40                            100 (const int)
+0:40                            100 (const int)
+0:41                        Function Call: fn1(vi4;vi4;i1[2];i1; ( temp 4-component vector of int)
+0:41                          Constant:
+0:41                            101 (const int)
+0:41                            101 (const int)
+0:41                            101 (const int)
+0:41                            101 (const int)
+0:41                          ui4: direct index for structure ( uniform 4-component vector of int)
+0:41                            'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of int ui4,  uniform float ufvar})
+0:41                            Constant:
+0:41                              0 (const uint)
+0:15                          Constant:
+0:15                            1 (const int)
+0:15                            2 (const int)
+0:16                          Constant:
+0:16                            42 (const int)
+0:42                      Function Call: fn1(vi4;vi4;i1[2];i1; ( temp 4-component vector of int)
+0:42                        Constant:
+0:42                          102 (const int)
+0:42                          102 (const int)
+0:42                          102 (const int)
+0:42                          102 (const int)
+0:42                        ui4: direct index for structure ( uniform 4-component vector of int)
+0:42                          'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of int ui4,  uniform float ufvar})
+0:42                          Constant:
+0:42                            0 (const uint)
+0:42                        'myarray' ( temp 2-element array of int)
+0:16                        Constant:
+0:16                          42 (const int)
+0:43                    Function Call: fn1(vi4;vi4;i1[2];i1; ( temp 4-component vector of int)
+0:43                      Constant:
+0:43                        103 (const int)
+0:43                        103 (const int)
+0:43                        103 (const int)
+0:43                        103 (const int)
+0:43                      ui4: direct index for structure ( uniform 4-component vector of int)
+0:43                        'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of int ui4,  uniform float ufvar})
+0:43                        Constant:
+0:43                          0 (const uint)
+0:43                      'myarray' ( temp 2-element array of int)
+0:43                      Constant:
+0:43                        99 (const int)
+0:44                  Function Call: fn1(vi4;b1;b1; ( temp 4-component vector of int)
+0:44                    Constant:
+0:44                      104 (const int)
+0:44                      104 (const int)
+0:44                      104 (const int)
+0:44                      104 (const int)
+0:44                    Constant:
+0:44                      false (const bool)
+0:9                    Constant:
+0:9                      false (const bool)
+0:45                Function Call: fn1(vi4;b1;b1; ( temp 4-component vector of int)
+0:45                  Constant:
+0:45                    105 (const int)
+0:45                    105 (const int)
+0:45                    105 (const int)
+0:45                    105 (const int)
+0:45                  Constant:
+0:45                    false (const bool)
+0:45                  Constant:
+0:45                    true (const bool)
+0:47              Function Call: fn2(vi4; ( temp 4-component vector of int)
+0:47                Constant:
+0:47                  112 (const int)
+0:47                  112 (const int)
+0:47                  112 (const int)
+0:47                  112 (const int)
+0:48            Function Call: fn2(vi4;i1; ( temp 4-component vector of int)
+0:48              Constant:
+0:48                110 (const int)
+0:48                110 (const int)
+0:48                110 (const int)
+0:48                110 (const int)
+0:48              Constant:
+0:48                11 (const int)
+0:49          Function Call: fn2(vi4;i1; ( temp 4-component vector of int)
+0:49            Constant:
+0:49              111 (const int)
+0:49              111 (const int)
+0:49              111 (const int)
+0:49              111 (const int)
+0:49            Constant:
+0:49              12 (const int)
+0:37  Function Definition: main( ( temp void)
+0:37    Function Parameters: 
+0:?     Sequence
+0:37      move second child to first child ( temp 4-component vector of int)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of int)
+0:37        Function Call: @main( ( temp 4-component vector of int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of int ui4,  uniform float ufvar})
+0:?     'cia' ( const int)
+0:?       -4 (const int)
+0:?     'cib' ( const int)
+0:?       -42 (const int)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of int)
+
+SPIR-V is not generated for failed compile or link

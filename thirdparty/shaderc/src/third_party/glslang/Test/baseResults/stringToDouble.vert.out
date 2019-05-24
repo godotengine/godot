@@ -1,0 +1,1045 @@
+stringToDouble.vert
+Shader version: 460
+Requested GL_EXT_shader_explicit_arithmetic_types_float16
+0:? Sequence
+0:3  Function Definition: main( ( global void)
+0:3    Function Parameters: 
+0:5    Sequence
+0:5      Sequence
+0:5        move second child to first child ( temp float)
+0:5          'w1' ( temp float)
+0:5          Constant:
+0:5            0.000000
+0:6      Sequence
+0:6        move second child to first child ( temp float)
+0:6          'w2' ( temp float)
+0:6          Constant:
+0:6            1.000000
+0:7      Sequence
+0:7        move second child to first child ( temp float)
+0:7          'w3' ( temp float)
+0:7          Constant:
+0:7            7.000000
+0:8      Sequence
+0:8        move second child to first child ( temp float)
+0:8          'w4' ( temp float)
+0:8          Constant:
+0:8            130000.000000
+0:9      Sequence
+0:9        move second child to first child ( temp float)
+0:9          'w5' ( temp float)
+0:9          Constant:
+0:9            123456789.000000
+0:10      Sequence
+0:10        move second child to first child ( temp double)
+0:10          'w6' ( temp double)
+0:10          Constant:
+0:10            1.2345678901235e+15
+0:11      Sequence
+0:11        move second child to first child ( temp double)
+0:11          'w7' ( temp double)
+0:11          Constant:
+0:11            1.2345678901235e+16
+0:12      Sequence
+0:12        move second child to first child ( temp double)
+0:12          'w8' ( temp double)
+0:12          Constant:
+0:12            1.2345678901235e+17
+0:13      Sequence
+0:13        move second child to first child ( temp double)
+0:13          'w9' ( temp double)
+0:13          Constant:
+0:13            1.2345678901235e+19
+0:14      Sequence
+0:14        move second child to first child ( temp double)
+0:14          'w10' ( temp double)
+0:14          Constant:
+0:14            1.2345678901235e+24
+0:16      Sequence
+0:16        move second child to first child ( temp float)
+0:16          'e1' ( temp float)
+0:16          Constant:
+0:16            0.000000
+0:17      Sequence
+0:17        move second child to first child ( temp float)
+0:17          'e2' ( temp float)
+0:17          Constant:
+0:17            1.000000
+0:18      Sequence
+0:18        move second child to first child ( temp float)
+0:18          'e3' ( temp float)
+0:18          Constant:
+0:18            0.000000
+0:19      Sequence
+0:19        move second child to first child ( temp float)
+0:19          'e4' ( temp float)
+0:19          Constant:
+0:19            1.0000000000000e+15
+0:20      Sequence
+0:20        move second child to first child ( temp float)
+0:20          'e5' ( temp float)
+0:20          Constant:
+0:20            1.0000000000000e+16
+0:21      Sequence
+0:21        move second child to first child ( temp float)
+0:21          'e6' ( temp float)
+0:21          Constant:
+0:21            0.000000
+0:22      Sequence
+0:22        move second child to first child ( temp float)
+0:22          'e7' ( temp float)
+0:22          Constant:
+0:22            1.0000000000000e-15
+0:23      Sequence
+0:23        move second child to first child ( temp float)
+0:23          'e8' ( temp float)
+0:23          Constant:
+0:23            1.0000000000000e-16
+0:24      Sequence
+0:24        move second child to first child ( temp double)
+0:24          'e9' ( temp double)
+0:24          Constant:
+0:24            1.0000000000000e+100
+0:25      Sequence
+0:25        move second child to first child ( temp double)
+0:25          'e10' ( temp double)
+0:25          Constant:
+0:25            1.0000000000000e+308
+0:26      Sequence
+0:26        move second child to first child ( temp double)
+0:26          'e11' ( temp double)
+0:26          Constant:
+0:26            1.0000000000000e-307
+0:27      Sequence
+0:27        move second child to first child ( temp double)
+0:27          'e12' ( temp double)
+0:27          Constant:
+0:27            +1.#INF
+0:28      Sequence
+0:28        move second child to first child ( temp double)
+0:28          'e13' ( temp double)
+0:28          Constant:
+0:28            0.000000
+0:29      Sequence
+0:29        move second child to first child ( temp double)
+0:29          'e24' ( temp double)
+0:29          Constant:
+0:29            +1.#INF
+0:30      Sequence
+0:30        move second child to first child ( temp double)
+0:30          'e25' ( temp double)
+0:30          Constant:
+0:30            0.000000
+0:32      Sequence
+0:32        move second child to first child ( temp double)
+0:32          'f1' ( temp double)
+0:32          Constant:
+0:32            0.500000
+0:33      Sequence
+0:33        move second child to first child ( temp double)
+0:33          'f2' ( temp double)
+0:33          Constant:
+0:33            0.125000
+0:34      Sequence
+0:34        move second child to first child ( temp double)
+0:34          'f31' ( temp double)
+0:34          Constant:
+0:34            0.100000
+0:35      Sequence
+0:35        move second child to first child ( temp double)
+0:35          'f32' ( temp double)
+0:35          Constant:
+0:35            0.200000
+0:36      Sequence
+0:36        move second child to first child ( temp double)
+0:36          'f33' ( temp double)
+0:36          Constant:
+0:36            0.300000
+0:37      Sequence
+0:37        move second child to first child ( temp double)
+0:37          'f34' ( temp double)
+0:37          Constant:
+0:37            0.400000
+0:38      Sequence
+0:38        move second child to first child ( temp double)
+0:38          'f35' ( temp double)
+0:38          Constant:
+0:38            0.500000
+0:39      Sequence
+0:39        move second child to first child ( temp double)
+0:39          'f36' ( temp double)
+0:39          Constant:
+0:39            0.600000
+0:40      Sequence
+0:40        move second child to first child ( temp double)
+0:40          'f37' ( temp double)
+0:40          Constant:
+0:40            0.700000
+0:41      Sequence
+0:41        move second child to first child ( temp double)
+0:41          'f38' ( temp double)
+0:41          Constant:
+0:41            0.800000
+0:42      Sequence
+0:42        move second child to first child ( temp double)
+0:42          'f39' ( temp double)
+0:42          Constant:
+0:42            0.900000
+0:43      Sequence
+0:43        move second child to first child ( temp double)
+0:43          'f4' ( temp double)
+0:43          Constant:
+0:43            0.333333
+0:44      Sequence
+0:44        move second child to first child ( temp double)
+0:44          'f51' ( temp double)
+0:44          Constant:
+0:44            7.8347500000000e-37
+0:45      Sequence
+0:45        move second child to first child ( temp double)
+0:45          'f52' ( temp double)
+0:45          Constant:
+0:45            7.8347500000000e-37
+0:46      Sequence
+0:46        move second child to first child ( temp double)
+0:46          'f53' ( temp double)
+0:46          Constant:
+0:46            7.8347500000000e-37
+0:47      Sequence
+0:47        move second child to first child ( temp double)
+0:47          'f54' ( temp double)
+0:47          Constant:
+0:47            7.8347500000000e-37
+0:48      Sequence
+0:48        move second child to first child ( temp double)
+0:48          'f61' ( temp double)
+0:48          Constant:
+0:48            4.000000
+0:49      Sequence
+0:49        move second child to first child ( temp double)
+0:49          'f62' ( temp double)
+0:49          Constant:
+0:49            40.000000
+0:50      Sequence
+0:50        move second child to first child ( temp double)
+0:50          'f63' ( temp double)
+0:50          Constant:
+0:50            0.000000
+0:51      Sequence
+0:51        move second child to first child ( temp double)
+0:51          'f64' ( temp double)
+0:51          Constant:
+0:51            4.000000
+0:52      Sequence
+0:52        move second child to first child ( temp double)
+0:52          'f65' ( temp double)
+0:52          Constant:
+0:52            0.000000
+0:53      Sequence
+0:53        move second child to first child ( temp double)
+0:53          'f66' ( temp double)
+0:53          Constant:
+0:53            0.004000
+0:54      Sequence
+0:54        move second child to first child ( temp double)
+0:54          'f67' ( temp double)
+0:54          Constant:
+0:54            0.400000
+0:55      Sequence
+0:55        move second child to first child ( temp double)
+0:55          'f68' ( temp double)
+0:55          Constant:
+0:55            0.040000
+0:57      Sequence
+0:57        move second child to first child ( temp double)
+0:57          'c1' ( temp double)
+0:57          Constant:
+0:57            0.000810
+0:58      Sequence
+0:58        move second child to first child ( temp double)
+0:58          'c2' ( temp double)
+0:58          Constant:
+0:58            7.300000
+0:59      Sequence
+0:59        move second child to first child ( temp double)
+0:59          'c3' ( temp double)
+0:59          Constant:
+0:59            3.450000
+0:60      Sequence
+0:60        move second child to first child ( temp double)
+0:60          'c4' ( temp double)
+0:60          Constant:
+0:60            0.003570
+0:61      Sequence
+0:61        move second child to first child ( temp double)
+0:61          'c5' ( temp double)
+0:61          Constant:
+0:61            439.000000
+0:62      Sequence
+0:62        move second child to first child ( temp double)
+0:62          'c6' ( temp double)
+0:62          Constant:
+0:62            522000.000000
+0:63      Sequence
+0:63        move second child to first child ( temp double)
+0:63          'c7' ( temp double)
+0:63          Constant:
+0:63            61000000.000000
+0:64      Sequence
+0:64        move second child to first child ( temp double)
+0:64          'c8' ( temp double)
+0:64          Constant:
+0:64            0.610000
+0:65      Sequence
+0:65        move second child to first child ( temp double)
+0:65          'c9' ( temp double)
+0:65          Constant:
+0:65            1.2345678901235e+18
+0:66      Sequence
+0:66        move second child to first child ( temp double)
+0:66          'c10' ( temp double)
+0:66          Constant:
+0:66            1.0000000000000e+21
+0:67      Sequence
+0:67        move second child to first child ( temp double)
+0:67          'c11' ( temp double)
+0:67          Constant:
+0:67            1230000.004560
+0:68      Sequence
+0:68        move second child to first child ( temp double)
+0:68          'c12' ( temp double)
+0:68          Constant:
+0:68            1230.000004
+0:69      Sequence
+0:69        move second child to first child ( temp double)
+0:69          'c13' ( temp double)
+0:69          Constant:
+0:69            123.000000
+0:70      Sequence
+0:70        move second child to first child ( temp double)
+0:70          'c14' ( temp double)
+0:70          Constant:
+0:70            102.300000
+0:71      Sequence
+0:71        move second child to first child ( temp double)
+0:71          'c15' ( temp double)
+0:71          Constant:
+0:71            1.2003000000456e+12
+0:72      Sequence
+0:72        move second child to first child ( temp double)
+0:72          'c16' ( temp double)
+0:72          Constant:
+0:72            123000000456.000000
+0:73      Sequence
+0:73        move second child to first child ( temp double)
+0:73          'c17' ( temp double)
+0:73          Constant:
+0:73            1.2300000045600e+12
+0:74      Sequence
+0:74        move second child to first child ( temp double)
+0:74          'c18' ( temp double)
+0:74          Constant:
+0:74            1.2300000045601e+12
+0:76      Sequence
+0:76        move second child to first child ( temp double)
+0:76          'b11' ( temp double)
+0:76          Constant:
+0:76            7.2057594037928e+16
+0:77      Sequence
+0:77        move second child to first child ( temp double)
+0:77          'b12' ( temp double)
+0:77          Constant:
+0:77            7.2057594037928e+16
+0:78      Sequence
+0:78        move second child to first child ( temp double)
+0:78          'b13' ( temp double)
+0:78          Constant:
+0:78            7.2057594037928e+16
+0:79      Sequence
+0:79        move second child to first child ( temp double)
+0:79          'b14' ( temp double)
+0:79          Constant:
+0:79            7.2057594037928e+16
+0:80      Sequence
+0:80        move second child to first child ( temp double)
+0:80          'b15' ( temp double)
+0:80          Constant:
+0:80            7.2057594037928e+16
+0:81      Sequence
+0:81        move second child to first child ( temp double)
+0:81          'b21' ( temp double)
+0:81          Constant:
+0:81            9.2233720368548e+18
+0:82      Sequence
+0:82        move second child to first child ( temp double)
+0:82          'b22' ( temp double)
+0:82          Constant:
+0:82            9.2233720368548e+18
+0:83      Sequence
+0:83        move second child to first child ( temp double)
+0:83          'b23' ( temp double)
+0:83          Constant:
+0:83            9.2233720368548e+18
+0:84      Sequence
+0:84        move second child to first child ( temp double)
+0:84          'b24' ( temp double)
+0:84          Constant:
+0:84            9.2233720368548e+18
+0:85      Sequence
+0:85        move second child to first child ( temp double)
+0:85          'b25' ( temp double)
+0:85          Constant:
+0:85            9.2233720368548e+18
+0:86      Sequence
+0:86        move second child to first child ( temp double)
+0:86          'b31' ( temp double)
+0:86          Constant:
+0:86            1.0141204801826e+31
+0:87      Sequence
+0:87        move second child to first child ( temp double)
+0:87          'b32' ( temp double)
+0:87          Constant:
+0:87            1.0141204801826e+31
+0:88      Sequence
+0:88        move second child to first child ( temp double)
+0:88          'b33' ( temp double)
+0:88          Constant:
+0:88            1.0141204801826e+31
+0:89      Sequence
+0:89        move second child to first child ( temp double)
+0:89          'b34' ( temp double)
+0:89          Constant:
+0:89            1.0141204801826e+31
+0:90      Sequence
+0:90        move second child to first child ( temp double)
+0:90          'b35' ( temp double)
+0:90          Constant:
+0:90            1.0141204801826e+31
+0:91      Sequence
+0:91        move second child to first child ( temp double)
+0:91          'b41' ( temp double)
+0:91          Constant:
+0:91            5.7089907708238e+45
+0:92      Sequence
+0:92        move second child to first child ( temp double)
+0:92          'b42' ( temp double)
+0:92          Constant:
+0:92            5.7089907708238e+45
+0:93      Sequence
+0:93        move second child to first child ( temp double)
+0:93          'b43' ( temp double)
+0:93          Constant:
+0:93            5.7089907708238e+45
+0:94      Sequence
+0:94        move second child to first child ( temp double)
+0:94          'b44' ( temp double)
+0:94          Constant:
+0:94            5.7089907708238e+45
+0:95      Sequence
+0:95        move second child to first child ( temp double)
+0:95          'b45' ( temp double)
+0:95          Constant:
+0:95            5.7089907708238e+45
+0:97      Sequence
+0:97        move second child to first child ( temp float)
+0:97          'pi1' ( temp float)
+0:97          Constant:
+0:97            3.141593
+0:98      Sequence
+0:98        move second child to first child ( temp float)
+0:98          'pi2' ( temp float)
+0:98          Constant:
+0:98            3.141593
+0:99      Sequence
+0:99        move second child to first child ( temp float)
+0:99          'pi3' ( temp float)
+0:99          Constant:
+0:99            3.141593
+0:101      Sequence
+0:101        move second child to first child ( temp double)
+0:101          'dpi1' ( temp double)
+0:101          Constant:
+0:101            3.141593
+0:102      Sequence
+0:102        move second child to first child ( temp double)
+0:102          'dpi2' ( temp double)
+0:102          Constant:
+0:102            3.141593
+0:103      Sequence
+0:103        move second child to first child ( temp double)
+0:103          'dpi3' ( temp double)
+0:103          Constant:
+0:103            3.141593
+0:105      Sequence
+0:105        move second child to first child ( temp float)
+0:105          'dfpi1' ( temp float)
+0:105          Constant:
+0:105            3.141593
+0:106      Sequence
+0:106        move second child to first child ( temp float)
+0:106          'dfpi2' ( temp float)
+0:106          Constant:
+0:106            3.141593
+0:107      Sequence
+0:107        move second child to first child ( temp float)
+0:107          'dfpi3' ( temp float)
+0:107          Constant:
+0:107            3.141593
+0:109      Sequence
+0:109        move second child to first child ( temp double)
+0:109          'lfpi1' ( temp double)
+0:109          Constant:
+0:109            3.141593
+0:110      Sequence
+0:110        move second child to first child ( temp double)
+0:110          'lfpi2' ( temp double)
+0:110          Constant:
+0:110            3.141593
+0:111      Sequence
+0:111        move second child to first child ( temp double)
+0:111          'lfpi3' ( temp double)
+0:111          Constant:
+0:111            3.141593
+0:113      Sequence
+0:113        move second child to first child ( temp double)
+0:113          'hfpi1' ( temp double)
+0:113          Constant:
+0:113            3.141593
+0:114      Sequence
+0:114        move second child to first child ( temp double)
+0:114          'hfpi2' ( temp double)
+0:114          Constant:
+0:114            3.141593
+0:115      Sequence
+0:115        move second child to first child ( temp double)
+0:115          'hfpi3' ( temp double)
+0:115          Constant:
+0:115            3.141593
+0:?   Linker Objects
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 460
+Requested GL_EXT_shader_explicit_arithmetic_types_float16
+0:? Sequence
+0:3  Function Definition: main( ( global void)
+0:3    Function Parameters: 
+0:5    Sequence
+0:5      Sequence
+0:5        move second child to first child ( temp float)
+0:5          'w1' ( temp float)
+0:5          Constant:
+0:5            0.000000
+0:6      Sequence
+0:6        move second child to first child ( temp float)
+0:6          'w2' ( temp float)
+0:6          Constant:
+0:6            1.000000
+0:7      Sequence
+0:7        move second child to first child ( temp float)
+0:7          'w3' ( temp float)
+0:7          Constant:
+0:7            7.000000
+0:8      Sequence
+0:8        move second child to first child ( temp float)
+0:8          'w4' ( temp float)
+0:8          Constant:
+0:8            130000.000000
+0:9      Sequence
+0:9        move second child to first child ( temp float)
+0:9          'w5' ( temp float)
+0:9          Constant:
+0:9            123456789.000000
+0:10      Sequence
+0:10        move second child to first child ( temp double)
+0:10          'w6' ( temp double)
+0:10          Constant:
+0:10            1.2345678901235e+15
+0:11      Sequence
+0:11        move second child to first child ( temp double)
+0:11          'w7' ( temp double)
+0:11          Constant:
+0:11            1.2345678901235e+16
+0:12      Sequence
+0:12        move second child to first child ( temp double)
+0:12          'w8' ( temp double)
+0:12          Constant:
+0:12            1.2345678901235e+17
+0:13      Sequence
+0:13        move second child to first child ( temp double)
+0:13          'w9' ( temp double)
+0:13          Constant:
+0:13            1.2345678901235e+19
+0:14      Sequence
+0:14        move second child to first child ( temp double)
+0:14          'w10' ( temp double)
+0:14          Constant:
+0:14            1.2345678901235e+24
+0:16      Sequence
+0:16        move second child to first child ( temp float)
+0:16          'e1' ( temp float)
+0:16          Constant:
+0:16            0.000000
+0:17      Sequence
+0:17        move second child to first child ( temp float)
+0:17          'e2' ( temp float)
+0:17          Constant:
+0:17            1.000000
+0:18      Sequence
+0:18        move second child to first child ( temp float)
+0:18          'e3' ( temp float)
+0:18          Constant:
+0:18            0.000000
+0:19      Sequence
+0:19        move second child to first child ( temp float)
+0:19          'e4' ( temp float)
+0:19          Constant:
+0:19            1.0000000000000e+15
+0:20      Sequence
+0:20        move second child to first child ( temp float)
+0:20          'e5' ( temp float)
+0:20          Constant:
+0:20            1.0000000000000e+16
+0:21      Sequence
+0:21        move second child to first child ( temp float)
+0:21          'e6' ( temp float)
+0:21          Constant:
+0:21            0.000000
+0:22      Sequence
+0:22        move second child to first child ( temp float)
+0:22          'e7' ( temp float)
+0:22          Constant:
+0:22            1.0000000000000e-15
+0:23      Sequence
+0:23        move second child to first child ( temp float)
+0:23          'e8' ( temp float)
+0:23          Constant:
+0:23            1.0000000000000e-16
+0:24      Sequence
+0:24        move second child to first child ( temp double)
+0:24          'e9' ( temp double)
+0:24          Constant:
+0:24            1.0000000000000e+100
+0:25      Sequence
+0:25        move second child to first child ( temp double)
+0:25          'e10' ( temp double)
+0:25          Constant:
+0:25            1.0000000000000e+308
+0:26      Sequence
+0:26        move second child to first child ( temp double)
+0:26          'e11' ( temp double)
+0:26          Constant:
+0:26            1.0000000000000e-307
+0:27      Sequence
+0:27        move second child to first child ( temp double)
+0:27          'e12' ( temp double)
+0:27          Constant:
+0:27            +1.#INF
+0:28      Sequence
+0:28        move second child to first child ( temp double)
+0:28          'e13' ( temp double)
+0:28          Constant:
+0:28            0.000000
+0:29      Sequence
+0:29        move second child to first child ( temp double)
+0:29          'e24' ( temp double)
+0:29          Constant:
+0:29            +1.#INF
+0:30      Sequence
+0:30        move second child to first child ( temp double)
+0:30          'e25' ( temp double)
+0:30          Constant:
+0:30            0.000000
+0:32      Sequence
+0:32        move second child to first child ( temp double)
+0:32          'f1' ( temp double)
+0:32          Constant:
+0:32            0.500000
+0:33      Sequence
+0:33        move second child to first child ( temp double)
+0:33          'f2' ( temp double)
+0:33          Constant:
+0:33            0.125000
+0:34      Sequence
+0:34        move second child to first child ( temp double)
+0:34          'f31' ( temp double)
+0:34          Constant:
+0:34            0.100000
+0:35      Sequence
+0:35        move second child to first child ( temp double)
+0:35          'f32' ( temp double)
+0:35          Constant:
+0:35            0.200000
+0:36      Sequence
+0:36        move second child to first child ( temp double)
+0:36          'f33' ( temp double)
+0:36          Constant:
+0:36            0.300000
+0:37      Sequence
+0:37        move second child to first child ( temp double)
+0:37          'f34' ( temp double)
+0:37          Constant:
+0:37            0.400000
+0:38      Sequence
+0:38        move second child to first child ( temp double)
+0:38          'f35' ( temp double)
+0:38          Constant:
+0:38            0.500000
+0:39      Sequence
+0:39        move second child to first child ( temp double)
+0:39          'f36' ( temp double)
+0:39          Constant:
+0:39            0.600000
+0:40      Sequence
+0:40        move second child to first child ( temp double)
+0:40          'f37' ( temp double)
+0:40          Constant:
+0:40            0.700000
+0:41      Sequence
+0:41        move second child to first child ( temp double)
+0:41          'f38' ( temp double)
+0:41          Constant:
+0:41            0.800000
+0:42      Sequence
+0:42        move second child to first child ( temp double)
+0:42          'f39' ( temp double)
+0:42          Constant:
+0:42            0.900000
+0:43      Sequence
+0:43        move second child to first child ( temp double)
+0:43          'f4' ( temp double)
+0:43          Constant:
+0:43            0.333333
+0:44      Sequence
+0:44        move second child to first child ( temp double)
+0:44          'f51' ( temp double)
+0:44          Constant:
+0:44            7.8347500000000e-37
+0:45      Sequence
+0:45        move second child to first child ( temp double)
+0:45          'f52' ( temp double)
+0:45          Constant:
+0:45            7.8347500000000e-37
+0:46      Sequence
+0:46        move second child to first child ( temp double)
+0:46          'f53' ( temp double)
+0:46          Constant:
+0:46            7.8347500000000e-37
+0:47      Sequence
+0:47        move second child to first child ( temp double)
+0:47          'f54' ( temp double)
+0:47          Constant:
+0:47            7.8347500000000e-37
+0:48      Sequence
+0:48        move second child to first child ( temp double)
+0:48          'f61' ( temp double)
+0:48          Constant:
+0:48            4.000000
+0:49      Sequence
+0:49        move second child to first child ( temp double)
+0:49          'f62' ( temp double)
+0:49          Constant:
+0:49            40.000000
+0:50      Sequence
+0:50        move second child to first child ( temp double)
+0:50          'f63' ( temp double)
+0:50          Constant:
+0:50            0.000000
+0:51      Sequence
+0:51        move second child to first child ( temp double)
+0:51          'f64' ( temp double)
+0:51          Constant:
+0:51            4.000000
+0:52      Sequence
+0:52        move second child to first child ( temp double)
+0:52          'f65' ( temp double)
+0:52          Constant:
+0:52            0.000000
+0:53      Sequence
+0:53        move second child to first child ( temp double)
+0:53          'f66' ( temp double)
+0:53          Constant:
+0:53            0.004000
+0:54      Sequence
+0:54        move second child to first child ( temp double)
+0:54          'f67' ( temp double)
+0:54          Constant:
+0:54            0.400000
+0:55      Sequence
+0:55        move second child to first child ( temp double)
+0:55          'f68' ( temp double)
+0:55          Constant:
+0:55            0.040000
+0:57      Sequence
+0:57        move second child to first child ( temp double)
+0:57          'c1' ( temp double)
+0:57          Constant:
+0:57            0.000810
+0:58      Sequence
+0:58        move second child to first child ( temp double)
+0:58          'c2' ( temp double)
+0:58          Constant:
+0:58            7.300000
+0:59      Sequence
+0:59        move second child to first child ( temp double)
+0:59          'c3' ( temp double)
+0:59          Constant:
+0:59            3.450000
+0:60      Sequence
+0:60        move second child to first child ( temp double)
+0:60          'c4' ( temp double)
+0:60          Constant:
+0:60            0.003570
+0:61      Sequence
+0:61        move second child to first child ( temp double)
+0:61          'c5' ( temp double)
+0:61          Constant:
+0:61            439.000000
+0:62      Sequence
+0:62        move second child to first child ( temp double)
+0:62          'c6' ( temp double)
+0:62          Constant:
+0:62            522000.000000
+0:63      Sequence
+0:63        move second child to first child ( temp double)
+0:63          'c7' ( temp double)
+0:63          Constant:
+0:63            61000000.000000
+0:64      Sequence
+0:64        move second child to first child ( temp double)
+0:64          'c8' ( temp double)
+0:64          Constant:
+0:64            0.610000
+0:65      Sequence
+0:65        move second child to first child ( temp double)
+0:65          'c9' ( temp double)
+0:65          Constant:
+0:65            1.2345678901235e+18
+0:66      Sequence
+0:66        move second child to first child ( temp double)
+0:66          'c10' ( temp double)
+0:66          Constant:
+0:66            1.0000000000000e+21
+0:67      Sequence
+0:67        move second child to first child ( temp double)
+0:67          'c11' ( temp double)
+0:67          Constant:
+0:67            1230000.004560
+0:68      Sequence
+0:68        move second child to first child ( temp double)
+0:68          'c12' ( temp double)
+0:68          Constant:
+0:68            1230.000004
+0:69      Sequence
+0:69        move second child to first child ( temp double)
+0:69          'c13' ( temp double)
+0:69          Constant:
+0:69            123.000000
+0:70      Sequence
+0:70        move second child to first child ( temp double)
+0:70          'c14' ( temp double)
+0:70          Constant:
+0:70            102.300000
+0:71      Sequence
+0:71        move second child to first child ( temp double)
+0:71          'c15' ( temp double)
+0:71          Constant:
+0:71            1.2003000000456e+12
+0:72      Sequence
+0:72        move second child to first child ( temp double)
+0:72          'c16' ( temp double)
+0:72          Constant:
+0:72            123000000456.000000
+0:73      Sequence
+0:73        move second child to first child ( temp double)
+0:73          'c17' ( temp double)
+0:73          Constant:
+0:73            1.2300000045600e+12
+0:74      Sequence
+0:74        move second child to first child ( temp double)
+0:74          'c18' ( temp double)
+0:74          Constant:
+0:74            1.2300000045601e+12
+0:76      Sequence
+0:76        move second child to first child ( temp double)
+0:76          'b11' ( temp double)
+0:76          Constant:
+0:76            7.2057594037928e+16
+0:77      Sequence
+0:77        move second child to first child ( temp double)
+0:77          'b12' ( temp double)
+0:77          Constant:
+0:77            7.2057594037928e+16
+0:78      Sequence
+0:78        move second child to first child ( temp double)
+0:78          'b13' ( temp double)
+0:78          Constant:
+0:78            7.2057594037928e+16
+0:79      Sequence
+0:79        move second child to first child ( temp double)
+0:79          'b14' ( temp double)
+0:79          Constant:
+0:79            7.2057594037928e+16
+0:80      Sequence
+0:80        move second child to first child ( temp double)
+0:80          'b15' ( temp double)
+0:80          Constant:
+0:80            7.2057594037928e+16
+0:81      Sequence
+0:81        move second child to first child ( temp double)
+0:81          'b21' ( temp double)
+0:81          Constant:
+0:81            9.2233720368548e+18
+0:82      Sequence
+0:82        move second child to first child ( temp double)
+0:82          'b22' ( temp double)
+0:82          Constant:
+0:82            9.2233720368548e+18
+0:83      Sequence
+0:83        move second child to first child ( temp double)
+0:83          'b23' ( temp double)
+0:83          Constant:
+0:83            9.2233720368548e+18
+0:84      Sequence
+0:84        move second child to first child ( temp double)
+0:84          'b24' ( temp double)
+0:84          Constant:
+0:84            9.2233720368548e+18
+0:85      Sequence
+0:85        move second child to first child ( temp double)
+0:85          'b25' ( temp double)
+0:85          Constant:
+0:85            9.2233720368548e+18
+0:86      Sequence
+0:86        move second child to first child ( temp double)
+0:86          'b31' ( temp double)
+0:86          Constant:
+0:86            1.0141204801826e+31
+0:87      Sequence
+0:87        move second child to first child ( temp double)
+0:87          'b32' ( temp double)
+0:87          Constant:
+0:87            1.0141204801826e+31
+0:88      Sequence
+0:88        move second child to first child ( temp double)
+0:88          'b33' ( temp double)
+0:88          Constant:
+0:88            1.0141204801826e+31
+0:89      Sequence
+0:89        move second child to first child ( temp double)
+0:89          'b34' ( temp double)
+0:89          Constant:
+0:89            1.0141204801826e+31
+0:90      Sequence
+0:90        move second child to first child ( temp double)
+0:90          'b35' ( temp double)
+0:90          Constant:
+0:90            1.0141204801826e+31
+0:91      Sequence
+0:91        move second child to first child ( temp double)
+0:91          'b41' ( temp double)
+0:91          Constant:
+0:91            5.7089907708238e+45
+0:92      Sequence
+0:92        move second child to first child ( temp double)
+0:92          'b42' ( temp double)
+0:92          Constant:
+0:92            5.7089907708238e+45
+0:93      Sequence
+0:93        move second child to first child ( temp double)
+0:93          'b43' ( temp double)
+0:93          Constant:
+0:93            5.7089907708238e+45
+0:94      Sequence
+0:94        move second child to first child ( temp double)
+0:94          'b44' ( temp double)
+0:94          Constant:
+0:94            5.7089907708238e+45
+0:95      Sequence
+0:95        move second child to first child ( temp double)
+0:95          'b45' ( temp double)
+0:95          Constant:
+0:95            5.7089907708238e+45
+0:97      Sequence
+0:97        move second child to first child ( temp float)
+0:97          'pi1' ( temp float)
+0:97          Constant:
+0:97            3.141593
+0:98      Sequence
+0:98        move second child to first child ( temp float)
+0:98          'pi2' ( temp float)
+0:98          Constant:
+0:98            3.141593
+0:99      Sequence
+0:99        move second child to first child ( temp float)
+0:99          'pi3' ( temp float)
+0:99          Constant:
+0:99            3.141593
+0:101      Sequence
+0:101        move second child to first child ( temp double)
+0:101          'dpi1' ( temp double)
+0:101          Constant:
+0:101            3.141593
+0:102      Sequence
+0:102        move second child to first child ( temp double)
+0:102          'dpi2' ( temp double)
+0:102          Constant:
+0:102            3.141593
+0:103      Sequence
+0:103        move second child to first child ( temp double)
+0:103          'dpi3' ( temp double)
+0:103          Constant:
+0:103            3.141593
+0:105      Sequence
+0:105        move second child to first child ( temp float)
+0:105          'dfpi1' ( temp float)
+0:105          Constant:
+0:105            3.141593
+0:106      Sequence
+0:106        move second child to first child ( temp float)
+0:106          'dfpi2' ( temp float)
+0:106          Constant:
+0:106            3.141593
+0:107      Sequence
+0:107        move second child to first child ( temp float)
+0:107          'dfpi3' ( temp float)
+0:107          Constant:
+0:107            3.141593
+0:109      Sequence
+0:109        move second child to first child ( temp double)
+0:109          'lfpi1' ( temp double)
+0:109          Constant:
+0:109            3.141593
+0:110      Sequence
+0:110        move second child to first child ( temp double)
+0:110          'lfpi2' ( temp double)
+0:110          Constant:
+0:110            3.141593
+0:111      Sequence
+0:111        move second child to first child ( temp double)
+0:111          'lfpi3' ( temp double)
+0:111          Constant:
+0:111            3.141593
+0:113      Sequence
+0:113        move second child to first child ( temp double)
+0:113          'hfpi1' ( temp double)
+0:113          Constant:
+0:113            3.141593
+0:114      Sequence
+0:114        move second child to first child ( temp double)
+0:114          'hfpi2' ( temp double)
+0:114          Constant:
+0:114            3.141593
+0:115      Sequence
+0:115        move second child to first child ( temp double)
+0:115          'hfpi3' ( temp double)
+0:115          Constant:
+0:115            3.141593
+0:?   Linker Objects
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

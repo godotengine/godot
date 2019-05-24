@@ -1,0 +1,186 @@
+# Copyright (C) 2018 Google, Inc.
+#
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#    Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#    Redistributions in binary form must reproduce the above
+#    copyright notice, this list of conditions and the following
+#    disclaimer in the documentation and/or other materials provided
+#    with the distribution.
+#
+#    Neither the name of Google Inc. nor the names of its
+#    contributors may be used to endorse or promote products derived
+#    from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+import("//build_overrides/glslang.gni")
+
+spirv_tools_dir = glslang_spirv_tools_dir
+
+config("glslang_public") {
+  include_dirs = [ "." ]
+}
+
+source_set("glslang_sources") {
+  public_configs = [ ":glslang_public" ]
+
+  sources = [
+    "OGLCompilersDLL/InitializeDll.cpp",
+    "OGLCompilersDLL/InitializeDll.h",
+    "SPIRV/GLSL.ext.EXT.h",
+    "SPIRV/GLSL.ext.KHR.h",
+    "SPIRV/GLSL.std.450.h",
+    "SPIRV/GlslangToSpv.cpp",
+    "SPIRV/GlslangToSpv.h",
+    "SPIRV/InReadableOrder.cpp",
+    "SPIRV/Logger.cpp",
+    "SPIRV/Logger.h",
+    "SPIRV/SPVRemapper.cpp",
+    "SPIRV/SPVRemapper.h",
+    "SPIRV/SpvBuilder.cpp",
+    "SPIRV/SpvBuilder.h",
+    "SPIRV/SpvPostProcess.cpp",
+    "SPIRV/bitutils.h",
+    "SPIRV/disassemble.cpp",
+    "SPIRV/disassemble.h",
+    "SPIRV/doc.cpp",
+    "SPIRV/doc.h",
+    "SPIRV/hex_float.h",
+    "SPIRV/spirv.hpp",
+    "SPIRV/spvIR.h",
+    "glslang/GenericCodeGen/CodeGen.cpp",
+    "glslang/GenericCodeGen/Link.cpp",
+    "glslang/Include/BaseTypes.h",
+    "glslang/Include/Common.h",
+    "glslang/Include/ConstantUnion.h",
+    "glslang/Include/InfoSink.h",
+    "glslang/Include/InitializeGlobals.h",
+    "glslang/Include/PoolAlloc.h",
+    "glslang/Include/ResourceLimits.h",
+    "glslang/Include/ShHandle.h",
+    "glslang/Include/Types.h",
+    "glslang/Include/arrays.h",
+    "glslang/Include/intermediate.h",
+    "glslang/Include/revision.h",
+    "glslang/MachineIndependent/Constant.cpp",
+    "glslang/MachineIndependent/InfoSink.cpp",
+    "glslang/MachineIndependent/Initialize.cpp",
+    "glslang/MachineIndependent/Initialize.h",
+    "glslang/MachineIndependent/IntermTraverse.cpp",
+    "glslang/MachineIndependent/Intermediate.cpp",
+    "glslang/MachineIndependent/LiveTraverser.h",
+    "glslang/MachineIndependent/ParseContextBase.cpp",
+    "glslang/MachineIndependent/ParseHelper.cpp",
+    "glslang/MachineIndependent/ParseHelper.h",
+    "glslang/MachineIndependent/PoolAlloc.cpp",
+    "glslang/MachineIndependent/RemoveTree.cpp",
+    "glslang/MachineIndependent/RemoveTree.h",
+    "glslang/MachineIndependent/Scan.cpp",
+    "glslang/MachineIndependent/Scan.h",
+    "glslang/MachineIndependent/ScanContext.h",
+    "glslang/MachineIndependent/ShaderLang.cpp",
+    "glslang/MachineIndependent/SymbolTable.cpp",
+    "glslang/MachineIndependent/SymbolTable.h",
+    "glslang/MachineIndependent/Versions.cpp",
+    "glslang/MachineIndependent/Versions.h",
+    "glslang/MachineIndependent/attribute.cpp",
+    "glslang/MachineIndependent/attribute.h",
+    "glslang/MachineIndependent/gl_types.h",
+    "glslang/MachineIndependent/glslang.y",
+    "glslang/MachineIndependent/glslang_tab.cpp",
+    "glslang/MachineIndependent/glslang_tab.cpp.h",
+    "glslang/MachineIndependent/intermOut.cpp",
+    "glslang/MachineIndependent/iomapper.cpp",
+    "glslang/MachineIndependent/iomapper.h",
+    "glslang/MachineIndependent/limits.cpp",
+    "glslang/MachineIndependent/linkValidate.cpp",
+    "glslang/MachineIndependent/localintermediate.h",
+    "glslang/MachineIndependent/parseConst.cpp",
+    "glslang/MachineIndependent/parseVersions.h",
+    "glslang/MachineIndependent/preprocessor/Pp.cpp",
+    "glslang/MachineIndependent/preprocessor/PpAtom.cpp",
+    "glslang/MachineIndependent/preprocessor/PpContext.cpp",
+    "glslang/MachineIndependent/preprocessor/PpContext.h",
+    "glslang/MachineIndependent/preprocessor/PpScanner.cpp",
+    "glslang/MachineIndependent/preprocessor/PpTokens.cpp",
+    "glslang/MachineIndependent/preprocessor/PpTokens.h",
+    "glslang/MachineIndependent/propagateNoContraction.cpp",
+    "glslang/MachineIndependent/propagateNoContraction.h",
+    "glslang/MachineIndependent/reflection.cpp",
+    "glslang/MachineIndependent/reflection.h",
+    "glslang/OSDependent/osinclude.h",
+    "glslang/Public/ShaderLang.h",
+  ]
+
+  defines = []
+  if (is_win) {
+    sources += [ "glslang/OSDependent/Windows/ossource.cpp" ]
+    defines += [ "GLSLANG_OSINCLUDE_WIN32" ]
+  } else {
+    sources += [ "glslang/OSDependent/Unix/ossource.cpp" ]
+    defines += [ "GLSLANG_OSINCLUDE_UNIX" ]
+  }
+
+  if (is_clang) {
+    cflags_cc = [
+      "-Wno-extra-semi",
+      "-Wno-ignored-qualifiers",
+      "-Wno-implicit-fallthrough",
+      "-Wno-inconsistent-missing-override",
+      "-Wno-sign-compare",
+      "-Wno-unused-variable",
+    ]
+  }
+  if (is_win && !is_clang) {
+    cflags = [
+      "/wd4018", # signed/unsigned mismatch
+      "/wd4189", # local variable is initialized but not referenced
+    ]
+  }
+
+  deps = [
+    "${spirv_tools_dir}:spvtools_opt",
+  ]
+}
+
+source_set("glslang_default_resource_limits_sources") {
+  sources = [
+    "StandAlone/ResourceLimits.cpp",
+    "StandAlone/ResourceLimits.h",
+  ]
+  deps = [ ":glslang_sources" ]
+  public_configs = [ ":glslang_public" ]
+}
+
+executable("glslang_validator") {
+  sources = [
+    "StandAlone/DirStackFileIncluder.h",
+    "StandAlone/StandAlone.cpp",
+  ]
+  if (!is_win) {
+    cflags = [ "-Woverflow" ]
+  }
+  defines = [ "ENABLE_OPT=0" ]
+  deps = [
+    ":glslang_default_resource_limits_sources",
+    ":glslang_sources",
+  ]
+}

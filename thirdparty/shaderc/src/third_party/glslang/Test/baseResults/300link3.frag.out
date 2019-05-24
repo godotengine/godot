@@ -1,0 +1,19 @@
+300link3.frag
+Shader version: 300
+0:? Sequence
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:?   Linker Objects
+0:?     'color1' ( out highp 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 300
+0:? Sequence
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:?   Linker Objects
+0:?     'color1' ( out highp 4-component vector of float)
+

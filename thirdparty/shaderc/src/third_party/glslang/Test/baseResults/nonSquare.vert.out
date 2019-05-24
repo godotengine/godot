@@ -1,0 +1,183 @@
+nonSquare.vert
+Shader version: 120
+0:? Sequence
+0:15  Function Definition: main( ( global void)
+0:15    Function Parameters: 
+0:?     Sequence
+0:20      move second child to first child ( temp 2-component vector of float)
+0:20        'a' ( temp 2-component vector of float)
+0:20        vector-times-matrix ( temp 2-component vector of float)
+0:20          'v3' ( in 3-component vector of float)
+0:20          'm23' ( temp 2X3 matrix of float)
+0:21      move second child to first child ( temp 2-component vector of float)
+0:21        'b' ( temp 2-component vector of float)
+0:21        matrix-times-vector ( temp 2-component vector of float)
+0:21          'm32' ( uniform 3X2 matrix of float)
+0:21          'v3' ( in 3-component vector of float)
+0:23      move second child to first child ( temp 4-component vector of float)
+0:23        'gl_Position' ( gl_Position 4-component vector of float Position)
+0:24        add ( temp 4-component vector of float)
+0:24          add ( temp 4-component vector of float)
+0:24            add ( temp 4-component vector of float)
+0:23              add ( temp 4-component vector of float)
+0:23                Construct vec4 ( temp 4-component vector of float)
+0:23                  matrix-times-vector ( temp 3-component vector of float)
+0:23                    matrix-multiply ( temp 3X3 matrix of float)
+0:23                      'm23' ( temp 2X3 matrix of float)
+0:23                      'm32' ( uniform 3X2 matrix of float)
+0:23                    'v3' ( in 3-component vector of float)
+0:23                  Constant:
+0:23                    0.000000
+0:24                matrix-times-vector ( temp 4-component vector of float)
+0:24                  Constant:
+0:24                    3.000000
+0:24                    6.000000
+0:24                    0.000000
+0:24                    0.000000
+0:24                    9.000000
+0:24                    12.000000
+0:24                    0.000000
+0:24                    0.000000
+0:24                    15.000000
+0:24                    18.000000
+0:24                    0.000000
+0:24                    0.000000
+0:24                    21.000000
+0:24                    24.000000
+0:24                    0.000000
+0:24                    0.000000
+0:24                  'v4' ( in 4-component vector of float)
+0:24              Constant:
+0:24                50.000000
+0:24                110.000000
+0:24                170.000000
+0:24                230.000000
+0:24            Constant:
+0:24              30.000000
+0:24              60.000000
+0:24              0.000000
+0:24              0.000000
+0:24          Constant:
+0:24            20.000000
+0:24            10.000000
+0:24            6.000000
+0:24            5.000000
+0:?   Linker Objects
+0:?     'v3' ( in 3-component vector of float)
+0:?     'v4' ( in 4-component vector of float)
+0:?     'm32' ( uniform 3X2 matrix of float)
+0:?     'cv2' ( const 2-component vector of float)
+0:?       10.000000
+0:?       20.000000
+0:?     'm24' ( const 2X4 matrix of float)
+0:?       3.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       3.000000
+0:?       0.000000
+0:?       0.000000
+0:?     'm42' ( const 4X2 matrix of float)
+0:?       1.000000
+0:?       2.000000
+0:?       3.000000
+0:?       4.000000
+0:?       5.000000
+0:?       6.000000
+0:?       7.000000
+0:?       8.000000
+
+
+Linked vertex stage:
+
+
+Shader version: 120
+0:? Sequence
+0:15  Function Definition: main( ( global void)
+0:15    Function Parameters: 
+0:?     Sequence
+0:20      move second child to first child ( temp 2-component vector of float)
+0:20        'a' ( temp 2-component vector of float)
+0:20        vector-times-matrix ( temp 2-component vector of float)
+0:20          'v3' ( in 3-component vector of float)
+0:20          'm23' ( temp 2X3 matrix of float)
+0:21      move second child to first child ( temp 2-component vector of float)
+0:21        'b' ( temp 2-component vector of float)
+0:21        matrix-times-vector ( temp 2-component vector of float)
+0:21          'm32' ( uniform 3X2 matrix of float)
+0:21          'v3' ( in 3-component vector of float)
+0:23      move second child to first child ( temp 4-component vector of float)
+0:23        'gl_Position' ( gl_Position 4-component vector of float Position)
+0:24        add ( temp 4-component vector of float)
+0:24          add ( temp 4-component vector of float)
+0:24            add ( temp 4-component vector of float)
+0:23              add ( temp 4-component vector of float)
+0:23                Construct vec4 ( temp 4-component vector of float)
+0:23                  matrix-times-vector ( temp 3-component vector of float)
+0:23                    matrix-multiply ( temp 3X3 matrix of float)
+0:23                      'm23' ( temp 2X3 matrix of float)
+0:23                      'm32' ( uniform 3X2 matrix of float)
+0:23                    'v3' ( in 3-component vector of float)
+0:23                  Constant:
+0:23                    0.000000
+0:24                matrix-times-vector ( temp 4-component vector of float)
+0:24                  Constant:
+0:24                    3.000000
+0:24                    6.000000
+0:24                    0.000000
+0:24                    0.000000
+0:24                    9.000000
+0:24                    12.000000
+0:24                    0.000000
+0:24                    0.000000
+0:24                    15.000000
+0:24                    18.000000
+0:24                    0.000000
+0:24                    0.000000
+0:24                    21.000000
+0:24                    24.000000
+0:24                    0.000000
+0:24                    0.000000
+0:24                  'v4' ( in 4-component vector of float)
+0:24              Constant:
+0:24                50.000000
+0:24                110.000000
+0:24                170.000000
+0:24                230.000000
+0:24            Constant:
+0:24              30.000000
+0:24              60.000000
+0:24              0.000000
+0:24              0.000000
+0:24          Constant:
+0:24            20.000000
+0:24            10.000000
+0:24            6.000000
+0:24            5.000000
+0:?   Linker Objects
+0:?     'v3' ( in 3-component vector of float)
+0:?     'v4' ( in 4-component vector of float)
+0:?     'm32' ( uniform 3X2 matrix of float)
+0:?     'cv2' ( const 2-component vector of float)
+0:?       10.000000
+0:?       20.000000
+0:?     'm24' ( const 2X4 matrix of float)
+0:?       3.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       3.000000
+0:?       0.000000
+0:?       0.000000
+0:?     'm42' ( const 4X2 matrix of float)
+0:?       1.000000
+0:?       2.000000
+0:?       3.000000
+0:?       4.000000
+0:?       5.000000
+0:?       6.000000
+0:?       7.000000
+0:?       8.000000
+

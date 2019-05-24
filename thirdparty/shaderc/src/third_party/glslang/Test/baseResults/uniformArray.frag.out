@@ -1,0 +1,97 @@
+uniformArray.frag
+Shader version: 130
+0:? Sequence
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:9    Sequence
+0:9      Sequence
+0:9        move second child to first child ( temp 4-component vector of float)
+0:9          'texColor' ( temp 4-component vector of float)
+0:9          add ( temp 4-component vector of float)
+0:9            direct index ( temp 4-component vector of float)
+0:9              'color' ( uniform 6-element array of 4-component vector of float)
+0:9              Constant:
+0:9                1 (const int)
+0:9            direct index ( temp 4-component vector of float)
+0:9              'color' ( uniform 6-element array of 4-component vector of float)
+0:9              Constant:
+0:9                1 (const int)
+0:11      add second child into first child ( temp 3-component vector of float)
+0:11        vector swizzle ( temp 3-component vector of float)
+0:11          'texColor' ( temp 4-component vector of float)
+0:11          Sequence
+0:11            Constant:
+0:11              0 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11            Constant:
+0:11              2 (const int)
+0:11        'inColor' ( uniform 3-component vector of float)
+0:13      add second child into first child ( temp float)
+0:13        direct index ( temp float)
+0:13          'texColor' ( temp 4-component vector of float)
+0:13          Constant:
+0:13            3 (const int)
+0:13        direct index ( temp float)
+0:13          'alpha' ( uniform 16-element array of float)
+0:13          Constant:
+0:13            12 (const int)
+0:15      move second child to first child ( temp 4-component vector of float)
+0:15        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:15        'texColor' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'texSampler2D' ( uniform sampler2D)
+0:?     'inColor' ( uniform 3-component vector of float)
+0:?     'color' ( uniform 6-element array of 4-component vector of float)
+0:?     'alpha' ( uniform 16-element array of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 130
+0:? Sequence
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:9    Sequence
+0:9      Sequence
+0:9        move second child to first child ( temp 4-component vector of float)
+0:9          'texColor' ( temp 4-component vector of float)
+0:9          add ( temp 4-component vector of float)
+0:9            direct index ( temp 4-component vector of float)
+0:9              'color' ( uniform 6-element array of 4-component vector of float)
+0:9              Constant:
+0:9                1 (const int)
+0:9            direct index ( temp 4-component vector of float)
+0:9              'color' ( uniform 6-element array of 4-component vector of float)
+0:9              Constant:
+0:9                1 (const int)
+0:11      add second child into first child ( temp 3-component vector of float)
+0:11        vector swizzle ( temp 3-component vector of float)
+0:11          'texColor' ( temp 4-component vector of float)
+0:11          Sequence
+0:11            Constant:
+0:11              0 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11            Constant:
+0:11              2 (const int)
+0:11        'inColor' ( uniform 3-component vector of float)
+0:13      add second child into first child ( temp float)
+0:13        direct index ( temp float)
+0:13          'texColor' ( temp 4-component vector of float)
+0:13          Constant:
+0:13            3 (const int)
+0:13        direct index ( temp float)
+0:13          'alpha' ( uniform 16-element array of float)
+0:13          Constant:
+0:13            12 (const int)
+0:15      move second child to first child ( temp 4-component vector of float)
+0:15        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:15        'texColor' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'texSampler2D' ( uniform sampler2D)
+0:?     'inColor' ( uniform 3-component vector of float)
+0:?     'color' ( uniform 6-element array of 4-component vector of float)
+0:?     'alpha' ( uniform 16-element array of float)
+

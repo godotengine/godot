@@ -1,0 +1,9 @@
+spv.ClosestHitShader_Errors.rchit
+ERROR: 0:8: 'assign' :  l-value required "payload" (cannot modify hitAttributeNV in this stage)
+ERROR: 0:9: 'reportIntersectionNV' : no matching overloaded function found 
+ERROR: 0:10: 'terminateRayNV' : no matching overloaded function found 
+ERROR: 0:11: 'ignoreIntersectionNV' : no matching overloaded function found 
+ERROR: 4 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

@@ -1,0 +1,200 @@
+hlsl.getdimensions.dx10.vert
+Shader version: 500
+0:? Sequence
+0:11  Function Definition: @main( ( temp structure{ temp 4-component vector of float Pos})
+0:11    Function Parameters: 
+0:?     Sequence
+0:21      Sequence
+0:21        move second child to first child ( temp uint)
+0:21          'sizeQueryTemp' ( temp uint)
+0:21          textureSize ( temp uint)
+0:21            'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:21            Constant:
+0:21              0 (const int)
+0:21        move second child to first child ( temp uint)
+0:21          'WidthU' ( temp uint)
+0:21          'sizeQueryTemp' ( temp uint)
+0:22      Sequence
+0:22        move second child to first child ( temp uint)
+0:22          'sizeQueryTemp' ( temp uint)
+0:22          textureSize ( temp uint)
+0:22            'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:22            Constant:
+0:22              6 (const uint)
+0:22        move second child to first child ( temp uint)
+0:22          'WidthU' ( temp uint)
+0:22          'sizeQueryTemp' ( temp uint)
+0:22        move second child to first child ( temp uint)
+0:22          'NumberOfLevelsU' ( temp uint)
+0:22          textureQueryLevels ( temp uint)
+0:22            'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:24      move second child to first child ( temp 4-component vector of float)
+0:24        Pos: direct index for structure ( temp 4-component vector of float)
+0:24          'vsout' ( temp structure{ temp 4-component vector of float Pos})
+0:24          Constant:
+0:24            0 (const int)
+0:?         Constant:
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:26      Branch: Return with expression
+0:26        'vsout' ( temp structure{ temp 4-component vector of float Pos})
+0:11  Function Definition: main( ( temp void)
+0:11    Function Parameters: 
+0:?     Sequence
+0:11      Sequence
+0:11        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Pos' ( out 4-component vector of float Position)
+0:11          Pos: direct index for structure ( temp 4-component vector of float)
+0:11            Function Call: @main( ( temp structure{ temp 4-component vector of float Pos})
+0:11            Constant:
+0:11              0 (const int)
+0:?   Linker Objects
+0:?     'g_sSamp' (layout( binding=0) uniform sampler)
+0:?     'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:?     '@entryPointOutput.Pos' ( out 4-component vector of float Position)
+
+
+Linked vertex stage:
+
+
+Shader version: 500
+0:? Sequence
+0:11  Function Definition: @main( ( temp structure{ temp 4-component vector of float Pos})
+0:11    Function Parameters: 
+0:?     Sequence
+0:21      Sequence
+0:21        move second child to first child ( temp uint)
+0:21          'sizeQueryTemp' ( temp uint)
+0:21          textureSize ( temp uint)
+0:21            'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:21            Constant:
+0:21              0 (const int)
+0:21        move second child to first child ( temp uint)
+0:21          'WidthU' ( temp uint)
+0:21          'sizeQueryTemp' ( temp uint)
+0:22      Sequence
+0:22        move second child to first child ( temp uint)
+0:22          'sizeQueryTemp' ( temp uint)
+0:22          textureSize ( temp uint)
+0:22            'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:22            Constant:
+0:22              6 (const uint)
+0:22        move second child to first child ( temp uint)
+0:22          'WidthU' ( temp uint)
+0:22          'sizeQueryTemp' ( temp uint)
+0:22        move second child to first child ( temp uint)
+0:22          'NumberOfLevelsU' ( temp uint)
+0:22          textureQueryLevels ( temp uint)
+0:22            'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:24      move second child to first child ( temp 4-component vector of float)
+0:24        Pos: direct index for structure ( temp 4-component vector of float)
+0:24          'vsout' ( temp structure{ temp 4-component vector of float Pos})
+0:24          Constant:
+0:24            0 (const int)
+0:?         Constant:
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:26      Branch: Return with expression
+0:26        'vsout' ( temp structure{ temp 4-component vector of float Pos})
+0:11  Function Definition: main( ( temp void)
+0:11    Function Parameters: 
+0:?     Sequence
+0:11      Sequence
+0:11        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Pos' ( out 4-component vector of float Position)
+0:11          Pos: direct index for structure ( temp 4-component vector of float)
+0:11            Function Call: @main( ( temp structure{ temp 4-component vector of float Pos})
+0:11            Constant:
+0:11              0 (const int)
+0:?   Linker Objects
+0:?     'g_sSamp' (layout( binding=0) uniform sampler)
+0:?     'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:?     '@entryPointOutput.Pos' ( out 4-component vector of float Position)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 48
+
+                              Capability Shader
+                              Capability Sampled1D
+                              Capability ImageQuery
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Vertex 4  "main" 42
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "VS_OUTPUT"
+                              MemberName 8(VS_OUTPUT) 0  "Pos"
+                              Name 10  "@main("
+                              Name 14  "sizeQueryTemp"
+                              Name 17  "g_tTex1df4"
+                              Name 22  "WidthU"
+                              Name 24  "sizeQueryTemp"
+                              Name 29  "NumberOfLevelsU"
+                              Name 33  "vsout"
+                              Name 42  "@entryPointOutput.Pos"
+                              Name 47  "g_sSamp"
+                              Decorate 17(g_tTex1df4) DescriptorSet 0
+                              Decorate 17(g_tTex1df4) Binding 0
+                              Decorate 42(@entryPointOutput.Pos) BuiltIn Position
+                              Decorate 47(g_sSamp) DescriptorSet 0
+                              Decorate 47(g_sSamp) Binding 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+    8(VS_OUTPUT):             TypeStruct 7(fvec4)
+               9:             TypeFunction 8(VS_OUTPUT)
+              12:             TypeInt 32 0
+              13:             TypePointer Function 12(int)
+              15:             TypeImage 6(float) 1D sampled format:Unknown
+              16:             TypePointer UniformConstant 15
+  17(g_tTex1df4):     16(ptr) Variable UniformConstant
+              19:             TypeInt 32 1
+              20:     19(int) Constant 0
+              26:     12(int) Constant 6
+              32:             TypePointer Function 8(VS_OUTPUT)
+              34:    6(float) Constant 0
+              35:    7(fvec4) ConstantComposite 34 34 34 34
+              36:             TypePointer Function 7(fvec4)
+              41:             TypePointer Output 7(fvec4)
+42(@entryPointOutput.Pos):     41(ptr) Variable Output
+              45:             TypeSampler
+              46:             TypePointer UniformConstant 45
+     47(g_sSamp):     46(ptr) Variable UniformConstant
+         4(main):           2 Function None 3
+               5:             Label
+              43:8(VS_OUTPUT) FunctionCall 10(@main()
+              44:    7(fvec4) CompositeExtract 43 0
+                              Store 42(@entryPointOutput.Pos) 44
+                              Return
+                              FunctionEnd
+      10(@main():8(VS_OUTPUT) Function None 9
+              11:             Label
+14(sizeQueryTemp):     13(ptr) Variable Function
+      22(WidthU):     13(ptr) Variable Function
+24(sizeQueryTemp):     13(ptr) Variable Function
+29(NumberOfLevelsU):     13(ptr) Variable Function
+       33(vsout):     32(ptr) Variable Function
+              18:          15 Load 17(g_tTex1df4)
+              21:     12(int) ImageQuerySizeLod 18 20
+                              Store 14(sizeQueryTemp) 21
+              23:     12(int) Load 14(sizeQueryTemp)
+                              Store 22(WidthU) 23
+              25:          15 Load 17(g_tTex1df4)
+              27:     12(int) ImageQuerySizeLod 25 26
+                              Store 24(sizeQueryTemp) 27
+              28:     12(int) Load 24(sizeQueryTemp)
+                              Store 22(WidthU) 28
+              30:          15 Load 17(g_tTex1df4)
+              31:     12(int) ImageQueryLevels 30
+                              Store 29(NumberOfLevelsU) 31
+              37:     36(ptr) AccessChain 33(vsout) 20
+                              Store 37 35
+              38:8(VS_OUTPUT) Load 33(vsout)
+                              ReturnValue 38
+                              FunctionEnd

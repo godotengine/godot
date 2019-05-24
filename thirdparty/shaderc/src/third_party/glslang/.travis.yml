@@ -1,0 +1,129 @@
+# Linux and Mac Build Configuration for Travis
+
+language: cpp
+
+os:
+  - linux
+  - osx
+
+# Use Ubuntu 14.04 LTS (Trusty) as the Linux testing environment.
+sudo: false
+dist: trusty
+
+env:
+  global:
+    - secure: aGFrgzyKp+84hKrGkxVWg8cHV61uqrKEHT38gfSQK6+WS4GfLOyH83p7WnsEBb7AMhzU7LMNFdvOFr6+NaMpVnqRvc40CEG1Q+lNg9Pq9mhIZLowvDrfqTL9kQ+8Nbw5Q6/dg6CTvY7fvRfpfCEmKIUZBRkoKUuHeuM1uy3IupFcdNuL5bSYn3Beo+apSJginh9DI4BLDXFUgBzTRSLLyCX5g3cpaeGGOCr8quJlYx75W6HRck5g9SZuLtUoH9GFEV3l+ZEWB8noErW+J56L03bwNwFuuAh321evw++oQk5KFa8rlDvar3SJ3b1RHB8u/eq5DBYMyaK/fS8+Q7QbGr8diF/wDe68bKO7U9IhpNfExXmczCpExjHomW5TQv4rYdGhygPMfW97aIsPRYyNKcl4fkmb7NDrM8w0Jscdq2g5c2Kz0ItyZoBri/NXLwFQQjaVCs7Pf97TjuMA7mK0GJmDTRzi6SrDYlWMt5BQL3y0CCojyfLIRcTh0CQjQI29s97bLfQrYAxt9GNNFR+HTXRLLrkaAlJkPGEPwUywlSfEThnvHLesNxYqemolAYpQT4ithoL4GehGIHmaxsW295aKVhuRf8K9eBODNqrfblvM42UHhjntT+92ZnQ/Gkq80GqaMxnxi4PO5FyPIxt0r981b54YBkWi8YA4P7w5pNI=
+  matrix:
+    - GLSLANG_BUILD_TYPE=Release
+    - GLSLANG_BUILD_TYPE=Debug
+
+compiler:
+  - clang
+  - gcc
+
+matrix:
+  fast_finish: true # Show final status immediately if a test fails.
+  exclude:
+    # Skip GCC builds on Mac OS X.
+    - os: osx
+      compiler: gcc
+  include:
+    # Additional build using Android NDK.
+    - env: BUILD_NDK=ON
+
+cache:
+  apt: true
+
+branches:
+  only:
+    - master
+
+addons:
+  apt:
+    packages:
+      - clang-3.6
+
+install:
+  # Make sure that clang-3.6 is selected on Linux.
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$CC" == "clang" ]]; then
+      export CC=clang-3.6 CXX=clang++-3.6;
+    fi
+  # Download a recent Android NDK and use its android.toolchain.cmake file.
+  - if [[ "$BUILD_NDK" == "ON" ]]; then
+      export ANDROID_NDK=$HOME/android-ndk;
+      git init $ANDROID_NDK;
+      pushd $ANDROID_NDK;
+        git remote add dneto0 https://github.com/dneto0/android-ndk.git;
+        git fetch --depth=1 dneto0 r17b-strip;
+        git checkout FETCH_HEAD;
+      popd;
+      export TOOLCHAIN_PATH=$ANDROID_NDK/build/cmake/android.toolchain.cmake;
+    fi
+
+before_script:
+  - git clone --depth=1 https://github.com/google/googletest.git External/googletest
+  - ./update_glslang_sources.py
+
+script:
+  - mkdir build && cd build
+  # For Android, do release building using NDK without testing.
+  # Use android-14, the oldest native API level supporeted by NDK r17b.
+  # We can use newer API levels if we want.
+  # For Linux and macOS, do debug/release building with testing.
+  - if [[ "$BUILD_NDK" == "ON" ]]; then
+      cmake -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_PATH}
+            -DANDROID_NATIVE_API_LEVEL=android-14
+            -DCMAKE_BUILD_TYPE=Release
+            -DANDROID_ABI="armeabi-v7a with NEON"
+            -DBUILD_TESTING=OFF ..;
+      make -j4;
+    else
+      cmake -DCMAKE_BUILD_TYPE=${GLSLANG_BUILD_TYPE}
+            -DCMAKE_INSTALL_PREFIX=`pwd`/install ..;
+      make -j4 install;
+      ctest --output-on-failure &&
+      cd ../Test && ./runtests;
+    fi
+
+after_success:
+  # For debug build, the generated dll has a postfix "d" in its name.
+  - if [[ "${GLSLANG_BUILD_TYPE}" == "Debug" ]]; then
+      export SUFFIX="d";
+    else
+      export SUFFIX="";
+    fi
+  # Create tarball for deployment
+  - if [[ ${CC} == clang* && "${BUILD_NDK}" != "ON" ]]; then
+      cd ../build/install;
+      export TARBALL=glslang-master-${TRAVIS_OS_NAME}-${GLSLANG_BUILD_TYPE}.zip;
+      zip ${TARBALL}
+        bin/glslangValidator
+        include/glslang/*
+        include/SPIRV/*
+        lib/libglslang${SUFFIX}.a
+        lib/libHLSL${SUFFIX}.a
+        lib/libOGLCompiler${SUFFIX}.a
+        lib/libOSDependent${SUFFIX}.a
+        lib/libSPIRV${SUFFIX}.a
+        lib/libSPVRemapper${SUFFIX}.a
+        lib/libSPIRV-Tools${SUFFIX}.a
+        lib/libSPIRV-Tools-opt${SUFFIX}.a;
+    fi
+
+before_deploy:
+  # Tag the current top of the tree as "master-tot".
+  # Travis CI replies on the tag name to properly push to GitHub Releases.
+  - git config --global user.name "Travis CI"
+  - git config --global user.email "builds@travis-ci.org"
+  - git tag -f master-tot
+  - git push -q -f https://${glslangtoken}@github.com/KhronosGroup/glslang --tags
+
+deploy:
+  provider: releases
+  api_key: ${glslangtoken}
+  on:
+    branch: master
+    condition: ${CC} == clang* && ${BUILD_NDK} != ON
+  file: ${TARBALL}
+  skip_cleanup: true
+  overwrite: true

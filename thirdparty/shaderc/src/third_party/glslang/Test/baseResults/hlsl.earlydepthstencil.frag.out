@@ -1,0 +1,189 @@
+hlsl.earlydepthstencil.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+using early_fragment_tests
+0:? Sequence
+0:8  Function Definition: @main(struct-InputStruct-vf41; ( temp uint)
+0:8    Function Parameters: 
+0:8      'input' ( in structure{ temp 4-component vector of float Position})
+0:?     Sequence
+0:10      move second child to first child ( temp uint)
+0:10        'oldVal' ( temp uint)
+0:10        imageAtomicExchange ( temp uint)
+0:10          'Values' (layout( r32ui) uniform uimage2D)
+0:?           Construct uvec2 ( temp 2-component vector of uint)
+0:10            Convert float to uint ( temp uint)
+0:10              direct index ( temp float)
+0:10                Position: direct index for structure ( temp 4-component vector of float)
+0:10                  'input' ( in structure{ temp 4-component vector of float Position})
+0:10                  Constant:
+0:10                    0 (const int)
+0:10                Constant:
+0:10                  0 (const int)
+0:10            Convert float to uint ( temp uint)
+0:10              direct index ( temp float)
+0:10                Position: direct index for structure ( temp 4-component vector of float)
+0:10                  'input' ( in structure{ temp 4-component vector of float Position})
+0:10                  Constant:
+0:10                    0 (const int)
+0:10                Constant:
+0:10                  1 (const int)
+0:10          Constant:
+0:10            1 (const uint)
+0:11      Branch: Return with expression
+0:11        'oldVal' ( temp uint)
+0:8  Function Definition: main( ( temp void)
+0:8    Function Parameters: 
+0:?     Sequence
+0:8      Sequence
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          Position: direct index for structure ( temp 4-component vector of float)
+0:?             'input' ( temp structure{ temp 4-component vector of float Position})
+0:8            Constant:
+0:8              0 (const int)
+0:?           'input.Position' ( in 4-component vector of float FragCoord)
+0:8      move second child to first child ( temp uint)
+0:?         '@entryPointOutput' (layout( location=0) out uint)
+0:8        Function Call: @main(struct-InputStruct-vf41; ( temp uint)
+0:?           'input' ( temp structure{ temp 4-component vector of float Position})
+0:?   Linker Objects
+0:?     'Values' (layout( r32ui) uniform uimage2D)
+0:?     '@entryPointOutput' (layout( location=0) out uint)
+0:?     'input.Position' ( in 4-component vector of float FragCoord)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+using early_fragment_tests
+0:? Sequence
+0:8  Function Definition: @main(struct-InputStruct-vf41; ( temp uint)
+0:8    Function Parameters: 
+0:8      'input' ( in structure{ temp 4-component vector of float Position})
+0:?     Sequence
+0:10      move second child to first child ( temp uint)
+0:10        'oldVal' ( temp uint)
+0:10        imageAtomicExchange ( temp uint)
+0:10          'Values' (layout( r32ui) uniform uimage2D)
+0:?           Construct uvec2 ( temp 2-component vector of uint)
+0:10            Convert float to uint ( temp uint)
+0:10              direct index ( temp float)
+0:10                Position: direct index for structure ( temp 4-component vector of float)
+0:10                  'input' ( in structure{ temp 4-component vector of float Position})
+0:10                  Constant:
+0:10                    0 (const int)
+0:10                Constant:
+0:10                  0 (const int)
+0:10            Convert float to uint ( temp uint)
+0:10              direct index ( temp float)
+0:10                Position: direct index for structure ( temp 4-component vector of float)
+0:10                  'input' ( in structure{ temp 4-component vector of float Position})
+0:10                  Constant:
+0:10                    0 (const int)
+0:10                Constant:
+0:10                  1 (const int)
+0:10          Constant:
+0:10            1 (const uint)
+0:11      Branch: Return with expression
+0:11        'oldVal' ( temp uint)
+0:8  Function Definition: main( ( temp void)
+0:8    Function Parameters: 
+0:?     Sequence
+0:8      Sequence
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          Position: direct index for structure ( temp 4-component vector of float)
+0:?             'input' ( temp structure{ temp 4-component vector of float Position})
+0:8            Constant:
+0:8              0 (const int)
+0:?           'input.Position' ( in 4-component vector of float FragCoord)
+0:8      move second child to first child ( temp uint)
+0:?         '@entryPointOutput' (layout( location=0) out uint)
+0:8        Function Call: @main(struct-InputStruct-vf41; ( temp uint)
+0:?           'input' ( temp structure{ temp 4-component vector of float Position})
+0:?   Linker Objects
+0:?     'Values' (layout( r32ui) uniform uimage2D)
+0:?     '@entryPointOutput' (layout( location=0) out uint)
+0:?     'input.Position' ( in 4-component vector of float FragCoord)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 50
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 41 46
+                              ExecutionMode 4 OriginUpperLeft
+                              ExecutionMode 4 EarlyFragmentTests
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "InputStruct"
+                              MemberName 8(InputStruct) 0  "Position"
+                              Name 13  "@main(struct-InputStruct-vf41;"
+                              Name 12  "input"
+                              Name 16  "oldVal"
+                              Name 19  "Values"
+                              Name 39  "input"
+                              Name 41  "input.Position"
+                              Name 46  "@entryPointOutput"
+                              Name 47  "param"
+                              Decorate 19(Values) DescriptorSet 0
+                              Decorate 19(Values) Binding 0
+                              Decorate 41(input.Position) BuiltIn FragCoord
+                              Decorate 46(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+  8(InputStruct):             TypeStruct 7(fvec4)
+               9:             TypePointer Function 8(InputStruct)
+              10:             TypeInt 32 0
+              11:             TypeFunction 10(int) 9(ptr)
+              15:             TypePointer Function 10(int)
+              17:             TypeImage 10(int) 2D nonsampled format:R32ui
+              18:             TypePointer UniformConstant 17
+      19(Values):     18(ptr) Variable UniformConstant
+              20:             TypeInt 32 1
+              21:     20(int) Constant 0
+              22:     10(int) Constant 0
+              23:             TypePointer Function 6(float)
+              27:     10(int) Constant 1
+              31:             TypeVector 10(int) 2
+              33:             TypePointer Image 10(int)
+              40:             TypePointer Input 7(fvec4)
+41(input.Position):     40(ptr) Variable Input
+              43:             TypePointer Function 7(fvec4)
+              45:             TypePointer Output 10(int)
+46(@entryPointOutput):     45(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+       39(input):      9(ptr) Variable Function
+       47(param):      9(ptr) Variable Function
+              42:    7(fvec4) Load 41(input.Position)
+              44:     43(ptr) AccessChain 39(input) 21
+                              Store 44 42
+              48:8(InputStruct) Load 39(input)
+                              Store 47(param) 48
+              49:     10(int) FunctionCall 13(@main(struct-InputStruct-vf41;) 47(param)
+                              Store 46(@entryPointOutput) 49
+                              Return
+                              FunctionEnd
+13(@main(struct-InputStruct-vf41;):     10(int) Function None 11
+       12(input):      9(ptr) FunctionParameter
+              14:             Label
+      16(oldVal):     15(ptr) Variable Function
+              24:     23(ptr) AccessChain 12(input) 21 22
+              25:    6(float) Load 24
+              26:     10(int) ConvertFToU 25
+              28:     23(ptr) AccessChain 12(input) 21 27
+              29:    6(float) Load 28
+              30:     10(int) ConvertFToU 29
+              32:   31(ivec2) CompositeConstruct 26 30
+              34:     33(ptr) ImageTexelPointer 19(Values) 32 22
+              35:     10(int) AtomicExchange 34 27 22 27
+                              Store 16(oldVal) 35
+              36:     10(int) Load 16(oldVal)
+                              ReturnValue 36
+                              FunctionEnd

@@ -1,0 +1,12 @@
+# Linker doesn't like these unmangled:
+# re2::RE2*
+__ZN3re23RE2*
+__ZNK3re23RE2*
+# re2::StringPiece*
+__ZN3re211StringPiece*
+__ZNK3re211StringPiece*
+# re2::operator<<*
+__ZN3re2ls*
+# re2::FilteredRE2*
+__ZN3re211FilteredRE2*
+__ZNK3re211FilteredRE2*

@@ -1,0 +1,275 @@
+glsl.es320.subgroupBallotNeg.comp
+ERROR: 0:31: 'id' : argument must be compile-time constant 
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 450
+Requested GL_KHR_shader_subgroup_ballot
+Requested GL_KHR_shader_subgroup_basic
+local_size = (8, 8, 1)
+ERROR: node is still EOpNull!
+0:14  Function Definition: main( ( global void)
+0:14    Function Parameters: 
+0:16    Sequence
+0:16      Sequence
+0:16        move second child to first child ( temp uint)
+0:16          'invocation' ( temp uint)
+0:16          mod ( temp uint)
+0:16            add ( temp uint)
+0:16              'gl_SubgroupInvocationID' ( in uint unknown built-in variable)
+0:16              'gl_SubgroupSize' ( in uint unknown built-in variable)
+0:16            Constant:
+0:16              4 (const uint)
+0:18      Sequence
+0:18        move second child to first child ( temp 4-component vector of uint)
+0:18          'relMask' ( temp 4-component vector of uint)
+0:21          add ( temp 4-component vector of uint)
+0:20            add ( temp 4-component vector of uint)
+0:19              add ( temp 4-component vector of uint)
+0:18                add ( temp 4-component vector of uint)
+0:18                  'gl_SubgroupEqMask' ( in 4-component vector of uint unknown built-in variable)
+0:19                  'gl_SubgroupGeMask' ( in 4-component vector of uint unknown built-in variable)
+0:20                'gl_SubgroupGtMask' ( in 4-component vector of uint unknown built-in variable)
+0:21              'gl_SubgroupLeMask' ( in 4-component vector of uint unknown built-in variable)
+0:22            'gl_SubgroupLtMask' ( in 4-component vector of uint unknown built-in variable)
+0:24      Sequence
+0:24        move second child to first child ( temp 4-component vector of uint)
+0:24          'result' ( temp 4-component vector of uint)
+0:24          subgroupBallot ( global 4-component vector of uint)
+0:24            Constant:
+0:24              true (const bool)
+0:26      move second child to first child ( temp uint)
+0:26        direct index ( temp uint)
+0:26          u4: direct index for structure (layout( column_major shared) buffer 4-component vector of uint)
+0:26            direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:26              'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:26              Constant:
+0:26                0 (const int)
+0:26            Constant:
+0:26              2 (const int)
+0:26          Constant:
+0:26            0 (const int)
+0:26        subgroupBallotBitCount ( global uint)
+0:26          'result' ( temp 4-component vector of uint)
+0:27      move second child to first child ( temp uint)
+0:27        direct index ( temp uint)
+0:27          u4: direct index for structure (layout( column_major shared) buffer 4-component vector of uint)
+0:27            direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:27              'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:27              Constant:
+0:27                0 (const int)
+0:27            Constant:
+0:27              2 (const int)
+0:27          Constant:
+0:27            1 (const int)
+0:27        Test condition and select ( temp uint)
+0:27          Condition
+0:27          subgroupBallotBitExtract ( global bool)
+0:27            'result' ( temp 4-component vector of uint)
+0:27            Constant:
+0:27              0 (const uint)
+0:27          true case
+0:27          Constant:
+0:27            1 (const uint)
+0:27          false case
+0:27          Constant:
+0:27            0 (const uint)
+0:28      move second child to first child ( temp uint)
+0:28        direct index ( temp uint)
+0:28          u4: direct index for structure (layout( column_major shared) buffer 4-component vector of uint)
+0:28            direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:28              'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:28              Constant:
+0:28                0 (const int)
+0:28            Constant:
+0:28              2 (const int)
+0:28          Constant:
+0:28            2 (const int)
+0:28        add ( temp uint)
+0:28          subgroupBallotInclusiveBitCount ( global uint)
+0:28            'result' ( temp 4-component vector of uint)
+0:28          subgroupBallotExclusiveBitCount ( global uint)
+0:28            'result' ( temp 4-component vector of uint)
+0:29      move second child to first child ( temp uint)
+0:29        direct index ( temp uint)
+0:29          u4: direct index for structure (layout( column_major shared) buffer 4-component vector of uint)
+0:29            direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:29              'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:29              Constant:
+0:29                0 (const int)
+0:29            Constant:
+0:29              2 (const int)
+0:29          Constant:
+0:29            3 (const int)
+0:29        add ( temp uint)
+0:29          subgroupBallotFindLSB ( global uint)
+0:29            'result' ( temp 4-component vector of uint)
+0:29          subgroupBallotFindMSB ( global uint)
+0:29            'result' ( temp 4-component vector of uint)
+0:31      move second child to first child ( temp float)
+0:31        direct index ( temp float)
+0:31          f4: direct index for structure (layout( column_major shared) buffer 4-component vector of float)
+0:31            direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:31              'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:31              Constant:
+0:31                1 (const int)
+0:31            Constant:
+0:31              0 (const int)
+0:31          Constant:
+0:31            0 (const int)
+0:31        subgroupBroadcast ( global float)
+0:31          direct index ( temp float)
+0:31            f4: direct index for structure (layout( column_major shared) buffer 4-component vector of float)
+0:31              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:31                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:31                Constant:
+0:31                  0 (const int)
+0:31              Constant:
+0:31                0 (const int)
+0:31            Constant:
+0:31              0 (const int)
+0:31          'invocation' ( temp uint)
+0:?   Linker Objects
+0:?     'gl_WorkGroupSize' ( const 3-component vector of uint WorkGroupSize)
+0:?       8 (const uint)
+0:?       8 (const uint)
+0:?       1 (const uint)
+0:?     'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+
+
+Linked compute stage:
+
+
+Shader version: 450
+Requested GL_KHR_shader_subgroup_ballot
+Requested GL_KHR_shader_subgroup_basic
+local_size = (8, 8, 1)
+ERROR: node is still EOpNull!
+0:14  Function Definition: main( ( global void)
+0:14    Function Parameters: 
+0:16    Sequence
+0:16      Sequence
+0:16        move second child to first child ( temp uint)
+0:16          'invocation' ( temp uint)
+0:16          mod ( temp uint)
+0:16            add ( temp uint)
+0:16              'gl_SubgroupInvocationID' ( in uint unknown built-in variable)
+0:16              'gl_SubgroupSize' ( in uint unknown built-in variable)
+0:16            Constant:
+0:16              4 (const uint)
+0:18      Sequence
+0:18        move second child to first child ( temp 4-component vector of uint)
+0:18          'relMask' ( temp 4-component vector of uint)
+0:21          add ( temp 4-component vector of uint)
+0:20            add ( temp 4-component vector of uint)
+0:19              add ( temp 4-component vector of uint)
+0:18                add ( temp 4-component vector of uint)
+0:18                  'gl_SubgroupEqMask' ( in 4-component vector of uint unknown built-in variable)
+0:19                  'gl_SubgroupGeMask' ( in 4-component vector of uint unknown built-in variable)
+0:20                'gl_SubgroupGtMask' ( in 4-component vector of uint unknown built-in variable)
+0:21              'gl_SubgroupLeMask' ( in 4-component vector of uint unknown built-in variable)
+0:22            'gl_SubgroupLtMask' ( in 4-component vector of uint unknown built-in variable)
+0:24      Sequence
+0:24        move second child to first child ( temp 4-component vector of uint)
+0:24          'result' ( temp 4-component vector of uint)
+0:24          subgroupBallot ( global 4-component vector of uint)
+0:24            Constant:
+0:24              true (const bool)
+0:26      move second child to first child ( temp uint)
+0:26        direct index ( temp uint)
+0:26          u4: direct index for structure (layout( column_major shared) buffer 4-component vector of uint)
+0:26            direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:26              'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:26              Constant:
+0:26                0 (const int)
+0:26            Constant:
+0:26              2 (const int)
+0:26          Constant:
+0:26            0 (const int)
+0:26        subgroupBallotBitCount ( global uint)
+0:26          'result' ( temp 4-component vector of uint)
+0:27      move second child to first child ( temp uint)
+0:27        direct index ( temp uint)
+0:27          u4: direct index for structure (layout( column_major shared) buffer 4-component vector of uint)
+0:27            direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:27              'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:27              Constant:
+0:27                0 (const int)
+0:27            Constant:
+0:27              2 (const int)
+0:27          Constant:
+0:27            1 (const int)
+0:27        Test condition and select ( temp uint)
+0:27          Condition
+0:27          subgroupBallotBitExtract ( global bool)
+0:27            'result' ( temp 4-component vector of uint)
+0:27            Constant:
+0:27              0 (const uint)
+0:27          true case
+0:27          Constant:
+0:27            1 (const uint)
+0:27          false case
+0:27          Constant:
+0:27            0 (const uint)
+0:28      move second child to first child ( temp uint)
+0:28        direct index ( temp uint)
+0:28          u4: direct index for structure (layout( column_major shared) buffer 4-component vector of uint)
+0:28            direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:28              'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:28              Constant:
+0:28                0 (const int)
+0:28            Constant:
+0:28              2 (const int)
+0:28          Constant:
+0:28            2 (const int)
+0:28        add ( temp uint)
+0:28          subgroupBallotInclusiveBitCount ( global uint)
+0:28            'result' ( temp 4-component vector of uint)
+0:28          subgroupBallotExclusiveBitCount ( global uint)
+0:28            'result' ( temp 4-component vector of uint)
+0:29      move second child to first child ( temp uint)
+0:29        direct index ( temp uint)
+0:29          u4: direct index for structure (layout( column_major shared) buffer 4-component vector of uint)
+0:29            direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:29              'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:29              Constant:
+0:29                0 (const int)
+0:29            Constant:
+0:29              2 (const int)
+0:29          Constant:
+0:29            3 (const int)
+0:29        add ( temp uint)
+0:29          subgroupBallotFindLSB ( global uint)
+0:29            'result' ( temp 4-component vector of uint)
+0:29          subgroupBallotFindMSB ( global uint)
+0:29            'result' ( temp 4-component vector of uint)
+0:31      move second child to first child ( temp float)
+0:31        direct index ( temp float)
+0:31          f4: direct index for structure (layout( column_major shared) buffer 4-component vector of float)
+0:31            direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:31              'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:31              Constant:
+0:31                1 (const int)
+0:31            Constant:
+0:31              0 (const int)
+0:31          Constant:
+0:31            0 (const int)
+0:31        subgroupBroadcast ( global float)
+0:31          direct index ( temp float)
+0:31            f4: direct index for structure (layout( column_major shared) buffer 4-component vector of float)
+0:31              direct index (layout( binding=0 column_major shared) temp block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:31                'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+0:31                Constant:
+0:31                  0 (const int)
+0:31              Constant:
+0:31                0 (const int)
+0:31            Constant:
+0:31              0 (const int)
+0:31          'invocation' ( temp uint)
+0:?   Linker Objects
+0:?     'gl_WorkGroupSize' ( const 3-component vector of uint WorkGroupSize)
+0:?       8 (const uint)
+0:?       8 (const uint)
+0:?       1 (const uint)
+0:?     'data' (layout( binding=0 column_major shared) buffer 4-element array of block{layout( column_major shared) buffer 4-component vector of float f4, layout( column_major shared) buffer 4-component vector of int i4, layout( column_major shared) buffer 4-component vector of uint u4})
+

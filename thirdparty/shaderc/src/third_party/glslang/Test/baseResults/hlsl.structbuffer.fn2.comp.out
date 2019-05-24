@@ -1,0 +1,249 @@
+hlsl.structbuffer.fn2.comp
+Shader version: 500
+local_size = (256, 1, 1)
+0:? Sequence
+0:5  Function Definition: testLoad(u1;block--u1[0]1; ( temp 2-component vector of uint)
+0:5    Function Parameters: 
+0:5      'loc' ( in uint)
+0:5      'buffer' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:?     Sequence
+0:6      Sequence
+0:6        move second child to first child ( temp 2-component vector of uint)
+0:6          'result' ( temp 2-component vector of uint)
+0:?           Sequence
+0:6            move second child to first child ( temp int)
+0:6              'byteAddrTemp' ( temp int)
+0:6              right-shift ( temp int)
+0:6                'loc' ( in uint)
+0:6                Constant:
+0:6                  2 (const int)
+0:?             Construct vec2 ( temp 2-component vector of uint)
+0:6              indirect index ( temp uint)
+0:6                @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:6                  'buffer' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:6                  Constant:
+0:6                    0 (const uint)
+0:6                'byteAddrTemp' ( temp int)
+0:6              indirect index ( temp uint)
+0:6                @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:6                  'buffer' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:6                  Constant:
+0:6                    0 (const uint)
+0:6                add ( temp int)
+0:6                  'byteAddrTemp' ( temp int)
+0:6                  Constant:
+0:6                    1 (const int)
+0:7      Branch: Return with expression
+0:7        'result' ( temp 2-component vector of uint)
+0:12  Function Definition: @main(u1; ( temp void)
+0:12    Function Parameters: 
+0:12      'dispatchId' ( in uint)
+0:?     Sequence
+0:13      Sequence
+0:13        move second child to first child ( temp 2-component vector of uint)
+0:13          'result' ( temp 2-component vector of uint)
+0:13          Function Call: testLoad(u1;block--u1[0]1; ( temp 2-component vector of uint)
+0:13            'dispatchId' ( in uint)
+0:13            'g_input' (layout( binding=0 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:14      Sequence
+0:14        imageStore ( temp void)
+0:14          'g_output' (layout( binding=1 rg32ui) uniform uimageBuffer)
+0:14          'dispatchId' ( in uint)
+0:14          'result' ( temp 2-component vector of uint)
+0:14        'result' ( temp 2-component vector of uint)
+0:12  Function Definition: main( ( temp void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:12      move second child to first child ( temp uint)
+0:?         'dispatchId' ( temp uint)
+0:?         Construct uint ( temp uint)
+0:?           'dispatchId' ( in 3-component vector of uint GlobalInvocationID)
+0:12      Function Call: @main(u1; ( temp void)
+0:?         'dispatchId' ( temp uint)
+0:?   Linker Objects
+0:?     'g_input' (layout( binding=0 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:?     'g_output' (layout( binding=1 rg32ui) uniform uimageBuffer)
+0:?     'dispatchId' ( in 3-component vector of uint GlobalInvocationID)
+
+
+Linked compute stage:
+
+
+Shader version: 500
+local_size = (256, 1, 1)
+0:? Sequence
+0:5  Function Definition: testLoad(u1;block--u1[0]1; ( temp 2-component vector of uint)
+0:5    Function Parameters: 
+0:5      'loc' ( in uint)
+0:5      'buffer' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:?     Sequence
+0:6      Sequence
+0:6        move second child to first child ( temp 2-component vector of uint)
+0:6          'result' ( temp 2-component vector of uint)
+0:?           Sequence
+0:6            move second child to first child ( temp int)
+0:6              'byteAddrTemp' ( temp int)
+0:6              right-shift ( temp int)
+0:6                'loc' ( in uint)
+0:6                Constant:
+0:6                  2 (const int)
+0:?             Construct vec2 ( temp 2-component vector of uint)
+0:6              indirect index ( temp uint)
+0:6                @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:6                  'buffer' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:6                  Constant:
+0:6                    0 (const uint)
+0:6                'byteAddrTemp' ( temp int)
+0:6              indirect index ( temp uint)
+0:6                @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:6                  'buffer' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:6                  Constant:
+0:6                    0 (const uint)
+0:6                add ( temp int)
+0:6                  'byteAddrTemp' ( temp int)
+0:6                  Constant:
+0:6                    1 (const int)
+0:7      Branch: Return with expression
+0:7        'result' ( temp 2-component vector of uint)
+0:12  Function Definition: @main(u1; ( temp void)
+0:12    Function Parameters: 
+0:12      'dispatchId' ( in uint)
+0:?     Sequence
+0:13      Sequence
+0:13        move second child to first child ( temp 2-component vector of uint)
+0:13          'result' ( temp 2-component vector of uint)
+0:13          Function Call: testLoad(u1;block--u1[0]1; ( temp 2-component vector of uint)
+0:13            'dispatchId' ( in uint)
+0:13            'g_input' (layout( binding=0 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:14      Sequence
+0:14        imageStore ( temp void)
+0:14          'g_output' (layout( binding=1 rg32ui) uniform uimageBuffer)
+0:14          'dispatchId' ( in uint)
+0:14          'result' ( temp 2-component vector of uint)
+0:14        'result' ( temp 2-component vector of uint)
+0:12  Function Definition: main( ( temp void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:12      move second child to first child ( temp uint)
+0:?         'dispatchId' ( temp uint)
+0:?         Construct uint ( temp uint)
+0:?           'dispatchId' ( in 3-component vector of uint GlobalInvocationID)
+0:12      Function Call: @main(u1; ( temp void)
+0:?         'dispatchId' ( temp uint)
+0:?   Linker Objects
+0:?     'g_input' (layout( binding=0 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:?     'g_output' (layout( binding=1 rg32ui) uniform uimageBuffer)
+0:?     'dispatchId' ( in 3-component vector of uint GlobalInvocationID)
+
+Validation failed
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 63
+
+                              Capability Shader
+                              Capability ImageBuffer
+                              Capability StorageImageExtendedFormats
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint GLCompute 4  "main" 57
+                              ExecutionMode 4 LocalSize 256 1 1
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  ""
+                              MemberName 9 0  "@data"
+                              Name 15  "testLoad(u1;block--u1[0]1;"
+                              Name 13  "loc"
+                              Name 14  "buffer"
+                              Name 19  "@main(u1;"
+                              Name 18  "dispatchId"
+                              Name 22  "result"
+                              Name 25  "byteAddrTemp"
+                              Name 43  "result"
+                              Name 44  "g_input"
+                              Name 45  "param"
+                              Name 50  "g_output"
+                              Name 54  "dispatchId"
+                              Name 57  "dispatchId"
+                              Name 60  "param"
+                              Decorate 8 ArrayStride 4
+                              MemberDecorate 9 0 NonWritable
+                              MemberDecorate 9 0 Offset 0
+                              Decorate 9 BufferBlock
+                              Decorate 14(buffer) NonWritable
+                              Decorate 44(g_input) DescriptorSet 0
+                              Decorate 44(g_input) Binding 0
+                              Decorate 50(g_output) DescriptorSet 0
+                              Decorate 50(g_output) Binding 1
+                              Decorate 57(dispatchId) BuiltIn GlobalInvocationId
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeInt 32 0
+               7:             TypePointer Function 6(int)
+               8:             TypeRuntimeArray 6(int)
+               9:             TypeStruct 8
+              10:             TypePointer Uniform 9(struct)
+              11:             TypeVector 6(int) 2
+              12:             TypeFunction 11(ivec2) 7(ptr) 10(ptr)
+              17:             TypeFunction 2 7(ptr)
+              21:             TypePointer Function 11(ivec2)
+              23:             TypeInt 32 1
+              24:             TypePointer Function 23(int)
+              27:     23(int) Constant 2
+              29:     23(int) Constant 0
+              31:             TypePointer Uniform 6(int)
+              35:     23(int) Constant 1
+     44(g_input):     10(ptr) Variable Uniform
+              48:             TypeImage 6(int) Buffer nonsampled format:Rg32ui
+              49:             TypePointer UniformConstant 48
+    50(g_output):     49(ptr) Variable UniformConstant
+              55:             TypeVector 6(int) 3
+              56:             TypePointer Input 55(ivec3)
+  57(dispatchId):     56(ptr) Variable Input
+         4(main):           2 Function None 3
+               5:             Label
+  54(dispatchId):      7(ptr) Variable Function
+       60(param):      7(ptr) Variable Function
+              58:   55(ivec3) Load 57(dispatchId)
+              59:      6(int) CompositeExtract 58 0
+                              Store 54(dispatchId) 59
+              61:      6(int) Load 54(dispatchId)
+                              Store 60(param) 61
+              62:           2 FunctionCall 19(@main(u1;) 60(param)
+                              Return
+                              FunctionEnd
+15(testLoad(u1;block--u1[0]1;):   11(ivec2) Function None 12
+         13(loc):      7(ptr) FunctionParameter
+      14(buffer):     10(ptr) FunctionParameter
+              16:             Label
+      22(result):     21(ptr) Variable Function
+25(byteAddrTemp):     24(ptr) Variable Function
+              26:      6(int) Load 13(loc)
+              28:     23(int) ShiftRightLogical 26 27
+                              Store 25(byteAddrTemp) 28
+              30:     23(int) Load 25(byteAddrTemp)
+              32:     31(ptr) AccessChain 14(buffer) 29 30
+              33:      6(int) Load 32
+              34:     23(int) Load 25(byteAddrTemp)
+              36:     23(int) IAdd 34 35
+              37:     31(ptr) AccessChain 14(buffer) 29 36
+              38:      6(int) Load 37
+              39:   11(ivec2) CompositeConstruct 33 38
+                              Store 22(result) 39
+              40:   11(ivec2) Load 22(result)
+                              ReturnValue 40
+                              FunctionEnd
+   19(@main(u1;):           2 Function None 17
+  18(dispatchId):      7(ptr) FunctionParameter
+              20:             Label
+      43(result):     21(ptr) Variable Function
+       45(param):      7(ptr) Variable Function
+              46:      6(int) Load 18(dispatchId)
+                              Store 45(param) 46
+              47:   11(ivec2) FunctionCall 15(testLoad(u1;block--u1[0]1;) 45(param) 44(g_input)
+                              Store 43(result) 47
+              51:          48 Load 50(g_output)
+              52:      6(int) Load 18(dispatchId)
+              53:   11(ivec2) Load 43(result)
+                              ImageWrite 51 52 53
+                              Return
+                              FunctionEnd

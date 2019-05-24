@@ -1,0 +1,285 @@
+deepRvalue.frag
+Shader version: 120
+0:? Sequence
+0:5  Sequence
+0:5    move second child to first child ( temp 4-component vector of float)
+0:5      'v1' ( global 4-component vector of float)
+0:5      Constant:
+0:5        2.000000
+0:5        3.000000
+0:5        5.000000
+0:5        7.000000
+0:6  Sequence
+0:6    move second child to first child ( temp 4-component vector of float)
+0:6      'v2' ( global 4-component vector of float)
+0:6      Constant:
+0:6        11.000000
+0:6        13.000000
+0:6        17.000000
+0:6        19.000000
+0:7  Sequence
+0:7    move second child to first child ( temp 4-component vector of float)
+0:7      'v3' ( global 4-component vector of float)
+0:7      Constant:
+0:7        23.000000
+0:7        29.000000
+0:7        31.000000
+0:7        37.000000
+0:8  Sequence
+0:8    move second child to first child ( temp 4-component vector of float)
+0:8      'v4' ( global 4-component vector of float)
+0:8      Constant:
+0:8        41.000000
+0:8        43.000000
+0:8        47.000000
+0:8        53.000000
+0:16  Function Definition: main( ( global void)
+0:16    Function Parameters: 
+0:18    Sequence
+0:18      Sequence
+0:18        move second child to first child ( temp 4X4 matrix of float)
+0:18          'm' ( temp 4X4 matrix of float)
+0:18          Construct mat4 ( temp 4X4 matrix of float)
+0:18            'v1' ( global 4-component vector of float)
+0:18            'v2' ( global 4-component vector of float)
+0:18            'v3' ( global 4-component vector of float)
+0:18            'v4' ( global 4-component vector of float)
+0:20      Sequence
+0:20        move second child to first child ( temp 4X4 matrix of float)
+0:20          'mm' ( temp 4X4 matrix of float)
+0:20          component-wise multiply ( global 4X4 matrix of float)
+0:20            'm' ( temp 4X4 matrix of float)
+0:20            'm' ( temp 4X4 matrix of float)
+0:21      Sequence
+0:21        move second child to first child ( temp float)
+0:21          'f' ( temp float)
+0:21          direct index ( temp float)
+0:21            direct index ( temp 4-component vector of float)
+0:21              'mm' ( temp 4X4 matrix of float)
+0:21              Constant:
+0:21                1 (const int)
+0:21            Constant:
+0:21              3 (const int)
+0:24      Sequence
+0:24        move second child to first child ( temp float)
+0:24          'g' ( temp float)
+0:24          direct index ( temp float)
+0:24            direct index ( temp 4-component vector of float)
+0:24              component-wise multiply ( global 4X4 matrix of float)
+0:24                'm' ( temp 4X4 matrix of float)
+0:24                'm' ( temp 4X4 matrix of float)
+0:24              Constant:
+0:24                2 (const int)
+0:24            Constant:
+0:24              1 (const int)
+0:26      Sequence
+0:26        move second child to first child ( temp float)
+0:26          'h' ( temp float)
+0:26          Constant:
+0:26            5.000000
+0:28      Sequence
+0:28        move second child to first child ( temp float)
+0:28          'i' ( temp float)
+0:28          direct index ( temp float)
+0:28            texture ( global 4-component vector of float)
+0:28              'sampler' ( uniform sampler2D)
+0:28              Constant:
+0:28                0.500000
+0:28                0.500000
+0:28            Constant:
+0:28              1 (const int)
+0:30      add second child into first child ( temp float)
+0:30        'i' ( temp float)
+0:30        direct index ( temp float)
+0:30          Test condition and select ( temp 4-component vector of float)
+0:30            Condition
+0:30            Compare Greater Than ( temp bool)
+0:30              'i' ( temp float)
+0:30              Constant:
+0:30                0.100000
+0:30            true case
+0:30            'v1' ( global 4-component vector of float)
+0:30            false case
+0:30            'v2' ( global 4-component vector of float)
+0:30          Constant:
+0:30            3 (const int)
+0:33      add second child into first child ( temp float)
+0:33        'i' ( temp float)
+0:33        direct index ( temp float)
+0:33          direct index ( temp 2-component vector of float)
+0:33            b: direct index for structure ( global 3-element array of 2-component vector of float)
+0:33              move second child to first child ( temp structure{ global int a,  global 3-element array of 2-component vector of float b,  global bool c})
+0:33                't' ( temp structure{ global int a,  global 3-element array of 2-component vector of float b,  global bool c})
+0:33                Constant:
+0:33                  1 (const int)
+0:33                  2.000000
+0:33                  3.000000
+0:33                  4.000000
+0:33                  5.000000
+0:33                  6.000000
+0:33                  7.000000
+0:33                  true (const bool)
+0:33              Constant:
+0:33                1 (const int)
+0:33            Constant:
+0:33              2 (const int)
+0:33          Constant:
+0:33            1 (const int)
+0:35      move second child to first child ( temp 4-component vector of float)
+0:35        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:35        Construct vec4 ( temp 4-component vector of float)
+0:35          'f' ( temp float)
+0:35          'g' ( temp float)
+0:35          'h' ( temp float)
+0:35          'i' ( temp float)
+0:?   Linker Objects
+0:?     'sampler' ( uniform sampler2D)
+0:?     'v1' ( global 4-component vector of float)
+0:?     'v2' ( global 4-component vector of float)
+0:?     'v3' ( global 4-component vector of float)
+0:?     'v4' ( global 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 120
+0:? Sequence
+0:5  Sequence
+0:5    move second child to first child ( temp 4-component vector of float)
+0:5      'v1' ( global 4-component vector of float)
+0:5      Constant:
+0:5        2.000000
+0:5        3.000000
+0:5        5.000000
+0:5        7.000000
+0:6  Sequence
+0:6    move second child to first child ( temp 4-component vector of float)
+0:6      'v2' ( global 4-component vector of float)
+0:6      Constant:
+0:6        11.000000
+0:6        13.000000
+0:6        17.000000
+0:6        19.000000
+0:7  Sequence
+0:7    move second child to first child ( temp 4-component vector of float)
+0:7      'v3' ( global 4-component vector of float)
+0:7      Constant:
+0:7        23.000000
+0:7        29.000000
+0:7        31.000000
+0:7        37.000000
+0:8  Sequence
+0:8    move second child to first child ( temp 4-component vector of float)
+0:8      'v4' ( global 4-component vector of float)
+0:8      Constant:
+0:8        41.000000
+0:8        43.000000
+0:8        47.000000
+0:8        53.000000
+0:16  Function Definition: main( ( global void)
+0:16    Function Parameters: 
+0:18    Sequence
+0:18      Sequence
+0:18        move second child to first child ( temp 4X4 matrix of float)
+0:18          'm' ( temp 4X4 matrix of float)
+0:18          Construct mat4 ( temp 4X4 matrix of float)
+0:18            'v1' ( global 4-component vector of float)
+0:18            'v2' ( global 4-component vector of float)
+0:18            'v3' ( global 4-component vector of float)
+0:18            'v4' ( global 4-component vector of float)
+0:20      Sequence
+0:20        move second child to first child ( temp 4X4 matrix of float)
+0:20          'mm' ( temp 4X4 matrix of float)
+0:20          component-wise multiply ( global 4X4 matrix of float)
+0:20            'm' ( temp 4X4 matrix of float)
+0:20            'm' ( temp 4X4 matrix of float)
+0:21      Sequence
+0:21        move second child to first child ( temp float)
+0:21          'f' ( temp float)
+0:21          direct index ( temp float)
+0:21            direct index ( temp 4-component vector of float)
+0:21              'mm' ( temp 4X4 matrix of float)
+0:21              Constant:
+0:21                1 (const int)
+0:21            Constant:
+0:21              3 (const int)
+0:24      Sequence
+0:24        move second child to first child ( temp float)
+0:24          'g' ( temp float)
+0:24          direct index ( temp float)
+0:24            direct index ( temp 4-component vector of float)
+0:24              component-wise multiply ( global 4X4 matrix of float)
+0:24                'm' ( temp 4X4 matrix of float)
+0:24                'm' ( temp 4X4 matrix of float)
+0:24              Constant:
+0:24                2 (const int)
+0:24            Constant:
+0:24              1 (const int)
+0:26      Sequence
+0:26        move second child to first child ( temp float)
+0:26          'h' ( temp float)
+0:26          Constant:
+0:26            5.000000
+0:28      Sequence
+0:28        move second child to first child ( temp float)
+0:28          'i' ( temp float)
+0:28          direct index ( temp float)
+0:28            texture ( global 4-component vector of float)
+0:28              'sampler' ( uniform sampler2D)
+0:28              Constant:
+0:28                0.500000
+0:28                0.500000
+0:28            Constant:
+0:28              1 (const int)
+0:30      add second child into first child ( temp float)
+0:30        'i' ( temp float)
+0:30        direct index ( temp float)
+0:30          Test condition and select ( temp 4-component vector of float)
+0:30            Condition
+0:30            Compare Greater Than ( temp bool)
+0:30              'i' ( temp float)
+0:30              Constant:
+0:30                0.100000
+0:30            true case
+0:30            'v1' ( global 4-component vector of float)
+0:30            false case
+0:30            'v2' ( global 4-component vector of float)
+0:30          Constant:
+0:30            3 (const int)
+0:33      add second child into first child ( temp float)
+0:33        'i' ( temp float)
+0:33        direct index ( temp float)
+0:33          direct index ( temp 2-component vector of float)
+0:33            b: direct index for structure ( global 3-element array of 2-component vector of float)
+0:33              move second child to first child ( temp structure{ global int a,  global 3-element array of 2-component vector of float b,  global bool c})
+0:33                't' ( temp structure{ global int a,  global 3-element array of 2-component vector of float b,  global bool c})
+0:33                Constant:
+0:33                  1 (const int)
+0:33                  2.000000
+0:33                  3.000000
+0:33                  4.000000
+0:33                  5.000000
+0:33                  6.000000
+0:33                  7.000000
+0:33                  true (const bool)
+0:33              Constant:
+0:33                1 (const int)
+0:33            Constant:
+0:33              2 (const int)
+0:33          Constant:
+0:33            1 (const int)
+0:35      move second child to first child ( temp 4-component vector of float)
+0:35        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:35        Construct vec4 ( temp 4-component vector of float)
+0:35          'f' ( temp float)
+0:35          'g' ( temp float)
+0:35          'h' ( temp float)
+0:35          'i' ( temp float)
+0:?   Linker Objects
+0:?     'sampler' ( uniform sampler2D)
+0:?     'v1' ( global 4-component vector of float)
+0:?     'v2' ( global 4-component vector of float)
+0:?     'v3' ( global 4-component vector of float)
+0:?     'v4' ( global 4-component vector of float)
+

@@ -1,0 +1,48 @@
+#version 450
+
+#extension GL_EXT_shader_explicit_arithmetic_types : require
+
+const bool bool_init = true;
+const int8_t int8_t_init = int8_t(-1);
+const int16_t int16_t_init = int16_t(-2);
+const int32_t int32_t_init = int32_t(-3);
+const int64_t int64_t_init = int64_t(-4);
+const uint8_t uint8_t_init = uint8_t(1);
+const uint16_t uint16_t_init = uint16_t(2);
+const uint32_t uint32_t_init = uint32_t(3);
+const uint64_t uint64_t_init = uint64_t(4);
+const float16_t float16_t_init = float16_t(42.0);
+const float32_t float32_t_init = float32_t(13.0);
+const float64_t float64_t_init = float64_t(-4.0);
+
+#define TYPE_TO_TYPE(x, y) \
+    const x y##_to_##x = x(y##_init)
+
+#define TYPE_TO(x)              \
+    TYPE_TO_TYPE(x, bool);      \
+    TYPE_TO_TYPE(x, int8_t);    \
+    TYPE_TO_TYPE(x, int16_t);   \
+    TYPE_TO_TYPE(x, int32_t);   \
+    TYPE_TO_TYPE(x, int64_t);   \
+    TYPE_TO_TYPE(x, uint8_t);   \
+    TYPE_TO_TYPE(x, uint16_t);  \
+    TYPE_TO_TYPE(x, uint32_t);  \
+    TYPE_TO_TYPE(x, uint64_t);  \
+    TYPE_TO_TYPE(x, float16_t); \
+    TYPE_TO_TYPE(x, float32_t); \
+    TYPE_TO_TYPE(x, float64_t)
+
+TYPE_TO(bool);
+TYPE_TO(int8_t);
+TYPE_TO(int16_t);
+TYPE_TO(int32_t);
+TYPE_TO(int64_t);
+TYPE_TO(uint8_t);
+TYPE_TO(uint16_t);
+TYPE_TO(uint32_t);
+TYPE_TO(uint64_t);
+TYPE_TO(float16_t);
+TYPE_TO(float32_t);
+TYPE_TO(float64_t);
+
+void main() {}

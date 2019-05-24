@@ -1,0 +1,106 @@
+#version 450
+#extension GL_NV_compute_shader_derivatives : require
+
+layout (local_size_x = 2, local_size_y = 4) in;
+layout(derivative_group_quadsNV) in;
+
+buffer block {
+  float fDerivativeX;
+  float fDerivativeY;
+  float fDerivativeWidth;
+  float fCoarseDerivativeX;
+  float fCoarseDerivativeY;
+  float fCoarseDerivativeWidth;
+  float fFineDerivativeX;
+  float fFineDerivativeY;
+  float fFineDerivativeWidth;
+  
+  float fX;
+  float fY;
+  
+  
+  vec2 v2DerivativeX;
+  vec2 v2DerivativeY;
+  vec2 v2DerivativeWidth;
+  vec2 v2CoarseDerivativeX;
+  vec2 v2CoarseDerivativeY;
+  vec2 v2CoarseDerivativeWidth;
+  vec2 v2FineDerivativeX;
+  vec2 v2FineDerivativeY;
+  vec2 v2FineDerivativeWidth;
+  
+  vec2 v2X;
+  vec2 v2Y;
+  
+  
+  vec3 v3DerivativeX;
+  vec3 v3DerivativeY;
+  vec3 v3DerivativeWidth;
+  vec3 v3CoarseDerivativeX;
+  vec3 v3CoarseDerivativeY;
+  vec3 v3CoarseDerivativeWidth;
+  vec3 v3FineDerivativeX;
+  vec3 v3FineDerivativeY;
+  vec3 v3FineDerivativeWidth;
+  
+  vec3 v3X;
+  vec3 v3Y;
+  
+  
+  vec4 v4DerivativeX;
+  vec4 v4DerivativeY;
+  vec4 v4DerivativeWidth;
+  vec4 v4CoarseDerivativeX;
+  vec4 v4CoarseDerivativeY;
+  vec4 v4CoarseDerivativeWidth;
+  vec4 v4FineDerivativeX;
+  vec4 v4FineDerivativeY;
+  vec4 v4FineDerivativeWidth;
+  
+  vec4 v4X;
+  vec4 v4Y;
+};
+
+void main(){
+    fDerivativeX = dFdx(fX);
+    fDerivativeY = dFdy(fY);
+    fDerivativeWidth = fwidth(fX);
+    fCoarseDerivativeX = dFdxCoarse(fX);
+    fCoarseDerivativeY = dFdyCoarse(fY);
+    fCoarseDerivativeWidth = fwidthCoarse(fX);
+    fFineDerivativeX = dFdxFine(fX);
+    fFineDerivativeY = dFdyFine(fY);
+    fFineDerivativeWidth = fwidthFine(fX);
+
+    v2DerivativeX = dFdx(v2X);
+    v2DerivativeY = dFdy(v2Y);
+    v2DerivativeWidth = fwidth(v2X);
+    v2CoarseDerivativeX = dFdxCoarse(v2X);
+    v2CoarseDerivativeY = dFdyCoarse(v2Y);
+    v2CoarseDerivativeWidth = fwidthCoarse(v2X);
+    v2FineDerivativeX = dFdxFine(v2X);
+    v2FineDerivativeY = dFdyFine(v2Y);
+    v2FineDerivativeWidth = fwidthFine(v2X);
+
+
+    v3DerivativeX = dFdx(v3X);
+    v3DerivativeY = dFdy(v3Y);
+    v3DerivativeWidth = fwidth(v3X);
+    v3CoarseDerivativeX = dFdxCoarse(v3X);
+    v3CoarseDerivativeY = dFdyCoarse(v3Y);
+    v3CoarseDerivativeWidth = fwidthCoarse(v3X);
+    v3FineDerivativeX = dFdxFine(v3X);
+    v3FineDerivativeY = dFdyFine(v3Y);
+    v3FineDerivativeWidth = fwidthFine(v3X);
+
+
+    v4DerivativeX = dFdx(v4X);
+    v4DerivativeY = dFdy(v4Y);
+    v4DerivativeWidth = fwidth(v4X);
+    v4CoarseDerivativeX = dFdxCoarse(v4X);
+    v4CoarseDerivativeY = dFdyCoarse(v4Y);
+    v4CoarseDerivativeWidth = fwidthCoarse(v4X);
+    v4FineDerivativeX = dFdxFine(v4X);
+    v4FineDerivativeY = dFdyFine(v4Y);
+    v4FineDerivativeWidth = fwidthFine(v4X);
+}

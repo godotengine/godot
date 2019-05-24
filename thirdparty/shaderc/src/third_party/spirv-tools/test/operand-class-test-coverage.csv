@@ -1,0 +1,43 @@
+Operand class,Example instruction,Notes,example unit test,negative-enum coverage location
+"    OperandNone,",UNUSED,not in grammar,,not enum
+"    OperandId,",many,ID,too many to count,not enum
+"    OperandOptionalId,","Source, Variable",OPTIONAL_ID,OpSourceAcceptsOptionalFileId,not enum
+"    OperandOptionalImage,",ImageFetch,,ImageOperandsTest,"TEST_F(ImageOperandsTest, WrongOperand)"
+"    OperandVariableIds,",ExtInst,,,not enum
+"    OperandOptionalLiteral,",ExecutionMode,,AnyExecutionMode,not enum
+"    OperandOptionalLiteralString,",Source,,OpSourceAcceptsOptionalSourceText,not enum
+"    OperandVariableLiterals,",Decorate,,OpDecorateSimpleTest,not enum
+"    OperandVariableIdLiteral,",GroupMemberDecorate,,GroupMemberDecorate*,not enum
+"    OperandVariableLiteralId,",Switch,,Switch*,not enum
+"    OperandLiteralNumber,","Source, Switch, ...",,Switch*,not enum
+"    OperandLiteralString,",SourceContinued,,OpSourceContinued,not enum
+"    OperandSource,",Source,,OpSource,not enum
+"    OperandExecutionModel,",EntryPoint,,OpEntryPointTest,"TEST_F(OpEntryPointTest, WrongModel)"
+"    OperandAddressing,",OpMemoryModel,,OpMemoryModelTest,"TEST_F(OpMemoryModelTest, WrongModel)"
+"    OperandMemory,",OpMemoryModel,,OpMemoryModelTest,"TEST_F(OpMemoryModelTest, WrongModel)"
+"    OperandExecutionMode,",OpExecutionMode,,OpExecutionModeTest,"TEST_F(OpExecutionModeTest, WrongMode)"
+"    OperandStorage,","TypePointer, TypeForwardPointer, Variable",,StorageClassTest,"TEST_F(OpTypeForwardPointerTest, WrongClass)"
+"    OperandDimensionality,",TypeImage,,DimTest/AnyDim,"TEST_F(DimTest, WrongDim)"
+"    OperandSamplerAddressingMode,",ConstantSampler,,SamplerAddressingModeTest,"TEST_F(SamplerAddressingModeTest, WrongMode)"
+"    OperandSamplerFilterMode,",ConstantSampler,,AnySamplerFilterMode,"TEST_F(SamplerFilterModeTest, WrongMode)"
+"    OperandSamplerImageFormat,",TypeImage,SAMPLER_IMAGE_FORMAT,ImageFormatTest,"TEST_F(ImageFormatTest, WrongFormat)"
+"    OperandImageChannelOrder,",UNUSED,returned as result value only,,
+"    OperandImageChannelDataType,",UNUSED,returned as result value only,,
+"    OperandImageOperands,",UNUSED,used to make a spec section,,see OperandOptionalImage
+"    OperandFPFastMath,",OpDecorate,,CombinedFPFastMathMask,"TEST_F(OpDecorateEnumTest, WrongFPFastMathMode)"
+"    OperandFPRoundingMode,",OpDecorate,,,"TEST_F(OpDecorateEnumTest, WrongFPRoundingMode)"
+"    OperandLinkageType,",OpDecorate,,OpDecorateLinkageTest,"TEST_F(OpDecorateLinkageTest, WrongType)"
+"    OperandAccessQualifier,",OpTypePipe,,AnyAccessQualifier,"TEST_F(OpTypePipeTest, WrongAccessQualifier)"
+"    OperandFuncParamAttr,",OpDecorate,,TextToBinaryDecorateFuncParamAttr,"TEST_F(OpDecorateEnumTest, WrongFuncParamAttr)"
+"    OperandDecoration,",OpDecorate,,AnyAccessQualifier,"TEST_F(OpTypePipeTest, WrongAccessQualifier)"
+"    OperandBuiltIn,",OpDecorate,,TextToBinaryDecorateBultIn,"TEST_F(OpDecorateEnumTest, WrongBuiltIn)"
+"    OperandSelect,",SelectionMerge,,TextToBinarySelectionMerge,"TEST_F(OpSelectionMergeTest, WrongSelectionControl)"
+"    OperandLoop,",LoopMerge,,CombinedLoopControlMask,"TEST_F(OpLoopMergeTest, WrongLoopControl)"
+"    OperandFunction,",Function,,AnySingleFunctionControlMask,"TEST_F(OpFunctionControlTest, WrongFunctionControl)"
+"    OperandMemorySemantics,",OpMemoryBarrier,"it's an ID, not in grammar",OpMemoryBarrier*,not enum
+"    OperandMemoryAccess,",UNUSED,"should be on opstore, but hacked in opcode.cpp",,not enum
+"    OperandScope,",MemoryBarrier,"it's an ID, not in grammar",OpMemoryBarrier*,not enum
+"    OperandGroupOperation,",GroupIAdd,,GroupOperationTest,"TEST_F(GroupOperationTest, WrongGroupOperation)"
+"    OperandKernelEnqueueFlags,",OpEnqueueKernel,"it's an ID, not in grammar",should not have one,not enum
+"    OperandKernelProfilingInfo,",OpCaptureEventProfilingInfo,"it's an ID, not in grammar",should not have one,not enum
+"    OperandCapability,",Capability,,OpCapabilityTest,"TEST_F(TextToBinaryCapability, BadInvalidCapability)"

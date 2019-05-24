@@ -1,0 +1,328 @@
+hlsl.buffer.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:30  Function Definition: foo( ( temp float)
+0:30    Function Parameters: 
+0:?     Sequence
+0:31      Branch: Return with expression
+0:31        Constant:
+0:31          1.000000
+0:43  Function Definition: @PixelShaderFunction(vf4; ( temp structure{ temp 4-component vector of float a})
+0:43    Function Parameters: 
+0:43      'input' ( in 4-component vector of float)
+0:?     Sequence
+0:45      move second child to first child ( temp 4-component vector of float)
+0:45        a: direct index for structure ( temp 4-component vector of float)
+0:45          'ret' ( temp structure{ temp 4-component vector of float a})
+0:45          Constant:
+0:45            0 (const int)
+0:45        add ( temp 4-component vector of float)
+0:45          v24: direct index for structure (layout( row_major std140) uniform 4-component vector of float)
+0:45            'anon@4' (layout( row_major std140) uniform block{layout( row_major std140) uniform 4-component vector of float v24})
+0:45            Constant:
+0:45              0 (const uint)
+0:45          vector-scale ( temp 4-component vector of float)
+0:45            add ( temp 4-component vector of float)
+0:45              add ( temp 4-component vector of float)
+0:45                add ( temp 4-component vector of float)
+0:45                  add ( temp 4-component vector of float)
+0:45                    'input' ( in 4-component vector of float)
+0:45                    v1: direct index for structure (layout( row_major std140) uniform 4-component vector of float)
+0:45                      'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform 4-component vector of float v1})
+0:45                      Constant:
+0:45                        0 (const uint)
+0:45                  v2: direct index for structure (layout( row_major std430) buffer 4-component vector of float)
+0:45                    'anon@1' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer 4-component vector of float v2})
+0:45                    Constant:
+0:45                      0 (const uint)
+0:45                v3: direct index for structure (layout( row_major std140 offset=0) uniform 4-component vector of float)
+0:45                  'anon@2' (layout( row_major std140) uniform block{layout( row_major std140 offset=0) uniform 4-component vector of float v3, layout( row_major std140 offset=20) uniform int i3})
+0:45                  Constant:
+0:45                    0 (const uint)
+0:45              v4: direct index for structure (layout( row_major std430 offset=16) buffer 4-component vector of float)
+0:45                'anon@3' (layout( binding=8 row_major std430) readonly buffer block{layout( row_major std430 offset=16) buffer 4-component vector of float v4, layout( row_major std430 offset=48) buffer int i4, layout( row_major std430 offset=60) buffer float f1, layout( row_major std430 offset=64) buffer float f3, layout( row_major std430 offset=68) buffer float f4, layout( row_major std430 offset=72) buffer float f5, layout( row_major std430) buffer float f6, layout( row_major std430 offset=128) buffer float f7, layout( row_major std430 offset=112) buffer 3X4 matrix of float m1, layout( column_major std430 offset=176) buffer 3X4 matrix of float m2, layout( row_major std430 offset=240) buffer 3X4 matrix of float m3, layout( row_major std430 offset=304) buffer 3X4 matrix of float m4})
+0:45                Constant:
+0:45                  0 (const uint)
+0:45            Function Call: foo( ( temp float)
+0:46      Branch: Return with expression
+0:46        'ret' ( temp structure{ temp 4-component vector of float a})
+0:43  Function Definition: PixelShaderFunction( ( temp void)
+0:43    Function Parameters: 
+0:?     Sequence
+0:43      move second child to first child ( temp 4-component vector of float)
+0:?         'input' ( temp 4-component vector of float)
+0:?         'input' ( in 4-component vector of float FragCoord)
+0:43      Sequence
+0:43        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.a' (layout( location=0) out 4-component vector of float)
+0:43          a: direct index for structure ( temp 4-component vector of float)
+0:43            Function Call: @PixelShaderFunction(vf4; ( temp structure{ temp 4-component vector of float a})
+0:?               'input' ( temp 4-component vector of float)
+0:43            Constant:
+0:43              0 (const int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform 4-component vector of float v1})
+0:?     'anon@1' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer 4-component vector of float v2})
+0:?     'anon@2' (layout( row_major std140) uniform block{layout( row_major std140 offset=0) uniform 4-component vector of float v3, layout( row_major std140 offset=20) uniform int i3})
+0:?     'anon@3' (layout( binding=8 row_major std430) readonly buffer block{layout( row_major std430 offset=16) buffer 4-component vector of float v4, layout( row_major std430 offset=48) buffer int i4, layout( row_major std430 offset=60) buffer float f1, layout( row_major std430 offset=64) buffer float f3, layout( row_major std430 offset=68) buffer float f4, layout( row_major std430 offset=72) buffer float f5, layout( row_major std430) buffer float f6, layout( row_major std430 offset=128) buffer float f7, layout( row_major std430 offset=112) buffer 3X4 matrix of float m1, layout( column_major std430 offset=176) buffer 3X4 matrix of float m2, layout( row_major std430 offset=240) buffer 3X4 matrix of float m3, layout( row_major std430 offset=304) buffer 3X4 matrix of float m4})
+0:?     'anon@4' (layout( row_major std140) uniform block{layout( row_major std140) uniform 4-component vector of float v24})
+0:?     '@entryPointOutput.a' (layout( location=0) out 4-component vector of float)
+0:?     'input' ( in 4-component vector of float FragCoord)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:30  Function Definition: foo( ( temp float)
+0:30    Function Parameters: 
+0:?     Sequence
+0:31      Branch: Return with expression
+0:31        Constant:
+0:31          1.000000
+0:43  Function Definition: @PixelShaderFunction(vf4; ( temp structure{ temp 4-component vector of float a})
+0:43    Function Parameters: 
+0:43      'input' ( in 4-component vector of float)
+0:?     Sequence
+0:45      move second child to first child ( temp 4-component vector of float)
+0:45        a: direct index for structure ( temp 4-component vector of float)
+0:45          'ret' ( temp structure{ temp 4-component vector of float a})
+0:45          Constant:
+0:45            0 (const int)
+0:45        add ( temp 4-component vector of float)
+0:45          v24: direct index for structure (layout( row_major std140) uniform 4-component vector of float)
+0:45            'anon@4' (layout( row_major std140) uniform block{layout( row_major std140) uniform 4-component vector of float v24})
+0:45            Constant:
+0:45              0 (const uint)
+0:45          vector-scale ( temp 4-component vector of float)
+0:45            add ( temp 4-component vector of float)
+0:45              add ( temp 4-component vector of float)
+0:45                add ( temp 4-component vector of float)
+0:45                  add ( temp 4-component vector of float)
+0:45                    'input' ( in 4-component vector of float)
+0:45                    v1: direct index for structure (layout( row_major std140) uniform 4-component vector of float)
+0:45                      'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform 4-component vector of float v1})
+0:45                      Constant:
+0:45                        0 (const uint)
+0:45                  v2: direct index for structure (layout( row_major std430) buffer 4-component vector of float)
+0:45                    'anon@1' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer 4-component vector of float v2})
+0:45                    Constant:
+0:45                      0 (const uint)
+0:45                v3: direct index for structure (layout( row_major std140 offset=0) uniform 4-component vector of float)
+0:45                  'anon@2' (layout( row_major std140) uniform block{layout( row_major std140 offset=0) uniform 4-component vector of float v3, layout( row_major std140 offset=20) uniform int i3})
+0:45                  Constant:
+0:45                    0 (const uint)
+0:45              v4: direct index for structure (layout( row_major std430 offset=16) buffer 4-component vector of float)
+0:45                'anon@3' (layout( binding=8 row_major std430) readonly buffer block{layout( row_major std430 offset=16) buffer 4-component vector of float v4, layout( row_major std430 offset=48) buffer int i4, layout( row_major std430 offset=60) buffer float f1, layout( row_major std430 offset=64) buffer float f3, layout( row_major std430 offset=68) buffer float f4, layout( row_major std430 offset=72) buffer float f5, layout( row_major std430) buffer float f6, layout( row_major std430 offset=128) buffer float f7, layout( row_major std430 offset=112) buffer 3X4 matrix of float m1, layout( column_major std430 offset=176) buffer 3X4 matrix of float m2, layout( row_major std430 offset=240) buffer 3X4 matrix of float m3, layout( row_major std430 offset=304) buffer 3X4 matrix of float m4})
+0:45                Constant:
+0:45                  0 (const uint)
+0:45            Function Call: foo( ( temp float)
+0:46      Branch: Return with expression
+0:46        'ret' ( temp structure{ temp 4-component vector of float a})
+0:43  Function Definition: PixelShaderFunction( ( temp void)
+0:43    Function Parameters: 
+0:?     Sequence
+0:43      move second child to first child ( temp 4-component vector of float)
+0:?         'input' ( temp 4-component vector of float)
+0:?         'input' ( in 4-component vector of float FragCoord)
+0:43      Sequence
+0:43        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.a' (layout( location=0) out 4-component vector of float)
+0:43          a: direct index for structure ( temp 4-component vector of float)
+0:43            Function Call: @PixelShaderFunction(vf4; ( temp structure{ temp 4-component vector of float a})
+0:?               'input' ( temp 4-component vector of float)
+0:43            Constant:
+0:43              0 (const int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{layout( row_major std140) uniform 4-component vector of float v1})
+0:?     'anon@1' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer 4-component vector of float v2})
+0:?     'anon@2' (layout( row_major std140) uniform block{layout( row_major std140 offset=0) uniform 4-component vector of float v3, layout( row_major std140 offset=20) uniform int i3})
+0:?     'anon@3' (layout( binding=8 row_major std430) readonly buffer block{layout( row_major std430 offset=16) buffer 4-component vector of float v4, layout( row_major std430 offset=48) buffer int i4, layout( row_major std430 offset=60) buffer float f1, layout( row_major std430 offset=64) buffer float f3, layout( row_major std430 offset=68) buffer float f4, layout( row_major std430 offset=72) buffer float f5, layout( row_major std430) buffer float f6, layout( row_major std430 offset=128) buffer float f7, layout( row_major std430 offset=112) buffer 3X4 matrix of float m1, layout( column_major std430 offset=176) buffer 3X4 matrix of float m2, layout( row_major std430 offset=240) buffer 3X4 matrix of float m3, layout( row_major std430 offset=304) buffer 3X4 matrix of float m4})
+0:?     'anon@4' (layout( row_major std140) uniform block{layout( row_major std140) uniform 4-component vector of float v24})
+0:?     '@entryPointOutput.a' (layout( location=0) out 4-component vector of float)
+0:?     'input' ( in 4-component vector of float FragCoord)
+
+Validation failed
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 73
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "PixelShaderFunction" 65 68
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "PixelShaderFunction"
+                              Name 8  "foo("
+                              Name 12  "id"
+                              MemberName 12(id) 0  "a"
+                              Name 15  "@PixelShaderFunction(vf4;"
+                              Name 14  "input"
+                              Name 21  "ret"
+                              Name 24  "cbufName2"
+                              MemberName 24(cbufName2) 0  "v24"
+                              Name 26  ""
+                              Name 31  "buf1"
+                              MemberName 31(buf1) 0  "v1"
+                              Name 33  ""
+                              Name 37  "buf2"
+                              MemberName 37(buf2) 0  "v2"
+                              Name 39  ""
+                              Name 43  "cbufName"
+                              MemberName 43(cbufName) 0  "v3"
+                              MemberName 43(cbufName) 1  "i3"
+                              Name 45  ""
+                              Name 50  "tbufName"
+                              MemberName 50(tbufName) 0  "v4"
+                              MemberName 50(tbufName) 1  "i4"
+                              MemberName 50(tbufName) 2  "f1"
+                              MemberName 50(tbufName) 3  "f3"
+                              MemberName 50(tbufName) 4  "f4"
+                              MemberName 50(tbufName) 5  "f5"
+                              MemberName 50(tbufName) 6  "f6"
+                              MemberName 50(tbufName) 7  "f7"
+                              MemberName 50(tbufName) 8  "m1"
+                              MemberName 50(tbufName) 9  "m2"
+                              MemberName 50(tbufName) 10  "m3"
+                              MemberName 50(tbufName) 11  "m4"
+                              Name 52  ""
+                              Name 63  "input"
+                              Name 65  "input"
+                              Name 68  "@entryPointOutput.a"
+                              Name 69  "param"
+                              MemberDecorate 24(cbufName2) 0 Offset 0
+                              Decorate 24(cbufName2) Block
+                              Decorate 26 DescriptorSet 0
+                              Decorate 26 Binding 0
+                              MemberDecorate 31(buf1) 0 Offset 0
+                              Decorate 31(buf1) Block
+                              Decorate 33 DescriptorSet 0
+                              Decorate 33 Binding 0
+                              MemberDecorate 37(buf2) 0 NonWritable
+                              MemberDecorate 37(buf2) 0 Offset 0
+                              Decorate 37(buf2) BufferBlock
+                              Decorate 39 DescriptorSet 0
+                              Decorate 39 Binding 0
+                              MemberDecorate 43(cbufName) 0 Offset 0
+                              MemberDecorate 43(cbufName) 1 Offset 20
+                              Decorate 43(cbufName) Block
+                              Decorate 45 DescriptorSet 0
+                              Decorate 45 Binding 0
+                              MemberDecorate 50(tbufName) 0 NonWritable
+                              MemberDecorate 50(tbufName) 0 Offset 16
+                              MemberDecorate 50(tbufName) 1 NonWritable
+                              MemberDecorate 50(tbufName) 1 Offset 48
+                              MemberDecorate 50(tbufName) 2 NonWritable
+                              MemberDecorate 50(tbufName) 2 Offset 60
+                              MemberDecorate 50(tbufName) 3 NonWritable
+                              MemberDecorate 50(tbufName) 3 Offset 64
+                              MemberDecorate 50(tbufName) 4 NonWritable
+                              MemberDecorate 50(tbufName) 4 Offset 68
+                              MemberDecorate 50(tbufName) 5 NonWritable
+                              MemberDecorate 50(tbufName) 5 Offset 72
+                              MemberDecorate 50(tbufName) 6 NonWritable
+                              MemberDecorate 50(tbufName) 6 Offset 76
+                              MemberDecorate 50(tbufName) 7 NonWritable
+                              MemberDecorate 50(tbufName) 7 Offset 128
+                              MemberDecorate 50(tbufName) 8 RowMajor
+                              MemberDecorate 50(tbufName) 8 NonWritable
+                              MemberDecorate 50(tbufName) 8 Offset 112
+                              MemberDecorate 50(tbufName) 8 MatrixStride 16
+                              MemberDecorate 50(tbufName) 9 ColMajor
+                              MemberDecorate 50(tbufName) 9 NonWritable
+                              MemberDecorate 50(tbufName) 9 Offset 176
+                              MemberDecorate 50(tbufName) 9 MatrixStride 16
+                              MemberDecorate 50(tbufName) 10 RowMajor
+                              MemberDecorate 50(tbufName) 10 NonWritable
+                              MemberDecorate 50(tbufName) 10 Offset 240
+                              MemberDecorate 50(tbufName) 10 MatrixStride 16
+                              MemberDecorate 50(tbufName) 11 RowMajor
+                              MemberDecorate 50(tbufName) 11 NonWritable
+                              MemberDecorate 50(tbufName) 11 Offset 304
+                              MemberDecorate 50(tbufName) 11 MatrixStride 16
+                              Decorate 50(tbufName) BufferBlock
+                              Decorate 52 DescriptorSet 0
+                              Decorate 52 Binding 8
+                              Decorate 65(input) BuiltIn FragCoord
+                              Decorate 68(@entryPointOutput.a) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeFunction 6(float)
+              10:             TypeVector 6(float) 4
+              11:             TypePointer Function 10(fvec4)
+          12(id):             TypeStruct 10(fvec4)
+              13:             TypeFunction 12(id) 11(ptr)
+              17:    6(float) Constant 1065353216
+              20:             TypePointer Function 12(id)
+              22:             TypeInt 32 1
+              23:     22(int) Constant 0
+   24(cbufName2):             TypeStruct 10(fvec4)
+              25:             TypePointer Uniform 24(cbufName2)
+              26:     25(ptr) Variable Uniform
+              27:             TypePointer Uniform 10(fvec4)
+        31(buf1):             TypeStruct 10(fvec4)
+              32:             TypePointer Uniform 31(buf1)
+              33:     32(ptr) Variable Uniform
+        37(buf2):             TypeStruct 10(fvec4)
+              38:             TypePointer Uniform 37(buf2)
+              39:     38(ptr) Variable Uniform
+    43(cbufName):             TypeStruct 10(fvec4) 22(int)
+              44:             TypePointer Uniform 43(cbufName)
+              45:     44(ptr) Variable Uniform
+              49:             TypeMatrix 10(fvec4) 3
+    50(tbufName):             TypeStruct 10(fvec4) 22(int) 6(float) 6(float) 6(float) 6(float) 6(float) 6(float) 49 49 49 49
+              51:             TypePointer Uniform 50(tbufName)
+              52:     51(ptr) Variable Uniform
+              64:             TypePointer Input 10(fvec4)
+       65(input):     64(ptr) Variable Input
+              67:             TypePointer Output 10(fvec4)
+68(@entryPointOutput.a):     67(ptr) Variable Output
+4(PixelShaderFunction):           2 Function None 3
+               5:             Label
+       63(input):     11(ptr) Variable Function
+       69(param):     11(ptr) Variable Function
+              66:   10(fvec4) Load 65(input)
+                              Store 63(input) 66
+              70:   10(fvec4) Load 63(input)
+                              Store 69(param) 70
+              71:      12(id) FunctionCall 15(@PixelShaderFunction(vf4;) 69(param)
+              72:   10(fvec4) CompositeExtract 71 0
+                              Store 68(@entryPointOutput.a) 72
+                              Return
+                              FunctionEnd
+         8(foo():    6(float) Function None 7
+               9:             Label
+                              ReturnValue 17
+                              FunctionEnd
+15(@PixelShaderFunction(vf4;):      12(id) Function None 13
+       14(input):     11(ptr) FunctionParameter
+              16:             Label
+         21(ret):     20(ptr) Variable Function
+              28:     27(ptr) AccessChain 26 23
+              29:   10(fvec4) Load 28
+              30:   10(fvec4) Load 14(input)
+              34:     27(ptr) AccessChain 33 23
+              35:   10(fvec4) Load 34
+              36:   10(fvec4) FAdd 30 35
+              40:     27(ptr) AccessChain 39 23
+              41:   10(fvec4) Load 40
+              42:   10(fvec4) FAdd 36 41
+              46:     27(ptr) AccessChain 45 23
+              47:   10(fvec4) Load 46
+              48:   10(fvec4) FAdd 42 47
+              53:     27(ptr) AccessChain 52 23
+              54:   10(fvec4) Load 53
+              55:   10(fvec4) FAdd 48 54
+              56:    6(float) FunctionCall 8(foo()
+              57:   10(fvec4) VectorTimesScalar 55 56
+              58:   10(fvec4) FAdd 29 57
+              59:     11(ptr) AccessChain 21(ret) 23
+                              Store 59 58
+              60:      12(id) Load 21(ret)
+                              ReturnValue 60
+                              FunctionEnd

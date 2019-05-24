@@ -1,0 +1,294 @@
+hlsl.isfinite.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:7  Function Definition: test1(f1; ( temp bool)
+0:7    Function Parameters: 
+0:7      'v' ( in float)
+0:?     Sequence
+0:8      Branch: Return with expression
+0:8        logical-and ( temp bool)
+0:8          Negate conditional ( temp bool)
+0:8            isnan ( temp bool)
+0:8              'v' ( in float)
+0:8          Sequence
+0:8            move second child to first child ( temp float)
+0:8              '@finitetmp' ( temp float)
+0:8              'v' ( in float)
+0:8            logical-and ( temp bool)
+0:8              Negate conditional ( temp bool)
+0:8                isnan ( temp bool)
+0:8                  '@finitetmp' ( temp float)
+0:8              Negate conditional ( temp bool)
+0:8                isinf ( temp bool)
+0:8                  '@finitetmp' ( temp float)
+0:12  Function Definition: @main( ( temp 4-component vector of float)
+0:12    Function Parameters: 
+0:?     Sequence
+0:13      Sequence
+0:13        move second child to first child ( temp float)
+0:13          '@finitetmp' ( temp float)
+0:13          f: direct index for structure ( uniform float)
+0:13            'anon@0' (layout( row_major std140) uniform block{ uniform float f,  uniform 2-component vector of float f2,  uniform 3-component vector of float f3})
+0:13            Constant:
+0:13              0 (const uint)
+0:13        logical-and ( temp bool)
+0:13          Negate conditional ( temp bool)
+0:13            isnan ( temp bool)
+0:13              '@finitetmp' ( temp float)
+0:13          Negate conditional ( temp bool)
+0:13            isinf ( temp bool)
+0:13              '@finitetmp' ( temp float)
+0:14      Sequence
+0:14        move second child to first child ( temp 2-component vector of float)
+0:14          '@finitetmp' ( temp 2-component vector of float)
+0:14          f2: direct index for structure ( uniform 2-component vector of float)
+0:14            'anon@0' (layout( row_major std140) uniform block{ uniform float f,  uniform 2-component vector of float f2,  uniform 3-component vector of float f3})
+0:14            Constant:
+0:14              1 (const uint)
+0:14        logical-and ( temp 2-component vector of bool)
+0:14          Negate conditional ( temp 2-component vector of bool)
+0:14            isnan ( temp 2-component vector of bool)
+0:14              '@finitetmp' ( temp 2-component vector of float)
+0:14          Negate conditional ( temp 2-component vector of bool)
+0:14            isinf ( temp 2-component vector of bool)
+0:14              '@finitetmp' ( temp 2-component vector of float)
+0:15      Sequence
+0:15        move second child to first child ( temp 3-component vector of float)
+0:15          '@finitetmp' ( temp 3-component vector of float)
+0:15          f3: direct index for structure ( uniform 3-component vector of float)
+0:15            'anon@0' (layout( row_major std140) uniform block{ uniform float f,  uniform 2-component vector of float f2,  uniform 3-component vector of float f3})
+0:15            Constant:
+0:15              2 (const uint)
+0:15        logical-and ( temp 3-component vector of bool)
+0:15          Negate conditional ( temp 3-component vector of bool)
+0:15            isnan ( temp 3-component vector of bool)
+0:15              '@finitetmp' ( temp 3-component vector of float)
+0:15          Negate conditional ( temp 3-component vector of bool)
+0:15            isinf ( temp 3-component vector of bool)
+0:15              '@finitetmp' ( temp 3-component vector of float)
+0:17      Branch: Return with expression
+0:17        Constant:
+0:17          0.000000
+0:17          0.000000
+0:17          0.000000
+0:17          0.000000
+0:12  Function Definition: main( ( temp void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:12      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:12        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform float f,  uniform 2-component vector of float f2,  uniform 3-component vector of float f3})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:7  Function Definition: test1(f1; ( temp bool)
+0:7    Function Parameters: 
+0:7      'v' ( in float)
+0:?     Sequence
+0:8      Branch: Return with expression
+0:8        logical-and ( temp bool)
+0:8          Negate conditional ( temp bool)
+0:8            isnan ( temp bool)
+0:8              'v' ( in float)
+0:8          Sequence
+0:8            move second child to first child ( temp float)
+0:8              '@finitetmp' ( temp float)
+0:8              'v' ( in float)
+0:8            logical-and ( temp bool)
+0:8              Negate conditional ( temp bool)
+0:8                isnan ( temp bool)
+0:8                  '@finitetmp' ( temp float)
+0:8              Negate conditional ( temp bool)
+0:8                isinf ( temp bool)
+0:8                  '@finitetmp' ( temp float)
+0:12  Function Definition: @main( ( temp 4-component vector of float)
+0:12    Function Parameters: 
+0:?     Sequence
+0:13      Sequence
+0:13        move second child to first child ( temp float)
+0:13          '@finitetmp' ( temp float)
+0:13          f: direct index for structure ( uniform float)
+0:13            'anon@0' (layout( row_major std140) uniform block{ uniform float f,  uniform 2-component vector of float f2,  uniform 3-component vector of float f3})
+0:13            Constant:
+0:13              0 (const uint)
+0:13        logical-and ( temp bool)
+0:13          Negate conditional ( temp bool)
+0:13            isnan ( temp bool)
+0:13              '@finitetmp' ( temp float)
+0:13          Negate conditional ( temp bool)
+0:13            isinf ( temp bool)
+0:13              '@finitetmp' ( temp float)
+0:14      Sequence
+0:14        move second child to first child ( temp 2-component vector of float)
+0:14          '@finitetmp' ( temp 2-component vector of float)
+0:14          f2: direct index for structure ( uniform 2-component vector of float)
+0:14            'anon@0' (layout( row_major std140) uniform block{ uniform float f,  uniform 2-component vector of float f2,  uniform 3-component vector of float f3})
+0:14            Constant:
+0:14              1 (const uint)
+0:14        logical-and ( temp 2-component vector of bool)
+0:14          Negate conditional ( temp 2-component vector of bool)
+0:14            isnan ( temp 2-component vector of bool)
+0:14              '@finitetmp' ( temp 2-component vector of float)
+0:14          Negate conditional ( temp 2-component vector of bool)
+0:14            isinf ( temp 2-component vector of bool)
+0:14              '@finitetmp' ( temp 2-component vector of float)
+0:15      Sequence
+0:15        move second child to first child ( temp 3-component vector of float)
+0:15          '@finitetmp' ( temp 3-component vector of float)
+0:15          f3: direct index for structure ( uniform 3-component vector of float)
+0:15            'anon@0' (layout( row_major std140) uniform block{ uniform float f,  uniform 2-component vector of float f2,  uniform 3-component vector of float f3})
+0:15            Constant:
+0:15              2 (const uint)
+0:15        logical-and ( temp 3-component vector of bool)
+0:15          Negate conditional ( temp 3-component vector of bool)
+0:15            isnan ( temp 3-component vector of bool)
+0:15              '@finitetmp' ( temp 3-component vector of float)
+0:15          Negate conditional ( temp 3-component vector of bool)
+0:15            isinf ( temp 3-component vector of bool)
+0:15              '@finitetmp' ( temp 3-component vector of float)
+0:17      Branch: Return with expression
+0:17        Constant:
+0:17          0.000000
+0:17          0.000000
+0:17          0.000000
+0:17          0.000000
+0:12  Function Definition: main( ( temp void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:12      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:12        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform float f,  uniform 2-component vector of float f2,  uniform 3-component vector of float f3})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 85
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 83
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 11  "test1(f1;"
+                              Name 10  "v"
+                              Name 15  "@main("
+                              Name 20  "@finitetmp"
+                              Name 32  "@finitetmp"
+                              Name 35  "$Global"
+                              MemberName 35($Global) 0  "f"
+                              MemberName 35($Global) 1  "f2"
+                              MemberName 35($Global) 2  "f3"
+                              Name 37  ""
+                              Name 51  "@finitetmp"
+                              Name 65  "@finitetmp"
+                              Name 83  "@entryPointOutput"
+                              MemberDecorate 35($Global) 0 Offset 0
+                              MemberDecorate 35($Global) 1 Offset 8
+                              MemberDecorate 35($Global) 2 Offset 16
+                              Decorate 35($Global) Block
+                              Decorate 37 DescriptorSet 0
+                              Decorate 37 Binding 0
+                              Decorate 83(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypePointer Function 6(float)
+               8:             TypeBool
+               9:             TypeFunction 8(bool) 7(ptr)
+              13:             TypeVector 6(float) 4
+              14:             TypeFunction 13(fvec4)
+              33:             TypeVector 6(float) 2
+              34:             TypeVector 6(float) 3
+     35($Global):             TypeStruct 6(float) 33(fvec2) 34(fvec3)
+              36:             TypePointer Uniform 35($Global)
+              37:     36(ptr) Variable Uniform
+              38:             TypeInt 32 1
+              39:     38(int) Constant 0
+              40:             TypePointer Uniform 6(float)
+              50:             TypePointer Function 33(fvec2)
+              52:     38(int) Constant 1
+              53:             TypePointer Uniform 33(fvec2)
+              57:             TypeVector 8(bool) 2
+              64:             TypePointer Function 34(fvec3)
+              66:     38(int) Constant 2
+              67:             TypePointer Uniform 34(fvec3)
+              71:             TypeVector 8(bool) 3
+              78:    6(float) Constant 0
+              79:   13(fvec4) ConstantComposite 78 78 78 78
+              82:             TypePointer Output 13(fvec4)
+83(@entryPointOutput):     82(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              84:   13(fvec4) FunctionCall 15(@main()
+                              Store 83(@entryPointOutput) 84
+                              Return
+                              FunctionEnd
+   11(test1(f1;):     8(bool) Function None 9
+           10(v):      7(ptr) FunctionParameter
+              12:             Label
+  20(@finitetmp):      7(ptr) Variable Function
+              17:    6(float) Load 10(v)
+              18:     8(bool) IsNan 17
+              19:     8(bool) LogicalNot 18
+              21:    6(float) Load 10(v)
+                              Store 20(@finitetmp) 21
+              22:    6(float) Load 20(@finitetmp)
+              23:     8(bool) IsNan 22
+              24:     8(bool) LogicalNot 23
+              25:    6(float) Load 20(@finitetmp)
+              26:     8(bool) IsInf 25
+              27:     8(bool) LogicalNot 26
+              28:     8(bool) LogicalAnd 24 27
+              29:     8(bool) LogicalAnd 19 28
+                              ReturnValue 29
+                              FunctionEnd
+      15(@main():   13(fvec4) Function None 14
+              16:             Label
+  32(@finitetmp):      7(ptr) Variable Function
+  51(@finitetmp):     50(ptr) Variable Function
+  65(@finitetmp):     64(ptr) Variable Function
+              41:     40(ptr) AccessChain 37 39
+              42:    6(float) Load 41
+                              Store 32(@finitetmp) 42
+              43:    6(float) Load 32(@finitetmp)
+              44:     8(bool) IsNan 43
+              45:     8(bool) LogicalNot 44
+              46:    6(float) Load 32(@finitetmp)
+              47:     8(bool) IsInf 46
+              48:     8(bool) LogicalNot 47
+              49:     8(bool) LogicalAnd 45 48
+              54:     53(ptr) AccessChain 37 52
+              55:   33(fvec2) Load 54
+                              Store 51(@finitetmp) 55
+              56:   33(fvec2) Load 51(@finitetmp)
+              58:   57(bvec2) IsNan 56
+              59:   57(bvec2) LogicalNot 58
+              60:   33(fvec2) Load 51(@finitetmp)
+              61:   57(bvec2) IsInf 60
+              62:   57(bvec2) LogicalNot 61
+              63:   57(bvec2) LogicalAnd 59 62
+              68:     67(ptr) AccessChain 37 66
+              69:   34(fvec3) Load 68
+                              Store 65(@finitetmp) 69
+              70:   34(fvec3) Load 65(@finitetmp)
+              72:   71(bvec3) IsNan 70
+              73:   71(bvec3) LogicalNot 72
+              74:   34(fvec3) Load 65(@finitetmp)
+              75:   71(bvec3) IsInf 74
+              76:   71(bvec3) LogicalNot 75
+              77:   71(bvec3) LogicalAnd 73 76
+                              ReturnValue 79
+                              FunctionEnd

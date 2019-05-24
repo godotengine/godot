@@ -1,0 +1,515 @@
+decls.frag
+ERROR: 0:19: 'vi4' : illegal use of type 'void' 
+ERROR: 0:20: 'vj' : illegal use of type 'void' 
+ERROR: 0:20: 'vk5' : illegal use of type 'void' 
+ERROR: 0:21: 'vm2' : illegal use of type 'void' 
+ERROR: 0:21: 'vm3' : illegal use of type 'void' 
+ERROR: 0:22: 'vn8' : illegal use of type 'void' 
+ERROR: 0:22: 'vp' : illegal use of type 'void' 
+ERROR: 0:25: 'cij' : variables with qualifier 'const' must be initialized 
+ERROR: 0:27: 'cip' : variables with qualifier 'const' must be initialized 
+ERROR: 0:34: 'gl_vi4' : identifiers starting with "gl_" are reserved 
+ERROR: 0:35: 'gl_vj' : identifiers starting with "gl_" are reserved 
+ERROR: 0:35: 'gl_vk5' : identifiers starting with "gl_" are reserved 
+ERROR: 0:36: 'gl_vm2' : identifiers starting with "gl_" are reserved 
+ERROR: 0:36: 'gl_vm3' : identifiers starting with "gl_" are reserved 
+ERROR: 0:37: 'gl_vn8' : identifiers starting with "gl_" are reserved 
+ERROR: 0:37: 'gl_vp' : identifiers starting with "gl_" are reserved 
+ERROR: 0:42: '' : boolean expression expected 
+ERROR: 0:43: 'gl_cond' : identifiers starting with "gl_" are reserved 
+WARNING: 0:46: 'foob__vi4' : identifiers containing consecutive underscores ("__") are reserved 
+WARNING: 0:47: 'foob__vj' : identifiers containing consecutive underscores ("__") are reserved 
+WARNING: 0:47: 'foob__vk5' : identifiers containing consecutive underscores ("__") are reserved 
+WARNING: 0:48: '__foobvm2' : identifiers containing consecutive underscores ("__") are reserved 
+WARNING: 0:48: '__foobvm3' : identifiers containing consecutive underscores ("__") are reserved 
+WARNING: 0:49: 'foob__vn8' : identifiers containing consecutive underscores ("__") are reserved 
+WARNING: 0:49: 'foob__vp' : identifiers containing consecutive underscores ("__") are reserved 
+ERROR: 18 compilation errors.  No code generated.
+
+
+Shader version: 120
+ERROR: node is still EOpNull!
+0:5  Sequence
+0:5    move second child to first child ( temp int)
+0:5      'd1' ( global int)
+0:5      Constant:
+0:5        1 (const int)
+0:6  Sequence
+0:6    move second child to first child ( temp int)
+0:6      'e2' ( global int)
+0:6      Constant:
+0:6        2 (const int)
+0:7  Sequence
+0:7    move second child to first child ( temp int)
+0:7      'h3' ( global int)
+0:7      Constant:
+0:7        3 (const int)
+0:14  Sequence
+0:14    move second child to first child ( temp 4-element array of int)
+0:14      'ii4' ( global 4-element array of int)
+0:14      Constant:
+0:14        1 (const int)
+0:14        2 (const int)
+0:14        3 (const int)
+0:14        4 (const int)
+0:15  Sequence
+0:15    move second child to first child ( temp 5-element array of int)
+0:15      'ik5' ( global 5-element array of int)
+0:15      Constant:
+0:15        5 (const int)
+0:15        6 (const int)
+0:15        7 (const int)
+0:15        8 (const int)
+0:15        9 (const int)
+0:16  Sequence
+0:16    move second child to first child ( temp 2-element array of int)
+0:16      'im2' ( global 2-element array of int)
+0:16      Constant:
+0:16        10 (const int)
+0:16        11 (const int)
+0:16    move second child to first child ( temp 3-element array of int)
+0:16      'im3' ( global 3-element array of int)
+0:16      Constant:
+0:16        12 (const int)
+0:16        13 (const int)
+0:16        14 (const int)
+0:17  Sequence
+0:17    move second child to first child ( temp 4-element array of int)
+0:17      'in8' ( global 4-element array of int)
+0:17      Constant:
+0:17        21 (const int)
+0:17        22 (const int)
+0:17        23 (const int)
+0:17        24 (const int)
+0:34  Sequence
+0:34    move second child to first child ( temp 4-element array of int)
+0:34      'gl_vi4' ( global 4-element array of int)
+0:34      Constant:
+0:34        1 (const int)
+0:34        2 (const int)
+0:34        3 (const int)
+0:34        4 (const int)
+0:35  Sequence
+0:35    move second child to first child ( temp 5-element array of int)
+0:35      'gl_vk5' ( global 5-element array of int)
+0:35      Constant:
+0:35        5 (const int)
+0:35        6 (const int)
+0:35        7 (const int)
+0:35        8 (const int)
+0:35        9 (const int)
+0:36  Sequence
+0:36    move second child to first child ( temp 2-element array of int)
+0:36      'gl_vm2' ( global 2-element array of int)
+0:36      Constant:
+0:36        10 (const int)
+0:36        11 (const int)
+0:36    move second child to first child ( temp 3-element array of int)
+0:36      'gl_vm3' ( global 3-element array of int)
+0:36      Constant:
+0:36        12 (const int)
+0:36        13 (const int)
+0:36        14 (const int)
+0:37  Sequence
+0:37    move second child to first child ( temp 4-element array of int)
+0:37      'gl_vn8' ( global 4-element array of int)
+0:37      Constant:
+0:37        21 (const int)
+0:37        22 (const int)
+0:37        23 (const int)
+0:37        24 (const int)
+0:39  Function Definition: main( ( global void)
+0:39    Function Parameters: 
+0:41    Sequence
+0:41      Loop with condition tested first
+0:41        Loop Condition
+0:41        move second child to first child ( temp bool)
+0:41          'cond' ( temp bool)
+0:41          Compare Less Than ( temp bool)
+0:41            'b' ( global int)
+0:41            'c' ( global int)
+0:41        No loop body
+0:42      Loop with condition tested first
+0:42        Loop Condition
+0:42        move second child to first child ( temp int)
+0:42          'icond' ( temp int)
+0:42          'b' ( global int)
+0:42        No loop body
+0:43      Loop with condition tested first
+0:43        Loop Condition
+0:43        move second child to first child ( temp bool)
+0:43          'gl_cond' ( temp bool)
+0:43          Compare Less Than ( temp bool)
+0:43            'b' ( global int)
+0:43            'c' ( global int)
+0:43        No loop body
+0:46  Sequence
+0:46    move second child to first child ( temp 4-element array of int)
+0:46      'foob__vi4' ( global 4-element array of int)
+0:46      Constant:
+0:46        1 (const int)
+0:46        2 (const int)
+0:46        3 (const int)
+0:46        4 (const int)
+0:47  Sequence
+0:47    move second child to first child ( temp 5-element array of int)
+0:47      'foob__vk5' ( global 5-element array of int)
+0:47      Constant:
+0:47        5 (const int)
+0:47        6 (const int)
+0:47        7 (const int)
+0:47        8 (const int)
+0:47        9 (const int)
+0:48  Sequence
+0:48    move second child to first child ( temp 2-element array of int)
+0:48      '__foobvm2' ( global 2-element array of int)
+0:48      Constant:
+0:48        10 (const int)
+0:48        11 (const int)
+0:48    move second child to first child ( temp 3-element array of int)
+0:48      '__foobvm3' ( global 3-element array of int)
+0:48      Constant:
+0:48        12 (const int)
+0:48        13 (const int)
+0:48        14 (const int)
+0:49  Sequence
+0:49    move second child to first child ( temp 4-element array of int)
+0:49      'foob__vn8' ( global 4-element array of int)
+0:49      Constant:
+0:49        21 (const int)
+0:49        22 (const int)
+0:49        23 (const int)
+0:49        24 (const int)
+0:?   Linker Objects
+0:?     'a' ( global int)
+0:?     'b' ( global int)
+0:?     'c' ( global int)
+0:?     'd1' ( global int)
+0:?     'e2' ( global int)
+0:?     'f' ( global int)
+0:?     'g' ( global int)
+0:?     'h3' ( global int)
+0:?     'i4' ( global 4-element array of int)
+0:?     'j' ( global int)
+0:?     'k5' ( global 5-element array of int)
+0:?     'm6' ( global 6-element array of int)
+0:?     'm7' ( global 7-element array of int)
+0:?     'n8' ( global 8-element array of int)
+0:?     'p' ( global int)
+0:?     'ii4' ( global 4-element array of int)
+0:?     'ij' ( global int)
+0:?     'ik5' ( global 5-element array of int)
+0:?     'im2' ( global 2-element array of int)
+0:?     'im3' ( global 3-element array of int)
+0:?     'in8' ( global 4-element array of int)
+0:?     'ip' ( global int)
+0:?     'cii4' ( const 4-element array of int)
+0:?       1 (const int)
+0:?       2 (const int)
+0:?       3 (const int)
+0:?       4 (const int)
+0:?     'cij' ( temp int)
+0:?     'cik5' ( const 5-element array of int)
+0:?       5 (const int)
+0:?       6 (const int)
+0:?       7 (const int)
+0:?       8 (const int)
+0:?       9 (const int)
+0:?     'cim2' ( const 2-element array of int)
+0:?       10 (const int)
+0:?       11 (const int)
+0:?     'cim3' ( const 3-element array of int)
+0:?       12 (const int)
+0:?       13 (const int)
+0:?       14 (const int)
+0:?     'cin8' ( const 4-element array of int)
+0:?       21 (const int)
+0:?       22 (const int)
+0:?       23 (const int)
+0:?       24 (const int)
+0:?     'cip' ( temp int)
+0:?     'uii4' ( uniform 4-element array of int)
+0:?       1 (const int)
+0:?       2 (const int)
+0:?       3 (const int)
+0:?       4 (const int)
+0:?     'uij' ( uniform int)
+0:?     'uik5' ( uniform 5-element array of int)
+0:?       5 (const int)
+0:?       6 (const int)
+0:?       7 (const int)
+0:?       8 (const int)
+0:?       9 (const int)
+0:?     'uim2' ( uniform 2-element array of int)
+0:?       10 (const int)
+0:?       11 (const int)
+0:?     'uim3' ( uniform 3-element array of int)
+0:?       12 (const int)
+0:?       13 (const int)
+0:?       14 (const int)
+0:?     'uin8' ( uniform 4-element array of int)
+0:?       21 (const int)
+0:?       22 (const int)
+0:?       23 (const int)
+0:?       24 (const int)
+0:?     'uip' ( uniform int)
+0:?     'gl_vi4' ( global 4-element array of int)
+0:?     'gl_vj' ( global int)
+0:?     'gl_vk5' ( global 5-element array of int)
+0:?     'gl_vm2' ( global 2-element array of int)
+0:?     'gl_vm3' ( global 3-element array of int)
+0:?     'gl_vn8' ( global 4-element array of int)
+0:?     'gl_vp' ( global int)
+0:?     'foob__vi4' ( global 4-element array of int)
+0:?     'foob__vj' ( global int)
+0:?     'foob__vk5' ( global 5-element array of int)
+0:?     '__foobvm2' ( global 2-element array of int)
+0:?     '__foobvm3' ( global 3-element array of int)
+0:?     'foob__vn8' ( global 4-element array of int)
+0:?     'foob__vp' ( global int)
+
+
+Linked fragment stage:
+
+
+Shader version: 120
+ERROR: node is still EOpNull!
+0:5  Sequence
+0:5    move second child to first child ( temp int)
+0:5      'd1' ( global int)
+0:5      Constant:
+0:5        1 (const int)
+0:6  Sequence
+0:6    move second child to first child ( temp int)
+0:6      'e2' ( global int)
+0:6      Constant:
+0:6        2 (const int)
+0:7  Sequence
+0:7    move second child to first child ( temp int)
+0:7      'h3' ( global int)
+0:7      Constant:
+0:7        3 (const int)
+0:14  Sequence
+0:14    move second child to first child ( temp 4-element array of int)
+0:14      'ii4' ( global 4-element array of int)
+0:14      Constant:
+0:14        1 (const int)
+0:14        2 (const int)
+0:14        3 (const int)
+0:14        4 (const int)
+0:15  Sequence
+0:15    move second child to first child ( temp 5-element array of int)
+0:15      'ik5' ( global 5-element array of int)
+0:15      Constant:
+0:15        5 (const int)
+0:15        6 (const int)
+0:15        7 (const int)
+0:15        8 (const int)
+0:15        9 (const int)
+0:16  Sequence
+0:16    move second child to first child ( temp 2-element array of int)
+0:16      'im2' ( global 2-element array of int)
+0:16      Constant:
+0:16        10 (const int)
+0:16        11 (const int)
+0:16    move second child to first child ( temp 3-element array of int)
+0:16      'im3' ( global 3-element array of int)
+0:16      Constant:
+0:16        12 (const int)
+0:16        13 (const int)
+0:16        14 (const int)
+0:17  Sequence
+0:17    move second child to first child ( temp 4-element array of int)
+0:17      'in8' ( global 4-element array of int)
+0:17      Constant:
+0:17        21 (const int)
+0:17        22 (const int)
+0:17        23 (const int)
+0:17        24 (const int)
+0:34  Sequence
+0:34    move second child to first child ( temp 4-element array of int)
+0:34      'gl_vi4' ( global 4-element array of int)
+0:34      Constant:
+0:34        1 (const int)
+0:34        2 (const int)
+0:34        3 (const int)
+0:34        4 (const int)
+0:35  Sequence
+0:35    move second child to first child ( temp 5-element array of int)
+0:35      'gl_vk5' ( global 5-element array of int)
+0:35      Constant:
+0:35        5 (const int)
+0:35        6 (const int)
+0:35        7 (const int)
+0:35        8 (const int)
+0:35        9 (const int)
+0:36  Sequence
+0:36    move second child to first child ( temp 2-element array of int)
+0:36      'gl_vm2' ( global 2-element array of int)
+0:36      Constant:
+0:36        10 (const int)
+0:36        11 (const int)
+0:36    move second child to first child ( temp 3-element array of int)
+0:36      'gl_vm3' ( global 3-element array of int)
+0:36      Constant:
+0:36        12 (const int)
+0:36        13 (const int)
+0:36        14 (const int)
+0:37  Sequence
+0:37    move second child to first child ( temp 4-element array of int)
+0:37      'gl_vn8' ( global 4-element array of int)
+0:37      Constant:
+0:37        21 (const int)
+0:37        22 (const int)
+0:37        23 (const int)
+0:37        24 (const int)
+0:39  Function Definition: main( ( global void)
+0:39    Function Parameters: 
+0:41    Sequence
+0:41      Loop with condition tested first
+0:41        Loop Condition
+0:41        move second child to first child ( temp bool)
+0:41          'cond' ( temp bool)
+0:41          Compare Less Than ( temp bool)
+0:41            'b' ( global int)
+0:41            'c' ( global int)
+0:41        No loop body
+0:42      Loop with condition tested first
+0:42        Loop Condition
+0:42        move second child to first child ( temp int)
+0:42          'icond' ( temp int)
+0:42          'b' ( global int)
+0:42        No loop body
+0:43      Loop with condition tested first
+0:43        Loop Condition
+0:43        move second child to first child ( temp bool)
+0:43          'gl_cond' ( temp bool)
+0:43          Compare Less Than ( temp bool)
+0:43            'b' ( global int)
+0:43            'c' ( global int)
+0:43        No loop body
+0:46  Sequence
+0:46    move second child to first child ( temp 4-element array of int)
+0:46      'foob__vi4' ( global 4-element array of int)
+0:46      Constant:
+0:46        1 (const int)
+0:46        2 (const int)
+0:46        3 (const int)
+0:46        4 (const int)
+0:47  Sequence
+0:47    move second child to first child ( temp 5-element array of int)
+0:47      'foob__vk5' ( global 5-element array of int)
+0:47      Constant:
+0:47        5 (const int)
+0:47        6 (const int)
+0:47        7 (const int)
+0:47        8 (const int)
+0:47        9 (const int)
+0:48  Sequence
+0:48    move second child to first child ( temp 2-element array of int)
+0:48      '__foobvm2' ( global 2-element array of int)
+0:48      Constant:
+0:48        10 (const int)
+0:48        11 (const int)
+0:48    move second child to first child ( temp 3-element array of int)
+0:48      '__foobvm3' ( global 3-element array of int)
+0:48      Constant:
+0:48        12 (const int)
+0:48        13 (const int)
+0:48        14 (const int)
+0:49  Sequence
+0:49    move second child to first child ( temp 4-element array of int)
+0:49      'foob__vn8' ( global 4-element array of int)
+0:49      Constant:
+0:49        21 (const int)
+0:49        22 (const int)
+0:49        23 (const int)
+0:49        24 (const int)
+0:?   Linker Objects
+0:?     'a' ( global int)
+0:?     'b' ( global int)
+0:?     'c' ( global int)
+0:?     'd1' ( global int)
+0:?     'e2' ( global int)
+0:?     'f' ( global int)
+0:?     'g' ( global int)
+0:?     'h3' ( global int)
+0:?     'i4' ( global 4-element array of int)
+0:?     'j' ( global int)
+0:?     'k5' ( global 5-element array of int)
+0:?     'm6' ( global 6-element array of int)
+0:?     'm7' ( global 7-element array of int)
+0:?     'n8' ( global 8-element array of int)
+0:?     'p' ( global int)
+0:?     'ii4' ( global 4-element array of int)
+0:?     'ij' ( global int)
+0:?     'ik5' ( global 5-element array of int)
+0:?     'im2' ( global 2-element array of int)
+0:?     'im3' ( global 3-element array of int)
+0:?     'in8' ( global 4-element array of int)
+0:?     'ip' ( global int)
+0:?     'cii4' ( const 4-element array of int)
+0:?       1 (const int)
+0:?       2 (const int)
+0:?       3 (const int)
+0:?       4 (const int)
+0:?     'cij' ( temp int)
+0:?     'cik5' ( const 5-element array of int)
+0:?       5 (const int)
+0:?       6 (const int)
+0:?       7 (const int)
+0:?       8 (const int)
+0:?       9 (const int)
+0:?     'cim2' ( const 2-element array of int)
+0:?       10 (const int)
+0:?       11 (const int)
+0:?     'cim3' ( const 3-element array of int)
+0:?       12 (const int)
+0:?       13 (const int)
+0:?       14 (const int)
+0:?     'cin8' ( const 4-element array of int)
+0:?       21 (const int)
+0:?       22 (const int)
+0:?       23 (const int)
+0:?       24 (const int)
+0:?     'cip' ( temp int)
+0:?     'uii4' ( uniform 4-element array of int)
+0:?       1 (const int)
+0:?       2 (const int)
+0:?       3 (const int)
+0:?       4 (const int)
+0:?     'uij' ( uniform int)
+0:?     'uik5' ( uniform 5-element array of int)
+0:?       5 (const int)
+0:?       6 (const int)
+0:?       7 (const int)
+0:?       8 (const int)
+0:?       9 (const int)
+0:?     'uim2' ( uniform 2-element array of int)
+0:?       10 (const int)
+0:?       11 (const int)
+0:?     'uim3' ( uniform 3-element array of int)
+0:?       12 (const int)
+0:?       13 (const int)
+0:?       14 (const int)
+0:?     'uin8' ( uniform 4-element array of int)
+0:?       21 (const int)
+0:?       22 (const int)
+0:?       23 (const int)
+0:?       24 (const int)
+0:?     'uip' ( uniform int)
+0:?     'gl_vi4' ( global 4-element array of int)
+0:?     'gl_vj' ( global int)
+0:?     'gl_vk5' ( global 5-element array of int)
+0:?     'gl_vm2' ( global 2-element array of int)
+0:?     'gl_vm3' ( global 3-element array of int)
+0:?     'gl_vn8' ( global 4-element array of int)
+0:?     'gl_vp' ( global int)
+0:?     'foob__vi4' ( global 4-element array of int)
+0:?     'foob__vj' ( global int)
+0:?     'foob__vk5' ( global 5-element array of int)
+0:?     '__foobvm2' ( global 2-element array of int)
+0:?     '__foobvm3' ( global 3-element array of int)
+0:?     'foob__vn8' ( global 4-element array of int)
+0:?     'foob__vp' ( global int)
+

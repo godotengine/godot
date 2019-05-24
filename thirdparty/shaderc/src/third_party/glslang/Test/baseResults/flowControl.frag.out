@@ -1,0 +1,81 @@
+flowControl.frag
+Shader version: 120
+0:? Sequence
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      Sequence
+0:12        move second child to first child ( temp 4-component vector of float)
+0:12          'color' ( temp 4-component vector of float)
+0:12          'BaseColor' ( smooth in 4-component vector of float)
+0:15      move second child to first child ( temp 4-component vector of float)
+0:15        'color2' ( temp 4-component vector of float)
+0:15        'otherColor' ( uniform 4-component vector of float)
+0:17      Test condition and select ( temp void)
+0:17        Condition
+0:17        Compare Greater Than ( temp bool)
+0:17          'c' ( smooth in float)
+0:17          'd' ( uniform float)
+0:17        true case
+0:18        add second child into first child ( temp 4-component vector of float)
+0:18          'color' ( temp 4-component vector of float)
+0:18          'bigColor' ( uniform 4-component vector of float)
+0:17        false case
+0:20        add second child into first child ( temp 4-component vector of float)
+0:20          'color' ( temp 4-component vector of float)
+0:20          'smallColor' ( uniform 4-component vector of float)
+0:22      move second child to first child ( temp 4-component vector of float)
+0:22        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:22        component-wise multiply ( temp 4-component vector of float)
+0:22          'color' ( temp 4-component vector of float)
+0:22          'color2' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'd' ( uniform float)
+0:?     'bigColor' ( uniform 4-component vector of float)
+0:?     'smallColor' ( uniform 4-component vector of float)
+0:?     'otherColor' ( uniform 4-component vector of float)
+0:?     'c' ( smooth in float)
+0:?     'BaseColor' ( smooth in 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 120
+0:? Sequence
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      Sequence
+0:12        move second child to first child ( temp 4-component vector of float)
+0:12          'color' ( temp 4-component vector of float)
+0:12          'BaseColor' ( smooth in 4-component vector of float)
+0:15      move second child to first child ( temp 4-component vector of float)
+0:15        'color2' ( temp 4-component vector of float)
+0:15        'otherColor' ( uniform 4-component vector of float)
+0:17      Test condition and select ( temp void)
+0:17        Condition
+0:17        Compare Greater Than ( temp bool)
+0:17          'c' ( smooth in float)
+0:17          'd' ( uniform float)
+0:17        true case
+0:18        add second child into first child ( temp 4-component vector of float)
+0:18          'color' ( temp 4-component vector of float)
+0:18          'bigColor' ( uniform 4-component vector of float)
+0:17        false case
+0:20        add second child into first child ( temp 4-component vector of float)
+0:20          'color' ( temp 4-component vector of float)
+0:20          'smallColor' ( uniform 4-component vector of float)
+0:22      move second child to first child ( temp 4-component vector of float)
+0:22        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:22        component-wise multiply ( temp 4-component vector of float)
+0:22          'color' ( temp 4-component vector of float)
+0:22          'color2' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'd' ( uniform float)
+0:?     'bigColor' ( uniform 4-component vector of float)
+0:?     'smallColor' ( uniform 4-component vector of float)
+0:?     'otherColor' ( uniform 4-component vector of float)
+0:?     'c' ( smooth in float)
+0:?     'BaseColor' ( smooth in 4-component vector of float)
+

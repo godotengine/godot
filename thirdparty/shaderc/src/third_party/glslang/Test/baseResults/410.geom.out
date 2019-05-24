@@ -1,0 +1,82 @@
+410.geom
+ERROR: 0:8: 'myIn' : cannot redeclare a built-in block with a user name 
+ERROR: 0:12: 'gl_myIn' : no declaration found for redeclaration 
+ERROR: 0:20: 'gl_PerVertex' : can only redeclare a built-in block once, and before any use 
+ERROR: 0:32: 'gl_Position' : no such field in structure 
+ERROR: 0:32: '=' :  cannot convert from ' temp block{ in float PointSize gl_PointSize}' to ' temp 4-component vector of float'
+ERROR: 0:33: 'gl_Position' : member of nameless block was not redeclared 
+ERROR: 0:33: 'assign' :  cannot convert from ' const 4-component vector of float' to 'layout( stream=0) gl_Position void Position'
+WARNING: 0:38: 'return' : type conversion on return values was not explicitly allowed until version 420 
+ERROR: 7 compilation errors.  No code generated.
+
+
+Shader version: 410
+invocations = -1
+max_vertices = -1
+input primitive = none
+output primitive = none
+ERROR: node is still EOpNull!
+0:3  Function Definition: main( ( global void)
+0:3    Function Parameters: 
+0:5    Sequence
+0:5      move second child to first child ( temp int)
+0:5        'gl_ViewportIndex' (layout( stream=0) out int ViewportIndex)
+0:5        Constant:
+0:5          7 (const int)
+0:28  Function Definition: foo( ( global void)
+0:28    Function Parameters: 
+0:30    Sequence
+0:30      Sequence
+0:30        move second child to first child ( temp float)
+0:30          'p' ( temp float)
+0:30          gl_PointSize: direct index for structure ( in float PointSize)
+0:30            direct index ( temp block{ in float PointSize gl_PointSize})
+0:30              'gl_in' ( in unsized 2-element array of block{ in float PointSize gl_PointSize})
+0:30              Constant:
+0:30                1 (const int)
+0:30            Constant:
+0:30              0 (const int)
+0:31      move second child to first child ( temp float)
+0:31        gl_PointSize: direct index for structure (layout( stream=0) gl_PointSize float PointSize)
+0:31          'anon@0' (layout( stream=0) out block{layout( stream=0) gl_PointSize float PointSize gl_PointSize, })
+0:31          Constant:
+0:31            1 (const uint)
+0:31        'p' ( temp float)
+0:33      gl_Position: direct index for structure (layout( stream=0) gl_Position void Position)
+0:33        'anon@0' (layout( stream=0) out block{layout( stream=0) gl_PointSize float PointSize gl_PointSize, })
+0:33        Constant:
+0:33          0 (const uint)
+0:36  Function Definition: foo5( ( global float)
+0:36    Function Parameters: 
+0:38    Sequence
+0:38      Branch: Return with expression
+0:38        Constant:
+0:38          4.000000
+0:?   Linker Objects
+0:?     'gl_in' ( in unsized 2-element array of block{ in float PointSize gl_PointSize})
+0:?     'anon@0' (layout( stream=0) out block{layout( stream=0) gl_PointSize float PointSize gl_PointSize, })
+
+
+Linked geometry stage:
+
+ERROR: Linking geometry stage: At least one shader must specify an input layout primitive
+ERROR: Linking geometry stage: At least one shader must specify an output layout primitive
+ERROR: Linking geometry stage: At least one shader must specify a layout(max_vertices = value)
+
+Shader version: 410
+invocations = 1
+max_vertices = -1
+input primitive = none
+output primitive = none
+ERROR: node is still EOpNull!
+0:3  Function Definition: main( ( global void)
+0:3    Function Parameters: 
+0:5    Sequence
+0:5      move second child to first child ( temp int)
+0:5        'gl_ViewportIndex' (layout( stream=0) out int ViewportIndex)
+0:5        Constant:
+0:5          7 (const int)
+0:?   Linker Objects
+0:?     'gl_in' ( in 2-element array of block{ in float PointSize gl_PointSize})
+0:?     'anon@0' (layout( stream=0) out block{layout( stream=0) gl_PointSize float PointSize gl_PointSize, })
+

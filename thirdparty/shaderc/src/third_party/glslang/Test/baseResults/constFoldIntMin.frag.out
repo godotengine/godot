@@ -1,0 +1,51 @@
+constFoldIntMin.frag
+Shader version: 460
+Requested GL_AMD_gpu_shader_int16
+Requested GL_ARB_gpu_shader_int64
+0:? Sequence
+0:5  Function Definition: a( ( global void)
+0:5    Function Parameters: 
+0:6    Sequence
+0:6      Sequence
+0:6        move second child to first child ( temp int16_t)
+0:6          'u' ( temp int16_t)
+0:6          Constant:
+0:6            -32768 (const int16_t)
+0:7      Sequence
+0:7        move second child to first child ( temp int)
+0:7          'v' ( temp int)
+0:7          Constant:
+0:7            -2147483648 (const int)
+0:8      Sequence
+0:8        move second child to first child ( temp int64_t)
+0:8          'w' ( temp int64_t)
+0:8          Constant:
+0:8            -9223372036854775808 (const int64_t)
+0:9      Sequence
+0:9        move second child to first child ( temp int16_t)
+0:9          'x' ( temp int16_t)
+0:9          Constant:
+0:9            0 (const int8_t)
+0:10      Sequence
+0:10        move second child to first child ( temp int)
+0:10          'y' ( temp int)
+0:10          Constant:
+0:10            0 (const int)
+0:11      Sequence
+0:11        move second child to first child ( temp int64_t)
+0:11          'z' ( temp int64_t)
+0:11          Constant:
+0:11            0 (const int64_t)
+0:?   Linker Objects
+
+
+Linked fragment stage:
+
+ERROR: Linking fragment stage: Missing entry point: Each stage requires one entry point
+
+Shader version: 460
+Requested GL_AMD_gpu_shader_int16
+Requested GL_ARB_gpu_shader_int64
+0:? Sequence
+0:?   Linker Objects
+

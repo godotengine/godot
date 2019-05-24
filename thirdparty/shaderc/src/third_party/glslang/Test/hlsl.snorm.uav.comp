@@ -1,0 +1,15 @@
+
+unorm float4 uf4;
+
+Texture3D<unorm float4> ResultInU: register(t0);
+RWTexture3D<unorm float4> ResultOutU: register(u0);
+
+Texture3D<snorm float4> ResultInS: register(t1);
+RWTexture3D<snorm float4> ResultOutS: register(u1);
+
+[numthreads(16, 16, 1)]
+void main(uint3 tid: SV_DispatchThreadID)
+{
+    ResultOutS[tid] = ResultInS[tid] + uf4;
+    ResultOutU[tid] = ResultInU[tid];
+}

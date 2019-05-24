@@ -1,0 +1,13 @@
+
+float ComputeShaderFunction()
+{
+    AllMemoryBarrier();
+    AllMemoryBarrierWithGroupSync();
+    DeviceMemoryBarrier();
+    DeviceMemoryBarrierWithGroupSync();
+    GroupMemoryBarrier();
+    GroupMemoryBarrierWithGroupSync();
+
+    return 0.0;
+}
+

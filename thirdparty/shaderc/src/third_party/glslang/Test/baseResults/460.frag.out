@@ -1,0 +1,101 @@
+460.frag
+ERROR: 0:22: 'attribute' : required extension not requested: GL_EXT_control_flow_attributes
+ERROR: 0:23: 'attribute' : required extension not requested: GL_EXT_control_flow_attributes
+ERROR: 0:30: 'dependency_length' : must be positive 
+ERROR: 0:31: 'dependency_length' : must be positive 
+ERROR: 4 compilation errors.  No code generated.
+
+
+Shader version: 460
+Requested GL_EXT_control_flow_attributes
+ERROR: node is still EOpNull!
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      interpolateAtCentroid ( global 4-component vector of float)
+0:12        v: direct index for structure ( global 4-component vector of float)
+0:12          's' ( smooth in structure{ global float f,  global 4-component vector of float v})
+0:12          Constant:
+0:12            1 (const int)
+0:14      move second child to first child ( temp bool)
+0:14        'b1' ( temp bool)
+0:14        anyInvocation ( global bool)
+0:14          'b1' ( temp bool)
+0:15      move second child to first child ( temp bool)
+0:15        'b1' ( temp bool)
+0:15        allInvocations ( global bool)
+0:15          'b1' ( temp bool)
+0:16      move second child to first child ( temp bool)
+0:16        'b1' ( temp bool)
+0:16        allInvocationsEqual ( global bool)
+0:16          'b1' ( temp bool)
+0:19  Function Definition: attExtBad( ( global void)
+0:19    Function Parameters: 
+0:22    Sequence
+0:22      Sequence
+0:22        Sequence
+0:22          move second child to first child ( temp int)
+0:22            'i' ( temp int)
+0:22            Constant:
+0:22              0 (const int)
+0:22        Loop with condition tested first: Dependency 4
+0:22          Loop Condition
+0:22          Compare Less Than ( temp bool)
+0:22            'i' ( temp int)
+0:22            Constant:
+0:22              8 (const int)
+0:22          No loop body
+0:22          Loop Terminal Expression
+0:22          Pre-Increment ( temp int)
+0:22            'i' ( temp int)
+0:23      Test condition and select ( temp void): Flatten
+0:23        Condition
+0:23        Constant:
+0:23          true (const bool)
+0:23        true case is null
+0:28  Function Definition: attExt( ( global void)
+0:28    Function Parameters: 
+0:30    Sequence
+0:30      Loop with condition not tested first: Dependency -3
+0:30        Loop Condition
+0:30        Constant:
+0:30          true (const bool)
+0:30        No loop body
+0:31      Loop with condition not tested first
+0:31        Loop Condition
+0:31        Constant:
+0:31          true (const bool)
+0:31        No loop body
+0:?   Linker Objects
+0:?     's' ( smooth in structure{ global float f,  global 4-component vector of float v})
+
+
+Linked fragment stage:
+
+
+Shader version: 460
+Requested GL_EXT_control_flow_attributes
+ERROR: node is still EOpNull!
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      interpolateAtCentroid ( global 4-component vector of float)
+0:12        v: direct index for structure ( global 4-component vector of float)
+0:12          's' ( smooth in structure{ global float f,  global 4-component vector of float v})
+0:12          Constant:
+0:12            1 (const int)
+0:14      move second child to first child ( temp bool)
+0:14        'b1' ( temp bool)
+0:14        anyInvocation ( global bool)
+0:14          'b1' ( temp bool)
+0:15      move second child to first child ( temp bool)
+0:15        'b1' ( temp bool)
+0:15        allInvocations ( global bool)
+0:15          'b1' ( temp bool)
+0:16      move second child to first child ( temp bool)
+0:16        'b1' ( temp bool)
+0:16        allInvocationsEqual ( global bool)
+0:16          'b1' ( temp bool)
+0:?   Linker Objects
+0:?     's' ( smooth in structure{ global float f,  global 4-component vector of float v})
+

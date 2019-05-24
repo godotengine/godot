@@ -1,0 +1,7 @@
+spv.arbPostDepthCoverage_Error.frag
+ERROR: 0:7: 'early_fragment_tests' : can only apply to a standalone qualifier 
+ERROR: 0:7: 'post_depth_coverage' : can only apply to a standalone qualifier 
+ERROR: 2 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

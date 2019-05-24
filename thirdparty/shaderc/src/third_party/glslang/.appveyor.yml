@@ -1,0 +1,94 @@
+# Windows Build Configuration for AppVeyor
+# http://www.appveyor.com/docs/appveyor-yml
+
+# build version format
+version: "{build}"
+
+os: Visual Studio 2013
+
+platform:
+  - x64
+
+configuration:
+  - Debug
+  - Release
+
+branches:
+  only:
+    - master
+
+# Travis advances the master-tot tag to current top of the tree after
+# each push into the master branch, because it relies on that tag to
+# upload build artifacts to the master-tot release. This will cause
+# double testing for each push on Appveyor: one for the push, one for
+# the tag advance. Disable testing tags.
+skip_tags: true
+
+clone_depth: 5
+
+matrix:
+  fast_finish: true # Show final status immediately if a test fails.
+
+# scripts that run after cloning repository
+install:
+  - C:/Python27/python.exe update_glslang_sources.py
+  - git clone https://github.com/google/googletest.git External/googletest
+  - cd External/googletest
+  - git checkout 440527a61e1c91188195f7de212c63c77e8f0a45
+  - cd ../..
+
+build:
+  parallel: true  # enable MSBuild parallel builds
+  verbosity: minimal
+
+build_script:
+  - mkdir build && cd build
+  - cmake -G "Visual Studio 12 2013 Win64" -DCMAKE_INSTALL_PREFIX=install ..
+  - cmake --build . --config %CONFIGURATION% --target install
+
+test_script:
+  - ctest -C %CONFIGURATION% --output-on-failure
+  - cd ../Test && bash runtests
+  - cd ../build
+
+after_test:
+  # For debug build, the generated dll has a postfix "d" in its name.
+  - ps: >-
+      If ($env:configuration -Match "Debug") {
+        $env:SUFFIX="d"
+      } Else {
+        $env:SUFFIX=""
+      }
+  - cd install
+  # Zip all glslang artifacts for uploading and deploying
+  - 7z a glslang-master-windows-"%PLATFORM%"-"%CONFIGURATION%".zip
+    bin\glslangValidator.exe
+    bin\spirv-remap.exe
+    include\glslang\*
+    include\SPIRV\*
+    lib\glslang%SUFFIX%.lib
+    lib\HLSL%SUFFIX%.lib
+    lib\OGLCompiler%SUFFIX%.lib
+    lib\OSDependent%SUFFIX%.lib
+    lib\SPIRV%SUFFIX%.lib
+    lib\SPVRemapper%SUFFIX%.lib
+    lib\SPIRV-Tools%SUFFIX%.lib
+    lib\SPIRV-Tools-opt%SUFFIX%.lib
+
+artifacts:
+  - path: build\install\*.zip
+    name: artifacts-zip
+
+deploy:
+  - provider: GitHub
+    auth_token:
+      secure: YglcSYdl0TylEa59H4K6lylBEDr586NAt2EMgZquSo+iuPrwgZQuJLPCoihSm9y6
+    release: master-tot
+    description: "Continuous build of the latest master branch by Appveyor and Travis CI"
+    artifact: artifacts-zip
+    draft: false
+    prerelease: false
+    force_update: true
+    on:
+      branch: master
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013

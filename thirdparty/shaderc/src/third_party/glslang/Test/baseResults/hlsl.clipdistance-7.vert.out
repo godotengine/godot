@@ -1,0 +1,505 @@
+hlsl.clipdistance-7.vert
+Shader version: 500
+0:? Sequence
+0:8  Function Definition: @main( ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8    Function Parameters: 
+0:?     Sequence
+0:10      move second child to first child ( temp 4-component vector of float)
+0:10        Position: direct index for structure ( temp 4-component vector of float)
+0:10          'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:10          Constant:
+0:10            0 (const int)
+0:10        Constant:
+0:10          0.000000
+0:10          0.000000
+0:10          0.000000
+0:10          0.000000
+0:12      move second child to first child ( temp float)
+0:12        direct index ( temp float)
+0:12          clip0: direct index for structure ( temp 3-component vector of float)
+0:12            'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:12            Constant:
+0:12              1 (const int)
+0:12          Constant:
+0:12            0 (const int)
+0:12        Constant:
+0:12          0.000000
+0:13      move second child to first child ( temp float)
+0:13        direct index ( temp float)
+0:13          clip0: direct index for structure ( temp 3-component vector of float)
+0:13            'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:13            Constant:
+0:13              1 (const int)
+0:13          Constant:
+0:13            1 (const int)
+0:13        Constant:
+0:13          1.000000
+0:14      move second child to first child ( temp float)
+0:14        direct index ( temp float)
+0:14          clip0: direct index for structure ( temp 3-component vector of float)
+0:14            'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:14            Constant:
+0:14              1 (const int)
+0:14          Constant:
+0:14            2 (const int)
+0:14        Constant:
+0:14          2.000000
+0:17      move second child to first child ( temp float)
+0:17        direct index ( temp float)
+0:17          clip1: direct index for structure ( temp 4-component vector of float)
+0:17            'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:17            Constant:
+0:17              2 (const int)
+0:17          Constant:
+0:17            0 (const int)
+0:17        Constant:
+0:17          4.000000
+0:18      move second child to first child ( temp float)
+0:18        direct index ( temp float)
+0:18          clip1: direct index for structure ( temp 4-component vector of float)
+0:18            'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:18            Constant:
+0:18              2 (const int)
+0:18          Constant:
+0:18            1 (const int)
+0:18        Constant:
+0:18          5.000000
+0:19      move second child to first child ( temp float)
+0:19        direct index ( temp float)
+0:19          clip1: direct index for structure ( temp 4-component vector of float)
+0:19            'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:19            Constant:
+0:19              2 (const int)
+0:19          Constant:
+0:19            2 (const int)
+0:19        Constant:
+0:19          6.000000
+0:20      move second child to first child ( temp float)
+0:20        direct index ( temp float)
+0:20          clip1: direct index for structure ( temp 4-component vector of float)
+0:20            'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:20            Constant:
+0:20              2 (const int)
+0:20          Constant:
+0:20            3 (const int)
+0:20        Constant:
+0:20          7.000000
+0:22      Branch: Return with expression
+0:22        'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8  Function Definition: main( ( temp void)
+0:8    Function Parameters: 
+0:?     Sequence
+0:8      Sequence
+0:8        move second child to first child ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8          'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8          Function Call: @main( ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Position' ( out 4-component vector of float Position)
+0:8          Position: direct index for structure ( temp 4-component vector of float)
+0:8            'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8            Constant:
+0:8              0 (const int)
+0:?         Sequence
+0:8          move second child to first child ( temp float)
+0:8            direct index ( out float ClipDistance)
+0:?               '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+0:8              Constant:
+0:8                0 (const int)
+0:8            direct index ( temp float)
+0:8              clip0: direct index for structure ( temp 3-component vector of float)
+0:8                'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8                Constant:
+0:8                  1 (const int)
+0:8              Constant:
+0:8                0 (const int)
+0:8          move second child to first child ( temp float)
+0:8            direct index ( out float ClipDistance)
+0:?               '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+0:8              Constant:
+0:8                1 (const int)
+0:8            direct index ( temp float)
+0:8              clip0: direct index for structure ( temp 3-component vector of float)
+0:8                'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8                Constant:
+0:8                  1 (const int)
+0:8              Constant:
+0:8                1 (const int)
+0:8          move second child to first child ( temp float)
+0:8            direct index ( out float ClipDistance)
+0:?               '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+0:8              Constant:
+0:8                2 (const int)
+0:8            direct index ( temp float)
+0:8              clip0: direct index for structure ( temp 3-component vector of float)
+0:8                'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8                Constant:
+0:8                  1 (const int)
+0:8              Constant:
+0:8                2 (const int)
+0:?         Sequence
+0:8          move second child to first child ( temp float)
+0:8            direct index ( out float ClipDistance)
+0:?               '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+0:8              Constant:
+0:8                4 (const int)
+0:8            direct index ( temp float)
+0:8              clip1: direct index for structure ( temp 4-component vector of float)
+0:8                'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8                Constant:
+0:8                  2 (const int)
+0:8              Constant:
+0:8                0 (const int)
+0:8          move second child to first child ( temp float)
+0:8            direct index ( out float ClipDistance)
+0:?               '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+0:8              Constant:
+0:8                5 (const int)
+0:8            direct index ( temp float)
+0:8              clip1: direct index for structure ( temp 4-component vector of float)
+0:8                'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8                Constant:
+0:8                  2 (const int)
+0:8              Constant:
+0:8                1 (const int)
+0:8          move second child to first child ( temp float)
+0:8            direct index ( out float ClipDistance)
+0:?               '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+0:8              Constant:
+0:8                6 (const int)
+0:8            direct index ( temp float)
+0:8              clip1: direct index for structure ( temp 4-component vector of float)
+0:8                'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8                Constant:
+0:8                  2 (const int)
+0:8              Constant:
+0:8                2 (const int)
+0:8          move second child to first child ( temp float)
+0:8            direct index ( out float ClipDistance)
+0:?               '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+0:8              Constant:
+0:8                7 (const int)
+0:8            direct index ( temp float)
+0:8              clip1: direct index for structure ( temp 4-component vector of float)
+0:8                'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8                Constant:
+0:8                  2 (const int)
+0:8              Constant:
+0:8                3 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.Position' ( out 4-component vector of float Position)
+0:?     '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+
+
+Linked vertex stage:
+
+
+Shader version: 500
+0:? Sequence
+0:8  Function Definition: @main( ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8    Function Parameters: 
+0:?     Sequence
+0:10      move second child to first child ( temp 4-component vector of float)
+0:10        Position: direct index for structure ( temp 4-component vector of float)
+0:10          'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:10          Constant:
+0:10            0 (const int)
+0:10        Constant:
+0:10          0.000000
+0:10          0.000000
+0:10          0.000000
+0:10          0.000000
+0:12      move second child to first child ( temp float)
+0:12        direct index ( temp float)
+0:12          clip0: direct index for structure ( temp 3-component vector of float)
+0:12            'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:12            Constant:
+0:12              1 (const int)
+0:12          Constant:
+0:12            0 (const int)
+0:12        Constant:
+0:12          0.000000
+0:13      move second child to first child ( temp float)
+0:13        direct index ( temp float)
+0:13          clip0: direct index for structure ( temp 3-component vector of float)
+0:13            'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:13            Constant:
+0:13              1 (const int)
+0:13          Constant:
+0:13            1 (const int)
+0:13        Constant:
+0:13          1.000000
+0:14      move second child to first child ( temp float)
+0:14        direct index ( temp float)
+0:14          clip0: direct index for structure ( temp 3-component vector of float)
+0:14            'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:14            Constant:
+0:14              1 (const int)
+0:14          Constant:
+0:14            2 (const int)
+0:14        Constant:
+0:14          2.000000
+0:17      move second child to first child ( temp float)
+0:17        direct index ( temp float)
+0:17          clip1: direct index for structure ( temp 4-component vector of float)
+0:17            'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:17            Constant:
+0:17              2 (const int)
+0:17          Constant:
+0:17            0 (const int)
+0:17        Constant:
+0:17          4.000000
+0:18      move second child to first child ( temp float)
+0:18        direct index ( temp float)
+0:18          clip1: direct index for structure ( temp 4-component vector of float)
+0:18            'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:18            Constant:
+0:18              2 (const int)
+0:18          Constant:
+0:18            1 (const int)
+0:18        Constant:
+0:18          5.000000
+0:19      move second child to first child ( temp float)
+0:19        direct index ( temp float)
+0:19          clip1: direct index for structure ( temp 4-component vector of float)
+0:19            'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:19            Constant:
+0:19              2 (const int)
+0:19          Constant:
+0:19            2 (const int)
+0:19        Constant:
+0:19          6.000000
+0:20      move second child to first child ( temp float)
+0:20        direct index ( temp float)
+0:20          clip1: direct index for structure ( temp 4-component vector of float)
+0:20            'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:20            Constant:
+0:20              2 (const int)
+0:20          Constant:
+0:20            3 (const int)
+0:20        Constant:
+0:20          7.000000
+0:22      Branch: Return with expression
+0:22        'Output' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8  Function Definition: main( ( temp void)
+0:8    Function Parameters: 
+0:?     Sequence
+0:8      Sequence
+0:8        move second child to first child ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8          'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8          Function Call: @main( ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Position' ( out 4-component vector of float Position)
+0:8          Position: direct index for structure ( temp 4-component vector of float)
+0:8            'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8            Constant:
+0:8              0 (const int)
+0:?         Sequence
+0:8          move second child to first child ( temp float)
+0:8            direct index ( out float ClipDistance)
+0:?               '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+0:8              Constant:
+0:8                0 (const int)
+0:8            direct index ( temp float)
+0:8              clip0: direct index for structure ( temp 3-component vector of float)
+0:8                'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8                Constant:
+0:8                  1 (const int)
+0:8              Constant:
+0:8                0 (const int)
+0:8          move second child to first child ( temp float)
+0:8            direct index ( out float ClipDistance)
+0:?               '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+0:8              Constant:
+0:8                1 (const int)
+0:8            direct index ( temp float)
+0:8              clip0: direct index for structure ( temp 3-component vector of float)
+0:8                'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8                Constant:
+0:8                  1 (const int)
+0:8              Constant:
+0:8                1 (const int)
+0:8          move second child to first child ( temp float)
+0:8            direct index ( out float ClipDistance)
+0:?               '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+0:8              Constant:
+0:8                2 (const int)
+0:8            direct index ( temp float)
+0:8              clip0: direct index for structure ( temp 3-component vector of float)
+0:8                'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8                Constant:
+0:8                  1 (const int)
+0:8              Constant:
+0:8                2 (const int)
+0:?         Sequence
+0:8          move second child to first child ( temp float)
+0:8            direct index ( out float ClipDistance)
+0:?               '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+0:8              Constant:
+0:8                4 (const int)
+0:8            direct index ( temp float)
+0:8              clip1: direct index for structure ( temp 4-component vector of float)
+0:8                'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8                Constant:
+0:8                  2 (const int)
+0:8              Constant:
+0:8                0 (const int)
+0:8          move second child to first child ( temp float)
+0:8            direct index ( out float ClipDistance)
+0:?               '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+0:8              Constant:
+0:8                5 (const int)
+0:8            direct index ( temp float)
+0:8              clip1: direct index for structure ( temp 4-component vector of float)
+0:8                'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8                Constant:
+0:8                  2 (const int)
+0:8              Constant:
+0:8                1 (const int)
+0:8          move second child to first child ( temp float)
+0:8            direct index ( out float ClipDistance)
+0:?               '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+0:8              Constant:
+0:8                6 (const int)
+0:8            direct index ( temp float)
+0:8              clip1: direct index for structure ( temp 4-component vector of float)
+0:8                'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8                Constant:
+0:8                  2 (const int)
+0:8              Constant:
+0:8                2 (const int)
+0:8          move second child to first child ( temp float)
+0:8            direct index ( out float ClipDistance)
+0:?               '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+0:8              Constant:
+0:8                7 (const int)
+0:8            direct index ( temp float)
+0:8              clip1: direct index for structure ( temp 4-component vector of float)
+0:8                'flattenTemp' ( temp structure{ temp 4-component vector of float Position,  temp 3-component vector of float clip0,  temp 4-component vector of float clip1})
+0:8                Constant:
+0:8                  2 (const int)
+0:8              Constant:
+0:8                3 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.Position' ( out 4-component vector of float Position)
+0:?     '@entryPointOutput.clip1' ( out 8-element array of float ClipDistance)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 81
+
+                              Capability Shader
+                              Capability ClipDistance
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Vertex 4  "main" 48 54
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "VS_OUTPUT"
+                              MemberName 9(VS_OUTPUT) 0  "Position"
+                              MemberName 9(VS_OUTPUT) 1  "clip0"
+                              MemberName 9(VS_OUTPUT) 2  "clip1"
+                              Name 11  "@main("
+                              Name 14  "Output"
+                              Name 45  "flattenTemp"
+                              Name 48  "@entryPointOutput.Position"
+                              Name 54  "@entryPointOutput.clip1"
+                              Decorate 48(@entryPointOutput.Position) BuiltIn Position
+                              Decorate 54(@entryPointOutput.clip1) BuiltIn ClipDistance
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeVector 6(float) 3
+    9(VS_OUTPUT):             TypeStruct 7(fvec4) 8(fvec3) 7(fvec4)
+              10:             TypeFunction 9(VS_OUTPUT)
+              13:             TypePointer Function 9(VS_OUTPUT)
+              15:             TypeInt 32 1
+              16:     15(int) Constant 0
+              17:    6(float) Constant 0
+              18:    7(fvec4) ConstantComposite 17 17 17 17
+              19:             TypePointer Function 7(fvec4)
+              21:     15(int) Constant 1
+              22:             TypeInt 32 0
+              23:     22(int) Constant 0
+              24:             TypePointer Function 6(float)
+              26:    6(float) Constant 1065353216
+              27:     22(int) Constant 1
+              29:    6(float) Constant 1073741824
+              30:     22(int) Constant 2
+              32:     15(int) Constant 2
+              33:    6(float) Constant 1082130432
+              35:    6(float) Constant 1084227584
+              37:    6(float) Constant 1086324736
+              39:    6(float) Constant 1088421888
+              40:     22(int) Constant 3
+              47:             TypePointer Output 7(fvec4)
+48(@entryPointOutput.Position):     47(ptr) Variable Output
+              51:     22(int) Constant 8
+              52:             TypeArray 6(float) 51
+              53:             TypePointer Output 52
+54(@entryPointOutput.clip1):     53(ptr) Variable Output
+              57:             TypePointer Output 6(float)
+              65:     15(int) Constant 4
+              69:     15(int) Constant 5
+              73:     15(int) Constant 6
+              77:     15(int) Constant 7
+         4(main):           2 Function None 3
+               5:             Label
+ 45(flattenTemp):     13(ptr) Variable Function
+              46:9(VS_OUTPUT) FunctionCall 11(@main()
+                              Store 45(flattenTemp) 46
+              49:     19(ptr) AccessChain 45(flattenTemp) 16
+              50:    7(fvec4) Load 49
+                              Store 48(@entryPointOutput.Position) 50
+              55:     24(ptr) AccessChain 45(flattenTemp) 21 23
+              56:    6(float) Load 55
+              58:     57(ptr) AccessChain 54(@entryPointOutput.clip1) 16
+                              Store 58 56
+              59:     24(ptr) AccessChain 45(flattenTemp) 21 27
+              60:    6(float) Load 59
+              61:     57(ptr) AccessChain 54(@entryPointOutput.clip1) 21
+                              Store 61 60
+              62:     24(ptr) AccessChain 45(flattenTemp) 21 30
+              63:    6(float) Load 62
+              64:     57(ptr) AccessChain 54(@entryPointOutput.clip1) 32
+                              Store 64 63
+              66:     24(ptr) AccessChain 45(flattenTemp) 32 23
+              67:    6(float) Load 66
+              68:     57(ptr) AccessChain 54(@entryPointOutput.clip1) 65
+                              Store 68 67
+              70:     24(ptr) AccessChain 45(flattenTemp) 32 27
+              71:    6(float) Load 70
+              72:     57(ptr) AccessChain 54(@entryPointOutput.clip1) 69
+                              Store 72 71
+              74:     24(ptr) AccessChain 45(flattenTemp) 32 30
+              75:    6(float) Load 74
+              76:     57(ptr) AccessChain 54(@entryPointOutput.clip1) 73
+                              Store 76 75
+              78:     24(ptr) AccessChain 45(flattenTemp) 32 40
+              79:    6(float) Load 78
+              80:     57(ptr) AccessChain 54(@entryPointOutput.clip1) 77
+                              Store 80 79
+                              Return
+                              FunctionEnd
+      11(@main():9(VS_OUTPUT) Function None 10
+              12:             Label
+      14(Output):     13(ptr) Variable Function
+              20:     19(ptr) AccessChain 14(Output) 16
+                              Store 20 18
+              25:     24(ptr) AccessChain 14(Output) 21 23
+                              Store 25 17
+              28:     24(ptr) AccessChain 14(Output) 21 27
+                              Store 28 26
+              31:     24(ptr) AccessChain 14(Output) 21 30
+                              Store 31 29
+              34:     24(ptr) AccessChain 14(Output) 32 23
+                              Store 34 33
+              36:     24(ptr) AccessChain 14(Output) 32 27
+                              Store 36 35
+              38:     24(ptr) AccessChain 14(Output) 32 30
+                              Store 38 37
+              41:     24(ptr) AccessChain 14(Output) 32 40
+                              Store 41 39
+              42:9(VS_OUTPUT) Load 14(Output)
+                              ReturnValue 42
+                              FunctionEnd
