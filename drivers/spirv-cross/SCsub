@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+Import('env')
+
+env_spirv_cross = env.Clone()
+
+spirv_cross_dir = "#thirdparty/spirv-cross/"
+spirv_cross_sources = [
+#    "spirv_common.hpp",
+#    "spirv.hpp",
+#    "spirv_cross.hpp",
+    "spirv_cross.cpp",
+    "spirv_parser.cpp",
+    "spirv_glsl.cpp",
+#    "spirv_cfg.hpp",
+    "spirv_cfg.cpp",
+]
+spirv_cross_sources = [spirv_cross_dir + file for file in spirv_cross_sources]
+
+if (not env.msvc):
+    env_spirv_cross.Append(CXXFLAGS=['-std=c++11'])
+
+env_thirdparty = env_spirv_cross.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(env.drivers_sources, spirv_cross_sources)
+env_thirdparty.Prepend(CPPPATH=spirv_cross_dir)
+
+# Godot's own source files
+env_spirv_cross.add_source_files(env.drivers_sources, "*.cpp")
