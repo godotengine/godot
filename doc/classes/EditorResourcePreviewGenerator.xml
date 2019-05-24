@@ -57,7 +57,7 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Return if your generator supports this resource type.
+				Returns if your generator supports this resource type.
 			</description>
 		</method>
 	</methods>

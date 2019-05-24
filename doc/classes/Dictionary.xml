@@ -38,7 +38,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return [code]true[/code] if the dictionary is empty.
+				Returns [code]true[/code] if the dictionary is empty.
 			</description>
 		</method>
 		<method name="erase">
@@ -67,7 +67,7 @@
 			<argument index="0" name="key" type="Variant">
 			</argument>
 			<description>
-				Return [code]true[/code] if the dictionary has a given key.
+				Returns [code]true[/code] if the dictionary has a given key.
 			</description>
 		</method>
 		<method name="has_all">
@@ -76,35 +76,35 @@
 			<argument index="0" name="keys" type="Array">
 			</argument>
 			<description>
-				Return [code]true[/code] if the dictionary has all of the keys in the given array.
+				Returns [code]true[/code] if the dictionary has all of the keys in the given array.
 			</description>
 		</method>
 		<method name="hash">
 			<return type="int">
 			</return>
 			<description>
-				Return a hashed integer value representing the dictionary contents.
+				Returns a hashed integer value representing the dictionary contents.
 			</description>
 		</method>
 		<method name="keys">
 			<return type="Array">
 			</return>
 			<description>
-				Return the list of keys in the [Dictionary].
+				Returns the list of keys in the [Dictionary].
 			</description>
 		</method>
 		<method name="size">
 			<return type="int">
 			</return>
 			<description>
-				Return the size of the dictionary (in pairs).
+				Returns the size of the dictionary (in pairs).
 			</description>
 		</method>
 		<method name="values">
 			<return type="Array">
 			</return>
 			<description>
-				Return the list of values in the [Dictionary].
+				Returns the list of values in the [Dictionary].
 			</description>
 		</method>
 	</methods>

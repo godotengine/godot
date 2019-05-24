@@ -50,7 +50,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of surfaces that the [Mesh] holds.
+				Returns the amount of surfaces that the [Mesh] holds.
 			</description>
 		</method>
 		<method name="surface_get_arrays" qualifiers="const">
@@ -77,7 +77,7 @@
 			<argument index="0" name="surf_idx" type="int">
 			</argument>
 			<description>
-				Return a [Material] in a given surface. Surface is rendered using this material.
+				Returns a [Material] in a given surface. Surface is rendered using this material.
 			</description>
 		</method>
 	</methods>

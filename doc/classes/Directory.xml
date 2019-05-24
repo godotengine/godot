@@ -52,7 +52,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return whether the current item processed with the last [method get_next] call is a directory ([code].[/code] and [code]..[/code] are considered directories).
+				Returns whether the current item processed with the last [method get_next] call is a directory ([code].[/code] and [code]..[/code] are considered directories).
 			</description>
 		</method>
 		<method name="dir_exists">
@@ -61,7 +61,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Return whether the target directory exists. The argument can be relative to the current directory, or an absolute path.
+				Returns whether the target directory exists. The argument can be relative to the current directory, or an absolute path.
 			</description>
 		</method>
 		<method name="file_exists">
@@ -70,14 +70,14 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Return whether the target file exists. The argument can be relative to the current directory, or an absolute path.
+				Returns whether the target file exists. The argument can be relative to the current directory, or an absolute path.
 			</description>
 		</method>
 		<method name="get_current_dir">
 			<return type="String">
 			</return>
 			<description>
-				Return the absolute path to the currently opened directory (e.g. [code]res://folder[/code] or [code]C:\tmp\folder[/code]).
+				Returns the absolute path to the currently opened directory (e.g. [code]res://folder[/code] or [code]C:\tmp\folder[/code]).
 			</description>
 		</method>
 		<method name="get_current_drive">
@@ -107,7 +107,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the next element (file or directory) in the current directory (including [code].[/code] and [code]..[/code], unless [code]skip_navigational[/code] was given to [method list_dir_begin]).
+				Returns the next element (file or directory) in the current directory (including [code].[/code] and [code]..[/code], unless [code]skip_navigational[/code] was given to [method list_dir_begin]).
 				The name of the file or directory is returned (and not its full path). Once the stream has been fully processed, the method returns an empty String and closes the stream automatically (i.e. [method list_dir_end] would not be mandatory in such a case).
 			</description>
 		</method>
@@ -155,7 +155,7 @@
 			</argument>
 			<description>
 				Create a target directory and all necessary intermediate directories in its path, by calling [method make_dir] recursively. The argument can be relative to the current directory, or an absolute path.
-				Return one of the error code constants defined in [@GlobalScope] (OK, FAILED or ERR_*).
+				Returns one of the error code constants defined in [@GlobalScope] (OK, FAILED or ERR_*).
 			</description>
 		</method>
 		<method name="open">
@@ -175,7 +175,7 @@
 			</argument>
 			<description>
 				Delete the target file or an empty directory. The argument can be relative to the current directory, or an absolute path. If the target directory is not empty, the operation will fail.
-				Return one of the error code constants defined in [@GlobalScope] (OK or FAILED).
+				Returns one of the error code constants defined in [@GlobalScope] (OK or FAILED).
 			</description>
 		</method>
 		<method name="rename">
@@ -187,7 +187,7 @@
 			</argument>
 			<description>
 				Rename (move) the [i]from[/i] file to the [i]to[/i] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
-				Return one of the error code constants defined in [@GlobalScope] (OK or FAILED).
+				Returns one of the error code constants defined in [@GlobalScope] (OK or FAILED).
 			</description>
 		</method>
 	</methods>
