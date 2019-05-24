@@ -105,6 +105,11 @@ void SceneTree::node_removed(Node *p_node) {
 		call_skip.insert(p_node);
 }
 
+void SceneTree::node_renamed(Node *p_node) {
+
+	emit_signal(node_renamed_name, p_node);
+}
+
 SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_node) {
 
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
@@ -1895,6 +1900,7 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_removed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("node_renamed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("screen_resized"));
 	ADD_SIGNAL(MethodInfo("node_configuration_warning_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 
@@ -1983,6 +1989,7 @@ SceneTree::SceneTree() {
 	tree_changed_name = "tree_changed";
 	node_added_name = "node_added";
 	node_removed_name = "node_removed";
+	node_renamed_name = "node_renamed";
 	ugc_locked = false;
 	call_lock = 0;
 	root_lock = 0;

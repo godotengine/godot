@@ -949,6 +949,7 @@ void Node::set_name(const String &p_name) {
 	if (is_inside_tree()) {
 
 		emit_signal("renamed");
+		get_tree()->node_renamed(this);
 		get_tree()->tree_changed();
 	}
 }
