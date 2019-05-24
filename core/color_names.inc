@@ -143,6 +143,7 @@ static void _populate_named_colors() {
 	_named_colors.insert("thistle", Color(0.85, 0.75, 0.85));
 	_named_colors.insert("tomato", Color(1.00, 0.39, 0.28));
 	_named_colors.insert("turquoise", Color(0.25, 0.88, 0.82));
+	_named_colors.insert("transparent", Color(1.00, 1.00, 1.00, 0.00));
 	_named_colors.insert("violet", Color(0.93, 0.51, 0.93));
 	_named_colors.insert("wheat", Color(0.96, 0.87, 0.70));
 	_named_colors.insert("white", Color(1.00, 1.00, 1.00));
