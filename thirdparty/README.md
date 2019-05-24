@@ -490,6 +490,13 @@ Files extracted from upstream source:
 - License.txt
 
 
+## shaderc
+
+- Upstream: https://github.com/google/shaderc
+- version: git (10530a08b, 2019)
+- License: Apache-2.0
+
+
 ## squish
 
 - Upstream: https://sourceforge.net/projects/libsquish
