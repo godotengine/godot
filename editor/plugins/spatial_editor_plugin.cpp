@@ -3510,10 +3510,14 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	camera->make_current();
 	surface->set_focus_mode(FOCUS_ALL);
 
+	VBoxContainer *vbox = memnew(VBoxContainer);
+	surface->add_child(vbox);
+	vbox->set_position(Point2(10, 10) * EDSCALE);
+
 	view_menu = memnew(MenuButton);
 	view_menu->set_flat(false);
-	surface->add_child(view_menu);
-	view_menu->set_position(Point2(10, 10) * EDSCALE);
+	vbox->add_child(view_menu);
+	view_menu->set_h_size_flags(0);
 
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/top_view"), VIEW_TOP);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/bottom_view"), VIEW_BOTTOM);
@@ -3566,9 +3570,9 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	ED_SHORTCUT("spatial_editor/freelook_speed_modifier", TTR("Freelook Speed Modifier"), KEY_SHIFT);
 
 	preview_camera = memnew(CheckBox);
-	preview_camera->set_position(Point2(10, 38) * EDSCALE); // Below the 'view_menu' MenuButton.
 	preview_camera->set_text(TTR("Preview"));
-	surface->add_child(preview_camera);
+	vbox->add_child(preview_camera);
+	preview_camera->set_h_size_flags(0);
 	preview_camera->hide();
 	preview_camera->connect("toggled", this, "_toggle_camera_preview");
 	previewing = NULL;
