@@ -1,0 +1,423 @@
+swizzle.frag
+Shader version: 110
+0:? Sequence
+0:9  Function Definition: main( ( global void)
+0:9    Function Parameters: 
+0:11    Sequence
+0:11      Sequence
+0:11        move second child to first child ( temp float)
+0:11          'blendscale' ( temp float)
+0:11          Constant:
+0:11            1.789000
+0:13      Sequence
+0:13        move second child to first child ( temp 4-component vector of float)
+0:13          'w' ( temp 4-component vector of float)
+0:13          'u' ( uniform 4-component vector of float)
+0:15      Sequence
+0:15        move second child to first child ( temp 4-component vector of float)
+0:15          'w_dep' ( temp 4-component vector of float)
+0:15          'u' ( uniform 4-component vector of float)
+0:16      Sequence
+0:16        move second child to first child ( temp 4-component vector of float)
+0:16          'w_reorder' ( temp 4-component vector of float)
+0:16          'u' ( uniform 4-component vector of float)
+0:17      Sequence
+0:17        move second child to first child ( temp 4-component vector of float)
+0:17          'w2' ( temp 4-component vector of float)
+0:17          'u' ( uniform 4-component vector of float)
+0:18      Sequence
+0:18        move second child to first child ( temp 4-component vector of float)
+0:18          'w_flow' ( temp 4-component vector of float)
+0:18          'u' ( uniform 4-component vector of float)
+0:20      move second child to first child ( temp float)
+0:20        direct index ( temp float)
+0:20          'w_reorder' ( temp 4-component vector of float)
+0:20          Constant:
+0:20            2 (const int)
+0:20        'blendscale' ( temp float)
+0:22      move second child to first child ( temp 2-component vector of float)
+0:22        vector swizzle ( temp 2-component vector of float)
+0:22          'w' ( temp 4-component vector of float)
+0:22          Sequence
+0:22            Constant:
+0:22              3 (const int)
+0:22            Constant:
+0:22              1 (const int)
+0:22        't' ( smooth in 2-component vector of float)
+0:24      move second child to first child ( temp float)
+0:24        direct index ( temp float)
+0:24          'w_reorder' ( temp 4-component vector of float)
+0:24          Constant:
+0:24            0 (const int)
+0:24        'blendscale' ( temp float)
+0:26      move second child to first child ( temp 4-component vector of float)
+0:26        vector swizzle ( temp 4-component vector of float)
+0:26          'w2' ( temp 4-component vector of float)
+0:26          Sequence
+0:26            Constant:
+0:26              0 (const int)
+0:26            Constant:
+0:26              1 (const int)
+0:26            Constant:
+0:26              2 (const int)
+0:26            Constant:
+0:26              3 (const int)
+0:26        vector swizzle ( temp 4-component vector of float)
+0:26          'u' ( uniform 4-component vector of float)
+0:26          Sequence
+0:26            Constant:
+0:26              2 (const int)
+0:26            Constant:
+0:26              3 (const int)
+0:26            Constant:
+0:26              0 (const int)
+0:26            Constant:
+0:26              1 (const int)
+0:28      move second child to first child ( temp float)
+0:28        direct index ( temp float)
+0:28          'w_reorder' ( temp 4-component vector of float)
+0:28          Constant:
+0:28            1 (const int)
+0:28        'blendscale' ( temp float)
+0:30      move second child to first child ( temp 2-component vector of float)
+0:30        vector swizzle ( temp 2-component vector of float)
+0:30          'w_dep' ( temp 4-component vector of float)
+0:30          Sequence
+0:30            Constant:
+0:30              0 (const int)
+0:30            Constant:
+0:30              1 (const int)
+0:30        vector swizzle ( temp 2-component vector of float)
+0:30          'w2' ( temp 4-component vector of float)
+0:30          Sequence
+0:30            Constant:
+0:30              0 (const int)
+0:30            Constant:
+0:30              2 (const int)
+0:31      move second child to first child ( temp 2-component vector of float)
+0:31        vector swizzle ( temp 2-component vector of float)
+0:31          'w_dep' ( temp 4-component vector of float)
+0:31          Sequence
+0:31            Constant:
+0:31              2 (const int)
+0:31            Constant:
+0:31              3 (const int)
+0:31        't' ( smooth in 2-component vector of float)
+0:33      move second child to first child ( temp 2-component vector of float)
+0:33        vector swizzle ( temp 2-component vector of float)
+0:33          'w_undef' ( temp 4-component vector of float)
+0:33          Sequence
+0:33            Constant:
+0:33              0 (const int)
+0:33            Constant:
+0:33              1 (const int)
+0:33        vector swizzle ( temp 2-component vector of float)
+0:33          'u' ( uniform 4-component vector of float)
+0:33          Sequence
+0:33            Constant:
+0:33              2 (const int)
+0:33            Constant:
+0:33              3 (const int)
+0:35      Test condition and select ( temp void)
+0:35        Condition
+0:35        'p' ( uniform bool)
+0:35        true case
+0:36        move second child to first child ( temp float)
+0:36          direct index ( temp float)
+0:36            'w_flow' ( temp 4-component vector of float)
+0:36            Constant:
+0:36              0 (const int)
+0:36          direct index ( temp float)
+0:36            't' ( smooth in 2-component vector of float)
+0:36            Constant:
+0:36              0 (const int)
+0:35        false case
+0:38        move second child to first child ( temp float)
+0:38          direct index ( temp float)
+0:38            'w_flow' ( temp 4-component vector of float)
+0:38            Constant:
+0:38              0 (const int)
+0:38          direct index ( temp float)
+0:38            't' ( smooth in 2-component vector of float)
+0:38            Constant:
+0:38              1 (const int)
+0:40      move second child to first child ( temp 4-component vector of float)
+0:40        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:40        mix ( global 4-component vector of float)
+0:40          'w_reorder' ( temp 4-component vector of float)
+0:40          'w_undef' ( temp 4-component vector of float)
+0:40          component-wise multiply ( temp 4-component vector of float)
+0:40            component-wise multiply ( temp 4-component vector of float)
+0:40              component-wise multiply ( temp 4-component vector of float)
+0:40                'w' ( temp 4-component vector of float)
+0:40                'w2' ( temp 4-component vector of float)
+0:40              'w_dep' ( temp 4-component vector of float)
+0:40            'w_flow' ( temp 4-component vector of float)
+0:42      Sequence
+0:42        move second child to first child ( temp 2-component vector of float)
+0:42          'c' ( temp 2-component vector of float)
+0:42          't' ( smooth in 2-component vector of float)
+0:43      Sequence
+0:43        move second child to first child ( temp 4-component vector of float)
+0:43          'rep' ( temp 4-component vector of float)
+0:43          Constant:
+0:43            0.000000
+0:43            0.000000
+0:43            0.000000
+0:43            1.000000
+0:45      Test condition and select ( temp void)
+0:45        Condition
+0:45        Compare Less Than ( temp bool)
+0:45          direct index ( temp float)
+0:45            'c' ( temp 2-component vector of float)
+0:45            Constant:
+0:45              0 (const int)
+0:45          Constant:
+0:45            0.000000
+0:45        true case
+0:46        multiply second child into first child ( temp float)
+0:46          direct index ( temp float)
+0:46            'c' ( temp 2-component vector of float)
+0:46            Constant:
+0:46              0 (const int)
+0:46          Constant:
+0:46            -1.000000
+0:48      Test condition and select ( temp void)
+0:48        Condition
+0:48        Compare Less Than or Equal ( temp bool)
+0:48          direct index ( temp float)
+0:48            'c' ( temp 2-component vector of float)
+0:48            Constant:
+0:48              0 (const int)
+0:48          Constant:
+0:48            1.000000
+0:48        true case
+0:49        move second child to first child ( temp float)
+0:49          direct index ( temp float)
+0:49            'rep' ( temp 4-component vector of float)
+0:49            Constant:
+0:49              0 (const int)
+0:49          Constant:
+0:49            3.400000
+0:51      add second child into first child ( temp 4-component vector of float)
+0:51        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:51        'rep' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'blend' ( uniform float)
+0:?     'u' ( uniform 4-component vector of float)
+0:?     'p' ( uniform bool)
+0:?     't' ( smooth in 2-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 110
+0:? Sequence
+0:9  Function Definition: main( ( global void)
+0:9    Function Parameters: 
+0:11    Sequence
+0:11      Sequence
+0:11        move second child to first child ( temp float)
+0:11          'blendscale' ( temp float)
+0:11          Constant:
+0:11            1.789000
+0:13      Sequence
+0:13        move second child to first child ( temp 4-component vector of float)
+0:13          'w' ( temp 4-component vector of float)
+0:13          'u' ( uniform 4-component vector of float)
+0:15      Sequence
+0:15        move second child to first child ( temp 4-component vector of float)
+0:15          'w_dep' ( temp 4-component vector of float)
+0:15          'u' ( uniform 4-component vector of float)
+0:16      Sequence
+0:16        move second child to first child ( temp 4-component vector of float)
+0:16          'w_reorder' ( temp 4-component vector of float)
+0:16          'u' ( uniform 4-component vector of float)
+0:17      Sequence
+0:17        move second child to first child ( temp 4-component vector of float)
+0:17          'w2' ( temp 4-component vector of float)
+0:17          'u' ( uniform 4-component vector of float)
+0:18      Sequence
+0:18        move second child to first child ( temp 4-component vector of float)
+0:18          'w_flow' ( temp 4-component vector of float)
+0:18          'u' ( uniform 4-component vector of float)
+0:20      move second child to first child ( temp float)
+0:20        direct index ( temp float)
+0:20          'w_reorder' ( temp 4-component vector of float)
+0:20          Constant:
+0:20            2 (const int)
+0:20        'blendscale' ( temp float)
+0:22      move second child to first child ( temp 2-component vector of float)
+0:22        vector swizzle ( temp 2-component vector of float)
+0:22          'w' ( temp 4-component vector of float)
+0:22          Sequence
+0:22            Constant:
+0:22              3 (const int)
+0:22            Constant:
+0:22              1 (const int)
+0:22        't' ( smooth in 2-component vector of float)
+0:24      move second child to first child ( temp float)
+0:24        direct index ( temp float)
+0:24          'w_reorder' ( temp 4-component vector of float)
+0:24          Constant:
+0:24            0 (const int)
+0:24        'blendscale' ( temp float)
+0:26      move second child to first child ( temp 4-component vector of float)
+0:26        vector swizzle ( temp 4-component vector of float)
+0:26          'w2' ( temp 4-component vector of float)
+0:26          Sequence
+0:26            Constant:
+0:26              0 (const int)
+0:26            Constant:
+0:26              1 (const int)
+0:26            Constant:
+0:26              2 (const int)
+0:26            Constant:
+0:26              3 (const int)
+0:26        vector swizzle ( temp 4-component vector of float)
+0:26          'u' ( uniform 4-component vector of float)
+0:26          Sequence
+0:26            Constant:
+0:26              2 (const int)
+0:26            Constant:
+0:26              3 (const int)
+0:26            Constant:
+0:26              0 (const int)
+0:26            Constant:
+0:26              1 (const int)
+0:28      move second child to first child ( temp float)
+0:28        direct index ( temp float)
+0:28          'w_reorder' ( temp 4-component vector of float)
+0:28          Constant:
+0:28            1 (const int)
+0:28        'blendscale' ( temp float)
+0:30      move second child to first child ( temp 2-component vector of float)
+0:30        vector swizzle ( temp 2-component vector of float)
+0:30          'w_dep' ( temp 4-component vector of float)
+0:30          Sequence
+0:30            Constant:
+0:30              0 (const int)
+0:30            Constant:
+0:30              1 (const int)
+0:30        vector swizzle ( temp 2-component vector of float)
+0:30          'w2' ( temp 4-component vector of float)
+0:30          Sequence
+0:30            Constant:
+0:30              0 (const int)
+0:30            Constant:
+0:30              2 (const int)
+0:31      move second child to first child ( temp 2-component vector of float)
+0:31        vector swizzle ( temp 2-component vector of float)
+0:31          'w_dep' ( temp 4-component vector of float)
+0:31          Sequence
+0:31            Constant:
+0:31              2 (const int)
+0:31            Constant:
+0:31              3 (const int)
+0:31        't' ( smooth in 2-component vector of float)
+0:33      move second child to first child ( temp 2-component vector of float)
+0:33        vector swizzle ( temp 2-component vector of float)
+0:33          'w_undef' ( temp 4-component vector of float)
+0:33          Sequence
+0:33            Constant:
+0:33              0 (const int)
+0:33            Constant:
+0:33              1 (const int)
+0:33        vector swizzle ( temp 2-component vector of float)
+0:33          'u' ( uniform 4-component vector of float)
+0:33          Sequence
+0:33            Constant:
+0:33              2 (const int)
+0:33            Constant:
+0:33              3 (const int)
+0:35      Test condition and select ( temp void)
+0:35        Condition
+0:35        'p' ( uniform bool)
+0:35        true case
+0:36        move second child to first child ( temp float)
+0:36          direct index ( temp float)
+0:36            'w_flow' ( temp 4-component vector of float)
+0:36            Constant:
+0:36              0 (const int)
+0:36          direct index ( temp float)
+0:36            't' ( smooth in 2-component vector of float)
+0:36            Constant:
+0:36              0 (const int)
+0:35        false case
+0:38        move second child to first child ( temp float)
+0:38          direct index ( temp float)
+0:38            'w_flow' ( temp 4-component vector of float)
+0:38            Constant:
+0:38              0 (const int)
+0:38          direct index ( temp float)
+0:38            't' ( smooth in 2-component vector of float)
+0:38            Constant:
+0:38              1 (const int)
+0:40      move second child to first child ( temp 4-component vector of float)
+0:40        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:40        mix ( global 4-component vector of float)
+0:40          'w_reorder' ( temp 4-component vector of float)
+0:40          'w_undef' ( temp 4-component vector of float)
+0:40          component-wise multiply ( temp 4-component vector of float)
+0:40            component-wise multiply ( temp 4-component vector of float)
+0:40              component-wise multiply ( temp 4-component vector of float)
+0:40                'w' ( temp 4-component vector of float)
+0:40                'w2' ( temp 4-component vector of float)
+0:40              'w_dep' ( temp 4-component vector of float)
+0:40            'w_flow' ( temp 4-component vector of float)
+0:42      Sequence
+0:42        move second child to first child ( temp 2-component vector of float)
+0:42          'c' ( temp 2-component vector of float)
+0:42          't' ( smooth in 2-component vector of float)
+0:43      Sequence
+0:43        move second child to first child ( temp 4-component vector of float)
+0:43          'rep' ( temp 4-component vector of float)
+0:43          Constant:
+0:43            0.000000
+0:43            0.000000
+0:43            0.000000
+0:43            1.000000
+0:45      Test condition and select ( temp void)
+0:45        Condition
+0:45        Compare Less Than ( temp bool)
+0:45          direct index ( temp float)
+0:45            'c' ( temp 2-component vector of float)
+0:45            Constant:
+0:45              0 (const int)
+0:45          Constant:
+0:45            0.000000
+0:45        true case
+0:46        multiply second child into first child ( temp float)
+0:46          direct index ( temp float)
+0:46            'c' ( temp 2-component vector of float)
+0:46            Constant:
+0:46              0 (const int)
+0:46          Constant:
+0:46            -1.000000
+0:48      Test condition and select ( temp void)
+0:48        Condition
+0:48        Compare Less Than or Equal ( temp bool)
+0:48          direct index ( temp float)
+0:48            'c' ( temp 2-component vector of float)
+0:48            Constant:
+0:48              0 (const int)
+0:48          Constant:
+0:48            1.000000
+0:48        true case
+0:49        move second child to first child ( temp float)
+0:49          direct index ( temp float)
+0:49            'rep' ( temp 4-component vector of float)
+0:49            Constant:
+0:49              0 (const int)
+0:49          Constant:
+0:49            3.400000
+0:51      add second child into first child ( temp 4-component vector of float)
+0:51        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:51        'rep' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'blend' ( uniform float)
+0:?     'u' ( uniform 4-component vector of float)
+0:?     'p' ( uniform bool)
+0:?     't' ( smooth in 2-component vector of float)
+

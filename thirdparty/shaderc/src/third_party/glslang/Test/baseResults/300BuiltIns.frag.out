@@ -1,0 +1,418 @@
+300BuiltIns.frag
+ERROR: 0:6: 'float' : type requires declaration of default precision qualifier 
+ERROR: 0:70: 'noise2' : no matching overloaded function found 
+ERROR: 0:72: 't__' : identifiers containing consecutive underscores ("__") are reserved, and an error if version <= 300 
+ERROR: 0:75: '#define' : names containing consecutive underscores are reserved, and an error if version <= 300: __D
+ERROR: 4 compilation errors.  No code generated.
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:26  Function Definition: main( ( global void)
+0:26    Function Parameters: 
+0:29    Sequence
+0:29      Sequence
+0:29        move second child to first child ( temp mediump 3-component vector of float)
+0:29          'v' ( temp mediump 3-component vector of float)
+0:29          mix ( global mediump 3-component vector of float)
+0:29            'x' ( global mediump 3-component vector of float)
+0:29            'y' ( global mediump 3-component vector of float)
+0:29            'bv' ( global 3-component vector of bool)
+0:30      Sequence
+0:30        move second child to first child ( temp mediump 4-component vector of int)
+0:30          'iv10' ( temp mediump 4-component vector of int)
+0:30          Absolute value ( global mediump 4-component vector of int)
+0:30            'iv4a' ( global mediump 4-component vector of int)
+0:31      Sequence
+0:31        move second child to first child ( temp mediump 4-component vector of int)
+0:31          'iv11' ( temp mediump 4-component vector of int)
+0:31          Sign ( global mediump 4-component vector of int)
+0:31            'iv4a' ( global mediump 4-component vector of int)
+0:32      Sequence
+0:32        move second child to first child ( temp mediump 4-component vector of int)
+0:32          'iv12' ( temp mediump 4-component vector of int)
+0:32          min ( global mediump 4-component vector of int)
+0:32            'iv4a' ( global mediump 4-component vector of int)
+0:32            'iv4b' ( global mediump 4-component vector of int)
+0:33      Sequence
+0:33        move second child to first child ( temp mediump 4-component vector of int)
+0:33          'iv13' ( temp mediump 4-component vector of int)
+0:33          min ( global mediump 4-component vector of int)
+0:33            'iv4a' ( global mediump 4-component vector of int)
+0:33            'imin' ( global mediump int)
+0:34      Sequence
+0:34        move second child to first child ( temp mediump 2-component vector of uint)
+0:34          'u' ( temp mediump 2-component vector of uint)
+0:34          min ( global mediump 2-component vector of uint)
+0:34            'uv2x' ( global mediump 2-component vector of uint)
+0:34            'uv2y' ( global mediump 2-component vector of uint)
+0:35      Sequence
+0:35        move second child to first child ( temp mediump 4-component vector of uint)
+0:35          'uv' ( temp mediump 4-component vector of uint)
+0:35          min ( global mediump 4-component vector of uint)
+0:35            'uv4y' ( global mediump 4-component vector of uint)
+0:35            'uy' ( global mediump uint)
+0:36      Sequence
+0:36        move second child to first child ( temp mediump 3-component vector of int)
+0:36          'iv14' ( temp mediump 3-component vector of int)
+0:36          max ( global mediump 3-component vector of int)
+0:36            'iv3a' ( global mediump 3-component vector of int)
+0:36            'iv3b' ( global mediump 3-component vector of int)
+0:37      Sequence
+0:37        move second child to first child ( temp mediump 4-component vector of int)
+0:37          'iv15' ( temp mediump 4-component vector of int)
+0:37          max ( global mediump 4-component vector of int)
+0:37            'iv4a' ( global mediump 4-component vector of int)
+0:37            'imax' ( global mediump int)
+0:38      Sequence
+0:38        move second child to first child ( temp mediump 2-component vector of uint)
+0:38          'u10' ( temp mediump 2-component vector of uint)
+0:38          max ( global mediump 2-component vector of uint)
+0:38            'uv2x' ( global mediump 2-component vector of uint)
+0:38            'uv2y' ( global mediump 2-component vector of uint)
+0:39      Sequence
+0:39        move second child to first child ( temp mediump 2-component vector of uint)
+0:39          'u11' ( temp mediump 2-component vector of uint)
+0:39          max ( global mediump 2-component vector of uint)
+0:39            'uv2x' ( global mediump 2-component vector of uint)
+0:39            'uy' ( global mediump uint)
+0:40      Sequence
+0:40        move second child to first child ( temp mediump 4-component vector of int)
+0:40          'iv16' ( temp mediump 4-component vector of int)
+0:40          clamp ( global mediump 4-component vector of int)
+0:40            'iv4a' ( global mediump 4-component vector of int)
+0:40            'iv4a' ( global mediump 4-component vector of int)
+0:40            'iv4b' ( global mediump 4-component vector of int)
+0:41      Sequence
+0:41        move second child to first child ( temp mediump 4-component vector of int)
+0:41          'iv17' ( temp mediump 4-component vector of int)
+0:41          clamp ( global mediump 4-component vector of int)
+0:41            'iv4a' ( global mediump 4-component vector of int)
+0:41            'imin' ( global mediump int)
+0:41            'imax' ( global mediump int)
+0:42      Sequence
+0:42        move second child to first child ( temp mediump 2-component vector of uint)
+0:42          'u12' ( temp mediump 2-component vector of uint)
+0:42          clamp ( global mediump 2-component vector of uint)
+0:42            'uv2x' ( global mediump 2-component vector of uint)
+0:42            'uv2y' ( global mediump 2-component vector of uint)
+0:42            'uv2c' ( global mediump 2-component vector of uint)
+0:43      Sequence
+0:43        move second child to first child ( temp mediump 4-component vector of uint)
+0:43          'uv10' ( temp mediump 4-component vector of uint)
+0:43          clamp ( global mediump 4-component vector of uint)
+0:43            'uv4y' ( global mediump 4-component vector of uint)
+0:43            'umin' ( global mediump uint)
+0:43            'umax' ( global mediump uint)
+0:47      Sequence
+0:47        move second child to first child ( temp mediump 3-component vector of float)
+0:47          'v11' ( temp mediump 3-component vector of float)
+0:47          modf ( global mediump 3-component vector of float)
+0:47            'x' ( global mediump 3-component vector of float)
+0:47            'modfOut' ( temp mediump 3-component vector of float)
+0:49      Sequence
+0:49        move second child to first child ( temp mediump float)
+0:49          't' ( temp mediump float)
+0:49          trunc ( global mediump float)
+0:49            'f' ( global mediump float)
+0:50      Sequence
+0:50        move second child to first child ( temp mediump 2-component vector of float)
+0:50          'v12' ( temp mediump 2-component vector of float)
+0:50          round ( global mediump 2-component vector of float)
+0:50            'v2a' ( global mediump 2-component vector of float)
+0:51      Sequence
+0:51        move second child to first child ( temp mediump 2-component vector of float)
+0:51          'v13' ( temp mediump 2-component vector of float)
+0:51          roundEven ( global mediump 2-component vector of float)
+0:51            'v2a' ( global mediump 2-component vector of float)
+0:52      Sequence
+0:52        move second child to first child ( temp 2-component vector of bool)
+0:52          'b10' ( temp 2-component vector of bool)
+0:52          isnan ( global 2-component vector of bool, operation at mediump)
+0:52            'v2a' ( global mediump 2-component vector of float)
+0:53      Sequence
+0:53        move second child to first child ( temp 4-component vector of bool)
+0:53          'b11' ( temp 4-component vector of bool)
+0:53          isinf ( global 4-component vector of bool, operation at mediump)
+0:53            'v4' ( global mediump 4-component vector of float)
+0:56      Sequence
+0:56        move second child to first child ( temp highp int)
+0:56          'i' ( temp mediump int)
+0:56          floatBitsToInt ( global highp int)
+0:56            'f' ( global mediump float)
+0:57      Sequence
+0:57        move second child to first child ( temp highp 4-component vector of uint)
+0:57          'uv11' ( temp mediump 4-component vector of uint)
+0:57          floatBitsToUint ( global highp 4-component vector of uint)
+0:57            'v4' ( global mediump 4-component vector of float)
+0:58      Sequence
+0:58        move second child to first child ( temp highp 4-component vector of float)
+0:58          'v14' ( temp mediump 4-component vector of float)
+0:58          intBitsToFloat ( global highp 4-component vector of float)
+0:58            'iv4a' ( global mediump 4-component vector of int)
+0:59      Sequence
+0:59        move second child to first child ( temp highp 2-component vector of float)
+0:59          'v15' ( temp mediump 2-component vector of float)
+0:59          uintBitsToFloat ( global highp 2-component vector of float)
+0:59            'uv2c' ( global mediump 2-component vector of uint)
+0:62      Sequence
+0:62        move second child to first child ( temp highp uint)
+0:62          'u19' ( temp mediump uint)
+0:62          packSnorm2x16 ( global highp uint, operation at mediump)
+0:62            'v2a' ( global mediump 2-component vector of float)
+0:63      Sequence
+0:63        move second child to first child ( temp highp 2-component vector of float)
+0:63          'v20' ( temp mediump 2-component vector of float)
+0:63          unpackSnorm2x16 ( global highp 2-component vector of float)
+0:63            'uy' ( global mediump uint)
+0:64      Sequence
+0:64        move second child to first child ( temp highp uint)
+0:64          'u15' ( temp mediump uint)
+0:64          packUnorm2x16 ( global highp uint, operation at mediump)
+0:64            'v2a' ( global mediump 2-component vector of float)
+0:65      Sequence
+0:65        move second child to first child ( temp highp 2-component vector of float)
+0:65          'v16' ( temp mediump 2-component vector of float)
+0:65          unpackUnorm2x16 ( global highp 2-component vector of float)
+0:65            'uy' ( global mediump uint)
+0:66      Sequence
+0:66        move second child to first child ( temp highp uint)
+0:66          'u17' ( temp mediump uint)
+0:66          packHalf2x16 ( global highp uint, operation at mediump)
+0:66            'v2b' ( global mediump 2-component vector of float)
+0:67      Sequence
+0:67        move second child to first child ( temp mediump 2-component vector of float)
+0:67          'v18' ( temp mediump 2-component vector of float)
+0:67          unpackHalf2x16 ( global mediump 2-component vector of float, operation at highp)
+0:67            'uy' ( global mediump uint)
+0:70      Constant:
+0:70        0.000000
+0:?   Linker Objects
+0:?     'imax' ( global mediump int)
+0:?     'imin' ( global mediump int)
+0:?     'umax' ( global mediump uint)
+0:?     'umin' ( global mediump uint)
+0:?     'x' ( global mediump 3-component vector of float)
+0:?     'y' ( global mediump 3-component vector of float)
+0:?     'bv' ( global 3-component vector of bool)
+0:?     'uy' ( global mediump uint)
+0:?     'uv2c' ( global mediump 2-component vector of uint)
+0:?     'uv2y' ( global mediump 2-component vector of uint)
+0:?     'uv2x' ( global mediump 2-component vector of uint)
+0:?     'uv4y' ( global mediump 4-component vector of uint)
+0:?     'iv3a' ( global mediump 3-component vector of int)
+0:?     'iv3b' ( global mediump 3-component vector of int)
+0:?     'iv4a' ( global mediump 4-component vector of int)
+0:?     'iv4b' ( global mediump 4-component vector of int)
+0:?     'f' ( global mediump float)
+0:?     'v2a' ( global mediump 2-component vector of float)
+0:?     'v2b' ( global mediump 2-component vector of float)
+0:?     'v4' ( global mediump 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:26  Function Definition: main( ( global void)
+0:26    Function Parameters: 
+0:29    Sequence
+0:29      Sequence
+0:29        move second child to first child ( temp mediump 3-component vector of float)
+0:29          'v' ( temp mediump 3-component vector of float)
+0:29          mix ( global mediump 3-component vector of float)
+0:29            'x' ( global mediump 3-component vector of float)
+0:29            'y' ( global mediump 3-component vector of float)
+0:29            'bv' ( global 3-component vector of bool)
+0:30      Sequence
+0:30        move second child to first child ( temp mediump 4-component vector of int)
+0:30          'iv10' ( temp mediump 4-component vector of int)
+0:30          Absolute value ( global mediump 4-component vector of int)
+0:30            'iv4a' ( global mediump 4-component vector of int)
+0:31      Sequence
+0:31        move second child to first child ( temp mediump 4-component vector of int)
+0:31          'iv11' ( temp mediump 4-component vector of int)
+0:31          Sign ( global mediump 4-component vector of int)
+0:31            'iv4a' ( global mediump 4-component vector of int)
+0:32      Sequence
+0:32        move second child to first child ( temp mediump 4-component vector of int)
+0:32          'iv12' ( temp mediump 4-component vector of int)
+0:32          min ( global mediump 4-component vector of int)
+0:32            'iv4a' ( global mediump 4-component vector of int)
+0:32            'iv4b' ( global mediump 4-component vector of int)
+0:33      Sequence
+0:33        move second child to first child ( temp mediump 4-component vector of int)
+0:33          'iv13' ( temp mediump 4-component vector of int)
+0:33          min ( global mediump 4-component vector of int)
+0:33            'iv4a' ( global mediump 4-component vector of int)
+0:33            'imin' ( global mediump int)
+0:34      Sequence
+0:34        move second child to first child ( temp mediump 2-component vector of uint)
+0:34          'u' ( temp mediump 2-component vector of uint)
+0:34          min ( global mediump 2-component vector of uint)
+0:34            'uv2x' ( global mediump 2-component vector of uint)
+0:34            'uv2y' ( global mediump 2-component vector of uint)
+0:35      Sequence
+0:35        move second child to first child ( temp mediump 4-component vector of uint)
+0:35          'uv' ( temp mediump 4-component vector of uint)
+0:35          min ( global mediump 4-component vector of uint)
+0:35            'uv4y' ( global mediump 4-component vector of uint)
+0:35            'uy' ( global mediump uint)
+0:36      Sequence
+0:36        move second child to first child ( temp mediump 3-component vector of int)
+0:36          'iv14' ( temp mediump 3-component vector of int)
+0:36          max ( global mediump 3-component vector of int)
+0:36            'iv3a' ( global mediump 3-component vector of int)
+0:36            'iv3b' ( global mediump 3-component vector of int)
+0:37      Sequence
+0:37        move second child to first child ( temp mediump 4-component vector of int)
+0:37          'iv15' ( temp mediump 4-component vector of int)
+0:37          max ( global mediump 4-component vector of int)
+0:37            'iv4a' ( global mediump 4-component vector of int)
+0:37            'imax' ( global mediump int)
+0:38      Sequence
+0:38        move second child to first child ( temp mediump 2-component vector of uint)
+0:38          'u10' ( temp mediump 2-component vector of uint)
+0:38          max ( global mediump 2-component vector of uint)
+0:38            'uv2x' ( global mediump 2-component vector of uint)
+0:38            'uv2y' ( global mediump 2-component vector of uint)
+0:39      Sequence
+0:39        move second child to first child ( temp mediump 2-component vector of uint)
+0:39          'u11' ( temp mediump 2-component vector of uint)
+0:39          max ( global mediump 2-component vector of uint)
+0:39            'uv2x' ( global mediump 2-component vector of uint)
+0:39            'uy' ( global mediump uint)
+0:40      Sequence
+0:40        move second child to first child ( temp mediump 4-component vector of int)
+0:40          'iv16' ( temp mediump 4-component vector of int)
+0:40          clamp ( global mediump 4-component vector of int)
+0:40            'iv4a' ( global mediump 4-component vector of int)
+0:40            'iv4a' ( global mediump 4-component vector of int)
+0:40            'iv4b' ( global mediump 4-component vector of int)
+0:41      Sequence
+0:41        move second child to first child ( temp mediump 4-component vector of int)
+0:41          'iv17' ( temp mediump 4-component vector of int)
+0:41          clamp ( global mediump 4-component vector of int)
+0:41            'iv4a' ( global mediump 4-component vector of int)
+0:41            'imin' ( global mediump int)
+0:41            'imax' ( global mediump int)
+0:42      Sequence
+0:42        move second child to first child ( temp mediump 2-component vector of uint)
+0:42          'u12' ( temp mediump 2-component vector of uint)
+0:42          clamp ( global mediump 2-component vector of uint)
+0:42            'uv2x' ( global mediump 2-component vector of uint)
+0:42            'uv2y' ( global mediump 2-component vector of uint)
+0:42            'uv2c' ( global mediump 2-component vector of uint)
+0:43      Sequence
+0:43        move second child to first child ( temp mediump 4-component vector of uint)
+0:43          'uv10' ( temp mediump 4-component vector of uint)
+0:43          clamp ( global mediump 4-component vector of uint)
+0:43            'uv4y' ( global mediump 4-component vector of uint)
+0:43            'umin' ( global mediump uint)
+0:43            'umax' ( global mediump uint)
+0:47      Sequence
+0:47        move second child to first child ( temp mediump 3-component vector of float)
+0:47          'v11' ( temp mediump 3-component vector of float)
+0:47          modf ( global mediump 3-component vector of float)
+0:47            'x' ( global mediump 3-component vector of float)
+0:47            'modfOut' ( temp mediump 3-component vector of float)
+0:49      Sequence
+0:49        move second child to first child ( temp mediump float)
+0:49          't' ( temp mediump float)
+0:49          trunc ( global mediump float)
+0:49            'f' ( global mediump float)
+0:50      Sequence
+0:50        move second child to first child ( temp mediump 2-component vector of float)
+0:50          'v12' ( temp mediump 2-component vector of float)
+0:50          round ( global mediump 2-component vector of float)
+0:50            'v2a' ( global mediump 2-component vector of float)
+0:51      Sequence
+0:51        move second child to first child ( temp mediump 2-component vector of float)
+0:51          'v13' ( temp mediump 2-component vector of float)
+0:51          roundEven ( global mediump 2-component vector of float)
+0:51            'v2a' ( global mediump 2-component vector of float)
+0:52      Sequence
+0:52        move second child to first child ( temp 2-component vector of bool)
+0:52          'b10' ( temp 2-component vector of bool)
+0:52          isnan ( global 2-component vector of bool, operation at mediump)
+0:52            'v2a' ( global mediump 2-component vector of float)
+0:53      Sequence
+0:53        move second child to first child ( temp 4-component vector of bool)
+0:53          'b11' ( temp 4-component vector of bool)
+0:53          isinf ( global 4-component vector of bool, operation at mediump)
+0:53            'v4' ( global mediump 4-component vector of float)
+0:56      Sequence
+0:56        move second child to first child ( temp highp int)
+0:56          'i' ( temp mediump int)
+0:56          floatBitsToInt ( global highp int)
+0:56            'f' ( global mediump float)
+0:57      Sequence
+0:57        move second child to first child ( temp highp 4-component vector of uint)
+0:57          'uv11' ( temp mediump 4-component vector of uint)
+0:57          floatBitsToUint ( global highp 4-component vector of uint)
+0:57            'v4' ( global mediump 4-component vector of float)
+0:58      Sequence
+0:58        move second child to first child ( temp highp 4-component vector of float)
+0:58          'v14' ( temp mediump 4-component vector of float)
+0:58          intBitsToFloat ( global highp 4-component vector of float)
+0:58            'iv4a' ( global mediump 4-component vector of int)
+0:59      Sequence
+0:59        move second child to first child ( temp highp 2-component vector of float)
+0:59          'v15' ( temp mediump 2-component vector of float)
+0:59          uintBitsToFloat ( global highp 2-component vector of float)
+0:59            'uv2c' ( global mediump 2-component vector of uint)
+0:62      Sequence
+0:62        move second child to first child ( temp highp uint)
+0:62          'u19' ( temp mediump uint)
+0:62          packSnorm2x16 ( global highp uint, operation at mediump)
+0:62            'v2a' ( global mediump 2-component vector of float)
+0:63      Sequence
+0:63        move second child to first child ( temp highp 2-component vector of float)
+0:63          'v20' ( temp mediump 2-component vector of float)
+0:63          unpackSnorm2x16 ( global highp 2-component vector of float)
+0:63            'uy' ( global mediump uint)
+0:64      Sequence
+0:64        move second child to first child ( temp highp uint)
+0:64          'u15' ( temp mediump uint)
+0:64          packUnorm2x16 ( global highp uint, operation at mediump)
+0:64            'v2a' ( global mediump 2-component vector of float)
+0:65      Sequence
+0:65        move second child to first child ( temp highp 2-component vector of float)
+0:65          'v16' ( temp mediump 2-component vector of float)
+0:65          unpackUnorm2x16 ( global highp 2-component vector of float)
+0:65            'uy' ( global mediump uint)
+0:66      Sequence
+0:66        move second child to first child ( temp highp uint)
+0:66          'u17' ( temp mediump uint)
+0:66          packHalf2x16 ( global highp uint, operation at mediump)
+0:66            'v2b' ( global mediump 2-component vector of float)
+0:67      Sequence
+0:67        move second child to first child ( temp mediump 2-component vector of float)
+0:67          'v18' ( temp mediump 2-component vector of float)
+0:67          unpackHalf2x16 ( global mediump 2-component vector of float, operation at highp)
+0:67            'uy' ( global mediump uint)
+0:70      Constant:
+0:70        0.000000
+0:?   Linker Objects
+0:?     'imax' ( global mediump int)
+0:?     'imin' ( global mediump int)
+0:?     'umax' ( global mediump uint)
+0:?     'umin' ( global mediump uint)
+0:?     'x' ( global mediump 3-component vector of float)
+0:?     'y' ( global mediump 3-component vector of float)
+0:?     'bv' ( global 3-component vector of bool)
+0:?     'uy' ( global mediump uint)
+0:?     'uv2c' ( global mediump 2-component vector of uint)
+0:?     'uv2y' ( global mediump 2-component vector of uint)
+0:?     'uv2x' ( global mediump 2-component vector of uint)
+0:?     'uv4y' ( global mediump 4-component vector of uint)
+0:?     'iv3a' ( global mediump 3-component vector of int)
+0:?     'iv3b' ( global mediump 3-component vector of int)
+0:?     'iv4a' ( global mediump 4-component vector of int)
+0:?     'iv4b' ( global mediump 4-component vector of int)
+0:?     'f' ( global mediump float)
+0:?     'v2a' ( global mediump 2-component vector of float)
+0:?     'v2b' ( global mediump 2-component vector of float)
+0:?     'v4' ( global mediump 4-component vector of float)
+

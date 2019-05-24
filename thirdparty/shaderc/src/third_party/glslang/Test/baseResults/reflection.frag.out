@@ -1,0 +1,13 @@
+reflection.frag
+Uniform reflection:
+
+Uniform block reflection:
+
+Buffer variable reflection:
+
+Buffer block reflection:
+
+Pipeline input reflection:
+
+Pipeline output reflection:
+

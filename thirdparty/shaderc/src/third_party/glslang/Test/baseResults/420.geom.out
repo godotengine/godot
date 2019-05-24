@@ -1,0 +1,152 @@
+420.geom
+ERROR: 0:9: 'length' :  array must first be sized by a redeclaration or layout qualifier
+ERROR: 0:11: '[' :  array must be sized by a redeclaration or layout qualifier before being indexed with a variable
+ERROR: 0:42: 'assign' :  l-value required (can't modify a const)
+ERROR: 0:43: 'assign' :  l-value required "v4" (can't modify a uniform)
+ERROR: 0:48: 'gl_PointSize' : cannot change arrayness of redeclared block member 
+ERROR: 0:49: 'gl_ClipDistance' : cannot change arrayness of redeclared block member 
+ERROR: 6 compilation errors.  No code generated.
+
+
+Shader version: 420
+invocations = -1
+max_vertices = -1
+input primitive = triangles
+output primitive = none
+ERROR: node is still EOpNull!
+0:7  Function Definition: foo( ( global void)
+0:7    Function Parameters: 
+0:9    Sequence
+0:9      Constant:
+0:9        1 (const int)
+0:10      gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:10        direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 1-element array of float ClipDistance gl_ClipDistance})
+0:10          'gl_in' ( in 3-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 1-element array of float ClipDistance gl_ClipDistance})
+0:10          Constant:
+0:10            1 (const int)
+0:10        Constant:
+0:10          0 (const int)
+0:11      gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:11        indirect index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 1-element array of float ClipDistance gl_ClipDistance})
+0:11          'gl_in' ( in 3-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 1-element array of float ClipDistance gl_ClipDistance})
+0:11          'i' ( global int)
+0:11        Constant:
+0:11          0 (const int)
+0:18  Function Definition: foo3( ( global void)
+0:18    Function Parameters: 
+0:20    Sequence
+0:20      Constant:
+0:20        3 (const int)
+0:21      gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:21        indirect index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 1-element array of float ClipDistance gl_ClipDistance})
+0:21          'gl_in' ( in 3-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 1-element array of float ClipDistance gl_ClipDistance})
+0:21          'i' ( global int)
+0:21        Constant:
+0:21          0 (const int)
+0:22      Constant:
+0:22        3 (const int)
+0:29  Function Definition: foo4( ( global void)
+0:29    Function Parameters: 
+0:?     Sequence
+0:40      Sequence
+0:40        move second child to first child ( temp 4-component vector of float)
+0:40          'v' ( temp 4-component vector of float)
+0:40          textureGatherOffset ( global 4-component vector of float)
+0:40            's2D' ( uniform sampler2D)
+0:40            direct index ( temp 2-component vector of float)
+0:40              'coord' ( in 3-element array of 2-component vector of float)
+0:40              Constant:
+0:40                0 (const int)
+0:40            vector swizzle ( temp 2-component vector of int)
+0:40              indirect index ( temp 2-component vector of int)
+0:40                Constant:
+0:40                  0 (const int)
+0:40                  1 (const int)
+0:40                  1 (const int)
+0:40                  -2 (const int)
+0:40                  0 (const int)
+0:40                  3 (const int)
+0:40                  -3 (const int)
+0:40                  0 (const int)
+0:40                  2 (const int)
+0:40                  1 (const int)
+0:40                'i' ( global int)
+0:40              Sequence
+0:40                Constant:
+0:40                  0 (const int)
+0:40                Constant:
+0:40                  1 (const int)
+0:42      move second child to first child ( temp 2-component vector of int)
+0:42        vector swizzle ( temp 2-component vector of int)
+0:42          indirect index ( temp 2-component vector of int)
+0:42            Constant:
+0:42              0 (const int)
+0:42              1 (const int)
+0:42              1 (const int)
+0:42              -2 (const int)
+0:42              0 (const int)
+0:42              3 (const int)
+0:42              -3 (const int)
+0:42              0 (const int)
+0:42              2 (const int)
+0:42              1 (const int)
+0:42            'i' ( global int)
+0:42          Sequence
+0:42            Constant:
+0:42              0 (const int)
+0:42            Constant:
+0:42              1 (const int)
+0:42        Constant:
+0:42          3 (const int)
+0:42          3 (const int)
+0:43      move second child to first child ( temp float)
+0:43        direct index ( temp float)
+0:43          'v4' ( uniform 4-component vector of float)
+0:43          Constant:
+0:43            0 (const int)
+0:43        Constant:
+0:43          3.200000
+0:44      vector swizzle ( temp 2-component vector of float)
+0:44        'v4' ( uniform 4-component vector of float)
+0:44        Sequence
+0:44          Constant:
+0:44            0 (const int)
+0:44          Constant:
+0:44            1 (const int)
+0:52  Function Definition: foo5( ( global float)
+0:52    Function Parameters: 
+0:54    Sequence
+0:54      Branch: Return with expression
+0:54        Convert int to float ( temp float)
+0:54          'i' ( global int)
+0:?   Linker Objects
+0:?     'i' ( global int)
+0:?     'gl_in' ( in 3-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 1-element array of float ClipDistance gl_ClipDistance})
+0:?     'color3' ( in 3-element array of 4-component vector of float)
+0:?     's2D' ( uniform sampler2D)
+0:?     'coord' ( in 3-element array of 2-component vector of float)
+0:?     'v4' ( uniform 4-component vector of float)
+0:?     'anon@0' (layout( stream=0) out block{layout( stream=0) gl_PointSize float PointSize gl_PointSize, layout( stream=0) out unsized 1-element array of float ClipDistance gl_ClipDistance})
+
+
+Linked geometry stage:
+
+ERROR: Linking geometry stage: Missing entry point: Each stage requires one entry point
+ERROR: Linking geometry stage: At least one shader must specify an output layout primitive
+ERROR: Linking geometry stage: At least one shader must specify a layout(max_vertices = value)
+
+Shader version: 420
+invocations = 1
+max_vertices = -1
+input primitive = triangles
+output primitive = none
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+0:?     'i' ( global int)
+0:?     'gl_in' ( in 3-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 1-element array of float ClipDistance gl_ClipDistance})
+0:?     'color3' ( in 3-element array of 4-component vector of float)
+0:?     's2D' ( uniform sampler2D)
+0:?     'coord' ( in 3-element array of 2-component vector of float)
+0:?     'v4' ( uniform 4-component vector of float)
+0:?     'anon@0' (layout( stream=0) out block{layout( stream=0) gl_PointSize float PointSize gl_PointSize, layout( stream=0) out 1-element array of float ClipDistance gl_ClipDistance})
+

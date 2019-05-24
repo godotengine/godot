@@ -1,0 +1,23 @@
+cppMerge.frag
+Shader version: 450
+0:? Sequence
+0:22  Function Definition: main( ( global void)
+0:22    Function Parameters: 
+0:?   Linker Objects
+0:?     'dest1' (layout( set=0 binding=0) writeonly uniform image1D)
+0:?     'dest2' (layout( set=0 binding=0) writeonly uniform image1D)
+0:?     'dest3' (layout( set=0 binding=0) writeonly uniform image1D)
+
+
+Linked fragment stage:
+
+
+Shader version: 450
+0:? Sequence
+0:22  Function Definition: main( ( global void)
+0:22    Function Parameters: 
+0:?   Linker Objects
+0:?     'dest1' (layout( set=0 binding=0) writeonly uniform image1D)
+0:?     'dest2' (layout( set=0 binding=0) writeonly uniform image1D)
+0:?     'dest3' (layout( set=0 binding=0) writeonly uniform image1D)
+

@@ -1,0 +1,6 @@
+---
+Language: Cpp
+BasedOnStyle: Google
+DerivePointerAlignment: false
+SortIncludes: true
+...

@@ -1,0 +1,115 @@
+#version 450 core
+#extension GL_KHR_memory_scope_semantics : enable
+#extension GL_NV_cooperative_matrix : enable
+#extension GL_EXT_shader_explicit_arithmetic_types_float16 : enable
+#extension GL_EXT_buffer_reference : enable
+
+layout (local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+const int X = 8;
+layout(constant_id = 0) const int Y = 2;
+const int Z = X*Y;
+
+fcoopmatNV<16, gl_ScopeSubgroup, Z, 8> mC;
+fcoopmatNV<16, gl_ScopeSubgroup, Z, 8> mC2[3];
+
+int arr[mC.length()];
+int arr2[mC2[1].length()];
+
+layout(constant_id = 1) const float F = 3.0;
+
+const fcoopmatNV<32, gl_ScopeSubgroup, Z, 8> mD = fcoopmatNV<32, gl_ScopeSubgroup, Z, 8>(0.0);
+const fcoopmatNV<16, gl_ScopeSubgroup, 8, 8> mD2 = fcoopmatNV<16, gl_ScopeSubgroup, 8, 8>(1);
+
+struct S { int a; int b; int c; };
+
+const S s = S(12, 23, 34);
+
+layout(set = 0, binding = 0, buffer_reference) coherent buffer Block {
+    float y[1024*1024];
+    float x[];
+} block;
+
+layout(set = 0, binding = 0) coherent buffer Block16 {
+    float16_t y[1024*1024];
+    float16_t x[];
+
+    Block b;
+} block16;
+
+fcoopmatNV<16, gl_ScopeSubgroup, 8, 8> f16(fcoopmatNV<16, gl_ScopeSubgroup, 8, 8> m) { return -m; }
+fcoopmatNV<32, gl_ScopeSubgroup, 8, 8> f32(fcoopmatNV<32, gl_ScopeSubgroup, 8, 8> m) { return -m; }
+
+layout(constant_id = 2) const int SC = 1;
+fcoopmatNV<16, gl_ScopeSubgroup, SC, SC> scm[SC][SC];
+
+// sized for fcoopmatNV<16, gl_ScopeSubgroup, 16, 16>
+shared uvec4 shmatrix[16*16*2/16];
+
+void main()
+{
+    fcoopmatNV<32, gl_ScopeSubgroup, 16, (2>1?8:4)> m = fcoopmatNV<32, gl_ScopeSubgroup, 16, (2>1?8:4)>(0.0);
+
+    m = m + m;
+    m = m - m;
+    m = -m;
+    m = 2.0*m;
+    m = m*2.0;
+
+    fcoopmatNV<16, gl_ScopeSubgroup, 16, 8> m2 = fcoopmatNV<16, gl_ScopeSubgroup, 16, 8>(m);
+
+    float x = m[1];
+    m[0] = x;
+
+    coopMatLoadNV(m, block.x, 16, 128, false);
+    coopMatStoreNV(m, block.x, 16, 128, false);
+    coopMatLoadNV(m2, block16.x, 16, 128, false);
+    coopMatStoreNV(m2, block16.x, 16, 128, false);
+    coopMatLoadNV(m, block16.b.x, 16, 128, false);
+    coopMatStoreNV(m, block16.b.x, 16, 128, false);
+
+    fcoopmatNV<16, gl_ScopeSubgroup, 16, 8> A;
+    fcoopmatNV<16, gl_ScopeSubgroup, 8, 8> B;
+    fcoopmatNV<32, gl_ScopeSubgroup, 16, 8> C;
+    fcoopmatNV<32, gl_ScopeSubgroup, 16, 8> D;
+    D = coopMatMulAddNV(A, B, C);
+
+    int l = D.length();
+
+    fcoopmatNV<16, gl_ScopeSubgroup, 8, 8> E;
+
+    fcoopmatNV<16, gl_ScopeSubgroup, Z, Z> F = fcoopmatNV<16, gl_ScopeSubgroup, Z, Z>(0.0);
+
+    fcoopmatNV<32, gl_ScopeSubgroup, 16, (2>1?8:4)> a[5];
+    a[3][0] = 1.0;
+
+    float md1 = mD[1];
+
+    md1 += (m += m)[1234];
+
+    mC2[1] = mC2[2];
+
+    coopMatLoadNV(m, block.y, 16, 128, false);
+    coopMatStoreNV(m, block.y, 16, 128, false);
+    coopMatLoadNV(m2, block16.y, 16, 128, false);
+    coopMatStoreNV(m2, block16.y, 16, 128, false);
+
+    fcoopmatNV<16, gl_ScopeSubgroup, 8, 8> p1;
+    fcoopmatNV<32, gl_ScopeSubgroup, 8, 8> p2;
+
+    p1 = f16(p1);
+    p2 = f32(p2);
+
+    p1 = fcoopmatNV<16, gl_ScopeSubgroup, 8, 8>(0.0);
+    p2 = fcoopmatNV<32, gl_ScopeSubgroup, 8, 8>(0.0);
+
+    p1 /= p1;
+
+    p1 *= float16_t(2.0);
+    p2 *= 4.0;
+
+    fcoopmatNV<16, gl_ScopeSubgroup, 16, 8> ms;
+    coopMatLoadNV(ms, shmatrix, 1, 2, false);
+    coopMatStoreNV(ms, shmatrix, 1, 2, false);
+
+}

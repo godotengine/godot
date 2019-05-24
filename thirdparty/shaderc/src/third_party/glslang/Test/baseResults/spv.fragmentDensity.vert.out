@@ -1,0 +1,9 @@
+spv.fragmentDensity.vert
+ERROR: 0:10: 'gl_FragSizeEXT' : undeclared identifier 
+ERROR: 0:10: 'assign' :  cannot convert from ' temp float' to 'layout( location=0) smooth out highp 2-component vector of uint'
+ERROR: 0:11: 'gl_FragInvocationCountEXT' : undeclared identifier 
+ERROR: 0:11: 'assign' :  cannot convert from ' temp float' to 'layout( location=2) smooth out highp int'
+ERROR: 4 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

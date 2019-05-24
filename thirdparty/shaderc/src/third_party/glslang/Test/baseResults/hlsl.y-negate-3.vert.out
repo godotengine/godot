@@ -1,0 +1,212 @@
+hlsl.y-negate-3.vert
+Shader version: 500
+0:? Sequence
+0:11  Function Definition: @main( ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:11    Function Parameters: 
+0:?     Sequence
+0:14      move second child to first child ( temp 4-component vector of float)
+0:14        pos: direct index for structure ( temp 4-component vector of float)
+0:14          'vsout' ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:14          Constant:
+0:14            0 (const int)
+0:14        position: direct index for structure ( uniform 4-component vector of float)
+0:14          'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of float position})
+0:14          Constant:
+0:14            0 (const uint)
+0:15      move second child to first child ( temp int)
+0:15        somethingelse: direct index for structure ( temp int)
+0:15          'vsout' ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:15          Constant:
+0:15            1 (const int)
+0:15        Constant:
+0:15          42 (const int)
+0:17      Branch: Return with expression
+0:17        'vsout' ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:11  Function Definition: main( ( temp void)
+0:11    Function Parameters: 
+0:?     Sequence
+0:11      Sequence
+0:11        move second child to first child ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:11          'flattenTemp' ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:11          Function Call: @main( ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:11        Sequence
+0:11          move second child to first child ( temp 4-component vector of float)
+0:11            '@position' ( temp 4-component vector of float)
+0:11            pos: direct index for structure ( temp 4-component vector of float)
+0:11              'flattenTemp' ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:11              Constant:
+0:11                0 (const int)
+0:11          move second child to first child ( temp float)
+0:11            direct index ( temp float)
+0:11              '@position' ( temp 4-component vector of float)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Negate value ( temp float)
+0:11              direct index ( temp float)
+0:11                '@position' ( temp 4-component vector of float)
+0:11                Constant:
+0:11                  1 (const int)
+0:11          move second child to first child ( temp 4-component vector of float)
+0:?             '@entryPointOutput.pos' ( out 4-component vector of float Position)
+0:11            '@position' ( temp 4-component vector of float)
+0:11        move second child to first child ( temp int)
+0:?           '@entryPointOutput.somethingelse' (layout( location=0) out int)
+0:11          somethingelse: direct index for structure ( temp int)
+0:11            'flattenTemp' ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:11            Constant:
+0:11              1 (const int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of float position})
+0:?     '@entryPointOutput.pos' ( out 4-component vector of float Position)
+0:?     '@entryPointOutput.somethingelse' (layout( location=0) out int)
+
+
+Linked vertex stage:
+
+
+Shader version: 500
+0:? Sequence
+0:11  Function Definition: @main( ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:11    Function Parameters: 
+0:?     Sequence
+0:14      move second child to first child ( temp 4-component vector of float)
+0:14        pos: direct index for structure ( temp 4-component vector of float)
+0:14          'vsout' ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:14          Constant:
+0:14            0 (const int)
+0:14        position: direct index for structure ( uniform 4-component vector of float)
+0:14          'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of float position})
+0:14          Constant:
+0:14            0 (const uint)
+0:15      move second child to first child ( temp int)
+0:15        somethingelse: direct index for structure ( temp int)
+0:15          'vsout' ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:15          Constant:
+0:15            1 (const int)
+0:15        Constant:
+0:15          42 (const int)
+0:17      Branch: Return with expression
+0:17        'vsout' ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:11  Function Definition: main( ( temp void)
+0:11    Function Parameters: 
+0:?     Sequence
+0:11      Sequence
+0:11        move second child to first child ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:11          'flattenTemp' ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:11          Function Call: @main( ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:11        Sequence
+0:11          move second child to first child ( temp 4-component vector of float)
+0:11            '@position' ( temp 4-component vector of float)
+0:11            pos: direct index for structure ( temp 4-component vector of float)
+0:11              'flattenTemp' ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:11              Constant:
+0:11                0 (const int)
+0:11          move second child to first child ( temp float)
+0:11            direct index ( temp float)
+0:11              '@position' ( temp 4-component vector of float)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Negate value ( temp float)
+0:11              direct index ( temp float)
+0:11                '@position' ( temp 4-component vector of float)
+0:11                Constant:
+0:11                  1 (const int)
+0:11          move second child to first child ( temp 4-component vector of float)
+0:?             '@entryPointOutput.pos' ( out 4-component vector of float Position)
+0:11            '@position' ( temp 4-component vector of float)
+0:11        move second child to first child ( temp int)
+0:?           '@entryPointOutput.somethingelse' (layout( location=0) out int)
+0:11          somethingelse: direct index for structure ( temp int)
+0:11            'flattenTemp' ( temp structure{ temp 4-component vector of float pos,  temp int somethingelse})
+0:11            Constant:
+0:11              1 (const int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of float position})
+0:?     '@entryPointOutput.pos' ( out 4-component vector of float Position)
+0:?     '@entryPointOutput.somethingelse' (layout( location=0) out int)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 50
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Vertex 4  "main" 44 47
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "VS_OUT"
+                              MemberName 9(VS_OUT) 0  "pos"
+                              MemberName 9(VS_OUT) 1  "somethingelse"
+                              Name 11  "@main("
+                              Name 14  "vsout"
+                              Name 16  "$Global"
+                              MemberName 16($Global) 0  "position"
+                              Name 18  ""
+                              Name 31  "flattenTemp"
+                              Name 33  "@position"
+                              Name 44  "@entryPointOutput.pos"
+                              Name 47  "@entryPointOutput.somethingelse"
+                              MemberDecorate 16($Global) 0 Offset 0
+                              Decorate 16($Global) Block
+                              Decorate 18 DescriptorSet 0
+                              Decorate 18 Binding 0
+                              Decorate 44(@entryPointOutput.pos) BuiltIn Position
+                              Decorate 47(@entryPointOutput.somethingelse) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeInt 32 1
+       9(VS_OUT):             TypeStruct 7(fvec4) 8(int)
+              10:             TypeFunction 9(VS_OUT)
+              13:             TypePointer Function 9(VS_OUT)
+              15:      8(int) Constant 0
+     16($Global):             TypeStruct 7(fvec4)
+              17:             TypePointer Uniform 16($Global)
+              18:     17(ptr) Variable Uniform
+              19:             TypePointer Uniform 7(fvec4)
+              22:             TypePointer Function 7(fvec4)
+              24:      8(int) Constant 1
+              25:      8(int) Constant 42
+              26:             TypePointer Function 8(int)
+              36:             TypeInt 32 0
+              37:     36(int) Constant 1
+              38:             TypePointer Function 6(float)
+              43:             TypePointer Output 7(fvec4)
+44(@entryPointOutput.pos):     43(ptr) Variable Output
+              46:             TypePointer Output 8(int)
+47(@entryPointOutput.somethingelse):     46(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+ 31(flattenTemp):     13(ptr) Variable Function
+   33(@position):     22(ptr) Variable Function
+              32:   9(VS_OUT) FunctionCall 11(@main()
+                              Store 31(flattenTemp) 32
+              34:     22(ptr) AccessChain 31(flattenTemp) 15
+              35:    7(fvec4) Load 34
+                              Store 33(@position) 35
+              39:     38(ptr) AccessChain 33(@position) 37
+              40:    6(float) Load 39
+              41:    6(float) FNegate 40
+              42:     38(ptr) AccessChain 33(@position) 37
+                              Store 42 41
+              45:    7(fvec4) Load 33(@position)
+                              Store 44(@entryPointOutput.pos) 45
+              48:     26(ptr) AccessChain 31(flattenTemp) 24
+              49:      8(int) Load 48
+                              Store 47(@entryPointOutput.somethingelse) 49
+                              Return
+                              FunctionEnd
+      11(@main():   9(VS_OUT) Function None 10
+              12:             Label
+       14(vsout):     13(ptr) Variable Function
+              20:     19(ptr) AccessChain 18 15
+              21:    7(fvec4) Load 20
+              23:     22(ptr) AccessChain 14(vsout) 15
+                              Store 23 21
+              27:     26(ptr) AccessChain 14(vsout) 24
+                              Store 27 25
+              28:   9(VS_OUT) Load 14(vsout)
+                              ReturnValue 28
+                              FunctionEnd

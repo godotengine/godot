@@ -1,0 +1,67 @@
+include.vert
+Shader version: 450
+Requested GL_GOOGLE_cpp_style_line_directive
+Requested GL_GOOGLE_include_directive
+0:? Sequence
+0:13  Function Definition: main( ( global void)
+0:13    Function Parameters: 
+0:15    Sequence
+0:15      move second child to first child ( temp 4-component vector of float)
+0:15        'color' ( smooth out 4-component vector of float)
+0:15        add ( temp 4-component vector of float)
+0:15          add ( temp 4-component vector of float)
+0:15            add ( temp 4-component vector of float)
+0:15              add ( temp 4-component vector of float)
+0:15                add ( temp 4-component vector of float)
+0:15                  'i1' ( global 4-component vector of float)
+0:15                  'i2' ( global 4-component vector of float)
+0:15                'i3' ( global 4-component vector of float)
+0:15              'i4' ( global 4-component vector of float)
+0:15            'i5' ( global 4-component vector of float)
+0:15          'i6' ( global 4-component vector of float)
+0:?   Linker Objects
+0:?     'i1' ( global 4-component vector of float)
+0:?     'i2' ( global 4-component vector of float)
+0:?     'i4' ( global 4-component vector of float)
+0:?     'i3' ( global 4-component vector of float)
+0:?     'i6' ( global 4-component vector of float)
+0:?     'i5' ( global 4-component vector of float)
+0:?     'color' ( smooth out 4-component vector of float)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 450
+Requested GL_GOOGLE_cpp_style_line_directive
+Requested GL_GOOGLE_include_directive
+0:? Sequence
+0:13  Function Definition: main( ( global void)
+0:13    Function Parameters: 
+0:15    Sequence
+0:15      move second child to first child ( temp 4-component vector of float)
+0:15        'color' ( smooth out 4-component vector of float)
+0:15        add ( temp 4-component vector of float)
+0:15          add ( temp 4-component vector of float)
+0:15            add ( temp 4-component vector of float)
+0:15              add ( temp 4-component vector of float)
+0:15                add ( temp 4-component vector of float)
+0:15                  'i1' ( global 4-component vector of float)
+0:15                  'i2' ( global 4-component vector of float)
+0:15                'i3' ( global 4-component vector of float)
+0:15              'i4' ( global 4-component vector of float)
+0:15            'i5' ( global 4-component vector of float)
+0:15          'i6' ( global 4-component vector of float)
+0:?   Linker Objects
+0:?     'i1' ( global 4-component vector of float)
+0:?     'i2' ( global 4-component vector of float)
+0:?     'i4' ( global 4-component vector of float)
+0:?     'i3' ( global 4-component vector of float)
+0:?     'i6' ( global 4-component vector of float)
+0:?     'i5' ( global 4-component vector of float)
+0:?     'color' ( smooth out 4-component vector of float)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

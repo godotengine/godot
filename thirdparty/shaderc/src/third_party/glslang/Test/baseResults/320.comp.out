@@ -1,0 +1,19 @@
+320.comp
+Shader version: 320
+local_size = (1, 1, 1)
+0:? Sequence
+0:3  Function Definition: main( ( global void)
+0:3    Function Parameters: 
+0:?   Linker Objects
+
+
+Linked compute stage:
+
+
+Shader version: 320
+local_size = (1, 1, 1)
+0:? Sequence
+0:3  Function Definition: main( ( global void)
+0:3    Function Parameters: 
+0:?   Linker Objects
+

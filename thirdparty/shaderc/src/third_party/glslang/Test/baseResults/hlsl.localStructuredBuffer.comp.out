@@ -1,0 +1,34 @@
+hlsl.localStructuredBuffer.comp
+ERROR: 0:3: 'block initializer' : buffer aliasing not yet supported 
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 500
+local_size = (1, 1, 1)
+ERROR: node is still EOpNull!
+0:2  Function Definition: @main( ( temp void)
+0:2    Function Parameters: 
+0:2  Function Definition: main( ( temp void)
+0:2    Function Parameters: 
+0:?     Sequence
+0:2      Function Call: @main( ( temp void)
+0:?   Linker Objects
+0:?     'srt0' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+
+
+Linked compute stage:
+
+
+Shader version: 500
+local_size = (1, 1, 1)
+ERROR: node is still EOpNull!
+0:2  Function Definition: @main( ( temp void)
+0:2    Function Parameters: 
+0:2  Function Definition: main( ( temp void)
+0:2    Function Parameters: 
+0:?     Sequence
+0:2      Function Call: @main( ( temp void)
+0:?   Linker Objects
+0:?     'srt0' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+
+SPIR-V is not generated for failed compile or link

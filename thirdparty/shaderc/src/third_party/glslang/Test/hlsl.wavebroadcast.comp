@@ -1,0 +1,53 @@
+struct Types
+{
+	uint4 u;
+	int4 i;
+	float4 f;
+	double4 d;
+};
+
+RWStructuredBuffer<Types> data;
+
+[numthreads(32, 16, 1)]
+void CSMain(uint3 dti : SV_DispatchThreadID)
+{
+	data[dti.x].u = WaveReadLaneAt(data[dti.x].u, 13);
+	data[dti.x].u.x = WaveReadLaneAt(data[dti.x].u.x, 13);
+	data[dti.x].u.xy = WaveReadLaneAt(data[dti.x].u.xy, 13);
+	data[dti.x].u.xyz = WaveReadLaneAt(data[dti.x].u.xyz, 13);
+
+	data[dti.x].i = WaveReadLaneAt(data[dti.x].i, 13);
+	data[dti.x].i.x = WaveReadLaneAt(data[dti.x].i.x, 13);
+	data[dti.x].i.xy = WaveReadLaneAt(data[dti.x].i.xy, 13);
+	data[dti.x].i.xyz = WaveReadLaneAt(data[dti.x].i.xyz, 13);
+
+	data[dti.x].f = WaveReadLaneAt(data[dti.x].f, 13);
+	data[dti.x].f.x = WaveReadLaneAt(data[dti.x].f.x, 13);
+	data[dti.x].f.xy = WaveReadLaneAt(data[dti.x].f.xy, 13);
+	data[dti.x].f.xyz = WaveReadLaneAt(data[dti.x].f.xyz, 13);
+
+	data[dti.x].d = WaveReadLaneFirst(data[dti.x].d);
+	data[dti.x].d.x = WaveReadLaneFirst(data[dti.x].d.x);
+	data[dti.x].d.xy = WaveReadLaneFirst(data[dti.x].d.xy);
+	data[dti.x].d.xyz = WaveReadLaneFirst(data[dti.x].d.xyz);
+
+	data[dti.x].u = WaveReadLaneFirst(data[dti.x].u);
+	data[dti.x].u.x = WaveReadLaneFirst(data[dti.x].u.x);
+	data[dti.x].u.xy = WaveReadLaneFirst(data[dti.x].u.xy);
+	data[dti.x].u.xyz = WaveReadLaneFirst(data[dti.x].u.xyz);
+
+	data[dti.x].i = WaveReadLaneFirst(data[dti.x].i);
+	data[dti.x].i.x = WaveReadLaneFirst(data[dti.x].i.x);
+	data[dti.x].i.xy = WaveReadLaneFirst(data[dti.x].i.xy);
+	data[dti.x].i.xyz = WaveReadLaneFirst(data[dti.x].i.xyz);
+
+	data[dti.x].f = WaveReadLaneFirst(data[dti.x].f);
+	data[dti.x].f.x = WaveReadLaneFirst(data[dti.x].f.x);
+	data[dti.x].f.xy = WaveReadLaneFirst(data[dti.x].f.xy);
+	data[dti.x].f.xyz = WaveReadLaneFirst(data[dti.x].f.xyz);
+
+	data[dti.x].d = WaveReadLaneFirst(data[dti.x].d);
+	data[dti.x].d.x = WaveReadLaneFirst(data[dti.x].d.x);
+	data[dti.x].d.xy = WaveReadLaneFirst(data[dti.x].d.xy);
+	data[dti.x].d.xyz = WaveReadLaneFirst(data[dti.x].d.xyz);
+}

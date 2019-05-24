@@ -1,0 +1,333 @@
+hlsl.boolConv.vert
+Shader version: 500
+0:? Sequence
+0:1  Sequence
+0:1    move second child to first child ( temp bool)
+0:1      'b' ( global bool)
+0:1      Constant:
+0:1        true (const bool)
+0:3  Function Definition: @main( ( temp 4-component vector of float)
+0:3    Function Parameters: 
+0:?     Sequence
+0:4      Sequence
+0:4        move second child to first child ( temp int)
+0:4          'r' ( temp int)
+0:4          Constant:
+0:4            0 (const int)
+0:6      add second child into first child ( temp int)
+0:6        'r' ( temp int)
+0:6        add ( temp int)
+0:6          Convert bool to int ( temp int)
+0:6            'a' ( global bool)
+0:6          Convert bool to int ( temp int)
+0:6            'b' ( global bool)
+0:7      add second child into first child ( temp int)
+0:7        'r' ( temp int)
+0:7        subtract ( temp int)
+0:7          Convert bool to int ( temp int)
+0:7            'a' ( global bool)
+0:7          Convert bool to int ( temp int)
+0:7            'b' ( global bool)
+0:8      add second child into first child ( temp int)
+0:8        'r' ( temp int)
+0:8        component-wise multiply ( temp int)
+0:8          Convert bool to int ( temp int)
+0:8            'a' ( global bool)
+0:8          Convert bool to int ( temp int)
+0:8            'b' ( global bool)
+0:9      add second child into first child ( temp int)
+0:9        'r' ( temp int)
+0:9        divide ( temp int)
+0:9          Convert bool to int ( temp int)
+0:9            'a' ( global bool)
+0:9          Convert bool to int ( temp int)
+0:9            'b' ( global bool)
+0:10      add second child into first child ( temp int)
+0:10        'r' ( temp int)
+0:10        mod ( temp int)
+0:10          Convert bool to int ( temp int)
+0:10            'a' ( global bool)
+0:10          Convert bool to int ( temp int)
+0:10            'b' ( global bool)
+0:12      add second child into first child ( temp int)
+0:12        'r' ( temp int)
+0:12        bitwise and ( temp int)
+0:12          Convert bool to int ( temp int)
+0:12            'a' ( global bool)
+0:12          Convert bool to int ( temp int)
+0:12            'b' ( global bool)
+0:13      add second child into first child ( temp int)
+0:13        'r' ( temp int)
+0:13        inclusive-or ( temp int)
+0:13          Convert bool to int ( temp int)
+0:13            'a' ( global bool)
+0:13          Convert bool to int ( temp int)
+0:13            'b' ( global bool)
+0:14      add second child into first child ( temp int)
+0:14        'r' ( temp int)
+0:14        exclusive-or ( temp int)
+0:14          Convert bool to int ( temp int)
+0:14            'a' ( global bool)
+0:14          Convert bool to int ( temp int)
+0:14            'b' ( global bool)
+0:16      add second child into first child ( temp int)
+0:16        'r' ( temp int)
+0:16        left-shift ( temp int)
+0:16          Convert bool to int ( temp int)
+0:16            'a' ( global bool)
+0:16          Convert bool to int ( temp int)
+0:16            'b' ( global bool)
+0:17      add second child into first child ( temp int)
+0:17        'r' ( temp int)
+0:17        right-shift ( temp int)
+0:17          Convert bool to int ( temp int)
+0:17            'a' ( global bool)
+0:17          Convert bool to int ( temp int)
+0:17            'b' ( global bool)
+0:19      Branch: Return with expression
+0:19        Construct vec4 ( temp 4-component vector of float)
+0:19          Convert int to float ( temp float)
+0:19            'r' ( temp int)
+0:3  Function Definition: main( ( temp void)
+0:3    Function Parameters: 
+0:?     Sequence
+0:3      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' ( out 4-component vector of float Position)
+0:3        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'a' ( global bool)
+0:?     'b' ( global bool)
+0:?     '@entryPointOutput' ( out 4-component vector of float Position)
+
+
+Linked vertex stage:
+
+
+Shader version: 500
+0:? Sequence
+0:1  Sequence
+0:1    move second child to first child ( temp bool)
+0:1      'b' ( global bool)
+0:1      Constant:
+0:1        true (const bool)
+0:3  Function Definition: @main( ( temp 4-component vector of float)
+0:3    Function Parameters: 
+0:?     Sequence
+0:4      Sequence
+0:4        move second child to first child ( temp int)
+0:4          'r' ( temp int)
+0:4          Constant:
+0:4            0 (const int)
+0:6      add second child into first child ( temp int)
+0:6        'r' ( temp int)
+0:6        add ( temp int)
+0:6          Convert bool to int ( temp int)
+0:6            'a' ( global bool)
+0:6          Convert bool to int ( temp int)
+0:6            'b' ( global bool)
+0:7      add second child into first child ( temp int)
+0:7        'r' ( temp int)
+0:7        subtract ( temp int)
+0:7          Convert bool to int ( temp int)
+0:7            'a' ( global bool)
+0:7          Convert bool to int ( temp int)
+0:7            'b' ( global bool)
+0:8      add second child into first child ( temp int)
+0:8        'r' ( temp int)
+0:8        component-wise multiply ( temp int)
+0:8          Convert bool to int ( temp int)
+0:8            'a' ( global bool)
+0:8          Convert bool to int ( temp int)
+0:8            'b' ( global bool)
+0:9      add second child into first child ( temp int)
+0:9        'r' ( temp int)
+0:9        divide ( temp int)
+0:9          Convert bool to int ( temp int)
+0:9            'a' ( global bool)
+0:9          Convert bool to int ( temp int)
+0:9            'b' ( global bool)
+0:10      add second child into first child ( temp int)
+0:10        'r' ( temp int)
+0:10        mod ( temp int)
+0:10          Convert bool to int ( temp int)
+0:10            'a' ( global bool)
+0:10          Convert bool to int ( temp int)
+0:10            'b' ( global bool)
+0:12      add second child into first child ( temp int)
+0:12        'r' ( temp int)
+0:12        bitwise and ( temp int)
+0:12          Convert bool to int ( temp int)
+0:12            'a' ( global bool)
+0:12          Convert bool to int ( temp int)
+0:12            'b' ( global bool)
+0:13      add second child into first child ( temp int)
+0:13        'r' ( temp int)
+0:13        inclusive-or ( temp int)
+0:13          Convert bool to int ( temp int)
+0:13            'a' ( global bool)
+0:13          Convert bool to int ( temp int)
+0:13            'b' ( global bool)
+0:14      add second child into first child ( temp int)
+0:14        'r' ( temp int)
+0:14        exclusive-or ( temp int)
+0:14          Convert bool to int ( temp int)
+0:14            'a' ( global bool)
+0:14          Convert bool to int ( temp int)
+0:14            'b' ( global bool)
+0:16      add second child into first child ( temp int)
+0:16        'r' ( temp int)
+0:16        left-shift ( temp int)
+0:16          Convert bool to int ( temp int)
+0:16            'a' ( global bool)
+0:16          Convert bool to int ( temp int)
+0:16            'b' ( global bool)
+0:17      add second child into first child ( temp int)
+0:17        'r' ( temp int)
+0:17        right-shift ( temp int)
+0:17          Convert bool to int ( temp int)
+0:17            'a' ( global bool)
+0:17          Convert bool to int ( temp int)
+0:17            'b' ( global bool)
+0:19      Branch: Return with expression
+0:19        Construct vec4 ( temp 4-component vector of float)
+0:19          Convert int to float ( temp float)
+0:19            'r' ( temp int)
+0:3  Function Definition: main( ( temp void)
+0:3    Function Parameters: 
+0:?     Sequence
+0:3      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' ( out 4-component vector of float Position)
+0:3        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'a' ( global bool)
+0:?     'b' ( global bool)
+0:?     '@entryPointOutput' ( out 4-component vector of float Position)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 99
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Vertex 4  "main" 97
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "@main("
+                              Name 13  "b"
+                              Name 17  "r"
+                              Name 19  "a"
+                              Name 97  "@entryPointOutput"
+                              Decorate 97(@entryPointOutput) BuiltIn Position
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeFunction 7(fvec4)
+              11:             TypeBool
+              12:             TypePointer Private 11(bool)
+           13(b):     12(ptr) Variable Private
+              14:    11(bool) ConstantTrue
+              15:             TypeInt 32 1
+              16:             TypePointer Function 15(int)
+              18:     15(int) Constant 0
+           19(a):     12(ptr) Variable Private
+              21:     15(int) Constant 1
+              96:             TypePointer Output 7(fvec4)
+97(@entryPointOutput):     96(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+                              Store 13(b) 14
+              98:    7(fvec4) FunctionCall 9(@main()
+                              Store 97(@entryPointOutput) 98
+                              Return
+                              FunctionEnd
+       9(@main():    7(fvec4) Function None 8
+              10:             Label
+           17(r):     16(ptr) Variable Function
+                              Store 17(r) 18
+              20:    11(bool) Load 19(a)
+              22:     15(int) Select 20 21 18
+              23:    11(bool) Load 13(b)
+              24:     15(int) Select 23 21 18
+              25:     15(int) IAdd 22 24
+              26:     15(int) Load 17(r)
+              27:     15(int) IAdd 26 25
+                              Store 17(r) 27
+              28:    11(bool) Load 19(a)
+              29:     15(int) Select 28 21 18
+              30:    11(bool) Load 13(b)
+              31:     15(int) Select 30 21 18
+              32:     15(int) ISub 29 31
+              33:     15(int) Load 17(r)
+              34:     15(int) IAdd 33 32
+                              Store 17(r) 34
+              35:    11(bool) Load 19(a)
+              36:     15(int) Select 35 21 18
+              37:    11(bool) Load 13(b)
+              38:     15(int) Select 37 21 18
+              39:     15(int) IMul 36 38
+              40:     15(int) Load 17(r)
+              41:     15(int) IAdd 40 39
+                              Store 17(r) 41
+              42:    11(bool) Load 19(a)
+              43:     15(int) Select 42 21 18
+              44:    11(bool) Load 13(b)
+              45:     15(int) Select 44 21 18
+              46:     15(int) SDiv 43 45
+              47:     15(int) Load 17(r)
+              48:     15(int) IAdd 47 46
+                              Store 17(r) 48
+              49:    11(bool) Load 19(a)
+              50:     15(int) Select 49 21 18
+              51:    11(bool) Load 13(b)
+              52:     15(int) Select 51 21 18
+              53:     15(int) SMod 50 52
+              54:     15(int) Load 17(r)
+              55:     15(int) IAdd 54 53
+                              Store 17(r) 55
+              56:    11(bool) Load 19(a)
+              57:     15(int) Select 56 21 18
+              58:    11(bool) Load 13(b)
+              59:     15(int) Select 58 21 18
+              60:     15(int) BitwiseAnd 57 59
+              61:     15(int) Load 17(r)
+              62:     15(int) IAdd 61 60
+                              Store 17(r) 62
+              63:    11(bool) Load 19(a)
+              64:     15(int) Select 63 21 18
+              65:    11(bool) Load 13(b)
+              66:     15(int) Select 65 21 18
+              67:     15(int) BitwiseOr 64 66
+              68:     15(int) Load 17(r)
+              69:     15(int) IAdd 68 67
+                              Store 17(r) 69
+              70:    11(bool) Load 19(a)
+              71:     15(int) Select 70 21 18
+              72:    11(bool) Load 13(b)
+              73:     15(int) Select 72 21 18
+              74:     15(int) BitwiseXor 71 73
+              75:     15(int) Load 17(r)
+              76:     15(int) IAdd 75 74
+                              Store 17(r) 76
+              77:    11(bool) Load 19(a)
+              78:     15(int) Select 77 21 18
+              79:    11(bool) Load 13(b)
+              80:     15(int) Select 79 21 18
+              81:     15(int) ShiftLeftLogical 78 80
+              82:     15(int) Load 17(r)
+              83:     15(int) IAdd 82 81
+                              Store 17(r) 83
+              84:    11(bool) Load 19(a)
+              85:     15(int) Select 84 21 18
+              86:    11(bool) Load 13(b)
+              87:     15(int) Select 86 21 18
+              88:     15(int) ShiftRightArithmetic 85 87
+              89:     15(int) Load 17(r)
+              90:     15(int) IAdd 89 88
+                              Store 17(r) 90
+              91:     15(int) Load 17(r)
+              92:    6(float) ConvertSToF 91
+              93:    7(fvec4) CompositeConstruct 92 92 92 92
+                              ReturnValue 93
+                              FunctionEnd

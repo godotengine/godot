@@ -1,0 +1,9 @@
+spv.bufferhandle17_Errors.frag
+ERROR: 0:11: 'qualifier' : variables with reference type can't have qualifier 'const' 
+ERROR: 0:16: 'qualifier' : variables with reference type can't have qualifier 'const' 
+ERROR: 0:18: '==' : can't use with reference types 
+ERROR: 0:19: '!=' : can't use with reference types 
+ERROR: 4 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

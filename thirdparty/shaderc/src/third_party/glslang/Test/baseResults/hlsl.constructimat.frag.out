@@ -1,0 +1,695 @@
+hlsl.constructimat.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:2  Function Definition: @main( ( temp int)
+0:2    Function Parameters: 
+0:?     Sequence
+0:6      Sequence
+0:6        move second child to first child ( temp 4X4 matrix of int)
+0:6          'var443' ( temp 4X4 matrix of int)
+0:6          Constant:
+0:6            0 (const int)
+0:6            1 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:6            1 (const int)
+0:6            1 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:6            1 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:7      Sequence
+0:7        move second child to first child ( temp 4X4 matrix of int)
+0:7          'var444' ( temp 4X4 matrix of int)
+0:?           Constant:
+0:?             0 (const int)
+0:?             1 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             1 (const int)
+0:?             1 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             1 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:11      Sequence
+0:11        move second child to first child ( temp 4X2 matrix of int)
+0:11          'var423' ( temp 4X2 matrix of int)
+0:11          Constant:
+0:11            0 (const int)
+0:11            1 (const int)
+0:11            1 (const int)
+0:11            1 (const int)
+0:11            1 (const int)
+0:11            0 (const int)
+0:11            0 (const int)
+0:11            0 (const int)
+0:12      Sequence
+0:12        move second child to first child ( temp 4X2 matrix of int)
+0:12          'var424' ( temp 4X2 matrix of int)
+0:?           Constant:
+0:?             0 (const int)
+0:?             1 (const int)
+0:?             1 (const int)
+0:?             1 (const int)
+0:?             1 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:16      Sequence
+0:16        move second child to first child ( temp 3X2 matrix of int)
+0:16          'var323' ( temp 3X2 matrix of int)
+0:16          Constant:
+0:16            0 (const int)
+0:16            1 (const int)
+0:16            1 (const int)
+0:16            1 (const int)
+0:16            1 (const int)
+0:16            0 (const int)
+0:17      Sequence
+0:17        move second child to first child ( temp 3X2 matrix of int)
+0:17          'var234' ( temp 3X2 matrix of int)
+0:?           Constant:
+0:?             0 (const int)
+0:?             1 (const int)
+0:?             1 (const int)
+0:?             1 (const int)
+0:?             1 (const int)
+0:?             0 (const int)
+0:22      Sequence
+0:22        move second child to first child ( temp 4X4 matrix of uint)
+0:22          'uvar443' ( temp 4X4 matrix of uint)
+0:22          Constant:
+0:22            0 (const uint)
+0:22            1 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:22            1 (const uint)
+0:22            1 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:22            1 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:23      Sequence
+0:23        move second child to first child ( temp 4X4 matrix of uint)
+0:23          'uvar444' ( temp 4X4 matrix of uint)
+0:?           Constant:
+0:?             0 (const uint)
+0:?             1 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             1 (const uint)
+0:?             1 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             1 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:27      Sequence
+0:27        move second child to first child ( temp 4X2 matrix of uint)
+0:27          'uvar423' ( temp 4X2 matrix of uint)
+0:27          Constant:
+0:27            0 (const uint)
+0:27            1 (const uint)
+0:27            1 (const uint)
+0:27            1 (const uint)
+0:27            1 (const uint)
+0:27            0 (const uint)
+0:27            0 (const uint)
+0:27            0 (const uint)
+0:28      Sequence
+0:28        move second child to first child ( temp 4X2 matrix of uint)
+0:28          'uvar424' ( temp 4X2 matrix of uint)
+0:?           Constant:
+0:?             0 (const uint)
+0:?             1 (const uint)
+0:?             1 (const uint)
+0:?             1 (const uint)
+0:?             1 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:32      Sequence
+0:32        move second child to first child ( temp 3X2 matrix of uint)
+0:32          'uvar323' ( temp 3X2 matrix of uint)
+0:32          Constant:
+0:32            0 (const uint)
+0:32            1 (const uint)
+0:32            1 (const uint)
+0:32            1 (const uint)
+0:32            1 (const uint)
+0:32            0 (const uint)
+0:33      Sequence
+0:33        move second child to first child ( temp 3X2 matrix of uint)
+0:33          'uvar234' ( temp 3X2 matrix of uint)
+0:?           Constant:
+0:?             0 (const uint)
+0:?             1 (const uint)
+0:?             1 (const uint)
+0:?             1 (const uint)
+0:?             1 (const uint)
+0:?             0 (const uint)
+0:38      Sequence
+0:38        move second child to first child ( temp 4X4 matrix of bool)
+0:38          'bvar443' ( temp 4X4 matrix of bool)
+0:38          Constant:
+0:38            false (const bool)
+0:38            true (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:38            true (const bool)
+0:38            true (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:38            true (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:39      Sequence
+0:39        move second child to first child ( temp 4X4 matrix of bool)
+0:39          'bvar444' ( temp 4X4 matrix of bool)
+0:?           Constant:
+0:?             false (const bool)
+0:?             true (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             true (const bool)
+0:?             true (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             true (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:43      Sequence
+0:43        move second child to first child ( temp 4X2 matrix of bool)
+0:43          'bvar423' ( temp 4X2 matrix of bool)
+0:43          Constant:
+0:43            false (const bool)
+0:43            true (const bool)
+0:43            true (const bool)
+0:43            true (const bool)
+0:43            true (const bool)
+0:43            false (const bool)
+0:43            false (const bool)
+0:43            false (const bool)
+0:44      Sequence
+0:44        move second child to first child ( temp 4X2 matrix of bool)
+0:44          'bvar424' ( temp 4X2 matrix of bool)
+0:?           Constant:
+0:?             false (const bool)
+0:?             true (const bool)
+0:?             true (const bool)
+0:?             true (const bool)
+0:?             true (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:48      Sequence
+0:48        move second child to first child ( temp 3X2 matrix of bool)
+0:48          'bvar323' ( temp 3X2 matrix of bool)
+0:48          Constant:
+0:48            false (const bool)
+0:48            true (const bool)
+0:48            true (const bool)
+0:48            true (const bool)
+0:48            true (const bool)
+0:48            false (const bool)
+0:49      Sequence
+0:49        move second child to first child ( temp 3X2 matrix of bool)
+0:49          'bvar234' ( temp 3X2 matrix of bool)
+0:?           Constant:
+0:?             false (const bool)
+0:?             true (const bool)
+0:?             true (const bool)
+0:?             true (const bool)
+0:?             true (const bool)
+0:?             false (const bool)
+0:51      Branch: Return with expression
+0:51        Constant:
+0:51          0 (const int)
+0:2  Function Definition: main( ( temp void)
+0:2    Function Parameters: 
+0:?     Sequence
+0:2      move second child to first child ( temp int)
+0:?         '@entryPointOutput' (layout( location=0) out int)
+0:2        Function Call: @main( ( temp int)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out int)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:2  Function Definition: @main( ( temp int)
+0:2    Function Parameters: 
+0:?     Sequence
+0:6      Sequence
+0:6        move second child to first child ( temp 4X4 matrix of int)
+0:6          'var443' ( temp 4X4 matrix of int)
+0:6          Constant:
+0:6            0 (const int)
+0:6            1 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:6            1 (const int)
+0:6            1 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:6            1 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:6            0 (const int)
+0:7      Sequence
+0:7        move second child to first child ( temp 4X4 matrix of int)
+0:7          'var444' ( temp 4X4 matrix of int)
+0:?           Constant:
+0:?             0 (const int)
+0:?             1 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             1 (const int)
+0:?             1 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             1 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:11      Sequence
+0:11        move second child to first child ( temp 4X2 matrix of int)
+0:11          'var423' ( temp 4X2 matrix of int)
+0:11          Constant:
+0:11            0 (const int)
+0:11            1 (const int)
+0:11            1 (const int)
+0:11            1 (const int)
+0:11            1 (const int)
+0:11            0 (const int)
+0:11            0 (const int)
+0:11            0 (const int)
+0:12      Sequence
+0:12        move second child to first child ( temp 4X2 matrix of int)
+0:12          'var424' ( temp 4X2 matrix of int)
+0:?           Constant:
+0:?             0 (const int)
+0:?             1 (const int)
+0:?             1 (const int)
+0:?             1 (const int)
+0:?             1 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:?             0 (const int)
+0:16      Sequence
+0:16        move second child to first child ( temp 3X2 matrix of int)
+0:16          'var323' ( temp 3X2 matrix of int)
+0:16          Constant:
+0:16            0 (const int)
+0:16            1 (const int)
+0:16            1 (const int)
+0:16            1 (const int)
+0:16            1 (const int)
+0:16            0 (const int)
+0:17      Sequence
+0:17        move second child to first child ( temp 3X2 matrix of int)
+0:17          'var234' ( temp 3X2 matrix of int)
+0:?           Constant:
+0:?             0 (const int)
+0:?             1 (const int)
+0:?             1 (const int)
+0:?             1 (const int)
+0:?             1 (const int)
+0:?             0 (const int)
+0:22      Sequence
+0:22        move second child to first child ( temp 4X4 matrix of uint)
+0:22          'uvar443' ( temp 4X4 matrix of uint)
+0:22          Constant:
+0:22            0 (const uint)
+0:22            1 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:22            1 (const uint)
+0:22            1 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:22            1 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:22            0 (const uint)
+0:23      Sequence
+0:23        move second child to first child ( temp 4X4 matrix of uint)
+0:23          'uvar444' ( temp 4X4 matrix of uint)
+0:?           Constant:
+0:?             0 (const uint)
+0:?             1 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             1 (const uint)
+0:?             1 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             1 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:27      Sequence
+0:27        move second child to first child ( temp 4X2 matrix of uint)
+0:27          'uvar423' ( temp 4X2 matrix of uint)
+0:27          Constant:
+0:27            0 (const uint)
+0:27            1 (const uint)
+0:27            1 (const uint)
+0:27            1 (const uint)
+0:27            1 (const uint)
+0:27            0 (const uint)
+0:27            0 (const uint)
+0:27            0 (const uint)
+0:28      Sequence
+0:28        move second child to first child ( temp 4X2 matrix of uint)
+0:28          'uvar424' ( temp 4X2 matrix of uint)
+0:?           Constant:
+0:?             0 (const uint)
+0:?             1 (const uint)
+0:?             1 (const uint)
+0:?             1 (const uint)
+0:?             1 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:?             0 (const uint)
+0:32      Sequence
+0:32        move second child to first child ( temp 3X2 matrix of uint)
+0:32          'uvar323' ( temp 3X2 matrix of uint)
+0:32          Constant:
+0:32            0 (const uint)
+0:32            1 (const uint)
+0:32            1 (const uint)
+0:32            1 (const uint)
+0:32            1 (const uint)
+0:32            0 (const uint)
+0:33      Sequence
+0:33        move second child to first child ( temp 3X2 matrix of uint)
+0:33          'uvar234' ( temp 3X2 matrix of uint)
+0:?           Constant:
+0:?             0 (const uint)
+0:?             1 (const uint)
+0:?             1 (const uint)
+0:?             1 (const uint)
+0:?             1 (const uint)
+0:?             0 (const uint)
+0:38      Sequence
+0:38        move second child to first child ( temp 4X4 matrix of bool)
+0:38          'bvar443' ( temp 4X4 matrix of bool)
+0:38          Constant:
+0:38            false (const bool)
+0:38            true (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:38            true (const bool)
+0:38            true (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:38            true (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:38            false (const bool)
+0:39      Sequence
+0:39        move second child to first child ( temp 4X4 matrix of bool)
+0:39          'bvar444' ( temp 4X4 matrix of bool)
+0:?           Constant:
+0:?             false (const bool)
+0:?             true (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             true (const bool)
+0:?             true (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             true (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:43      Sequence
+0:43        move second child to first child ( temp 4X2 matrix of bool)
+0:43          'bvar423' ( temp 4X2 matrix of bool)
+0:43          Constant:
+0:43            false (const bool)
+0:43            true (const bool)
+0:43            true (const bool)
+0:43            true (const bool)
+0:43            true (const bool)
+0:43            false (const bool)
+0:43            false (const bool)
+0:43            false (const bool)
+0:44      Sequence
+0:44        move second child to first child ( temp 4X2 matrix of bool)
+0:44          'bvar424' ( temp 4X2 matrix of bool)
+0:?           Constant:
+0:?             false (const bool)
+0:?             true (const bool)
+0:?             true (const bool)
+0:?             true (const bool)
+0:?             true (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:?             false (const bool)
+0:48      Sequence
+0:48        move second child to first child ( temp 3X2 matrix of bool)
+0:48          'bvar323' ( temp 3X2 matrix of bool)
+0:48          Constant:
+0:48            false (const bool)
+0:48            true (const bool)
+0:48            true (const bool)
+0:48            true (const bool)
+0:48            true (const bool)
+0:48            false (const bool)
+0:49      Sequence
+0:49        move second child to first child ( temp 3X2 matrix of bool)
+0:49          'bvar234' ( temp 3X2 matrix of bool)
+0:?           Constant:
+0:?             false (const bool)
+0:?             true (const bool)
+0:?             true (const bool)
+0:?             true (const bool)
+0:?             true (const bool)
+0:?             false (const bool)
+0:51      Branch: Return with expression
+0:51        Constant:
+0:51          0 (const int)
+0:2  Function Definition: main( ( temp void)
+0:2    Function Parameters: 
+0:?     Sequence
+0:2      move second child to first child ( temp int)
+0:?         '@entryPointOutput' (layout( location=0) out int)
+0:2        Function Call: @main( ( temp int)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out int)
+
+Validation failed
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 98
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 96
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "@main("
+                              Name 13  "var443"
+                              Name 21  "var444"
+                              Name 25  "var423"
+                              Name 31  "var424"
+                              Name 34  "var323"
+                              Name 36  "var234"
+                              Name 41  "uvar443"
+                              Name 49  "uvar444"
+                              Name 53  "uvar423"
+                              Name 59  "uvar424"
+                              Name 62  "uvar323"
+                              Name 64  "uvar234"
+                              Name 69  "bvar443"
+                              Name 77  "bvar444"
+                              Name 81  "bvar423"
+                              Name 87  "bvar424"
+                              Name 90  "bvar323"
+                              Name 92  "bvar234"
+                              Name 96  "@entryPointOutput"
+                              Decorate 96(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeInt 32 1
+               7:             TypeFunction 6(int)
+              10:             TypeVector 6(int) 4
+              11:             TypeMatrix 10(ivec4) 4
+              12:             TypePointer Function 11
+              14:      6(int) Constant 0
+              15:      6(int) Constant 1
+              16:   10(ivec4) ConstantComposite 14 15 14 14
+              17:   10(ivec4) ConstantComposite 15 15 14 14
+              18:   10(ivec4) ConstantComposite 15 14 14 14
+              19:   10(ivec4) ConstantComposite 14 14 14 14
+              20:          11 ConstantComposite 16 17 18 19
+              22:             TypeVector 6(int) 2
+              23:             TypeMatrix 22(ivec2) 4
+              24:             TypePointer Function 23
+              26:   22(ivec2) ConstantComposite 14 15
+              27:   22(ivec2) ConstantComposite 15 15
+              28:   22(ivec2) ConstantComposite 15 14
+              29:   22(ivec2) ConstantComposite 14 14
+              30:          23 ConstantComposite 26 27 28 29
+              32:             TypeMatrix 22(ivec2) 3
+              33:             TypePointer Function 32
+              35:          32 ConstantComposite 26 27 28
+              37:             TypeInt 32 0
+              38:             TypeVector 37(int) 4
+              39:             TypeMatrix 38(ivec4) 4
+              40:             TypePointer Function 39
+              42:     37(int) Constant 0
+              43:     37(int) Constant 1
+              44:   38(ivec4) ConstantComposite 42 43 42 42
+              45:   38(ivec4) ConstantComposite 43 43 42 42
+              46:   38(ivec4) ConstantComposite 43 42 42 42
+              47:   38(ivec4) ConstantComposite 42 42 42 42
+              48:          39 ConstantComposite 44 45 46 47
+              50:             TypeVector 37(int) 2
+              51:             TypeMatrix 50(ivec2) 4
+              52:             TypePointer Function 51
+              54:   50(ivec2) ConstantComposite 42 43
+              55:   50(ivec2) ConstantComposite 43 43
+              56:   50(ivec2) ConstantComposite 43 42
+              57:   50(ivec2) ConstantComposite 42 42
+              58:          51 ConstantComposite 54 55 56 57
+              60:             TypeMatrix 50(ivec2) 3
+              61:             TypePointer Function 60
+              63:          60 ConstantComposite 54 55 56
+              65:             TypeBool
+              66:             TypeVector 65(bool) 4
+              67:             TypeMatrix 66(bvec4) 4
+              68:             TypePointer Function 67
+              70:    65(bool) ConstantFalse
+              71:    65(bool) ConstantTrue
+              72:   66(bvec4) ConstantComposite 70 71 70 70
+              73:   66(bvec4) ConstantComposite 71 71 70 70
+              74:   66(bvec4) ConstantComposite 71 70 70 70
+              75:   66(bvec4) ConstantComposite 70 70 70 70
+              76:          67 ConstantComposite 72 73 74 75
+              78:             TypeVector 65(bool) 2
+              79:             TypeMatrix 78(bvec2) 4
+              80:             TypePointer Function 79
+              82:   78(bvec2) ConstantComposite 70 71
+              83:   78(bvec2) ConstantComposite 71 71
+              84:   78(bvec2) ConstantComposite 71 70
+              85:   78(bvec2) ConstantComposite 70 70
+              86:          79 ConstantComposite 82 83 84 85
+              88:             TypeMatrix 78(bvec2) 3
+              89:             TypePointer Function 88
+              91:          88 ConstantComposite 82 83 84
+              95:             TypePointer Output 6(int)
+96(@entryPointOutput):     95(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              97:      6(int) FunctionCall 8(@main()
+                              Store 96(@entryPointOutput) 97
+                              Return
+                              FunctionEnd
+       8(@main():      6(int) Function None 7
+               9:             Label
+      13(var443):     12(ptr) Variable Function
+      21(var444):     12(ptr) Variable Function
+      25(var423):     24(ptr) Variable Function
+      31(var424):     24(ptr) Variable Function
+      34(var323):     33(ptr) Variable Function
+      36(var234):     33(ptr) Variable Function
+     41(uvar443):     40(ptr) Variable Function
+     49(uvar444):     40(ptr) Variable Function
+     53(uvar423):     52(ptr) Variable Function
+     59(uvar424):     52(ptr) Variable Function
+     62(uvar323):     61(ptr) Variable Function
+     64(uvar234):     61(ptr) Variable Function
+     69(bvar443):     68(ptr) Variable Function
+     77(bvar444):     68(ptr) Variable Function
+     81(bvar423):     80(ptr) Variable Function
+     87(bvar424):     80(ptr) Variable Function
+     90(bvar323):     89(ptr) Variable Function
+     92(bvar234):     89(ptr) Variable Function
+                              Store 13(var443) 20
+                              Store 21(var444) 20
+                              Store 25(var423) 30
+                              Store 31(var424) 30
+                              Store 34(var323) 35
+                              Store 36(var234) 35
+                              Store 41(uvar443) 48
+                              Store 49(uvar444) 48
+                              Store 53(uvar423) 58
+                              Store 59(uvar424) 58
+                              Store 62(uvar323) 63
+                              Store 64(uvar234) 63
+                              Store 69(bvar443) 76
+                              Store 77(bvar444) 76
+                              Store 81(bvar423) 86
+                              Store 87(bvar424) 86
+                              Store 90(bvar323) 91
+                              Store 92(bvar234) 91
+                              ReturnValue 14
+                              FunctionEnd

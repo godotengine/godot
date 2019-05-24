@@ -1,0 +1,482 @@
+hlsl.flattenOpaque.frag
+WARNING: AST will form illegal SPIR-V; need to transform to legalize
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:15  Function Definition: osCall1(struct-os-p11; ( temp 4-component vector of float)
+0:15    Function Parameters: 
+0:15      's' ( in structure{ temp sampler s2D})
+0:?     Sequence
+0:16      Branch: Return with expression
+0:16        texture ( temp 4-component vector of float)
+0:16          Construct combined texture-sampler ( temp sampler2D)
+0:16            'tex' ( uniform texture2D)
+0:16            s2D: direct index for structure ( temp sampler)
+0:16              's' ( in structure{ temp sampler s2D})
+0:16              Constant:
+0:16                0 (const int)
+0:?           Constant:
+0:?             0.200000
+0:?             0.300000
+0:20  Function Definition: osCall2(struct-os-p11;vf2; ( temp 4-component vector of float)
+0:20    Function Parameters: 
+0:20      's' ( in structure{ temp sampler s2D})
+0:20      'f2' ( in 2-component vector of float)
+0:?     Sequence
+0:21      Branch: Return with expression
+0:21        texture ( temp 4-component vector of float)
+0:21          Construct combined texture-sampler ( temp sampler2D)
+0:21            'tex' ( uniform texture2D)
+0:21            s2D: direct index for structure ( temp sampler)
+0:21              's' ( in structure{ temp sampler s2D})
+0:21              Constant:
+0:21                0 (const int)
+0:21          'f2' ( in 2-component vector of float)
+0:25  Function Definition: os2Call1(struct-os2-p1-t211; ( temp 4-component vector of float)
+0:25    Function Parameters: 
+0:25      's' ( in structure{ temp sampler s2D,  temp texture2D tex})
+0:?     Sequence
+0:26      Branch: Return with expression
+0:26        texture ( temp 4-component vector of float)
+0:26          Construct combined texture-sampler ( temp sampler2D)
+0:26            tex: direct index for structure ( temp texture2D)
+0:26              's' ( in structure{ temp sampler s2D,  temp texture2D tex})
+0:26              Constant:
+0:26                1 (const int)
+0:26            s2D: direct index for structure ( temp sampler)
+0:26              's' ( in structure{ temp sampler s2D,  temp texture2D tex})
+0:26              Constant:
+0:26                0 (const int)
+0:?           Constant:
+0:?             0.200000
+0:?             0.300000
+0:30  Function Definition: os2Call2(struct-os2-p1-t211;vf2; ( temp 4-component vector of float)
+0:30    Function Parameters: 
+0:30      's' ( in structure{ temp sampler s2D,  temp texture2D tex})
+0:30      'f2' ( in 2-component vector of float)
+0:?     Sequence
+0:31      Branch: Return with expression
+0:31        texture ( temp 4-component vector of float)
+0:31          Construct combined texture-sampler ( temp sampler2D)
+0:31            tex: direct index for structure ( temp texture2D)
+0:31              's' ( in structure{ temp sampler s2D,  temp texture2D tex})
+0:31              Constant:
+0:31                1 (const int)
+0:31            s2D: direct index for structure ( temp sampler)
+0:31              's' ( in structure{ temp sampler s2D,  temp texture2D tex})
+0:31              Constant:
+0:31                0 (const int)
+0:31          'f2' ( in 2-component vector of float)
+0:35  Function Definition: @main( ( temp 4-component vector of float)
+0:35    Function Parameters: 
+0:?     Sequence
+0:39      Branch: Return with expression
+0:38        add ( temp 4-component vector of float)
+0:37          add ( temp 4-component vector of float)
+0:36            add ( temp 4-component vector of float)
+0:36              Function Call: osCall1(struct-os-p11; ( temp 4-component vector of float)
+0:36                Comma ( temp structure{ temp sampler s2D})
+0:36                  Sequence
+0:36                    move second child to first child ( temp sampler)
+0:36                      s2D: direct index for structure ( temp sampler)
+0:36                        'aggShadow' ( temp structure{ temp sampler s2D})
+0:36                        Constant:
+0:36                          0 (const int)
+0:?                       's.s2D' ( uniform sampler)
+0:36                  'aggShadow' ( temp structure{ temp sampler s2D})
+0:37              Function Call: osCall2(struct-os-p11;vf2; ( temp 4-component vector of float)
+0:37                Comma ( temp structure{ temp sampler s2D})
+0:37                  Sequence
+0:37                    move second child to first child ( temp sampler)
+0:37                      s2D: direct index for structure ( temp sampler)
+0:37                        'aggShadow' ( temp structure{ temp sampler s2D})
+0:37                        Constant:
+0:37                          0 (const int)
+0:?                       's.s2D' ( uniform sampler)
+0:37                  'aggShadow' ( temp structure{ temp sampler s2D})
+0:?                 Constant:
+0:?                   0.200000
+0:?                   0.300000
+0:38            Function Call: os2Call1(struct-os2-p1-t211; ( temp 4-component vector of float)
+0:38              Comma ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:38                Sequence
+0:38                  move second child to first child ( temp sampler)
+0:38                    s2D: direct index for structure ( temp sampler)
+0:38                      'aggShadow' ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:38                      Constant:
+0:38                        0 (const int)
+0:?                     's2.s2D' ( uniform sampler)
+0:38                  move second child to first child ( temp texture2D)
+0:38                    tex: direct index for structure ( temp texture2D)
+0:38                      'aggShadow' ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:38                      Constant:
+0:38                        1 (const int)
+0:?                     's2.tex' ( uniform texture2D)
+0:38                'aggShadow' ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:39          Function Call: os2Call2(struct-os2-p1-t211;vf2; ( temp 4-component vector of float)
+0:39            Comma ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:39              Sequence
+0:39                move second child to first child ( temp sampler)
+0:39                  s2D: direct index for structure ( temp sampler)
+0:39                    'aggShadow' ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:39                    Constant:
+0:39                      0 (const int)
+0:?                   's2.s2D' ( uniform sampler)
+0:39                move second child to first child ( temp texture2D)
+0:39                  tex: direct index for structure ( temp texture2D)
+0:39                    'aggShadow' ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:39                    Constant:
+0:39                      1 (const int)
+0:?                   's2.tex' ( uniform texture2D)
+0:39              'aggShadow' ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:?             Constant:
+0:?               0.200000
+0:?               0.300000
+0:35  Function Definition: main( ( temp void)
+0:35    Function Parameters: 
+0:?     Sequence
+0:35      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:35        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'tex' ( uniform texture2D)
+0:?     's.s2D' ( uniform sampler)
+0:?     's2.s2D' ( uniform sampler)
+0:?     's2.tex' ( uniform texture2D)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:15  Function Definition: osCall1(struct-os-p11; ( temp 4-component vector of float)
+0:15    Function Parameters: 
+0:15      's' ( in structure{ temp sampler s2D})
+0:?     Sequence
+0:16      Branch: Return with expression
+0:16        texture ( temp 4-component vector of float)
+0:16          Construct combined texture-sampler ( temp sampler2D)
+0:16            'tex' ( uniform texture2D)
+0:16            s2D: direct index for structure ( temp sampler)
+0:16              's' ( in structure{ temp sampler s2D})
+0:16              Constant:
+0:16                0 (const int)
+0:?           Constant:
+0:?             0.200000
+0:?             0.300000
+0:20  Function Definition: osCall2(struct-os-p11;vf2; ( temp 4-component vector of float)
+0:20    Function Parameters: 
+0:20      's' ( in structure{ temp sampler s2D})
+0:20      'f2' ( in 2-component vector of float)
+0:?     Sequence
+0:21      Branch: Return with expression
+0:21        texture ( temp 4-component vector of float)
+0:21          Construct combined texture-sampler ( temp sampler2D)
+0:21            'tex' ( uniform texture2D)
+0:21            s2D: direct index for structure ( temp sampler)
+0:21              's' ( in structure{ temp sampler s2D})
+0:21              Constant:
+0:21                0 (const int)
+0:21          'f2' ( in 2-component vector of float)
+0:25  Function Definition: os2Call1(struct-os2-p1-t211; ( temp 4-component vector of float)
+0:25    Function Parameters: 
+0:25      's' ( in structure{ temp sampler s2D,  temp texture2D tex})
+0:?     Sequence
+0:26      Branch: Return with expression
+0:26        texture ( temp 4-component vector of float)
+0:26          Construct combined texture-sampler ( temp sampler2D)
+0:26            tex: direct index for structure ( temp texture2D)
+0:26              's' ( in structure{ temp sampler s2D,  temp texture2D tex})
+0:26              Constant:
+0:26                1 (const int)
+0:26            s2D: direct index for structure ( temp sampler)
+0:26              's' ( in structure{ temp sampler s2D,  temp texture2D tex})
+0:26              Constant:
+0:26                0 (const int)
+0:?           Constant:
+0:?             0.200000
+0:?             0.300000
+0:30  Function Definition: os2Call2(struct-os2-p1-t211;vf2; ( temp 4-component vector of float)
+0:30    Function Parameters: 
+0:30      's' ( in structure{ temp sampler s2D,  temp texture2D tex})
+0:30      'f2' ( in 2-component vector of float)
+0:?     Sequence
+0:31      Branch: Return with expression
+0:31        texture ( temp 4-component vector of float)
+0:31          Construct combined texture-sampler ( temp sampler2D)
+0:31            tex: direct index for structure ( temp texture2D)
+0:31              's' ( in structure{ temp sampler s2D,  temp texture2D tex})
+0:31              Constant:
+0:31                1 (const int)
+0:31            s2D: direct index for structure ( temp sampler)
+0:31              's' ( in structure{ temp sampler s2D,  temp texture2D tex})
+0:31              Constant:
+0:31                0 (const int)
+0:31          'f2' ( in 2-component vector of float)
+0:35  Function Definition: @main( ( temp 4-component vector of float)
+0:35    Function Parameters: 
+0:?     Sequence
+0:39      Branch: Return with expression
+0:38        add ( temp 4-component vector of float)
+0:37          add ( temp 4-component vector of float)
+0:36            add ( temp 4-component vector of float)
+0:36              Function Call: osCall1(struct-os-p11; ( temp 4-component vector of float)
+0:36                Comma ( temp structure{ temp sampler s2D})
+0:36                  Sequence
+0:36                    move second child to first child ( temp sampler)
+0:36                      s2D: direct index for structure ( temp sampler)
+0:36                        'aggShadow' ( temp structure{ temp sampler s2D})
+0:36                        Constant:
+0:36                          0 (const int)
+0:?                       's.s2D' ( uniform sampler)
+0:36                  'aggShadow' ( temp structure{ temp sampler s2D})
+0:37              Function Call: osCall2(struct-os-p11;vf2; ( temp 4-component vector of float)
+0:37                Comma ( temp structure{ temp sampler s2D})
+0:37                  Sequence
+0:37                    move second child to first child ( temp sampler)
+0:37                      s2D: direct index for structure ( temp sampler)
+0:37                        'aggShadow' ( temp structure{ temp sampler s2D})
+0:37                        Constant:
+0:37                          0 (const int)
+0:?                       's.s2D' ( uniform sampler)
+0:37                  'aggShadow' ( temp structure{ temp sampler s2D})
+0:?                 Constant:
+0:?                   0.200000
+0:?                   0.300000
+0:38            Function Call: os2Call1(struct-os2-p1-t211; ( temp 4-component vector of float)
+0:38              Comma ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:38                Sequence
+0:38                  move second child to first child ( temp sampler)
+0:38                    s2D: direct index for structure ( temp sampler)
+0:38                      'aggShadow' ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:38                      Constant:
+0:38                        0 (const int)
+0:?                     's2.s2D' ( uniform sampler)
+0:38                  move second child to first child ( temp texture2D)
+0:38                    tex: direct index for structure ( temp texture2D)
+0:38                      'aggShadow' ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:38                      Constant:
+0:38                        1 (const int)
+0:?                     's2.tex' ( uniform texture2D)
+0:38                'aggShadow' ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:39          Function Call: os2Call2(struct-os2-p1-t211;vf2; ( temp 4-component vector of float)
+0:39            Comma ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:39              Sequence
+0:39                move second child to first child ( temp sampler)
+0:39                  s2D: direct index for structure ( temp sampler)
+0:39                    'aggShadow' ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:39                    Constant:
+0:39                      0 (const int)
+0:?                   's2.s2D' ( uniform sampler)
+0:39                move second child to first child ( temp texture2D)
+0:39                  tex: direct index for structure ( temp texture2D)
+0:39                    'aggShadow' ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:39                    Constant:
+0:39                      1 (const int)
+0:?                   's2.tex' ( uniform texture2D)
+0:39              'aggShadow' ( temp structure{ temp sampler s2D,  temp texture2D tex})
+0:?             Constant:
+0:?               0.200000
+0:?               0.300000
+0:35  Function Definition: main( ( temp void)
+0:35    Function Parameters: 
+0:?     Sequence
+0:35      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:35        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'tex' ( uniform texture2D)
+0:?     's.s2D' ( uniform sampler)
+0:?     's2.s2D' ( uniform sampler)
+0:?     's2.tex' ( uniform texture2D)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 122
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 120
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 7  "os"
+                              MemberName 7(os) 0  "s2D"
+                              Name 13  "osCall1(struct-os-p11;"
+                              Name 12  "s"
+                              Name 20  "osCall2(struct-os-p11;vf2;"
+                              Name 18  "s"
+                              Name 19  "f2"
+                              Name 23  "os2"
+                              MemberName 23(os2) 0  "s2D"
+                              MemberName 23(os2) 1  "tex"
+                              Name 27  "os2Call1(struct-os2-p1-t211;"
+                              Name 26  "s"
+                              Name 32  "os2Call2(struct-os2-p1-t211;vf2;"
+                              Name 30  "s"
+                              Name 31  "f2"
+                              Name 35  "@main("
+                              Name 38  "tex"
+                              Name 80  "aggShadow"
+                              Name 82  "s.s2D"
+                              Name 85  "param"
+                              Name 88  "aggShadow"
+                              Name 91  "param"
+                              Name 93  "param"
+                              Name 96  "aggShadow"
+                              Name 97  "s2.s2D"
+                              Name 100  "s2.tex"
+                              Name 103  "param"
+                              Name 107  "aggShadow"
+                              Name 112  "param"
+                              Name 114  "param"
+                              Name 120  "@entryPointOutput"
+                              Decorate 38(tex) DescriptorSet 0
+                              Decorate 38(tex) Binding 0
+                              Decorate 82(s.s2D) DescriptorSet 0
+                              Decorate 82(s.s2D) Binding 0
+                              Decorate 97(s2.s2D) DescriptorSet 0
+                              Decorate 97(s2.s2D) Binding 0
+                              Decorate 100(s2.tex) DescriptorSet 0
+                              Decorate 100(s2.tex) Binding 0
+                              Decorate 120(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeSampler
+           7(os):             TypeStruct 6
+               8:             TypePointer Function 7(os)
+               9:             TypeFloat 32
+              10:             TypeVector 9(float) 4
+              11:             TypeFunction 10(fvec4) 8(ptr)
+              15:             TypeVector 9(float) 2
+              16:             TypePointer Function 15(fvec2)
+              17:             TypeFunction 10(fvec4) 8(ptr) 16(ptr)
+              22:             TypeImage 9(float) 2D sampled format:Unknown
+         23(os2):             TypeStruct 6 22
+              24:             TypePointer Function 23(os2)
+              25:             TypeFunction 10(fvec4) 24(ptr)
+              29:             TypeFunction 10(fvec4) 24(ptr) 16(ptr)
+              34:             TypeFunction 10(fvec4)
+              37:             TypePointer UniformConstant 22
+         38(tex):     37(ptr) Variable UniformConstant
+              40:             TypeInt 32 1
+              41:     40(int) Constant 0
+              42:             TypePointer Function 6
+              45:             TypeSampledImage 22
+              47:    9(float) Constant 1045220557
+              48:    9(float) Constant 1050253722
+              49:   15(fvec2) ConstantComposite 47 48
+              61:     40(int) Constant 1
+              62:             TypePointer Function 22
+              81:             TypePointer UniformConstant 6
+       82(s.s2D):     81(ptr) Variable UniformConstant
+      97(s2.s2D):     81(ptr) Variable UniformConstant
+     100(s2.tex):     37(ptr) Variable UniformConstant
+             119:             TypePointer Output 10(fvec4)
+120(@entryPointOutput):    119(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+             121:   10(fvec4) FunctionCall 35(@main()
+                              Store 120(@entryPointOutput) 121
+                              Return
+                              FunctionEnd
+13(osCall1(struct-os-p11;):   10(fvec4) Function None 11
+           12(s):      8(ptr) FunctionParameter
+              14:             Label
+              39:          22 Load 38(tex)
+              43:     42(ptr) AccessChain 12(s) 41
+              44:           6 Load 43
+              46:          45 SampledImage 39 44
+              50:   10(fvec4) ImageSampleImplicitLod 46 49
+                              ReturnValue 50
+                              FunctionEnd
+20(osCall2(struct-os-p11;vf2;):   10(fvec4) Function None 17
+           18(s):      8(ptr) FunctionParameter
+          19(f2):     16(ptr) FunctionParameter
+              21:             Label
+              53:          22 Load 38(tex)
+              54:     42(ptr) AccessChain 18(s) 41
+              55:           6 Load 54
+              56:          45 SampledImage 53 55
+              57:   15(fvec2) Load 19(f2)
+              58:   10(fvec4) ImageSampleImplicitLod 56 57
+                              ReturnValue 58
+                              FunctionEnd
+27(os2Call1(struct-os2-p1-t211;):   10(fvec4) Function None 25
+           26(s):     24(ptr) FunctionParameter
+              28:             Label
+              63:     62(ptr) AccessChain 26(s) 61
+              64:          22 Load 63
+              65:     42(ptr) AccessChain 26(s) 41
+              66:           6 Load 65
+              67:          45 SampledImage 64 66
+              68:   10(fvec4) ImageSampleImplicitLod 67 49
+                              ReturnValue 68
+                              FunctionEnd
+32(os2Call2(struct-os2-p1-t211;vf2;):   10(fvec4) Function None 29
+           30(s):     24(ptr) FunctionParameter
+          31(f2):     16(ptr) FunctionParameter
+              33:             Label
+              71:     62(ptr) AccessChain 30(s) 61
+              72:          22 Load 71
+              73:     42(ptr) AccessChain 30(s) 41
+              74:           6 Load 73
+              75:          45 SampledImage 72 74
+              76:   15(fvec2) Load 31(f2)
+              77:   10(fvec4) ImageSampleImplicitLod 75 76
+                              ReturnValue 77
+                              FunctionEnd
+      35(@main():   10(fvec4) Function None 34
+              36:             Label
+   80(aggShadow):      8(ptr) Variable Function
+       85(param):      8(ptr) Variable Function
+   88(aggShadow):      8(ptr) Variable Function
+       91(param):      8(ptr) Variable Function
+       93(param):     16(ptr) Variable Function
+   96(aggShadow):     24(ptr) Variable Function
+      103(param):     24(ptr) Variable Function
+  107(aggShadow):     24(ptr) Variable Function
+      112(param):     24(ptr) Variable Function
+      114(param):     16(ptr) Variable Function
+              83:           6 Load 82(s.s2D)
+              84:     42(ptr) AccessChain 80(aggShadow) 41
+                              Store 84 83
+              86:       7(os) Load 80(aggShadow)
+                              Store 85(param) 86
+              87:   10(fvec4) FunctionCall 13(osCall1(struct-os-p11;) 85(param)
+              89:           6 Load 82(s.s2D)
+              90:     42(ptr) AccessChain 88(aggShadow) 41
+                              Store 90 89
+              92:       7(os) Load 88(aggShadow)
+                              Store 91(param) 92
+                              Store 93(param) 49
+              94:   10(fvec4) FunctionCall 20(osCall2(struct-os-p11;vf2;) 91(param) 93(param)
+              95:   10(fvec4) FAdd 87 94
+              98:           6 Load 97(s2.s2D)
+              99:     42(ptr) AccessChain 96(aggShadow) 41
+                              Store 99 98
+             101:          22 Load 100(s2.tex)
+             102:     62(ptr) AccessChain 96(aggShadow) 61
+                              Store 102 101
+             104:     23(os2) Load 96(aggShadow)
+                              Store 103(param) 104
+             105:   10(fvec4) FunctionCall 27(os2Call1(struct-os2-p1-t211;) 103(param)
+             106:   10(fvec4) FAdd 95 105
+             108:           6 Load 97(s2.s2D)
+             109:     42(ptr) AccessChain 107(aggShadow) 41
+                              Store 109 108
+             110:          22 Load 100(s2.tex)
+             111:     62(ptr) AccessChain 107(aggShadow) 61
+                              Store 111 110
+             113:     23(os2) Load 107(aggShadow)
+                              Store 112(param) 113
+                              Store 114(param) 49
+             115:   10(fvec4) FunctionCall 32(os2Call2(struct-os2-p1-t211;vf2;) 112(param) 114(param)
+             116:   10(fvec4) FAdd 106 115
+                              ReturnValue 116
+                              FunctionEnd

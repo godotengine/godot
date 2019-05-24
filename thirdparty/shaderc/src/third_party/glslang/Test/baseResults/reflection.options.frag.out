@@ -1,0 +1,14 @@
+reflection.frag
+Uniform reflection:
+
+Uniform block reflection:
+
+Buffer variable reflection:
+
+Buffer block reflection:
+
+Pipeline input reflection:
+inval: offset 0, type 1406, size 1, index 0, binding -1, stages 16
+
+Pipeline output reflection:
+

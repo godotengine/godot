@@ -1,0 +1,215 @@
+140.vert
+ERROR: 0:23: 'gl_Position' : identifiers starting with "gl_" are reserved 
+ERROR: 0:25: 'location' : not supported for this version or the enabled extensions 
+ERROR: 0:25: 'location qualifier on input' : not supported for this version or the enabled extensions 
+ERROR: 0:34: 'redeclaration' : cannot change storage, memory, or auxiliary qualification of gl_Position
+ERROR: 0:34: 'redeclaration' : cannot change interpolation qualification of gl_Position
+ERROR: 0:35: 'redeclaration' : cannot change the type of gl_Position
+ERROR: 0:38: 'gl_ClipVertex' : cannot redeclare after use 
+ERROR: 0:39: 'gl_FogFragCoord' : cannot redeclare after use 
+ERROR: 0:51: 'texelFetch' : no matching overloaded function found 
+ERROR: 0:53: 'texture' : no matching overloaded function found 
+ERROR: 0:63: 'gl_DeviceIndex' : required extension not requested: GL_EXT_device_group
+ERROR: 0:64: 'gl_ViewIndex' : required extension not requested: GL_EXT_multiview
+ERROR: 12 compilation errors.  No code generated.
+
+
+Shader version: 140
+Requested GL_ARB_explicit_attrib_location
+Requested GL_ARB_separate_shader_objects
+Requested GL_EXT_device_group
+Requested GL_EXT_multiview
+ERROR: node is still EOpNull!
+0:9  Function Definition: main( ( global void)
+0:9    Function Parameters: 
+0:11    Sequence
+0:11      Sequence
+0:11        move second child to first child ( temp int)
+0:11          'id' ( temp int)
+0:11          'gl_InstanceID' ( gl_InstanceId int InstanceId)
+0:12      add second child into first child ( temp int)
+0:12        'id' ( temp int)
+0:12        anonMem: direct index for structure (layout( column_major std140 offset=0) uniform int)
+0:12          'anon@0' (layout( column_major std140) uniform block{layout( column_major std140 offset=0) uniform int anonMem})
+0:12          Constant:
+0:12            0 (const uint)
+0:13      add second child into first child ( temp int)
+0:13        'id' ( temp int)
+0:13        direct index ( temp int)
+0:13          textureFetch ( global 4-component vector of int)
+0:13            'sbuf' ( uniform isamplerBuffer)
+0:13            Constant:
+0:13              8 (const int)
+0:13          Constant:
+0:13            3 (const int)
+0:14      'gl_ClipVertex' ( gl_ClipVertex 4-component vector of float ClipVertex)
+0:15      'gl_Color' ( in 4-component vector of float Color)
+0:16      direct index ( temp structure{ global 4-component vector of float ambient,  global 4-component vector of float diffuse,  global 4-component vector of float specular,  global 4-component vector of float position,  global 4-component vector of float halfVector,  global 3-component vector of float spotDirection,  global float spotExponent,  global float spotCutoff,  global float spotCosCutoff,  global float constantAttenuation,  global float linearAttenuation,  global float quadraticAttenuation})
+0:16        'gl_LightSource' ( uniform 32-element array of structure{ global 4-component vector of float ambient,  global 4-component vector of float diffuse,  global 4-component vector of float specular,  global 4-component vector of float position,  global 4-component vector of float halfVector,  global 3-component vector of float spotDirection,  global float spotExponent,  global float spotCutoff,  global float spotCosCutoff,  global float constantAttenuation,  global float linearAttenuation,  global float quadraticAttenuation})
+0:16        Constant:
+0:16          0 (const int)
+0:17      far: direct index for structure ( global float)
+0:17        'gl_DepthRange' ( uniform structure{ global float near,  global float far,  global float diff})
+0:17        Constant:
+0:17          1 (const int)
+0:18      'gl_TexCoord' ( smooth out unsized 1-element array of 4-component vector of float TexCoord)
+0:19      'gl_FogFragCoord' ( smooth out float FogFragCoord)
+0:20      'gl_FrontColor' ( smooth out 4-component vector of float FrontColor)
+0:48  Function Definition: foo( ( global void)
+0:48    Function Parameters: 
+0:50    Sequence
+0:50      Sequence
+0:50        move second child to first child ( temp 4-component vector of float)
+0:50          'v' ( temp 4-component vector of float)
+0:50          textureFetch ( global 4-component vector of float)
+0:50            's2dr' ( uniform sampler2DRect)
+0:50            'itloc2' ( in 2-component vector of int)
+0:51      add second child into first child ( temp 4-component vector of float)
+0:51        'v' ( temp 4-component vector of float)
+0:51        Constant:
+0:51          0.000000
+0:52      add second child into first child ( temp 4-component vector of float)
+0:52        'v' ( temp 4-component vector of float)
+0:52        texture ( global 4-component vector of float)
+0:52          's2dr' ( uniform sampler2DRect)
+0:52          'tloc2' ( in 2-component vector of float)
+0:53      add second child into first child ( temp 4-component vector of float)
+0:53        'v' ( temp 4-component vector of float)
+0:53        Constant:
+0:53          0.000000
+0:54      add second child into first child ( temp 4-component vector of float)
+0:54        'v' ( temp 4-component vector of float)
+0:54        texture ( global float)
+0:54          's2drs' ( uniform sampler2DRectShadow)
+0:54          'tloc3' ( in 3-component vector of float)
+0:55      add second child into first child ( temp 4-component vector of float)
+0:55        'v' ( temp 4-component vector of float)
+0:55        textureProj ( global 4-component vector of float)
+0:55          's2dr' ( uniform sampler2DRect)
+0:55          'tloc3' ( in 3-component vector of float)
+0:56      add second child into first child ( temp 4-component vector of float)
+0:56        'v' ( temp 4-component vector of float)
+0:56        textureProj ( global 4-component vector of float)
+0:56          's2dr' ( uniform sampler2DRect)
+0:56          'tloc4' ( in 4-component vector of float)
+0:57      add second child into first child ( temp 4-component vector of float)
+0:57        'v' ( temp 4-component vector of float)
+0:57        textureProjGradOffset ( global 4-component vector of float)
+0:57          's2dr' ( uniform sampler2DRect)
+0:57          'tloc4' ( in 4-component vector of float)
+0:57          Constant:
+0:57            0.000000
+0:57            0.000000
+0:57          Constant:
+0:57            0.000000
+0:57            0.000000
+0:57          Constant:
+0:57            1 (const int)
+0:57            2 (const int)
+0:58      add second child into first child ( temp 4-component vector of float)
+0:58        'v' ( temp 4-component vector of float)
+0:58        textureProjGradOffset ( global float)
+0:58          's2drs' ( uniform sampler2DRectShadow)
+0:58          'tloc4' ( in 4-component vector of float)
+0:58          Constant:
+0:58            0.000000
+0:58            0.000000
+0:58          Constant:
+0:58            0.000000
+0:58            0.000000
+0:58          Constant:
+0:58            1 (const int)
+0:58            2 (const int)
+0:61  Function Definition: devi( ( global void)
+0:61    Function Parameters: 
+0:63    Sequence
+0:63      'gl_DeviceIndex' ( in int DeviceIndex)
+0:64      'gl_ViewIndex' ( in int ViewIndex)
+0:75  Function Definition: devie( ( global void)
+0:75    Function Parameters: 
+0:77    Sequence
+0:77      'gl_DeviceIndex' ( in int DeviceIndex)
+0:78      'gl_ViewIndex' ( in int ViewIndex)
+0:?   Linker Objects
+0:?     'sbuf' ( uniform isamplerBuffer)
+0:?     'anon@0' (layout( column_major std140) uniform block{layout( column_major std140 offset=0) uniform int anonMem})
+0:?     'gl_TexCoord' ( smooth out unsized 1-element array of 4-component vector of float TexCoord)
+0:?     'gl_Position' ( smooth out 4-component vector of float)
+0:?     'locBad' (layout( location=9) in 4-component vector of float)
+0:?     'loc' (layout( location=9) in 4-component vector of float)
+0:?     'gl_PointSize' ( gl_PointSize float PointSize)
+0:?     'gl_ClipVertex' ( gl_ClipVertex 4-component vector of float ClipVertex)
+0:?     'gl_FogFragCoord' ( smooth out float FogFragCoord)
+0:?     's2dr' ( uniform sampler2DRect)
+0:?     's2drs' ( uniform sampler2DRectShadow)
+0:?     'itloc2' ( in 2-component vector of int)
+0:?     'tloc2' ( in 2-component vector of float)
+0:?     'tloc3' ( in 3-component vector of float)
+0:?     'tloc4' ( in 4-component vector of float)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 140
+Requested GL_ARB_explicit_attrib_location
+Requested GL_ARB_separate_shader_objects
+Requested GL_EXT_device_group
+Requested GL_EXT_multiview
+ERROR: node is still EOpNull!
+0:9  Function Definition: main( ( global void)
+0:9    Function Parameters: 
+0:11    Sequence
+0:11      Sequence
+0:11        move second child to first child ( temp int)
+0:11          'id' ( temp int)
+0:11          'gl_InstanceID' ( gl_InstanceId int InstanceId)
+0:12      add second child into first child ( temp int)
+0:12        'id' ( temp int)
+0:12        anonMem: direct index for structure (layout( column_major std140 offset=0) uniform int)
+0:12          'anon@0' (layout( column_major std140) uniform block{layout( column_major std140 offset=0) uniform int anonMem})
+0:12          Constant:
+0:12            0 (const uint)
+0:13      add second child into first child ( temp int)
+0:13        'id' ( temp int)
+0:13        direct index ( temp int)
+0:13          textureFetch ( global 4-component vector of int)
+0:13            'sbuf' ( uniform isamplerBuffer)
+0:13            Constant:
+0:13              8 (const int)
+0:13          Constant:
+0:13            3 (const int)
+0:14      'gl_ClipVertex' ( gl_ClipVertex 4-component vector of float ClipVertex)
+0:15      'gl_Color' ( in 4-component vector of float Color)
+0:16      direct index ( temp structure{ global 4-component vector of float ambient,  global 4-component vector of float diffuse,  global 4-component vector of float specular,  global 4-component vector of float position,  global 4-component vector of float halfVector,  global 3-component vector of float spotDirection,  global float spotExponent,  global float spotCutoff,  global float spotCosCutoff,  global float constantAttenuation,  global float linearAttenuation,  global float quadraticAttenuation})
+0:16        'gl_LightSource' ( uniform 32-element array of structure{ global 4-component vector of float ambient,  global 4-component vector of float diffuse,  global 4-component vector of float specular,  global 4-component vector of float position,  global 4-component vector of float halfVector,  global 3-component vector of float spotDirection,  global float spotExponent,  global float spotCutoff,  global float spotCosCutoff,  global float constantAttenuation,  global float linearAttenuation,  global float quadraticAttenuation})
+0:16        Constant:
+0:16          0 (const int)
+0:17      far: direct index for structure ( global float)
+0:17        'gl_DepthRange' ( uniform structure{ global float near,  global float far,  global float diff})
+0:17        Constant:
+0:17          1 (const int)
+0:18      'gl_TexCoord' ( smooth out 1-element array of 4-component vector of float TexCoord)
+0:19      'gl_FogFragCoord' ( smooth out float FogFragCoord)
+0:20      'gl_FrontColor' ( smooth out 4-component vector of float FrontColor)
+0:?   Linker Objects
+0:?     'sbuf' ( uniform isamplerBuffer)
+0:?     'anon@0' (layout( column_major std140) uniform block{layout( column_major std140 offset=0) uniform int anonMem})
+0:?     'gl_TexCoord' ( smooth out 1-element array of 4-component vector of float TexCoord)
+0:?     'gl_Position' ( smooth out 4-component vector of float)
+0:?     'locBad' (layout( location=9) in 4-component vector of float)
+0:?     'loc' (layout( location=9) in 4-component vector of float)
+0:?     'gl_PointSize' ( gl_PointSize float PointSize)
+0:?     'gl_ClipVertex' ( gl_ClipVertex 4-component vector of float ClipVertex)
+0:?     'gl_FogFragCoord' ( smooth out float FogFragCoord)
+0:?     's2dr' ( uniform sampler2DRect)
+0:?     's2drs' ( uniform sampler2DRectShadow)
+0:?     'itloc2' ( in 2-component vector of int)
+0:?     'tloc2' ( in 2-component vector of float)
+0:?     'tloc3' ( in 3-component vector of float)
+0:?     'tloc4' ( in 4-component vector of float)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

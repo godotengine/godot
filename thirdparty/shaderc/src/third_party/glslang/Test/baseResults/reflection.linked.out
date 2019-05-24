@@ -1,0 +1,20 @@
+reflection.linked.vert
+reflection.linked.frag
+Uniform reflection:
+ubo_block.shared_uniform: offset 4, type 1406, size 1, index 0, binding -1, stages 17
+ubo_block.vsonly_uniform: offset 8, type 1406, size 1, index 0, binding -1, stages 17
+ubo_block.fsonly_uniform: offset 12, type 1406, size 1, index 0, binding -1, stages 16
+
+Uniform block reflection:
+ubo_block: offset -1, type ffffffff, size 16, index -1, binding 0, stages 17, numMembers 4
+
+Buffer variable reflection:
+
+Buffer block reflection:
+
+Pipeline input reflection:
+vertin: offset 0, type 1406, size 1, index 0, binding -1, stages 1
+
+Pipeline output reflection:
+fragout: offset 0, type 1406, size 1, index 0, binding -1, stages 16
+

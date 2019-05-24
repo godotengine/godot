@@ -1,0 +1,8 @@
+spv.looseUniformNoLoc.vert
+ERROR: spv.looseUniformNoLoc.vert:9: 'uv' : non-opaque uniform variables need a layout(location=L) 
+ERROR: 1 compilation errors.  No code generated.
+
+
+ERROR: Linking vertex stage: Missing entry point: Each stage requires one entry point
+
+SPIR-V is not generated for failed compile or link

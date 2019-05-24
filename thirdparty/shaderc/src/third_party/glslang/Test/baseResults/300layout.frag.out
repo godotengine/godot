@@ -1,0 +1,69 @@
+300layout.frag
+ERROR: 0:4: 'location qualifier on input' : not supported in this stage: fragment
+ERROR: 0:4: 'location qualifier on input' : not supported for this version or the enabled extensions 
+ERROR: 0:17: 'location' : too large for fragment output 
+ERROR: 0:18: 'location' : too large for fragment output 
+ERROR: 0:18: 'location' : overlapping use of location 41
+ERROR: 0:19: 'location' : too large for fragment output 
+ERROR: 0:19: 'location' : overlapping use of location 40
+ERROR: 7 compilation errors.  No code generated.
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      move second child to first child ( temp mediump 4-component vector of float)
+0:12        'c' (layout( location=1) out mediump 4-component vector of float)
+0:12        'color' (layout( location=2) smooth in mediump 4-component vector of float)
+0:13      move second child to first child ( temp mediump 4-component vector of float)
+0:13        'p' (layout( location=3) out mediump 4-component vector of float)
+0:13        'pos' ( smooth in mediump 4-component vector of float)
+0:14      move second child to first child ( temp mediump 4-component vector of float)
+0:14        direct index (layout( location=4) temp mediump 4-component vector of float)
+0:14          'q' (layout( location=4) out 2-element array of mediump 4-component vector of float)
+0:14          Constant:
+0:14            1 (const int)
+0:14        'pos' ( smooth in mediump 4-component vector of float)
+0:?   Linker Objects
+0:?     'pos' ( smooth in mediump 4-component vector of float)
+0:?     'color' (layout( location=2) smooth in mediump 4-component vector of float)
+0:?     'c' (layout( location=1) out mediump 4-component vector of float)
+0:?     'p' (layout( location=3) out mediump 4-component vector of float)
+0:?     'q' (layout( location=4) out 2-element array of mediump 4-component vector of float)
+0:?     'ca' (layout( location=40) out 4-element array of mediump float)
+0:?     'cb' (layout( location=41) out 2-element array of mediump float)
+0:?     'cc' (layout( location=39) out 6-element array of mediump float)
+
+
+Linked fragment stage:
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      move second child to first child ( temp mediump 4-component vector of float)
+0:12        'c' (layout( location=1) out mediump 4-component vector of float)
+0:12        'color' (layout( location=2) smooth in mediump 4-component vector of float)
+0:13      move second child to first child ( temp mediump 4-component vector of float)
+0:13        'p' (layout( location=3) out mediump 4-component vector of float)
+0:13        'pos' ( smooth in mediump 4-component vector of float)
+0:14      move second child to first child ( temp mediump 4-component vector of float)
+0:14        direct index (layout( location=4) temp mediump 4-component vector of float)
+0:14          'q' (layout( location=4) out 2-element array of mediump 4-component vector of float)
+0:14          Constant:
+0:14            1 (const int)
+0:14        'pos' ( smooth in mediump 4-component vector of float)
+0:?   Linker Objects
+0:?     'pos' ( smooth in mediump 4-component vector of float)
+0:?     'color' (layout( location=2) smooth in mediump 4-component vector of float)
+0:?     'c' (layout( location=1) out mediump 4-component vector of float)
+0:?     'p' (layout( location=3) out mediump 4-component vector of float)
+0:?     'q' (layout( location=4) out 2-element array of mediump 4-component vector of float)
+0:?     'ca' (layout( location=40) out 4-element array of mediump float)
+0:?     'cb' (layout( location=41) out 2-element array of mediump float)
+0:?     'cc' (layout( location=39) out 6-element array of mediump float)
+

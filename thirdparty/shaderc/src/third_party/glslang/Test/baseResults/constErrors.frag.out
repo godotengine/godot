@@ -1,0 +1,54 @@
+constErrors.frag
+ERROR: 0:14: 'non-constant initializer' : not supported for this version or the enabled extensions 
+ERROR: 0:17: '' : array size must be a constant integer expression
+ERROR: 0:18: '' : array size must be a constant integer expression
+ERROR: 0:19: '' : array size must be a constant integer expression
+ERROR: 0:27: '=' : global const initializers must be constant ' const structure{ global 3-component vector of float v3,  global 2-component vector of int iv2}'
+ERROR: 0:33: '=' : global const initializers must be constant ' const structure{ global 3-component vector of float v3,  global 2-component vector of int iv2,  global 2X4 matrix of float m}'
+ERROR: 6 compilation errors.  No code generated.
+
+
+Shader version: 330
+ERROR: node is still EOpNull!
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:?     Sequence
+0:14      Sequence
+0:14        move second child to first child ( temp int)
+0:14          'a3' ( const (read only) int)
+0:14          'uniformInt' ( uniform int)
+0:?   Linker Objects
+0:?     'inVar' ( smooth in 4-component vector of float)
+0:?     'outVar' ( out 4-component vector of float)
+0:?     'constInt' ( const int)
+0:?       3 (const int)
+0:?     'uniformInt' ( uniform int)
+0:?     's' ( temp structure{ global 3-component vector of float v3,  global 2-component vector of int iv2})
+0:?     's2' ( temp structure{ global 3-component vector of float v3,  global 2-component vector of int iv2,  global 2X4 matrix of float m})
+0:?     'f' ( const float)
+0:?       3.000000
+
+
+Linked fragment stage:
+
+
+Shader version: 330
+ERROR: node is still EOpNull!
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:?     Sequence
+0:14      Sequence
+0:14        move second child to first child ( temp int)
+0:14          'a3' ( const (read only) int)
+0:14          'uniformInt' ( uniform int)
+0:?   Linker Objects
+0:?     'inVar' ( smooth in 4-component vector of float)
+0:?     'outVar' ( out 4-component vector of float)
+0:?     'constInt' ( const int)
+0:?       3 (const int)
+0:?     'uniformInt' ( uniform int)
+0:?     's' ( temp structure{ global 3-component vector of float v3,  global 2-component vector of int iv2})
+0:?     's2' ( temp structure{ global 3-component vector of float v3,  global 2-component vector of int iv2,  global 2X4 matrix of float m})
+0:?     'f' ( const float)
+0:?       3.000000
+

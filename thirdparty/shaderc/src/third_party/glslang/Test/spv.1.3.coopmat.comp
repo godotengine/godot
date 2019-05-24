@@ -1,0 +1,28 @@
+#version 450 core
+#extension GL_KHR_memory_scope_semantics : enable
+#extension GL_NV_cooperative_matrix : enable
+#extension GL_EXT_shader_explicit_arithmetic_types_float16 : enable
+
+#pragma use_variable_pointers
+
+layout (local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+layout(set = 0, binding = 0) coherent buffer Block {
+    float y[1024*1024];
+    float x[];
+} block;
+
+
+void main()
+{
+    fcoopmatNV<32, gl_ScopeSubgroup, 16, 8> m = fcoopmatNV<32, gl_ScopeSubgroup, 16, 8>(0.0);
+
+    m = m + m;
+    m = m - m;
+    m = -m;
+    m = 2.0*m;
+    m = m*2.0;
+
+    coopMatLoadNV(m, block.x, 16, 128, false);
+    coopMatStoreNV(m, block.x, 16, 128, false);
+}

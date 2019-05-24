@@ -1,0 +1,219 @@
+hlsl.logical.binary.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:12  Function Definition: @main( ( temp structure{ temp 4-component vector of float Color})
+0:12    Function Parameters: 
+0:?     Sequence
+0:13      Test condition and select ( temp void)
+0:13        Condition
+0:13        logical-and ( temp bool)
+0:13          Convert int to bool ( temp bool)
+0:13            ival: direct index for structure ( uniform int)
+0:13              'anon@0' (layout( row_major std140) uniform block{ uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:13              Constant:
+0:13                0 (const uint)
+0:13          Convert float to bool ( temp bool)
+0:13            fval: direct index for structure ( uniform float)
+0:13              'anon@0' (layout( row_major std140) uniform block{ uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:13              Constant:
+0:13                2 (const uint)
+0:13        true case is null
+0:14      Test condition and select ( temp void)
+0:14        Condition
+0:14        logical-or ( temp bool)
+0:14          Convert int to bool ( temp bool)
+0:14            ival: direct index for structure ( uniform int)
+0:14              'anon@0' (layout( row_major std140) uniform block{ uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:14              Constant:
+0:14                0 (const uint)
+0:14          Convert float to bool ( temp bool)
+0:14            fval: direct index for structure ( uniform float)
+0:14              'anon@0' (layout( row_major std140) uniform block{ uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:14              Constant:
+0:14                2 (const uint)
+0:14        true case is null
+0:17      move second child to first child ( temp 4-component vector of float)
+0:17        Color: direct index for structure ( temp 4-component vector of float)
+0:17          'psout' ( temp structure{ temp 4-component vector of float Color})
+0:17          Constant:
+0:17            0 (const int)
+0:17        Constant:
+0:17          1.000000
+0:17          1.000000
+0:17          1.000000
+0:17          1.000000
+0:18      Branch: Return with expression
+0:18        'psout' ( temp structure{ temp 4-component vector of float Color})
+0:12  Function Definition: main( ( temp void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:12      Sequence
+0:12        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+0:12          Color: direct index for structure ( temp 4-component vector of float)
+0:12            Function Call: @main( ( temp structure{ temp 4-component vector of float Color})
+0:12            Constant:
+0:12              0 (const int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:?     '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:12  Function Definition: @main( ( temp structure{ temp 4-component vector of float Color})
+0:12    Function Parameters: 
+0:?     Sequence
+0:13      Test condition and select ( temp void)
+0:13        Condition
+0:13        logical-and ( temp bool)
+0:13          Convert int to bool ( temp bool)
+0:13            ival: direct index for structure ( uniform int)
+0:13              'anon@0' (layout( row_major std140) uniform block{ uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:13              Constant:
+0:13                0 (const uint)
+0:13          Convert float to bool ( temp bool)
+0:13            fval: direct index for structure ( uniform float)
+0:13              'anon@0' (layout( row_major std140) uniform block{ uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:13              Constant:
+0:13                2 (const uint)
+0:13        true case is null
+0:14      Test condition and select ( temp void)
+0:14        Condition
+0:14        logical-or ( temp bool)
+0:14          Convert int to bool ( temp bool)
+0:14            ival: direct index for structure ( uniform int)
+0:14              'anon@0' (layout( row_major std140) uniform block{ uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:14              Constant:
+0:14                0 (const uint)
+0:14          Convert float to bool ( temp bool)
+0:14            fval: direct index for structure ( uniform float)
+0:14              'anon@0' (layout( row_major std140) uniform block{ uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:14              Constant:
+0:14                2 (const uint)
+0:14        true case is null
+0:17      move second child to first child ( temp 4-component vector of float)
+0:17        Color: direct index for structure ( temp 4-component vector of float)
+0:17          'psout' ( temp structure{ temp 4-component vector of float Color})
+0:17          Constant:
+0:17            0 (const int)
+0:17        Constant:
+0:17          1.000000
+0:17          1.000000
+0:17          1.000000
+0:17          1.000000
+0:18      Branch: Return with expression
+0:18        'psout' ( temp structure{ temp 4-component vector of float Color})
+0:12  Function Definition: main( ( temp void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:12      Sequence
+0:12        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+0:12          Color: direct index for structure ( temp 4-component vector of float)
+0:12            Function Call: @main( ( temp structure{ temp 4-component vector of float Color})
+0:12            Constant:
+0:12              0 (const int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:?     '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 56
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 53
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "PS_OUTPUT"
+                              MemberName 8(PS_OUTPUT) 0  "Color"
+                              Name 10  "@main("
+                              Name 14  "$Global"
+                              MemberName 14($Global) 0  "ival"
+                              MemberName 14($Global) 1  "ival4"
+                              MemberName 14($Global) 2  "fval"
+                              MemberName 14($Global) 3  "fval4"
+                              Name 16  ""
+                              Name 44  "psout"
+                              Name 53  "@entryPointOutput.Color"
+                              MemberDecorate 14($Global) 0 Offset 0
+                              MemberDecorate 14($Global) 1 Offset 16
+                              MemberDecorate 14($Global) 2 Offset 32
+                              MemberDecorate 14($Global) 3 Offset 48
+                              Decorate 14($Global) Block
+                              Decorate 16 DescriptorSet 0
+                              Decorate 16 Binding 0
+                              Decorate 53(@entryPointOutput.Color) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+    8(PS_OUTPUT):             TypeStruct 7(fvec4)
+               9:             TypeFunction 8(PS_OUTPUT)
+              12:             TypeInt 32 1
+              13:             TypeVector 12(int) 4
+     14($Global):             TypeStruct 12(int) 13(ivec4) 6(float) 7(fvec4)
+              15:             TypePointer Uniform 14($Global)
+              16:     15(ptr) Variable Uniform
+              17:     12(int) Constant 0
+              18:             TypePointer Uniform 12(int)
+              21:             TypeBool
+              22:             TypeInt 32 0
+              23:     22(int) Constant 0
+              25:     12(int) Constant 2
+              26:             TypePointer Uniform 6(float)
+              29:    6(float) Constant 0
+              43:             TypePointer Function 8(PS_OUTPUT)
+              45:    6(float) Constant 1065353216
+              46:    7(fvec4) ConstantComposite 45 45 45 45
+              47:             TypePointer Function 7(fvec4)
+              52:             TypePointer Output 7(fvec4)
+53(@entryPointOutput.Color):     52(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              54:8(PS_OUTPUT) FunctionCall 10(@main()
+              55:    7(fvec4) CompositeExtract 54 0
+                              Store 53(@entryPointOutput.Color) 55
+                              Return
+                              FunctionEnd
+      10(@main():8(PS_OUTPUT) Function None 9
+              11:             Label
+       44(psout):     43(ptr) Variable Function
+              19:     18(ptr) AccessChain 16 17
+              20:     12(int) Load 19
+              24:    21(bool) INotEqual 20 23
+              27:     26(ptr) AccessChain 16 25
+              28:    6(float) Load 27
+              30:    21(bool) FOrdNotEqual 28 29
+              31:    21(bool) LogicalAnd 24 30
+                              SelectionMerge 33 None
+                              BranchConditional 31 32 33
+              32:               Label
+                                Branch 33
+              33:             Label
+              34:     18(ptr) AccessChain 16 17
+              35:     12(int) Load 34
+              36:    21(bool) INotEqual 35 23
+              37:     26(ptr) AccessChain 16 25
+              38:    6(float) Load 37
+              39:    21(bool) FOrdNotEqual 38 29
+              40:    21(bool) LogicalOr 36 39
+                              SelectionMerge 42 None
+                              BranchConditional 40 41 42
+              41:               Label
+                                Branch 42
+              42:             Label
+              48:     47(ptr) AccessChain 44(psout) 17
+                              Store 48 46
+              49:8(PS_OUTPUT) Load 44(psout)
+                              ReturnValue 49
+                              FunctionEnd

@@ -1,0 +1,77 @@
+matrixError.vert
+ERROR: 0:10: 'constructor' : too many arguments 
+ERROR: 0:7: 'const' : non-matching or non-convertible constant type for const initializer 
+ERROR: 0:17: 'assign' :  cannot convert from ' temp 2-component vector of float' to ' temp 3-component vector of float'
+ERROR: 0:18: 'assign' :  cannot convert from ' temp 2-component vector of float' to ' temp 3-component vector of float'
+ERROR: 0:19: 'xy' : does not apply to this type:  temp 2X3 matrix of float
+ERROR: 0:21: '[' :  matrix index out of range '2'
+ERROR: 0:21: '[' :  vector index out of range '4'
+ERROR: 0:22: 'assign' :  cannot convert from ' temp 2X3 matrix of float' to ' temp 2X3 matrix of float'
+ERROR: 0:23: 'assign' :  cannot convert from ' uniform 3X2 matrix of float' to ' temp 2X3 matrix of float'
+ERROR: 9 compilation errors.  No code generated.
+
+
+Shader version: 120
+ERROR: node is still EOpNull!
+0:12  Function Definition: main( ( global void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:17      'a' ( temp 3-component vector of float)
+0:18      'b' ( temp 3-component vector of float)
+0:19      'm23' ( temp 2X3 matrix of float)
+0:21      move second child to first child ( temp 4-component vector of float)
+0:21        'gl_Position' ( gl_Position 4-component vector of float Position)
+0:21        Construct vec4 ( temp 4-component vector of float)
+0:21          matrix-times-vector ( temp 3-component vector of float)
+0:21            matrix-multiply ( temp 3X3 matrix of float)
+0:21              'm23' ( temp 2X3 matrix of float)
+0:21              'm32' ( uniform 3X2 matrix of float)
+0:21            'v3' ( in 3-component vector of float)
+0:21          direct index ( temp float)
+0:21            direct index ( temp 4-component vector of float)
+0:21              'm24' ( temp 2X4 matrix of float)
+0:21              Constant:
+0:21                2 (const int)
+0:21            Constant:
+0:21              4 (const int)
+0:22      'm23' ( temp 2X3 matrix of float)
+0:23      'm23' ( temp 2X3 matrix of float)
+0:?   Linker Objects
+0:?     'v3' ( in 3-component vector of float)
+0:?     'm32' ( uniform 3X2 matrix of float)
+0:?     'm24' ( temp 2X4 matrix of float)
+
+
+Linked vertex stage:
+
+
+Shader version: 120
+ERROR: node is still EOpNull!
+0:12  Function Definition: main( ( global void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:17      'a' ( temp 3-component vector of float)
+0:18      'b' ( temp 3-component vector of float)
+0:19      'm23' ( temp 2X3 matrix of float)
+0:21      move second child to first child ( temp 4-component vector of float)
+0:21        'gl_Position' ( gl_Position 4-component vector of float Position)
+0:21        Construct vec4 ( temp 4-component vector of float)
+0:21          matrix-times-vector ( temp 3-component vector of float)
+0:21            matrix-multiply ( temp 3X3 matrix of float)
+0:21              'm23' ( temp 2X3 matrix of float)
+0:21              'm32' ( uniform 3X2 matrix of float)
+0:21            'v3' ( in 3-component vector of float)
+0:21          direct index ( temp float)
+0:21            direct index ( temp 4-component vector of float)
+0:21              'm24' ( temp 2X4 matrix of float)
+0:21              Constant:
+0:21                2 (const int)
+0:21            Constant:
+0:21              4 (const int)
+0:22      'm23' ( temp 2X3 matrix of float)
+0:23      'm23' ( temp 2X3 matrix of float)
+0:?   Linker Objects
+0:?     'v3' ( in 3-component vector of float)
+0:?     'm32' ( uniform 3X2 matrix of float)
+0:?     'm24' ( temp 2X4 matrix of float)
+

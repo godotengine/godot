@@ -1,0 +1,43 @@
+sample.vert
+Shader version: 110
+0:? Sequence
+0:38  Function Definition: main( ( global void)
+0:38    Function Parameters: 
+0:40    Sequence
+0:40      move second child to first child ( temp 3-component vector of float)
+0:40        'color' ( smooth out 3-component vector of float)
+0:40        Constant:
+0:40          1.000000
+0:40          1.000000
+0:40          1.000000
+0:42      move second child to first child ( temp 4-component vector of float)
+0:42        'gl_Position' ( gl_Position 4-component vector of float Position)
+0:42        matrix-times-vector ( temp 4-component vector of float)
+0:42          'gl_ModelViewProjectionMatrix' ( uniform 4X4 matrix of float)
+0:42          'gl_Vertex' ( in 4-component vector of float Vertex)
+0:?   Linker Objects
+0:?     'color' ( smooth out 3-component vector of float)
+
+
+Linked vertex stage:
+
+
+Shader version: 110
+0:? Sequence
+0:38  Function Definition: main( ( global void)
+0:38    Function Parameters: 
+0:40    Sequence
+0:40      move second child to first child ( temp 3-component vector of float)
+0:40        'color' ( smooth out 3-component vector of float)
+0:40        Constant:
+0:40          1.000000
+0:40          1.000000
+0:40          1.000000
+0:42      move second child to first child ( temp 4-component vector of float)
+0:42        'gl_Position' ( gl_Position 4-component vector of float Position)
+0:42        matrix-times-vector ( temp 4-component vector of float)
+0:42          'gl_ModelViewProjectionMatrix' ( uniform 4X4 matrix of float)
+0:42          'gl_Vertex' ( in 4-component vector of float Vertex)
+0:?   Linker Objects
+0:?     'color' ( smooth out 3-component vector of float)
+

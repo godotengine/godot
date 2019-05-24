@@ -1,0 +1,349 @@
+hlsl.structbuffer.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:12  Function Definition: @main(u1; ( temp 4-component vector of float)
+0:12    Function Parameters: 
+0:12      'pos' ( in uint)
+0:?     Sequence
+0:13      Sequence
+0:13        move second child to first child ( temp structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:13          'mydata' ( temp structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:13          indirect index (layout( row_major std430) buffer structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:13            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:13              'sbuf' (layout( binding=10 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2} @data})
+0:13              Constant:
+0:13                0 (const uint)
+0:13            'pos' ( in uint)
+0:17      Sequence
+0:17        move second child to first child ( temp uint)
+0:17          'size' ( temp uint)
+0:17          array length ( temp uint)
+0:17            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:17              'sbuf' (layout( binding=10 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2} @data})
+0:17              Constant:
+0:17                0 (const uint)
+0:17        move second child to first child ( temp uint)
+0:17          'stride' ( temp uint)
+0:17          Constant:
+0:17            32 (const uint)
+0:19      Test condition and select ( temp void)
+0:19        Condition
+0:19        test: direct index for structure ( temp bool)
+0:19          indirect index (layout( row_major std430) buffer structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:19            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:19              'sbuf' (layout( binding=10 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2} @data})
+0:19              Constant:
+0:19                0 (const uint)
+0:19            'pos' ( in uint)
+0:19          Constant:
+0:19            1 (const int)
+0:19        true case
+0:20        Branch: Return with expression
+0:?           Construct vec4 ( temp 4-component vector of float)
+0:20            add ( temp 3-component vector of float)
+0:20              color: direct index for structure ( temp 3-component vector of float)
+0:20                indirect index (layout( row_major std430) buffer structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:20                  @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:20                    'sbuf' (layout( binding=10 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2} @data})
+0:20                    Constant:
+0:20                      0 (const uint)
+0:20                  'pos' ( in uint)
+0:20                Constant:
+0:20                  0 (const int)
+0:20              indirect index (layout( row_major std430) buffer float)
+0:20                @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of float)
+0:20                  'sbuf2' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:20                  Constant:
+0:20                    0 (const uint)
+0:20                'pos' ( in uint)
+0:20            Constant:
+0:20              0.000000
+0:19        false case
+0:22        Branch: Return with expression
+0:22          Construct vec4 ( temp 4-component vector of float)
+0:22            add ( temp float)
+0:22              add ( temp float)
+0:22                direct index ( temp float)
+0:22                  color: direct index for structure ( temp 3-component vector of float)
+0:22                    'mydata' ( temp structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:22                    Constant:
+0:22                      0 (const int)
+0:22                  Constant:
+0:22                    0 (const int)
+0:22                Convert uint to float ( temp float)
+0:22                  'size' ( temp uint)
+0:22              Convert uint to float ( temp float)
+0:22                'stride' ( temp uint)
+0:12  Function Definition: main( ( temp void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:12      move second child to first child ( temp uint)
+0:?         'pos' ( temp uint)
+0:?         'pos' (layout( location=0) flat in uint)
+0:12      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:12        Function Call: @main(u1; ( temp 4-component vector of float)
+0:?           'pos' ( temp uint)
+0:?   Linker Objects
+0:?     'sbuf' (layout( binding=10 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2} @data})
+0:?     'sbuf2' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'pos' (layout( location=0) flat in uint)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:12  Function Definition: @main(u1; ( temp 4-component vector of float)
+0:12    Function Parameters: 
+0:12      'pos' ( in uint)
+0:?     Sequence
+0:13      Sequence
+0:13        move second child to first child ( temp structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:13          'mydata' ( temp structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:13          indirect index (layout( row_major std430) buffer structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:13            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:13              'sbuf' (layout( binding=10 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2} @data})
+0:13              Constant:
+0:13                0 (const uint)
+0:13            'pos' ( in uint)
+0:17      Sequence
+0:17        move second child to first child ( temp uint)
+0:17          'size' ( temp uint)
+0:17          array length ( temp uint)
+0:17            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:17              'sbuf' (layout( binding=10 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2} @data})
+0:17              Constant:
+0:17                0 (const uint)
+0:17        move second child to first child ( temp uint)
+0:17          'stride' ( temp uint)
+0:17          Constant:
+0:17            32 (const uint)
+0:19      Test condition and select ( temp void)
+0:19        Condition
+0:19        test: direct index for structure ( temp bool)
+0:19          indirect index (layout( row_major std430) buffer structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:19            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:19              'sbuf' (layout( binding=10 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2} @data})
+0:19              Constant:
+0:19                0 (const uint)
+0:19            'pos' ( in uint)
+0:19          Constant:
+0:19            1 (const int)
+0:19        true case
+0:20        Branch: Return with expression
+0:?           Construct vec4 ( temp 4-component vector of float)
+0:20            add ( temp 3-component vector of float)
+0:20              color: direct index for structure ( temp 3-component vector of float)
+0:20                indirect index (layout( row_major std430) buffer structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:20                  @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:20                    'sbuf' (layout( binding=10 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2} @data})
+0:20                    Constant:
+0:20                      0 (const uint)
+0:20                  'pos' ( in uint)
+0:20                Constant:
+0:20                  0 (const int)
+0:20              indirect index (layout( row_major std430) buffer float)
+0:20                @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of float)
+0:20                  'sbuf2' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:20                  Constant:
+0:20                    0 (const uint)
+0:20                'pos' ( in uint)
+0:20            Constant:
+0:20              0.000000
+0:19        false case
+0:22        Branch: Return with expression
+0:22          Construct vec4 ( temp 4-component vector of float)
+0:22            add ( temp float)
+0:22              add ( temp float)
+0:22                direct index ( temp float)
+0:22                  color: direct index for structure ( temp 3-component vector of float)
+0:22                    'mydata' ( temp structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2})
+0:22                    Constant:
+0:22                      0 (const int)
+0:22                  Constant:
+0:22                    0 (const int)
+0:22                Convert uint to float ( temp float)
+0:22                  'size' ( temp uint)
+0:22              Convert uint to float ( temp float)
+0:22                'stride' ( temp uint)
+0:12  Function Definition: main( ( temp void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:12      move second child to first child ( temp uint)
+0:?         'pos' ( temp uint)
+0:?         'pos' (layout( location=0) flat in uint)
+0:12      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:12        Function Call: @main(u1; ( temp 4-component vector of float)
+0:?           'pos' ( temp uint)
+0:?   Linker Objects
+0:?     'sbuf' (layout( binding=10 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of structure{ temp 3-component vector of float color,  temp bool test,  temp bool test2} @data})
+0:?     'sbuf2' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'pos' (layout( location=0) flat in uint)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 96
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 89 92
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 12  "@main(u1;"
+                              Name 11  "pos"
+                              Name 16  "sb_t"
+                              MemberName 16(sb_t) 0  "color"
+                              MemberName 16(sb_t) 1  "test"
+                              MemberName 16(sb_t) 2  "test2"
+                              Name 18  "mydata"
+                              Name 19  "sb_t"
+                              MemberName 19(sb_t) 0  "color"
+                              MemberName 19(sb_t) 1  "test"
+                              MemberName 19(sb_t) 2  "test2"
+                              Name 21  "sbuf"
+                              MemberName 21(sbuf) 0  "@data"
+                              Name 23  "sbuf"
+                              Name 43  "size"
+                              Name 45  "stride"
+                              Name 59  "sbuf2"
+                              MemberName 59(sbuf2) 0  "@data"
+                              Name 61  "sbuf2"
+                              Name 87  "pos"
+                              Name 89  "pos"
+                              Name 92  "@entryPointOutput"
+                              Name 93  "param"
+                              MemberDecorate 19(sb_t) 0 Offset 0
+                              MemberDecorate 19(sb_t) 1 Offset 12
+                              MemberDecorate 19(sb_t) 2 Offset 16
+                              Decorate 20 ArrayStride 32
+                              MemberDecorate 21(sbuf) 0 NonWritable
+                              MemberDecorate 21(sbuf) 0 Offset 0
+                              Decorate 21(sbuf) BufferBlock
+                              Decorate 23(sbuf) DescriptorSet 0
+                              Decorate 23(sbuf) Binding 10
+                              Decorate 58 ArrayStride 4
+                              MemberDecorate 59(sbuf2) 0 NonWritable
+                              MemberDecorate 59(sbuf2) 0 Offset 0
+                              Decorate 59(sbuf2) BufferBlock
+                              Decorate 61(sbuf2) DescriptorSet 0
+                              Decorate 61(sbuf2) Binding 0
+                              Decorate 89(pos) Flat
+                              Decorate 89(pos) Location 0
+                              Decorate 92(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeInt 32 0
+               7:             TypePointer Function 6(int)
+               8:             TypeFloat 32
+               9:             TypeVector 8(float) 4
+              10:             TypeFunction 9(fvec4) 7(ptr)
+              14:             TypeVector 8(float) 3
+              15:             TypeBool
+        16(sb_t):             TypeStruct 14(fvec3) 15(bool) 15(bool)
+              17:             TypePointer Function 16(sb_t)
+        19(sb_t):             TypeStruct 14(fvec3) 6(int) 6(int)
+              20:             TypeRuntimeArray 19(sb_t)
+        21(sbuf):             TypeStruct 20
+              22:             TypePointer Uniform 21(sbuf)
+        23(sbuf):     22(ptr) Variable Uniform
+              24:             TypeInt 32 1
+              25:     24(int) Constant 0
+              27:             TypePointer Uniform 19(sb_t)
+              31:             TypePointer Function 14(fvec3)
+              34:     24(int) Constant 1
+              35:      6(int) Constant 0
+              37:             TypePointer Function 15(bool)
+              40:     24(int) Constant 2
+              46:      6(int) Constant 32
+              48:             TypePointer Uniform 6(int)
+              55:             TypePointer Uniform 14(fvec3)
+              58:             TypeRuntimeArray 8(float)
+       59(sbuf2):             TypeStruct 58
+              60:             TypePointer Uniform 59(sbuf2)
+       61(sbuf2):     60(ptr) Variable Uniform
+              63:             TypePointer Uniform 8(float)
+              68:    8(float) Constant 0
+              75:             TypePointer Function 8(float)
+              88:             TypePointer Input 6(int)
+         89(pos):     88(ptr) Variable Input
+              91:             TypePointer Output 9(fvec4)
+92(@entryPointOutput):     91(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+         87(pos):      7(ptr) Variable Function
+       93(param):      7(ptr) Variable Function
+              90:      6(int) Load 89(pos)
+                              Store 87(pos) 90
+              94:      6(int) Load 87(pos)
+                              Store 93(param) 94
+              95:    9(fvec4) FunctionCall 12(@main(u1;) 93(param)
+                              Store 92(@entryPointOutput) 95
+                              Return
+                              FunctionEnd
+   12(@main(u1;):    9(fvec4) Function None 10
+         11(pos):      7(ptr) FunctionParameter
+              13:             Label
+      18(mydata):     17(ptr) Variable Function
+        43(size):      7(ptr) Variable Function
+      45(stride):      7(ptr) Variable Function
+              26:      6(int) Load 11(pos)
+              28:     27(ptr) AccessChain 23(sbuf) 25 26
+              29:    19(sb_t) Load 28
+              30:   14(fvec3) CompositeExtract 29 0
+              32:     31(ptr) AccessChain 18(mydata) 25
+                              Store 32 30
+              33:      6(int) CompositeExtract 29 1
+              36:    15(bool) INotEqual 33 35
+              38:     37(ptr) AccessChain 18(mydata) 34
+                              Store 38 36
+              39:      6(int) CompositeExtract 29 2
+              41:    15(bool) INotEqual 39 35
+              42:     37(ptr) AccessChain 18(mydata) 40
+                              Store 42 41
+              44:      6(int) ArrayLength 23(sbuf) 0
+                              Store 43(size) 44
+                              Store 45(stride) 46
+              47:      6(int) Load 11(pos)
+              49:     48(ptr) AccessChain 23(sbuf) 25 47 34
+              50:      6(int) Load 49
+              51:    15(bool) INotEqual 50 35
+                              SelectionMerge 53 None
+                              BranchConditional 51 52 74
+              52:               Label
+              54:      6(int)   Load 11(pos)
+              56:     55(ptr)   AccessChain 23(sbuf) 25 54 25
+              57:   14(fvec3)   Load 56
+              62:      6(int)   Load 11(pos)
+              64:     63(ptr)   AccessChain 61(sbuf2) 25 62
+              65:    8(float)   Load 64
+              66:   14(fvec3)   CompositeConstruct 65 65 65
+              67:   14(fvec3)   FAdd 57 66
+              69:    8(float)   CompositeExtract 67 0
+              70:    8(float)   CompositeExtract 67 1
+              71:    8(float)   CompositeExtract 67 2
+              72:    9(fvec4)   CompositeConstruct 69 70 71 68
+                                ReturnValue 72
+              74:               Label
+              76:     75(ptr)   AccessChain 18(mydata) 25 35
+              77:    8(float)   Load 76
+              78:      6(int)   Load 43(size)
+              79:    8(float)   ConvertUToF 78
+              80:    8(float)   FAdd 77 79
+              81:      6(int)   Load 45(stride)
+              82:    8(float)   ConvertUToF 81
+              83:    8(float)   FAdd 80 82
+              84:    9(fvec4)   CompositeConstruct 83 83 83 83
+                                ReturnValue 84
+              53:             Label
+              86:    9(fvec4) Undef
+                              ReturnValue 86
+                              FunctionEnd

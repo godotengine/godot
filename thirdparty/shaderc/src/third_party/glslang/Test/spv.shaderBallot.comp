@@ -1,0 +1,59 @@
+#version 450
+
+#extension GL_ARB_gpu_shader_int64: enable
+#extension GL_ARB_shader_ballot: enable
+
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+layout(binding = 0) buffer Buffers
+{
+    vec4  f4;
+    ivec4 i4;
+    uvec4 u4; 
+} data[4];
+
+void main()
+{
+    uint invocation = (gl_SubGroupInvocationARB + gl_SubGroupSizeARB) % 4;
+
+    uint64_t relMask = gl_SubGroupEqMaskARB +
+                       gl_SubGroupGeMaskARB +
+                       gl_SubGroupGtMaskARB +
+                       gl_SubGroupLeMaskARB +
+                       gl_SubGroupLtMaskARB;
+
+    if (relMask == ballotARB(true))
+    {
+        data[invocation].f4.x   = readInvocationARB(data[0].f4.x,    invocation);
+        data[invocation].f4.xy  = readInvocationARB(data[1].f4.xy,   invocation);
+        data[invocation].f4.xyz = readInvocationARB(data[2].f4.xyz,  invocation);
+        data[invocation].f4     = readInvocationARB(data[3].f4,      invocation);
+
+        data[invocation].i4.x   = readInvocationARB(data[0].i4.x,    invocation);
+        data[invocation].i4.xy  = readInvocationARB(data[1].i4.xy,   invocation);
+        data[invocation].i4.xyz = readInvocationARB(data[2].i4.xyz,  invocation);
+        data[invocation].i4     = readInvocationARB(data[3].i4,      invocation);
+
+        data[invocation].u4.x   = readInvocationARB(data[0].u4.x,    invocation);
+        data[invocation].u4.xy  = readInvocationARB(data[1].u4.xy,   invocation);
+        data[invocation].u4.xyz = readInvocationARB(data[2].u4.xyz,  invocation);
+        data[invocation].u4     = readInvocationARB(data[3].u4,      invocation);
+    }
+    else
+    {
+        data[invocation].f4.x   = readFirstInvocationARB(data[0].f4.x);
+        data[invocation].f4.xy  = readFirstInvocationARB(data[1].f4.xy);
+        data[invocation].f4.xyz = readFirstInvocationARB(data[2].f4.xyz);
+        data[invocation].f4     = readFirstInvocationARB(data[3].f4);
+
+        data[invocation].i4.x   = readFirstInvocationARB(data[0].i4.x);
+        data[invocation].i4.xy  = readFirstInvocationARB(data[1].i4.xy);
+        data[invocation].i4.xyz = readFirstInvocationARB(data[2].i4.xyz);
+        data[invocation].i4     = readFirstInvocationARB(data[3].i4);
+
+        data[invocation].u4.x   = readFirstInvocationARB(data[0].u4.x);
+        data[invocation].u4.xy  = readFirstInvocationARB(data[1].u4.xy);
+        data[invocation].u4.xyz = readFirstInvocationARB(data[2].u4.xyz);
+        data[invocation].u4     = readFirstInvocationARB(data[3].u4);
+    }
+}

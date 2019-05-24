@@ -1,0 +1,40 @@
+vulkan.vert
+ERROR: 0:3: 'subpass input' : not supported in this stage: vertex
+ERROR: 0:3: 'binding' : sampler/texture/image requires layout(binding=X) 
+ERROR: 0:4: 'subpass input' : not supported in this stage: vertex
+ERROR: 0:4: 'binding' : sampler/texture/image requires layout(binding=X) 
+ERROR: 0:5: 'subpass input' : not supported in this stage: vertex
+ERROR: 0:5: 'binding' : sampler/texture/image requires layout(binding=X) 
+ERROR: 0:6: 'subpass input' : not supported in this stage: vertex
+ERROR: 0:6: 'binding' : sampler/texture/image requires layout(binding=X) 
+ERROR: 0:7: 'subpass input' : not supported in this stage: vertex
+ERROR: 0:7: 'binding' : sampler/texture/image requires layout(binding=X) 
+ERROR: 0:8: 'subpass input' : not supported in this stage: vertex
+ERROR: 0:8: 'binding' : sampler/texture/image requires layout(binding=X) 
+ERROR: 0:10: 'location' : SPIR-V requires location for user input/output 
+ERROR: 0:12: 'constant_id' : can only be applied to a scalar 
+ERROR: 0:13: 'constant_id' : specialization-constant id already used 
+ERROR: 0:13: 'binding' : sampler/texture/image requires layout(binding=X) 
+ERROR: 0:13: 'constant_id' : can only be applied to 'const'-qualified scalar 
+ERROR: 0:13: 'constant_id' : cannot be applied to this type 
+ERROR: 0:14: 'constant_id' : specialization-constant id is too large 
+ERROR: 0:15: 'constant_id' : can only be applied to a scalar 
+ERROR: 0:16: 'constant_id' : specialization-constant id already used 
+ERROR: 0:16: 'constant_id' : cannot declare a default, can only be used on a scalar 
+ERROR: 0:20: 'subpassLoad' : no matching overloaded function found 
+ERROR: 0:20: 'assign' :  cannot convert from ' const float' to ' smooth out highp 4-component vector of float'
+ERROR: 0:23: 'atomic counter types' : not allowed when using GLSL for Vulkan 
+ERROR: 0:24: 'shared' : not allowed when generating SPIR-V 
+ERROR: 0:25: 'packed' : not allowed when generating SPIR-V 
+ERROR: 0:32: 'initializer' : can't use with types containing arrays sized with a specialization constant 
+ERROR: 0:34: '=' : can't use with types containing arrays sized with a specialization constant 
+ERROR: 0:35: '==' : can't use with types containing arrays sized with a specialization constant 
+ERROR: 0:39: 'set' : cannot be used with push_constant 
+ERROR: 0:54: '[]' : only outermost dimension of an array of arrays can be a specialization constant 
+ERROR: 0:54: 'location' : SPIR-V requires location for user input/output 
+ERROR: 0:58: 'location' : SPIR-V requires location for user input/output 
+ERROR: 0:65: 'location' : overlapping use of location 10
+ERROR: 35 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

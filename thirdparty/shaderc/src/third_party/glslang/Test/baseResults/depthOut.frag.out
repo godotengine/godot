@@ -1,0 +1,38 @@
+depthOut.frag
+WARNING: 0:3: varying deprecated in version 130; may be removed in future release
+WARNING: 0:4: varying deprecated in version 130; may be removed in future release
+
+Shader version: 130
+0:? Sequence
+0:6  Function Definition: main( ( global void)
+0:6    Function Parameters: 
+0:8    Sequence
+0:8      move second child to first child ( temp float)
+0:8        'gl_FragDepth' ( gl_FragDepth float FragDepth)
+0:8        'Depth' ( smooth in float)
+0:9      move second child to first child ( temp 4-component vector of float)
+0:9        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:9        'Color' ( smooth in 4-component vector of float)
+0:?   Linker Objects
+0:?     'Color' ( smooth in 4-component vector of float)
+0:?     'Depth' ( smooth in float)
+
+
+Linked fragment stage:
+
+
+Shader version: 130
+0:? Sequence
+0:6  Function Definition: main( ( global void)
+0:6    Function Parameters: 
+0:8    Sequence
+0:8      move second child to first child ( temp float)
+0:8        'gl_FragDepth' ( gl_FragDepth float FragDepth)
+0:8        'Depth' ( smooth in float)
+0:9      move second child to first child ( temp 4-component vector of float)
+0:9        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:9        'Color' ( smooth in 4-component vector of float)
+0:?   Linker Objects
+0:?     'Color' ( smooth in 4-component vector of float)
+0:?     'Depth' ( smooth in float)
+

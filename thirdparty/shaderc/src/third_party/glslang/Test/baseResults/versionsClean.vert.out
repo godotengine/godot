@@ -1,0 +1,47 @@
+versionsClean.vert
+Shader version: 420
+0:? Sequence
+0:40  Function Definition: main( ( global void)
+0:40    Function Parameters: 
+0:42    Sequence
+0:42      move second child to first child ( temp 4-component vector of float)
+0:42        gl_Position: direct index for structure ( gl_Position 4-component vector of float Position)
+0:42          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out unsized 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:42          Constant:
+0:42            0 (const uint)
+0:42        Construct vec4 ( temp 4-component vector of float)
+0:42          'color' ( in 3-component vector of float)
+0:42          Constant:
+0:42            142.000000
+0:?   Linker Objects
+0:?     'color' ( in 3-component vector of float)
+0:?     'foo' ( uniform sampler2DRect)
+0:?     'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out unsized 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 420
+0:? Sequence
+0:40  Function Definition: main( ( global void)
+0:40    Function Parameters: 
+0:42    Sequence
+0:42      move second child to first child ( temp 4-component vector of float)
+0:42        gl_Position: direct index for structure ( gl_Position 4-component vector of float Position)
+0:42          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:42          Constant:
+0:42            0 (const uint)
+0:42        Construct vec4 ( temp 4-component vector of float)
+0:42          'color' ( in 3-component vector of float)
+0:42          Constant:
+0:42            142.000000
+0:?   Linker Objects
+0:?     'color' ( in 3-component vector of float)
+0:?     'foo' ( uniform sampler2DRect)
+0:?     'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

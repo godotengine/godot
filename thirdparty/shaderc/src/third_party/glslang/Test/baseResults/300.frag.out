@@ -1,0 +1,632 @@
+300.frag
+ERROR: 0:2: 'float' : type requires declaration of default precision qualifier 
+ERROR: 0:30: 'noperspective' : Reserved word. 
+ERROR: 0:30: 'noperspective' : not supported for this version or the enabled extensions 
+ERROR: 0:31: 'sampler2D' : sampler/image types can only be used in uniform variables or function parameters: bads
+ERROR: 0:32: 'uint' : cannot apply precision statement to this type; use 'float', 'int' or a sampler type 
+ERROR: 0:39: 'structure' : must be qualified as flat in
+ERROR: 0:39: 'structure' : non-uniform struct contains a sampler or image: badout
+ERROR: 0:60: 'texel offset' : argument must be compile-time constant 
+ERROR: 0:62: 'texel offset' : argument must be compile-time constant 
+ERROR: 0:63: 'texel offset' : argument must be compile-time constant 
+ERROR: 0:64: 'texel offset' : argument must be compile-time constant 
+ERROR: 0:66: 'texel offset' : argument must be compile-time constant 
+ERROR: 0:68: 'texel offset' : argument must be compile-time constant 
+ERROR: 0:69: 'variable indexing sampler array' : not supported for this version or the enabled extensions 
+ERROR: 0:73: 'texel offset' : argument must be compile-time constant 
+ERROR: 0:83: 'double' : Reserved word. 
+ERROR: 0:83: 'double' : not supported with this profile: es
+ERROR: 0:84: 'dvec2' : Reserved word. 
+ERROR: 0:84: 'double vector' : not supported with this profile: es
+ERROR: 0:85: 'dvec3' : Reserved word. 
+ERROR: 0:85: 'double vector' : not supported with this profile: es
+ERROR: 0:86: 'dvec4' : Reserved word. 
+ERROR: 0:86: 'double vector' : not supported with this profile: es
+ERROR: 0:101: 'arrays of arrays' : not supported for this version or the enabled extensions 
+ERROR: 0:102: 'arrays of arrays' : not supported for this version or the enabled extensions 
+ERROR: 0:102: 'arrays of arrays' : not supported for this version or the enabled extensions 
+ERROR: 0:103: 'arrays of arrays' : not supported for this version or the enabled extensions 
+ERROR: 0:103: 'arrays of arrays' : not supported for this version or the enabled extensions 
+ERROR: 0:100: 'arrays of arrays' : not supported for this version or the enabled extensions 
+ERROR: 0:100: 'array-of-array of block' : not supported with this profile: es
+ERROR: 0:111: 'variable indexing fragment shader output array' : not supported with this profile: es
+ERROR: 0:119: '==' : can't use with samplers or structs containing samplers 
+ERROR: 0:120: '!=' : can't use with samplers or structs containing samplers 
+ERROR: 0:121: '==' : can't use with samplers or structs containing samplers 
+ERROR: 0:121: '==' :  wrong operand types: no operation '==' exists that takes a left-hand operand of type ' global lowp sampler2D' and a right operand of type ' global lowp sampler2D' (or there is no acceptable conversion)
+ERROR: 0:122: '=' : can't use with samplers or structs containing samplers 
+ERROR: 0:123: '==' : can't use with samplers or structs containing samplers 
+ERROR: 0:129: 'texel offset' : value is out of range: [gl_MinProgramTexelOffset, gl_MaxProgramTexelOffset]
+ERROR: 0:129: 'texel offset' : value is out of range: [gl_MinProgramTexelOffset, gl_MaxProgramTexelOffset]
+ERROR: 0:148: 'qualifier' : cannot use auxiliary, memory, interpolation, or precision qualifier in a default qualifier declaration (declaration with no type) 
+ERROR: 0:150: 'early_fragment_tests' : not supported for this version or the enabled extensions 
+ERROR: 0:156: 'invariant' : can only apply to an output 
+ERROR: 0:157: 'invariant' : can only apply to an output 
+ERROR: 0:158: 'invariant' : can only apply to an output 
+ERROR: 0:160: 'imageBuffer' : Reserved word. 
+ERROR: 0:160: '' :  syntax error, unexpected IMAGEBUFFER, expecting COMMA or SEMICOLON
+ERROR: 46 compilation errors.  No code generated.
+
+
+Shader version: 300
+using early_fragment_tests
+ERROR: node is still EOpNull!
+0:53  Function Definition: main( ( global void)
+0:53    Function Parameters: 
+0:?     Sequence
+0:57      move second child to first child ( temp lowp 4-component vector of float)
+0:57        'v' ( temp lowp 4-component vector of float)
+0:57        texture ( global lowp 4-component vector of float)
+0:57          's2D' ( uniform lowp sampler2D)
+0:57          'c2D' ( smooth in lowp 2-component vector of float)
+0:58      move second child to first child ( temp lowp 4-component vector of float)
+0:58        'v' ( temp lowp 4-component vector of float)
+0:58        textureProj ( global lowp 4-component vector of float)
+0:58          's3D' ( uniform lowp sampler3D)
+0:58          'c4D' ( smooth temp lowp 4-component vector of float)
+0:59      move second child to first child ( temp lowp 4-component vector of float)
+0:59        'v' ( temp lowp 4-component vector of float)
+0:59        textureLod ( global lowp 4-component vector of float)
+0:59          's2DArray' ( uniform lowp sampler2DArray)
+0:59          'c3D' ( smooth in lowp 3-component vector of float)
+0:59          Constant:
+0:59            1.200000
+0:60      move second child to first child ( temp lowp float)
+0:60        'f' ( temp lowp float)
+0:60        textureOffset ( global lowp float, operation at mediump)
+0:60          's2DShadow' ( uniform lowp sampler2DShadow)
+0:60          'c3D' ( smooth in lowp 3-component vector of float)
+0:60          'ic2D' ( flat in mediump 2-component vector of int)
+0:60          'c1D' ( smooth in lowp float)
+0:61      move second child to first child ( temp lowp 4-component vector of float)
+0:61        'v' ( temp lowp 4-component vector of float)
+0:61        textureFetch ( global lowp 4-component vector of float, operation at mediump)
+0:61          's3D' ( uniform lowp sampler3D)
+0:61          'ic3D' ( flat in mediump 3-component vector of int)
+0:61          'ic1D' ( flat in mediump int)
+0:62      move second child to first child ( temp lowp 4-component vector of float)
+0:62        'v' ( temp lowp 4-component vector of float)
+0:62        textureFetchOffset ( global lowp 4-component vector of float, operation at mediump)
+0:62          direct index ( temp lowp sampler2D)
+0:62            'arrayedSampler' ( uniform 5-element array of lowp sampler2D)
+0:62            Constant:
+0:62              2 (const int)
+0:62          'ic2D' ( flat in mediump 2-component vector of int)
+0:62          Constant:
+0:62            4 (const int)
+0:62          'ic2D' ( flat in mediump 2-component vector of int)
+0:63      move second child to first child ( temp lowp float)
+0:63        'f' ( temp lowp float)
+0:63        textureLodOffset ( global lowp float, operation at mediump)
+0:63          's2DShadow' ( uniform lowp sampler2DShadow)
+0:63          'c3D' ( smooth in lowp 3-component vector of float)
+0:63          'c1D' ( smooth in lowp float)
+0:63          'ic2D' ( flat in mediump 2-component vector of int)
+0:64      move second child to first child ( temp lowp 4-component vector of float)
+0:64        'v' ( temp lowp 4-component vector of float)
+0:64        textureProjLodOffset ( global lowp 4-component vector of float, operation at mediump)
+0:64          's2D' ( uniform lowp sampler2D)
+0:64          'c3D' ( smooth in lowp 3-component vector of float)
+0:64          'c1D' ( smooth in lowp float)
+0:64          'ic2D' ( flat in mediump 2-component vector of int)
+0:65      move second child to first child ( temp lowp 4-component vector of float)
+0:65        'v' ( temp lowp 4-component vector of float)
+0:65        textureGrad ( global lowp 4-component vector of float)
+0:65          'sCube' ( uniform lowp samplerCube)
+0:65          'c3D' ( smooth in lowp 3-component vector of float)
+0:65          'c3D' ( smooth in lowp 3-component vector of float)
+0:65          'c3D' ( smooth in lowp 3-component vector of float)
+0:66      move second child to first child ( temp lowp float)
+0:66        'f' ( temp lowp float)
+0:66        textureGradOffset ( global lowp float, operation at mediump)
+0:66          's2DArrayShadow' ( uniform lowp sampler2DArrayShadow)
+0:66          'c4D' ( smooth temp lowp 4-component vector of float)
+0:66          'c2D' ( smooth in lowp 2-component vector of float)
+0:66          'c2D' ( smooth in lowp 2-component vector of float)
+0:66          'ic2D' ( flat in mediump 2-component vector of int)
+0:67      move second child to first child ( temp lowp 4-component vector of float)
+0:67        'v' ( temp lowp 4-component vector of float)
+0:67        textureProjGrad ( global lowp 4-component vector of float)
+0:67          's3D' ( uniform lowp sampler3D)
+0:67          'c4D' ( smooth temp lowp 4-component vector of float)
+0:67          'c3D' ( smooth in lowp 3-component vector of float)
+0:67          'c3D' ( smooth in lowp 3-component vector of float)
+0:68      move second child to first child ( temp lowp 4-component vector of float)
+0:68        'v' ( temp lowp 4-component vector of float)
+0:68        textureProjGradOffset ( global lowp 4-component vector of float, operation at mediump)
+0:68          's2D' ( uniform lowp sampler2D)
+0:68          'c3D' ( smooth in lowp 3-component vector of float)
+0:68          'c2D' ( smooth in lowp 2-component vector of float)
+0:68          'c2D' ( smooth in lowp 2-component vector of float)
+0:68          'ic2D' ( flat in mediump 2-component vector of int)
+0:69      move second child to first child ( temp lowp 4-component vector of float)
+0:69        'v' ( temp lowp 4-component vector of float)
+0:69        texture ( global lowp 4-component vector of float)
+0:69          indirect index ( temp lowp sampler2D)
+0:69            'arrayedSampler' ( uniform 5-element array of lowp sampler2D)
+0:69            'ic1D' ( flat in mediump int)
+0:69          'c2D' ( smooth in lowp 2-component vector of float)
+0:72      move second child to first child ( temp mediump 4-component vector of int)
+0:72        'iv' ( temp mediump 4-component vector of int)
+0:72        texture ( global lowp 4-component vector of int)
+0:72          'is2D' ( uniform lowp isampler2D)
+0:72          'c2D' ( smooth in lowp 2-component vector of float)
+0:73      move second child to first child ( temp mediump 4-component vector of int)
+0:73        'iv' ( temp mediump 4-component vector of int)
+0:73        textureProjOffset ( global lowp 4-component vector of int, operation at mediump)
+0:73          'is2D' ( uniform lowp isampler2D)
+0:73          'c4D' ( smooth temp lowp 4-component vector of float)
+0:73          'ic2D' ( flat in mediump 2-component vector of int)
+0:74      move second child to first child ( temp mediump 4-component vector of int)
+0:74        'iv' ( temp mediump 4-component vector of int)
+0:74        textureProjLod ( global lowp 4-component vector of int)
+0:74          'is2D' ( uniform lowp isampler2D)
+0:74          'c3D' ( smooth in lowp 3-component vector of float)
+0:74          'c1D' ( smooth in lowp float)
+0:75      move second child to first child ( temp mediump 4-component vector of int)
+0:75        'iv' ( temp mediump 4-component vector of int)
+0:75        textureProjGrad ( global lowp 4-component vector of int)
+0:75          'is2D' ( uniform lowp isampler2D)
+0:75          'c3D' ( smooth in lowp 3-component vector of float)
+0:75          'c2D' ( smooth in lowp 2-component vector of float)
+0:75          'c2D' ( smooth in lowp 2-component vector of float)
+0:76      move second child to first child ( temp mediump 4-component vector of int)
+0:76        'iv' ( temp mediump 4-component vector of int)
+0:76        texture ( global lowp 4-component vector of int)
+0:76          'is3D' ( uniform lowp isampler3D)
+0:76          'c3D' ( smooth in lowp 3-component vector of float)
+0:76          Constant:
+0:76            4.200000
+0:77      move second child to first child ( temp mediump 4-component vector of int)
+0:77        'iv' ( temp mediump 4-component vector of int)
+0:77        textureLod ( global lowp 4-component vector of int)
+0:77          'isCube' ( uniform lowp isamplerCube)
+0:77          'c3D' ( smooth in lowp 3-component vector of float)
+0:77          'c1D' ( smooth in lowp float)
+0:78      move second child to first child ( temp mediump 4-component vector of int)
+0:78        'iv' ( temp mediump 4-component vector of int)
+0:78        textureFetch ( global lowp 4-component vector of int, operation at mediump)
+0:78          'is2DArray' ( uniform lowp isampler2DArray)
+0:78          'ic3D' ( flat in mediump 3-component vector of int)
+0:78          'ic1D' ( flat in mediump int)
+0:80      move second child to first child ( temp highp 2-component vector of int)
+0:80        vector swizzle ( temp mediump 2-component vector of int)
+0:80          'iv' ( temp mediump 4-component vector of int)
+0:80          Sequence
+0:80            Constant:
+0:80              0 (const int)
+0:80            Constant:
+0:80              1 (const int)
+0:80        textureSize ( global highp 2-component vector of int, operation at lowp)
+0:80          'sCubeShadow' ( uniform lowp samplerCubeShadow)
+0:80          Constant:
+0:80            2 (const int)
+0:88      add second child into first child ( temp highp float)
+0:88        'f' ( temp lowp float)
+0:88        direct index ( temp highp float)
+0:88          'gl_FragCoord' ( gl_FragCoord highp 4-component vector of float FragCoord)
+0:88          Constant:
+0:88            1 (const int)
+0:89      move second child to first child ( temp highp float)
+0:89        'gl_FragDepth' ( gl_FragDepth highp float FragDepth)
+0:89        'f' ( temp lowp float)
+0:91      move second child to first child ( temp lowp 3-component vector of float)
+0:91        'sc' ( out lowp 3-component vector of float)
+0:91        c: direct index for structure ( global lowp 3-component vector of float)
+0:91          's2' ( smooth in structure{ global lowp 3-component vector of float c,  global lowp float f})
+0:91          Constant:
+0:91            0 (const int)
+0:92      move second child to first child ( temp lowp float)
+0:92        'sf' ( out lowp float)
+0:92        f: direct index for structure ( global lowp float)
+0:92          's2' ( smooth in structure{ global lowp 3-component vector of float c,  global lowp float f})
+0:92          Constant:
+0:92            1 (const int)
+0:94      add ( temp lowp 2-component vector of float)
+0:94        hyp. sine ( global lowp float)
+0:94          'c1D' ( smooth in lowp float)
+0:95        vector-scale ( temp lowp 2-component vector of float)
+0:95          hyp. cosine ( global lowp float)
+0:95            'c1D' ( smooth in lowp float)
+0:95          hyp. tangent ( global lowp 2-component vector of float)
+0:95            'c2D' ( smooth in lowp 2-component vector of float)
+0:96      add ( temp lowp 4-component vector of float)
+0:96        arc hyp. sine ( global lowp 4-component vector of float)
+0:96          'c4D' ( smooth temp lowp 4-component vector of float)
+0:96        arc hyp. cosine ( global lowp 4-component vector of float)
+0:96          'c4D' ( smooth temp lowp 4-component vector of float)
+0:97      arc hyp. tangent ( global lowp 3-component vector of float)
+0:97        'c3D' ( smooth in lowp 3-component vector of float)
+0:108  Function Definition: foo( ( global void)
+0:108    Function Parameters: 
+0:110    Sequence
+0:110      move second child to first child ( temp lowp 4-component vector of float)
+0:110        direct index ( temp lowp 4-component vector of float)
+0:110          'colors' ( out 4-element array of lowp 4-component vector of float)
+0:110          Constant:
+0:110            2 (const int)
+0:110        'c4D' ( smooth temp lowp 4-component vector of float)
+0:111      move second child to first child ( temp lowp 4-component vector of float)
+0:111        indirect index ( temp lowp 4-component vector of float)
+0:111          'colors' ( out 4-element array of lowp 4-component vector of float)
+0:111          'ic1D' ( flat in mediump int)
+0:111        'c4D' ( smooth temp lowp 4-component vector of float)
+0:117  Function Definition: foo13(struct-s-i1-s211; ( global void)
+0:117    Function Parameters: 
+0:117      'inSt2' ( in structure{ global mediump int i,  global lowp sampler2D s})
+0:119    Sequence
+0:119      Test condition and select ( temp void)
+0:119        Condition
+0:119        Compare Equal ( temp bool)
+0:119          'st1' ( uniform structure{ global mediump int i,  global lowp sampler2D s})
+0:119          'st2' ( uniform structure{ global mediump int i,  global lowp sampler2D s})
+0:119        true case is null
+0:120      Test condition and select ( temp void)
+0:120        Condition
+0:120        Compare Not Equal ( temp bool)
+0:120          'st1' ( uniform structure{ global mediump int i,  global lowp sampler2D s})
+0:120          'st2' ( uniform structure{ global mediump int i,  global lowp sampler2D s})
+0:120        true case is null
+0:121      Constant:
+0:121        false (const bool)
+0:122      move second child to first child ( temp structure{ global mediump int i,  global lowp sampler2D s})
+0:122        'inSt2' ( in structure{ global mediump int i,  global lowp sampler2D s})
+0:122        'st1' ( uniform structure{ global mediump int i,  global lowp sampler2D s})
+0:123      Compare Equal ( temp bool)
+0:123        'inSt2' ( in structure{ global mediump int i,  global lowp sampler2D s})
+0:123        'st1' ( uniform structure{ global mediump int i,  global lowp sampler2D s})
+0:126  Function Definition: foo23( ( global void)
+0:126    Function Parameters: 
+0:128    Sequence
+0:128      textureOffset ( global lowp float)
+0:128        's2DShadow' ( uniform lowp sampler2DShadow)
+0:128        'c3D' ( smooth in lowp 3-component vector of float)
+0:128        Constant:
+0:128          -8 (const int)
+0:128          7 (const int)
+0:128        'c1D' ( smooth in lowp float)
+0:129      textureOffset ( global lowp float)
+0:129        's2DShadow' ( uniform lowp sampler2DShadow)
+0:129        'c3D' ( smooth in lowp 3-component vector of float)
+0:129        Constant:
+0:129          -9 (const int)
+0:129          8 (const int)
+0:129        'c1D' ( smooth in lowp float)
+0:132  Function Definition: foo324( ( global void)
+0:132    Function Parameters: 
+0:134    Sequence
+0:134      Sequence
+0:134        move second child to first child ( temp lowp float)
+0:134          'p' ( temp lowp float)
+0:134          Constant:
+0:134            210.712306
+0:135      add second child into first child ( temp lowp float)
+0:135        'p' ( temp lowp float)
+0:135        Constant:
+0:135          0.389418
+0:136      add second child into first child ( temp lowp float)
+0:136        'p' ( temp lowp float)
+0:136        Constant:
+0:136          5.000000
+0:137      add second child into first child ( temp lowp float)
+0:137        'p' ( temp lowp float)
+0:137        Constant:
+0:137          13.000000
+0:138      Sequence
+0:138        move second child to first child ( temp lowp 3-component vector of float)
+0:138          'c3' ( temp lowp 3-component vector of float)
+0:138          Constant:
+0:138            -15.000000
+0:138            -2.000000
+0:138            39.000000
+0:139      add second child into first child ( temp lowp 3-component vector of float)
+0:139        'c3' ( temp lowp 3-component vector of float)
+0:139        Constant:
+0:139          -1.000000
+0:139          -2.000000
+0:139          -3.000000
+0:140      add second child into first child ( temp lowp 3-component vector of float)
+0:140        'c3' ( temp lowp 3-component vector of float)
+0:140        Constant:
+0:140          1.000000
+0:140          2.000000
+0:140          3.000000
+0:141      Sequence
+0:141        move second child to first child ( temp lowp 2-component vector of float)
+0:141          'c2' ( temp lowp 2-component vector of float)
+0:141          Constant:
+0:141            1.000000
+0:141            -3.000000
+0:142      add second child into first child ( temp lowp 2-component vector of float)
+0:142        'c2' ( temp lowp 2-component vector of float)
+0:142        Constant:
+0:142          1.000000
+0:142          -3.000000
+0:143      add second child into first child ( temp lowp 2-component vector of float)
+0:143        'c2' ( temp lowp 2-component vector of float)
+0:143        Constant:
+0:143          3.000000
+0:143          -8.544004
+0:144      add second child into first child ( temp lowp 2-component vector of float)
+0:144        'c2' ( temp lowp 2-component vector of float)
+0:144        Constant:
+0:144          0.000000
+0:144          0.000000
+0:145      Sequence
+0:145        move second child to first child ( temp lowp 3X2 matrix of float)
+0:145          'm32' ( temp lowp 3X2 matrix of float)
+0:145          Constant:
+0:145            10.000000
+0:145            15.000000
+0:145            14.000000
+0:145            21.000000
+0:145            22.000000
+0:145            33.000000
+0:?   Linker Objects
+0:?     's2D' ( uniform lowp sampler2D)
+0:?     's3D' ( uniform lowp sampler3D)
+0:?     'sCube' ( uniform lowp samplerCube)
+0:?     'sCubeShadow' ( uniform lowp samplerCubeShadow)
+0:?     's2DShadow' ( uniform lowp sampler2DShadow)
+0:?     's2DArray' ( uniform lowp sampler2DArray)
+0:?     's2DArrayShadow' ( uniform lowp sampler2DArrayShadow)
+0:?     'is2D' ( uniform lowp isampler2D)
+0:?     'is3D' ( uniform lowp isampler3D)
+0:?     'isCube' ( uniform lowp isamplerCube)
+0:?     'is2DArray' ( uniform lowp isampler2DArray)
+0:?     'us2D' ( uniform lowp usampler2D)
+0:?     'us3D' ( uniform lowp usampler3D)
+0:?     'usCube' ( uniform lowp usamplerCube)
+0:?     'us2DArray' ( uniform lowp usampler2DArray)
+0:?     'c1D' ( smooth in lowp float)
+0:?     'c2D' ( smooth in lowp 2-component vector of float)
+0:?     'c3D' ( smooth in lowp 3-component vector of float)
+0:?     'c4D' ( smooth temp lowp 4-component vector of float)
+0:?     'ic1D' ( flat in mediump int)
+0:?     'ic2D' ( flat in mediump 2-component vector of int)
+0:?     'ic3D' ( flat in mediump 3-component vector of int)
+0:?     'ic4D' ( flat in mediump 4-component vector of int)
+0:?     'badv' ( noperspective in lowp 4-component vector of float)
+0:?     'bads' ( smooth in lowp sampler2D)
+0:?     'badout' ( smooth in structure{ global mediump int i,  global lowp sampler2D s})
+0:?     's2' ( smooth in structure{ global lowp 3-component vector of float c,  global lowp float f})
+0:?     'sc' ( out lowp 3-component vector of float)
+0:?     'sf' ( out lowp float)
+0:?     'arrayedSampler' ( uniform 5-element array of lowp sampler2D)
+0:?     'multiInst' (layout( column_major shared) uniform 2-element array of 3-element array of block{layout( column_major shared) uniform 3-element array of 2-element array of mediump int a, layout( column_major shared) uniform 2-element array of 3-element array of mediump int b, layout( column_major shared) uniform 2-element array of 3-element array of mediump int c})
+0:?     'colors' ( out 4-element array of lowp 4-component vector of float)
+0:?     'st1' ( uniform structure{ global mediump int i,  global lowp sampler2D s})
+0:?     'st2' ( uniform structure{ global mediump int i,  global lowp sampler2D s})
+0:?     'fooinv' ( invariant smooth in lowp 4-component vector of float)
+
+
+Linked fragment stage:
+
+ERROR: Linking fragment stage: when more than one fragment shader output, all must have location qualifiers
+
+Shader version: 300
+using early_fragment_tests
+ERROR: node is still EOpNull!
+0:53  Function Definition: main( ( global void)
+0:53    Function Parameters: 
+0:?     Sequence
+0:57      move second child to first child ( temp lowp 4-component vector of float)
+0:57        'v' ( temp lowp 4-component vector of float)
+0:57        texture ( global lowp 4-component vector of float)
+0:57          's2D' ( uniform lowp sampler2D)
+0:57          'c2D' ( smooth in lowp 2-component vector of float)
+0:58      move second child to first child ( temp lowp 4-component vector of float)
+0:58        'v' ( temp lowp 4-component vector of float)
+0:58        textureProj ( global lowp 4-component vector of float)
+0:58          's3D' ( uniform lowp sampler3D)
+0:58          'c4D' ( smooth temp lowp 4-component vector of float)
+0:59      move second child to first child ( temp lowp 4-component vector of float)
+0:59        'v' ( temp lowp 4-component vector of float)
+0:59        textureLod ( global lowp 4-component vector of float)
+0:59          's2DArray' ( uniform lowp sampler2DArray)
+0:59          'c3D' ( smooth in lowp 3-component vector of float)
+0:59          Constant:
+0:59            1.200000
+0:60      move second child to first child ( temp lowp float)
+0:60        'f' ( temp lowp float)
+0:60        textureOffset ( global lowp float, operation at mediump)
+0:60          's2DShadow' ( uniform lowp sampler2DShadow)
+0:60          'c3D' ( smooth in lowp 3-component vector of float)
+0:60          'ic2D' ( flat in mediump 2-component vector of int)
+0:60          'c1D' ( smooth in lowp float)
+0:61      move second child to first child ( temp lowp 4-component vector of float)
+0:61        'v' ( temp lowp 4-component vector of float)
+0:61        textureFetch ( global lowp 4-component vector of float, operation at mediump)
+0:61          's3D' ( uniform lowp sampler3D)
+0:61          'ic3D' ( flat in mediump 3-component vector of int)
+0:61          'ic1D' ( flat in mediump int)
+0:62      move second child to first child ( temp lowp 4-component vector of float)
+0:62        'v' ( temp lowp 4-component vector of float)
+0:62        textureFetchOffset ( global lowp 4-component vector of float, operation at mediump)
+0:62          direct index ( temp lowp sampler2D)
+0:62            'arrayedSampler' ( uniform 5-element array of lowp sampler2D)
+0:62            Constant:
+0:62              2 (const int)
+0:62          'ic2D' ( flat in mediump 2-component vector of int)
+0:62          Constant:
+0:62            4 (const int)
+0:62          'ic2D' ( flat in mediump 2-component vector of int)
+0:63      move second child to first child ( temp lowp float)
+0:63        'f' ( temp lowp float)
+0:63        textureLodOffset ( global lowp float, operation at mediump)
+0:63          's2DShadow' ( uniform lowp sampler2DShadow)
+0:63          'c3D' ( smooth in lowp 3-component vector of float)
+0:63          'c1D' ( smooth in lowp float)
+0:63          'ic2D' ( flat in mediump 2-component vector of int)
+0:64      move second child to first child ( temp lowp 4-component vector of float)
+0:64        'v' ( temp lowp 4-component vector of float)
+0:64        textureProjLodOffset ( global lowp 4-component vector of float, operation at mediump)
+0:64          's2D' ( uniform lowp sampler2D)
+0:64          'c3D' ( smooth in lowp 3-component vector of float)
+0:64          'c1D' ( smooth in lowp float)
+0:64          'ic2D' ( flat in mediump 2-component vector of int)
+0:65      move second child to first child ( temp lowp 4-component vector of float)
+0:65        'v' ( temp lowp 4-component vector of float)
+0:65        textureGrad ( global lowp 4-component vector of float)
+0:65          'sCube' ( uniform lowp samplerCube)
+0:65          'c3D' ( smooth in lowp 3-component vector of float)
+0:65          'c3D' ( smooth in lowp 3-component vector of float)
+0:65          'c3D' ( smooth in lowp 3-component vector of float)
+0:66      move second child to first child ( temp lowp float)
+0:66        'f' ( temp lowp float)
+0:66        textureGradOffset ( global lowp float, operation at mediump)
+0:66          's2DArrayShadow' ( uniform lowp sampler2DArrayShadow)
+0:66          'c4D' ( smooth temp lowp 4-component vector of float)
+0:66          'c2D' ( smooth in lowp 2-component vector of float)
+0:66          'c2D' ( smooth in lowp 2-component vector of float)
+0:66          'ic2D' ( flat in mediump 2-component vector of int)
+0:67      move second child to first child ( temp lowp 4-component vector of float)
+0:67        'v' ( temp lowp 4-component vector of float)
+0:67        textureProjGrad ( global lowp 4-component vector of float)
+0:67          's3D' ( uniform lowp sampler3D)
+0:67          'c4D' ( smooth temp lowp 4-component vector of float)
+0:67          'c3D' ( smooth in lowp 3-component vector of float)
+0:67          'c3D' ( smooth in lowp 3-component vector of float)
+0:68      move second child to first child ( temp lowp 4-component vector of float)
+0:68        'v' ( temp lowp 4-component vector of float)
+0:68        textureProjGradOffset ( global lowp 4-component vector of float, operation at mediump)
+0:68          's2D' ( uniform lowp sampler2D)
+0:68          'c3D' ( smooth in lowp 3-component vector of float)
+0:68          'c2D' ( smooth in lowp 2-component vector of float)
+0:68          'c2D' ( smooth in lowp 2-component vector of float)
+0:68          'ic2D' ( flat in mediump 2-component vector of int)
+0:69      move second child to first child ( temp lowp 4-component vector of float)
+0:69        'v' ( temp lowp 4-component vector of float)
+0:69        texture ( global lowp 4-component vector of float)
+0:69          indirect index ( temp lowp sampler2D)
+0:69            'arrayedSampler' ( uniform 5-element array of lowp sampler2D)
+0:69            'ic1D' ( flat in mediump int)
+0:69          'c2D' ( smooth in lowp 2-component vector of float)
+0:72      move second child to first child ( temp mediump 4-component vector of int)
+0:72        'iv' ( temp mediump 4-component vector of int)
+0:72        texture ( global lowp 4-component vector of int)
+0:72          'is2D' ( uniform lowp isampler2D)
+0:72          'c2D' ( smooth in lowp 2-component vector of float)
+0:73      move second child to first child ( temp mediump 4-component vector of int)
+0:73        'iv' ( temp mediump 4-component vector of int)
+0:73        textureProjOffset ( global lowp 4-component vector of int, operation at mediump)
+0:73          'is2D' ( uniform lowp isampler2D)
+0:73          'c4D' ( smooth temp lowp 4-component vector of float)
+0:73          'ic2D' ( flat in mediump 2-component vector of int)
+0:74      move second child to first child ( temp mediump 4-component vector of int)
+0:74        'iv' ( temp mediump 4-component vector of int)
+0:74        textureProjLod ( global lowp 4-component vector of int)
+0:74          'is2D' ( uniform lowp isampler2D)
+0:74          'c3D' ( smooth in lowp 3-component vector of float)
+0:74          'c1D' ( smooth in lowp float)
+0:75      move second child to first child ( temp mediump 4-component vector of int)
+0:75        'iv' ( temp mediump 4-component vector of int)
+0:75        textureProjGrad ( global lowp 4-component vector of int)
+0:75          'is2D' ( uniform lowp isampler2D)
+0:75          'c3D' ( smooth in lowp 3-component vector of float)
+0:75          'c2D' ( smooth in lowp 2-component vector of float)
+0:75          'c2D' ( smooth in lowp 2-component vector of float)
+0:76      move second child to first child ( temp mediump 4-component vector of int)
+0:76        'iv' ( temp mediump 4-component vector of int)
+0:76        texture ( global lowp 4-component vector of int)
+0:76          'is3D' ( uniform lowp isampler3D)
+0:76          'c3D' ( smooth in lowp 3-component vector of float)
+0:76          Constant:
+0:76            4.200000
+0:77      move second child to first child ( temp mediump 4-component vector of int)
+0:77        'iv' ( temp mediump 4-component vector of int)
+0:77        textureLod ( global lowp 4-component vector of int)
+0:77          'isCube' ( uniform lowp isamplerCube)
+0:77          'c3D' ( smooth in lowp 3-component vector of float)
+0:77          'c1D' ( smooth in lowp float)
+0:78      move second child to first child ( temp mediump 4-component vector of int)
+0:78        'iv' ( temp mediump 4-component vector of int)
+0:78        textureFetch ( global lowp 4-component vector of int, operation at mediump)
+0:78          'is2DArray' ( uniform lowp isampler2DArray)
+0:78          'ic3D' ( flat in mediump 3-component vector of int)
+0:78          'ic1D' ( flat in mediump int)
+0:80      move second child to first child ( temp highp 2-component vector of int)
+0:80        vector swizzle ( temp mediump 2-component vector of int)
+0:80          'iv' ( temp mediump 4-component vector of int)
+0:80          Sequence
+0:80            Constant:
+0:80              0 (const int)
+0:80            Constant:
+0:80              1 (const int)
+0:80        textureSize ( global highp 2-component vector of int, operation at lowp)
+0:80          'sCubeShadow' ( uniform lowp samplerCubeShadow)
+0:80          Constant:
+0:80            2 (const int)
+0:88      add second child into first child ( temp highp float)
+0:88        'f' ( temp lowp float)
+0:88        direct index ( temp highp float)
+0:88          'gl_FragCoord' ( gl_FragCoord highp 4-component vector of float FragCoord)
+0:88          Constant:
+0:88            1 (const int)
+0:89      move second child to first child ( temp highp float)
+0:89        'gl_FragDepth' ( gl_FragDepth highp float FragDepth)
+0:89        'f' ( temp lowp float)
+0:91      move second child to first child ( temp lowp 3-component vector of float)
+0:91        'sc' ( out lowp 3-component vector of float)
+0:91        c: direct index for structure ( global lowp 3-component vector of float)
+0:91          's2' ( smooth in structure{ global lowp 3-component vector of float c,  global lowp float f})
+0:91          Constant:
+0:91            0 (const int)
+0:92      move second child to first child ( temp lowp float)
+0:92        'sf' ( out lowp float)
+0:92        f: direct index for structure ( global lowp float)
+0:92          's2' ( smooth in structure{ global lowp 3-component vector of float c,  global lowp float f})
+0:92          Constant:
+0:92            1 (const int)
+0:94      add ( temp lowp 2-component vector of float)
+0:94        hyp. sine ( global lowp float)
+0:94          'c1D' ( smooth in lowp float)
+0:95        vector-scale ( temp lowp 2-component vector of float)
+0:95          hyp. cosine ( global lowp float)
+0:95            'c1D' ( smooth in lowp float)
+0:95          hyp. tangent ( global lowp 2-component vector of float)
+0:95            'c2D' ( smooth in lowp 2-component vector of float)
+0:96      add ( temp lowp 4-component vector of float)
+0:96        arc hyp. sine ( global lowp 4-component vector of float)
+0:96          'c4D' ( smooth temp lowp 4-component vector of float)
+0:96        arc hyp. cosine ( global lowp 4-component vector of float)
+0:96          'c4D' ( smooth temp lowp 4-component vector of float)
+0:97      arc hyp. tangent ( global lowp 3-component vector of float)
+0:97        'c3D' ( smooth in lowp 3-component vector of float)
+0:?   Linker Objects
+0:?     's2D' ( uniform lowp sampler2D)
+0:?     's3D' ( uniform lowp sampler3D)
+0:?     'sCube' ( uniform lowp samplerCube)
+0:?     'sCubeShadow' ( uniform lowp samplerCubeShadow)
+0:?     's2DShadow' ( uniform lowp sampler2DShadow)
+0:?     's2DArray' ( uniform lowp sampler2DArray)
+0:?     's2DArrayShadow' ( uniform lowp sampler2DArrayShadow)
+0:?     'is2D' ( uniform lowp isampler2D)
+0:?     'is3D' ( uniform lowp isampler3D)
+0:?     'isCube' ( uniform lowp isamplerCube)
+0:?     'is2DArray' ( uniform lowp isampler2DArray)
+0:?     'us2D' ( uniform lowp usampler2D)
+0:?     'us3D' ( uniform lowp usampler3D)
+0:?     'usCube' ( uniform lowp usamplerCube)
+0:?     'us2DArray' ( uniform lowp usampler2DArray)
+0:?     'c1D' ( smooth in lowp float)
+0:?     'c2D' ( smooth in lowp 2-component vector of float)
+0:?     'c3D' ( smooth in lowp 3-component vector of float)
+0:?     'c4D' ( smooth temp lowp 4-component vector of float)
+0:?     'ic1D' ( flat in mediump int)
+0:?     'ic2D' ( flat in mediump 2-component vector of int)
+0:?     'ic3D' ( flat in mediump 3-component vector of int)
+0:?     'ic4D' ( flat in mediump 4-component vector of int)
+0:?     'badv' ( noperspective in lowp 4-component vector of float)
+0:?     'bads' ( smooth in lowp sampler2D)
+0:?     'badout' ( smooth in structure{ global mediump int i,  global lowp sampler2D s})
+0:?     's2' ( smooth in structure{ global lowp 3-component vector of float c,  global lowp float f})
+0:?     'sc' ( out lowp 3-component vector of float)
+0:?     'sf' ( out lowp float)
+0:?     'arrayedSampler' ( uniform 5-element array of lowp sampler2D)
+0:?     'multiInst' (layout( column_major shared) uniform 2-element array of 3-element array of block{layout( column_major shared) uniform 3-element array of 2-element array of mediump int a, layout( column_major shared) uniform 2-element array of 3-element array of mediump int b, layout( column_major shared) uniform 2-element array of 3-element array of mediump int c})
+0:?     'colors' ( out 4-element array of lowp 4-component vector of float)
+0:?     'st1' ( uniform structure{ global mediump int i,  global lowp sampler2D s})
+0:?     'st2' ( uniform structure{ global mediump int i,  global lowp sampler2D s})
+0:?     'fooinv' ( invariant smooth in lowp 4-component vector of float)
+

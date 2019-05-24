@@ -1,0 +1,499 @@
+hlsl.structin.vert
+Shader version: 500
+0:? Sequence
+0:8  Function Definition: @main(vf4;struct-VI-vf4[2]-vf4-vf41;vf4; ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8    Function Parameters: 
+0:8      'd' ( in 4-component vector of float)
+0:8      'vi' ( in structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8      'e' ( in 4-component vector of float)
+0:?     Sequence
+0:11      move second child to first child ( temp 4-component vector of float)
+0:11        b: direct index for structure ( temp 4-component vector of float)
+0:11          'local' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:11          Constant:
+0:11            2 (const int)
+0:11        add ( temp 4-component vector of float)
+0:11          add ( temp 4-component vector of float)
+0:11            add ( temp 4-component vector of float)
+0:11              add ( temp 4-component vector of float)
+0:11                direct index ( temp 4-component vector of float)
+0:11                  m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:11                    'vi' ( in structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:11                    Constant:
+0:11                      0 (const int)
+0:11                  Constant:
+0:11                    1 (const int)
+0:11                direct index ( temp 4-component vector of float)
+0:11                  m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:11                    'vi' ( in structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:11                    Constant:
+0:11                      0 (const int)
+0:11                  Constant:
+0:11                    0 (const int)
+0:11              Construct vec4 ( temp 4-component vector of float)
+0:11                direct index ( temp float)
+0:11                  coord: direct index for structure ( temp 4-component vector of float)
+0:11                    'vi' ( in structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:11                    Constant:
+0:11                      1 (const int)
+0:11                  Constant:
+0:11                    0 (const int)
+0:11            'd' ( in 4-component vector of float)
+0:11          'e' ( in 4-component vector of float)
+0:12      move second child to first child ( temp 4-component vector of float)
+0:12        coord: direct index for structure ( temp 4-component vector of float)
+0:12          'local' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:12          Constant:
+0:12            1 (const int)
+0:12        Constant:
+0:12          1.000000
+0:12          1.000000
+0:12          1.000000
+0:12          1.000000
+0:13      move second child to first child ( temp 4-component vector of float)
+0:13        direct index ( temp 4-component vector of float)
+0:13          m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:13            'local' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:13            Constant:
+0:13              0 (const int)
+0:13          Constant:
+0:13            0 (const int)
+0:13        Constant:
+0:13          2.000000
+0:13          2.000000
+0:13          2.000000
+0:13          2.000000
+0:14      move second child to first child ( temp 4-component vector of float)
+0:14        direct index ( temp 4-component vector of float)
+0:14          m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:14            'local' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:14            Constant:
+0:14              0 (const int)
+0:14          Constant:
+0:14            1 (const int)
+0:14        Constant:
+0:14          3.000000
+0:14          3.000000
+0:14          3.000000
+0:14          3.000000
+0:16      Branch: Return with expression
+0:16        'local' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8  Function Definition: main( ( temp void)
+0:8    Function Parameters: 
+0:?     Sequence
+0:8      move second child to first child ( temp 4-component vector of float)
+0:?         'd' ( temp 4-component vector of float)
+0:?         'd' (layout( location=0) in 4-component vector of float)
+0:8      Sequence
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          direct index ( temp 4-component vector of float)
+0:8            m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:?               'vi' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8              Constant:
+0:8                0 (const int)
+0:8            Constant:
+0:8              0 (const int)
+0:?           'vi.m[0]' (layout( location=1) in 4-component vector of float)
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          direct index ( temp 4-component vector of float)
+0:8            m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:?               'vi' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8              Constant:
+0:8                0 (const int)
+0:8            Constant:
+0:8              1 (const int)
+0:?           'vi.m[1]' (layout( location=2) in 4-component vector of float)
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          coord: direct index for structure ( temp 4-component vector of float)
+0:?             'vi' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8            Constant:
+0:8              1 (const int)
+0:?           'vi.coord' (layout( location=3) in 4-component vector of float)
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          b: direct index for structure ( temp 4-component vector of float)
+0:?             'vi' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8            Constant:
+0:8              2 (const int)
+0:?           'vi.b' (layout( location=4) in 4-component vector of float)
+0:8      move second child to first child ( temp 4-component vector of float)
+0:?         'e' ( temp 4-component vector of float)
+0:?         'e' (layout( location=5) in 4-component vector of float)
+0:8      Sequence
+0:8        move second child to first child ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8          'flattenTemp' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8          Function Call: @main(vf4;struct-VI-vf4[2]-vf4-vf41;vf4; ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:?             'd' ( temp 4-component vector of float)
+0:?             'vi' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:?             'e' ( temp 4-component vector of float)
+0:8        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.m[0]' (layout( location=0) out 4-component vector of float)
+0:8          direct index ( temp 4-component vector of float)
+0:8            m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:8              'flattenTemp' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8              Constant:
+0:8                0 (const int)
+0:8            Constant:
+0:8              0 (const int)
+0:8        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.m[1]' (layout( location=1) out 4-component vector of float)
+0:8          direct index ( temp 4-component vector of float)
+0:8            m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:8              'flattenTemp' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8              Constant:
+0:8                0 (const int)
+0:8            Constant:
+0:8              1 (const int)
+0:8        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.coord' ( out 4-component vector of float Position)
+0:8          coord: direct index for structure ( temp 4-component vector of float)
+0:8            'flattenTemp' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8            Constant:
+0:8              1 (const int)
+0:8        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.b' (layout( location=2) smooth out 4-component vector of float)
+0:8          b: direct index for structure ( temp 4-component vector of float)
+0:8            'flattenTemp' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8            Constant:
+0:8              2 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.coord' ( out 4-component vector of float Position)
+0:?     '@entryPointOutput.m[0]' (layout( location=0) out 4-component vector of float)
+0:?     '@entryPointOutput.m[1]' (layout( location=1) out 4-component vector of float)
+0:?     '@entryPointOutput.b' (layout( location=2) smooth out 4-component vector of float)
+0:?     'd' (layout( location=0) in 4-component vector of float)
+0:?     'vi.m[0]' (layout( location=1) in 4-component vector of float)
+0:?     'vi.m[1]' (layout( location=2) in 4-component vector of float)
+0:?     'vi.coord' (layout( location=3) in 4-component vector of float)
+0:?     'vi.b' (layout( location=4) in 4-component vector of float)
+0:?     'e' (layout( location=5) in 4-component vector of float)
+
+
+Linked vertex stage:
+
+
+Shader version: 500
+0:? Sequence
+0:8  Function Definition: @main(vf4;struct-VI-vf4[2]-vf4-vf41;vf4; ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8    Function Parameters: 
+0:8      'd' ( in 4-component vector of float)
+0:8      'vi' ( in structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8      'e' ( in 4-component vector of float)
+0:?     Sequence
+0:11      move second child to first child ( temp 4-component vector of float)
+0:11        b: direct index for structure ( temp 4-component vector of float)
+0:11          'local' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:11          Constant:
+0:11            2 (const int)
+0:11        add ( temp 4-component vector of float)
+0:11          add ( temp 4-component vector of float)
+0:11            add ( temp 4-component vector of float)
+0:11              add ( temp 4-component vector of float)
+0:11                direct index ( temp 4-component vector of float)
+0:11                  m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:11                    'vi' ( in structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:11                    Constant:
+0:11                      0 (const int)
+0:11                  Constant:
+0:11                    1 (const int)
+0:11                direct index ( temp 4-component vector of float)
+0:11                  m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:11                    'vi' ( in structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:11                    Constant:
+0:11                      0 (const int)
+0:11                  Constant:
+0:11                    0 (const int)
+0:11              Construct vec4 ( temp 4-component vector of float)
+0:11                direct index ( temp float)
+0:11                  coord: direct index for structure ( temp 4-component vector of float)
+0:11                    'vi' ( in structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:11                    Constant:
+0:11                      1 (const int)
+0:11                  Constant:
+0:11                    0 (const int)
+0:11            'd' ( in 4-component vector of float)
+0:11          'e' ( in 4-component vector of float)
+0:12      move second child to first child ( temp 4-component vector of float)
+0:12        coord: direct index for structure ( temp 4-component vector of float)
+0:12          'local' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:12          Constant:
+0:12            1 (const int)
+0:12        Constant:
+0:12          1.000000
+0:12          1.000000
+0:12          1.000000
+0:12          1.000000
+0:13      move second child to first child ( temp 4-component vector of float)
+0:13        direct index ( temp 4-component vector of float)
+0:13          m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:13            'local' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:13            Constant:
+0:13              0 (const int)
+0:13          Constant:
+0:13            0 (const int)
+0:13        Constant:
+0:13          2.000000
+0:13          2.000000
+0:13          2.000000
+0:13          2.000000
+0:14      move second child to first child ( temp 4-component vector of float)
+0:14        direct index ( temp 4-component vector of float)
+0:14          m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:14            'local' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:14            Constant:
+0:14              0 (const int)
+0:14          Constant:
+0:14            1 (const int)
+0:14        Constant:
+0:14          3.000000
+0:14          3.000000
+0:14          3.000000
+0:14          3.000000
+0:16      Branch: Return with expression
+0:16        'local' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8  Function Definition: main( ( temp void)
+0:8    Function Parameters: 
+0:?     Sequence
+0:8      move second child to first child ( temp 4-component vector of float)
+0:?         'd' ( temp 4-component vector of float)
+0:?         'd' (layout( location=0) in 4-component vector of float)
+0:8      Sequence
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          direct index ( temp 4-component vector of float)
+0:8            m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:?               'vi' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8              Constant:
+0:8                0 (const int)
+0:8            Constant:
+0:8              0 (const int)
+0:?           'vi.m[0]' (layout( location=1) in 4-component vector of float)
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          direct index ( temp 4-component vector of float)
+0:8            m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:?               'vi' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8              Constant:
+0:8                0 (const int)
+0:8            Constant:
+0:8              1 (const int)
+0:?           'vi.m[1]' (layout( location=2) in 4-component vector of float)
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          coord: direct index for structure ( temp 4-component vector of float)
+0:?             'vi' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8            Constant:
+0:8              1 (const int)
+0:?           'vi.coord' (layout( location=3) in 4-component vector of float)
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          b: direct index for structure ( temp 4-component vector of float)
+0:?             'vi' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8            Constant:
+0:8              2 (const int)
+0:?           'vi.b' (layout( location=4) in 4-component vector of float)
+0:8      move second child to first child ( temp 4-component vector of float)
+0:?         'e' ( temp 4-component vector of float)
+0:?         'e' (layout( location=5) in 4-component vector of float)
+0:8      Sequence
+0:8        move second child to first child ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8          'flattenTemp' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8          Function Call: @main(vf4;struct-VI-vf4[2]-vf4-vf41;vf4; ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:?             'd' ( temp 4-component vector of float)
+0:?             'vi' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:?             'e' ( temp 4-component vector of float)
+0:8        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.m[0]' (layout( location=0) out 4-component vector of float)
+0:8          direct index ( temp 4-component vector of float)
+0:8            m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:8              'flattenTemp' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8              Constant:
+0:8                0 (const int)
+0:8            Constant:
+0:8              0 (const int)
+0:8        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.m[1]' (layout( location=1) out 4-component vector of float)
+0:8          direct index ( temp 4-component vector of float)
+0:8            m: direct index for structure ( temp 2-element array of 4-component vector of float)
+0:8              'flattenTemp' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8              Constant:
+0:8                0 (const int)
+0:8            Constant:
+0:8              1 (const int)
+0:8        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.coord' ( out 4-component vector of float Position)
+0:8          coord: direct index for structure ( temp 4-component vector of float)
+0:8            'flattenTemp' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8            Constant:
+0:8              1 (const int)
+0:8        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.b' (layout( location=2) smooth out 4-component vector of float)
+0:8          b: direct index for structure ( temp 4-component vector of float)
+0:8            'flattenTemp' ( temp structure{ temp 2-element array of 4-component vector of float m,  temp 4-component vector of float coord,  temp 4-component vector of float b})
+0:8            Constant:
+0:8              2 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.coord' ( out 4-component vector of float Position)
+0:?     '@entryPointOutput.m[0]' (layout( location=0) out 4-component vector of float)
+0:?     '@entryPointOutput.m[1]' (layout( location=1) out 4-component vector of float)
+0:?     '@entryPointOutput.b' (layout( location=2) smooth out 4-component vector of float)
+0:?     'd' (layout( location=0) in 4-component vector of float)
+0:?     'vi.m[0]' (layout( location=1) in 4-component vector of float)
+0:?     'vi.m[1]' (layout( location=2) in 4-component vector of float)
+0:?     'vi.coord' (layout( location=3) in 4-component vector of float)
+0:?     'vi.b' (layout( location=4) in 4-component vector of float)
+0:?     'e' (layout( location=5) in 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 94
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Vertex 4  "main" 55 58 61 64 67 71 82 85 88 91
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 12  "VI"
+                              MemberName 12(VI) 0  "m"
+                              MemberName 12(VI) 1  "coord"
+                              MemberName 12(VI) 2  "b"
+                              Name 18  "@main(vf4;struct-VI-vf4[2]-vf4-vf41;vf4;"
+                              Name 15  "d"
+                              Name 16  "vi"
+                              Name 17  "e"
+                              Name 20  "local"
+                              Name 53  "d"
+                              Name 55  "d"
+                              Name 57  "vi"
+                              Name 58  "vi.m[0]"
+                              Name 61  "vi.m[1]"
+                              Name 64  "vi.coord"
+                              Name 67  "vi.b"
+                              Name 70  "e"
+                              Name 71  "e"
+                              Name 73  "flattenTemp"
+                              Name 74  "param"
+                              Name 76  "param"
+                              Name 78  "param"
+                              Name 82  "@entryPointOutput.m[0]"
+                              Name 85  "@entryPointOutput.m[1]"
+                              Name 88  "@entryPointOutput.coord"
+                              Name 91  "@entryPointOutput.b"
+                              Decorate 55(d) Location 0
+                              Decorate 58(vi.m[0]) Location 1
+                              Decorate 61(vi.m[1]) Location 2
+                              Decorate 64(vi.coord) Location 3
+                              Decorate 67(vi.b) Location 4
+                              Decorate 71(e) Location 5
+                              Decorate 82(@entryPointOutput.m[0]) Location 0
+                              Decorate 85(@entryPointOutput.m[1]) Location 1
+                              Decorate 88(@entryPointOutput.coord) BuiltIn Position
+                              Decorate 91(@entryPointOutput.b) Location 2
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypePointer Function 7(fvec4)
+               9:             TypeInt 32 0
+              10:      9(int) Constant 2
+              11:             TypeArray 7(fvec4) 10
+          12(VI):             TypeStruct 11 7(fvec4) 7(fvec4)
+              13:             TypePointer Function 12(VI)
+              14:             TypeFunction 12(VI) 8(ptr) 13(ptr) 8(ptr)
+              21:             TypeInt 32 1
+              22:     21(int) Constant 2
+              23:     21(int) Constant 0
+              24:     21(int) Constant 1
+              30:      9(int) Constant 0
+              31:             TypePointer Function 6(float)
+              41:    6(float) Constant 1065353216
+              42:    7(fvec4) ConstantComposite 41 41 41 41
+              44:    6(float) Constant 1073741824
+              45:    7(fvec4) ConstantComposite 44 44 44 44
+              47:    6(float) Constant 1077936128
+              48:    7(fvec4) ConstantComposite 47 47 47 47
+              54:             TypePointer Input 7(fvec4)
+           55(d):     54(ptr) Variable Input
+     58(vi.m[0]):     54(ptr) Variable Input
+     61(vi.m[1]):     54(ptr) Variable Input
+    64(vi.coord):     54(ptr) Variable Input
+        67(vi.b):     54(ptr) Variable Input
+           71(e):     54(ptr) Variable Input
+              81:             TypePointer Output 7(fvec4)
+82(@entryPointOutput.m[0]):     81(ptr) Variable Output
+85(@entryPointOutput.m[1]):     81(ptr) Variable Output
+88(@entryPointOutput.coord):     81(ptr) Variable Output
+91(@entryPointOutput.b):     81(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+           53(d):      8(ptr) Variable Function
+          57(vi):     13(ptr) Variable Function
+           70(e):      8(ptr) Variable Function
+ 73(flattenTemp):     13(ptr) Variable Function
+       74(param):      8(ptr) Variable Function
+       76(param):     13(ptr) Variable Function
+       78(param):      8(ptr) Variable Function
+              56:    7(fvec4) Load 55(d)
+                              Store 53(d) 56
+              59:    7(fvec4) Load 58(vi.m[0])
+              60:      8(ptr) AccessChain 57(vi) 23 23
+                              Store 60 59
+              62:    7(fvec4) Load 61(vi.m[1])
+              63:      8(ptr) AccessChain 57(vi) 23 24
+                              Store 63 62
+              65:    7(fvec4) Load 64(vi.coord)
+              66:      8(ptr) AccessChain 57(vi) 24
+                              Store 66 65
+              68:    7(fvec4) Load 67(vi.b)
+              69:      8(ptr) AccessChain 57(vi) 22
+                              Store 69 68
+              72:    7(fvec4) Load 71(e)
+                              Store 70(e) 72
+              75:    7(fvec4) Load 53(d)
+                              Store 74(param) 75
+              77:      12(VI) Load 57(vi)
+                              Store 76(param) 77
+              79:    7(fvec4) Load 70(e)
+                              Store 78(param) 79
+              80:      12(VI) FunctionCall 18(@main(vf4;struct-VI-vf4[2]-vf4-vf41;vf4;) 74(param) 76(param) 78(param)
+                              Store 73(flattenTemp) 80
+              83:      8(ptr) AccessChain 73(flattenTemp) 23 23
+              84:    7(fvec4) Load 83
+                              Store 82(@entryPointOutput.m[0]) 84
+              86:      8(ptr) AccessChain 73(flattenTemp) 23 24
+              87:    7(fvec4) Load 86
+                              Store 85(@entryPointOutput.m[1]) 87
+              89:      8(ptr) AccessChain 73(flattenTemp) 24
+              90:    7(fvec4) Load 89
+                              Store 88(@entryPointOutput.coord) 90
+              92:      8(ptr) AccessChain 73(flattenTemp) 22
+              93:    7(fvec4) Load 92
+                              Store 91(@entryPointOutput.b) 93
+                              Return
+                              FunctionEnd
+18(@main(vf4;struct-VI-vf4[2]-vf4-vf41;vf4;):      12(VI) Function None 14
+           15(d):      8(ptr) FunctionParameter
+          16(vi):     13(ptr) FunctionParameter
+           17(e):      8(ptr) FunctionParameter
+              19:             Label
+       20(local):     13(ptr) Variable Function
+              25:      8(ptr) AccessChain 16(vi) 23 24
+              26:    7(fvec4) Load 25
+              27:      8(ptr) AccessChain 16(vi) 23 23
+              28:    7(fvec4) Load 27
+              29:    7(fvec4) FAdd 26 28
+              32:     31(ptr) AccessChain 16(vi) 24 30
+              33:    6(float) Load 32
+              34:    7(fvec4) CompositeConstruct 33 33 33 33
+              35:    7(fvec4) FAdd 29 34
+              36:    7(fvec4) Load 15(d)
+              37:    7(fvec4) FAdd 35 36
+              38:    7(fvec4) Load 17(e)
+              39:    7(fvec4) FAdd 37 38
+              40:      8(ptr) AccessChain 20(local) 22
+                              Store 40 39
+              43:      8(ptr) AccessChain 20(local) 24
+                              Store 43 42
+              46:      8(ptr) AccessChain 20(local) 23 23
+                              Store 46 45
+              49:      8(ptr) AccessChain 20(local) 23 24
+                              Store 49 48
+              50:      12(VI) Load 20(local)
+                              ReturnValue 50
+                              FunctionEnd

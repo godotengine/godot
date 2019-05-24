@@ -1,0 +1,8 @@
+spv.AnyHitShader_Errors.rahit
+ERROR: 0:8: 'assign' :  l-value required "payload" (cannot modify hitAttributeNV in this stage)
+ERROR: 0:9: 'reportIntersectionNV' : no matching overloaded function found 
+ERROR: 0:10: 'traceNV' : no matching overloaded function found 
+ERROR: 3 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

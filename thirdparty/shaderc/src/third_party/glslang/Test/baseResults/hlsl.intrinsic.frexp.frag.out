@@ -1,0 +1,336 @@
+hlsl.intrinsic.frexp.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:3  Function Definition: PixelShaderFunctionS(f1;f1; ( temp float)
+0:3    Function Parameters: 
+0:3      'inF0' ( in float)
+0:3      'inF1' ( in float)
+0:?     Sequence
+0:4      Sequence
+0:4        move second child to first child ( temp float)
+0:4          'r000' ( temp float)
+0:4          frexp ( temp float)
+0:4            'inF0' ( in float)
+0:4            'inF1' ( in float)
+0:5      Branch: Return with expression
+0:5        Constant:
+0:5          0.000000
+0:9  Function Definition: PixelShaderFunction2(vf2;vf2; ( temp 2-component vector of float)
+0:9    Function Parameters: 
+0:9      'inF0' ( in 2-component vector of float)
+0:9      'inF1' ( in 2-component vector of float)
+0:?     Sequence
+0:10      Sequence
+0:10        move second child to first child ( temp 2-component vector of float)
+0:10          'r000' ( temp 2-component vector of float)
+0:10          frexp ( temp 2-component vector of float)
+0:10            'inF0' ( in 2-component vector of float)
+0:10            'inF1' ( in 2-component vector of float)
+0:11      Branch: Return with expression
+0:?         Constant:
+0:?           1.000000
+0:?           2.000000
+0:15  Function Definition: PixelShaderFunction3(vf3;vf3; ( temp 3-component vector of float)
+0:15    Function Parameters: 
+0:15      'inF0' ( in 3-component vector of float)
+0:15      'inF1' ( in 3-component vector of float)
+0:?     Sequence
+0:16      Sequence
+0:16        move second child to first child ( temp 3-component vector of float)
+0:16          'r000' ( temp 3-component vector of float)
+0:16          frexp ( temp 3-component vector of float)
+0:16            'inF0' ( in 3-component vector of float)
+0:16            'inF1' ( in 3-component vector of float)
+0:17      Branch: Return with expression
+0:?         Constant:
+0:?           1.000000
+0:?           2.000000
+0:?           3.000000
+0:21  Function Definition: PixelShaderFunction(vf4;vf4; ( temp 4-component vector of float)
+0:21    Function Parameters: 
+0:21      'inF0' ( in 4-component vector of float)
+0:21      'inF1' ( in 4-component vector of float)
+0:?     Sequence
+0:22      Sequence
+0:22        move second child to first child ( temp 4-component vector of float)
+0:22          'r000' ( temp 4-component vector of float)
+0:22          frexp ( temp 4-component vector of float)
+0:22            'inF0' ( in 4-component vector of float)
+0:22            'inF1' ( in 4-component vector of float)
+0:23      Branch: Return with expression
+0:?         Constant:
+0:?           1.000000
+0:?           2.000000
+0:?           3.000000
+0:?           4.000000
+0:33  Function Definition: @main( ( temp structure{ temp 4-component vector of float color})
+0:33    Function Parameters: 
+0:?     Sequence
+0:35      move second child to first child ( temp 4-component vector of float)
+0:35        color: direct index for structure ( temp 4-component vector of float)
+0:35          'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:35          Constant:
+0:35            0 (const int)
+0:35        Constant:
+0:35          1.000000
+0:35          1.000000
+0:35          1.000000
+0:35          1.000000
+0:36      Branch: Return with expression
+0:36        'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:33  Function Definition: main( ( temp void)
+0:33    Function Parameters: 
+0:?     Sequence
+0:33      Sequence
+0:33        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:33          color: direct index for structure ( temp 4-component vector of float)
+0:33            Function Call: @main( ( temp structure{ temp 4-component vector of float color})
+0:33            Constant:
+0:33              0 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:3  Function Definition: PixelShaderFunctionS(f1;f1; ( temp float)
+0:3    Function Parameters: 
+0:3      'inF0' ( in float)
+0:3      'inF1' ( in float)
+0:?     Sequence
+0:4      Sequence
+0:4        move second child to first child ( temp float)
+0:4          'r000' ( temp float)
+0:4          frexp ( temp float)
+0:4            'inF0' ( in float)
+0:4            'inF1' ( in float)
+0:5      Branch: Return with expression
+0:5        Constant:
+0:5          0.000000
+0:9  Function Definition: PixelShaderFunction2(vf2;vf2; ( temp 2-component vector of float)
+0:9    Function Parameters: 
+0:9      'inF0' ( in 2-component vector of float)
+0:9      'inF1' ( in 2-component vector of float)
+0:?     Sequence
+0:10      Sequence
+0:10        move second child to first child ( temp 2-component vector of float)
+0:10          'r000' ( temp 2-component vector of float)
+0:10          frexp ( temp 2-component vector of float)
+0:10            'inF0' ( in 2-component vector of float)
+0:10            'inF1' ( in 2-component vector of float)
+0:11      Branch: Return with expression
+0:?         Constant:
+0:?           1.000000
+0:?           2.000000
+0:15  Function Definition: PixelShaderFunction3(vf3;vf3; ( temp 3-component vector of float)
+0:15    Function Parameters: 
+0:15      'inF0' ( in 3-component vector of float)
+0:15      'inF1' ( in 3-component vector of float)
+0:?     Sequence
+0:16      Sequence
+0:16        move second child to first child ( temp 3-component vector of float)
+0:16          'r000' ( temp 3-component vector of float)
+0:16          frexp ( temp 3-component vector of float)
+0:16            'inF0' ( in 3-component vector of float)
+0:16            'inF1' ( in 3-component vector of float)
+0:17      Branch: Return with expression
+0:?         Constant:
+0:?           1.000000
+0:?           2.000000
+0:?           3.000000
+0:21  Function Definition: PixelShaderFunction(vf4;vf4; ( temp 4-component vector of float)
+0:21    Function Parameters: 
+0:21      'inF0' ( in 4-component vector of float)
+0:21      'inF1' ( in 4-component vector of float)
+0:?     Sequence
+0:22      Sequence
+0:22        move second child to first child ( temp 4-component vector of float)
+0:22          'r000' ( temp 4-component vector of float)
+0:22          frexp ( temp 4-component vector of float)
+0:22            'inF0' ( in 4-component vector of float)
+0:22            'inF1' ( in 4-component vector of float)
+0:23      Branch: Return with expression
+0:?         Constant:
+0:?           1.000000
+0:?           2.000000
+0:?           3.000000
+0:?           4.000000
+0:33  Function Definition: @main( ( temp structure{ temp 4-component vector of float color})
+0:33    Function Parameters: 
+0:?     Sequence
+0:35      move second child to first child ( temp 4-component vector of float)
+0:35        color: direct index for structure ( temp 4-component vector of float)
+0:35          'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:35          Constant:
+0:35            0 (const int)
+0:35        Constant:
+0:35          1.000000
+0:35          1.000000
+0:35          1.000000
+0:35          1.000000
+0:36      Branch: Return with expression
+0:36        'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:33  Function Definition: main( ( temp void)
+0:33    Function Parameters: 
+0:?     Sequence
+0:33      Sequence
+0:33        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:33          color: direct index for structure ( temp 4-component vector of float)
+0:33            Function Call: @main( ( temp structure{ temp 4-component vector of float color})
+0:33            Constant:
+0:33              0 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 98
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 95
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 11  "PixelShaderFunctionS(f1;f1;"
+                              Name 9  "inF0"
+                              Name 10  "inF1"
+                              Name 18  "PixelShaderFunction2(vf2;vf2;"
+                              Name 16  "inF0"
+                              Name 17  "inF1"
+                              Name 25  "PixelShaderFunction3(vf3;vf3;"
+                              Name 23  "inF0"
+                              Name 24  "inF1"
+                              Name 32  "PixelShaderFunction(vf4;vf4;"
+                              Name 30  "inF0"
+                              Name 31  "inF1"
+                              Name 34  "PS_OUTPUT"
+                              MemberName 34(PS_OUTPUT) 0  "color"
+                              Name 36  "@main("
+                              Name 38  "r000"
+                              Name 41  "ResType"
+                              Name 49  "r000"
+                              Name 52  "ResType"
+                              Name 62  "r000"
+                              Name 65  "ResType"
+                              Name 74  "r000"
+                              Name 77  "ResType"
+                              Name 87  "ps_output"
+                              Name 95  "@entryPointOutput.color"
+                              Decorate 95(@entryPointOutput.color) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypePointer Function 6(float)
+               8:             TypeFunction 6(float) 7(ptr) 7(ptr)
+              13:             TypeVector 6(float) 2
+              14:             TypePointer Function 13(fvec2)
+              15:             TypeFunction 13(fvec2) 14(ptr) 14(ptr)
+              20:             TypeVector 6(float) 3
+              21:             TypePointer Function 20(fvec3)
+              22:             TypeFunction 20(fvec3) 21(ptr) 21(ptr)
+              27:             TypeVector 6(float) 4
+              28:             TypePointer Function 27(fvec4)
+              29:             TypeFunction 27(fvec4) 28(ptr) 28(ptr)
+   34(PS_OUTPUT):             TypeStruct 27(fvec4)
+              35:             TypeFunction 34(PS_OUTPUT)
+              40:             TypeInt 32 1
+     41(ResType):             TypeStruct 6(float) 40(int)
+              46:    6(float) Constant 0
+              51:             TypeVector 40(int) 2
+     52(ResType):             TypeStruct 13(fvec2) 51(ivec2)
+              57:    6(float) Constant 1065353216
+              58:    6(float) Constant 1073741824
+              59:   13(fvec2) ConstantComposite 57 58
+              64:             TypeVector 40(int) 3
+     65(ResType):             TypeStruct 20(fvec3) 64(ivec3)
+              70:    6(float) Constant 1077936128
+              71:   20(fvec3) ConstantComposite 57 58 70
+              76:             TypeVector 40(int) 4
+     77(ResType):             TypeStruct 27(fvec4) 76(ivec4)
+              82:    6(float) Constant 1082130432
+              83:   27(fvec4) ConstantComposite 57 58 70 82
+              86:             TypePointer Function 34(PS_OUTPUT)
+              88:     40(int) Constant 0
+              89:   27(fvec4) ConstantComposite 57 57 57 57
+              94:             TypePointer Output 27(fvec4)
+95(@entryPointOutput.color):     94(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              96:34(PS_OUTPUT) FunctionCall 36(@main()
+              97:   27(fvec4) CompositeExtract 96 0
+                              Store 95(@entryPointOutput.color) 97
+                              Return
+                              FunctionEnd
+11(PixelShaderFunctionS(f1;f1;):    6(float) Function None 8
+         9(inF0):      7(ptr) FunctionParameter
+        10(inF1):      7(ptr) FunctionParameter
+              12:             Label
+        38(r000):      7(ptr) Variable Function
+              39:    6(float) Load 9(inF0)
+              42: 41(ResType) ExtInst 1(GLSL.std.450) 52(FrexpStruct) 39
+              43:     40(int) CompositeExtract 42 1
+              44:    6(float) ConvertSToF 43
+                              Store 10(inF1) 44
+              45:    6(float) CompositeExtract 42 0
+                              Store 38(r000) 45
+                              ReturnValue 46
+                              FunctionEnd
+18(PixelShaderFunction2(vf2;vf2;):   13(fvec2) Function None 15
+        16(inF0):     14(ptr) FunctionParameter
+        17(inF1):     14(ptr) FunctionParameter
+              19:             Label
+        49(r000):     14(ptr) Variable Function
+              50:   13(fvec2) Load 16(inF0)
+              53: 52(ResType) ExtInst 1(GLSL.std.450) 52(FrexpStruct) 50
+              54:   51(ivec2) CompositeExtract 53 1
+              55:   13(fvec2) ConvertSToF 54
+                              Store 17(inF1) 55
+              56:   13(fvec2) CompositeExtract 53 0
+                              Store 49(r000) 56
+                              ReturnValue 59
+                              FunctionEnd
+25(PixelShaderFunction3(vf3;vf3;):   20(fvec3) Function None 22
+        23(inF0):     21(ptr) FunctionParameter
+        24(inF1):     21(ptr) FunctionParameter
+              26:             Label
+        62(r000):     21(ptr) Variable Function
+              63:   20(fvec3) Load 23(inF0)
+              66: 65(ResType) ExtInst 1(GLSL.std.450) 52(FrexpStruct) 63
+              67:   64(ivec3) CompositeExtract 66 1
+              68:   20(fvec3) ConvertSToF 67
+                              Store 24(inF1) 68
+              69:   20(fvec3) CompositeExtract 66 0
+                              Store 62(r000) 69
+                              ReturnValue 71
+                              FunctionEnd
+32(PixelShaderFunction(vf4;vf4;):   27(fvec4) Function None 29
+        30(inF0):     28(ptr) FunctionParameter
+        31(inF1):     28(ptr) FunctionParameter
+              33:             Label
+        74(r000):     28(ptr) Variable Function
+              75:   27(fvec4) Load 30(inF0)
+              78: 77(ResType) ExtInst 1(GLSL.std.450) 52(FrexpStruct) 75
+              79:   76(ivec4) CompositeExtract 78 1
+              80:   27(fvec4) ConvertSToF 79
+                              Store 31(inF1) 80
+              81:   27(fvec4) CompositeExtract 78 0
+                              Store 74(r000) 81
+                              ReturnValue 83
+                              FunctionEnd
+      36(@main():34(PS_OUTPUT) Function None 35
+              37:             Label
+   87(ps_output):     86(ptr) Variable Function
+              90:     28(ptr) AccessChain 87(ps_output) 88
+                              Store 90 89
+              91:34(PS_OUTPUT) Load 87(ps_output)
+                              ReturnValue 91
+                              FunctionEnd

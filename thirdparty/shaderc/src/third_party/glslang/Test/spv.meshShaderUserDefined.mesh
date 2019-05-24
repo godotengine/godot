@@ -1,0 +1,59 @@
+#version 450
+
+#define MAX_VER  81
+#define MAX_PRIM 32
+
+#define BARRIER() \
+    memoryBarrierShared(); \
+    barrier();
+
+#extension GL_NV_mesh_shader : enable
+
+layout(local_size_x = 32) in;
+
+layout(max_vertices=MAX_VER) out;
+layout(max_primitives=MAX_PRIM) out;
+layout(triangles) out;
+
+// test use of user defined interface out blocks:
+
+// per-primitive block
+perprimitiveNV layout(location=0) out myblock {
+    float f;
+    float fArr[4];
+    vec3 pos;
+    vec4 posArr[4];
+    mat4 m;
+    mat3 mArr[2];
+} blk[];
+
+// per-vertex block
+layout(location=20) out myblock2 {
+    float f;
+    vec4 pos;
+    mat4 m;
+} blk2[];
+
+void main()
+{
+    uint iid = gl_LocalInvocationID.x;
+    uint gid = gl_WorkGroupID.x;
+
+    blk[iid].f               = 11.0;
+    blk[iid+1].fArr[gid]     = blk[iid].f;
+    blk[iid/2].pos.yzx       = vec3(14.0, 15.0, 13.0);
+    blk[iid*2].posArr[1].yzw = blk[iid/2].pos;
+    blk[iid/4].m[2].wzyx     = vec4(13.0, 14.0, 15.0, 16.0);
+    blk[iid].mArr[0][1][1]   = blk[iid/4].m[2].w;
+    blk[iid*4].mArr[1][gid]  = vec3(17.0, 18.0, 19.0);
+
+    BARRIER();
+
+    blk2[iid].f           = blk2[iid-1].f + 20.0;
+    blk2[iid].pos         = vec4(21.0, 22.0, 23.0, 24.0);
+    blk2[iid+1].m[gid]    = blk2[iid].pos;
+    blk2[iid+1].m[gid][2] = 29.0;
+    blk2[iid+2].m[3]      = blk2[iid+1].m[gid];
+
+    BARRIER();
+}

@@ -1,0 +1,7 @@
+AppendStructuredBuffer<float4> Buf : register(u0);
+
+[numthreads(1, 1, 1)]
+void main()
+{
+	Buf.Append(1.0f.xxxx);
+}

@@ -1,0 +1,264 @@
+hlsl.memberFunCall.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:1  Function Definition: method3(f1; ( temp float)
+0:1    Function Parameters: 
+0:1      'a' ( in float)
+0:?     Sequence
+0:1      Branch: Return with expression
+0:1        Constant:
+0:1          1.000000
+0:4  Function Definition: myContext::method1( ( temp float)
+0:4    Function Parameters: 
+0:4      '@this' ( temp structure{ temp float f})
+0:?     Sequence
+0:4      Branch: Return with expression
+0:4        Function Call: myContext::method2( ( temp float)
+0:?           '@this' ( temp structure{ temp float f})
+0:5  Function Definition: myContext::method2( ( temp float)
+0:5    Function Parameters: 
+0:5      '@this' ( temp structure{ temp float f})
+0:?     Sequence
+0:5      Branch: Return with expression
+0:5        Function Call: myContext::method3(f1; ( temp float)
+0:?           '@this' ( temp structure{ temp float f})
+0:5          Constant:
+0:5            1.000000
+0:6  Function Definition: myContext::method3(f1; ( temp float)
+0:6    Function Parameters: 
+0:6      '@this' ( temp structure{ temp float f})
+0:6      'a' ( in float)
+0:?     Sequence
+0:6      Branch: Return with expression
+0:6        Function Call: myContext::method4(f1;f1; ( temp float)
+0:?           '@this' ( temp structure{ temp float f})
+0:6          'a' ( in float)
+0:6          'a' ( in float)
+0:7  Function Definition: myContext::method4(f1;f1; ( temp float)
+0:7    Function Parameters: 
+0:7      '@this' ( temp structure{ temp float f})
+0:7      'a' ( in float)
+0:7      'b' ( in float)
+0:?     Sequence
+0:7      Branch: Return with expression
+0:7        add ( temp float)
+0:7          add ( temp float)
+0:7            'a' ( in float)
+0:7            'b' ( in float)
+0:7          f: direct index for structure ( temp float)
+0:7            '@this' ( temp structure{ temp float f})
+0:7            Constant:
+0:7              0 (const uint)
+0:12  Function Definition: @main( ( temp 4-component vector of float)
+0:12    Function Parameters: 
+0:?     Sequence
+0:14      move second child to first child ( temp float)
+0:14        f: direct index for structure ( temp float)
+0:14          'context' ( temp structure{ temp float f})
+0:14          Constant:
+0:14            0 (const int)
+0:14        Constant:
+0:14          3.000000
+0:15      Branch: Return with expression
+0:15        Construct vec4 ( temp 4-component vector of float)
+0:15          Function Call: myContext::method1( ( temp float)
+0:15            'context' ( temp structure{ temp float f})
+0:12  Function Definition: main( ( temp void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:12      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:12        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:1  Function Definition: method3(f1; ( temp float)
+0:1    Function Parameters: 
+0:1      'a' ( in float)
+0:?     Sequence
+0:1      Branch: Return with expression
+0:1        Constant:
+0:1          1.000000
+0:4  Function Definition: myContext::method1( ( temp float)
+0:4    Function Parameters: 
+0:4      '@this' ( temp structure{ temp float f})
+0:?     Sequence
+0:4      Branch: Return with expression
+0:4        Function Call: myContext::method2( ( temp float)
+0:?           '@this' ( temp structure{ temp float f})
+0:5  Function Definition: myContext::method2( ( temp float)
+0:5    Function Parameters: 
+0:5      '@this' ( temp structure{ temp float f})
+0:?     Sequence
+0:5      Branch: Return with expression
+0:5        Function Call: myContext::method3(f1; ( temp float)
+0:?           '@this' ( temp structure{ temp float f})
+0:5          Constant:
+0:5            1.000000
+0:6  Function Definition: myContext::method3(f1; ( temp float)
+0:6    Function Parameters: 
+0:6      '@this' ( temp structure{ temp float f})
+0:6      'a' ( in float)
+0:?     Sequence
+0:6      Branch: Return with expression
+0:6        Function Call: myContext::method4(f1;f1; ( temp float)
+0:?           '@this' ( temp structure{ temp float f})
+0:6          'a' ( in float)
+0:6          'a' ( in float)
+0:7  Function Definition: myContext::method4(f1;f1; ( temp float)
+0:7    Function Parameters: 
+0:7      '@this' ( temp structure{ temp float f})
+0:7      'a' ( in float)
+0:7      'b' ( in float)
+0:?     Sequence
+0:7      Branch: Return with expression
+0:7        add ( temp float)
+0:7          add ( temp float)
+0:7            'a' ( in float)
+0:7            'b' ( in float)
+0:7          f: direct index for structure ( temp float)
+0:7            '@this' ( temp structure{ temp float f})
+0:7            Constant:
+0:7              0 (const uint)
+0:12  Function Definition: @main( ( temp 4-component vector of float)
+0:12    Function Parameters: 
+0:?     Sequence
+0:14      move second child to first child ( temp float)
+0:14        f: direct index for structure ( temp float)
+0:14          'context' ( temp structure{ temp float f})
+0:14          Constant:
+0:14            0 (const int)
+0:14        Constant:
+0:14          3.000000
+0:15      Branch: Return with expression
+0:15        Construct vec4 ( temp 4-component vector of float)
+0:15          Function Call: myContext::method1( ( temp float)
+0:15            'context' ( temp structure{ temp float f})
+0:12  Function Definition: main( ( temp void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:12      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:12        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 73
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 71
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 10  "method3(f1;"
+                              Name 9  "a"
+                              Name 12  "myContext"
+                              MemberName 12(myContext) 0  "f"
+                              Name 16  "myContext::method1("
+                              Name 15  "@this"
+                              Name 19  "myContext::method2("
+                              Name 18  "@this"
+                              Name 24  "myContext::method3(f1;"
+                              Name 22  "@this"
+                              Name 23  "a"
+                              Name 30  "myContext::method4(f1;f1;"
+                              Name 27  "@this"
+                              Name 28  "a"
+                              Name 29  "b"
+                              Name 34  "@main("
+                              Name 42  "param"
+                              Name 46  "param"
+                              Name 48  "param"
+                              Name 63  "context"
+                              Name 71  "@entryPointOutput"
+                              Decorate 71(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypePointer Function 6(float)
+               8:             TypeFunction 6(float) 7(ptr)
+   12(myContext):             TypeStruct 6(float)
+              13:             TypePointer Function 12(myContext)
+              14:             TypeFunction 6(float) 13(ptr)
+              21:             TypeFunction 6(float) 13(ptr) 7(ptr)
+              26:             TypeFunction 6(float) 13(ptr) 7(ptr) 7(ptr)
+              32:             TypeVector 6(float) 4
+              33:             TypeFunction 32(fvec4)
+              36:    6(float) Constant 1065353216
+              56:             TypeInt 32 1
+              57:     56(int) Constant 0
+              64:    6(float) Constant 1077936128
+              70:             TypePointer Output 32(fvec4)
+71(@entryPointOutput):     70(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              72:   32(fvec4) FunctionCall 34(@main()
+                              Store 71(@entryPointOutput) 72
+                              Return
+                              FunctionEnd
+ 10(method3(f1;):    6(float) Function None 8
+            9(a):      7(ptr) FunctionParameter
+              11:             Label
+                              ReturnValue 36
+                              FunctionEnd
+16(myContext::method1():    6(float) Function None 14
+       15(@this):     13(ptr) FunctionParameter
+              17:             Label
+              39:    6(float) FunctionCall 19(myContext::method2() 15(@this)
+                              ReturnValue 39
+                              FunctionEnd
+19(myContext::method2():    6(float) Function None 14
+       18(@this):     13(ptr) FunctionParameter
+              20:             Label
+       42(param):      7(ptr) Variable Function
+                              Store 42(param) 36
+              43:    6(float) FunctionCall 24(myContext::method3(f1;) 18(@this) 42(param)
+                              ReturnValue 43
+                              FunctionEnd
+24(myContext::method3(f1;):    6(float) Function None 21
+       22(@this):     13(ptr) FunctionParameter
+           23(a):      7(ptr) FunctionParameter
+              25:             Label
+       46(param):      7(ptr) Variable Function
+       48(param):      7(ptr) Variable Function
+              47:    6(float) Load 23(a)
+                              Store 46(param) 47
+              49:    6(float) Load 23(a)
+                              Store 48(param) 49
+              50:    6(float) FunctionCall 30(myContext::method4(f1;f1;) 22(@this) 46(param) 48(param)
+                              ReturnValue 50
+                              FunctionEnd
+30(myContext::method4(f1;f1;):    6(float) Function None 26
+       27(@this):     13(ptr) FunctionParameter
+           28(a):      7(ptr) FunctionParameter
+           29(b):      7(ptr) FunctionParameter
+              31:             Label
+              53:    6(float) Load 28(a)
+              54:    6(float) Load 29(b)
+              55:    6(float) FAdd 53 54
+              58:      7(ptr) AccessChain 27(@this) 57
+              59:    6(float) Load 58
+              60:    6(float) FAdd 55 59
+                              ReturnValue 60
+                              FunctionEnd
+      34(@main():   32(fvec4) Function None 33
+              35:             Label
+     63(context):     13(ptr) Variable Function
+              65:      7(ptr) AccessChain 63(context) 57
+                              Store 65 64
+              66:    6(float) FunctionCall 16(myContext::method1() 63(context)
+              67:   32(fvec4) CompositeConstruct 66 66 66 66
+                              ReturnValue 67
+                              FunctionEnd

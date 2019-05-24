@@ -1,0 +1,389 @@
+hlsl.intrinsics.f1632.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:2  Function Definition: PixelShaderFunctionS(u1; ( temp float)
+0:2    Function Parameters: 
+0:2      'inF0' ( in uint)
+0:?     Sequence
+0:3      Branch: Return with expression
+0:3        direct index ( temp float)
+0:3          unpackHalf2x16 ( temp 2-component vector of float)
+0:3            'inF0' ( in uint)
+0:3          Constant:
+0:3            0 (const int)
+0:7  Function Definition: PixelShaderFunction1(vu1; ( temp 1-component vector of float)
+0:7    Function Parameters: 
+0:7      'inF0' ( in 1-component vector of uint)
+0:?     Sequence
+0:8      Branch: Return with expression
+0:8        Constant:
+0:8          0.000000
+0:12  Function Definition: PixelShaderFunction2(vu2; ( temp 2-component vector of float)
+0:12    Function Parameters: 
+0:12      'inF0' ( in 2-component vector of uint)
+0:?     Sequence
+0:13      Branch: Return with expression
+0:13        Construct vec2 ( temp 2-component vector of float)
+0:13          direct index ( temp float)
+0:13            unpackHalf2x16 ( temp 2-component vector of float)
+0:13              direct index ( temp uint)
+0:13                'inF0' ( in 2-component vector of uint)
+0:13                Constant:
+0:13                  0 (const int)
+0:13            Constant:
+0:13              0 (const int)
+0:13          direct index ( temp float)
+0:13            unpackHalf2x16 ( temp 2-component vector of float)
+0:13              direct index ( temp uint)
+0:13                'inF0' ( in 2-component vector of uint)
+0:13                Constant:
+0:13                  1 (const int)
+0:13            Constant:
+0:13              0 (const int)
+0:17  Function Definition: PixelShaderFunction3(vu3; ( temp 3-component vector of float)
+0:17    Function Parameters: 
+0:17      'inF0' ( in 3-component vector of uint)
+0:?     Sequence
+0:18      Branch: Return with expression
+0:18        Construct vec3 ( temp 3-component vector of float)
+0:18          direct index ( temp float)
+0:18            unpackHalf2x16 ( temp 2-component vector of float)
+0:18              direct index ( temp uint)
+0:18                'inF0' ( in 3-component vector of uint)
+0:18                Constant:
+0:18                  0 (const int)
+0:18            Constant:
+0:18              0 (const int)
+0:18          direct index ( temp float)
+0:18            unpackHalf2x16 ( temp 2-component vector of float)
+0:18              direct index ( temp uint)
+0:18                'inF0' ( in 3-component vector of uint)
+0:18                Constant:
+0:18                  1 (const int)
+0:18            Constant:
+0:18              0 (const int)
+0:18          direct index ( temp float)
+0:18            unpackHalf2x16 ( temp 2-component vector of float)
+0:18              direct index ( temp uint)
+0:18                'inF0' ( in 3-component vector of uint)
+0:18                Constant:
+0:18                  2 (const int)
+0:18            Constant:
+0:18              0 (const int)
+0:22  Function Definition: PixelShaderFunction(vu4; ( temp 4-component vector of float)
+0:22    Function Parameters: 
+0:22      'inF0' ( in 4-component vector of uint)
+0:?     Sequence
+0:23      Branch: Return with expression
+0:23        Construct vec4 ( temp 4-component vector of float)
+0:23          direct index ( temp float)
+0:23            unpackHalf2x16 ( temp 2-component vector of float)
+0:23              direct index ( temp uint)
+0:23                'inF0' ( in 4-component vector of uint)
+0:23                Constant:
+0:23                  0 (const int)
+0:23            Constant:
+0:23              0 (const int)
+0:23          direct index ( temp float)
+0:23            unpackHalf2x16 ( temp 2-component vector of float)
+0:23              direct index ( temp uint)
+0:23                'inF0' ( in 4-component vector of uint)
+0:23                Constant:
+0:23                  1 (const int)
+0:23            Constant:
+0:23              0 (const int)
+0:23          direct index ( temp float)
+0:23            unpackHalf2x16 ( temp 2-component vector of float)
+0:23              direct index ( temp uint)
+0:23                'inF0' ( in 4-component vector of uint)
+0:23                Constant:
+0:23                  2 (const int)
+0:23            Constant:
+0:23              0 (const int)
+0:23          direct index ( temp float)
+0:23            unpackHalf2x16 ( temp 2-component vector of float)
+0:23              direct index ( temp uint)
+0:23                'inF0' ( in 4-component vector of uint)
+0:23                Constant:
+0:23                  3 (const int)
+0:23            Constant:
+0:23              0 (const int)
+0:27  Function Definition: @main( ( temp 4-component vector of float)
+0:27    Function Parameters: 
+0:?     Sequence
+0:28      Branch: Return with expression
+0:28        Constant:
+0:28          0.000000
+0:28          0.000000
+0:28          0.000000
+0:28          0.000000
+0:27  Function Definition: main( ( temp void)
+0:27    Function Parameters: 
+0:?     Sequence
+0:27      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:27        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:2  Function Definition: PixelShaderFunctionS(u1; ( temp float)
+0:2    Function Parameters: 
+0:2      'inF0' ( in uint)
+0:?     Sequence
+0:3      Branch: Return with expression
+0:3        direct index ( temp float)
+0:3          unpackHalf2x16 ( temp 2-component vector of float)
+0:3            'inF0' ( in uint)
+0:3          Constant:
+0:3            0 (const int)
+0:7  Function Definition: PixelShaderFunction1(vu1; ( temp 1-component vector of float)
+0:7    Function Parameters: 
+0:7      'inF0' ( in 1-component vector of uint)
+0:?     Sequence
+0:8      Branch: Return with expression
+0:8        Constant:
+0:8          0.000000
+0:12  Function Definition: PixelShaderFunction2(vu2; ( temp 2-component vector of float)
+0:12    Function Parameters: 
+0:12      'inF0' ( in 2-component vector of uint)
+0:?     Sequence
+0:13      Branch: Return with expression
+0:13        Construct vec2 ( temp 2-component vector of float)
+0:13          direct index ( temp float)
+0:13            unpackHalf2x16 ( temp 2-component vector of float)
+0:13              direct index ( temp uint)
+0:13                'inF0' ( in 2-component vector of uint)
+0:13                Constant:
+0:13                  0 (const int)
+0:13            Constant:
+0:13              0 (const int)
+0:13          direct index ( temp float)
+0:13            unpackHalf2x16 ( temp 2-component vector of float)
+0:13              direct index ( temp uint)
+0:13                'inF0' ( in 2-component vector of uint)
+0:13                Constant:
+0:13                  1 (const int)
+0:13            Constant:
+0:13              0 (const int)
+0:17  Function Definition: PixelShaderFunction3(vu3; ( temp 3-component vector of float)
+0:17    Function Parameters: 
+0:17      'inF0' ( in 3-component vector of uint)
+0:?     Sequence
+0:18      Branch: Return with expression
+0:18        Construct vec3 ( temp 3-component vector of float)
+0:18          direct index ( temp float)
+0:18            unpackHalf2x16 ( temp 2-component vector of float)
+0:18              direct index ( temp uint)
+0:18                'inF0' ( in 3-component vector of uint)
+0:18                Constant:
+0:18                  0 (const int)
+0:18            Constant:
+0:18              0 (const int)
+0:18          direct index ( temp float)
+0:18            unpackHalf2x16 ( temp 2-component vector of float)
+0:18              direct index ( temp uint)
+0:18                'inF0' ( in 3-component vector of uint)
+0:18                Constant:
+0:18                  1 (const int)
+0:18            Constant:
+0:18              0 (const int)
+0:18          direct index ( temp float)
+0:18            unpackHalf2x16 ( temp 2-component vector of float)
+0:18              direct index ( temp uint)
+0:18                'inF0' ( in 3-component vector of uint)
+0:18                Constant:
+0:18                  2 (const int)
+0:18            Constant:
+0:18              0 (const int)
+0:22  Function Definition: PixelShaderFunction(vu4; ( temp 4-component vector of float)
+0:22    Function Parameters: 
+0:22      'inF0' ( in 4-component vector of uint)
+0:?     Sequence
+0:23      Branch: Return with expression
+0:23        Construct vec4 ( temp 4-component vector of float)
+0:23          direct index ( temp float)
+0:23            unpackHalf2x16 ( temp 2-component vector of float)
+0:23              direct index ( temp uint)
+0:23                'inF0' ( in 4-component vector of uint)
+0:23                Constant:
+0:23                  0 (const int)
+0:23            Constant:
+0:23              0 (const int)
+0:23          direct index ( temp float)
+0:23            unpackHalf2x16 ( temp 2-component vector of float)
+0:23              direct index ( temp uint)
+0:23                'inF0' ( in 4-component vector of uint)
+0:23                Constant:
+0:23                  1 (const int)
+0:23            Constant:
+0:23              0 (const int)
+0:23          direct index ( temp float)
+0:23            unpackHalf2x16 ( temp 2-component vector of float)
+0:23              direct index ( temp uint)
+0:23                'inF0' ( in 4-component vector of uint)
+0:23                Constant:
+0:23                  2 (const int)
+0:23            Constant:
+0:23              0 (const int)
+0:23          direct index ( temp float)
+0:23            unpackHalf2x16 ( temp 2-component vector of float)
+0:23              direct index ( temp uint)
+0:23                'inF0' ( in 4-component vector of uint)
+0:23                Constant:
+0:23                  3 (const int)
+0:23            Constant:
+0:23              0 (const int)
+0:27  Function Definition: @main( ( temp 4-component vector of float)
+0:27    Function Parameters: 
+0:?     Sequence
+0:28      Branch: Return with expression
+0:28        Constant:
+0:28          0.000000
+0:28          0.000000
+0:28          0.000000
+0:28          0.000000
+0:27  Function Definition: main( ( temp void)
+0:27    Function Parameters: 
+0:?     Sequence
+0:27      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:27        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 103
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 101
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 11  "PixelShaderFunctionS(u1;"
+                              Name 10  "inF0"
+                              Name 14  "PixelShaderFunction1(vu1;"
+                              Name 13  "inF0"
+                              Name 21  "PixelShaderFunction2(vu2;"
+                              Name 20  "inF0"
+                              Name 28  "PixelShaderFunction3(vu3;"
+                              Name 27  "inF0"
+                              Name 35  "PixelShaderFunction(vu4;"
+                              Name 34  "inF0"
+                              Name 38  "@main("
+                              Name 101  "@entryPointOutput"
+                              Decorate 101(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeInt 32 0
+               7:             TypePointer Function 6(int)
+               8:             TypeFloat 32
+               9:             TypeFunction 8(float) 7(ptr)
+              16:             TypeVector 6(int) 2
+              17:             TypePointer Function 16(ivec2)
+              18:             TypeVector 8(float) 2
+              19:             TypeFunction 18(fvec2) 17(ptr)
+              23:             TypeVector 6(int) 3
+              24:             TypePointer Function 23(ivec3)
+              25:             TypeVector 8(float) 3
+              26:             TypeFunction 25(fvec3) 24(ptr)
+              30:             TypeVector 6(int) 4
+              31:             TypePointer Function 30(ivec4)
+              32:             TypeVector 8(float) 4
+              33:             TypeFunction 32(fvec4) 31(ptr)
+              37:             TypeFunction 32(fvec4)
+              42:      6(int) Constant 0
+              46:    8(float) Constant 0
+              53:      6(int) Constant 1
+              69:      6(int) Constant 2
+              89:      6(int) Constant 3
+              97:   32(fvec4) ConstantComposite 46 46 46 46
+             100:             TypePointer Output 32(fvec4)
+101(@entryPointOutput):    100(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+             102:   32(fvec4) FunctionCall 38(@main()
+                              Store 101(@entryPointOutput) 102
+                              Return
+                              FunctionEnd
+11(PixelShaderFunctionS(u1;):    8(float) Function None 9
+        10(inF0):      7(ptr) FunctionParameter
+              12:             Label
+              40:      6(int) Load 10(inF0)
+              41:   18(fvec2) ExtInst 1(GLSL.std.450) 62(UnpackHalf2x16) 40
+              43:    8(float) CompositeExtract 41 0
+                              ReturnValue 43
+                              FunctionEnd
+14(PixelShaderFunction1(vu1;):    8(float) Function None 9
+        13(inF0):      7(ptr) FunctionParameter
+              15:             Label
+                              ReturnValue 46
+                              FunctionEnd
+21(PixelShaderFunction2(vu2;):   18(fvec2) Function None 19
+        20(inF0):     17(ptr) FunctionParameter
+              22:             Label
+              49:      7(ptr) AccessChain 20(inF0) 42
+              50:      6(int) Load 49
+              51:   18(fvec2) ExtInst 1(GLSL.std.450) 62(UnpackHalf2x16) 50
+              52:    8(float) CompositeExtract 51 0
+              54:      7(ptr) AccessChain 20(inF0) 53
+              55:      6(int) Load 54
+              56:   18(fvec2) ExtInst 1(GLSL.std.450) 62(UnpackHalf2x16) 55
+              57:    8(float) CompositeExtract 56 0
+              58:   18(fvec2) CompositeConstruct 52 57
+                              ReturnValue 58
+                              FunctionEnd
+28(PixelShaderFunction3(vu3;):   25(fvec3) Function None 26
+        27(inF0):     24(ptr) FunctionParameter
+              29:             Label
+              61:      7(ptr) AccessChain 27(inF0) 42
+              62:      6(int) Load 61
+              63:   18(fvec2) ExtInst 1(GLSL.std.450) 62(UnpackHalf2x16) 62
+              64:    8(float) CompositeExtract 63 0
+              65:      7(ptr) AccessChain 27(inF0) 53
+              66:      6(int) Load 65
+              67:   18(fvec2) ExtInst 1(GLSL.std.450) 62(UnpackHalf2x16) 66
+              68:    8(float) CompositeExtract 67 0
+              70:      7(ptr) AccessChain 27(inF0) 69
+              71:      6(int) Load 70
+              72:   18(fvec2) ExtInst 1(GLSL.std.450) 62(UnpackHalf2x16) 71
+              73:    8(float) CompositeExtract 72 0
+              74:   25(fvec3) CompositeConstruct 64 68 73
+                              ReturnValue 74
+                              FunctionEnd
+35(PixelShaderFunction(vu4;):   32(fvec4) Function None 33
+        34(inF0):     31(ptr) FunctionParameter
+              36:             Label
+              77:      7(ptr) AccessChain 34(inF0) 42
+              78:      6(int) Load 77
+              79:   18(fvec2) ExtInst 1(GLSL.std.450) 62(UnpackHalf2x16) 78
+              80:    8(float) CompositeExtract 79 0
+              81:      7(ptr) AccessChain 34(inF0) 53
+              82:      6(int) Load 81
+              83:   18(fvec2) ExtInst 1(GLSL.std.450) 62(UnpackHalf2x16) 82
+              84:    8(float) CompositeExtract 83 0
+              85:      7(ptr) AccessChain 34(inF0) 69
+              86:      6(int) Load 85
+              87:   18(fvec2) ExtInst 1(GLSL.std.450) 62(UnpackHalf2x16) 86
+              88:    8(float) CompositeExtract 87 0
+              90:      7(ptr) AccessChain 34(inF0) 89
+              91:      6(int) Load 90
+              92:   18(fvec2) ExtInst 1(GLSL.std.450) 62(UnpackHalf2x16) 91
+              93:    8(float) CompositeExtract 92 0
+              94:   32(fvec4) CompositeConstruct 80 84 88 93
+                              ReturnValue 94
+                              FunctionEnd
+      38(@main():   32(fvec4) Function None 37
+              39:             Label
+                              ReturnValue 97
+                              FunctionEnd

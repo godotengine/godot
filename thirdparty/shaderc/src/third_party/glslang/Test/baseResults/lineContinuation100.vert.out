@@ -1,0 +1,127 @@
+lineContinuation100.vert
+WARNING: 0:3: 'line continuation' : used at end of comment, but this version does not provide line continuation 
+ERROR: 0:4: '#error' : good error  
+ERROR: 0:8: 'line continuation' : not supported for this version or the enabled extensions 
+ERROR: 0:11: '#error' : e2  
+ERROR: 0:13: 'line continuation' : not supported for this version or the enabled extensions 
+ERROR: 0:14: 'line continuation' : not supported for this version or the enabled extensions 
+ERROR: 0:15: 'line continuation' : not supported for this version or the enabled extensions 
+ERROR: 0:18: '#error' : e3  
+ERROR: 0:24: 'line continuation' : not supported for this version or the enabled extensions 
+ERROR: 0:40: '\' : illegal use of escape character 
+ERROR: 0:41: '@' : unexpected token 
+ERROR: 0:42: '$' : unexpected token 
+ERROR: 0:43: '\' : illegal use of escape character 
+ERROR: 0:45: '\' : illegal use of escape character 
+ERROR: 0:46: '\' : illegal use of escape character 
+ERROR: 0:47: '$' : unexpected token 
+ERROR: 0:48: '@' : unexpected token 
+ERROR: 0:50: 'line continuation' : not supported for this version or the enabled extensions 
+ERROR: 0:52: 'line continuation' : not supported for this version or the enabled extensions 
+ERROR: 0:53: '#error' : bad continuation  
+ERROR: 0:55: 'line continuation' : not supported for this version or the enabled extensions 
+ERROR: 20 compilation errors.  No code generated.
+
+
+Shader version: 100
+ERROR: node is still EOpNull!
+0:20  Function Definition: main( ( global void)
+0:20    Function Parameters: 
+0:20    Sequence
+0:20      move second child to first child ( temp highp 4-component vector of float)
+0:20        'gl_Position' ( gl_Position highp 4-component vector of float Position)
+0:20        Construct vec4 ( temp highp 4-component vector of float)
+0:20          'foo' ( global highp float)
+0:22  Function Definition: foo2(vf4; ( global highp 4-component vector of float)
+0:22    Function Parameters: 
+0:22      'a' ( in highp 4-component vector of float)
+0:24    Sequence
+0:24      Sequence
+0:24        move second child to first child ( temp highp 4-component vector of float)
+0:24          'b' ( temp highp 4-component vector of float)
+0:24          'a' ( in highp 4-component vector of float)
+0:25      Branch: Return with expression
+0:25        'b' ( temp highp 4-component vector of float)
+0:45  Sequence
+0:45    move second child to first child ( temp highp int)
+0:45      'q1' ( global highp int)
+0:45      Constant:
+0:45        1 (const int)
+0:46  Sequence
+0:46    move second child to first child ( temp highp int)
+0:46      'q2' ( global highp int)
+0:46      Constant:
+0:46        1 (const int)
+0:47  Sequence
+0:47    move second child to first child ( temp highp int)
+0:47      'q3' ( global highp int)
+0:47      Constant:
+0:47        1 (const int)
+0:48  Sequence
+0:48    move second child to first child ( temp highp int)
+0:48      'q4' ( global highp int)
+0:48      Constant:
+0:48        1 (const int)
+0:?   Linker Objects
+0:?     'foo' ( global highp float)
+0:?     'a1' ( const highp int)
+0:?       4 (const int)
+0:?     'a2' ( const highp int)
+0:?       3 (const int)
+0:?     'a3' ( const highp int)
+0:?       4 (const int)
+0:?     'a4' ( const highp int)
+0:?       3 (const int)
+0:?     'q1' ( global highp int)
+0:?     'q2' ( global highp int)
+0:?     'q3' ( global highp int)
+0:?     'q4' ( global highp int)
+
+
+Linked vertex stage:
+
+
+Shader version: 100
+ERROR: node is still EOpNull!
+0:20  Function Definition: main( ( global void)
+0:20    Function Parameters: 
+0:20    Sequence
+0:20      move second child to first child ( temp highp 4-component vector of float)
+0:20        'gl_Position' ( gl_Position highp 4-component vector of float Position)
+0:20        Construct vec4 ( temp highp 4-component vector of float)
+0:20          'foo' ( global highp float)
+0:45  Sequence
+0:45    move second child to first child ( temp highp int)
+0:45      'q1' ( global highp int)
+0:45      Constant:
+0:45        1 (const int)
+0:46  Sequence
+0:46    move second child to first child ( temp highp int)
+0:46      'q2' ( global highp int)
+0:46      Constant:
+0:46        1 (const int)
+0:47  Sequence
+0:47    move second child to first child ( temp highp int)
+0:47      'q3' ( global highp int)
+0:47      Constant:
+0:47        1 (const int)
+0:48  Sequence
+0:48    move second child to first child ( temp highp int)
+0:48      'q4' ( global highp int)
+0:48      Constant:
+0:48        1 (const int)
+0:?   Linker Objects
+0:?     'foo' ( global highp float)
+0:?     'a1' ( const highp int)
+0:?       4 (const int)
+0:?     'a2' ( const highp int)
+0:?       3 (const int)
+0:?     'a3' ( const highp int)
+0:?       4 (const int)
+0:?     'a4' ( const highp int)
+0:?       3 (const int)
+0:?     'q1' ( global highp int)
+0:?     'q2' ( global highp int)
+0:?     'q3' ( global highp int)
+0:?     'q4' ( global highp int)
+

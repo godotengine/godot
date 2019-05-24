@@ -1,0 +1,6 @@
+groupshared float4 a[100];
+
+void main(int dti : SV_DispatchThreadID, int gti : SV_GroupThreadID)
+{
+    dti - gti;
+}

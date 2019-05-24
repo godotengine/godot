@@ -1,0 +1,55 @@
+struct Types
+{
+	uint4 u;
+	int4 i;
+	float4 f;
+	double4 d;
+};
+
+RWStructuredBuffer<Types> data;
+
+[numthreads(32, 16, 1)]
+void CSMain(uint3 dti : SV_DispatchThreadID)
+{
+	data[dti.x].u = WavePrefixSum(data[dti.x].u);
+	data[dti.x].u.x = WavePrefixSum(data[dti.x].u.x);
+	data[dti.x].u.xy = WavePrefixSum(data[dti.x].u.xy);
+	data[dti.x].u.xyz = WavePrefixSum(data[dti.x].u.xyz);
+
+	data[dti.x].i = WavePrefixSum(data[dti.x].i);
+	data[dti.x].i.x = WavePrefixSum(data[dti.x].i.x);
+	data[dti.x].i.xy = WavePrefixSum(data[dti.x].i.xy);
+	data[dti.x].i.xyz = WavePrefixSum(data[dti.x].i.xyz);
+
+	data[dti.x].f = WavePrefixSum(data[dti.x].f);
+	data[dti.x].f.x = WavePrefixSum(data[dti.x].f.x);
+	data[dti.x].f.xy = WavePrefixSum(data[dti.x].f.xy);
+	data[dti.x].f.xyz = WavePrefixSum(data[dti.x].f.xyz);
+
+	data[dti.x].d = WavePrefixSum(data[dti.x].d);
+	data[dti.x].d.x = WavePrefixSum(data[dti.x].d.x);
+	data[dti.x].d.xy = WavePrefixSum(data[dti.x].d.xy);
+	data[dti.x].d.xyz = WavePrefixSum(data[dti.x].d.xyz);
+
+	data[dti.x].u = WavePrefixProduct(data[dti.x].u);
+	data[dti.x].u.x = WavePrefixProduct(data[dti.x].u.x);
+	data[dti.x].u.xy = WavePrefixProduct(data[dti.x].u.xy);
+	data[dti.x].u.xyz = WavePrefixProduct(data[dti.x].u.xyz);
+
+	data[dti.x].i = WavePrefixProduct(data[dti.x].i);
+	data[dti.x].i.x = WavePrefixProduct(data[dti.x].i.x);
+	data[dti.x].i.xy = WavePrefixProduct(data[dti.x].i.xy);
+	data[dti.x].i.xyz = WavePrefixProduct(data[dti.x].i.xyz);
+
+	data[dti.x].f = WavePrefixProduct(data[dti.x].f);
+	data[dti.x].f.x = WavePrefixProduct(data[dti.x].f.x);
+	data[dti.x].f.xy = WavePrefixProduct(data[dti.x].f.xy);
+	data[dti.x].f.xyz = WavePrefixProduct(data[dti.x].f.xyz);
+
+	data[dti.x].d = WavePrefixProduct(data[dti.x].d);
+	data[dti.x].d.x = WavePrefixProduct(data[dti.x].d.x);
+	data[dti.x].d.xy = WavePrefixProduct(data[dti.x].d.xy);
+	data[dti.x].d.xyz = WavePrefixProduct(data[dti.x].d.xyz);
+
+	data[dti.x].u.x = WavePrefixCountBits(data[dti.x].u.x == 0);
+}

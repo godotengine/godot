@@ -1,0 +1,38 @@
+nvShaderNoperspectiveInterpolation.frag
+ERROR: 0:5: 'noperspective' : Reserved word. 
+ERROR: 0:5: 'noperspective' : not supported for this version or the enabled extensions 
+ERROR: 2 compilation errors.  No code generated.
+
+
+Shader version: 300
+Requested GL_NV_shader_noperspective_interpolation
+ERROR: node is still EOpNull!
+0:13  Function Definition: main( ( global void)
+0:13    Function Parameters: 
+0:14    Sequence
+0:14      move second child to first child ( temp mediump 4-component vector of float)
+0:14        'fragColor' ( out mediump 4-component vector of float)
+0:14        'color' ( noperspective in mediump 4-component vector of float)
+0:?   Linker Objects
+0:?     'bad' ( noperspective in mediump 4-component vector of float)
+0:?     'color' ( noperspective in mediump 4-component vector of float)
+0:?     'fragColor' ( out mediump 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 300
+Requested GL_NV_shader_noperspective_interpolation
+ERROR: node is still EOpNull!
+0:13  Function Definition: main( ( global void)
+0:13    Function Parameters: 
+0:14    Sequence
+0:14      move second child to first child ( temp mediump 4-component vector of float)
+0:14        'fragColor' ( out mediump 4-component vector of float)
+0:14        'color' ( noperspective in mediump 4-component vector of float)
+0:?   Linker Objects
+0:?     'bad' ( noperspective in mediump 4-component vector of float)
+0:?     'color' ( noperspective in mediump 4-component vector of float)
+0:?     'fragColor' ( out mediump 4-component vector of float)
+

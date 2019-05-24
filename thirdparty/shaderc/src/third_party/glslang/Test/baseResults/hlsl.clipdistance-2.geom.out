@@ -1,0 +1,924 @@
+hlsl.clipdistance-2.geom
+Shader version: 500
+invocations = -1
+max_vertices = 3
+input primitive = triangles
+output primitive = line_strip
+0:? Sequence
+0:11  Function Definition: @main(vf4[3];u1[3];struct-S-vf4-vf2[2]1;vf2[3][2]; ( temp void)
+0:11    Function Parameters: 
+0:11      'pos' ( in 3-element array of 4-component vector of float)
+0:11      'VertexID' ( in 3-element array of uint)
+0:11      'OutputStream' ( out structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:11      'clip' ( in 3-element array of 2-element array of 2-component vector of float)
+0:?     Sequence
+0:14      move second child to first child ( temp 4-component vector of float)
+0:14        pos: direct index for structure ( temp 4-component vector of float)
+0:14          's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:14          Constant:
+0:14            0 (const int)
+0:14        direct index ( temp 4-component vector of float)
+0:14          'pos' ( in 3-element array of 4-component vector of float)
+0:14          Constant:
+0:14            0 (const int)
+0:15      move second child to first child ( temp 2-component vector of float)
+0:15        direct index ( temp 2-component vector of float)
+0:15          clip: direct index for structure ( temp 2-element array of 2-component vector of float)
+0:15            's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:15            Constant:
+0:15              1 (const int)
+0:15          Constant:
+0:15            0 (const int)
+0:15        direct index ( temp 2-component vector of float)
+0:15          direct index ( temp 2-element array of 2-component vector of float)
+0:15            'clip' ( in 3-element array of 2-element array of 2-component vector of float)
+0:15            Constant:
+0:15              0 (const int)
+0:15          Constant:
+0:15            0 (const int)
+0:16      move second child to first child ( temp 2-component vector of float)
+0:16        direct index ( temp 2-component vector of float)
+0:16          clip: direct index for structure ( temp 2-element array of 2-component vector of float)
+0:16            's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:16            Constant:
+0:16              1 (const int)
+0:16          Constant:
+0:16            1 (const int)
+0:16        direct index ( temp 2-component vector of float)
+0:16          direct index ( temp 2-element array of 2-component vector of float)
+0:16            'clip' ( in 3-element array of 2-element array of 2-component vector of float)
+0:16            Constant:
+0:16              0 (const int)
+0:16          Constant:
+0:16            1 (const int)
+0:18      Sequence
+0:18        Sequence
+0:18          move second child to first child ( temp 4-component vector of float)
+0:?             'OutputStream.pos' ( out 4-component vector of float Position)
+0:18            pos: direct index for structure ( temp 4-component vector of float)
+0:18              's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:18              Constant:
+0:18                0 (const int)
+0:?           Sequence
+0:18            move second child to first child ( temp float)
+0:18              direct index ( out float ClipDistance)
+0:?                 'OutputStream.clip' ( out 4-element array of float ClipDistance)
+0:18                Constant:
+0:18                  0 (const int)
+0:18              direct index ( temp float)
+0:18                direct index ( temp 2-component vector of float)
+0:18                  clip: direct index for structure ( temp 2-element array of 2-component vector of float)
+0:18                    's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:18                    Constant:
+0:18                      1 (const int)
+0:18                  Constant:
+0:18                    0 (const int)
+0:18                Constant:
+0:18                  0 (const int)
+0:18            move second child to first child ( temp float)
+0:18              direct index ( out float ClipDistance)
+0:?                 'OutputStream.clip' ( out 4-element array of float ClipDistance)
+0:18                Constant:
+0:18                  1 (const int)
+0:18              direct index ( temp float)
+0:18                direct index ( temp 2-component vector of float)
+0:18                  clip: direct index for structure ( temp 2-element array of 2-component vector of float)
+0:18                    's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:18                    Constant:
+0:18                      1 (const int)
+0:18                  Constant:
+0:18                    0 (const int)
+0:18                Constant:
+0:18                  1 (const int)
+0:18            move second child to first child ( temp float)
+0:18              direct index ( out float ClipDistance)
+0:?                 'OutputStream.clip' ( out 4-element array of float ClipDistance)
+0:18                Constant:
+0:18                  2 (const int)
+0:18              direct index ( temp float)
+0:18                direct index ( temp 2-component vector of float)
+0:18                  clip: direct index for structure ( temp 2-element array of 2-component vector of float)
+0:18                    's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:18                    Constant:
+0:18                      1 (const int)
+0:18                  Constant:
+0:18                    1 (const int)
+0:18                Constant:
+0:18                  0 (const int)
+0:18            move second child to first child ( temp float)
+0:18              direct index ( out float ClipDistance)
+0:?                 'OutputStream.clip' ( out 4-element array of float ClipDistance)
+0:18                Constant:
+0:18                  3 (const int)
+0:18              direct index ( temp float)
+0:18                direct index ( temp 2-component vector of float)
+0:18                  clip: direct index for structure ( temp 2-element array of 2-component vector of float)
+0:18                    's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:18                    Constant:
+0:18                      1 (const int)
+0:18                  Constant:
+0:18                    1 (const int)
+0:18                Constant:
+0:18                  1 (const int)
+0:18        EmitVertex ( temp void)
+0:11  Function Definition: main( ( temp void)
+0:11    Function Parameters: 
+0:?     Sequence
+0:11      move second child to first child ( temp 3-element array of 4-component vector of float)
+0:?         'pos' ( temp 3-element array of 4-component vector of float)
+0:?         'pos' ( in 3-element array of 4-component vector of float Position)
+0:11      move second child to first child ( temp 3-element array of uint)
+0:?         'VertexID' ( temp 3-element array of uint)
+0:?         'VertexID' (layout( location=0) in 3-element array of uint)
+0:?       Sequence
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  0 (const int)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  0 (const int)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  0 (const int)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              2 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  0 (const int)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              3 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  1 (const int)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  1 (const int)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  1 (const int)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              2 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  1 (const int)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              3 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  2 (const int)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                2 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  2 (const int)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                2 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  2 (const int)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                2 (const int)
+0:11            Constant:
+0:11              2 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  2 (const int)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                2 (const int)
+0:11            Constant:
+0:11              3 (const int)
+0:11      Function Call: @main(vf4[3];u1[3];struct-S-vf4-vf2[2]1;vf2[3][2]; ( temp void)
+0:?         'pos' ( temp 3-element array of 4-component vector of float)
+0:?         'VertexID' ( temp 3-element array of uint)
+0:?         'OutputStream' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:?         'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:?   Linker Objects
+0:?     'pos' ( in 3-element array of 4-component vector of float Position)
+0:?     'VertexID' (layout( location=0) in 3-element array of uint)
+0:?     'OutputStream.pos' ( out 4-component vector of float Position)
+0:?     'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:?     'OutputStream.clip' ( out 4-element array of float ClipDistance)
+
+
+Linked geometry stage:
+
+
+Shader version: 500
+invocations = 1
+max_vertices = 3
+input primitive = triangles
+output primitive = line_strip
+0:? Sequence
+0:11  Function Definition: @main(vf4[3];u1[3];struct-S-vf4-vf2[2]1;vf2[3][2]; ( temp void)
+0:11    Function Parameters: 
+0:11      'pos' ( in 3-element array of 4-component vector of float)
+0:11      'VertexID' ( in 3-element array of uint)
+0:11      'OutputStream' ( out structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:11      'clip' ( in 3-element array of 2-element array of 2-component vector of float)
+0:?     Sequence
+0:14      move second child to first child ( temp 4-component vector of float)
+0:14        pos: direct index for structure ( temp 4-component vector of float)
+0:14          's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:14          Constant:
+0:14            0 (const int)
+0:14        direct index ( temp 4-component vector of float)
+0:14          'pos' ( in 3-element array of 4-component vector of float)
+0:14          Constant:
+0:14            0 (const int)
+0:15      move second child to first child ( temp 2-component vector of float)
+0:15        direct index ( temp 2-component vector of float)
+0:15          clip: direct index for structure ( temp 2-element array of 2-component vector of float)
+0:15            's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:15            Constant:
+0:15              1 (const int)
+0:15          Constant:
+0:15            0 (const int)
+0:15        direct index ( temp 2-component vector of float)
+0:15          direct index ( temp 2-element array of 2-component vector of float)
+0:15            'clip' ( in 3-element array of 2-element array of 2-component vector of float)
+0:15            Constant:
+0:15              0 (const int)
+0:15          Constant:
+0:15            0 (const int)
+0:16      move second child to first child ( temp 2-component vector of float)
+0:16        direct index ( temp 2-component vector of float)
+0:16          clip: direct index for structure ( temp 2-element array of 2-component vector of float)
+0:16            's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:16            Constant:
+0:16              1 (const int)
+0:16          Constant:
+0:16            1 (const int)
+0:16        direct index ( temp 2-component vector of float)
+0:16          direct index ( temp 2-element array of 2-component vector of float)
+0:16            'clip' ( in 3-element array of 2-element array of 2-component vector of float)
+0:16            Constant:
+0:16              0 (const int)
+0:16          Constant:
+0:16            1 (const int)
+0:18      Sequence
+0:18        Sequence
+0:18          move second child to first child ( temp 4-component vector of float)
+0:?             'OutputStream.pos' ( out 4-component vector of float Position)
+0:18            pos: direct index for structure ( temp 4-component vector of float)
+0:18              's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:18              Constant:
+0:18                0 (const int)
+0:?           Sequence
+0:18            move second child to first child ( temp float)
+0:18              direct index ( out float ClipDistance)
+0:?                 'OutputStream.clip' ( out 4-element array of float ClipDistance)
+0:18                Constant:
+0:18                  0 (const int)
+0:18              direct index ( temp float)
+0:18                direct index ( temp 2-component vector of float)
+0:18                  clip: direct index for structure ( temp 2-element array of 2-component vector of float)
+0:18                    's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:18                    Constant:
+0:18                      1 (const int)
+0:18                  Constant:
+0:18                    0 (const int)
+0:18                Constant:
+0:18                  0 (const int)
+0:18            move second child to first child ( temp float)
+0:18              direct index ( out float ClipDistance)
+0:?                 'OutputStream.clip' ( out 4-element array of float ClipDistance)
+0:18                Constant:
+0:18                  1 (const int)
+0:18              direct index ( temp float)
+0:18                direct index ( temp 2-component vector of float)
+0:18                  clip: direct index for structure ( temp 2-element array of 2-component vector of float)
+0:18                    's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:18                    Constant:
+0:18                      1 (const int)
+0:18                  Constant:
+0:18                    0 (const int)
+0:18                Constant:
+0:18                  1 (const int)
+0:18            move second child to first child ( temp float)
+0:18              direct index ( out float ClipDistance)
+0:?                 'OutputStream.clip' ( out 4-element array of float ClipDistance)
+0:18                Constant:
+0:18                  2 (const int)
+0:18              direct index ( temp float)
+0:18                direct index ( temp 2-component vector of float)
+0:18                  clip: direct index for structure ( temp 2-element array of 2-component vector of float)
+0:18                    's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:18                    Constant:
+0:18                      1 (const int)
+0:18                  Constant:
+0:18                    1 (const int)
+0:18                Constant:
+0:18                  0 (const int)
+0:18            move second child to first child ( temp float)
+0:18              direct index ( out float ClipDistance)
+0:?                 'OutputStream.clip' ( out 4-element array of float ClipDistance)
+0:18                Constant:
+0:18                  3 (const int)
+0:18              direct index ( temp float)
+0:18                direct index ( temp 2-component vector of float)
+0:18                  clip: direct index for structure ( temp 2-element array of 2-component vector of float)
+0:18                    's' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:18                    Constant:
+0:18                      1 (const int)
+0:18                  Constant:
+0:18                    1 (const int)
+0:18                Constant:
+0:18                  1 (const int)
+0:18        EmitVertex ( temp void)
+0:11  Function Definition: main( ( temp void)
+0:11    Function Parameters: 
+0:?     Sequence
+0:11      move second child to first child ( temp 3-element array of 4-component vector of float)
+0:?         'pos' ( temp 3-element array of 4-component vector of float)
+0:?         'pos' ( in 3-element array of 4-component vector of float Position)
+0:11      move second child to first child ( temp 3-element array of uint)
+0:?         'VertexID' ( temp 3-element array of uint)
+0:?         'VertexID' (layout( location=0) in 3-element array of uint)
+0:?       Sequence
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  0 (const int)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  0 (const int)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  0 (const int)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              2 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  0 (const int)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              3 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  1 (const int)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  1 (const int)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  1 (const int)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              2 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  1 (const int)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              3 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  2 (const int)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                2 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  2 (const int)
+0:11              Constant:
+0:11                0 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                2 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  2 (const int)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                2 (const int)
+0:11            Constant:
+0:11              2 (const int)
+0:11        move second child to first child ( temp float)
+0:11          direct index ( temp float)
+0:11            direct index ( temp 2-component vector of float)
+0:11              direct index ( temp 2-element array of 2-component vector of float)
+0:?                 'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:11                Constant:
+0:11                  2 (const int)
+0:11              Constant:
+0:11                1 (const int)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( in float ClipDistance)
+0:11            direct index ( in 4-element array of float ClipDistance)
+0:?               'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:11              Constant:
+0:11                2 (const int)
+0:11            Constant:
+0:11              3 (const int)
+0:11      Function Call: @main(vf4[3];u1[3];struct-S-vf4-vf2[2]1;vf2[3][2]; ( temp void)
+0:?         'pos' ( temp 3-element array of 4-component vector of float)
+0:?         'VertexID' ( temp 3-element array of uint)
+0:?         'OutputStream' ( temp structure{ temp 4-component vector of float pos,  temp 2-element array of 2-component vector of float clip})
+0:?         'clip' ( temp 3-element array of 2-element array of 2-component vector of float)
+0:?   Linker Objects
+0:?     'pos' ( in 3-element array of 4-component vector of float Position)
+0:?     'VertexID' (layout( location=0) in 3-element array of uint)
+0:?     'OutputStream.pos' ( out 4-component vector of float Position)
+0:?     'clip' ( in 3-element array of 4-element array of float ClipDistance)
+0:?     'OutputStream.clip' ( out 4-element array of float ClipDistance)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 128
+
+                              Capability Geometry
+                              Capability ClipDistance
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Geometry 4  "main" 44 50 71 75 80
+                              ExecutionMode 4 Triangles
+                              ExecutionMode 4 Invocations 1
+                              ExecutionMode 4 OutputLineStrip
+                              ExecutionMode 4 OutputVertices 3
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 17  "S"
+                              MemberName 17(S) 0  "pos"
+                              MemberName 17(S) 1  "clip"
+                              Name 26  "@main(vf4[3];u1[3];struct-S-vf4-vf2[2]1;vf2[3][2];"
+                              Name 22  "pos"
+                              Name 23  "VertexID"
+                              Name 24  "OutputStream"
+                              Name 25  "clip"
+                              Name 28  "s"
+                              Name 44  "OutputStream.pos"
+                              Name 50  "OutputStream.clip"
+                              Name 69  "pos"
+                              Name 71  "pos"
+                              Name 73  "VertexID"
+                              Name 75  "VertexID"
+                              Name 77  "clip"
+                              Name 80  "clip"
+                              Name 118  "OutputStream"
+                              Name 119  "param"
+                              Name 121  "param"
+                              Name 123  "param"
+                              Name 124  "param"
+                              Decorate 44(OutputStream.pos) BuiltIn Position
+                              Decorate 50(OutputStream.clip) BuiltIn ClipDistance
+                              Decorate 71(pos) BuiltIn Position
+                              Decorate 75(VertexID) Location 0
+                              Decorate 80(clip) BuiltIn ClipDistance
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeInt 32 0
+               9:      8(int) Constant 3
+              10:             TypeArray 7(fvec4) 9
+              11:             TypePointer Function 10
+              12:             TypeArray 8(int) 9
+              13:             TypePointer Function 12
+              14:             TypeVector 6(float) 2
+              15:      8(int) Constant 2
+              16:             TypeArray 14(fvec2) 15
+           17(S):             TypeStruct 7(fvec4) 16
+              18:             TypePointer Function 17(S)
+              19:             TypeArray 16 9
+              20:             TypePointer Function 19
+              21:             TypeFunction 2 11(ptr) 13(ptr) 18(ptr) 20(ptr)
+              29:             TypeInt 32 1
+              30:     29(int) Constant 0
+              31:             TypePointer Function 7(fvec4)
+              35:     29(int) Constant 1
+              36:             TypePointer Function 14(fvec2)
+              43:             TypePointer Output 7(fvec4)
+44(OutputStream.pos):     43(ptr) Variable Output
+              47:      8(int) Constant 4
+              48:             TypeArray 6(float) 47
+              49:             TypePointer Output 48
+50(OutputStream.clip):     49(ptr) Variable Output
+              51:      8(int) Constant 0
+              52:             TypePointer Function 6(float)
+              55:             TypePointer Output 6(float)
+              57:      8(int) Constant 1
+              61:     29(int) Constant 2
+              65:     29(int) Constant 3
+              70:             TypePointer Input 10
+         71(pos):     70(ptr) Variable Input
+              74:             TypePointer Input 12
+    75(VertexID):     74(ptr) Variable Input
+              78:             TypeArray 48 9
+              79:             TypePointer Input 78
+        80(clip):     79(ptr) Variable Input
+              81:             TypePointer Input 6(float)
+         4(main):           2 Function None 3
+               5:             Label
+         69(pos):     11(ptr) Variable Function
+    73(VertexID):     13(ptr) Variable Function
+        77(clip):     20(ptr) Variable Function
+118(OutputStream):     18(ptr) Variable Function
+      119(param):     11(ptr) Variable Function
+      121(param):     13(ptr) Variable Function
+      123(param):     18(ptr) Variable Function
+      124(param):     20(ptr) Variable Function
+              72:          10 Load 71(pos)
+                              Store 69(pos) 72
+              76:          12 Load 75(VertexID)
+                              Store 73(VertexID) 76
+              82:     81(ptr) AccessChain 80(clip) 30 30
+              83:    6(float) Load 82
+              84:     52(ptr) AccessChain 77(clip) 30 30 51
+                              Store 84 83
+              85:     81(ptr) AccessChain 80(clip) 30 35
+              86:    6(float) Load 85
+              87:     52(ptr) AccessChain 77(clip) 30 30 57
+                              Store 87 86
+              88:     81(ptr) AccessChain 80(clip) 30 61
+              89:    6(float) Load 88
+              90:     52(ptr) AccessChain 77(clip) 30 35 51
+                              Store 90 89
+              91:     81(ptr) AccessChain 80(clip) 30 65
+              92:    6(float) Load 91
+              93:     52(ptr) AccessChain 77(clip) 30 35 57
+                              Store 93 92
+              94:     81(ptr) AccessChain 80(clip) 35 30
+              95:    6(float) Load 94
+              96:     52(ptr) AccessChain 77(clip) 35 30 51
+                              Store 96 95
+              97:     81(ptr) AccessChain 80(clip) 35 35
+              98:    6(float) Load 97
+              99:     52(ptr) AccessChain 77(clip) 35 30 57
+                              Store 99 98
+             100:     81(ptr) AccessChain 80(clip) 35 61
+             101:    6(float) Load 100
+             102:     52(ptr) AccessChain 77(clip) 35 35 51
+                              Store 102 101
+             103:     81(ptr) AccessChain 80(clip) 35 65
+             104:    6(float) Load 103
+             105:     52(ptr) AccessChain 77(clip) 35 35 57
+                              Store 105 104
+             106:     81(ptr) AccessChain 80(clip) 61 30
+             107:    6(float) Load 106
+             108:     52(ptr) AccessChain 77(clip) 61 30 51
+                              Store 108 107
+             109:     81(ptr) AccessChain 80(clip) 61 35
+             110:    6(float) Load 109
+             111:     52(ptr) AccessChain 77(clip) 61 30 57
+                              Store 111 110
+             112:     81(ptr) AccessChain 80(clip) 61 61
+             113:    6(float) Load 112
+             114:     52(ptr) AccessChain 77(clip) 61 35 51
+                              Store 114 113
+             115:     81(ptr) AccessChain 80(clip) 61 65
+             116:    6(float) Load 115
+             117:     52(ptr) AccessChain 77(clip) 61 35 57
+                              Store 117 116
+             120:          10 Load 69(pos)
+                              Store 119(param) 120
+             122:          12 Load 73(VertexID)
+                              Store 121(param) 122
+             125:          19 Load 77(clip)
+                              Store 124(param) 125
+             126:           2 FunctionCall 26(@main(vf4[3];u1[3];struct-S-vf4-vf2[2]1;vf2[3][2];) 119(param) 121(param) 123(param) 124(param)
+             127:       17(S) Load 123(param)
+                              Store 118(OutputStream) 127
+                              Return
+                              FunctionEnd
+26(@main(vf4[3];u1[3];struct-S-vf4-vf2[2]1;vf2[3][2];):           2 Function None 21
+         22(pos):     11(ptr) FunctionParameter
+    23(VertexID):     13(ptr) FunctionParameter
+24(OutputStream):     18(ptr) FunctionParameter
+        25(clip):     20(ptr) FunctionParameter
+              27:             Label
+           28(s):     18(ptr) Variable Function
+              32:     31(ptr) AccessChain 22(pos) 30
+              33:    7(fvec4) Load 32
+              34:     31(ptr) AccessChain 28(s) 30
+                              Store 34 33
+              37:     36(ptr) AccessChain 25(clip) 30 30
+              38:   14(fvec2) Load 37
+              39:     36(ptr) AccessChain 28(s) 35 30
+                              Store 39 38
+              40:     36(ptr) AccessChain 25(clip) 30 35
+              41:   14(fvec2) Load 40
+              42:     36(ptr) AccessChain 28(s) 35 35
+                              Store 42 41
+              45:     31(ptr) AccessChain 28(s) 30
+              46:    7(fvec4) Load 45
+                              Store 44(OutputStream.pos) 46
+              53:     52(ptr) AccessChain 28(s) 35 30 51
+              54:    6(float) Load 53
+              56:     55(ptr) AccessChain 50(OutputStream.clip) 30
+                              Store 56 54
+              58:     52(ptr) AccessChain 28(s) 35 30 57
+              59:    6(float) Load 58
+              60:     55(ptr) AccessChain 50(OutputStream.clip) 35
+                              Store 60 59
+              62:     52(ptr) AccessChain 28(s) 35 35 51
+              63:    6(float) Load 62
+              64:     55(ptr) AccessChain 50(OutputStream.clip) 61
+                              Store 64 63
+              66:     52(ptr) AccessChain 28(s) 35 35 57
+              67:    6(float) Load 66
+              68:     55(ptr) AccessChain 50(OutputStream.clip) 65
+                              Store 68 67
+                              EmitVertex
+                              Return
+                              FunctionEnd

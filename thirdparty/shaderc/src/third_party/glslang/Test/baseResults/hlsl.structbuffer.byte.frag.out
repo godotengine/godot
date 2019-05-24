@@ -1,0 +1,479 @@
+hlsl.structbuffer.byte.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:5  Function Definition: @main(u1; ( temp 4-component vector of float)
+0:5    Function Parameters: 
+0:5      'pos' ( in uint)
+0:?     Sequence
+0:7      Sequence
+0:7        move second child to first child ( temp uint)
+0:7          'size' ( temp uint)
+0:7          array length ( temp uint)
+0:7            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:7              'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:7              Constant:
+0:7                0 (const uint)
+0:12      Branch: Return with expression
+0:11        add ( temp 4-component vector of float)
+0:10          add ( temp 4-component vector of float)
+0:9            add ( temp 4-component vector of float)
+0:9              Convert uint to float ( temp float)
+0:9                indirect index (layout( row_major std430) buffer uint)
+0:9                  @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:9                    'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:9                    Constant:
+0:9                      0 (const uint)
+0:9                  right-shift ( temp int)
+0:9                    'pos' ( in uint)
+0:9                    Constant:
+0:9                      2 (const int)
+0:?               Construct vec4 ( temp 4-component vector of float)
+0:?                 Convert uint to float ( temp 2-component vector of float)
+0:?                   Sequence
+0:10                    move second child to first child ( temp int)
+0:10                      'byteAddrTemp' ( temp int)
+0:10                      right-shift ( temp int)
+0:10                        add ( temp uint)
+0:10                          'pos' ( in uint)
+0:10                          Constant:
+0:10                            4 (const uint)
+0:10                        Constant:
+0:10                          2 (const int)
+0:?                     Construct vec2 ( temp 2-component vector of uint)
+0:10                      indirect index ( temp uint)
+0:10                        @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:10                          'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:10                          Constant:
+0:10                            0 (const uint)
+0:10                        'byteAddrTemp' ( temp int)
+0:10                      indirect index ( temp uint)
+0:10                        @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:10                          'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:10                          Constant:
+0:10                            0 (const uint)
+0:10                        add ( temp int)
+0:10                          'byteAddrTemp' ( temp int)
+0:10                          Constant:
+0:10                            1 (const int)
+0:10                Constant:
+0:10                  0.000000
+0:10                Constant:
+0:10                  0.000000
+0:?             Construct vec4 ( temp 4-component vector of float)
+0:?               Convert uint to float ( temp 3-component vector of float)
+0:?                 Sequence
+0:11                  move second child to first child ( temp int)
+0:11                    'byteAddrTemp' ( temp int)
+0:11                    right-shift ( temp int)
+0:11                      add ( temp uint)
+0:11                        'pos' ( in uint)
+0:11                        Constant:
+0:11                          8 (const uint)
+0:11                      Constant:
+0:11                        2 (const int)
+0:?                   Construct vec3 ( temp 3-component vector of uint)
+0:11                    indirect index ( temp uint)
+0:11                      @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:11                        'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:11                        Constant:
+0:11                          0 (const uint)
+0:11                      'byteAddrTemp' ( temp int)
+0:11                    indirect index ( temp uint)
+0:11                      @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:11                        'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:11                        Constant:
+0:11                          0 (const uint)
+0:11                      add ( temp int)
+0:11                        'byteAddrTemp' ( temp int)
+0:11                        Constant:
+0:11                          1 (const int)
+0:11                    indirect index ( temp uint)
+0:11                      @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:11                        'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:11                        Constant:
+0:11                          0 (const uint)
+0:11                      add ( temp int)
+0:11                        'byteAddrTemp' ( temp int)
+0:11                        Constant:
+0:11                          2 (const int)
+0:11              Constant:
+0:11                0.000000
+0:?           Convert uint to float ( temp 4-component vector of float)
+0:?             Sequence
+0:12              move second child to first child ( temp int)
+0:12                'byteAddrTemp' ( temp int)
+0:12                right-shift ( temp int)
+0:12                  add ( temp uint)
+0:12                    'pos' ( in uint)
+0:12                    Constant:
+0:12                      12 (const uint)
+0:12                  Constant:
+0:12                    2 (const int)
+0:?               Construct vec4 ( temp 4-component vector of uint)
+0:12                indirect index ( temp uint)
+0:12                  @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:12                    'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:12                    Constant:
+0:12                      0 (const uint)
+0:12                  'byteAddrTemp' ( temp int)
+0:12                indirect index ( temp uint)
+0:12                  @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:12                    'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:12                    Constant:
+0:12                      0 (const uint)
+0:12                  add ( temp int)
+0:12                    'byteAddrTemp' ( temp int)
+0:12                    Constant:
+0:12                      1 (const int)
+0:12                indirect index ( temp uint)
+0:12                  @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:12                    'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:12                    Constant:
+0:12                      0 (const uint)
+0:12                  add ( temp int)
+0:12                    'byteAddrTemp' ( temp int)
+0:12                    Constant:
+0:12                      2 (const int)
+0:12                indirect index ( temp uint)
+0:12                  @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:12                    'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:12                    Constant:
+0:12                      0 (const uint)
+0:12                  add ( temp int)
+0:12                    'byteAddrTemp' ( temp int)
+0:12                    Constant:
+0:12                      3 (const int)
+0:5  Function Definition: main( ( temp void)
+0:5    Function Parameters: 
+0:?     Sequence
+0:5      move second child to first child ( temp uint)
+0:?         'pos' ( temp uint)
+0:?         'pos' (layout( location=0) flat in uint)
+0:5      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:5        Function Call: @main(u1; ( temp 4-component vector of float)
+0:?           'pos' ( temp uint)
+0:?   Linker Objects
+0:?     'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'pos' (layout( location=0) flat in uint)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:5  Function Definition: @main(u1; ( temp 4-component vector of float)
+0:5    Function Parameters: 
+0:5      'pos' ( in uint)
+0:?     Sequence
+0:7      Sequence
+0:7        move second child to first child ( temp uint)
+0:7          'size' ( temp uint)
+0:7          array length ( temp uint)
+0:7            @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:7              'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:7              Constant:
+0:7                0 (const uint)
+0:12      Branch: Return with expression
+0:11        add ( temp 4-component vector of float)
+0:10          add ( temp 4-component vector of float)
+0:9            add ( temp 4-component vector of float)
+0:9              Convert uint to float ( temp float)
+0:9                indirect index (layout( row_major std430) buffer uint)
+0:9                  @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:9                    'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:9                    Constant:
+0:9                      0 (const uint)
+0:9                  right-shift ( temp int)
+0:9                    'pos' ( in uint)
+0:9                    Constant:
+0:9                      2 (const int)
+0:?               Construct vec4 ( temp 4-component vector of float)
+0:?                 Convert uint to float ( temp 2-component vector of float)
+0:?                   Sequence
+0:10                    move second child to first child ( temp int)
+0:10                      'byteAddrTemp' ( temp int)
+0:10                      right-shift ( temp int)
+0:10                        add ( temp uint)
+0:10                          'pos' ( in uint)
+0:10                          Constant:
+0:10                            4 (const uint)
+0:10                        Constant:
+0:10                          2 (const int)
+0:?                     Construct vec2 ( temp 2-component vector of uint)
+0:10                      indirect index ( temp uint)
+0:10                        @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:10                          'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:10                          Constant:
+0:10                            0 (const uint)
+0:10                        'byteAddrTemp' ( temp int)
+0:10                      indirect index ( temp uint)
+0:10                        @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:10                          'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:10                          Constant:
+0:10                            0 (const uint)
+0:10                        add ( temp int)
+0:10                          'byteAddrTemp' ( temp int)
+0:10                          Constant:
+0:10                            1 (const int)
+0:10                Constant:
+0:10                  0.000000
+0:10                Constant:
+0:10                  0.000000
+0:?             Construct vec4 ( temp 4-component vector of float)
+0:?               Convert uint to float ( temp 3-component vector of float)
+0:?                 Sequence
+0:11                  move second child to first child ( temp int)
+0:11                    'byteAddrTemp' ( temp int)
+0:11                    right-shift ( temp int)
+0:11                      add ( temp uint)
+0:11                        'pos' ( in uint)
+0:11                        Constant:
+0:11                          8 (const uint)
+0:11                      Constant:
+0:11                        2 (const int)
+0:?                   Construct vec3 ( temp 3-component vector of uint)
+0:11                    indirect index ( temp uint)
+0:11                      @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:11                        'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:11                        Constant:
+0:11                          0 (const uint)
+0:11                      'byteAddrTemp' ( temp int)
+0:11                    indirect index ( temp uint)
+0:11                      @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:11                        'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:11                        Constant:
+0:11                          0 (const uint)
+0:11                      add ( temp int)
+0:11                        'byteAddrTemp' ( temp int)
+0:11                        Constant:
+0:11                          1 (const int)
+0:11                    indirect index ( temp uint)
+0:11                      @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:11                        'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:11                        Constant:
+0:11                          0 (const uint)
+0:11                      add ( temp int)
+0:11                        'byteAddrTemp' ( temp int)
+0:11                        Constant:
+0:11                          2 (const int)
+0:11              Constant:
+0:11                0.000000
+0:?           Convert uint to float ( temp 4-component vector of float)
+0:?             Sequence
+0:12              move second child to first child ( temp int)
+0:12                'byteAddrTemp' ( temp int)
+0:12                right-shift ( temp int)
+0:12                  add ( temp uint)
+0:12                    'pos' ( in uint)
+0:12                    Constant:
+0:12                      12 (const uint)
+0:12                  Constant:
+0:12                    2 (const int)
+0:?               Construct vec4 ( temp 4-component vector of uint)
+0:12                indirect index ( temp uint)
+0:12                  @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:12                    'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:12                    Constant:
+0:12                      0 (const uint)
+0:12                  'byteAddrTemp' ( temp int)
+0:12                indirect index ( temp uint)
+0:12                  @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:12                    'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:12                    Constant:
+0:12                      0 (const uint)
+0:12                  add ( temp int)
+0:12                    'byteAddrTemp' ( temp int)
+0:12                    Constant:
+0:12                      1 (const int)
+0:12                indirect index ( temp uint)
+0:12                  @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:12                    'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:12                    Constant:
+0:12                      0 (const uint)
+0:12                  add ( temp int)
+0:12                    'byteAddrTemp' ( temp int)
+0:12                    Constant:
+0:12                      2 (const int)
+0:12                indirect index ( temp uint)
+0:12                  @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:12                    'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:12                    Constant:
+0:12                      0 (const uint)
+0:12                  add ( temp int)
+0:12                    'byteAddrTemp' ( temp int)
+0:12                    Constant:
+0:12                      3 (const int)
+0:5  Function Definition: main( ( temp void)
+0:5    Function Parameters: 
+0:?     Sequence
+0:5      move second child to first child ( temp uint)
+0:?         'pos' ( temp uint)
+0:?         'pos' (layout( location=0) flat in uint)
+0:5      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:5        Function Call: @main(u1; ( temp 4-component vector of float)
+0:?           'pos' ( temp uint)
+0:?   Linker Objects
+0:?     'sbuf' (layout( row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'pos' (layout( location=0) flat in uint)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 114
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 107 110
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 12  "@main(u1;"
+                              Name 11  "pos"
+                              Name 14  "size"
+                              Name 16  "sbuf"
+                              MemberName 16(sbuf) 0  "@data"
+                              Name 18  "sbuf"
+                              Name 30  "byteAddrTemp"
+                              Name 53  "byteAddrTemp"
+                              Name 78  "byteAddrTemp"
+                              Name 105  "pos"
+                              Name 107  "pos"
+                              Name 110  "@entryPointOutput"
+                              Name 111  "param"
+                              Decorate 15 ArrayStride 4
+                              MemberDecorate 16(sbuf) 0 NonWritable
+                              MemberDecorate 16(sbuf) 0 Offset 0
+                              Decorate 16(sbuf) BufferBlock
+                              Decorate 18(sbuf) DescriptorSet 0
+                              Decorate 18(sbuf) Binding 0
+                              Decorate 107(pos) Flat
+                              Decorate 107(pos) Location 0
+                              Decorate 110(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeInt 32 0
+               7:             TypePointer Function 6(int)
+               8:             TypeFloat 32
+               9:             TypeVector 8(float) 4
+              10:             TypeFunction 9(fvec4) 7(ptr)
+              15:             TypeRuntimeArray 6(int)
+        16(sbuf):             TypeStruct 15
+              17:             TypePointer Uniform 16(sbuf)
+        18(sbuf):     17(ptr) Variable Uniform
+              20:             TypeInt 32 1
+              21:     20(int) Constant 0
+              23:     20(int) Constant 2
+              25:             TypePointer Uniform 6(int)
+              29:             TypePointer Function 20(int)
+              32:      6(int) Constant 4
+              39:     20(int) Constant 1
+              43:             TypeVector 6(int) 2
+              45:             TypeVector 8(float) 2
+              47:    8(float) Constant 0
+              55:      6(int) Constant 8
+              69:             TypeVector 6(int) 3
+              71:             TypeVector 8(float) 3
+              80:      6(int) Constant 12
+              95:     20(int) Constant 3
+              99:             TypeVector 6(int) 4
+             106:             TypePointer Input 6(int)
+        107(pos):    106(ptr) Variable Input
+             109:             TypePointer Output 9(fvec4)
+110(@entryPointOutput):    109(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+        105(pos):      7(ptr) Variable Function
+      111(param):      7(ptr) Variable Function
+             108:      6(int) Load 107(pos)
+                              Store 105(pos) 108
+             112:      6(int) Load 105(pos)
+                              Store 111(param) 112
+             113:    9(fvec4) FunctionCall 12(@main(u1;) 111(param)
+                              Store 110(@entryPointOutput) 113
+                              Return
+                              FunctionEnd
+   12(@main(u1;):    9(fvec4) Function None 10
+         11(pos):      7(ptr) FunctionParameter
+              13:             Label
+        14(size):      7(ptr) Variable Function
+30(byteAddrTemp):     29(ptr) Variable Function
+53(byteAddrTemp):     29(ptr) Variable Function
+78(byteAddrTemp):     29(ptr) Variable Function
+              19:      6(int) ArrayLength 18(sbuf) 0
+                              Store 14(size) 19
+              22:      6(int) Load 11(pos)
+              24:     20(int) ShiftRightLogical 22 23
+              26:     25(ptr) AccessChain 18(sbuf) 21 24
+              27:      6(int) Load 26
+              28:    8(float) ConvertUToF 27
+              31:      6(int) Load 11(pos)
+              33:      6(int) IAdd 31 32
+              34:     20(int) ShiftRightLogical 33 23
+                              Store 30(byteAddrTemp) 34
+              35:     20(int) Load 30(byteAddrTemp)
+              36:     25(ptr) AccessChain 18(sbuf) 21 35
+              37:      6(int) Load 36
+              38:     20(int) Load 30(byteAddrTemp)
+              40:     20(int) IAdd 38 39
+              41:     25(ptr) AccessChain 18(sbuf) 21 40
+              42:      6(int) Load 41
+              44:   43(ivec2) CompositeConstruct 37 42
+              46:   45(fvec2) ConvertUToF 44
+              48:    8(float) CompositeExtract 46 0
+              49:    8(float) CompositeExtract 46 1
+              50:    9(fvec4) CompositeConstruct 48 49 47 47
+              51:    9(fvec4) CompositeConstruct 28 28 28 28
+              52:    9(fvec4) FAdd 51 50
+              54:      6(int) Load 11(pos)
+              56:      6(int) IAdd 54 55
+              57:     20(int) ShiftRightLogical 56 23
+                              Store 53(byteAddrTemp) 57
+              58:     20(int) Load 53(byteAddrTemp)
+              59:     25(ptr) AccessChain 18(sbuf) 21 58
+              60:      6(int) Load 59
+              61:     20(int) Load 53(byteAddrTemp)
+              62:     20(int) IAdd 61 39
+              63:     25(ptr) AccessChain 18(sbuf) 21 62
+              64:      6(int) Load 63
+              65:     20(int) Load 53(byteAddrTemp)
+              66:     20(int) IAdd 65 23
+              67:     25(ptr) AccessChain 18(sbuf) 21 66
+              68:      6(int) Load 67
+              70:   69(ivec3) CompositeConstruct 60 64 68
+              72:   71(fvec3) ConvertUToF 70
+              73:    8(float) CompositeExtract 72 0
+              74:    8(float) CompositeExtract 72 1
+              75:    8(float) CompositeExtract 72 2
+              76:    9(fvec4) CompositeConstruct 73 74 75 47
+              77:    9(fvec4) FAdd 52 76
+              79:      6(int) Load 11(pos)
+              81:      6(int) IAdd 79 80
+              82:     20(int) ShiftRightLogical 81 23
+                              Store 78(byteAddrTemp) 82
+              83:     20(int) Load 78(byteAddrTemp)
+              84:     25(ptr) AccessChain 18(sbuf) 21 83
+              85:      6(int) Load 84
+              86:     20(int) Load 78(byteAddrTemp)
+              87:     20(int) IAdd 86 39
+              88:     25(ptr) AccessChain 18(sbuf) 21 87
+              89:      6(int) Load 88
+              90:     20(int) Load 78(byteAddrTemp)
+              91:     20(int) IAdd 90 23
+              92:     25(ptr) AccessChain 18(sbuf) 21 91
+              93:      6(int) Load 92
+              94:     20(int) Load 78(byteAddrTemp)
+              96:     20(int) IAdd 94 95
+              97:     25(ptr) AccessChain 18(sbuf) 21 96
+              98:      6(int) Load 97
+             100:   99(ivec4) CompositeConstruct 85 89 93 98
+             101:    9(fvec4) ConvertUToF 100
+             102:    9(fvec4) FAdd 77 101
+                              ReturnValue 102
+                              FunctionEnd

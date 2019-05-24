@@ -1,0 +1,68 @@
+mixedArrayDecls.frag
+ERROR: 0:30: '' :  syntax error, unexpected LEFT_PAREN, expecting COMMA or SEMICOLON
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 450
+ERROR: node is still EOpNull!
+0:16  Function Definition: foo(i1[14][15][6]; ( global 14-element array of 15-element array of 6-element array of int)
+0:16    Function Parameters: 
+0:16      'p' ( in 14-element array of 15-element array of 6-element array of int)
+0:16    Sequence
+0:16      Branch: Return with expression
+0:16        'p' ( in 14-element array of 15-element array of 6-element array of int)
+0:18  Function Definition: main( ( global void)
+0:18    Function Parameters: 
+0:20    Sequence
+0:20      direct index ( temp 14-element array of int)
+0:20        'g' ( global unsized 4-element array of 14-element array of int)
+0:20        Constant:
+0:20          3 (const int)
+0:21      direct index ( temp 14-element array of int)
+0:21        'h' ( global unsized 3-element array of 14-element array of int)
+0:21        Constant:
+0:21          2 (const int)
+0:24  Function Definition: bar( ( global 4-element array of 3-element array of 2-element array of float)
+0:24    Function Parameters: 
+0:?     Sequence
+0:24      Branch: Return with expression
+0:24        'a' ( temp 4-element array of 3-element array of 2-element array of float)
+0:?   Linker Objects
+0:?     's' ( global structure{ global 2-element array of 3-element array of int a,  global 5-element array of 3-element array of int b})
+0:?     'c' ( global 4-element array of 5-element array of int)
+0:?     'd' ( global 8-element array of 5-element array of int)
+0:?     'e' ( global 11-element array of 9-element array of int)
+0:?     'f' ( global 13-element array of 9-element array of int)
+0:?     'g' ( global unsized 4-element array of 14-element array of int)
+0:?     'h' ( global unsized 3-element array of 14-element array of int)
+0:?     'inbinst' ( in 4-element array of 5-element array of 6-element array of block{ in 8-element array of 9-element array of 7-element array of float f})
+0:?     'barm' ( global 4-element array of 3-element array of 2-element array of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 450
+ERROR: node is still EOpNull!
+0:18  Function Definition: main( ( global void)
+0:18    Function Parameters: 
+0:20    Sequence
+0:20      direct index ( temp 14-element array of int)
+0:20        'g' ( global 4-element array of 14-element array of int)
+0:20        Constant:
+0:20          3 (const int)
+0:21      direct index ( temp 14-element array of int)
+0:21        'h' ( global 3-element array of 14-element array of int)
+0:21        Constant:
+0:21          2 (const int)
+0:?   Linker Objects
+0:?     's' ( global structure{ global 2-element array of 3-element array of int a,  global 5-element array of 3-element array of int b})
+0:?     'c' ( global 4-element array of 5-element array of int)
+0:?     'd' ( global 8-element array of 5-element array of int)
+0:?     'e' ( global 11-element array of 9-element array of int)
+0:?     'f' ( global 13-element array of 9-element array of int)
+0:?     'g' ( global 4-element array of 14-element array of int)
+0:?     'h' ( global 3-element array of 14-element array of int)
+0:?     'inbinst' ( in 4-element array of 5-element array of 6-element array of block{ in 8-element array of 9-element array of 7-element array of float f})
+0:?     'barm' ( global 4-element array of 3-element array of 2-element array of float)
+

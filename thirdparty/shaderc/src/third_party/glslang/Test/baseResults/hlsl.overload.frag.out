@@ -1,0 +1,1625 @@
+hlsl.overload.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:2  Function Definition: foo1(d1;b1; ( temp void)
+0:2    Function Parameters: 
+0:2      'a' ( in double)
+0:2      'b' ( in bool)
+0:3  Function Definition: foo1(d1;u1; ( temp void)
+0:3    Function Parameters: 
+0:3      'a' ( in double)
+0:3      'b' ( in uint)
+0:4  Function Definition: foo1(d1;i1; ( temp void)
+0:4    Function Parameters: 
+0:4      'a' ( in double)
+0:4      'b' ( in int)
+0:5  Function Definition: foo1(d1;f1; ( temp void)
+0:5    Function Parameters: 
+0:5      'a' ( in double)
+0:5      'b' ( in float)
+0:6  Function Definition: foo1(d1;d1; ( temp void)
+0:6    Function Parameters: 
+0:6      'a' ( in double)
+0:6      'b' ( in double)
+0:9  Function Definition: foo2(i1;b1; ( temp void)
+0:9    Function Parameters: 
+0:9      'a' ( in int)
+0:9      'b' ( in bool)
+0:10  Function Definition: foo2(i1;u1; ( temp void)
+0:10    Function Parameters: 
+0:10      'a' ( in int)
+0:10      'b' ( in uint)
+0:11  Function Definition: foo2(i1;i1; ( temp void)
+0:11    Function Parameters: 
+0:11      'a' ( in int)
+0:11      'b' ( in int)
+0:12  Function Definition: foo2(i1;f1; ( temp void)
+0:12    Function Parameters: 
+0:12      'a' ( in int)
+0:12      'b' ( in float)
+0:13  Function Definition: foo2(i1;d1; ( temp void)
+0:13    Function Parameters: 
+0:13      'a' ( in int)
+0:13      'b' ( in double)
+0:16  Function Definition: foo3(b1; ( temp void)
+0:16    Function Parameters: 
+0:16      'b' ( in bool)
+0:17  Function Definition: foo4(u1; ( temp void)
+0:17    Function Parameters: 
+0:17      'b' ( in uint)
+0:18  Function Definition: foo5(i1; ( temp void)
+0:18    Function Parameters: 
+0:18      'b' ( in int)
+0:19  Function Definition: foo6(f1; ( temp void)
+0:19    Function Parameters: 
+0:19      'b' ( in float)
+0:20  Function Definition: foo7(d1; ( temp void)
+0:20    Function Parameters: 
+0:20      'b' ( in double)
+0:23  Function Definition: foo8(f1; ( temp void)
+0:23    Function Parameters: 
+0:23      '' ( in float)
+0:24  Function Definition: foo8(d1; ( temp void)
+0:24    Function Parameters: 
+0:24      '' ( in double)
+0:25  Function Definition: foo9(i1; ( temp void)
+0:25    Function Parameters: 
+0:25      '' ( in int)
+0:26  Function Definition: foo9(u1; ( temp void)
+0:26    Function Parameters: 
+0:26      '' ( in uint)
+0:27  Function Definition: foo10(b1; ( temp void)
+0:27    Function Parameters: 
+0:27      '' ( in bool)
+0:28  Function Definition: foo10(i1; ( temp void)
+0:28    Function Parameters: 
+0:28      '' ( in int)
+0:31  Function Definition: foo11(vf3; ( temp void)
+0:31    Function Parameters: 
+0:31      '' ( in 3-component vector of float)
+0:32  Function Definition: foo11(d1; ( temp void)
+0:32    Function Parameters: 
+0:32      '' ( in double)
+0:33  Function Definition: foo11(vi3; ( temp void)
+0:33    Function Parameters: 
+0:33      '' ( in 3-component vector of int)
+0:34  Function Definition: foo11(u1; ( temp void)
+0:34    Function Parameters: 
+0:34      '' ( in uint)
+0:35  Function Definition: foo12(vf1; ( temp void)
+0:35    Function Parameters: 
+0:35      '' ( in 1-component vector of float)
+0:36  Function Definition: foo12(vd3; ( temp void)
+0:36    Function Parameters: 
+0:36      '' ( in 3-component vector of double)
+0:37  Function Definition: foo16(u1; ( temp void)
+0:37    Function Parameters: 
+0:37      '' ( in uint)
+0:38  Function Definition: foo16(vu2; ( temp void)
+0:38    Function Parameters: 
+0:38      '' ( in 2-component vector of uint)
+0:41  Function Definition: foo13(vf3; ( temp void)
+0:41    Function Parameters: 
+0:41      '' ( in 3-component vector of float)
+0:42  Function Definition: foo14(vi1; ( temp void)
+0:42    Function Parameters: 
+0:42      '' ( in 1-component vector of int)
+0:43  Function Definition: foo15(vb1; ( temp void)
+0:43    Function Parameters: 
+0:43      '' ( in 1-component vector of bool)
+0:46  Function Definition: @PixelShaderFunction(vf4; ( temp 4-component vector of float)
+0:46    Function Parameters: 
+0:46      'input' ( in 4-component vector of float)
+0:?     Sequence
+0:53      Function Call: foo1(d1;b1; ( temp void)
+0:53        'd' ( temp double)
+0:53        'b' ( temp bool)
+0:54      Function Call: foo1(d1;d1; ( temp void)
+0:54        'd' ( temp double)
+0:54        'd' ( temp double)
+0:55      Function Call: foo1(d1;u1; ( temp void)
+0:55        'd' ( temp double)
+0:55        'u' ( temp uint)
+0:56      Function Call: foo1(d1;i1; ( temp void)
+0:56        'd' ( temp double)
+0:56        'i' ( temp int)
+0:57      Function Call: foo1(d1;f1; ( temp void)
+0:57        'd' ( temp double)
+0:57        'f' ( temp float)
+0:59      Function Call: foo1(d1;b1; ( temp void)
+0:59        Convert float to double ( temp double)
+0:59          'f' ( temp float)
+0:59        'b' ( temp bool)
+0:60      Function Call: foo1(d1;d1; ( temp void)
+0:60        Convert float to double ( temp double)
+0:60          'f' ( temp float)
+0:60        'd' ( temp double)
+0:61      Function Call: foo1(d1;u1; ( temp void)
+0:61        Convert float to double ( temp double)
+0:61          'f' ( temp float)
+0:61        'u' ( temp uint)
+0:62      Function Call: foo1(d1;i1; ( temp void)
+0:62        Convert float to double ( temp double)
+0:62          'f' ( temp float)
+0:62        'i' ( temp int)
+0:63      Function Call: foo1(d1;f1; ( temp void)
+0:63        Convert float to double ( temp double)
+0:63          'f' ( temp float)
+0:63        'f' ( temp float)
+0:65      Function Call: foo1(d1;b1; ( temp void)
+0:65        Convert uint to double ( temp double)
+0:65          'u' ( temp uint)
+0:65        'b' ( temp bool)
+0:66      Function Call: foo1(d1;d1; ( temp void)
+0:66        Convert uint to double ( temp double)
+0:66          'u' ( temp uint)
+0:66        'd' ( temp double)
+0:67      Function Call: foo1(d1;u1; ( temp void)
+0:67        Convert uint to double ( temp double)
+0:67          'u' ( temp uint)
+0:67        'u' ( temp uint)
+0:68      Function Call: foo1(d1;i1; ( temp void)
+0:68        Convert uint to double ( temp double)
+0:68          'u' ( temp uint)
+0:68        'i' ( temp int)
+0:69      Function Call: foo1(d1;f1; ( temp void)
+0:69        Convert uint to double ( temp double)
+0:69          'u' ( temp uint)
+0:69        'f' ( temp float)
+0:71      Function Call: foo1(d1;b1; ( temp void)
+0:71        Convert int to double ( temp double)
+0:71          'i' ( temp int)
+0:71        'b' ( temp bool)
+0:72      Function Call: foo1(d1;d1; ( temp void)
+0:72        Convert int to double ( temp double)
+0:72          'i' ( temp int)
+0:72        'd' ( temp double)
+0:73      Function Call: foo1(d1;u1; ( temp void)
+0:73        Convert int to double ( temp double)
+0:73          'i' ( temp int)
+0:73        'u' ( temp uint)
+0:74      Function Call: foo1(d1;i1; ( temp void)
+0:74        Convert int to double ( temp double)
+0:74          'i' ( temp int)
+0:74        'i' ( temp int)
+0:75      Function Call: foo1(d1;f1; ( temp void)
+0:75        Convert int to double ( temp double)
+0:75          'i' ( temp int)
+0:75        'f' ( temp float)
+0:77      Function Call: foo2(i1;b1; ( temp void)
+0:77        Convert uint to int ( temp int)
+0:77          'u' ( temp uint)
+0:77        'b' ( temp bool)
+0:78      Function Call: foo2(i1;d1; ( temp void)
+0:78        Convert uint to int ( temp int)
+0:78          'u' ( temp uint)
+0:78        'd' ( temp double)
+0:79      Function Call: foo2(i1;u1; ( temp void)
+0:79        Convert uint to int ( temp int)
+0:79          'u' ( temp uint)
+0:79        'u' ( temp uint)
+0:80      Function Call: foo2(i1;i1; ( temp void)
+0:80        Convert uint to int ( temp int)
+0:80          'u' ( temp uint)
+0:80        'i' ( temp int)
+0:81      Function Call: foo2(i1;f1; ( temp void)
+0:81        Convert uint to int ( temp int)
+0:81          'u' ( temp uint)
+0:81        'f' ( temp float)
+0:83      Function Call: foo2(i1;b1; ( temp void)
+0:83        'i' ( temp int)
+0:83        'b' ( temp bool)
+0:84      Function Call: foo2(i1;d1; ( temp void)
+0:84        'i' ( temp int)
+0:84        'd' ( temp double)
+0:85      Function Call: foo2(i1;u1; ( temp void)
+0:85        'i' ( temp int)
+0:85        'u' ( temp uint)
+0:86      Function Call: foo2(i1;i1; ( temp void)
+0:86        'i' ( temp int)
+0:86        'i' ( temp int)
+0:87      Function Call: foo2(i1;f1; ( temp void)
+0:87        'i' ( temp int)
+0:87        'f' ( temp float)
+0:89      Function Call: foo3(b1; ( temp void)
+0:89        'b' ( temp bool)
+0:90      Function Call: foo3(b1; ( temp void)
+0:90        Convert double to bool ( temp bool)
+0:90          'd' ( temp double)
+0:91      Function Call: foo3(b1; ( temp void)
+0:91        Convert uint to bool ( temp bool)
+0:91          'u' ( temp uint)
+0:92      Function Call: foo3(b1; ( temp void)
+0:92        Convert int to bool ( temp bool)
+0:92          'i' ( temp int)
+0:93      Function Call: foo3(b1; ( temp void)
+0:93        Convert float to bool ( temp bool)
+0:93          'f' ( temp float)
+0:95      Function Call: foo4(u1; ( temp void)
+0:95        Convert bool to uint ( temp uint)
+0:95          'b' ( temp bool)
+0:96      Function Call: foo4(u1; ( temp void)
+0:96        Convert double to uint ( temp uint)
+0:96          'd' ( temp double)
+0:97      Function Call: foo4(u1; ( temp void)
+0:97        'u' ( temp uint)
+0:98      Function Call: foo4(u1; ( temp void)
+0:98        Convert int to uint ( temp uint)
+0:98          'i' ( temp int)
+0:99      Function Call: foo4(u1; ( temp void)
+0:99        Convert float to uint ( temp uint)
+0:99          'f' ( temp float)
+0:101      Function Call: foo5(i1; ( temp void)
+0:101        Convert bool to int ( temp int)
+0:101          'b' ( temp bool)
+0:102      Function Call: foo5(i1; ( temp void)
+0:102        Convert double to int ( temp int)
+0:102          'd' ( temp double)
+0:103      Function Call: foo5(i1; ( temp void)
+0:103        Convert uint to int ( temp int)
+0:103          'u' ( temp uint)
+0:104      Function Call: foo5(i1; ( temp void)
+0:104        'i' ( temp int)
+0:105      Function Call: foo5(i1; ( temp void)
+0:105        Convert float to int ( temp int)
+0:105          'f' ( temp float)
+0:107      Function Call: foo6(f1; ( temp void)
+0:107        Convert bool to float ( temp float)
+0:107          'b' ( temp bool)
+0:108      Function Call: foo6(f1; ( temp void)
+0:108        Convert double to float ( temp float)
+0:108          'd' ( temp double)
+0:109      Function Call: foo6(f1; ( temp void)
+0:109        Convert uint to float ( temp float)
+0:109          'u' ( temp uint)
+0:110      Function Call: foo6(f1; ( temp void)
+0:110        Convert int to float ( temp float)
+0:110          'i' ( temp int)
+0:111      Function Call: foo6(f1; ( temp void)
+0:111        'f' ( temp float)
+0:113      Function Call: foo7(d1; ( temp void)
+0:113        Convert bool to double ( temp double)
+0:113          'b' ( temp bool)
+0:114      Function Call: foo7(d1; ( temp void)
+0:114        'd' ( temp double)
+0:115      Function Call: foo7(d1; ( temp void)
+0:115        Convert uint to double ( temp double)
+0:115          'u' ( temp uint)
+0:116      Function Call: foo7(d1; ( temp void)
+0:116        Convert int to double ( temp double)
+0:116          'i' ( temp int)
+0:117      Function Call: foo7(d1; ( temp void)
+0:117        Convert float to double ( temp double)
+0:117          'f' ( temp float)
+0:119      Function Call: foo8(f1; ( temp void)
+0:119        Convert bool to float ( temp float)
+0:119          'b' ( temp bool)
+0:120      Function Call: foo8(f1; ( temp void)
+0:120        Convert uint to float ( temp float)
+0:120          'u' ( temp uint)
+0:121      Function Call: foo8(f1; ( temp void)
+0:121        Convert int to float ( temp float)
+0:121          'i' ( temp int)
+0:123      Function Call: foo9(i1; ( temp void)
+0:123        Convert bool to int ( temp int)
+0:123          'b' ( temp bool)
+0:124      Function Call: foo9(u1; ( temp void)
+0:124        Convert float to uint ( temp uint)
+0:124          'f' ( temp float)
+0:125      Function Call: foo9(u1; ( temp void)
+0:125        Convert double to uint ( temp uint)
+0:125          'd' ( temp double)
+0:127      Function Call: foo10(i1; ( temp void)
+0:127        Convert uint to int ( temp int)
+0:127          'u' ( temp uint)
+0:128      Function Call: foo10(i1; ( temp void)
+0:128        Convert float to int ( temp int)
+0:128          'f' ( temp float)
+0:129      Function Call: foo10(i1; ( temp void)
+0:129        Convert double to int ( temp int)
+0:129          'd' ( temp double)
+0:131      Function Call: foo11(u1; ( temp void)
+0:131        Convert bool to uint ( temp uint)
+0:131          'b' ( temp bool)
+0:132      Function Call: foo11(d1; ( temp void)
+0:132        Convert float to double ( temp double)
+0:132          'f' ( temp float)
+0:133      Function Call: foo12(vd3; ( temp void)
+0:133        Convert float to double ( temp 3-component vector of double)
+0:133          Construct vec3 ( temp 3-component vector of float)
+0:133            'f' ( temp float)
+0:134      Function Call: foo16(vu2; ( temp void)
+0:?         Convert int to uint ( temp 2-component vector of uint)
+0:?           Construct ivec2 ( temp 2-component vector of int)
+0:134            'i' ( temp int)
+0:134            'i' ( temp int)
+0:136      Function Call: foo13(vf3; ( temp void)
+0:136        Construct vec3 ( in 3-component vector of float)
+0:136          'f' ( temp float)
+0:137      Function Call: foo14(vi1; ( temp void)
+0:137        Construct int ( in 1-component vector of int)
+0:137          Construct ivec4 ( temp 4-component vector of int)
+0:137            'i' ( temp int)
+0:138      Function Call: foo15(vb1; ( temp void)
+0:138        Construct bool ( in 1-component vector of bool)
+0:138          'b' ( temp bool)
+0:139      Function Call: foo15(vb1; ( temp void)
+0:139        Construct bool ( in 1-component vector of bool)
+0:139          Construct bvec3 ( temp 3-component vector of bool)
+0:139            'b' ( temp bool)
+0:141      Branch: Return with expression
+0:141        'input' ( in 4-component vector of float)
+0:46  Function Definition: PixelShaderFunction( ( temp void)
+0:46    Function Parameters: 
+0:?     Sequence
+0:46      move second child to first child ( temp 4-component vector of float)
+0:?         'input' ( temp 4-component vector of float)
+0:?         'input' (layout( location=0) in 4-component vector of float)
+0:46      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:46        Function Call: @PixelShaderFunction(vf4; ( temp 4-component vector of float)
+0:?           'input' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'input' (layout( location=0) in 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:2  Function Definition: foo1(d1;b1; ( temp void)
+0:2    Function Parameters: 
+0:2      'a' ( in double)
+0:2      'b' ( in bool)
+0:3  Function Definition: foo1(d1;u1; ( temp void)
+0:3    Function Parameters: 
+0:3      'a' ( in double)
+0:3      'b' ( in uint)
+0:4  Function Definition: foo1(d1;i1; ( temp void)
+0:4    Function Parameters: 
+0:4      'a' ( in double)
+0:4      'b' ( in int)
+0:5  Function Definition: foo1(d1;f1; ( temp void)
+0:5    Function Parameters: 
+0:5      'a' ( in double)
+0:5      'b' ( in float)
+0:6  Function Definition: foo1(d1;d1; ( temp void)
+0:6    Function Parameters: 
+0:6      'a' ( in double)
+0:6      'b' ( in double)
+0:9  Function Definition: foo2(i1;b1; ( temp void)
+0:9    Function Parameters: 
+0:9      'a' ( in int)
+0:9      'b' ( in bool)
+0:10  Function Definition: foo2(i1;u1; ( temp void)
+0:10    Function Parameters: 
+0:10      'a' ( in int)
+0:10      'b' ( in uint)
+0:11  Function Definition: foo2(i1;i1; ( temp void)
+0:11    Function Parameters: 
+0:11      'a' ( in int)
+0:11      'b' ( in int)
+0:12  Function Definition: foo2(i1;f1; ( temp void)
+0:12    Function Parameters: 
+0:12      'a' ( in int)
+0:12      'b' ( in float)
+0:13  Function Definition: foo2(i1;d1; ( temp void)
+0:13    Function Parameters: 
+0:13      'a' ( in int)
+0:13      'b' ( in double)
+0:16  Function Definition: foo3(b1; ( temp void)
+0:16    Function Parameters: 
+0:16      'b' ( in bool)
+0:17  Function Definition: foo4(u1; ( temp void)
+0:17    Function Parameters: 
+0:17      'b' ( in uint)
+0:18  Function Definition: foo5(i1; ( temp void)
+0:18    Function Parameters: 
+0:18      'b' ( in int)
+0:19  Function Definition: foo6(f1; ( temp void)
+0:19    Function Parameters: 
+0:19      'b' ( in float)
+0:20  Function Definition: foo7(d1; ( temp void)
+0:20    Function Parameters: 
+0:20      'b' ( in double)
+0:23  Function Definition: foo8(f1; ( temp void)
+0:23    Function Parameters: 
+0:23      '' ( in float)
+0:24  Function Definition: foo8(d1; ( temp void)
+0:24    Function Parameters: 
+0:24      '' ( in double)
+0:25  Function Definition: foo9(i1; ( temp void)
+0:25    Function Parameters: 
+0:25      '' ( in int)
+0:26  Function Definition: foo9(u1; ( temp void)
+0:26    Function Parameters: 
+0:26      '' ( in uint)
+0:27  Function Definition: foo10(b1; ( temp void)
+0:27    Function Parameters: 
+0:27      '' ( in bool)
+0:28  Function Definition: foo10(i1; ( temp void)
+0:28    Function Parameters: 
+0:28      '' ( in int)
+0:31  Function Definition: foo11(vf3; ( temp void)
+0:31    Function Parameters: 
+0:31      '' ( in 3-component vector of float)
+0:32  Function Definition: foo11(d1; ( temp void)
+0:32    Function Parameters: 
+0:32      '' ( in double)
+0:33  Function Definition: foo11(vi3; ( temp void)
+0:33    Function Parameters: 
+0:33      '' ( in 3-component vector of int)
+0:34  Function Definition: foo11(u1; ( temp void)
+0:34    Function Parameters: 
+0:34      '' ( in uint)
+0:35  Function Definition: foo12(vf1; ( temp void)
+0:35    Function Parameters: 
+0:35      '' ( in 1-component vector of float)
+0:36  Function Definition: foo12(vd3; ( temp void)
+0:36    Function Parameters: 
+0:36      '' ( in 3-component vector of double)
+0:37  Function Definition: foo16(u1; ( temp void)
+0:37    Function Parameters: 
+0:37      '' ( in uint)
+0:38  Function Definition: foo16(vu2; ( temp void)
+0:38    Function Parameters: 
+0:38      '' ( in 2-component vector of uint)
+0:41  Function Definition: foo13(vf3; ( temp void)
+0:41    Function Parameters: 
+0:41      '' ( in 3-component vector of float)
+0:42  Function Definition: foo14(vi1; ( temp void)
+0:42    Function Parameters: 
+0:42      '' ( in 1-component vector of int)
+0:43  Function Definition: foo15(vb1; ( temp void)
+0:43    Function Parameters: 
+0:43      '' ( in 1-component vector of bool)
+0:46  Function Definition: @PixelShaderFunction(vf4; ( temp 4-component vector of float)
+0:46    Function Parameters: 
+0:46      'input' ( in 4-component vector of float)
+0:?     Sequence
+0:53      Function Call: foo1(d1;b1; ( temp void)
+0:53        'd' ( temp double)
+0:53        'b' ( temp bool)
+0:54      Function Call: foo1(d1;d1; ( temp void)
+0:54        'd' ( temp double)
+0:54        'd' ( temp double)
+0:55      Function Call: foo1(d1;u1; ( temp void)
+0:55        'd' ( temp double)
+0:55        'u' ( temp uint)
+0:56      Function Call: foo1(d1;i1; ( temp void)
+0:56        'd' ( temp double)
+0:56        'i' ( temp int)
+0:57      Function Call: foo1(d1;f1; ( temp void)
+0:57        'd' ( temp double)
+0:57        'f' ( temp float)
+0:59      Function Call: foo1(d1;b1; ( temp void)
+0:59        Convert float to double ( temp double)
+0:59          'f' ( temp float)
+0:59        'b' ( temp bool)
+0:60      Function Call: foo1(d1;d1; ( temp void)
+0:60        Convert float to double ( temp double)
+0:60          'f' ( temp float)
+0:60        'd' ( temp double)
+0:61      Function Call: foo1(d1;u1; ( temp void)
+0:61        Convert float to double ( temp double)
+0:61          'f' ( temp float)
+0:61        'u' ( temp uint)
+0:62      Function Call: foo1(d1;i1; ( temp void)
+0:62        Convert float to double ( temp double)
+0:62          'f' ( temp float)
+0:62        'i' ( temp int)
+0:63      Function Call: foo1(d1;f1; ( temp void)
+0:63        Convert float to double ( temp double)
+0:63          'f' ( temp float)
+0:63        'f' ( temp float)
+0:65      Function Call: foo1(d1;b1; ( temp void)
+0:65        Convert uint to double ( temp double)
+0:65          'u' ( temp uint)
+0:65        'b' ( temp bool)
+0:66      Function Call: foo1(d1;d1; ( temp void)
+0:66        Convert uint to double ( temp double)
+0:66          'u' ( temp uint)
+0:66        'd' ( temp double)
+0:67      Function Call: foo1(d1;u1; ( temp void)
+0:67        Convert uint to double ( temp double)
+0:67          'u' ( temp uint)
+0:67        'u' ( temp uint)
+0:68      Function Call: foo1(d1;i1; ( temp void)
+0:68        Convert uint to double ( temp double)
+0:68          'u' ( temp uint)
+0:68        'i' ( temp int)
+0:69      Function Call: foo1(d1;f1; ( temp void)
+0:69        Convert uint to double ( temp double)
+0:69          'u' ( temp uint)
+0:69        'f' ( temp float)
+0:71      Function Call: foo1(d1;b1; ( temp void)
+0:71        Convert int to double ( temp double)
+0:71          'i' ( temp int)
+0:71        'b' ( temp bool)
+0:72      Function Call: foo1(d1;d1; ( temp void)
+0:72        Convert int to double ( temp double)
+0:72          'i' ( temp int)
+0:72        'd' ( temp double)
+0:73      Function Call: foo1(d1;u1; ( temp void)
+0:73        Convert int to double ( temp double)
+0:73          'i' ( temp int)
+0:73        'u' ( temp uint)
+0:74      Function Call: foo1(d1;i1; ( temp void)
+0:74        Convert int to double ( temp double)
+0:74          'i' ( temp int)
+0:74        'i' ( temp int)
+0:75      Function Call: foo1(d1;f1; ( temp void)
+0:75        Convert int to double ( temp double)
+0:75          'i' ( temp int)
+0:75        'f' ( temp float)
+0:77      Function Call: foo2(i1;b1; ( temp void)
+0:77        Convert uint to int ( temp int)
+0:77          'u' ( temp uint)
+0:77        'b' ( temp bool)
+0:78      Function Call: foo2(i1;d1; ( temp void)
+0:78        Convert uint to int ( temp int)
+0:78          'u' ( temp uint)
+0:78        'd' ( temp double)
+0:79      Function Call: foo2(i1;u1; ( temp void)
+0:79        Convert uint to int ( temp int)
+0:79          'u' ( temp uint)
+0:79        'u' ( temp uint)
+0:80      Function Call: foo2(i1;i1; ( temp void)
+0:80        Convert uint to int ( temp int)
+0:80          'u' ( temp uint)
+0:80        'i' ( temp int)
+0:81      Function Call: foo2(i1;f1; ( temp void)
+0:81        Convert uint to int ( temp int)
+0:81          'u' ( temp uint)
+0:81        'f' ( temp float)
+0:83      Function Call: foo2(i1;b1; ( temp void)
+0:83        'i' ( temp int)
+0:83        'b' ( temp bool)
+0:84      Function Call: foo2(i1;d1; ( temp void)
+0:84        'i' ( temp int)
+0:84        'd' ( temp double)
+0:85      Function Call: foo2(i1;u1; ( temp void)
+0:85        'i' ( temp int)
+0:85        'u' ( temp uint)
+0:86      Function Call: foo2(i1;i1; ( temp void)
+0:86        'i' ( temp int)
+0:86        'i' ( temp int)
+0:87      Function Call: foo2(i1;f1; ( temp void)
+0:87        'i' ( temp int)
+0:87        'f' ( temp float)
+0:89      Function Call: foo3(b1; ( temp void)
+0:89        'b' ( temp bool)
+0:90      Function Call: foo3(b1; ( temp void)
+0:90        Convert double to bool ( temp bool)
+0:90          'd' ( temp double)
+0:91      Function Call: foo3(b1; ( temp void)
+0:91        Convert uint to bool ( temp bool)
+0:91          'u' ( temp uint)
+0:92      Function Call: foo3(b1; ( temp void)
+0:92        Convert int to bool ( temp bool)
+0:92          'i' ( temp int)
+0:93      Function Call: foo3(b1; ( temp void)
+0:93        Convert float to bool ( temp bool)
+0:93          'f' ( temp float)
+0:95      Function Call: foo4(u1; ( temp void)
+0:95        Convert bool to uint ( temp uint)
+0:95          'b' ( temp bool)
+0:96      Function Call: foo4(u1; ( temp void)
+0:96        Convert double to uint ( temp uint)
+0:96          'd' ( temp double)
+0:97      Function Call: foo4(u1; ( temp void)
+0:97        'u' ( temp uint)
+0:98      Function Call: foo4(u1; ( temp void)
+0:98        Convert int to uint ( temp uint)
+0:98          'i' ( temp int)
+0:99      Function Call: foo4(u1; ( temp void)
+0:99        Convert float to uint ( temp uint)
+0:99          'f' ( temp float)
+0:101      Function Call: foo5(i1; ( temp void)
+0:101        Convert bool to int ( temp int)
+0:101          'b' ( temp bool)
+0:102      Function Call: foo5(i1; ( temp void)
+0:102        Convert double to int ( temp int)
+0:102          'd' ( temp double)
+0:103      Function Call: foo5(i1; ( temp void)
+0:103        Convert uint to int ( temp int)
+0:103          'u' ( temp uint)
+0:104      Function Call: foo5(i1; ( temp void)
+0:104        'i' ( temp int)
+0:105      Function Call: foo5(i1; ( temp void)
+0:105        Convert float to int ( temp int)
+0:105          'f' ( temp float)
+0:107      Function Call: foo6(f1; ( temp void)
+0:107        Convert bool to float ( temp float)
+0:107          'b' ( temp bool)
+0:108      Function Call: foo6(f1; ( temp void)
+0:108        Convert double to float ( temp float)
+0:108          'd' ( temp double)
+0:109      Function Call: foo6(f1; ( temp void)
+0:109        Convert uint to float ( temp float)
+0:109          'u' ( temp uint)
+0:110      Function Call: foo6(f1; ( temp void)
+0:110        Convert int to float ( temp float)
+0:110          'i' ( temp int)
+0:111      Function Call: foo6(f1; ( temp void)
+0:111        'f' ( temp float)
+0:113      Function Call: foo7(d1; ( temp void)
+0:113        Convert bool to double ( temp double)
+0:113          'b' ( temp bool)
+0:114      Function Call: foo7(d1; ( temp void)
+0:114        'd' ( temp double)
+0:115      Function Call: foo7(d1; ( temp void)
+0:115        Convert uint to double ( temp double)
+0:115          'u' ( temp uint)
+0:116      Function Call: foo7(d1; ( temp void)
+0:116        Convert int to double ( temp double)
+0:116          'i' ( temp int)
+0:117      Function Call: foo7(d1; ( temp void)
+0:117        Convert float to double ( temp double)
+0:117          'f' ( temp float)
+0:119      Function Call: foo8(f1; ( temp void)
+0:119        Convert bool to float ( temp float)
+0:119          'b' ( temp bool)
+0:120      Function Call: foo8(f1; ( temp void)
+0:120        Convert uint to float ( temp float)
+0:120          'u' ( temp uint)
+0:121      Function Call: foo8(f1; ( temp void)
+0:121        Convert int to float ( temp float)
+0:121          'i' ( temp int)
+0:123      Function Call: foo9(i1; ( temp void)
+0:123        Convert bool to int ( temp int)
+0:123          'b' ( temp bool)
+0:124      Function Call: foo9(u1; ( temp void)
+0:124        Convert float to uint ( temp uint)
+0:124          'f' ( temp float)
+0:125      Function Call: foo9(u1; ( temp void)
+0:125        Convert double to uint ( temp uint)
+0:125          'd' ( temp double)
+0:127      Function Call: foo10(i1; ( temp void)
+0:127        Convert uint to int ( temp int)
+0:127          'u' ( temp uint)
+0:128      Function Call: foo10(i1; ( temp void)
+0:128        Convert float to int ( temp int)
+0:128          'f' ( temp float)
+0:129      Function Call: foo10(i1; ( temp void)
+0:129        Convert double to int ( temp int)
+0:129          'd' ( temp double)
+0:131      Function Call: foo11(u1; ( temp void)
+0:131        Convert bool to uint ( temp uint)
+0:131          'b' ( temp bool)
+0:132      Function Call: foo11(d1; ( temp void)
+0:132        Convert float to double ( temp double)
+0:132          'f' ( temp float)
+0:133      Function Call: foo12(vd3; ( temp void)
+0:133        Convert float to double ( temp 3-component vector of double)
+0:133          Construct vec3 ( temp 3-component vector of float)
+0:133            'f' ( temp float)
+0:134      Function Call: foo16(vu2; ( temp void)
+0:?         Convert int to uint ( temp 2-component vector of uint)
+0:?           Construct ivec2 ( temp 2-component vector of int)
+0:134            'i' ( temp int)
+0:134            'i' ( temp int)
+0:136      Function Call: foo13(vf3; ( temp void)
+0:136        Construct vec3 ( in 3-component vector of float)
+0:136          'f' ( temp float)
+0:137      Function Call: foo14(vi1; ( temp void)
+0:137        Construct int ( in 1-component vector of int)
+0:137          Construct ivec4 ( temp 4-component vector of int)
+0:137            'i' ( temp int)
+0:138      Function Call: foo15(vb1; ( temp void)
+0:138        Construct bool ( in 1-component vector of bool)
+0:138          'b' ( temp bool)
+0:139      Function Call: foo15(vb1; ( temp void)
+0:139        Construct bool ( in 1-component vector of bool)
+0:139          Construct bvec3 ( temp 3-component vector of bool)
+0:139            'b' ( temp bool)
+0:141      Branch: Return with expression
+0:141        'input' ( in 4-component vector of float)
+0:46  Function Definition: PixelShaderFunction( ( temp void)
+0:46    Function Parameters: 
+0:?     Sequence
+0:46      move second child to first child ( temp 4-component vector of float)
+0:?         'input' ( temp 4-component vector of float)
+0:?         'input' (layout( location=0) in 4-component vector of float)
+0:46      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:46        Function Call: @PixelShaderFunction(vf4; ( temp 4-component vector of float)
+0:?           'input' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'input' (layout( location=0) in 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 520
+
+                              Capability Shader
+                              Capability Float64
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "PixelShaderFunction" 513 516
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "PixelShaderFunction"
+                              Name 13  "foo1(d1;b1;"
+                              Name 11  "a"
+                              Name 12  "b"
+                              Name 20  "foo1(d1;u1;"
+                              Name 18  "a"
+                              Name 19  "b"
+                              Name 27  "foo1(d1;i1;"
+                              Name 25  "a"
+                              Name 26  "b"
+                              Name 34  "foo1(d1;f1;"
+                              Name 32  "a"
+                              Name 33  "b"
+                              Name 39  "foo1(d1;d1;"
+                              Name 37  "a"
+                              Name 38  "b"
+                              Name 44  "foo2(i1;b1;"
+                              Name 42  "a"
+                              Name 43  "b"
+                              Name 49  "foo2(i1;u1;"
+                              Name 47  "a"
+                              Name 48  "b"
+                              Name 54  "foo2(i1;i1;"
+                              Name 52  "a"
+                              Name 53  "b"
+                              Name 59  "foo2(i1;f1;"
+                              Name 57  "a"
+                              Name 58  "b"
+                              Name 64  "foo2(i1;d1;"
+                              Name 62  "a"
+                              Name 63  "b"
+                              Name 68  "foo3(b1;"
+                              Name 67  "b"
+                              Name 72  "foo4(u1;"
+                              Name 71  "b"
+                              Name 76  "foo5(i1;"
+                              Name 75  "b"
+                              Name 80  "foo6(f1;"
+                              Name 79  "b"
+                              Name 84  "foo7(d1;"
+                              Name 83  "b"
+                              Name 87  "foo8(f1;"
+                              Name 86  ""
+                              Name 90  "foo8(d1;"
+                              Name 89  ""
+                              Name 93  "foo9(i1;"
+                              Name 92  ""
+                              Name 96  "foo9(u1;"
+                              Name 95  ""
+                              Name 99  "foo10(b1;"
+                              Name 98  ""
+                              Name 102  "foo10(i1;"
+                              Name 101  ""
+                              Name 108  "foo11(vf3;"
+                              Name 107  ""
+                              Name 111  "foo11(d1;"
+                              Name 110  ""
+                              Name 117  "foo11(vi3;"
+                              Name 116  ""
+                              Name 120  "foo11(u1;"
+                              Name 119  ""
+                              Name 123  "foo12(vf1;"
+                              Name 122  ""
+                              Name 129  "foo12(vd3;"
+                              Name 128  ""
+                              Name 132  "foo16(u1;"
+                              Name 131  ""
+                              Name 138  "foo16(vu2;"
+                              Name 137  ""
+                              Name 141  "foo13(vf3;"
+                              Name 140  ""
+                              Name 144  "foo14(vi1;"
+                              Name 143  ""
+                              Name 147  "foo15(vb1;"
+                              Name 146  ""
+                              Name 153  "@PixelShaderFunction(vf4;"
+                              Name 152  "input"
+                              Name 155  "d"
+                              Name 156  "b"
+                              Name 157  "param"
+                              Name 159  "param"
+                              Name 162  "param"
+                              Name 164  "param"
+                              Name 167  "u"
+                              Name 168  "param"
+                              Name 170  "param"
+                              Name 173  "i"
+                              Name 174  "param"
+                              Name 176  "param"
+                              Name 179  "f"
+                              Name 180  "param"
+                              Name 182  "param"
+                              Name 187  "param"
+                              Name 188  "param"
+                              Name 193  "param"
+                              Name 194  "param"
+                              Name 199  "param"
+                              Name 200  "param"
+                              Name 205  "param"
+                              Name 206  "param"
+                              Name 211  "param"
+                              Name 212  "param"
+                              Name 217  "param"
+                              Name 218  "param"
+                              Name 223  "param"
+                              Name 224  "param"
+                              Name 229  "param"
+                              Name 230  "param"
+                              Name 235  "param"
+                              Name 236  "param"
+                              Name 241  "param"
+                              Name 242  "param"
+                              Name 247  "param"
+                              Name 248  "param"
+                              Name 253  "param"
+                              Name 254  "param"
+                              Name 259  "param"
+                              Name 260  "param"
+                              Name 265  "param"
+                              Name 266  "param"
+                              Name 271  "param"
+                              Name 272  "param"
+                              Name 277  "param"
+                              Name 278  "param"
+                              Name 283  "param"
+                              Name 284  "param"
+                              Name 289  "param"
+                              Name 290  "param"
+                              Name 295  "param"
+                              Name 296  "param"
+                              Name 301  "param"
+                              Name 302  "param"
+                              Name 305  "param"
+                              Name 307  "param"
+                              Name 310  "param"
+                              Name 312  "param"
+                              Name 315  "param"
+                              Name 317  "param"
+                              Name 320  "param"
+                              Name 322  "param"
+                              Name 325  "param"
+                              Name 327  "param"
+                              Name 330  "param"
+                              Name 336  "param"
+                              Name 341  "param"
+                              Name 345  "param"
+                              Name 350  "param"
+                              Name 355  "param"
+                              Name 359  "param"
+                              Name 361  "param"
+                              Name 366  "param"
+                              Name 370  "param"
+                              Name 376  "param"
+                              Name 380  "param"
+                              Name 384  "param"
+                              Name 386  "param"
+                              Name 391  "param"
+                              Name 396  "param"
+                              Name 400  "param"
+                              Name 404  "param"
+                              Name 408  "param"
+                              Name 410  "param"
+                              Name 416  "param"
+                              Name 418  "param"
+                              Name 423  "param"
+                              Name 427  "param"
+                              Name 431  "param"
+                              Name 435  "param"
+                              Name 439  "param"
+                              Name 443  "param"
+                              Name 447  "param"
+                              Name 451  "param"
+                              Name 455  "param"
+                              Name 459  "param"
+                              Name 463  "param"
+                              Name 467  "param"
+                              Name 471  "param"
+                              Name 475  "param"
+                              Name 480  "param"
+                              Name 487  "param"
+                              Name 491  "param"
+                              Name 497  "param"
+                              Name 500  "param"
+                              Name 506  "param"
+                              Name 511  "input"
+                              Name 513  "input"
+                              Name 516  "@entryPointOutput"
+                              Name 517  "param"
+                              Decorate 513(input) Location 0
+                              Decorate 516(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 64
+               7:             TypePointer Function 6(float64_t)
+               8:             TypeBool
+               9:             TypePointer Function 8(bool)
+              10:             TypeFunction 2 7(ptr) 9(ptr)
+              15:             TypeInt 32 0
+              16:             TypePointer Function 15(int)
+              17:             TypeFunction 2 7(ptr) 16(ptr)
+              22:             TypeInt 32 1
+              23:             TypePointer Function 22(int)
+              24:             TypeFunction 2 7(ptr) 23(ptr)
+              29:             TypeFloat 32
+              30:             TypePointer Function 29(float)
+              31:             TypeFunction 2 7(ptr) 30(ptr)
+              36:             TypeFunction 2 7(ptr) 7(ptr)
+              41:             TypeFunction 2 23(ptr) 9(ptr)
+              46:             TypeFunction 2 23(ptr) 16(ptr)
+              51:             TypeFunction 2 23(ptr) 23(ptr)
+              56:             TypeFunction 2 23(ptr) 30(ptr)
+              61:             TypeFunction 2 23(ptr) 7(ptr)
+              66:             TypeFunction 2 9(ptr)
+              70:             TypeFunction 2 16(ptr)
+              74:             TypeFunction 2 23(ptr)
+              78:             TypeFunction 2 30(ptr)
+              82:             TypeFunction 2 7(ptr)
+             104:             TypeVector 29(float) 3
+             105:             TypePointer Function 104(fvec3)
+             106:             TypeFunction 2 105(ptr)
+             113:             TypeVector 22(int) 3
+             114:             TypePointer Function 113(ivec3)
+             115:             TypeFunction 2 114(ptr)
+             125:             TypeVector 6(float64_t) 3
+             126:             TypePointer Function 125(f64vec3)
+             127:             TypeFunction 2 126(ptr)
+             134:             TypeVector 15(int) 2
+             135:             TypePointer Function 134(ivec2)
+             136:             TypeFunction 2 135(ptr)
+             149:             TypeVector 29(float) 4
+             150:             TypePointer Function 149(fvec4)
+             151:             TypeFunction 149(fvec4) 150(ptr)
+             334:6(float64_t) Constant 0 0
+             339:     15(int) Constant 0
+             348:   29(float) Constant 0
+             353:     15(int) Constant 1
+             373:     22(int) Constant 0
+             374:     22(int) Constant 1
+             394:   29(float) Constant 1065353216
+             414:6(float64_t) Constant 0 1072693248
+             484:             TypeVector 22(int) 2
+             494:             TypeVector 22(int) 4
+             503:             TypeVector 8(bool) 3
+             512:             TypePointer Input 149(fvec4)
+      513(input):    512(ptr) Variable Input
+             515:             TypePointer Output 149(fvec4)
+516(@entryPointOutput):    515(ptr) Variable Output
+4(PixelShaderFunction):           2 Function None 3
+               5:             Label
+      511(input):    150(ptr) Variable Function
+      517(param):    150(ptr) Variable Function
+             514:  149(fvec4) Load 513(input)
+                              Store 511(input) 514
+             518:  149(fvec4) Load 511(input)
+                              Store 517(param) 518
+             519:  149(fvec4) FunctionCall 153(@PixelShaderFunction(vf4;) 517(param)
+                              Store 516(@entryPointOutput) 519
+                              Return
+                              FunctionEnd
+ 13(foo1(d1;b1;):           2 Function None 10
+           11(a):      7(ptr) FunctionParameter
+           12(b):      9(ptr) FunctionParameter
+              14:             Label
+                              Return
+                              FunctionEnd
+ 20(foo1(d1;u1;):           2 Function None 17
+           18(a):      7(ptr) FunctionParameter
+           19(b):     16(ptr) FunctionParameter
+              21:             Label
+                              Return
+                              FunctionEnd
+ 27(foo1(d1;i1;):           2 Function None 24
+           25(a):      7(ptr) FunctionParameter
+           26(b):     23(ptr) FunctionParameter
+              28:             Label
+                              Return
+                              FunctionEnd
+ 34(foo1(d1;f1;):           2 Function None 31
+           32(a):      7(ptr) FunctionParameter
+           33(b):     30(ptr) FunctionParameter
+              35:             Label
+                              Return
+                              FunctionEnd
+ 39(foo1(d1;d1;):           2 Function None 36
+           37(a):      7(ptr) FunctionParameter
+           38(b):      7(ptr) FunctionParameter
+              40:             Label
+                              Return
+                              FunctionEnd
+ 44(foo2(i1;b1;):           2 Function None 41
+           42(a):     23(ptr) FunctionParameter
+           43(b):      9(ptr) FunctionParameter
+              45:             Label
+                              Return
+                              FunctionEnd
+ 49(foo2(i1;u1;):           2 Function None 46
+           47(a):     23(ptr) FunctionParameter
+           48(b):     16(ptr) FunctionParameter
+              50:             Label
+                              Return
+                              FunctionEnd
+ 54(foo2(i1;i1;):           2 Function None 51
+           52(a):     23(ptr) FunctionParameter
+           53(b):     23(ptr) FunctionParameter
+              55:             Label
+                              Return
+                              FunctionEnd
+ 59(foo2(i1;f1;):           2 Function None 56
+           57(a):     23(ptr) FunctionParameter
+           58(b):     30(ptr) FunctionParameter
+              60:             Label
+                              Return
+                              FunctionEnd
+ 64(foo2(i1;d1;):           2 Function None 61
+           62(a):     23(ptr) FunctionParameter
+           63(b):      7(ptr) FunctionParameter
+              65:             Label
+                              Return
+                              FunctionEnd
+    68(foo3(b1;):           2 Function None 66
+           67(b):      9(ptr) FunctionParameter
+              69:             Label
+                              Return
+                              FunctionEnd
+    72(foo4(u1;):           2 Function None 70
+           71(b):     16(ptr) FunctionParameter
+              73:             Label
+                              Return
+                              FunctionEnd
+    76(foo5(i1;):           2 Function None 74
+           75(b):     23(ptr) FunctionParameter
+              77:             Label
+                              Return
+                              FunctionEnd
+    80(foo6(f1;):           2 Function None 78
+           79(b):     30(ptr) FunctionParameter
+              81:             Label
+                              Return
+                              FunctionEnd
+    84(foo7(d1;):           2 Function None 82
+           83(b):      7(ptr) FunctionParameter
+              85:             Label
+                              Return
+                              FunctionEnd
+    87(foo8(f1;):           2 Function None 78
+              86:     30(ptr) FunctionParameter
+              88:             Label
+                              Return
+                              FunctionEnd
+    90(foo8(d1;):           2 Function None 82
+              89:      7(ptr) FunctionParameter
+              91:             Label
+                              Return
+                              FunctionEnd
+    93(foo9(i1;):           2 Function None 74
+              92:     23(ptr) FunctionParameter
+              94:             Label
+                              Return
+                              FunctionEnd
+    96(foo9(u1;):           2 Function None 70
+              95:     16(ptr) FunctionParameter
+              97:             Label
+                              Return
+                              FunctionEnd
+   99(foo10(b1;):           2 Function None 66
+              98:      9(ptr) FunctionParameter
+             100:             Label
+                              Return
+                              FunctionEnd
+  102(foo10(i1;):           2 Function None 74
+             101:     23(ptr) FunctionParameter
+             103:             Label
+                              Return
+                              FunctionEnd
+ 108(foo11(vf3;):           2 Function None 106
+             107:    105(ptr) FunctionParameter
+             109:             Label
+                              Return
+                              FunctionEnd
+  111(foo11(d1;):           2 Function None 82
+             110:      7(ptr) FunctionParameter
+             112:             Label
+                              Return
+                              FunctionEnd
+ 117(foo11(vi3;):           2 Function None 115
+             116:    114(ptr) FunctionParameter
+             118:             Label
+                              Return
+                              FunctionEnd
+  120(foo11(u1;):           2 Function None 70
+             119:     16(ptr) FunctionParameter
+             121:             Label
+                              Return
+                              FunctionEnd
+ 123(foo12(vf1;):           2 Function None 78
+             122:     30(ptr) FunctionParameter
+             124:             Label
+                              Return
+                              FunctionEnd
+ 129(foo12(vd3;):           2 Function None 127
+             128:    126(ptr) FunctionParameter
+             130:             Label
+                              Return
+                              FunctionEnd
+  132(foo16(u1;):           2 Function None 70
+             131:     16(ptr) FunctionParameter
+             133:             Label
+                              Return
+                              FunctionEnd
+ 138(foo16(vu2;):           2 Function None 136
+             137:    135(ptr) FunctionParameter
+             139:             Label
+                              Return
+                              FunctionEnd
+ 141(foo13(vf3;):           2 Function None 106
+             140:    105(ptr) FunctionParameter
+             142:             Label
+                              Return
+                              FunctionEnd
+ 144(foo14(vi1;):           2 Function None 74
+             143:     23(ptr) FunctionParameter
+             145:             Label
+                              Return
+                              FunctionEnd
+ 147(foo15(vb1;):           2 Function None 66
+             146:      9(ptr) FunctionParameter
+             148:             Label
+                              Return
+                              FunctionEnd
+153(@PixelShaderFunction(vf4;):  149(fvec4) Function None 151
+      152(input):    150(ptr) FunctionParameter
+             154:             Label
+          155(d):      7(ptr) Variable Function
+          156(b):      9(ptr) Variable Function
+      157(param):      7(ptr) Variable Function
+      159(param):      9(ptr) Variable Function
+      162(param):      7(ptr) Variable Function
+      164(param):      7(ptr) Variable Function
+          167(u):     16(ptr) Variable Function
+      168(param):      7(ptr) Variable Function
+      170(param):     16(ptr) Variable Function
+          173(i):     23(ptr) Variable Function
+      174(param):      7(ptr) Variable Function
+      176(param):     23(ptr) Variable Function
+          179(f):     30(ptr) Variable Function
+      180(param):      7(ptr) Variable Function
+      182(param):     30(ptr) Variable Function
+      187(param):      7(ptr) Variable Function
+      188(param):      9(ptr) Variable Function
+      193(param):      7(ptr) Variable Function
+      194(param):      7(ptr) Variable Function
+      199(param):      7(ptr) Variable Function
+      200(param):     16(ptr) Variable Function
+      205(param):      7(ptr) Variable Function
+      206(param):     23(ptr) Variable Function
+      211(param):      7(ptr) Variable Function
+      212(param):     30(ptr) Variable Function
+      217(param):      7(ptr) Variable Function
+      218(param):      9(ptr) Variable Function
+      223(param):      7(ptr) Variable Function
+      224(param):      7(ptr) Variable Function
+      229(param):      7(ptr) Variable Function
+      230(param):     16(ptr) Variable Function
+      235(param):      7(ptr) Variable Function
+      236(param):     23(ptr) Variable Function
+      241(param):      7(ptr) Variable Function
+      242(param):     30(ptr) Variable Function
+      247(param):      7(ptr) Variable Function
+      248(param):      9(ptr) Variable Function
+      253(param):      7(ptr) Variable Function
+      254(param):      7(ptr) Variable Function
+      259(param):      7(ptr) Variable Function
+      260(param):     16(ptr) Variable Function
+      265(param):      7(ptr) Variable Function
+      266(param):     23(ptr) Variable Function
+      271(param):      7(ptr) Variable Function
+      272(param):     30(ptr) Variable Function
+      277(param):     23(ptr) Variable Function
+      278(param):      9(ptr) Variable Function
+      283(param):     23(ptr) Variable Function
+      284(param):      7(ptr) Variable Function
+      289(param):     23(ptr) Variable Function
+      290(param):     16(ptr) Variable Function
+      295(param):     23(ptr) Variable Function
+      296(param):     23(ptr) Variable Function
+      301(param):     23(ptr) Variable Function
+      302(param):     30(ptr) Variable Function
+      305(param):     23(ptr) Variable Function
+      307(param):      9(ptr) Variable Function
+      310(param):     23(ptr) Variable Function
+      312(param):      7(ptr) Variable Function
+      315(param):     23(ptr) Variable Function
+      317(param):     16(ptr) Variable Function
+      320(param):     23(ptr) Variable Function
+      322(param):     23(ptr) Variable Function
+      325(param):     23(ptr) Variable Function
+      327(param):     30(ptr) Variable Function
+      330(param):      9(ptr) Variable Function
+      336(param):      9(ptr) Variable Function
+      341(param):      9(ptr) Variable Function
+      345(param):      9(ptr) Variable Function
+      350(param):      9(ptr) Variable Function
+      355(param):     16(ptr) Variable Function
+      359(param):     16(ptr) Variable Function
+      361(param):     16(ptr) Variable Function
+      366(param):     16(ptr) Variable Function
+      370(param):     16(ptr) Variable Function
+      376(param):     23(ptr) Variable Function
+      380(param):     23(ptr) Variable Function
+      384(param):     23(ptr) Variable Function
+      386(param):     23(ptr) Variable Function
+      391(param):     23(ptr) Variable Function
+      396(param):     30(ptr) Variable Function
+      400(param):     30(ptr) Variable Function
+      404(param):     30(ptr) Variable Function
+      408(param):     30(ptr) Variable Function
+      410(param):     30(ptr) Variable Function
+      416(param):      7(ptr) Variable Function
+      418(param):      7(ptr) Variable Function
+      423(param):      7(ptr) Variable Function
+      427(param):      7(ptr) Variable Function
+      431(param):      7(ptr) Variable Function
+      435(param):     30(ptr) Variable Function
+      439(param):     30(ptr) Variable Function
+      443(param):     30(ptr) Variable Function
+      447(param):     23(ptr) Variable Function
+      451(param):     16(ptr) Variable Function
+      455(param):     16(ptr) Variable Function
+      459(param):     23(ptr) Variable Function
+      463(param):     23(ptr) Variable Function
+      467(param):     23(ptr) Variable Function
+      471(param):     16(ptr) Variable Function
+      475(param):      7(ptr) Variable Function
+      480(param):    126(ptr) Variable Function
+      487(param):    135(ptr) Variable Function
+      491(param):    105(ptr) Variable Function
+      497(param):     23(ptr) Variable Function
+      500(param):      9(ptr) Variable Function
+      506(param):      9(ptr) Variable Function
+             158:6(float64_t) Load 155(d)
+                              Store 157(param) 158
+             160:     8(bool) Load 156(b)
+                              Store 159(param) 160
+             161:           2 FunctionCall 13(foo1(d1;b1;) 157(param) 159(param)
+             163:6(float64_t) Load 155(d)
+                              Store 162(param) 163
+             165:6(float64_t) Load 155(d)
+                              Store 164(param) 165
+             166:           2 FunctionCall 39(foo1(d1;d1;) 162(param) 164(param)
+             169:6(float64_t) Load 155(d)
+                              Store 168(param) 169
+             171:     15(int) Load 167(u)
+                              Store 170(param) 171
+             172:           2 FunctionCall 20(foo1(d1;u1;) 168(param) 170(param)
+             175:6(float64_t) Load 155(d)
+                              Store 174(param) 175
+             177:     22(int) Load 173(i)
+                              Store 176(param) 177
+             178:           2 FunctionCall 27(foo1(d1;i1;) 174(param) 176(param)
+             181:6(float64_t) Load 155(d)
+                              Store 180(param) 181
+             183:   29(float) Load 179(f)
+                              Store 182(param) 183
+             184:           2 FunctionCall 34(foo1(d1;f1;) 180(param) 182(param)
+             185:   29(float) Load 179(f)
+             186:6(float64_t) FConvert 185
+                              Store 187(param) 186
+             189:     8(bool) Load 156(b)
+                              Store 188(param) 189
+             190:           2 FunctionCall 13(foo1(d1;b1;) 187(param) 188(param)
+             191:   29(float) Load 179(f)
+             192:6(float64_t) FConvert 191
+                              Store 193(param) 192
+             195:6(float64_t) Load 155(d)
+                              Store 194(param) 195
+             196:           2 FunctionCall 39(foo1(d1;d1;) 193(param) 194(param)
+             197:   29(float) Load 179(f)
+             198:6(float64_t) FConvert 197
+                              Store 199(param) 198
+             201:     15(int) Load 167(u)
+                              Store 200(param) 201
+             202:           2 FunctionCall 20(foo1(d1;u1;) 199(param) 200(param)
+             203:   29(float) Load 179(f)
+             204:6(float64_t) FConvert 203
+                              Store 205(param) 204
+             207:     22(int) Load 173(i)
+                              Store 206(param) 207
+             208:           2 FunctionCall 27(foo1(d1;i1;) 205(param) 206(param)
+             209:   29(float) Load 179(f)
+             210:6(float64_t) FConvert 209
+                              Store 211(param) 210
+             213:   29(float) Load 179(f)
+                              Store 212(param) 213
+             214:           2 FunctionCall 34(foo1(d1;f1;) 211(param) 212(param)
+             215:     15(int) Load 167(u)
+             216:6(float64_t) ConvertUToF 215
+                              Store 217(param) 216
+             219:     8(bool) Load 156(b)
+                              Store 218(param) 219
+             220:           2 FunctionCall 13(foo1(d1;b1;) 217(param) 218(param)
+             221:     15(int) Load 167(u)
+             222:6(float64_t) ConvertUToF 221
+                              Store 223(param) 222
+             225:6(float64_t) Load 155(d)
+                              Store 224(param) 225
+             226:           2 FunctionCall 39(foo1(d1;d1;) 223(param) 224(param)
+             227:     15(int) Load 167(u)
+             228:6(float64_t) ConvertUToF 227
+                              Store 229(param) 228
+             231:     15(int) Load 167(u)
+                              Store 230(param) 231
+             232:           2 FunctionCall 20(foo1(d1;u1;) 229(param) 230(param)
+             233:     15(int) Load 167(u)
+             234:6(float64_t) ConvertUToF 233
+                              Store 235(param) 234
+             237:     22(int) Load 173(i)
+                              Store 236(param) 237
+             238:           2 FunctionCall 27(foo1(d1;i1;) 235(param) 236(param)
+             239:     15(int) Load 167(u)
+             240:6(float64_t) ConvertUToF 239
+                              Store 241(param) 240
+             243:   29(float) Load 179(f)
+                              Store 242(param) 243
+             244:           2 FunctionCall 34(foo1(d1;f1;) 241(param) 242(param)
+             245:     22(int) Load 173(i)
+             246:6(float64_t) ConvertSToF 245
+                              Store 247(param) 246
+             249:     8(bool) Load 156(b)
+                              Store 248(param) 249
+             250:           2 FunctionCall 13(foo1(d1;b1;) 247(param) 248(param)
+             251:     22(int) Load 173(i)
+             252:6(float64_t) ConvertSToF 251
+                              Store 253(param) 252
+             255:6(float64_t) Load 155(d)
+                              Store 254(param) 255
+             256:           2 FunctionCall 39(foo1(d1;d1;) 253(param) 254(param)
+             257:     22(int) Load 173(i)
+             258:6(float64_t) ConvertSToF 257
+                              Store 259(param) 258
+             261:     15(int) Load 167(u)
+                              Store 260(param) 261
+             262:           2 FunctionCall 20(foo1(d1;u1;) 259(param) 260(param)
+             263:     22(int) Load 173(i)
+             264:6(float64_t) ConvertSToF 263
+                              Store 265(param) 264
+             267:     22(int) Load 173(i)
+                              Store 266(param) 267
+             268:           2 FunctionCall 27(foo1(d1;i1;) 265(param) 266(param)
+             269:     22(int) Load 173(i)
+             270:6(float64_t) ConvertSToF 269
+                              Store 271(param) 270
+             273:   29(float) Load 179(f)
+                              Store 272(param) 273
+             274:           2 FunctionCall 34(foo1(d1;f1;) 271(param) 272(param)
+             275:     15(int) Load 167(u)
+             276:     22(int) Bitcast 275
+                              Store 277(param) 276
+             279:     8(bool) Load 156(b)
+                              Store 278(param) 279
+             280:           2 FunctionCall 44(foo2(i1;b1;) 277(param) 278(param)
+             281:     15(int) Load 167(u)
+             282:     22(int) Bitcast 281
+                              Store 283(param) 282
+             285:6(float64_t) Load 155(d)
+                              Store 284(param) 285
+             286:           2 FunctionCall 64(foo2(i1;d1;) 283(param) 284(param)
+             287:     15(int) Load 167(u)
+             288:     22(int) Bitcast 287
+                              Store 289(param) 288
+             291:     15(int) Load 167(u)
+                              Store 290(param) 291
+             292:           2 FunctionCall 49(foo2(i1;u1;) 289(param) 290(param)
+             293:     15(int) Load 167(u)
+             294:     22(int) Bitcast 293
+                              Store 295(param) 294
+             297:     22(int) Load 173(i)
+                              Store 296(param) 297
+             298:           2 FunctionCall 54(foo2(i1;i1;) 295(param) 296(param)
+             299:     15(int) Load 167(u)
+             300:     22(int) Bitcast 299
+                              Store 301(param) 300
+             303:   29(float) Load 179(f)
+                              Store 302(param) 303
+             304:           2 FunctionCall 59(foo2(i1;f1;) 301(param) 302(param)
+             306:     22(int) Load 173(i)
+                              Store 305(param) 306
+             308:     8(bool) Load 156(b)
+                              Store 307(param) 308
+             309:           2 FunctionCall 44(foo2(i1;b1;) 305(param) 307(param)
+             311:     22(int) Load 173(i)
+                              Store 310(param) 311
+             313:6(float64_t) Load 155(d)
+                              Store 312(param) 313
+             314:           2 FunctionCall 64(foo2(i1;d1;) 310(param) 312(param)
+             316:     22(int) Load 173(i)
+                              Store 315(param) 316
+             318:     15(int) Load 167(u)
+                              Store 317(param) 318
+             319:           2 FunctionCall 49(foo2(i1;u1;) 315(param) 317(param)
+             321:     22(int) Load 173(i)
+                              Store 320(param) 321
+             323:     22(int) Load 173(i)
+                              Store 322(param) 323
+             324:           2 FunctionCall 54(foo2(i1;i1;) 320(param) 322(param)
+             326:     22(int) Load 173(i)
+                              Store 325(param) 326
+             328:   29(float) Load 179(f)
+                              Store 327(param) 328
+             329:           2 FunctionCall 59(foo2(i1;f1;) 325(param) 327(param)
+             331:     8(bool) Load 156(b)
+                              Store 330(param) 331
+             332:           2 FunctionCall 68(foo3(b1;) 330(param)
+             333:6(float64_t) Load 155(d)
+             335:     8(bool) FOrdNotEqual 333 334
+                              Store 336(param) 335
+             337:           2 FunctionCall 68(foo3(b1;) 336(param)
+             338:     15(int) Load 167(u)
+             340:     8(bool) INotEqual 338 339
+                              Store 341(param) 340
+             342:           2 FunctionCall 68(foo3(b1;) 341(param)
+             343:     22(int) Load 173(i)
+             344:     8(bool) INotEqual 343 339
+                              Store 345(param) 344
+             346:           2 FunctionCall 68(foo3(b1;) 345(param)
+             347:   29(float) Load 179(f)
+             349:     8(bool) FOrdNotEqual 347 348
+                              Store 350(param) 349
+             351:           2 FunctionCall 68(foo3(b1;) 350(param)
+             352:     8(bool) Load 156(b)
+             354:     15(int) Select 352 353 339
+                              Store 355(param) 354
+             356:           2 FunctionCall 72(foo4(u1;) 355(param)
+             357:6(float64_t) Load 155(d)
+             358:     15(int) ConvertFToU 357
+                              Store 359(param) 358
+             360:           2 FunctionCall 72(foo4(u1;) 359(param)
+             362:     15(int) Load 167(u)
+                              Store 361(param) 362
+             363:           2 FunctionCall 72(foo4(u1;) 361(param)
+             364:     22(int) Load 173(i)
+             365:     15(int) Bitcast 364
+                              Store 366(param) 365
+             367:           2 FunctionCall 72(foo4(u1;) 366(param)
+             368:   29(float) Load 179(f)
+             369:     15(int) ConvertFToU 368
+                              Store 370(param) 369
+             371:           2 FunctionCall 72(foo4(u1;) 370(param)
+             372:     8(bool) Load 156(b)
+             375:     22(int) Select 372 374 373
+                              Store 376(param) 375
+             377:           2 FunctionCall 76(foo5(i1;) 376(param)
+             378:6(float64_t) Load 155(d)
+             379:     22(int) ConvertFToS 378
+                              Store 380(param) 379
+             381:           2 FunctionCall 76(foo5(i1;) 380(param)
+             382:     15(int) Load 167(u)
+             383:     22(int) Bitcast 382
+                              Store 384(param) 383
+             385:           2 FunctionCall 76(foo5(i1;) 384(param)
+             387:     22(int) Load 173(i)
+                              Store 386(param) 387
+             388:           2 FunctionCall 76(foo5(i1;) 386(param)
+             389:   29(float) Load 179(f)
+             390:     22(int) ConvertFToS 389
+                              Store 391(param) 390
+             392:           2 FunctionCall 76(foo5(i1;) 391(param)
+             393:     8(bool) Load 156(b)
+             395:   29(float) Select 393 394 348
+                              Store 396(param) 395
+             397:           2 FunctionCall 80(foo6(f1;) 396(param)
+             398:6(float64_t) Load 155(d)
+             399:   29(float) FConvert 398
+                              Store 400(param) 399
+             401:           2 FunctionCall 80(foo6(f1;) 400(param)
+             402:     15(int) Load 167(u)
+             403:   29(float) ConvertUToF 402
+                              Store 404(param) 403
+             405:           2 FunctionCall 80(foo6(f1;) 404(param)
+             406:     22(int) Load 173(i)
+             407:   29(float) ConvertSToF 406
+                              Store 408(param) 407
+             409:           2 FunctionCall 80(foo6(f1;) 408(param)
+             411:   29(float) Load 179(f)
+                              Store 410(param) 411
+             412:           2 FunctionCall 80(foo6(f1;) 410(param)
+             413:     8(bool) Load 156(b)
+             415:6(float64_t) Select 413 414 334
+                              Store 416(param) 415
+             417:           2 FunctionCall 84(foo7(d1;) 416(param)
+             419:6(float64_t) Load 155(d)
+                              Store 418(param) 419
+             420:           2 FunctionCall 84(foo7(d1;) 418(param)
+             421:     15(int) Load 167(u)
+             422:6(float64_t) ConvertUToF 421
+                              Store 423(param) 422
+             424:           2 FunctionCall 84(foo7(d1;) 423(param)
+             425:     22(int) Load 173(i)
+             426:6(float64_t) ConvertSToF 425
+                              Store 427(param) 426
+             428:           2 FunctionCall 84(foo7(d1;) 427(param)
+             429:   29(float) Load 179(f)
+             430:6(float64_t) FConvert 429
+                              Store 431(param) 430
+             432:           2 FunctionCall 84(foo7(d1;) 431(param)
+             433:     8(bool) Load 156(b)
+             434:   29(float) Select 433 394 348
+                              Store 435(param) 434
+             436:           2 FunctionCall 87(foo8(f1;) 435(param)
+             437:     15(int) Load 167(u)
+             438:   29(float) ConvertUToF 437
+                              Store 439(param) 438
+             440:           2 FunctionCall 87(foo8(f1;) 439(param)
+             441:     22(int) Load 173(i)
+             442:   29(float) ConvertSToF 441
+                              Store 443(param) 442
+             444:           2 FunctionCall 87(foo8(f1;) 443(param)
+             445:     8(bool) Load 156(b)
+             446:     22(int) Select 445 374 373
+                              Store 447(param) 446
+             448:           2 FunctionCall 93(foo9(i1;) 447(param)
+             449:   29(float) Load 179(f)
+             450:     15(int) ConvertFToU 449
+                              Store 451(param) 450
+             452:           2 FunctionCall 96(foo9(u1;) 451(param)
+             453:6(float64_t) Load 155(d)
+             454:     15(int) ConvertFToU 453
+                              Store 455(param) 454
+             456:           2 FunctionCall 96(foo9(u1;) 455(param)
+             457:     15(int) Load 167(u)
+             458:     22(int) Bitcast 457
+                              Store 459(param) 458
+             460:           2 FunctionCall 102(foo10(i1;) 459(param)
+             461:   29(float) Load 179(f)
+             462:     22(int) ConvertFToS 461
+                              Store 463(param) 462
+             464:           2 FunctionCall 102(foo10(i1;) 463(param)
+             465:6(float64_t) Load 155(d)
+             466:     22(int) ConvertFToS 465
+                              Store 467(param) 466
+             468:           2 FunctionCall 102(foo10(i1;) 467(param)
+             469:     8(bool) Load 156(b)
+             470:     15(int) Select 469 353 339
+                              Store 471(param) 470
+             472:           2 FunctionCall 120(foo11(u1;) 471(param)
+             473:   29(float) Load 179(f)
+             474:6(float64_t) FConvert 473
+                              Store 475(param) 474
+             476:           2 FunctionCall 111(foo11(d1;) 475(param)
+             477:   29(float) Load 179(f)
+             478:  104(fvec3) CompositeConstruct 477 477 477
+             479:125(f64vec3) FConvert 478
+                              Store 480(param) 479
+             481:           2 FunctionCall 129(foo12(vd3;) 480(param)
+             482:     22(int) Load 173(i)
+             483:     22(int) Load 173(i)
+             485:  484(ivec2) CompositeConstruct 482 483
+             486:  134(ivec2) Bitcast 485
+                              Store 487(param) 486
+             488:           2 FunctionCall 138(foo16(vu2;) 487(param)
+             489:   29(float) Load 179(f)
+             490:  104(fvec3) CompositeConstruct 489 489 489
+                              Store 491(param) 490
+             492:           2 FunctionCall 141(foo13(vf3;) 491(param)
+             493:     22(int) Load 173(i)
+             495:  494(ivec4) CompositeConstruct 493 493 493 493
+             496:     22(int) CompositeExtract 495 0
+                              Store 497(param) 496
+             498:           2 FunctionCall 144(foo14(vi1;) 497(param)
+             499:     8(bool) Load 156(b)
+                              Store 500(param) 499
+             501:           2 FunctionCall 147(foo15(vb1;) 500(param)
+             502:     8(bool) Load 156(b)
+             504:  503(bvec3) CompositeConstruct 502 502 502
+             505:     8(bool) CompositeExtract 504 0
+                              Store 506(param) 505
+             507:           2 FunctionCall 147(foo15(vb1;) 506(param)
+             508:  149(fvec4) Load 152(input)
+                              ReturnValue 508
+                              FunctionEnd

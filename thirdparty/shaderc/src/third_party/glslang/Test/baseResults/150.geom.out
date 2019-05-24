@@ -1,0 +1,289 @@
+150.geom
+ERROR: 0:15: 'fromVertex' : block instance name redefinition 
+ERROR: 0:19: 'fromVertex' : redefinition 
+ERROR: 0:21: 'fooC' : block instance name redefinition 
+ERROR: 0:29: 'EmitStreamVertex' : no matching overloaded function found 
+ERROR: 0:30: 'EndStreamPrimitive' : no matching overloaded function found 
+ERROR: 0:44: 'stream' : can only be used on an output 
+ERROR: 0:45: 'stream' : can only be used on an output 
+ERROR: 0:46: 'stream' : can only be used on an output 
+ERROR: 0:47: 'stream' : can only be used on an output 
+ERROR: 0:47: 'stream' : can only be used on an output 
+ERROR: 0:60: 'stream' : member cannot contradict block 
+ERROR: 0:66: 'max_vertices' : too large, must be less than gl_MaxGeometryOutputVertices 
+ERROR: 0:66: 'max_vertices' : cannot change previously set layout value 
+ERROR: 0:67: 'max_vertices' : can only apply to a standalone qualifier 
+ERROR: 0:72: 'points' : cannot change previously set output primitive 
+ERROR: 0:73: 'points' : cannot change previously set output primitive 
+ERROR: 0:74: 'triangle_strip' : cannot apply to input 
+ERROR: 0:75: 'triangle_strip' : cannot apply to: uniform
+ERROR: 0:76: 'triangle_strip' : can only apply to a standalone qualifier 
+ERROR: 0:77: 'triangle_strip' : can only apply to a standalone qualifier 
+ERROR: 0:78: 'invocations' : not supported for this version or the enabled extensions 
+ERROR: 0:78: 'invocations' : can only apply to a standalone qualifier 
+ERROR: 0:80: 'invocations' : not supported for this version or the enabled extensions 
+ERROR: 0:80: 'invocations' : can only apply to a standalone qualifier 
+ERROR: 0:81: 'max_vertices' : can only apply to a standalone qualifier 
+ERROR: 0:82: 'triangle_strip' : can only apply to a standalone qualifier 
+ERROR: 0:85: 'lines' : cannot apply to 'out' 
+ERROR: 0:87: 'triangles' : cannot change previously set input primitive 
+ERROR: 0:88: 'triangles_adjacency' : cannot change previously set input primitive 
+ERROR: 0:89: 'invocations' : not supported for this version or the enabled extensions 
+ERROR: 0:92: 'stream' : member cannot contradict block 
+ERROR: 0:92: 'stream' : can only be used on an output 
+ERROR: 0:129: 'gl_ViewportIndex' : required extension not requested: GL_ARB_viewport_array
+ERROR: 0:129: 'gl_MaxViewports' : required extension not requested: GL_ARB_viewport_array
+ERROR: 0:139: 'gl_ViewportIndex' : identifiers starting with "gl_" are reserved 
+ERROR: 35 compilation errors.  No code generated.
+
+
+Shader version: 150
+Requested GL_ARB_viewport_array
+invocations = 4
+max_vertices = 200
+input primitive = lines_adjacency
+output primitive = triangle_strip
+ERROR: node is still EOpNull!
+0:25  Function Definition: main( ( global void)
+0:25    Function Parameters: 
+0:27    Sequence
+0:27      EmitVertex ( global void)
+0:28      EndPrimitive ( global void)
+0:29      Constant:
+0:29        0.000000
+0:30      Constant:
+0:30        0.000000
+0:32      move second child to first child ( temp 3-component vector of float)
+0:32        color: direct index for structure (layout( stream=0) out 3-component vector of float)
+0:32          'anon@0' (layout( stream=0) out block{layout( stream=0) out 3-component vector of float color})
+0:32          Constant:
+0:32            0 (const uint)
+0:32        color: direct index for structure ( in 3-component vector of float)
+0:32          direct index ( temp block{ in 3-component vector of float color})
+0:32            'fromV' ( in 4-element array of block{ in 3-component vector of float color})
+0:32            Constant:
+0:32              0 (const int)
+0:32          Constant:
+0:32            0 (const int)
+0:33      move second child to first child ( temp float)
+0:33        direct index (layout( stream=0) temp float ClipDistance)
+0:33          gl_ClipDistance: direct index for structure (layout( stream=0) out unsized 4-element array of float ClipDistance)
+0:33            'anon@1' (layout( stream=0) out block{layout( stream=0) gl_Position 4-component vector of float Position gl_Position, layout( stream=0) gl_PointSize float PointSize gl_PointSize, layout( stream=0) out unsized 4-element array of float ClipDistance gl_ClipDistance})
+0:33            Constant:
+0:33              2 (const uint)
+0:33          Constant:
+0:33            3 (const int)
+0:33        direct index ( temp float ClipDistance)
+0:33          gl_ClipDistance: direct index for structure ( in unsized 3-element array of float ClipDistance)
+0:33            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:33              'gl_in' ( in 4-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:33              Constant:
+0:33                1 (const int)
+0:33            Constant:
+0:33              2 (const int)
+0:33          Constant:
+0:33            2 (const int)
+0:34      move second child to first child ( temp 4-component vector of float)
+0:34        gl_Position: direct index for structure (layout( stream=0) gl_Position 4-component vector of float Position)
+0:34          'anon@1' (layout( stream=0) out block{layout( stream=0) gl_Position 4-component vector of float Position gl_Position, layout( stream=0) gl_PointSize float PointSize gl_PointSize, layout( stream=0) out unsized 4-element array of float ClipDistance gl_ClipDistance})
+0:34          Constant:
+0:34            0 (const uint)
+0:34        gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:34          direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:34            'gl_in' ( in 4-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:34            Constant:
+0:34              0 (const int)
+0:34          Constant:
+0:34            0 (const int)
+0:35      move second child to first child ( temp float)
+0:35        gl_PointSize: direct index for structure (layout( stream=0) gl_PointSize float PointSize)
+0:35          'anon@1' (layout( stream=0) out block{layout( stream=0) gl_Position 4-component vector of float Position gl_Position, layout( stream=0) gl_PointSize float PointSize gl_PointSize, layout( stream=0) out unsized 4-element array of float ClipDistance gl_ClipDistance})
+0:35          Constant:
+0:35            1 (const uint)
+0:35        gl_PointSize: direct index for structure ( in float PointSize)
+0:35          direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:35            'gl_in' ( in 4-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:35            Constant:
+0:35              3 (const int)
+0:35          Constant:
+0:35            1 (const int)
+0:36      move second child to first child ( temp int)
+0:36        'gl_PrimitiveID' (layout( stream=0) out int PrimitiveID)
+0:36        'gl_PrimitiveIDIn' ( in int PrimitiveID)
+0:37      move second child to first child ( temp int)
+0:37        'gl_Layer' (layout( stream=0) out int Layer)
+0:37        Constant:
+0:37          2 (const int)
+0:67  Function Definition: foo(i1; ( global void)
+0:67    Function Parameters: 
+0:67      'a' ( in int)
+0:69    Sequence
+0:69      move second child to first child ( temp 4-component vector of float)
+0:69        a: direct index for structure (layout( stream=6) out 4-component vector of float)
+0:69          'ouuaa6' (layout( stream=6) out block{layout( stream=6) out 4-component vector of float a})
+0:69          Constant:
+0:69            0 (const int)
+0:69        Constant:
+0:69          1.000000
+0:69          1.000000
+0:69          1.000000
+0:69          1.000000
+0:107  Sequence
+0:107    move second child to first child ( temp float)
+0:107      'summ' ( global float)
+0:107      Constant:
+0:107        11332.000000
+0:127  Function Definition: fooe1( ( global void)
+0:127    Function Parameters: 
+0:129    Sequence
+0:129      move second child to first child ( temp int)
+0:129        'gl_ViewportIndex' (layout( stream=0) out int ViewportIndex)
+0:129        Constant:
+0:129          15 (const int)
+0:134  Function Definition: fooe2( ( global void)
+0:134    Function Parameters: 
+0:136    Sequence
+0:136      move second child to first child ( temp int)
+0:136        'gl_ViewportIndex' (layout( stream=0) out int ViewportIndex)
+0:136        Constant:
+0:136          15 (const int)
+0:?   Linker Objects
+0:?     'fromV' ( in 4-element array of block{ in 3-component vector of float color})
+0:?     'toF' (layout( stream=0) out block{layout( stream=0) out 3-component vector of float color})
+0:?     'anon@0' (layout( stream=0) out block{layout( stream=0) out 3-component vector of float color})
+0:?     'anon@1' (layout( stream=0) out block{layout( stream=0) gl_Position 4-component vector of float Position gl_Position, layout( stream=0) gl_PointSize float PointSize gl_PointSize, layout( stream=0) out unsized 4-element array of float ClipDistance gl_ClipDistance})
+0:?     'gl_in' ( in 4-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in unsized 3-element array of float ClipDistance gl_ClipDistance})
+0:?     'ov0' (layout( stream=0) out 4-component vector of float)
+0:?     'ov4' (layout( stream=4) out 4-component vector of float)
+0:?     'o1v0' (layout( stream=0) out 4-component vector of float)
+0:?     'ua' (layout( stream=3) uniform int)
+0:?     'ibb' (layout( stream=3 column_major shared) uniform block{layout( stream=3 column_major shared) uniform int ua})
+0:?     'ov3' (layout( stream=3) out 4-component vector of float)
+0:?     'ouuaa6' (layout( stream=6) out block{layout( stream=6) out 4-component vector of float a})
+0:?     'ouua6' (layout( stream=6) out block{layout( stream=6) out 4-component vector of float a})
+0:?     'ouua7' (layout( stream=7) out block{layout( stream=6) out 4-component vector of float a})
+0:?     'ov2s3' (layout( stream=3) out 4-component vector of float)
+0:?     'badv4' (layout( stream=3) out 4-component vector of float)
+0:?     'bad2v4' ( in 4-element array of 4-component vector of float)
+0:?     'anon@2' (layout( stream=3) out block{layout( stream=3) out int a})
+0:?     'outbi' (layout( stream=3) out block{layout( stream=3) out int a, layout( stream=3) out int b, layout( stream=3) out int c})
+0:?     'inbi' ( in 4-element array of block{layout( stream=2) in int a})
+0:?     'insn' ( in 4-element array of block{ in int a15})
+0:?     'anon@3' (layout( stream=3) out block{layout( stream=3) out float f15})
+0:?     'anon@4' (layout( column_major shared) uniform block{layout( column_major shared) uniform bool b15})
+0:?     'summ' ( global float)
+0:?     'gl_ViewportIndex' (layout( stream=3) out int)
+
+
+Linked geometry stage:
+
+
+Shader version: 150
+Requested GL_ARB_viewport_array
+invocations = 4
+max_vertices = 200
+input primitive = lines_adjacency
+output primitive = triangle_strip
+ERROR: node is still EOpNull!
+0:25  Function Definition: main( ( global void)
+0:25    Function Parameters: 
+0:27    Sequence
+0:27      EmitVertex ( global void)
+0:28      EndPrimitive ( global void)
+0:29      Constant:
+0:29        0.000000
+0:30      Constant:
+0:30        0.000000
+0:32      move second child to first child ( temp 3-component vector of float)
+0:32        color: direct index for structure (layout( stream=0) out 3-component vector of float)
+0:32          'anon@0' (layout( stream=0) out block{layout( stream=0) out 3-component vector of float color})
+0:32          Constant:
+0:32            0 (const uint)
+0:32        color: direct index for structure ( in 3-component vector of float)
+0:32          direct index ( temp block{ in 3-component vector of float color})
+0:32            'fromV' ( in 4-element array of block{ in 3-component vector of float color})
+0:32            Constant:
+0:32              0 (const int)
+0:32          Constant:
+0:32            0 (const int)
+0:33      move second child to first child ( temp float)
+0:33        direct index (layout( stream=0) temp float ClipDistance)
+0:33          gl_ClipDistance: direct index for structure (layout( stream=0) out 4-element array of float ClipDistance)
+0:33            'anon@1' (layout( stream=0) out block{layout( stream=0) gl_Position 4-component vector of float Position gl_Position, layout( stream=0) gl_PointSize float PointSize gl_PointSize, layout( stream=0) out 4-element array of float ClipDistance gl_ClipDistance})
+0:33            Constant:
+0:33              2 (const uint)
+0:33          Constant:
+0:33            3 (const int)
+0:33        direct index ( temp float ClipDistance)
+0:33          gl_ClipDistance: direct index for structure ( in 3-element array of float ClipDistance)
+0:33            direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:33              'gl_in' ( in 4-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:33              Constant:
+0:33                1 (const int)
+0:33            Constant:
+0:33              2 (const int)
+0:33          Constant:
+0:33            2 (const int)
+0:34      move second child to first child ( temp 4-component vector of float)
+0:34        gl_Position: direct index for structure (layout( stream=0) gl_Position 4-component vector of float Position)
+0:34          'anon@1' (layout( stream=0) out block{layout( stream=0) gl_Position 4-component vector of float Position gl_Position, layout( stream=0) gl_PointSize float PointSize gl_PointSize, layout( stream=0) out 4-element array of float ClipDistance gl_ClipDistance})
+0:34          Constant:
+0:34            0 (const uint)
+0:34        gl_Position: direct index for structure ( in 4-component vector of float Position)
+0:34          direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:34            'gl_in' ( in 4-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:34            Constant:
+0:34              0 (const int)
+0:34          Constant:
+0:34            0 (const int)
+0:35      move second child to first child ( temp float)
+0:35        gl_PointSize: direct index for structure (layout( stream=0) gl_PointSize float PointSize)
+0:35          'anon@1' (layout( stream=0) out block{layout( stream=0) gl_Position 4-component vector of float Position gl_Position, layout( stream=0) gl_PointSize float PointSize gl_PointSize, layout( stream=0) out 4-element array of float ClipDistance gl_ClipDistance})
+0:35          Constant:
+0:35            1 (const uint)
+0:35        gl_PointSize: direct index for structure ( in float PointSize)
+0:35          direct index ( temp block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:35            'gl_in' ( in 4-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:35            Constant:
+0:35              3 (const int)
+0:35          Constant:
+0:35            1 (const int)
+0:36      move second child to first child ( temp int)
+0:36        'gl_PrimitiveID' (layout( stream=0) out int PrimitiveID)
+0:36        'gl_PrimitiveIDIn' ( in int PrimitiveID)
+0:37      move second child to first child ( temp int)
+0:37        'gl_Layer' (layout( stream=0) out int Layer)
+0:37        Constant:
+0:37          2 (const int)
+0:107  Sequence
+0:107    move second child to first child ( temp float)
+0:107      'summ' ( global float)
+0:107      Constant:
+0:107        11332.000000
+0:?   Linker Objects
+0:?     'fromV' ( in 4-element array of block{ in 3-component vector of float color})
+0:?     'toF' (layout( stream=0) out block{layout( stream=0) out 3-component vector of float color})
+0:?     'anon@0' (layout( stream=0) out block{layout( stream=0) out 3-component vector of float color})
+0:?     'anon@1' (layout( stream=0) out block{layout( stream=0) gl_Position 4-component vector of float Position gl_Position, layout( stream=0) gl_PointSize float PointSize gl_PointSize, layout( stream=0) out 4-element array of float ClipDistance gl_ClipDistance})
+0:?     'gl_in' ( in 4-element array of block{ in 4-component vector of float Position gl_Position,  in float PointSize gl_PointSize,  in 3-element array of float ClipDistance gl_ClipDistance})
+0:?     'ov0' (layout( stream=0) out 4-component vector of float)
+0:?     'ov4' (layout( stream=4) out 4-component vector of float)
+0:?     'o1v0' (layout( stream=0) out 4-component vector of float)
+0:?     'ua' (layout( stream=3) uniform int)
+0:?     'ibb' (layout( stream=3 column_major shared) uniform block{layout( stream=3 column_major shared) uniform int ua})
+0:?     'ov3' (layout( stream=3) out 4-component vector of float)
+0:?     'ouuaa6' (layout( stream=6) out block{layout( stream=6) out 4-component vector of float a})
+0:?     'ouua6' (layout( stream=6) out block{layout( stream=6) out 4-component vector of float a})
+0:?     'ouua7' (layout( stream=7) out block{layout( stream=6) out 4-component vector of float a})
+0:?     'ov2s3' (layout( stream=3) out 4-component vector of float)
+0:?     'badv4' (layout( stream=3) out 4-component vector of float)
+0:?     'bad2v4' ( in 4-element array of 4-component vector of float)
+0:?     'anon@2' (layout( stream=3) out block{layout( stream=3) out int a})
+0:?     'outbi' (layout( stream=3) out block{layout( stream=3) out int a, layout( stream=3) out int b, layout( stream=3) out int c})
+0:?     'inbi' ( in 4-element array of block{layout( stream=2) in int a})
+0:?     'insn' ( in 4-element array of block{ in int a15})
+0:?     'anon@3' (layout( stream=3) out block{layout( stream=3) out float f15})
+0:?     'anon@4' (layout( column_major shared) uniform block{layout( column_major shared) uniform bool b15})
+0:?     'summ' ( global float)
+0:?     'gl_ViewportIndex' (layout( stream=3) out int)
+

@@ -1,0 +1,14 @@
+cppIntMinOverNegativeOne.frag
+Shader version: 100
+0:? Sequence
+0:?   Linker Objects
+
+
+Linked fragment stage:
+
+ERROR: Linking fragment stage: Missing entry point: Each stage requires one entry point
+
+Shader version: 100
+0:? Sequence
+0:?   Linker Objects
+

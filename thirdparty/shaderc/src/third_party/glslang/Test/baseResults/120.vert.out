@@ -1,0 +1,505 @@
+120.vert
+ERROR: 0:3: 'in for stage inputs' : not supported for this version or the enabled extensions 
+ERROR: 0:4: 'out for stage outputs' : not supported for this version or the enabled extensions 
+ERROR: 0:11: 'gl_Position' : cannot add storage, auxiliary, memory, interpolation, layout, or precision qualifier to an existing variable 
+ERROR: 0:12: '' : can only have one auxiliary qualifier (centroid, patch, and sample) 
+ERROR: 0:12: '' : replicated qualifiers 
+ERROR: 0:12: 'foo' : identifier not previously declared 
+ERROR: 0:21: 'gl_ClipDistance' : undeclared identifier 
+ERROR: 0:21: 'gl_ClipDistance' :  left of '[' is not of type array, matrix, or vector  
+ERROR: 0:21: 'assign' :  l-value required (can't modify a const)
+ERROR: 0:28: 'length' :  array must be declared with a size before using this method
+ERROR: 0:31: 'length' : incomplete method syntax 
+ERROR: 0:32: 'length' : method does not accept any arguments 
+ERROR: 0:33: '.' : cannot apply to an array: flizbit
+ERROR: 0:33: '=' :  cannot convert from ' temp 7-element array of float' to ' temp int'
+ERROR: 0:34: '.' : cannot apply to an array: flizbit
+ERROR: 0:34: 'f' : can't use function syntax on variable 
+ERROR: 0:34: 'a4' : redefinition 
+ERROR: 0:35: 'arrays of arrays' : not supported with this profile: none
+ERROR: 0:36: 'arrays of arrays' : not supported with this profile: none
+ERROR: 0:37: 'arrays of arrays' : not supported with this profile: none
+ERROR: 0:37: 'arrays of arrays' : not supported with this profile: none
+ERROR: 0:38: 'arrays of arrays' : not supported with this profile: none
+ERROR: 0:39: 'arrays of arrays' : not supported with this profile: none
+ERROR: 0:40: 'arrays of arrays' : not supported with this profile: none
+ERROR: 0:40: 'constructor' : array constructor needs one argument per array element 
+ERROR: 0:40: 'arrays of arrays' : not supported with this profile: none
+ERROR: 0:40: '=' :  cannot convert from ' const float' to ' temp 2-element array of 3-element array of float'
+ERROR: 0:41: 'arrays of arrays' : not supported with this profile: none
+ERROR: 0:41: 'constructor' : array constructor needs one argument per array element 
+ERROR: 0:41: 'arrays of arrays' : not supported with this profile: none
+ERROR: 0:41: '=' :  cannot convert from ' const float' to ' temp 2-element array of 3-element array of float'
+ERROR: 0:50: 'arrays of arrays' : not supported with this profile: none
+ERROR: 0:51: 'arrays of arrays' : not supported with this profile: none
+ERROR: 0:52: 'arrays of arrays' : not supported with this profile: none
+ERROR: 0:53: 'arrays of arrays' : not supported with this profile: none
+ERROR: 0:56: 'out' : overloaded functions must have the same parameter storage qualifiers for argument 1
+ERROR: 0:57: 'overloadA' : overloaded functions must have the same return type 
+ERROR: 0:87: 'overloadC' : no matching overloaded function found 
+ERROR: 0:90: 'overloadC' : no matching overloaded function found 
+ERROR: 0:95: 'overloadD' : ambiguous function signature match: multiple signatures match under implicit type conversion 
+ERROR: 0:98: 'overloadB' : can't use function syntax on variable 
+ERROR: 0:106: 'overloadC' : no matching overloaded function found 
+ERROR: 0:107: 'overloadE' : no matching overloaded function found 
+ERROR: 0:108: 'overloadE' : no matching overloaded function found 
+ERROR: 0:111: 'overloadE' : no matching overloaded function found 
+ERROR: 0:117: 'overloadF' : no matching overloaded function found 
+ERROR: 0:121: 'gl_TexCoord array size' : must be less than or equal to gl_MaxTextureCoords (32)
+ERROR: 0:165: 'switch' : Reserved word. 
+ERROR: 0:171: 'default' : Reserved word. 
+ERROR: 0:165: 'switch statements' : not supported for this version or the enabled extensions 
+ERROR: 0:176: 'bit shift left' : not supported for this version or the enabled extensions 
+ERROR: 0:176: 'bit shift right' : not supported for this version or the enabled extensions 
+ERROR: 0:176: 'bitwise and' : not supported for this version or the enabled extensions 
+ERROR: 0:176: 'bitwise inclusive or' : not supported for this version or the enabled extensions 
+ERROR: 0:179: 'modf' : no matching overloaded function found 
+ERROR: 0:179: '=' :  cannot convert from ' const float' to ' temp 3-component vector of float'
+ERROR: 0:180: 'trunc' : no matching overloaded function found 
+ERROR: 0:181: 'round' : no matching overloaded function found 
+ERROR: 0:181: '=' :  cannot convert from ' const float' to ' temp 2-component vector of float'
+ERROR: 0:182: 'roundEven' : no matching overloaded function found 
+ERROR: 0:182: '=' :  cannot convert from ' const float' to ' temp 2-component vector of float'
+ERROR: 0:183: 'isnan' : no matching overloaded function found 
+ERROR: 0:183: '=' :  cannot convert from ' const float' to ' temp 2-component vector of bool'
+ERROR: 0:184: 'isinf' : no matching overloaded function found 
+ERROR: 0:184: '=' :  cannot convert from ' const float' to ' temp 4-component vector of bool'
+ERROR: 0:186: 'sinh' : no matching overloaded function found 
+ERROR: 0:187: 'cosh' : no matching overloaded function found 
+ERROR: 0:187: 'tanh' : no matching overloaded function found 
+ERROR: 0:188: 'c4D' : undeclared identifier 
+ERROR: 0:188: 'asinh' : no matching overloaded function found 
+ERROR: 0:188: 'acosh' : no matching overloaded function found 
+ERROR: 0:189: 'atanh' : no matching overloaded function found 
+ERROR: 0:191: 'gl_VertexID' : undeclared identifier 
+ERROR: 0:191: '=' :  cannot convert from ' temp float' to ' temp int'
+ERROR: 0:192: 'gl_ClipDistance' : undeclared identifier 
+ERROR: 0:192: 'gl_ClipDistance' :  left of '[' is not of type array, matrix, or vector  
+ERROR: 0:192: 'assign' :  l-value required (can't modify a const)
+ERROR: 0:195: 'gl_ModelViewMatrix' : identifiers starting with "gl_" are reserved 
+ERROR: 0:200: 'token pasting (##)' : not supported for this version or the enabled extensions 
+ERROR: 0:203: 'token pasting (##)' : not supported for this version or the enabled extensions 
+ERROR: 80 compilation errors.  No code generated.
+
+
+Shader version: 120
+ERROR: node is still EOpNull!
+0:15  Function Definition: main( ( global void)
+0:15    Function Parameters: 
+0:17    Sequence
+0:17      move second child to first child ( temp 2-component vector of float)
+0:17        'centTexCoord' ( invariant smooth out 2-component vector of float)
+0:17        'attv2' ( in 2-component vector of float)
+0:18      move second child to first child ( temp 4-component vector of float)
+0:18        'gl_Position' ( invariant gl_Position 4-component vector of float Position)
+0:18        'attv4' ( in 4-component vector of float)
+0:20      move second child to first child ( temp 4-component vector of float)
+0:20        'gl_ClipVertex' ( gl_ClipVertex 4-component vector of float ClipVertex)
+0:20        'attv4' ( in 4-component vector of float)
+0:21      move second child to first child ( temp float)
+0:21        Constant:
+0:21          0.000000
+0:21        Constant:
+0:21          0.200000
+0:25      move second child to first child ( temp 4-component vector of float)
+0:25        'gl_Position' ( invariant gl_Position 4-component vector of float Position)
+0:25        direct index ( temp 4-component vector of float)
+0:25          'b' ( temp 12-element array of 4-component vector of float)
+0:25          Constant:
+0:25            11 (const int)
+0:28      Sequence
+0:28        move second child to first child ( temp int)
+0:28          'a1' ( temp int)
+0:28          Constant:
+0:28            1 (const int)
+0:30      Sequence
+0:30        move second child to first child ( temp int)
+0:30          'aa' ( temp int)
+0:30          Constant:
+0:30            7 (const int)
+0:31      Sequence
+0:31        move second child to first child ( temp int)
+0:31          'a2' ( temp int)
+0:32      Sequence
+0:32        move second child to first child ( temp int)
+0:32          'a3' ( temp int)
+0:32          Constant:
+0:32            1 (const int)
+0:43      move second child to first child ( temp float)
+0:43        'gl_PointSize' ( invariant gl_PointSize float PointSize)
+0:43        Constant:
+0:43          3.800000
+0:61  Function Definition: overloadB(f1;f1; ( global void)
+0:61    Function Parameters: 
+0:61      '' ( in float)
+0:61      '' ( const (read only) float)
+0:78  Function Definition: foo( ( global void)
+0:78    Function Parameters: 
+0:?     Sequence
+0:83      Function Call: overloadB(f1;f1; ( global void)
+0:83        'f' ( temp float)
+0:83        'f' ( temp float)
+0:84      Function Call: overloadB(f1;f1; ( global void)
+0:84        'f' ( temp float)
+0:84        Constant:
+0:84          2.000000
+0:85      Function Call: overloadB(f1;f1; ( global void)
+0:85        Constant:
+0:85          1.000000
+0:85        Convert int to float ( temp float)
+0:85          'i' ( temp int)
+0:87      Constant:
+0:87        0.000000
+0:88      Function Call: overloadC(i1;i1; ( global 2-component vector of float)
+0:88        Constant:
+0:88          1 (const int)
+0:88        'i' ( temp int)
+0:89      Function Call: overloadC(vf2;vf2; ( global 2-component vector of float)
+0:89        Constant:
+0:89          1.000000
+0:89          1.000000
+0:89        Constant:
+0:89          2.000000
+0:89          2.000000
+0:90      Constant:
+0:90        0.000000
+0:91      Function Call: overloadC(vf2;vf2; ( global 2-component vector of float)
+0:91        Constant:
+0:91          1.000000
+0:91          1.000000
+0:91        Constant:
+0:91          2.000000
+0:91          2.000000
+0:93      Function Call: overloadD(i1;f1; ( global 3-component vector of float)
+0:93        'i' ( temp int)
+0:93        'f' ( temp float)
+0:94      Function Call: overloadD(f1;i1; ( global 3-component vector of float)
+0:94        'f' ( temp float)
+0:94        'i' ( temp int)
+0:95      Function Call: overloadD(f1;i1; ( global 3-component vector of float)
+0:95        Convert int to float ( temp float)
+0:95          'i' ( temp int)
+0:95        'i' ( temp int)
+0:98      Constant:
+0:98        0.000000
+0:100      Constant:
+0:100        0.841471
+0:101      texture ( global 4-component vector of float)
+0:101        's2D' ( uniform sampler2D)
+0:101        Constant:
+0:101          0.000000
+0:101          0.000000
+0:102      clamp ( global 4-component vector of float)
+0:102        'attv4' ( in 4-component vector of float)
+0:102        Constant:
+0:102          0.000000
+0:102        Constant:
+0:102          1.000000
+0:103      clamp ( global 4-component vector of float)
+0:103        Convert int to float ( temp 4-component vector of float)
+0:103          Convert float to int ( temp 4-component vector of int)
+0:103            'attv4' ( in 4-component vector of float)
+0:103        Constant:
+0:103          0.000000
+0:103        Constant:
+0:103          1.000000
+0:106      Constant:
+0:106        0.000000
+0:107      Constant:
+0:107        0.000000
+0:108      Constant:
+0:108        0.000000
+0:109      Function Call: overloadE(vf2; ( global 3-component vector of float)
+0:109        Constant:
+0:109          3.300000
+0:109          3.300000
+0:110      Function Call: overloadE(mf22; ( global 3-component vector of float)
+0:110        Constant:
+0:110          0.500000
+0:110          0.000000
+0:110          0.000000
+0:110          0.500000
+0:111      Constant:
+0:111        0.000000
+0:112      Function Call: overloadE(vf2; ( global 3-component vector of float)
+0:112        Constant:
+0:112          1.000000
+0:112          1.000000
+0:115      Function Call: overloadE(f1[2]; ( global 3-component vector of float)
+0:115        'b' ( temp 2-element array of float)
+0:117      Constant:
+0:117        0.000000
+0:118      Function Call: overloadF(i1; ( global 3-component vector of float)
+0:118        Constant:
+0:118          1 (const int)
+0:128  Function Definition: foo2( ( global void)
+0:128    Function Parameters: 
+0:?     Sequence
+0:135      Comma ( global void)
+0:135        Function Call: outFun(f1;vi2;i1;f1; ( global void)
+0:135          Convert int to float ( temp float)
+0:135            'i' ( temp int)
+0:135          'tempArg' ( temp 2-component vector of int)
+0:135          'i' ( temp int)
+0:135          'f' ( temp float)
+0:135        move second child to first child ( temp 2-component vector of float)
+0:135          'v2' ( temp 2-component vector of float)
+0:135          Convert int to float ( temp 2-component vector of float)
+0:135            'tempArg' ( temp 2-component vector of int)
+0:136      Comma ( global int)
+0:136        move second child to first child ( temp int)
+0:136          'tempReturn' ( global int)
+0:136          Function Call: outFunRet(f1;i1;i1;vi4; ( global int)
+0:136            Convert int to float ( temp float)
+0:136              'i' ( temp int)
+0:136            'tempArg' ( temp int)
+0:136            'i' ( temp int)
+0:136            'tempArg' ( temp 4-component vector of int)
+0:136        move second child to first child ( temp float)
+0:136          'f' ( temp float)
+0:136          Convert int to float ( temp float)
+0:136            'tempArg' ( temp int)
+0:136        move second child to first child ( temp 4-component vector of float)
+0:136          'v4' ( temp 4-component vector of float)
+0:136          Convert int to float ( temp 4-component vector of float)
+0:136            'tempArg' ( temp 4-component vector of int)
+0:136        'tempReturn' ( global int)
+0:137      Sequence
+0:137        move second child to first child ( temp float)
+0:137          'ret' ( temp float)
+0:137          Convert int to float ( temp float)
+0:137            Comma ( global int)
+0:137              move second child to first child ( temp int)
+0:137                'tempReturn' ( global int)
+0:137                Function Call: outFunRet(f1;i1;i1;vi4; ( global int)
+0:137                  Convert int to float ( temp float)
+0:137                    'i' ( temp int)
+0:137                  'tempArg' ( temp int)
+0:137                  'i' ( temp int)
+0:137                  'tempArg' ( temp 4-component vector of int)
+0:137              move second child to first child ( temp float)
+0:137                'f' ( temp float)
+0:137                Convert int to float ( temp float)
+0:137                  'tempArg' ( temp int)
+0:137              move second child to first child ( temp 4-component vector of float)
+0:137                'v4' ( temp 4-component vector of float)
+0:137                Convert int to float ( temp 4-component vector of float)
+0:137                  'tempArg' ( temp 4-component vector of int)
+0:137              'tempReturn' ( global int)
+0:138      Sequence
+0:138        move second child to first child ( temp 2-component vector of float)
+0:138          'ret2' ( temp 2-component vector of float)
+0:138          Convert int to float ( temp 2-component vector of float)
+0:138            Comma ( global 2-component vector of int)
+0:138              move second child to first child ( temp 2-component vector of int)
+0:138                'tempReturn' ( global 2-component vector of int)
+0:138                Function Call: outFunRet(f1;vi4;i1;vi4; ( global 2-component vector of int)
+0:138                  Convert int to float ( temp float)
+0:138                    'i' ( temp int)
+0:138                  'tempArg' ( temp 4-component vector of int)
+0:138                  'i' ( temp int)
+0:138                  'tempArg' ( temp 4-component vector of int)
+0:138              move second child to first child ( temp 4-component vector of float)
+0:138                'v4' ( temp 4-component vector of float)
+0:138                Convert int to float ( temp 4-component vector of float)
+0:138                  'tempArg' ( temp 4-component vector of int)
+0:138              move second child to first child ( temp 4-component vector of float)
+0:138                'v4' ( temp 4-component vector of float)
+0:138                Convert int to float ( temp 4-component vector of float)
+0:138                  'tempArg' ( temp 4-component vector of int)
+0:138              'tempReturn' ( global 2-component vector of int)
+0:139      Sequence
+0:139        move second child to first child ( temp bool)
+0:139          'b' ( temp bool)
+0:139          any ( global bool)
+0:139            Compare Less Than ( global 4-component vector of bool)
+0:139              'v4' ( temp 4-component vector of float)
+0:139              'attv4' ( in 4-component vector of float)
+0:142  Function Definition: noise( ( global void)
+0:142    Function Parameters: 
+0:144    Sequence
+0:144      Sequence
+0:144        move second child to first child ( temp float)
+0:144          'f1' ( temp float)
+0:144          noise ( global float)
+0:144            Constant:
+0:144              1.000000
+0:145      Sequence
+0:145        move second child to first child ( temp 2-component vector of float)
+0:145          'f2' ( temp 2-component vector of float)
+0:145          noise ( global 2-component vector of float)
+0:145            Constant:
+0:145              1.000000
+0:145              1.000000
+0:146      Sequence
+0:146        move second child to first child ( temp 3-component vector of float)
+0:146          'f3' ( temp 3-component vector of float)
+0:146          noise ( global 3-component vector of float)
+0:146            Constant:
+0:146              1.000000
+0:146              1.000000
+0:146              1.000000
+0:147      Sequence
+0:147        move second child to first child ( temp 4-component vector of float)
+0:147          'f4' ( temp 4-component vector of float)
+0:147          noise ( global 4-component vector of float)
+0:147            Constant:
+0:147              1.000000
+0:147              1.000000
+0:147              1.000000
+0:147              1.000000
+0:162  Function Definition: foo213( ( global void)
+0:162    Function Parameters: 
+0:164    Sequence
+0:164      Sequence
+0:164        move second child to first child ( temp float)
+0:164          'f' ( temp float)
+0:164          Constant:
+0:164            3.000000
+0:165      switch
+0:165      condition
+0:165        'c' ( uniform int)
+0:165      body
+0:165        Sequence
+0:166          case:  with expression
+0:166            Constant:
+0:166              1 (const int)
+0:?           Sequence
+0:167            move second child to first child ( temp float)
+0:167              'f' ( temp float)
+0:167              sine ( global float)
+0:167                'f' ( temp float)
+0:168            Branch: Break
+0:169          case:  with expression
+0:169            Constant:
+0:169              2 (const int)
+0:?           Sequence
+0:170            move second child to first child ( temp float)
+0:170              'f' ( temp float)
+0:170              component-wise multiply ( temp float)
+0:170                'f' ( temp float)
+0:170                'f' ( temp float)
+0:171          default: 
+0:?           Sequence
+0:172            move second child to first child ( temp float)
+0:172              'f' ( temp float)
+0:172              Constant:
+0:172                3.000000
+0:176      inclusive-or ( temp int)
+0:176        left-shift ( temp int)
+0:176          'i' ( temp int)
+0:176          Constant:
+0:176            3 (const int)
+0:176        Constant:
+0:176          69 (const int)
+0:180      Sequence
+0:180        move second child to first child ( temp float)
+0:180          't' ( temp float)
+0:180          Constant:
+0:180            0.000000
+0:186      Constant:
+0:186        0.000000
+0:188      Constant:
+0:188        0.000000
+0:189      Constant:
+0:189        0.000000
+0:192      move second child to first child ( temp float)
+0:192        Constant:
+0:192          0.000000
+0:192        Constant:
+0:192          0.300000
+0:?   Linker Objects
+0:?     'i' ( in 4-component vector of float)
+0:?     'o' ( smooth out 4-component vector of float)
+0:?     'attv2' ( in 2-component vector of float)
+0:?     'attv4' ( in 4-component vector of float)
+0:?     's2D' ( uniform sampler2D)
+0:?     'centTexCoord' ( invariant smooth out 2-component vector of float)
+0:?     'initted' ( uniform float)
+0:?       3.400000
+0:?     'concall' ( const float)
+0:?       0.295520
+0:?     'gl_TexCoord' ( smooth out 35-element array of 4-component vector of float TexCoord)
+0:?     'c' ( uniform int)
+0:?     'x' ( in 2-component vector of int)
+0:?     'v2a' ( in 2-component vector of float)
+0:?     'c1D' ( in float)
+0:?     'c2D' ( in 2-component vector of float)
+0:?     'c3D' ( in 3-component vector of float)
+0:?     'v4' ( uniform 4-component vector of float)
+0:?     'abcdef' ( global int)
+0:?     'qrstuv' ( global int)
+
+
+Linked vertex stage:
+
+
+Shader version: 120
+ERROR: node is still EOpNull!
+0:15  Function Definition: main( ( global void)
+0:15    Function Parameters: 
+0:17    Sequence
+0:17      move second child to first child ( temp 2-component vector of float)
+0:17        'centTexCoord' ( invariant smooth out 2-component vector of float)
+0:17        'attv2' ( in 2-component vector of float)
+0:18      move second child to first child ( temp 4-component vector of float)
+0:18        'gl_Position' ( invariant gl_Position 4-component vector of float Position)
+0:18        'attv4' ( in 4-component vector of float)
+0:20      move second child to first child ( temp 4-component vector of float)
+0:20        'gl_ClipVertex' ( gl_ClipVertex 4-component vector of float ClipVertex)
+0:20        'attv4' ( in 4-component vector of float)
+0:21      move second child to first child ( temp float)
+0:21        Constant:
+0:21          0.000000
+0:21        Constant:
+0:21          0.200000
+0:25      move second child to first child ( temp 4-component vector of float)
+0:25        'gl_Position' ( invariant gl_Position 4-component vector of float Position)
+0:25        direct index ( temp 4-component vector of float)
+0:25          'b' ( temp 12-element array of 4-component vector of float)
+0:25          Constant:
+0:25            11 (const int)
+0:28      Sequence
+0:28        move second child to first child ( temp int)
+0:28          'a1' ( temp int)
+0:28          Constant:
+0:28            1 (const int)
+0:30      Sequence
+0:30        move second child to first child ( temp int)
+0:30          'aa' ( temp int)
+0:30          Constant:
+0:30            7 (const int)
+0:31      Sequence
+0:31        move second child to first child ( temp int)
+0:31          'a2' ( temp int)
+0:32      Sequence
+0:32        move second child to first child ( temp int)
+0:32          'a3' ( temp int)
+0:32          Constant:
+0:32            1 (const int)
+0:43      move second child to first child ( temp float)
+0:43        'gl_PointSize' ( invariant gl_PointSize float PointSize)
+0:43        Constant:
+0:43          3.800000
+0:?   Linker Objects
+0:?     'i' ( in 4-component vector of float)
+0:?     'o' ( smooth out 4-component vector of float)
+0:?     'attv2' ( in 2-component vector of float)
+0:?     'attv4' ( in 4-component vector of float)
+0:?     's2D' ( uniform sampler2D)
+0:?     'centTexCoord' ( invariant smooth out 2-component vector of float)
+0:?     'initted' ( uniform float)
+0:?       3.400000
+0:?     'concall' ( const float)
+0:?       0.295520
+0:?     'gl_TexCoord' ( smooth out 35-element array of 4-component vector of float TexCoord)
+0:?     'c' ( uniform int)
+0:?     'x' ( in 2-component vector of int)
+0:?     'v2a' ( in 2-component vector of float)
+0:?     'c1D' ( in float)
+0:?     'c2D' ( in 2-component vector of float)
+0:?     'c3D' ( in 3-component vector of float)
+0:?     'v4' ( uniform 4-component vector of float)
+0:?     'abcdef' ( global int)
+0:?     'qrstuv' ( global int)
+

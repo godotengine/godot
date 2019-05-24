@@ -1,0 +1,436 @@
+hlsl.nonstaticMemberFunction.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:1  Sequence
+0:1    move second child to first child ( temp 2-component vector of float)
+0:1      'i' ( global 2-component vector of float)
+0:?       Constant:
+0:?         1.000000
+0:?         2.000000
+0:5  Function Definition: type1::setmem(vf4; ( temp void)
+0:5    Function Parameters: 
+0:5      '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:5      'm' ( in 4-component vector of float)
+0:?     Sequence
+0:5      move second child to first child ( temp 4-component vector of float)
+0:5        memVar: direct index for structure ( temp 4-component vector of float)
+0:5          '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:5          Constant:
+0:5            0 (const uint)
+0:5        'm' ( in 4-component vector of float)
+0:6  Function Definition: type1::seti(i1; ( temp void)
+0:6    Function Parameters: 
+0:6      '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:6      'si' ( in int)
+0:?     Sequence
+0:6      move second child to first child ( temp int)
+0:6        i: direct index for structure ( temp int)
+0:6          '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:6          Constant:
+0:6            1 (const uint)
+0:6        'si' ( in int)
+0:9  Function Definition: type1::memFun(vf4; ( temp 4-component vector of float)
+0:9    Function Parameters: 
+0:9      '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:9      'a' ( in 4-component vector of float)
+0:?     Sequence
+0:10      Branch: Return with expression
+0:10        add ( temp 4-component vector of float)
+0:10          vector-scale ( temp 4-component vector of float)
+0:10            Convert int to float ( temp float)
+0:10              i: direct index for structure ( temp int)
+0:10                '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:10                Constant:
+0:10                  1 (const uint)
+0:10            'a' ( in 4-component vector of float)
+0:10          memVar: direct index for structure ( temp 4-component vector of float)
+0:10            '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:10            Constant:
+0:10              0 (const uint)
+0:13  Function Definition: type1::memFun(i1; ( temp int)
+0:13    Function Parameters: 
+0:13      '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:13      'a' ( in int)
+0:?     Sequence
+0:14      Branch: Return with expression
+0:14        Convert float to int ( temp int)
+0:14          subtract ( temp float)
+0:14            Convert int to float ( temp float)
+0:14              add ( temp int)
+0:14                i: direct index for structure ( temp int)
+0:14                  '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:14                  Constant:
+0:14                    1 (const uint)
+0:14                'a' ( in int)
+0:14            direct index ( temp float)
+0:14              memVar: direct index for structure ( temp 4-component vector of float)
+0:14                '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:14                Constant:
+0:14                  0 (const uint)
+0:14              Constant:
+0:14                2 (const int)
+0:19  Sequence
+0:19    move second child to first child ( temp 2-component vector of float)
+0:19      'j' ( global 2-component vector of float)
+0:19      'i' ( global 2-component vector of float)
+0:23  Function Definition: type2::memFun( ( temp 2-component vector of float)
+0:23    Function Parameters: 
+0:23      '@this' ( temp structure{})
+0:?     Sequence
+0:23      Branch: Return with expression
+0:23        'i' ( global 2-component vector of float)
+0:27  Function Definition: @main( ( temp 4-component vector of float)
+0:27    Function Parameters: 
+0:?     Sequence
+0:29      Function Call: type1::setmem(vf4; ( temp void)
+0:29        'test' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:?         Constant:
+0:?           2.000000
+0:?           2.000000
+0:?           2.000000
+0:?           2.000000
+0:30      Function Call: type1::seti(i1; ( temp void)
+0:30        'test' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:30        Constant:
+0:30          17 (const int)
+0:31      Sequence
+0:31        move second child to first child ( temp 4-component vector of float)
+0:31          'f4' ( temp 4-component vector of float)
+0:?           Constant:
+0:?             1.000000
+0:?             1.000000
+0:?             1.000000
+0:?             1.000000
+0:32      add second child into first child ( temp 4-component vector of float)
+0:32        'f4' ( temp 4-component vector of float)
+0:32        Function Call: type1::memFun(vf4; ( temp 4-component vector of float)
+0:32          'test' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:?           Constant:
+0:?             5.000000
+0:?             5.000000
+0:?             5.000000
+0:?             5.000000
+0:33      add second child into first child ( temp 4-component vector of float)
+0:33        'f4' ( temp 4-component vector of float)
+0:33        Convert int to float ( temp float)
+0:33          Function Call: type1::memFun(i1; ( temp int)
+0:33            'test' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:33            Constant:
+0:33              7 (const int)
+0:34      Branch: Return with expression
+0:34        'f4' ( temp 4-component vector of float)
+0:27  Function Definition: main( ( temp void)
+0:27    Function Parameters: 
+0:?     Sequence
+0:27      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:27        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'i' ( global 2-component vector of float)
+0:?     'j' ( global 2-component vector of float)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:1  Sequence
+0:1    move second child to first child ( temp 2-component vector of float)
+0:1      'i' ( global 2-component vector of float)
+0:?       Constant:
+0:?         1.000000
+0:?         2.000000
+0:5  Function Definition: type1::setmem(vf4; ( temp void)
+0:5    Function Parameters: 
+0:5      '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:5      'm' ( in 4-component vector of float)
+0:?     Sequence
+0:5      move second child to first child ( temp 4-component vector of float)
+0:5        memVar: direct index for structure ( temp 4-component vector of float)
+0:5          '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:5          Constant:
+0:5            0 (const uint)
+0:5        'm' ( in 4-component vector of float)
+0:6  Function Definition: type1::seti(i1; ( temp void)
+0:6    Function Parameters: 
+0:6      '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:6      'si' ( in int)
+0:?     Sequence
+0:6      move second child to first child ( temp int)
+0:6        i: direct index for structure ( temp int)
+0:6          '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:6          Constant:
+0:6            1 (const uint)
+0:6        'si' ( in int)
+0:9  Function Definition: type1::memFun(vf4; ( temp 4-component vector of float)
+0:9    Function Parameters: 
+0:9      '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:9      'a' ( in 4-component vector of float)
+0:?     Sequence
+0:10      Branch: Return with expression
+0:10        add ( temp 4-component vector of float)
+0:10          vector-scale ( temp 4-component vector of float)
+0:10            Convert int to float ( temp float)
+0:10              i: direct index for structure ( temp int)
+0:10                '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:10                Constant:
+0:10                  1 (const uint)
+0:10            'a' ( in 4-component vector of float)
+0:10          memVar: direct index for structure ( temp 4-component vector of float)
+0:10            '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:10            Constant:
+0:10              0 (const uint)
+0:13  Function Definition: type1::memFun(i1; ( temp int)
+0:13    Function Parameters: 
+0:13      '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:13      'a' ( in int)
+0:?     Sequence
+0:14      Branch: Return with expression
+0:14        Convert float to int ( temp int)
+0:14          subtract ( temp float)
+0:14            Convert int to float ( temp float)
+0:14              add ( temp int)
+0:14                i: direct index for structure ( temp int)
+0:14                  '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:14                  Constant:
+0:14                    1 (const uint)
+0:14                'a' ( in int)
+0:14            direct index ( temp float)
+0:14              memVar: direct index for structure ( temp 4-component vector of float)
+0:14                '@this' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:14                Constant:
+0:14                  0 (const uint)
+0:14              Constant:
+0:14                2 (const int)
+0:19  Sequence
+0:19    move second child to first child ( temp 2-component vector of float)
+0:19      'j' ( global 2-component vector of float)
+0:19      'i' ( global 2-component vector of float)
+0:23  Function Definition: type2::memFun( ( temp 2-component vector of float)
+0:23    Function Parameters: 
+0:23      '@this' ( temp structure{})
+0:?     Sequence
+0:23      Branch: Return with expression
+0:23        'i' ( global 2-component vector of float)
+0:27  Function Definition: @main( ( temp 4-component vector of float)
+0:27    Function Parameters: 
+0:?     Sequence
+0:29      Function Call: type1::setmem(vf4; ( temp void)
+0:29        'test' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:?         Constant:
+0:?           2.000000
+0:?           2.000000
+0:?           2.000000
+0:?           2.000000
+0:30      Function Call: type1::seti(i1; ( temp void)
+0:30        'test' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:30        Constant:
+0:30          17 (const int)
+0:31      Sequence
+0:31        move second child to first child ( temp 4-component vector of float)
+0:31          'f4' ( temp 4-component vector of float)
+0:?           Constant:
+0:?             1.000000
+0:?             1.000000
+0:?             1.000000
+0:?             1.000000
+0:32      add second child into first child ( temp 4-component vector of float)
+0:32        'f4' ( temp 4-component vector of float)
+0:32        Function Call: type1::memFun(vf4; ( temp 4-component vector of float)
+0:32          'test' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:?           Constant:
+0:?             5.000000
+0:?             5.000000
+0:?             5.000000
+0:?             5.000000
+0:33      add second child into first child ( temp 4-component vector of float)
+0:33        'f4' ( temp 4-component vector of float)
+0:33        Convert int to float ( temp float)
+0:33          Function Call: type1::memFun(i1; ( temp int)
+0:33            'test' ( temp structure{ temp 4-component vector of float memVar,  temp int i})
+0:33            Constant:
+0:33              7 (const int)
+0:34      Branch: Return with expression
+0:34        'f4' ( temp 4-component vector of float)
+0:27  Function Definition: main( ( temp void)
+0:27    Function Parameters: 
+0:?     Sequence
+0:27      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:27        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'i' ( global 2-component vector of float)
+0:?     'j' ( global 2-component vector of float)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 111
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 109
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "type1"
+                              MemberName 9(type1) 0  "memVar"
+                              MemberName 9(type1) 1  "i"
+                              Name 15  "type1::setmem(vf4;"
+                              Name 13  "@this"
+                              Name 14  "m"
+                              Name 21  "type1::seti(i1;"
+                              Name 19  "@this"
+                              Name 20  "si"
+                              Name 26  "type1::memFun(vf4;"
+                              Name 24  "@this"
+                              Name 25  "a"
+                              Name 31  "type1::memFun(i1;"
+                              Name 29  "@this"
+                              Name 30  "a"
+                              Name 33  "type2"
+                              Name 38  "type2::memFun("
+                              Name 37  "@this"
+                              Name 41  "@main("
+                              Name 44  "i"
+                              Name 48  "j"
+                              Name 83  "test"
+                              Name 85  "param"
+                              Name 88  "param"
+                              Name 90  "f4"
+                              Name 94  "param"
+                              Name 99  "param"
+                              Name 109  "@entryPointOutput"
+                              Decorate 109(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeInt 32 1
+        9(type1):             TypeStruct 7(fvec4) 8(int)
+              10:             TypePointer Function 9(type1)
+              11:             TypePointer Function 7(fvec4)
+              12:             TypeFunction 2 10(ptr) 11(ptr)
+              17:             TypePointer Function 8(int)
+              18:             TypeFunction 2 10(ptr) 17(ptr)
+              23:             TypeFunction 7(fvec4) 10(ptr) 11(ptr)
+              28:             TypeFunction 8(int) 10(ptr) 17(ptr)
+       33(type2):             TypeStruct
+              34:             TypePointer Function 33(type2)
+              35:             TypeVector 6(float) 2
+              36:             TypeFunction 35(fvec2) 34(ptr)
+              40:             TypeFunction 7(fvec4)
+              43:             TypePointer Private 35(fvec2)
+           44(i):     43(ptr) Variable Private
+              45:    6(float) Constant 1065353216
+              46:    6(float) Constant 1073741824
+              47:   35(fvec2) ConstantComposite 45 46
+           48(j):     43(ptr) Variable Private
+              50:      8(int) Constant 0
+              53:      8(int) Constant 1
+              71:             TypeInt 32 0
+              72:     71(int) Constant 2
+              73:             TypePointer Function 6(float)
+              84:    7(fvec4) ConstantComposite 46 46 46 46
+              87:      8(int) Constant 17
+              91:    7(fvec4) ConstantComposite 45 45 45 45
+              92:    6(float) Constant 1084227584
+              93:    7(fvec4) ConstantComposite 92 92 92 92
+              98:      8(int) Constant 7
+             108:             TypePointer Output 7(fvec4)
+109(@entryPointOutput):    108(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+                              Store 44(i) 47
+              49:   35(fvec2) Load 44(i)
+                              Store 48(j) 49
+             110:    7(fvec4) FunctionCall 41(@main()
+                              Store 109(@entryPointOutput) 110
+                              Return
+                              FunctionEnd
+15(type1::setmem(vf4;):           2 Function None 12
+       13(@this):     10(ptr) FunctionParameter
+           14(m):     11(ptr) FunctionParameter
+              16:             Label
+              51:    7(fvec4) Load 14(m)
+              52:     11(ptr) AccessChain 13(@this) 50
+                              Store 52 51
+                              Return
+                              FunctionEnd
+21(type1::seti(i1;):           2 Function None 18
+       19(@this):     10(ptr) FunctionParameter
+          20(si):     17(ptr) FunctionParameter
+              22:             Label
+              54:      8(int) Load 20(si)
+              55:     17(ptr) AccessChain 19(@this) 53
+                              Store 55 54
+                              Return
+                              FunctionEnd
+26(type1::memFun(vf4;):    7(fvec4) Function None 23
+       24(@this):     10(ptr) FunctionParameter
+           25(a):     11(ptr) FunctionParameter
+              27:             Label
+              56:     17(ptr) AccessChain 24(@this) 53
+              57:      8(int) Load 56
+              58:    6(float) ConvertSToF 57
+              59:    7(fvec4) Load 25(a)
+              60:    7(fvec4) VectorTimesScalar 59 58
+              61:     11(ptr) AccessChain 24(@this) 50
+              62:    7(fvec4) Load 61
+              63:    7(fvec4) FAdd 60 62
+                              ReturnValue 63
+                              FunctionEnd
+31(type1::memFun(i1;):      8(int) Function None 28
+       29(@this):     10(ptr) FunctionParameter
+           30(a):     17(ptr) FunctionParameter
+              32:             Label
+              66:     17(ptr) AccessChain 29(@this) 53
+              67:      8(int) Load 66
+              68:      8(int) Load 30(a)
+              69:      8(int) IAdd 67 68
+              70:    6(float) ConvertSToF 69
+              74:     73(ptr) AccessChain 29(@this) 50 72
+              75:    6(float) Load 74
+              76:    6(float) FSub 70 75
+              77:      8(int) ConvertFToS 76
+                              ReturnValue 77
+                              FunctionEnd
+38(type2::memFun():   35(fvec2) Function None 36
+       37(@this):     34(ptr) FunctionParameter
+              39:             Label
+              80:   35(fvec2) Load 44(i)
+                              ReturnValue 80
+                              FunctionEnd
+      41(@main():    7(fvec4) Function None 40
+              42:             Label
+        83(test):     10(ptr) Variable Function
+       85(param):     11(ptr) Variable Function
+       88(param):     17(ptr) Variable Function
+          90(f4):     11(ptr) Variable Function
+       94(param):     11(ptr) Variable Function
+       99(param):     17(ptr) Variable Function
+                              Store 85(param) 84
+              86:           2 FunctionCall 15(type1::setmem(vf4;) 83(test) 85(param)
+                              Store 88(param) 87
+              89:           2 FunctionCall 21(type1::seti(i1;) 83(test) 88(param)
+                              Store 90(f4) 91
+                              Store 94(param) 93
+              95:    7(fvec4) FunctionCall 26(type1::memFun(vf4;) 83(test) 94(param)
+              96:    7(fvec4) Load 90(f4)
+              97:    7(fvec4) FAdd 96 95
+                              Store 90(f4) 97
+                              Store 99(param) 98
+             100:      8(int) FunctionCall 31(type1::memFun(i1;) 83(test) 99(param)
+             101:    6(float) ConvertSToF 100
+             102:    7(fvec4) Load 90(f4)
+             103:    7(fvec4) CompositeConstruct 101 101 101 101
+             104:    7(fvec4) FAdd 102 103
+                              Store 90(f4) 104
+             105:    7(fvec4) Load 90(f4)
+                              ReturnValue 105
+                              FunctionEnd

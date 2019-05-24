@@ -1,0 +1,13 @@
+ERROR: 0:8000: '#include' : required extension not requested: GL_GOOGLE_include_directive
+ERROR: 0:8000: '#include' : must be followed by a header name 
+ERROR: 0:8001: '#include' : required extension not requested: GL_GOOGLE_include_directive
+ERROR: 0:8001: '#include' : must be followed by a header name 
+ERROR: 0:8002: '#include' : required extension not requested: GL_GOOGLE_include_directive
+ERROR: 0:8002: '#include' : Could not process include directive for header name: foo
+ERROR: 0:8003: '#include' : required extension not requested: GL_GOOGLE_include_directive
+ERROR: 0:8003: '#include' : extra content after header name: foo
+ERROR: 0:8004: '#include' : required extension not requested: GL_GOOGLE_include_directive
+ERROR: 0:8004: '#include' : expected newline after header name: no-eol
+ERROR: 10 compilation errors.  No code generated.
+
+

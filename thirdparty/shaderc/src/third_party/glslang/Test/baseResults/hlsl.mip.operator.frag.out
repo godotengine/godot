@@ -1,0 +1,211 @@
+hlsl.mip.operator.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:5  Function Definition: @main( ( temp 4-component vector of float)
+0:5    Function Parameters: 
+0:?     Sequence
+0:13      Branch: Return with expression
+0:9        add ( temp 4-component vector of float)
+0:6          add ( temp 4-component vector of float)
+0:?             textureFetch ( temp 4-component vector of float)
+0:6              'g_tTex2df4' ( uniform texture2D)
+0:?               Constant:
+0:?                 3 (const uint)
+0:?                 4 (const uint)
+0:6              Constant:
+0:6                2 (const int)
+0:?             textureFetch ( temp 4-component vector of float)
+0:9              'g_tTex2df4a' ( uniform texture2DArray)
+0:?               Constant:
+0:?                 6 (const uint)
+0:?                 7 (const uint)
+0:?                 8 (const uint)
+0:9              Constant:
+0:9                5 (const uint)
+0:13          textureFetch ( temp 4-component vector of float)
+0:13            'g_tTex2df4' ( uniform texture2D)
+0:13            Convert float to uint ( temp 2-component vector of uint)
+0:13              vector swizzle ( temp 2-component vector of float)
+0:?                 textureFetch ( temp 4-component vector of float)
+0:13                  'g_tTex2df4' ( uniform texture2D)
+0:?                   Constant:
+0:?                     14 (const uint)
+0:?                     15 (const uint)
+0:13                  Constant:
+0:13                    13 (const int)
+0:13                Sequence
+0:13                  Constant:
+0:13                    0 (const int)
+0:13                  Constant:
+0:13                    1 (const int)
+0:13            Convert float to uint ( temp uint)
+0:13              direct index ( temp float)
+0:?                 textureFetch ( temp 4-component vector of float)
+0:13                  'g_tTex2df4' ( uniform texture2D)
+0:?                   Constant:
+0:?                     10 (const uint)
+0:?                     11 (const uint)
+0:13                  Constant:
+0:13                    9 (const int)
+0:13                Constant:
+0:13                  0 (const int)
+0:5  Function Definition: main( ( temp void)
+0:5    Function Parameters: 
+0:?     Sequence
+0:5      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:5        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'g_tTex2df4a' ( uniform texture2DArray)
+0:?     'g_tTex2df4' ( uniform texture2D)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:5  Function Definition: @main( ( temp 4-component vector of float)
+0:5    Function Parameters: 
+0:?     Sequence
+0:13      Branch: Return with expression
+0:9        add ( temp 4-component vector of float)
+0:6          add ( temp 4-component vector of float)
+0:?             textureFetch ( temp 4-component vector of float)
+0:6              'g_tTex2df4' ( uniform texture2D)
+0:?               Constant:
+0:?                 3 (const uint)
+0:?                 4 (const uint)
+0:6              Constant:
+0:6                2 (const int)
+0:?             textureFetch ( temp 4-component vector of float)
+0:9              'g_tTex2df4a' ( uniform texture2DArray)
+0:?               Constant:
+0:?                 6 (const uint)
+0:?                 7 (const uint)
+0:?                 8 (const uint)
+0:9              Constant:
+0:9                5 (const uint)
+0:13          textureFetch ( temp 4-component vector of float)
+0:13            'g_tTex2df4' ( uniform texture2D)
+0:13            Convert float to uint ( temp 2-component vector of uint)
+0:13              vector swizzle ( temp 2-component vector of float)
+0:?                 textureFetch ( temp 4-component vector of float)
+0:13                  'g_tTex2df4' ( uniform texture2D)
+0:?                   Constant:
+0:?                     14 (const uint)
+0:?                     15 (const uint)
+0:13                  Constant:
+0:13                    13 (const int)
+0:13                Sequence
+0:13                  Constant:
+0:13                    0 (const int)
+0:13                  Constant:
+0:13                    1 (const int)
+0:13            Convert float to uint ( temp uint)
+0:13              direct index ( temp float)
+0:?                 textureFetch ( temp 4-component vector of float)
+0:13                  'g_tTex2df4' ( uniform texture2D)
+0:?                   Constant:
+0:?                     10 (const uint)
+0:?                     11 (const uint)
+0:13                  Constant:
+0:13                    9 (const int)
+0:13                Constant:
+0:13                  0 (const int)
+0:5  Function Definition: main( ( temp void)
+0:5    Function Parameters: 
+0:?     Sequence
+0:5      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:5        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'g_tTex2df4a' ( uniform texture2DArray)
+0:?     'g_tTex2df4' ( uniform texture2D)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 61
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 59
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "@main("
+                              Name 13  "g_tTex2df4"
+                              Name 25  "g_tTex2df4a"
+                              Name 59  "@entryPointOutput"
+                              Decorate 13(g_tTex2df4) DescriptorSet 0
+                              Decorate 13(g_tTex2df4) Binding 0
+                              Decorate 25(g_tTex2df4a) DescriptorSet 0
+                              Decorate 25(g_tTex2df4a) Binding 0
+                              Decorate 59(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeFunction 7(fvec4)
+              11:             TypeImage 6(float) 2D sampled format:Unknown
+              12:             TypePointer UniformConstant 11
+  13(g_tTex2df4):     12(ptr) Variable UniformConstant
+              15:             TypeInt 32 0
+              16:             TypeVector 15(int) 2
+              17:     15(int) Constant 3
+              18:     15(int) Constant 4
+              19:   16(ivec2) ConstantComposite 17 18
+              20:             TypeInt 32 1
+              21:     20(int) Constant 2
+              23:             TypeImage 6(float) 2D array sampled format:Unknown
+              24:             TypePointer UniformConstant 23
+ 25(g_tTex2df4a):     24(ptr) Variable UniformConstant
+              27:             TypeVector 15(int) 3
+              28:     15(int) Constant 6
+              29:     15(int) Constant 7
+              30:     15(int) Constant 8
+              31:   27(ivec3) ConstantComposite 28 29 30
+              32:     15(int) Constant 5
+              37:     15(int) Constant 14
+              38:     15(int) Constant 15
+              39:   16(ivec2) ConstantComposite 37 38
+              40:     20(int) Constant 13
+              42:             TypeVector 6(float) 2
+              46:     15(int) Constant 10
+              47:     15(int) Constant 11
+              48:   16(ivec2) ConstantComposite 46 47
+              49:     20(int) Constant 9
+              51:     15(int) Constant 0
+              58:             TypePointer Output 7(fvec4)
+59(@entryPointOutput):     58(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              60:    7(fvec4) FunctionCall 9(@main()
+                              Store 59(@entryPointOutput) 60
+                              Return
+                              FunctionEnd
+       9(@main():    7(fvec4) Function None 8
+              10:             Label
+              14:          11 Load 13(g_tTex2df4)
+              22:    7(fvec4) ImageFetch 14 19 Lod 21
+              26:          23 Load 25(g_tTex2df4a)
+              33:    7(fvec4) ImageFetch 26 31 Lod 32
+              34:    7(fvec4) FAdd 22 33
+              35:          11 Load 13(g_tTex2df4)
+              36:          11 Load 13(g_tTex2df4)
+              41:    7(fvec4) ImageFetch 36 39 Lod 40
+              43:   42(fvec2) VectorShuffle 41 41 0 1
+              44:   16(ivec2) ConvertFToU 43
+              45:          11 Load 13(g_tTex2df4)
+              50:    7(fvec4) ImageFetch 45 48 Lod 49
+              52:    6(float) CompositeExtract 50 0
+              53:     15(int) ConvertFToU 52
+              54:    7(fvec4) ImageFetch 35 44 Lod 53
+              55:    7(fvec4) FAdd 34 54
+                              ReturnValue 55
+                              FunctionEnd

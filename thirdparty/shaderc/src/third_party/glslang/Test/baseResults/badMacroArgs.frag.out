@@ -1,0 +1,6 @@
+badMacroArgs.frag
+ERROR: 0:4: 'macro expansion' : Too few args in Macro m
+ERROR: 0:4: '' : compilation terminated 
+ERROR: 2 compilation errors.  No code generated.
+
+

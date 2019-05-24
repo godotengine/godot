@@ -1,0 +1,19 @@
+
+
+
+
+
+
+struct A
+{
+    float4 a;
+    float4 b;
+    float4 c = { 1, 2, 3, 4 };
+    float4 d = {({ {(({ 1, 2, 3, 4 }))} })}, { { 1, 2, 3, 4 } };
+};
+
+void main()
+{
+    "a string"
+}
+

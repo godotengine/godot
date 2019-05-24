@@ -1,0 +1,3223 @@
+hlsl.getdimensions.dx10.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+using depth_any
+0:? Sequence
+0:46  Function Definition: @main( ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:46    Function Parameters: 
+0:?     Sequence
+0:65      Sequence
+0:65        move second child to first child ( temp uint)
+0:65          'sizeQueryTemp' ( temp uint)
+0:65          textureSize ( temp uint)
+0:65            'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:65            Constant:
+0:65              0 (const int)
+0:65        move second child to first child ( temp uint)
+0:65          'WidthU' ( temp uint)
+0:65          'sizeQueryTemp' ( temp uint)
+0:66      Sequence
+0:66        move second child to first child ( temp uint)
+0:66          'sizeQueryTemp' ( temp uint)
+0:66          textureSize ( temp uint)
+0:66            'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:66            Constant:
+0:66              6 (const uint)
+0:66        move second child to first child ( temp uint)
+0:66          'WidthU' ( temp uint)
+0:66          'sizeQueryTemp' ( temp uint)
+0:66        move second child to first child ( temp uint)
+0:66          'NumberOfLevelsU' ( temp uint)
+0:66          textureQueryLevels ( temp uint)
+0:66            'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:69      Sequence
+0:69        move second child to first child ( temp uint)
+0:69          'sizeQueryTemp' ( temp uint)
+0:69          textureSize ( temp uint)
+0:69            'g_tTex1di4' ( uniform itexture1D)
+0:69            Constant:
+0:69              0 (const int)
+0:69        move second child to first child ( temp uint)
+0:69          'WidthU' ( temp uint)
+0:69          'sizeQueryTemp' ( temp uint)
+0:70      Sequence
+0:70        move second child to first child ( temp uint)
+0:70          'sizeQueryTemp' ( temp uint)
+0:70          textureSize ( temp uint)
+0:70            'g_tTex1di4' ( uniform itexture1D)
+0:70            Constant:
+0:70              6 (const uint)
+0:70        move second child to first child ( temp uint)
+0:70          'WidthU' ( temp uint)
+0:70          'sizeQueryTemp' ( temp uint)
+0:70        move second child to first child ( temp uint)
+0:70          'NumberOfLevelsU' ( temp uint)
+0:70          textureQueryLevels ( temp uint)
+0:70            'g_tTex1di4' ( uniform itexture1D)
+0:73      Sequence
+0:73        move second child to first child ( temp uint)
+0:73          'sizeQueryTemp' ( temp uint)
+0:73          textureSize ( temp uint)
+0:73            'g_tTex1du4' ( uniform utexture1D)
+0:73            Constant:
+0:73              0 (const int)
+0:73        move second child to first child ( temp uint)
+0:73          'WidthU' ( temp uint)
+0:73          'sizeQueryTemp' ( temp uint)
+0:74      Sequence
+0:74        move second child to first child ( temp uint)
+0:74          'sizeQueryTemp' ( temp uint)
+0:74          textureSize ( temp uint)
+0:74            'g_tTex1du4' ( uniform utexture1D)
+0:74            Constant:
+0:74              6 (const uint)
+0:74        move second child to first child ( temp uint)
+0:74          'WidthU' ( temp uint)
+0:74          'sizeQueryTemp' ( temp uint)
+0:74        move second child to first child ( temp uint)
+0:74          'NumberOfLevelsU' ( temp uint)
+0:74          textureQueryLevels ( temp uint)
+0:74            'g_tTex1du4' ( uniform utexture1D)
+0:77      Sequence
+0:77        move second child to first child ( temp 2-component vector of uint)
+0:77          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:77          textureSize ( temp 2-component vector of uint)
+0:77            'g_tTex1df4a' ( uniform texture1DArray)
+0:77            Constant:
+0:77              0 (const int)
+0:77        move second child to first child ( temp uint)
+0:77          'WidthU' ( temp uint)
+0:77          direct index ( temp uint)
+0:77            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:77            Constant:
+0:77              0 (const int)
+0:77        move second child to first child ( temp uint)
+0:77          'ElementsU' ( temp uint)
+0:77          direct index ( temp uint)
+0:77            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:77            Constant:
+0:77              1 (const int)
+0:78      Sequence
+0:78        move second child to first child ( temp 2-component vector of uint)
+0:78          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:78          textureSize ( temp 2-component vector of uint)
+0:78            'g_tTex1df4a' ( uniform texture1DArray)
+0:78            Constant:
+0:78              6 (const uint)
+0:78        move second child to first child ( temp uint)
+0:78          'WidthU' ( temp uint)
+0:78          direct index ( temp uint)
+0:78            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:78            Constant:
+0:78              0 (const int)
+0:78        move second child to first child ( temp uint)
+0:78          'ElementsU' ( temp uint)
+0:78          direct index ( temp uint)
+0:78            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:78            Constant:
+0:78              1 (const int)
+0:78        move second child to first child ( temp uint)
+0:78          'NumberOfLevelsU' ( temp uint)
+0:78          textureQueryLevels ( temp uint)
+0:78            'g_tTex1df4a' ( uniform texture1DArray)
+0:81      Sequence
+0:81        move second child to first child ( temp 2-component vector of uint)
+0:81          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:81          textureSize ( temp 2-component vector of uint)
+0:81            'g_tTex1di4a' ( uniform itexture1DArray)
+0:81            Constant:
+0:81              0 (const int)
+0:81        move second child to first child ( temp uint)
+0:81          'WidthU' ( temp uint)
+0:81          direct index ( temp uint)
+0:81            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:81            Constant:
+0:81              0 (const int)
+0:81        move second child to first child ( temp uint)
+0:81          'ElementsU' ( temp uint)
+0:81          direct index ( temp uint)
+0:81            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:81            Constant:
+0:81              1 (const int)
+0:82      Sequence
+0:82        move second child to first child ( temp 2-component vector of uint)
+0:82          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:82          textureSize ( temp 2-component vector of uint)
+0:82            'g_tTex1di4a' ( uniform itexture1DArray)
+0:82            Constant:
+0:82              6 (const uint)
+0:82        move second child to first child ( temp uint)
+0:82          'WidthU' ( temp uint)
+0:82          direct index ( temp uint)
+0:82            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:82            Constant:
+0:82              0 (const int)
+0:82        move second child to first child ( temp uint)
+0:82          'ElementsU' ( temp uint)
+0:82          direct index ( temp uint)
+0:82            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:82            Constant:
+0:82              1 (const int)
+0:82        move second child to first child ( temp uint)
+0:82          'NumberOfLevelsU' ( temp uint)
+0:82          textureQueryLevels ( temp uint)
+0:82            'g_tTex1di4a' ( uniform itexture1DArray)
+0:85      Sequence
+0:85        move second child to first child ( temp 2-component vector of uint)
+0:85          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:85          textureSize ( temp 2-component vector of uint)
+0:85            'g_tTex1du4a' ( uniform utexture1DArray)
+0:85            Constant:
+0:85              0 (const int)
+0:85        move second child to first child ( temp uint)
+0:85          'WidthU' ( temp uint)
+0:85          direct index ( temp uint)
+0:85            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:85            Constant:
+0:85              0 (const int)
+0:85        move second child to first child ( temp uint)
+0:85          'ElementsU' ( temp uint)
+0:85          direct index ( temp uint)
+0:85            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:85            Constant:
+0:85              1 (const int)
+0:86      Sequence
+0:86        move second child to first child ( temp 2-component vector of uint)
+0:86          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:86          textureSize ( temp 2-component vector of uint)
+0:86            'g_tTex1du4a' ( uniform utexture1DArray)
+0:86            Constant:
+0:86              6 (const uint)
+0:86        move second child to first child ( temp uint)
+0:86          'WidthU' ( temp uint)
+0:86          direct index ( temp uint)
+0:86            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:86            Constant:
+0:86              0 (const int)
+0:86        move second child to first child ( temp uint)
+0:86          'ElementsU' ( temp uint)
+0:86          direct index ( temp uint)
+0:86            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:86            Constant:
+0:86              1 (const int)
+0:86        move second child to first child ( temp uint)
+0:86          'NumberOfLevelsU' ( temp uint)
+0:86          textureQueryLevels ( temp uint)
+0:86            'g_tTex1du4a' ( uniform utexture1DArray)
+0:89      Sequence
+0:89        move second child to first child ( temp 2-component vector of uint)
+0:89          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:89          textureSize ( temp 2-component vector of uint)
+0:89            'g_tTex2df4' ( uniform texture2D)
+0:89            Constant:
+0:89              0 (const int)
+0:89        move second child to first child ( temp uint)
+0:89          'WidthU' ( temp uint)
+0:89          direct index ( temp uint)
+0:89            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:89            Constant:
+0:89              0 (const int)
+0:89        move second child to first child ( temp uint)
+0:89          'HeightU' ( temp uint)
+0:89          direct index ( temp uint)
+0:89            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:89            Constant:
+0:89              1 (const int)
+0:90      Sequence
+0:90        move second child to first child ( temp 2-component vector of uint)
+0:90          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:90          textureSize ( temp 2-component vector of uint)
+0:90            'g_tTex2df4' ( uniform texture2D)
+0:90            Constant:
+0:90              6 (const uint)
+0:90        move second child to first child ( temp uint)
+0:90          'WidthU' ( temp uint)
+0:90          direct index ( temp uint)
+0:90            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:90            Constant:
+0:90              0 (const int)
+0:90        move second child to first child ( temp uint)
+0:90          'HeightU' ( temp uint)
+0:90          direct index ( temp uint)
+0:90            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:90            Constant:
+0:90              1 (const int)
+0:90        move second child to first child ( temp uint)
+0:90          'NumberOfLevelsU' ( temp uint)
+0:90          textureQueryLevels ( temp uint)
+0:90            'g_tTex2df4' ( uniform texture2D)
+0:93      Sequence
+0:93        move second child to first child ( temp 2-component vector of uint)
+0:93          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:93          textureSize ( temp 2-component vector of uint)
+0:93            'g_tTex2di4' ( uniform itexture2D)
+0:93            Constant:
+0:93              0 (const int)
+0:93        move second child to first child ( temp uint)
+0:93          'WidthU' ( temp uint)
+0:93          direct index ( temp uint)
+0:93            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:93            Constant:
+0:93              0 (const int)
+0:93        move second child to first child ( temp uint)
+0:93          'HeightU' ( temp uint)
+0:93          direct index ( temp uint)
+0:93            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:93            Constant:
+0:93              1 (const int)
+0:94      Sequence
+0:94        move second child to first child ( temp 2-component vector of uint)
+0:94          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:94          textureSize ( temp 2-component vector of uint)
+0:94            'g_tTex2di4' ( uniform itexture2D)
+0:94            Constant:
+0:94              6 (const uint)
+0:94        move second child to first child ( temp uint)
+0:94          'WidthU' ( temp uint)
+0:94          direct index ( temp uint)
+0:94            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:94            Constant:
+0:94              0 (const int)
+0:94        move second child to first child ( temp uint)
+0:94          'HeightU' ( temp uint)
+0:94          direct index ( temp uint)
+0:94            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:94            Constant:
+0:94              1 (const int)
+0:94        move second child to first child ( temp uint)
+0:94          'NumberOfLevelsU' ( temp uint)
+0:94          textureQueryLevels ( temp uint)
+0:94            'g_tTex2di4' ( uniform itexture2D)
+0:97      Sequence
+0:97        move second child to first child ( temp 2-component vector of uint)
+0:97          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:97          textureSize ( temp 2-component vector of uint)
+0:97            'g_tTex2du4' ( uniform utexture2D)
+0:97            Constant:
+0:97              0 (const int)
+0:97        move second child to first child ( temp uint)
+0:97          'WidthU' ( temp uint)
+0:97          direct index ( temp uint)
+0:97            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:97            Constant:
+0:97              0 (const int)
+0:97        move second child to first child ( temp uint)
+0:97          'HeightU' ( temp uint)
+0:97          direct index ( temp uint)
+0:97            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:97            Constant:
+0:97              1 (const int)
+0:98      Sequence
+0:98        move second child to first child ( temp 2-component vector of uint)
+0:98          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:98          textureSize ( temp 2-component vector of uint)
+0:98            'g_tTex2du4' ( uniform utexture2D)
+0:98            Constant:
+0:98              6 (const uint)
+0:98        move second child to first child ( temp uint)
+0:98          'WidthU' ( temp uint)
+0:98          direct index ( temp uint)
+0:98            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:98            Constant:
+0:98              0 (const int)
+0:98        move second child to first child ( temp uint)
+0:98          'HeightU' ( temp uint)
+0:98          direct index ( temp uint)
+0:98            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:98            Constant:
+0:98              1 (const int)
+0:98        move second child to first child ( temp uint)
+0:98          'NumberOfLevelsU' ( temp uint)
+0:98          textureQueryLevels ( temp uint)
+0:98            'g_tTex2du4' ( uniform utexture2D)
+0:101      Sequence
+0:101        move second child to first child ( temp 3-component vector of uint)
+0:101          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:101          textureSize ( temp 3-component vector of uint)
+0:101            'g_tTex2df4a' ( uniform texture2DArray)
+0:101            Constant:
+0:101              0 (const int)
+0:101        move second child to first child ( temp uint)
+0:101          'WidthU' ( temp uint)
+0:101          direct index ( temp uint)
+0:101            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:101            Constant:
+0:101              0 (const int)
+0:101        move second child to first child ( temp uint)
+0:101          'HeightU' ( temp uint)
+0:101          direct index ( temp uint)
+0:101            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:101            Constant:
+0:101              1 (const int)
+0:101        move second child to first child ( temp uint)
+0:101          'ElementsU' ( temp uint)
+0:101          direct index ( temp uint)
+0:101            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:101            Constant:
+0:101              2 (const int)
+0:102      Sequence
+0:102        move second child to first child ( temp 3-component vector of uint)
+0:102          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:102          textureSize ( temp 3-component vector of uint)
+0:102            'g_tTex2df4a' ( uniform texture2DArray)
+0:102            Constant:
+0:102              6 (const uint)
+0:102        move second child to first child ( temp uint)
+0:102          'WidthU' ( temp uint)
+0:102          direct index ( temp uint)
+0:102            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:102            Constant:
+0:102              0 (const int)
+0:102        move second child to first child ( temp uint)
+0:102          'HeightU' ( temp uint)
+0:102          direct index ( temp uint)
+0:102            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:102            Constant:
+0:102              1 (const int)
+0:102        move second child to first child ( temp uint)
+0:102          'ElementsU' ( temp uint)
+0:102          direct index ( temp uint)
+0:102            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:102            Constant:
+0:102              2 (const int)
+0:102        move second child to first child ( temp uint)
+0:102          'NumberOfLevelsU' ( temp uint)
+0:102          textureQueryLevels ( temp uint)
+0:102            'g_tTex2df4a' ( uniform texture2DArray)
+0:105      Sequence
+0:105        move second child to first child ( temp 3-component vector of uint)
+0:105          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:105          textureSize ( temp 3-component vector of uint)
+0:105            'g_tTex2di4a' ( uniform itexture2DArray)
+0:105            Constant:
+0:105              0 (const int)
+0:105        move second child to first child ( temp uint)
+0:105          'WidthU' ( temp uint)
+0:105          direct index ( temp uint)
+0:105            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:105            Constant:
+0:105              0 (const int)
+0:105        move second child to first child ( temp uint)
+0:105          'HeightU' ( temp uint)
+0:105          direct index ( temp uint)
+0:105            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:105            Constant:
+0:105              1 (const int)
+0:105        move second child to first child ( temp uint)
+0:105          'ElementsU' ( temp uint)
+0:105          direct index ( temp uint)
+0:105            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:105            Constant:
+0:105              2 (const int)
+0:106      Sequence
+0:106        move second child to first child ( temp 3-component vector of uint)
+0:106          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:106          textureSize ( temp 3-component vector of uint)
+0:106            'g_tTex2di4a' ( uniform itexture2DArray)
+0:106            Constant:
+0:106              6 (const uint)
+0:106        move second child to first child ( temp uint)
+0:106          'WidthU' ( temp uint)
+0:106          direct index ( temp uint)
+0:106            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:106            Constant:
+0:106              0 (const int)
+0:106        move second child to first child ( temp uint)
+0:106          'HeightU' ( temp uint)
+0:106          direct index ( temp uint)
+0:106            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:106            Constant:
+0:106              1 (const int)
+0:106        move second child to first child ( temp uint)
+0:106          'ElementsU' ( temp uint)
+0:106          direct index ( temp uint)
+0:106            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:106            Constant:
+0:106              2 (const int)
+0:106        move second child to first child ( temp uint)
+0:106          'NumberOfLevelsU' ( temp uint)
+0:106          textureQueryLevels ( temp uint)
+0:106            'g_tTex2di4a' ( uniform itexture2DArray)
+0:109      Sequence
+0:109        move second child to first child ( temp 3-component vector of uint)
+0:109          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:109          textureSize ( temp 3-component vector of uint)
+0:109            'g_tTex2du4a' ( uniform utexture2DArray)
+0:109            Constant:
+0:109              0 (const int)
+0:109        move second child to first child ( temp uint)
+0:109          'WidthU' ( temp uint)
+0:109          direct index ( temp uint)
+0:109            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:109            Constant:
+0:109              0 (const int)
+0:109        move second child to first child ( temp uint)
+0:109          'HeightU' ( temp uint)
+0:109          direct index ( temp uint)
+0:109            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:109            Constant:
+0:109              1 (const int)
+0:109        move second child to first child ( temp uint)
+0:109          'ElementsU' ( temp uint)
+0:109          direct index ( temp uint)
+0:109            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:109            Constant:
+0:109              2 (const int)
+0:110      Sequence
+0:110        move second child to first child ( temp 3-component vector of uint)
+0:110          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:110          textureSize ( temp 3-component vector of uint)
+0:110            'g_tTex2du4a' ( uniform utexture2DArray)
+0:110            Constant:
+0:110              6 (const uint)
+0:110        move second child to first child ( temp uint)
+0:110          'WidthU' ( temp uint)
+0:110          direct index ( temp uint)
+0:110            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:110            Constant:
+0:110              0 (const int)
+0:110        move second child to first child ( temp uint)
+0:110          'HeightU' ( temp uint)
+0:110          direct index ( temp uint)
+0:110            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:110            Constant:
+0:110              1 (const int)
+0:110        move second child to first child ( temp uint)
+0:110          'ElementsU' ( temp uint)
+0:110          direct index ( temp uint)
+0:110            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:110            Constant:
+0:110              2 (const int)
+0:110        move second child to first child ( temp uint)
+0:110          'NumberOfLevelsU' ( temp uint)
+0:110          textureQueryLevels ( temp uint)
+0:110            'g_tTex2du4a' ( uniform utexture2DArray)
+0:113      Sequence
+0:113        move second child to first child ( temp 3-component vector of uint)
+0:113          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:113          textureSize ( temp 3-component vector of uint)
+0:113            'g_tTex3df4' ( uniform texture3D)
+0:113            Constant:
+0:113              0 (const int)
+0:113        move second child to first child ( temp uint)
+0:113          'WidthU' ( temp uint)
+0:113          direct index ( temp uint)
+0:113            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:113            Constant:
+0:113              0 (const int)
+0:113        move second child to first child ( temp uint)
+0:113          'HeightU' ( temp uint)
+0:113          direct index ( temp uint)
+0:113            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:113            Constant:
+0:113              1 (const int)
+0:113        move second child to first child ( temp uint)
+0:113          'DepthU' ( temp uint)
+0:113          direct index ( temp uint)
+0:113            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:113            Constant:
+0:113              2 (const int)
+0:114      Sequence
+0:114        move second child to first child ( temp 3-component vector of uint)
+0:114          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:114          textureSize ( temp 3-component vector of uint)
+0:114            'g_tTex3df4' ( uniform texture3D)
+0:114            Constant:
+0:114              6 (const uint)
+0:114        move second child to first child ( temp uint)
+0:114          'WidthU' ( temp uint)
+0:114          direct index ( temp uint)
+0:114            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:114            Constant:
+0:114              0 (const int)
+0:114        move second child to first child ( temp uint)
+0:114          'HeightU' ( temp uint)
+0:114          direct index ( temp uint)
+0:114            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:114            Constant:
+0:114              1 (const int)
+0:114        move second child to first child ( temp uint)
+0:114          'DepthU' ( temp uint)
+0:114          direct index ( temp uint)
+0:114            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:114            Constant:
+0:114              2 (const int)
+0:114        move second child to first child ( temp uint)
+0:114          'NumberOfLevelsU' ( temp uint)
+0:114          textureQueryLevels ( temp uint)
+0:114            'g_tTex3df4' ( uniform texture3D)
+0:117      Sequence
+0:117        move second child to first child ( temp 3-component vector of uint)
+0:117          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:117          textureSize ( temp 3-component vector of uint)
+0:117            'g_tTex3di4' ( uniform itexture3D)
+0:117            Constant:
+0:117              0 (const int)
+0:117        move second child to first child ( temp uint)
+0:117          'WidthU' ( temp uint)
+0:117          direct index ( temp uint)
+0:117            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:117            Constant:
+0:117              0 (const int)
+0:117        move second child to first child ( temp uint)
+0:117          'HeightU' ( temp uint)
+0:117          direct index ( temp uint)
+0:117            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:117            Constant:
+0:117              1 (const int)
+0:117        move second child to first child ( temp uint)
+0:117          'DepthU' ( temp uint)
+0:117          direct index ( temp uint)
+0:117            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:117            Constant:
+0:117              2 (const int)
+0:118      Sequence
+0:118        move second child to first child ( temp 3-component vector of uint)
+0:118          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:118          textureSize ( temp 3-component vector of uint)
+0:118            'g_tTex3di4' ( uniform itexture3D)
+0:118            Constant:
+0:118              6 (const uint)
+0:118        move second child to first child ( temp uint)
+0:118          'WidthU' ( temp uint)
+0:118          direct index ( temp uint)
+0:118            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:118            Constant:
+0:118              0 (const int)
+0:118        move second child to first child ( temp uint)
+0:118          'HeightU' ( temp uint)
+0:118          direct index ( temp uint)
+0:118            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:118            Constant:
+0:118              1 (const int)
+0:118        move second child to first child ( temp uint)
+0:118          'DepthU' ( temp uint)
+0:118          direct index ( temp uint)
+0:118            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:118            Constant:
+0:118              2 (const int)
+0:118        move second child to first child ( temp uint)
+0:118          'NumberOfLevelsU' ( temp uint)
+0:118          textureQueryLevels ( temp uint)
+0:118            'g_tTex3di4' ( uniform itexture3D)
+0:121      Sequence
+0:121        move second child to first child ( temp 3-component vector of uint)
+0:121          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:121          textureSize ( temp 3-component vector of uint)
+0:121            'g_tTex3du4' ( uniform utexture3D)
+0:121            Constant:
+0:121              0 (const int)
+0:121        move second child to first child ( temp uint)
+0:121          'WidthU' ( temp uint)
+0:121          direct index ( temp uint)
+0:121            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:121            Constant:
+0:121              0 (const int)
+0:121        move second child to first child ( temp uint)
+0:121          'HeightU' ( temp uint)
+0:121          direct index ( temp uint)
+0:121            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:121            Constant:
+0:121              1 (const int)
+0:121        move second child to first child ( temp uint)
+0:121          'DepthU' ( temp uint)
+0:121          direct index ( temp uint)
+0:121            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:121            Constant:
+0:121              2 (const int)
+0:122      Sequence
+0:122        move second child to first child ( temp 3-component vector of uint)
+0:122          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:122          textureSize ( temp 3-component vector of uint)
+0:122            'g_tTex3du4' ( uniform utexture3D)
+0:122            Constant:
+0:122              6 (const uint)
+0:122        move second child to first child ( temp uint)
+0:122          'WidthU' ( temp uint)
+0:122          direct index ( temp uint)
+0:122            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:122            Constant:
+0:122              0 (const int)
+0:122        move second child to first child ( temp uint)
+0:122          'HeightU' ( temp uint)
+0:122          direct index ( temp uint)
+0:122            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:122            Constant:
+0:122              1 (const int)
+0:122        move second child to first child ( temp uint)
+0:122          'DepthU' ( temp uint)
+0:122          direct index ( temp uint)
+0:122            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:122            Constant:
+0:122              2 (const int)
+0:122        move second child to first child ( temp uint)
+0:122          'NumberOfLevelsU' ( temp uint)
+0:122          textureQueryLevels ( temp uint)
+0:122            'g_tTex3du4' ( uniform utexture3D)
+0:125      Sequence
+0:125        move second child to first child ( temp 2-component vector of uint)
+0:125          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:125          textureSize ( temp 2-component vector of uint)
+0:125            'g_tTexcdf4' ( uniform textureCube)
+0:125            Constant:
+0:125              0 (const int)
+0:125        move second child to first child ( temp uint)
+0:125          'WidthU' ( temp uint)
+0:125          direct index ( temp uint)
+0:125            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:125            Constant:
+0:125              0 (const int)
+0:125        move second child to first child ( temp uint)
+0:125          'HeightU' ( temp uint)
+0:125          direct index ( temp uint)
+0:125            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:125            Constant:
+0:125              1 (const int)
+0:126      Sequence
+0:126        move second child to first child ( temp 2-component vector of uint)
+0:126          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:126          textureSize ( temp 2-component vector of uint)
+0:126            'g_tTexcdf4' ( uniform textureCube)
+0:126            Constant:
+0:126              6 (const uint)
+0:126        move second child to first child ( temp uint)
+0:126          'WidthU' ( temp uint)
+0:126          direct index ( temp uint)
+0:126            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:126            Constant:
+0:126              0 (const int)
+0:126        move second child to first child ( temp uint)
+0:126          'HeightU' ( temp uint)
+0:126          direct index ( temp uint)
+0:126            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:126            Constant:
+0:126              1 (const int)
+0:126        move second child to first child ( temp uint)
+0:126          'NumberOfLevelsU' ( temp uint)
+0:126          textureQueryLevels ( temp uint)
+0:126            'g_tTexcdf4' ( uniform textureCube)
+0:129      Sequence
+0:129        move second child to first child ( temp 2-component vector of uint)
+0:129          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:129          textureSize ( temp 2-component vector of uint)
+0:129            'g_tTexcdi4' ( uniform itextureCube)
+0:129            Constant:
+0:129              0 (const int)
+0:129        move second child to first child ( temp uint)
+0:129          'WidthU' ( temp uint)
+0:129          direct index ( temp uint)
+0:129            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:129            Constant:
+0:129              0 (const int)
+0:129        move second child to first child ( temp uint)
+0:129          'HeightU' ( temp uint)
+0:129          direct index ( temp uint)
+0:129            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:129            Constant:
+0:129              1 (const int)
+0:130      Sequence
+0:130        move second child to first child ( temp 2-component vector of uint)
+0:130          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:130          textureSize ( temp 2-component vector of uint)
+0:130            'g_tTexcdi4' ( uniform itextureCube)
+0:130            Constant:
+0:130              6 (const uint)
+0:130        move second child to first child ( temp uint)
+0:130          'WidthU' ( temp uint)
+0:130          direct index ( temp uint)
+0:130            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:130            Constant:
+0:130              0 (const int)
+0:130        move second child to first child ( temp uint)
+0:130          'HeightU' ( temp uint)
+0:130          direct index ( temp uint)
+0:130            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:130            Constant:
+0:130              1 (const int)
+0:130        move second child to first child ( temp uint)
+0:130          'NumberOfLevelsU' ( temp uint)
+0:130          textureQueryLevels ( temp uint)
+0:130            'g_tTexcdi4' ( uniform itextureCube)
+0:133      Sequence
+0:133        move second child to first child ( temp 2-component vector of uint)
+0:133          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:133          textureSize ( temp 2-component vector of uint)
+0:133            'g_tTexcdu4' ( uniform utextureCube)
+0:133            Constant:
+0:133              0 (const int)
+0:133        move second child to first child ( temp uint)
+0:133          'WidthU' ( temp uint)
+0:133          direct index ( temp uint)
+0:133            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:133            Constant:
+0:133              0 (const int)
+0:133        move second child to first child ( temp uint)
+0:133          'HeightU' ( temp uint)
+0:133          direct index ( temp uint)
+0:133            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:133            Constant:
+0:133              1 (const int)
+0:134      Sequence
+0:134        move second child to first child ( temp 2-component vector of uint)
+0:134          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:134          textureSize ( temp 2-component vector of uint)
+0:134            'g_tTexcdu4' ( uniform utextureCube)
+0:134            Constant:
+0:134              6 (const uint)
+0:134        move second child to first child ( temp uint)
+0:134          'WidthU' ( temp uint)
+0:134          direct index ( temp uint)
+0:134            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:134            Constant:
+0:134              0 (const int)
+0:134        move second child to first child ( temp uint)
+0:134          'HeightU' ( temp uint)
+0:134          direct index ( temp uint)
+0:134            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:134            Constant:
+0:134              1 (const int)
+0:134        move second child to first child ( temp uint)
+0:134          'NumberOfLevelsU' ( temp uint)
+0:134          textureQueryLevels ( temp uint)
+0:134            'g_tTexcdu4' ( uniform utextureCube)
+0:137      Sequence
+0:137        move second child to first child ( temp 3-component vector of uint)
+0:137          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:137          textureSize ( temp 3-component vector of uint)
+0:137            'g_tTexcdf4a' ( uniform textureCubeArray)
+0:137            Constant:
+0:137              0 (const int)
+0:137        move second child to first child ( temp uint)
+0:137          'WidthU' ( temp uint)
+0:137          direct index ( temp uint)
+0:137            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:137            Constant:
+0:137              0 (const int)
+0:137        move second child to first child ( temp uint)
+0:137          'HeightU' ( temp uint)
+0:137          direct index ( temp uint)
+0:137            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:137            Constant:
+0:137              1 (const int)
+0:137        move second child to first child ( temp uint)
+0:137          'ElementsU' ( temp uint)
+0:137          direct index ( temp uint)
+0:137            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:137            Constant:
+0:137              2 (const int)
+0:138      Sequence
+0:138        move second child to first child ( temp 3-component vector of uint)
+0:138          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:138          textureSize ( temp 3-component vector of uint)
+0:138            'g_tTexcdf4a' ( uniform textureCubeArray)
+0:138            Constant:
+0:138              6 (const uint)
+0:138        move second child to first child ( temp uint)
+0:138          'WidthU' ( temp uint)
+0:138          direct index ( temp uint)
+0:138            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:138            Constant:
+0:138              0 (const int)
+0:138        move second child to first child ( temp uint)
+0:138          'HeightU' ( temp uint)
+0:138          direct index ( temp uint)
+0:138            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:138            Constant:
+0:138              1 (const int)
+0:138        move second child to first child ( temp uint)
+0:138          'ElementsU' ( temp uint)
+0:138          direct index ( temp uint)
+0:138            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:138            Constant:
+0:138              2 (const int)
+0:138        move second child to first child ( temp uint)
+0:138          'NumberOfLevelsU' ( temp uint)
+0:138          textureQueryLevels ( temp uint)
+0:138            'g_tTexcdf4a' ( uniform textureCubeArray)
+0:141      Sequence
+0:141        move second child to first child ( temp 3-component vector of uint)
+0:141          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:141          textureSize ( temp 3-component vector of uint)
+0:141            'g_tTexcdi4a' ( uniform itextureCubeArray)
+0:141            Constant:
+0:141              0 (const int)
+0:141        move second child to first child ( temp uint)
+0:141          'WidthU' ( temp uint)
+0:141          direct index ( temp uint)
+0:141            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:141            Constant:
+0:141              0 (const int)
+0:141        move second child to first child ( temp uint)
+0:141          'HeightU' ( temp uint)
+0:141          direct index ( temp uint)
+0:141            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:141            Constant:
+0:141              1 (const int)
+0:141        move second child to first child ( temp uint)
+0:141          'ElementsU' ( temp uint)
+0:141          direct index ( temp uint)
+0:141            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:141            Constant:
+0:141              2 (const int)
+0:142      Sequence
+0:142        move second child to first child ( temp 3-component vector of uint)
+0:142          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:142          textureSize ( temp 3-component vector of uint)
+0:142            'g_tTexcdi4a' ( uniform itextureCubeArray)
+0:142            Constant:
+0:142              6 (const uint)
+0:142        move second child to first child ( temp uint)
+0:142          'WidthU' ( temp uint)
+0:142          direct index ( temp uint)
+0:142            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:142            Constant:
+0:142              0 (const int)
+0:142        move second child to first child ( temp uint)
+0:142          'HeightU' ( temp uint)
+0:142          direct index ( temp uint)
+0:142            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:142            Constant:
+0:142              1 (const int)
+0:142        move second child to first child ( temp uint)
+0:142          'ElementsU' ( temp uint)
+0:142          direct index ( temp uint)
+0:142            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:142            Constant:
+0:142              2 (const int)
+0:142        move second child to first child ( temp uint)
+0:142          'NumberOfLevelsU' ( temp uint)
+0:142          textureQueryLevels ( temp uint)
+0:142            'g_tTexcdi4a' ( uniform itextureCubeArray)
+0:145      Sequence
+0:145        move second child to first child ( temp 3-component vector of uint)
+0:145          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:145          textureSize ( temp 3-component vector of uint)
+0:145            'g_tTexcdu4a' ( uniform utextureCubeArray)
+0:145            Constant:
+0:145              0 (const int)
+0:145        move second child to first child ( temp uint)
+0:145          'WidthU' ( temp uint)
+0:145          direct index ( temp uint)
+0:145            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:145            Constant:
+0:145              0 (const int)
+0:145        move second child to first child ( temp uint)
+0:145          'HeightU' ( temp uint)
+0:145          direct index ( temp uint)
+0:145            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:145            Constant:
+0:145              1 (const int)
+0:145        move second child to first child ( temp uint)
+0:145          'ElementsU' ( temp uint)
+0:145          direct index ( temp uint)
+0:145            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:145            Constant:
+0:145              2 (const int)
+0:146      Sequence
+0:146        move second child to first child ( temp 3-component vector of uint)
+0:146          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:146          textureSize ( temp 3-component vector of uint)
+0:146            'g_tTexcdu4a' ( uniform utextureCubeArray)
+0:146            Constant:
+0:146              6 (const uint)
+0:146        move second child to first child ( temp uint)
+0:146          'WidthU' ( temp uint)
+0:146          direct index ( temp uint)
+0:146            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:146            Constant:
+0:146              0 (const int)
+0:146        move second child to first child ( temp uint)
+0:146          'HeightU' ( temp uint)
+0:146          direct index ( temp uint)
+0:146            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:146            Constant:
+0:146              1 (const int)
+0:146        move second child to first child ( temp uint)
+0:146          'ElementsU' ( temp uint)
+0:146          direct index ( temp uint)
+0:146            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:146            Constant:
+0:146              2 (const int)
+0:146        move second child to first child ( temp uint)
+0:146          'NumberOfLevelsU' ( temp uint)
+0:146          textureQueryLevels ( temp uint)
+0:146            'g_tTexcdu4a' ( uniform utextureCubeArray)
+0:149      Sequence
+0:149        move second child to first child ( temp 2-component vector of uint)
+0:149          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:149          textureSize ( temp 2-component vector of uint)
+0:149            'g_tTex2dmsf4' ( uniform texture2DMS)
+0:149        move second child to first child ( temp uint)
+0:149          'WidthU' ( temp uint)
+0:149          direct index ( temp uint)
+0:149            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:149            Constant:
+0:149              0 (const int)
+0:149        move second child to first child ( temp uint)
+0:149          'HeightU' ( temp uint)
+0:149          direct index ( temp uint)
+0:149            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:149            Constant:
+0:149              1 (const int)
+0:149        move second child to first child ( temp uint)
+0:149          'NumberOfSamplesU' ( temp uint)
+0:149          imageQuerySamples ( temp uint)
+0:149            'g_tTex2dmsf4' ( uniform texture2DMS)
+0:152      Sequence
+0:152        move second child to first child ( temp 2-component vector of uint)
+0:152          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:152          textureSize ( temp 2-component vector of uint)
+0:152            'g_tTex2dmsi4' ( uniform itexture2DMS)
+0:152        move second child to first child ( temp uint)
+0:152          'WidthU' ( temp uint)
+0:152          direct index ( temp uint)
+0:152            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:152            Constant:
+0:152              0 (const int)
+0:152        move second child to first child ( temp uint)
+0:152          'HeightU' ( temp uint)
+0:152          direct index ( temp uint)
+0:152            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:152            Constant:
+0:152              1 (const int)
+0:152        move second child to first child ( temp uint)
+0:152          'NumberOfSamplesU' ( temp uint)
+0:152          imageQuerySamples ( temp uint)
+0:152            'g_tTex2dmsi4' ( uniform itexture2DMS)
+0:155      Sequence
+0:155        move second child to first child ( temp 2-component vector of uint)
+0:155          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:155          textureSize ( temp 2-component vector of uint)
+0:155            'g_tTex2dmsu4' ( uniform utexture2DMS)
+0:155        move second child to first child ( temp uint)
+0:155          'WidthU' ( temp uint)
+0:155          direct index ( temp uint)
+0:155            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:155            Constant:
+0:155              0 (const int)
+0:155        move second child to first child ( temp uint)
+0:155          'HeightU' ( temp uint)
+0:155          direct index ( temp uint)
+0:155            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:155            Constant:
+0:155              1 (const int)
+0:155        move second child to first child ( temp uint)
+0:155          'NumberOfSamplesU' ( temp uint)
+0:155          imageQuerySamples ( temp uint)
+0:155            'g_tTex2dmsu4' ( uniform utexture2DMS)
+0:158      Sequence
+0:158        move second child to first child ( temp 3-component vector of uint)
+0:158          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:158          textureSize ( temp 3-component vector of uint)
+0:158            'g_tTex2dmsf4a' ( uniform texture2DMSArray)
+0:158        move second child to first child ( temp uint)
+0:158          'WidthU' ( temp uint)
+0:158          direct index ( temp uint)
+0:158            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:158            Constant:
+0:158              0 (const int)
+0:158        move second child to first child ( temp uint)
+0:158          'HeightU' ( temp uint)
+0:158          direct index ( temp uint)
+0:158            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:158            Constant:
+0:158              1 (const int)
+0:158        move second child to first child ( temp uint)
+0:158          'ElementsU' ( temp uint)
+0:158          direct index ( temp uint)
+0:158            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:158            Constant:
+0:158              2 (const int)
+0:158        move second child to first child ( temp uint)
+0:158          'NumberOfSamplesU' ( temp uint)
+0:158          imageQuerySamples ( temp uint)
+0:158            'g_tTex2dmsf4a' ( uniform texture2DMSArray)
+0:161      Sequence
+0:161        move second child to first child ( temp 3-component vector of uint)
+0:161          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:161          textureSize ( temp 3-component vector of uint)
+0:161            'g_tTex2dmsi4a' ( uniform itexture2DMSArray)
+0:161        move second child to first child ( temp uint)
+0:161          'WidthU' ( temp uint)
+0:161          direct index ( temp uint)
+0:161            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:161            Constant:
+0:161              0 (const int)
+0:161        move second child to first child ( temp uint)
+0:161          'HeightU' ( temp uint)
+0:161          direct index ( temp uint)
+0:161            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:161            Constant:
+0:161              1 (const int)
+0:161        move second child to first child ( temp uint)
+0:161          'ElementsU' ( temp uint)
+0:161          direct index ( temp uint)
+0:161            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:161            Constant:
+0:161              2 (const int)
+0:161        move second child to first child ( temp uint)
+0:161          'NumberOfSamplesU' ( temp uint)
+0:161          imageQuerySamples ( temp uint)
+0:161            'g_tTex2dmsi4a' ( uniform itexture2DMSArray)
+0:164      Sequence
+0:164        move second child to first child ( temp 3-component vector of uint)
+0:164          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:164          textureSize ( temp 3-component vector of uint)
+0:164            'g_tTex2dmsu4a' ( uniform utexture2DMSArray)
+0:164        move second child to first child ( temp uint)
+0:164          'WidthU' ( temp uint)
+0:164          direct index ( temp uint)
+0:164            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:164            Constant:
+0:164              0 (const int)
+0:164        move second child to first child ( temp uint)
+0:164          'HeightU' ( temp uint)
+0:164          direct index ( temp uint)
+0:164            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:164            Constant:
+0:164              1 (const int)
+0:164        move second child to first child ( temp uint)
+0:164          'ElementsU' ( temp uint)
+0:164          direct index ( temp uint)
+0:164            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:164            Constant:
+0:164              2 (const int)
+0:164        move second child to first child ( temp uint)
+0:164          'NumberOfSamplesU' ( temp uint)
+0:164          imageQuerySamples ( temp uint)
+0:164            'g_tTex2dmsu4a' ( uniform utexture2DMSArray)
+0:276      move second child to first child ( temp 4-component vector of float)
+0:276        Color: direct index for structure ( temp 4-component vector of float)
+0:276          'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:276          Constant:
+0:276            0 (const int)
+0:276        Constant:
+0:276          1.000000
+0:276          1.000000
+0:276          1.000000
+0:276          1.000000
+0:277      move second child to first child ( temp float)
+0:277        Depth: direct index for structure ( temp float)
+0:277          'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:277          Constant:
+0:277            1 (const int)
+0:277        Constant:
+0:277          1.000000
+0:279      Branch: Return with expression
+0:279        'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:46  Function Definition: main( ( temp void)
+0:46    Function Parameters: 
+0:?     Sequence
+0:46      Sequence
+0:46        move second child to first child ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:46          'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:46          Function Call: @main( ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:46        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+0:46          Color: direct index for structure ( temp 4-component vector of float)
+0:46            'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:46            Constant:
+0:46              0 (const int)
+0:46        move second child to first child ( temp float)
+0:?           '@entryPointOutput.Depth' ( out float FragDepth)
+0:46          Depth: direct index for structure ( temp float)
+0:46            'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:46            Constant:
+0:46              1 (const int)
+0:?   Linker Objects
+0:?     'g_sSamp' (layout( binding=0) uniform sampler)
+0:?     'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:?     'g_tTex1di4' ( uniform itexture1D)
+0:?     'g_tTex1du4' ( uniform utexture1D)
+0:?     'g_tTex2df4' ( uniform texture2D)
+0:?     'g_tTex2di4' ( uniform itexture2D)
+0:?     'g_tTex2du4' ( uniform utexture2D)
+0:?     'g_tTex3df4' ( uniform texture3D)
+0:?     'g_tTex3di4' ( uniform itexture3D)
+0:?     'g_tTex3du4' ( uniform utexture3D)
+0:?     'g_tTexcdf4' ( uniform textureCube)
+0:?     'g_tTexcdi4' ( uniform itextureCube)
+0:?     'g_tTexcdu4' ( uniform utextureCube)
+0:?     'g_tTex1df4a' ( uniform texture1DArray)
+0:?     'g_tTex1di4a' ( uniform itexture1DArray)
+0:?     'g_tTex1du4a' ( uniform utexture1DArray)
+0:?     'g_tTex2df4a' ( uniform texture2DArray)
+0:?     'g_tTex2di4a' ( uniform itexture2DArray)
+0:?     'g_tTex2du4a' ( uniform utexture2DArray)
+0:?     'g_tTexcdf4a' ( uniform textureCubeArray)
+0:?     'g_tTexcdi4a' ( uniform itextureCubeArray)
+0:?     'g_tTexcdu4a' ( uniform utextureCubeArray)
+0:?     'g_tTex2dmsf4' ( uniform texture2DMS)
+0:?     'g_tTex2dmsi4' ( uniform itexture2DMS)
+0:?     'g_tTex2dmsu4' ( uniform utexture2DMS)
+0:?     'g_tTex2dmsf4a' ( uniform texture2DMSArray)
+0:?     'g_tTex2dmsi4a' ( uniform itexture2DMSArray)
+0:?     'g_tTex2dmsu4a' ( uniform utexture2DMSArray)
+0:?     '@entryPointOutput.Depth' ( out float FragDepth)
+0:?     '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+using depth_any
+0:? Sequence
+0:46  Function Definition: @main( ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:46    Function Parameters: 
+0:?     Sequence
+0:65      Sequence
+0:65        move second child to first child ( temp uint)
+0:65          'sizeQueryTemp' ( temp uint)
+0:65          textureSize ( temp uint)
+0:65            'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:65            Constant:
+0:65              0 (const int)
+0:65        move second child to first child ( temp uint)
+0:65          'WidthU' ( temp uint)
+0:65          'sizeQueryTemp' ( temp uint)
+0:66      Sequence
+0:66        move second child to first child ( temp uint)
+0:66          'sizeQueryTemp' ( temp uint)
+0:66          textureSize ( temp uint)
+0:66            'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:66            Constant:
+0:66              6 (const uint)
+0:66        move second child to first child ( temp uint)
+0:66          'WidthU' ( temp uint)
+0:66          'sizeQueryTemp' ( temp uint)
+0:66        move second child to first child ( temp uint)
+0:66          'NumberOfLevelsU' ( temp uint)
+0:66          textureQueryLevels ( temp uint)
+0:66            'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:69      Sequence
+0:69        move second child to first child ( temp uint)
+0:69          'sizeQueryTemp' ( temp uint)
+0:69          textureSize ( temp uint)
+0:69            'g_tTex1di4' ( uniform itexture1D)
+0:69            Constant:
+0:69              0 (const int)
+0:69        move second child to first child ( temp uint)
+0:69          'WidthU' ( temp uint)
+0:69          'sizeQueryTemp' ( temp uint)
+0:70      Sequence
+0:70        move second child to first child ( temp uint)
+0:70          'sizeQueryTemp' ( temp uint)
+0:70          textureSize ( temp uint)
+0:70            'g_tTex1di4' ( uniform itexture1D)
+0:70            Constant:
+0:70              6 (const uint)
+0:70        move second child to first child ( temp uint)
+0:70          'WidthU' ( temp uint)
+0:70          'sizeQueryTemp' ( temp uint)
+0:70        move second child to first child ( temp uint)
+0:70          'NumberOfLevelsU' ( temp uint)
+0:70          textureQueryLevels ( temp uint)
+0:70            'g_tTex1di4' ( uniform itexture1D)
+0:73      Sequence
+0:73        move second child to first child ( temp uint)
+0:73          'sizeQueryTemp' ( temp uint)
+0:73          textureSize ( temp uint)
+0:73            'g_tTex1du4' ( uniform utexture1D)
+0:73            Constant:
+0:73              0 (const int)
+0:73        move second child to first child ( temp uint)
+0:73          'WidthU' ( temp uint)
+0:73          'sizeQueryTemp' ( temp uint)
+0:74      Sequence
+0:74        move second child to first child ( temp uint)
+0:74          'sizeQueryTemp' ( temp uint)
+0:74          textureSize ( temp uint)
+0:74            'g_tTex1du4' ( uniform utexture1D)
+0:74            Constant:
+0:74              6 (const uint)
+0:74        move second child to first child ( temp uint)
+0:74          'WidthU' ( temp uint)
+0:74          'sizeQueryTemp' ( temp uint)
+0:74        move second child to first child ( temp uint)
+0:74          'NumberOfLevelsU' ( temp uint)
+0:74          textureQueryLevels ( temp uint)
+0:74            'g_tTex1du4' ( uniform utexture1D)
+0:77      Sequence
+0:77        move second child to first child ( temp 2-component vector of uint)
+0:77          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:77          textureSize ( temp 2-component vector of uint)
+0:77            'g_tTex1df4a' ( uniform texture1DArray)
+0:77            Constant:
+0:77              0 (const int)
+0:77        move second child to first child ( temp uint)
+0:77          'WidthU' ( temp uint)
+0:77          direct index ( temp uint)
+0:77            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:77            Constant:
+0:77              0 (const int)
+0:77        move second child to first child ( temp uint)
+0:77          'ElementsU' ( temp uint)
+0:77          direct index ( temp uint)
+0:77            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:77            Constant:
+0:77              1 (const int)
+0:78      Sequence
+0:78        move second child to first child ( temp 2-component vector of uint)
+0:78          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:78          textureSize ( temp 2-component vector of uint)
+0:78            'g_tTex1df4a' ( uniform texture1DArray)
+0:78            Constant:
+0:78              6 (const uint)
+0:78        move second child to first child ( temp uint)
+0:78          'WidthU' ( temp uint)
+0:78          direct index ( temp uint)
+0:78            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:78            Constant:
+0:78              0 (const int)
+0:78        move second child to first child ( temp uint)
+0:78          'ElementsU' ( temp uint)
+0:78          direct index ( temp uint)
+0:78            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:78            Constant:
+0:78              1 (const int)
+0:78        move second child to first child ( temp uint)
+0:78          'NumberOfLevelsU' ( temp uint)
+0:78          textureQueryLevels ( temp uint)
+0:78            'g_tTex1df4a' ( uniform texture1DArray)
+0:81      Sequence
+0:81        move second child to first child ( temp 2-component vector of uint)
+0:81          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:81          textureSize ( temp 2-component vector of uint)
+0:81            'g_tTex1di4a' ( uniform itexture1DArray)
+0:81            Constant:
+0:81              0 (const int)
+0:81        move second child to first child ( temp uint)
+0:81          'WidthU' ( temp uint)
+0:81          direct index ( temp uint)
+0:81            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:81            Constant:
+0:81              0 (const int)
+0:81        move second child to first child ( temp uint)
+0:81          'ElementsU' ( temp uint)
+0:81          direct index ( temp uint)
+0:81            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:81            Constant:
+0:81              1 (const int)
+0:82      Sequence
+0:82        move second child to first child ( temp 2-component vector of uint)
+0:82          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:82          textureSize ( temp 2-component vector of uint)
+0:82            'g_tTex1di4a' ( uniform itexture1DArray)
+0:82            Constant:
+0:82              6 (const uint)
+0:82        move second child to first child ( temp uint)
+0:82          'WidthU' ( temp uint)
+0:82          direct index ( temp uint)
+0:82            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:82            Constant:
+0:82              0 (const int)
+0:82        move second child to first child ( temp uint)
+0:82          'ElementsU' ( temp uint)
+0:82          direct index ( temp uint)
+0:82            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:82            Constant:
+0:82              1 (const int)
+0:82        move second child to first child ( temp uint)
+0:82          'NumberOfLevelsU' ( temp uint)
+0:82          textureQueryLevels ( temp uint)
+0:82            'g_tTex1di4a' ( uniform itexture1DArray)
+0:85      Sequence
+0:85        move second child to first child ( temp 2-component vector of uint)
+0:85          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:85          textureSize ( temp 2-component vector of uint)
+0:85            'g_tTex1du4a' ( uniform utexture1DArray)
+0:85            Constant:
+0:85              0 (const int)
+0:85        move second child to first child ( temp uint)
+0:85          'WidthU' ( temp uint)
+0:85          direct index ( temp uint)
+0:85            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:85            Constant:
+0:85              0 (const int)
+0:85        move second child to first child ( temp uint)
+0:85          'ElementsU' ( temp uint)
+0:85          direct index ( temp uint)
+0:85            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:85            Constant:
+0:85              1 (const int)
+0:86      Sequence
+0:86        move second child to first child ( temp 2-component vector of uint)
+0:86          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:86          textureSize ( temp 2-component vector of uint)
+0:86            'g_tTex1du4a' ( uniform utexture1DArray)
+0:86            Constant:
+0:86              6 (const uint)
+0:86        move second child to first child ( temp uint)
+0:86          'WidthU' ( temp uint)
+0:86          direct index ( temp uint)
+0:86            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:86            Constant:
+0:86              0 (const int)
+0:86        move second child to first child ( temp uint)
+0:86          'ElementsU' ( temp uint)
+0:86          direct index ( temp uint)
+0:86            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:86            Constant:
+0:86              1 (const int)
+0:86        move second child to first child ( temp uint)
+0:86          'NumberOfLevelsU' ( temp uint)
+0:86          textureQueryLevels ( temp uint)
+0:86            'g_tTex1du4a' ( uniform utexture1DArray)
+0:89      Sequence
+0:89        move second child to first child ( temp 2-component vector of uint)
+0:89          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:89          textureSize ( temp 2-component vector of uint)
+0:89            'g_tTex2df4' ( uniform texture2D)
+0:89            Constant:
+0:89              0 (const int)
+0:89        move second child to first child ( temp uint)
+0:89          'WidthU' ( temp uint)
+0:89          direct index ( temp uint)
+0:89            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:89            Constant:
+0:89              0 (const int)
+0:89        move second child to first child ( temp uint)
+0:89          'HeightU' ( temp uint)
+0:89          direct index ( temp uint)
+0:89            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:89            Constant:
+0:89              1 (const int)
+0:90      Sequence
+0:90        move second child to first child ( temp 2-component vector of uint)
+0:90          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:90          textureSize ( temp 2-component vector of uint)
+0:90            'g_tTex2df4' ( uniform texture2D)
+0:90            Constant:
+0:90              6 (const uint)
+0:90        move second child to first child ( temp uint)
+0:90          'WidthU' ( temp uint)
+0:90          direct index ( temp uint)
+0:90            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:90            Constant:
+0:90              0 (const int)
+0:90        move second child to first child ( temp uint)
+0:90          'HeightU' ( temp uint)
+0:90          direct index ( temp uint)
+0:90            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:90            Constant:
+0:90              1 (const int)
+0:90        move second child to first child ( temp uint)
+0:90          'NumberOfLevelsU' ( temp uint)
+0:90          textureQueryLevels ( temp uint)
+0:90            'g_tTex2df4' ( uniform texture2D)
+0:93      Sequence
+0:93        move second child to first child ( temp 2-component vector of uint)
+0:93          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:93          textureSize ( temp 2-component vector of uint)
+0:93            'g_tTex2di4' ( uniform itexture2D)
+0:93            Constant:
+0:93              0 (const int)
+0:93        move second child to first child ( temp uint)
+0:93          'WidthU' ( temp uint)
+0:93          direct index ( temp uint)
+0:93            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:93            Constant:
+0:93              0 (const int)
+0:93        move second child to first child ( temp uint)
+0:93          'HeightU' ( temp uint)
+0:93          direct index ( temp uint)
+0:93            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:93            Constant:
+0:93              1 (const int)
+0:94      Sequence
+0:94        move second child to first child ( temp 2-component vector of uint)
+0:94          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:94          textureSize ( temp 2-component vector of uint)
+0:94            'g_tTex2di4' ( uniform itexture2D)
+0:94            Constant:
+0:94              6 (const uint)
+0:94        move second child to first child ( temp uint)
+0:94          'WidthU' ( temp uint)
+0:94          direct index ( temp uint)
+0:94            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:94            Constant:
+0:94              0 (const int)
+0:94        move second child to first child ( temp uint)
+0:94          'HeightU' ( temp uint)
+0:94          direct index ( temp uint)
+0:94            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:94            Constant:
+0:94              1 (const int)
+0:94        move second child to first child ( temp uint)
+0:94          'NumberOfLevelsU' ( temp uint)
+0:94          textureQueryLevels ( temp uint)
+0:94            'g_tTex2di4' ( uniform itexture2D)
+0:97      Sequence
+0:97        move second child to first child ( temp 2-component vector of uint)
+0:97          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:97          textureSize ( temp 2-component vector of uint)
+0:97            'g_tTex2du4' ( uniform utexture2D)
+0:97            Constant:
+0:97              0 (const int)
+0:97        move second child to first child ( temp uint)
+0:97          'WidthU' ( temp uint)
+0:97          direct index ( temp uint)
+0:97            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:97            Constant:
+0:97              0 (const int)
+0:97        move second child to first child ( temp uint)
+0:97          'HeightU' ( temp uint)
+0:97          direct index ( temp uint)
+0:97            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:97            Constant:
+0:97              1 (const int)
+0:98      Sequence
+0:98        move second child to first child ( temp 2-component vector of uint)
+0:98          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:98          textureSize ( temp 2-component vector of uint)
+0:98            'g_tTex2du4' ( uniform utexture2D)
+0:98            Constant:
+0:98              6 (const uint)
+0:98        move second child to first child ( temp uint)
+0:98          'WidthU' ( temp uint)
+0:98          direct index ( temp uint)
+0:98            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:98            Constant:
+0:98              0 (const int)
+0:98        move second child to first child ( temp uint)
+0:98          'HeightU' ( temp uint)
+0:98          direct index ( temp uint)
+0:98            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:98            Constant:
+0:98              1 (const int)
+0:98        move second child to first child ( temp uint)
+0:98          'NumberOfLevelsU' ( temp uint)
+0:98          textureQueryLevels ( temp uint)
+0:98            'g_tTex2du4' ( uniform utexture2D)
+0:101      Sequence
+0:101        move second child to first child ( temp 3-component vector of uint)
+0:101          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:101          textureSize ( temp 3-component vector of uint)
+0:101            'g_tTex2df4a' ( uniform texture2DArray)
+0:101            Constant:
+0:101              0 (const int)
+0:101        move second child to first child ( temp uint)
+0:101          'WidthU' ( temp uint)
+0:101          direct index ( temp uint)
+0:101            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:101            Constant:
+0:101              0 (const int)
+0:101        move second child to first child ( temp uint)
+0:101          'HeightU' ( temp uint)
+0:101          direct index ( temp uint)
+0:101            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:101            Constant:
+0:101              1 (const int)
+0:101        move second child to first child ( temp uint)
+0:101          'ElementsU' ( temp uint)
+0:101          direct index ( temp uint)
+0:101            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:101            Constant:
+0:101              2 (const int)
+0:102      Sequence
+0:102        move second child to first child ( temp 3-component vector of uint)
+0:102          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:102          textureSize ( temp 3-component vector of uint)
+0:102            'g_tTex2df4a' ( uniform texture2DArray)
+0:102            Constant:
+0:102              6 (const uint)
+0:102        move second child to first child ( temp uint)
+0:102          'WidthU' ( temp uint)
+0:102          direct index ( temp uint)
+0:102            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:102            Constant:
+0:102              0 (const int)
+0:102        move second child to first child ( temp uint)
+0:102          'HeightU' ( temp uint)
+0:102          direct index ( temp uint)
+0:102            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:102            Constant:
+0:102              1 (const int)
+0:102        move second child to first child ( temp uint)
+0:102          'ElementsU' ( temp uint)
+0:102          direct index ( temp uint)
+0:102            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:102            Constant:
+0:102              2 (const int)
+0:102        move second child to first child ( temp uint)
+0:102          'NumberOfLevelsU' ( temp uint)
+0:102          textureQueryLevels ( temp uint)
+0:102            'g_tTex2df4a' ( uniform texture2DArray)
+0:105      Sequence
+0:105        move second child to first child ( temp 3-component vector of uint)
+0:105          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:105          textureSize ( temp 3-component vector of uint)
+0:105            'g_tTex2di4a' ( uniform itexture2DArray)
+0:105            Constant:
+0:105              0 (const int)
+0:105        move second child to first child ( temp uint)
+0:105          'WidthU' ( temp uint)
+0:105          direct index ( temp uint)
+0:105            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:105            Constant:
+0:105              0 (const int)
+0:105        move second child to first child ( temp uint)
+0:105          'HeightU' ( temp uint)
+0:105          direct index ( temp uint)
+0:105            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:105            Constant:
+0:105              1 (const int)
+0:105        move second child to first child ( temp uint)
+0:105          'ElementsU' ( temp uint)
+0:105          direct index ( temp uint)
+0:105            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:105            Constant:
+0:105              2 (const int)
+0:106      Sequence
+0:106        move second child to first child ( temp 3-component vector of uint)
+0:106          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:106          textureSize ( temp 3-component vector of uint)
+0:106            'g_tTex2di4a' ( uniform itexture2DArray)
+0:106            Constant:
+0:106              6 (const uint)
+0:106        move second child to first child ( temp uint)
+0:106          'WidthU' ( temp uint)
+0:106          direct index ( temp uint)
+0:106            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:106            Constant:
+0:106              0 (const int)
+0:106        move second child to first child ( temp uint)
+0:106          'HeightU' ( temp uint)
+0:106          direct index ( temp uint)
+0:106            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:106            Constant:
+0:106              1 (const int)
+0:106        move second child to first child ( temp uint)
+0:106          'ElementsU' ( temp uint)
+0:106          direct index ( temp uint)
+0:106            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:106            Constant:
+0:106              2 (const int)
+0:106        move second child to first child ( temp uint)
+0:106          'NumberOfLevelsU' ( temp uint)
+0:106          textureQueryLevels ( temp uint)
+0:106            'g_tTex2di4a' ( uniform itexture2DArray)
+0:109      Sequence
+0:109        move second child to first child ( temp 3-component vector of uint)
+0:109          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:109          textureSize ( temp 3-component vector of uint)
+0:109            'g_tTex2du4a' ( uniform utexture2DArray)
+0:109            Constant:
+0:109              0 (const int)
+0:109        move second child to first child ( temp uint)
+0:109          'WidthU' ( temp uint)
+0:109          direct index ( temp uint)
+0:109            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:109            Constant:
+0:109              0 (const int)
+0:109        move second child to first child ( temp uint)
+0:109          'HeightU' ( temp uint)
+0:109          direct index ( temp uint)
+0:109            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:109            Constant:
+0:109              1 (const int)
+0:109        move second child to first child ( temp uint)
+0:109          'ElementsU' ( temp uint)
+0:109          direct index ( temp uint)
+0:109            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:109            Constant:
+0:109              2 (const int)
+0:110      Sequence
+0:110        move second child to first child ( temp 3-component vector of uint)
+0:110          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:110          textureSize ( temp 3-component vector of uint)
+0:110            'g_tTex2du4a' ( uniform utexture2DArray)
+0:110            Constant:
+0:110              6 (const uint)
+0:110        move second child to first child ( temp uint)
+0:110          'WidthU' ( temp uint)
+0:110          direct index ( temp uint)
+0:110            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:110            Constant:
+0:110              0 (const int)
+0:110        move second child to first child ( temp uint)
+0:110          'HeightU' ( temp uint)
+0:110          direct index ( temp uint)
+0:110            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:110            Constant:
+0:110              1 (const int)
+0:110        move second child to first child ( temp uint)
+0:110          'ElementsU' ( temp uint)
+0:110          direct index ( temp uint)
+0:110            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:110            Constant:
+0:110              2 (const int)
+0:110        move second child to first child ( temp uint)
+0:110          'NumberOfLevelsU' ( temp uint)
+0:110          textureQueryLevels ( temp uint)
+0:110            'g_tTex2du4a' ( uniform utexture2DArray)
+0:113      Sequence
+0:113        move second child to first child ( temp 3-component vector of uint)
+0:113          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:113          textureSize ( temp 3-component vector of uint)
+0:113            'g_tTex3df4' ( uniform texture3D)
+0:113            Constant:
+0:113              0 (const int)
+0:113        move second child to first child ( temp uint)
+0:113          'WidthU' ( temp uint)
+0:113          direct index ( temp uint)
+0:113            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:113            Constant:
+0:113              0 (const int)
+0:113        move second child to first child ( temp uint)
+0:113          'HeightU' ( temp uint)
+0:113          direct index ( temp uint)
+0:113            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:113            Constant:
+0:113              1 (const int)
+0:113        move second child to first child ( temp uint)
+0:113          'DepthU' ( temp uint)
+0:113          direct index ( temp uint)
+0:113            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:113            Constant:
+0:113              2 (const int)
+0:114      Sequence
+0:114        move second child to first child ( temp 3-component vector of uint)
+0:114          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:114          textureSize ( temp 3-component vector of uint)
+0:114            'g_tTex3df4' ( uniform texture3D)
+0:114            Constant:
+0:114              6 (const uint)
+0:114        move second child to first child ( temp uint)
+0:114          'WidthU' ( temp uint)
+0:114          direct index ( temp uint)
+0:114            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:114            Constant:
+0:114              0 (const int)
+0:114        move second child to first child ( temp uint)
+0:114          'HeightU' ( temp uint)
+0:114          direct index ( temp uint)
+0:114            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:114            Constant:
+0:114              1 (const int)
+0:114        move second child to first child ( temp uint)
+0:114          'DepthU' ( temp uint)
+0:114          direct index ( temp uint)
+0:114            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:114            Constant:
+0:114              2 (const int)
+0:114        move second child to first child ( temp uint)
+0:114          'NumberOfLevelsU' ( temp uint)
+0:114          textureQueryLevels ( temp uint)
+0:114            'g_tTex3df4' ( uniform texture3D)
+0:117      Sequence
+0:117        move second child to first child ( temp 3-component vector of uint)
+0:117          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:117          textureSize ( temp 3-component vector of uint)
+0:117            'g_tTex3di4' ( uniform itexture3D)
+0:117            Constant:
+0:117              0 (const int)
+0:117        move second child to first child ( temp uint)
+0:117          'WidthU' ( temp uint)
+0:117          direct index ( temp uint)
+0:117            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:117            Constant:
+0:117              0 (const int)
+0:117        move second child to first child ( temp uint)
+0:117          'HeightU' ( temp uint)
+0:117          direct index ( temp uint)
+0:117            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:117            Constant:
+0:117              1 (const int)
+0:117        move second child to first child ( temp uint)
+0:117          'DepthU' ( temp uint)
+0:117          direct index ( temp uint)
+0:117            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:117            Constant:
+0:117              2 (const int)
+0:118      Sequence
+0:118        move second child to first child ( temp 3-component vector of uint)
+0:118          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:118          textureSize ( temp 3-component vector of uint)
+0:118            'g_tTex3di4' ( uniform itexture3D)
+0:118            Constant:
+0:118              6 (const uint)
+0:118        move second child to first child ( temp uint)
+0:118          'WidthU' ( temp uint)
+0:118          direct index ( temp uint)
+0:118            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:118            Constant:
+0:118              0 (const int)
+0:118        move second child to first child ( temp uint)
+0:118          'HeightU' ( temp uint)
+0:118          direct index ( temp uint)
+0:118            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:118            Constant:
+0:118              1 (const int)
+0:118        move second child to first child ( temp uint)
+0:118          'DepthU' ( temp uint)
+0:118          direct index ( temp uint)
+0:118            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:118            Constant:
+0:118              2 (const int)
+0:118        move second child to first child ( temp uint)
+0:118          'NumberOfLevelsU' ( temp uint)
+0:118          textureQueryLevels ( temp uint)
+0:118            'g_tTex3di4' ( uniform itexture3D)
+0:121      Sequence
+0:121        move second child to first child ( temp 3-component vector of uint)
+0:121          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:121          textureSize ( temp 3-component vector of uint)
+0:121            'g_tTex3du4' ( uniform utexture3D)
+0:121            Constant:
+0:121              0 (const int)
+0:121        move second child to first child ( temp uint)
+0:121          'WidthU' ( temp uint)
+0:121          direct index ( temp uint)
+0:121            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:121            Constant:
+0:121              0 (const int)
+0:121        move second child to first child ( temp uint)
+0:121          'HeightU' ( temp uint)
+0:121          direct index ( temp uint)
+0:121            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:121            Constant:
+0:121              1 (const int)
+0:121        move second child to first child ( temp uint)
+0:121          'DepthU' ( temp uint)
+0:121          direct index ( temp uint)
+0:121            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:121            Constant:
+0:121              2 (const int)
+0:122      Sequence
+0:122        move second child to first child ( temp 3-component vector of uint)
+0:122          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:122          textureSize ( temp 3-component vector of uint)
+0:122            'g_tTex3du4' ( uniform utexture3D)
+0:122            Constant:
+0:122              6 (const uint)
+0:122        move second child to first child ( temp uint)
+0:122          'WidthU' ( temp uint)
+0:122          direct index ( temp uint)
+0:122            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:122            Constant:
+0:122              0 (const int)
+0:122        move second child to first child ( temp uint)
+0:122          'HeightU' ( temp uint)
+0:122          direct index ( temp uint)
+0:122            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:122            Constant:
+0:122              1 (const int)
+0:122        move second child to first child ( temp uint)
+0:122          'DepthU' ( temp uint)
+0:122          direct index ( temp uint)
+0:122            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:122            Constant:
+0:122              2 (const int)
+0:122        move second child to first child ( temp uint)
+0:122          'NumberOfLevelsU' ( temp uint)
+0:122          textureQueryLevels ( temp uint)
+0:122            'g_tTex3du4' ( uniform utexture3D)
+0:125      Sequence
+0:125        move second child to first child ( temp 2-component vector of uint)
+0:125          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:125          textureSize ( temp 2-component vector of uint)
+0:125            'g_tTexcdf4' ( uniform textureCube)
+0:125            Constant:
+0:125              0 (const int)
+0:125        move second child to first child ( temp uint)
+0:125          'WidthU' ( temp uint)
+0:125          direct index ( temp uint)
+0:125            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:125            Constant:
+0:125              0 (const int)
+0:125        move second child to first child ( temp uint)
+0:125          'HeightU' ( temp uint)
+0:125          direct index ( temp uint)
+0:125            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:125            Constant:
+0:125              1 (const int)
+0:126      Sequence
+0:126        move second child to first child ( temp 2-component vector of uint)
+0:126          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:126          textureSize ( temp 2-component vector of uint)
+0:126            'g_tTexcdf4' ( uniform textureCube)
+0:126            Constant:
+0:126              6 (const uint)
+0:126        move second child to first child ( temp uint)
+0:126          'WidthU' ( temp uint)
+0:126          direct index ( temp uint)
+0:126            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:126            Constant:
+0:126              0 (const int)
+0:126        move second child to first child ( temp uint)
+0:126          'HeightU' ( temp uint)
+0:126          direct index ( temp uint)
+0:126            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:126            Constant:
+0:126              1 (const int)
+0:126        move second child to first child ( temp uint)
+0:126          'NumberOfLevelsU' ( temp uint)
+0:126          textureQueryLevels ( temp uint)
+0:126            'g_tTexcdf4' ( uniform textureCube)
+0:129      Sequence
+0:129        move second child to first child ( temp 2-component vector of uint)
+0:129          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:129          textureSize ( temp 2-component vector of uint)
+0:129            'g_tTexcdi4' ( uniform itextureCube)
+0:129            Constant:
+0:129              0 (const int)
+0:129        move second child to first child ( temp uint)
+0:129          'WidthU' ( temp uint)
+0:129          direct index ( temp uint)
+0:129            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:129            Constant:
+0:129              0 (const int)
+0:129        move second child to first child ( temp uint)
+0:129          'HeightU' ( temp uint)
+0:129          direct index ( temp uint)
+0:129            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:129            Constant:
+0:129              1 (const int)
+0:130      Sequence
+0:130        move second child to first child ( temp 2-component vector of uint)
+0:130          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:130          textureSize ( temp 2-component vector of uint)
+0:130            'g_tTexcdi4' ( uniform itextureCube)
+0:130            Constant:
+0:130              6 (const uint)
+0:130        move second child to first child ( temp uint)
+0:130          'WidthU' ( temp uint)
+0:130          direct index ( temp uint)
+0:130            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:130            Constant:
+0:130              0 (const int)
+0:130        move second child to first child ( temp uint)
+0:130          'HeightU' ( temp uint)
+0:130          direct index ( temp uint)
+0:130            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:130            Constant:
+0:130              1 (const int)
+0:130        move second child to first child ( temp uint)
+0:130          'NumberOfLevelsU' ( temp uint)
+0:130          textureQueryLevels ( temp uint)
+0:130            'g_tTexcdi4' ( uniform itextureCube)
+0:133      Sequence
+0:133        move second child to first child ( temp 2-component vector of uint)
+0:133          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:133          textureSize ( temp 2-component vector of uint)
+0:133            'g_tTexcdu4' ( uniform utextureCube)
+0:133            Constant:
+0:133              0 (const int)
+0:133        move second child to first child ( temp uint)
+0:133          'WidthU' ( temp uint)
+0:133          direct index ( temp uint)
+0:133            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:133            Constant:
+0:133              0 (const int)
+0:133        move second child to first child ( temp uint)
+0:133          'HeightU' ( temp uint)
+0:133          direct index ( temp uint)
+0:133            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:133            Constant:
+0:133              1 (const int)
+0:134      Sequence
+0:134        move second child to first child ( temp 2-component vector of uint)
+0:134          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:134          textureSize ( temp 2-component vector of uint)
+0:134            'g_tTexcdu4' ( uniform utextureCube)
+0:134            Constant:
+0:134              6 (const uint)
+0:134        move second child to first child ( temp uint)
+0:134          'WidthU' ( temp uint)
+0:134          direct index ( temp uint)
+0:134            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:134            Constant:
+0:134              0 (const int)
+0:134        move second child to first child ( temp uint)
+0:134          'HeightU' ( temp uint)
+0:134          direct index ( temp uint)
+0:134            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:134            Constant:
+0:134              1 (const int)
+0:134        move second child to first child ( temp uint)
+0:134          'NumberOfLevelsU' ( temp uint)
+0:134          textureQueryLevels ( temp uint)
+0:134            'g_tTexcdu4' ( uniform utextureCube)
+0:137      Sequence
+0:137        move second child to first child ( temp 3-component vector of uint)
+0:137          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:137          textureSize ( temp 3-component vector of uint)
+0:137            'g_tTexcdf4a' ( uniform textureCubeArray)
+0:137            Constant:
+0:137              0 (const int)
+0:137        move second child to first child ( temp uint)
+0:137          'WidthU' ( temp uint)
+0:137          direct index ( temp uint)
+0:137            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:137            Constant:
+0:137              0 (const int)
+0:137        move second child to first child ( temp uint)
+0:137          'HeightU' ( temp uint)
+0:137          direct index ( temp uint)
+0:137            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:137            Constant:
+0:137              1 (const int)
+0:137        move second child to first child ( temp uint)
+0:137          'ElementsU' ( temp uint)
+0:137          direct index ( temp uint)
+0:137            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:137            Constant:
+0:137              2 (const int)
+0:138      Sequence
+0:138        move second child to first child ( temp 3-component vector of uint)
+0:138          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:138          textureSize ( temp 3-component vector of uint)
+0:138            'g_tTexcdf4a' ( uniform textureCubeArray)
+0:138            Constant:
+0:138              6 (const uint)
+0:138        move second child to first child ( temp uint)
+0:138          'WidthU' ( temp uint)
+0:138          direct index ( temp uint)
+0:138            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:138            Constant:
+0:138              0 (const int)
+0:138        move second child to first child ( temp uint)
+0:138          'HeightU' ( temp uint)
+0:138          direct index ( temp uint)
+0:138            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:138            Constant:
+0:138              1 (const int)
+0:138        move second child to first child ( temp uint)
+0:138          'ElementsU' ( temp uint)
+0:138          direct index ( temp uint)
+0:138            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:138            Constant:
+0:138              2 (const int)
+0:138        move second child to first child ( temp uint)
+0:138          'NumberOfLevelsU' ( temp uint)
+0:138          textureQueryLevels ( temp uint)
+0:138            'g_tTexcdf4a' ( uniform textureCubeArray)
+0:141      Sequence
+0:141        move second child to first child ( temp 3-component vector of uint)
+0:141          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:141          textureSize ( temp 3-component vector of uint)
+0:141            'g_tTexcdi4a' ( uniform itextureCubeArray)
+0:141            Constant:
+0:141              0 (const int)
+0:141        move second child to first child ( temp uint)
+0:141          'WidthU' ( temp uint)
+0:141          direct index ( temp uint)
+0:141            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:141            Constant:
+0:141              0 (const int)
+0:141        move second child to first child ( temp uint)
+0:141          'HeightU' ( temp uint)
+0:141          direct index ( temp uint)
+0:141            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:141            Constant:
+0:141              1 (const int)
+0:141        move second child to first child ( temp uint)
+0:141          'ElementsU' ( temp uint)
+0:141          direct index ( temp uint)
+0:141            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:141            Constant:
+0:141              2 (const int)
+0:142      Sequence
+0:142        move second child to first child ( temp 3-component vector of uint)
+0:142          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:142          textureSize ( temp 3-component vector of uint)
+0:142            'g_tTexcdi4a' ( uniform itextureCubeArray)
+0:142            Constant:
+0:142              6 (const uint)
+0:142        move second child to first child ( temp uint)
+0:142          'WidthU' ( temp uint)
+0:142          direct index ( temp uint)
+0:142            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:142            Constant:
+0:142              0 (const int)
+0:142        move second child to first child ( temp uint)
+0:142          'HeightU' ( temp uint)
+0:142          direct index ( temp uint)
+0:142            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:142            Constant:
+0:142              1 (const int)
+0:142        move second child to first child ( temp uint)
+0:142          'ElementsU' ( temp uint)
+0:142          direct index ( temp uint)
+0:142            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:142            Constant:
+0:142              2 (const int)
+0:142        move second child to first child ( temp uint)
+0:142          'NumberOfLevelsU' ( temp uint)
+0:142          textureQueryLevels ( temp uint)
+0:142            'g_tTexcdi4a' ( uniform itextureCubeArray)
+0:145      Sequence
+0:145        move second child to first child ( temp 3-component vector of uint)
+0:145          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:145          textureSize ( temp 3-component vector of uint)
+0:145            'g_tTexcdu4a' ( uniform utextureCubeArray)
+0:145            Constant:
+0:145              0 (const int)
+0:145        move second child to first child ( temp uint)
+0:145          'WidthU' ( temp uint)
+0:145          direct index ( temp uint)
+0:145            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:145            Constant:
+0:145              0 (const int)
+0:145        move second child to first child ( temp uint)
+0:145          'HeightU' ( temp uint)
+0:145          direct index ( temp uint)
+0:145            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:145            Constant:
+0:145              1 (const int)
+0:145        move second child to first child ( temp uint)
+0:145          'ElementsU' ( temp uint)
+0:145          direct index ( temp uint)
+0:145            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:145            Constant:
+0:145              2 (const int)
+0:146      Sequence
+0:146        move second child to first child ( temp 3-component vector of uint)
+0:146          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:146          textureSize ( temp 3-component vector of uint)
+0:146            'g_tTexcdu4a' ( uniform utextureCubeArray)
+0:146            Constant:
+0:146              6 (const uint)
+0:146        move second child to first child ( temp uint)
+0:146          'WidthU' ( temp uint)
+0:146          direct index ( temp uint)
+0:146            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:146            Constant:
+0:146              0 (const int)
+0:146        move second child to first child ( temp uint)
+0:146          'HeightU' ( temp uint)
+0:146          direct index ( temp uint)
+0:146            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:146            Constant:
+0:146              1 (const int)
+0:146        move second child to first child ( temp uint)
+0:146          'ElementsU' ( temp uint)
+0:146          direct index ( temp uint)
+0:146            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:146            Constant:
+0:146              2 (const int)
+0:146        move second child to first child ( temp uint)
+0:146          'NumberOfLevelsU' ( temp uint)
+0:146          textureQueryLevels ( temp uint)
+0:146            'g_tTexcdu4a' ( uniform utextureCubeArray)
+0:149      Sequence
+0:149        move second child to first child ( temp 2-component vector of uint)
+0:149          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:149          textureSize ( temp 2-component vector of uint)
+0:149            'g_tTex2dmsf4' ( uniform texture2DMS)
+0:149        move second child to first child ( temp uint)
+0:149          'WidthU' ( temp uint)
+0:149          direct index ( temp uint)
+0:149            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:149            Constant:
+0:149              0 (const int)
+0:149        move second child to first child ( temp uint)
+0:149          'HeightU' ( temp uint)
+0:149          direct index ( temp uint)
+0:149            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:149            Constant:
+0:149              1 (const int)
+0:149        move second child to first child ( temp uint)
+0:149          'NumberOfSamplesU' ( temp uint)
+0:149          imageQuerySamples ( temp uint)
+0:149            'g_tTex2dmsf4' ( uniform texture2DMS)
+0:152      Sequence
+0:152        move second child to first child ( temp 2-component vector of uint)
+0:152          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:152          textureSize ( temp 2-component vector of uint)
+0:152            'g_tTex2dmsi4' ( uniform itexture2DMS)
+0:152        move second child to first child ( temp uint)
+0:152          'WidthU' ( temp uint)
+0:152          direct index ( temp uint)
+0:152            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:152            Constant:
+0:152              0 (const int)
+0:152        move second child to first child ( temp uint)
+0:152          'HeightU' ( temp uint)
+0:152          direct index ( temp uint)
+0:152            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:152            Constant:
+0:152              1 (const int)
+0:152        move second child to first child ( temp uint)
+0:152          'NumberOfSamplesU' ( temp uint)
+0:152          imageQuerySamples ( temp uint)
+0:152            'g_tTex2dmsi4' ( uniform itexture2DMS)
+0:155      Sequence
+0:155        move second child to first child ( temp 2-component vector of uint)
+0:155          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:155          textureSize ( temp 2-component vector of uint)
+0:155            'g_tTex2dmsu4' ( uniform utexture2DMS)
+0:155        move second child to first child ( temp uint)
+0:155          'WidthU' ( temp uint)
+0:155          direct index ( temp uint)
+0:155            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:155            Constant:
+0:155              0 (const int)
+0:155        move second child to first child ( temp uint)
+0:155          'HeightU' ( temp uint)
+0:155          direct index ( temp uint)
+0:155            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:155            Constant:
+0:155              1 (const int)
+0:155        move second child to first child ( temp uint)
+0:155          'NumberOfSamplesU' ( temp uint)
+0:155          imageQuerySamples ( temp uint)
+0:155            'g_tTex2dmsu4' ( uniform utexture2DMS)
+0:158      Sequence
+0:158        move second child to first child ( temp 3-component vector of uint)
+0:158          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:158          textureSize ( temp 3-component vector of uint)
+0:158            'g_tTex2dmsf4a' ( uniform texture2DMSArray)
+0:158        move second child to first child ( temp uint)
+0:158          'WidthU' ( temp uint)
+0:158          direct index ( temp uint)
+0:158            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:158            Constant:
+0:158              0 (const int)
+0:158        move second child to first child ( temp uint)
+0:158          'HeightU' ( temp uint)
+0:158          direct index ( temp uint)
+0:158            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:158            Constant:
+0:158              1 (const int)
+0:158        move second child to first child ( temp uint)
+0:158          'ElementsU' ( temp uint)
+0:158          direct index ( temp uint)
+0:158            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:158            Constant:
+0:158              2 (const int)
+0:158        move second child to first child ( temp uint)
+0:158          'NumberOfSamplesU' ( temp uint)
+0:158          imageQuerySamples ( temp uint)
+0:158            'g_tTex2dmsf4a' ( uniform texture2DMSArray)
+0:161      Sequence
+0:161        move second child to first child ( temp 3-component vector of uint)
+0:161          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:161          textureSize ( temp 3-component vector of uint)
+0:161            'g_tTex2dmsi4a' ( uniform itexture2DMSArray)
+0:161        move second child to first child ( temp uint)
+0:161          'WidthU' ( temp uint)
+0:161          direct index ( temp uint)
+0:161            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:161            Constant:
+0:161              0 (const int)
+0:161        move second child to first child ( temp uint)
+0:161          'HeightU' ( temp uint)
+0:161          direct index ( temp uint)
+0:161            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:161            Constant:
+0:161              1 (const int)
+0:161        move second child to first child ( temp uint)
+0:161          'ElementsU' ( temp uint)
+0:161          direct index ( temp uint)
+0:161            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:161            Constant:
+0:161              2 (const int)
+0:161        move second child to first child ( temp uint)
+0:161          'NumberOfSamplesU' ( temp uint)
+0:161          imageQuerySamples ( temp uint)
+0:161            'g_tTex2dmsi4a' ( uniform itexture2DMSArray)
+0:164      Sequence
+0:164        move second child to first child ( temp 3-component vector of uint)
+0:164          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:164          textureSize ( temp 3-component vector of uint)
+0:164            'g_tTex2dmsu4a' ( uniform utexture2DMSArray)
+0:164        move second child to first child ( temp uint)
+0:164          'WidthU' ( temp uint)
+0:164          direct index ( temp uint)
+0:164            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:164            Constant:
+0:164              0 (const int)
+0:164        move second child to first child ( temp uint)
+0:164          'HeightU' ( temp uint)
+0:164          direct index ( temp uint)
+0:164            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:164            Constant:
+0:164              1 (const int)
+0:164        move second child to first child ( temp uint)
+0:164          'ElementsU' ( temp uint)
+0:164          direct index ( temp uint)
+0:164            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:164            Constant:
+0:164              2 (const int)
+0:164        move second child to first child ( temp uint)
+0:164          'NumberOfSamplesU' ( temp uint)
+0:164          imageQuerySamples ( temp uint)
+0:164            'g_tTex2dmsu4a' ( uniform utexture2DMSArray)
+0:276      move second child to first child ( temp 4-component vector of float)
+0:276        Color: direct index for structure ( temp 4-component vector of float)
+0:276          'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:276          Constant:
+0:276            0 (const int)
+0:276        Constant:
+0:276          1.000000
+0:276          1.000000
+0:276          1.000000
+0:276          1.000000
+0:277      move second child to first child ( temp float)
+0:277        Depth: direct index for structure ( temp float)
+0:277          'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:277          Constant:
+0:277            1 (const int)
+0:277        Constant:
+0:277          1.000000
+0:279      Branch: Return with expression
+0:279        'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:46  Function Definition: main( ( temp void)
+0:46    Function Parameters: 
+0:?     Sequence
+0:46      Sequence
+0:46        move second child to first child ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:46          'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:46          Function Call: @main( ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:46        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+0:46          Color: direct index for structure ( temp 4-component vector of float)
+0:46            'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:46            Constant:
+0:46              0 (const int)
+0:46        move second child to first child ( temp float)
+0:?           '@entryPointOutput.Depth' ( out float FragDepth)
+0:46          Depth: direct index for structure ( temp float)
+0:46            'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:46            Constant:
+0:46              1 (const int)
+0:?   Linker Objects
+0:?     'g_sSamp' (layout( binding=0) uniform sampler)
+0:?     'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:?     'g_tTex1di4' ( uniform itexture1D)
+0:?     'g_tTex1du4' ( uniform utexture1D)
+0:?     'g_tTex2df4' ( uniform texture2D)
+0:?     'g_tTex2di4' ( uniform itexture2D)
+0:?     'g_tTex2du4' ( uniform utexture2D)
+0:?     'g_tTex3df4' ( uniform texture3D)
+0:?     'g_tTex3di4' ( uniform itexture3D)
+0:?     'g_tTex3du4' ( uniform utexture3D)
+0:?     'g_tTexcdf4' ( uniform textureCube)
+0:?     'g_tTexcdi4' ( uniform itextureCube)
+0:?     'g_tTexcdu4' ( uniform utextureCube)
+0:?     'g_tTex1df4a' ( uniform texture1DArray)
+0:?     'g_tTex1di4a' ( uniform itexture1DArray)
+0:?     'g_tTex1du4a' ( uniform utexture1DArray)
+0:?     'g_tTex2df4a' ( uniform texture2DArray)
+0:?     'g_tTex2di4a' ( uniform itexture2DArray)
+0:?     'g_tTex2du4a' ( uniform utexture2DArray)
+0:?     'g_tTexcdf4a' ( uniform textureCubeArray)
+0:?     'g_tTexcdi4a' ( uniform itextureCubeArray)
+0:?     'g_tTexcdu4a' ( uniform utextureCubeArray)
+0:?     'g_tTex2dmsf4' ( uniform texture2DMS)
+0:?     'g_tTex2dmsi4' ( uniform itexture2DMS)
+0:?     'g_tTex2dmsu4' ( uniform utexture2DMS)
+0:?     'g_tTex2dmsf4a' ( uniform texture2DMSArray)
+0:?     'g_tTex2dmsi4a' ( uniform itexture2DMSArray)
+0:?     'g_tTex2dmsu4a' ( uniform utexture2DMSArray)
+0:?     '@entryPointOutput.Depth' ( out float FragDepth)
+0:?     '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 550
+
+                              Capability Shader
+                              Capability Sampled1D
+                              Capability SampledCubeArray
+                              Capability ImageQuery
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 540 544
+                              ExecutionMode 4 OriginUpperLeft
+                              ExecutionMode 4 DepthReplacing
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "PS_OUTPUT"
+                              MemberName 8(PS_OUTPUT) 0  "Color"
+                              MemberName 8(PS_OUTPUT) 1  "Depth"
+                              Name 10  "@main("
+                              Name 14  "sizeQueryTemp"
+                              Name 17  "g_tTex1df4"
+                              Name 22  "WidthU"
+                              Name 24  "sizeQueryTemp"
+                              Name 29  "NumberOfLevelsU"
+                              Name 32  "sizeQueryTemp"
+                              Name 35  "g_tTex1di4"
+                              Name 39  "sizeQueryTemp"
+                              Name 45  "sizeQueryTemp"
+                              Name 48  "g_tTex1du4"
+                              Name 52  "sizeQueryTemp"
+                              Name 60  "sizeQueryTemp"
+                              Name 63  "g_tTex1df4a"
+                              Name 69  "ElementsU"
+                              Name 73  "sizeQueryTemp"
+                              Name 82  "sizeQueryTemp"
+                              Name 85  "g_tTex1di4a"
+                              Name 92  "sizeQueryTemp"
+                              Name 101  "sizeQueryTemp"
+                              Name 104  "g_tTex1du4a"
+                              Name 111  "sizeQueryTemp"
+                              Name 120  "sizeQueryTemp"
+                              Name 123  "g_tTex2df4"
+                              Name 128  "HeightU"
+                              Name 131  "sizeQueryTemp"
+                              Name 140  "sizeQueryTemp"
+                              Name 143  "g_tTex2di4"
+                              Name 150  "sizeQueryTemp"
+                              Name 159  "sizeQueryTemp"
+                              Name 162  "g_tTex2du4"
+                              Name 169  "sizeQueryTemp"
+                              Name 180  "sizeQueryTemp"
+                              Name 183  "g_tTex2df4a"
+                              Name 193  "sizeQueryTemp"
+                              Name 204  "sizeQueryTemp"
+                              Name 207  "g_tTex2di4a"
+                              Name 216  "sizeQueryTemp"
+                              Name 227  "sizeQueryTemp"
+                              Name 230  "g_tTex2du4a"
+                              Name 239  "sizeQueryTemp"
+                              Name 250  "sizeQueryTemp"
+                              Name 253  "g_tTex3df4"
+                              Name 260  "DepthU"
+                              Name 263  "sizeQueryTemp"
+                              Name 274  "sizeQueryTemp"
+                              Name 277  "g_tTex3di4"
+                              Name 286  "sizeQueryTemp"
+                              Name 297  "sizeQueryTemp"
+                              Name 300  "g_tTex3du4"
+                              Name 309  "sizeQueryTemp"
+                              Name 320  "sizeQueryTemp"
+                              Name 323  "g_tTexcdf4"
+                              Name 330  "sizeQueryTemp"
+                              Name 339  "sizeQueryTemp"
+                              Name 342  "g_tTexcdi4"
+                              Name 349  "sizeQueryTemp"
+                              Name 358  "sizeQueryTemp"
+                              Name 361  "g_tTexcdu4"
+                              Name 368  "sizeQueryTemp"
+                              Name 377  "sizeQueryTemp"
+                              Name 380  "g_tTexcdf4a"
+                              Name 389  "sizeQueryTemp"
+                              Name 400  "sizeQueryTemp"
+                              Name 403  "g_tTexcdi4a"
+                              Name 412  "sizeQueryTemp"
+                              Name 423  "sizeQueryTemp"
+                              Name 426  "g_tTexcdu4a"
+                              Name 435  "sizeQueryTemp"
+                              Name 446  "sizeQueryTemp"
+                              Name 449  "g_tTex2dmsf4"
+                              Name 456  "NumberOfSamplesU"
+                              Name 459  "sizeQueryTemp"
+                              Name 462  "g_tTex2dmsi4"
+                              Name 471  "sizeQueryTemp"
+                              Name 474  "g_tTex2dmsu4"
+                              Name 483  "sizeQueryTemp"
+                              Name 486  "g_tTex2dmsf4a"
+                              Name 497  "sizeQueryTemp"
+                              Name 500  "g_tTex2dmsi4a"
+                              Name 511  "sizeQueryTemp"
+                              Name 514  "g_tTex2dmsu4a"
+                              Name 526  "psout"
+                              Name 537  "flattenTemp"
+                              Name 540  "@entryPointOutput.Color"
+                              Name 544  "@entryPointOutput.Depth"
+                              Name 549  "g_sSamp"
+                              Decorate 17(g_tTex1df4) DescriptorSet 0
+                              Decorate 17(g_tTex1df4) Binding 0
+                              Decorate 35(g_tTex1di4) DescriptorSet 0
+                              Decorate 35(g_tTex1di4) Binding 0
+                              Decorate 48(g_tTex1du4) DescriptorSet 0
+                              Decorate 48(g_tTex1du4) Binding 0
+                              Decorate 63(g_tTex1df4a) DescriptorSet 0
+                              Decorate 63(g_tTex1df4a) Binding 0
+                              Decorate 85(g_tTex1di4a) DescriptorSet 0
+                              Decorate 85(g_tTex1di4a) Binding 0
+                              Decorate 104(g_tTex1du4a) DescriptorSet 0
+                              Decorate 104(g_tTex1du4a) Binding 0
+                              Decorate 123(g_tTex2df4) DescriptorSet 0
+                              Decorate 123(g_tTex2df4) Binding 0
+                              Decorate 143(g_tTex2di4) DescriptorSet 0
+                              Decorate 143(g_tTex2di4) Binding 0
+                              Decorate 162(g_tTex2du4) DescriptorSet 0
+                              Decorate 162(g_tTex2du4) Binding 0
+                              Decorate 183(g_tTex2df4a) DescriptorSet 0
+                              Decorate 183(g_tTex2df4a) Binding 0
+                              Decorate 207(g_tTex2di4a) DescriptorSet 0
+                              Decorate 207(g_tTex2di4a) Binding 0
+                              Decorate 230(g_tTex2du4a) DescriptorSet 0
+                              Decorate 230(g_tTex2du4a) Binding 0
+                              Decorate 253(g_tTex3df4) DescriptorSet 0
+                              Decorate 253(g_tTex3df4) Binding 0
+                              Decorate 277(g_tTex3di4) DescriptorSet 0
+                              Decorate 277(g_tTex3di4) Binding 0
+                              Decorate 300(g_tTex3du4) DescriptorSet 0
+                              Decorate 300(g_tTex3du4) Binding 0
+                              Decorate 323(g_tTexcdf4) DescriptorSet 0
+                              Decorate 323(g_tTexcdf4) Binding 0
+                              Decorate 342(g_tTexcdi4) DescriptorSet 0
+                              Decorate 342(g_tTexcdi4) Binding 0
+                              Decorate 361(g_tTexcdu4) DescriptorSet 0
+                              Decorate 361(g_tTexcdu4) Binding 0
+                              Decorate 380(g_tTexcdf4a) DescriptorSet 0
+                              Decorate 380(g_tTexcdf4a) Binding 0
+                              Decorate 403(g_tTexcdi4a) DescriptorSet 0
+                              Decorate 403(g_tTexcdi4a) Binding 0
+                              Decorate 426(g_tTexcdu4a) DescriptorSet 0
+                              Decorate 426(g_tTexcdu4a) Binding 0
+                              Decorate 449(g_tTex2dmsf4) DescriptorSet 0
+                              Decorate 449(g_tTex2dmsf4) Binding 0
+                              Decorate 462(g_tTex2dmsi4) DescriptorSet 0
+                              Decorate 462(g_tTex2dmsi4) Binding 0
+                              Decorate 474(g_tTex2dmsu4) DescriptorSet 0
+                              Decorate 474(g_tTex2dmsu4) Binding 0
+                              Decorate 486(g_tTex2dmsf4a) DescriptorSet 0
+                              Decorate 486(g_tTex2dmsf4a) Binding 0
+                              Decorate 500(g_tTex2dmsi4a) DescriptorSet 0
+                              Decorate 500(g_tTex2dmsi4a) Binding 0
+                              Decorate 514(g_tTex2dmsu4a) DescriptorSet 0
+                              Decorate 514(g_tTex2dmsu4a) Binding 0
+                              Decorate 540(@entryPointOutput.Color) Location 0
+                              Decorate 544(@entryPointOutput.Depth) BuiltIn FragDepth
+                              Decorate 549(g_sSamp) DescriptorSet 0
+                              Decorate 549(g_sSamp) Binding 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+    8(PS_OUTPUT):             TypeStruct 7(fvec4) 6(float)
+               9:             TypeFunction 8(PS_OUTPUT)
+              12:             TypeInt 32 0
+              13:             TypePointer Function 12(int)
+              15:             TypeImage 6(float) 1D sampled format:Unknown
+              16:             TypePointer UniformConstant 15
+  17(g_tTex1df4):     16(ptr) Variable UniformConstant
+              19:             TypeInt 32 1
+              20:     19(int) Constant 0
+              26:     12(int) Constant 6
+              33:             TypeImage 19(int) 1D sampled format:Unknown
+              34:             TypePointer UniformConstant 33
+  35(g_tTex1di4):     34(ptr) Variable UniformConstant
+              46:             TypeImage 12(int) 1D sampled format:Unknown
+              47:             TypePointer UniformConstant 46
+  48(g_tTex1du4):     47(ptr) Variable UniformConstant
+              58:             TypeVector 12(int) 2
+              59:             TypePointer Function 58(ivec2)
+              61:             TypeImage 6(float) 1D array sampled format:Unknown
+              62:             TypePointer UniformConstant 61
+ 63(g_tTex1df4a):     62(ptr) Variable UniformConstant
+              66:     12(int) Constant 0
+              70:     12(int) Constant 1
+              83:             TypeImage 19(int) 1D array sampled format:Unknown
+              84:             TypePointer UniformConstant 83
+ 85(g_tTex1di4a):     84(ptr) Variable UniformConstant
+             102:             TypeImage 12(int) 1D array sampled format:Unknown
+             103:             TypePointer UniformConstant 102
+104(g_tTex1du4a):    103(ptr) Variable UniformConstant
+             121:             TypeImage 6(float) 2D sampled format:Unknown
+             122:             TypePointer UniformConstant 121
+ 123(g_tTex2df4):    122(ptr) Variable UniformConstant
+             141:             TypeImage 19(int) 2D sampled format:Unknown
+             142:             TypePointer UniformConstant 141
+ 143(g_tTex2di4):    142(ptr) Variable UniformConstant
+             160:             TypeImage 12(int) 2D sampled format:Unknown
+             161:             TypePointer UniformConstant 160
+ 162(g_tTex2du4):    161(ptr) Variable UniformConstant
+             178:             TypeVector 12(int) 3
+             179:             TypePointer Function 178(ivec3)
+             181:             TypeImage 6(float) 2D array sampled format:Unknown
+             182:             TypePointer UniformConstant 181
+183(g_tTex2df4a):    182(ptr) Variable UniformConstant
+             190:     12(int) Constant 2
+             205:             TypeImage 19(int) 2D array sampled format:Unknown
+             206:             TypePointer UniformConstant 205
+207(g_tTex2di4a):    206(ptr) Variable UniformConstant
+             228:             TypeImage 12(int) 2D array sampled format:Unknown
+             229:             TypePointer UniformConstant 228
+230(g_tTex2du4a):    229(ptr) Variable UniformConstant
+             251:             TypeImage 6(float) 3D sampled format:Unknown
+             252:             TypePointer UniformConstant 251
+ 253(g_tTex3df4):    252(ptr) Variable UniformConstant
+             275:             TypeImage 19(int) 3D sampled format:Unknown
+             276:             TypePointer UniformConstant 275
+ 277(g_tTex3di4):    276(ptr) Variable UniformConstant
+             298:             TypeImage 12(int) 3D sampled format:Unknown
+             299:             TypePointer UniformConstant 298
+ 300(g_tTex3du4):    299(ptr) Variable UniformConstant
+             321:             TypeImage 6(float) Cube sampled format:Unknown
+             322:             TypePointer UniformConstant 321
+ 323(g_tTexcdf4):    322(ptr) Variable UniformConstant
+             340:             TypeImage 19(int) Cube sampled format:Unknown
+             341:             TypePointer UniformConstant 340
+ 342(g_tTexcdi4):    341(ptr) Variable UniformConstant
+             359:             TypeImage 12(int) Cube sampled format:Unknown
+             360:             TypePointer UniformConstant 359
+ 361(g_tTexcdu4):    360(ptr) Variable UniformConstant
+             378:             TypeImage 6(float) Cube array sampled format:Unknown
+             379:             TypePointer UniformConstant 378
+380(g_tTexcdf4a):    379(ptr) Variable UniformConstant
+             401:             TypeImage 19(int) Cube array sampled format:Unknown
+             402:             TypePointer UniformConstant 401
+403(g_tTexcdi4a):    402(ptr) Variable UniformConstant
+             424:             TypeImage 12(int) Cube array sampled format:Unknown
+             425:             TypePointer UniformConstant 424
+426(g_tTexcdu4a):    425(ptr) Variable UniformConstant
+             447:             TypeImage 6(float) 2D multi-sampled sampled format:Unknown
+             448:             TypePointer UniformConstant 447
+449(g_tTex2dmsf4):    448(ptr) Variable UniformConstant
+             460:             TypeImage 19(int) 2D multi-sampled sampled format:Unknown
+             461:             TypePointer UniformConstant 460
+462(g_tTex2dmsi4):    461(ptr) Variable UniformConstant
+             472:             TypeImage 12(int) 2D multi-sampled sampled format:Unknown
+             473:             TypePointer UniformConstant 472
+474(g_tTex2dmsu4):    473(ptr) Variable UniformConstant
+             484:             TypeImage 6(float) 2D array multi-sampled sampled format:Unknown
+             485:             TypePointer UniformConstant 484
+486(g_tTex2dmsf4a):    485(ptr) Variable UniformConstant
+             498:             TypeImage 19(int) 2D array multi-sampled sampled format:Unknown
+             499:             TypePointer UniformConstant 498
+500(g_tTex2dmsi4a):    499(ptr) Variable UniformConstant
+             512:             TypeImage 12(int) 2D array multi-sampled sampled format:Unknown
+             513:             TypePointer UniformConstant 512
+514(g_tTex2dmsu4a):    513(ptr) Variable UniformConstant
+             525:             TypePointer Function 8(PS_OUTPUT)
+             527:    6(float) Constant 1065353216
+             528:    7(fvec4) ConstantComposite 527 527 527 527
+             529:             TypePointer Function 7(fvec4)
+             531:     19(int) Constant 1
+             532:             TypePointer Function 6(float)
+             539:             TypePointer Output 7(fvec4)
+540(@entryPointOutput.Color):    539(ptr) Variable Output
+             543:             TypePointer Output 6(float)
+544(@entryPointOutput.Depth):    543(ptr) Variable Output
+             547:             TypeSampler
+             548:             TypePointer UniformConstant 547
+    549(g_sSamp):    548(ptr) Variable UniformConstant
+         4(main):           2 Function None 3
+               5:             Label
+537(flattenTemp):    525(ptr) Variable Function
+             538:8(PS_OUTPUT) FunctionCall 10(@main()
+                              Store 537(flattenTemp) 538
+             541:    529(ptr) AccessChain 537(flattenTemp) 20
+             542:    7(fvec4) Load 541
+                              Store 540(@entryPointOutput.Color) 542
+             545:    532(ptr) AccessChain 537(flattenTemp) 531
+             546:    6(float) Load 545
+                              Store 544(@entryPointOutput.Depth) 546
+                              Return
+                              FunctionEnd
+      10(@main():8(PS_OUTPUT) Function None 9
+              11:             Label
+14(sizeQueryTemp):     13(ptr) Variable Function
+      22(WidthU):     13(ptr) Variable Function
+24(sizeQueryTemp):     13(ptr) Variable Function
+29(NumberOfLevelsU):     13(ptr) Variable Function
+32(sizeQueryTemp):     13(ptr) Variable Function
+39(sizeQueryTemp):     13(ptr) Variable Function
+45(sizeQueryTemp):     13(ptr) Variable Function
+52(sizeQueryTemp):     13(ptr) Variable Function
+60(sizeQueryTemp):     59(ptr) Variable Function
+   69(ElementsU):     13(ptr) Variable Function
+73(sizeQueryTemp):     59(ptr) Variable Function
+82(sizeQueryTemp):     59(ptr) Variable Function
+92(sizeQueryTemp):     59(ptr) Variable Function
+101(sizeQueryTemp):     59(ptr) Variable Function
+111(sizeQueryTemp):     59(ptr) Variable Function
+120(sizeQueryTemp):     59(ptr) Variable Function
+    128(HeightU):     13(ptr) Variable Function
+131(sizeQueryTemp):     59(ptr) Variable Function
+140(sizeQueryTemp):     59(ptr) Variable Function
+150(sizeQueryTemp):     59(ptr) Variable Function
+159(sizeQueryTemp):     59(ptr) Variable Function
+169(sizeQueryTemp):     59(ptr) Variable Function
+180(sizeQueryTemp):    179(ptr) Variable Function
+193(sizeQueryTemp):    179(ptr) Variable Function
+204(sizeQueryTemp):    179(ptr) Variable Function
+216(sizeQueryTemp):    179(ptr) Variable Function
+227(sizeQueryTemp):    179(ptr) Variable Function
+239(sizeQueryTemp):    179(ptr) Variable Function
+250(sizeQueryTemp):    179(ptr) Variable Function
+     260(DepthU):     13(ptr) Variable Function
+263(sizeQueryTemp):    179(ptr) Variable Function
+274(sizeQueryTemp):    179(ptr) Variable Function
+286(sizeQueryTemp):    179(ptr) Variable Function
+297(sizeQueryTemp):    179(ptr) Variable Function
+309(sizeQueryTemp):    179(ptr) Variable Function
+320(sizeQueryTemp):     59(ptr) Variable Function
+330(sizeQueryTemp):     59(ptr) Variable Function
+339(sizeQueryTemp):     59(ptr) Variable Function
+349(sizeQueryTemp):     59(ptr) Variable Function
+358(sizeQueryTemp):     59(ptr) Variable Function
+368(sizeQueryTemp):     59(ptr) Variable Function
+377(sizeQueryTemp):    179(ptr) Variable Function
+389(sizeQueryTemp):    179(ptr) Variable Function
+400(sizeQueryTemp):    179(ptr) Variable Function
+412(sizeQueryTemp):    179(ptr) Variable Function
+423(sizeQueryTemp):    179(ptr) Variable Function
+435(sizeQueryTemp):    179(ptr) Variable Function
+446(sizeQueryTemp):     59(ptr) Variable Function
+456(NumberOfSamplesU):     13(ptr) Variable Function
+459(sizeQueryTemp):     59(ptr) Variable Function
+471(sizeQueryTemp):     59(ptr) Variable Function
+483(sizeQueryTemp):    179(ptr) Variable Function
+497(sizeQueryTemp):    179(ptr) Variable Function
+511(sizeQueryTemp):    179(ptr) Variable Function
+      526(psout):    525(ptr) Variable Function
+              18:          15 Load 17(g_tTex1df4)
+              21:     12(int) ImageQuerySizeLod 18 20
+                              Store 14(sizeQueryTemp) 21
+              23:     12(int) Load 14(sizeQueryTemp)
+                              Store 22(WidthU) 23
+              25:          15 Load 17(g_tTex1df4)
+              27:     12(int) ImageQuerySizeLod 25 26
+                              Store 24(sizeQueryTemp) 27
+              28:     12(int) Load 24(sizeQueryTemp)
+                              Store 22(WidthU) 28
+              30:          15 Load 17(g_tTex1df4)
+              31:     12(int) ImageQueryLevels 30
+                              Store 29(NumberOfLevelsU) 31
+              36:          33 Load 35(g_tTex1di4)
+              37:     12(int) ImageQuerySizeLod 36 20
+                              Store 32(sizeQueryTemp) 37
+              38:     12(int) Load 32(sizeQueryTemp)
+                              Store 22(WidthU) 38
+              40:          33 Load 35(g_tTex1di4)
+              41:     12(int) ImageQuerySizeLod 40 26
+                              Store 39(sizeQueryTemp) 41
+              42:     12(int) Load 39(sizeQueryTemp)
+                              Store 22(WidthU) 42
+              43:          33 Load 35(g_tTex1di4)
+              44:     12(int) ImageQueryLevels 43
+                              Store 29(NumberOfLevelsU) 44
+              49:          46 Load 48(g_tTex1du4)
+              50:     12(int) ImageQuerySizeLod 49 20
+                              Store 45(sizeQueryTemp) 50
+              51:     12(int) Load 45(sizeQueryTemp)
+                              Store 22(WidthU) 51
+              53:          46 Load 48(g_tTex1du4)
+              54:     12(int) ImageQuerySizeLod 53 26
+                              Store 52(sizeQueryTemp) 54
+              55:     12(int) Load 52(sizeQueryTemp)
+                              Store 22(WidthU) 55
+              56:          46 Load 48(g_tTex1du4)
+              57:     12(int) ImageQueryLevels 56
+                              Store 29(NumberOfLevelsU) 57
+              64:          61 Load 63(g_tTex1df4a)
+              65:   58(ivec2) ImageQuerySizeLod 64 20
+                              Store 60(sizeQueryTemp) 65
+              67:     13(ptr) AccessChain 60(sizeQueryTemp) 66
+              68:     12(int) Load 67
+                              Store 22(WidthU) 68
+              71:     13(ptr) AccessChain 60(sizeQueryTemp) 70
+              72:     12(int) Load 71
+                              Store 69(ElementsU) 72
+              74:          61 Load 63(g_tTex1df4a)
+              75:   58(ivec2) ImageQuerySizeLod 74 26
+                              Store 73(sizeQueryTemp) 75
+              76:     13(ptr) AccessChain 73(sizeQueryTemp) 66
+              77:     12(int) Load 76
+                              Store 22(WidthU) 77
+              78:     13(ptr) AccessChain 73(sizeQueryTemp) 70
+              79:     12(int) Load 78
+                              Store 69(ElementsU) 79
+              80:          61 Load 63(g_tTex1df4a)
+              81:     12(int) ImageQueryLevels 80
+                              Store 29(NumberOfLevelsU) 81
+              86:          83 Load 85(g_tTex1di4a)
+              87:   58(ivec2) ImageQuerySizeLod 86 20
+                              Store 82(sizeQueryTemp) 87
+              88:     13(ptr) AccessChain 82(sizeQueryTemp) 66
+              89:     12(int) Load 88
+                              Store 22(WidthU) 89
+              90:     13(ptr) AccessChain 82(sizeQueryTemp) 70
+              91:     12(int) Load 90
+                              Store 69(ElementsU) 91
+              93:          83 Load 85(g_tTex1di4a)
+              94:   58(ivec2) ImageQuerySizeLod 93 26
+                              Store 92(sizeQueryTemp) 94
+              95:     13(ptr) AccessChain 92(sizeQueryTemp) 66
+              96:     12(int) Load 95
+                              Store 22(WidthU) 96
+              97:     13(ptr) AccessChain 92(sizeQueryTemp) 70
+              98:     12(int) Load 97
+                              Store 69(ElementsU) 98
+              99:          83 Load 85(g_tTex1di4a)
+             100:     12(int) ImageQueryLevels 99
+                              Store 29(NumberOfLevelsU) 100
+             105:         102 Load 104(g_tTex1du4a)
+             106:   58(ivec2) ImageQuerySizeLod 105 20
+                              Store 101(sizeQueryTemp) 106
+             107:     13(ptr) AccessChain 101(sizeQueryTemp) 66
+             108:     12(int) Load 107
+                              Store 22(WidthU) 108
+             109:     13(ptr) AccessChain 101(sizeQueryTemp) 70
+             110:     12(int) Load 109
+                              Store 69(ElementsU) 110
+             112:         102 Load 104(g_tTex1du4a)
+             113:   58(ivec2) ImageQuerySizeLod 112 26
+                              Store 111(sizeQueryTemp) 113
+             114:     13(ptr) AccessChain 111(sizeQueryTemp) 66
+             115:     12(int) Load 114
+                              Store 22(WidthU) 115
+             116:     13(ptr) AccessChain 111(sizeQueryTemp) 70
+             117:     12(int) Load 116
+                              Store 69(ElementsU) 117
+             118:         102 Load 104(g_tTex1du4a)
+             119:     12(int) ImageQueryLevels 118
+                              Store 29(NumberOfLevelsU) 119
+             124:         121 Load 123(g_tTex2df4)
+             125:   58(ivec2) ImageQuerySizeLod 124 20
+                              Store 120(sizeQueryTemp) 125
+             126:     13(ptr) AccessChain 120(sizeQueryTemp) 66
+             127:     12(int) Load 126
+                              Store 22(WidthU) 127
+             129:     13(ptr) AccessChain 120(sizeQueryTemp) 70
+             130:     12(int) Load 129
+                              Store 128(HeightU) 130
+             132:         121 Load 123(g_tTex2df4)
+             133:   58(ivec2) ImageQuerySizeLod 132 26
+                              Store 131(sizeQueryTemp) 133
+             134:     13(ptr) AccessChain 131(sizeQueryTemp) 66
+             135:     12(int) Load 134
+                              Store 22(WidthU) 135
+             136:     13(ptr) AccessChain 131(sizeQueryTemp) 70
+             137:     12(int) Load 136
+                              Store 128(HeightU) 137
+             138:         121 Load 123(g_tTex2df4)
+             139:     12(int) ImageQueryLevels 138
+                              Store 29(NumberOfLevelsU) 139
+             144:         141 Load 143(g_tTex2di4)
+             145:   58(ivec2) ImageQuerySizeLod 144 20
+                              Store 140(sizeQueryTemp) 145
+             146:     13(ptr) AccessChain 140(sizeQueryTemp) 66
+             147:     12(int) Load 146
+                              Store 22(WidthU) 147
+             148:     13(ptr) AccessChain 140(sizeQueryTemp) 70
+             149:     12(int) Load 148
+                              Store 128(HeightU) 149
+             151:         141 Load 143(g_tTex2di4)
+             152:   58(ivec2) ImageQuerySizeLod 151 26
+                              Store 150(sizeQueryTemp) 152
+             153:     13(ptr) AccessChain 150(sizeQueryTemp) 66
+             154:     12(int) Load 153
+                              Store 22(WidthU) 154
+             155:     13(ptr) AccessChain 150(sizeQueryTemp) 70
+             156:     12(int) Load 155
+                              Store 128(HeightU) 156
+             157:         141 Load 143(g_tTex2di4)
+             158:     12(int) ImageQueryLevels 157
+                              Store 29(NumberOfLevelsU) 158
+             163:         160 Load 162(g_tTex2du4)
+             164:   58(ivec2) ImageQuerySizeLod 163 20
+                              Store 159(sizeQueryTemp) 164
+             165:     13(ptr) AccessChain 159(sizeQueryTemp) 66
+             166:     12(int) Load 165
+                              Store 22(WidthU) 166
+             167:     13(ptr) AccessChain 159(sizeQueryTemp) 70
+             168:     12(int) Load 167
+                              Store 128(HeightU) 168
+             170:         160 Load 162(g_tTex2du4)
+             171:   58(ivec2) ImageQuerySizeLod 170 26
+                              Store 169(sizeQueryTemp) 171
+             172:     13(ptr) AccessChain 169(sizeQueryTemp) 66
+             173:     12(int) Load 172
+                              Store 22(WidthU) 173
+             174:     13(ptr) AccessChain 169(sizeQueryTemp) 70
+             175:     12(int) Load 174
+                              Store 128(HeightU) 175
+             176:         160 Load 162(g_tTex2du4)
+             177:     12(int) ImageQueryLevels 176
+                              Store 29(NumberOfLevelsU) 177
+             184:         181 Load 183(g_tTex2df4a)
+             185:  178(ivec3) ImageQuerySizeLod 184 20
+                              Store 180(sizeQueryTemp) 185
+             186:     13(ptr) AccessChain 180(sizeQueryTemp) 66
+             187:     12(int) Load 186
+                              Store 22(WidthU) 187
+             188:     13(ptr) AccessChain 180(sizeQueryTemp) 70
+             189:     12(int) Load 188
+                              Store 128(HeightU) 189
+             191:     13(ptr) AccessChain 180(sizeQueryTemp) 190
+             192:     12(int) Load 191
+                              Store 69(ElementsU) 192
+             194:         181 Load 183(g_tTex2df4a)
+             195:  178(ivec3) ImageQuerySizeLod 194 26
+                              Store 193(sizeQueryTemp) 195
+             196:     13(ptr) AccessChain 193(sizeQueryTemp) 66
+             197:     12(int) Load 196
+                              Store 22(WidthU) 197
+             198:     13(ptr) AccessChain 193(sizeQueryTemp) 70
+             199:     12(int) Load 198
+                              Store 128(HeightU) 199
+             200:     13(ptr) AccessChain 193(sizeQueryTemp) 190
+             201:     12(int) Load 200
+                              Store 69(ElementsU) 201
+             202:         181 Load 183(g_tTex2df4a)
+             203:     12(int) ImageQueryLevels 202
+                              Store 29(NumberOfLevelsU) 203
+             208:         205 Load 207(g_tTex2di4a)
+             209:  178(ivec3) ImageQuerySizeLod 208 20
+                              Store 204(sizeQueryTemp) 209
+             210:     13(ptr) AccessChain 204(sizeQueryTemp) 66
+             211:     12(int) Load 210
+                              Store 22(WidthU) 211
+             212:     13(ptr) AccessChain 204(sizeQueryTemp) 70
+             213:     12(int) Load 212
+                              Store 128(HeightU) 213
+             214:     13(ptr) AccessChain 204(sizeQueryTemp) 190
+             215:     12(int) Load 214
+                              Store 69(ElementsU) 215
+             217:         205 Load 207(g_tTex2di4a)
+             218:  178(ivec3) ImageQuerySizeLod 217 26
+                              Store 216(sizeQueryTemp) 218
+             219:     13(ptr) AccessChain 216(sizeQueryTemp) 66
+             220:     12(int) Load 219
+                              Store 22(WidthU) 220
+             221:     13(ptr) AccessChain 216(sizeQueryTemp) 70
+             222:     12(int) Load 221
+                              Store 128(HeightU) 222
+             223:     13(ptr) AccessChain 216(sizeQueryTemp) 190
+             224:     12(int) Load 223
+                              Store 69(ElementsU) 224
+             225:         205 Load 207(g_tTex2di4a)
+             226:     12(int) ImageQueryLevels 225
+                              Store 29(NumberOfLevelsU) 226
+             231:         228 Load 230(g_tTex2du4a)
+             232:  178(ivec3) ImageQuerySizeLod 231 20
+                              Store 227(sizeQueryTemp) 232
+             233:     13(ptr) AccessChain 227(sizeQueryTemp) 66
+             234:     12(int) Load 233
+                              Store 22(WidthU) 234
+             235:     13(ptr) AccessChain 227(sizeQueryTemp) 70
+             236:     12(int) Load 235
+                              Store 128(HeightU) 236
+             237:     13(ptr) AccessChain 227(sizeQueryTemp) 190
+             238:     12(int) Load 237
+                              Store 69(ElementsU) 238
+             240:         228 Load 230(g_tTex2du4a)
+             241:  178(ivec3) ImageQuerySizeLod 240 26
+                              Store 239(sizeQueryTemp) 241
+             242:     13(ptr) AccessChain 239(sizeQueryTemp) 66
+             243:     12(int) Load 242
+                              Store 22(WidthU) 243
+             244:     13(ptr) AccessChain 239(sizeQueryTemp) 70
+             245:     12(int) Load 244
+                              Store 128(HeightU) 245
+             246:     13(ptr) AccessChain 239(sizeQueryTemp) 190
+             247:     12(int) Load 246
+                              Store 69(ElementsU) 247
+             248:         228 Load 230(g_tTex2du4a)
+             249:     12(int) ImageQueryLevels 248
+                              Store 29(NumberOfLevelsU) 249
+             254:         251 Load 253(g_tTex3df4)
+             255:  178(ivec3) ImageQuerySizeLod 254 20
+                              Store 250(sizeQueryTemp) 255
+             256:     13(ptr) AccessChain 250(sizeQueryTemp) 66
+             257:     12(int) Load 256
+                              Store 22(WidthU) 257
+             258:     13(ptr) AccessChain 250(sizeQueryTemp) 70
+             259:     12(int) Load 258
+                              Store 128(HeightU) 259
+             261:     13(ptr) AccessChain 250(sizeQueryTemp) 190
+             262:     12(int) Load 261
+                              Store 260(DepthU) 262
+             264:         251 Load 253(g_tTex3df4)
+             265:  178(ivec3) ImageQuerySizeLod 264 26
+                              Store 263(sizeQueryTemp) 265
+             266:     13(ptr) AccessChain 263(sizeQueryTemp) 66
+             267:     12(int) Load 266
+                              Store 22(WidthU) 267
+             268:     13(ptr) AccessChain 263(sizeQueryTemp) 70
+             269:     12(int) Load 268
+                              Store 128(HeightU) 269
+             270:     13(ptr) AccessChain 263(sizeQueryTemp) 190
+             271:     12(int) Load 270
+                              Store 260(DepthU) 271
+             272:         251 Load 253(g_tTex3df4)
+             273:     12(int) ImageQueryLevels 272
+                              Store 29(NumberOfLevelsU) 273
+             278:         275 Load 277(g_tTex3di4)
+             279:  178(ivec3) ImageQuerySizeLod 278 20
+                              Store 274(sizeQueryTemp) 279
+             280:     13(ptr) AccessChain 274(sizeQueryTemp) 66
+             281:     12(int) Load 280
+                              Store 22(WidthU) 281
+             282:     13(ptr) AccessChain 274(sizeQueryTemp) 70
+             283:     12(int) Load 282
+                              Store 128(HeightU) 283
+             284:     13(ptr) AccessChain 274(sizeQueryTemp) 190
+             285:     12(int) Load 284
+                              Store 260(DepthU) 285
+             287:         275 Load 277(g_tTex3di4)
+             288:  178(ivec3) ImageQuerySizeLod 287 26
+                              Store 286(sizeQueryTemp) 288
+             289:     13(ptr) AccessChain 286(sizeQueryTemp) 66
+             290:     12(int) Load 289
+                              Store 22(WidthU) 290
+             291:     13(ptr) AccessChain 286(sizeQueryTemp) 70
+             292:     12(int) Load 291
+                              Store 128(HeightU) 292
+             293:     13(ptr) AccessChain 286(sizeQueryTemp) 190
+             294:     12(int) Load 293
+                              Store 260(DepthU) 294
+             295:         275 Load 277(g_tTex3di4)
+             296:     12(int) ImageQueryLevels 295
+                              Store 29(NumberOfLevelsU) 296
+             301:         298 Load 300(g_tTex3du4)
+             302:  178(ivec3) ImageQuerySizeLod 301 20
+                              Store 297(sizeQueryTemp) 302
+             303:     13(ptr) AccessChain 297(sizeQueryTemp) 66
+             304:     12(int) Load 303
+                              Store 22(WidthU) 304
+             305:     13(ptr) AccessChain 297(sizeQueryTemp) 70
+             306:     12(int) Load 305
+                              Store 128(HeightU) 306
+             307:     13(ptr) AccessChain 297(sizeQueryTemp) 190
+             308:     12(int) Load 307
+                              Store 260(DepthU) 308
+             310:         298 Load 300(g_tTex3du4)
+             311:  178(ivec3) ImageQuerySizeLod 310 26
+                              Store 309(sizeQueryTemp) 311
+             312:     13(ptr) AccessChain 309(sizeQueryTemp) 66
+             313:     12(int) Load 312
+                              Store 22(WidthU) 313
+             314:     13(ptr) AccessChain 309(sizeQueryTemp) 70
+             315:     12(int) Load 314
+                              Store 128(HeightU) 315
+             316:     13(ptr) AccessChain 309(sizeQueryTemp) 190
+             317:     12(int) Load 316
+                              Store 260(DepthU) 317
+             318:         298 Load 300(g_tTex3du4)
+             319:     12(int) ImageQueryLevels 318
+                              Store 29(NumberOfLevelsU) 319
+             324:         321 Load 323(g_tTexcdf4)
+             325:   58(ivec2) ImageQuerySizeLod 324 20
+                              Store 320(sizeQueryTemp) 325
+             326:     13(ptr) AccessChain 320(sizeQueryTemp) 66
+             327:     12(int) Load 326
+                              Store 22(WidthU) 327
+             328:     13(ptr) AccessChain 320(sizeQueryTemp) 70
+             329:     12(int) Load 328
+                              Store 128(HeightU) 329
+             331:         321 Load 323(g_tTexcdf4)
+             332:   58(ivec2) ImageQuerySizeLod 331 26
+                              Store 330(sizeQueryTemp) 332
+             333:     13(ptr) AccessChain 330(sizeQueryTemp) 66
+             334:     12(int) Load 333
+                              Store 22(WidthU) 334
+             335:     13(ptr) AccessChain 330(sizeQueryTemp) 70
+             336:     12(int) Load 335
+                              Store 128(HeightU) 336
+             337:         321 Load 323(g_tTexcdf4)
+             338:     12(int) ImageQueryLevels 337
+                              Store 29(NumberOfLevelsU) 338
+             343:         340 Load 342(g_tTexcdi4)
+             344:   58(ivec2) ImageQuerySizeLod 343 20
+                              Store 339(sizeQueryTemp) 344
+             345:     13(ptr) AccessChain 339(sizeQueryTemp) 66
+             346:     12(int) Load 345
+                              Store 22(WidthU) 346
+             347:     13(ptr) AccessChain 339(sizeQueryTemp) 70
+             348:     12(int) Load 347
+                              Store 128(HeightU) 348
+             350:         340 Load 342(g_tTexcdi4)
+             351:   58(ivec2) ImageQuerySizeLod 350 26
+                              Store 349(sizeQueryTemp) 351
+             352:     13(ptr) AccessChain 349(sizeQueryTemp) 66
+             353:     12(int) Load 352
+                              Store 22(WidthU) 353
+             354:     13(ptr) AccessChain 349(sizeQueryTemp) 70
+             355:     12(int) Load 354
+                              Store 128(HeightU) 355
+             356:         340 Load 342(g_tTexcdi4)
+             357:     12(int) ImageQueryLevels 356
+                              Store 29(NumberOfLevelsU) 357
+             362:         359 Load 361(g_tTexcdu4)
+             363:   58(ivec2) ImageQuerySizeLod 362 20
+                              Store 358(sizeQueryTemp) 363
+             364:     13(ptr) AccessChain 358(sizeQueryTemp) 66
+             365:     12(int) Load 364
+                              Store 22(WidthU) 365
+             366:     13(ptr) AccessChain 358(sizeQueryTemp) 70
+             367:     12(int) Load 366
+                              Store 128(HeightU) 367
+             369:         359 Load 361(g_tTexcdu4)
+             370:   58(ivec2) ImageQuerySizeLod 369 26
+                              Store 368(sizeQueryTemp) 370
+             371:     13(ptr) AccessChain 368(sizeQueryTemp) 66
+             372:     12(int) Load 371
+                              Store 22(WidthU) 372
+             373:     13(ptr) AccessChain 368(sizeQueryTemp) 70
+             374:     12(int) Load 373
+                              Store 128(HeightU) 374
+             375:         359 Load 361(g_tTexcdu4)
+             376:     12(int) ImageQueryLevels 375
+                              Store 29(NumberOfLevelsU) 376
+             381:         378 Load 380(g_tTexcdf4a)
+             382:  178(ivec3) ImageQuerySizeLod 381 20
+                              Store 377(sizeQueryTemp) 382
+             383:     13(ptr) AccessChain 377(sizeQueryTemp) 66
+             384:     12(int) Load 383
+                              Store 22(WidthU) 384
+             385:     13(ptr) AccessChain 377(sizeQueryTemp) 70
+             386:     12(int) Load 385
+                              Store 128(HeightU) 386
+             387:     13(ptr) AccessChain 377(sizeQueryTemp) 190
+             388:     12(int) Load 387
+                              Store 69(ElementsU) 388
+             390:         378 Load 380(g_tTexcdf4a)
+             391:  178(ivec3) ImageQuerySizeLod 390 26
+                              Store 389(sizeQueryTemp) 391
+             392:     13(ptr) AccessChain 389(sizeQueryTemp) 66
+             393:     12(int) Load 392
+                              Store 22(WidthU) 393
+             394:     13(ptr) AccessChain 389(sizeQueryTemp) 70
+             395:     12(int) Load 394
+                              Store 128(HeightU) 395
+             396:     13(ptr) AccessChain 389(sizeQueryTemp) 190
+             397:     12(int) Load 396
+                              Store 69(ElementsU) 397
+             398:         378 Load 380(g_tTexcdf4a)
+             399:     12(int) ImageQueryLevels 398
+                              Store 29(NumberOfLevelsU) 399
+             404:         401 Load 403(g_tTexcdi4a)
+             405:  178(ivec3) ImageQuerySizeLod 404 20
+                              Store 400(sizeQueryTemp) 405
+             406:     13(ptr) AccessChain 400(sizeQueryTemp) 66
+             407:     12(int) Load 406
+                              Store 22(WidthU) 407
+             408:     13(ptr) AccessChain 400(sizeQueryTemp) 70
+             409:     12(int) Load 408
+                              Store 128(HeightU) 409
+             410:     13(ptr) AccessChain 400(sizeQueryTemp) 190
+             411:     12(int) Load 410
+                              Store 69(ElementsU) 411
+             413:         401 Load 403(g_tTexcdi4a)
+             414:  178(ivec3) ImageQuerySizeLod 413 26
+                              Store 412(sizeQueryTemp) 414
+             415:     13(ptr) AccessChain 412(sizeQueryTemp) 66
+             416:     12(int) Load 415
+                              Store 22(WidthU) 416
+             417:     13(ptr) AccessChain 412(sizeQueryTemp) 70
+             418:     12(int) Load 417
+                              Store 128(HeightU) 418
+             419:     13(ptr) AccessChain 412(sizeQueryTemp) 190
+             420:     12(int) Load 419
+                              Store 69(ElementsU) 420
+             421:         401 Load 403(g_tTexcdi4a)
+             422:     12(int) ImageQueryLevels 421
+                              Store 29(NumberOfLevelsU) 422
+             427:         424 Load 426(g_tTexcdu4a)
+             428:  178(ivec3) ImageQuerySizeLod 427 20
+                              Store 423(sizeQueryTemp) 428
+             429:     13(ptr) AccessChain 423(sizeQueryTemp) 66
+             430:     12(int) Load 429
+                              Store 22(WidthU) 430
+             431:     13(ptr) AccessChain 423(sizeQueryTemp) 70
+             432:     12(int) Load 431
+                              Store 128(HeightU) 432
+             433:     13(ptr) AccessChain 423(sizeQueryTemp) 190
+             434:     12(int) Load 433
+                              Store 69(ElementsU) 434
+             436:         424 Load 426(g_tTexcdu4a)
+             437:  178(ivec3) ImageQuerySizeLod 436 26
+                              Store 435(sizeQueryTemp) 437
+             438:     13(ptr) AccessChain 435(sizeQueryTemp) 66
+             439:     12(int) Load 438
+                              Store 22(WidthU) 439
+             440:     13(ptr) AccessChain 435(sizeQueryTemp) 70
+             441:     12(int) Load 440
+                              Store 128(HeightU) 441
+             442:     13(ptr) AccessChain 435(sizeQueryTemp) 190
+             443:     12(int) Load 442
+                              Store 69(ElementsU) 443
+             444:         424 Load 426(g_tTexcdu4a)
+             445:     12(int) ImageQueryLevels 444
+                              Store 29(NumberOfLevelsU) 445
+             450:         447 Load 449(g_tTex2dmsf4)
+             451:   58(ivec2) ImageQuerySize 450
+                              Store 446(sizeQueryTemp) 451
+             452:     13(ptr) AccessChain 446(sizeQueryTemp) 66
+             453:     12(int) Load 452
+                              Store 22(WidthU) 453
+             454:     13(ptr) AccessChain 446(sizeQueryTemp) 70
+             455:     12(int) Load 454
+                              Store 128(HeightU) 455
+             457:         447 Load 449(g_tTex2dmsf4)
+             458:     12(int) ImageQuerySamples 457
+                              Store 456(NumberOfSamplesU) 458
+             463:         460 Load 462(g_tTex2dmsi4)
+             464:   58(ivec2) ImageQuerySize 463
+                              Store 459(sizeQueryTemp) 464
+             465:     13(ptr) AccessChain 459(sizeQueryTemp) 66
+             466:     12(int) Load 465
+                              Store 22(WidthU) 466
+             467:     13(ptr) AccessChain 459(sizeQueryTemp) 70
+             468:     12(int) Load 467
+                              Store 128(HeightU) 468
+             469:         460 Load 462(g_tTex2dmsi4)
+             470:     12(int) ImageQuerySamples 469
+                              Store 456(NumberOfSamplesU) 470
+             475:         472 Load 474(g_tTex2dmsu4)
+             476:   58(ivec2) ImageQuerySize 475
+                              Store 471(sizeQueryTemp) 476
+             477:     13(ptr) AccessChain 471(sizeQueryTemp) 66
+             478:     12(int) Load 477
+                              Store 22(WidthU) 478
+             479:     13(ptr) AccessChain 471(sizeQueryTemp) 70
+             480:     12(int) Load 479
+                              Store 128(HeightU) 480
+             481:         472 Load 474(g_tTex2dmsu4)
+             482:     12(int) ImageQuerySamples 481
+                              Store 456(NumberOfSamplesU) 482
+             487:         484 Load 486(g_tTex2dmsf4a)
+             488:  178(ivec3) ImageQuerySize 487
+                              Store 483(sizeQueryTemp) 488
+             489:     13(ptr) AccessChain 483(sizeQueryTemp) 66
+             490:     12(int) Load 489
+                              Store 22(WidthU) 490
+             491:     13(ptr) AccessChain 483(sizeQueryTemp) 70
+             492:     12(int) Load 491
+                              Store 128(HeightU) 492
+             493:     13(ptr) AccessChain 483(sizeQueryTemp) 190
+             494:     12(int) Load 493
+                              Store 69(ElementsU) 494
+             495:         484 Load 486(g_tTex2dmsf4a)
+             496:     12(int) ImageQuerySamples 495
+                              Store 456(NumberOfSamplesU) 496
+             501:         498 Load 500(g_tTex2dmsi4a)
+             502:  178(ivec3) ImageQuerySize 501
+                              Store 497(sizeQueryTemp) 502
+             503:     13(ptr) AccessChain 497(sizeQueryTemp) 66
+             504:     12(int) Load 503
+                              Store 22(WidthU) 504
+             505:     13(ptr) AccessChain 497(sizeQueryTemp) 70
+             506:     12(int) Load 505
+                              Store 128(HeightU) 506
+             507:     13(ptr) AccessChain 497(sizeQueryTemp) 190
+             508:     12(int) Load 507
+                              Store 69(ElementsU) 508
+             509:         498 Load 500(g_tTex2dmsi4a)
+             510:     12(int) ImageQuerySamples 509
+                              Store 456(NumberOfSamplesU) 510
+             515:         512 Load 514(g_tTex2dmsu4a)
+             516:  178(ivec3) ImageQuerySize 515
+                              Store 511(sizeQueryTemp) 516
+             517:     13(ptr) AccessChain 511(sizeQueryTemp) 66
+             518:     12(int) Load 517
+                              Store 22(WidthU) 518
+             519:     13(ptr) AccessChain 511(sizeQueryTemp) 70
+             520:     12(int) Load 519
+                              Store 128(HeightU) 520
+             521:     13(ptr) AccessChain 511(sizeQueryTemp) 190
+             522:     12(int) Load 521
+                              Store 69(ElementsU) 522
+             523:         512 Load 514(g_tTex2dmsu4a)
+             524:     12(int) ImageQuerySamples 523
+                              Store 456(NumberOfSamplesU) 524
+             530:    529(ptr) AccessChain 526(psout) 20
+                              Store 530 528
+             533:    532(ptr) AccessChain 526(psout) 531
+                              Store 533 527
+             534:8(PS_OUTPUT) Load 526(psout)
+                              ReturnValue 534
+                              FunctionEnd

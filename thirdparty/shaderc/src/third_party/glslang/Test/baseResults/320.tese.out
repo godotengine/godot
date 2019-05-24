@@ -1,0 +1,275 @@
+320.tese
+ERROR: 0:3: 'vertices' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:5: 'triangles' : cannot change previously set input primitive 
+ERROR: 0:6: 'isolines' : cannot change previously set input primitive 
+ERROR: 0:8: 'ccw' : cannot change previously set vertex order 
+ERROR: 0:12: 'equal_spacing' : cannot change previously set vertex spacing 
+ERROR: 0:13: 'fractional_even_spacing' : cannot change previously set vertex spacing 
+ERROR: 0:18: 'patch' : can only use on input in tessellation-evaluation shader 
+ERROR: 0:22: 'barrier' : no matching overloaded function found 
+ERROR: 0:33: 'gl_PointSize' : required extension not requested: Possible extensions include:
+GL_EXT_tessellation_point_size
+GL_OES_tessellation_point_size
+ERROR: 0:34: 'gl_ClipDistance' : no such field in structure 
+ERROR: 0:34: 'expression' :  left of '[' is not of type array, matrix, or vector  
+ERROR: 0:43: 'gl_PointSize' : required extension not requested: Possible extensions include:
+GL_EXT_tessellation_point_size
+GL_OES_tessellation_point_size
+ERROR: 0:44: 'gl_ClipDistance' : undeclared identifier 
+ERROR: 0:44: 'gl_ClipDistance' :  left of '[' is not of type array, matrix, or vector  
+ERROR: 0:44: 'assign' :  l-value required (can't modify a const)
+ERROR: 0:47: 'patch' : cannot use interpolation qualifiers with patch 
+ERROR: 0:48: 'patch' : cannot use interpolation qualifiers with patch 
+ERROR: 0:49: 'noperspective' : Reserved word. 
+ERROR: 0:49: 'noperspective' : not supported for this version or the enabled extensions 
+ERROR: 0:49: 'patch' : cannot use interpolation qualifiers with patch 
+ERROR: 0:50: '' : can only have one auxiliary qualifier (centroid, patch, and sample) 
+ERROR: 0:59: 'gl_PerVertex' : can only redeclare a built-in block once, and before any use 
+ERROR: 0:64: 'quads' : cannot apply to 'out' 
+ERROR: 0:64: 'cw' : can only apply to 'in' 
+ERROR: 0:65: 'triangles' : cannot apply to 'out' 
+ERROR: 0:66: 'isolines' : cannot apply to 'out' 
+ERROR: 0:67: 'cw' : can only apply to 'in' 
+ERROR: 0:68: 'fractional_odd_spacing' : can only apply to 'in' 
+ERROR: 0:69: 'equal_spacing' : can only apply to 'in' 
+ERROR: 0:70: 'fractional_even_spacing' : can only apply to 'in' 
+ERROR: 0:71: 'point_mode' : can only apply to 'in' 
+ERROR: 0:73: 'in' : type must be an array: ina
+ERROR: 0:75: '[]' : tessellation input array size must be gl_MaxPatchVertices or implicitly sized 
+ERROR: 0:78: 'in' : type must be an array: bla
+ERROR: 0:86: '[]' : tessellation input array size must be gl_MaxPatchVertices or implicitly sized 
+ERROR: 0:96: 'location' : overlapping use of location 24
+ERROR: 0:99: 'location' : overlapping use of location 24
+ERROR: 0:101: 'gl_TessLevelOuter' : identifiers starting with "gl_" are reserved 
+ERROR: 0:113: 'gl_BoundingBoxOES' : undeclared identifier 
+ERROR: 39 compilation errors.  No code generated.
+
+
+Shader version: 320
+Requested GL_ARB_separate_shader_objects
+input primitive = quads
+vertex spacing = fractional_odd_spacing
+triangle order = cw
+using point mode
+ERROR: node is still EOpNull!
+0:20  Function Definition: main( ( global void)
+0:20    Function Parameters: 
+0:22    Sequence
+0:22      Constant:
+0:22        0.000000
+0:24      Sequence
+0:24        move second child to first child ( temp highp int)
+0:24          'a' ( temp highp int)
+0:24          Constant:
+0:24            1512 (const int)
+0:32      Sequence
+0:32        move second child to first child ( temp highp 4-component vector of float)
+0:32          'p' ( temp highp 4-component vector of float)
+0:32          gl_Position: direct index for structure ( in highp 4-component vector of float Position)
+0:32            direct index ( temp block{ in highp 4-component vector of float Position gl_Position,  in highp float PointSize gl_PointSize,  in highp 4-component vector of float gl_SecondaryPositionNV,  in unsized 1-element array of highp 4-component vector of float gl_PositionPerViewNV})
+0:32              'gl_in' ( in 32-element array of block{ in highp 4-component vector of float Position gl_Position,  in highp float PointSize gl_PointSize,  in highp 4-component vector of float gl_SecondaryPositionNV,  in unsized 1-element array of highp 4-component vector of float gl_PositionPerViewNV})
+0:32              Constant:
+0:32                1 (const int)
+0:32            Constant:
+0:32              0 (const int)
+0:33      Sequence
+0:33        move second child to first child ( temp highp float)
+0:33          'ps' ( temp highp float)
+0:33          gl_PointSize: direct index for structure ( in highp float PointSize)
+0:33            direct index ( temp block{ in highp 4-component vector of float Position gl_Position,  in highp float PointSize gl_PointSize,  in highp 4-component vector of float gl_SecondaryPositionNV,  in unsized 1-element array of highp 4-component vector of float gl_PositionPerViewNV})
+0:33              'gl_in' ( in 32-element array of block{ in highp 4-component vector of float Position gl_Position,  in highp float PointSize gl_PointSize,  in highp 4-component vector of float gl_SecondaryPositionNV,  in unsized 1-element array of highp 4-component vector of float gl_PositionPerViewNV})
+0:33              Constant:
+0:33                1 (const int)
+0:33            Constant:
+0:33              1 (const int)
+0:34      Sequence
+0:34        move second child to first child ( temp highp float)
+0:34          'cd' ( temp highp float)
+0:34          Constant:
+0:34            0.000000
+0:36      Sequence
+0:36        move second child to first child ( temp highp int)
+0:36          'pvi' ( temp highp int)
+0:36          'gl_PatchVerticesIn' ( in highp int PatchVertices)
+0:37      Sequence
+0:37        move second child to first child ( temp highp int)
+0:37          'pid' ( temp highp int)
+0:37          'gl_PrimitiveID' ( in highp int PrimitiveID)
+0:38      Sequence
+0:38        move second child to first child ( temp highp 3-component vector of float)
+0:38          'tc' ( temp highp 3-component vector of float)
+0:38          'gl_TessCoord' ( in highp 3-component vector of float TessCoord)
+0:39      Sequence
+0:39        move second child to first child ( temp highp float)
+0:39          'tlo' ( temp highp float)
+0:39          direct index ( patch temp highp float TessLevelOuter)
+0:39            'gl_TessLevelOuter' ( patch in 4-element array of highp float TessLevelOuter)
+0:39            Constant:
+0:39              3 (const int)
+0:40      Sequence
+0:40        move second child to first child ( temp highp float)
+0:40          'tli' ( temp highp float)
+0:40          direct index ( patch temp highp float TessLevelInner)
+0:40            'gl_TessLevelInner' ( patch in 2-element array of highp float TessLevelInner)
+0:40            Constant:
+0:40              1 (const int)
+0:42      move second child to first child ( temp highp 4-component vector of float)
+0:42        gl_Position: direct index for structure ( gl_Position highp 4-component vector of float Position)
+0:42          'anon@1' ( out block{ gl_Position highp 4-component vector of float Position gl_Position,  gl_PointSize highp float PointSize gl_PointSize})
+0:42          Constant:
+0:42            0 (const uint)
+0:42        'p' ( temp highp 4-component vector of float)
+0:43      move second child to first child ( temp highp float)
+0:43        gl_PointSize: direct index for structure ( gl_PointSize highp float PointSize)
+0:43          'anon@1' ( out block{ gl_Position highp 4-component vector of float Position gl_Position,  gl_PointSize highp float PointSize gl_PointSize})
+0:43          Constant:
+0:43            1 (const uint)
+0:43        'ps' ( temp highp float)
+0:44      move second child to first child ( temp highp float)
+0:44        Constant:
+0:44          0.000000
+0:44        'cd' ( temp highp float)
+0:111  Function Definition: bbbad( ( global void)
+0:111    Function Parameters: 
+0:113    Sequence
+0:113      'gl_BoundingBoxOES' ( temp float)
+0:?   Linker Objects
+0:?     'patchIn' ( patch in highp 4-component vector of float)
+0:?     'patchOut' ( patch out highp 4-component vector of float)
+0:?     'badp1' ( smooth patch in highp 4-component vector of float)
+0:?     'badp2' ( flat patch in highp 4-component vector of float)
+0:?     'badp3' ( noperspective patch in highp 4-component vector of float)
+0:?     'badp4' ( patch sample in highp 3-component vector of float)
+0:?     'gl_in' ( in 32-element array of block{ in highp 4-component vector of float Position gl_Position})
+0:?     'ina' ( in highp 2-component vector of float)
+0:?     'inb' ( in 32-element array of highp 2-component vector of float)
+0:?     'inc' ( in 32-element array of highp 2-component vector of float)
+0:?     'ind' ( in 32-element array of highp 2-component vector of float)
+0:?     'bla' ( in block{ in highp int f})
+0:?     'blb' ( in 32-element array of block{ in highp int f})
+0:?     'blc' ( in 32-element array of block{ in highp int f})
+0:?     'bld' ( in 32-element array of block{ in highp int f})
+0:?     'ivla' (layout( location=23) in 32-element array of highp 4-component vector of float)
+0:?     'ivlb' (layout( location=24) in 32-element array of highp 4-component vector of float)
+0:?     'ivlc' (layout( location=24) in 32-element array of highp 4-component vector of float)
+0:?     'ovla' (layout( location=23) out 2-element array of highp 4-component vector of float)
+0:?     'ovlb' (layout( location=24) out 2-element array of highp 4-component vector of float)
+0:?     'pinbi' ( patch in block{ in highp int a})
+0:?     'myColor2' ( centroid out highp 3-component vector of float)
+0:?     'centr' ( centroid in 32-element array of highp 3-component vector of float)
+0:?     'perSampleColor' ( sample out highp 4-component vector of float)
+
+
+Linked tessellation evaluation stage:
+
+
+Shader version: 320
+Requested GL_ARB_separate_shader_objects
+input primitive = quads
+vertex spacing = fractional_odd_spacing
+triangle order = cw
+using point mode
+ERROR: node is still EOpNull!
+0:20  Function Definition: main( ( global void)
+0:20    Function Parameters: 
+0:22    Sequence
+0:22      Constant:
+0:22        0.000000
+0:24      Sequence
+0:24        move second child to first child ( temp highp int)
+0:24          'a' ( temp highp int)
+0:24          Constant:
+0:24            1512 (const int)
+0:32      Sequence
+0:32        move second child to first child ( temp highp 4-component vector of float)
+0:32          'p' ( temp highp 4-component vector of float)
+0:32          gl_Position: direct index for structure ( in highp 4-component vector of float Position)
+0:32            direct index ( temp block{ in highp 4-component vector of float Position gl_Position,  in highp float PointSize gl_PointSize,  in highp 4-component vector of float gl_SecondaryPositionNV,  in 1-element array of highp 4-component vector of float gl_PositionPerViewNV})
+0:32              'gl_in' ( in 32-element array of block{ in highp 4-component vector of float Position gl_Position,  in highp float PointSize gl_PointSize,  in highp 4-component vector of float gl_SecondaryPositionNV,  in 1-element array of highp 4-component vector of float gl_PositionPerViewNV})
+0:32              Constant:
+0:32                1 (const int)
+0:32            Constant:
+0:32              0 (const int)
+0:33      Sequence
+0:33        move second child to first child ( temp highp float)
+0:33          'ps' ( temp highp float)
+0:33          gl_PointSize: direct index for structure ( in highp float PointSize)
+0:33            direct index ( temp block{ in highp 4-component vector of float Position gl_Position,  in highp float PointSize gl_PointSize,  in highp 4-component vector of float gl_SecondaryPositionNV,  in 1-element array of highp 4-component vector of float gl_PositionPerViewNV})
+0:33              'gl_in' ( in 32-element array of block{ in highp 4-component vector of float Position gl_Position,  in highp float PointSize gl_PointSize,  in highp 4-component vector of float gl_SecondaryPositionNV,  in 1-element array of highp 4-component vector of float gl_PositionPerViewNV})
+0:33              Constant:
+0:33                1 (const int)
+0:33            Constant:
+0:33              1 (const int)
+0:34      Sequence
+0:34        move second child to first child ( temp highp float)
+0:34          'cd' ( temp highp float)
+0:34          Constant:
+0:34            0.000000
+0:36      Sequence
+0:36        move second child to first child ( temp highp int)
+0:36          'pvi' ( temp highp int)
+0:36          'gl_PatchVerticesIn' ( in highp int PatchVertices)
+0:37      Sequence
+0:37        move second child to first child ( temp highp int)
+0:37          'pid' ( temp highp int)
+0:37          'gl_PrimitiveID' ( in highp int PrimitiveID)
+0:38      Sequence
+0:38        move second child to first child ( temp highp 3-component vector of float)
+0:38          'tc' ( temp highp 3-component vector of float)
+0:38          'gl_TessCoord' ( in highp 3-component vector of float TessCoord)
+0:39      Sequence
+0:39        move second child to first child ( temp highp float)
+0:39          'tlo' ( temp highp float)
+0:39          direct index ( patch temp highp float TessLevelOuter)
+0:39            'gl_TessLevelOuter' ( patch in 4-element array of highp float TessLevelOuter)
+0:39            Constant:
+0:39              3 (const int)
+0:40      Sequence
+0:40        move second child to first child ( temp highp float)
+0:40          'tli' ( temp highp float)
+0:40          direct index ( patch temp highp float TessLevelInner)
+0:40            'gl_TessLevelInner' ( patch in 2-element array of highp float TessLevelInner)
+0:40            Constant:
+0:40              1 (const int)
+0:42      move second child to first child ( temp highp 4-component vector of float)
+0:42        gl_Position: direct index for structure ( gl_Position highp 4-component vector of float Position)
+0:42          'anon@1' ( out block{ gl_Position highp 4-component vector of float Position gl_Position,  gl_PointSize highp float PointSize gl_PointSize})
+0:42          Constant:
+0:42            0 (const uint)
+0:42        'p' ( temp highp 4-component vector of float)
+0:43      move second child to first child ( temp highp float)
+0:43        gl_PointSize: direct index for structure ( gl_PointSize highp float PointSize)
+0:43          'anon@1' ( out block{ gl_Position highp 4-component vector of float Position gl_Position,  gl_PointSize highp float PointSize gl_PointSize})
+0:43          Constant:
+0:43            1 (const uint)
+0:43        'ps' ( temp highp float)
+0:44      move second child to first child ( temp highp float)
+0:44        Constant:
+0:44          0.000000
+0:44        'cd' ( temp highp float)
+0:?   Linker Objects
+0:?     'patchIn' ( patch in highp 4-component vector of float)
+0:?     'patchOut' ( patch out highp 4-component vector of float)
+0:?     'badp1' ( smooth patch in highp 4-component vector of float)
+0:?     'badp2' ( flat patch in highp 4-component vector of float)
+0:?     'badp3' ( noperspective patch in highp 4-component vector of float)
+0:?     'badp4' ( patch sample in highp 3-component vector of float)
+0:?     'gl_in' ( in 32-element array of block{ in highp 4-component vector of float Position gl_Position})
+0:?     'ina' ( in highp 2-component vector of float)
+0:?     'inb' ( in 32-element array of highp 2-component vector of float)
+0:?     'inc' ( in 32-element array of highp 2-component vector of float)
+0:?     'ind' ( in 32-element array of highp 2-component vector of float)
+0:?     'bla' ( in block{ in highp int f})
+0:?     'blb' ( in 32-element array of block{ in highp int f})
+0:?     'blc' ( in 32-element array of block{ in highp int f})
+0:?     'bld' ( in 32-element array of block{ in highp int f})
+0:?     'ivla' (layout( location=23) in 32-element array of highp 4-component vector of float)
+0:?     'ivlb' (layout( location=24) in 32-element array of highp 4-component vector of float)
+0:?     'ivlc' (layout( location=24) in 32-element array of highp 4-component vector of float)
+0:?     'ovla' (layout( location=23) out 2-element array of highp 4-component vector of float)
+0:?     'ovlb' (layout( location=24) out 2-element array of highp 4-component vector of float)
+0:?     'pinbi' ( patch in block{ in highp int a})
+0:?     'myColor2' ( centroid out highp 3-component vector of float)
+0:?     'centr' ( centroid in 32-element array of highp 3-component vector of float)
+0:?     'perSampleColor' ( sample out highp 4-component vector of float)
+

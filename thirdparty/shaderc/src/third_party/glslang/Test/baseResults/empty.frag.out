@@ -1,0 +1,17 @@
+empty.frag
+Shader version: 100
+0:? Sequence
+0:?   Linker Objects
+
+empty2.frag
+Shader version: 100
+0:? Sequence
+0:?   Linker Objects
+
+empty3.frag
+Shader version: 110
+0:? Sequence
+0:?   Linker Objects
+
+ERROR: Cannot mix ES profile with non-ES profile shaders
+

@@ -1,0 +1,647 @@
+runtimeArray.vert
+WARNING: 0:33: '[]' : assuming binding count of one for compile-time checking of binding numbers for unsized array 
+WARNING: 0:34: '[]' : assuming binding count of one for compile-time checking of binding numbers for unsized array 
+WARNING: 0:37: '[]' : assuming binding count of one for compile-time checking of binding numbers for unsized array 
+WARNING: 0:38: '[]' : assuming binding count of one for compile-time checking of binding numbers for unsized array 
+WARNING: 0:39: '[]' : assuming binding count of one for compile-time checking of binding numbers for unsized array 
+WARNING: 0:40: '[]' : assuming binding count of one for compile-time checking of binding numbers for unsized array 
+ERROR: 0:61: '[' :  array must be redeclared with a size before being indexed with a variable
+ERROR: 0:62: '[' :  array must be redeclared with a size before being indexed with a variable
+ERROR: 0:63: '[' :  array must be redeclared with a size before being indexed with a variable
+ERROR: 0:66: 'length' :  array must be declared with a size before using this method
+ERROR: 0:67: 'length' :  array must be declared with a size before using this method
+ERROR: 0:68: 'length' :  array must be declared with a size before using this method
+ERROR: 0:71: '[' :  array must be redeclared with a size before being indexed with a variable
+ERROR: 0:72: '[' :  array must be redeclared with a size before being indexed with a variable
+ERROR: 0:73: '[' :  array must be redeclared with a size before being indexed with a variable
+ERROR: 0:76: 'length' :  array must be declared with a size before using this method
+ERROR: 0:77: 'length' :  array must be declared with a size before using this method
+ERROR: 0:78: 'length' :  array must be declared with a size before using this method
+ERROR: 0:81: '[' :  array must be redeclared with a size before being indexed with a variable
+ERROR: 0:82: '[' :  array must be redeclared with a size before being indexed with a variable
+ERROR: 0:83: '[' :  array must be redeclared with a size before being indexed with a variable
+ERROR: 0:86: 'length' :  array must be declared with a size before using this method
+ERROR: 0:87: 'length' :  array must be declared with a size before using this method
+ERROR: 0:88: 'length' :  array must be declared with a size before using this method
+ERROR: 0:100: 'variable index' : required extension not requested: GL_EXT_nonuniform_qualifier
+ERROR: 0:101: 'variable index' : required extension not requested: GL_EXT_nonuniform_qualifier
+ERROR: 0:102: 'variable index' : required extension not requested: GL_EXT_nonuniform_qualifier
+ERROR: 0:103: 'variable index' : required extension not requested: GL_EXT_nonuniform_qualifier
+ERROR: 0:104: 'variable index' : required extension not requested: GL_EXT_nonuniform_qualifier
+ERROR: 0:105: 'variable index' : required extension not requested: GL_EXT_nonuniform_qualifier
+ERROR: 0:106: 'variable index' : required extension not requested: GL_EXT_nonuniform_qualifier
+ERROR: 0:107: 'variable index' : required extension not requested: GL_EXT_nonuniform_qualifier
+ERROR: 0:109: '[]' : array initializer must be sized 
+ERROR: 27 compilation errors.  No code generated.
+
+
+Shader version: 450
+ERROR: node is still EOpNull!
+0:44  Function Definition: main( ( global void)
+0:44    Function Parameters: 
+0:46    Sequence
+0:46      direct index (layout( column_major shared) temp int)
+0:46        a: direct index for structure (layout( column_major shared) uniform runtime-sized array of int)
+0:46          'ubuf' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:46          Constant:
+0:46            0 (const int)
+0:46        Constant:
+0:46          3 (const int)
+0:47      direct index (layout( column_major shared) temp float)
+0:47        b: direct index for structure (layout( column_major shared) uniform runtime-sized array of float)
+0:47          'ubuf' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:47          Constant:
+0:47            1 (const int)
+0:47        Constant:
+0:47          3 (const int)
+0:48      direct index (layout( column_major shared) temp int)
+0:48        a: direct index for structure (layout( column_major shared) buffer runtime-sized array of int)
+0:48          'buf' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:48          Constant:
+0:48            0 (const int)
+0:48        Constant:
+0:48          3 (const int)
+0:49      direct index (layout( column_major shared) temp float)
+0:49        b: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:49          'buf' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:49          Constant:
+0:49            1 (const int)
+0:49        Constant:
+0:49          3 (const int)
+0:51      direct index (layout( column_major shared) temp int)
+0:51        a: direct index for structure (layout( column_major shared) uniform runtime-sized array of int)
+0:51          direct index (layout( column_major shared) temp block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:51            'ubufa' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:51            Constant:
+0:51              3 (const int)
+0:51          Constant:
+0:51            0 (const int)
+0:51        Constant:
+0:51          3 (const int)
+0:52      direct index (layout( column_major shared) temp float)
+0:52        b: direct index for structure (layout( column_major shared) uniform runtime-sized array of float)
+0:52          direct index (layout( column_major shared) temp block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:52            'ubufa' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:52            Constant:
+0:52              3 (const int)
+0:52          Constant:
+0:52            1 (const int)
+0:52        Constant:
+0:52          3 (const int)
+0:53      direct index (layout( column_major shared) temp int)
+0:53        a: direct index for structure (layout( column_major shared) buffer runtime-sized array of int)
+0:53          direct index (layout( column_major shared) temp block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:53            'bufa' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:53            Constant:
+0:53              3 (const int)
+0:53          Constant:
+0:53            0 (const int)
+0:53        Constant:
+0:53          3 (const int)
+0:54      direct index (layout( column_major shared) temp float)
+0:54        b: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:54          direct index (layout( column_major shared) temp block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:54            'bufa' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:54            Constant:
+0:54              3 (const int)
+0:54          Constant:
+0:54            1 (const int)
+0:54        Constant:
+0:54          3 (const int)
+0:56      direct index (layout( column_major shared) temp int)
+0:56        aua: direct index for structure (layout( column_major shared) uniform runtime-sized array of int)
+0:56          'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int aua, layout( column_major shared) uniform runtime-sized array of float aub})
+0:56          Constant:
+0:56            0 (const uint)
+0:56        Constant:
+0:56          3 (const int)
+0:57      direct index (layout( column_major shared) temp float)
+0:57        aub: direct index for structure (layout( column_major shared) uniform runtime-sized array of float)
+0:57          'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int aua, layout( column_major shared) uniform runtime-sized array of float aub})
+0:57          Constant:
+0:57            1 (const uint)
+0:57        Constant:
+0:57          3 (const int)
+0:58      direct index (layout( column_major shared) temp int)
+0:58        aba: direct index for structure (layout( column_major shared) buffer runtime-sized array of int)
+0:58          'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int aba, layout( column_major shared) buffer runtime-sized array of float abb})
+0:58          Constant:
+0:58            0 (const uint)
+0:58        Constant:
+0:58          3 (const int)
+0:59      direct index (layout( column_major shared) temp float)
+0:59        abb: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:59          'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int aba, layout( column_major shared) buffer runtime-sized array of float abb})
+0:59          Constant:
+0:59            1 (const uint)
+0:59        Constant:
+0:59          3 (const int)
+0:61      indirect index (layout( column_major shared) temp int)
+0:61        a: direct index for structure (layout( column_major shared) uniform runtime-sized array of int)
+0:61          'ubuf' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:61          Constant:
+0:61            0 (const int)
+0:61        'i' ( global int)
+0:62      indirect index (layout( column_major shared) temp float)
+0:62        b: direct index for structure (layout( column_major shared) uniform runtime-sized array of float)
+0:62          'ubuf' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:62          Constant:
+0:62            1 (const int)
+0:62        'i' ( global int)
+0:63      indirect index (layout( column_major shared) temp int)
+0:63        a: direct index for structure (layout( column_major shared) buffer runtime-sized array of int)
+0:63          'buf' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:63          Constant:
+0:63            0 (const int)
+0:63        'i' ( global int)
+0:64      indirect index (layout( column_major shared) temp float)
+0:64        b: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:64          'buf' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:64          Constant:
+0:64            1 (const int)
+0:64        'i' ( global int)
+0:66      Constant:
+0:66        1 (const int)
+0:67      Constant:
+0:67        1 (const int)
+0:68      Constant:
+0:68        1 (const int)
+0:69      array length ( temp int)
+0:69        b: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:69          'buf' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:69          Constant:
+0:69            1 (const int)
+0:71      indirect index (layout( column_major shared) temp int)
+0:71        a: direct index for structure (layout( column_major shared) uniform runtime-sized array of int)
+0:71          direct index (layout( column_major shared) temp block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:71            'ubufa' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:71            Constant:
+0:71              1 (const int)
+0:71          Constant:
+0:71            0 (const int)
+0:71        'i' ( global int)
+0:72      indirect index (layout( column_major shared) temp float)
+0:72        b: direct index for structure (layout( column_major shared) uniform runtime-sized array of float)
+0:72          direct index (layout( column_major shared) temp block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:72            'ubufa' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:72            Constant:
+0:72              1 (const int)
+0:72          Constant:
+0:72            1 (const int)
+0:72        'i' ( global int)
+0:73      indirect index (layout( column_major shared) temp int)
+0:73        a: direct index for structure (layout( column_major shared) buffer runtime-sized array of int)
+0:73          direct index (layout( column_major shared) temp block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:73            'bufa' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:73            Constant:
+0:73              1 (const int)
+0:73          Constant:
+0:73            0 (const int)
+0:73        'i' ( global int)
+0:74      indirect index (layout( column_major shared) temp float)
+0:74        b: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:74          direct index (layout( column_major shared) temp block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:74            'bufa' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:74            Constant:
+0:74              1 (const int)
+0:74          Constant:
+0:74            1 (const int)
+0:74        'i' ( global int)
+0:76      Constant:
+0:76        1 (const int)
+0:77      Constant:
+0:77        1 (const int)
+0:78      Constant:
+0:78        1 (const int)
+0:79      array length ( temp int)
+0:79        b: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:79          direct index (layout( column_major shared) temp block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:79            'bufa' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:79            Constant:
+0:79              1 (const int)
+0:79          Constant:
+0:79            1 (const int)
+0:81      indirect index (layout( column_major shared) temp int)
+0:81        aua: direct index for structure (layout( column_major shared) uniform runtime-sized array of int)
+0:81          'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int aua, layout( column_major shared) uniform runtime-sized array of float aub})
+0:81          Constant:
+0:81            0 (const uint)
+0:81        'i' ( global int)
+0:82      indirect index (layout( column_major shared) temp float)
+0:82        aub: direct index for structure (layout( column_major shared) uniform runtime-sized array of float)
+0:82          'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int aua, layout( column_major shared) uniform runtime-sized array of float aub})
+0:82          Constant:
+0:82            1 (const uint)
+0:82        'i' ( global int)
+0:83      indirect index (layout( column_major shared) temp int)
+0:83        aba: direct index for structure (layout( column_major shared) buffer runtime-sized array of int)
+0:83          'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int aba, layout( column_major shared) buffer runtime-sized array of float abb})
+0:83          Constant:
+0:83            0 (const uint)
+0:83        'i' ( global int)
+0:84      indirect index (layout( column_major shared) temp float)
+0:84        abb: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:84          'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int aba, layout( column_major shared) buffer runtime-sized array of float abb})
+0:84          Constant:
+0:84            1 (const uint)
+0:84        'i' ( global int)
+0:86      Constant:
+0:86        1 (const int)
+0:87      Constant:
+0:87        1 (const int)
+0:88      Constant:
+0:88        1 (const int)
+0:89      array length ( temp int)
+0:89        abb: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:89          'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int aba, layout( column_major shared) buffer runtime-sized array of float abb})
+0:89          Constant:
+0:89            1 (const uint)
+0:91      direct index (layout( binding=1) temp samplerBuffer)
+0:91        'uniformTexelBufferDyn' (layout( binding=1) uniform runtime-sized array of samplerBuffer)
+0:91        Constant:
+0:91          1 (const int)
+0:92      direct index (layout( binding=2 r32f) temp imageBuffer)
+0:92        'storageTexelBufferDyn' (layout( binding=2 r32f) uniform runtime-sized array of imageBuffer)
+0:92        Constant:
+0:92          1 (const int)
+0:93      direct index (layout( binding=3 column_major shared) temp block{layout( column_major shared) uniform float a})
+0:93        'uniformBuffer' (layout( binding=3 column_major shared) uniform runtime-sized array of block{layout( column_major shared) uniform float a})
+0:93        Constant:
+0:93          1 (const int)
+0:94      direct index (layout( binding=4 column_major shared) temp block{layout( column_major shared) buffer float b})
+0:94        'storageBuffer' (layout( binding=4 column_major shared) buffer runtime-sized array of block{layout( column_major shared) buffer float b})
+0:94        Constant:
+0:94          1 (const int)
+0:95      direct index (layout( binding=5) temp sampler2D)
+0:95        'sampledImage' (layout( binding=5) uniform runtime-sized array of sampler2D)
+0:95        Constant:
+0:95          1 (const int)
+0:96      direct index (layout( binding=6 r32f) temp image2D)
+0:96        'storageImage' (layout( binding=6 r32f) uniform runtime-sized array of image2D)
+0:96        Constant:
+0:96          1 (const int)
+0:97      direct index (layout( binding=8) temp samplerBuffer)
+0:97        'uniformTexelBuffer' (layout( binding=8) uniform runtime-sized array of samplerBuffer)
+0:97        Constant:
+0:97          1 (const int)
+0:98      direct index (layout( binding=9 r32f) temp imageBuffer)
+0:98        'storageTexelBuffer' (layout( binding=9 r32f) uniform runtime-sized array of imageBuffer)
+0:98        Constant:
+0:98          1 (const int)
+0:100      indirect index (layout( binding=1) temp samplerBuffer)
+0:100        'uniformTexelBufferDyn' (layout( binding=1) uniform runtime-sized array of samplerBuffer)
+0:100        'i' ( global int)
+0:101      indirect index (layout( binding=2 r32f) temp imageBuffer)
+0:101        'storageTexelBufferDyn' (layout( binding=2 r32f) uniform runtime-sized array of imageBuffer)
+0:101        'i' ( global int)
+0:102      indirect index (layout( binding=3 column_major shared) temp block{layout( column_major shared) uniform float a})
+0:102        'uniformBuffer' (layout( binding=3 column_major shared) uniform runtime-sized array of block{layout( column_major shared) uniform float a})
+0:102        'i' ( global int)
+0:103      indirect index (layout( binding=4 column_major shared) temp block{layout( column_major shared) buffer float b})
+0:103        'storageBuffer' (layout( binding=4 column_major shared) buffer runtime-sized array of block{layout( column_major shared) buffer float b})
+0:103        'i' ( global int)
+0:104      indirect index (layout( binding=5) temp sampler2D)
+0:104        'sampledImage' (layout( binding=5) uniform runtime-sized array of sampler2D)
+0:104        'i' ( global int)
+0:105      indirect index (layout( binding=6 r32f) temp image2D)
+0:105        'storageImage' (layout( binding=6 r32f) uniform runtime-sized array of image2D)
+0:105        'i' ( global int)
+0:106      indirect index (layout( binding=8) temp samplerBuffer)
+0:106        'uniformTexelBuffer' (layout( binding=8) uniform runtime-sized array of samplerBuffer)
+0:106        'i' ( global int)
+0:107      indirect index (layout( binding=9 r32f) temp imageBuffer)
+0:107        'storageTexelBuffer' (layout( binding=9 r32f) uniform runtime-sized array of imageBuffer)
+0:107        'i' ( global int)
+0:109      Sequence
+0:109        move second child to first child ( temp unsized 1-element array of float)
+0:109          'local' ( temp unsized 1-element array of float)
+0:109          b: direct index for structure (layout( column_major shared) uniform runtime-sized array of float)
+0:109            'ubuf' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:109            Constant:
+0:109              1 (const int)
+0:?   Linker Objects
+0:?     'buf' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:?     'ubuf' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:?     'bufa' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:?     'ubufa' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:?     'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int aba, layout( column_major shared) buffer runtime-sized array of float abb})
+0:?     'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int aua, layout( column_major shared) uniform runtime-sized array of float aub})
+0:?     'uniformTexelBufferDyn' (layout( binding=1) uniform runtime-sized array of samplerBuffer)
+0:?     'storageTexelBufferDyn' (layout( binding=2 r32f) uniform runtime-sized array of imageBuffer)
+0:?     'uniformBuffer' (layout( binding=3 column_major shared) uniform runtime-sized array of block{layout( column_major shared) uniform float a})
+0:?     'storageBuffer' (layout( binding=4 column_major shared) buffer runtime-sized array of block{layout( column_major shared) buffer float b})
+0:?     'sampledImage' (layout( binding=5) uniform runtime-sized array of sampler2D)
+0:?     'storageImage' (layout( binding=6 r32f) uniform runtime-sized array of image2D)
+0:?     'uniformTexelBuffer' (layout( binding=8) uniform runtime-sized array of samplerBuffer)
+0:?     'storageTexelBuffer' (layout( binding=9 r32f) uniform runtime-sized array of imageBuffer)
+0:?     'i' ( global int)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 450
+ERROR: node is still EOpNull!
+0:44  Function Definition: main( ( global void)
+0:44    Function Parameters: 
+0:46    Sequence
+0:46      direct index (layout( column_major shared) temp int)
+0:46        a: direct index for structure (layout( column_major shared) uniform runtime-sized array of int)
+0:46          'ubuf' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:46          Constant:
+0:46            0 (const int)
+0:46        Constant:
+0:46          3 (const int)
+0:47      direct index (layout( column_major shared) temp float)
+0:47        b: direct index for structure (layout( column_major shared) uniform runtime-sized array of float)
+0:47          'ubuf' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:47          Constant:
+0:47            1 (const int)
+0:47        Constant:
+0:47          3 (const int)
+0:48      direct index (layout( column_major shared) temp int)
+0:48        a: direct index for structure (layout( column_major shared) buffer runtime-sized array of int)
+0:48          'buf' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:48          Constant:
+0:48            0 (const int)
+0:48        Constant:
+0:48          3 (const int)
+0:49      direct index (layout( column_major shared) temp float)
+0:49        b: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:49          'buf' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:49          Constant:
+0:49            1 (const int)
+0:49        Constant:
+0:49          3 (const int)
+0:51      direct index (layout( column_major shared) temp int)
+0:51        a: direct index for structure (layout( column_major shared) uniform runtime-sized array of int)
+0:51          direct index (layout( column_major shared) temp block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:51            'ubufa' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:51            Constant:
+0:51              3 (const int)
+0:51          Constant:
+0:51            0 (const int)
+0:51        Constant:
+0:51          3 (const int)
+0:52      direct index (layout( column_major shared) temp float)
+0:52        b: direct index for structure (layout( column_major shared) uniform runtime-sized array of float)
+0:52          direct index (layout( column_major shared) temp block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:52            'ubufa' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:52            Constant:
+0:52              3 (const int)
+0:52          Constant:
+0:52            1 (const int)
+0:52        Constant:
+0:52          3 (const int)
+0:53      direct index (layout( column_major shared) temp int)
+0:53        a: direct index for structure (layout( column_major shared) buffer runtime-sized array of int)
+0:53          direct index (layout( column_major shared) temp block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:53            'bufa' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:53            Constant:
+0:53              3 (const int)
+0:53          Constant:
+0:53            0 (const int)
+0:53        Constant:
+0:53          3 (const int)
+0:54      direct index (layout( column_major shared) temp float)
+0:54        b: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:54          direct index (layout( column_major shared) temp block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:54            'bufa' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:54            Constant:
+0:54              3 (const int)
+0:54          Constant:
+0:54            1 (const int)
+0:54        Constant:
+0:54          3 (const int)
+0:56      direct index (layout( column_major shared) temp int)
+0:56        aua: direct index for structure (layout( column_major shared) uniform runtime-sized array of int)
+0:56          'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int aua, layout( column_major shared) uniform runtime-sized array of float aub})
+0:56          Constant:
+0:56            0 (const uint)
+0:56        Constant:
+0:56          3 (const int)
+0:57      direct index (layout( column_major shared) temp float)
+0:57        aub: direct index for structure (layout( column_major shared) uniform runtime-sized array of float)
+0:57          'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int aua, layout( column_major shared) uniform runtime-sized array of float aub})
+0:57          Constant:
+0:57            1 (const uint)
+0:57        Constant:
+0:57          3 (const int)
+0:58      direct index (layout( column_major shared) temp int)
+0:58        aba: direct index for structure (layout( column_major shared) buffer runtime-sized array of int)
+0:58          'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int aba, layout( column_major shared) buffer runtime-sized array of float abb})
+0:58          Constant:
+0:58            0 (const uint)
+0:58        Constant:
+0:58          3 (const int)
+0:59      direct index (layout( column_major shared) temp float)
+0:59        abb: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:59          'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int aba, layout( column_major shared) buffer runtime-sized array of float abb})
+0:59          Constant:
+0:59            1 (const uint)
+0:59        Constant:
+0:59          3 (const int)
+0:61      indirect index (layout( column_major shared) temp int)
+0:61        a: direct index for structure (layout( column_major shared) uniform runtime-sized array of int)
+0:61          'ubuf' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:61          Constant:
+0:61            0 (const int)
+0:61        'i' ( global int)
+0:62      indirect index (layout( column_major shared) temp float)
+0:62        b: direct index for structure (layout( column_major shared) uniform runtime-sized array of float)
+0:62          'ubuf' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:62          Constant:
+0:62            1 (const int)
+0:62        'i' ( global int)
+0:63      indirect index (layout( column_major shared) temp int)
+0:63        a: direct index for structure (layout( column_major shared) buffer runtime-sized array of int)
+0:63          'buf' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:63          Constant:
+0:63            0 (const int)
+0:63        'i' ( global int)
+0:64      indirect index (layout( column_major shared) temp float)
+0:64        b: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:64          'buf' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:64          Constant:
+0:64            1 (const int)
+0:64        'i' ( global int)
+0:66      Constant:
+0:66        1 (const int)
+0:67      Constant:
+0:67        1 (const int)
+0:68      Constant:
+0:68        1 (const int)
+0:69      array length ( temp int)
+0:69        b: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:69          'buf' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:69          Constant:
+0:69            1 (const int)
+0:71      indirect index (layout( column_major shared) temp int)
+0:71        a: direct index for structure (layout( column_major shared) uniform runtime-sized array of int)
+0:71          direct index (layout( column_major shared) temp block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:71            'ubufa' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:71            Constant:
+0:71              1 (const int)
+0:71          Constant:
+0:71            0 (const int)
+0:71        'i' ( global int)
+0:72      indirect index (layout( column_major shared) temp float)
+0:72        b: direct index for structure (layout( column_major shared) uniform runtime-sized array of float)
+0:72          direct index (layout( column_major shared) temp block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:72            'ubufa' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:72            Constant:
+0:72              1 (const int)
+0:72          Constant:
+0:72            1 (const int)
+0:72        'i' ( global int)
+0:73      indirect index (layout( column_major shared) temp int)
+0:73        a: direct index for structure (layout( column_major shared) buffer runtime-sized array of int)
+0:73          direct index (layout( column_major shared) temp block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:73            'bufa' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:73            Constant:
+0:73              1 (const int)
+0:73          Constant:
+0:73            0 (const int)
+0:73        'i' ( global int)
+0:74      indirect index (layout( column_major shared) temp float)
+0:74        b: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:74          direct index (layout( column_major shared) temp block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:74            'bufa' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:74            Constant:
+0:74              1 (const int)
+0:74          Constant:
+0:74            1 (const int)
+0:74        'i' ( global int)
+0:76      Constant:
+0:76        1 (const int)
+0:77      Constant:
+0:77        1 (const int)
+0:78      Constant:
+0:78        1 (const int)
+0:79      array length ( temp int)
+0:79        b: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:79          direct index (layout( column_major shared) temp block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:79            'bufa' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:79            Constant:
+0:79              1 (const int)
+0:79          Constant:
+0:79            1 (const int)
+0:81      indirect index (layout( column_major shared) temp int)
+0:81        aua: direct index for structure (layout( column_major shared) uniform runtime-sized array of int)
+0:81          'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int aua, layout( column_major shared) uniform runtime-sized array of float aub})
+0:81          Constant:
+0:81            0 (const uint)
+0:81        'i' ( global int)
+0:82      indirect index (layout( column_major shared) temp float)
+0:82        aub: direct index for structure (layout( column_major shared) uniform runtime-sized array of float)
+0:82          'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int aua, layout( column_major shared) uniform runtime-sized array of float aub})
+0:82          Constant:
+0:82            1 (const uint)
+0:82        'i' ( global int)
+0:83      indirect index (layout( column_major shared) temp int)
+0:83        aba: direct index for structure (layout( column_major shared) buffer runtime-sized array of int)
+0:83          'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int aba, layout( column_major shared) buffer runtime-sized array of float abb})
+0:83          Constant:
+0:83            0 (const uint)
+0:83        'i' ( global int)
+0:84      indirect index (layout( column_major shared) temp float)
+0:84        abb: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:84          'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int aba, layout( column_major shared) buffer runtime-sized array of float abb})
+0:84          Constant:
+0:84            1 (const uint)
+0:84        'i' ( global int)
+0:86      Constant:
+0:86        1 (const int)
+0:87      Constant:
+0:87        1 (const int)
+0:88      Constant:
+0:88        1 (const int)
+0:89      array length ( temp int)
+0:89        abb: direct index for structure (layout( column_major shared) buffer runtime-sized array of float)
+0:89          'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int aba, layout( column_major shared) buffer runtime-sized array of float abb})
+0:89          Constant:
+0:89            1 (const uint)
+0:91      direct index (layout( binding=1) temp samplerBuffer)
+0:91        'uniformTexelBufferDyn' (layout( binding=1) uniform runtime-sized array of samplerBuffer)
+0:91        Constant:
+0:91          1 (const int)
+0:92      direct index (layout( binding=2 r32f) temp imageBuffer)
+0:92        'storageTexelBufferDyn' (layout( binding=2 r32f) uniform runtime-sized array of imageBuffer)
+0:92        Constant:
+0:92          1 (const int)
+0:93      direct index (layout( binding=3 column_major shared) temp block{layout( column_major shared) uniform float a})
+0:93        'uniformBuffer' (layout( binding=3 column_major shared) uniform runtime-sized array of block{layout( column_major shared) uniform float a})
+0:93        Constant:
+0:93          1 (const int)
+0:94      direct index (layout( binding=4 column_major shared) temp block{layout( column_major shared) buffer float b})
+0:94        'storageBuffer' (layout( binding=4 column_major shared) buffer runtime-sized array of block{layout( column_major shared) buffer float b})
+0:94        Constant:
+0:94          1 (const int)
+0:95      direct index (layout( binding=5) temp sampler2D)
+0:95        'sampledImage' (layout( binding=5) uniform runtime-sized array of sampler2D)
+0:95        Constant:
+0:95          1 (const int)
+0:96      direct index (layout( binding=6 r32f) temp image2D)
+0:96        'storageImage' (layout( binding=6 r32f) uniform runtime-sized array of image2D)
+0:96        Constant:
+0:96          1 (const int)
+0:97      direct index (layout( binding=8) temp samplerBuffer)
+0:97        'uniformTexelBuffer' (layout( binding=8) uniform runtime-sized array of samplerBuffer)
+0:97        Constant:
+0:97          1 (const int)
+0:98      direct index (layout( binding=9 r32f) temp imageBuffer)
+0:98        'storageTexelBuffer' (layout( binding=9 r32f) uniform runtime-sized array of imageBuffer)
+0:98        Constant:
+0:98          1 (const int)
+0:100      indirect index (layout( binding=1) temp samplerBuffer)
+0:100        'uniformTexelBufferDyn' (layout( binding=1) uniform runtime-sized array of samplerBuffer)
+0:100        'i' ( global int)
+0:101      indirect index (layout( binding=2 r32f) temp imageBuffer)
+0:101        'storageTexelBufferDyn' (layout( binding=2 r32f) uniform runtime-sized array of imageBuffer)
+0:101        'i' ( global int)
+0:102      indirect index (layout( binding=3 column_major shared) temp block{layout( column_major shared) uniform float a})
+0:102        'uniformBuffer' (layout( binding=3 column_major shared) uniform runtime-sized array of block{layout( column_major shared) uniform float a})
+0:102        'i' ( global int)
+0:103      indirect index (layout( binding=4 column_major shared) temp block{layout( column_major shared) buffer float b})
+0:103        'storageBuffer' (layout( binding=4 column_major shared) buffer runtime-sized array of block{layout( column_major shared) buffer float b})
+0:103        'i' ( global int)
+0:104      indirect index (layout( binding=5) temp sampler2D)
+0:104        'sampledImage' (layout( binding=5) uniform runtime-sized array of sampler2D)
+0:104        'i' ( global int)
+0:105      indirect index (layout( binding=6 r32f) temp image2D)
+0:105        'storageImage' (layout( binding=6 r32f) uniform runtime-sized array of image2D)
+0:105        'i' ( global int)
+0:106      indirect index (layout( binding=8) temp samplerBuffer)
+0:106        'uniformTexelBuffer' (layout( binding=8) uniform runtime-sized array of samplerBuffer)
+0:106        'i' ( global int)
+0:107      indirect index (layout( binding=9 r32f) temp imageBuffer)
+0:107        'storageTexelBuffer' (layout( binding=9 r32f) uniform runtime-sized array of imageBuffer)
+0:107        'i' ( global int)
+0:109      Sequence
+0:109        move second child to first child ( temp 1-element array of float)
+0:109          'local' ( temp 1-element array of float)
+0:109          b: direct index for structure (layout( column_major shared) uniform runtime-sized array of float)
+0:109            'ubuf' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:109            Constant:
+0:109              1 (const int)
+0:?   Linker Objects
+0:?     'buf' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:?     'ubuf' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:?     'bufa' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer runtime-sized array of int a, layout( column_major shared) buffer runtime-sized array of float b})
+0:?     'ubufa' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform runtime-sized array of int a, layout( column_major shared) uniform runtime-sized array of float b})
+0:?     'anon@0' (layout( column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of int aba, layout( column_major shared) buffer runtime-sized array of float abb})
+0:?     'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform runtime-sized array of int aua, layout( column_major shared) uniform runtime-sized array of float aub})
+0:?     'uniformTexelBufferDyn' (layout( binding=1) uniform runtime-sized array of samplerBuffer)
+0:?     'storageTexelBufferDyn' (layout( binding=2 r32f) uniform runtime-sized array of imageBuffer)
+0:?     'uniformBuffer' (layout( binding=3 column_major shared) uniform runtime-sized array of block{layout( column_major shared) uniform float a})
+0:?     'storageBuffer' (layout( binding=4 column_major shared) buffer runtime-sized array of block{layout( column_major shared) buffer float b})
+0:?     'sampledImage' (layout( binding=5) uniform runtime-sized array of sampler2D)
+0:?     'storageImage' (layout( binding=6 r32f) uniform runtime-sized array of image2D)
+0:?     'uniformTexelBuffer' (layout( binding=8) uniform runtime-sized array of samplerBuffer)
+0:?     'storageTexelBuffer' (layout( binding=9 r32f) uniform runtime-sized array of imageBuffer)
+0:?     'i' ( global int)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

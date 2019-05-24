@@ -1,0 +1,96 @@
+missingBodies.vert
+Shader version: 450
+0:? Sequence
+0:4  Function Definition: foo( ( global void)
+0:4    Function Parameters: 
+0:4    Sequence
+0:4      Function Call: bar( ( global void)
+0:8  Function Definition: C(i1;i1; ( global void)
+0:8    Function Parameters: 
+0:8      '' ( in int)
+0:8      '' ( in int)
+0:10  Function Definition: A( ( global void)
+0:10    Function Parameters: 
+0:10    Sequence
+0:10      Function Call: B( ( global void)
+0:10      Function Call: C(i1; ( global void)
+0:10        Constant:
+0:10          1 (const int)
+0:10      Function Call: C(b1; ( global void)
+0:10        Constant:
+0:10          true (const bool)
+0:10      Function Call: C(i1;i1; ( global void)
+0:10        Constant:
+0:10          1 (const int)
+0:10        Constant:
+0:10          2 (const int)
+0:12  Function Definition: main( ( global void)
+0:12    Function Parameters: 
+0:14    Sequence
+0:14      Function Call: foo( ( global void)
+0:15      Function Call: C(b1; ( global void)
+0:15        Constant:
+0:15          true (const bool)
+0:20  Sequence
+0:20    move second child to first child ( temp int)
+0:20      'f1' ( global int)
+0:20      Function Call: ret1( ( global int)
+0:22  Function Definition: ret2( ( global int)
+0:22    Function Parameters: 
+0:22    Sequence
+0:22      Branch: Return with expression
+0:22        Constant:
+0:22          3 (const int)
+0:24  Sequence
+0:24    move second child to first child ( temp int)
+0:24      'f2' ( global int)
+0:24      Function Call: ret2( ( global int)
+0:?   Linker Objects
+0:?     'f1' ( global int)
+0:?     'f2' ( global int)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+ERROR: Linking vertex stage: No function definition (body) found: 
+    ret1(
+ERROR: Linking vertex stage: No function definition (body) found: 
+    C(b1;
+ERROR: Linking vertex stage: No function definition (body) found: 
+    bar(
+
+Shader version: 450
+0:? Sequence
+0:4  Function Definition: foo( ( global void)
+0:4    Function Parameters: 
+0:4    Sequence
+0:4      Function Call: bar( ( global void)
+0:12  Function Definition: main( ( global void)
+0:12    Function Parameters: 
+0:14    Sequence
+0:14      Function Call: foo( ( global void)
+0:15      Function Call: C(b1; ( global void)
+0:15        Constant:
+0:15          true (const bool)
+0:20  Sequence
+0:20    move second child to first child ( temp int)
+0:20      'f1' ( global int)
+0:20      Function Call: ret1( ( global int)
+0:22  Function Definition: ret2( ( global int)
+0:22    Function Parameters: 
+0:22    Sequence
+0:22      Branch: Return with expression
+0:22        Constant:
+0:22          3 (const int)
+0:24  Sequence
+0:24    move second child to first child ( temp int)
+0:24      'f2' ( global int)
+0:24      Function Call: ret2( ( global int)
+0:?   Linker Objects
+0:?     'f1' ( global int)
+0:?     'f2' ( global int)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

@@ -1,0 +1,7 @@
+RWStructuredBuffer<uint> data;
+
+[numthreads(32, 16, 1)]
+void CSMain()
+{
+    data[WaveGetLaneIndex()] = (WaveIsFirstLane()) ? WaveGetLaneCount() : 0;
+}

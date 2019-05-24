@@ -1,0 +1,143 @@
+cppNest.vert
+ERROR: 0:144: '#elif' : #elif after #else 
+ERROR: 0:152: '#else' : #else after #else 
+ERROR: 0:161: '#elif' : #elif after #else 
+ERROR: 0:169: '#else' : #else after #else 
+ERROR: 0:177: 'macro expansion' : End of input in macro FUNC
+ERROR: 0:178: '' : compilation terminated 
+ERROR: 6 compilation errors.  No code generated.
+
+
+Shader version: 110
+ERROR: node is still EOpNull!
+0:5  Sequence
+0:5    move second child to first child ( temp float)
+0:5      'sum' ( global float)
+0:5      Constant:
+0:5        0.000000
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:12    Sequence
+0:12      add second child into first child ( temp float)
+0:12        'sum' ( global float)
+0:12        Constant:
+0:12          1.000000
+0:21      add second child into first child ( temp float)
+0:21        'sum' ( global float)
+0:21        Constant:
+0:21          300.000000
+0:61      add second child into first child ( temp float)
+0:61        'sum' ( global float)
+0:61        Constant:
+0:61          600000.000000
+0:65      add second child into first child ( temp float)
+0:65        'sum' ( global float)
+0:65        Constant:
+0:65          80000000.000000
+0:69      add second child into first child ( temp float)
+0:69        'sum' ( global float)
+0:69        Constant:
+0:69          900000000.000000
+0:76      add second child into first child ( temp float)
+0:76        'sum' ( global float)
+0:76        Constant:
+0:76          7000000.000000
+0:86      move second child to first child ( temp 4-component vector of float)
+0:86        'gl_Position' ( gl_Position 4-component vector of float Position)
+0:86        Construct vec4 ( temp 4-component vector of float)
+0:86          'sum' ( global float)
+0:103  Sequence
+0:103    move second child to first child ( temp int)
+0:103      'selected4' ( global int)
+0:103      Constant:
+0:103        4 (const int)
+0:115  Sequence
+0:115    move second child to first child ( temp int)
+0:115      'selected2' ( global int)
+0:115      Constant:
+0:115        2 (const int)
+0:133  Sequence
+0:133    move second child to first child ( temp int)
+0:133      'selected3' ( global int)
+0:133      Constant:
+0:133        3 (const int)
+0:175  Function Definition: foo985( ( global void)
+0:175    Function Parameters: 
+0:175    Sequence
+0:175      add ( temp int)
+0:175        Constant:
+0:175          2 (const int)
+0:175        Comma ( temp int)
+0:175          Constant:
+0:175            3 (const int)
+0:175          Constant:
+0:175            4 (const int)
+0:?   Linker Objects
+0:?     'sum' ( global float)
+0:?     'selected4' ( global int)
+0:?     'selected2' ( global int)
+0:?     'selected3' ( global int)
+
+
+Linked vertex stage:
+
+
+Shader version: 110
+ERROR: node is still EOpNull!
+0:5  Sequence
+0:5    move second child to first child ( temp float)
+0:5      'sum' ( global float)
+0:5      Constant:
+0:5        0.000000
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:12    Sequence
+0:12      add second child into first child ( temp float)
+0:12        'sum' ( global float)
+0:12        Constant:
+0:12          1.000000
+0:21      add second child into first child ( temp float)
+0:21        'sum' ( global float)
+0:21        Constant:
+0:21          300.000000
+0:61      add second child into first child ( temp float)
+0:61        'sum' ( global float)
+0:61        Constant:
+0:61          600000.000000
+0:65      add second child into first child ( temp float)
+0:65        'sum' ( global float)
+0:65        Constant:
+0:65          80000000.000000
+0:69      add second child into first child ( temp float)
+0:69        'sum' ( global float)
+0:69        Constant:
+0:69          900000000.000000
+0:76      add second child into first child ( temp float)
+0:76        'sum' ( global float)
+0:76        Constant:
+0:76          7000000.000000
+0:86      move second child to first child ( temp 4-component vector of float)
+0:86        'gl_Position' ( gl_Position 4-component vector of float Position)
+0:86        Construct vec4 ( temp 4-component vector of float)
+0:86          'sum' ( global float)
+0:103  Sequence
+0:103    move second child to first child ( temp int)
+0:103      'selected4' ( global int)
+0:103      Constant:
+0:103        4 (const int)
+0:115  Sequence
+0:115    move second child to first child ( temp int)
+0:115      'selected2' ( global int)
+0:115      Constant:
+0:115        2 (const int)
+0:133  Sequence
+0:133    move second child to first child ( temp int)
+0:133      'selected3' ( global int)
+0:133      Constant:
+0:133        3 (const int)
+0:?   Linker Objects
+0:?     'sum' ( global float)
+0:?     'selected4' ( global int)
+0:?     'selected2' ( global int)
+0:?     'selected3' ( global int)
+

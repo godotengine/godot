@@ -1,0 +1,68 @@
+reflection.options.vert
+Uniform reflection:
+UBO.verts[0].position[0]: offset 0, type 1406, size 3, index 0, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+UBO.verts[0].normal[0]: offset 12, type 1406, size 3, index 0, binding -1, stages 0, arrayStride 4, topLevelArrayStride 24
+UBO.verts[1].position[0]: offset 24, type 1406, size 3, index 0, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+UBO.verts[1].normal[0]: offset 36, type 1406, size 3, index 0, binding -1, stages 0, arrayStride 4, topLevelArrayStride 24
+UBO.flt[0]: offset 48, type 1406, size 8, index 0, binding -1, stages 1, arrayStride 4, topLevelArrayStride 4
+UBO.unused: offset 80, type 8dc8, size 1, index 0, binding -1, stages 0
+UBO.uniform_multi[0][0][0]: offset 96, type 1406, size 2, index 0, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+UBO.uniform_multi[0][1][0]: offset 104, type 1406, size 2, index 0, binding -1, stages 0, arrayStride 4, topLevelArrayStride 24
+UBO.uniform_multi[0][2][0]: offset 112, type 1406, size 2, index 0, binding -1, stages 0, arrayStride 4, topLevelArrayStride 24
+UBO.uniform_multi[1][0][0]: offset 120, type 1406, size 2, index 0, binding -1, stages 0, arrayStride 4, topLevelArrayStride 24
+UBO.uniform_multi[1][1][0]: offset 128, type 1406, size 2, index 0, binding -1, stages 0, arrayStride 4, topLevelArrayStride 24
+UBO.uniform_multi[1][2][0]: offset 136, type 1406, size 2, index 0, binding -1, stages 0, arrayStride 4, topLevelArrayStride 24
+UBO.uniform_multi[2][0][0]: offset 144, type 1406, size 2, index 0, binding -1, stages 0, arrayStride 4, topLevelArrayStride 24
+UBO.uniform_multi[2][1][0]: offset 152, type 1406, size 2, index 0, binding -1, stages 0, arrayStride 4, topLevelArrayStride 24
+UBO.uniform_multi[2][2][0]: offset 160, type 1406, size 2, index 0, binding -1, stages 0, arrayStride 4, topLevelArrayStride 24
+UBO.uniform_multi[3][0][0]: offset 168, type 1406, size 2, index 0, binding -1, stages 0, arrayStride 4, topLevelArrayStride 24
+UBO.uniform_multi[3][1][0]: offset 176, type 1406, size 2, index 0, binding -1, stages 0, arrayStride 4, topLevelArrayStride 24
+UBO.uniform_multi[3][2][0]: offset 184, type 1406, size 2, index 0, binding -1, stages 0, arrayStride 4, topLevelArrayStride 24
+uniform_multi[0][0][0]: offset -1, type 1406, size 2, index -1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+uniform_multi[0][1][0]: offset -1, type 1406, size 2, index -1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+uniform_multi[0][2][0]: offset -1, type 1406, size 2, index -1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+uniform_multi[1][0][0]: offset -1, type 1406, size 2, index -1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+uniform_multi[1][1][0]: offset -1, type 1406, size 2, index -1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+uniform_multi[1][2][0]: offset -1, type 1406, size 2, index -1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+uniform_multi[2][0][0]: offset -1, type 1406, size 2, index -1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+uniform_multi[2][1][0]: offset -1, type 1406, size 2, index -1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+uniform_multi[2][2][0]: offset -1, type 1406, size 2, index -1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+uniform_multi[3][0][0]: offset -1, type 1406, size 2, index -1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+uniform_multi[3][1][0]: offset -1, type 1406, size 2, index -1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+uniform_multi[3][2][0]: offset -1, type 1406, size 2, index -1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+
+Uniform block reflection:
+UBO: offset -1, type ffffffff, size 192, index -1, binding -1, stages 1, numMembers 7
+
+Buffer variable reflection:
+t[0].v[0].position[0]: offset 0, type 1406, size 3, index 0, binding -1, stages 1, arrayStride 4, topLevelArrayStride 72
+t[0].v[0].normal[0]: offset 12, type 1406, size 3, index 0, binding -1, stages 1, arrayStride 4, topLevelArrayStride 72
+t[0].v[1].position[0]: offset 24, type 1406, size 3, index 0, binding -1, stages 1, arrayStride 4, topLevelArrayStride 72
+t[0].v[1].normal[0]: offset 36, type 1406, size 3, index 0, binding -1, stages 1, arrayStride 4, topLevelArrayStride 72
+t[0].v[2].position[0]: offset 48, type 1406, size 3, index 0, binding -1, stages 1, arrayStride 4, topLevelArrayStride 72
+t[0].v[2].normal[0]: offset 60, type 1406, size 3, index 0, binding -1, stages 1, arrayStride 4, topLevelArrayStride 72
+padding[0]: offset 360, type 1405, size 10, index 0, binding -1, stages 0, arrayStride 4, topLevelArrayStride 4
+MultipleArrays.tri[0].v[0].position[0]: offset 0, type 1406, size 3, index 1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 72
+MultipleArrays.tri[0].v[0].normal[0]: offset 12, type 1406, size 3, index 1, binding -1, stages 0, arrayStride 4, topLevelArrayStride 72
+MultipleArrays.tri[0].v[1].position[0]: offset 24, type 1406, size 3, index 1, binding -1, stages 0, arrayStride 4, topLevelArrayStride 72
+MultipleArrays.tri[0].v[1].normal[0]: offset 36, type 1406, size 3, index 1, binding -1, stages 0, arrayStride 4, topLevelArrayStride 72
+MultipleArrays.tri[0].v[2].position[0]: offset 48, type 1406, size 3, index 1, binding -1, stages 0, arrayStride 4, topLevelArrayStride 72
+MultipleArrays.tri[0].v[2].normal[0]: offset 60, type 1406, size 3, index 1, binding -1, stages 0, arrayStride 4, topLevelArrayStride 72
+MultipleArrays.vert[0].position[0]: offset 360, type 1406, size 3, index 1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 24
+MultipleArrays.vert[0].normal[0]: offset 372, type 1406, size 3, index 1, binding -1, stages 0, arrayStride 4, topLevelArrayStride 24
+MultipleArrays.f[0]: offset 480, type 1406, size 5, index 1, binding -1, stages 1, arrayStride 4, topLevelArrayStride 4
+
+Buffer block reflection:
+VertexCollection: offset -1, type ffffffff, size 400, index -1, binding -1, stages 1, numMembers 7
+MultipleArrays: offset -1, type ffffffff, size 500, index -1, binding -1, stages 1, numMembers 9
+
+Pipeline input reflection:
+gl_InstanceID: offset 0, type 1404, size 1, index 0, binding -1, stages 1
+
+Pipeline output reflection:
+outval.val: offset 0, type 1406, size 1, index 0, binding -1, stages 1
+outval.a: offset 0, type 8b51, size 1, index 0, binding -1, stages 1
+outval.b[0]: offset 0, type 8b50, size 4, index 0, binding -1, stages 1
+outval.c: offset 0, type 8b5a, size 1, index 0, binding -1, stages 1
+outarr[0]: offset 0, type 1406, size 3, index 0, binding -1, stages 1
+

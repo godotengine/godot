@@ -1,0 +1,254 @@
+#!/usr/bin/env bash
+
+TARGETDIR=localResults
+BASEDIR=baseResults
+EXE=../build/install/bin/glslangValidator
+REMAPEXE=../build/install/bin/spirv-remap
+HASERROR=0
+mkdir -p localResults
+
+if [ -a localtestlist ]
+  then
+    while read t; do
+        echo Running $t...
+        b=`basename $t`
+        $EXE -i -l $t > $TARGETDIR/$b.out
+        diff -b $BASEDIR/$b.out $TARGETDIR/$b.out || HASERROR=1
+    done < localtestlist
+fi
+
+rm -f comp.spv frag.spv geom.spv tesc.spv tese.spv vert.spv
+
+#
+# special tests
+#
+
+$EXE badMacroArgs.frag > $TARGETDIR/badMacroArgs.frag.out
+diff -b $BASEDIR/badMacroArgs.frag.out $TARGETDIR/badMacroArgs.frag.out || HASERROR=1
+
+#
+# reflection tests
+#
+echo Running reflection...
+$EXE -l -q -C reflection.vert > $TARGETDIR/reflection.vert.out
+diff -b $BASEDIR/reflection.vert.out $TARGETDIR/reflection.vert.out || HASERROR=1
+$EXE -l -q -C --reflect-strict-array-suffix --reflect-basic-array-suffix --reflect-intermediate-io --reflect-separate-buffers --reflect-all-block-variables --reflect-unwrap-io-blocks reflection.options.vert > $TARGETDIR/reflection.options.vert.out
+diff -b $BASEDIR/reflection.options.vert.out $TARGETDIR/reflection.options.vert.out || HASERROR=1
+$EXE -l -q -C reflection.frag > $TARGETDIR/reflection.frag.out
+diff -b $BASEDIR/reflection.frag.out $TARGETDIR/reflection.frag.out || HASERROR=1
+$EXE -l -q -C --reflect-strict-array-suffix --reflect-basic-array-suffix --reflect-intermediate-io --reflect-separate-buffers --reflect-all-block-variables --reflect-unwrap-io-blocks reflection.frag > $TARGETDIR/reflection.options.frag.out
+diff -b $BASEDIR/reflection.options.frag.out $TARGETDIR/reflection.options.frag.out || HASERROR=1
+$EXE -l -q -C --reflect-strict-array-suffix --reflect-basic-array-suffix --reflect-intermediate-io --reflect-separate-buffers --reflect-all-block-variables --reflect-unwrap-io-blocks reflection.options.geom > $TARGETDIR/reflection.options.geom.out
+diff -b $BASEDIR/reflection.options.geom.out $TARGETDIR/reflection.options.geom.out || HASERROR=1
+$EXE -l -q -C reflection.linked.vert reflection.linked.frag > $TARGETDIR/reflection.linked.out
+diff -b $BASEDIR/reflection.linked.out $TARGETDIR/reflection.linked.out || HASERROR=1
+$EXE -l -q -C --reflect-strict-array-suffix --reflect-basic-array-suffix --reflect-intermediate-io --reflect-separate-buffers --reflect-all-block-variables --reflect-unwrap-io-blocks reflection.linked.vert reflection.linked.frag > $TARGETDIR/reflection.linked.options.out
+diff -b $BASEDIR/reflection.linked.options.out $TARGETDIR/reflection.linked.options.out || HASERROR=1
+$EXE -D -Od -e flizv -l -q -C -V -Od hlsl.reflection.vert > $TARGETDIR/hlsl.reflection.vert.out
+diff -b $BASEDIR/hlsl.reflection.vert.out $TARGETDIR/hlsl.reflection.vert.out || HASERROR=1
+$EXE -D -Od -e main -l -q -C -V -Od hlsl.reflection.binding.frag > $TARGETDIR/hlsl.reflection.binding.frag.out
+diff -b $BASEDIR/hlsl.reflection.binding.frag.out $TARGETDIR/hlsl.reflection.binding.frag.out || HASERROR=1
+$EXE -D -Od -e main -l -q --hlsl-iomap --auto-map-bindings --stb 10 --sbb 20 --ssb 30 --suavb 40 --scb 50 -D -V -e main -Od hlsl.automap.frag > $TARGETDIR/hlsl.automap.frag.out
+diff -b $BASEDIR/hlsl.automap.frag.out $TARGETDIR/hlsl.automap.frag.out || HASERROR=1
+
+#
+# multi-threaded test
+#
+echo Comparing single thread to multithread for all tests in current directory...
+$EXE -i -C *.vert *.geom *.frag *.tes* *.comp > singleThread.out
+$EXE -i -C *.vert *.geom *.frag *.tes* *.comp -t > multiThread.out
+diff singleThread.out multiThread.out || HASERROR=1
+if [ $HASERROR -eq 0 ]
+then
+    rm singleThread.out
+    rm multiThread.out
+fi
+
+#
+# entry point renaming tests
+#
+echo Running entry-point renaming tests
+$EXE -i -H -V -D -Od --entry-point main_in_spv --ku --source-entrypoint main -Od hlsl.entry.rename.frag > $TARGETDIR/hlsl.entry.rename.frag.out
+diff -b $BASEDIR/hlsl.entry.rename.frag.out $TARGETDIR/hlsl.entry.rename.frag.out || HASERROR=1
+
+#
+# Testing ill-defined uncalled function
+#
+echo Running ill-defined uncalled function
+$EXE -D -Od -e main -H -Od hlsl.deadFunctionMissingBody.vert > $TARGETDIR/hlsl.deadFunctionMissingBody.vert.out
+diff -b $BASEDIR/hlsl.deadFunctionMissingBody.vert.out $TARGETDIR/hlsl.deadFunctionMissingBody.vert.out || HASERROR=1
+
+if [ $HASERROR -eq 0 ]
+then
+    echo Tests Succeeded.
+else
+    echo Tests Failed.
+fi
+
+#
+# Testing -S and compound suffixes
+#
+echo Running explicit stage test and compound suffix tests
+$EXE -Od -i -S vert nosuffix > $TARGETDIR/nosuffix.out
+diff -b $BASEDIR/nosuffix.out $TARGETDIR/nosuffix.out || HASERROR=1
+$EXE -Od -i compoundsuffix.vert.glsl > $TARGETDIR/compoundsuffix.vert.glsl
+diff -b $BASEDIR/compoundsuffix.vert.glsl $TARGETDIR/compoundsuffix.vert.glsl || HASERROR=1
+$EXE -Od -e main -H compoundsuffix.frag.hlsl > $TARGETDIR/compoundsuffix.frag.hlsl
+diff -b $BASEDIR/compoundsuffix.frag.hlsl $TARGETDIR/compoundsuffix.frag.hlsl || HASERROR=1
+
+#
+# Testing --hlsl-offsets
+#
+echo Running hlsl offsets
+$EXE -i --hlsl-offsets -H spv.hlslOffsets.vert > $TARGETDIR/spv.hlslOffsets.vert.out
+diff -b $BASEDIR/spv.hlslOffsets.vert.out $TARGETDIR/spv.hlslOffsets.vert.out || HASERROR=1
+
+echo Running hlsl offsets
+$EXE -i  --hlsl-offsets -D -Od -e main -H -Od hlsl.hlslOffset.vert > $TARGETDIR/hlsl.hlslOffset.vert.out
+diff -b $BASEDIR/hlsl.hlslOffset.vert.out $TARGETDIR/hlsl.hlslOffset.vert.out || HASERROR=1
+
+#
+# Testing --resource-set-binding
+#
+echo Configuring HLSL descriptor set and binding number manually
+$EXE -V -D -Od -e main -H -Od hlsl.multiDescriptorSet.frag --rsb frag t0 0 0 t1 1 0 s0 0 1 s1 1 1 b0 2 0 b1 2 1 b2 2 2 > $TARGETDIR/hlsl.multiDescriptorSet.frag.out
+diff -b $BASEDIR/hlsl.multiDescriptorSet.frag.out $TARGETDIR/hlsl.multiDescriptorSet.frag.out || HASERROR=1
+
+$EXE -V -D -Od -e main -H -Od hlsl.explicitDescriptorSet.frag --hlsl-iomap --amb --ssb 10 --stb 20 --rsb 4 > $TARGETDIR/hlsl.explicitDescriptorSet.frag.out
+diff -b $BASEDIR/hlsl.explicitDescriptorSet.frag.out $TARGETDIR/hlsl.explicitDescriptorSet.frag.out || HASERROR=1
+
+$EXE -V -D -Od -e main -H -Od hlsl.explicitDescriptorSet.frag --hlsl-iomap --amb --ssb 10 --stb 20 --rsb frag 3 > $TARGETDIR/hlsl.explicitDescriptorSet-2.frag.out
+diff -b $BASEDIR/hlsl.explicitDescriptorSet-2.frag.out $TARGETDIR/hlsl.explicitDescriptorSet-2.frag.out || HASERROR=1
+
+#
+# Testing per-descriptor-set IO map shift
+#
+echo 'Testing per-descriptor-set IO map shift'
+$EXE -e main --hlsl-iomap --ssb 10 1 15 2 --stb 20 --stb 25 2 --stb 70 6 --suavb 30 --suavb 40 2 --sub 50 6 -i -q -D -Od -V hlsl.shift.per-set.frag > $TARGETDIR/hlsl.shift.per-set.frag.out || HASERROR=1
+diff -b $BASEDIR/hlsl.shift.per-set.frag.out $TARGETDIR/hlsl.shift.per-set.frag.out || HASERROR=1
+
+#
+# Testing location error
+#
+echo Testing SPV no location
+$EXE -V -C spv.noLocation.vert > $TARGETDIR/spv.noLocation.vert.out
+diff -b $BASEDIR/spv.noLocation.vert.out $TARGETDIR/spv.noLocation.vert.out || HASERROR=1
+$EXE -G -H --aml spv.noBuiltInLoc.vert > $TARGETDIR/spv.noBuiltInLoc.vert.out
+diff -b $BASEDIR/spv.noBuiltInLoc.vert.out $TARGETDIR/spv.noBuiltInLoc.vert.out || HASERROR=1
+$EXE -G spv.looseUniformNoLoc.vert > $TARGETDIR/spv.looseUniformNoLoc.vert.out
+diff -b $BASEDIR/spv.looseUniformNoLoc.vert.out $TARGETDIR/spv.looseUniformNoLoc.vert.out || HASERROR=1
+
+#
+# Testing debug information
+#
+echo Testing SPV Debug Information
+$EXE -g --relaxed-errors --suppress-warnings --aml --amb --hlsl-offsets --nsf --spirv-val \
+     -G -H spv.debugInfo.frag --rsb frag 3 > $TARGETDIR/spv.debugInfo.frag.out
+diff -b $BASEDIR/spv.debugInfo.frag.out $TARGETDIR/spv.debugInfo.frag.out || HASERROR=1
+$EXE -g -Od --target-env vulkan1.1 --relaxed-errors --suppress-warnings --aml --hlsl-offsets --nsf --spirv-val \
+     -G -H spv.debugInfo.frag --rsb frag 3 > $TARGETDIR/spv.debugInfo.1.1.frag.out
+diff -b $BASEDIR/spv.debugInfo.1.1.frag.out $TARGETDIR/spv.debugInfo.1.1.frag.out || HASERROR=1
+$EXE -g -D -Od -e newMain -g --amb --aml --fua --hlsl-iomap --nsf --spirv-val --sib 1 --ssb 2 --sbb 3 --stb 4 --suavb 5 --sub 6 \
+     --sep origMain -H -Od spv.hlslDebugInfo.vert --rsb vert t0 0 0 > $TARGETDIR/spv.hlslDebugInfo.frag.out
+diff -b $BASEDIR/spv.hlslDebugInfo.frag.out $TARGETDIR/spv.hlslDebugInfo.frag.out || HASERROR=1
+
+#
+# Testing Includer
+#
+echo Testing Includer
+$EXE -D -Od -e main -H -Od ../Test/hlsl.include.vert > $TARGETDIR/hlsl.include.vert.out
+diff -b $BASEDIR/hlsl.include.vert.out $TARGETDIR/hlsl.include.vert.out || HASERROR=1
+$EXE -D -Od -e main -H -Od hlsl.includeNegative.vert > $TARGETDIR/hlsl.includeNegative.vert.out
+diff -b $BASEDIR/hlsl.includeNegative.vert.out $TARGETDIR/hlsl.includeNegative.vert.out || HASERROR=1
+$EXE -l -i include.vert > $TARGETDIR/include.vert.out
+diff -b $BASEDIR/include.vert.out $TARGETDIR/include.vert.out || HASERROR=1
+$EXE -D -Od -e main -H -Od -Iinc1/path1 -Iinc1/path2 hlsl.dashI.vert > $TARGETDIR/hlsl.dashI.vert.out
+diff -b $BASEDIR/hlsl.dashI.vert.out $TARGETDIR/hlsl.dashI.vert.out || HASERROR=1
+$EXE -D -Od -e MainPs -H -Od -g hlsl.pp.line3.frag > $TARGETDIR/hlsl.pp.line3.frag.out
+diff -b $BASEDIR/hlsl.pp.line3.frag.out $TARGETDIR/hlsl.pp.line3.frag.out || HASERROR=1
+
+#
+# Testing -D and -U
+#
+echo "Testing -D and -U"
+$EXE -DUNDEFED -UIN_SHADER -DFOO=200 -i -l -UUNDEFED -DMUL=FOO*2 glsl.-D-U.frag > $TARGETDIR/glsl.-D-U.frag.out
+diff -b $BASEDIR/glsl.-D-U.frag.out $TARGETDIR/glsl.-D-U.frag.out || HASERROR=1
+$EXE -D -Od -e main -V -i -DUNDEFED -UIN_SHADER -DFOO=200 -UUNDEFED -Od hlsl.-D-U.frag > $TARGETDIR/hlsl.-D-U.frag.out
+diff -b $BASEDIR/hlsl.-D-U.frag.out $TARGETDIR/hlsl.-D-U.frag.out || HASERROR=1
+
+#
+# Test --client and --target-env
+#
+echo "Testing --client and --target-env"
+$EXE --client vulkan100       spv.targetVulkan.vert || HASERROR=1
+$EXE --client opengl100       spv.targetOpenGL.vert || HASERROR=1
+$EXE --target-env vulkan1.0   spv.targetVulkan.vert || HASERROR=1
+$EXE --target-env vulkan1.1   spv.targetVulkan.vert || HASERROR=1
+$EXE --target-env opengl      spv.targetOpenGL.vert || HASERROR=1
+$EXE -V100                    spv.targetVulkan.vert || HASERROR=1
+$EXE -G100                    spv.targetOpenGL.vert || HASERROR=1
+$EXE --target-env spirv1.2 -V spv.targetVulkan.vert || HASERROR=1
+
+#
+# Testing GLSL entry point rename
+#
+echo "Testing GLSL entry point rename"
+$EXE -H -e foo --source-entrypoint main glsl.entryPointRename.vert > $TARGETDIR/glsl.entryPointRename.vert.out
+diff -b $BASEDIR/glsl.entryPointRename.vert.out $TARGETDIR/glsl.entryPointRename.vert.out || HASERROR=1
+$EXE -H -e foo --source-entrypoint bar glsl.entryPointRename.vert > $TARGETDIR/glsl.entryPointRename.vert.bad.out
+diff -b $BASEDIR/glsl.entryPointRename.vert.bad.out $TARGETDIR/glsl.entryPointRename.vert.bad.out || HASERROR=1
+$EXE -H -e foo --source-entrypoint main glsl.entryPointRename2.vert > $TARGETDIR/glsl.entryPointRename2.vert.out
+diff -b $BASEDIR/glsl.entryPointRename2.vert.out $TARGETDIR/glsl.entryPointRename2.vert.out || HASERROR=1
+
+#
+# Testing remapper error handling
+#
+echo "Testing remapper error handling"
+$REMAPEXE --do-everything -i remap.invalid-spirv-1.spv -o $TARGETDIR > $TARGETDIR/remap.invalid-spirv-1.out && HASERROR=1
+diff -b $BASEDIR/remap.invalid-spirv-1.out $TARGETDIR/remap.invalid-spirv-1.out || HASERROR=1
+$REMAPEXE --do-everything -i remap.invalid-spirv-2.spv -o $TARGETDIR > $TARGETDIR/remap.invalid-spirv-2.out && HASERROR=1
+diff -b $BASEDIR/remap.invalid-spirv-2.out $TARGETDIR/remap.invalid-spirv-2.out || HASERROR=1
+
+#
+# Testing position Y inversion
+#
+echo "Testing position Y inversion"
+$EXE -H -e main -V -D -Od -H -i --iy hlsl.y-negate-1.vert > $TARGETDIR/hlsl.y-negate-1.vert.out
+diff -b $BASEDIR/hlsl.y-negate-1.vert.out $TARGETDIR/hlsl.y-negate-1.vert.out || HASERROR=1
+$EXE -H -e main -V -D -Od -H -i --invert-y hlsl.y-negate-2.vert > $TARGETDIR/hlsl.y-negate-2.vert.out
+diff -b $BASEDIR/hlsl.y-negate-2.vert.out $TARGETDIR/hlsl.y-negate-2.vert.out || HASERROR=1
+$EXE -H -e main -V -D -Od -H -i --invert-y hlsl.y-negate-3.vert > $TARGETDIR/hlsl.y-negate-3.vert.out
+diff -b $BASEDIR/hlsl.y-negate-3.vert.out $TARGETDIR/hlsl.y-negate-3.vert.out || HASERROR=1
+
+#
+# Testing hlsl_functionality1
+#
+echo "Testing hlsl_functionality1"
+$EXE -H -e main -D -Od -fhlsl_functionality1 hlsl.structbuffer.incdec.frag > \
+    $TARGETDIR/hlsl.structbuffer.incdec.frag.hlslfun1.out
+diff -b $BASEDIR/hlsl.structbuffer.incdec.frag.hlslfun1.out $TARGETDIR/hlsl.structbuffer.incdec.frag.hlslfun1.out || HASERROR=1
+$EXE -H -e main -D -Od -fhlsl_functionality1 hlsl.noSemantic.functionality1.comp > \
+    $TARGETDIR/hlsl.noSemantic.functionality1.comp.out
+diff -b $BASEDIR/hlsl.noSemantic.functionality1.comp.out $TARGETDIR/hlsl.noSemantic.functionality1.comp.out || HASERROR=1
+
+#
+# Testing HLSL-specific PP feature expansion
+#
+echo "Testing HLSL-specific PP feature expansion"
+$EXE -D -E hlsl.pp.expand.frag > $TARGETDIR/hlsl.pp.expand.frag.out 2> $TARGETDIR/hlsl.pp.expand.frag.err
+diff -b $BASEDIR/hlsl.pp.expand.frag.out $TARGETDIR/hlsl.pp.expand.frag.out || HASERROR=1
+diff -b $BASEDIR/hlsl.pp.expand.frag.err $TARGETDIR/hlsl.pp.expand.frag.err || HASERROR=1
+
+#
+# Final checking
+#
+if [ $HASERROR -eq 0 ]
+then
+    echo Tests Succeeded.
+else
+    echo Tests Failed.
+fi
+
+rm -f comp.spv frag.spv geom.spv tesc.spv tese.spv vert.spv
+
+exit $HASERROR

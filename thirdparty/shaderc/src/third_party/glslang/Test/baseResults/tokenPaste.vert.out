@@ -1,0 +1,119 @@
+tokenPaste.vert
+ERROR: 0:38: '##' : unexpected location 
+ERROR: 0:40: '##' : unexpected location; end of replacement list 
+ERROR: 0:49: '##' : combined tokens are too long 
+ERROR: 0:52: '##' : not supported for these tokens 
+ERROR: 0:69: '##' : combined token is invalid 
+ERROR: 0:82: 'macro expansion' : Too few args in Macro rec
+ERROR: 0:82: '##' : unexpected location 
+ERROR: 0:82: '##' : unexpected location 
+ERROR: 0:86: '##' : unexpected location; end of argument 
+ERROR: 9 compilation errors.  No code generated.
+
+
+Shader version: 450
+ERROR: node is still EOpNull!
+0:52  Sequence
+0:52    move second child to first child ( temp int)
+0:52      'a' ( global int)
+0:52      Constant:
+0:52        11 (const int)
+0:58  Sequence
+0:58    move second child to first child ( temp int)
+0:58      'cop' ( global int)
+0:58      Constant:
+0:58        160 (const int)
+0:59  Sequence
+0:59    move second child to first child ( temp bool)
+0:59      'dop' ( global bool)
+0:59      Constant:
+0:59        true (const bool)
+0:63  Function Definition: ShouldntExpandToThis( ( global void)
+0:63    Function Parameters: 
+0:65    Sequence
+0:65      Sequence
+0:65        move second child to first child ( temp int)
+0:65          'e' ( temp int)
+0:65          Constant:
+0:65            16 (const int)
+0:66      right shift second child into first child ( temp int)
+0:66        'e' ( temp int)
+0:66        Constant:
+0:66          2 (const int)
+0:69      Sequence
+0:69        move second child to first child ( temp bool)
+0:69          'f' ( temp bool)
+0:69          Compare Greater Than ( temp bool)
+0:69            'e' ( temp int)
+0:69            Constant:
+0:69              5 (const int)
+0:?   Linker Objects
+0:?     'SecondExpansion' ( global int)
+0:?     'PostPasteExpansion' ( global int)
+0:?     'foo27' ( global float)
+0:?     'foo155' ( uniform float)
+0:?     'foo719' ( global float)
+0:?     'barfoo' ( uniform float)
+0:?     'argless' ( global float)
+0:?     'dc1' ( global float)
+0:?     'dc2' ( global float)
+0:?     'foo875' ( uniform float)
+0:?     'ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF012345' ( global float)
+0:?     'a' ( global int)
+0:?     'aop' ( const int)
+0:?       10 (const int)
+0:?     'bop' ( const int)
+0:?       4 (const int)
+0:?     'cop' ( global int)
+0:?     'dop' ( global bool)
+0:?     'argPaste2' ( uniform int)
+0:?     'argPaste20suff' ( uniform int)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+ERROR: Linking vertex stage: Missing entry point: Each stage requires one entry point
+
+Shader version: 450
+ERROR: node is still EOpNull!
+0:52  Sequence
+0:52    move second child to first child ( temp int)
+0:52      'a' ( global int)
+0:52      Constant:
+0:52        11 (const int)
+0:58  Sequence
+0:58    move second child to first child ( temp int)
+0:58      'cop' ( global int)
+0:58      Constant:
+0:58        160 (const int)
+0:59  Sequence
+0:59    move second child to first child ( temp bool)
+0:59      'dop' ( global bool)
+0:59      Constant:
+0:59        true (const bool)
+0:?   Linker Objects
+0:?     'SecondExpansion' ( global int)
+0:?     'PostPasteExpansion' ( global int)
+0:?     'foo27' ( global float)
+0:?     'foo155' ( uniform float)
+0:?     'foo719' ( global float)
+0:?     'barfoo' ( uniform float)
+0:?     'argless' ( global float)
+0:?     'dc1' ( global float)
+0:?     'dc2' ( global float)
+0:?     'foo875' ( uniform float)
+0:?     'ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF012345' ( global float)
+0:?     'a' ( global int)
+0:?     'aop' ( const int)
+0:?       10 (const int)
+0:?     'bop' ( const int)
+0:?       4 (const int)
+0:?     'cop' ( global int)
+0:?     'dop' ( global bool)
+0:?     'argPaste2' ( uniform int)
+0:?     'argPaste20suff' ( uniform int)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

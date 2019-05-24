@@ -1,0 +1,229 @@
+hlsl.structbuffer.append.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:7  Function Definition: @main(u1; ( temp 4-component vector of float)
+0:7    Function Parameters: 
+0:7      'pos' ( in uint)
+0:?     Sequence
+0:8      move second child to first child ( temp 4-component vector of float)
+0:8        indirect index (layout( row_major std430) buffer 4-component vector of float)
+0:8          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of 4-component vector of float)
+0:8            'sbuf_a' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of 4-component vector of float @data})
+0:8            Constant:
+0:8              0 (const uint)
+0:8          AtomicAdd ( temp uint)
+0:8            @count: direct index for structure ( temp uint)
+0:8              'sbuf_a@count' (layout( row_major std430) buffer block{layout( row_major std430) buffer uint @count})
+0:8              Constant:
+0:8                0 (const int)
+0:8            Constant:
+0:8              1 (const uint)
+0:?         Constant:
+0:?           1.000000
+0:?           2.000000
+0:?           3.000000
+0:?           4.000000
+0:10      Branch: Return with expression
+0:10        indirect index (layout( row_major std430) buffer 4-component vector of float)
+0:10          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of 4-component vector of float)
+0:10            'sbuf_c' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of 4-component vector of float @data})
+0:10            Constant:
+0:10              0 (const uint)
+0:10          add ( temp uint)
+0:10            AtomicAdd ( temp uint)
+0:10              @count: direct index for structure ( temp uint)
+0:10                'sbuf_c@count' (layout( row_major std430) buffer block{layout( row_major std430) buffer uint @count})
+0:10                Constant:
+0:10                  0 (const int)
+0:10              Constant:
+0:10                4294967295 (const uint)
+0:10            Constant:
+0:10              -1 (const int)
+0:7  Function Definition: main( ( temp void)
+0:7    Function Parameters: 
+0:?     Sequence
+0:7      move second child to first child ( temp uint)
+0:?         'pos' ( temp uint)
+0:?         'pos' (layout( location=0) flat in uint)
+0:7      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:7        Function Call: @main(u1; ( temp 4-component vector of float)
+0:?           'pos' ( temp uint)
+0:?   Linker Objects
+0:?     'sbuf_a' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of 4-component vector of float @data})
+0:?     'sbuf_a@count' (layout( row_major std430) buffer block{layout( row_major std430) buffer uint @count})
+0:?     'sbuf_c' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of 4-component vector of float @data})
+0:?     'sbuf_c@count' (layout( row_major std430) buffer block{layout( row_major std430) buffer uint @count})
+0:?     'sbuf_unused' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of 4-component vector of float @data})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'pos' (layout( location=0) flat in uint)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:7  Function Definition: @main(u1; ( temp 4-component vector of float)
+0:7    Function Parameters: 
+0:7      'pos' ( in uint)
+0:?     Sequence
+0:8      move second child to first child ( temp 4-component vector of float)
+0:8        indirect index (layout( row_major std430) buffer 4-component vector of float)
+0:8          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of 4-component vector of float)
+0:8            'sbuf_a' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of 4-component vector of float @data})
+0:8            Constant:
+0:8              0 (const uint)
+0:8          AtomicAdd ( temp uint)
+0:8            @count: direct index for structure ( temp uint)
+0:8              'sbuf_a@count' (layout( row_major std430) buffer block{layout( row_major std430) buffer uint @count})
+0:8              Constant:
+0:8                0 (const int)
+0:8            Constant:
+0:8              1 (const uint)
+0:?         Constant:
+0:?           1.000000
+0:?           2.000000
+0:?           3.000000
+0:?           4.000000
+0:10      Branch: Return with expression
+0:10        indirect index (layout( row_major std430) buffer 4-component vector of float)
+0:10          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of 4-component vector of float)
+0:10            'sbuf_c' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of 4-component vector of float @data})
+0:10            Constant:
+0:10              0 (const uint)
+0:10          add ( temp uint)
+0:10            AtomicAdd ( temp uint)
+0:10              @count: direct index for structure ( temp uint)
+0:10                'sbuf_c@count' (layout( row_major std430) buffer block{layout( row_major std430) buffer uint @count})
+0:10                Constant:
+0:10                  0 (const int)
+0:10              Constant:
+0:10                4294967295 (const uint)
+0:10            Constant:
+0:10              -1 (const int)
+0:7  Function Definition: main( ( temp void)
+0:7    Function Parameters: 
+0:?     Sequence
+0:7      move second child to first child ( temp uint)
+0:?         'pos' ( temp uint)
+0:?         'pos' (layout( location=0) flat in uint)
+0:7      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:7        Function Call: @main(u1; ( temp 4-component vector of float)
+0:?           'pos' ( temp uint)
+0:?   Linker Objects
+0:?     'sbuf_a' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of 4-component vector of float @data})
+0:?     'sbuf_a@count' (layout( row_major std430) buffer block{layout( row_major std430) buffer uint @count})
+0:?     'sbuf_c' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of 4-component vector of float @data})
+0:?     'sbuf_c@count' (layout( row_major std430) buffer block{layout( row_major std430) buffer uint @count})
+0:?     'sbuf_unused' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of 4-component vector of float @data})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'pos' (layout( location=0) flat in uint)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 56
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 48 51
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 12  "@main(u1;"
+                              Name 11  "pos"
+                              Name 15  "sbuf_a"
+                              MemberName 15(sbuf_a) 0  "@data"
+                              Name 17  "sbuf_a"
+                              Name 20  "sbuf_a@count"
+                              MemberName 20(sbuf_a@count) 0  "@count"
+                              Name 22  "sbuf_a@count"
+                              Name 35  "sbuf_c"
+                              Name 36  "sbuf_c@count"
+                              Name 46  "pos"
+                              Name 48  "pos"
+                              Name 51  "@entryPointOutput"
+                              Name 52  "param"
+                              Name 55  "sbuf_unused"
+                              Decorate 14 ArrayStride 16
+                              MemberDecorate 15(sbuf_a) 0 Offset 0
+                              Decorate 15(sbuf_a) BufferBlock
+                              Decorate 17(sbuf_a) DescriptorSet 0
+                              Decorate 17(sbuf_a) Binding 0
+                              MemberDecorate 20(sbuf_a@count) 0 Offset 0
+                              Decorate 20(sbuf_a@count) BufferBlock
+                              Decorate 22(sbuf_a@count) DescriptorSet 0
+                              Decorate 22(sbuf_a@count) Binding 0
+                              Decorate 35(sbuf_c) DescriptorSet 0
+                              Decorate 35(sbuf_c) Binding 0
+                              Decorate 36(sbuf_c@count) DescriptorSet 0
+                              Decorate 36(sbuf_c@count) Binding 0
+                              Decorate 48(pos) Flat
+                              Decorate 48(pos) Location 0
+                              Decorate 51(@entryPointOutput) Location 0
+                              Decorate 55(sbuf_unused) DescriptorSet 0
+                              Decorate 55(sbuf_unused) Binding 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeInt 32 0
+               7:             TypePointer Function 6(int)
+               8:             TypeFloat 32
+               9:             TypeVector 8(float) 4
+              10:             TypeFunction 9(fvec4) 7(ptr)
+              14:             TypeRuntimeArray 9(fvec4)
+      15(sbuf_a):             TypeStruct 14
+              16:             TypePointer Uniform 15(sbuf_a)
+      17(sbuf_a):     16(ptr) Variable Uniform
+              18:             TypeInt 32 1
+              19:     18(int) Constant 0
+20(sbuf_a@count):             TypeStruct 6(int)
+              21:             TypePointer Uniform 20(sbuf_a@count)
+22(sbuf_a@count):     21(ptr) Variable Uniform
+              23:             TypePointer Uniform 6(int)
+              25:      6(int) Constant 1
+              26:      6(int) Constant 0
+              28:    8(float) Constant 1065353216
+              29:    8(float) Constant 1073741824
+              30:    8(float) Constant 1077936128
+              31:    8(float) Constant 1082130432
+              32:    9(fvec4) ConstantComposite 28 29 30 31
+              33:             TypePointer Uniform 9(fvec4)
+      35(sbuf_c):     16(ptr) Variable Uniform
+36(sbuf_c@count):     21(ptr) Variable Uniform
+              38:      6(int) Constant 4294967295
+              40:     18(int) Constant 4294967295
+              47:             TypePointer Input 6(int)
+         48(pos):     47(ptr) Variable Input
+              50:             TypePointer Output 9(fvec4)
+51(@entryPointOutput):     50(ptr) Variable Output
+ 55(sbuf_unused):     16(ptr) Variable Uniform
+         4(main):           2 Function None 3
+               5:             Label
+         46(pos):      7(ptr) Variable Function
+       52(param):      7(ptr) Variable Function
+              49:      6(int) Load 48(pos)
+                              Store 46(pos) 49
+              53:      6(int) Load 46(pos)
+                              Store 52(param) 53
+              54:    9(fvec4) FunctionCall 12(@main(u1;) 52(param)
+                              Store 51(@entryPointOutput) 54
+                              Return
+                              FunctionEnd
+   12(@main(u1;):    9(fvec4) Function None 10
+         11(pos):      7(ptr) FunctionParameter
+              13:             Label
+              24:     23(ptr) AccessChain 22(sbuf_a@count) 19
+              27:      6(int) AtomicIAdd 24 25 26 25
+              34:     33(ptr) AccessChain 17(sbuf_a) 19 27
+                              Store 34 32
+              37:     23(ptr) AccessChain 36(sbuf_c@count) 19
+              39:      6(int) AtomicIAdd 37 25 26 38
+              41:      6(int) IAdd 39 40
+              42:     33(ptr) AccessChain 35(sbuf_c) 19 41
+              43:    9(fvec4) Load 42
+                              ReturnValue 43
+                              FunctionEnd

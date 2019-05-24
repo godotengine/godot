@@ -1,0 +1,35 @@
+spv.coopmat_Error.comp
+ERROR: 0:8: 'ftemplate16' : unexpected type parameters 
+ERROR: 0:10: 'fnoparams' : expected four type parameters 
+ERROR: 0:12: 'fbadbits' : expected 16, 32, or 64 bits for first type parameter 
+ERROR: 0:14: 'fbadnumparams' : expected four type parameters 
+ERROR: 0:18: '' : type parameter must be a constant integer expression
+ERROR: 0:20: 'constant_id' : can only be applied to 'const'-qualified scalar 
+ERROR: 0:22: 'Cooperative matrix types must not be used in shared memory' : qualifier 
+ERROR: 0:25: 'bufmat' : member of block cannot be or contain a cooperative matrix type 
+ERROR: 0:34: 'assign' :  cannot convert from ' temp<16, 3, 16, 8> float16_t' to ' temp<32, 3, 16, 8> highp float'
+ERROR: 0:35: 'assign' :  cannot convert from ' temp<16, 3, 16, 8> float16_t' to ' temp<32, 3, 16, 8> highp float'
+ERROR: 0:40: 'assign' :  cannot convert from ' temp<16, 3, 8, 8> float16_t' to ' temp<16, 3, 16, 8> float16_t'
+ERROR: 0:46: 'assign' :  cannot convert from ' temp<16, 3, 8, 1> float16_t' to ' temp<16, 3, 8, 1> float16_t'
+ERROR: 0:49: 'constructor' : too many arguments 
+ERROR: 0:49: 'assign' :  cannot convert from ' const float' to ' temp<16, 3, 8, 8> float16_t'
+ERROR: 0:53: 'constructor' : Cooperative matrix constructor argument must be scalar or cooperative matrix 
+ERROR: 0:53: '=' :  cannot convert from ' const float' to ' temp<32, 3, 4, 4> highp float'
+ERROR: 0:56: 'expression' :  left of '[' is not of type array, matrix, or vector  
+ERROR: 0:59: '.' : cannot apply to a cooperative matrix type: x
+ERROR: 0:61: '*' :  wrong operand types: no operation '*' exists that takes a left-hand operand of type ' temp<16, 3, 16, 8> float16_t' and a right operand of type ' temp<16, 3, 16, 8> float16_t' (or there is no acceptable conversion)
+ERROR: 0:63: '+' :  wrong operand types: no operation '+' exists that takes a left-hand operand of type ' temp<16, 3, 16, 8> float16_t' and a right operand of type ' const float' (or there is no acceptable conversion)
+ERROR: 0:64: '-' :  wrong operand types: no operation '-' exists that takes a left-hand operand of type ' temp<16, 3, 16, 8> float16_t' and a right operand of type ' const float' (or there is no acceptable conversion)
+ERROR: 0:65: '/' :  wrong operand types: no operation '/' exists that takes a left-hand operand of type ' temp<16, 3, 16, 8> float16_t' and a right operand of type ' const float' (or there is no acceptable conversion)
+ERROR: 0:66: 'assign' :  cannot convert from ' const float' to ' temp<16, 3, 16, 8> float16_t'
+ERROR: 0:67: 'assign' :  cannot convert from ' const float' to ' temp<16, 3, 16, 8> float16_t'
+ERROR: 0:68: 'assign' :  cannot convert from ' const float' to ' temp<16, 3, 16, 8> float16_t'
+ERROR: 0:70: '*' :  wrong operand types: no operation '*' exists that takes a left-hand operand of type ' temp<16, 3, 16, 8> float16_t' and a right operand of type ' const float' (or there is no acceptable conversion)
+ERROR: 0:71: '*' :  wrong operand types: no operation '*' exists that takes a left-hand operand of type ' const float' and a right operand of type ' temp<16, 3, 16, 8> float16_t' (or there is no acceptable conversion)
+ERROR: 0:72: '*' :  wrong operand types: no operation '*' exists that takes a left-hand operand of type ' temp<32, 3, 16, 8> highp float' and a right operand of type ' const float16_t' (or there is no acceptable conversion)
+ERROR: 0:73: '*' :  wrong operand types: no operation '*' exists that takes a left-hand operand of type ' const float16_t' and a right operand of type ' temp<32, 3, 16, 8> highp float' (or there is no acceptable conversion)
+ERROR: 0:75: 'transpose' : no matching overloaded function found 
+ERROR: 30 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

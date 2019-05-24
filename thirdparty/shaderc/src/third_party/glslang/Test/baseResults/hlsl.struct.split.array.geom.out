@@ -1,0 +1,306 @@
+hlsl.struct.split.array.geom
+Shader version: 500
+invocations = -1
+max_vertices = 4
+input primitive = points
+output primitive = triangle_strip
+0:? Sequence
+0:13  Function Definition: @main(u1[1];struct-PSInput-vf4-vf2-vf3-u11; ( temp void)
+0:13    Function Parameters: 
+0:13      'v' ( in 1-element array of uint)
+0:13      'OutputStream' ( out structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:?     Sequence
+0:16      Sequence
+0:16        move second child to first child ( temp structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:16          'Out' ( temp structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:16          Constant:
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0 (const uint)
+0:18      Sequence
+0:18        move second child to first child ( temp int)
+0:18          'x' ( temp int)
+0:18          Constant:
+0:18            0 (const int)
+0:18        Loop with condition tested first
+0:18          Loop Condition
+0:18          Compare Less Than ( temp bool)
+0:18            'x' ( temp int)
+0:18            Constant:
+0:18              2 (const int)
+0:18          Loop Body
+0:19          Sequence
+0:19            move second child to first child ( temp int)
+0:19              'y' ( temp int)
+0:19              Constant:
+0:19                0 (const int)
+0:19            Loop with condition tested first
+0:19              Loop Condition
+0:19              Compare Less Than ( temp bool)
+0:19                'y' ( temp int)
+0:19                Constant:
+0:19                  2 (const int)
+0:19              Loop Body
+0:20              move second child to first child ( temp structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:20                indirect index ( temp structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:20                  indirect index ( temp 3-element array of structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:20                    'Verts' ( temp 2-element array of 3-element array of structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:20                    'x' ( temp int)
+0:20                  'y' ( temp int)
+0:20                'Out' ( temp structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:19              Loop Terminal Expression
+0:19              Pre-Increment ( temp int)
+0:19                'y' ( temp int)
+0:18          Loop Terminal Expression
+0:18          Pre-Increment ( temp int)
+0:18            'x' ( temp int)
+0:13  Function Definition: main( ( temp void)
+0:13    Function Parameters: 
+0:?     Sequence
+0:13      move second child to first child ( temp 1-element array of uint)
+0:?         'v' ( temp 1-element array of uint)
+0:?         'v' (layout( location=0) in 1-element array of uint)
+0:13      Function Call: @main(u1[1];struct-PSInput-vf4-vf2-vf3-u11; ( temp void)
+0:?         'v' ( temp 1-element array of uint)
+0:?         'OutputStream' ( temp structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:?   Linker Objects
+0:?     'v' (layout( location=0) in 1-element array of uint)
+0:?     'OutputStream.Pos' ( out 4-component vector of float Position)
+0:?     'OutputStream.TexCoord' (layout( location=0) out 2-component vector of float)
+0:?     'OutputStream.TerrainPos' (layout( location=1) out 3-component vector of float)
+0:?     'OutputStream.VertexID' (layout( location=2) out uint)
+
+
+Linked geometry stage:
+
+
+Shader version: 500
+invocations = 1
+max_vertices = 4
+input primitive = points
+output primitive = triangle_strip
+0:? Sequence
+0:13  Function Definition: @main(u1[1];struct-PSInput-vf4-vf2-vf3-u11; ( temp void)
+0:13    Function Parameters: 
+0:13      'v' ( in 1-element array of uint)
+0:13      'OutputStream' ( out structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:?     Sequence
+0:16      Sequence
+0:16        move second child to first child ( temp structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:16          'Out' ( temp structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:16          Constant:
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0.000000
+0:16            0 (const uint)
+0:18      Sequence
+0:18        move second child to first child ( temp int)
+0:18          'x' ( temp int)
+0:18          Constant:
+0:18            0 (const int)
+0:18        Loop with condition tested first
+0:18          Loop Condition
+0:18          Compare Less Than ( temp bool)
+0:18            'x' ( temp int)
+0:18            Constant:
+0:18              2 (const int)
+0:18          Loop Body
+0:19          Sequence
+0:19            move second child to first child ( temp int)
+0:19              'y' ( temp int)
+0:19              Constant:
+0:19                0 (const int)
+0:19            Loop with condition tested first
+0:19              Loop Condition
+0:19              Compare Less Than ( temp bool)
+0:19                'y' ( temp int)
+0:19                Constant:
+0:19                  2 (const int)
+0:19              Loop Body
+0:20              move second child to first child ( temp structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:20                indirect index ( temp structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:20                  indirect index ( temp 3-element array of structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:20                    'Verts' ( temp 2-element array of 3-element array of structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:20                    'x' ( temp int)
+0:20                  'y' ( temp int)
+0:20                'Out' ( temp structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:19              Loop Terminal Expression
+0:19              Pre-Increment ( temp int)
+0:19                'y' ( temp int)
+0:18          Loop Terminal Expression
+0:18          Pre-Increment ( temp int)
+0:18            'x' ( temp int)
+0:13  Function Definition: main( ( temp void)
+0:13    Function Parameters: 
+0:?     Sequence
+0:13      move second child to first child ( temp 1-element array of uint)
+0:?         'v' ( temp 1-element array of uint)
+0:?         'v' (layout( location=0) in 1-element array of uint)
+0:13      Function Call: @main(u1[1];struct-PSInput-vf4-vf2-vf3-u11; ( temp void)
+0:?         'v' ( temp 1-element array of uint)
+0:?         'OutputStream' ( temp structure{ temp 4-component vector of float Pos,  temp 2-component vector of float TexCoord,  temp 3-component vector of float TerrainPos,  temp uint VertexID})
+0:?   Linker Objects
+0:?     'v' (layout( location=0) in 1-element array of uint)
+0:?     'OutputStream.Pos' ( out 4-component vector of float Position)
+0:?     'OutputStream.TexCoord' (layout( location=0) out 2-component vector of float)
+0:?     'OutputStream.TerrainPos' (layout( location=1) out 3-component vector of float)
+0:?     'OutputStream.VertexID' (layout( location=2) out uint)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 82
+
+                              Capability Geometry
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Geometry 4  "main" 66 75 77 79 81
+                              ExecutionMode 4 InputPoints
+                              ExecutionMode 4 Invocations 1
+                              ExecutionMode 4 OutputTriangleStrip
+                              ExecutionMode 4 OutputVertices 4
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 14  "PSInput"
+                              MemberName 14(PSInput) 0  "Pos"
+                              MemberName 14(PSInput) 1  "TexCoord"
+                              MemberName 14(PSInput) 2  "TerrainPos"
+                              MemberName 14(PSInput) 3  "VertexID"
+                              Name 19  "@main(u1[1];struct-PSInput-vf4-vf2-vf3-u11;"
+                              Name 17  "v"
+                              Name 18  "OutputStream"
+                              Name 21  "Out"
+                              Name 30  "x"
+                              Name 41  "y"
+                              Name 54  "Verts"
+                              Name 64  "v"
+                              Name 66  "v"
+                              Name 68  "OutputStream"
+                              Name 69  "param"
+                              Name 71  "param"
+                              Name 75  "OutputStream.Pos"
+                              Name 77  "OutputStream.TexCoord"
+                              Name 79  "OutputStream.TerrainPos"
+                              Name 81  "OutputStream.VertexID"
+                              Decorate 66(v) Location 0
+                              Decorate 75(OutputStream.Pos) BuiltIn Position
+                              Decorate 77(OutputStream.TexCoord) Location 0
+                              Decorate 79(OutputStream.TerrainPos) Location 1
+                              Decorate 81(OutputStream.VertexID) Location 2
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeInt 32 0
+               7:      6(int) Constant 1
+               8:             TypeArray 6(int) 7
+               9:             TypePointer Function 8
+              10:             TypeFloat 32
+              11:             TypeVector 10(float) 4
+              12:             TypeVector 10(float) 2
+              13:             TypeVector 10(float) 3
+     14(PSInput):             TypeStruct 11(fvec4) 12(fvec2) 13(fvec3) 6(int)
+              15:             TypePointer Function 14(PSInput)
+              16:             TypeFunction 2 9(ptr) 15(ptr)
+              22:   10(float) Constant 0
+              23:   11(fvec4) ConstantComposite 22 22 22 22
+              24:   12(fvec2) ConstantComposite 22 22
+              25:   13(fvec3) ConstantComposite 22 22 22
+              26:      6(int) Constant 0
+              27: 14(PSInput) ConstantComposite 23 24 25 26
+              28:             TypeInt 32 1
+              29:             TypePointer Function 28(int)
+              31:     28(int) Constant 0
+              38:     28(int) Constant 2
+              39:             TypeBool
+              49:      6(int) Constant 3
+              50:             TypeArray 14(PSInput) 49
+              51:      6(int) Constant 2
+              52:             TypeArray 50 51
+              53:             TypePointer Function 52
+              60:     28(int) Constant 1
+              65:             TypePointer Input 8
+           66(v):     65(ptr) Variable Input
+              74:             TypePointer Output 11(fvec4)
+75(OutputStream.Pos):     74(ptr) Variable Output
+              76:             TypePointer Output 12(fvec2)
+77(OutputStream.TexCoord):     76(ptr) Variable Output
+              78:             TypePointer Output 13(fvec3)
+79(OutputStream.TerrainPos):     78(ptr) Variable Output
+              80:             TypePointer Output 6(int)
+81(OutputStream.VertexID):     80(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+           64(v):      9(ptr) Variable Function
+68(OutputStream):     15(ptr) Variable Function
+       69(param):      9(ptr) Variable Function
+       71(param):     15(ptr) Variable Function
+              67:           8 Load 66(v)
+                              Store 64(v) 67
+              70:           8 Load 64(v)
+                              Store 69(param) 70
+              72:           2 FunctionCall 19(@main(u1[1];struct-PSInput-vf4-vf2-vf3-u11;) 69(param) 71(param)
+              73: 14(PSInput) Load 71(param)
+                              Store 68(OutputStream) 73
+                              Return
+                              FunctionEnd
+19(@main(u1[1];struct-PSInput-vf4-vf2-vf3-u11;):           2 Function None 16
+           17(v):      9(ptr) FunctionParameter
+18(OutputStream):     15(ptr) FunctionParameter
+              20:             Label
+         21(Out):     15(ptr) Variable Function
+           30(x):     29(ptr) Variable Function
+           41(y):     29(ptr) Variable Function
+       54(Verts):     53(ptr) Variable Function
+                              Store 21(Out) 27
+                              Store 30(x) 31
+                              Branch 32
+              32:             Label
+                              LoopMerge 34 35 None
+                              Branch 36
+              36:             Label
+              37:     28(int) Load 30(x)
+              40:    39(bool) SLessThan 37 38
+                              BranchConditional 40 33 34
+              33:               Label
+                                Store 41(y) 31
+                                Branch 42
+              42:               Label
+                                LoopMerge 44 45 None
+                                Branch 46
+              46:               Label
+              47:     28(int)   Load 41(y)
+              48:    39(bool)   SLessThan 47 38
+                                BranchConditional 48 43 44
+              43:                 Label
+              55:     28(int)     Load 30(x)
+              56:     28(int)     Load 41(y)
+              57: 14(PSInput)     Load 21(Out)
+              58:     15(ptr)     AccessChain 54(Verts) 55 56
+                                  Store 58 57
+                                  Branch 45
+              45:                 Label
+              59:     28(int)     Load 41(y)
+              61:     28(int)     IAdd 59 60
+                                  Store 41(y) 61
+                                  Branch 42
+              44:               Label
+                                Branch 35
+              35:               Label
+              62:     28(int)   Load 30(x)
+              63:     28(int)   IAdd 62 60
+                                Store 30(x) 63
+                                Branch 32
+              34:             Label
+                              Return
+                              FunctionEnd

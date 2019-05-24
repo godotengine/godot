@@ -1,0 +1,91 @@
+spv.16bitstorage_Error-uint.frag
+ERROR: 0:54: 'structure: (u)int16 types can only be in uniform block or buffer storage' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:58: 'return: can't use with structs containing uint16' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:61: 'uint16_t: (u)int16 types can only be in uniform block or buffer storage' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:74: '[: does not operate on types containing (u)int16' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:75: '.: can't swizzle types containing (u)int16' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:76: 'built-in function: (u)int16 types can only be in uniform block or buffer storage' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:76: 'built-in function: (u)int16 types can only be in uniform block or buffer storage' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:76: 'built-in function: (u)int16 types can only be in uniform block or buffer storage' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:77: 'built-in function: (u)int16 types can only be in uniform block or buffer storage' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:77: 'built-in function: (u)int16 types can only be in uniform block or buffer storage' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:78: '+' :  wrong operand types: no operation '+' exists that takes a left-hand operand of type 'layout( column_major std140 offset=0) uniform uint16_t' and a right operand of type 'layout( column_major std140 offset=0) uniform uint16_t' (or there is no acceptable conversion)
+ERROR: 0:79: '-' :  wrong operand type no operation '-' exists that takes an operand of type layout( column_major std140 offset=0) uniform uint16_t (or there is no acceptable conversion)
+ERROR: 0:80: '+' :  wrong operand types: no operation '+' exists that takes a left-hand operand of type 'layout( column_major std140 offset=0) uniform uint16_t' and a right operand of type ' const int' (or there is no acceptable conversion)
+ERROR: 0:81: '.: can't swizzle types containing (u)int16' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:82: '=: can't use with structs containing uint16' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:83: 'qualifier: (u)int16 types can only be in uniform block or buffer storage' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:84: 'qualifier: (u)int16 types can only be in uniform block or buffer storage' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:85: 'qualifier: (u)int16 types can only be in uniform block or buffer storage' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:86: '==' :  wrong operand types: no operation '==' exists that takes a left-hand operand of type 'layout( column_major std140 offset=0) uniform uint16_t' and a right operand of type 'layout( column_major std140 offset=0) uniform uint16_t' (or there is no acceptable conversion)
+ERROR: 0:87: '=: can't use with arrays containing uint16' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:88: 'constructor: 16-bit vectors only take vector types' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:89: 'constructor: 16-bit arrays not supported' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:89: 'constructor: 16-bit vectors only take vector types' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:92: 'constructor: can't construct structure containing 16-bit type' : required extension not requested: Possible extensions include:
+GL_AMD_gpu_shader_int16
+GL_EXT_shader_explicit_arithmetic_types
+GL_EXT_shader_explicit_arithmetic_types_int16
+ERROR: 0:93: 'func2' : no matching overloaded function found 
+ERROR: 0:99: '' :  syntax error, unexpected IDENTIFIER
+ERROR: 26 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

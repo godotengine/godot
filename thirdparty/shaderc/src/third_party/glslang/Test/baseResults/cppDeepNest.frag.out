@@ -1,0 +1,20 @@
+cppDeepNest.frag
+ERROR: 0:66: '#if/#ifdef/#ifndef' : maximum nesting depth exceeded 
+ERROR: 0:66: '' : missing #endif 
+ERROR: 0:66: '' :  syntax error, unexpected $end
+ERROR: 3 compilation errors.  No code generated.
+
+
+Shader version: 100
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+
+
+Linked fragment stage:
+
+ERROR: Linking fragment stage: Missing entry point: Each stage requires one entry point
+
+Shader version: 100
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+

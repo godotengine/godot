@@ -1,0 +1,153 @@
+struct Types
+{
+	uint4 u;
+	int4 i;
+	float4 f;
+	double4 d;
+};
+
+RWStructuredBuffer<Types> data;
+
+[numthreads(32, 16, 1)]
+void CSMain(uint3 dti : SV_DispatchThreadID)
+{
+	data[dti.x].u = QuadReadLaneAt(data[dti.x].u, 0);
+	data[dti.x].u.x = QuadReadLaneAt(data[dti.x].u.x, 0);
+	data[dti.x].u.xy = QuadReadLaneAt(data[dti.x].u.xy, 0);
+	data[dti.x].u.xyz = QuadReadLaneAt(data[dti.x].u.xyz, 0);
+
+	data[dti.x].i = QuadReadLaneAt(data[dti.x].i, 0);
+	data[dti.x].i.x = QuadReadLaneAt(data[dti.x].i.x, 0);
+	data[dti.x].i.xy = QuadReadLaneAt(data[dti.x].i.xy, 0);
+	data[dti.x].i.xyz = QuadReadLaneAt(data[dti.x].i.xyz, 0);
+
+	data[dti.x].f = QuadReadLaneAt(data[dti.x].f, 0);
+	data[dti.x].f.x = QuadReadLaneAt(data[dti.x].f.x, 0);
+	data[dti.x].f.xy = QuadReadLaneAt(data[dti.x].f.xy, 0);
+	data[dti.x].f.xyz = QuadReadLaneAt(data[dti.x].f.xyz, 0);
+
+	data[dti.x].d = QuadReadLaneAt(data[dti.x].d, 0);
+	data[dti.x].d.x = QuadReadLaneAt(data[dti.x].d.x, 0);
+	data[dti.x].d.xy = QuadReadLaneAt(data[dti.x].d.xy, 0);
+	data[dti.x].d.xyz = QuadReadLaneAt(data[dti.x].d.xyz, 0);
+
+	data[dti.x].u = QuadReadLaneAt(data[dti.x].u, 1);
+	data[dti.x].u.x = QuadReadLaneAt(data[dti.x].u.x, 1);
+	data[dti.x].u.xy = QuadReadLaneAt(data[dti.x].u.xy, 1);
+	data[dti.x].u.xyz = QuadReadLaneAt(data[dti.x].u.xyz, 1);
+
+	data[dti.x].i = QuadReadLaneAt(data[dti.x].i, 1);
+	data[dti.x].i.x = QuadReadLaneAt(data[dti.x].i.x, 1);
+	data[dti.x].i.xy = QuadReadLaneAt(data[dti.x].i.xy, 1);
+	data[dti.x].i.xyz = QuadReadLaneAt(data[dti.x].i.xyz, 1);
+
+	data[dti.x].f = QuadReadLaneAt(data[dti.x].f, 1);
+	data[dti.x].f.x = QuadReadLaneAt(data[dti.x].f.x, 1);
+	data[dti.x].f.xy = QuadReadLaneAt(data[dti.x].f.xy, 1);
+	data[dti.x].f.xyz = QuadReadLaneAt(data[dti.x].f.xyz, 1);
+
+	data[dti.x].d = QuadReadLaneAt(data[dti.x].d, 1);
+	data[dti.x].d.x = QuadReadLaneAt(data[dti.x].d.x, 1);
+	data[dti.x].d.xy = QuadReadLaneAt(data[dti.x].d.xy, 1);
+	data[dti.x].d.xyz = QuadReadLaneAt(data[dti.x].d.xyz, 1);
+
+	data[dti.x].u = QuadReadLaneAt(data[dti.x].u, 2);
+	data[dti.x].u.x = QuadReadLaneAt(data[dti.x].u.x, 2);
+	data[dti.x].u.xy = QuadReadLaneAt(data[dti.x].u.xy, 2);
+	data[dti.x].u.xyz = QuadReadLaneAt(data[dti.x].u.xyz, 2);
+
+	data[dti.x].i = QuadReadLaneAt(data[dti.x].i, 2);
+	data[dti.x].i.x = QuadReadLaneAt(data[dti.x].i.x, 2);
+	data[dti.x].i.xy = QuadReadLaneAt(data[dti.x].i.xy, 2);
+	data[dti.x].i.xyz = QuadReadLaneAt(data[dti.x].i.xyz, 2);
+
+	data[dti.x].f = QuadReadLaneAt(data[dti.x].f, 2);
+	data[dti.x].f.x = QuadReadLaneAt(data[dti.x].f.x, 2);
+	data[dti.x].f.xy = QuadReadLaneAt(data[dti.x].f.xy, 2);
+	data[dti.x].f.xyz = QuadReadLaneAt(data[dti.x].f.xyz, 2);
+
+	data[dti.x].d = QuadReadLaneAt(data[dti.x].d, 2);
+	data[dti.x].d.x = QuadReadLaneAt(data[dti.x].d.x, 2);
+	data[dti.x].d.xy = QuadReadLaneAt(data[dti.x].d.xy, 2);
+	data[dti.x].d.xyz = QuadReadLaneAt(data[dti.x].d.xyz, 2);
+
+	data[dti.x].u = QuadReadLaneAt(data[dti.x].u, 3);
+	data[dti.x].u.x = QuadReadLaneAt(data[dti.x].u.x, 3);
+	data[dti.x].u.xy = QuadReadLaneAt(data[dti.x].u.xy, 3);
+	data[dti.x].u.xyz = QuadReadLaneAt(data[dti.x].u.xyz, 3);
+
+	data[dti.x].i = QuadReadLaneAt(data[dti.x].i, 3);
+	data[dti.x].i.x = QuadReadLaneAt(data[dti.x].i.x, 3);
+	data[dti.x].i.xy = QuadReadLaneAt(data[dti.x].i.xy, 3);
+	data[dti.x].i.xyz = QuadReadLaneAt(data[dti.x].i.xyz, 3);
+
+	data[dti.x].f = QuadReadLaneAt(data[dti.x].f, 3);
+	data[dti.x].f.x = QuadReadLaneAt(data[dti.x].f.x, 3);
+	data[dti.x].f.xy = QuadReadLaneAt(data[dti.x].f.xy, 3);
+	data[dti.x].f.xyz = QuadReadLaneAt(data[dti.x].f.xyz, 3);
+
+	data[dti.x].d = QuadReadLaneAt(data[dti.x].d, 3);
+	data[dti.x].d.x = QuadReadLaneAt(data[dti.x].d.x, 3);
+	data[dti.x].d.xy = QuadReadLaneAt(data[dti.x].d.xy, 3);
+	data[dti.x].d.xyz = QuadReadLaneAt(data[dti.x].d.xyz, 3);
+
+	data[dti.x].u = QuadReadAcrossX(data[dti.x].u);
+	data[dti.x].u.x = QuadReadAcrossX(data[dti.x].u.x);
+	data[dti.x].u.xy = QuadReadAcrossX(data[dti.x].u.xy);
+	data[dti.x].u.xyz = QuadReadAcrossX(data[dti.x].u.xyz);
+
+	data[dti.x].i = QuadReadAcrossX(data[dti.x].i);
+	data[dti.x].i.x = QuadReadAcrossX(data[dti.x].i.x);
+	data[dti.x].i.xy = QuadReadAcrossX(data[dti.x].i.xy);
+	data[dti.x].i.xyz = QuadReadAcrossX(data[dti.x].i.xyz);
+
+	data[dti.x].f = QuadReadAcrossX(data[dti.x].f);
+	data[dti.x].f.x = QuadReadAcrossX(data[dti.x].f.x);
+	data[dti.x].f.xy = QuadReadAcrossX(data[dti.x].f.xy);
+	data[dti.x].f.xyz = QuadReadAcrossX(data[dti.x].f.xyz);
+
+	data[dti.x].d = QuadReadAcrossX(data[dti.x].d);
+	data[dti.x].d.x = QuadReadAcrossX(data[dti.x].d.x);
+	data[dti.x].d.xy = QuadReadAcrossX(data[dti.x].d.xy);
+	data[dti.x].d.xyz = QuadReadAcrossX(data[dti.x].d.xyz);
+
+	data[dti.x].u = QuadReadAcrossY(data[dti.x].u);
+	data[dti.x].u.x = QuadReadAcrossY(data[dti.x].u.x);
+	data[dti.x].u.xy = QuadReadAcrossY(data[dti.x].u.xy);
+	data[dti.x].u.xyz = QuadReadAcrossY(data[dti.x].u.xyz);
+
+	data[dti.x].i = QuadReadAcrossY(data[dti.x].i);
+	data[dti.x].i.x = QuadReadAcrossY(data[dti.x].i.x);
+	data[dti.x].i.xy = QuadReadAcrossY(data[dti.x].i.xy);
+	data[dti.x].i.xyz = QuadReadAcrossY(data[dti.x].i.xyz);
+
+	data[dti.x].f = QuadReadAcrossY(data[dti.x].f);
+	data[dti.x].f.x = QuadReadAcrossY(data[dti.x].f.x);
+	data[dti.x].f.xy = QuadReadAcrossY(data[dti.x].f.xy);
+	data[dti.x].f.xyz = QuadReadAcrossY(data[dti.x].f.xyz);
+
+	data[dti.x].d = QuadReadAcrossY(data[dti.x].d);
+	data[dti.x].d.x = QuadReadAcrossY(data[dti.x].d.x);
+	data[dti.x].d.xy = QuadReadAcrossY(data[dti.x].d.xy);
+	data[dti.x].d.xyz = QuadReadAcrossY(data[dti.x].d.xyz);
+
+	data[dti.x].u = QuadReadAcrossDiagonal(data[dti.x].u);
+	data[dti.x].u.x = QuadReadAcrossDiagonal(data[dti.x].u.x);
+	data[dti.x].u.xy = QuadReadAcrossDiagonal(data[dti.x].u.xy);
+	data[dti.x].u.xyz = QuadReadAcrossDiagonal(data[dti.x].u.xyz);
+
+	data[dti.x].i = QuadReadAcrossDiagonal(data[dti.x].i);
+	data[dti.x].i.x = QuadReadAcrossDiagonal(data[dti.x].i.x);
+	data[dti.x].i.xy = QuadReadAcrossDiagonal(data[dti.x].i.xy);
+	data[dti.x].i.xyz = QuadReadAcrossDiagonal(data[dti.x].i.xyz);
+
+	data[dti.x].f = QuadReadAcrossDiagonal(data[dti.x].f);
+	data[dti.x].f.x = QuadReadAcrossDiagonal(data[dti.x].f.x);
+	data[dti.x].f.xy = QuadReadAcrossDiagonal(data[dti.x].f.xy);
+	data[dti.x].f.xyz = QuadReadAcrossDiagonal(data[dti.x].f.xyz);
+
+	data[dti.x].d = QuadReadAcrossDiagonal(data[dti.x].d);
+	data[dti.x].d.x = QuadReadAcrossDiagonal(data[dti.x].d.x);
+	data[dti.x].d.xy = QuadReadAcrossDiagonal(data[dti.x].d.xy);
+	data[dti.x].d.xyz = QuadReadAcrossDiagonal(data[dti.x].d.xyz);
+}

@@ -1,0 +1,239 @@
+discard-dce.frag
+Shader version: 110
+0:? Sequence
+0:4  Function Definition: main( ( global void)
+0:4    Function Parameters: 
+0:6    Sequence
+0:6      Sequence
+0:6        move second child to first child ( temp 4-component vector of float)
+0:6          'white' ( temp 4-component vector of float)
+0:6          Constant:
+0:6            1.000000
+0:6            1.000000
+0:6            1.000000
+0:6            1.000000
+0:7      Sequence
+0:7        move second child to first child ( temp 4-component vector of float)
+0:7          'black' ( temp 4-component vector of float)
+0:7          Constant:
+0:7            0.200000
+0:7            0.200000
+0:7            0.200000
+0:7            0.200000
+0:8      Sequence
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          'color' ( temp 4-component vector of float)
+0:8          'white' ( temp 4-component vector of float)
+0:11      Sequence
+0:11        move second child to first child ( temp float)
+0:11          'x' ( temp float)
+0:11          subtract ( temp float)
+0:11            component-wise multiply ( temp float)
+0:11              direct index ( temp float)
+0:11                'tex_coord' ( smooth in 2-component vector of float)
+0:11                Constant:
+0:11                  0 (const int)
+0:11              Constant:
+0:11                2.000000
+0:11            Constant:
+0:11              1.000000
+0:12      Sequence
+0:12        move second child to first child ( temp float)
+0:12          'y' ( temp float)
+0:12          subtract ( temp float)
+0:12            component-wise multiply ( temp float)
+0:12              direct index ( temp float)
+0:12                'tex_coord' ( smooth in 2-component vector of float)
+0:12                Constant:
+0:12                  1 (const int)
+0:12              Constant:
+0:12                2.000000
+0:12            Constant:
+0:12              1.000000
+0:14      Sequence
+0:14        move second child to first child ( temp float)
+0:14          'radius' ( temp float)
+0:14          sqrt ( global float)
+0:14            add ( temp float)
+0:14              component-wise multiply ( temp float)
+0:14                'x' ( temp float)
+0:14                'x' ( temp float)
+0:14              component-wise multiply ( temp float)
+0:14                'y' ( temp float)
+0:14                'y' ( temp float)
+0:15      Test condition and select ( temp void)
+0:15        Condition
+0:15        Compare Greater Than ( temp bool)
+0:15          'radius' ( temp float)
+0:15          Constant:
+0:15            1.000000
+0:15        true case
+0:16        Sequence
+0:16          Test condition and select ( temp void)
+0:16            Condition
+0:16            Compare Greater Than ( temp bool)
+0:16              'radius' ( temp float)
+0:16              Constant:
+0:16                1.100000
+0:16            true case
+0:17            Sequence
+0:17              Pre-Increment ( temp 4-component vector of float)
+0:17                'color' ( temp 4-component vector of float)
+0:20          move second child to first child ( temp 4-component vector of float)
+0:20            'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:20            'color' ( temp 4-component vector of float)
+0:22          Test condition and select ( temp void)
+0:22            Condition
+0:22            Compare Greater Than ( temp bool)
+0:22              'radius' ( temp float)
+0:22              Constant:
+0:22                1.200000
+0:22            true case
+0:23            Sequence
+0:23              Pre-Increment ( temp 4-component vector of float)
+0:23                'color' ( temp 4-component vector of float)
+0:26          Branch: Kill
+0:30      Test condition and select ( temp void)
+0:30        Condition
+0:30        Compare Greater Than or Equal ( temp bool)
+0:30          'radius' ( temp float)
+0:30          Constant:
+0:30            0.750000
+0:30        true case
+0:31        subtract second child into first child ( temp 4-component vector of float)
+0:31          'color' ( temp 4-component vector of float)
+0:31          Absolute value ( global float)
+0:31            divide ( temp float)
+0:31              pow ( global float)
+0:31                'radius' ( temp float)
+0:31                Constant:
+0:31                  16.000000
+0:31              Constant:
+0:31                2.000000
+0:33      move second child to first child ( temp 4-component vector of float)
+0:33        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:33        'color' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'tex_coord' ( smooth in 2-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 110
+0:? Sequence
+0:4  Function Definition: main( ( global void)
+0:4    Function Parameters: 
+0:6    Sequence
+0:6      Sequence
+0:6        move second child to first child ( temp 4-component vector of float)
+0:6          'white' ( temp 4-component vector of float)
+0:6          Constant:
+0:6            1.000000
+0:6            1.000000
+0:6            1.000000
+0:6            1.000000
+0:7      Sequence
+0:7        move second child to first child ( temp 4-component vector of float)
+0:7          'black' ( temp 4-component vector of float)
+0:7          Constant:
+0:7            0.200000
+0:7            0.200000
+0:7            0.200000
+0:7            0.200000
+0:8      Sequence
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          'color' ( temp 4-component vector of float)
+0:8          'white' ( temp 4-component vector of float)
+0:11      Sequence
+0:11        move second child to first child ( temp float)
+0:11          'x' ( temp float)
+0:11          subtract ( temp float)
+0:11            component-wise multiply ( temp float)
+0:11              direct index ( temp float)
+0:11                'tex_coord' ( smooth in 2-component vector of float)
+0:11                Constant:
+0:11                  0 (const int)
+0:11              Constant:
+0:11                2.000000
+0:11            Constant:
+0:11              1.000000
+0:12      Sequence
+0:12        move second child to first child ( temp float)
+0:12          'y' ( temp float)
+0:12          subtract ( temp float)
+0:12            component-wise multiply ( temp float)
+0:12              direct index ( temp float)
+0:12                'tex_coord' ( smooth in 2-component vector of float)
+0:12                Constant:
+0:12                  1 (const int)
+0:12              Constant:
+0:12                2.000000
+0:12            Constant:
+0:12              1.000000
+0:14      Sequence
+0:14        move second child to first child ( temp float)
+0:14          'radius' ( temp float)
+0:14          sqrt ( global float)
+0:14            add ( temp float)
+0:14              component-wise multiply ( temp float)
+0:14                'x' ( temp float)
+0:14                'x' ( temp float)
+0:14              component-wise multiply ( temp float)
+0:14                'y' ( temp float)
+0:14                'y' ( temp float)
+0:15      Test condition and select ( temp void)
+0:15        Condition
+0:15        Compare Greater Than ( temp bool)
+0:15          'radius' ( temp float)
+0:15          Constant:
+0:15            1.000000
+0:15        true case
+0:16        Sequence
+0:16          Test condition and select ( temp void)
+0:16            Condition
+0:16            Compare Greater Than ( temp bool)
+0:16              'radius' ( temp float)
+0:16              Constant:
+0:16                1.100000
+0:16            true case
+0:17            Sequence
+0:17              Pre-Increment ( temp 4-component vector of float)
+0:17                'color' ( temp 4-component vector of float)
+0:20          move second child to first child ( temp 4-component vector of float)
+0:20            'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:20            'color' ( temp 4-component vector of float)
+0:22          Test condition and select ( temp void)
+0:22            Condition
+0:22            Compare Greater Than ( temp bool)
+0:22              'radius' ( temp float)
+0:22              Constant:
+0:22                1.200000
+0:22            true case
+0:23            Sequence
+0:23              Pre-Increment ( temp 4-component vector of float)
+0:23                'color' ( temp 4-component vector of float)
+0:26          Branch: Kill
+0:30      Test condition and select ( temp void)
+0:30        Condition
+0:30        Compare Greater Than or Equal ( temp bool)
+0:30          'radius' ( temp float)
+0:30          Constant:
+0:30            0.750000
+0:30        true case
+0:31        subtract second child into first child ( temp 4-component vector of float)
+0:31          'color' ( temp 4-component vector of float)
+0:31          Absolute value ( global float)
+0:31            divide ( temp float)
+0:31              pow ( global float)
+0:31                'radius' ( temp float)
+0:31                Constant:
+0:31                  16.000000
+0:31              Constant:
+0:31                2.000000
+0:33      move second child to first child ( temp 4-component vector of float)
+0:33        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:33        'color' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'tex_coord' ( smooth in 2-component vector of float)
+

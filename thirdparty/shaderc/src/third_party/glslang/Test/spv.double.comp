@@ -1,0 +1,25 @@
+#version 430
+
+const double d1 = 3.1415926535897932384626433832795LF;
+const double d2 = 3.1415;
+const double d3 = 3.1415926535897932384626433832795LF;
+const double d4 = 3.1415926535897932384626433832795;
+
+buffer bufName {
+    float f;
+    double d;
+} bufInst;
+
+
+uniform writeonly image2D destTex;
+
+void main()
+{
+    bufInst.d = float(d1);
+    bufInst.f = float(d1 + d2 + d3 + d4);
+
+    ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
+    double localCoef = length(vec2(ivec2(gl_LocalInvocationID.xy)-8)/8.0);
+    dvec4 aa = dvec4(0.4, 0.2, 0.3, 0.4);
+    double globalCoef = 1.0;
+}

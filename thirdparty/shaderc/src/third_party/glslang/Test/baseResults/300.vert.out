@@ -1,0 +1,505 @@
+300.vert
+ERROR: 0:8: 'varying' : Reserved word. 
+ERROR: 0:8: 'varying' : no longer supported in es profile; removed in version 300
+ERROR: 0:9: 'vertex input arrays' : not supported with this profile: es
+ERROR: 0:10: '' : precision qualifier must appear as last qualifier 
+ERROR: 0:11: '' : invariant qualifier must appear before interpolation, storage, and precision qualifiers  
+ERROR: 0:12: '' : Auxiliary qualifiers (centroid, patch, and sample) must appear before storage and precision qualifiers 
+ERROR: 0:12: '' : vertex input cannot be further qualified 
+ERROR: 0:13: '' : interpolation qualifiers must appear before storage and precision qualifiers 
+ERROR: 0:14: '' : in/out must appear before const 
+ERROR: 0:15: '' : precision qualifier must appear as last qualifier 
+ERROR: 0:16: '' : can only have one interpolation qualifier (flat, smooth, noperspective, __explicitInterpAMD) 
+ERROR: 0:17: 'sample' : Reserved word. 
+ERROR: 0:17: '' : can only have one auxiliary qualifier (centroid, patch, and sample) 
+ERROR: 0:18: 'uniform' : too many storage qualifiers 
+ERROR: 0:56: '#error' : GL_ES is set  
+ERROR: 0:62: '' : array size required 
+ERROR: 0:63: '' : array size required 
+ERROR: 0:64: '' : array size required 
+ERROR: 0:65: '' : array size required 
+ERROR: 0:67: '' : array size required 
+ERROR: 0:76: 'invariant' : cannot change qualification after use 
+ERROR: 0:78: 'invariant' : can only apply to an output 
+ERROR: 0:88: 'ub2' : Cannot reuse block name within the same interface: uniform
+ERROR: 0:92: 'ub2' : Cannot reuse block name within the same interface: uniform
+ERROR: 0:96: 'ub2' : Cannot reuse block name within the same interface: uniform
+ERROR: 0:104: 'ub3' : Cannot reuse block name within the same interface: uniform
+ERROR: 0:121: 'textureSize' : no matching overloaded function found 
+ERROR: 0:123: 'textureSize' : no matching overloaded function found 
+ERROR: 0:125: 'texture' : no matching overloaded function found 
+ERROR: 0:127: 'textureProjOffset' : no matching overloaded function found 
+ERROR: 0:132: 'highp' : overloaded functions must have the same parameter precision qualifiers for argument 2
+ERROR: 0:135: 'in' : overloaded functions must have the same parameter storage qualifiers for argument 2
+ERROR: 0:146: '' : array size required 
+ERROR: 0:147: '' : array size required 
+ERROR: 0:148: '' : array size required 
+ERROR: 0:149: 'float' : cannot apply precision statement to this type; use 'float', 'int' or a sampler type 
+ERROR: 0:168: 'Binst' : cannot add storage, auxiliary, memory, interpolation, layout, or precision qualifier to an existing variable 
+ERROR: 0:169: 'Bblock' : cannot add storage, auxiliary, memory, interpolation, layout, or precision qualifier to an existing variable 
+ERROR: 0:170: 'Bfoo' : cannot add storage, auxiliary, memory, interpolation, layout, or precision qualifier to an existing variable 
+ERROR: 0:172: 'std430' : not supported for this version or the enabled extensions 
+ERROR: 0:172: 'std430 requires the buffer storage qualifier' : required extension not requested: GL_EXT_scalar_block_layout
+ERROR: 0:175: '' : array size required 
+ERROR: 0:185: 'assign' :  cannot convert from ' temp 4-element array of highp float' to ' temp 3-element array of highp float'
+ERROR: 0:186: 'assign' :  cannot convert from ' temp 3-element array of highp float' to ' temp 4-element array of highp float'
+ERROR: 0:189: 'num_views' : required extension not requested: Possible extensions include:
+GL_OVR_multiview
+GL_OVR_multiview2
+ERROR: 0:193: 'gl_ViewID_OVR' : required extension not requested: Possible extensions include:
+GL_OVR_multiview
+GL_OVR_multiview2
+ERROR: 0:198: 'num_views' : can only apply to a standalone qualifier 
+ERROR: 47 compilation errors.  No code generated.
+
+
+Shader version: 300
+Requested GL_OVR_multiview
+ERROR: node is still EOpNull!
+0:27  Function Definition: main( ( global void)
+0:27    Function Parameters: 
+0:29    Sequence
+0:29      Sequence
+0:29        move second child to first child ( temp highp int)
+0:29          'id' ( temp highp int)
+0:29          add ( temp highp int)
+0:29            'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:29            'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+0:31      Sequence
+0:31        move second child to first child ( temp highp int)
+0:31          'c0' ( temp highp int)
+0:31          Constant:
+0:31            64 (const int)
+0:32      Sequence
+0:32        move second child to first child ( temp highp int)
+0:32          'c1' ( temp highp int)
+0:32          Constant:
+0:32            128 (const int)
+0:33      Sequence
+0:33        move second child to first child ( temp highp int)
+0:33          'c2' ( temp highp int)
+0:33          Constant:
+0:33            16 (const int)
+0:34      Sequence
+0:34        move second child to first child ( temp highp int)
+0:34          'c3' ( temp highp int)
+0:34          Constant:
+0:34            15 (const int)
+0:35      Sequence
+0:35        move second child to first child ( temp highp int)
+0:35          'c4' ( temp highp int)
+0:35          Constant:
+0:35            32 (const int)
+0:36      Sequence
+0:36        move second child to first child ( temp highp int)
+0:36          'c5' ( temp highp int)
+0:36          Constant:
+0:36            80 (const int)
+0:37      Sequence
+0:37        move second child to first child ( temp highp int)
+0:37          'c6' ( temp highp int)
+0:37          Constant:
+0:37            32 (const int)
+0:38      Sequence
+0:38        move second child to first child ( temp highp int)
+0:38          'c7' ( temp highp int)
+0:38          Constant:
+0:38            16 (const int)
+0:39      Sequence
+0:39        move second child to first child ( temp highp int)
+0:39          'c8' ( temp highp int)
+0:39          Constant:
+0:39            32 (const int)
+0:40      Sequence
+0:40        move second child to first child ( temp highp int)
+0:40          'c9' ( temp highp int)
+0:40          Constant:
+0:40            -8 (const int)
+0:41      Sequence
+0:41        move second child to first child ( temp highp int)
+0:41          'c10' ( temp highp int)
+0:41          Constant:
+0:41            7 (const int)
+0:43      Sequence
+0:43        move second child to first child ( temp highp 3X4 matrix of float)
+0:43          'tm' ( temp highp 3X4 matrix of float)
+0:43          transpose ( global highp 3X4 matrix of float)
+0:43            'm43' ( uniform highp 4X3 matrix of float)
+0:44      Sequence
+0:44        move second child to first child ( temp highp float)
+0:44          'dm' ( temp highp float)
+0:44          determinant ( global highp float)
+0:44            'm44' ( uniform highp 4X4 matrix of float)
+0:45      Sequence
+0:45        move second child to first child ( temp highp 3X3 matrix of float)
+0:45          'im' ( temp highp 3X3 matrix of float)
+0:45          inverse ( global highp 3X3 matrix of float)
+0:45            'm33' ( uniform highp 3X3 matrix of float)
+0:47      Sequence
+0:47        move second child to first child ( temp highp 3X2 matrix of float)
+0:47          'op' ( temp highp 3X2 matrix of float)
+0:47          outer product ( global highp 3X2 matrix of float)
+0:47            'v2' ( smooth out highp 2-component vector of float)
+0:47            'v3' ( in highp 3-component vector of float)
+0:49      move second child to first child ( temp highp 4-component vector of float)
+0:49        'gl_Position' ( gl_Position highp 4-component vector of float Position)
+0:49        direct index ( temp highp 4-component vector of float)
+0:49          'm44' ( uniform highp 4X4 matrix of float)
+0:49          Constant:
+0:49            2 (const int)
+0:50      move second child to first child ( temp highp float)
+0:50        'gl_PointSize' ( gl_PointSize highp float PointSize)
+0:50        direct index ( temp highp float)
+0:50          'v2' ( smooth out highp 2-component vector of float)
+0:50          Constant:
+0:50            1 (const int)
+0:52      move second child to first child ( temp highp 3-component vector of float)
+0:52        c: direct index for structure ( global highp 3-component vector of float)
+0:52          's' ( smooth out structure{ global highp 3-component vector of float c,  global highp float f})
+0:52          Constant:
+0:52            0 (const int)
+0:52        'v3' ( in highp 3-component vector of float)
+0:53      move second child to first child ( temp highp float)
+0:53        f: direct index for structure ( global highp float)
+0:53          's' ( smooth out structure{ global highp 3-component vector of float c,  global highp float f})
+0:53          Constant:
+0:53            1 (const int)
+0:53        'dm' ( temp highp float)
+0:68  Sequence
+0:68    move second child to first child ( temp 2-element array of highp float)
+0:68      'okayA' ( global 2-element array of highp float)
+0:68      Constant:
+0:68        3.000000
+0:68        4.000000
+0:71  Function Definition: newVFun( ( global void)
+0:71    Function Parameters: 
+0:73    Sequence
+0:73      move second child to first child ( temp highp 3-component vector of float)
+0:73        'newV' ( smooth out highp 3-component vector of float)
+0:73        'v3' ( in highp 3-component vector of float)
+0:118  Function Definition: foo23( ( global void)
+0:118    Function Parameters: 
+0:120    Sequence
+0:120      Sequence
+0:120        move second child to first child ( temp highp 2-component vector of int)
+0:120          'x1' ( temp highp 2-component vector of int)
+0:120          textureSize ( global highp 2-component vector of int, operation at lowp)
+0:120            's2D' ( uniform lowp sampler2D)
+0:120            Constant:
+0:120              2 (const int)
+0:121      Constant:
+0:121        0.000000
+0:122      Sequence
+0:122        move second child to first child ( temp highp 3-component vector of int)
+0:122          'x3' ( temp highp 3-component vector of int)
+0:122          textureSize ( global highp 3-component vector of int, operation at lowp)
+0:122            's2DAS' ( uniform lowp sampler2DArrayShadow)
+0:122            Constant:
+0:122              -1 (const int)
+0:123      Constant:
+0:123        0.000000
+0:124      Sequence
+0:124        move second child to first child ( temp highp 4-component vector of float)
+0:124          'x4' ( temp highp 4-component vector of float)
+0:124          texture ( global lowp 4-component vector of float, operation at highp)
+0:124            's2D' ( uniform lowp sampler2D)
+0:124            'c2D' ( in highp 2-component vector of float)
+0:125      Constant:
+0:125        0.000000
+0:126      Sequence
+0:126        move second child to first child ( temp highp 4-component vector of float)
+0:126          'x5' ( temp highp 4-component vector of float)
+0:126          textureProjOffset ( global lowp 4-component vector of float)
+0:126            's3D' ( uniform lowp sampler3D)
+0:126            Constant:
+0:126              0.200000
+0:126              0.200000
+0:126              0.200000
+0:126              0.200000
+0:126            Constant:
+0:126              1 (const int)
+0:126              1 (const int)
+0:126              1 (const int)
+0:127      Constant:
+0:127        0.000000
+0:128      Sequence
+0:128        move second child to first child ( temp highp float)
+0:128          'x6' ( temp highp float)
+0:128          textureProjGradOffset ( global lowp float, operation at highp)
+0:128            's2DS' ( uniform lowp sampler2DShadow)
+0:128            'invIn' ( invariant in highp 4-component vector of float)
+0:128            Constant:
+0:128              4.200000
+0:128              4.200000
+0:128            Constant:
+0:128              5.300000
+0:128              5.300000
+0:128            Constant:
+0:128              1 (const int)
+0:128              1 (const int)
+0:137  Function Definition: foo2349( ( global void)
+0:137    Function Parameters: 
+0:139    Sequence
+0:139      Sequence
+0:139        move second child to first child ( temp 3-element array of highp float)
+0:139          'x' ( temp 3-element array of highp float)
+0:139          Constant:
+0:139            1.000000
+0:139            2.000000
+0:139            3.000000
+0:140      Sequence
+0:140        move second child to first child ( temp 3-element array of highp float)
+0:140          'y' ( temp 3-element array of highp float)
+0:140          'x' ( temp 3-element array of highp float)
+0:141      Sequence
+0:141        move second child to first child ( temp 3-element array of highp float)
+0:141          'z' ( temp 3-element array of highp float)
+0:141          'x' ( temp 3-element array of highp float)
+0:143      move second child to first child ( temp 3-element array of highp float)
+0:143        'w' ( temp 3-element array of highp float)
+0:143        'y' ( temp 3-element array of highp float)
+0:155  Function Definition: gggf(f1; ( global highp int)
+0:155    Function Parameters: 
+0:155      'f' ( in highp float)
+0:155    Sequence
+0:155      Branch: Return with expression
+0:155        Constant:
+0:155          2 (const int)
+0:158  Function Definition: agggf(f1; ( global highp int)
+0:158    Function Parameters: 
+0:158      'f' ( in highp float)
+0:158    Sequence
+0:158      Branch: Return with expression
+0:158        Constant:
+0:158          2 (const int)
+0:178  Function Definition: fooDeeparray( ( global void)
+0:178    Function Parameters: 
+0:181    Sequence
+0:181      Sequence
+0:180        move second child to first child ( temp 3-element array of highp float)
+0:180          'x' ( temp 3-element array of highp float)
+0:180          Constant:
+0:180            1.000000
+0:180            2.000000
+0:180            3.000000
+0:181        move second child to first child ( temp 4-element array of highp float)
+0:181          'y' ( temp 4-element array of highp float)
+0:181          Constant:
+0:181            1.000000
+0:181            2.000000
+0:181            3.000000
+0:181            4.000000
+0:183      move second child to first child ( temp 3-element array of highp float)
+0:183        'xp' ( temp 3-element array of highp float)
+0:183        'x' ( temp 3-element array of highp float)
+0:184      move second child to first child ( temp 4-element array of highp float)
+0:184        'yp' ( temp 4-element array of highp float)
+0:184        'y' ( temp 4-element array of highp float)
+0:185      'xp' ( temp 3-element array of highp float)
+0:186      'yp' ( temp 4-element array of highp float)
+0:191  Function Definition: mwErr( ( global void)
+0:191    Function Parameters: 
+0:193    Sequence
+0:193      'gl_ViewID_OVR' ( in highp uint ViewIndex)
+0:201  Function Definition: mwOk( ( global void)
+0:201    Function Parameters: 
+0:203    Sequence
+0:203      'gl_ViewID_OVR' ( in highp uint ViewIndex)
+0:?   Linker Objects
+0:?     'm43' ( uniform highp 4X3 matrix of float)
+0:?     'm33' ( uniform highp 3X3 matrix of float)
+0:?     'm44' ( uniform highp 4X4 matrix of float)
+0:?     'v3' ( in highp 3-component vector of float)
+0:?     'v2' ( smooth out highp 2-component vector of float)
+0:?     'bad' ( in 10-element array of highp 4-component vector of float)
+0:?     'badorder' ( in highp 4-component vector of float)
+0:?     'badorder2' ( invariant smooth out highp 4-component vector of float)
+0:?     'badorder4' ( centroid in highp 4-component vector of float)
+0:?     'badorder3' ( flat out highp 4-component vector of float)
+0:?     'rep' ( smooth flat out highp 4-component vector of float)
+0:?     'rep2' ( centroid smooth sample out highp 4-component vector of float)
+0:?     'rep3' ( in highp 4-component vector of float)
+0:?     's' ( smooth out structure{ global highp 3-component vector of float c,  global highp float f})
+0:?     'badsize' ( global unsized 1-element array of highp float)
+0:?     'badsize2' ( global unsized 1-element array of highp float)
+0:?     'ubInst' (layout( column_major shared) uniform unsized 1-element array of block{layout( column_major shared) uniform unsized 1-element array of highp int a})
+0:?     'okayA' ( global 2-element array of highp float)
+0:?     'newV' ( invariant smooth out highp 3-component vector of float)
+0:?     'invIn' ( invariant in highp 4-component vector of float)
+0:?     's2' ( invariant smooth out structure{ global highp 3-component vector of float c,  global highp float f})
+0:?     's3' ( invariant smooth out structure{ global highp 3-component vector of float c,  global highp float f})
+0:?     'a' (layout( column_major shared) uniform block{layout( column_major shared) uniform highp float f})
+0:?     'anon@0' (layout( column_major shared) uniform block{layout( column_major shared) uniform bool b23})
+0:?     's2D' ( uniform lowp sampler2D)
+0:?     's3D' ( uniform lowp sampler3D)
+0:?     's2DS' ( uniform lowp sampler2DShadow)
+0:?     's2DAS' ( uniform lowp sampler2DArrayShadow)
+0:?     'c2D' ( in highp 2-component vector of float)
+0:?     'ssss' ( smooth out structure{ global highp float f})
+0:?     'Binst' (layout( column_major shared) uniform block{layout( column_major shared) uniform highp int a})
+0:?     'Bfoo' ( global highp int)
+0:?     'B430i' (layout( column_major std430) uniform block{layout( column_major std430 offset=0) uniform highp int a})
+0:?     'mwUniform' ( uniform highp float)
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 300
+Requested GL_OVR_multiview
+ERROR: node is still EOpNull!
+0:27  Function Definition: main( ( global void)
+0:27    Function Parameters: 
+0:29    Sequence
+0:29      Sequence
+0:29        move second child to first child ( temp highp int)
+0:29          'id' ( temp highp int)
+0:29          add ( temp highp int)
+0:29            'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:29            'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+0:31      Sequence
+0:31        move second child to first child ( temp highp int)
+0:31          'c0' ( temp highp int)
+0:31          Constant:
+0:31            64 (const int)
+0:32      Sequence
+0:32        move second child to first child ( temp highp int)
+0:32          'c1' ( temp highp int)
+0:32          Constant:
+0:32            128 (const int)
+0:33      Sequence
+0:33        move second child to first child ( temp highp int)
+0:33          'c2' ( temp highp int)
+0:33          Constant:
+0:33            16 (const int)
+0:34      Sequence
+0:34        move second child to first child ( temp highp int)
+0:34          'c3' ( temp highp int)
+0:34          Constant:
+0:34            15 (const int)
+0:35      Sequence
+0:35        move second child to first child ( temp highp int)
+0:35          'c4' ( temp highp int)
+0:35          Constant:
+0:35            32 (const int)
+0:36      Sequence
+0:36        move second child to first child ( temp highp int)
+0:36          'c5' ( temp highp int)
+0:36          Constant:
+0:36            80 (const int)
+0:37      Sequence
+0:37        move second child to first child ( temp highp int)
+0:37          'c6' ( temp highp int)
+0:37          Constant:
+0:37            32 (const int)
+0:38      Sequence
+0:38        move second child to first child ( temp highp int)
+0:38          'c7' ( temp highp int)
+0:38          Constant:
+0:38            16 (const int)
+0:39      Sequence
+0:39        move second child to first child ( temp highp int)
+0:39          'c8' ( temp highp int)
+0:39          Constant:
+0:39            32 (const int)
+0:40      Sequence
+0:40        move second child to first child ( temp highp int)
+0:40          'c9' ( temp highp int)
+0:40          Constant:
+0:40            -8 (const int)
+0:41      Sequence
+0:41        move second child to first child ( temp highp int)
+0:41          'c10' ( temp highp int)
+0:41          Constant:
+0:41            7 (const int)
+0:43      Sequence
+0:43        move second child to first child ( temp highp 3X4 matrix of float)
+0:43          'tm' ( temp highp 3X4 matrix of float)
+0:43          transpose ( global highp 3X4 matrix of float)
+0:43            'm43' ( uniform highp 4X3 matrix of float)
+0:44      Sequence
+0:44        move second child to first child ( temp highp float)
+0:44          'dm' ( temp highp float)
+0:44          determinant ( global highp float)
+0:44            'm44' ( uniform highp 4X4 matrix of float)
+0:45      Sequence
+0:45        move second child to first child ( temp highp 3X3 matrix of float)
+0:45          'im' ( temp highp 3X3 matrix of float)
+0:45          inverse ( global highp 3X3 matrix of float)
+0:45            'm33' ( uniform highp 3X3 matrix of float)
+0:47      Sequence
+0:47        move second child to first child ( temp highp 3X2 matrix of float)
+0:47          'op' ( temp highp 3X2 matrix of float)
+0:47          outer product ( global highp 3X2 matrix of float)
+0:47            'v2' ( smooth out highp 2-component vector of float)
+0:47            'v3' ( in highp 3-component vector of float)
+0:49      move second child to first child ( temp highp 4-component vector of float)
+0:49        'gl_Position' ( gl_Position highp 4-component vector of float Position)
+0:49        direct index ( temp highp 4-component vector of float)
+0:49          'm44' ( uniform highp 4X4 matrix of float)
+0:49          Constant:
+0:49            2 (const int)
+0:50      move second child to first child ( temp highp float)
+0:50        'gl_PointSize' ( gl_PointSize highp float PointSize)
+0:50        direct index ( temp highp float)
+0:50          'v2' ( smooth out highp 2-component vector of float)
+0:50          Constant:
+0:50            1 (const int)
+0:52      move second child to first child ( temp highp 3-component vector of float)
+0:52        c: direct index for structure ( global highp 3-component vector of float)
+0:52          's' ( smooth out structure{ global highp 3-component vector of float c,  global highp float f})
+0:52          Constant:
+0:52            0 (const int)
+0:52        'v3' ( in highp 3-component vector of float)
+0:53      move second child to first child ( temp highp float)
+0:53        f: direct index for structure ( global highp float)
+0:53          's' ( smooth out structure{ global highp 3-component vector of float c,  global highp float f})
+0:53          Constant:
+0:53            1 (const int)
+0:53        'dm' ( temp highp float)
+0:68  Sequence
+0:68    move second child to first child ( temp 2-element array of highp float)
+0:68      'okayA' ( global 2-element array of highp float)
+0:68      Constant:
+0:68        3.000000
+0:68        4.000000
+0:?   Linker Objects
+0:?     'm43' ( uniform highp 4X3 matrix of float)
+0:?     'm33' ( uniform highp 3X3 matrix of float)
+0:?     'm44' ( uniform highp 4X4 matrix of float)
+0:?     'v3' ( in highp 3-component vector of float)
+0:?     'v2' ( smooth out highp 2-component vector of float)
+0:?     'bad' ( in 10-element array of highp 4-component vector of float)
+0:?     'badorder' ( in highp 4-component vector of float)
+0:?     'badorder2' ( invariant smooth out highp 4-component vector of float)
+0:?     'badorder4' ( centroid in highp 4-component vector of float)
+0:?     'badorder3' ( flat out highp 4-component vector of float)
+0:?     'rep' ( smooth flat out highp 4-component vector of float)
+0:?     'rep2' ( centroid smooth sample out highp 4-component vector of float)
+0:?     'rep3' ( in highp 4-component vector of float)
+0:?     's' ( smooth out structure{ global highp 3-component vector of float c,  global highp float f})
+0:?     'badsize' ( global 1-element array of highp float)
+0:?     'badsize2' ( global 1-element array of highp float)
+0:?     'ubInst' (layout( column_major shared) uniform 1-element array of block{layout( column_major shared) uniform 1-element array of highp int a})
+0:?     'okayA' ( global 2-element array of highp float)
+0:?     'newV' ( invariant smooth out highp 3-component vector of float)
+0:?     'invIn' ( invariant in highp 4-component vector of float)
+0:?     's2' ( invariant smooth out structure{ global highp 3-component vector of float c,  global highp float f})
+0:?     's3' ( invariant smooth out structure{ global highp 3-component vector of float c,  global highp float f})
+0:?     'a' (layout( column_major shared) uniform block{layout( column_major shared) uniform highp float f})
+0:?     'anon@0' (layout( column_major shared) uniform block{layout( column_major shared) uniform bool b23})
+0:?     's2D' ( uniform lowp sampler2D)
+0:?     's3D' ( uniform lowp sampler3D)
+0:?     's2DS' ( uniform lowp sampler2DShadow)
+0:?     's2DAS' ( uniform lowp sampler2DArrayShadow)
+0:?     'c2D' ( in highp 2-component vector of float)
+0:?     'ssss' ( smooth out structure{ global highp float f})
+0:?     'Binst' (layout( column_major shared) uniform block{layout( column_major shared) uniform highp int a})
+0:?     'Bfoo' ( global highp int)
+0:?     'B430i' (layout( column_major std430) uniform block{layout( column_major std430 offset=0) uniform highp int a})
+0:?     'mwUniform' ( uniform highp float)
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+

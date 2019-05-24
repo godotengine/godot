@@ -1,0 +1,51 @@
+460.vert
+Shader version: 460
+0:? Sequence
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:?     Sequence
+0:10      move second child to first child ( temp bool)
+0:10        'b1' ( temp bool)
+0:10        anyInvocation ( global bool)
+0:10          'b1' ( temp bool)
+0:11      move second child to first child ( temp bool)
+0:11        'b1' ( temp bool)
+0:11        allInvocations ( global bool)
+0:11          'b1' ( temp bool)
+0:12      move second child to first child ( temp bool)
+0:12        'b1' ( temp bool)
+0:12        allInvocationsEqual ( global bool)
+0:12          'b1' ( temp bool)
+0:?   Linker Objects
+0:?     'i' ( global int)
+0:?     'f' ( global float)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 460
+0:? Sequence
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:?     Sequence
+0:10      move second child to first child ( temp bool)
+0:10        'b1' ( temp bool)
+0:10        anyInvocation ( global bool)
+0:10          'b1' ( temp bool)
+0:11      move second child to first child ( temp bool)
+0:11        'b1' ( temp bool)
+0:11        allInvocations ( global bool)
+0:11          'b1' ( temp bool)
+0:12      move second child to first child ( temp bool)
+0:12        'b1' ( temp bool)
+0:12        allInvocationsEqual ( global bool)
+0:12          'b1' ( temp bool)
+0:?   Linker Objects
+0:?     'i' ( global int)
+0:?     'f' ( global float)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

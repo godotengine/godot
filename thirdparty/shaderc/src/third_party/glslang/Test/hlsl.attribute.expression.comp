@@ -1,0 +1,15 @@
+
+uniform int bound;
+
+#define FOO 3
+#define BAR 2
+
+[numthreads(2+2, 2*3, (1+FOO)*BAR)]
+float4 main() : SV_TARGET
+{
+    [unroll(5*2 + 1) ]
+        for (int x=0; x<bound; ++x)
+            ;
+    
+    return float4(0,0,0,0);
+}

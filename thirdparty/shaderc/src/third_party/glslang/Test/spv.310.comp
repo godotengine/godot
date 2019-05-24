@@ -1,0 +1,42 @@
+#version 310 es
+
+precision highp float;
+
+layout (local_size_x = 16, local_size_y = 32, local_size_z = 4) in;
+
+shared float s;
+shared int i;
+
+buffer outb {
+    float f;
+    float g;
+    float h;
+    vec3 uns[];
+} outbname;
+
+buffer outbna {
+    int k;
+    vec4 na;
+} outbnamena;
+
+buffer outs {
+    int s;
+    vec4 va[];
+} outnames;
+
+#extension GL_EXT_device_group : enable
+
+void main()
+{
+    barrier();
+    outbname.f = s;
+    outbnamena.na = vec4(s);
+    s = outbname.uns[18].x;
+    outbname.uns[17] = vec3(3.0);
+    outbname.uns[i] = vec3(s);
+    outnames.va[gl_LocalInvocationID.x] = vec4(s);
+    outnames.s = outbname.uns.length();
+    gl_DeviceIndex;
+    memoryBarrierShared();
+    groupMemoryBarrier();
+}

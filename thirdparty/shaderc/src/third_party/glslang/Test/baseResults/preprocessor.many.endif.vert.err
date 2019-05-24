@@ -1,0 +1,12 @@
+ERROR: 0:1: '#endif' : mismatched statements 
+ERROR: 0:2: '#endif' : mismatched statements 
+ERROR: 0:3: '#endif' : mismatched statements 
+ERROR: 0:4: '#endif' : mismatched statements 
+ERROR: 0:5: '#endif' : mismatched statements 
+ERROR: 0:6: '#endif' : mismatched statements 
+ERROR: 0:7: '#endif' : mismatched statements 
+ERROR: 0:10: 'preprocessor evaluation' : bad expression 
+ERROR: 0:11: '' : missing #endif 
+ERROR: 9 compilation errors.  No code generated.
+
+

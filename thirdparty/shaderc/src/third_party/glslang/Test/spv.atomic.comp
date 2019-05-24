@@ -1,0 +1,48 @@
+#version 450
+
+
+
+layout(binding = 0) uniform atomic_uint counter;
+
+layout(binding = 0, offset = 4) uniform atomic_uint countArr[4];
+shared uint value;
+
+int arrX[gl_WorkGroupSize.x];
+int arrY[gl_WorkGroupSize.y];
+int arrZ[gl_WorkGroupSize.z];
+
+uint func(atomic_uint c)
+{
+    return atomicCounterIncrement(c);
+}
+
+void main()
+{
+    memoryBarrierAtomicCounter();
+    func(counter);
+    uint val = atomicCounter(countArr[2]);
+    atomicCounterDecrement(counter);
+    atomicCounterIncrement(counter);
+}
+
+shared int atomi;
+shared uint atomu;
+
+layout (std140, binding = 0) restrict buffer dataSSB
+{
+    float f;
+    ivec4 n_frames_rendered;
+} result;
+
+void atoms()
+{
+    int origi = atomicAdd(atomi, 3);
+    uint origu = atomicAnd(atomu, value);
+    origu = atomicOr(atomu, 7u);
+    origu = atomicXor(atomu, 7u);
+    origu = atomicMin(atomu, value);
+    origi = atomicMax(atomi, 7);
+    origi = atomicExchange(atomi, origi);
+    origu = atomicCompSwap(atomu, 10u, value);
+    atomicAdd(result.n_frames_rendered.z, 1);
+}

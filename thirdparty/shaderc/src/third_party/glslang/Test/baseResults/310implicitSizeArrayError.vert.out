@@ -1,0 +1,49 @@
+310implicitSizeArrayError.vert
+ERROR: 0:3: '' : array size required 
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 310
+ERROR: node is still EOpNull!
+0:6  Function Definition: main( ( global void)
+0:6    Function Parameters: 
+0:7    Sequence
+0:7      move second child to first child ( temp highp int)
+0:7        'o' (layout( location=0) smooth out highp int)
+0:7        direct index (layout( column_major shared) temp highp int)
+0:7          a: direct index for structure (layout( column_major shared) uniform unsized 3-element array of highp int)
+0:7            'uni' (layout( binding=0 column_major shared) uniform block{layout( column_major shared) uniform unsized 3-element array of highp int a})
+0:7            Constant:
+0:7              0 (const int)
+0:7          Constant:
+0:7            2 (const int)
+0:?   Linker Objects
+0:?     'uni' (layout( binding=0 column_major shared) uniform block{layout( column_major shared) uniform unsized 3-element array of highp int a})
+0:?     'o' (layout( location=0) smooth out highp int)
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 310
+ERROR: node is still EOpNull!
+0:6  Function Definition: main( ( global void)
+0:6    Function Parameters: 
+0:7    Sequence
+0:7      move second child to first child ( temp highp int)
+0:7        'o' (layout( location=0) smooth out highp int)
+0:7        direct index (layout( column_major shared) temp highp int)
+0:7          a: direct index for structure (layout( column_major shared) uniform 3-element array of highp int)
+0:7            'uni' (layout( binding=0 column_major shared) uniform block{layout( column_major shared) uniform 3-element array of highp int a})
+0:7            Constant:
+0:7              0 (const int)
+0:7          Constant:
+0:7            2 (const int)
+0:?   Linker Objects
+0:?     'uni' (layout( binding=0 column_major shared) uniform block{layout( column_major shared) uniform 3-element array of highp int a})
+0:?     'o' (layout( location=0) smooth out highp int)
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+

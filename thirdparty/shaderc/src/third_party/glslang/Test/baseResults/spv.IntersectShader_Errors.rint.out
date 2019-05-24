@@ -1,0 +1,10 @@
+spv.IntersectShader_Errors.rint
+ERROR: 0:3: 'rayPayloadInNV' : not supported in this stage: intersection
+ERROR: 0:4: 'rayPayloadNV' : not supported in this stage: intersection
+ERROR: 0:8: 'gl_HitTNV' : undeclared identifier 
+ERROR: 0:9: 'gl_HitKindNV' : undeclared identifier 
+ERROR: 0:10: 'traceNV' : no matching overloaded function found 
+ERROR: 5 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

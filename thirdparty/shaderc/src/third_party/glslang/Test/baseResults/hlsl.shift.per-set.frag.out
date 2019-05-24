@@ -1,0 +1,237 @@
+hlsl.shift.per-set.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:34  Function Definition: @main( ( temp 4-component vector of float)
+0:34    Function Parameters: 
+0:?     Sequence
+0:35      't1' (layout( set=1 binding=1) uniform texture1D)
+0:36      't2' (layout( set=1 binding=2) uniform texture2D)
+0:37      't3' (layout( set=2 binding=1) uniform texture3D)
+0:38      direct index (layout( row_major std430) buffer 4-component vector of float)
+0:38        @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of 4-component vector of float)
+0:38          't4' (layout( set=3 binding=1 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of 4-component vector of float @data})
+0:38          Constant:
+0:38            0 (const uint)
+0:38        Constant:
+0:38          0 (const int)
+0:39      indirect index (layout( row_major std430) buffer uint)
+0:39        @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:39          't5' (layout( set=3 binding=2 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:39          Constant:
+0:39            0 (const uint)
+0:39        right-shift ( temp int)
+0:39          Constant:
+0:39            0 (const int)
+0:39          Constant:
+0:39            2 (const int)
+0:40      't6' (layout( set=3 binding=3 rgba32f) uniform textureBuffer)
+0:42      's1' (layout( set=1 binding=1) uniform sampler)
+0:43      's2' (layout( set=2 binding=2) uniform sampler)
+0:45      'u1' (layout( set=1 binding=1 rgba32f) uniform image1D)
+0:46      'u2' (layout( set=2 binding=2 rgba32f) uniform image2D)
+0:47      'u3' (layout( set=2 binding=3 rgba32f) uniform image3D)
+0:49      imageLoad ( temp float)
+0:49        'u4' (layout( set=1 binding=4 r32f) uniform imageBuffer)
+0:49        Constant:
+0:49          0 (const int)
+0:50      indirect index (layout( row_major std430) buffer uint)
+0:50        @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:50          'u5' (layout( set=2 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:50          Constant:
+0:50            0 (const uint)
+0:50        right-shift ( temp int)
+0:50          Constant:
+0:50            0 (const int)
+0:50          Constant:
+0:50            2 (const int)
+0:51      direct index (layout( row_major std430) buffer float)
+0:51        @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of float)
+0:51          'u6' (layout( set=3 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:51          Constant:
+0:51            0 (const uint)
+0:51        Constant:
+0:51          0 (const int)
+0:52      'u7' (layout( set=4 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:53      'u8' (layout( set=5 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:55      cb1: direct index for structure (layout( row_major std140) uniform int)
+0:55        'anon@0' (layout( set=6 binding=1 row_major std140) uniform block{layout( row_major std140) uniform int cb1})
+0:55        Constant:
+0:55          0 (const uint)
+0:56      tb1: direct index for structure (layout( row_major std430) buffer int)
+0:56        'anon@1' (layout( binding=7 row_major std430) readonly buffer block{layout( row_major std430) buffer int tb1})
+0:56        Constant:
+0:56          0 (const uint)
+0:57      'ts6' (layout( set=6 binding=1) uniform texture3D)
+0:59      Branch: Return with expression
+0:59        Constant:
+0:59          0.000000
+0:59          0.000000
+0:59          0.000000
+0:59          0.000000
+0:34  Function Definition: main( ( temp void)
+0:34    Function Parameters: 
+0:?     Sequence
+0:34      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:34        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     's1' (layout( set=1 binding=1) uniform sampler)
+0:?     's2' (layout( set=2 binding=2) uniform sampler)
+0:?     't1' (layout( set=1 binding=1) uniform texture1D)
+0:?     't2' (layout( set=1 binding=2) uniform texture2D)
+0:?     't3' (layout( set=2 binding=1) uniform texture3D)
+0:?     'ts6' (layout( set=6 binding=1) uniform texture3D)
+0:?     't4' (layout( set=3 binding=1 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of 4-component vector of float @data})
+0:?     't5' (layout( set=3 binding=2 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:?     't6' (layout( set=3 binding=3 rgba32f) uniform textureBuffer)
+0:?     'u1' (layout( set=1 binding=1 rgba32f) uniform image1D)
+0:?     'u2' (layout( set=2 binding=2 rgba32f) uniform image2D)
+0:?     'u3' (layout( set=2 binding=3 rgba32f) uniform image3D)
+0:?     'u4' (layout( set=1 binding=4 r32f) uniform imageBuffer)
+0:?     'u5' (layout( set=2 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:?     'u6' (layout( set=3 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:?     'u7' (layout( set=4 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:?     'u8' (layout( set=5 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:?     'anon@0' (layout( set=6 binding=1 row_major std140) uniform block{layout( row_major std140) uniform int cb1})
+0:?     'anon@1' (layout( binding=7 row_major std430) readonly buffer block{layout( row_major std430) buffer int tb1})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:34  Function Definition: @main( ( temp 4-component vector of float)
+0:34    Function Parameters: 
+0:?     Sequence
+0:35      't1' (layout( set=1 binding=1) uniform texture1D)
+0:36      't2' (layout( set=1 binding=2) uniform texture2D)
+0:37      't3' (layout( set=2 binding=1) uniform texture3D)
+0:38      direct index (layout( row_major std430) buffer 4-component vector of float)
+0:38        @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of 4-component vector of float)
+0:38          't4' (layout( set=3 binding=1 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of 4-component vector of float @data})
+0:38          Constant:
+0:38            0 (const uint)
+0:38        Constant:
+0:38          0 (const int)
+0:39      indirect index (layout( row_major std430) buffer uint)
+0:39        @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:39          't5' (layout( set=3 binding=2 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:39          Constant:
+0:39            0 (const uint)
+0:39        right-shift ( temp int)
+0:39          Constant:
+0:39            0 (const int)
+0:39          Constant:
+0:39            2 (const int)
+0:40      't6' (layout( set=3 binding=3 rgba32f) uniform textureBuffer)
+0:42      's1' (layout( set=1 binding=1) uniform sampler)
+0:43      's2' (layout( set=2 binding=2) uniform sampler)
+0:45      'u1' (layout( set=1 binding=1 rgba32f) uniform image1D)
+0:46      'u2' (layout( set=2 binding=2 rgba32f) uniform image2D)
+0:47      'u3' (layout( set=2 binding=3 rgba32f) uniform image3D)
+0:49      imageLoad ( temp float)
+0:49        'u4' (layout( set=1 binding=4 r32f) uniform imageBuffer)
+0:49        Constant:
+0:49          0 (const int)
+0:50      indirect index (layout( row_major std430) buffer uint)
+0:50        @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint)
+0:50          'u5' (layout( set=2 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:50          Constant:
+0:50            0 (const uint)
+0:50        right-shift ( temp int)
+0:50          Constant:
+0:50            0 (const int)
+0:50          Constant:
+0:50            2 (const int)
+0:51      direct index (layout( row_major std430) buffer float)
+0:51        @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of float)
+0:51          'u6' (layout( set=3 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:51          Constant:
+0:51            0 (const uint)
+0:51        Constant:
+0:51          0 (const int)
+0:52      'u7' (layout( set=4 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:53      'u8' (layout( set=5 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:55      cb1: direct index for structure (layout( row_major std140) uniform int)
+0:55        'anon@0' (layout( set=6 binding=1 row_major std140) uniform block{layout( row_major std140) uniform int cb1})
+0:55        Constant:
+0:55          0 (const uint)
+0:56      tb1: direct index for structure (layout( row_major std430) buffer int)
+0:56        'anon@1' (layout( binding=7 row_major std430) readonly buffer block{layout( row_major std430) buffer int tb1})
+0:56        Constant:
+0:56          0 (const uint)
+0:57      'ts6' (layout( set=6 binding=1) uniform texture3D)
+0:59      Branch: Return with expression
+0:59        Constant:
+0:59          0.000000
+0:59          0.000000
+0:59          0.000000
+0:59          0.000000
+0:34  Function Definition: main( ( temp void)
+0:34    Function Parameters: 
+0:?     Sequence
+0:34      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:34        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     's1' (layout( set=1 binding=1) uniform sampler)
+0:?     's2' (layout( set=2 binding=2) uniform sampler)
+0:?     't1' (layout( set=1 binding=1) uniform texture1D)
+0:?     't2' (layout( set=1 binding=2) uniform texture2D)
+0:?     't3' (layout( set=2 binding=1) uniform texture3D)
+0:?     'ts6' (layout( set=6 binding=1) uniform texture3D)
+0:?     't4' (layout( set=3 binding=1 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of 4-component vector of float @data})
+0:?     't5' (layout( set=3 binding=2 row_major std430) readonly buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:?     't6' (layout( set=3 binding=3 rgba32f) uniform textureBuffer)
+0:?     'u1' (layout( set=1 binding=1 rgba32f) uniform image1D)
+0:?     'u2' (layout( set=2 binding=2 rgba32f) uniform image2D)
+0:?     'u3' (layout( set=2 binding=3 rgba32f) uniform image3D)
+0:?     'u4' (layout( set=1 binding=4 r32f) uniform imageBuffer)
+0:?     'u5' (layout( set=2 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint @data})
+0:?     'u6' (layout( set=3 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:?     'u7' (layout( set=4 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:?     'u8' (layout( set=5 binding=4 row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of float @data})
+0:?     'anon@0' (layout( set=6 binding=1 row_major std140) uniform block{layout( row_major std140) uniform int cb1})
+0:?     'anon@1' (layout( binding=7 row_major std430) readonly buffer block{layout( row_major std430) buffer int tb1})
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+Uniform reflection:
+t1: offset -1, type 8b5d, size 1, index -1, binding 21, stages 16
+t2: offset -1, type 8b5e, size 1, index -1, binding 22, stages 16
+t3: offset -1, type 8b5f, size 1, index -1, binding 26, stages 16
+t4.@data: offset 0, type 8b52, size 1, index 0, binding -1, stages 16, arrayStride 16, topLevelArrayStride 16
+t5.@data: offset 0, type 1405, size 0, index 1, binding -1, stages 16, arrayStride 4, topLevelArrayStride 4
+t6: offset -1, type 8dc2, size 1, index -1, binding 23, stages 16
+s1: offset -1, type 0, size 1, index -1, binding 11, stages 16
+s2: offset -1, type 0, size 1, index -1, binding 17, stages 16
+u1: offset -1, type 904c, size 1, index -1, binding 31, stages 16
+u2: offset -1, type 904d, size 1, index -1, binding 42, stages 16
+u3: offset -1, type 904e, size 1, index -1, binding 43, stages 16
+u4: offset -1, type 9051, size 1, index -1, binding 34, stages 16
+u5.@data: offset 0, type 1405, size 0, index 2, binding -1, stages 16, arrayStride 4, topLevelArrayStride 4
+u6.@data: offset 0, type 1406, size 1, index 3, binding -1, stages 16, arrayStride 4, topLevelArrayStride 4
+cb1: offset 0, type 1404, size 1, index 4, binding -1, stages 16
+tb1: offset 0, type 1404, size 1, index 5, binding -1, stages 16
+ts6: offset -1, type 8b5f, size 1, index -1, binding 71, stages 16
+
+Uniform block reflection:
+t4: offset -1, type ffffffff, size 0, index -1, binding 21, stages 16, numMembers 1
+t5: offset -1, type ffffffff, size 0, index -1, binding 22, stages 16, numMembers 1
+u5: offset -1, type ffffffff, size 0, index -1, binding 44, stages 16, numMembers 1
+u6: offset -1, type ffffffff, size 0, index -1, binding 34, stages 16, numMembers 1
+cb: offset -1, type ffffffff, size 4, index -1, binding 51, stages 16, numMembers 1
+tb: offset -1, type ffffffff, size 4, index -1, binding 27, stages 16, numMembers 1
+
+Buffer variable reflection:
+
+Buffer block reflection:
+
+Pipeline input reflection:
+
+Pipeline output reflection:
+@entryPointOutput: offset 0, type 8b52, size 1, index 0, binding -1, stages 16
+

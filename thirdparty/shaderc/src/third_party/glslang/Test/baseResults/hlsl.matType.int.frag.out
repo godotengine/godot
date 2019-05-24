@@ -1,0 +1,753 @@
+hlsl.matType.int.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:3  Function Definition: TestIntMatTypes( ( temp void)
+0:3    Function Parameters: 
+0:?     Sequence
+0:25      Sequence
+0:25        move second child to first child ( temp 1X1 matrix of int)
+0:25          'r00' ( temp 1X1 matrix of int)
+0:25          transpose ( temp 1X1 matrix of int)
+0:25            'i1x1' ( temp 1X1 matrix of int)
+0:26      Sequence
+0:26        move second child to first child ( temp 1X2 matrix of int)
+0:26          'r01' ( temp 1X2 matrix of int)
+0:26          transpose ( temp 1X2 matrix of int)
+0:26            'i2x1' ( temp 2X1 matrix of int)
+0:27      Sequence
+0:27        move second child to first child ( temp 1X3 matrix of int)
+0:27          'r02' ( temp 1X3 matrix of int)
+0:27          transpose ( temp 1X3 matrix of int)
+0:27            'i3x1' ( temp 3X1 matrix of int)
+0:28      Sequence
+0:28        move second child to first child ( temp 1X4 matrix of int)
+0:28          'r03' ( temp 1X4 matrix of int)
+0:28          transpose ( temp 1X4 matrix of int)
+0:28            'i4x1' ( temp 4X1 matrix of int)
+0:30      Sequence
+0:30        move second child to first child ( temp 2X1 matrix of int)
+0:30          'r10' ( temp 2X1 matrix of int)
+0:30          transpose ( temp 2X1 matrix of int)
+0:30            'i1x2' ( temp 1X2 matrix of int)
+0:31      Sequence
+0:31        move second child to first child ( temp 2X2 matrix of int)
+0:31          'r11' ( temp 2X2 matrix of int)
+0:31          transpose ( temp 2X2 matrix of int)
+0:31            'i2x2' ( temp 2X2 matrix of int)
+0:32      Sequence
+0:32        move second child to first child ( temp 2X3 matrix of int)
+0:32          'r12' ( temp 2X3 matrix of int)
+0:32          transpose ( temp 2X3 matrix of int)
+0:32            'i3x2' ( temp 3X2 matrix of int)
+0:33      Sequence
+0:33        move second child to first child ( temp 2X4 matrix of int)
+0:33          'r13' ( temp 2X4 matrix of int)
+0:33          transpose ( temp 2X4 matrix of int)
+0:33            'i4x2' ( temp 4X2 matrix of int)
+0:35      Sequence
+0:35        move second child to first child ( temp 3X1 matrix of int)
+0:35          'r20' ( temp 3X1 matrix of int)
+0:35          transpose ( temp 3X1 matrix of int)
+0:35            'i1x3' ( temp 1X3 matrix of int)
+0:36      Sequence
+0:36        move second child to first child ( temp 3X2 matrix of int)
+0:36          'r21' ( temp 3X2 matrix of int)
+0:36          transpose ( temp 3X2 matrix of int)
+0:36            'i2x3' ( temp 2X3 matrix of int)
+0:37      Sequence
+0:37        move second child to first child ( temp 3X3 matrix of int)
+0:37          'r22' ( temp 3X3 matrix of int)
+0:37          transpose ( temp 3X3 matrix of int)
+0:37            'i3x3' ( temp 3X3 matrix of int)
+0:38      Sequence
+0:38        move second child to first child ( temp 3X4 matrix of int)
+0:38          'r23' ( temp 3X4 matrix of int)
+0:38          transpose ( temp 3X4 matrix of int)
+0:38            'i4x3' ( temp 4X3 matrix of int)
+0:40      Sequence
+0:40        move second child to first child ( temp 4X1 matrix of int)
+0:40          'r30' ( temp 4X1 matrix of int)
+0:40          transpose ( temp 4X1 matrix of int)
+0:40            'i1x4' ( temp 1X4 matrix of int)
+0:41      Sequence
+0:41        move second child to first child ( temp 4X2 matrix of int)
+0:41          'r31' ( temp 4X2 matrix of int)
+0:41          transpose ( temp 4X2 matrix of int)
+0:41            'i2x4' ( temp 2X4 matrix of int)
+0:42      Sequence
+0:42        move second child to first child ( temp 4X3 matrix of int)
+0:42          'r32' ( temp 4X3 matrix of int)
+0:42          transpose ( temp 4X3 matrix of int)
+0:42            'i3x4' ( temp 3X4 matrix of int)
+0:43      Sequence
+0:43        move second child to first child ( temp 4X4 matrix of int)
+0:43          'r33' ( temp 4X4 matrix of int)
+0:43          transpose ( temp 4X4 matrix of int)
+0:43            'i4x4' ( temp 4X4 matrix of int)
+0:47  Function Definition: TestUintMatTypes( ( temp void)
+0:47    Function Parameters: 
+0:?     Sequence
+0:69      Sequence
+0:69        move second child to first child ( temp 1X1 matrix of uint)
+0:69          'r00' ( temp 1X1 matrix of uint)
+0:69          transpose ( temp 1X1 matrix of uint)
+0:69            'u1x1' ( temp 1X1 matrix of uint)
+0:70      Sequence
+0:70        move second child to first child ( temp 1X2 matrix of uint)
+0:70          'r01' ( temp 1X2 matrix of uint)
+0:70          transpose ( temp 1X2 matrix of uint)
+0:70            'u2x1' ( temp 2X1 matrix of uint)
+0:71      Sequence
+0:71        move second child to first child ( temp 1X3 matrix of uint)
+0:71          'r02' ( temp 1X3 matrix of uint)
+0:71          transpose ( temp 1X3 matrix of uint)
+0:71            'u3x1' ( temp 3X1 matrix of uint)
+0:72      Sequence
+0:72        move second child to first child ( temp 1X4 matrix of uint)
+0:72          'r03' ( temp 1X4 matrix of uint)
+0:72          transpose ( temp 1X4 matrix of uint)
+0:72            'u4x1' ( temp 4X1 matrix of uint)
+0:74      Sequence
+0:74        move second child to first child ( temp 2X1 matrix of uint)
+0:74          'r10' ( temp 2X1 matrix of uint)
+0:74          transpose ( temp 2X1 matrix of uint)
+0:74            'u1x2' ( temp 1X2 matrix of uint)
+0:75      Sequence
+0:75        move second child to first child ( temp 2X2 matrix of uint)
+0:75          'r11' ( temp 2X2 matrix of uint)
+0:75          transpose ( temp 2X2 matrix of uint)
+0:75            'u2x2' ( temp 2X2 matrix of uint)
+0:76      Sequence
+0:76        move second child to first child ( temp 2X3 matrix of uint)
+0:76          'r12' ( temp 2X3 matrix of uint)
+0:76          transpose ( temp 2X3 matrix of uint)
+0:76            'u3x2' ( temp 3X2 matrix of uint)
+0:77      Sequence
+0:77        move second child to first child ( temp 2X4 matrix of uint)
+0:77          'r13' ( temp 2X4 matrix of uint)
+0:77          transpose ( temp 2X4 matrix of uint)
+0:77            'u4x2' ( temp 4X2 matrix of uint)
+0:79      Sequence
+0:79        move second child to first child ( temp 3X1 matrix of uint)
+0:79          'r20' ( temp 3X1 matrix of uint)
+0:79          transpose ( temp 3X1 matrix of uint)
+0:79            'u1x3' ( temp 1X3 matrix of uint)
+0:80      Sequence
+0:80        move second child to first child ( temp 3X2 matrix of uint)
+0:80          'r21' ( temp 3X2 matrix of uint)
+0:80          transpose ( temp 3X2 matrix of uint)
+0:80            'u2x3' ( temp 2X3 matrix of uint)
+0:81      Sequence
+0:81        move second child to first child ( temp 3X3 matrix of uint)
+0:81          'r22' ( temp 3X3 matrix of uint)
+0:81          transpose ( temp 3X3 matrix of uint)
+0:81            'u3x3' ( temp 3X3 matrix of uint)
+0:82      Sequence
+0:82        move second child to first child ( temp 3X4 matrix of uint)
+0:82          'r23' ( temp 3X4 matrix of uint)
+0:82          transpose ( temp 3X4 matrix of uint)
+0:82            'u4x3' ( temp 4X3 matrix of uint)
+0:84      Sequence
+0:84        move second child to first child ( temp 4X1 matrix of uint)
+0:84          'r30' ( temp 4X1 matrix of uint)
+0:84          transpose ( temp 4X1 matrix of uint)
+0:84            'u1x4' ( temp 1X4 matrix of uint)
+0:85      Sequence
+0:85        move second child to first child ( temp 4X2 matrix of uint)
+0:85          'r31' ( temp 4X2 matrix of uint)
+0:85          transpose ( temp 4X2 matrix of uint)
+0:85            'u2x4' ( temp 2X4 matrix of uint)
+0:86      Sequence
+0:86        move second child to first child ( temp 4X3 matrix of uint)
+0:86          'r32' ( temp 4X3 matrix of uint)
+0:86          transpose ( temp 4X3 matrix of uint)
+0:86            'u3x4' ( temp 3X4 matrix of uint)
+0:87      Sequence
+0:87        move second child to first child ( temp 4X4 matrix of uint)
+0:87          'r33' ( temp 4X4 matrix of uint)
+0:87          transpose ( temp 4X4 matrix of uint)
+0:87            'u4x4' ( temp 4X4 matrix of uint)
+0:93  Function Definition: @main( ( temp structure{ temp 4-component vector of float color})
+0:93    Function Parameters: 
+0:?     Sequence
+0:95      move second child to first child ( temp 4-component vector of float)
+0:95        color: direct index for structure ( temp 4-component vector of float)
+0:95          'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:95          Constant:
+0:95            0 (const int)
+0:?         Constant:
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:96      Branch: Return with expression
+0:96        'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:93  Function Definition: main( ( temp void)
+0:93    Function Parameters: 
+0:?     Sequence
+0:93      Sequence
+0:93        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:93          color: direct index for structure ( temp 4-component vector of float)
+0:93            Function Call: @main( ( temp structure{ temp 4-component vector of float color})
+0:93            Constant:
+0:93              0 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:3  Function Definition: TestIntMatTypes( ( temp void)
+0:3    Function Parameters: 
+0:?     Sequence
+0:25      Sequence
+0:25        move second child to first child ( temp 1X1 matrix of int)
+0:25          'r00' ( temp 1X1 matrix of int)
+0:25          transpose ( temp 1X1 matrix of int)
+0:25            'i1x1' ( temp 1X1 matrix of int)
+0:26      Sequence
+0:26        move second child to first child ( temp 1X2 matrix of int)
+0:26          'r01' ( temp 1X2 matrix of int)
+0:26          transpose ( temp 1X2 matrix of int)
+0:26            'i2x1' ( temp 2X1 matrix of int)
+0:27      Sequence
+0:27        move second child to first child ( temp 1X3 matrix of int)
+0:27          'r02' ( temp 1X3 matrix of int)
+0:27          transpose ( temp 1X3 matrix of int)
+0:27            'i3x1' ( temp 3X1 matrix of int)
+0:28      Sequence
+0:28        move second child to first child ( temp 1X4 matrix of int)
+0:28          'r03' ( temp 1X4 matrix of int)
+0:28          transpose ( temp 1X4 matrix of int)
+0:28            'i4x1' ( temp 4X1 matrix of int)
+0:30      Sequence
+0:30        move second child to first child ( temp 2X1 matrix of int)
+0:30          'r10' ( temp 2X1 matrix of int)
+0:30          transpose ( temp 2X1 matrix of int)
+0:30            'i1x2' ( temp 1X2 matrix of int)
+0:31      Sequence
+0:31        move second child to first child ( temp 2X2 matrix of int)
+0:31          'r11' ( temp 2X2 matrix of int)
+0:31          transpose ( temp 2X2 matrix of int)
+0:31            'i2x2' ( temp 2X2 matrix of int)
+0:32      Sequence
+0:32        move second child to first child ( temp 2X3 matrix of int)
+0:32          'r12' ( temp 2X3 matrix of int)
+0:32          transpose ( temp 2X3 matrix of int)
+0:32            'i3x2' ( temp 3X2 matrix of int)
+0:33      Sequence
+0:33        move second child to first child ( temp 2X4 matrix of int)
+0:33          'r13' ( temp 2X4 matrix of int)
+0:33          transpose ( temp 2X4 matrix of int)
+0:33            'i4x2' ( temp 4X2 matrix of int)
+0:35      Sequence
+0:35        move second child to first child ( temp 3X1 matrix of int)
+0:35          'r20' ( temp 3X1 matrix of int)
+0:35          transpose ( temp 3X1 matrix of int)
+0:35            'i1x3' ( temp 1X3 matrix of int)
+0:36      Sequence
+0:36        move second child to first child ( temp 3X2 matrix of int)
+0:36          'r21' ( temp 3X2 matrix of int)
+0:36          transpose ( temp 3X2 matrix of int)
+0:36            'i2x3' ( temp 2X3 matrix of int)
+0:37      Sequence
+0:37        move second child to first child ( temp 3X3 matrix of int)
+0:37          'r22' ( temp 3X3 matrix of int)
+0:37          transpose ( temp 3X3 matrix of int)
+0:37            'i3x3' ( temp 3X3 matrix of int)
+0:38      Sequence
+0:38        move second child to first child ( temp 3X4 matrix of int)
+0:38          'r23' ( temp 3X4 matrix of int)
+0:38          transpose ( temp 3X4 matrix of int)
+0:38            'i4x3' ( temp 4X3 matrix of int)
+0:40      Sequence
+0:40        move second child to first child ( temp 4X1 matrix of int)
+0:40          'r30' ( temp 4X1 matrix of int)
+0:40          transpose ( temp 4X1 matrix of int)
+0:40            'i1x4' ( temp 1X4 matrix of int)
+0:41      Sequence
+0:41        move second child to first child ( temp 4X2 matrix of int)
+0:41          'r31' ( temp 4X2 matrix of int)
+0:41          transpose ( temp 4X2 matrix of int)
+0:41            'i2x4' ( temp 2X4 matrix of int)
+0:42      Sequence
+0:42        move second child to first child ( temp 4X3 matrix of int)
+0:42          'r32' ( temp 4X3 matrix of int)
+0:42          transpose ( temp 4X3 matrix of int)
+0:42            'i3x4' ( temp 3X4 matrix of int)
+0:43      Sequence
+0:43        move second child to first child ( temp 4X4 matrix of int)
+0:43          'r33' ( temp 4X4 matrix of int)
+0:43          transpose ( temp 4X4 matrix of int)
+0:43            'i4x4' ( temp 4X4 matrix of int)
+0:47  Function Definition: TestUintMatTypes( ( temp void)
+0:47    Function Parameters: 
+0:?     Sequence
+0:69      Sequence
+0:69        move second child to first child ( temp 1X1 matrix of uint)
+0:69          'r00' ( temp 1X1 matrix of uint)
+0:69          transpose ( temp 1X1 matrix of uint)
+0:69            'u1x1' ( temp 1X1 matrix of uint)
+0:70      Sequence
+0:70        move second child to first child ( temp 1X2 matrix of uint)
+0:70          'r01' ( temp 1X2 matrix of uint)
+0:70          transpose ( temp 1X2 matrix of uint)
+0:70            'u2x1' ( temp 2X1 matrix of uint)
+0:71      Sequence
+0:71        move second child to first child ( temp 1X3 matrix of uint)
+0:71          'r02' ( temp 1X3 matrix of uint)
+0:71          transpose ( temp 1X3 matrix of uint)
+0:71            'u3x1' ( temp 3X1 matrix of uint)
+0:72      Sequence
+0:72        move second child to first child ( temp 1X4 matrix of uint)
+0:72          'r03' ( temp 1X4 matrix of uint)
+0:72          transpose ( temp 1X4 matrix of uint)
+0:72            'u4x1' ( temp 4X1 matrix of uint)
+0:74      Sequence
+0:74        move second child to first child ( temp 2X1 matrix of uint)
+0:74          'r10' ( temp 2X1 matrix of uint)
+0:74          transpose ( temp 2X1 matrix of uint)
+0:74            'u1x2' ( temp 1X2 matrix of uint)
+0:75      Sequence
+0:75        move second child to first child ( temp 2X2 matrix of uint)
+0:75          'r11' ( temp 2X2 matrix of uint)
+0:75          transpose ( temp 2X2 matrix of uint)
+0:75            'u2x2' ( temp 2X2 matrix of uint)
+0:76      Sequence
+0:76        move second child to first child ( temp 2X3 matrix of uint)
+0:76          'r12' ( temp 2X3 matrix of uint)
+0:76          transpose ( temp 2X3 matrix of uint)
+0:76            'u3x2' ( temp 3X2 matrix of uint)
+0:77      Sequence
+0:77        move second child to first child ( temp 2X4 matrix of uint)
+0:77          'r13' ( temp 2X4 matrix of uint)
+0:77          transpose ( temp 2X4 matrix of uint)
+0:77            'u4x2' ( temp 4X2 matrix of uint)
+0:79      Sequence
+0:79        move second child to first child ( temp 3X1 matrix of uint)
+0:79          'r20' ( temp 3X1 matrix of uint)
+0:79          transpose ( temp 3X1 matrix of uint)
+0:79            'u1x3' ( temp 1X3 matrix of uint)
+0:80      Sequence
+0:80        move second child to first child ( temp 3X2 matrix of uint)
+0:80          'r21' ( temp 3X2 matrix of uint)
+0:80          transpose ( temp 3X2 matrix of uint)
+0:80            'u2x3' ( temp 2X3 matrix of uint)
+0:81      Sequence
+0:81        move second child to first child ( temp 3X3 matrix of uint)
+0:81          'r22' ( temp 3X3 matrix of uint)
+0:81          transpose ( temp 3X3 matrix of uint)
+0:81            'u3x3' ( temp 3X3 matrix of uint)
+0:82      Sequence
+0:82        move second child to first child ( temp 3X4 matrix of uint)
+0:82          'r23' ( temp 3X4 matrix of uint)
+0:82          transpose ( temp 3X4 matrix of uint)
+0:82            'u4x3' ( temp 4X3 matrix of uint)
+0:84      Sequence
+0:84        move second child to first child ( temp 4X1 matrix of uint)
+0:84          'r30' ( temp 4X1 matrix of uint)
+0:84          transpose ( temp 4X1 matrix of uint)
+0:84            'u1x4' ( temp 1X4 matrix of uint)
+0:85      Sequence
+0:85        move second child to first child ( temp 4X2 matrix of uint)
+0:85          'r31' ( temp 4X2 matrix of uint)
+0:85          transpose ( temp 4X2 matrix of uint)
+0:85            'u2x4' ( temp 2X4 matrix of uint)
+0:86      Sequence
+0:86        move second child to first child ( temp 4X3 matrix of uint)
+0:86          'r32' ( temp 4X3 matrix of uint)
+0:86          transpose ( temp 4X3 matrix of uint)
+0:86            'u3x4' ( temp 3X4 matrix of uint)
+0:87      Sequence
+0:87        move second child to first child ( temp 4X4 matrix of uint)
+0:87          'r33' ( temp 4X4 matrix of uint)
+0:87          transpose ( temp 4X4 matrix of uint)
+0:87            'u4x4' ( temp 4X4 matrix of uint)
+0:93  Function Definition: @main( ( temp structure{ temp 4-component vector of float color})
+0:93    Function Parameters: 
+0:?     Sequence
+0:95      move second child to first child ( temp 4-component vector of float)
+0:95        color: direct index for structure ( temp 4-component vector of float)
+0:95          'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:95          Constant:
+0:95            0 (const int)
+0:?         Constant:
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:96      Branch: Return with expression
+0:96        'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:93  Function Definition: main( ( temp void)
+0:93    Function Parameters: 
+0:?     Sequence
+0:93      Sequence
+0:93        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:93          color: direct index for structure ( temp 4-component vector of float)
+0:93            Function Call: @main( ( temp structure{ temp 4-component vector of float color})
+0:93            Constant:
+0:93              0 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+
+Validation failed
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 232
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 229
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 6  "TestIntMatTypes("
+                              Name 8  "TestUintMatTypes("
+                              Name 12  "PS_OUTPUT"
+                              MemberName 12(PS_OUTPUT) 0  "color"
+                              Name 14  "@main("
+                              Name 20  "r00"
+                              Name 21  "i1x1"
+                              Name 27  "r01"
+                              Name 30  "i2x1"
+                              Name 36  "r02"
+                              Name 39  "i3x1"
+                              Name 45  "r03"
+                              Name 48  "i4x1"
+                              Name 51  "r10"
+                              Name 52  "i1x2"
+                              Name 57  "r11"
+                              Name 58  "i2x2"
+                              Name 63  "r12"
+                              Name 66  "i3x2"
+                              Name 71  "r13"
+                              Name 74  "i4x2"
+                              Name 77  "r20"
+                              Name 78  "i1x3"
+                              Name 81  "r21"
+                              Name 82  "i2x3"
+                              Name 87  "r22"
+                              Name 88  "i3x3"
+                              Name 93  "r23"
+                              Name 96  "i4x3"
+                              Name 99  "r30"
+                              Name 100  "i1x4"
+                              Name 103  "r31"
+                              Name 104  "i2x4"
+                              Name 107  "r32"
+                              Name 108  "i3x4"
+                              Name 113  "r33"
+                              Name 114  "i4x4"
+                              Name 121  "r00"
+                              Name 122  "u1x1"
+                              Name 128  "r01"
+                              Name 131  "u2x1"
+                              Name 137  "r02"
+                              Name 140  "u3x1"
+                              Name 146  "r03"
+                              Name 149  "u4x1"
+                              Name 152  "r10"
+                              Name 153  "u1x2"
+                              Name 158  "r11"
+                              Name 159  "u2x2"
+                              Name 164  "r12"
+                              Name 167  "u3x2"
+                              Name 172  "r13"
+                              Name 175  "u4x2"
+                              Name 178  "r20"
+                              Name 179  "u1x3"
+                              Name 182  "r21"
+                              Name 183  "u2x3"
+                              Name 188  "r22"
+                              Name 189  "u3x3"
+                              Name 194  "r23"
+                              Name 197  "u4x3"
+                              Name 200  "r30"
+                              Name 201  "u1x4"
+                              Name 204  "r31"
+                              Name 205  "u2x4"
+                              Name 208  "r32"
+                              Name 209  "u3x4"
+                              Name 214  "r33"
+                              Name 215  "u4x4"
+                              Name 219  "ps_output"
+                              Name 229  "@entryPointOutput.color"
+                              Decorate 229(@entryPointOutput.color) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+              10:             TypeFloat 32
+              11:             TypeVector 10(float) 4
+   12(PS_OUTPUT):             TypeStruct 11(fvec4)
+              13:             TypeFunction 12(PS_OUTPUT)
+              16:             TypeInt 32 1
+              17:             TypeVector 16(int) 1
+              18:             TypeMatrix 17(ivec) 1
+              19:             TypePointer Function 18
+              24:             TypeVector 16(int) 2
+              25:             TypeMatrix 24(ivec2) 1
+              26:             TypePointer Function 25
+              28:             TypeMatrix 17(ivec) 2
+              29:             TypePointer Function 28
+              33:             TypeVector 16(int) 3
+              34:             TypeMatrix 33(ivec3) 1
+              35:             TypePointer Function 34
+              37:             TypeMatrix 17(ivec) 3
+              38:             TypePointer Function 37
+              42:             TypeVector 16(int) 4
+              43:             TypeMatrix 42(ivec4) 1
+              44:             TypePointer Function 43
+              46:             TypeMatrix 17(ivec) 4
+              47:             TypePointer Function 46
+              55:             TypeMatrix 24(ivec2) 2
+              56:             TypePointer Function 55
+              61:             TypeMatrix 33(ivec3) 2
+              62:             TypePointer Function 61
+              64:             TypeMatrix 24(ivec2) 3
+              65:             TypePointer Function 64
+              69:             TypeMatrix 42(ivec4) 2
+              70:             TypePointer Function 69
+              72:             TypeMatrix 24(ivec2) 4
+              73:             TypePointer Function 72
+              85:             TypeMatrix 33(ivec3) 3
+              86:             TypePointer Function 85
+              91:             TypeMatrix 42(ivec4) 3
+              92:             TypePointer Function 91
+              94:             TypeMatrix 33(ivec3) 4
+              95:             TypePointer Function 94
+             111:             TypeMatrix 42(ivec4) 4
+             112:             TypePointer Function 111
+             117:             TypeInt 32 0
+             118:             TypeVector 117(int) 1
+             119:             TypeMatrix 118(ivec) 1
+             120:             TypePointer Function 119
+             125:             TypeVector 117(int) 2
+             126:             TypeMatrix 125(ivec2) 1
+             127:             TypePointer Function 126
+             129:             TypeMatrix 118(ivec) 2
+             130:             TypePointer Function 129
+             134:             TypeVector 117(int) 3
+             135:             TypeMatrix 134(ivec3) 1
+             136:             TypePointer Function 135
+             138:             TypeMatrix 118(ivec) 3
+             139:             TypePointer Function 138
+             143:             TypeVector 117(int) 4
+             144:             TypeMatrix 143(ivec4) 1
+             145:             TypePointer Function 144
+             147:             TypeMatrix 118(ivec) 4
+             148:             TypePointer Function 147
+             156:             TypeMatrix 125(ivec2) 2
+             157:             TypePointer Function 156
+             162:             TypeMatrix 134(ivec3) 2
+             163:             TypePointer Function 162
+             165:             TypeMatrix 125(ivec2) 3
+             166:             TypePointer Function 165
+             170:             TypeMatrix 143(ivec4) 2
+             171:             TypePointer Function 170
+             173:             TypeMatrix 125(ivec2) 4
+             174:             TypePointer Function 173
+             186:             TypeMatrix 134(ivec3) 3
+             187:             TypePointer Function 186
+             192:             TypeMatrix 143(ivec4) 3
+             193:             TypePointer Function 192
+             195:             TypeMatrix 134(ivec3) 4
+             196:             TypePointer Function 195
+             212:             TypeMatrix 143(ivec4) 4
+             213:             TypePointer Function 212
+             218:             TypePointer Function 12(PS_OUTPUT)
+             220:     16(int) Constant 0
+             221:   10(float) Constant 0
+             222:   11(fvec4) ConstantComposite 221 221 221 221
+             223:             TypePointer Function 11(fvec4)
+             228:             TypePointer Output 11(fvec4)
+229(@entryPointOutput.color):    228(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+             230:12(PS_OUTPUT) FunctionCall 14(@main()
+             231:   11(fvec4) CompositeExtract 230 0
+                              Store 229(@entryPointOutput.color) 231
+                              Return
+                              FunctionEnd
+6(TestIntMatTypes():           2 Function None 3
+               7:             Label
+         20(r00):     19(ptr) Variable Function
+        21(i1x1):     19(ptr) Variable Function
+         27(r01):     26(ptr) Variable Function
+        30(i2x1):     29(ptr) Variable Function
+         36(r02):     35(ptr) Variable Function
+        39(i3x1):     38(ptr) Variable Function
+         45(r03):     44(ptr) Variable Function
+        48(i4x1):     47(ptr) Variable Function
+         51(r10):     29(ptr) Variable Function
+        52(i1x2):     26(ptr) Variable Function
+         57(r11):     56(ptr) Variable Function
+        58(i2x2):     56(ptr) Variable Function
+         63(r12):     62(ptr) Variable Function
+        66(i3x2):     65(ptr) Variable Function
+         71(r13):     70(ptr) Variable Function
+        74(i4x2):     73(ptr) Variable Function
+         77(r20):     38(ptr) Variable Function
+        78(i1x3):     35(ptr) Variable Function
+         81(r21):     65(ptr) Variable Function
+        82(i2x3):     62(ptr) Variable Function
+         87(r22):     86(ptr) Variable Function
+        88(i3x3):     86(ptr) Variable Function
+         93(r23):     92(ptr) Variable Function
+        96(i4x3):     95(ptr) Variable Function
+         99(r30):     47(ptr) Variable Function
+       100(i1x4):     44(ptr) Variable Function
+        103(r31):     73(ptr) Variable Function
+       104(i2x4):     70(ptr) Variable Function
+        107(r32):     95(ptr) Variable Function
+       108(i3x4):     92(ptr) Variable Function
+        113(r33):    112(ptr) Variable Function
+       114(i4x4):    112(ptr) Variable Function
+              22:          18 Load 21(i1x1)
+              23:          18 Transpose 22
+                              Store 20(r00) 23
+              31:          28 Load 30(i2x1)
+              32:          25 Transpose 31
+                              Store 27(r01) 32
+              40:          37 Load 39(i3x1)
+              41:          34 Transpose 40
+                              Store 36(r02) 41
+              49:          46 Load 48(i4x1)
+              50:          43 Transpose 49
+                              Store 45(r03) 50
+              53:          25 Load 52(i1x2)
+              54:          28 Transpose 53
+                              Store 51(r10) 54
+              59:          55 Load 58(i2x2)
+              60:          55 Transpose 59
+                              Store 57(r11) 60
+              67:          64 Load 66(i3x2)
+              68:          61 Transpose 67
+                              Store 63(r12) 68
+              75:          72 Load 74(i4x2)
+              76:          69 Transpose 75
+                              Store 71(r13) 76
+              79:          34 Load 78(i1x3)
+              80:          37 Transpose 79
+                              Store 77(r20) 80
+              83:          61 Load 82(i2x3)
+              84:          64 Transpose 83
+                              Store 81(r21) 84
+              89:          85 Load 88(i3x3)
+              90:          85 Transpose 89
+                              Store 87(r22) 90
+              97:          94 Load 96(i4x3)
+              98:          91 Transpose 97
+                              Store 93(r23) 98
+             101:          43 Load 100(i1x4)
+             102:          46 Transpose 101
+                              Store 99(r30) 102
+             105:          69 Load 104(i2x4)
+             106:          72 Transpose 105
+                              Store 103(r31) 106
+             109:          91 Load 108(i3x4)
+             110:          94 Transpose 109
+                              Store 107(r32) 110
+             115:         111 Load 114(i4x4)
+             116:         111 Transpose 115
+                              Store 113(r33) 116
+                              Return
+                              FunctionEnd
+8(TestUintMatTypes():           2 Function None 3
+               9:             Label
+        121(r00):    120(ptr) Variable Function
+       122(u1x1):    120(ptr) Variable Function
+        128(r01):    127(ptr) Variable Function
+       131(u2x1):    130(ptr) Variable Function
+        137(r02):    136(ptr) Variable Function
+       140(u3x1):    139(ptr) Variable Function
+        146(r03):    145(ptr) Variable Function
+       149(u4x1):    148(ptr) Variable Function
+        152(r10):    130(ptr) Variable Function
+       153(u1x2):    127(ptr) Variable Function
+        158(r11):    157(ptr) Variable Function
+       159(u2x2):    157(ptr) Variable Function
+        164(r12):    163(ptr) Variable Function
+       167(u3x2):    166(ptr) Variable Function
+        172(r13):    171(ptr) Variable Function
+       175(u4x2):    174(ptr) Variable Function
+        178(r20):    139(ptr) Variable Function
+       179(u1x3):    136(ptr) Variable Function
+        182(r21):    166(ptr) Variable Function
+       183(u2x3):    163(ptr) Variable Function
+        188(r22):    187(ptr) Variable Function
+       189(u3x3):    187(ptr) Variable Function
+        194(r23):    193(ptr) Variable Function
+       197(u4x3):    196(ptr) Variable Function
+        200(r30):    148(ptr) Variable Function
+       201(u1x4):    145(ptr) Variable Function
+        204(r31):    174(ptr) Variable Function
+       205(u2x4):    171(ptr) Variable Function
+        208(r32):    196(ptr) Variable Function
+       209(u3x4):    193(ptr) Variable Function
+        214(r33):    213(ptr) Variable Function
+       215(u4x4):    213(ptr) Variable Function
+             123:         119 Load 122(u1x1)
+             124:         119 Transpose 123
+                              Store 121(r00) 124
+             132:         129 Load 131(u2x1)
+             133:         126 Transpose 132
+                              Store 128(r01) 133
+             141:         138 Load 140(u3x1)
+             142:         135 Transpose 141
+                              Store 137(r02) 142
+             150:         147 Load 149(u4x1)
+             151:         144 Transpose 150
+                              Store 146(r03) 151
+             154:         126 Load 153(u1x2)
+             155:         129 Transpose 154
+                              Store 152(r10) 155
+             160:         156 Load 159(u2x2)
+             161:         156 Transpose 160
+                              Store 158(r11) 161
+             168:         165 Load 167(u3x2)
+             169:         162 Transpose 168
+                              Store 164(r12) 169
+             176:         173 Load 175(u4x2)
+             177:         170 Transpose 176
+                              Store 172(r13) 177
+             180:         135 Load 179(u1x3)
+             181:         138 Transpose 180
+                              Store 178(r20) 181
+             184:         162 Load 183(u2x3)
+             185:         165 Transpose 184
+                              Store 182(r21) 185
+             190:         186 Load 189(u3x3)
+             191:         186 Transpose 190
+                              Store 188(r22) 191
+             198:         195 Load 197(u4x3)
+             199:         192 Transpose 198
+                              Store 194(r23) 199
+             202:         144 Load 201(u1x4)
+             203:         147 Transpose 202
+                              Store 200(r30) 203
+             206:         170 Load 205(u2x4)
+             207:         173 Transpose 206
+                              Store 204(r31) 207
+             210:         192 Load 209(u3x4)
+             211:         195 Transpose 210
+                              Store 208(r32) 211
+             216:         212 Load 215(u4x4)
+             217:         212 Transpose 216
+                              Store 214(r33) 217
+                              Return
+                              FunctionEnd
+      14(@main():12(PS_OUTPUT) Function None 13
+              15:             Label
+  219(ps_output):    218(ptr) Variable Function
+             224:    223(ptr) AccessChain 219(ps_output) 220
+                              Store 224 222
+             225:12(PS_OUTPUT) Load 219(ps_output)
+                              ReturnValue 225
+                              FunctionEnd

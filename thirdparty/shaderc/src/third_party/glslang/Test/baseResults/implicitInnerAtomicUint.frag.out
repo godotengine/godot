@@ -1,0 +1,20 @@
+implicitInnerAtomicUint.frag
+ERROR: 0:2: '[]' : only outermost dimension of an array of arrays can be implicitly sized 
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 460
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+0:?     'c' (layout( binding=0 offset=0) uniform 1-element array of 1-element array of atomic_uint)
+
+
+Linked fragment stage:
+
+ERROR: Linking fragment stage: Missing entry point: Each stage requires one entry point
+
+Shader version: 460
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+0:?     'c' (layout( binding=0 offset=0) uniform 1-element array of 1-element array of atomic_uint)
+

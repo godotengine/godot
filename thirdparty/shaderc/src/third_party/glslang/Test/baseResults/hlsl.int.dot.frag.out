@@ -1,0 +1,339 @@
+hlsl.int.dot.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:1  Function Definition: @main( ( temp 4-component vector of float)
+0:1    Function Parameters: 
+0:?     Sequence
+0:2      Sequence
+0:2        move second child to first child ( temp int)
+0:2          'i' ( temp int)
+0:2          Constant:
+0:2            1 (const int)
+0:3      Sequence
+0:3        move second child to first child ( temp 1-component vector of int)
+0:3          'i2' ( temp 1-component vector of int)
+0:3          Constant:
+0:3            2 (const int)
+0:4      Sequence
+0:4        move second child to first child ( temp 2-component vector of int)
+0:4          'i3' ( temp 2-component vector of int)
+0:4          Constant:
+0:4            3 (const int)
+0:4            3 (const int)
+0:5      Sequence
+0:5        move second child to first child ( temp 3-component vector of int)
+0:5          'i4' ( temp 3-component vector of int)
+0:5          Constant:
+0:5            4 (const int)
+0:5            4 (const int)
+0:5            4 (const int)
+0:6      Sequence
+0:6        move second child to first child ( temp 4-component vector of int)
+0:6          'i5' ( temp 4-component vector of int)
+0:6          Constant:
+0:6            5 (const int)
+0:6            5 (const int)
+0:6            5 (const int)
+0:6            5 (const int)
+0:8      move second child to first child ( temp int)
+0:8        'i' ( temp int)
+0:8        dot-product ( temp int)
+0:8          'i' ( temp int)
+0:8          'i' ( temp int)
+0:9      move second child to first child ( temp 1-component vector of int)
+0:9        'i2' ( temp 1-component vector of int)
+0:9        Construct int ( temp 1-component vector of int)
+0:9          dot-product ( temp int)
+0:9            Construct int ( in int)
+0:9              'i2' ( temp 1-component vector of int)
+0:9            Construct int ( in int)
+0:9              'i2' ( temp 1-component vector of int)
+0:10      move second child to first child ( temp 2-component vector of int)
+0:10        'i3' ( temp 2-component vector of int)
+0:10        Construct ivec2 ( temp 2-component vector of int)
+0:10          dot-product ( temp int)
+0:10            'i3' ( temp 2-component vector of int)
+0:10            'i3' ( temp 2-component vector of int)
+0:11      move second child to first child ( temp 3-component vector of int)
+0:11        'i4' ( temp 3-component vector of int)
+0:11        Construct ivec3 ( temp 3-component vector of int)
+0:11          dot-product ( temp int)
+0:11            'i4' ( temp 3-component vector of int)
+0:11            'i4' ( temp 3-component vector of int)
+0:12      move second child to first child ( temp 4-component vector of int)
+0:12        'i5' ( temp 4-component vector of int)
+0:12        Construct ivec4 ( temp 4-component vector of int)
+0:12          dot-product ( temp int)
+0:12            'i5' ( temp 4-component vector of int)
+0:12            'i5' ( temp 4-component vector of int)
+0:13      Branch: Return with expression
+0:13        Convert int to float ( temp 4-component vector of float)
+0:13          add ( temp 4-component vector of int)
+0:13            add ( temp 4-component vector of int)
+0:13              add ( temp 4-component vector of int)
+0:13                add ( temp 4-component vector of int)
+0:13                  'i' ( temp int)
+0:13                  Construct ivec4 ( temp 4-component vector of int)
+0:13                    Construct int ( temp int)
+0:13                      'i2' ( temp 1-component vector of int)
+0:13                vector swizzle ( temp 4-component vector of int)
+0:13                  'i3' ( temp 2-component vector of int)
+0:13                  Sequence
+0:13                    Constant:
+0:13                      0 (const int)
+0:13                    Constant:
+0:13                      1 (const int)
+0:13                    Constant:
+0:13                      0 (const int)
+0:13                    Constant:
+0:13                      1 (const int)
+0:13              vector swizzle ( temp 4-component vector of int)
+0:13                'i4' ( temp 3-component vector of int)
+0:13                Sequence
+0:13                  Constant:
+0:13                    0 (const int)
+0:13                  Constant:
+0:13                    1 (const int)
+0:13                  Constant:
+0:13                    2 (const int)
+0:13                  Constant:
+0:13                    0 (const int)
+0:13            'i5' ( temp 4-component vector of int)
+0:1  Function Definition: main( ( temp void)
+0:1    Function Parameters: 
+0:?     Sequence
+0:1      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:1        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:1  Function Definition: @main( ( temp 4-component vector of float)
+0:1    Function Parameters: 
+0:?     Sequence
+0:2      Sequence
+0:2        move second child to first child ( temp int)
+0:2          'i' ( temp int)
+0:2          Constant:
+0:2            1 (const int)
+0:3      Sequence
+0:3        move second child to first child ( temp 1-component vector of int)
+0:3          'i2' ( temp 1-component vector of int)
+0:3          Constant:
+0:3            2 (const int)
+0:4      Sequence
+0:4        move second child to first child ( temp 2-component vector of int)
+0:4          'i3' ( temp 2-component vector of int)
+0:4          Constant:
+0:4            3 (const int)
+0:4            3 (const int)
+0:5      Sequence
+0:5        move second child to first child ( temp 3-component vector of int)
+0:5          'i4' ( temp 3-component vector of int)
+0:5          Constant:
+0:5            4 (const int)
+0:5            4 (const int)
+0:5            4 (const int)
+0:6      Sequence
+0:6        move second child to first child ( temp 4-component vector of int)
+0:6          'i5' ( temp 4-component vector of int)
+0:6          Constant:
+0:6            5 (const int)
+0:6            5 (const int)
+0:6            5 (const int)
+0:6            5 (const int)
+0:8      move second child to first child ( temp int)
+0:8        'i' ( temp int)
+0:8        dot-product ( temp int)
+0:8          'i' ( temp int)
+0:8          'i' ( temp int)
+0:9      move second child to first child ( temp 1-component vector of int)
+0:9        'i2' ( temp 1-component vector of int)
+0:9        Construct int ( temp 1-component vector of int)
+0:9          dot-product ( temp int)
+0:9            Construct int ( in int)
+0:9              'i2' ( temp 1-component vector of int)
+0:9            Construct int ( in int)
+0:9              'i2' ( temp 1-component vector of int)
+0:10      move second child to first child ( temp 2-component vector of int)
+0:10        'i3' ( temp 2-component vector of int)
+0:10        Construct ivec2 ( temp 2-component vector of int)
+0:10          dot-product ( temp int)
+0:10            'i3' ( temp 2-component vector of int)
+0:10            'i3' ( temp 2-component vector of int)
+0:11      move second child to first child ( temp 3-component vector of int)
+0:11        'i4' ( temp 3-component vector of int)
+0:11        Construct ivec3 ( temp 3-component vector of int)
+0:11          dot-product ( temp int)
+0:11            'i4' ( temp 3-component vector of int)
+0:11            'i4' ( temp 3-component vector of int)
+0:12      move second child to first child ( temp 4-component vector of int)
+0:12        'i5' ( temp 4-component vector of int)
+0:12        Construct ivec4 ( temp 4-component vector of int)
+0:12          dot-product ( temp int)
+0:12            'i5' ( temp 4-component vector of int)
+0:12            'i5' ( temp 4-component vector of int)
+0:13      Branch: Return with expression
+0:13        Convert int to float ( temp 4-component vector of float)
+0:13          add ( temp 4-component vector of int)
+0:13            add ( temp 4-component vector of int)
+0:13              add ( temp 4-component vector of int)
+0:13                add ( temp 4-component vector of int)
+0:13                  'i' ( temp int)
+0:13                  Construct ivec4 ( temp 4-component vector of int)
+0:13                    Construct int ( temp int)
+0:13                      'i2' ( temp 1-component vector of int)
+0:13                vector swizzle ( temp 4-component vector of int)
+0:13                  'i3' ( temp 2-component vector of int)
+0:13                  Sequence
+0:13                    Constant:
+0:13                      0 (const int)
+0:13                    Constant:
+0:13                      1 (const int)
+0:13                    Constant:
+0:13                      0 (const int)
+0:13                    Constant:
+0:13                      1 (const int)
+0:13              vector swizzle ( temp 4-component vector of int)
+0:13                'i4' ( temp 3-component vector of int)
+0:13                Sequence
+0:13                  Constant:
+0:13                    0 (const int)
+0:13                  Constant:
+0:13                    1 (const int)
+0:13                  Constant:
+0:13                    2 (const int)
+0:13                  Constant:
+0:13                    0 (const int)
+0:13            'i5' ( temp 4-component vector of int)
+0:1  Function Definition: main( ( temp void)
+0:1    Function Parameters: 
+0:?     Sequence
+0:1      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:1        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10300
+// Generated by (magic number): 80007
+// Id's are bound by 84
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 82
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "@main("
+                              Name 13  "i"
+                              Name 15  "i2"
+                              Name 19  "i3"
+                              Name 24  "i4"
+                              Name 29  "i5"
+                              Name 82  "@entryPointOutput"
+                              Decorate 82(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeFunction 7(fvec4)
+              11:             TypeInt 32 1
+              12:             TypePointer Function 11(int)
+              14:     11(int) Constant 1
+              16:     11(int) Constant 2
+              17:             TypeVector 11(int) 2
+              18:             TypePointer Function 17(ivec2)
+              20:     11(int) Constant 3
+              21:   17(ivec2) ConstantComposite 20 20
+              22:             TypeVector 11(int) 3
+              23:             TypePointer Function 22(ivec3)
+              25:     11(int) Constant 4
+              26:   22(ivec3) ConstantComposite 25 25 25
+              27:             TypeVector 11(int) 4
+              28:             TypePointer Function 27(ivec4)
+              30:     11(int) Constant 5
+              31:   27(ivec4) ConstantComposite 30 30 30 30
+              81:             TypePointer Output 7(fvec4)
+82(@entryPointOutput):     81(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              83:    7(fvec4) FunctionCall 9(@main()
+                              Store 82(@entryPointOutput) 83
+                              Return
+                              FunctionEnd
+       9(@main():    7(fvec4) Function None 8
+              10:             Label
+           13(i):     12(ptr) Variable Function
+          15(i2):     12(ptr) Variable Function
+          19(i3):     18(ptr) Variable Function
+          24(i4):     23(ptr) Variable Function
+          29(i5):     28(ptr) Variable Function
+                              Store 13(i) 14
+                              Store 15(i2) 16
+                              Store 19(i3) 21
+                              Store 24(i4) 26
+                              Store 29(i5) 31
+              32:     11(int) Load 13(i)
+              33:     11(int) Load 13(i)
+              34:     11(int) IMul 32 33
+                              Store 13(i) 34
+              35:     11(int) Load 15(i2)
+              36:     11(int) Load 15(i2)
+              37:     11(int) IMul 35 36
+                              Store 15(i2) 37
+              38:   17(ivec2) Load 19(i3)
+              39:   17(ivec2) Load 19(i3)
+              40:   17(ivec2) IMul 38 39
+              41:     11(int) CompositeExtract 40 0
+              42:     11(int) CompositeExtract 38 1
+              43:     11(int) IAdd 41 42
+              44:   17(ivec2) CompositeConstruct 43 43
+                              Store 19(i3) 44
+              45:   22(ivec3) Load 24(i4)
+              46:   22(ivec3) Load 24(i4)
+              47:   22(ivec3) IMul 45 46
+              48:     11(int) CompositeExtract 47 0
+              49:     11(int) CompositeExtract 45 1
+              50:     11(int) IAdd 48 49
+              51:     11(int) CompositeExtract 45 2
+              52:     11(int) IAdd 50 51
+              53:   22(ivec3) CompositeConstruct 52 52 52
+                              Store 24(i4) 53
+              54:   27(ivec4) Load 29(i5)
+              55:   27(ivec4) Load 29(i5)
+              56:   27(ivec4) IMul 54 55
+              57:     11(int) CompositeExtract 56 0
+              58:     11(int) CompositeExtract 54 1
+              59:     11(int) IAdd 57 58
+              60:     11(int) CompositeExtract 54 2
+              61:     11(int) IAdd 59 60
+              62:     11(int) CompositeExtract 54 3
+              63:     11(int) IAdd 61 62
+              64:   27(ivec4) CompositeConstruct 63 63 63 63
+                              Store 29(i5) 64
+              65:     11(int) Load 13(i)
+              66:     11(int) Load 15(i2)
+              67:   27(ivec4) CompositeConstruct 66 66 66 66
+              68:   27(ivec4) CompositeConstruct 65 65 65 65
+              69:   27(ivec4) IAdd 68 67
+              70:   17(ivec2) Load 19(i3)
+              71:   27(ivec4) VectorShuffle 70 70 0 1 0 1
+              72:   27(ivec4) IAdd 69 71
+              73:   22(ivec3) Load 24(i4)
+              74:   27(ivec4) VectorShuffle 73 73 0 1 2 0
+              75:   27(ivec4) IAdd 72 74
+              76:   27(ivec4) Load 29(i5)
+              77:   27(ivec4) IAdd 75 76
+              78:    7(fvec4) ConvertSToF 77
+                              ReturnValue 78
+                              FunctionEnd

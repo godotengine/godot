@@ -1,0 +1,316 @@
+link1.vk.frag
+Shader version: 450
+gl_FragCoord origin is upper left
+0:? Sequence
+0:16  Function Definition: main( ( global void)
+0:16    Function Parameters: 
+0:18    Sequence
+0:18      move second child to first child ( temp highp 4-component vector of float)
+0:18        'color' (layout( location=0) out highp 4-component vector of float)
+0:18        Function Call: getColor( ( global highp 4-component vector of float)
+0:20      move second child to first child ( temp highp int)
+0:20        direct index ( temp highp int)
+0:20          'a1' ( global unsized 9-element array of highp int)
+0:20          Constant:
+0:20            8 (const int)
+0:20        Constant:
+0:20          1 (const int)
+0:21      move second child to first child ( temp highp int)
+0:21        direct index ( temp highp int)
+0:21          'a2' ( global unsized 2-element array of highp int)
+0:21          Constant:
+0:21            1 (const int)
+0:21        Constant:
+0:21          1 (const int)
+0:22      move second child to first child ( temp highp int)
+0:22        indirect index ( temp highp int)
+0:22          'b' ( global 5-element array of highp int)
+0:22          'i' ( global highp int)
+0:22        Constant:
+0:22          1 (const int)
+0:23      move second child to first child ( temp highp int)
+0:23        direct index ( temp highp int)
+0:23          'c' ( global unsized 4-element array of highp int)
+0:23          Constant:
+0:23            3 (const int)
+0:23        Constant:
+0:23          1 (const int)
+0:?   Linker Objects
+0:?     'color' (layout( location=0) out highp 4-component vector of float)
+0:?     'a1' ( global unsized 9-element array of highp int)
+0:?     'a2' ( global unsized 2-element array of highp int)
+0:?     'b' ( global 5-element array of highp int)
+0:?     'c' ( global unsized 4-element array of highp int)
+0:?     'i' ( global highp int)
+0:?     'anon@0' (layout( column_major std430) buffer block{layout( column_major std430) buffer unsized 1-element array of highp float r})
+0:?     'anon@1' (layout( column_major std430) buffer block{layout( column_major std430) buffer unsized 1-element array of highp float m})
+
+link2.vk.frag
+Shader version: 450
+gl_FragCoord origin is upper left
+0:? Sequence
+0:14  Function Definition: getColor( ( global highp 4-component vector of float)
+0:14    Function Parameters: 
+0:16    Sequence
+0:16      move second child to first child ( temp highp int)
+0:16        direct index ( temp highp int)
+0:16          'a1' ( global unsized 3-element array of highp int)
+0:16          Constant:
+0:16            2 (const int)
+0:16        Constant:
+0:16          1 (const int)
+0:17      move second child to first child ( temp highp int)
+0:17        direct index ( temp highp int)
+0:17          'a2' ( global unsized 10-element array of highp int)
+0:17          Constant:
+0:17            9 (const int)
+0:17        Constant:
+0:17          1 (const int)
+0:18      move second child to first child ( temp highp int)
+0:18        direct index ( temp highp int)
+0:18          'b' ( global unsized 3-element array of highp int)
+0:18          Constant:
+0:18            2 (const int)
+0:18        Constant:
+0:18          1 (const int)
+0:19      move second child to first child ( temp highp int)
+0:19        direct index ( temp highp int)
+0:19          'c' ( global 7-element array of highp int)
+0:19          Constant:
+0:19            3 (const int)
+0:19        Constant:
+0:19          1 (const int)
+0:20      move second child to first child ( temp highp int)
+0:20        indirect index ( temp highp int)
+0:20          'c' ( global 7-element array of highp int)
+0:20          'i' ( global highp int)
+0:20        Constant:
+0:20          1 (const int)
+0:22      Branch: Return with expression
+0:22        texture ( global highp 4-component vector of float)
+0:22          's2D' (layout( binding=1) uniform highp sampler2D)
+0:22          Constant:
+0:22            0.500000
+0:22            0.500000
+0:?   Linker Objects
+0:?     's2D' (layout( binding=1) uniform highp sampler2D)
+0:?     'a1' ( global unsized 3-element array of highp int)
+0:?     'a2' ( global unsized 10-element array of highp int)
+0:?     'b' ( global unsized 3-element array of highp int)
+0:?     'c' ( global 7-element array of highp int)
+0:?     'i' ( global highp int)
+0:?     'anon@0' (layout( column_major std430) buffer block{layout( column_major std430) buffer unsized 1-element array of highp float r})
+0:?     'anon@1' (layout( column_major std430) buffer block{layout( column_major std430) buffer 4-element array of highp float m})
+
+
+Linked fragment stage:
+
+
+Shader version: 450
+gl_FragCoord origin is upper left
+0:? Sequence
+0:16  Function Definition: main( ( global void)
+0:16    Function Parameters: 
+0:18    Sequence
+0:18      move second child to first child ( temp highp 4-component vector of float)
+0:18        'color' (layout( location=0) out highp 4-component vector of float)
+0:18        Function Call: getColor( ( global highp 4-component vector of float)
+0:20      move second child to first child ( temp highp int)
+0:20        direct index ( temp highp int)
+0:20          'a1' ( global 9-element array of highp int)
+0:20          Constant:
+0:20            8 (const int)
+0:20        Constant:
+0:20          1 (const int)
+0:21      move second child to first child ( temp highp int)
+0:21        direct index ( temp highp int)
+0:21          'a2' ( global 10-element array of highp int)
+0:21          Constant:
+0:21            1 (const int)
+0:21        Constant:
+0:21          1 (const int)
+0:22      move second child to first child ( temp highp int)
+0:22        indirect index ( temp highp int)
+0:22          'b' ( global 5-element array of highp int)
+0:22          'i' ( global highp int)
+0:22        Constant:
+0:22          1 (const int)
+0:23      move second child to first child ( temp highp int)
+0:23        direct index ( temp highp int)
+0:23          'c' ( global 7-element array of highp int)
+0:23          Constant:
+0:23            3 (const int)
+0:23        Constant:
+0:23          1 (const int)
+0:14  Function Definition: getColor( ( global highp 4-component vector of float)
+0:14    Function Parameters: 
+0:16    Sequence
+0:16      move second child to first child ( temp highp int)
+0:16        direct index ( temp highp int)
+0:16          'a1' ( global 3-element array of highp int)
+0:16          Constant:
+0:16            2 (const int)
+0:16        Constant:
+0:16          1 (const int)
+0:17      move second child to first child ( temp highp int)
+0:17        direct index ( temp highp int)
+0:17          'a2' ( global 10-element array of highp int)
+0:17          Constant:
+0:17            9 (const int)
+0:17        Constant:
+0:17          1 (const int)
+0:18      move second child to first child ( temp highp int)
+0:18        direct index ( temp highp int)
+0:18          'b' ( global 3-element array of highp int)
+0:18          Constant:
+0:18            2 (const int)
+0:18        Constant:
+0:18          1 (const int)
+0:19      move second child to first child ( temp highp int)
+0:19        direct index ( temp highp int)
+0:19          'c' ( global 7-element array of highp int)
+0:19          Constant:
+0:19            3 (const int)
+0:19        Constant:
+0:19          1 (const int)
+0:20      move second child to first child ( temp highp int)
+0:20        indirect index ( temp highp int)
+0:20          'c' ( global 7-element array of highp int)
+0:20          'i' ( global highp int)
+0:20        Constant:
+0:20          1 (const int)
+0:22      Branch: Return with expression
+0:22        texture ( global highp 4-component vector of float)
+0:22          's2D' (layout( binding=1) uniform highp sampler2D)
+0:22          Constant:
+0:22            0.500000
+0:22            0.500000
+0:?   Linker Objects
+0:?     'color' (layout( location=0) out highp 4-component vector of float)
+0:?     'a1' ( global 9-element array of highp int)
+0:?     'a2' ( global 10-element array of highp int)
+0:?     'b' ( global 5-element array of highp int)
+0:?     'c' ( global 7-element array of highp int)
+0:?     'i' ( global highp int)
+0:?     'anon@0' (layout( column_major std430) buffer block{layout( column_major std430) buffer unsized 1-element array of highp float r})
+0:?     'anon@1' (layout( column_major std430) buffer block{layout( column_major std430) buffer 4-element array of highp float m})
+0:?     's2D' (layout( binding=1) uniform highp sampler2D)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 70
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 12
+                              ExecutionMode 4 OriginUpperLeft
+                              Source GLSL 450
+                              Name 4  "main"
+                              Name 9  "getColor("
+                              Name 12  "color"
+                              Name 19  "a1"
+                              Name 27  "a2"
+                              Name 32  "b"
+                              Name 33  "i"
+                              Name 39  "c"
+                              Name 53  "s2D"
+                              Name 62  "bnameRuntime"
+                              MemberName 62(bnameRuntime) 0  "r"
+                              Name 64  ""
+                              Name 67  "bnameImplicit"
+                              MemberName 67(bnameImplicit) 0  "m"
+                              Name 69  ""
+                              Decorate 12(color) Location 0
+                              Decorate 53(s2D) DescriptorSet 0
+                              Decorate 53(s2D) Binding 1
+                              Decorate 61 ArrayStride 4
+                              MemberDecorate 62(bnameRuntime) 0 Offset 0
+                              Decorate 62(bnameRuntime) BufferBlock
+                              Decorate 64 DescriptorSet 0
+                              Decorate 64 Binding 0
+                              Decorate 66 ArrayStride 4
+                              MemberDecorate 67(bnameImplicit) 0 Offset 0
+                              Decorate 67(bnameImplicit) BufferBlock
+                              Decorate 69 DescriptorSet 0
+                              Decorate 69 Binding 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeFunction 7(fvec4)
+              11:             TypePointer Output 7(fvec4)
+       12(color):     11(ptr) Variable Output
+              14:             TypeInt 32 1
+              15:             TypeInt 32 0
+              16:     15(int) Constant 9
+              17:             TypeArray 14(int) 16
+              18:             TypePointer Private 17
+          19(a1):     18(ptr) Variable Private
+              20:     14(int) Constant 8
+              21:     14(int) Constant 1
+              22:             TypePointer Private 14(int)
+              24:     15(int) Constant 10
+              25:             TypeArray 14(int) 24
+              26:             TypePointer Private 25
+          27(a2):     26(ptr) Variable Private
+              29:     15(int) Constant 5
+              30:             TypeArray 14(int) 29
+              31:             TypePointer Private 30
+           32(b):     31(ptr) Variable Private
+           33(i):     22(ptr) Variable Private
+              36:     15(int) Constant 7
+              37:             TypeArray 14(int) 36
+              38:             TypePointer Private 37
+           39(c):     38(ptr) Variable Private
+              40:     14(int) Constant 3
+              42:     14(int) Constant 2
+              44:     14(int) Constant 9
+              50:             TypeImage 6(float) 2D sampled format:Unknown
+              51:             TypeSampledImage 50
+              52:             TypePointer UniformConstant 51
+         53(s2D):     52(ptr) Variable UniformConstant
+              55:             TypeVector 6(float) 2
+              56:    6(float) Constant 1056964608
+              57:   55(fvec2) ConstantComposite 56 56
+              61:             TypeRuntimeArray 6(float)
+62(bnameRuntime):             TypeStruct 61
+              63:             TypePointer Uniform 62(bnameRuntime)
+              64:     63(ptr) Variable Uniform
+              65:     15(int) Constant 4
+              66:             TypeArray 6(float) 65
+67(bnameImplicit):             TypeStruct 66
+              68:             TypePointer Uniform 67(bnameImplicit)
+              69:     68(ptr) Variable Uniform
+         4(main):           2 Function None 3
+               5:             Label
+              13:    7(fvec4) FunctionCall 9(getColor()
+                              Store 12(color) 13
+              23:     22(ptr) AccessChain 19(a1) 20
+                              Store 23 21
+              28:     22(ptr) AccessChain 27(a2) 21
+                              Store 28 21
+              34:     14(int) Load 33(i)
+              35:     22(ptr) AccessChain 32(b) 34
+                              Store 35 21
+              41:     22(ptr) AccessChain 39(c) 40
+                              Store 41 21
+                              Return
+                              FunctionEnd
+    9(getColor():    7(fvec4) Function None 8
+              10:             Label
+              43:     22(ptr) AccessChain 19(a1) 42
+                              Store 43 21
+              45:     22(ptr) AccessChain 27(a2) 44
+                              Store 45 21
+              46:     22(ptr) AccessChain 32(b) 42
+                              Store 46 21
+              47:     22(ptr) AccessChain 39(c) 40
+                              Store 47 21
+              48:     14(int) Load 33(i)
+              49:     22(ptr) AccessChain 39(c) 48
+                              Store 49 21
+              54:          51 Load 53(s2D)
+              58:    7(fvec4) ImageSampleImplicitLod 54 57
+                              ReturnValue 58
+                              FunctionEnd

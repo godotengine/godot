@@ -1,0 +1,30 @@
+410.tesc
+ERROR: 0:4: 'length' :  array must first be sized by a redeclaration or layout qualifier
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 400
+vertices = -1
+ERROR: node is still EOpNull!
+0:8  Function Definition: main( ( global void)
+0:8    Function Parameters: 
+0:?   Linker Objects
+0:?     'gl_out' ( out unsized 1-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out unsized 1-element array of float ClipDistance gl_ClipDistance})
+0:?     'outa' ( global 1-element array of int)
+0:?     'patchOut' ( patch out 4-component vector of float)
+
+
+Linked tessellation control stage:
+
+ERROR: Linking tessellation control stage: At least one shader must specify an output layout(vertices=...)
+
+Shader version: 400
+vertices = -1
+ERROR: node is still EOpNull!
+0:8  Function Definition: main( ( global void)
+0:8    Function Parameters: 
+0:?   Linker Objects
+0:?     'gl_out' ( out 1-element array of block{ out 4-component vector of float Position gl_Position,  out float PointSize gl_PointSize,  out 1-element array of float ClipDistance gl_ClipDistance})
+0:?     'outa' ( global 1-element array of int)
+0:?     'patchOut' ( patch out 4-component vector of float)
+

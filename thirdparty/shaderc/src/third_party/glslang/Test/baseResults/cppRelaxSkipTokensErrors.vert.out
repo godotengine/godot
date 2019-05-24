@@ -1,0 +1,14 @@
+cppRelaxSkipTokensErrors.vert
+Shader version: 110
+0:? Sequence
+0:?   Linker Objects
+
+
+Linked vertex stage:
+
+ERROR: Linking vertex stage: Missing entry point: Each stage requires one entry point
+
+Shader version: 110
+0:? Sequence
+0:?   Linker Objects
+

@@ -1,0 +1,95 @@
+150.vert
+ERROR: 0:26: 'a' : cannot redeclare a user-block member array 
+ERROR: 0:3001: '#error' : line of this error should be 3001  
+ERROR: 2 compilation errors.  No code generated.
+
+
+Shader version: 150
+ERROR: node is still EOpNull!
+0:13  Function Definition: main( ( global void)
+0:13    Function Parameters: 
+0:15    Sequence
+0:15      move second child to first child ( temp 4-component vector of float)
+0:15        gl_Position: direct index for structure ( invariant gl_Position 4-component vector of float Position)
+0:15          'anon@0' ( out block{ invariant gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 4-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out unsized 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:15          Constant:
+0:15            0 (const uint)
+0:15        'iv4' ( in 4-component vector of float)
+0:16      move second child to first child ( temp float)
+0:16        gl_PointSize: direct index for structure ( gl_PointSize float PointSize)
+0:16          'anon@0' ( out block{ invariant gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 4-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out unsized 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:16          Constant:
+0:16            1 (const uint)
+0:16        'ps' ( uniform float)
+0:17      move second child to first child ( temp float)
+0:17        direct index ( temp float ClipDistance)
+0:17          gl_ClipDistance: direct index for structure ( out 4-element array of float ClipDistance)
+0:17            'anon@0' ( out block{ invariant gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 4-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out unsized 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:17            Constant:
+0:17              2 (const uint)
+0:17          Constant:
+0:17            2 (const int)
+0:17        direct index ( temp float)
+0:17          'iv4' ( in 4-component vector of float)
+0:17          Constant:
+0:17            0 (const int)
+0:18      move second child to first child ( temp 4-component vector of float)
+0:18        gl_ClipVertex: direct index for structure ( gl_ClipVertex 4-component vector of float ClipVertex)
+0:18          'anon@0' ( out block{ invariant gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 4-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out unsized 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:18          Constant:
+0:18            3 (const uint)
+0:18        'iv4' ( in 4-component vector of float)
+0:?   Linker Objects
+0:?     'iv4' ( in 4-component vector of float)
+0:?     'ps' ( uniform float)
+0:?     'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform unsized 1-element array of int a})
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+ERROR: Linking vertex stage: Can only use one of gl_ClipDistance or gl_ClipVertex (gl_ClipDistance is preferred)
+
+Shader version: 150
+ERROR: node is still EOpNull!
+0:13  Function Definition: main( ( global void)
+0:13    Function Parameters: 
+0:15    Sequence
+0:15      move second child to first child ( temp 4-component vector of float)
+0:15        gl_Position: direct index for structure ( invariant gl_Position 4-component vector of float Position)
+0:15          'anon@0' ( out block{ invariant gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 4-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:15          Constant:
+0:15            0 (const uint)
+0:15        'iv4' ( in 4-component vector of float)
+0:16      move second child to first child ( temp float)
+0:16        gl_PointSize: direct index for structure ( gl_PointSize float PointSize)
+0:16          'anon@0' ( out block{ invariant gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 4-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:16          Constant:
+0:16            1 (const uint)
+0:16        'ps' ( uniform float)
+0:17      move second child to first child ( temp float)
+0:17        direct index ( temp float ClipDistance)
+0:17          gl_ClipDistance: direct index for structure ( out 4-element array of float ClipDistance)
+0:17            'anon@0' ( out block{ invariant gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 4-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:17            Constant:
+0:17              2 (const uint)
+0:17          Constant:
+0:17            2 (const int)
+0:17        direct index ( temp float)
+0:17          'iv4' ( in 4-component vector of float)
+0:17          Constant:
+0:17            0 (const int)
+0:18      move second child to first child ( temp 4-component vector of float)
+0:18        gl_ClipVertex: direct index for structure ( gl_ClipVertex 4-component vector of float ClipVertex)
+0:18          'anon@0' ( out block{ invariant gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 4-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:18          Constant:
+0:18            3 (const uint)
+0:18        'iv4' ( in 4-component vector of float)
+0:?   Linker Objects
+0:?     'iv4' ( in 4-component vector of float)
+0:?     'ps' ( uniform float)
+0:?     'anon@1' (layout( column_major shared) uniform block{layout( column_major shared) uniform 1-element array of int a})
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

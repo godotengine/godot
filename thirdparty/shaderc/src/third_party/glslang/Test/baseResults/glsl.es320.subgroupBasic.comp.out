@@ -1,0 +1,129 @@
+glsl.es320.subgroupBasic.comp
+Shader version: 320
+Requested GL_KHR_shader_subgroup_basic
+local_size = (8, 8, 1)
+0:? Sequence
+0:12  Function Definition: main( ( global void)
+0:12    Function Parameters: 
+0:14    Sequence
+0:14      move second child to first child ( temp highp int)
+0:14        indirect index (layout( column_major shared) temp highp int)
+0:14          a: direct index for structure (layout( column_major shared) buffer runtime-sized array of highp int)
+0:14            'data' (layout( binding=0 column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of highp int a})
+0:14            Constant:
+0:14              0 (const int)
+0:14          'gl_SubgroupSize' ( in mediump uint unknown built-in variable)
+0:14        Constant:
+0:14          1 (const int)
+0:15      move second child to first child ( temp highp int)
+0:15        indirect index (layout( column_major shared) temp highp int)
+0:15          a: direct index for structure (layout( column_major shared) buffer runtime-sized array of highp int)
+0:15            'data' (layout( binding=0 column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of highp int a})
+0:15            Constant:
+0:15              0 (const int)
+0:15          'gl_SubgroupInvocationID' ( in mediump uint unknown built-in variable)
+0:15        Constant:
+0:15          1 (const int)
+0:16      move second child to first child ( temp highp int)
+0:16        indirect index (layout( column_major shared) temp highp int)
+0:16          a: direct index for structure (layout( column_major shared) buffer runtime-sized array of highp int)
+0:16            'data' (layout( binding=0 column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of highp int a})
+0:16            Constant:
+0:16              0 (const int)
+0:16          'gl_NumSubgroups' ( in highp uint unknown built-in variable)
+0:16        Constant:
+0:16          1 (const int)
+0:17      move second child to first child ( temp highp int)
+0:17        indirect index (layout( column_major shared) temp highp int)
+0:17          a: direct index for structure (layout( column_major shared) buffer runtime-sized array of highp int)
+0:17            'data' (layout( binding=0 column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of highp int a})
+0:17            Constant:
+0:17              0 (const int)
+0:17          'gl_SubgroupID' ( in highp uint unknown built-in variable)
+0:17        Test condition and select ( temp highp int)
+0:17          Condition
+0:17          subgroupElect ( global bool)
+0:17          true case
+0:17          Constant:
+0:17            1 (const int)
+0:17          false case
+0:17          Constant:
+0:17            0 (const int)
+0:18      subgroupBarrier ( global void)
+0:19      subgroupMemoryBarrier ( global void)
+0:20      subgroupMemoryBarrierBuffer ( global void)
+0:21      subgroupMemoryBarrierShared ( global void)
+0:22      subgroupMemoryBarrierImage ( global void)
+0:?   Linker Objects
+0:?     'gl_WorkGroupSize' ( const highp 3-component vector of uint WorkGroupSize)
+0:?       8 (const uint)
+0:?       8 (const uint)
+0:?       1 (const uint)
+0:?     'data' (layout( binding=0 column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of highp int a})
+
+
+Linked compute stage:
+
+
+Shader version: 320
+Requested GL_KHR_shader_subgroup_basic
+local_size = (8, 8, 1)
+0:? Sequence
+0:12  Function Definition: main( ( global void)
+0:12    Function Parameters: 
+0:14    Sequence
+0:14      move second child to first child ( temp highp int)
+0:14        indirect index (layout( column_major shared) temp highp int)
+0:14          a: direct index for structure (layout( column_major shared) buffer runtime-sized array of highp int)
+0:14            'data' (layout( binding=0 column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of highp int a})
+0:14            Constant:
+0:14              0 (const int)
+0:14          'gl_SubgroupSize' ( in mediump uint unknown built-in variable)
+0:14        Constant:
+0:14          1 (const int)
+0:15      move second child to first child ( temp highp int)
+0:15        indirect index (layout( column_major shared) temp highp int)
+0:15          a: direct index for structure (layout( column_major shared) buffer runtime-sized array of highp int)
+0:15            'data' (layout( binding=0 column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of highp int a})
+0:15            Constant:
+0:15              0 (const int)
+0:15          'gl_SubgroupInvocationID' ( in mediump uint unknown built-in variable)
+0:15        Constant:
+0:15          1 (const int)
+0:16      move second child to first child ( temp highp int)
+0:16        indirect index (layout( column_major shared) temp highp int)
+0:16          a: direct index for structure (layout( column_major shared) buffer runtime-sized array of highp int)
+0:16            'data' (layout( binding=0 column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of highp int a})
+0:16            Constant:
+0:16              0 (const int)
+0:16          'gl_NumSubgroups' ( in highp uint unknown built-in variable)
+0:16        Constant:
+0:16          1 (const int)
+0:17      move second child to first child ( temp highp int)
+0:17        indirect index (layout( column_major shared) temp highp int)
+0:17          a: direct index for structure (layout( column_major shared) buffer runtime-sized array of highp int)
+0:17            'data' (layout( binding=0 column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of highp int a})
+0:17            Constant:
+0:17              0 (const int)
+0:17          'gl_SubgroupID' ( in highp uint unknown built-in variable)
+0:17        Test condition and select ( temp highp int)
+0:17          Condition
+0:17          subgroupElect ( global bool)
+0:17          true case
+0:17          Constant:
+0:17            1 (const int)
+0:17          false case
+0:17          Constant:
+0:17            0 (const int)
+0:18      subgroupBarrier ( global void)
+0:19      subgroupMemoryBarrier ( global void)
+0:20      subgroupMemoryBarrierBuffer ( global void)
+0:21      subgroupMemoryBarrierShared ( global void)
+0:22      subgroupMemoryBarrierImage ( global void)
+0:?   Linker Objects
+0:?     'gl_WorkGroupSize' ( const highp 3-component vector of uint WorkGroupSize)
+0:?       8 (const uint)
+0:?       8 (const uint)
+0:?       1 (const uint)
+0:?     'data' (layout( binding=0 column_major shared) buffer block{layout( column_major shared) buffer runtime-sized array of highp int a})
+

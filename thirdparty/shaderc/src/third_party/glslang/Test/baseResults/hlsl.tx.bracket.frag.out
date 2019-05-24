@@ -1,0 +1,731 @@
+hlsl.tx.bracket.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:38  Function Definition: Fn1(vi4; ( temp 4-component vector of int)
+0:38    Function Parameters: 
+0:38      'x' ( in 4-component vector of int)
+0:?     Sequence
+0:38      Branch: Return with expression
+0:38        'x' ( in 4-component vector of int)
+0:39  Function Definition: Fn1(vu4; ( temp 4-component vector of uint)
+0:39    Function Parameters: 
+0:39      'x' ( in 4-component vector of uint)
+0:?     Sequence
+0:39      Branch: Return with expression
+0:39        'x' ( in 4-component vector of uint)
+0:40  Function Definition: Fn1(vf4; ( temp 4-component vector of float)
+0:40    Function Parameters: 
+0:40      'x' ( in 4-component vector of float)
+0:?     Sequence
+0:40      Branch: Return with expression
+0:40        'x' ( in 4-component vector of float)
+0:42  Function Definition: SomeValue( ( temp 4-component vector of float)
+0:42    Function Parameters: 
+0:?     Sequence
+0:42      Branch: Return with expression
+0:42        Convert int to float ( temp 4-component vector of float)
+0:42          c4: direct index for structure ( uniform 4-component vector of int)
+0:42            'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:42            Constant:
+0:42              3 (const uint)
+0:45  Function Definition: @main( ( temp structure{ temp 4-component vector of float Color})
+0:45    Function Parameters: 
+0:?     Sequence
+0:49      textureFetch ( temp 4-component vector of float)
+0:49        'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:49        c1: direct index for structure ( uniform int)
+0:49          'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:49          Constant:
+0:49            0 (const uint)
+0:49        Constant:
+0:49          0 (const int)
+0:51      Sequence
+0:51        move second child to first child ( temp 4-component vector of float)
+0:51          'r00' ( temp 4-component vector of float)
+0:51          textureFetch ( temp 4-component vector of float)
+0:51            'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:51            c1: direct index for structure ( uniform int)
+0:51              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:51              Constant:
+0:51                0 (const uint)
+0:51            Constant:
+0:51              0 (const int)
+0:52      Sequence
+0:52        move second child to first child ( temp 4-component vector of int)
+0:52          'r01' ( temp 4-component vector of int)
+0:52          textureFetch ( temp 4-component vector of int)
+0:52            'g_tTex1di4' ( uniform itexture1D)
+0:52            c1: direct index for structure ( uniform int)
+0:52              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:52              Constant:
+0:52                0 (const uint)
+0:52            Constant:
+0:52              0 (const int)
+0:53      Sequence
+0:53        move second child to first child ( temp 4-component vector of uint)
+0:53          'r02' ( temp 4-component vector of uint)
+0:53          textureFetch ( temp 4-component vector of uint)
+0:53            'g_tTex1du4' ( uniform utexture1D)
+0:53            c1: direct index for structure ( uniform int)
+0:53              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:53              Constant:
+0:53                0 (const uint)
+0:53            Constant:
+0:53              0 (const int)
+0:56      Sequence
+0:56        move second child to first child ( temp 4-component vector of float)
+0:56          'r10' ( temp 4-component vector of float)
+0:56          textureFetch ( temp 4-component vector of float)
+0:56            'g_tTex2df4' ( uniform texture2D)
+0:56            c2: direct index for structure ( uniform 2-component vector of int)
+0:56              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:56              Constant:
+0:56                1 (const uint)
+0:56            Constant:
+0:56              0 (const int)
+0:57      Sequence
+0:57        move second child to first child ( temp 4-component vector of int)
+0:57          'r11' ( temp 4-component vector of int)
+0:57          textureFetch ( temp 4-component vector of int)
+0:57            'g_tTex2di4' ( uniform itexture2D)
+0:57            c2: direct index for structure ( uniform 2-component vector of int)
+0:57              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:57              Constant:
+0:57                1 (const uint)
+0:57            Constant:
+0:57              0 (const int)
+0:58      Sequence
+0:58        move second child to first child ( temp 4-component vector of uint)
+0:58          'r12' ( temp 4-component vector of uint)
+0:58          textureFetch ( temp 4-component vector of uint)
+0:58            'g_tTex2du4' ( uniform utexture2D)
+0:58            c2: direct index for structure ( uniform 2-component vector of int)
+0:58              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:58              Constant:
+0:58                1 (const uint)
+0:58            Constant:
+0:58              0 (const int)
+0:61      Sequence
+0:61        move second child to first child ( temp 4-component vector of float)
+0:61          'r20' ( temp 4-component vector of float)
+0:61          textureFetch ( temp 4-component vector of float)
+0:61            'g_tTex3df4' ( uniform texture3D)
+0:61            c3: direct index for structure ( uniform 3-component vector of int)
+0:61              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:61              Constant:
+0:61                2 (const uint)
+0:61            Constant:
+0:61              0 (const int)
+0:62      Sequence
+0:62        move second child to first child ( temp 4-component vector of int)
+0:62          'r21' ( temp 4-component vector of int)
+0:62          textureFetch ( temp 4-component vector of int)
+0:62            'g_tTex3di4' ( uniform itexture3D)
+0:62            c3: direct index for structure ( uniform 3-component vector of int)
+0:62              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:62              Constant:
+0:62                2 (const uint)
+0:62            Constant:
+0:62              0 (const int)
+0:63      Sequence
+0:63        move second child to first child ( temp 4-component vector of uint)
+0:63          'r22' ( temp 4-component vector of uint)
+0:63          textureFetch ( temp 4-component vector of uint)
+0:63            'g_tTex3du4' ( uniform utexture3D)
+0:63            c3: direct index for structure ( uniform 3-component vector of int)
+0:63              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:63              Constant:
+0:63                2 (const uint)
+0:63            Constant:
+0:63              0 (const int)
+0:66      Function Call: Fn1(vf4; ( temp 4-component vector of float)
+0:66        textureFetch ( temp 4-component vector of float)
+0:66          'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:66          c1: direct index for structure ( uniform int)
+0:66            'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:66            Constant:
+0:66              0 (const uint)
+0:66          Constant:
+0:66            0 (const int)
+0:67      Function Call: Fn1(vi4; ( temp 4-component vector of int)
+0:67        textureFetch ( temp 4-component vector of int)
+0:67          'g_tTex1di4' ( uniform itexture1D)
+0:67          c1: direct index for structure ( uniform int)
+0:67            'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:67            Constant:
+0:67              0 (const uint)
+0:67          Constant:
+0:67            0 (const int)
+0:68      Function Call: Fn1(vu4; ( temp 4-component vector of uint)
+0:68        textureFetch ( temp 4-component vector of uint)
+0:68          'g_tTex1du4' ( uniform utexture1D)
+0:68          c1: direct index for structure ( uniform int)
+0:68            'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:68            Constant:
+0:68              0 (const uint)
+0:68          Constant:
+0:68            0 (const int)
+0:70      move second child to first child ( temp 4-component vector of float)
+0:70        Color: direct index for structure ( temp 4-component vector of float)
+0:70          'psout' ( temp structure{ temp 4-component vector of float Color})
+0:70          Constant:
+0:70            0 (const int)
+0:70        Constant:
+0:70          1.000000
+0:70          1.000000
+0:70          1.000000
+0:70          1.000000
+0:72      Branch: Return with expression
+0:72        'psout' ( temp structure{ temp 4-component vector of float Color})
+0:45  Function Definition: main( ( temp void)
+0:45    Function Parameters: 
+0:?     Sequence
+0:45      Sequence
+0:45        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+0:45          Color: direct index for structure ( temp 4-component vector of float)
+0:45            Function Call: @main( ( temp structure{ temp 4-component vector of float Color})
+0:45            Constant:
+0:45              0 (const int)
+0:?   Linker Objects
+0:?     'g_sSamp' (layout( binding=0) uniform sampler)
+0:?     'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:?     'g_tTex1di4' ( uniform itexture1D)
+0:?     'g_tTex1du4' ( uniform utexture1D)
+0:?     'g_tTex2df4' ( uniform texture2D)
+0:?     'g_tTex2di4' ( uniform itexture2D)
+0:?     'g_tTex2du4' ( uniform utexture2D)
+0:?     'g_tTex3df4' ( uniform texture3D)
+0:?     'g_tTex3di4' ( uniform itexture3D)
+0:?     'g_tTex3du4' ( uniform utexture3D)
+0:?     'g_tTex1df4a' ( uniform texture1DArray)
+0:?     'g_tTex1di4a' ( uniform itexture1DArray)
+0:?     'g_tTex1du4a' ( uniform utexture1DArray)
+0:?     'g_tTex2df4a' ( uniform texture2DArray)
+0:?     'g_tTex2di4a' ( uniform itexture2DArray)
+0:?     'g_tTex2du4a' ( uniform utexture2DArray)
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:?     '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:38  Function Definition: Fn1(vi4; ( temp 4-component vector of int)
+0:38    Function Parameters: 
+0:38      'x' ( in 4-component vector of int)
+0:?     Sequence
+0:38      Branch: Return with expression
+0:38        'x' ( in 4-component vector of int)
+0:39  Function Definition: Fn1(vu4; ( temp 4-component vector of uint)
+0:39    Function Parameters: 
+0:39      'x' ( in 4-component vector of uint)
+0:?     Sequence
+0:39      Branch: Return with expression
+0:39        'x' ( in 4-component vector of uint)
+0:40  Function Definition: Fn1(vf4; ( temp 4-component vector of float)
+0:40    Function Parameters: 
+0:40      'x' ( in 4-component vector of float)
+0:?     Sequence
+0:40      Branch: Return with expression
+0:40        'x' ( in 4-component vector of float)
+0:42  Function Definition: SomeValue( ( temp 4-component vector of float)
+0:42    Function Parameters: 
+0:?     Sequence
+0:42      Branch: Return with expression
+0:42        Convert int to float ( temp 4-component vector of float)
+0:42          c4: direct index for structure ( uniform 4-component vector of int)
+0:42            'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:42            Constant:
+0:42              3 (const uint)
+0:45  Function Definition: @main( ( temp structure{ temp 4-component vector of float Color})
+0:45    Function Parameters: 
+0:?     Sequence
+0:49      textureFetch ( temp 4-component vector of float)
+0:49        'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:49        c1: direct index for structure ( uniform int)
+0:49          'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:49          Constant:
+0:49            0 (const uint)
+0:49        Constant:
+0:49          0 (const int)
+0:51      Sequence
+0:51        move second child to first child ( temp 4-component vector of float)
+0:51          'r00' ( temp 4-component vector of float)
+0:51          textureFetch ( temp 4-component vector of float)
+0:51            'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:51            c1: direct index for structure ( uniform int)
+0:51              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:51              Constant:
+0:51                0 (const uint)
+0:51            Constant:
+0:51              0 (const int)
+0:52      Sequence
+0:52        move second child to first child ( temp 4-component vector of int)
+0:52          'r01' ( temp 4-component vector of int)
+0:52          textureFetch ( temp 4-component vector of int)
+0:52            'g_tTex1di4' ( uniform itexture1D)
+0:52            c1: direct index for structure ( uniform int)
+0:52              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:52              Constant:
+0:52                0 (const uint)
+0:52            Constant:
+0:52              0 (const int)
+0:53      Sequence
+0:53        move second child to first child ( temp 4-component vector of uint)
+0:53          'r02' ( temp 4-component vector of uint)
+0:53          textureFetch ( temp 4-component vector of uint)
+0:53            'g_tTex1du4' ( uniform utexture1D)
+0:53            c1: direct index for structure ( uniform int)
+0:53              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:53              Constant:
+0:53                0 (const uint)
+0:53            Constant:
+0:53              0 (const int)
+0:56      Sequence
+0:56        move second child to first child ( temp 4-component vector of float)
+0:56          'r10' ( temp 4-component vector of float)
+0:56          textureFetch ( temp 4-component vector of float)
+0:56            'g_tTex2df4' ( uniform texture2D)
+0:56            c2: direct index for structure ( uniform 2-component vector of int)
+0:56              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:56              Constant:
+0:56                1 (const uint)
+0:56            Constant:
+0:56              0 (const int)
+0:57      Sequence
+0:57        move second child to first child ( temp 4-component vector of int)
+0:57          'r11' ( temp 4-component vector of int)
+0:57          textureFetch ( temp 4-component vector of int)
+0:57            'g_tTex2di4' ( uniform itexture2D)
+0:57            c2: direct index for structure ( uniform 2-component vector of int)
+0:57              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:57              Constant:
+0:57                1 (const uint)
+0:57            Constant:
+0:57              0 (const int)
+0:58      Sequence
+0:58        move second child to first child ( temp 4-component vector of uint)
+0:58          'r12' ( temp 4-component vector of uint)
+0:58          textureFetch ( temp 4-component vector of uint)
+0:58            'g_tTex2du4' ( uniform utexture2D)
+0:58            c2: direct index for structure ( uniform 2-component vector of int)
+0:58              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:58              Constant:
+0:58                1 (const uint)
+0:58            Constant:
+0:58              0 (const int)
+0:61      Sequence
+0:61        move second child to first child ( temp 4-component vector of float)
+0:61          'r20' ( temp 4-component vector of float)
+0:61          textureFetch ( temp 4-component vector of float)
+0:61            'g_tTex3df4' ( uniform texture3D)
+0:61            c3: direct index for structure ( uniform 3-component vector of int)
+0:61              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:61              Constant:
+0:61                2 (const uint)
+0:61            Constant:
+0:61              0 (const int)
+0:62      Sequence
+0:62        move second child to first child ( temp 4-component vector of int)
+0:62          'r21' ( temp 4-component vector of int)
+0:62          textureFetch ( temp 4-component vector of int)
+0:62            'g_tTex3di4' ( uniform itexture3D)
+0:62            c3: direct index for structure ( uniform 3-component vector of int)
+0:62              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:62              Constant:
+0:62                2 (const uint)
+0:62            Constant:
+0:62              0 (const int)
+0:63      Sequence
+0:63        move second child to first child ( temp 4-component vector of uint)
+0:63          'r22' ( temp 4-component vector of uint)
+0:63          textureFetch ( temp 4-component vector of uint)
+0:63            'g_tTex3du4' ( uniform utexture3D)
+0:63            c3: direct index for structure ( uniform 3-component vector of int)
+0:63              'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:63              Constant:
+0:63                2 (const uint)
+0:63            Constant:
+0:63              0 (const int)
+0:66      Function Call: Fn1(vf4; ( temp 4-component vector of float)
+0:66        textureFetch ( temp 4-component vector of float)
+0:66          'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:66          c1: direct index for structure ( uniform int)
+0:66            'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:66            Constant:
+0:66              0 (const uint)
+0:66          Constant:
+0:66            0 (const int)
+0:67      Function Call: Fn1(vi4; ( temp 4-component vector of int)
+0:67        textureFetch ( temp 4-component vector of int)
+0:67          'g_tTex1di4' ( uniform itexture1D)
+0:67          c1: direct index for structure ( uniform int)
+0:67            'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:67            Constant:
+0:67              0 (const uint)
+0:67          Constant:
+0:67            0 (const int)
+0:68      Function Call: Fn1(vu4; ( temp 4-component vector of uint)
+0:68        textureFetch ( temp 4-component vector of uint)
+0:68          'g_tTex1du4' ( uniform utexture1D)
+0:68          c1: direct index for structure ( uniform int)
+0:68            'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:68            Constant:
+0:68              0 (const uint)
+0:68          Constant:
+0:68            0 (const int)
+0:70      move second child to first child ( temp 4-component vector of float)
+0:70        Color: direct index for structure ( temp 4-component vector of float)
+0:70          'psout' ( temp structure{ temp 4-component vector of float Color})
+0:70          Constant:
+0:70            0 (const int)
+0:70        Constant:
+0:70          1.000000
+0:70          1.000000
+0:70          1.000000
+0:70          1.000000
+0:72      Branch: Return with expression
+0:72        'psout' ( temp structure{ temp 4-component vector of float Color})
+0:45  Function Definition: main( ( temp void)
+0:45    Function Parameters: 
+0:?     Sequence
+0:45      Sequence
+0:45        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+0:45          Color: direct index for structure ( temp 4-component vector of float)
+0:45            Function Call: @main( ( temp structure{ temp 4-component vector of float Color})
+0:45            Constant:
+0:45              0 (const int)
+0:?   Linker Objects
+0:?     'g_sSamp' (layout( binding=0) uniform sampler)
+0:?     'g_tTex1df4' (layout( binding=0) uniform texture1D)
+0:?     'g_tTex1di4' ( uniform itexture1D)
+0:?     'g_tTex1du4' ( uniform utexture1D)
+0:?     'g_tTex2df4' ( uniform texture2D)
+0:?     'g_tTex2di4' ( uniform itexture2D)
+0:?     'g_tTex2du4' ( uniform utexture2D)
+0:?     'g_tTex3df4' ( uniform texture3D)
+0:?     'g_tTex3di4' ( uniform itexture3D)
+0:?     'g_tTex3du4' ( uniform utexture3D)
+0:?     'g_tTex1df4a' ( uniform texture1DArray)
+0:?     'g_tTex1di4a' ( uniform itexture1DArray)
+0:?     'g_tTex1du4a' ( uniform utexture1DArray)
+0:?     'g_tTex2df4a' ( uniform texture2DArray)
+0:?     'g_tTex2di4a' ( uniform itexture2DArray)
+0:?     'g_tTex2du4a' ( uniform utexture2DArray)
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:?     '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 188
+
+                              Capability Shader
+                              Capability Sampled1D
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 164
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 11  "Fn1(vi4;"
+                              Name 10  "x"
+                              Name 18  "Fn1(vu4;"
+                              Name 17  "x"
+                              Name 25  "Fn1(vf4;"
+                              Name 24  "x"
+                              Name 28  "SomeValue("
+                              Name 30  "PS_OUTPUT"
+                              MemberName 30(PS_OUTPUT) 0  "Color"
+                              Name 32  "@main("
+                              Name 45  "$Global"
+                              MemberName 45($Global) 0  "c1"
+                              MemberName 45($Global) 1  "c2"
+                              MemberName 45($Global) 2  "c3"
+                              MemberName 45($Global) 3  "c4"
+                              MemberName 45($Global) 4  "o1"
+                              MemberName 45($Global) 5  "o2"
+                              MemberName 45($Global) 6  "o3"
+                              MemberName 45($Global) 7  "o4"
+                              Name 47  ""
+                              Name 57  "g_tTex1df4"
+                              Name 64  "r00"
+                              Name 69  "r01"
+                              Name 72  "g_tTex1di4"
+                              Name 77  "r02"
+                              Name 80  "g_tTex1du4"
+                              Name 85  "r10"
+                              Name 88  "g_tTex2df4"
+                              Name 95  "r11"
+                              Name 98  "g_tTex2di4"
+                              Name 103  "r12"
+                              Name 106  "g_tTex2du4"
+                              Name 111  "r20"
+                              Name 114  "g_tTex3df4"
+                              Name 121  "r21"
+                              Name 124  "g_tTex3di4"
+                              Name 129  "r22"
+                              Name 132  "g_tTex3du4"
+                              Name 141  "param"
+                              Name 147  "param"
+                              Name 153  "param"
+                              Name 156  "psout"
+                              Name 164  "@entryPointOutput.Color"
+                              Name 169  "g_sSamp"
+                              Name 172  "g_tTex1df4a"
+                              Name 175  "g_tTex1di4a"
+                              Name 178  "g_tTex1du4a"
+                              Name 181  "g_tTex2df4a"
+                              Name 184  "g_tTex2di4a"
+                              Name 187  "g_tTex2du4a"
+                              MemberDecorate 45($Global) 0 Offset 0
+                              MemberDecorate 45($Global) 1 Offset 8
+                              MemberDecorate 45($Global) 2 Offset 16
+                              MemberDecorate 45($Global) 3 Offset 32
+                              MemberDecorate 45($Global) 4 Offset 48
+                              MemberDecorate 45($Global) 5 Offset 56
+                              MemberDecorate 45($Global) 6 Offset 64
+                              MemberDecorate 45($Global) 7 Offset 80
+                              Decorate 45($Global) Block
+                              Decorate 47 DescriptorSet 0
+                              Decorate 47 Binding 0
+                              Decorate 57(g_tTex1df4) DescriptorSet 0
+                              Decorate 57(g_tTex1df4) Binding 0
+                              Decorate 72(g_tTex1di4) DescriptorSet 0
+                              Decorate 72(g_tTex1di4) Binding 0
+                              Decorate 80(g_tTex1du4) DescriptorSet 0
+                              Decorate 80(g_tTex1du4) Binding 0
+                              Decorate 88(g_tTex2df4) DescriptorSet 0
+                              Decorate 88(g_tTex2df4) Binding 0
+                              Decorate 98(g_tTex2di4) DescriptorSet 0
+                              Decorate 98(g_tTex2di4) Binding 0
+                              Decorate 106(g_tTex2du4) DescriptorSet 0
+                              Decorate 106(g_tTex2du4) Binding 0
+                              Decorate 114(g_tTex3df4) DescriptorSet 0
+                              Decorate 114(g_tTex3df4) Binding 0
+                              Decorate 124(g_tTex3di4) DescriptorSet 0
+                              Decorate 124(g_tTex3di4) Binding 0
+                              Decorate 132(g_tTex3du4) DescriptorSet 0
+                              Decorate 132(g_tTex3du4) Binding 0
+                              Decorate 164(@entryPointOutput.Color) Location 0
+                              Decorate 169(g_sSamp) DescriptorSet 0
+                              Decorate 169(g_sSamp) Binding 0
+                              Decorate 172(g_tTex1df4a) DescriptorSet 0
+                              Decorate 172(g_tTex1df4a) Binding 0
+                              Decorate 175(g_tTex1di4a) DescriptorSet 0
+                              Decorate 175(g_tTex1di4a) Binding 0
+                              Decorate 178(g_tTex1du4a) DescriptorSet 0
+                              Decorate 178(g_tTex1du4a) Binding 0
+                              Decorate 181(g_tTex2df4a) DescriptorSet 0
+                              Decorate 181(g_tTex2df4a) Binding 0
+                              Decorate 184(g_tTex2di4a) DescriptorSet 0
+                              Decorate 184(g_tTex2di4a) Binding 0
+                              Decorate 187(g_tTex2du4a) DescriptorSet 0
+                              Decorate 187(g_tTex2du4a) Binding 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeInt 32 1
+               7:             TypeVector 6(int) 4
+               8:             TypePointer Function 7(ivec4)
+               9:             TypeFunction 7(ivec4) 8(ptr)
+              13:             TypeInt 32 0
+              14:             TypeVector 13(int) 4
+              15:             TypePointer Function 14(ivec4)
+              16:             TypeFunction 14(ivec4) 15(ptr)
+              20:             TypeFloat 32
+              21:             TypeVector 20(float) 4
+              22:             TypePointer Function 21(fvec4)
+              23:             TypeFunction 21(fvec4) 22(ptr)
+              27:             TypeFunction 21(fvec4)
+   30(PS_OUTPUT):             TypeStruct 21(fvec4)
+              31:             TypeFunction 30(PS_OUTPUT)
+              43:             TypeVector 6(int) 2
+              44:             TypeVector 6(int) 3
+     45($Global):             TypeStruct 6(int) 43(ivec2) 44(ivec3) 7(ivec4) 6(int) 43(ivec2) 44(ivec3) 7(ivec4)
+              46:             TypePointer Uniform 45($Global)
+              47:     46(ptr) Variable Uniform
+              48:      6(int) Constant 3
+              49:             TypePointer Uniform 7(ivec4)
+              55:             TypeImage 20(float) 1D sampled format:Unknown
+              56:             TypePointer UniformConstant 55
+  57(g_tTex1df4):     56(ptr) Variable UniformConstant
+              59:      6(int) Constant 0
+              60:             TypePointer Uniform 6(int)
+              70:             TypeImage 6(int) 1D sampled format:Unknown
+              71:             TypePointer UniformConstant 70
+  72(g_tTex1di4):     71(ptr) Variable UniformConstant
+              78:             TypeImage 13(int) 1D sampled format:Unknown
+              79:             TypePointer UniformConstant 78
+  80(g_tTex1du4):     79(ptr) Variable UniformConstant
+              86:             TypeImage 20(float) 2D sampled format:Unknown
+              87:             TypePointer UniformConstant 86
+  88(g_tTex2df4):     87(ptr) Variable UniformConstant
+              90:      6(int) Constant 1
+              91:             TypePointer Uniform 43(ivec2)
+              96:             TypeImage 6(int) 2D sampled format:Unknown
+              97:             TypePointer UniformConstant 96
+  98(g_tTex2di4):     97(ptr) Variable UniformConstant
+             104:             TypeImage 13(int) 2D sampled format:Unknown
+             105:             TypePointer UniformConstant 104
+ 106(g_tTex2du4):    105(ptr) Variable UniformConstant
+             112:             TypeImage 20(float) 3D sampled format:Unknown
+             113:             TypePointer UniformConstant 112
+ 114(g_tTex3df4):    113(ptr) Variable UniformConstant
+             116:      6(int) Constant 2
+             117:             TypePointer Uniform 44(ivec3)
+             122:             TypeImage 6(int) 3D sampled format:Unknown
+             123:             TypePointer UniformConstant 122
+ 124(g_tTex3di4):    123(ptr) Variable UniformConstant
+             130:             TypeImage 13(int) 3D sampled format:Unknown
+             131:             TypePointer UniformConstant 130
+ 132(g_tTex3du4):    131(ptr) Variable UniformConstant
+             155:             TypePointer Function 30(PS_OUTPUT)
+             157:   20(float) Constant 1065353216
+             158:   21(fvec4) ConstantComposite 157 157 157 157
+             163:             TypePointer Output 21(fvec4)
+164(@entryPointOutput.Color):    163(ptr) Variable Output
+             167:             TypeSampler
+             168:             TypePointer UniformConstant 167
+    169(g_sSamp):    168(ptr) Variable UniformConstant
+             170:             TypeImage 20(float) 1D array sampled format:Unknown
+             171:             TypePointer UniformConstant 170
+172(g_tTex1df4a):    171(ptr) Variable UniformConstant
+             173:             TypeImage 6(int) 1D array sampled format:Unknown
+             174:             TypePointer UniformConstant 173
+175(g_tTex1di4a):    174(ptr) Variable UniformConstant
+             176:             TypeImage 13(int) 1D array sampled format:Unknown
+             177:             TypePointer UniformConstant 176
+178(g_tTex1du4a):    177(ptr) Variable UniformConstant
+             179:             TypeImage 20(float) 2D array sampled format:Unknown
+             180:             TypePointer UniformConstant 179
+181(g_tTex2df4a):    180(ptr) Variable UniformConstant
+             182:             TypeImage 6(int) 2D array sampled format:Unknown
+             183:             TypePointer UniformConstant 182
+184(g_tTex2di4a):    183(ptr) Variable UniformConstant
+             185:             TypeImage 13(int) 2D array sampled format:Unknown
+             186:             TypePointer UniformConstant 185
+187(g_tTex2du4a):    186(ptr) Variable UniformConstant
+         4(main):           2 Function None 3
+               5:             Label
+             165:30(PS_OUTPUT) FunctionCall 32(@main()
+             166:   21(fvec4) CompositeExtract 165 0
+                              Store 164(@entryPointOutput.Color) 166
+                              Return
+                              FunctionEnd
+    11(Fn1(vi4;):    7(ivec4) Function None 9
+           10(x):      8(ptr) FunctionParameter
+              12:             Label
+              34:    7(ivec4) Load 10(x)
+                              ReturnValue 34
+                              FunctionEnd
+    18(Fn1(vu4;):   14(ivec4) Function None 16
+           17(x):     15(ptr) FunctionParameter
+              19:             Label
+              37:   14(ivec4) Load 17(x)
+                              ReturnValue 37
+                              FunctionEnd
+    25(Fn1(vf4;):   21(fvec4) Function None 23
+           24(x):     22(ptr) FunctionParameter
+              26:             Label
+              40:   21(fvec4) Load 24(x)
+                              ReturnValue 40
+                              FunctionEnd
+  28(SomeValue():   21(fvec4) Function None 27
+              29:             Label
+              50:     49(ptr) AccessChain 47 48
+              51:    7(ivec4) Load 50
+              52:   21(fvec4) ConvertSToF 51
+                              ReturnValue 52
+                              FunctionEnd
+      32(@main():30(PS_OUTPUT) Function None 31
+              33:             Label
+         64(r00):     22(ptr) Variable Function
+         69(r01):      8(ptr) Variable Function
+         77(r02):     15(ptr) Variable Function
+         85(r10):     22(ptr) Variable Function
+         95(r11):      8(ptr) Variable Function
+        103(r12):     15(ptr) Variable Function
+        111(r20):     22(ptr) Variable Function
+        121(r21):      8(ptr) Variable Function
+        129(r22):     15(ptr) Variable Function
+      141(param):     22(ptr) Variable Function
+      147(param):      8(ptr) Variable Function
+      153(param):     15(ptr) Variable Function
+      156(psout):    155(ptr) Variable Function
+              58:          55 Load 57(g_tTex1df4)
+              61:     60(ptr) AccessChain 47 59
+              62:      6(int) Load 61
+              63:   21(fvec4) ImageFetch 58 62 Lod 59
+              65:          55 Load 57(g_tTex1df4)
+              66:     60(ptr) AccessChain 47 59
+              67:      6(int) Load 66
+              68:   21(fvec4) ImageFetch 65 67 Lod 59
+                              Store 64(r00) 68
+              73:          70 Load 72(g_tTex1di4)
+              74:     60(ptr) AccessChain 47 59
+              75:      6(int) Load 74
+              76:    7(ivec4) ImageFetch 73 75 Lod 59
+                              Store 69(r01) 76
+              81:          78 Load 80(g_tTex1du4)
+              82:     60(ptr) AccessChain 47 59
+              83:      6(int) Load 82
+              84:   14(ivec4) ImageFetch 81 83 Lod 59
+                              Store 77(r02) 84
+              89:          86 Load 88(g_tTex2df4)
+              92:     91(ptr) AccessChain 47 90
+              93:   43(ivec2) Load 92
+              94:   21(fvec4) ImageFetch 89 93 Lod 59
+                              Store 85(r10) 94
+              99:          96 Load 98(g_tTex2di4)
+             100:     91(ptr) AccessChain 47 90
+             101:   43(ivec2) Load 100
+             102:    7(ivec4) ImageFetch 99 101 Lod 59
+                              Store 95(r11) 102
+             107:         104 Load 106(g_tTex2du4)
+             108:     91(ptr) AccessChain 47 90
+             109:   43(ivec2) Load 108
+             110:   14(ivec4) ImageFetch 107 109 Lod 59
+                              Store 103(r12) 110
+             115:         112 Load 114(g_tTex3df4)
+             118:    117(ptr) AccessChain 47 116
+             119:   44(ivec3) Load 118
+             120:   21(fvec4) ImageFetch 115 119 Lod 59
+                              Store 111(r20) 120
+             125:         122 Load 124(g_tTex3di4)
+             126:    117(ptr) AccessChain 47 116
+             127:   44(ivec3) Load 126
+             128:    7(ivec4) ImageFetch 125 127 Lod 59
+                              Store 121(r21) 128
+             133:         130 Load 132(g_tTex3du4)
+             134:    117(ptr) AccessChain 47 116
+             135:   44(ivec3) Load 134
+             136:   14(ivec4) ImageFetch 133 135 Lod 59
+                              Store 129(r22) 136
+             137:          55 Load 57(g_tTex1df4)
+             138:     60(ptr) AccessChain 47 59
+             139:      6(int) Load 138
+             140:   21(fvec4) ImageFetch 137 139 Lod 59
+                              Store 141(param) 140
+             142:   21(fvec4) FunctionCall 25(Fn1(vf4;) 141(param)
+             143:          70 Load 72(g_tTex1di4)
+             144:     60(ptr) AccessChain 47 59
+             145:      6(int) Load 144
+             146:    7(ivec4) ImageFetch 143 145 Lod 59
+                              Store 147(param) 146
+             148:    7(ivec4) FunctionCall 11(Fn1(vi4;) 147(param)
+             149:          78 Load 80(g_tTex1du4)
+             150:     60(ptr) AccessChain 47 59
+             151:      6(int) Load 150
+             152:   14(ivec4) ImageFetch 149 151 Lod 59
+                              Store 153(param) 152
+             154:   14(ivec4) FunctionCall 18(Fn1(vu4;) 153(param)
+             159:     22(ptr) AccessChain 156(psout) 59
+                              Store 159 158
+             160:30(PS_OUTPUT) Load 156(psout)
+                              ReturnValue 160
+                              FunctionEnd

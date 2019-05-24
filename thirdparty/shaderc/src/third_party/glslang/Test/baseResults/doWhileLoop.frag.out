@@ -1,0 +1,65 @@
+doWhileLoop.frag
+Shader version: 110
+0:? Sequence
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:9    Sequence
+0:9      Sequence
+0:9        move second child to first child ( temp 4-component vector of float)
+0:9          'color' ( temp 4-component vector of float)
+0:9          'BaseColor' ( smooth in 4-component vector of float)
+0:13      Loop with condition not tested first
+0:13        Loop Condition
+0:13        Compare Less Than ( temp bool)
+0:13          direct index ( temp float)
+0:13            'color' ( temp 4-component vector of float)
+0:13            Constant:
+0:13              0 (const int)
+0:13          'd' ( uniform float)
+0:13        Loop Body
+0:12        Sequence
+0:12          add second child into first child ( temp 4-component vector of float)
+0:12            'color' ( temp 4-component vector of float)
+0:12            'bigColor' ( uniform 4-component vector of float)
+0:15      move second child to first child ( temp 4-component vector of float)
+0:15        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:15        'color' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'bigColor' ( uniform 4-component vector of float)
+0:?     'BaseColor' ( smooth in 4-component vector of float)
+0:?     'd' ( uniform float)
+
+
+Linked fragment stage:
+
+
+Shader version: 110
+0:? Sequence
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:9    Sequence
+0:9      Sequence
+0:9        move second child to first child ( temp 4-component vector of float)
+0:9          'color' ( temp 4-component vector of float)
+0:9          'BaseColor' ( smooth in 4-component vector of float)
+0:13      Loop with condition not tested first
+0:13        Loop Condition
+0:13        Compare Less Than ( temp bool)
+0:13          direct index ( temp float)
+0:13            'color' ( temp 4-component vector of float)
+0:13            Constant:
+0:13              0 (const int)
+0:13          'd' ( uniform float)
+0:13        Loop Body
+0:12        Sequence
+0:12          add second child into first child ( temp 4-component vector of float)
+0:12            'color' ( temp 4-component vector of float)
+0:12            'bigColor' ( uniform 4-component vector of float)
+0:15      move second child to first child ( temp 4-component vector of float)
+0:15        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:15        'color' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'bigColor' ( uniform 4-component vector of float)
+0:?     'BaseColor' ( smooth in 4-component vector of float)
+0:?     'd' ( uniform float)
+

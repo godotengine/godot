@@ -1,0 +1,32 @@
+errors.frag
+ERROR: 0:1: 'main' : function cannot take any parameter(s) 
+ERROR: 0:1: 'int' :  entry point cannot return a value
+ERROR: 2 compilation errors.  No code generated.
+
+
+Shader version: 100
+ERROR: node is still EOpNull!
+0:1  Function Definition: main(i1; ( global mediump int)
+0:1    Function Parameters: 
+0:1      'foo' ( in mediump int)
+0:3    Sequence
+0:3      Branch: Return with expression
+0:3        Constant:
+0:3          1 (const int)
+0:?   Linker Objects
+
+
+Linked fragment stage:
+
+
+Shader version: 100
+ERROR: node is still EOpNull!
+0:1  Function Definition: main(i1; ( global mediump int)
+0:1    Function Parameters: 
+0:1      'foo' ( in mediump int)
+0:3    Sequence
+0:3      Branch: Return with expression
+0:3        Constant:
+0:3          1 (const int)
+0:?   Linker Objects
+

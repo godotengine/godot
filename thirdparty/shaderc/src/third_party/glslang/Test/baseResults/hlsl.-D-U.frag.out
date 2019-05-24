@@ -1,0 +1,65 @@
+hlsl.-D-U.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:7  Function Definition: @main( ( temp void)
+0:7    Function Parameters: 
+0:?     Sequence
+0:9      move second child to first child ( temp 4-component vector of float)
+0:9        'color' ( global 4-component vector of float)
+0:9        Constant:
+0:9          1.000000
+0:9          1.000000
+0:9          1.000000
+0:9          1.000000
+0:15      subtract second child into first child ( temp 4-component vector of float)
+0:15        'color' ( global 4-component vector of float)
+0:15        Constant:
+0:15          5.000000
+0:21      Post-Increment ( temp 4-component vector of float)
+0:21        'color' ( global 4-component vector of float)
+0:29      vector scale second child into first child ( temp 4-component vector of float)
+0:29        'color' ( global 4-component vector of float)
+0:29        Constant:
+0:29          3.000000
+0:7  Function Definition: main( ( temp void)
+0:7    Function Parameters: 
+0:?     Sequence
+0:7      Function Call: @main( ( temp void)
+0:?   Linker Objects
+0:?     'color' ( global 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:7  Function Definition: @main( ( temp void)
+0:7    Function Parameters: 
+0:?     Sequence
+0:9      move second child to first child ( temp 4-component vector of float)
+0:9        'color' ( global 4-component vector of float)
+0:9        Constant:
+0:9          1.000000
+0:9          1.000000
+0:9          1.000000
+0:9          1.000000
+0:15      subtract second child into first child ( temp 4-component vector of float)
+0:15        'color' ( global 4-component vector of float)
+0:15        Constant:
+0:15          5.000000
+0:21      Post-Increment ( temp 4-component vector of float)
+0:21        'color' ( global 4-component vector of float)
+0:29      vector scale second child into first child ( temp 4-component vector of float)
+0:29        'color' ( global 4-component vector of float)
+0:29        Constant:
+0:29          3.000000
+0:7  Function Definition: main( ( temp void)
+0:7    Function Parameters: 
+0:?     Sequence
+0:7      Function Call: @main( ( temp void)
+0:?   Linker Objects
+0:?     'color' ( global 4-component vector of float)
+

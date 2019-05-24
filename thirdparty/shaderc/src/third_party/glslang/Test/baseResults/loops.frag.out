@@ -1,0 +1,1935 @@
+loops.frag
+WARNING: 0:14: varying deprecated in version 130; may be removed in future release
+
+Shader version: 130
+0:? Sequence
+0:53  Function Definition: main( ( global void)
+0:53    Function Parameters: 
+0:55    Sequence
+0:55      Sequence
+0:55        move second child to first child ( temp 4-component vector of float)
+0:55          'color' ( temp 4-component vector of float)
+0:55          'BaseColor' ( smooth in 4-component vector of float)
+0:58      Loop with condition tested first
+0:58        Loop Condition
+0:58        Constant:
+0:58          true (const bool)
+0:58        Loop Body
+0:59        Sequence
+0:59          Test condition and select ( temp void)
+0:59            Condition
+0:59            Compare Less Than ( temp bool)
+0:59              direct index ( temp float)
+0:59                'color' ( temp 4-component vector of float)
+0:59                Constant:
+0:59                  0 (const int)
+0:59              Constant:
+0:59                0.330000
+0:59            true case
+0:60            Sequence
+0:60              add second child into first child ( temp 4-component vector of float)
+0:60                'color' ( temp 4-component vector of float)
+0:60                Constant:
+0:60                  0.330000
+0:60                  0.330000
+0:60                  0.330000
+0:60                  0.330000
+0:61              Branch: Break
+0:63          Test condition and select ( temp void)
+0:63            Condition
+0:63            Compare Less Than ( temp bool)
+0:63              direct index ( temp float)
+0:63                'color' ( temp 4-component vector of float)
+0:63                Constant:
+0:63                  0 (const int)
+0:63              Constant:
+0:63                0.660000
+0:63            true case
+0:64            Sequence
+0:64              add second child into first child ( temp 4-component vector of float)
+0:64                'color' ( temp 4-component vector of float)
+0:64                Constant:
+0:64                  0.660000
+0:64                  0.660000
+0:64                  0.660000
+0:64                  0.660000
+0:65              Branch: Break
+0:68          add second child into first child ( temp 4-component vector of float)
+0:68            'color' ( temp 4-component vector of float)
+0:68            Constant:
+0:68              0.330000
+0:68              0.330000
+0:68              0.330000
+0:68              0.330000
+0:69          Branch: Break
+0:73      Loop with condition tested first
+0:73        Loop Condition
+0:73        Compare Less Than ( temp bool)
+0:73          direct index ( temp float)
+0:73            'color' ( temp 4-component vector of float)
+0:73            Constant:
+0:73              0 (const int)
+0:73          'd' ( uniform float)
+0:73        Loop Body
+0:74        Sequence
+0:74          add second child into first child ( temp 4-component vector of float)
+0:74            'color' ( temp 4-component vector of float)
+0:74            'bigColor' ( uniform 4-component vector of float)
+0:78      Loop with condition tested first
+0:78        Loop Condition
+0:78        Compare Less Than ( temp bool)
+0:78          direct index ( temp float)
+0:78            'color' ( temp 4-component vector of float)
+0:78            Constant:
+0:78              2 (const int)
+0:78          'd' ( uniform float)
+0:78        Loop Body
+0:79        Sequence
+0:79          add second child into first child ( temp 4-component vector of float)
+0:79            'color' ( temp 4-component vector of float)
+0:79            'bigColor1_1' ( uniform 4-component vector of float)
+0:80          Test condition and select ( temp void)
+0:80            Condition
+0:80            Compare Less Than ( temp bool)
+0:80              direct index ( temp float)
+0:80                'color' ( temp 4-component vector of float)
+0:80                Constant:
+0:80                  3 (const int)
+0:80              'd' ( uniform float)
+0:80            true case
+0:81            Branch: Continue
+0:83          add second child into first child ( temp 4-component vector of float)
+0:83            'color' ( temp 4-component vector of float)
+0:83            'bigColor1_1' ( uniform 4-component vector of float)
+0:87      Loop with condition tested first
+0:87        Loop Condition
+0:87        Compare Less Than ( temp bool)
+0:87          direct index ( temp float)
+0:87            'color' ( temp 4-component vector of float)
+0:87            Constant:
+0:87              0 (const int)
+0:87          Constant:
+0:87            42.000000
+0:87        Loop Body
+0:88        Sequence
+0:88          Pre-Increment ( temp 4-component vector of float)
+0:88            'color' ( temp 4-component vector of float)
+0:92      Loop with condition tested first
+0:92        Loop Condition
+0:92        logical-and ( temp bool)
+0:92          Compare Less Than ( temp bool)
+0:92            direct index ( temp float)
+0:92              'color' ( temp 4-component vector of float)
+0:92              Constant:
+0:92                3 (const int)
+0:92            'd2' ( uniform float)
+0:92          Compare Less Than ( temp bool)
+0:92            direct index ( temp float)
+0:92              'color' ( temp 4-component vector of float)
+0:92              Constant:
+0:92                1 (const int)
+0:92            'd3' ( uniform float)
+0:92        Loop Body
+0:93        Sequence
+0:93          add second child into first child ( temp 4-component vector of float)
+0:93            'color' ( temp 4-component vector of float)
+0:93            'bigColor1_2' ( uniform 4-component vector of float)
+0:97      Loop with condition tested first
+0:97        Loop Condition
+0:97        Compare Less Than ( temp bool)
+0:97          direct index ( temp float)
+0:97            'color' ( temp 4-component vector of float)
+0:97            Constant:
+0:97              2 (const int)
+0:97          'd3' ( uniform float)
+0:97        Loop Body
+0:98        Sequence
+0:98          add second child into first child ( temp 4-component vector of float)
+0:98            'color' ( temp 4-component vector of float)
+0:98            'bigColor1_3' ( uniform 4-component vector of float)
+0:99          Test condition and select ( temp void)
+0:99            Condition
+0:99            Compare Less Than ( temp bool)
+0:99              direct index ( temp float)
+0:99                'color' ( temp 4-component vector of float)
+0:99                Constant:
+0:99                  1 (const int)
+0:99              'd4' ( uniform float)
+0:99            true case
+0:100            Branch: Break
+0:101          add second child into first child ( temp 4-component vector of float)
+0:101            'color' ( temp 4-component vector of float)
+0:101            'bigColor1_3' ( uniform 4-component vector of float)
+0:105      Sequence
+0:105        Sequence
+0:105          move second child to first child ( temp int)
+0:105            'i' ( temp int)
+0:105            Constant:
+0:105              0 (const int)
+0:105        Loop with condition tested first
+0:105          Loop Condition
+0:105          Compare Less Than ( temp bool)
+0:105            'i' ( temp int)
+0:105            'Count' ( uniform int)
+0:105          Loop Body
+0:106          Sequence
+0:106            add second child into first child ( temp 4-component vector of float)
+0:106              'color' ( temp 4-component vector of float)
+0:106              'bigColor2' ( uniform 4-component vector of float)
+0:105          Loop Terminal Expression
+0:105          Pre-Increment ( temp int)
+0:105            'i' ( temp int)
+0:112      Loop with condition not tested first
+0:112        Loop Condition
+0:112        Compare Less Than ( temp bool)
+0:112          direct index ( temp float)
+0:112            'color' ( temp 4-component vector of float)
+0:112            Constant:
+0:112              0 (const int)
+0:112          'd2' ( uniform float)
+0:112        Loop Body
+0:111        Sequence
+0:111          add second child into first child ( temp 4-component vector of float)
+0:111            'color' ( temp 4-component vector of float)
+0:111            'bigColor3' ( uniform 4-component vector of float)
+0:115      Sequence
+0:115        Sequence
+0:115          move second child to first child ( temp int)
+0:115            'i' ( temp int)
+0:115            Constant:
+0:115              0 (const int)
+0:115        Loop with condition tested first
+0:115          Loop Condition
+0:115          Compare Less Than ( temp bool)
+0:115            'i' ( temp int)
+0:115            Constant:
+0:115              42 (const int)
+0:115          Loop Body
+0:116          Sequence
+0:116            add second child into first child ( temp float)
+0:116              direct index ( temp float)
+0:116                'color' ( temp 4-component vector of float)
+0:116                Constant:
+0:116                  2 (const int)
+0:116              'd3' ( uniform float)
+0:115          Loop Terminal Expression
+0:115          Pre-Increment ( temp int)
+0:115            'i' ( temp int)
+0:120      Sequence
+0:120        Sequence
+0:120          move second child to first child ( temp int)
+0:120            'i' ( temp int)
+0:120            Constant:
+0:120              0 (const int)
+0:120        Loop with condition tested first
+0:120          Loop Condition
+0:120          Compare Less Than ( temp bool)
+0:120            'i' ( temp int)
+0:120            Constant:
+0:120              100 (const int)
+0:120          Loop Body
+0:121          Sequence
+0:121            Test condition and select ( temp void)
+0:121              Condition
+0:121              Compare Less Than ( temp bool)
+0:121                direct index ( temp float)
+0:121                  'color' ( temp 4-component vector of float)
+0:121                  Constant:
+0:121                    2 (const int)
+0:121                Constant:
+0:121                  20.000000
+0:121              true case
+0:122              Post-Increment ( temp float)
+0:122                direct index ( temp float)
+0:122                  'color' ( temp 4-component vector of float)
+0:122                  Constant:
+0:122                    0 (const int)
+0:121              false case
+0:124              Post-Increment ( temp float)
+0:124                direct index ( temp float)
+0:124                  'color' ( temp 4-component vector of float)
+0:124                  Constant:
+0:124                    1 (const int)
+0:125            Test condition and select ( temp void)
+0:125              Condition
+0:125              Compare Less Than ( temp bool)
+0:125                direct index ( temp float)
+0:125                  'color' ( temp 4-component vector of float)
+0:125                  Constant:
+0:125                    3 (const int)
+0:125                Constant:
+0:125                  20.000000
+0:125              true case
+0:126              Test condition and select ( temp void)
+0:126                Condition
+0:126                Compare Greater Than ( temp bool)
+0:126                  direct index ( temp float)
+0:126                    'color' ( temp 4-component vector of float)
+0:126                    Constant:
+0:126                      2 (const int)
+0:126                  direct index ( temp float)
+0:126                    'color' ( temp 4-component vector of float)
+0:126                    Constant:
+0:126                      1 (const int)
+0:126                true case
+0:127                Constant:
+0:127                  0 (const int)
+0:120          Loop Terminal Expression
+0:120          Pre-Increment ( temp int)
+0:120            'i' ( temp int)
+0:131      Sequence
+0:131        Sequence
+0:131          move second child to first child ( temp int)
+0:131            'i' ( temp int)
+0:131            Constant:
+0:131              0 (const int)
+0:131        Loop with condition tested first
+0:131          Loop Condition
+0:131          Compare Less Than ( temp bool)
+0:131            'i' ( temp int)
+0:131            Constant:
+0:131              120 (const int)
+0:131          Loop Body
+0:132          Sequence
+0:132            Test condition and select ( temp void)
+0:132              Condition
+0:132              Compare Less Than ( temp bool)
+0:132                direct index ( temp float)
+0:132                  'color' ( temp 4-component vector of float)
+0:132                  Constant:
+0:132                    2 (const int)
+0:132                Constant:
+0:132                  20.000000
+0:132              true case
+0:133              Post-Increment ( temp float)
+0:133                direct index ( temp float)
+0:133                  'color' ( temp 4-component vector of float)
+0:133                  Constant:
+0:133                    0 (const int)
+0:132              false case
+0:135              Post-Increment ( temp float)
+0:135                direct index ( temp float)
+0:135                  'color' ( temp 4-component vector of float)
+0:135                  Constant:
+0:135                    1 (const int)
+0:131          Loop Terminal Expression
+0:131          Pre-Increment ( temp int)
+0:131            'i' ( temp int)
+0:139      Sequence
+0:139        Sequence
+0:139          move second child to first child ( temp int)
+0:139            'i' ( temp int)
+0:139            Constant:
+0:139              0 (const int)
+0:139        Loop with condition tested first
+0:139          Loop Condition
+0:139          Compare Less Than ( temp bool)
+0:139            'i' ( temp int)
+0:139            Constant:
+0:139              42 (const int)
+0:139          Loop Body
+0:140          Sequence
+0:140            add second child into first child ( temp float)
+0:140              direct index ( temp float)
+0:140                'color' ( temp 4-component vector of float)
+0:140                Constant:
+0:140                  2 (const int)
+0:140              'd3' ( uniform float)
+0:141            Test condition and select ( temp void)
+0:141              Condition
+0:141              Compare Less Than ( temp bool)
+0:141                direct index ( temp float)
+0:141                  'color' ( temp 4-component vector of float)
+0:141                  Constant:
+0:141                    0 (const int)
+0:141                'd4' ( uniform float)
+0:141              true case
+0:142              Branch: Continue
+0:143            Pre-Increment ( temp float)
+0:143              direct index ( temp float)
+0:143                'color' ( temp 4-component vector of float)
+0:143                Constant:
+0:143                  3 (const int)
+0:139          Loop Terminal Expression
+0:139          Pre-Increment ( temp int)
+0:139            'i' ( temp int)
+0:147      Sequence
+0:147        Sequence
+0:147          move second child to first child ( temp int)
+0:147            'i' ( temp int)
+0:147            Constant:
+0:147              0 (const int)
+0:147        Loop with condition tested first
+0:147          Loop Condition
+0:147          Compare Less Than ( temp bool)
+0:147            'i' ( temp int)
+0:147            Constant:
+0:147              42 (const int)
+0:147          Loop Body
+0:148          Sequence
+0:148            add second child into first child ( temp float)
+0:148              direct index ( temp float)
+0:148                'color' ( temp 4-component vector of float)
+0:148                Constant:
+0:148                  2 (const int)
+0:148              'd3' ( uniform float)
+0:149            Test condition and select ( temp void)
+0:149              Condition
+0:149              Compare Less Than ( temp bool)
+0:149                direct index ( temp float)
+0:149                  'color' ( temp 4-component vector of float)
+0:149                  Constant:
+0:149                    0 (const int)
+0:149                'd4' ( uniform float)
+0:149              true case
+0:150              Branch: Break
+0:151            Pre-Increment ( temp float)
+0:151              direct index ( temp float)
+0:151                'color' ( temp 4-component vector of float)
+0:151                Constant:
+0:151                  3 (const int)
+0:147          Loop Terminal Expression
+0:147          Pre-Increment ( temp int)
+0:147            'i' ( temp int)
+0:163      Loop with condition not tested first
+0:163        Loop Condition
+0:163        Compare Less Than ( temp bool)
+0:163          direct index ( temp float)
+0:163            'color' ( temp 4-component vector of float)
+0:163            Constant:
+0:163              2 (const int)
+0:163          'd4' ( uniform float)
+0:163        Loop Body
+0:156        Sequence
+0:156          add second child into first child ( temp 4-component vector of float)
+0:156            'color' ( temp 4-component vector of float)
+0:156            'bigColor4' ( uniform 4-component vector of float)
+0:157          Test condition and select ( temp void)
+0:157            Condition
+0:157            Compare Less Than ( temp bool)
+0:157              direct index ( temp float)
+0:157                'color' ( temp 4-component vector of float)
+0:157                Constant:
+0:157                  0 (const int)
+0:157              'd4' ( uniform float)
+0:157            true case
+0:158            Branch: Continue
+0:159          Test condition and select ( temp void)
+0:159            Condition
+0:159            Compare Less Than ( temp bool)
+0:159              direct index ( temp float)
+0:159                'color' ( temp 4-component vector of float)
+0:159                Constant:
+0:159                  1 (const int)
+0:159              'd4' ( uniform float)
+0:159            true case
+0:160            add second child into first child ( temp float)
+0:160              direct index ( temp float)
+0:160                'color' ( temp 4-component vector of float)
+0:160                Constant:
+0:160                  1 (const int)
+0:160              'd4' ( uniform float)
+0:159            false case
+0:162            add second child into first child ( temp float)
+0:162              direct index ( temp float)
+0:162                'color' ( temp 4-component vector of float)
+0:162                Constant:
+0:162                  0 (const int)
+0:162              'd4' ( uniform float)
+0:170      Loop with condition not tested first
+0:170        Loop Condition
+0:170        Compare Less Than ( temp bool)
+0:170          direct index ( temp float)
+0:170            'color' ( temp 4-component vector of float)
+0:170            Constant:
+0:170              0 (const int)
+0:170          'd5' ( uniform float)
+0:170        Loop Body
+0:167        Sequence
+0:167          add second child into first child ( temp 4-component vector of float)
+0:167            'color' ( temp 4-component vector of float)
+0:167            'bigColor5' ( uniform 4-component vector of float)
+0:168          Test condition and select ( temp void)
+0:168            Condition
+0:168            Compare Less Than ( temp bool)
+0:168              direct index ( temp float)
+0:168                'color' ( temp 4-component vector of float)
+0:168                Constant:
+0:168                  1 (const int)
+0:168              'd5' ( uniform float)
+0:168            true case
+0:169            add second child into first child ( temp float)
+0:169              direct index ( temp float)
+0:169                'color' ( temp 4-component vector of float)
+0:169                Constant:
+0:169                  1 (const int)
+0:169              'd5' ( uniform float)
+0:173      Test condition and select ( temp void)
+0:173        Condition
+0:173        Compare Less Than ( temp bool)
+0:173          direct index ( temp float)
+0:173            'color' ( temp 4-component vector of float)
+0:173            Constant:
+0:173              0 (const int)
+0:173          'd6' ( uniform float)
+0:173        true case
+0:174        Sequence
+0:174          Loop with condition tested first
+0:174            Loop Condition
+0:174            Compare Less Than ( temp bool)
+0:174              direct index ( temp float)
+0:174                'color' ( temp 4-component vector of float)
+0:174                Constant:
+0:174                  1 (const int)
+0:174              'd6' ( uniform float)
+0:174            Loop Body
+0:175            add second child into first child ( temp 4-component vector of float)
+0:175              'color' ( temp 4-component vector of float)
+0:175              'bigColor6' ( uniform 4-component vector of float)
+0:173        false case
+0:177        Sequence
+0:177          Loop with condition tested first
+0:177            Loop Condition
+0:177            Compare Less Than ( temp bool)
+0:177              direct index ( temp float)
+0:177                'color' ( temp 4-component vector of float)
+0:177                Constant:
+0:177                  2 (const int)
+0:177              'd6' ( uniform float)
+0:177            Loop Body
+0:178            add second child into first child ( temp float)
+0:178              direct index ( temp float)
+0:178                'color' ( temp 4-component vector of float)
+0:178                Constant:
+0:178                  2 (const int)
+0:178              direct index ( temp float)
+0:178                'bigColor6' ( uniform 4-component vector of float)
+0:178                Constant:
+0:178                  2 (const int)
+0:182      Test condition and select ( temp void)
+0:182        Condition
+0:182        Compare Less Than ( temp bool)
+0:182          direct index ( temp float)
+0:182            'color' ( temp 4-component vector of float)
+0:182            Constant:
+0:182              0 (const int)
+0:182          'd6' ( uniform float)
+0:182        true case
+0:183        Sequence
+0:183          Loop with condition tested first
+0:183            Loop Condition
+0:183            Compare Less Than ( temp bool)
+0:183              direct index ( temp float)
+0:183                'color' ( temp 4-component vector of float)
+0:183                Constant:
+0:183                  1 (const int)
+0:183              'd6' ( uniform float)
+0:183            Loop Body
+0:184            Sequence
+0:184              add second child into first child ( temp 4-component vector of float)
+0:184                'color' ( temp 4-component vector of float)
+0:184                'bigColor6' ( uniform 4-component vector of float)
+0:185              Test condition and select ( temp void)
+0:185                Condition
+0:185                Compare Less Than ( temp bool)
+0:185                  'd7' ( uniform float)
+0:185                  Constant:
+0:185                    1.000000
+0:185                true case
+0:186                Branch: Break
+0:182        false case
+0:190        Sequence
+0:190          Loop with condition tested first
+0:190            Loop Condition
+0:190            Compare Less Than ( temp bool)
+0:190              direct index ( temp float)
+0:190                'color' ( temp 4-component vector of float)
+0:190                Constant:
+0:190                  2 (const int)
+0:190              'd6' ( uniform float)
+0:190            Loop Body
+0:191            add second child into first child ( temp float)
+0:191              direct index ( temp float)
+0:191                'color' ( temp 4-component vector of float)
+0:191                Constant:
+0:191                  2 (const int)
+0:191              direct index ( temp float)
+0:191                'bigColor6' ( uniform 4-component vector of float)
+0:191                Constant:
+0:191                  2 (const int)
+0:209      Loop with condition not tested first
+0:209        Loop Condition
+0:209        Constant:
+0:209          true (const bool)
+0:209        Loop Body
+0:197        Sequence
+0:197          Test condition and select ( temp void)
+0:197            Condition
+0:197            Compare Less Than ( temp bool)
+0:197              'd7' ( uniform float)
+0:197              Constant:
+0:197                0.000000
+0:197            true case
+0:198            Branch: Break
+0:200          add second child into first child ( temp 4-component vector of float)
+0:200            'color' ( temp 4-component vector of float)
+0:200            'bigColor7' ( uniform 4-component vector of float)
+0:202          Test condition and select ( temp void)
+0:202            Condition
+0:202            Compare Less Than ( temp bool)
+0:202              'd7' ( uniform float)
+0:202              Constant:
+0:202                1.000000
+0:202            true case
+0:203            Sequence
+0:203              Post-Increment ( temp float)
+0:203                direct index ( temp float)
+0:203                  'color' ( temp 4-component vector of float)
+0:203                  Constant:
+0:203                    2 (const int)
+0:204              Branch: Break
+0:207          add second child into first child ( temp 4-component vector of float)
+0:207            'color' ( temp 4-component vector of float)
+0:207            'BaseColor' ( smooth in 4-component vector of float)
+0:234      Loop with condition not tested first
+0:234        Loop Condition
+0:234        Compare Less Than ( temp bool)
+0:234          direct index ( temp float)
+0:234            'color' ( temp 4-component vector of float)
+0:234            Constant:
+0:234              2 (const int)
+0:234          'd8' ( uniform float)
+0:234        Loop Body
+0:217        Sequence
+0:217          Test condition and select ( temp void)
+0:217            Condition
+0:217            Compare Less Than ( temp bool)
+0:217              'd8' ( uniform float)
+0:217              Constant:
+0:217                0.000000
+0:217            true case
+0:218            Branch: Break
+0:220          add second child into first child ( temp 4-component vector of float)
+0:220            'color' ( temp 4-component vector of float)
+0:220            'bigColor7' ( uniform 4-component vector of float)
+0:222          Test condition and select ( temp void)
+0:222            Condition
+0:222            Compare Less Than ( temp bool)
+0:222              'd8' ( uniform float)
+0:222              Constant:
+0:222                1.000000
+0:222            true case
+0:223            Sequence
+0:223              Post-Increment ( temp float)
+0:223                direct index ( temp float)
+0:223                  'color' ( temp 4-component vector of float)
+0:223                  Constant:
+0:223                    2 (const int)
+0:224              Test condition and select ( temp void)
+0:224                Condition
+0:224                Compare Less Than ( temp bool)
+0:224                  'd8' ( uniform float)
+0:224                  Constant:
+0:224                    2.000000
+0:224                true case
+0:225                Sequence
+0:225                  Post-Increment ( temp float)
+0:225                    direct index ( temp float)
+0:225                      'color' ( temp 4-component vector of float)
+0:225                      Constant:
+0:225                        1 (const int)
+0:224                false case
+0:227                Sequence
+0:227                  Post-Increment ( temp float)
+0:227                    direct index ( temp float)
+0:227                      'color' ( temp 4-component vector of float)
+0:227                      Constant:
+0:227                        0 (const int)
+0:229              Branch: Break
+0:232          add second child into first child ( temp 4-component vector of float)
+0:232            'color' ( temp 4-component vector of float)
+0:232            'BaseColor' ( smooth in 4-component vector of float)
+0:237      Loop with condition tested first
+0:237        Loop Condition
+0:237        Compare Less Than ( temp bool)
+0:237          direct index ( temp float)
+0:237            'color' ( temp 4-component vector of float)
+0:237            Constant:
+0:237              3 (const int)
+0:237          'd9' ( uniform float)
+0:237        Loop Body
+0:238        Sequence
+0:238          Test condition and select ( temp void)
+0:238            Condition
+0:238            Compare Greater Than ( temp bool)
+0:238              'd9' ( uniform float)
+0:238              'd8' ( uniform float)
+0:238            true case
+0:239            Sequence
+0:239              Test condition and select ( temp void)
+0:239                Condition
+0:239                Compare Less Than or Equal ( temp bool)
+0:239                  direct index ( temp float)
+0:239                    'color' ( temp 4-component vector of float)
+0:239                    Constant:
+0:239                      0 (const int)
+0:239                  'd7' ( uniform float)
+0:239                true case
+0:240                Sequence
+0:240                  Test condition and select ( temp void)
+0:240                    Condition
+0:240                    Compare Equal ( temp bool)
+0:240                      direct index ( temp float)
+0:240                        'color' ( temp 4-component vector of float)
+0:240                        Constant:
+0:240                          2 (const int)
+0:240                      Constant:
+0:240                        5.000000
+0:240                    true case
+0:241                    Post-Increment ( temp float)
+0:241                      direct index ( temp float)
+0:241                        'color' ( temp 4-component vector of float)
+0:241                        Constant:
+0:241                          3 (const int)
+0:240                    false case
+0:243                    Branch: Break
+0:250      Loop with condition tested first
+0:250        Loop Condition
+0:250        Compare Less Than ( temp bool)
+0:250          direct index ( temp float)
+0:250            'color' ( temp 4-component vector of float)
+0:250            Constant:
+0:250              2 (const int)
+0:250          'd10' ( uniform float)
+0:250        Loop Body
+0:251        Sequence
+0:251          Post-Increment ( temp float)
+0:251            direct index ( temp float)
+0:251              'color' ( temp 4-component vector of float)
+0:251              Constant:
+0:251                1 (const int)
+0:252          Test condition and select ( temp void)
+0:252            Condition
+0:252            Compare Less Than ( temp bool)
+0:252              direct index ( temp float)
+0:252                'color' ( temp 4-component vector of float)
+0:252                Constant:
+0:252                  1 (const int)
+0:252              'd11' ( uniform float)
+0:252            true case
+0:253            Sequence
+0:253              Post-Increment ( temp float)
+0:253                direct index ( temp float)
+0:253                  'color' ( temp 4-component vector of float)
+0:253                  Constant:
+0:253                    2 (const int)
+0:254              Test condition and select ( temp void)
+0:254                Condition
+0:254                Compare Less Than ( temp bool)
+0:254                  direct index ( temp float)
+0:254                    'color' ( temp 4-component vector of float)
+0:254                    Constant:
+0:254                      3 (const int)
+0:254                  'd12' ( uniform float)
+0:254                true case
+0:255                Post-Increment ( temp float)
+0:255                  direct index ( temp float)
+0:255                    'color' ( temp 4-component vector of float)
+0:255                    Constant:
+0:255                      3 (const int)
+0:254                false case
+0:257                Post-Increment ( temp float)
+0:257                  direct index ( temp float)
+0:257                    'color' ( temp 4-component vector of float)
+0:257                    Constant:
+0:257                      0 (const int)
+0:258              Branch: Continue
+0:261          Post-Increment ( temp 4-component vector of float)
+0:261            'color' ( temp 4-component vector of float)
+0:262          Branch: Break
+0:266      Loop with condition tested first
+0:266        Loop Condition
+0:266        Compare Less Than ( temp bool)
+0:266          direct index ( temp float)
+0:266            'color' ( temp 4-component vector of float)
+0:266            Constant:
+0:266              0 (const int)
+0:266          Constant:
+0:266            10.000000
+0:266        Loop Body
+0:267        Sequence
+0:267          add second child into first child ( temp 4-component vector of float)
+0:267            'color' ( temp 4-component vector of float)
+0:267            'bigColor8' ( uniform 4-component vector of float)
+0:269          Test condition and select ( temp void)
+0:269            Condition
+0:269            Compare Less Than ( temp bool)
+0:269              direct index ( temp float)
+0:269                'color' ( temp 4-component vector of float)
+0:269                Constant:
+0:269                  2 (const int)
+0:269              'd8' ( uniform float)
+0:269            true case
+0:270            Test condition and select ( temp void)
+0:270              Condition
+0:270              Compare Less Than ( temp bool)
+0:270                direct index ( temp float)
+0:270                  'color' ( temp 4-component vector of float)
+0:270                  Constant:
+0:270                    3 (const int)
+0:270                'd6' ( uniform float)
+0:270              true case
+0:271              Branch: Continue
+0:273          add second child into first child ( temp float)
+0:273            direct index ( temp float)
+0:273              'color' ( temp 4-component vector of float)
+0:273              Constant:
+0:273                1 (const int)
+0:273            direct index ( temp float)
+0:273              'bigColor8' ( uniform 4-component vector of float)
+0:273              Constant:
+0:273                0 (const int)
+0:276      Post-Increment ( temp 4-component vector of float)
+0:276        'color' ( temp 4-component vector of float)
+0:277      move second child to first child ( temp 4-component vector of float)
+0:277        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:277        'color' ( temp 4-component vector of float)
+0:280      Loop with condition tested first
+0:280        Loop Condition
+0:280        Compare Less Than ( temp bool)
+0:280          direct index ( temp float)
+0:280            'color' ( temp 4-component vector of float)
+0:280            Constant:
+0:280              0 (const int)
+0:280          'd14' ( uniform float)
+0:280        Loop Body
+0:281        Sequence
+0:281          Test condition and select ( temp void)
+0:281            Condition
+0:281            Compare Less Than ( temp bool)
+0:281              direct index ( temp float)
+0:281                'color' ( temp 4-component vector of float)
+0:281                Constant:
+0:281                  1 (const int)
+0:281              'd15' ( uniform float)
+0:281            true case
+0:282            Sequence
+0:282              Branch: Return
+0:281            false case
+0:285            Post-Increment ( temp 4-component vector of float)
+0:285              'color' ( temp 4-component vector of float)
+0:288      Post-Increment ( temp 4-component vector of float)
+0:288        'color' ( temp 4-component vector of float)
+0:290      Loop with condition tested first
+0:290        Loop Condition
+0:290        Compare Less Than ( temp bool)
+0:290          direct index ( temp float)
+0:290            'color' ( temp 4-component vector of float)
+0:290            Constant:
+0:290              3 (const int)
+0:290          'd16' ( uniform float)
+0:290        Loop Body
+0:291        Sequence
+0:291          Post-Increment ( temp float)
+0:291            direct index ( temp float)
+0:291              'color' ( temp 4-component vector of float)
+0:291              Constant:
+0:291                3 (const int)
+0:296      Loop with condition tested first
+0:296        Loop Condition
+0:296        logical-and ( temp bool)
+0:296          Compare Less Than ( temp bool)
+0:296            direct index ( temp float)
+0:296              'color' ( temp 4-component vector of float)
+0:296              Constant:
+0:296                3 (const int)
+0:296            'd2' ( uniform float)
+0:296          Compare Less Than ( temp bool)
+0:296            direct index ( temp float)
+0:296              'color' ( temp 4-component vector of float)
+0:296              Constant:
+0:296                1 (const int)
+0:296            'd3' ( uniform float)
+0:296        Loop Body
+0:297        Sequence
+0:297          add second child into first child ( temp 4-component vector of float)
+0:297            'color' ( temp 4-component vector of float)
+0:297            'bigColor1_2' ( uniform 4-component vector of float)
+0:298          Test condition and select ( temp void)
+0:298            Condition
+0:298            Compare Less Than ( temp bool)
+0:298              direct index ( temp float)
+0:298                'color' ( temp 4-component vector of float)
+0:298                Constant:
+0:298                  2 (const int)
+0:298              'd3' ( uniform float)
+0:298            true case
+0:299            Branch: Return
+0:307      Loop with condition not tested first
+0:307        Loop Condition
+0:307        Compare Less Than ( temp bool)
+0:307          direct index ( temp float)
+0:307            'color' ( temp 4-component vector of float)
+0:307            Constant:
+0:307              0 (const int)
+0:307          'd17' ( uniform float)
+0:307        Loop Body
+0:304        Sequence
+0:304          Test condition and select ( temp void)
+0:304            Condition
+0:304            Compare Less Than ( temp bool)
+0:304              direct index ( temp float)
+0:304                'color' ( temp 4-component vector of float)
+0:304                Constant:
+0:304                  1 (const int)
+0:304              'd18' ( uniform float)
+0:304            true case
+0:305            Branch: Return
+0:306          Post-Increment ( temp 4-component vector of float)
+0:306            'color' ( temp 4-component vector of float)
+0:310      Loop with condition tested first
+0:310        Loop Condition
+0:310        Compare Less Than ( temp bool)
+0:310          direct index ( temp float)
+0:310            'color' ( temp 4-component vector of float)
+0:310            Constant:
+0:310              1 (const int)
+0:310          'd16' ( uniform float)
+0:310        Loop Body
+0:311        Sequence
+0:311          Test condition and select ( temp void)
+0:311            Condition
+0:311            Compare Less Than ( temp bool)
+0:311              direct index ( temp float)
+0:311                'color' ( temp 4-component vector of float)
+0:311                Constant:
+0:311                  3 (const int)
+0:311              'd16' ( uniform float)
+0:311            true case
+0:312            Sequence
+0:312              Branch: Kill
+0:311            false case
+0:314            Post-Increment ( temp 4-component vector of float)
+0:314              'color' ( temp 4-component vector of float)
+0:317      Post-Increment ( temp 4-component vector of float)
+0:317        'color' ( temp 4-component vector of float)
+0:319      move second child to first child ( temp 4-component vector of float)
+0:319        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:319        'color' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'bigColor' ( uniform 4-component vector of float)
+0:?     'bigColor1_1' ( uniform 4-component vector of float)
+0:?     'bigColor1_2' ( uniform 4-component vector of float)
+0:?     'bigColor1_3' ( uniform 4-component vector of float)
+0:?     'bigColor2' ( uniform 4-component vector of float)
+0:?     'bigColor3' ( uniform 4-component vector of float)
+0:?     'bigColor4' ( uniform 4-component vector of float)
+0:?     'bigColor5' ( uniform 4-component vector of float)
+0:?     'bigColor6' ( uniform 4-component vector of float)
+0:?     'bigColor7' ( uniform 4-component vector of float)
+0:?     'bigColor8' ( uniform 4-component vector of float)
+0:?     'BaseColor' ( smooth in 4-component vector of float)
+0:?     'd' ( uniform float)
+0:?     'd2' ( uniform float)
+0:?     'd3' ( uniform float)
+0:?     'd4' ( uniform float)
+0:?     'd5' ( uniform float)
+0:?     'd6' ( uniform float)
+0:?     'd7' ( uniform float)
+0:?     'd8' ( uniform float)
+0:?     'd9' ( uniform float)
+0:?     'd10' ( uniform float)
+0:?     'd11' ( uniform float)
+0:?     'd12' ( uniform float)
+0:?     'd13' ( uniform float)
+0:?     'd14' ( uniform float)
+0:?     'd15' ( uniform float)
+0:?     'd16' ( uniform float)
+0:?     'd17' ( uniform float)
+0:?     'd18' ( uniform float)
+0:?     'd19' ( uniform float)
+0:?     'd20' ( uniform float)
+0:?     'd21' ( uniform float)
+0:?     'd22' ( uniform float)
+0:?     'd23' ( uniform float)
+0:?     'd24' ( uniform float)
+0:?     'd25' ( uniform float)
+0:?     'd26' ( uniform float)
+0:?     'd27' ( uniform float)
+0:?     'd28' ( uniform float)
+0:?     'd29' ( uniform float)
+0:?     'd30' ( uniform float)
+0:?     'd31' ( uniform float)
+0:?     'd32' ( uniform float)
+0:?     'd33' ( uniform float)
+0:?     'd34' ( uniform float)
+0:?     'Count' ( uniform int)
+
+
+Linked fragment stage:
+
+
+Shader version: 130
+0:? Sequence
+0:53  Function Definition: main( ( global void)
+0:53    Function Parameters: 
+0:55    Sequence
+0:55      Sequence
+0:55        move second child to first child ( temp 4-component vector of float)
+0:55          'color' ( temp 4-component vector of float)
+0:55          'BaseColor' ( smooth in 4-component vector of float)
+0:58      Loop with condition tested first
+0:58        Loop Condition
+0:58        Constant:
+0:58          true (const bool)
+0:58        Loop Body
+0:59        Sequence
+0:59          Test condition and select ( temp void)
+0:59            Condition
+0:59            Compare Less Than ( temp bool)
+0:59              direct index ( temp float)
+0:59                'color' ( temp 4-component vector of float)
+0:59                Constant:
+0:59                  0 (const int)
+0:59              Constant:
+0:59                0.330000
+0:59            true case
+0:60            Sequence
+0:60              add second child into first child ( temp 4-component vector of float)
+0:60                'color' ( temp 4-component vector of float)
+0:60                Constant:
+0:60                  0.330000
+0:60                  0.330000
+0:60                  0.330000
+0:60                  0.330000
+0:61              Branch: Break
+0:63          Test condition and select ( temp void)
+0:63            Condition
+0:63            Compare Less Than ( temp bool)
+0:63              direct index ( temp float)
+0:63                'color' ( temp 4-component vector of float)
+0:63                Constant:
+0:63                  0 (const int)
+0:63              Constant:
+0:63                0.660000
+0:63            true case
+0:64            Sequence
+0:64              add second child into first child ( temp 4-component vector of float)
+0:64                'color' ( temp 4-component vector of float)
+0:64                Constant:
+0:64                  0.660000
+0:64                  0.660000
+0:64                  0.660000
+0:64                  0.660000
+0:65              Branch: Break
+0:68          add second child into first child ( temp 4-component vector of float)
+0:68            'color' ( temp 4-component vector of float)
+0:68            Constant:
+0:68              0.330000
+0:68              0.330000
+0:68              0.330000
+0:68              0.330000
+0:69          Branch: Break
+0:73      Loop with condition tested first
+0:73        Loop Condition
+0:73        Compare Less Than ( temp bool)
+0:73          direct index ( temp float)
+0:73            'color' ( temp 4-component vector of float)
+0:73            Constant:
+0:73              0 (const int)
+0:73          'd' ( uniform float)
+0:73        Loop Body
+0:74        Sequence
+0:74          add second child into first child ( temp 4-component vector of float)
+0:74            'color' ( temp 4-component vector of float)
+0:74            'bigColor' ( uniform 4-component vector of float)
+0:78      Loop with condition tested first
+0:78        Loop Condition
+0:78        Compare Less Than ( temp bool)
+0:78          direct index ( temp float)
+0:78            'color' ( temp 4-component vector of float)
+0:78            Constant:
+0:78              2 (const int)
+0:78          'd' ( uniform float)
+0:78        Loop Body
+0:79        Sequence
+0:79          add second child into first child ( temp 4-component vector of float)
+0:79            'color' ( temp 4-component vector of float)
+0:79            'bigColor1_1' ( uniform 4-component vector of float)
+0:80          Test condition and select ( temp void)
+0:80            Condition
+0:80            Compare Less Than ( temp bool)
+0:80              direct index ( temp float)
+0:80                'color' ( temp 4-component vector of float)
+0:80                Constant:
+0:80                  3 (const int)
+0:80              'd' ( uniform float)
+0:80            true case
+0:81            Branch: Continue
+0:83          add second child into first child ( temp 4-component vector of float)
+0:83            'color' ( temp 4-component vector of float)
+0:83            'bigColor1_1' ( uniform 4-component vector of float)
+0:87      Loop with condition tested first
+0:87        Loop Condition
+0:87        Compare Less Than ( temp bool)
+0:87          direct index ( temp float)
+0:87            'color' ( temp 4-component vector of float)
+0:87            Constant:
+0:87              0 (const int)
+0:87          Constant:
+0:87            42.000000
+0:87        Loop Body
+0:88        Sequence
+0:88          Pre-Increment ( temp 4-component vector of float)
+0:88            'color' ( temp 4-component vector of float)
+0:92      Loop with condition tested first
+0:92        Loop Condition
+0:92        logical-and ( temp bool)
+0:92          Compare Less Than ( temp bool)
+0:92            direct index ( temp float)
+0:92              'color' ( temp 4-component vector of float)
+0:92              Constant:
+0:92                3 (const int)
+0:92            'd2' ( uniform float)
+0:92          Compare Less Than ( temp bool)
+0:92            direct index ( temp float)
+0:92              'color' ( temp 4-component vector of float)
+0:92              Constant:
+0:92                1 (const int)
+0:92            'd3' ( uniform float)
+0:92        Loop Body
+0:93        Sequence
+0:93          add second child into first child ( temp 4-component vector of float)
+0:93            'color' ( temp 4-component vector of float)
+0:93            'bigColor1_2' ( uniform 4-component vector of float)
+0:97      Loop with condition tested first
+0:97        Loop Condition
+0:97        Compare Less Than ( temp bool)
+0:97          direct index ( temp float)
+0:97            'color' ( temp 4-component vector of float)
+0:97            Constant:
+0:97              2 (const int)
+0:97          'd3' ( uniform float)
+0:97        Loop Body
+0:98        Sequence
+0:98          add second child into first child ( temp 4-component vector of float)
+0:98            'color' ( temp 4-component vector of float)
+0:98            'bigColor1_3' ( uniform 4-component vector of float)
+0:99          Test condition and select ( temp void)
+0:99            Condition
+0:99            Compare Less Than ( temp bool)
+0:99              direct index ( temp float)
+0:99                'color' ( temp 4-component vector of float)
+0:99                Constant:
+0:99                  1 (const int)
+0:99              'd4' ( uniform float)
+0:99            true case
+0:100            Branch: Break
+0:101          add second child into first child ( temp 4-component vector of float)
+0:101            'color' ( temp 4-component vector of float)
+0:101            'bigColor1_3' ( uniform 4-component vector of float)
+0:105      Sequence
+0:105        Sequence
+0:105          move second child to first child ( temp int)
+0:105            'i' ( temp int)
+0:105            Constant:
+0:105              0 (const int)
+0:105        Loop with condition tested first
+0:105          Loop Condition
+0:105          Compare Less Than ( temp bool)
+0:105            'i' ( temp int)
+0:105            'Count' ( uniform int)
+0:105          Loop Body
+0:106          Sequence
+0:106            add second child into first child ( temp 4-component vector of float)
+0:106              'color' ( temp 4-component vector of float)
+0:106              'bigColor2' ( uniform 4-component vector of float)
+0:105          Loop Terminal Expression
+0:105          Pre-Increment ( temp int)
+0:105            'i' ( temp int)
+0:112      Loop with condition not tested first
+0:112        Loop Condition
+0:112        Compare Less Than ( temp bool)
+0:112          direct index ( temp float)
+0:112            'color' ( temp 4-component vector of float)
+0:112            Constant:
+0:112              0 (const int)
+0:112          'd2' ( uniform float)
+0:112        Loop Body
+0:111        Sequence
+0:111          add second child into first child ( temp 4-component vector of float)
+0:111            'color' ( temp 4-component vector of float)
+0:111            'bigColor3' ( uniform 4-component vector of float)
+0:115      Sequence
+0:115        Sequence
+0:115          move second child to first child ( temp int)
+0:115            'i' ( temp int)
+0:115            Constant:
+0:115              0 (const int)
+0:115        Loop with condition tested first
+0:115          Loop Condition
+0:115          Compare Less Than ( temp bool)
+0:115            'i' ( temp int)
+0:115            Constant:
+0:115              42 (const int)
+0:115          Loop Body
+0:116          Sequence
+0:116            add second child into first child ( temp float)
+0:116              direct index ( temp float)
+0:116                'color' ( temp 4-component vector of float)
+0:116                Constant:
+0:116                  2 (const int)
+0:116              'd3' ( uniform float)
+0:115          Loop Terminal Expression
+0:115          Pre-Increment ( temp int)
+0:115            'i' ( temp int)
+0:120      Sequence
+0:120        Sequence
+0:120          move second child to first child ( temp int)
+0:120            'i' ( temp int)
+0:120            Constant:
+0:120              0 (const int)
+0:120        Loop with condition tested first
+0:120          Loop Condition
+0:120          Compare Less Than ( temp bool)
+0:120            'i' ( temp int)
+0:120            Constant:
+0:120              100 (const int)
+0:120          Loop Body
+0:121          Sequence
+0:121            Test condition and select ( temp void)
+0:121              Condition
+0:121              Compare Less Than ( temp bool)
+0:121                direct index ( temp float)
+0:121                  'color' ( temp 4-component vector of float)
+0:121                  Constant:
+0:121                    2 (const int)
+0:121                Constant:
+0:121                  20.000000
+0:121              true case
+0:122              Post-Increment ( temp float)
+0:122                direct index ( temp float)
+0:122                  'color' ( temp 4-component vector of float)
+0:122                  Constant:
+0:122                    0 (const int)
+0:121              false case
+0:124              Post-Increment ( temp float)
+0:124                direct index ( temp float)
+0:124                  'color' ( temp 4-component vector of float)
+0:124                  Constant:
+0:124                    1 (const int)
+0:125            Test condition and select ( temp void)
+0:125              Condition
+0:125              Compare Less Than ( temp bool)
+0:125                direct index ( temp float)
+0:125                  'color' ( temp 4-component vector of float)
+0:125                  Constant:
+0:125                    3 (const int)
+0:125                Constant:
+0:125                  20.000000
+0:125              true case
+0:126              Test condition and select ( temp void)
+0:126                Condition
+0:126                Compare Greater Than ( temp bool)
+0:126                  direct index ( temp float)
+0:126                    'color' ( temp 4-component vector of float)
+0:126                    Constant:
+0:126                      2 (const int)
+0:126                  direct index ( temp float)
+0:126                    'color' ( temp 4-component vector of float)
+0:126                    Constant:
+0:126                      1 (const int)
+0:126                true case
+0:127                Constant:
+0:127                  0 (const int)
+0:120          Loop Terminal Expression
+0:120          Pre-Increment ( temp int)
+0:120            'i' ( temp int)
+0:131      Sequence
+0:131        Sequence
+0:131          move second child to first child ( temp int)
+0:131            'i' ( temp int)
+0:131            Constant:
+0:131              0 (const int)
+0:131        Loop with condition tested first
+0:131          Loop Condition
+0:131          Compare Less Than ( temp bool)
+0:131            'i' ( temp int)
+0:131            Constant:
+0:131              120 (const int)
+0:131          Loop Body
+0:132          Sequence
+0:132            Test condition and select ( temp void)
+0:132              Condition
+0:132              Compare Less Than ( temp bool)
+0:132                direct index ( temp float)
+0:132                  'color' ( temp 4-component vector of float)
+0:132                  Constant:
+0:132                    2 (const int)
+0:132                Constant:
+0:132                  20.000000
+0:132              true case
+0:133              Post-Increment ( temp float)
+0:133                direct index ( temp float)
+0:133                  'color' ( temp 4-component vector of float)
+0:133                  Constant:
+0:133                    0 (const int)
+0:132              false case
+0:135              Post-Increment ( temp float)
+0:135                direct index ( temp float)
+0:135                  'color' ( temp 4-component vector of float)
+0:135                  Constant:
+0:135                    1 (const int)
+0:131          Loop Terminal Expression
+0:131          Pre-Increment ( temp int)
+0:131            'i' ( temp int)
+0:139      Sequence
+0:139        Sequence
+0:139          move second child to first child ( temp int)
+0:139            'i' ( temp int)
+0:139            Constant:
+0:139              0 (const int)
+0:139        Loop with condition tested first
+0:139          Loop Condition
+0:139          Compare Less Than ( temp bool)
+0:139            'i' ( temp int)
+0:139            Constant:
+0:139              42 (const int)
+0:139          Loop Body
+0:140          Sequence
+0:140            add second child into first child ( temp float)
+0:140              direct index ( temp float)
+0:140                'color' ( temp 4-component vector of float)
+0:140                Constant:
+0:140                  2 (const int)
+0:140              'd3' ( uniform float)
+0:141            Test condition and select ( temp void)
+0:141              Condition
+0:141              Compare Less Than ( temp bool)
+0:141                direct index ( temp float)
+0:141                  'color' ( temp 4-component vector of float)
+0:141                  Constant:
+0:141                    0 (const int)
+0:141                'd4' ( uniform float)
+0:141              true case
+0:142              Branch: Continue
+0:143            Pre-Increment ( temp float)
+0:143              direct index ( temp float)
+0:143                'color' ( temp 4-component vector of float)
+0:143                Constant:
+0:143                  3 (const int)
+0:139          Loop Terminal Expression
+0:139          Pre-Increment ( temp int)
+0:139            'i' ( temp int)
+0:147      Sequence
+0:147        Sequence
+0:147          move second child to first child ( temp int)
+0:147            'i' ( temp int)
+0:147            Constant:
+0:147              0 (const int)
+0:147        Loop with condition tested first
+0:147          Loop Condition
+0:147          Compare Less Than ( temp bool)
+0:147            'i' ( temp int)
+0:147            Constant:
+0:147              42 (const int)
+0:147          Loop Body
+0:148          Sequence
+0:148            add second child into first child ( temp float)
+0:148              direct index ( temp float)
+0:148                'color' ( temp 4-component vector of float)
+0:148                Constant:
+0:148                  2 (const int)
+0:148              'd3' ( uniform float)
+0:149            Test condition and select ( temp void)
+0:149              Condition
+0:149              Compare Less Than ( temp bool)
+0:149                direct index ( temp float)
+0:149                  'color' ( temp 4-component vector of float)
+0:149                  Constant:
+0:149                    0 (const int)
+0:149                'd4' ( uniform float)
+0:149              true case
+0:150              Branch: Break
+0:151            Pre-Increment ( temp float)
+0:151              direct index ( temp float)
+0:151                'color' ( temp 4-component vector of float)
+0:151                Constant:
+0:151                  3 (const int)
+0:147          Loop Terminal Expression
+0:147          Pre-Increment ( temp int)
+0:147            'i' ( temp int)
+0:163      Loop with condition not tested first
+0:163        Loop Condition
+0:163        Compare Less Than ( temp bool)
+0:163          direct index ( temp float)
+0:163            'color' ( temp 4-component vector of float)
+0:163            Constant:
+0:163              2 (const int)
+0:163          'd4' ( uniform float)
+0:163        Loop Body
+0:156        Sequence
+0:156          add second child into first child ( temp 4-component vector of float)
+0:156            'color' ( temp 4-component vector of float)
+0:156            'bigColor4' ( uniform 4-component vector of float)
+0:157          Test condition and select ( temp void)
+0:157            Condition
+0:157            Compare Less Than ( temp bool)
+0:157              direct index ( temp float)
+0:157                'color' ( temp 4-component vector of float)
+0:157                Constant:
+0:157                  0 (const int)
+0:157              'd4' ( uniform float)
+0:157            true case
+0:158            Branch: Continue
+0:159          Test condition and select ( temp void)
+0:159            Condition
+0:159            Compare Less Than ( temp bool)
+0:159              direct index ( temp float)
+0:159                'color' ( temp 4-component vector of float)
+0:159                Constant:
+0:159                  1 (const int)
+0:159              'd4' ( uniform float)
+0:159            true case
+0:160            add second child into first child ( temp float)
+0:160              direct index ( temp float)
+0:160                'color' ( temp 4-component vector of float)
+0:160                Constant:
+0:160                  1 (const int)
+0:160              'd4' ( uniform float)
+0:159            false case
+0:162            add second child into first child ( temp float)
+0:162              direct index ( temp float)
+0:162                'color' ( temp 4-component vector of float)
+0:162                Constant:
+0:162                  0 (const int)
+0:162              'd4' ( uniform float)
+0:170      Loop with condition not tested first
+0:170        Loop Condition
+0:170        Compare Less Than ( temp bool)
+0:170          direct index ( temp float)
+0:170            'color' ( temp 4-component vector of float)
+0:170            Constant:
+0:170              0 (const int)
+0:170          'd5' ( uniform float)
+0:170        Loop Body
+0:167        Sequence
+0:167          add second child into first child ( temp 4-component vector of float)
+0:167            'color' ( temp 4-component vector of float)
+0:167            'bigColor5' ( uniform 4-component vector of float)
+0:168          Test condition and select ( temp void)
+0:168            Condition
+0:168            Compare Less Than ( temp bool)
+0:168              direct index ( temp float)
+0:168                'color' ( temp 4-component vector of float)
+0:168                Constant:
+0:168                  1 (const int)
+0:168              'd5' ( uniform float)
+0:168            true case
+0:169            add second child into first child ( temp float)
+0:169              direct index ( temp float)
+0:169                'color' ( temp 4-component vector of float)
+0:169                Constant:
+0:169                  1 (const int)
+0:169              'd5' ( uniform float)
+0:173      Test condition and select ( temp void)
+0:173        Condition
+0:173        Compare Less Than ( temp bool)
+0:173          direct index ( temp float)
+0:173            'color' ( temp 4-component vector of float)
+0:173            Constant:
+0:173              0 (const int)
+0:173          'd6' ( uniform float)
+0:173        true case
+0:174        Sequence
+0:174          Loop with condition tested first
+0:174            Loop Condition
+0:174            Compare Less Than ( temp bool)
+0:174              direct index ( temp float)
+0:174                'color' ( temp 4-component vector of float)
+0:174                Constant:
+0:174                  1 (const int)
+0:174              'd6' ( uniform float)
+0:174            Loop Body
+0:175            add second child into first child ( temp 4-component vector of float)
+0:175              'color' ( temp 4-component vector of float)
+0:175              'bigColor6' ( uniform 4-component vector of float)
+0:173        false case
+0:177        Sequence
+0:177          Loop with condition tested first
+0:177            Loop Condition
+0:177            Compare Less Than ( temp bool)
+0:177              direct index ( temp float)
+0:177                'color' ( temp 4-component vector of float)
+0:177                Constant:
+0:177                  2 (const int)
+0:177              'd6' ( uniform float)
+0:177            Loop Body
+0:178            add second child into first child ( temp float)
+0:178              direct index ( temp float)
+0:178                'color' ( temp 4-component vector of float)
+0:178                Constant:
+0:178                  2 (const int)
+0:178              direct index ( temp float)
+0:178                'bigColor6' ( uniform 4-component vector of float)
+0:178                Constant:
+0:178                  2 (const int)
+0:182      Test condition and select ( temp void)
+0:182        Condition
+0:182        Compare Less Than ( temp bool)
+0:182          direct index ( temp float)
+0:182            'color' ( temp 4-component vector of float)
+0:182            Constant:
+0:182              0 (const int)
+0:182          'd6' ( uniform float)
+0:182        true case
+0:183        Sequence
+0:183          Loop with condition tested first
+0:183            Loop Condition
+0:183            Compare Less Than ( temp bool)
+0:183              direct index ( temp float)
+0:183                'color' ( temp 4-component vector of float)
+0:183                Constant:
+0:183                  1 (const int)
+0:183              'd6' ( uniform float)
+0:183            Loop Body
+0:184            Sequence
+0:184              add second child into first child ( temp 4-component vector of float)
+0:184                'color' ( temp 4-component vector of float)
+0:184                'bigColor6' ( uniform 4-component vector of float)
+0:185              Test condition and select ( temp void)
+0:185                Condition
+0:185                Compare Less Than ( temp bool)
+0:185                  'd7' ( uniform float)
+0:185                  Constant:
+0:185                    1.000000
+0:185                true case
+0:186                Branch: Break
+0:182        false case
+0:190        Sequence
+0:190          Loop with condition tested first
+0:190            Loop Condition
+0:190            Compare Less Than ( temp bool)
+0:190              direct index ( temp float)
+0:190                'color' ( temp 4-component vector of float)
+0:190                Constant:
+0:190                  2 (const int)
+0:190              'd6' ( uniform float)
+0:190            Loop Body
+0:191            add second child into first child ( temp float)
+0:191              direct index ( temp float)
+0:191                'color' ( temp 4-component vector of float)
+0:191                Constant:
+0:191                  2 (const int)
+0:191              direct index ( temp float)
+0:191                'bigColor6' ( uniform 4-component vector of float)
+0:191                Constant:
+0:191                  2 (const int)
+0:209      Loop with condition not tested first
+0:209        Loop Condition
+0:209        Constant:
+0:209          true (const bool)
+0:209        Loop Body
+0:197        Sequence
+0:197          Test condition and select ( temp void)
+0:197            Condition
+0:197            Compare Less Than ( temp bool)
+0:197              'd7' ( uniform float)
+0:197              Constant:
+0:197                0.000000
+0:197            true case
+0:198            Branch: Break
+0:200          add second child into first child ( temp 4-component vector of float)
+0:200            'color' ( temp 4-component vector of float)
+0:200            'bigColor7' ( uniform 4-component vector of float)
+0:202          Test condition and select ( temp void)
+0:202            Condition
+0:202            Compare Less Than ( temp bool)
+0:202              'd7' ( uniform float)
+0:202              Constant:
+0:202                1.000000
+0:202            true case
+0:203            Sequence
+0:203              Post-Increment ( temp float)
+0:203                direct index ( temp float)
+0:203                  'color' ( temp 4-component vector of float)
+0:203                  Constant:
+0:203                    2 (const int)
+0:204              Branch: Break
+0:207          add second child into first child ( temp 4-component vector of float)
+0:207            'color' ( temp 4-component vector of float)
+0:207            'BaseColor' ( smooth in 4-component vector of float)
+0:234      Loop with condition not tested first
+0:234        Loop Condition
+0:234        Compare Less Than ( temp bool)
+0:234          direct index ( temp float)
+0:234            'color' ( temp 4-component vector of float)
+0:234            Constant:
+0:234              2 (const int)
+0:234          'd8' ( uniform float)
+0:234        Loop Body
+0:217        Sequence
+0:217          Test condition and select ( temp void)
+0:217            Condition
+0:217            Compare Less Than ( temp bool)
+0:217              'd8' ( uniform float)
+0:217              Constant:
+0:217                0.000000
+0:217            true case
+0:218            Branch: Break
+0:220          add second child into first child ( temp 4-component vector of float)
+0:220            'color' ( temp 4-component vector of float)
+0:220            'bigColor7' ( uniform 4-component vector of float)
+0:222          Test condition and select ( temp void)
+0:222            Condition
+0:222            Compare Less Than ( temp bool)
+0:222              'd8' ( uniform float)
+0:222              Constant:
+0:222                1.000000
+0:222            true case
+0:223            Sequence
+0:223              Post-Increment ( temp float)
+0:223                direct index ( temp float)
+0:223                  'color' ( temp 4-component vector of float)
+0:223                  Constant:
+0:223                    2 (const int)
+0:224              Test condition and select ( temp void)
+0:224                Condition
+0:224                Compare Less Than ( temp bool)
+0:224                  'd8' ( uniform float)
+0:224                  Constant:
+0:224                    2.000000
+0:224                true case
+0:225                Sequence
+0:225                  Post-Increment ( temp float)
+0:225                    direct index ( temp float)
+0:225                      'color' ( temp 4-component vector of float)
+0:225                      Constant:
+0:225                        1 (const int)
+0:224                false case
+0:227                Sequence
+0:227                  Post-Increment ( temp float)
+0:227                    direct index ( temp float)
+0:227                      'color' ( temp 4-component vector of float)
+0:227                      Constant:
+0:227                        0 (const int)
+0:229              Branch: Break
+0:232          add second child into first child ( temp 4-component vector of float)
+0:232            'color' ( temp 4-component vector of float)
+0:232            'BaseColor' ( smooth in 4-component vector of float)
+0:237      Loop with condition tested first
+0:237        Loop Condition
+0:237        Compare Less Than ( temp bool)
+0:237          direct index ( temp float)
+0:237            'color' ( temp 4-component vector of float)
+0:237            Constant:
+0:237              3 (const int)
+0:237          'd9' ( uniform float)
+0:237        Loop Body
+0:238        Sequence
+0:238          Test condition and select ( temp void)
+0:238            Condition
+0:238            Compare Greater Than ( temp bool)
+0:238              'd9' ( uniform float)
+0:238              'd8' ( uniform float)
+0:238            true case
+0:239            Sequence
+0:239              Test condition and select ( temp void)
+0:239                Condition
+0:239                Compare Less Than or Equal ( temp bool)
+0:239                  direct index ( temp float)
+0:239                    'color' ( temp 4-component vector of float)
+0:239                    Constant:
+0:239                      0 (const int)
+0:239                  'd7' ( uniform float)
+0:239                true case
+0:240                Sequence
+0:240                  Test condition and select ( temp void)
+0:240                    Condition
+0:240                    Compare Equal ( temp bool)
+0:240                      direct index ( temp float)
+0:240                        'color' ( temp 4-component vector of float)
+0:240                        Constant:
+0:240                          2 (const int)
+0:240                      Constant:
+0:240                        5.000000
+0:240                    true case
+0:241                    Post-Increment ( temp float)
+0:241                      direct index ( temp float)
+0:241                        'color' ( temp 4-component vector of float)
+0:241                        Constant:
+0:241                          3 (const int)
+0:240                    false case
+0:243                    Branch: Break
+0:250      Loop with condition tested first
+0:250        Loop Condition
+0:250        Compare Less Than ( temp bool)
+0:250          direct index ( temp float)
+0:250            'color' ( temp 4-component vector of float)
+0:250            Constant:
+0:250              2 (const int)
+0:250          'd10' ( uniform float)
+0:250        Loop Body
+0:251        Sequence
+0:251          Post-Increment ( temp float)
+0:251            direct index ( temp float)
+0:251              'color' ( temp 4-component vector of float)
+0:251              Constant:
+0:251                1 (const int)
+0:252          Test condition and select ( temp void)
+0:252            Condition
+0:252            Compare Less Than ( temp bool)
+0:252              direct index ( temp float)
+0:252                'color' ( temp 4-component vector of float)
+0:252                Constant:
+0:252                  1 (const int)
+0:252              'd11' ( uniform float)
+0:252            true case
+0:253            Sequence
+0:253              Post-Increment ( temp float)
+0:253                direct index ( temp float)
+0:253                  'color' ( temp 4-component vector of float)
+0:253                  Constant:
+0:253                    2 (const int)
+0:254              Test condition and select ( temp void)
+0:254                Condition
+0:254                Compare Less Than ( temp bool)
+0:254                  direct index ( temp float)
+0:254                    'color' ( temp 4-component vector of float)
+0:254                    Constant:
+0:254                      3 (const int)
+0:254                  'd12' ( uniform float)
+0:254                true case
+0:255                Post-Increment ( temp float)
+0:255                  direct index ( temp float)
+0:255                    'color' ( temp 4-component vector of float)
+0:255                    Constant:
+0:255                      3 (const int)
+0:254                false case
+0:257                Post-Increment ( temp float)
+0:257                  direct index ( temp float)
+0:257                    'color' ( temp 4-component vector of float)
+0:257                    Constant:
+0:257                      0 (const int)
+0:258              Branch: Continue
+0:261          Post-Increment ( temp 4-component vector of float)
+0:261            'color' ( temp 4-component vector of float)
+0:262          Branch: Break
+0:266      Loop with condition tested first
+0:266        Loop Condition
+0:266        Compare Less Than ( temp bool)
+0:266          direct index ( temp float)
+0:266            'color' ( temp 4-component vector of float)
+0:266            Constant:
+0:266              0 (const int)
+0:266          Constant:
+0:266            10.000000
+0:266        Loop Body
+0:267        Sequence
+0:267          add second child into first child ( temp 4-component vector of float)
+0:267            'color' ( temp 4-component vector of float)
+0:267            'bigColor8' ( uniform 4-component vector of float)
+0:269          Test condition and select ( temp void)
+0:269            Condition
+0:269            Compare Less Than ( temp bool)
+0:269              direct index ( temp float)
+0:269                'color' ( temp 4-component vector of float)
+0:269                Constant:
+0:269                  2 (const int)
+0:269              'd8' ( uniform float)
+0:269            true case
+0:270            Test condition and select ( temp void)
+0:270              Condition
+0:270              Compare Less Than ( temp bool)
+0:270                direct index ( temp float)
+0:270                  'color' ( temp 4-component vector of float)
+0:270                  Constant:
+0:270                    3 (const int)
+0:270                'd6' ( uniform float)
+0:270              true case
+0:271              Branch: Continue
+0:273          add second child into first child ( temp float)
+0:273            direct index ( temp float)
+0:273              'color' ( temp 4-component vector of float)
+0:273              Constant:
+0:273                1 (const int)
+0:273            direct index ( temp float)
+0:273              'bigColor8' ( uniform 4-component vector of float)
+0:273              Constant:
+0:273                0 (const int)
+0:276      Post-Increment ( temp 4-component vector of float)
+0:276        'color' ( temp 4-component vector of float)
+0:277      move second child to first child ( temp 4-component vector of float)
+0:277        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:277        'color' ( temp 4-component vector of float)
+0:280      Loop with condition tested first
+0:280        Loop Condition
+0:280        Compare Less Than ( temp bool)
+0:280          direct index ( temp float)
+0:280            'color' ( temp 4-component vector of float)
+0:280            Constant:
+0:280              0 (const int)
+0:280          'd14' ( uniform float)
+0:280        Loop Body
+0:281        Sequence
+0:281          Test condition and select ( temp void)
+0:281            Condition
+0:281            Compare Less Than ( temp bool)
+0:281              direct index ( temp float)
+0:281                'color' ( temp 4-component vector of float)
+0:281                Constant:
+0:281                  1 (const int)
+0:281              'd15' ( uniform float)
+0:281            true case
+0:282            Sequence
+0:282              Branch: Return
+0:281            false case
+0:285            Post-Increment ( temp 4-component vector of float)
+0:285              'color' ( temp 4-component vector of float)
+0:288      Post-Increment ( temp 4-component vector of float)
+0:288        'color' ( temp 4-component vector of float)
+0:290      Loop with condition tested first
+0:290        Loop Condition
+0:290        Compare Less Than ( temp bool)
+0:290          direct index ( temp float)
+0:290            'color' ( temp 4-component vector of float)
+0:290            Constant:
+0:290              3 (const int)
+0:290          'd16' ( uniform float)
+0:290        Loop Body
+0:291        Sequence
+0:291          Post-Increment ( temp float)
+0:291            direct index ( temp float)
+0:291              'color' ( temp 4-component vector of float)
+0:291              Constant:
+0:291                3 (const int)
+0:296      Loop with condition tested first
+0:296        Loop Condition
+0:296        logical-and ( temp bool)
+0:296          Compare Less Than ( temp bool)
+0:296            direct index ( temp float)
+0:296              'color' ( temp 4-component vector of float)
+0:296              Constant:
+0:296                3 (const int)
+0:296            'd2' ( uniform float)
+0:296          Compare Less Than ( temp bool)
+0:296            direct index ( temp float)
+0:296              'color' ( temp 4-component vector of float)
+0:296              Constant:
+0:296                1 (const int)
+0:296            'd3' ( uniform float)
+0:296        Loop Body
+0:297        Sequence
+0:297          add second child into first child ( temp 4-component vector of float)
+0:297            'color' ( temp 4-component vector of float)
+0:297            'bigColor1_2' ( uniform 4-component vector of float)
+0:298          Test condition and select ( temp void)
+0:298            Condition
+0:298            Compare Less Than ( temp bool)
+0:298              direct index ( temp float)
+0:298                'color' ( temp 4-component vector of float)
+0:298                Constant:
+0:298                  2 (const int)
+0:298              'd3' ( uniform float)
+0:298            true case
+0:299            Branch: Return
+0:307      Loop with condition not tested first
+0:307        Loop Condition
+0:307        Compare Less Than ( temp bool)
+0:307          direct index ( temp float)
+0:307            'color' ( temp 4-component vector of float)
+0:307            Constant:
+0:307              0 (const int)
+0:307          'd17' ( uniform float)
+0:307        Loop Body
+0:304        Sequence
+0:304          Test condition and select ( temp void)
+0:304            Condition
+0:304            Compare Less Than ( temp bool)
+0:304              direct index ( temp float)
+0:304                'color' ( temp 4-component vector of float)
+0:304                Constant:
+0:304                  1 (const int)
+0:304              'd18' ( uniform float)
+0:304            true case
+0:305            Branch: Return
+0:306          Post-Increment ( temp 4-component vector of float)
+0:306            'color' ( temp 4-component vector of float)
+0:310      Loop with condition tested first
+0:310        Loop Condition
+0:310        Compare Less Than ( temp bool)
+0:310          direct index ( temp float)
+0:310            'color' ( temp 4-component vector of float)
+0:310            Constant:
+0:310              1 (const int)
+0:310          'd16' ( uniform float)
+0:310        Loop Body
+0:311        Sequence
+0:311          Test condition and select ( temp void)
+0:311            Condition
+0:311            Compare Less Than ( temp bool)
+0:311              direct index ( temp float)
+0:311                'color' ( temp 4-component vector of float)
+0:311                Constant:
+0:311                  3 (const int)
+0:311              'd16' ( uniform float)
+0:311            true case
+0:312            Sequence
+0:312              Branch: Kill
+0:311            false case
+0:314            Post-Increment ( temp 4-component vector of float)
+0:314              'color' ( temp 4-component vector of float)
+0:317      Post-Increment ( temp 4-component vector of float)
+0:317        'color' ( temp 4-component vector of float)
+0:319      move second child to first child ( temp 4-component vector of float)
+0:319        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:319        'color' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'bigColor' ( uniform 4-component vector of float)
+0:?     'bigColor1_1' ( uniform 4-component vector of float)
+0:?     'bigColor1_2' ( uniform 4-component vector of float)
+0:?     'bigColor1_3' ( uniform 4-component vector of float)
+0:?     'bigColor2' ( uniform 4-component vector of float)
+0:?     'bigColor3' ( uniform 4-component vector of float)
+0:?     'bigColor4' ( uniform 4-component vector of float)
+0:?     'bigColor5' ( uniform 4-component vector of float)
+0:?     'bigColor6' ( uniform 4-component vector of float)
+0:?     'bigColor7' ( uniform 4-component vector of float)
+0:?     'bigColor8' ( uniform 4-component vector of float)
+0:?     'BaseColor' ( smooth in 4-component vector of float)
+0:?     'd' ( uniform float)
+0:?     'd2' ( uniform float)
+0:?     'd3' ( uniform float)
+0:?     'd4' ( uniform float)
+0:?     'd5' ( uniform float)
+0:?     'd6' ( uniform float)
+0:?     'd7' ( uniform float)
+0:?     'd8' ( uniform float)
+0:?     'd9' ( uniform float)
+0:?     'd10' ( uniform float)
+0:?     'd11' ( uniform float)
+0:?     'd12' ( uniform float)
+0:?     'd13' ( uniform float)
+0:?     'd14' ( uniform float)
+0:?     'd15' ( uniform float)
+0:?     'd16' ( uniform float)
+0:?     'd17' ( uniform float)
+0:?     'd18' ( uniform float)
+0:?     'd19' ( uniform float)
+0:?     'd20' ( uniform float)
+0:?     'd21' ( uniform float)
+0:?     'd22' ( uniform float)
+0:?     'd23' ( uniform float)
+0:?     'd24' ( uniform float)
+0:?     'd25' ( uniform float)
+0:?     'd26' ( uniform float)
+0:?     'd27' ( uniform float)
+0:?     'd28' ( uniform float)
+0:?     'd29' ( uniform float)
+0:?     'd30' ( uniform float)
+0:?     'd31' ( uniform float)
+0:?     'd32' ( uniform float)
+0:?     'd33' ( uniform float)
+0:?     'd34' ( uniform float)
+0:?     'Count' ( uniform int)
+

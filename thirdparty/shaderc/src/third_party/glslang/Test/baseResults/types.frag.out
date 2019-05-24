@@ -1,0 +1,677 @@
+types.frag
+Shader version: 130
+0:? Sequence
+0:33  Function Definition: main( ( global void)
+0:33    Function Parameters: 
+0:35    Sequence
+0:35      Sequence
+0:35        move second child to first child ( temp bool)
+0:35          'b' ( temp bool)
+0:35          logical-and ( temp bool)
+0:35            'u_b' ( uniform bool)
+0:35            'i_b' ( uniform bool)
+0:36      Sequence
+0:36        move second child to first child ( temp 2-component vector of bool)
+0:36          'b2' ( temp 2-component vector of bool)
+0:36          Construct bvec2 ( temp 2-component vector of bool)
+0:36            logical-and ( temp bool)
+0:36              logical-and ( temp bool)
+0:36                logical-and ( temp bool)
+0:36                  direct index ( temp bool)
+0:36                    'u_b2' ( uniform 2-component vector of bool)
+0:36                    Constant:
+0:36                      0 (const int)
+0:36                  direct index ( temp bool)
+0:36                    'i_b2' ( uniform 2-component vector of bool)
+0:36                    Constant:
+0:36                      0 (const int)
+0:36                direct index ( temp bool)
+0:36                  'u_b2' ( uniform 2-component vector of bool)
+0:36                  Constant:
+0:36                    1 (const int)
+0:36              direct index ( temp bool)
+0:36                'i_b2' ( uniform 2-component vector of bool)
+0:36                Constant:
+0:36                  1 (const int)
+0:37      Sequence
+0:37        move second child to first child ( temp 3-component vector of bool)
+0:37          'b3' ( temp 3-component vector of bool)
+0:37          Construct bvec3 ( temp 3-component vector of bool)
+0:37            logical-and ( temp bool)
+0:37              logical-and ( temp bool)
+0:37                logical-and ( temp bool)
+0:37                  logical-and ( temp bool)
+0:37                    logical-and ( temp bool)
+0:37                      direct index ( temp bool)
+0:37                        'u_b3' ( uniform 3-component vector of bool)
+0:37                        Constant:
+0:37                          0 (const int)
+0:37                      direct index ( temp bool)
+0:37                        'i_b3' ( uniform 3-component vector of bool)
+0:37                        Constant:
+0:37                          0 (const int)
+0:37                    direct index ( temp bool)
+0:37                      'u_b3' ( uniform 3-component vector of bool)
+0:37                      Constant:
+0:37                        1 (const int)
+0:37                  direct index ( temp bool)
+0:37                    'i_b3' ( uniform 3-component vector of bool)
+0:37                    Constant:
+0:37                      1 (const int)
+0:37                direct index ( temp bool)
+0:37                  'u_b3' ( uniform 3-component vector of bool)
+0:37                  Constant:
+0:37                    2 (const int)
+0:37              direct index ( temp bool)
+0:37                'i_b3' ( uniform 3-component vector of bool)
+0:37                Constant:
+0:37                  2 (const int)
+0:38      Sequence
+0:38        move second child to first child ( temp 4-component vector of bool)
+0:38          'b4' ( temp 4-component vector of bool)
+0:38          Construct bvec4 ( temp 4-component vector of bool)
+0:38            logical-and ( temp bool)
+0:38              logical-and ( temp bool)
+0:38                logical-and ( temp bool)
+0:38                  logical-and ( temp bool)
+0:38                    logical-and ( temp bool)
+0:38                      logical-and ( temp bool)
+0:38                        logical-and ( temp bool)
+0:38                          direct index ( temp bool)
+0:38                            'u_b4' ( uniform 4-component vector of bool)
+0:38                            Constant:
+0:38                              0 (const int)
+0:38                          direct index ( temp bool)
+0:38                            'i_b4' ( uniform 4-component vector of bool)
+0:38                            Constant:
+0:38                              0 (const int)
+0:38                        direct index ( temp bool)
+0:38                          'u_b4' ( uniform 4-component vector of bool)
+0:38                          Constant:
+0:38                            1 (const int)
+0:38                      direct index ( temp bool)
+0:38                        'i_b4' ( uniform 4-component vector of bool)
+0:38                        Constant:
+0:38                          1 (const int)
+0:38                    direct index ( temp bool)
+0:38                      'u_b4' ( uniform 4-component vector of bool)
+0:38                      Constant:
+0:38                        2 (const int)
+0:38                  direct index ( temp bool)
+0:38                    'i_b4' ( uniform 4-component vector of bool)
+0:38                    Constant:
+0:38                      2 (const int)
+0:38                direct index ( temp bool)
+0:38                  'u_b4' ( uniform 4-component vector of bool)
+0:38                  Constant:
+0:38                    3 (const int)
+0:38              direct index ( temp bool)
+0:38                'i_b4' ( uniform 4-component vector of bool)
+0:38                Constant:
+0:38                  3 (const int)
+0:40      Sequence
+0:40        move second child to first child ( temp int)
+0:40          'i' ( temp int)
+0:40          add ( temp int)
+0:40            'u_i' ( uniform int)
+0:40            'i_i' ( flat in int)
+0:41      Sequence
+0:41        move second child to first child ( temp 2-component vector of int)
+0:41          'i2' ( temp 2-component vector of int)
+0:41          add ( temp 2-component vector of int)
+0:41            'u_i2' ( uniform 2-component vector of int)
+0:41            'i_i2' ( flat in 2-component vector of int)
+0:42      Sequence
+0:42        move second child to first child ( temp 3-component vector of int)
+0:42          'i3' ( temp 3-component vector of int)
+0:42          add ( temp 3-component vector of int)
+0:42            'u_i3' ( uniform 3-component vector of int)
+0:42            'i_i3' ( flat in 3-component vector of int)
+0:43      Sequence
+0:43        move second child to first child ( temp 4-component vector of int)
+0:43          'i4' ( temp 4-component vector of int)
+0:43          add ( temp 4-component vector of int)
+0:43            'u_i4' ( uniform 4-component vector of int)
+0:43            'i_i4' ( flat in 4-component vector of int)
+0:45      Sequence
+0:45        move second child to first child ( temp float)
+0:45          'f' ( temp float)
+0:45          add ( temp float)
+0:45            'u_f' ( uniform float)
+0:45            'i_f' ( smooth in float)
+0:46      Sequence
+0:46        move second child to first child ( temp 2-component vector of float)
+0:46          'f2' ( temp 2-component vector of float)
+0:46          add ( temp 2-component vector of float)
+0:46            'u_f2' ( uniform 2-component vector of float)
+0:46            'i_f2' ( smooth in 2-component vector of float)
+0:47      Sequence
+0:47        move second child to first child ( temp 3-component vector of float)
+0:47          'f3' ( temp 3-component vector of float)
+0:47          add ( temp 3-component vector of float)
+0:47            'u_f3' ( uniform 3-component vector of float)
+0:47            'i_f3' ( smooth in 3-component vector of float)
+0:48      Sequence
+0:48        move second child to first child ( temp 4-component vector of float)
+0:48          'f4' ( temp 4-component vector of float)
+0:48          add ( temp 4-component vector of float)
+0:48            'u_f4' ( uniform 4-component vector of float)
+0:48            'i_f4' ( smooth in 4-component vector of float)
+0:50      move second child to first child ( temp 4-component vector of float)
+0:50        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:60        Test condition and select ( temp 4-component vector of float)
+0:60          Condition
+0:59          logical-or ( temp bool)
+0:58            logical-or ( temp bool)
+0:57              logical-or ( temp bool)
+0:56                logical-or ( temp bool)
+0:55                  logical-or ( temp bool)
+0:54                    logical-or ( temp bool)
+0:53                      logical-or ( temp bool)
+0:52                        logical-or ( temp bool)
+0:51                          logical-or ( temp bool)
+0:51                            'b' ( temp bool)
+0:52                            direct index ( temp bool)
+0:52                              'b2' ( temp 2-component vector of bool)
+0:52                              Constant:
+0:52                                0 (const int)
+0:53                          direct index ( temp bool)
+0:53                            'b2' ( temp 2-component vector of bool)
+0:53                            Constant:
+0:53                              1 (const int)
+0:54                        direct index ( temp bool)
+0:54                          'b3' ( temp 3-component vector of bool)
+0:54                          Constant:
+0:54                            0 (const int)
+0:55                      direct index ( temp bool)
+0:55                        'b3' ( temp 3-component vector of bool)
+0:55                        Constant:
+0:55                          1 (const int)
+0:56                    direct index ( temp bool)
+0:56                      'b3' ( temp 3-component vector of bool)
+0:56                      Constant:
+0:56                        2 (const int)
+0:57                  direct index ( temp bool)
+0:57                    'b4' ( temp 4-component vector of bool)
+0:57                    Constant:
+0:57                      0 (const int)
+0:58                direct index ( temp bool)
+0:58                  'b4' ( temp 4-component vector of bool)
+0:58                  Constant:
+0:58                    1 (const int)
+0:59              direct index ( temp bool)
+0:59                'b4' ( temp 4-component vector of bool)
+0:59                Constant:
+0:59                  2 (const int)
+0:60            direct index ( temp bool)
+0:60              'b4' ( temp 4-component vector of bool)
+0:60              Constant:
+0:60                3 (const int)
+0:60          true case
+0:79          Construct vec4 ( temp 4-component vector of float)
+0:79            add ( temp float)
+0:78              add ( temp float)
+0:77                add ( temp float)
+0:76                  add ( temp float)
+0:75                    add ( temp float)
+0:74                      add ( temp float)
+0:73                        add ( temp float)
+0:72                          add ( temp float)
+0:71                            add ( temp float)
+0:70                              add ( temp float)
+0:69                                Convert int to float ( temp float)
+0:69                                  add ( temp int)
+0:68                                    add ( temp int)
+0:67                                      add ( temp int)
+0:66                                        add ( temp int)
+0:65                                          add ( temp int)
+0:64                                            add ( temp int)
+0:63                                              add ( temp int)
+0:62                                                add ( temp int)
+0:61                                                  add ( temp int)
+0:61                                                    'i' ( temp int)
+0:62                                                    direct index ( temp int)
+0:62                                                      'i2' ( temp 2-component vector of int)
+0:62                                                      Constant:
+0:62                                                        0 (const int)
+0:63                                                  direct index ( temp int)
+0:63                                                    'i2' ( temp 2-component vector of int)
+0:63                                                    Constant:
+0:63                                                      1 (const int)
+0:64                                                direct index ( temp int)
+0:64                                                  'i3' ( temp 3-component vector of int)
+0:64                                                  Constant:
+0:64                                                    0 (const int)
+0:65                                              direct index ( temp int)
+0:65                                                'i3' ( temp 3-component vector of int)
+0:65                                                Constant:
+0:65                                                  1 (const int)
+0:66                                            direct index ( temp int)
+0:66                                              'i3' ( temp 3-component vector of int)
+0:66                                              Constant:
+0:66                                                2 (const int)
+0:67                                          direct index ( temp int)
+0:67                                            'i4' ( temp 4-component vector of int)
+0:67                                            Constant:
+0:67                                              0 (const int)
+0:68                                        direct index ( temp int)
+0:68                                          'i4' ( temp 4-component vector of int)
+0:68                                          Constant:
+0:68                                            1 (const int)
+0:69                                      direct index ( temp int)
+0:69                                        'i4' ( temp 4-component vector of int)
+0:69                                        Constant:
+0:69                                          2 (const int)
+0:70                                    direct index ( temp int)
+0:70                                      'i4' ( temp 4-component vector of int)
+0:70                                      Constant:
+0:70                                        3 (const int)
+0:71                                'f' ( temp float)
+0:72                              direct index ( temp float)
+0:72                                'f2' ( temp 2-component vector of float)
+0:72                                Constant:
+0:72                                  0 (const int)
+0:73                            direct index ( temp float)
+0:73                              'f2' ( temp 2-component vector of float)
+0:73                              Constant:
+0:73                                1 (const int)
+0:74                          direct index ( temp float)
+0:74                            'f3' ( temp 3-component vector of float)
+0:74                            Constant:
+0:74                              0 (const int)
+0:75                        direct index ( temp float)
+0:75                          'f3' ( temp 3-component vector of float)
+0:75                          Constant:
+0:75                            1 (const int)
+0:76                      direct index ( temp float)
+0:76                        'f3' ( temp 3-component vector of float)
+0:76                        Constant:
+0:76                          2 (const int)
+0:77                    direct index ( temp float)
+0:77                      'f4' ( temp 4-component vector of float)
+0:77                      Constant:
+0:77                        0 (const int)
+0:78                  direct index ( temp float)
+0:78                    'f4' ( temp 4-component vector of float)
+0:78                    Constant:
+0:78                      1 (const int)
+0:79                direct index ( temp float)
+0:79                  'f4' ( temp 4-component vector of float)
+0:79                  Constant:
+0:79                    2 (const int)
+0:80              direct index ( temp float)
+0:80                'f4' ( temp 4-component vector of float)
+0:80                Constant:
+0:80                  3 (const int)
+0:60          false case
+0:80          Constant:
+0:80            1.000000
+0:80            1.000000
+0:80            1.000000
+0:80            1.000000
+0:?   Linker Objects
+0:?     'u_b' ( uniform bool)
+0:?     'u_b2' ( uniform 2-component vector of bool)
+0:?     'u_b3' ( uniform 3-component vector of bool)
+0:?     'u_b4' ( uniform 4-component vector of bool)
+0:?     'u_i' ( uniform int)
+0:?     'u_i2' ( uniform 2-component vector of int)
+0:?     'u_i3' ( uniform 3-component vector of int)
+0:?     'u_i4' ( uniform 4-component vector of int)
+0:?     'u_f' ( uniform float)
+0:?     'u_f2' ( uniform 2-component vector of float)
+0:?     'u_f3' ( uniform 3-component vector of float)
+0:?     'u_f4' ( uniform 4-component vector of float)
+0:?     'i_b' ( uniform bool)
+0:?     'i_b2' ( uniform 2-component vector of bool)
+0:?     'i_b3' ( uniform 3-component vector of bool)
+0:?     'i_b4' ( uniform 4-component vector of bool)
+0:?     'i_i' ( flat in int)
+0:?     'i_i2' ( flat in 2-component vector of int)
+0:?     'i_i3' ( flat in 3-component vector of int)
+0:?     'i_i4' ( flat in 4-component vector of int)
+0:?     'i_f' ( smooth in float)
+0:?     'i_f2' ( smooth in 2-component vector of float)
+0:?     'i_f3' ( smooth in 3-component vector of float)
+0:?     'i_f4' ( smooth in 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 130
+0:? Sequence
+0:33  Function Definition: main( ( global void)
+0:33    Function Parameters: 
+0:35    Sequence
+0:35      Sequence
+0:35        move second child to first child ( temp bool)
+0:35          'b' ( temp bool)
+0:35          logical-and ( temp bool)
+0:35            'u_b' ( uniform bool)
+0:35            'i_b' ( uniform bool)
+0:36      Sequence
+0:36        move second child to first child ( temp 2-component vector of bool)
+0:36          'b2' ( temp 2-component vector of bool)
+0:36          Construct bvec2 ( temp 2-component vector of bool)
+0:36            logical-and ( temp bool)
+0:36              logical-and ( temp bool)
+0:36                logical-and ( temp bool)
+0:36                  direct index ( temp bool)
+0:36                    'u_b2' ( uniform 2-component vector of bool)
+0:36                    Constant:
+0:36                      0 (const int)
+0:36                  direct index ( temp bool)
+0:36                    'i_b2' ( uniform 2-component vector of bool)
+0:36                    Constant:
+0:36                      0 (const int)
+0:36                direct index ( temp bool)
+0:36                  'u_b2' ( uniform 2-component vector of bool)
+0:36                  Constant:
+0:36                    1 (const int)
+0:36              direct index ( temp bool)
+0:36                'i_b2' ( uniform 2-component vector of bool)
+0:36                Constant:
+0:36                  1 (const int)
+0:37      Sequence
+0:37        move second child to first child ( temp 3-component vector of bool)
+0:37          'b3' ( temp 3-component vector of bool)
+0:37          Construct bvec3 ( temp 3-component vector of bool)
+0:37            logical-and ( temp bool)
+0:37              logical-and ( temp bool)
+0:37                logical-and ( temp bool)
+0:37                  logical-and ( temp bool)
+0:37                    logical-and ( temp bool)
+0:37                      direct index ( temp bool)
+0:37                        'u_b3' ( uniform 3-component vector of bool)
+0:37                        Constant:
+0:37                          0 (const int)
+0:37                      direct index ( temp bool)
+0:37                        'i_b3' ( uniform 3-component vector of bool)
+0:37                        Constant:
+0:37                          0 (const int)
+0:37                    direct index ( temp bool)
+0:37                      'u_b3' ( uniform 3-component vector of bool)
+0:37                      Constant:
+0:37                        1 (const int)
+0:37                  direct index ( temp bool)
+0:37                    'i_b3' ( uniform 3-component vector of bool)
+0:37                    Constant:
+0:37                      1 (const int)
+0:37                direct index ( temp bool)
+0:37                  'u_b3' ( uniform 3-component vector of bool)
+0:37                  Constant:
+0:37                    2 (const int)
+0:37              direct index ( temp bool)
+0:37                'i_b3' ( uniform 3-component vector of bool)
+0:37                Constant:
+0:37                  2 (const int)
+0:38      Sequence
+0:38        move second child to first child ( temp 4-component vector of bool)
+0:38          'b4' ( temp 4-component vector of bool)
+0:38          Construct bvec4 ( temp 4-component vector of bool)
+0:38            logical-and ( temp bool)
+0:38              logical-and ( temp bool)
+0:38                logical-and ( temp bool)
+0:38                  logical-and ( temp bool)
+0:38                    logical-and ( temp bool)
+0:38                      logical-and ( temp bool)
+0:38                        logical-and ( temp bool)
+0:38                          direct index ( temp bool)
+0:38                            'u_b4' ( uniform 4-component vector of bool)
+0:38                            Constant:
+0:38                              0 (const int)
+0:38                          direct index ( temp bool)
+0:38                            'i_b4' ( uniform 4-component vector of bool)
+0:38                            Constant:
+0:38                              0 (const int)
+0:38                        direct index ( temp bool)
+0:38                          'u_b4' ( uniform 4-component vector of bool)
+0:38                          Constant:
+0:38                            1 (const int)
+0:38                      direct index ( temp bool)
+0:38                        'i_b4' ( uniform 4-component vector of bool)
+0:38                        Constant:
+0:38                          1 (const int)
+0:38                    direct index ( temp bool)
+0:38                      'u_b4' ( uniform 4-component vector of bool)
+0:38                      Constant:
+0:38                        2 (const int)
+0:38                  direct index ( temp bool)
+0:38                    'i_b4' ( uniform 4-component vector of bool)
+0:38                    Constant:
+0:38                      2 (const int)
+0:38                direct index ( temp bool)
+0:38                  'u_b4' ( uniform 4-component vector of bool)
+0:38                  Constant:
+0:38                    3 (const int)
+0:38              direct index ( temp bool)
+0:38                'i_b4' ( uniform 4-component vector of bool)
+0:38                Constant:
+0:38                  3 (const int)
+0:40      Sequence
+0:40        move second child to first child ( temp int)
+0:40          'i' ( temp int)
+0:40          add ( temp int)
+0:40            'u_i' ( uniform int)
+0:40            'i_i' ( flat in int)
+0:41      Sequence
+0:41        move second child to first child ( temp 2-component vector of int)
+0:41          'i2' ( temp 2-component vector of int)
+0:41          add ( temp 2-component vector of int)
+0:41            'u_i2' ( uniform 2-component vector of int)
+0:41            'i_i2' ( flat in 2-component vector of int)
+0:42      Sequence
+0:42        move second child to first child ( temp 3-component vector of int)
+0:42          'i3' ( temp 3-component vector of int)
+0:42          add ( temp 3-component vector of int)
+0:42            'u_i3' ( uniform 3-component vector of int)
+0:42            'i_i3' ( flat in 3-component vector of int)
+0:43      Sequence
+0:43        move second child to first child ( temp 4-component vector of int)
+0:43          'i4' ( temp 4-component vector of int)
+0:43          add ( temp 4-component vector of int)
+0:43            'u_i4' ( uniform 4-component vector of int)
+0:43            'i_i4' ( flat in 4-component vector of int)
+0:45      Sequence
+0:45        move second child to first child ( temp float)
+0:45          'f' ( temp float)
+0:45          add ( temp float)
+0:45            'u_f' ( uniform float)
+0:45            'i_f' ( smooth in float)
+0:46      Sequence
+0:46        move second child to first child ( temp 2-component vector of float)
+0:46          'f2' ( temp 2-component vector of float)
+0:46          add ( temp 2-component vector of float)
+0:46            'u_f2' ( uniform 2-component vector of float)
+0:46            'i_f2' ( smooth in 2-component vector of float)
+0:47      Sequence
+0:47        move second child to first child ( temp 3-component vector of float)
+0:47          'f3' ( temp 3-component vector of float)
+0:47          add ( temp 3-component vector of float)
+0:47            'u_f3' ( uniform 3-component vector of float)
+0:47            'i_f3' ( smooth in 3-component vector of float)
+0:48      Sequence
+0:48        move second child to first child ( temp 4-component vector of float)
+0:48          'f4' ( temp 4-component vector of float)
+0:48          add ( temp 4-component vector of float)
+0:48            'u_f4' ( uniform 4-component vector of float)
+0:48            'i_f4' ( smooth in 4-component vector of float)
+0:50      move second child to first child ( temp 4-component vector of float)
+0:50        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:60        Test condition and select ( temp 4-component vector of float)
+0:60          Condition
+0:59          logical-or ( temp bool)
+0:58            logical-or ( temp bool)
+0:57              logical-or ( temp bool)
+0:56                logical-or ( temp bool)
+0:55                  logical-or ( temp bool)
+0:54                    logical-or ( temp bool)
+0:53                      logical-or ( temp bool)
+0:52                        logical-or ( temp bool)
+0:51                          logical-or ( temp bool)
+0:51                            'b' ( temp bool)
+0:52                            direct index ( temp bool)
+0:52                              'b2' ( temp 2-component vector of bool)
+0:52                              Constant:
+0:52                                0 (const int)
+0:53                          direct index ( temp bool)
+0:53                            'b2' ( temp 2-component vector of bool)
+0:53                            Constant:
+0:53                              1 (const int)
+0:54                        direct index ( temp bool)
+0:54                          'b3' ( temp 3-component vector of bool)
+0:54                          Constant:
+0:54                            0 (const int)
+0:55                      direct index ( temp bool)
+0:55                        'b3' ( temp 3-component vector of bool)
+0:55                        Constant:
+0:55                          1 (const int)
+0:56                    direct index ( temp bool)
+0:56                      'b3' ( temp 3-component vector of bool)
+0:56                      Constant:
+0:56                        2 (const int)
+0:57                  direct index ( temp bool)
+0:57                    'b4' ( temp 4-component vector of bool)
+0:57                    Constant:
+0:57                      0 (const int)
+0:58                direct index ( temp bool)
+0:58                  'b4' ( temp 4-component vector of bool)
+0:58                  Constant:
+0:58                    1 (const int)
+0:59              direct index ( temp bool)
+0:59                'b4' ( temp 4-component vector of bool)
+0:59                Constant:
+0:59                  2 (const int)
+0:60            direct index ( temp bool)
+0:60              'b4' ( temp 4-component vector of bool)
+0:60              Constant:
+0:60                3 (const int)
+0:60          true case
+0:79          Construct vec4 ( temp 4-component vector of float)
+0:79            add ( temp float)
+0:78              add ( temp float)
+0:77                add ( temp float)
+0:76                  add ( temp float)
+0:75                    add ( temp float)
+0:74                      add ( temp float)
+0:73                        add ( temp float)
+0:72                          add ( temp float)
+0:71                            add ( temp float)
+0:70                              add ( temp float)
+0:69                                Convert int to float ( temp float)
+0:69                                  add ( temp int)
+0:68                                    add ( temp int)
+0:67                                      add ( temp int)
+0:66                                        add ( temp int)
+0:65                                          add ( temp int)
+0:64                                            add ( temp int)
+0:63                                              add ( temp int)
+0:62                                                add ( temp int)
+0:61                                                  add ( temp int)
+0:61                                                    'i' ( temp int)
+0:62                                                    direct index ( temp int)
+0:62                                                      'i2' ( temp 2-component vector of int)
+0:62                                                      Constant:
+0:62                                                        0 (const int)
+0:63                                                  direct index ( temp int)
+0:63                                                    'i2' ( temp 2-component vector of int)
+0:63                                                    Constant:
+0:63                                                      1 (const int)
+0:64                                                direct index ( temp int)
+0:64                                                  'i3' ( temp 3-component vector of int)
+0:64                                                  Constant:
+0:64                                                    0 (const int)
+0:65                                              direct index ( temp int)
+0:65                                                'i3' ( temp 3-component vector of int)
+0:65                                                Constant:
+0:65                                                  1 (const int)
+0:66                                            direct index ( temp int)
+0:66                                              'i3' ( temp 3-component vector of int)
+0:66                                              Constant:
+0:66                                                2 (const int)
+0:67                                          direct index ( temp int)
+0:67                                            'i4' ( temp 4-component vector of int)
+0:67                                            Constant:
+0:67                                              0 (const int)
+0:68                                        direct index ( temp int)
+0:68                                          'i4' ( temp 4-component vector of int)
+0:68                                          Constant:
+0:68                                            1 (const int)
+0:69                                      direct index ( temp int)
+0:69                                        'i4' ( temp 4-component vector of int)
+0:69                                        Constant:
+0:69                                          2 (const int)
+0:70                                    direct index ( temp int)
+0:70                                      'i4' ( temp 4-component vector of int)
+0:70                                      Constant:
+0:70                                        3 (const int)
+0:71                                'f' ( temp float)
+0:72                              direct index ( temp float)
+0:72                                'f2' ( temp 2-component vector of float)
+0:72                                Constant:
+0:72                                  0 (const int)
+0:73                            direct index ( temp float)
+0:73                              'f2' ( temp 2-component vector of float)
+0:73                              Constant:
+0:73                                1 (const int)
+0:74                          direct index ( temp float)
+0:74                            'f3' ( temp 3-component vector of float)
+0:74                            Constant:
+0:74                              0 (const int)
+0:75                        direct index ( temp float)
+0:75                          'f3' ( temp 3-component vector of float)
+0:75                          Constant:
+0:75                            1 (const int)
+0:76                      direct index ( temp float)
+0:76                        'f3' ( temp 3-component vector of float)
+0:76                        Constant:
+0:76                          2 (const int)
+0:77                    direct index ( temp float)
+0:77                      'f4' ( temp 4-component vector of float)
+0:77                      Constant:
+0:77                        0 (const int)
+0:78                  direct index ( temp float)
+0:78                    'f4' ( temp 4-component vector of float)
+0:78                    Constant:
+0:78                      1 (const int)
+0:79                direct index ( temp float)
+0:79                  'f4' ( temp 4-component vector of float)
+0:79                  Constant:
+0:79                    2 (const int)
+0:80              direct index ( temp float)
+0:80                'f4' ( temp 4-component vector of float)
+0:80                Constant:
+0:80                  3 (const int)
+0:60          false case
+0:80          Constant:
+0:80            1.000000
+0:80            1.000000
+0:80            1.000000
+0:80            1.000000
+0:?   Linker Objects
+0:?     'u_b' ( uniform bool)
+0:?     'u_b2' ( uniform 2-component vector of bool)
+0:?     'u_b3' ( uniform 3-component vector of bool)
+0:?     'u_b4' ( uniform 4-component vector of bool)
+0:?     'u_i' ( uniform int)
+0:?     'u_i2' ( uniform 2-component vector of int)
+0:?     'u_i3' ( uniform 3-component vector of int)
+0:?     'u_i4' ( uniform 4-component vector of int)
+0:?     'u_f' ( uniform float)
+0:?     'u_f2' ( uniform 2-component vector of float)
+0:?     'u_f3' ( uniform 3-component vector of float)
+0:?     'u_f4' ( uniform 4-component vector of float)
+0:?     'i_b' ( uniform bool)
+0:?     'i_b2' ( uniform 2-component vector of bool)
+0:?     'i_b3' ( uniform 3-component vector of bool)
+0:?     'i_b4' ( uniform 4-component vector of bool)
+0:?     'i_i' ( flat in int)
+0:?     'i_i2' ( flat in 2-component vector of int)
+0:?     'i_i3' ( flat in 3-component vector of int)
+0:?     'i_i4' ( flat in 4-component vector of int)
+0:?     'i_f' ( smooth in float)
+0:?     'i_f2' ( smooth in 2-component vector of float)
+0:?     'i_f3' ( smooth in 3-component vector of float)
+0:?     'i_f4' ( smooth in 4-component vector of float)
+

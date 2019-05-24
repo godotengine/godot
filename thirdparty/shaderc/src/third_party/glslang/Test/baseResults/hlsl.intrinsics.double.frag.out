@@ -1,0 +1,339 @@
+hlsl.intrinsics.double.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:5  Function Definition: @PixelShaderFunction(d1;d1;d1;vd2;vd3;vd4;u1;u1; ( temp float)
+0:5    Function Parameters: 
+0:5      'inDV1a' ( in double)
+0:5      'inDV1b' ( in double)
+0:5      'inDV1c' ( in double)
+0:5      'inDV2' ( in 2-component vector of double)
+0:5      'inDV3' ( in 3-component vector of double)
+0:5      'inDV4' ( in 4-component vector of double)
+0:5      'inU1a' ( in uint)
+0:5      'inU1b' ( in uint)
+0:?     Sequence
+0:6      Sequence
+0:6        move second child to first child ( temp double)
+0:6          'r00' ( temp double)
+0:6          fma ( temp double)
+0:6            'inDV1a' ( in double)
+0:6            'inDV1b' ( in double)
+0:6            'inDV1c' ( in double)
+0:7      Sequence
+0:7        move second child to first child ( temp double)
+0:7          'r01' ( temp double)
+0:7          uint64BitsToDouble ( temp double)
+0:7            Construct uvec2 ( temp 2-component vector of uint)
+0:7              'inU1a' ( in uint)
+0:7              'inU1b' ( in uint)
+0:9      Branch: Return with expression
+0:9        Constant:
+0:9          0.000000
+0:5  Function Definition: PixelShaderFunction( ( temp void)
+0:5    Function Parameters: 
+0:?     Sequence
+0:5      move second child to first child ( temp double)
+0:?         'inDV1a' ( temp double)
+0:?         'inDV1a' (layout( location=0) flat in double)
+0:5      move second child to first child ( temp double)
+0:?         'inDV1b' ( temp double)
+0:?         'inDV1b' (layout( location=1) flat in double)
+0:5      move second child to first child ( temp double)
+0:?         'inDV1c' ( temp double)
+0:?         'inDV1c' (layout( location=2) flat in double)
+0:5      move second child to first child ( temp 2-component vector of double)
+0:?         'inDV2' ( temp 2-component vector of double)
+0:?         'inDV2' (layout( location=3) flat in 2-component vector of double)
+0:5      move second child to first child ( temp 3-component vector of double)
+0:?         'inDV3' ( temp 3-component vector of double)
+0:?         'inDV3' (layout( location=4) flat in 3-component vector of double)
+0:5      move second child to first child ( temp 4-component vector of double)
+0:?         'inDV4' ( temp 4-component vector of double)
+0:?         'inDV4' (layout( location=6) flat in 4-component vector of double)
+0:5      move second child to first child ( temp uint)
+0:?         'inU1a' ( temp uint)
+0:?         'inU1a' (layout( location=8) flat in uint)
+0:5      move second child to first child ( temp uint)
+0:?         'inU1b' ( temp uint)
+0:?         'inU1b' (layout( location=9) flat in uint)
+0:5      move second child to first child ( temp float)
+0:?         '@entryPointOutput' (layout( location=0) out float)
+0:5        Function Call: @PixelShaderFunction(d1;d1;d1;vd2;vd3;vd4;u1;u1; ( temp float)
+0:?           'inDV1a' ( temp double)
+0:?           'inDV1b' ( temp double)
+0:?           'inDV1c' ( temp double)
+0:?           'inDV2' ( temp 2-component vector of double)
+0:?           'inDV3' ( temp 3-component vector of double)
+0:?           'inDV4' ( temp 4-component vector of double)
+0:?           'inU1a' ( temp uint)
+0:?           'inU1b' ( temp uint)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out float)
+0:?     'inDV1a' (layout( location=0) flat in double)
+0:?     'inDV1b' (layout( location=1) flat in double)
+0:?     'inDV1c' (layout( location=2) flat in double)
+0:?     'inDV2' (layout( location=3) flat in 2-component vector of double)
+0:?     'inDV3' (layout( location=4) flat in 3-component vector of double)
+0:?     'inDV4' (layout( location=6) flat in 4-component vector of double)
+0:?     'inU1a' (layout( location=8) flat in uint)
+0:?     'inU1b' (layout( location=9) flat in uint)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:5  Function Definition: @PixelShaderFunction(d1;d1;d1;vd2;vd3;vd4;u1;u1; ( temp float)
+0:5    Function Parameters: 
+0:5      'inDV1a' ( in double)
+0:5      'inDV1b' ( in double)
+0:5      'inDV1c' ( in double)
+0:5      'inDV2' ( in 2-component vector of double)
+0:5      'inDV3' ( in 3-component vector of double)
+0:5      'inDV4' ( in 4-component vector of double)
+0:5      'inU1a' ( in uint)
+0:5      'inU1b' ( in uint)
+0:?     Sequence
+0:6      Sequence
+0:6        move second child to first child ( temp double)
+0:6          'r00' ( temp double)
+0:6          fma ( temp double)
+0:6            'inDV1a' ( in double)
+0:6            'inDV1b' ( in double)
+0:6            'inDV1c' ( in double)
+0:7      Sequence
+0:7        move second child to first child ( temp double)
+0:7          'r01' ( temp double)
+0:7          uint64BitsToDouble ( temp double)
+0:7            Construct uvec2 ( temp 2-component vector of uint)
+0:7              'inU1a' ( in uint)
+0:7              'inU1b' ( in uint)
+0:9      Branch: Return with expression
+0:9        Constant:
+0:9          0.000000
+0:5  Function Definition: PixelShaderFunction( ( temp void)
+0:5    Function Parameters: 
+0:?     Sequence
+0:5      move second child to first child ( temp double)
+0:?         'inDV1a' ( temp double)
+0:?         'inDV1a' (layout( location=0) flat in double)
+0:5      move second child to first child ( temp double)
+0:?         'inDV1b' ( temp double)
+0:?         'inDV1b' (layout( location=1) flat in double)
+0:5      move second child to first child ( temp double)
+0:?         'inDV1c' ( temp double)
+0:?         'inDV1c' (layout( location=2) flat in double)
+0:5      move second child to first child ( temp 2-component vector of double)
+0:?         'inDV2' ( temp 2-component vector of double)
+0:?         'inDV2' (layout( location=3) flat in 2-component vector of double)
+0:5      move second child to first child ( temp 3-component vector of double)
+0:?         'inDV3' ( temp 3-component vector of double)
+0:?         'inDV3' (layout( location=4) flat in 3-component vector of double)
+0:5      move second child to first child ( temp 4-component vector of double)
+0:?         'inDV4' ( temp 4-component vector of double)
+0:?         'inDV4' (layout( location=6) flat in 4-component vector of double)
+0:5      move second child to first child ( temp uint)
+0:?         'inU1a' ( temp uint)
+0:?         'inU1a' (layout( location=8) flat in uint)
+0:5      move second child to first child ( temp uint)
+0:?         'inU1b' ( temp uint)
+0:?         'inU1b' (layout( location=9) flat in uint)
+0:5      move second child to first child ( temp float)
+0:?         '@entryPointOutput' (layout( location=0) out float)
+0:5        Function Call: @PixelShaderFunction(d1;d1;d1;vd2;vd3;vd4;u1;u1; ( temp float)
+0:?           'inDV1a' ( temp double)
+0:?           'inDV1b' ( temp double)
+0:?           'inDV1c' ( temp double)
+0:?           'inDV2' ( temp 2-component vector of double)
+0:?           'inDV3' ( temp 3-component vector of double)
+0:?           'inDV4' ( temp 4-component vector of double)
+0:?           'inU1a' ( temp uint)
+0:?           'inU1b' ( temp uint)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out float)
+0:?     'inDV1a' (layout( location=0) flat in double)
+0:?     'inDV1b' (layout( location=1) flat in double)
+0:?     'inDV1c' (layout( location=2) flat in double)
+0:?     'inDV2' (layout( location=3) flat in 2-component vector of double)
+0:?     'inDV3' (layout( location=4) flat in 3-component vector of double)
+0:?     'inDV4' (layout( location=6) flat in 4-component vector of double)
+0:?     'inU1a' (layout( location=8) flat in uint)
+0:?     'inU1b' (layout( location=9) flat in uint)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 90
+
+                              Capability Shader
+                              Capability Float64
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "PixelShaderFunction" 44 47 50 54 58 62 66 69 72
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "PixelShaderFunction"
+                              Name 26  "@PixelShaderFunction(d1;d1;d1;vd2;vd3;vd4;u1;u1;"
+                              Name 18  "inDV1a"
+                              Name 19  "inDV1b"
+                              Name 20  "inDV1c"
+                              Name 21  "inDV2"
+                              Name 22  "inDV3"
+                              Name 23  "inDV4"
+                              Name 24  "inU1a"
+                              Name 25  "inU1b"
+                              Name 28  "r00"
+                              Name 33  "r01"
+                              Name 42  "inDV1a"
+                              Name 44  "inDV1a"
+                              Name 46  "inDV1b"
+                              Name 47  "inDV1b"
+                              Name 49  "inDV1c"
+                              Name 50  "inDV1c"
+                              Name 52  "inDV2"
+                              Name 54  "inDV2"
+                              Name 56  "inDV3"
+                              Name 58  "inDV3"
+                              Name 60  "inDV4"
+                              Name 62  "inDV4"
+                              Name 64  "inU1a"
+                              Name 66  "inU1a"
+                              Name 68  "inU1b"
+                              Name 69  "inU1b"
+                              Name 72  "@entryPointOutput"
+                              Name 73  "param"
+                              Name 75  "param"
+                              Name 77  "param"
+                              Name 79  "param"
+                              Name 81  "param"
+                              Name 83  "param"
+                              Name 85  "param"
+                              Name 87  "param"
+                              Decorate 44(inDV1a) Flat
+                              Decorate 44(inDV1a) Location 0
+                              Decorate 47(inDV1b) Flat
+                              Decorate 47(inDV1b) Location 1
+                              Decorate 50(inDV1c) Flat
+                              Decorate 50(inDV1c) Location 2
+                              Decorate 54(inDV2) Flat
+                              Decorate 54(inDV2) Location 3
+                              Decorate 58(inDV3) Flat
+                              Decorate 58(inDV3) Location 4
+                              Decorate 62(inDV4) Flat
+                              Decorate 62(inDV4) Location 6
+                              Decorate 66(inU1a) Flat
+                              Decorate 66(inU1a) Location 8
+                              Decorate 69(inU1b) Flat
+                              Decorate 69(inU1b) Location 9
+                              Decorate 72(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 64
+               7:             TypePointer Function 6(float64_t)
+               8:             TypeVector 6(float64_t) 2
+               9:             TypePointer Function 8(f64vec2)
+              10:             TypeVector 6(float64_t) 3
+              11:             TypePointer Function 10(f64vec3)
+              12:             TypeVector 6(float64_t) 4
+              13:             TypePointer Function 12(f64vec4)
+              14:             TypeInt 32 0
+              15:             TypePointer Function 14(int)
+              16:             TypeFloat 32
+              17:             TypeFunction 16(float) 7(ptr) 7(ptr) 7(ptr) 9(ptr) 11(ptr) 13(ptr) 15(ptr) 15(ptr)
+              36:             TypeVector 14(int) 2
+              39:   16(float) Constant 0
+              43:             TypePointer Input 6(float64_t)
+      44(inDV1a):     43(ptr) Variable Input
+      47(inDV1b):     43(ptr) Variable Input
+      50(inDV1c):     43(ptr) Variable Input
+              53:             TypePointer Input 8(f64vec2)
+       54(inDV2):     53(ptr) Variable Input
+              57:             TypePointer Input 10(f64vec3)
+       58(inDV3):     57(ptr) Variable Input
+              61:             TypePointer Input 12(f64vec4)
+       62(inDV4):     61(ptr) Variable Input
+              65:             TypePointer Input 14(int)
+       66(inU1a):     65(ptr) Variable Input
+       69(inU1b):     65(ptr) Variable Input
+              71:             TypePointer Output 16(float)
+72(@entryPointOutput):     71(ptr) Variable Output
+4(PixelShaderFunction):           2 Function None 3
+               5:             Label
+      42(inDV1a):      7(ptr) Variable Function
+      46(inDV1b):      7(ptr) Variable Function
+      49(inDV1c):      7(ptr) Variable Function
+       52(inDV2):      9(ptr) Variable Function
+       56(inDV3):     11(ptr) Variable Function
+       60(inDV4):     13(ptr) Variable Function
+       64(inU1a):     15(ptr) Variable Function
+       68(inU1b):     15(ptr) Variable Function
+       73(param):      7(ptr) Variable Function
+       75(param):      7(ptr) Variable Function
+       77(param):      7(ptr) Variable Function
+       79(param):      9(ptr) Variable Function
+       81(param):     11(ptr) Variable Function
+       83(param):     13(ptr) Variable Function
+       85(param):     15(ptr) Variable Function
+       87(param):     15(ptr) Variable Function
+              45:6(float64_t) Load 44(inDV1a)
+                              Store 42(inDV1a) 45
+              48:6(float64_t) Load 47(inDV1b)
+                              Store 46(inDV1b) 48
+              51:6(float64_t) Load 50(inDV1c)
+                              Store 49(inDV1c) 51
+              55:  8(f64vec2) Load 54(inDV2)
+                              Store 52(inDV2) 55
+              59: 10(f64vec3) Load 58(inDV3)
+                              Store 56(inDV3) 59
+              63: 12(f64vec4) Load 62(inDV4)
+                              Store 60(inDV4) 63
+              67:     14(int) Load 66(inU1a)
+                              Store 64(inU1a) 67
+              70:     14(int) Load 69(inU1b)
+                              Store 68(inU1b) 70
+              74:6(float64_t) Load 42(inDV1a)
+                              Store 73(param) 74
+              76:6(float64_t) Load 46(inDV1b)
+                              Store 75(param) 76
+              78:6(float64_t) Load 49(inDV1c)
+                              Store 77(param) 78
+              80:  8(f64vec2) Load 52(inDV2)
+                              Store 79(param) 80
+              82: 10(f64vec3) Load 56(inDV3)
+                              Store 81(param) 82
+              84: 12(f64vec4) Load 60(inDV4)
+                              Store 83(param) 84
+              86:     14(int) Load 64(inU1a)
+                              Store 85(param) 86
+              88:     14(int) Load 68(inU1b)
+                              Store 87(param) 88
+              89:   16(float) FunctionCall 26(@PixelShaderFunction(d1;d1;d1;vd2;vd3;vd4;u1;u1;) 73(param) 75(param) 77(param) 79(param) 81(param) 83(param) 85(param) 87(param)
+                              Store 72(@entryPointOutput) 89
+                              Return
+                              FunctionEnd
+26(@PixelShaderFunction(d1;d1;d1;vd2;vd3;vd4;u1;u1;):   16(float) Function None 17
+      18(inDV1a):      7(ptr) FunctionParameter
+      19(inDV1b):      7(ptr) FunctionParameter
+      20(inDV1c):      7(ptr) FunctionParameter
+       21(inDV2):      9(ptr) FunctionParameter
+       22(inDV3):     11(ptr) FunctionParameter
+       23(inDV4):     13(ptr) FunctionParameter
+       24(inU1a):     15(ptr) FunctionParameter
+       25(inU1b):     15(ptr) FunctionParameter
+              27:             Label
+         28(r00):      7(ptr) Variable Function
+         33(r01):      7(ptr) Variable Function
+              29:6(float64_t) Load 18(inDV1a)
+              30:6(float64_t) Load 19(inDV1b)
+              31:6(float64_t) Load 20(inDV1c)
+              32:6(float64_t) ExtInst 1(GLSL.std.450) 50(Fma) 29 30 31
+                              Store 28(r00) 32
+              34:     14(int) Load 24(inU1a)
+              35:     14(int) Load 25(inU1b)
+              37:   36(ivec2) CompositeConstruct 34 35
+              38:6(float64_t) Bitcast 37
+                              Store 33(r01) 38
+                              ReturnValue 39
+                              FunctionEnd

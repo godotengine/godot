@@ -1,0 +1,6 @@
+spv.subgroupBallotNeg.comp
+ERROR: 0:32: 'id' : argument must be compile-time constant 
+ERROR: 1 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

@@ -1,0 +1,158 @@
+150.frag
+ERROR: 0:4: 'redeclaration' : cannot redeclare with different qualification: gl_FragCoord
+ERROR: 0:5: 'redeclaration' : cannot redeclare with different qualification: gl_FragCoord
+ERROR: 0:6: 'layout qualifier' : can only apply origin_upper_left and pixel_center_origin to gl_FragCoord 
+ERROR: 0:14: 'gl_FragCoord' : cannot redeclare after use 
+ERROR: 4 compilation errors.  No code generated.
+
+
+Shader version: 150
+gl_FragCoord pixel center is integer
+gl_FragCoord origin is upper left
+ERROR: node is still EOpNull!
+0:9  Function Definition: main( ( global void)
+0:9    Function Parameters: 
+0:11    Sequence
+0:11      Sequence
+0:11        move second child to first child ( temp 4-component vector of float)
+0:11          'c' ( temp 4-component vector of float)
+0:11          'gl_FragCoord' ( gl_FragCoord 4-component vector of float FragCoord)
+0:18  Sequence
+0:18    move second child to first child ( temp float)
+0:18      'patch' ( global float)
+0:18      Constant:
+0:18        3.100000
+0:31  Function Definition: barWxyz( ( global void)
+0:31    Function Parameters: 
+0:33    Sequence
+0:33      Sequence
+0:33        move second child to first child ( temp 2-component vector of int)
+0:33          't11' ( temp 2-component vector of int)
+0:33          textureSize ( global 2-component vector of int)
+0:33            'sms' ( uniform sampler2DMS)
+0:34      Sequence
+0:34        move second child to first child ( temp 2-component vector of int)
+0:34          't12' ( temp 2-component vector of int)
+0:34          textureSize ( global 2-component vector of int)
+0:34            'isms' ( uniform isampler2DMS)
+0:35      Sequence
+0:35        move second child to first child ( temp 2-component vector of int)
+0:35          't13' ( temp 2-component vector of int)
+0:35          textureSize ( global 2-component vector of int)
+0:35            'usms' ( uniform usampler2DMS)
+0:36      Sequence
+0:36        move second child to first child ( temp 3-component vector of int)
+0:36          't21' ( temp 3-component vector of int)
+0:36          textureSize ( global 3-component vector of int)
+0:36            'smsa' ( uniform sampler2DMSArray)
+0:37      Sequence
+0:37        move second child to first child ( temp 3-component vector of int)
+0:37          't22' ( temp 3-component vector of int)
+0:37          textureSize ( global 3-component vector of int)
+0:37            'ismsa' ( uniform isampler2DMSArray)
+0:38      Sequence
+0:38        move second child to first child ( temp 3-component vector of int)
+0:38          't23' ( temp 3-component vector of int)
+0:38          textureSize ( global 3-component vector of int)
+0:38            'usmsa' ( uniform usampler2DMSArray)
+0:39      Sequence
+0:39        move second child to first child ( temp 4-component vector of float)
+0:39          't31' ( temp 4-component vector of float)
+0:39          textureFetch ( global 4-component vector of float)
+0:39            'sms' ( uniform sampler2DMS)
+0:39            'p2' ( flat in 2-component vector of int)
+0:39            'samp' ( flat in int)
+0:40      Sequence
+0:40        move second child to first child ( temp 4-component vector of int)
+0:40          't32' ( temp 4-component vector of int)
+0:40          textureFetch ( global 4-component vector of int)
+0:40            'isms' ( uniform isampler2DMS)
+0:40            'p2' ( flat in 2-component vector of int)
+0:40            'samp' ( flat in int)
+0:41      Sequence
+0:41        move second child to first child ( temp 4-component vector of uint)
+0:41          't33' ( temp 4-component vector of uint)
+0:41          textureFetch ( global 4-component vector of uint)
+0:41            'usms' ( uniform usampler2DMS)
+0:41            'p2' ( flat in 2-component vector of int)
+0:41            Constant:
+0:41              3 (const int)
+0:42      Sequence
+0:42        move second child to first child ( temp 4-component vector of float)
+0:42          't41' ( temp 4-component vector of float)
+0:42          textureFetch ( global 4-component vector of float)
+0:42            'smsa' ( uniform sampler2DMSArray)
+0:42            'p3' ( flat in 3-component vector of int)
+0:42            'samp' ( flat in int)
+0:43      Sequence
+0:43        move second child to first child ( temp 4-component vector of int)
+0:43          't42' ( temp 4-component vector of int)
+0:43          textureFetch ( global 4-component vector of int)
+0:43            'ismsa' ( uniform isampler2DMSArray)
+0:43            Constant:
+0:43              2 (const int)
+0:43              2 (const int)
+0:43              2 (const int)
+0:43            'samp' ( flat in int)
+0:44      Sequence
+0:44        move second child to first child ( temp 4-component vector of uint)
+0:44          't43' ( temp 4-component vector of uint)
+0:44          textureFetch ( global 4-component vector of uint)
+0:44            'usmsa' ( uniform usampler2DMSArray)
+0:44            'p3' ( flat in 3-component vector of int)
+0:44            'samp' ( flat in int)
+0:47  Function Definition: primitiveID( ( global int)
+0:47    Function Parameters: 
+0:49    Sequence
+0:49      Branch: Return with expression
+0:49        'gl_PrimitiveID' ( flat in int PrimitiveID)
+0:?   Linker Objects
+0:?     'gl_FragCoord' ( gl_FragCoord 4-component vector of float FragCoord)
+0:?     'foo' ( smooth in 4-component vector of float)
+0:?     's' ( smooth in structure{ global float f})
+0:?     'patch' ( global float)
+0:?     'sms' ( uniform sampler2DMS)
+0:?     'isms' ( uniform isampler2DMS)
+0:?     'usms' ( uniform usampler2DMS)
+0:?     'smsa' ( uniform sampler2DMSArray)
+0:?     'ismsa' ( uniform isampler2DMSArray)
+0:?     'usmsa' ( uniform usampler2DMSArray)
+0:?     'p2' ( flat in 2-component vector of int)
+0:?     'p3' ( flat in 3-component vector of int)
+0:?     'samp' ( flat in int)
+
+
+Linked fragment stage:
+
+
+Shader version: 150
+gl_FragCoord pixel center is integer
+gl_FragCoord origin is upper left
+ERROR: node is still EOpNull!
+0:9  Function Definition: main( ( global void)
+0:9    Function Parameters: 
+0:11    Sequence
+0:11      Sequence
+0:11        move second child to first child ( temp 4-component vector of float)
+0:11          'c' ( temp 4-component vector of float)
+0:11          'gl_FragCoord' ( gl_FragCoord 4-component vector of float FragCoord)
+0:18  Sequence
+0:18    move second child to first child ( temp float)
+0:18      'patch' ( global float)
+0:18      Constant:
+0:18        3.100000
+0:?   Linker Objects
+0:?     'gl_FragCoord' ( gl_FragCoord 4-component vector of float FragCoord)
+0:?     'foo' ( smooth in 4-component vector of float)
+0:?     's' ( smooth in structure{ global float f})
+0:?     'patch' ( global float)
+0:?     'sms' ( uniform sampler2DMS)
+0:?     'isms' ( uniform isampler2DMS)
+0:?     'usms' ( uniform usampler2DMS)
+0:?     'smsa' ( uniform sampler2DMSArray)
+0:?     'ismsa' ( uniform isampler2DMSArray)
+0:?     'usmsa' ( uniform usampler2DMSArray)
+0:?     'p2' ( flat in 2-component vector of int)
+0:?     'p3' ( flat in 3-component vector of int)
+0:?     'samp' ( flat in int)
+

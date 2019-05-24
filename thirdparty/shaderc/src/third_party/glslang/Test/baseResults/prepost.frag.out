@@ -1,0 +1,271 @@
+prepost.frag
+Shader version: 140
+0:? Sequence
+0:3  Function Definition: main( ( global void)
+0:3    Function Parameters: 
+0:?     Sequence
+0:10      Sequence
+0:10        move second child to first child ( temp int)
+0:10          'index' ( temp int)
+0:10          Constant:
+0:10            5 (const int)
+0:12      move second child to first child ( temp float)
+0:12        direct index ( temp float)
+0:12          y: direct index for structure ( temp 5-element array of float)
+0:12            'str' ( temp structure{ temp 5-element array of float y})
+0:12            Constant:
+0:12              0 (const int)
+0:12          Constant:
+0:12            4 (const int)
+0:12        Constant:
+0:12          2.000000
+0:13      move second child to first child ( temp float)
+0:13        't' ( temp float)
+0:13        Pre-Increment ( temp float)
+0:13          indirect index ( temp float)
+0:13            y: direct index for structure ( temp 5-element array of float)
+0:13              'str' ( temp structure{ temp 5-element array of float y})
+0:13              Constant:
+0:13                0 (const int)
+0:13            Pre-Decrement ( temp int)
+0:13              'index' ( temp int)
+0:14      add second child into first child ( temp float)
+0:14        direct index ( temp float)
+0:14          y: direct index for structure ( temp 5-element array of float)
+0:14            'str' ( temp structure{ temp 5-element array of float y})
+0:14            Constant:
+0:14              0 (const int)
+0:14          Constant:
+0:14            4 (const int)
+0:14        't' ( temp float)
+0:15      move second child to first child ( temp float)
+0:15        't' ( temp float)
+0:15        Post-Decrement ( temp float)
+0:15          direct index ( temp float)
+0:15            y: direct index for structure ( temp 5-element array of float)
+0:15              'str' ( temp structure{ temp 5-element array of float y})
+0:15              Constant:
+0:15                0 (const int)
+0:15            Constant:
+0:15              4 (const int)
+0:16      add second child into first child ( temp float)
+0:16        indirect index ( temp float)
+0:16          y: direct index for structure ( temp 5-element array of float)
+0:16            'str' ( temp structure{ temp 5-element array of float y})
+0:16            Constant:
+0:16              0 (const int)
+0:16          Post-Increment ( temp int)
+0:16            'index' ( temp int)
+0:16        't' ( temp float)
+0:17      Pre-Decrement ( temp float)
+0:17        indirect index ( temp float)
+0:17          y: direct index for structure ( temp 5-element array of float)
+0:17            'str' ( temp structure{ temp 5-element array of float y})
+0:17            Constant:
+0:17              0 (const int)
+0:17          Pre-Decrement ( temp int)
+0:17            'index' ( temp int)
+0:19      Sequence
+0:19        move second child to first child ( temp float)
+0:19          'x' ( temp float)
+0:19          direct index ( temp float)
+0:19            y: direct index for structure ( temp 5-element array of float)
+0:19              'str' ( temp structure{ temp 5-element array of float y})
+0:19              Constant:
+0:19                0 (const int)
+0:19            Constant:
+0:19              4 (const int)
+0:20      Pre-Increment ( temp float)
+0:20        'x' ( temp float)
+0:21      Pre-Decrement ( temp float)
+0:21        'x' ( temp float)
+0:22      Post-Increment ( temp float)
+0:22        'x' ( temp float)
+0:23      Post-Decrement ( temp float)
+0:23        'x' ( temp float)
+0:27      Sequence
+0:27        move second child to first child ( temp float)
+0:27          'y' ( temp float)
+0:27          component-wise multiply ( temp float)
+0:27            'x' ( temp float)
+0:27            Pre-Increment ( temp float)
+0:27              'x' ( temp float)
+0:28      Sequence
+0:28        move second child to first child ( temp float)
+0:28          'z' ( temp float)
+0:28          component-wise multiply ( temp float)
+0:28            'y' ( temp float)
+0:28            Post-Decrement ( temp float)
+0:28              'x' ( temp float)
+0:33      Sequence
+0:33        move second child to first child ( temp 4-component vector of float)
+0:33          'v' ( temp 4-component vector of float)
+0:33          Constant:
+0:33            1.000000
+0:33            2.000000
+0:33            3.000000
+0:33            4.000000
+0:34      move second child to first child ( temp float)
+0:34        direct index ( temp float)
+0:34          'v' ( temp 4-component vector of float)
+0:34          Constant:
+0:34            1 (const int)
+0:34        Post-Decrement ( temp float)
+0:34          direct index ( temp float)
+0:34            'v' ( temp 4-component vector of float)
+0:34            Constant:
+0:34              2 (const int)
+0:35      move second child to first child ( temp float)
+0:35        direct index ( temp float)
+0:35          'v' ( temp 4-component vector of float)
+0:35          Constant:
+0:35            0 (const int)
+0:35        Pre-Decrement ( temp float)
+0:35          direct index ( temp float)
+0:35            'v' ( temp 4-component vector of float)
+0:35            Constant:
+0:35              3 (const int)
+0:37      move second child to first child ( temp 4-component vector of float)
+0:37        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:37        vector-scale ( temp 4-component vector of float)
+0:37          'z' ( temp float)
+0:37          'v' ( temp 4-component vector of float)
+0:?   Linker Objects
+
+
+Linked fragment stage:
+
+
+Shader version: 140
+0:? Sequence
+0:3  Function Definition: main( ( global void)
+0:3    Function Parameters: 
+0:?     Sequence
+0:10      Sequence
+0:10        move second child to first child ( temp int)
+0:10          'index' ( temp int)
+0:10          Constant:
+0:10            5 (const int)
+0:12      move second child to first child ( temp float)
+0:12        direct index ( temp float)
+0:12          y: direct index for structure ( temp 5-element array of float)
+0:12            'str' ( temp structure{ temp 5-element array of float y})
+0:12            Constant:
+0:12              0 (const int)
+0:12          Constant:
+0:12            4 (const int)
+0:12        Constant:
+0:12          2.000000
+0:13      move second child to first child ( temp float)
+0:13        't' ( temp float)
+0:13        Pre-Increment ( temp float)
+0:13          indirect index ( temp float)
+0:13            y: direct index for structure ( temp 5-element array of float)
+0:13              'str' ( temp structure{ temp 5-element array of float y})
+0:13              Constant:
+0:13                0 (const int)
+0:13            Pre-Decrement ( temp int)
+0:13              'index' ( temp int)
+0:14      add second child into first child ( temp float)
+0:14        direct index ( temp float)
+0:14          y: direct index for structure ( temp 5-element array of float)
+0:14            'str' ( temp structure{ temp 5-element array of float y})
+0:14            Constant:
+0:14              0 (const int)
+0:14          Constant:
+0:14            4 (const int)
+0:14        't' ( temp float)
+0:15      move second child to first child ( temp float)
+0:15        't' ( temp float)
+0:15        Post-Decrement ( temp float)
+0:15          direct index ( temp float)
+0:15            y: direct index for structure ( temp 5-element array of float)
+0:15              'str' ( temp structure{ temp 5-element array of float y})
+0:15              Constant:
+0:15                0 (const int)
+0:15            Constant:
+0:15              4 (const int)
+0:16      add second child into first child ( temp float)
+0:16        indirect index ( temp float)
+0:16          y: direct index for structure ( temp 5-element array of float)
+0:16            'str' ( temp structure{ temp 5-element array of float y})
+0:16            Constant:
+0:16              0 (const int)
+0:16          Post-Increment ( temp int)
+0:16            'index' ( temp int)
+0:16        't' ( temp float)
+0:17      Pre-Decrement ( temp float)
+0:17        indirect index ( temp float)
+0:17          y: direct index for structure ( temp 5-element array of float)
+0:17            'str' ( temp structure{ temp 5-element array of float y})
+0:17            Constant:
+0:17              0 (const int)
+0:17          Pre-Decrement ( temp int)
+0:17            'index' ( temp int)
+0:19      Sequence
+0:19        move second child to first child ( temp float)
+0:19          'x' ( temp float)
+0:19          direct index ( temp float)
+0:19            y: direct index for structure ( temp 5-element array of float)
+0:19              'str' ( temp structure{ temp 5-element array of float y})
+0:19              Constant:
+0:19                0 (const int)
+0:19            Constant:
+0:19              4 (const int)
+0:20      Pre-Increment ( temp float)
+0:20        'x' ( temp float)
+0:21      Pre-Decrement ( temp float)
+0:21        'x' ( temp float)
+0:22      Post-Increment ( temp float)
+0:22        'x' ( temp float)
+0:23      Post-Decrement ( temp float)
+0:23        'x' ( temp float)
+0:27      Sequence
+0:27        move second child to first child ( temp float)
+0:27          'y' ( temp float)
+0:27          component-wise multiply ( temp float)
+0:27            'x' ( temp float)
+0:27            Pre-Increment ( temp float)
+0:27              'x' ( temp float)
+0:28      Sequence
+0:28        move second child to first child ( temp float)
+0:28          'z' ( temp float)
+0:28          component-wise multiply ( temp float)
+0:28            'y' ( temp float)
+0:28            Post-Decrement ( temp float)
+0:28              'x' ( temp float)
+0:33      Sequence
+0:33        move second child to first child ( temp 4-component vector of float)
+0:33          'v' ( temp 4-component vector of float)
+0:33          Constant:
+0:33            1.000000
+0:33            2.000000
+0:33            3.000000
+0:33            4.000000
+0:34      move second child to first child ( temp float)
+0:34        direct index ( temp float)
+0:34          'v' ( temp 4-component vector of float)
+0:34          Constant:
+0:34            1 (const int)
+0:34        Post-Decrement ( temp float)
+0:34          direct index ( temp float)
+0:34            'v' ( temp 4-component vector of float)
+0:34            Constant:
+0:34              2 (const int)
+0:35      move second child to first child ( temp float)
+0:35        direct index ( temp float)
+0:35          'v' ( temp 4-component vector of float)
+0:35          Constant:
+0:35            0 (const int)
+0:35        Pre-Decrement ( temp float)
+0:35          direct index ( temp float)
+0:35            'v' ( temp 4-component vector of float)
+0:35            Constant:
+0:35              3 (const int)
+0:37      move second child to first child ( temp 4-component vector of float)
+0:37        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:37        vector-scale ( temp 4-component vector of float)
+0:37          'z' ( temp float)
+0:37          'v' ( temp 4-component vector of float)
+0:?   Linker Objects
+

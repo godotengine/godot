@@ -1,0 +1,188 @@
+hlsl.hull.5.tesc
+ERROR: 0:0: '' : unimplemented: PCF input patch without entry point input patch parameter 
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 500
+vertices = 3
+vertex spacing = fractional_odd_spacing
+triangle order = cw
+ERROR: node is still EOpNull!
+0:25  Function Definition: HS_ConstFunc(struct-HS_Input-vf4-vf41[3]; ( temp structure{ temp 3-element array of float fTessFactor,  temp float fInsideTessFactor})
+0:25    Function Parameters: 
+0:25      'I' ( in 3-element array of structure{ temp 4-component vector of float m_Position,  temp 4-component vector of float m_Normal})
+0:?     Sequence
+0:26      Sequence
+0:26        move second child to first child ( temp structure{ temp 3-element array of float fTessFactor,  temp float fInsideTessFactor})
+0:26          'O' ( temp structure{ temp 3-element array of float fTessFactor,  temp float fInsideTessFactor})
+0:26          Constant:
+0:26            0.000000
+0:26            0.000000
+0:26            0.000000
+0:26            0.000000
+0:28      move second child to first child ( temp float)
+0:28        fInsideTessFactor: direct index for structure ( temp float)
+0:28          'O' ( temp structure{ temp 3-element array of float fTessFactor,  temp float fInsideTessFactor})
+0:28          Constant:
+0:28            1 (const int)
+0:28        add ( temp float)
+0:28          direct index ( temp float)
+0:28            m_Position: direct index for structure ( temp 4-component vector of float)
+0:28              direct index ( temp structure{ temp 4-component vector of float m_Position,  temp 4-component vector of float m_Normal})
+0:28                'I' ( in 3-element array of structure{ temp 4-component vector of float m_Position,  temp 4-component vector of float m_Normal})
+0:28                Constant:
+0:28                  0 (const int)
+0:28              Constant:
+0:28                0 (const int)
+0:28            Constant:
+0:28              3 (const int)
+0:28          direct index ( temp float)
+0:28            m_Normal: direct index for structure ( temp 4-component vector of float)
+0:28              direct index ( temp structure{ temp 4-component vector of float m_Position,  temp 4-component vector of float m_Normal})
+0:28                'I' ( in 3-element array of structure{ temp 4-component vector of float m_Position,  temp 4-component vector of float m_Normal})
+0:28                Constant:
+0:28                  0 (const int)
+0:28              Constant:
+0:28                1 (const int)
+0:28            Constant:
+0:28              3 (const int)
+0:30      Branch: Return with expression
+0:30        'O' ( temp structure{ temp 3-element array of float fTessFactor,  temp float fInsideTessFactor})
+0:39  Function Definition: @main(u1; ( temp structure{ temp 4-component vector of float m_Position})
+0:39    Function Parameters: 
+0:39      'cpid' ( in uint)
+0:?     Sequence
+0:40      Sequence
+0:40        move second child to first child ( temp structure{ temp 4-component vector of float m_Position})
+0:40          'output' ( temp structure{ temp 4-component vector of float m_Position})
+0:40          Constant:
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:41      move second child to first child ( temp 4-component vector of float)
+0:41        m_Position: direct index for structure ( temp 4-component vector of float)
+0:41          'output' ( temp structure{ temp 4-component vector of float m_Position})
+0:41          Constant:
+0:41            0 (const int)
+0:41        Constant:
+0:41          0.000000
+0:41          0.000000
+0:41          0.000000
+0:41          0.000000
+0:42      Branch: Return with expression
+0:42        'output' ( temp structure{ temp 4-component vector of float m_Position})
+0:39  Function Definition: main( ( temp void)
+0:39    Function Parameters: 
+0:?     Sequence
+0:39      move second child to first child ( temp uint)
+0:?         'cpid' ( temp uint)
+0:?         'cpid' ( in uint InvocationID)
+0:39      Sequence
+0:39        move second child to first child ( temp 4-component vector of float)
+0:39          indirect index ( out 4-component vector of float Position)
+0:?             '@entryPointOutput.m_Position' ( out 3-element array of 4-component vector of float Position)
+0:?             'cpid' ( in uint InvocationID)
+0:39          m_Position: direct index for structure ( temp 4-component vector of float)
+0:39            Function Call: @main(u1; ( temp structure{ temp 4-component vector of float m_Position})
+0:?               'cpid' ( temp uint)
+0:39            Constant:
+0:39              0 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.m_Position' ( out 3-element array of 4-component vector of float Position)
+0:?     'cpid' ( in uint InvocationID)
+
+
+Linked tessellation control stage:
+
+
+Shader version: 500
+vertices = 3
+vertex spacing = fractional_odd_spacing
+triangle order = cw
+ERROR: node is still EOpNull!
+0:25  Function Definition: HS_ConstFunc(struct-HS_Input-vf4-vf41[3]; ( temp structure{ temp 3-element array of float fTessFactor,  temp float fInsideTessFactor})
+0:25    Function Parameters: 
+0:25      'I' ( in 3-element array of structure{ temp 4-component vector of float m_Position,  temp 4-component vector of float m_Normal})
+0:?     Sequence
+0:26      Sequence
+0:26        move second child to first child ( temp structure{ temp 3-element array of float fTessFactor,  temp float fInsideTessFactor})
+0:26          'O' ( temp structure{ temp 3-element array of float fTessFactor,  temp float fInsideTessFactor})
+0:26          Constant:
+0:26            0.000000
+0:26            0.000000
+0:26            0.000000
+0:26            0.000000
+0:28      move second child to first child ( temp float)
+0:28        fInsideTessFactor: direct index for structure ( temp float)
+0:28          'O' ( temp structure{ temp 3-element array of float fTessFactor,  temp float fInsideTessFactor})
+0:28          Constant:
+0:28            1 (const int)
+0:28        add ( temp float)
+0:28          direct index ( temp float)
+0:28            m_Position: direct index for structure ( temp 4-component vector of float)
+0:28              direct index ( temp structure{ temp 4-component vector of float m_Position,  temp 4-component vector of float m_Normal})
+0:28                'I' ( in 3-element array of structure{ temp 4-component vector of float m_Position,  temp 4-component vector of float m_Normal})
+0:28                Constant:
+0:28                  0 (const int)
+0:28              Constant:
+0:28                0 (const int)
+0:28            Constant:
+0:28              3 (const int)
+0:28          direct index ( temp float)
+0:28            m_Normal: direct index for structure ( temp 4-component vector of float)
+0:28              direct index ( temp structure{ temp 4-component vector of float m_Position,  temp 4-component vector of float m_Normal})
+0:28                'I' ( in 3-element array of structure{ temp 4-component vector of float m_Position,  temp 4-component vector of float m_Normal})
+0:28                Constant:
+0:28                  0 (const int)
+0:28              Constant:
+0:28                1 (const int)
+0:28            Constant:
+0:28              3 (const int)
+0:30      Branch: Return with expression
+0:30        'O' ( temp structure{ temp 3-element array of float fTessFactor,  temp float fInsideTessFactor})
+0:39  Function Definition: @main(u1; ( temp structure{ temp 4-component vector of float m_Position})
+0:39    Function Parameters: 
+0:39      'cpid' ( in uint)
+0:?     Sequence
+0:40      Sequence
+0:40        move second child to first child ( temp structure{ temp 4-component vector of float m_Position})
+0:40          'output' ( temp structure{ temp 4-component vector of float m_Position})
+0:40          Constant:
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:40            0.000000
+0:41      move second child to first child ( temp 4-component vector of float)
+0:41        m_Position: direct index for structure ( temp 4-component vector of float)
+0:41          'output' ( temp structure{ temp 4-component vector of float m_Position})
+0:41          Constant:
+0:41            0 (const int)
+0:41        Constant:
+0:41          0.000000
+0:41          0.000000
+0:41          0.000000
+0:41          0.000000
+0:42      Branch: Return with expression
+0:42        'output' ( temp structure{ temp 4-component vector of float m_Position})
+0:39  Function Definition: main( ( temp void)
+0:39    Function Parameters: 
+0:?     Sequence
+0:39      move second child to first child ( temp uint)
+0:?         'cpid' ( temp uint)
+0:?         'cpid' ( in uint InvocationID)
+0:39      Sequence
+0:39        move second child to first child ( temp 4-component vector of float)
+0:39          indirect index ( out 4-component vector of float Position)
+0:?             '@entryPointOutput.m_Position' ( out 3-element array of 4-component vector of float Position)
+0:?             'cpid' ( in uint InvocationID)
+0:39          m_Position: direct index for structure ( temp 4-component vector of float)
+0:39            Function Call: @main(u1; ( temp structure{ temp 4-component vector of float m_Position})
+0:?               'cpid' ( temp uint)
+0:39            Constant:
+0:39              0 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.m_Position' ( out 3-element array of 4-component vector of float Position)
+0:?     'cpid' ( in uint InvocationID)
+
+SPIR-V is not generated for failed compile or link

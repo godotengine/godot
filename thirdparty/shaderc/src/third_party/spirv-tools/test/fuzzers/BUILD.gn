@@ -1,0 +1,137 @@
+# Copyright 2018 Google Inc. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//testing/libfuzzer/fuzzer_test.gni")
+import("//testing/test.gni")
+
+config("fuzzer_config") {
+  configs = [ "../..:spvtools_internal_config" ]
+}
+
+group("fuzzers") {
+  testonly = true
+  deps = []
+
+  if (!build_with_chromium || use_fuzzing_engine) {
+    deps += [ ":fuzzers_bin" ]
+  }
+}
+
+if (!build_with_chromium || use_fuzzing_engine) {
+  group("fuzzers_bin") {
+    testonly = true
+
+    deps = [
+      ":spvtools_binary_parser_fuzzer",
+      ":spvtools_opt_legalization_fuzzer",
+      ":spvtools_opt_performance_fuzzer",
+      ":spvtools_opt_size_fuzzer",
+      ":spvtools_val_fuzzer",
+    ]
+  }
+}
+
+template("spvtools_fuzzer") {
+  source_set(target_name) {
+    testonly = true
+    sources = invoker.sources
+    deps = [
+      "../..:spvtools",
+      "../..:spvtools_opt",
+      "../..:spvtools_val",
+    ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
+      ":fuzzer_config",
+    ]
+  }
+}
+
+spvtools_fuzzer("spvtools_binary_parser_fuzzer_src") {
+  sources = [
+    "spvtools_binary_parser_fuzzer.cpp",
+  ]
+}
+
+spvtools_fuzzer("spvtools_opt_performance_fuzzer_src") {
+  sources = [
+    "spvtools_opt_performance_fuzzer.cpp",
+  ]
+}
+
+spvtools_fuzzer("spvtools_opt_legalization_fuzzer_src") {
+  sources = [
+    "spvtools_opt_legalization_fuzzer.cpp",
+  ]
+}
+
+spvtools_fuzzer("spvtools_opt_size_fuzzer_src") {
+  sources = [
+    "spvtools_opt_size_fuzzer.cpp",
+  ]
+}
+
+spvtools_fuzzer("spvtools_val_fuzzer_src") {
+  sources = [
+    "spvtools_val_fuzzer.cpp",
+  ]
+}
+
+if (!build_with_chromium || use_fuzzing_engine) {
+  fuzzer_test("spvtools_binary_parser_fuzzer") {
+    sources = []
+    deps = [
+      ":spvtools_binary_parser_fuzzer_src",
+    ]
+    # Intentionally doesn't use the seed corpus, because it consumes
+    #  part of the input as not part of the file.
+  }
+
+  fuzzer_test("spvtools_opt_performance_fuzzer") {
+    sources = []
+    deps = [
+      ":spvtools_opt_performance_fuzzer_src",
+    ]
+    seed_corpus = "corpora/spv"
+  }
+
+  fuzzer_test("spvtools_opt_legalization_fuzzer") {
+    sources = []
+    deps = [
+      ":spvtools_opt_legalization_fuzzer_src",
+    ]
+    seed_corpus = "corpora/spv"
+  }
+
+  fuzzer_test("spvtools_opt_size_fuzzer") {
+    sources = []
+    deps = [
+      ":spvtools_opt_size_fuzzer_src",
+    ]
+    seed_corpus = "corpora/spv"
+  }
+
+  fuzzer_test("spvtools_val_fuzzer") {
+    sources = []
+    deps = [
+      ":spvtools_val_fuzzer_src",
+    ]
+    seed_corpus = "corpora/spv"
+  }
+}

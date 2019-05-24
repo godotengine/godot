@@ -1,0 +1,218 @@
+hlsl.flattenSubset.frag
+WARNING: AST will form illegal SPIR-V; need to transform to legalize
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:30  Function Definition: @main(vf4; ( temp 4-component vector of float)
+0:30    Function Parameters: 
+0:30      'vpos' ( in 4-component vector of float)
+0:?     Sequence
+0:33      move second child to first child ( temp sampler)
+0:33        ss: direct index for structure ( temp sampler)
+0:33          s0: direct index for structure ( temp structure{ temp int x,  temp int y,  temp sampler ss})
+0:33            's1' ( temp structure{ temp float b,  temp sampler samplerState,  temp structure{ temp int x,  temp int y,  temp sampler ss} s0,  temp int a})
+0:33            Constant:
+0:33              2 (const int)
+0:33          Constant:
+0:33            2 (const int)
+0:33        'samp' ( uniform sampler)
+0:34      move second child to first child ( temp structure{ temp float b,  temp sampler samplerState,  temp structure{ temp int x,  temp int y,  temp sampler ss} s0,  temp int a})
+0:34        resources: direct index for structure ( temp structure{ temp float b,  temp sampler samplerState,  temp structure{ temp int x,  temp int y,  temp sampler ss} s0,  temp int a})
+0:34          's2' ( temp structure{ temp int a1,  temp int a2,  temp int a3,  temp int a4,  temp int a5,  temp structure{ temp float b,  temp sampler samplerState,  temp structure{ temp int x,  temp int y,  temp sampler ss} s0,  temp int a} resources})
+0:34          Constant:
+0:34            5 (const int)
+0:34        's1' ( temp structure{ temp float b,  temp sampler samplerState,  temp structure{ temp int x,  temp int y,  temp sampler ss} s0,  temp int a})
+0:35      Branch: Return with expression
+0:35        texture ( temp 4-component vector of float)
+0:35          Construct combined texture-sampler ( temp sampler2D)
+0:35            'tex' ( uniform texture2D)
+0:35            ss: direct index for structure ( temp sampler)
+0:35              s0: direct index for structure ( temp structure{ temp int x,  temp int y,  temp sampler ss})
+0:35                resources: direct index for structure ( temp structure{ temp float b,  temp sampler samplerState,  temp structure{ temp int x,  temp int y,  temp sampler ss} s0,  temp int a})
+0:35                  's2' ( temp structure{ temp int a1,  temp int a2,  temp int a3,  temp int a4,  temp int a5,  temp structure{ temp float b,  temp sampler samplerState,  temp structure{ temp int x,  temp int y,  temp sampler ss} s0,  temp int a} resources})
+0:35                  Constant:
+0:35                    5 (const int)
+0:35                Constant:
+0:35                  2 (const int)
+0:35              Constant:
+0:35                2 (const int)
+0:35          Constant:
+0:35            0.500000
+0:35            0.500000
+0:30  Function Definition: main( ( temp void)
+0:30    Function Parameters: 
+0:?     Sequence
+0:30      move second child to first child ( temp 4-component vector of float)
+0:?         'vpos' ( temp 4-component vector of float)
+0:?         'vpos' (layout( location=0) in 4-component vector of float)
+0:30      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:30        Function Call: @main(vf4; ( temp 4-component vector of float)
+0:?           'vpos' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'samp' ( uniform sampler)
+0:?     'tex' ( uniform texture2D)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'vpos' (layout( location=0) in 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:30  Function Definition: @main(vf4; ( temp 4-component vector of float)
+0:30    Function Parameters: 
+0:30      'vpos' ( in 4-component vector of float)
+0:?     Sequence
+0:33      move second child to first child ( temp sampler)
+0:33        ss: direct index for structure ( temp sampler)
+0:33          s0: direct index for structure ( temp structure{ temp int x,  temp int y,  temp sampler ss})
+0:33            's1' ( temp structure{ temp float b,  temp sampler samplerState,  temp structure{ temp int x,  temp int y,  temp sampler ss} s0,  temp int a})
+0:33            Constant:
+0:33              2 (const int)
+0:33          Constant:
+0:33            2 (const int)
+0:33        'samp' ( uniform sampler)
+0:34      move second child to first child ( temp structure{ temp float b,  temp sampler samplerState,  temp structure{ temp int x,  temp int y,  temp sampler ss} s0,  temp int a})
+0:34        resources: direct index for structure ( temp structure{ temp float b,  temp sampler samplerState,  temp structure{ temp int x,  temp int y,  temp sampler ss} s0,  temp int a})
+0:34          's2' ( temp structure{ temp int a1,  temp int a2,  temp int a3,  temp int a4,  temp int a5,  temp structure{ temp float b,  temp sampler samplerState,  temp structure{ temp int x,  temp int y,  temp sampler ss} s0,  temp int a} resources})
+0:34          Constant:
+0:34            5 (const int)
+0:34        's1' ( temp structure{ temp float b,  temp sampler samplerState,  temp structure{ temp int x,  temp int y,  temp sampler ss} s0,  temp int a})
+0:35      Branch: Return with expression
+0:35        texture ( temp 4-component vector of float)
+0:35          Construct combined texture-sampler ( temp sampler2D)
+0:35            'tex' ( uniform texture2D)
+0:35            ss: direct index for structure ( temp sampler)
+0:35              s0: direct index for structure ( temp structure{ temp int x,  temp int y,  temp sampler ss})
+0:35                resources: direct index for structure ( temp structure{ temp float b,  temp sampler samplerState,  temp structure{ temp int x,  temp int y,  temp sampler ss} s0,  temp int a})
+0:35                  's2' ( temp structure{ temp int a1,  temp int a2,  temp int a3,  temp int a4,  temp int a5,  temp structure{ temp float b,  temp sampler samplerState,  temp structure{ temp int x,  temp int y,  temp sampler ss} s0,  temp int a} resources})
+0:35                  Constant:
+0:35                    5 (const int)
+0:35                Constant:
+0:35                  2 (const int)
+0:35              Constant:
+0:35                2 (const int)
+0:35          Constant:
+0:35            0.500000
+0:35            0.500000
+0:30  Function Definition: main( ( temp void)
+0:30    Function Parameters: 
+0:?     Sequence
+0:30      move second child to first child ( temp 4-component vector of float)
+0:?         'vpos' ( temp 4-component vector of float)
+0:?         'vpos' (layout( location=0) in 4-component vector of float)
+0:30      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:30        Function Call: @main(vf4; ( temp 4-component vector of float)
+0:?           'vpos' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'samp' ( uniform sampler)
+0:?     'tex' ( uniform texture2D)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'vpos' (layout( location=0) in 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 54
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 47 50
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 11  "@main(vf4;"
+                              Name 10  "vpos"
+                              Name 15  "S0"
+                              MemberName 15(S0) 0  "x"
+                              MemberName 15(S0) 1  "y"
+                              MemberName 15(S0) 2  "ss"
+                              Name 16  "S1"
+                              MemberName 16(S1) 0  "b"
+                              MemberName 16(S1) 1  "samplerState"
+                              MemberName 16(S1) 2  "s0"
+                              MemberName 16(S1) 3  "a"
+                              Name 18  "s1"
+                              Name 21  "samp"
+                              Name 25  "S2"
+                              MemberName 25(S2) 0  "a1"
+                              MemberName 25(S2) 1  "a2"
+                              MemberName 25(S2) 2  "a3"
+                              MemberName 25(S2) 3  "a4"
+                              MemberName 25(S2) 4  "a5"
+                              MemberName 25(S2) 5  "resources"
+                              Name 27  "s2"
+                              Name 33  "tex"
+                              Name 45  "vpos"
+                              Name 47  "vpos"
+                              Name 50  "@entryPointOutput"
+                              Name 51  "param"
+                              Decorate 21(samp) DescriptorSet 0
+                              Decorate 21(samp) Binding 0
+                              Decorate 33(tex) DescriptorSet 0
+                              Decorate 33(tex) Binding 0
+                              Decorate 47(vpos) Location 0
+                              Decorate 50(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypePointer Function 7(fvec4)
+               9:             TypeFunction 7(fvec4) 8(ptr)
+              13:             TypeSampler
+              14:             TypeInt 32 1
+          15(S0):             TypeStruct 14(int) 14(int) 13
+          16(S1):             TypeStruct 6(float) 13 15(S0) 14(int)
+              17:             TypePointer Function 16(S1)
+              19:     14(int) Constant 2
+              20:             TypePointer UniformConstant 13
+        21(samp):     20(ptr) Variable UniformConstant
+              23:             TypePointer Function 13
+          25(S2):             TypeStruct 14(int) 14(int) 14(int) 14(int) 14(int) 16(S1)
+              26:             TypePointer Function 25(S2)
+              28:     14(int) Constant 5
+              31:             TypeImage 6(float) 2D sampled format:Unknown
+              32:             TypePointer UniformConstant 31
+         33(tex):     32(ptr) Variable UniformConstant
+              37:             TypeSampledImage 31
+              39:             TypeVector 6(float) 2
+              40:    6(float) Constant 1056964608
+              41:   39(fvec2) ConstantComposite 40 40
+              46:             TypePointer Input 7(fvec4)
+        47(vpos):     46(ptr) Variable Input
+              49:             TypePointer Output 7(fvec4)
+50(@entryPointOutput):     49(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+        45(vpos):      8(ptr) Variable Function
+       51(param):      8(ptr) Variable Function
+              48:    7(fvec4) Load 47(vpos)
+                              Store 45(vpos) 48
+              52:    7(fvec4) Load 45(vpos)
+                              Store 51(param) 52
+              53:    7(fvec4) FunctionCall 11(@main(vf4;) 51(param)
+                              Store 50(@entryPointOutput) 53
+                              Return
+                              FunctionEnd
+  11(@main(vf4;):    7(fvec4) Function None 9
+        10(vpos):      8(ptr) FunctionParameter
+              12:             Label
+          18(s1):     17(ptr) Variable Function
+          27(s2):     26(ptr) Variable Function
+              22:          13 Load 21(samp)
+              24:     23(ptr) AccessChain 18(s1) 19 19
+                              Store 24 22
+              29:      16(S1) Load 18(s1)
+              30:     17(ptr) AccessChain 27(s2) 28
+                              Store 30 29
+              34:          31 Load 33(tex)
+              35:     23(ptr) AccessChain 27(s2) 28 19 19
+              36:          13 Load 35
+              38:          37 SampledImage 34 36
+              42:    7(fvec4) ImageSampleImplicitLod 38 41
+                              ReturnValue 42
+                              FunctionEnd

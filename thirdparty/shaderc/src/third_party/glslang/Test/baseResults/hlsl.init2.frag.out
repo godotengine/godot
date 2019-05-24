@@ -1,0 +1,531 @@
+hlsl.init2.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:3  Function Definition: Test1( ( temp void)
+0:3    Function Parameters: 
+0:?     Sequence
+0:5      Sequence
+0:5        move second child to first child ( temp structure{ temp 2-component vector of float a})
+0:5          'test1' ( temp structure{ temp 2-component vector of float a})
+0:5          Constant:
+0:5            1.000000
+0:5            2.000000
+0:9      Sequence
+0:9        move second child to first child ( temp structure{ temp 2-component vector of float a})
+0:9          'test2' ( temp structure{ temp 2-component vector of float a})
+0:9          Constant:
+0:9            3.000000
+0:9            4.000000
+0:17      Sequence
+0:17        move second child to first child ( temp float)
+0:17          'test4' ( temp float)
+0:17          Constant:
+0:17            7.000000
+0:20      Sequence
+0:20        move second child to first child ( temp structure{ temp float a,  temp float b,  temp float c})
+0:20          'test5' ( temp structure{ temp float a,  temp float b,  temp float c})
+0:20          Constant:
+0:20            8.000000
+0:20            9.000000
+0:20            10.000000
+0:22      Constant:
+0:22        10.000000
+0:25      Sequence
+0:25        move second child to first child ( temp float)
+0:25          'n' ( temp float)
+0:25          Constant:
+0:25            0.000000
+0:26      Sequence
+0:26        move second child to first child ( temp 8-element array of 3-component vector of float)
+0:26          'a' ( const (read only) 8-element array of 3-component vector of float)
+0:26          Construct vec3 ( temp 8-element array of 3-component vector of float)
+0:27            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 0.577350
+0:?                 0.577350
+0:?                 0.577350
+0:27              add second child into first child ( temp float)
+0:27                'n' ( temp float)
+0:27                Constant:
+0:27                  1.000000
+0:28            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 -0.577350
+0:?                 -0.577350
+0:?                 -0.577350
+0:28              add second child into first child ( temp float)
+0:28                'n' ( temp float)
+0:28                Constant:
+0:28                  1.000000
+0:29            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 -0.577350
+0:?                 -0.577350
+0:?                 0.577350
+0:29              add second child into first child ( temp float)
+0:29                'n' ( temp float)
+0:29                Constant:
+0:29                  1.000000
+0:30            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 -0.577350
+0:?                 0.577350
+0:?                 -0.577350
+0:30              add second child into first child ( temp float)
+0:30                'n' ( temp float)
+0:30                Constant:
+0:30                  1.000000
+0:31            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 -0.577350
+0:?                 0.577350
+0:?                 0.577350
+0:31              add second child into first child ( temp float)
+0:31                'n' ( temp float)
+0:31                Constant:
+0:31                  1.000000
+0:32            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 0.577350
+0:?                 -0.577350
+0:?                 -0.577350
+0:32              add second child into first child ( temp float)
+0:32                'n' ( temp float)
+0:32                Constant:
+0:32                  1.000000
+0:33            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 0.577350
+0:?                 -0.577350
+0:?                 0.577350
+0:33              add second child into first child ( temp float)
+0:33                'n' ( temp float)
+0:33                Constant:
+0:33                  1.000000
+0:34            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 0.577350
+0:?                 0.577350
+0:?                 -0.577350
+0:34              add second child into first child ( temp float)
+0:34                'n' ( temp float)
+0:34                Constant:
+0:34                  1.000000
+0:36      Sequence
+0:36        move second child to first child ( temp structure{ temp 3-component vector of float a})
+0:36          'oneNonConst' ( const (read only) structure{ temp 3-component vector of float a})
+0:36          Construct structure ( temp structure{ temp 3-component vector of float a})
+0:36            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 -0.577350
+0:?                 0.577350
+0:?                 0.577350
+0:36              add second child into first child ( temp float)
+0:36                'n' ( temp float)
+0:36                Constant:
+0:36                  1.000000
+0:38      Sequence
+0:38        move second child to first child ( temp structure{ temp 3-component vector of float a,  temp 3-component vector of float b})
+0:38          'twoNonConst' ( const (read only) structure{ temp 3-component vector of float a,  temp 3-component vector of float b})
+0:38          Construct structure ( temp structure{ temp 3-component vector of float a,  temp 3-component vector of float b})
+0:38            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 -0.577350
+0:?                 0.577350
+0:?                 0.577350
+0:38              add second child into first child ( temp float)
+0:38                'n' ( temp float)
+0:38                Constant:
+0:38                  1.000000
+0:39            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 -0.577350
+0:?                 0.577350
+0:?                 0.577350
+0:39              add second child into first child ( temp float)
+0:39                'n' ( temp float)
+0:39                Constant:
+0:39                  1.000000
+0:45  Function Definition: @main( ( temp structure{ temp 4-component vector of float color})
+0:45    Function Parameters: 
+0:?     Sequence
+0:46      Function Call: Test1( ( temp void)
+0:49      move second child to first child ( temp 4-component vector of float)
+0:49        color: direct index for structure ( temp 4-component vector of float)
+0:49          'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:49          Constant:
+0:49            0 (const int)
+0:49        Constant:
+0:49          1.000000
+0:49          1.000000
+0:49          1.000000
+0:49          1.000000
+0:50      Branch: Return with expression
+0:50        'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:45  Function Definition: main( ( temp void)
+0:45    Function Parameters: 
+0:?     Sequence
+0:45      Sequence
+0:45        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:45          color: direct index for structure ( temp 4-component vector of float)
+0:45            Function Call: @main( ( temp structure{ temp 4-component vector of float color})
+0:45            Constant:
+0:45              0 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:3  Function Definition: Test1( ( temp void)
+0:3    Function Parameters: 
+0:?     Sequence
+0:5      Sequence
+0:5        move second child to first child ( temp structure{ temp 2-component vector of float a})
+0:5          'test1' ( temp structure{ temp 2-component vector of float a})
+0:5          Constant:
+0:5            1.000000
+0:5            2.000000
+0:9      Sequence
+0:9        move second child to first child ( temp structure{ temp 2-component vector of float a})
+0:9          'test2' ( temp structure{ temp 2-component vector of float a})
+0:9          Constant:
+0:9            3.000000
+0:9            4.000000
+0:17      Sequence
+0:17        move second child to first child ( temp float)
+0:17          'test4' ( temp float)
+0:17          Constant:
+0:17            7.000000
+0:20      Sequence
+0:20        move second child to first child ( temp structure{ temp float a,  temp float b,  temp float c})
+0:20          'test5' ( temp structure{ temp float a,  temp float b,  temp float c})
+0:20          Constant:
+0:20            8.000000
+0:20            9.000000
+0:20            10.000000
+0:22      Constant:
+0:22        10.000000
+0:25      Sequence
+0:25        move second child to first child ( temp float)
+0:25          'n' ( temp float)
+0:25          Constant:
+0:25            0.000000
+0:26      Sequence
+0:26        move second child to first child ( temp 8-element array of 3-component vector of float)
+0:26          'a' ( const (read only) 8-element array of 3-component vector of float)
+0:26          Construct vec3 ( temp 8-element array of 3-component vector of float)
+0:27            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 0.577350
+0:?                 0.577350
+0:?                 0.577350
+0:27              add second child into first child ( temp float)
+0:27                'n' ( temp float)
+0:27                Constant:
+0:27                  1.000000
+0:28            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 -0.577350
+0:?                 -0.577350
+0:?                 -0.577350
+0:28              add second child into first child ( temp float)
+0:28                'n' ( temp float)
+0:28                Constant:
+0:28                  1.000000
+0:29            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 -0.577350
+0:?                 -0.577350
+0:?                 0.577350
+0:29              add second child into first child ( temp float)
+0:29                'n' ( temp float)
+0:29                Constant:
+0:29                  1.000000
+0:30            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 -0.577350
+0:?                 0.577350
+0:?                 -0.577350
+0:30              add second child into first child ( temp float)
+0:30                'n' ( temp float)
+0:30                Constant:
+0:30                  1.000000
+0:31            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 -0.577350
+0:?                 0.577350
+0:?                 0.577350
+0:31              add second child into first child ( temp float)
+0:31                'n' ( temp float)
+0:31                Constant:
+0:31                  1.000000
+0:32            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 0.577350
+0:?                 -0.577350
+0:?                 -0.577350
+0:32              add second child into first child ( temp float)
+0:32                'n' ( temp float)
+0:32                Constant:
+0:32                  1.000000
+0:33            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 0.577350
+0:?                 -0.577350
+0:?                 0.577350
+0:33              add second child into first child ( temp float)
+0:33                'n' ( temp float)
+0:33                Constant:
+0:33                  1.000000
+0:34            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 0.577350
+0:?                 0.577350
+0:?                 -0.577350
+0:34              add second child into first child ( temp float)
+0:34                'n' ( temp float)
+0:34                Constant:
+0:34                  1.000000
+0:36      Sequence
+0:36        move second child to first child ( temp structure{ temp 3-component vector of float a})
+0:36          'oneNonConst' ( const (read only) structure{ temp 3-component vector of float a})
+0:36          Construct structure ( temp structure{ temp 3-component vector of float a})
+0:36            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 -0.577350
+0:?                 0.577350
+0:?                 0.577350
+0:36              add second child into first child ( temp float)
+0:36                'n' ( temp float)
+0:36                Constant:
+0:36                  1.000000
+0:38      Sequence
+0:38        move second child to first child ( temp structure{ temp 3-component vector of float a,  temp 3-component vector of float b})
+0:38          'twoNonConst' ( const (read only) structure{ temp 3-component vector of float a,  temp 3-component vector of float b})
+0:38          Construct structure ( temp structure{ temp 3-component vector of float a,  temp 3-component vector of float b})
+0:38            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 -0.577350
+0:?                 0.577350
+0:?                 0.577350
+0:38              add second child into first child ( temp float)
+0:38                'n' ( temp float)
+0:38                Constant:
+0:38                  1.000000
+0:39            vector-scale ( temp 3-component vector of float)
+0:?               Constant:
+0:?                 -0.577350
+0:?                 0.577350
+0:?                 0.577350
+0:39              add second child into first child ( temp float)
+0:39                'n' ( temp float)
+0:39                Constant:
+0:39                  1.000000
+0:45  Function Definition: @main( ( temp structure{ temp 4-component vector of float color})
+0:45    Function Parameters: 
+0:?     Sequence
+0:46      Function Call: Test1( ( temp void)
+0:49      move second child to first child ( temp 4-component vector of float)
+0:49        color: direct index for structure ( temp 4-component vector of float)
+0:49          'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:49          Constant:
+0:49            0 (const int)
+0:49        Constant:
+0:49          1.000000
+0:49          1.000000
+0:49          1.000000
+0:49          1.000000
+0:50      Branch: Return with expression
+0:50        'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:45  Function Definition: main( ( temp void)
+0:45    Function Parameters: 
+0:?     Sequence
+0:45      Sequence
+0:45        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:45          color: direct index for structure ( temp 4-component vector of float)
+0:45            Function Call: @main( ( temp structure{ temp 4-component vector of float color})
+0:45            Constant:
+0:45              0 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 112
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 109
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 6  "Test1("
+                              Name 10  "PS_OUTPUT"
+                              MemberName 10(PS_OUTPUT) 0  "color"
+                              Name 12  "@main("
+                              Name 15  "mystruct"
+                              MemberName 15(mystruct) 0  "a"
+                              Name 17  "test1"
+                              Name 22  "test2"
+                              Name 28  "test4"
+                              Name 30  "mystruct2"
+                              MemberName 30(mystruct2) 0  "a"
+                              MemberName 30(mystruct2) 1  "b"
+                              MemberName 30(mystruct2) 2  "c"
+                              Name 32  "test5"
+                              Name 37  "n"
+                              Name 44  "a"
+                              Name 80  "one"
+                              MemberName 80(one) 0  "a"
+                              Name 82  "oneNonConst"
+                              Name 87  "two"
+                              MemberName 87(two) 0  "a"
+                              MemberName 87(two) 1  "b"
+                              Name 89  "twoNonConst"
+                              Name 99  "ps_output"
+                              Name 109  "@entryPointOutput.color"
+                              Decorate 109(@entryPointOutput.color) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               8:             TypeFloat 32
+               9:             TypeVector 8(float) 4
+   10(PS_OUTPUT):             TypeStruct 9(fvec4)
+              11:             TypeFunction 10(PS_OUTPUT)
+              14:             TypeVector 8(float) 2
+    15(mystruct):             TypeStruct 14(fvec2)
+              16:             TypePointer Function 15(mystruct)
+              18:    8(float) Constant 1065353216
+              19:    8(float) Constant 1073741824
+              20:   14(fvec2) ConstantComposite 18 19
+              21:15(mystruct) ConstantComposite 20
+              23:    8(float) Constant 1077936128
+              24:    8(float) Constant 1082130432
+              25:   14(fvec2) ConstantComposite 23 24
+              26:15(mystruct) ConstantComposite 25
+              27:             TypePointer Function 8(float)
+              29:    8(float) Constant 1088421888
+   30(mystruct2):             TypeStruct 8(float) 8(float) 8(float)
+              31:             TypePointer Function 30(mystruct2)
+              33:    8(float) Constant 1090519040
+              34:    8(float) Constant 1091567616
+              35:    8(float) Constant 1092616192
+              36:30(mystruct2) ConstantComposite 33 34 35
+              38:    8(float) Constant 0
+              39:             TypeVector 8(float) 3
+              40:             TypeInt 32 0
+              41:     40(int) Constant 8
+              42:             TypeArray 39(fvec3) 41
+              43:             TypePointer Function 42
+              45:    8(float) Constant 1058262330
+              46:   39(fvec3) ConstantComposite 45 45 45
+              50:    8(float) Constant 3205745978
+              51:   39(fvec3) ConstantComposite 50 50 50
+              55:   39(fvec3) ConstantComposite 50 50 45
+              59:   39(fvec3) ConstantComposite 50 45 50
+              63:   39(fvec3) ConstantComposite 50 45 45
+              67:   39(fvec3) ConstantComposite 45 50 50
+              71:   39(fvec3) ConstantComposite 45 50 45
+              75:   39(fvec3) ConstantComposite 45 45 50
+         80(one):             TypeStruct 39(fvec3)
+              81:             TypePointer Function 80(one)
+         87(two):             TypeStruct 39(fvec3) 39(fvec3)
+              88:             TypePointer Function 87(two)
+              98:             TypePointer Function 10(PS_OUTPUT)
+             100:             TypeInt 32 1
+             101:    100(int) Constant 0
+             102:    9(fvec4) ConstantComposite 18 18 18 18
+             103:             TypePointer Function 9(fvec4)
+             108:             TypePointer Output 9(fvec4)
+109(@entryPointOutput.color):    108(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+             110:10(PS_OUTPUT) FunctionCall 12(@main()
+             111:    9(fvec4) CompositeExtract 110 0
+                              Store 109(@entryPointOutput.color) 111
+                              Return
+                              FunctionEnd
+       6(Test1():           2 Function None 3
+               7:             Label
+       17(test1):     16(ptr) Variable Function
+       22(test2):     16(ptr) Variable Function
+       28(test4):     27(ptr) Variable Function
+       32(test5):     31(ptr) Variable Function
+           37(n):     27(ptr) Variable Function
+           44(a):     43(ptr) Variable Function
+ 82(oneNonConst):     81(ptr) Variable Function
+ 89(twoNonConst):     88(ptr) Variable Function
+                              Store 17(test1) 21
+                              Store 22(test2) 26
+                              Store 28(test4) 29
+                              Store 32(test5) 36
+                              Store 37(n) 38
+              47:    8(float) Load 37(n)
+              48:    8(float) FAdd 47 18
+                              Store 37(n) 48
+              49:   39(fvec3) VectorTimesScalar 46 48
+              52:    8(float) Load 37(n)
+              53:    8(float) FAdd 52 18
+                              Store 37(n) 53
+              54:   39(fvec3) VectorTimesScalar 51 53
+              56:    8(float) Load 37(n)
+              57:    8(float) FAdd 56 18
+                              Store 37(n) 57
+              58:   39(fvec3) VectorTimesScalar 55 57
+              60:    8(float) Load 37(n)
+              61:    8(float) FAdd 60 18
+                              Store 37(n) 61
+              62:   39(fvec3) VectorTimesScalar 59 61
+              64:    8(float) Load 37(n)
+              65:    8(float) FAdd 64 18
+                              Store 37(n) 65
+              66:   39(fvec3) VectorTimesScalar 63 65
+              68:    8(float) Load 37(n)
+              69:    8(float) FAdd 68 18
+                              Store 37(n) 69
+              70:   39(fvec3) VectorTimesScalar 67 69
+              72:    8(float) Load 37(n)
+              73:    8(float) FAdd 72 18
+                              Store 37(n) 73
+              74:   39(fvec3) VectorTimesScalar 71 73
+              76:    8(float) Load 37(n)
+              77:    8(float) FAdd 76 18
+                              Store 37(n) 77
+              78:   39(fvec3) VectorTimesScalar 75 77
+              79:          42 CompositeConstruct 49 54 58 62 66 70 74 78
+                              Store 44(a) 79
+              83:    8(float) Load 37(n)
+              84:    8(float) FAdd 83 18
+                              Store 37(n) 84
+              85:   39(fvec3) VectorTimesScalar 63 84
+              86:     80(one) CompositeConstruct 85
+                              Store 82(oneNonConst) 86
+              90:    8(float) Load 37(n)
+              91:    8(float) FAdd 90 18
+                              Store 37(n) 91
+              92:   39(fvec3) VectorTimesScalar 63 91
+              93:    8(float) Load 37(n)
+              94:    8(float) FAdd 93 18
+                              Store 37(n) 94
+              95:   39(fvec3) VectorTimesScalar 63 94
+              96:     87(two) CompositeConstruct 92 95
+                              Store 89(twoNonConst) 96
+                              Return
+                              FunctionEnd
+      12(@main():10(PS_OUTPUT) Function None 11
+              13:             Label
+   99(ps_output):     98(ptr) Variable Function
+              97:           2 FunctionCall 6(Test1()
+             104:    103(ptr) AccessChain 99(ps_output) 101
+                              Store 104 102
+             105:10(PS_OUTPUT) Load 99(ps_output)
+                              ReturnValue 105
+                              FunctionEnd

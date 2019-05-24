@@ -1,0 +1,5 @@
+spv.register.autoassign.rangetest.frag
+INTERNAL ERROR: mapped binding out of range: g_tSamp
+INTERNAL ERROR: mapped binding out of range: g_tScene
+
+SPIR-V is not generated for failed compile or link

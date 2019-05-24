@@ -1,0 +1,576 @@
+100.frag
+ERROR: 0:3: '{ } style initializers' : not supported with this profile: es
+ERROR: 0:3: 'initializer' : not supported for this version or the enabled extensions 
+ERROR: 0:3: 'array initializer' : not supported for this version or the enabled extensions 
+ERROR: 0:4: '#version' : must occur first in shader 
+ERROR: 0:7: 'attribute' : not supported in this stage: fragment
+ERROR: 0:7: 'float' : type requires declaration of default precision qualifier 
+ERROR: 0:9: '=' :  cannot convert from ' const int' to ' global mediump float'
+ERROR: 0:11: 'uniform block' : not supported for this version or the enabled extensions 
+ERROR: 0:19: 'foo' : no matching overloaded function found 
+ERROR: 0:20: 'bit shift left' : not supported for this version or the enabled extensions 
+ERROR: 0:21: 'bit shift right' : not supported for this version or the enabled extensions 
+ERROR: 0:22: 'array comparison' : not supported for this version or the enabled extensions 
+ERROR: 0:24: 'bitwise and' : not supported for this version or the enabled extensions 
+ERROR: 0:25: '%' : not supported for this version or the enabled extensions 
+ERROR: 0:26: 'bitwise inclusive or' : not supported for this version or the enabled extensions 
+ERROR: 0:27: 'bit-shift right assign' : not supported for this version or the enabled extensions 
+ERROR: 0:28: 'bit-shift left assign' : not supported for this version or the enabled extensions 
+ERROR: 0:29: '%=' : not supported for this version or the enabled extensions 
+ERROR: 0:36: 'array assignment' : not supported for this version or the enabled extensions 
+ERROR: 0:37: 'array comparison' : not supported for this version or the enabled extensions 
+ERROR: 0:38: 'array comparison' : not supported for this version or the enabled extensions 
+ERROR: 0:40: 'switch' : Reserved word. 
+ERROR: 0:40: 'switch statements' : not supported for this version or the enabled extensions 
+ERROR: 0:45: '' : array size required 
+ERROR: 0:47: 'invariant' : can only apply to an output, or to an input in a non-vertex stage
+ 
+ERROR: 0:49: 'invariant' : can only apply to an output, or to an input in a non-vertex stage
+ 
+ERROR: 0:50: 'invariant' : can only apply to an output, or to an input in a non-vertex stage
+ 
+ERROR: 0:56: 'invariant' : not allowed in nested scope 
+ERROR: 0:56: 'invariant' : can only apply to an output, or to an input in a non-vertex stage
+ 
+ERROR: 0:57: 'invariant' : not allowed in nested scope 
+ERROR: 0:57: 'invariant' : can only apply to an output, or to an input in a non-vertex stage
+ 
+ERROR: 0:59: 'invariant' : not allowed in nested scope 
+ERROR: 0:59: 'invariant' : can only apply to an output, or to an input in a non-vertex stage
+ 
+ERROR: 0:63: 'invariant' : can only apply to an output, or to an input in a non-vertex stage
+ 
+ERROR: 0:64: 'invariant' : can only apply to an output, or to an input in a non-vertex stage
+ 
+ERROR: 0:66: 'sampler2D' : sampler/image types can only be used in uniform variables or function parameters: glob2D
+ERROR: 0:69: 'sampler2D' : sampler/image types can only be used in uniform variables or function parameters: v2D
+ERROR: 0:71: 'sampler2D' : sampler/image types can only be used in uniform variables or function parameters: vary2D
+ERROR: 0:75: 'in for stage inputs' : not supported for this version or the enabled extensions 
+ERROR: 0:77: 'invariant' : can only apply to an output, or to an input in a non-vertex stage
+ 
+ERROR: 0:75: 'g' : cannot use storage or interpolation qualifiers on structure members 
+ERROR: 0:76: 'h' : cannot use storage or interpolation qualifiers on structure members 
+ERROR: 0:77: 'i' : cannot use invariant qualifier on structure members 
+ERROR: 0:80: 'sampler3D' : Reserved word. 
+ERROR: 0:80: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:91: 'dFdx' : required extension not requested: GL_OES_standard_derivatives
+ERROR: 0:92: 'dFdy' : required extension not requested: GL_OES_standard_derivatives
+ERROR: 0:93: 'fwidth' : required extension not requested: GL_OES_standard_derivatives
+ERROR: 0:103: 'gl_FragDepth' : undeclared identifier 
+ERROR: 0:104: 'gl_FragDepthEXT' : required extension not requested: GL_EXT_frag_depth
+ERROR: 0:111: 'gl_FragDepth' : undeclared identifier 
+ERROR: 0:134: 'texture3D' : no matching overloaded function found 
+ERROR: 0:135: 'texture2DProjLod' : no matching overloaded function found 
+ERROR: 0:137: 'bitwise not' : not supported for this version or the enabled extensions 
+ERROR: 0:138: 'bitwise inclusive or' : not supported for this version or the enabled extensions 
+ERROR: 0:139: 'bitwise and' : not supported for this version or the enabled extensions 
+ERROR: 0:145: 'a' : redefinition 
+ERROR: 0:147: 'texture2DProjGradEXT' : required extension not requested: GL_EXT_shader_texture_lod
+ERROR: 0:151: 'floating-point suffix' : not supported for this version or the enabled extensions 
+ERROR: 0:152: 'floating-point suffix' : not supported for this version or the enabled extensions 
+ERROR: 0:167: 'highp' : overloaded functions must have the same parameter precision qualifiers for argument 2
+ERROR: 0:170: 'multiple prototypes for same function' : not supported for this version or the enabled extensions 
+ERROR: 0:177: 'multiple prototypes for same function' : not supported for this version or the enabled extensions 
+ERROR: 0:179: 'fragment-shader struct input' : not supported for this version or the enabled extensions 
+ERROR: 0:183: 'v' : illegal use of type 'void' 
+ERROR: 0:184: 'void' : cannot be an argument type except for '(void)' 
+ERROR: 0:185: 'v' : illegal use of type 'void' 
+ERROR: 0:185: 'void' : cannot be an argument type except for '(void)' 
+ERROR: 0:190: '.' : cannot apply to an array: y
+ERROR: 0:191: '.' : cannot apply to an array: zy
+ERROR: 0:192: '.' : cannot apply to an array: nothing
+ERROR: 0:193: '.length' : not supported for this version or the enabled extensions 
+ERROR: 0:194: '.' : cannot apply to an array: method
+ERROR: 0:194: 'a' : can't use function syntax on variable 
+ERROR: 0:214: 'non-constant global initializer (needs GL_EXT_shader_non_constant_global_initializers)' : not supported for this version or the enabled extensions 
+ERROR: 0:3000: '#error' : line of this error should be 3000  
+ERROR: 0:3002: '' :  syntax error, unexpected IDENTIFIER, expecting LEFT_BRACE or COMMA or SEMICOLON
+ERROR: 77 compilation errors.  No code generated.
+
+
+Shader version: 100
+Requested GL_EXT_frag_depth
+Requested GL_EXT_shader_non_constant_global_initializers
+Requested GL_EXT_shader_texture_lod
+Requested GL_OES_EGL_image_external
+Requested GL_OES_standard_derivatives
+Requested GL_OES_texture_3D
+ERROR: node is still EOpNull!
+0:3  Sequence
+0:3    move second child to first child ( temp 3-element array of mediump int)
+0:3      'a' ( global 3-element array of mediump int)
+0:3      Constant:
+0:3        2 (const int)
+0:3        3 (const int)
+0:3        4 (const int)
+0:17  Function Definition: main( ( global void)
+0:17    Function Parameters: 
+0:19    Sequence
+0:19      Constant:
+0:19        0.000000
+0:20      Sequence
+0:20        move second child to first child ( temp mediump int)
+0:20          's' ( temp mediump int)
+0:20          Constant:
+0:20            16 (const int)
+0:21      move second child to first child ( temp mediump int)
+0:21        's' ( temp mediump int)
+0:21        Constant:
+0:21          4 (const int)
+0:22      Test condition and select ( temp void)
+0:22        Condition
+0:22        Compare Equal ( temp bool)
+0:22          'a' ( global 3-element array of mediump int)
+0:22          'a' ( global 3-element array of mediump int)
+0:22        true case is null
+0:24      move second child to first child ( temp mediump int)
+0:24        'b' ( temp mediump int)
+0:24        bitwise and ( temp mediump int)
+0:24          'c' ( temp mediump int)
+0:24          Constant:
+0:24            4 (const int)
+0:25      move second child to first child ( temp mediump int)
+0:25        'b' ( temp mediump int)
+0:25        mod ( temp mediump int)
+0:25          'c' ( temp mediump int)
+0:25          Constant:
+0:25            4 (const int)
+0:26      move second child to first child ( temp mediump int)
+0:26        'b' ( temp mediump int)
+0:26        inclusive-or ( temp mediump int)
+0:26          'c' ( temp mediump int)
+0:26          Constant:
+0:26            4 (const int)
+0:27      right shift second child into first child ( temp mediump int)
+0:27        'b' ( temp mediump int)
+0:27        Constant:
+0:27          2 (const int)
+0:28      left shift second child into first child ( temp mediump int)
+0:28        'b' ( temp mediump int)
+0:28        Constant:
+0:28          2 (const int)
+0:29      mod second child into first child ( temp mediump int)
+0:29        'b' ( temp mediump int)
+0:29        Constant:
+0:29          3 (const int)
+0:36      move second child to first child ( temp structure{ temp mediump float f,  temp 10-element array of mediump float a})
+0:36        's1' ( temp structure{ temp mediump float f,  temp 10-element array of mediump float a})
+0:36        's2' ( temp structure{ temp mediump float f,  temp 10-element array of mediump float a})
+0:37      Test condition and select ( temp void)
+0:37        Condition
+0:37        Compare Equal ( temp bool)
+0:37          's1' ( temp structure{ temp mediump float f,  temp 10-element array of mediump float a})
+0:37          's2' ( temp structure{ temp mediump float f,  temp 10-element array of mediump float a})
+0:37        true case is null
+0:38      Test condition and select ( temp void)
+0:38        Condition
+0:38        Compare Not Equal ( temp bool)
+0:38          's1' ( temp structure{ temp mediump float f,  temp 10-element array of mediump float a})
+0:38          's2' ( temp structure{ temp mediump float f,  temp 10-element array of mediump float a})
+0:38        true case is null
+0:40      'b' ( temp mediump int)
+0:54  Function Definition: foo10( ( global void)
+0:54    Function Parameters: 
+0:67  Function Definition: f11(s21; ( global void)
+0:67    Function Parameters: 
+0:67      'p2d' ( in lowp sampler2D)
+0:87  Function Definition: foo234( ( global void)
+0:87    Function Parameters: 
+0:89    Sequence
+0:89      texture ( global highp 4-component vector of float)
+0:89        's3D2' ( uniform highp sampler3D)
+0:89        Constant:
+0:89          0.200000
+0:89          0.200000
+0:89          0.200000
+0:89        Constant:
+0:89          0.200000
+0:90      textureProj ( global highp 4-component vector of float)
+0:90        's3D2' ( uniform highp sampler3D)
+0:90        direct index ( smooth temp mediump 4-component vector of float)
+0:90          'v' ( smooth in 3-element array of mediump 4-component vector of float)
+0:90          Constant:
+0:90            1 (const int)
+0:90        Constant:
+0:90          0.400000
+0:91      dPdx ( global mediump 4-component vector of float)
+0:91        direct index ( smooth temp mediump 4-component vector of float)
+0:91          'v' ( smooth in 3-element array of mediump 4-component vector of float)
+0:91          Constant:
+0:91            0 (const int)
+0:92      Constant:
+0:92        0.000000
+0:93      fwidth ( global mediump float)
+0:93        'f13' ( invariant global mediump float)
+0:98  Function Definition: foo236( ( global void)
+0:98    Function Parameters: 
+0:100    Sequence
+0:100      dPdx ( global mediump 4-component vector of float)
+0:100        direct index ( smooth temp mediump 4-component vector of float)
+0:100          'v' ( smooth in 3-element array of mediump 4-component vector of float)
+0:100          Constant:
+0:100            0 (const int)
+0:101      Constant:
+0:101        0.000000
+0:102      fwidth ( global mediump float)
+0:102        'f13' ( invariant global mediump float)
+0:103      move second child to first child ( temp mediump float)
+0:103        'gl_FragDepth' ( temp mediump float)
+0:103        'f13' ( invariant global mediump float)
+0:104      move second child to first child ( temp highp float)
+0:104        'gl_FragDepthEXT' ( gl_FragDepth highp float FragDepth)
+0:104        'f13' ( invariant global mediump float)
+0:109  Function Definition: foo239( ( global void)
+0:109    Function Parameters: 
+0:111    Sequence
+0:111      move second child to first child ( temp mediump float)
+0:111        'gl_FragDepth' ( temp mediump float)
+0:111        'f13' ( invariant global mediump float)
+0:112      move second child to first child ( temp highp float)
+0:112        'gl_FragDepthEXT' ( gl_FragDepth highp float FragDepth)
+0:112        'f13' ( invariant global mediump float)
+0:119  Function Definition: foo245( ( global void)
+0:119    Function Parameters: 
+0:121    Sequence
+0:121      texture ( global lowp 4-component vector of float)
+0:121        'sExt' ( uniform lowp samplerExternalOES)
+0:121        Constant:
+0:121          0.200000
+0:121          0.200000
+0:122      textureProj ( global lowp 4-component vector of float)
+0:122        'sExt' ( uniform lowp samplerExternalOES)
+0:122        Construct vec3 ( temp lowp 3-component vector of float)
+0:122          'f13' ( invariant global mediump float)
+0:123      textureProj ( global lowp 4-component vector of float, operation at mediump)
+0:123        'sExt' ( uniform lowp samplerExternalOES)
+0:123        direct index ( smooth temp mediump 4-component vector of float)
+0:123          'v' ( smooth in 3-element array of mediump 4-component vector of float)
+0:123          Constant:
+0:123            2 (const int)
+0:130  Function Definition: foo246( ( global void)
+0:130    Function Parameters: 
+0:132    Sequence
+0:132      texture ( global mediump 4-component vector of float)
+0:132        'mediumExt' ( uniform mediump samplerExternalOES)
+0:132        Constant:
+0:132          0.200000
+0:132          0.200000
+0:133      textureProj ( global highp 4-component vector of float)
+0:133        'highExt' ( uniform highp samplerExternalOES)
+0:133        direct index ( smooth temp mediump 4-component vector of float)
+0:133          'v' ( smooth in 3-element array of mediump 4-component vector of float)
+0:133          Constant:
+0:133            2 (const int)
+0:134      Constant:
+0:134        0.000000
+0:135      Constant:
+0:135        0.000000
+0:137      Bitwise not ( temp mediump int)
+0:137        'a' ( temp mediump int)
+0:138      inclusive-or ( temp mediump int)
+0:138        'a' ( temp mediump int)
+0:138        'a' ( temp mediump int)
+0:139      bitwise and ( temp mediump int)
+0:139        'a' ( temp mediump int)
+0:139        'a' ( temp mediump int)
+0:145  Function Definition: foo203940(i1;f1;f1; ( global mediump int)
+0:145    Function Parameters: 
+0:145      'a' ( in mediump int)
+0:145      'b' ( in mediump float)
+0:147    Sequence
+0:147      textureProjGrad ( global lowp 4-component vector of float, operation at mediump)
+0:147        's2Dg' ( uniform lowp sampler2D)
+0:147        Construct vec3 ( temp mediump 3-component vector of float)
+0:147          'f13' ( invariant global mediump float)
+0:147        'uv2' ( invariant uniform mediump 2-component vector of float)
+0:147        'uv2' ( invariant uniform mediump 2-component vector of float)
+0:148      Branch: Return with expression
+0:148        'a' ( in mediump int)
+0:151  Sequence
+0:151    move second child to first child ( temp mediump float)
+0:151      'f123' ( global mediump float)
+0:151      Constant:
+0:151        4.000000
+0:152  Sequence
+0:152    move second child to first child ( temp mediump float)
+0:152      'f124' ( global mediump float)
+0:152      Constant:
+0:152        50000000000.000000
+0:158  Function Definition: foo323433( ( global void)
+0:158    Function Parameters: 
+0:160    Sequence
+0:160      textureLod ( global lowp 4-component vector of float, operation at mediump)
+0:160        's2Dg' ( uniform lowp sampler2D)
+0:160        'uv2' ( invariant uniform mediump 2-component vector of float)
+0:160        'f13' ( invariant global mediump float)
+0:161      textureProjGrad ( global lowp 4-component vector of float, operation at mediump)
+0:161        's2Dg' ( uniform lowp sampler2D)
+0:161        Construct vec3 ( temp mediump 3-component vector of float)
+0:161          'f13' ( invariant global mediump float)
+0:161        'uv2' ( invariant uniform mediump 2-component vector of float)
+0:161        'uv2' ( invariant uniform mediump 2-component vector of float)
+0:162      textureGrad ( global lowp 4-component vector of float, operation at mediump)
+0:162        's2Dg' ( uniform lowp sampler2D)
+0:162        'uv2' ( invariant uniform mediump 2-component vector of float)
+0:162        'uv2' ( invariant uniform mediump 2-component vector of float)
+0:162        'uv2' ( invariant uniform mediump 2-component vector of float)
+0:163      textureGrad ( global lowp 4-component vector of float)
+0:163        'sCube' ( uniform lowp samplerCube)
+0:163        Construct vec3 ( temp lowp 3-component vector of float)
+0:163          'f13' ( invariant global mediump float)
+0:163        Construct vec3 ( temp lowp 3-component vector of float)
+0:163          'f13' ( invariant global mediump float)
+0:163        Construct vec3 ( temp lowp 3-component vector of float)
+0:163          'f13' ( invariant global mediump float)
+0:167  Function Definition: fgfg(f1;i1; ( global mediump int)
+0:167    Function Parameters: 
+0:167      'f' ( in mediump float)
+0:167      'i' ( in highp int)
+0:167    Sequence
+0:167      Branch: Return with expression
+0:167        Constant:
+0:167          2 (const int)
+0:173  Function Definition: gggf(f1; ( global mediump int)
+0:173    Function Parameters: 
+0:173      'f' ( in mediump float)
+0:173    Sequence
+0:173      Branch: Return with expression
+0:173        Constant:
+0:173          2 (const int)
+0:175  Function Definition: agggf(f1; ( global mediump int)
+0:175    Function Parameters: 
+0:175      'f' ( in mediump float)
+0:175    Sequence
+0:175      Branch: Return with expression
+0:175        Constant:
+0:175          2 (const int)
+0:187  Function Definition: badswizzle( ( global void)
+0:187    Function Parameters: 
+0:?     Sequence
+0:190      'a' ( temp 5-element array of mediump 3-component vector of float)
+0:191      'a' ( temp 5-element array of mediump 3-component vector of float)
+0:192      'a' ( temp 5-element array of mediump 3-component vector of float)
+0:193      Constant:
+0:193        5 (const int)
+0:194      Constant:
+0:194        0.000000
+0:199  Function Definition: fooinittest( ( global mediump float)
+0:199    Function Parameters: 
+0:201    Sequence
+0:201      Branch: Return with expression
+0:201        Function Call: fooinit( ( global mediump float)
+0:209  Function Definition: fooinit( ( global mediump float)
+0:209    Function Parameters: 
+0:211    Sequence
+0:211      Branch: Return with expression
+0:211        Constant:
+0:211          12.000000
+0:214  Sequence
+0:214    move second child to first child ( temp mediump int)
+0:214      'init1' ( global mediump int)
+0:214      Test condition and select ( temp mediump int)
+0:214        Condition
+0:214        'gl_FrontFacing' ( gl_FrontFacing bool Face)
+0:214        true case
+0:214        Constant:
+0:214          1 (const int)
+0:214        false case
+0:214        Constant:
+0:214          2 (const int)
+0:220  Sequence
+0:220    move second child to first child ( temp mediump int)
+0:220      'init2' ( global mediump int)
+0:220      Test condition and select ( temp mediump int)
+0:220        Condition
+0:220        'gl_FrontFacing' ( gl_FrontFacing bool Face)
+0:220        true case
+0:220        Constant:
+0:220          1 (const int)
+0:220        false case
+0:220        Constant:
+0:220          2 (const int)
+0:?   Linker Objects
+0:?     'a' ( global 3-element array of mediump int)
+0:?     'uint' ( global mediump int)
+0:?     'v' ( smooth in 3-element array of mediump 4-component vector of float)
+0:?     'f' ( invariant global mediump float)
+0:?     'anon@0' (layout( column_major shared) uniform block{layout( column_major shared) uniform mediump int x})
+0:?     'fa' ( global unsized 1-element array of mediump float)
+0:?     'f13' ( invariant global mediump float)
+0:?     'fi' ( invariant temp mediump float)
+0:?     'av' ( invariant smooth in mediump 4-component vector of float)
+0:?     'uv2' ( invariant uniform mediump 2-component vector of float)
+0:?     'uv3' ( invariant uniform mediump 3-component vector of float)
+0:?     'glob2D' ( global lowp sampler2D)
+0:?     'vary2D' ( smooth in lowp sampler2D)
+0:?     's3D' ( uniform mediump sampler3D)
+0:?     's3D2' ( uniform highp sampler3D)
+0:?     'sExt' ( uniform lowp samplerExternalOES)
+0:?     'mediumExt' ( uniform mediump samplerExternalOES)
+0:?     'highExt' ( uniform highp samplerExternalOES)
+0:?     's2Dg' ( uniform lowp sampler2D)
+0:?     'f123' ( global mediump float)
+0:?     'f124' ( global mediump float)
+0:?     'sCube' ( uniform lowp samplerCube)
+0:?     's' ( smooth in structure{ global mediump float f})
+0:?     'fi1' ( const mediump float)
+0:?       3.000000
+0:?     'fi2' ( const mediump float)
+0:?       4.000000
+0:?     'fi3' ( const mediump float)
+0:?       5.000000
+0:?     'init1' ( global mediump int)
+0:?     'init2' ( global mediump int)
+
+
+Linked fragment stage:
+
+
+Shader version: 100
+Requested GL_EXT_frag_depth
+Requested GL_EXT_shader_non_constant_global_initializers
+Requested GL_EXT_shader_texture_lod
+Requested GL_OES_EGL_image_external
+Requested GL_OES_standard_derivatives
+Requested GL_OES_texture_3D
+ERROR: node is still EOpNull!
+0:3  Sequence
+0:3    move second child to first child ( temp 3-element array of mediump int)
+0:3      'a' ( global 3-element array of mediump int)
+0:3      Constant:
+0:3        2 (const int)
+0:3        3 (const int)
+0:3        4 (const int)
+0:17  Function Definition: main( ( global void)
+0:17    Function Parameters: 
+0:19    Sequence
+0:19      Constant:
+0:19        0.000000
+0:20      Sequence
+0:20        move second child to first child ( temp mediump int)
+0:20          's' ( temp mediump int)
+0:20          Constant:
+0:20            16 (const int)
+0:21      move second child to first child ( temp mediump int)
+0:21        's' ( temp mediump int)
+0:21        Constant:
+0:21          4 (const int)
+0:22      Test condition and select ( temp void)
+0:22        Condition
+0:22        Compare Equal ( temp bool)
+0:22          'a' ( global 3-element array of mediump int)
+0:22          'a' ( global 3-element array of mediump int)
+0:22        true case is null
+0:24      move second child to first child ( temp mediump int)
+0:24        'b' ( temp mediump int)
+0:24        bitwise and ( temp mediump int)
+0:24          'c' ( temp mediump int)
+0:24          Constant:
+0:24            4 (const int)
+0:25      move second child to first child ( temp mediump int)
+0:25        'b' ( temp mediump int)
+0:25        mod ( temp mediump int)
+0:25          'c' ( temp mediump int)
+0:25          Constant:
+0:25            4 (const int)
+0:26      move second child to first child ( temp mediump int)
+0:26        'b' ( temp mediump int)
+0:26        inclusive-or ( temp mediump int)
+0:26          'c' ( temp mediump int)
+0:26          Constant:
+0:26            4 (const int)
+0:27      right shift second child into first child ( temp mediump int)
+0:27        'b' ( temp mediump int)
+0:27        Constant:
+0:27          2 (const int)
+0:28      left shift second child into first child ( temp mediump int)
+0:28        'b' ( temp mediump int)
+0:28        Constant:
+0:28          2 (const int)
+0:29      mod second child into first child ( temp mediump int)
+0:29        'b' ( temp mediump int)
+0:29        Constant:
+0:29          3 (const int)
+0:36      move second child to first child ( temp structure{ temp mediump float f,  temp 10-element array of mediump float a})
+0:36        's1' ( temp structure{ temp mediump float f,  temp 10-element array of mediump float a})
+0:36        's2' ( temp structure{ temp mediump float f,  temp 10-element array of mediump float a})
+0:37      Test condition and select ( temp void)
+0:37        Condition
+0:37        Compare Equal ( temp bool)
+0:37          's1' ( temp structure{ temp mediump float f,  temp 10-element array of mediump float a})
+0:37          's2' ( temp structure{ temp mediump float f,  temp 10-element array of mediump float a})
+0:37        true case is null
+0:38      Test condition and select ( temp void)
+0:38        Condition
+0:38        Compare Not Equal ( temp bool)
+0:38          's1' ( temp structure{ temp mediump float f,  temp 10-element array of mediump float a})
+0:38          's2' ( temp structure{ temp mediump float f,  temp 10-element array of mediump float a})
+0:38        true case is null
+0:40      'b' ( temp mediump int)
+0:151  Sequence
+0:151    move second child to first child ( temp mediump float)
+0:151      'f123' ( global mediump float)
+0:151      Constant:
+0:151        4.000000
+0:152  Sequence
+0:152    move second child to first child ( temp mediump float)
+0:152      'f124' ( global mediump float)
+0:152      Constant:
+0:152        50000000000.000000
+0:214  Sequence
+0:214    move second child to first child ( temp mediump int)
+0:214      'init1' ( global mediump int)
+0:214      Test condition and select ( temp mediump int)
+0:214        Condition
+0:214        'gl_FrontFacing' ( gl_FrontFacing bool Face)
+0:214        true case
+0:214        Constant:
+0:214          1 (const int)
+0:214        false case
+0:214        Constant:
+0:214          2 (const int)
+0:220  Sequence
+0:220    move second child to first child ( temp mediump int)
+0:220      'init2' ( global mediump int)
+0:220      Test condition and select ( temp mediump int)
+0:220        Condition
+0:220        'gl_FrontFacing' ( gl_FrontFacing bool Face)
+0:220        true case
+0:220        Constant:
+0:220          1 (const int)
+0:220        false case
+0:220        Constant:
+0:220          2 (const int)
+0:?   Linker Objects
+0:?     'a' ( global 3-element array of mediump int)
+0:?     'uint' ( global mediump int)
+0:?     'v' ( smooth in 3-element array of mediump 4-component vector of float)
+0:?     'f' ( invariant global mediump float)
+0:?     'anon@0' (layout( column_major shared) uniform block{layout( column_major shared) uniform mediump int x})
+0:?     'fa' ( global 1-element array of mediump float)
+0:?     'f13' ( invariant global mediump float)
+0:?     'fi' ( invariant temp mediump float)
+0:?     'av' ( invariant smooth in mediump 4-component vector of float)
+0:?     'uv2' ( invariant uniform mediump 2-component vector of float)
+0:?     'uv3' ( invariant uniform mediump 3-component vector of float)
+0:?     'glob2D' ( global lowp sampler2D)
+0:?     'vary2D' ( smooth in lowp sampler2D)
+0:?     's3D' ( uniform mediump sampler3D)
+0:?     's3D2' ( uniform highp sampler3D)
+0:?     'sExt' ( uniform lowp samplerExternalOES)
+0:?     'mediumExt' ( uniform mediump samplerExternalOES)
+0:?     'highExt' ( uniform highp samplerExternalOES)
+0:?     's2Dg' ( uniform lowp sampler2D)
+0:?     'f123' ( global mediump float)
+0:?     'f124' ( global mediump float)
+0:?     'sCube' ( uniform lowp samplerCube)
+0:?     's' ( smooth in structure{ global mediump float f})
+0:?     'fi1' ( const mediump float)
+0:?       3.000000
+0:?     'fi2' ( const mediump float)
+0:?       4.000000
+0:?     'fi3' ( const mediump float)
+0:?       5.000000
+0:?     'init1' ( global mediump int)
+0:?     'init2' ( global mediump int)
+

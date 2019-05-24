@@ -1,0 +1,15 @@
+hlsl.reflection.binding.vert
+
+Linked vertex stage:
+
+
+Uniform reflection:
+t1: offset -1, type 8b5d, size 1, index -1, binding 15
+s1: offset -1, type 0, size 1, index -1, binding 5
+t1a: offset -1, type 8b5d, size 1, index -1, binding 16
+s1a: offset -1, type 0, size 1, index -1, binding 6
+
+Uniform block reflection:
+
+Vertex attribute reflection:
+

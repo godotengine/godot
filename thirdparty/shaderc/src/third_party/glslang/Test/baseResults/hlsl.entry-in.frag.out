@@ -1,0 +1,286 @@
+hlsl.entry-in.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:8  Function Definition: fun(struct-InParam-vf2-vf4-vi21; ( temp float)
+0:8    Function Parameters: 
+0:8      'p' ( in structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:?     Sequence
+0:9      Branch: Return with expression
+0:9        add ( temp float)
+0:9          direct index ( temp float)
+0:9            v: direct index for structure ( temp 2-component vector of float)
+0:9              'p' ( in structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:9              Constant:
+0:9                0 (const int)
+0:9            Constant:
+0:9              1 (const int)
+0:9          direct index ( temp float)
+0:9            fragCoord: direct index for structure ( temp 4-component vector of float)
+0:9              'p' ( in structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:9              Constant:
+0:9                1 (const int)
+0:9            Constant:
+0:9              0 (const int)
+0:13  Function Definition: @PixelShaderFunction(struct-InParam-vf2-vf4-vi21; ( temp 4-component vector of float)
+0:13    Function Parameters: 
+0:13      'i' ( in structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:?     Sequence
+0:15      move second child to first child ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:15        'local' ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:15        'i' ( in structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:16      Sequence
+0:16        move second child to first child ( temp float)
+0:16          'ret1' ( temp float)
+0:16          Function Call: fun(struct-InParam-vf2-vf4-vi21; ( temp float)
+0:16            'local' ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:17      Sequence
+0:17        move second child to first child ( temp float)
+0:17          'ret2' ( temp float)
+0:17          Function Call: fun(struct-InParam-vf2-vf4-vi21; ( temp float)
+0:17            'i' ( in structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:19      Branch: Return with expression
+0:19        vector-scale ( temp 4-component vector of float)
+0:19          vector-scale ( temp 4-component vector of float)
+0:19            fragCoord: direct index for structure ( temp 4-component vector of float)
+0:19              'local' ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:19              Constant:
+0:19                1 (const int)
+0:19            'ret1' ( temp float)
+0:19          'ret2' ( temp float)
+0:13  Function Definition: PixelShaderFunction( ( temp void)
+0:13    Function Parameters: 
+0:?     Sequence
+0:13      Sequence
+0:13        move second child to first child ( temp 2-component vector of float)
+0:13          v: direct index for structure ( temp 2-component vector of float)
+0:?             'i' ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:13            Constant:
+0:13              0 (const int)
+0:?           'i.v' (layout( location=0) in 2-component vector of float)
+0:13        move second child to first child ( temp 4-component vector of float)
+0:13          fragCoord: direct index for structure ( temp 4-component vector of float)
+0:?             'i' ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:13            Constant:
+0:13              1 (const int)
+0:?           'i.fragCoord' ( in 4-component vector of float FragCoord)
+0:13        move second child to first child ( temp 2-component vector of int)
+0:13          i2: direct index for structure ( temp 2-component vector of int)
+0:?             'i' ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:13            Constant:
+0:13              2 (const int)
+0:?           'i.i2' (layout( location=1) flat in 2-component vector of int)
+0:13      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:13        Function Call: @PixelShaderFunction(struct-InParam-vf2-vf4-vi21; ( temp 4-component vector of float)
+0:?           'i' ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'i.fragCoord' ( in 4-component vector of float FragCoord)
+0:?     'i.v' (layout( location=0) in 2-component vector of float)
+0:?     'i.i2' (layout( location=1) flat in 2-component vector of int)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:8  Function Definition: fun(struct-InParam-vf2-vf4-vi21; ( temp float)
+0:8    Function Parameters: 
+0:8      'p' ( in structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:?     Sequence
+0:9      Branch: Return with expression
+0:9        add ( temp float)
+0:9          direct index ( temp float)
+0:9            v: direct index for structure ( temp 2-component vector of float)
+0:9              'p' ( in structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:9              Constant:
+0:9                0 (const int)
+0:9            Constant:
+0:9              1 (const int)
+0:9          direct index ( temp float)
+0:9            fragCoord: direct index for structure ( temp 4-component vector of float)
+0:9              'p' ( in structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:9              Constant:
+0:9                1 (const int)
+0:9            Constant:
+0:9              0 (const int)
+0:13  Function Definition: @PixelShaderFunction(struct-InParam-vf2-vf4-vi21; ( temp 4-component vector of float)
+0:13    Function Parameters: 
+0:13      'i' ( in structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:?     Sequence
+0:15      move second child to first child ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:15        'local' ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:15        'i' ( in structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:16      Sequence
+0:16        move second child to first child ( temp float)
+0:16          'ret1' ( temp float)
+0:16          Function Call: fun(struct-InParam-vf2-vf4-vi21; ( temp float)
+0:16            'local' ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:17      Sequence
+0:17        move second child to first child ( temp float)
+0:17          'ret2' ( temp float)
+0:17          Function Call: fun(struct-InParam-vf2-vf4-vi21; ( temp float)
+0:17            'i' ( in structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:19      Branch: Return with expression
+0:19        vector-scale ( temp 4-component vector of float)
+0:19          vector-scale ( temp 4-component vector of float)
+0:19            fragCoord: direct index for structure ( temp 4-component vector of float)
+0:19              'local' ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:19              Constant:
+0:19                1 (const int)
+0:19            'ret1' ( temp float)
+0:19          'ret2' ( temp float)
+0:13  Function Definition: PixelShaderFunction( ( temp void)
+0:13    Function Parameters: 
+0:?     Sequence
+0:13      Sequence
+0:13        move second child to first child ( temp 2-component vector of float)
+0:13          v: direct index for structure ( temp 2-component vector of float)
+0:?             'i' ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:13            Constant:
+0:13              0 (const int)
+0:?           'i.v' (layout( location=0) in 2-component vector of float)
+0:13        move second child to first child ( temp 4-component vector of float)
+0:13          fragCoord: direct index for structure ( temp 4-component vector of float)
+0:?             'i' ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:13            Constant:
+0:13              1 (const int)
+0:?           'i.fragCoord' ( in 4-component vector of float FragCoord)
+0:13        move second child to first child ( temp 2-component vector of int)
+0:13          i2: direct index for structure ( temp 2-component vector of int)
+0:?             'i' ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:13            Constant:
+0:13              2 (const int)
+0:?           'i.i2' (layout( location=1) flat in 2-component vector of int)
+0:13      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:13        Function Call: @PixelShaderFunction(struct-InParam-vf2-vf4-vi21; ( temp 4-component vector of float)
+0:?           'i' ( temp structure{ temp 2-component vector of float v,  temp 4-component vector of float fragCoord,  temp 2-component vector of int i2})
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'i.fragCoord' ( in 4-component vector of float FragCoord)
+0:?     'i.v' (layout( location=0) in 2-component vector of float)
+0:?     'i.i2' (layout( location=1) flat in 2-component vector of int)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 74
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "PixelShaderFunction" 55 60 65 70
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "PixelShaderFunction"
+                              Name 11  "InParam"
+                              MemberName 11(InParam) 0  "v"
+                              MemberName 11(InParam) 1  "fragCoord"
+                              MemberName 11(InParam) 2  "i2"
+                              Name 15  "fun(struct-InParam-vf2-vf4-vi21;"
+                              Name 14  "p"
+                              Name 19  "@PixelShaderFunction(struct-InParam-vf2-vf4-vi21;"
+                              Name 18  "i"
+                              Name 34  "local"
+                              Name 36  "ret1"
+                              Name 37  "param"
+                              Name 40  "ret2"
+                              Name 41  "param"
+                              Name 53  "i"
+                              Name 55  "i.v"
+                              Name 60  "i.fragCoord"
+                              Name 65  "i.i2"
+                              Name 70  "@entryPointOutput"
+                              Name 71  "param"
+                              Decorate 55(i.v) Location 0
+                              Decorate 60(i.fragCoord) BuiltIn FragCoord
+                              Decorate 65(i.i2) Flat
+                              Decorate 65(i.i2) Location 1
+                              Decorate 70(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 2
+               8:             TypeVector 6(float) 4
+               9:             TypeInt 32 1
+              10:             TypeVector 9(int) 2
+     11(InParam):             TypeStruct 7(fvec2) 8(fvec4) 10(ivec2)
+              12:             TypePointer Function 11(InParam)
+              13:             TypeFunction 6(float) 12(ptr)
+              17:             TypeFunction 8(fvec4) 12(ptr)
+              21:      9(int) Constant 0
+              22:             TypeInt 32 0
+              23:     22(int) Constant 1
+              24:             TypePointer Function 6(float)
+              27:      9(int) Constant 1
+              28:     22(int) Constant 0
+              44:             TypePointer Function 8(fvec4)
+              54:             TypePointer Input 7(fvec2)
+         55(i.v):     54(ptr) Variable Input
+              57:             TypePointer Function 7(fvec2)
+              59:             TypePointer Input 8(fvec4)
+ 60(i.fragCoord):     59(ptr) Variable Input
+              63:      9(int) Constant 2
+              64:             TypePointer Input 10(ivec2)
+        65(i.i2):     64(ptr) Variable Input
+              67:             TypePointer Function 10(ivec2)
+              69:             TypePointer Output 8(fvec4)
+70(@entryPointOutput):     69(ptr) Variable Output
+4(PixelShaderFunction):           2 Function None 3
+               5:             Label
+           53(i):     12(ptr) Variable Function
+       71(param):     12(ptr) Variable Function
+              56:    7(fvec2) Load 55(i.v)
+              58:     57(ptr) AccessChain 53(i) 21
+                              Store 58 56
+              61:    8(fvec4) Load 60(i.fragCoord)
+              62:     44(ptr) AccessChain 53(i) 27
+                              Store 62 61
+              66:   10(ivec2) Load 65(i.i2)
+              68:     67(ptr) AccessChain 53(i) 63
+                              Store 68 66
+              72: 11(InParam) Load 53(i)
+                              Store 71(param) 72
+              73:    8(fvec4) FunctionCall 19(@PixelShaderFunction(struct-InParam-vf2-vf4-vi21;) 71(param)
+                              Store 70(@entryPointOutput) 73
+                              Return
+                              FunctionEnd
+15(fun(struct-InParam-vf2-vf4-vi21;):    6(float) Function None 13
+           14(p):     12(ptr) FunctionParameter
+              16:             Label
+              25:     24(ptr) AccessChain 14(p) 21 23
+              26:    6(float) Load 25
+              29:     24(ptr) AccessChain 14(p) 27 28
+              30:    6(float) Load 29
+              31:    6(float) FAdd 26 30
+                              ReturnValue 31
+                              FunctionEnd
+19(@PixelShaderFunction(struct-InParam-vf2-vf4-vi21;):    8(fvec4) Function None 17
+           18(i):     12(ptr) FunctionParameter
+              20:             Label
+       34(local):     12(ptr) Variable Function
+        36(ret1):     24(ptr) Variable Function
+       37(param):     12(ptr) Variable Function
+        40(ret2):     24(ptr) Variable Function
+       41(param):     12(ptr) Variable Function
+              35: 11(InParam) Load 18(i)
+                              Store 34(local) 35
+              38: 11(InParam) Load 34(local)
+                              Store 37(param) 38
+              39:    6(float) FunctionCall 15(fun(struct-InParam-vf2-vf4-vi21;) 37(param)
+                              Store 36(ret1) 39
+              42: 11(InParam) Load 18(i)
+                              Store 41(param) 42
+              43:    6(float) FunctionCall 15(fun(struct-InParam-vf2-vf4-vi21;) 41(param)
+                              Store 40(ret2) 43
+              45:     44(ptr) AccessChain 34(local) 27
+              46:    8(fvec4) Load 45
+              47:    6(float) Load 36(ret1)
+              48:    8(fvec4) VectorTimesScalar 46 47
+              49:    6(float) Load 40(ret2)
+              50:    8(fvec4) VectorTimesScalar 48 49
+                              ReturnValue 50
+                              FunctionEnd

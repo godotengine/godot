@@ -1,0 +1,317 @@
+hlsl.wavevote.comp
+Shader version: 500
+local_size = (32, 16, 1)
+0:? Sequence
+0:5  Function Definition: @CSMain(vu3; ( temp void)
+0:5    Function Parameters: 
+0:5      'dti' ( in 3-component vector of uint)
+0:?     Sequence
+0:6      move second child to first child ( temp uint64_t)
+0:6        indirect index (layout( row_major std430) buffer uint64_t)
+0:6          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint64_t)
+0:6            'data' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint64_t @data})
+0:6            Constant:
+0:6              0 (const uint)
+0:6          direct index ( temp uint)
+0:6            'dti' ( in 3-component vector of uint)
+0:6            Constant:
+0:6              0 (const int)
+0:6        Construct uint64 (layout( row_major std430) buffer uint64_t)
+0:6          Convert uint to uint64 ( temp 4-component vector of uint64_t)
+0:6            subgroupBallot ( temp 4-component vector of uint)
+0:6              subgroupAny ( temp bool)
+0:6                Compare Equal ( temp bool)
+0:6                  direct index ( temp uint)
+0:6                    'dti' ( in 3-component vector of uint)
+0:6                    Constant:
+0:6                      0 (const int)
+0:6                  Constant:
+0:6                    0 (const uint)
+0:7      move second child to first child ( temp uint64_t)
+0:7        indirect index (layout( row_major std430) buffer uint64_t)
+0:7          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint64_t)
+0:7            'data' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint64_t @data})
+0:7            Constant:
+0:7              0 (const uint)
+0:7          direct index ( temp uint)
+0:7            'dti' ( in 3-component vector of uint)
+0:7            Constant:
+0:7              1 (const int)
+0:7        Construct uint64 (layout( row_major std430) buffer uint64_t)
+0:7          Convert uint to uint64 ( temp 4-component vector of uint64_t)
+0:7            subgroupBallot ( temp 4-component vector of uint)
+0:7              subgroupAll ( temp bool)
+0:7                Compare Equal ( temp bool)
+0:7                  direct index ( temp uint)
+0:7                    'dti' ( in 3-component vector of uint)
+0:7                    Constant:
+0:7                      1 (const int)
+0:7                  Constant:
+0:7                    0 (const uint)
+0:8      move second child to first child ( temp uint64_t)
+0:8        indirect index (layout( row_major std430) buffer uint64_t)
+0:8          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint64_t)
+0:8            'data' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint64_t @data})
+0:8            Constant:
+0:8              0 (const uint)
+0:8          direct index ( temp uint)
+0:8            'dti' ( in 3-component vector of uint)
+0:8            Constant:
+0:8              2 (const int)
+0:8        Construct uint64 (layout( row_major std430) buffer uint64_t)
+0:8          Convert uint to uint64 ( temp 4-component vector of uint64_t)
+0:8            subgroupBallot ( temp 4-component vector of uint)
+0:8              subgroupAllEqual ( temp bool)
+0:8                Compare Equal ( temp bool)
+0:8                  direct index ( temp uint)
+0:8                    'dti' ( in 3-component vector of uint)
+0:8                    Constant:
+0:8                      2 (const int)
+0:8                  Constant:
+0:8                    0 (const uint)
+0:9      move second child to first child ( temp uint64_t)
+0:9        indirect index (layout( row_major std430) buffer uint64_t)
+0:9          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint64_t)
+0:9            'data' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint64_t @data})
+0:9            Constant:
+0:9              0 (const uint)
+0:9          direct index ( temp uint)
+0:9            'dti' ( in 3-component vector of uint)
+0:9            Constant:
+0:9              2 (const int)
+0:9        Construct uint64 (layout( row_major std430) buffer uint64_t)
+0:9          Convert uint to uint64 ( temp 4-component vector of uint64_t)
+0:9            subgroupBallot ( temp 4-component vector of uint)
+0:9              subgroupAllEqual ( temp bool)
+0:9                direct index ( temp uint)
+0:9                  'dti' ( in 3-component vector of uint)
+0:9                  Constant:
+0:9                    2 (const int)
+0:5  Function Definition: CSMain( ( temp void)
+0:5    Function Parameters: 
+0:?     Sequence
+0:5      move second child to first child ( temp 3-component vector of uint)
+0:?         'dti' ( temp 3-component vector of uint)
+0:?         'dti' ( in 3-component vector of uint GlobalInvocationID)
+0:5      Function Call: @CSMain(vu3; ( temp void)
+0:?         'dti' ( temp 3-component vector of uint)
+0:?   Linker Objects
+0:?     'data' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint64_t @data})
+0:?     'dti' ( in 3-component vector of uint GlobalInvocationID)
+
+
+Linked compute stage:
+
+
+Shader version: 500
+local_size = (32, 16, 1)
+0:? Sequence
+0:5  Function Definition: @CSMain(vu3; ( temp void)
+0:5    Function Parameters: 
+0:5      'dti' ( in 3-component vector of uint)
+0:?     Sequence
+0:6      move second child to first child ( temp uint64_t)
+0:6        indirect index (layout( row_major std430) buffer uint64_t)
+0:6          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint64_t)
+0:6            'data' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint64_t @data})
+0:6            Constant:
+0:6              0 (const uint)
+0:6          direct index ( temp uint)
+0:6            'dti' ( in 3-component vector of uint)
+0:6            Constant:
+0:6              0 (const int)
+0:6        Construct uint64 (layout( row_major std430) buffer uint64_t)
+0:6          Convert uint to uint64 ( temp 4-component vector of uint64_t)
+0:6            subgroupBallot ( temp 4-component vector of uint)
+0:6              subgroupAny ( temp bool)
+0:6                Compare Equal ( temp bool)
+0:6                  direct index ( temp uint)
+0:6                    'dti' ( in 3-component vector of uint)
+0:6                    Constant:
+0:6                      0 (const int)
+0:6                  Constant:
+0:6                    0 (const uint)
+0:7      move second child to first child ( temp uint64_t)
+0:7        indirect index (layout( row_major std430) buffer uint64_t)
+0:7          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint64_t)
+0:7            'data' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint64_t @data})
+0:7            Constant:
+0:7              0 (const uint)
+0:7          direct index ( temp uint)
+0:7            'dti' ( in 3-component vector of uint)
+0:7            Constant:
+0:7              1 (const int)
+0:7        Construct uint64 (layout( row_major std430) buffer uint64_t)
+0:7          Convert uint to uint64 ( temp 4-component vector of uint64_t)
+0:7            subgroupBallot ( temp 4-component vector of uint)
+0:7              subgroupAll ( temp bool)
+0:7                Compare Equal ( temp bool)
+0:7                  direct index ( temp uint)
+0:7                    'dti' ( in 3-component vector of uint)
+0:7                    Constant:
+0:7                      1 (const int)
+0:7                  Constant:
+0:7                    0 (const uint)
+0:8      move second child to first child ( temp uint64_t)
+0:8        indirect index (layout( row_major std430) buffer uint64_t)
+0:8          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint64_t)
+0:8            'data' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint64_t @data})
+0:8            Constant:
+0:8              0 (const uint)
+0:8          direct index ( temp uint)
+0:8            'dti' ( in 3-component vector of uint)
+0:8            Constant:
+0:8              2 (const int)
+0:8        Construct uint64 (layout( row_major std430) buffer uint64_t)
+0:8          Convert uint to uint64 ( temp 4-component vector of uint64_t)
+0:8            subgroupBallot ( temp 4-component vector of uint)
+0:8              subgroupAllEqual ( temp bool)
+0:8                Compare Equal ( temp bool)
+0:8                  direct index ( temp uint)
+0:8                    'dti' ( in 3-component vector of uint)
+0:8                    Constant:
+0:8                      2 (const int)
+0:8                  Constant:
+0:8                    0 (const uint)
+0:9      move second child to first child ( temp uint64_t)
+0:9        indirect index (layout( row_major std430) buffer uint64_t)
+0:9          @data: direct index for structure (layout( row_major std430) buffer unsized 1-element array of uint64_t)
+0:9            'data' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint64_t @data})
+0:9            Constant:
+0:9              0 (const uint)
+0:9          direct index ( temp uint)
+0:9            'dti' ( in 3-component vector of uint)
+0:9            Constant:
+0:9              2 (const int)
+0:9        Construct uint64 (layout( row_major std430) buffer uint64_t)
+0:9          Convert uint to uint64 ( temp 4-component vector of uint64_t)
+0:9            subgroupBallot ( temp 4-component vector of uint)
+0:9              subgroupAllEqual ( temp bool)
+0:9                direct index ( temp uint)
+0:9                  'dti' ( in 3-component vector of uint)
+0:9                  Constant:
+0:9                    2 (const int)
+0:5  Function Definition: CSMain( ( temp void)
+0:5    Function Parameters: 
+0:?     Sequence
+0:5      move second child to first child ( temp 3-component vector of uint)
+0:?         'dti' ( temp 3-component vector of uint)
+0:?         'dti' ( in 3-component vector of uint GlobalInvocationID)
+0:5      Function Call: @CSMain(vu3; ( temp void)
+0:?         'dti' ( temp 3-component vector of uint)
+0:?   Linker Objects
+0:?     'data' (layout( row_major std430) buffer block{layout( row_major std430) buffer unsized 1-element array of uint64_t @data})
+0:?     'dti' ( in 3-component vector of uint GlobalInvocationID)
+
+// Module Version 10300
+// Generated by (magic number): 80007
+// Id's are bound by 75
+
+                              Capability Shader
+                              Capability Int64
+                              Capability GroupNonUniform
+                              Capability GroupNonUniformVote
+                              Capability GroupNonUniformBallot
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint GLCompute 4  "CSMain" 70
+                              ExecutionMode 4 LocalSize 32 16 1
+                              Source HLSL 500
+                              Name 4  "CSMain"
+                              Name 11  "@CSMain(vu3;"
+                              Name 10  "dti"
+                              Name 15  "data"
+                              MemberName 15(data) 0  "@data"
+                              Name 17  "data"
+                              Name 68  "dti"
+                              Name 70  "dti"
+                              Name 72  "param"
+                              Decorate 14 ArrayStride 8
+                              MemberDecorate 15(data) 0 Offset 0
+                              Decorate 15(data) BufferBlock
+                              Decorate 17(data) DescriptorSet 0
+                              Decorate 17(data) Binding 0
+                              Decorate 70(dti) BuiltIn GlobalInvocationId
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeInt 32 0
+               7:             TypeVector 6(int) 3
+               8:             TypePointer Function 7(ivec3)
+               9:             TypeFunction 2 8(ptr)
+              13:             TypeInt 64 0
+              14:             TypeRuntimeArray 13(int64_t)
+        15(data):             TypeStruct 14
+              16:             TypePointer Uniform 15(data)
+        17(data):     16(ptr) Variable Uniform
+              18:             TypeInt 32 1
+              19:     18(int) Constant 0
+              20:      6(int) Constant 0
+              21:             TypePointer Function 6(int)
+              26:             TypeBool
+              28:      6(int) Constant 3
+              30:             TypeVector 6(int) 4
+              32:             TypeVector 13(int64_t) 4
+              35:             TypePointer Uniform 13(int64_t)
+              37:      6(int) Constant 1
+              48:      6(int) Constant 2
+              69:             TypePointer Input 7(ivec3)
+         70(dti):     69(ptr) Variable Input
+       4(CSMain):           2 Function None 3
+               5:             Label
+         68(dti):      8(ptr) Variable Function
+       72(param):      8(ptr) Variable Function
+              71:    7(ivec3) Load 70(dti)
+                              Store 68(dti) 71
+              73:    7(ivec3) Load 68(dti)
+                              Store 72(param) 73
+              74:           2 FunctionCall 11(@CSMain(vu3;) 72(param)
+                              Return
+                              FunctionEnd
+11(@CSMain(vu3;):           2 Function None 9
+         10(dti):      8(ptr) FunctionParameter
+              12:             Label
+              22:     21(ptr) AccessChain 10(dti) 20
+              23:      6(int) Load 22
+              24:     21(ptr) AccessChain 10(dti) 20
+              25:      6(int) Load 24
+              27:    26(bool) IEqual 25 20
+              29:    26(bool) GroupNonUniformAny 28 27
+              31:   30(ivec4) GroupNonUniformBallot 28 29
+              33: 32(i64vec4) UConvert 31
+              34: 13(int64_t) CompositeExtract 33 0
+              36:     35(ptr) AccessChain 17(data) 19 23
+                              Store 36 34
+              38:     21(ptr) AccessChain 10(dti) 37
+              39:      6(int) Load 38
+              40:     21(ptr) AccessChain 10(dti) 37
+              41:      6(int) Load 40
+              42:    26(bool) IEqual 41 20
+              43:    26(bool) GroupNonUniformAll 28 42
+              44:   30(ivec4) GroupNonUniformBallot 28 43
+              45: 32(i64vec4) UConvert 44
+              46: 13(int64_t) CompositeExtract 45 0
+              47:     35(ptr) AccessChain 17(data) 19 39
+                              Store 47 46
+              49:     21(ptr) AccessChain 10(dti) 48
+              50:      6(int) Load 49
+              51:     21(ptr) AccessChain 10(dti) 48
+              52:      6(int) Load 51
+              53:    26(bool) IEqual 52 20
+              54:    26(bool) GroupNonUniformAllEqual 28 53
+              55:   30(ivec4) GroupNonUniformBallot 28 54
+              56: 32(i64vec4) UConvert 55
+              57: 13(int64_t) CompositeExtract 56 0
+              58:     35(ptr) AccessChain 17(data) 19 50
+                              Store 58 57
+              59:     21(ptr) AccessChain 10(dti) 48
+              60:      6(int) Load 59
+              61:     21(ptr) AccessChain 10(dti) 48
+              62:      6(int) Load 61
+              63:    26(bool) GroupNonUniformAllEqual 28 62
+              64:   30(ivec4) GroupNonUniformBallot 28 63
+              65: 32(i64vec4) UConvert 64
+              66: 13(int64_t) CompositeExtract 65 0
+              67:     35(ptr) AccessChain 17(data) 19 60
+                              Store 67 66
+                              Return
+                              FunctionEnd

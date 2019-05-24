@@ -1,0 +1,599 @@
+specExamples.vert
+ERROR: 0:29: 'location' : can only apply to uniform, buffer, in, or out storage qualifiers 
+ERROR: 0:31: 'triangles' : unrecognized layout identifier, or qualifier requires assignment (e.g., binding = 4) 
+ERROR: 0:31: 'invocations' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:33: 'lines' : unrecognized layout identifier, or qualifier requires assignment (e.g., binding = 4) 
+ERROR: 0:35: 'triangle_strip' : unrecognized layout identifier, or qualifier requires assignment (e.g., binding = 4) 
+ERROR: 0:35: 'max_vertices' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:36: 'max_vertices' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:37: 'triangle_strip' : unrecognized layout identifier, or qualifier requires assignment (e.g., binding = 4) 
+ERROR: 0:41: 'stream' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:43: 'stream' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:45: 'stream' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:46: 'stream' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:47: 'stream' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:50: 'stream' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:55: 'stream' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:80: 's17' : redefinition 
+ERROR: 0:85: 'binding' : atomic_uint binding is too large; see gl_MaxAtomicCounterBindings 
+ERROR: 0:87: 'binding' : atomic_uint binding is too large; see gl_MaxAtomicCounterBindings 
+ERROR: 0:89: 'binding' : atomic_uint binding is too large 
+ERROR: 0:91: 'bar' : redefinition 
+ERROR: 0:92: 'atomic_uint' : layout(binding=X) is required 
+ERROR: 0:94: 'a2' : redefinition 
+ERROR: 0:95: 'binding' : atomic_uint binding is too large; see gl_MaxAtomicCounterBindings 
+ERROR: 0:96: 'binding' : atomic_uint binding is too large; see gl_MaxAtomicCounterBindings 
+ERROR: 0:97: 'binding' : atomic_uint binding is too large; see gl_MaxAtomicCounterBindings 
+ERROR: 0:106: '' : vertex input cannot be further qualified 
+ERROR: 0:106: 'redeclaration' : cannot change storage, memory, or auxiliary qualification of gl_FrontColor
+ERROR: 0:112: 'ColorIvn' : identifier not previously declared 
+ERROR: 0:132: 'shared' : not supported in this stage: vertex
+ERROR: 0:134: '' : function does not return a value: funcA
+ERROR: 0:136: '' : function does not return a value: funcB
+ERROR: 0:153: '' : function does not return a value: func3
+ERROR: 0:170: 'coherent' : argument cannot drop memory qualifier when passed to formal parameter 
+ERROR: 33 compilation errors.  No code generated.
+
+
+Shader version: 430
+Requested GL_3DL_array_objects
+ERROR: node is still EOpNull!
+0:134  Function Definition: funcA(I21; ( global 4-component vector of float)
+0:134    Function Parameters: 
+0:134      'a' ( restrict in image2D)
+0:136  Function Definition: funcB(I21; ( global 4-component vector of float)
+0:136    Function Parameters: 
+0:136      'a' ( in image2D)
+0:140  Function Definition: func(f1;f1;f1;f1; ( global float)
+0:140    Function Parameters: 
+0:140      'e' ( in float)
+0:140      'f' ( in float)
+0:140      'g' ( in float)
+0:140      'h' ( in float)
+0:142    Sequence
+0:142      Branch: Return with expression
+0:142        add ( temp float)
+0:142          component-wise multiply ( temp float)
+0:142            'e' ( in float)
+0:142            'f' ( in float)
+0:142          component-wise multiply ( temp float)
+0:142            'g' ( in float)
+0:142            'h' ( in float)
+0:146  Function Definition: func2(f1;f1;f1;f1; ( global float)
+0:146    Function Parameters: 
+0:146      'e' ( in float)
+0:146      'f' ( in float)
+0:146      'g' ( in float)
+0:146      'h' ( in float)
+0:148    Sequence
+0:148      Sequence
+0:148        move second child to first child ( temp float)
+0:148          'result' ( noContraction temp float)
+0:148          add ( temp float)
+0:148            component-wise multiply ( temp float)
+0:148              'e' ( in float)
+0:148              'f' ( in float)
+0:148            component-wise multiply ( temp float)
+0:148              'g' ( in float)
+0:148              'h' ( in float)
+0:150      Branch: Return with expression
+0:150        'result' ( noContraction temp float)
+0:153  Function Definition: func3(f1;f1;f1; ( global float)
+0:153    Function Parameters: 
+0:153      'i' ( in float)
+0:153      'j' ( in float)
+0:153      'k' ( noContraction out float)
+0:155    Sequence
+0:155      move second child to first child ( temp float)
+0:155        'k' ( noContraction out float)
+0:155        add ( temp float)
+0:155          component-wise multiply ( temp float)
+0:155            'i' ( in float)
+0:155            'i' ( in float)
+0:155          'j' ( in float)
+0:158  Function Definition: main( ( global void)
+0:158    Function Parameters: 
+0:160    Sequence
+0:160      Sequence
+0:160        move second child to first child ( temp 3-component vector of float)
+0:160          'r' ( temp 3-component vector of float)
+0:160          Construct vec3 ( temp 3-component vector of float)
+0:160            component-wise multiply ( temp 4-component vector of float)
+0:160              'a' ( in 4-component vector of float)
+0:160              'b' ( in 4-component vector of float)
+0:161      Sequence
+0:161        move second child to first child ( temp 3-component vector of float)
+0:161          's' ( temp 3-component vector of float)
+0:161          Construct vec3 ( temp 3-component vector of float)
+0:161            component-wise multiply ( temp 4-component vector of float)
+0:161              'c' ( in 4-component vector of float)
+0:161              'd' ( in 4-component vector of float)
+0:162      move second child to first child ( temp 3-component vector of float)
+0:162        vector swizzle ( noContraction temp 3-component vector of float)
+0:162          'v' ( noContraction smooth out 4-component vector of float)
+0:162          Sequence
+0:162            Constant:
+0:162              0 (const int)
+0:162            Constant:
+0:162              1 (const int)
+0:162            Constant:
+0:162              2 (const int)
+0:162        add ( temp 3-component vector of float)
+0:162          'r' ( temp 3-component vector of float)
+0:162          's' ( temp 3-component vector of float)
+0:163      move second child to first child ( temp float)
+0:163        direct index ( noContraction temp float)
+0:163          'v' ( noContraction smooth out 4-component vector of float)
+0:163          Constant:
+0:163            3 (const int)
+0:163        add ( temp float)
+0:163          component-wise multiply ( temp float)
+0:163            direct index ( temp float)
+0:163              'a' ( in 4-component vector of float)
+0:163              Constant:
+0:163                3 (const int)
+0:163            direct index ( temp float)
+0:163              'b' ( in 4-component vector of float)
+0:163              Constant:
+0:163                3 (const int)
+0:163          component-wise multiply ( temp float)
+0:163            direct index ( temp float)
+0:163              'c' ( in 4-component vector of float)
+0:163              Constant:
+0:163                3 (const int)
+0:163            direct index ( temp float)
+0:163              'd' ( in 4-component vector of float)
+0:163              Constant:
+0:163                3 (const int)
+0:164      move second child to first child ( temp float)
+0:164        direct index ( noContraction temp float)
+0:164          'v' ( noContraction smooth out 4-component vector of float)
+0:164          Constant:
+0:164            0 (const int)
+0:164        Function Call: func(f1;f1;f1;f1; ( global float)
+0:164          direct index ( temp float)
+0:164            'a' ( in 4-component vector of float)
+0:164            Constant:
+0:164              0 (const int)
+0:164          direct index ( temp float)
+0:164            'b' ( in 4-component vector of float)
+0:164            Constant:
+0:164              0 (const int)
+0:164          direct index ( temp float)
+0:164            'c' ( in 4-component vector of float)
+0:164            Constant:
+0:164              0 (const int)
+0:164          direct index ( temp float)
+0:164            'd' ( in 4-component vector of float)
+0:164            Constant:
+0:164              0 (const int)
+0:166      move second child to first child ( temp float)
+0:166        direct index ( noContraction temp float)
+0:166          'v' ( noContraction smooth out 4-component vector of float)
+0:166          Constant:
+0:166            0 (const int)
+0:166        Function Call: func2(f1;f1;f1;f1; ( global float)
+0:166          direct index ( temp float)
+0:166            'a' ( in 4-component vector of float)
+0:166            Constant:
+0:166              0 (const int)
+0:166          direct index ( temp float)
+0:166            'b' ( in 4-component vector of float)
+0:166            Constant:
+0:166              0 (const int)
+0:166          direct index ( temp float)
+0:166            'c' ( in 4-component vector of float)
+0:166            Constant:
+0:166              0 (const int)
+0:166          direct index ( temp float)
+0:166            'd' ( in 4-component vector of float)
+0:166            Constant:
+0:166              0 (const int)
+0:167      Function Call: func3(f1;f1;f1; ( global float)
+0:167        component-wise multiply ( temp float)
+0:167          direct index ( temp float)
+0:167            'a' ( in 4-component vector of float)
+0:167            Constant:
+0:167              0 (const int)
+0:167          direct index ( temp float)
+0:167            'b' ( in 4-component vector of float)
+0:167            Constant:
+0:167              0 (const int)
+0:167        component-wise multiply ( temp float)
+0:167          direct index ( temp float)
+0:167            'c' ( in 4-component vector of float)
+0:167            Constant:
+0:167              0 (const int)
+0:167          direct index ( temp float)
+0:167            'd' ( in 4-component vector of float)
+0:167            Constant:
+0:167              0 (const int)
+0:167        direct index ( noContraction temp float)
+0:167          'v' ( noContraction smooth out 4-component vector of float)
+0:167          Constant:
+0:167            0 (const int)
+0:169      Function Call: funcA(I21; ( global 4-component vector of float)
+0:169        'img1' (layout( rgba32f) uniform image2D)
+0:170      Function Call: funcB(I21; ( global 4-component vector of float)
+0:170        'img2' (layout( rgba32f) coherent uniform image2D)
+0:?       Sequence
+0:178        Sequence
+0:178          move second child to first child ( temp structure{ temp float intensity,  temp 3-component vector of float position})
+0:178            'lightVar' ( temp structure{ temp float intensity,  temp 3-component vector of float position})
+0:178            Constant:
+0:178              3.000000
+0:178              1.000000
+0:178              2.000000
+0:178              3.000000
+0:?       Sequence
+0:185        Sequence
+0:185          move second child to first child ( temp 5-element array of float)
+0:185            'a' ( temp 5-element array of float)
+0:185            Construct float ( temp 5-element array of float)
+0:185              'g' ( temp float)
+0:185              Constant:
+0:185                1.000000
+0:185              'g' ( temp float)
+0:185              Constant:
+0:185                2.300000
+0:185              'g' ( temp float)
+0:188        move second child to first child ( temp 3-element array of float)
+0:188          'b' ( temp 3-element array of float)
+0:188          Construct float ( temp 3-element array of float)
+0:188            'g' ( temp float)
+0:188            add ( temp float)
+0:188              'g' ( temp float)
+0:188              Constant:
+0:188                1.000000
+0:188            add ( temp float)
+0:188              'g' ( temp float)
+0:188              Constant:
+0:188                2.000000
+0:191      Sequence
+0:191        Sequence
+0:191          move second child to first child ( temp 2-element array of 4-component vector of float)
+0:191            'b' ( temp 2-element array of 4-component vector of float)
+0:191            Constant:
+0:191              1.000000
+0:191              1.000000
+0:191              1.000000
+0:191              1.000000
+0:191              1.000000
+0:191              1.000000
+0:191              1.000000
+0:191              1.000000
+0:192        Construct vec4 ( temp 3-element array of 2-element array of 4-component vector of float)
+0:192          'b' ( temp 2-element array of 4-component vector of float)
+0:192          'b' ( temp 2-element array of 4-component vector of float)
+0:192          'b' ( temp 2-element array of 4-component vector of float)
+0:193        Construct vec4 ( temp 3-element array of 2-element array of 4-component vector of float)
+0:193          'b' ( temp 2-element array of 4-component vector of float)
+0:193          'b' ( temp 2-element array of 4-component vector of float)
+0:193          'b' ( temp 2-element array of 4-component vector of float)
+0:194        Construct vec4 ( temp 3-element array of 2-element array of 4-component vector of float)
+0:194          'b' ( temp 2-element array of 4-component vector of float)
+0:194          'b' ( temp 2-element array of 4-component vector of float)
+0:194          'b' ( temp 2-element array of 4-component vector of float)
+0:?   Linker Objects
+0:?     'Coords' ( out block{ out 4-component vector of float Position,  out 2-component vector of float Texture})
+0:?     'anon@0' ( out block{ out 4-component vector of float Color})
+0:?     'transforms' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform 4X4 matrix of float ModelViewMatrix, layout( column_major shared) uniform 4X4 matrix of float ModelViewProjectionMatrix, layout( column_major shared) uniform unsized 1-element array of 4-component vector of float a, layout( column_major shared) uniform float Deformation})
+0:?     'normal' (layout( location=3) in 4-component vector of float)
+0:?     'colors' (layout( location=6) in 3-element array of 4-component vector of float)
+0:?     'transforms2' (layout( location=9) in 2-element array of 4X4 matrix of float)
+0:?     's' (layout( location=3) temp structure{ global 3-component vector of float a1,  global 2X2 matrix of float b,  global 2-element array of 4-component vector of float c})
+0:?     'var1' ( smooth out 4-component vector of float)
+0:?     'anon@1' ( out block{ out 4-component vector of float var2,  out 2-component vector of float var3,  out 3-component vector of float var4})
+0:?     'var5' ( smooth out 4-component vector of float)
+0:?     'anon@2' ( out block{ out 4-component vector of float var6})
+0:?     'var7' ( smooth out 4-component vector of float)
+0:?     'anon@3' (layout( row_major std140) uniform block{layout( row_major std140 offset=0) uniform 4X4 matrix of float M1, layout( column_major std140 offset=64) uniform 4X4 matrix of float M2, layout( row_major std140 offset=128) uniform 3X3 matrix of float N1})
+0:?     'anon@4' (layout( column_major shared) uniform block{layout( column_major shared) uniform 4X4 matrix of float M13, layout( row_major shared) uniform 4X4 matrix of float m14, layout( column_major shared) uniform 3X3 matrix of float N12})
+0:?     's17' (layout( binding=3) uniform sampler2D)
+0:?     'a2' (layout( binding=2 offset=4) uniform atomic_uint)
+0:?     'bar' (layout( binding=2) uniform atomic_uint)
+0:?     'bar23' (layout( offset=8) uniform atomic_uint)
+0:?     'b2' (layout( binding=2) uniform atomic_uint)
+0:?     'c2' (layout( binding=3) uniform atomic_uint)
+0:?     'd2' (layout( binding=2) uniform atomic_uint)
+0:?     'anon@5' ( out block{ invariant gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  flat out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out unsized 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:?     'ColorInv' ( smooth out 3-component vector of float)
+0:?     'Color4' ( invariant centroid smooth out 3-component vector of float)
+0:?     'position' ( noContraction smooth out 4-component vector of float)
+0:?     'Color5' ( noContraction smooth out 3-component vector of float)
+0:?     'a' ( in 4-component vector of float)
+0:?     'b' ( in 4-component vector of float)
+0:?     'c' ( in 4-component vector of float)
+0:?     'd' ( in 4-component vector of float)
+0:?     'v' ( noContraction smooth out 4-component vector of float)
+0:?     'anon@6' (layout( column_major shared) coherent buffer block{layout( column_major shared) readonly buffer 4-component vector of float member1, layout( column_major shared) buffer 4-component vector of float member2})
+0:?     'anon@7' (layout( column_major shared) buffer block{layout( column_major shared) coherent readonly buffer 4-component vector of float member1A, layout( column_major shared) coherent buffer 4-component vector of float member2A})
+0:?     'shv' ( shared 4-component vector of float)
+0:?     'img1' (layout( rgba32f) uniform image2D)
+0:?     'img2' (layout( rgba32f) coherent uniform image2D)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 430
+Requested GL_3DL_array_objects
+ERROR: node is still EOpNull!
+0:134  Function Definition: funcA(I21; ( global 4-component vector of float)
+0:134    Function Parameters: 
+0:134      'a' ( restrict in image2D)
+0:136  Function Definition: funcB(I21; ( global 4-component vector of float)
+0:136    Function Parameters: 
+0:136      'a' ( in image2D)
+0:140  Function Definition: func(f1;f1;f1;f1; ( global float)
+0:140    Function Parameters: 
+0:140      'e' ( in float)
+0:140      'f' ( in float)
+0:140      'g' ( in float)
+0:140      'h' ( in float)
+0:142    Sequence
+0:142      Branch: Return with expression
+0:142        add ( temp float)
+0:142          component-wise multiply ( temp float)
+0:142            'e' ( in float)
+0:142            'f' ( in float)
+0:142          component-wise multiply ( temp float)
+0:142            'g' ( in float)
+0:142            'h' ( in float)
+0:146  Function Definition: func2(f1;f1;f1;f1; ( global float)
+0:146    Function Parameters: 
+0:146      'e' ( in float)
+0:146      'f' ( in float)
+0:146      'g' ( in float)
+0:146      'h' ( in float)
+0:148    Sequence
+0:148      Sequence
+0:148        move second child to first child ( temp float)
+0:148          'result' ( noContraction temp float)
+0:148          add ( temp float)
+0:148            component-wise multiply ( temp float)
+0:148              'e' ( in float)
+0:148              'f' ( in float)
+0:148            component-wise multiply ( temp float)
+0:148              'g' ( in float)
+0:148              'h' ( in float)
+0:150      Branch: Return with expression
+0:150        'result' ( noContraction temp float)
+0:153  Function Definition: func3(f1;f1;f1; ( global float)
+0:153    Function Parameters: 
+0:153      'i' ( in float)
+0:153      'j' ( in float)
+0:153      'k' ( noContraction out float)
+0:155    Sequence
+0:155      move second child to first child ( temp float)
+0:155        'k' ( noContraction out float)
+0:155        add ( temp float)
+0:155          component-wise multiply ( temp float)
+0:155            'i' ( in float)
+0:155            'i' ( in float)
+0:155          'j' ( in float)
+0:158  Function Definition: main( ( global void)
+0:158    Function Parameters: 
+0:160    Sequence
+0:160      Sequence
+0:160        move second child to first child ( temp 3-component vector of float)
+0:160          'r' ( temp 3-component vector of float)
+0:160          Construct vec3 ( temp 3-component vector of float)
+0:160            component-wise multiply ( temp 4-component vector of float)
+0:160              'a' ( in 4-component vector of float)
+0:160              'b' ( in 4-component vector of float)
+0:161      Sequence
+0:161        move second child to first child ( temp 3-component vector of float)
+0:161          's' ( temp 3-component vector of float)
+0:161          Construct vec3 ( temp 3-component vector of float)
+0:161            component-wise multiply ( temp 4-component vector of float)
+0:161              'c' ( in 4-component vector of float)
+0:161              'd' ( in 4-component vector of float)
+0:162      move second child to first child ( temp 3-component vector of float)
+0:162        vector swizzle ( noContraction temp 3-component vector of float)
+0:162          'v' ( noContraction smooth out 4-component vector of float)
+0:162          Sequence
+0:162            Constant:
+0:162              0 (const int)
+0:162            Constant:
+0:162              1 (const int)
+0:162            Constant:
+0:162              2 (const int)
+0:162        add ( temp 3-component vector of float)
+0:162          'r' ( temp 3-component vector of float)
+0:162          's' ( temp 3-component vector of float)
+0:163      move second child to first child ( temp float)
+0:163        direct index ( noContraction temp float)
+0:163          'v' ( noContraction smooth out 4-component vector of float)
+0:163          Constant:
+0:163            3 (const int)
+0:163        add ( temp float)
+0:163          component-wise multiply ( temp float)
+0:163            direct index ( temp float)
+0:163              'a' ( in 4-component vector of float)
+0:163              Constant:
+0:163                3 (const int)
+0:163            direct index ( temp float)
+0:163              'b' ( in 4-component vector of float)
+0:163              Constant:
+0:163                3 (const int)
+0:163          component-wise multiply ( temp float)
+0:163            direct index ( temp float)
+0:163              'c' ( in 4-component vector of float)
+0:163              Constant:
+0:163                3 (const int)
+0:163            direct index ( temp float)
+0:163              'd' ( in 4-component vector of float)
+0:163              Constant:
+0:163                3 (const int)
+0:164      move second child to first child ( temp float)
+0:164        direct index ( noContraction temp float)
+0:164          'v' ( noContraction smooth out 4-component vector of float)
+0:164          Constant:
+0:164            0 (const int)
+0:164        Function Call: func(f1;f1;f1;f1; ( global float)
+0:164          direct index ( temp float)
+0:164            'a' ( in 4-component vector of float)
+0:164            Constant:
+0:164              0 (const int)
+0:164          direct index ( temp float)
+0:164            'b' ( in 4-component vector of float)
+0:164            Constant:
+0:164              0 (const int)
+0:164          direct index ( temp float)
+0:164            'c' ( in 4-component vector of float)
+0:164            Constant:
+0:164              0 (const int)
+0:164          direct index ( temp float)
+0:164            'd' ( in 4-component vector of float)
+0:164            Constant:
+0:164              0 (const int)
+0:166      move second child to first child ( temp float)
+0:166        direct index ( noContraction temp float)
+0:166          'v' ( noContraction smooth out 4-component vector of float)
+0:166          Constant:
+0:166            0 (const int)
+0:166        Function Call: func2(f1;f1;f1;f1; ( global float)
+0:166          direct index ( temp float)
+0:166            'a' ( in 4-component vector of float)
+0:166            Constant:
+0:166              0 (const int)
+0:166          direct index ( temp float)
+0:166            'b' ( in 4-component vector of float)
+0:166            Constant:
+0:166              0 (const int)
+0:166          direct index ( temp float)
+0:166            'c' ( in 4-component vector of float)
+0:166            Constant:
+0:166              0 (const int)
+0:166          direct index ( temp float)
+0:166            'd' ( in 4-component vector of float)
+0:166            Constant:
+0:166              0 (const int)
+0:167      Function Call: func3(f1;f1;f1; ( global float)
+0:167        component-wise multiply ( temp float)
+0:167          direct index ( temp float)
+0:167            'a' ( in 4-component vector of float)
+0:167            Constant:
+0:167              0 (const int)
+0:167          direct index ( temp float)
+0:167            'b' ( in 4-component vector of float)
+0:167            Constant:
+0:167              0 (const int)
+0:167        component-wise multiply ( temp float)
+0:167          direct index ( temp float)
+0:167            'c' ( in 4-component vector of float)
+0:167            Constant:
+0:167              0 (const int)
+0:167          direct index ( temp float)
+0:167            'd' ( in 4-component vector of float)
+0:167            Constant:
+0:167              0 (const int)
+0:167        direct index ( noContraction temp float)
+0:167          'v' ( noContraction smooth out 4-component vector of float)
+0:167          Constant:
+0:167            0 (const int)
+0:169      Function Call: funcA(I21; ( global 4-component vector of float)
+0:169        'img1' (layout( rgba32f) uniform image2D)
+0:170      Function Call: funcB(I21; ( global 4-component vector of float)
+0:170        'img2' (layout( rgba32f) coherent uniform image2D)
+0:?       Sequence
+0:178        Sequence
+0:178          move second child to first child ( temp structure{ temp float intensity,  temp 3-component vector of float position})
+0:178            'lightVar' ( temp structure{ temp float intensity,  temp 3-component vector of float position})
+0:178            Constant:
+0:178              3.000000
+0:178              1.000000
+0:178              2.000000
+0:178              3.000000
+0:?       Sequence
+0:185        Sequence
+0:185          move second child to first child ( temp 5-element array of float)
+0:185            'a' ( temp 5-element array of float)
+0:185            Construct float ( temp 5-element array of float)
+0:185              'g' ( temp float)
+0:185              Constant:
+0:185                1.000000
+0:185              'g' ( temp float)
+0:185              Constant:
+0:185                2.300000
+0:185              'g' ( temp float)
+0:188        move second child to first child ( temp 3-element array of float)
+0:188          'b' ( temp 3-element array of float)
+0:188          Construct float ( temp 3-element array of float)
+0:188            'g' ( temp float)
+0:188            add ( temp float)
+0:188              'g' ( temp float)
+0:188              Constant:
+0:188                1.000000
+0:188            add ( temp float)
+0:188              'g' ( temp float)
+0:188              Constant:
+0:188                2.000000
+0:191      Sequence
+0:191        Sequence
+0:191          move second child to first child ( temp 2-element array of 4-component vector of float)
+0:191            'b' ( temp 2-element array of 4-component vector of float)
+0:191            Constant:
+0:191              1.000000
+0:191              1.000000
+0:191              1.000000
+0:191              1.000000
+0:191              1.000000
+0:191              1.000000
+0:191              1.000000
+0:191              1.000000
+0:192        Construct vec4 ( temp 3-element array of 2-element array of 4-component vector of float)
+0:192          'b' ( temp 2-element array of 4-component vector of float)
+0:192          'b' ( temp 2-element array of 4-component vector of float)
+0:192          'b' ( temp 2-element array of 4-component vector of float)
+0:193        Construct vec4 ( temp 3-element array of 2-element array of 4-component vector of float)
+0:193          'b' ( temp 2-element array of 4-component vector of float)
+0:193          'b' ( temp 2-element array of 4-component vector of float)
+0:193          'b' ( temp 2-element array of 4-component vector of float)
+0:194        Construct vec4 ( temp 3-element array of 2-element array of 4-component vector of float)
+0:194          'b' ( temp 2-element array of 4-component vector of float)
+0:194          'b' ( temp 2-element array of 4-component vector of float)
+0:194          'b' ( temp 2-element array of 4-component vector of float)
+0:?   Linker Objects
+0:?     'Coords' ( out block{ out 4-component vector of float Position,  out 2-component vector of float Texture})
+0:?     'anon@0' ( out block{ out 4-component vector of float Color})
+0:?     'transforms' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform 4X4 matrix of float ModelViewMatrix, layout( column_major shared) uniform 4X4 matrix of float ModelViewProjectionMatrix, layout( column_major shared) uniform 1-element array of 4-component vector of float a, layout( column_major shared) uniform float Deformation})
+0:?     'normal' (layout( location=3) in 4-component vector of float)
+0:?     'colors' (layout( location=6) in 3-element array of 4-component vector of float)
+0:?     'transforms2' (layout( location=9) in 2-element array of 4X4 matrix of float)
+0:?     's' (layout( location=3) temp structure{ global 3-component vector of float a1,  global 2X2 matrix of float b,  global 2-element array of 4-component vector of float c})
+0:?     'var1' ( smooth out 4-component vector of float)
+0:?     'anon@1' ( out block{ out 4-component vector of float var2,  out 2-component vector of float var3,  out 3-component vector of float var4})
+0:?     'var5' ( smooth out 4-component vector of float)
+0:?     'anon@2' ( out block{ out 4-component vector of float var6})
+0:?     'var7' ( smooth out 4-component vector of float)
+0:?     'anon@3' (layout( row_major std140) uniform block{layout( row_major std140 offset=0) uniform 4X4 matrix of float M1, layout( column_major std140 offset=64) uniform 4X4 matrix of float M2, layout( row_major std140 offset=128) uniform 3X3 matrix of float N1})
+0:?     'anon@4' (layout( column_major shared) uniform block{layout( column_major shared) uniform 4X4 matrix of float M13, layout( row_major shared) uniform 4X4 matrix of float m14, layout( column_major shared) uniform 3X3 matrix of float N12})
+0:?     's17' (layout( binding=3) uniform sampler2D)
+0:?     'a2' (layout( binding=2 offset=4) uniform atomic_uint)
+0:?     'bar' (layout( binding=2) uniform atomic_uint)
+0:?     'bar23' (layout( offset=8) uniform atomic_uint)
+0:?     'b2' (layout( binding=2) uniform atomic_uint)
+0:?     'c2' (layout( binding=3) uniform atomic_uint)
+0:?     'd2' (layout( binding=2) uniform atomic_uint)
+0:?     'anon@5' ( out block{ invariant gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  flat out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:?     'ColorInv' ( smooth out 3-component vector of float)
+0:?     'Color4' ( invariant centroid smooth out 3-component vector of float)
+0:?     'position' ( noContraction smooth out 4-component vector of float)
+0:?     'Color5' ( noContraction smooth out 3-component vector of float)
+0:?     'a' ( in 4-component vector of float)
+0:?     'b' ( in 4-component vector of float)
+0:?     'c' ( in 4-component vector of float)
+0:?     'd' ( in 4-component vector of float)
+0:?     'v' ( noContraction smooth out 4-component vector of float)
+0:?     'anon@6' (layout( column_major shared) coherent buffer block{layout( column_major shared) readonly buffer 4-component vector of float member1, layout( column_major shared) buffer 4-component vector of float member2})
+0:?     'anon@7' (layout( column_major shared) buffer block{layout( column_major shared) coherent readonly buffer 4-component vector of float member1A, layout( column_major shared) coherent buffer 4-component vector of float member2A})
+0:?     'shv' ( shared 4-component vector of float)
+0:?     'img1' (layout( rgba32f) uniform image2D)
+0:?     'img2' (layout( rgba32f) coherent uniform image2D)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

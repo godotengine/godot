@@ -1,0 +1,19 @@
+cppBad5.vert
+ERROR: 0:4: 'macro expansion' : End of input in macro g
+ERROR: 0:5: '' : compilation terminated 
+ERROR: 2 compilation errors.  No code generated.
+
+
+Shader version: 100
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+
+
+Linked vertex stage:
+
+ERROR: Linking vertex stage: Missing entry point: Each stage requires one entry point
+
+Shader version: 100
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+

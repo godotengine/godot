@@ -1,0 +1,1135 @@
+hlsl.getdimensions.rw.dx10.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+using depth_any
+0:? Sequence
+0:44  Function Definition: @main( ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:44    Function Parameters: 
+0:?     Sequence
+0:63      Sequence
+0:63        move second child to first child ( temp uint)
+0:63          'sizeQueryTemp' ( temp uint)
+0:63          imageQuerySize ( temp uint)
+0:63            'g_tTex1df4' (layout( binding=0 rgba32f) uniform image1D)
+0:63        move second child to first child ( temp uint)
+0:63          'WidthU' ( temp uint)
+0:63          'sizeQueryTemp' ( temp uint)
+0:64      Sequence
+0:64        move second child to first child ( temp uint)
+0:64          'sizeQueryTemp' ( temp uint)
+0:64          imageQuerySize ( temp uint)
+0:64            'g_tTex1di4' (layout( rgba32i) uniform iimage1D)
+0:64        move second child to first child ( temp uint)
+0:64          'WidthU' ( temp uint)
+0:64          'sizeQueryTemp' ( temp uint)
+0:65      Sequence
+0:65        move second child to first child ( temp uint)
+0:65          'sizeQueryTemp' ( temp uint)
+0:65          imageQuerySize ( temp uint)
+0:65            'g_tTex1du4' (layout( rgba32ui) uniform uimage1D)
+0:65        move second child to first child ( temp uint)
+0:65          'WidthU' ( temp uint)
+0:65          'sizeQueryTemp' ( temp uint)
+0:68      Sequence
+0:68        move second child to first child ( temp uint)
+0:68          'sizeQueryTemp' ( temp uint)
+0:68          imageQuerySize ( temp uint)
+0:68            'g_tBuffF' (layout( rgba32f) uniform imageBuffer)
+0:68        move second child to first child ( temp uint)
+0:68          'WidthU' ( temp uint)
+0:68          'sizeQueryTemp' ( temp uint)
+0:69      Sequence
+0:69        move second child to first child ( temp uint)
+0:69          'sizeQueryTemp' ( temp uint)
+0:69          imageQuerySize ( temp uint)
+0:69            'g_tBuffI' (layout( rgba32i) uniform iimageBuffer)
+0:69        move second child to first child ( temp uint)
+0:69          'WidthU' ( temp uint)
+0:69          'sizeQueryTemp' ( temp uint)
+0:70      Sequence
+0:70        move second child to first child ( temp uint)
+0:70          'sizeQueryTemp' ( temp uint)
+0:70          imageQuerySize ( temp uint)
+0:70            'g_tBuffU' (layout( rgba32ui) uniform uimageBuffer)
+0:70        move second child to first child ( temp uint)
+0:70          'WidthU' ( temp uint)
+0:70          'sizeQueryTemp' ( temp uint)
+0:73      Sequence
+0:73        move second child to first child ( temp 2-component vector of uint)
+0:73          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:73          imageQuerySize ( temp 2-component vector of uint)
+0:73            'g_tTex1df4a' (layout( rgba32f) uniform image1DArray)
+0:73        move second child to first child ( temp uint)
+0:73          'WidthU' ( temp uint)
+0:73          direct index ( temp uint)
+0:73            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:73            Constant:
+0:73              0 (const int)
+0:73        move second child to first child ( temp uint)
+0:73          'ElementsU' ( temp uint)
+0:73          direct index ( temp uint)
+0:73            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:73            Constant:
+0:73              1 (const int)
+0:74      Sequence
+0:74        move second child to first child ( temp 2-component vector of uint)
+0:74          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:74          imageQuerySize ( temp 2-component vector of uint)
+0:74            'g_tTex1di4a' (layout( rgba32i) uniform iimage1DArray)
+0:74        move second child to first child ( temp uint)
+0:74          'WidthU' ( temp uint)
+0:74          direct index ( temp uint)
+0:74            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:74            Constant:
+0:74              0 (const int)
+0:74        move second child to first child ( temp uint)
+0:74          'ElementsU' ( temp uint)
+0:74          direct index ( temp uint)
+0:74            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:74            Constant:
+0:74              1 (const int)
+0:75      Sequence
+0:75        move second child to first child ( temp 2-component vector of uint)
+0:75          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:75          imageQuerySize ( temp 2-component vector of uint)
+0:75            'g_tTex1du4a' (layout( rgba32ui) uniform uimage1DArray)
+0:75        move second child to first child ( temp uint)
+0:75          'WidthU' ( temp uint)
+0:75          direct index ( temp uint)
+0:75            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:75            Constant:
+0:75              0 (const int)
+0:75        move second child to first child ( temp uint)
+0:75          'ElementsU' ( temp uint)
+0:75          direct index ( temp uint)
+0:75            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:75            Constant:
+0:75              1 (const int)
+0:78      Sequence
+0:78        move second child to first child ( temp 2-component vector of uint)
+0:78          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:78          imageQuerySize ( temp 2-component vector of uint)
+0:78            'g_tTex2df4' (layout( rgba32f) uniform image2D)
+0:78        move second child to first child ( temp uint)
+0:78          'WidthU' ( temp uint)
+0:78          direct index ( temp uint)
+0:78            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:78            Constant:
+0:78              0 (const int)
+0:78        move second child to first child ( temp uint)
+0:78          'HeightU' ( temp uint)
+0:78          direct index ( temp uint)
+0:78            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:78            Constant:
+0:78              1 (const int)
+0:79      Sequence
+0:79        move second child to first child ( temp 2-component vector of uint)
+0:79          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:79          imageQuerySize ( temp 2-component vector of uint)
+0:79            'g_tTex2di4' (layout( rgba32i) uniform iimage2D)
+0:79        move second child to first child ( temp uint)
+0:79          'WidthU' ( temp uint)
+0:79          direct index ( temp uint)
+0:79            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:79            Constant:
+0:79              0 (const int)
+0:79        move second child to first child ( temp uint)
+0:79          'HeightU' ( temp uint)
+0:79          direct index ( temp uint)
+0:79            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:79            Constant:
+0:79              1 (const int)
+0:80      Sequence
+0:80        move second child to first child ( temp 2-component vector of uint)
+0:80          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:80          imageQuerySize ( temp 2-component vector of uint)
+0:80            'g_tTex2du4' (layout( rgba32ui) uniform uimage2D)
+0:80        move second child to first child ( temp uint)
+0:80          'WidthU' ( temp uint)
+0:80          direct index ( temp uint)
+0:80            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:80            Constant:
+0:80              0 (const int)
+0:80        move second child to first child ( temp uint)
+0:80          'HeightU' ( temp uint)
+0:80          direct index ( temp uint)
+0:80            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:80            Constant:
+0:80              1 (const int)
+0:83      Sequence
+0:83        move second child to first child ( temp 3-component vector of uint)
+0:83          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:83          imageQuerySize ( temp 3-component vector of uint)
+0:83            'g_tTex2df4a' (layout( rgba32f) uniform image2DArray)
+0:83        move second child to first child ( temp uint)
+0:83          'WidthU' ( temp uint)
+0:83          direct index ( temp uint)
+0:83            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:83            Constant:
+0:83              0 (const int)
+0:83        move second child to first child ( temp uint)
+0:83          'HeightU' ( temp uint)
+0:83          direct index ( temp uint)
+0:83            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:83            Constant:
+0:83              1 (const int)
+0:83        move second child to first child ( temp uint)
+0:83          'ElementsU' ( temp uint)
+0:83          direct index ( temp uint)
+0:83            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:83            Constant:
+0:83              2 (const int)
+0:84      Sequence
+0:84        move second child to first child ( temp 3-component vector of uint)
+0:84          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:84          imageQuerySize ( temp 3-component vector of uint)
+0:84            'g_tTex2di4a' (layout( rgba32i) uniform iimage2DArray)
+0:84        move second child to first child ( temp uint)
+0:84          'WidthU' ( temp uint)
+0:84          direct index ( temp uint)
+0:84            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:84            Constant:
+0:84              0 (const int)
+0:84        move second child to first child ( temp uint)
+0:84          'HeightU' ( temp uint)
+0:84          direct index ( temp uint)
+0:84            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:84            Constant:
+0:84              1 (const int)
+0:84        move second child to first child ( temp uint)
+0:84          'ElementsU' ( temp uint)
+0:84          direct index ( temp uint)
+0:84            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:84            Constant:
+0:84              2 (const int)
+0:85      Sequence
+0:85        move second child to first child ( temp 3-component vector of uint)
+0:85          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:85          imageQuerySize ( temp 3-component vector of uint)
+0:85            'g_tTex2du4a' (layout( rgba32ui) uniform uimage2DArray)
+0:85        move second child to first child ( temp uint)
+0:85          'WidthU' ( temp uint)
+0:85          direct index ( temp uint)
+0:85            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:85            Constant:
+0:85              0 (const int)
+0:85        move second child to first child ( temp uint)
+0:85          'HeightU' ( temp uint)
+0:85          direct index ( temp uint)
+0:85            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:85            Constant:
+0:85              1 (const int)
+0:85        move second child to first child ( temp uint)
+0:85          'ElementsU' ( temp uint)
+0:85          direct index ( temp uint)
+0:85            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:85            Constant:
+0:85              2 (const int)
+0:88      Sequence
+0:88        move second child to first child ( temp 3-component vector of uint)
+0:88          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:88          imageQuerySize ( temp 3-component vector of uint)
+0:88            'g_tTex3df4' (layout( rgba32f) uniform image3D)
+0:88        move second child to first child ( temp uint)
+0:88          'WidthU' ( temp uint)
+0:88          direct index ( temp uint)
+0:88            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:88            Constant:
+0:88              0 (const int)
+0:88        move second child to first child ( temp uint)
+0:88          'HeightU' ( temp uint)
+0:88          direct index ( temp uint)
+0:88            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:88            Constant:
+0:88              1 (const int)
+0:88        move second child to first child ( temp uint)
+0:88          'DepthU' ( temp uint)
+0:88          direct index ( temp uint)
+0:88            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:88            Constant:
+0:88              2 (const int)
+0:89      Sequence
+0:89        move second child to first child ( temp 3-component vector of uint)
+0:89          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:89          imageQuerySize ( temp 3-component vector of uint)
+0:89            'g_tTex3di4' (layout( rgba32i) uniform iimage3D)
+0:89        move second child to first child ( temp uint)
+0:89          'WidthU' ( temp uint)
+0:89          direct index ( temp uint)
+0:89            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:89            Constant:
+0:89              0 (const int)
+0:89        move second child to first child ( temp uint)
+0:89          'HeightU' ( temp uint)
+0:89          direct index ( temp uint)
+0:89            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:89            Constant:
+0:89              1 (const int)
+0:89        move second child to first child ( temp uint)
+0:89          'DepthU' ( temp uint)
+0:89          direct index ( temp uint)
+0:89            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:89            Constant:
+0:89              2 (const int)
+0:90      Sequence
+0:90        move second child to first child ( temp 3-component vector of uint)
+0:90          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:90          imageQuerySize ( temp 3-component vector of uint)
+0:90            'g_tTex3du4' (layout( rgba32ui) uniform uimage3D)
+0:90        move second child to first child ( temp uint)
+0:90          'WidthU' ( temp uint)
+0:90          direct index ( temp uint)
+0:90            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:90            Constant:
+0:90              0 (const int)
+0:90        move second child to first child ( temp uint)
+0:90          'HeightU' ( temp uint)
+0:90          direct index ( temp uint)
+0:90            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:90            Constant:
+0:90              1 (const int)
+0:90        move second child to first child ( temp uint)
+0:90          'DepthU' ( temp uint)
+0:90          direct index ( temp uint)
+0:90            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:90            Constant:
+0:90              2 (const int)
+0:92      move second child to first child ( temp 4-component vector of float)
+0:92        Color: direct index for structure ( temp 4-component vector of float)
+0:92          'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:92          Constant:
+0:92            0 (const int)
+0:92        Constant:
+0:92          1.000000
+0:92          1.000000
+0:92          1.000000
+0:92          1.000000
+0:93      move second child to first child ( temp float)
+0:93        Depth: direct index for structure ( temp float)
+0:93          'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:93          Constant:
+0:93            1 (const int)
+0:93        Constant:
+0:93          1.000000
+0:95      Branch: Return with expression
+0:95        'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:44  Function Definition: main( ( temp void)
+0:44    Function Parameters: 
+0:?     Sequence
+0:44      Sequence
+0:44        move second child to first child ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:44          'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:44          Function Call: @main( ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:44        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+0:44          Color: direct index for structure ( temp 4-component vector of float)
+0:44            'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:44            Constant:
+0:44              0 (const int)
+0:44        move second child to first child ( temp float)
+0:?           '@entryPointOutput.Depth' ( out float FragDepth)
+0:44          Depth: direct index for structure ( temp float)
+0:44            'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:44            Constant:
+0:44              1 (const int)
+0:?   Linker Objects
+0:?     'g_sSamp' (layout( binding=0) uniform sampler)
+0:?     'g_tTex1df4' (layout( binding=0 rgba32f) uniform image1D)
+0:?     'g_tTex1di4' (layout( rgba32i) uniform iimage1D)
+0:?     'g_tTex1du4' (layout( rgba32ui) uniform uimage1D)
+0:?     'g_tTex2df4' (layout( rgba32f) uniform image2D)
+0:?     'g_tTex2di4' (layout( rgba32i) uniform iimage2D)
+0:?     'g_tTex2du4' (layout( rgba32ui) uniform uimage2D)
+0:?     'g_tTex3df4' (layout( rgba32f) uniform image3D)
+0:?     'g_tTex3di4' (layout( rgba32i) uniform iimage3D)
+0:?     'g_tTex3du4' (layout( rgba32ui) uniform uimage3D)
+0:?     'g_tTex1df4a' (layout( rgba32f) uniform image1DArray)
+0:?     'g_tTex1di4a' (layout( rgba32i) uniform iimage1DArray)
+0:?     'g_tTex1du4a' (layout( rgba32ui) uniform uimage1DArray)
+0:?     'g_tTex2df4a' (layout( rgba32f) uniform image2DArray)
+0:?     'g_tTex2di4a' (layout( rgba32i) uniform iimage2DArray)
+0:?     'g_tTex2du4a' (layout( rgba32ui) uniform uimage2DArray)
+0:?     'g_tBuffF' (layout( rgba32f) uniform imageBuffer)
+0:?     'g_tBuffI' (layout( rgba32i) uniform iimageBuffer)
+0:?     'g_tBuffU' (layout( rgba32ui) uniform uimageBuffer)
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:?     '@entryPointOutput.Depth' ( out float FragDepth)
+0:?     '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+using depth_any
+0:? Sequence
+0:44  Function Definition: @main( ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:44    Function Parameters: 
+0:?     Sequence
+0:63      Sequence
+0:63        move second child to first child ( temp uint)
+0:63          'sizeQueryTemp' ( temp uint)
+0:63          imageQuerySize ( temp uint)
+0:63            'g_tTex1df4' (layout( binding=0 rgba32f) uniform image1D)
+0:63        move second child to first child ( temp uint)
+0:63          'WidthU' ( temp uint)
+0:63          'sizeQueryTemp' ( temp uint)
+0:64      Sequence
+0:64        move second child to first child ( temp uint)
+0:64          'sizeQueryTemp' ( temp uint)
+0:64          imageQuerySize ( temp uint)
+0:64            'g_tTex1di4' (layout( rgba32i) uniform iimage1D)
+0:64        move second child to first child ( temp uint)
+0:64          'WidthU' ( temp uint)
+0:64          'sizeQueryTemp' ( temp uint)
+0:65      Sequence
+0:65        move second child to first child ( temp uint)
+0:65          'sizeQueryTemp' ( temp uint)
+0:65          imageQuerySize ( temp uint)
+0:65            'g_tTex1du4' (layout( rgba32ui) uniform uimage1D)
+0:65        move second child to first child ( temp uint)
+0:65          'WidthU' ( temp uint)
+0:65          'sizeQueryTemp' ( temp uint)
+0:68      Sequence
+0:68        move second child to first child ( temp uint)
+0:68          'sizeQueryTemp' ( temp uint)
+0:68          imageQuerySize ( temp uint)
+0:68            'g_tBuffF' (layout( rgba32f) uniform imageBuffer)
+0:68        move second child to first child ( temp uint)
+0:68          'WidthU' ( temp uint)
+0:68          'sizeQueryTemp' ( temp uint)
+0:69      Sequence
+0:69        move second child to first child ( temp uint)
+0:69          'sizeQueryTemp' ( temp uint)
+0:69          imageQuerySize ( temp uint)
+0:69            'g_tBuffI' (layout( rgba32i) uniform iimageBuffer)
+0:69        move second child to first child ( temp uint)
+0:69          'WidthU' ( temp uint)
+0:69          'sizeQueryTemp' ( temp uint)
+0:70      Sequence
+0:70        move second child to first child ( temp uint)
+0:70          'sizeQueryTemp' ( temp uint)
+0:70          imageQuerySize ( temp uint)
+0:70            'g_tBuffU' (layout( rgba32ui) uniform uimageBuffer)
+0:70        move second child to first child ( temp uint)
+0:70          'WidthU' ( temp uint)
+0:70          'sizeQueryTemp' ( temp uint)
+0:73      Sequence
+0:73        move second child to first child ( temp 2-component vector of uint)
+0:73          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:73          imageQuerySize ( temp 2-component vector of uint)
+0:73            'g_tTex1df4a' (layout( rgba32f) uniform image1DArray)
+0:73        move second child to first child ( temp uint)
+0:73          'WidthU' ( temp uint)
+0:73          direct index ( temp uint)
+0:73            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:73            Constant:
+0:73              0 (const int)
+0:73        move second child to first child ( temp uint)
+0:73          'ElementsU' ( temp uint)
+0:73          direct index ( temp uint)
+0:73            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:73            Constant:
+0:73              1 (const int)
+0:74      Sequence
+0:74        move second child to first child ( temp 2-component vector of uint)
+0:74          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:74          imageQuerySize ( temp 2-component vector of uint)
+0:74            'g_tTex1di4a' (layout( rgba32i) uniform iimage1DArray)
+0:74        move second child to first child ( temp uint)
+0:74          'WidthU' ( temp uint)
+0:74          direct index ( temp uint)
+0:74            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:74            Constant:
+0:74              0 (const int)
+0:74        move second child to first child ( temp uint)
+0:74          'ElementsU' ( temp uint)
+0:74          direct index ( temp uint)
+0:74            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:74            Constant:
+0:74              1 (const int)
+0:75      Sequence
+0:75        move second child to first child ( temp 2-component vector of uint)
+0:75          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:75          imageQuerySize ( temp 2-component vector of uint)
+0:75            'g_tTex1du4a' (layout( rgba32ui) uniform uimage1DArray)
+0:75        move second child to first child ( temp uint)
+0:75          'WidthU' ( temp uint)
+0:75          direct index ( temp uint)
+0:75            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:75            Constant:
+0:75              0 (const int)
+0:75        move second child to first child ( temp uint)
+0:75          'ElementsU' ( temp uint)
+0:75          direct index ( temp uint)
+0:75            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:75            Constant:
+0:75              1 (const int)
+0:78      Sequence
+0:78        move second child to first child ( temp 2-component vector of uint)
+0:78          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:78          imageQuerySize ( temp 2-component vector of uint)
+0:78            'g_tTex2df4' (layout( rgba32f) uniform image2D)
+0:78        move second child to first child ( temp uint)
+0:78          'WidthU' ( temp uint)
+0:78          direct index ( temp uint)
+0:78            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:78            Constant:
+0:78              0 (const int)
+0:78        move second child to first child ( temp uint)
+0:78          'HeightU' ( temp uint)
+0:78          direct index ( temp uint)
+0:78            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:78            Constant:
+0:78              1 (const int)
+0:79      Sequence
+0:79        move second child to first child ( temp 2-component vector of uint)
+0:79          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:79          imageQuerySize ( temp 2-component vector of uint)
+0:79            'g_tTex2di4' (layout( rgba32i) uniform iimage2D)
+0:79        move second child to first child ( temp uint)
+0:79          'WidthU' ( temp uint)
+0:79          direct index ( temp uint)
+0:79            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:79            Constant:
+0:79              0 (const int)
+0:79        move second child to first child ( temp uint)
+0:79          'HeightU' ( temp uint)
+0:79          direct index ( temp uint)
+0:79            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:79            Constant:
+0:79              1 (const int)
+0:80      Sequence
+0:80        move second child to first child ( temp 2-component vector of uint)
+0:80          'sizeQueryTemp' ( temp 2-component vector of uint)
+0:80          imageQuerySize ( temp 2-component vector of uint)
+0:80            'g_tTex2du4' (layout( rgba32ui) uniform uimage2D)
+0:80        move second child to first child ( temp uint)
+0:80          'WidthU' ( temp uint)
+0:80          direct index ( temp uint)
+0:80            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:80            Constant:
+0:80              0 (const int)
+0:80        move second child to first child ( temp uint)
+0:80          'HeightU' ( temp uint)
+0:80          direct index ( temp uint)
+0:80            'sizeQueryTemp' ( temp 2-component vector of uint)
+0:80            Constant:
+0:80              1 (const int)
+0:83      Sequence
+0:83        move second child to first child ( temp 3-component vector of uint)
+0:83          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:83          imageQuerySize ( temp 3-component vector of uint)
+0:83            'g_tTex2df4a' (layout( rgba32f) uniform image2DArray)
+0:83        move second child to first child ( temp uint)
+0:83          'WidthU' ( temp uint)
+0:83          direct index ( temp uint)
+0:83            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:83            Constant:
+0:83              0 (const int)
+0:83        move second child to first child ( temp uint)
+0:83          'HeightU' ( temp uint)
+0:83          direct index ( temp uint)
+0:83            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:83            Constant:
+0:83              1 (const int)
+0:83        move second child to first child ( temp uint)
+0:83          'ElementsU' ( temp uint)
+0:83          direct index ( temp uint)
+0:83            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:83            Constant:
+0:83              2 (const int)
+0:84      Sequence
+0:84        move second child to first child ( temp 3-component vector of uint)
+0:84          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:84          imageQuerySize ( temp 3-component vector of uint)
+0:84            'g_tTex2di4a' (layout( rgba32i) uniform iimage2DArray)
+0:84        move second child to first child ( temp uint)
+0:84          'WidthU' ( temp uint)
+0:84          direct index ( temp uint)
+0:84            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:84            Constant:
+0:84              0 (const int)
+0:84        move second child to first child ( temp uint)
+0:84          'HeightU' ( temp uint)
+0:84          direct index ( temp uint)
+0:84            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:84            Constant:
+0:84              1 (const int)
+0:84        move second child to first child ( temp uint)
+0:84          'ElementsU' ( temp uint)
+0:84          direct index ( temp uint)
+0:84            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:84            Constant:
+0:84              2 (const int)
+0:85      Sequence
+0:85        move second child to first child ( temp 3-component vector of uint)
+0:85          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:85          imageQuerySize ( temp 3-component vector of uint)
+0:85            'g_tTex2du4a' (layout( rgba32ui) uniform uimage2DArray)
+0:85        move second child to first child ( temp uint)
+0:85          'WidthU' ( temp uint)
+0:85          direct index ( temp uint)
+0:85            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:85            Constant:
+0:85              0 (const int)
+0:85        move second child to first child ( temp uint)
+0:85          'HeightU' ( temp uint)
+0:85          direct index ( temp uint)
+0:85            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:85            Constant:
+0:85              1 (const int)
+0:85        move second child to first child ( temp uint)
+0:85          'ElementsU' ( temp uint)
+0:85          direct index ( temp uint)
+0:85            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:85            Constant:
+0:85              2 (const int)
+0:88      Sequence
+0:88        move second child to first child ( temp 3-component vector of uint)
+0:88          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:88          imageQuerySize ( temp 3-component vector of uint)
+0:88            'g_tTex3df4' (layout( rgba32f) uniform image3D)
+0:88        move second child to first child ( temp uint)
+0:88          'WidthU' ( temp uint)
+0:88          direct index ( temp uint)
+0:88            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:88            Constant:
+0:88              0 (const int)
+0:88        move second child to first child ( temp uint)
+0:88          'HeightU' ( temp uint)
+0:88          direct index ( temp uint)
+0:88            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:88            Constant:
+0:88              1 (const int)
+0:88        move second child to first child ( temp uint)
+0:88          'DepthU' ( temp uint)
+0:88          direct index ( temp uint)
+0:88            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:88            Constant:
+0:88              2 (const int)
+0:89      Sequence
+0:89        move second child to first child ( temp 3-component vector of uint)
+0:89          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:89          imageQuerySize ( temp 3-component vector of uint)
+0:89            'g_tTex3di4' (layout( rgba32i) uniform iimage3D)
+0:89        move second child to first child ( temp uint)
+0:89          'WidthU' ( temp uint)
+0:89          direct index ( temp uint)
+0:89            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:89            Constant:
+0:89              0 (const int)
+0:89        move second child to first child ( temp uint)
+0:89          'HeightU' ( temp uint)
+0:89          direct index ( temp uint)
+0:89            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:89            Constant:
+0:89              1 (const int)
+0:89        move second child to first child ( temp uint)
+0:89          'DepthU' ( temp uint)
+0:89          direct index ( temp uint)
+0:89            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:89            Constant:
+0:89              2 (const int)
+0:90      Sequence
+0:90        move second child to first child ( temp 3-component vector of uint)
+0:90          'sizeQueryTemp' ( temp 3-component vector of uint)
+0:90          imageQuerySize ( temp 3-component vector of uint)
+0:90            'g_tTex3du4' (layout( rgba32ui) uniform uimage3D)
+0:90        move second child to first child ( temp uint)
+0:90          'WidthU' ( temp uint)
+0:90          direct index ( temp uint)
+0:90            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:90            Constant:
+0:90              0 (const int)
+0:90        move second child to first child ( temp uint)
+0:90          'HeightU' ( temp uint)
+0:90          direct index ( temp uint)
+0:90            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:90            Constant:
+0:90              1 (const int)
+0:90        move second child to first child ( temp uint)
+0:90          'DepthU' ( temp uint)
+0:90          direct index ( temp uint)
+0:90            'sizeQueryTemp' ( temp 3-component vector of uint)
+0:90            Constant:
+0:90              2 (const int)
+0:92      move second child to first child ( temp 4-component vector of float)
+0:92        Color: direct index for structure ( temp 4-component vector of float)
+0:92          'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:92          Constant:
+0:92            0 (const int)
+0:92        Constant:
+0:92          1.000000
+0:92          1.000000
+0:92          1.000000
+0:92          1.000000
+0:93      move second child to first child ( temp float)
+0:93        Depth: direct index for structure ( temp float)
+0:93          'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:93          Constant:
+0:93            1 (const int)
+0:93        Constant:
+0:93          1.000000
+0:95      Branch: Return with expression
+0:95        'psout' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:44  Function Definition: main( ( temp void)
+0:44    Function Parameters: 
+0:?     Sequence
+0:44      Sequence
+0:44        move second child to first child ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:44          'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:44          Function Call: @main( ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:44        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+0:44          Color: direct index for structure ( temp 4-component vector of float)
+0:44            'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:44            Constant:
+0:44              0 (const int)
+0:44        move second child to first child ( temp float)
+0:?           '@entryPointOutput.Depth' ( out float FragDepth)
+0:44          Depth: direct index for structure ( temp float)
+0:44            'flattenTemp' ( temp structure{ temp 4-component vector of float Color,  temp float Depth})
+0:44            Constant:
+0:44              1 (const int)
+0:?   Linker Objects
+0:?     'g_sSamp' (layout( binding=0) uniform sampler)
+0:?     'g_tTex1df4' (layout( binding=0 rgba32f) uniform image1D)
+0:?     'g_tTex1di4' (layout( rgba32i) uniform iimage1D)
+0:?     'g_tTex1du4' (layout( rgba32ui) uniform uimage1D)
+0:?     'g_tTex2df4' (layout( rgba32f) uniform image2D)
+0:?     'g_tTex2di4' (layout( rgba32i) uniform iimage2D)
+0:?     'g_tTex2du4' (layout( rgba32ui) uniform uimage2D)
+0:?     'g_tTex3df4' (layout( rgba32f) uniform image3D)
+0:?     'g_tTex3di4' (layout( rgba32i) uniform iimage3D)
+0:?     'g_tTex3du4' (layout( rgba32ui) uniform uimage3D)
+0:?     'g_tTex1df4a' (layout( rgba32f) uniform image1DArray)
+0:?     'g_tTex1di4a' (layout( rgba32i) uniform iimage1DArray)
+0:?     'g_tTex1du4a' (layout( rgba32ui) uniform uimage1DArray)
+0:?     'g_tTex2df4a' (layout( rgba32f) uniform image2DArray)
+0:?     'g_tTex2di4a' (layout( rgba32i) uniform iimage2DArray)
+0:?     'g_tTex2du4a' (layout( rgba32ui) uniform uimage2DArray)
+0:?     'g_tBuffF' (layout( rgba32f) uniform imageBuffer)
+0:?     'g_tBuffI' (layout( rgba32i) uniform iimageBuffer)
+0:?     'g_tBuffU' (layout( rgba32ui) uniform uimageBuffer)
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform int c1,  uniform 2-component vector of int c2,  uniform 3-component vector of int c3,  uniform 4-component vector of int c4,  uniform int o1,  uniform 2-component vector of int o2,  uniform 3-component vector of int o3,  uniform 4-component vector of int o4})
+0:?     '@entryPointOutput.Depth' ( out float FragDepth)
+0:?     '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 232
+
+                              Capability Shader
+                              Capability Image1D
+                              Capability ImageBuffer
+                              Capability ImageQuery
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 216 220
+                              ExecutionMode 4 OriginUpperLeft
+                              ExecutionMode 4 DepthReplacing
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "PS_OUTPUT"
+                              MemberName 8(PS_OUTPUT) 0  "Color"
+                              MemberName 8(PS_OUTPUT) 1  "Depth"
+                              Name 10  "@main("
+                              Name 14  "sizeQueryTemp"
+                              Name 17  "g_tTex1df4"
+                              Name 20  "WidthU"
+                              Name 22  "sizeQueryTemp"
+                              Name 26  "g_tTex1di4"
+                              Name 30  "sizeQueryTemp"
+                              Name 33  "g_tTex1du4"
+                              Name 37  "sizeQueryTemp"
+                              Name 40  "g_tBuffF"
+                              Name 44  "sizeQueryTemp"
+                              Name 47  "g_tBuffI"
+                              Name 51  "sizeQueryTemp"
+                              Name 54  "g_tBuffU"
+                              Name 60  "sizeQueryTemp"
+                              Name 63  "g_tTex1df4a"
+                              Name 69  "ElementsU"
+                              Name 73  "sizeQueryTemp"
+                              Name 76  "g_tTex1di4a"
+                              Name 83  "sizeQueryTemp"
+                              Name 86  "g_tTex1du4a"
+                              Name 93  "sizeQueryTemp"
+                              Name 96  "g_tTex2df4"
+                              Name 101  "HeightU"
+                              Name 104  "sizeQueryTemp"
+                              Name 107  "g_tTex2di4"
+                              Name 114  "sizeQueryTemp"
+                              Name 117  "g_tTex2du4"
+                              Name 126  "sizeQueryTemp"
+                              Name 129  "g_tTex2df4a"
+                              Name 139  "sizeQueryTemp"
+                              Name 142  "g_tTex2di4a"
+                              Name 151  "sizeQueryTemp"
+                              Name 154  "g_tTex2du4a"
+                              Name 163  "sizeQueryTemp"
+                              Name 166  "g_tTex3df4"
+                              Name 173  "DepthU"
+                              Name 176  "sizeQueryTemp"
+                              Name 179  "g_tTex3di4"
+                              Name 188  "sizeQueryTemp"
+                              Name 191  "g_tTex3du4"
+                              Name 201  "psout"
+                              Name 213  "flattenTemp"
+                              Name 216  "@entryPointOutput.Color"
+                              Name 220  "@entryPointOutput.Depth"
+                              Name 225  "g_sSamp"
+                              Name 229  "$Global"
+                              MemberName 229($Global) 0  "c1"
+                              MemberName 229($Global) 1  "c2"
+                              MemberName 229($Global) 2  "c3"
+                              MemberName 229($Global) 3  "c4"
+                              MemberName 229($Global) 4  "o1"
+                              MemberName 229($Global) 5  "o2"
+                              MemberName 229($Global) 6  "o3"
+                              MemberName 229($Global) 7  "o4"
+                              Name 231  ""
+                              Decorate 17(g_tTex1df4) DescriptorSet 0
+                              Decorate 17(g_tTex1df4) Binding 0
+                              Decorate 26(g_tTex1di4) DescriptorSet 0
+                              Decorate 26(g_tTex1di4) Binding 0
+                              Decorate 33(g_tTex1du4) DescriptorSet 0
+                              Decorate 33(g_tTex1du4) Binding 0
+                              Decorate 40(g_tBuffF) DescriptorSet 0
+                              Decorate 40(g_tBuffF) Binding 0
+                              Decorate 47(g_tBuffI) DescriptorSet 0
+                              Decorate 47(g_tBuffI) Binding 0
+                              Decorate 54(g_tBuffU) DescriptorSet 0
+                              Decorate 54(g_tBuffU) Binding 0
+                              Decorate 63(g_tTex1df4a) DescriptorSet 0
+                              Decorate 63(g_tTex1df4a) Binding 0
+                              Decorate 76(g_tTex1di4a) DescriptorSet 0
+                              Decorate 76(g_tTex1di4a) Binding 0
+                              Decorate 86(g_tTex1du4a) DescriptorSet 0
+                              Decorate 86(g_tTex1du4a) Binding 0
+                              Decorate 96(g_tTex2df4) DescriptorSet 0
+                              Decorate 96(g_tTex2df4) Binding 0
+                              Decorate 107(g_tTex2di4) DescriptorSet 0
+                              Decorate 107(g_tTex2di4) Binding 0
+                              Decorate 117(g_tTex2du4) DescriptorSet 0
+                              Decorate 117(g_tTex2du4) Binding 0
+                              Decorate 129(g_tTex2df4a) DescriptorSet 0
+                              Decorate 129(g_tTex2df4a) Binding 0
+                              Decorate 142(g_tTex2di4a) DescriptorSet 0
+                              Decorate 142(g_tTex2di4a) Binding 0
+                              Decorate 154(g_tTex2du4a) DescriptorSet 0
+                              Decorate 154(g_tTex2du4a) Binding 0
+                              Decorate 166(g_tTex3df4) DescriptorSet 0
+                              Decorate 166(g_tTex3df4) Binding 0
+                              Decorate 179(g_tTex3di4) DescriptorSet 0
+                              Decorate 179(g_tTex3di4) Binding 0
+                              Decorate 191(g_tTex3du4) DescriptorSet 0
+                              Decorate 191(g_tTex3du4) Binding 0
+                              Decorate 216(@entryPointOutput.Color) Location 0
+                              Decorate 220(@entryPointOutput.Depth) BuiltIn FragDepth
+                              Decorate 225(g_sSamp) DescriptorSet 0
+                              Decorate 225(g_sSamp) Binding 0
+                              MemberDecorate 229($Global) 0 Offset 0
+                              MemberDecorate 229($Global) 1 Offset 8
+                              MemberDecorate 229($Global) 2 Offset 16
+                              MemberDecorate 229($Global) 3 Offset 32
+                              MemberDecorate 229($Global) 4 Offset 48
+                              MemberDecorate 229($Global) 5 Offset 56
+                              MemberDecorate 229($Global) 6 Offset 64
+                              MemberDecorate 229($Global) 7 Offset 80
+                              Decorate 229($Global) Block
+                              Decorate 231 DescriptorSet 0
+                              Decorate 231 Binding 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+    8(PS_OUTPUT):             TypeStruct 7(fvec4) 6(float)
+               9:             TypeFunction 8(PS_OUTPUT)
+              12:             TypeInt 32 0
+              13:             TypePointer Function 12(int)
+              15:             TypeImage 6(float) 1D nonsampled format:Rgba32f
+              16:             TypePointer UniformConstant 15
+  17(g_tTex1df4):     16(ptr) Variable UniformConstant
+              23:             TypeInt 32 1
+              24:             TypeImage 23(int) 1D nonsampled format:Rgba32i
+              25:             TypePointer UniformConstant 24
+  26(g_tTex1di4):     25(ptr) Variable UniformConstant
+              31:             TypeImage 12(int) 1D nonsampled format:Rgba32ui
+              32:             TypePointer UniformConstant 31
+  33(g_tTex1du4):     32(ptr) Variable UniformConstant
+              38:             TypeImage 6(float) Buffer nonsampled format:Rgba32f
+              39:             TypePointer UniformConstant 38
+    40(g_tBuffF):     39(ptr) Variable UniformConstant
+              45:             TypeImage 23(int) Buffer nonsampled format:Rgba32i
+              46:             TypePointer UniformConstant 45
+    47(g_tBuffI):     46(ptr) Variable UniformConstant
+              52:             TypeImage 12(int) Buffer nonsampled format:Rgba32ui
+              53:             TypePointer UniformConstant 52
+    54(g_tBuffU):     53(ptr) Variable UniformConstant
+              58:             TypeVector 12(int) 2
+              59:             TypePointer Function 58(ivec2)
+              61:             TypeImage 6(float) 1D array nonsampled format:Rgba32f
+              62:             TypePointer UniformConstant 61
+ 63(g_tTex1df4a):     62(ptr) Variable UniformConstant
+              66:     12(int) Constant 0
+              70:     12(int) Constant 1
+              74:             TypeImage 23(int) 1D array nonsampled format:Rgba32i
+              75:             TypePointer UniformConstant 74
+ 76(g_tTex1di4a):     75(ptr) Variable UniformConstant
+              84:             TypeImage 12(int) 1D array nonsampled format:Rgba32ui
+              85:             TypePointer UniformConstant 84
+ 86(g_tTex1du4a):     85(ptr) Variable UniformConstant
+              94:             TypeImage 6(float) 2D nonsampled format:Rgba32f
+              95:             TypePointer UniformConstant 94
+  96(g_tTex2df4):     95(ptr) Variable UniformConstant
+             105:             TypeImage 23(int) 2D nonsampled format:Rgba32i
+             106:             TypePointer UniformConstant 105
+ 107(g_tTex2di4):    106(ptr) Variable UniformConstant
+             115:             TypeImage 12(int) 2D nonsampled format:Rgba32ui
+             116:             TypePointer UniformConstant 115
+ 117(g_tTex2du4):    116(ptr) Variable UniformConstant
+             124:             TypeVector 12(int) 3
+             125:             TypePointer Function 124(ivec3)
+             127:             TypeImage 6(float) 2D array nonsampled format:Rgba32f
+             128:             TypePointer UniformConstant 127
+129(g_tTex2df4a):    128(ptr) Variable UniformConstant
+             136:     12(int) Constant 2
+             140:             TypeImage 23(int) 2D array nonsampled format:Rgba32i
+             141:             TypePointer UniformConstant 140
+142(g_tTex2di4a):    141(ptr) Variable UniformConstant
+             152:             TypeImage 12(int) 2D array nonsampled format:Rgba32ui
+             153:             TypePointer UniformConstant 152
+154(g_tTex2du4a):    153(ptr) Variable UniformConstant
+             164:             TypeImage 6(float) 3D nonsampled format:Rgba32f
+             165:             TypePointer UniformConstant 164
+ 166(g_tTex3df4):    165(ptr) Variable UniformConstant
+             177:             TypeImage 23(int) 3D nonsampled format:Rgba32i
+             178:             TypePointer UniformConstant 177
+ 179(g_tTex3di4):    178(ptr) Variable UniformConstant
+             189:             TypeImage 12(int) 3D nonsampled format:Rgba32ui
+             190:             TypePointer UniformConstant 189
+ 191(g_tTex3du4):    190(ptr) Variable UniformConstant
+             200:             TypePointer Function 8(PS_OUTPUT)
+             202:     23(int) Constant 0
+             203:    6(float) Constant 1065353216
+             204:    7(fvec4) ConstantComposite 203 203 203 203
+             205:             TypePointer Function 7(fvec4)
+             207:     23(int) Constant 1
+             208:             TypePointer Function 6(float)
+             215:             TypePointer Output 7(fvec4)
+216(@entryPointOutput.Color):    215(ptr) Variable Output
+             219:             TypePointer Output 6(float)
+220(@entryPointOutput.Depth):    219(ptr) Variable Output
+             223:             TypeSampler
+             224:             TypePointer UniformConstant 223
+    225(g_sSamp):    224(ptr) Variable UniformConstant
+             226:             TypeVector 23(int) 2
+             227:             TypeVector 23(int) 3
+             228:             TypeVector 23(int) 4
+    229($Global):             TypeStruct 23(int) 226(ivec2) 227(ivec3) 228(ivec4) 23(int) 226(ivec2) 227(ivec3) 228(ivec4)
+             230:             TypePointer Uniform 229($Global)
+             231:    230(ptr) Variable Uniform
+         4(main):           2 Function None 3
+               5:             Label
+213(flattenTemp):    200(ptr) Variable Function
+             214:8(PS_OUTPUT) FunctionCall 10(@main()
+                              Store 213(flattenTemp) 214
+             217:    205(ptr) AccessChain 213(flattenTemp) 202
+             218:    7(fvec4) Load 217
+                              Store 216(@entryPointOutput.Color) 218
+             221:    208(ptr) AccessChain 213(flattenTemp) 207
+             222:    6(float) Load 221
+                              Store 220(@entryPointOutput.Depth) 222
+                              Return
+                              FunctionEnd
+      10(@main():8(PS_OUTPUT) Function None 9
+              11:             Label
+14(sizeQueryTemp):     13(ptr) Variable Function
+      20(WidthU):     13(ptr) Variable Function
+22(sizeQueryTemp):     13(ptr) Variable Function
+30(sizeQueryTemp):     13(ptr) Variable Function
+37(sizeQueryTemp):     13(ptr) Variable Function
+44(sizeQueryTemp):     13(ptr) Variable Function
+51(sizeQueryTemp):     13(ptr) Variable Function
+60(sizeQueryTemp):     59(ptr) Variable Function
+   69(ElementsU):     13(ptr) Variable Function
+73(sizeQueryTemp):     59(ptr) Variable Function
+83(sizeQueryTemp):     59(ptr) Variable Function
+93(sizeQueryTemp):     59(ptr) Variable Function
+    101(HeightU):     13(ptr) Variable Function
+104(sizeQueryTemp):     59(ptr) Variable Function
+114(sizeQueryTemp):     59(ptr) Variable Function
+126(sizeQueryTemp):    125(ptr) Variable Function
+139(sizeQueryTemp):    125(ptr) Variable Function
+151(sizeQueryTemp):    125(ptr) Variable Function
+163(sizeQueryTemp):    125(ptr) Variable Function
+     173(DepthU):     13(ptr) Variable Function
+176(sizeQueryTemp):    125(ptr) Variable Function
+188(sizeQueryTemp):    125(ptr) Variable Function
+      201(psout):    200(ptr) Variable Function
+              18:          15 Load 17(g_tTex1df4)
+              19:     12(int) ImageQuerySize 18
+                              Store 14(sizeQueryTemp) 19
+              21:     12(int) Load 14(sizeQueryTemp)
+                              Store 20(WidthU) 21
+              27:          24 Load 26(g_tTex1di4)
+              28:     12(int) ImageQuerySize 27
+                              Store 22(sizeQueryTemp) 28
+              29:     12(int) Load 22(sizeQueryTemp)
+                              Store 20(WidthU) 29
+              34:          31 Load 33(g_tTex1du4)
+              35:     12(int) ImageQuerySize 34
+                              Store 30(sizeQueryTemp) 35
+              36:     12(int) Load 30(sizeQueryTemp)
+                              Store 20(WidthU) 36
+              41:          38 Load 40(g_tBuffF)
+              42:     12(int) ImageQuerySize 41
+                              Store 37(sizeQueryTemp) 42
+              43:     12(int) Load 37(sizeQueryTemp)
+                              Store 20(WidthU) 43
+              48:          45 Load 47(g_tBuffI)
+              49:     12(int) ImageQuerySize 48
+                              Store 44(sizeQueryTemp) 49
+              50:     12(int) Load 44(sizeQueryTemp)
+                              Store 20(WidthU) 50
+              55:          52 Load 54(g_tBuffU)
+              56:     12(int) ImageQuerySize 55
+                              Store 51(sizeQueryTemp) 56
+              57:     12(int) Load 51(sizeQueryTemp)
+                              Store 20(WidthU) 57
+              64:          61 Load 63(g_tTex1df4a)
+              65:   58(ivec2) ImageQuerySize 64
+                              Store 60(sizeQueryTemp) 65
+              67:     13(ptr) AccessChain 60(sizeQueryTemp) 66
+              68:     12(int) Load 67
+                              Store 20(WidthU) 68
+              71:     13(ptr) AccessChain 60(sizeQueryTemp) 70
+              72:     12(int) Load 71
+                              Store 69(ElementsU) 72
+              77:          74 Load 76(g_tTex1di4a)
+              78:   58(ivec2) ImageQuerySize 77
+                              Store 73(sizeQueryTemp) 78
+              79:     13(ptr) AccessChain 73(sizeQueryTemp) 66
+              80:     12(int) Load 79
+                              Store 20(WidthU) 80
+              81:     13(ptr) AccessChain 73(sizeQueryTemp) 70
+              82:     12(int) Load 81
+                              Store 69(ElementsU) 82
+              87:          84 Load 86(g_tTex1du4a)
+              88:   58(ivec2) ImageQuerySize 87
+                              Store 83(sizeQueryTemp) 88
+              89:     13(ptr) AccessChain 83(sizeQueryTemp) 66
+              90:     12(int) Load 89
+                              Store 20(WidthU) 90
+              91:     13(ptr) AccessChain 83(sizeQueryTemp) 70
+              92:     12(int) Load 91
+                              Store 69(ElementsU) 92
+              97:          94 Load 96(g_tTex2df4)
+              98:   58(ivec2) ImageQuerySize 97
+                              Store 93(sizeQueryTemp) 98
+              99:     13(ptr) AccessChain 93(sizeQueryTemp) 66
+             100:     12(int) Load 99
+                              Store 20(WidthU) 100
+             102:     13(ptr) AccessChain 93(sizeQueryTemp) 70
+             103:     12(int) Load 102
+                              Store 101(HeightU) 103
+             108:         105 Load 107(g_tTex2di4)
+             109:   58(ivec2) ImageQuerySize 108
+                              Store 104(sizeQueryTemp) 109
+             110:     13(ptr) AccessChain 104(sizeQueryTemp) 66
+             111:     12(int) Load 110
+                              Store 20(WidthU) 111
+             112:     13(ptr) AccessChain 104(sizeQueryTemp) 70
+             113:     12(int) Load 112
+                              Store 101(HeightU) 113
+             118:         115 Load 117(g_tTex2du4)
+             119:   58(ivec2) ImageQuerySize 118
+                              Store 114(sizeQueryTemp) 119
+             120:     13(ptr) AccessChain 114(sizeQueryTemp) 66
+             121:     12(int) Load 120
+                              Store 20(WidthU) 121
+             122:     13(ptr) AccessChain 114(sizeQueryTemp) 70
+             123:     12(int) Load 122
+                              Store 101(HeightU) 123
+             130:         127 Load 129(g_tTex2df4a)
+             131:  124(ivec3) ImageQuerySize 130
+                              Store 126(sizeQueryTemp) 131
+             132:     13(ptr) AccessChain 126(sizeQueryTemp) 66
+             133:     12(int) Load 132
+                              Store 20(WidthU) 133
+             134:     13(ptr) AccessChain 126(sizeQueryTemp) 70
+             135:     12(int) Load 134
+                              Store 101(HeightU) 135
+             137:     13(ptr) AccessChain 126(sizeQueryTemp) 136
+             138:     12(int) Load 137
+                              Store 69(ElementsU) 138
+             143:         140 Load 142(g_tTex2di4a)
+             144:  124(ivec3) ImageQuerySize 143
+                              Store 139(sizeQueryTemp) 144
+             145:     13(ptr) AccessChain 139(sizeQueryTemp) 66
+             146:     12(int) Load 145
+                              Store 20(WidthU) 146
+             147:     13(ptr) AccessChain 139(sizeQueryTemp) 70
+             148:     12(int) Load 147
+                              Store 101(HeightU) 148
+             149:     13(ptr) AccessChain 139(sizeQueryTemp) 136
+             150:     12(int) Load 149
+                              Store 69(ElementsU) 150
+             155:         152 Load 154(g_tTex2du4a)
+             156:  124(ivec3) ImageQuerySize 155
+                              Store 151(sizeQueryTemp) 156
+             157:     13(ptr) AccessChain 151(sizeQueryTemp) 66
+             158:     12(int) Load 157
+                              Store 20(WidthU) 158
+             159:     13(ptr) AccessChain 151(sizeQueryTemp) 70
+             160:     12(int) Load 159
+                              Store 101(HeightU) 160
+             161:     13(ptr) AccessChain 151(sizeQueryTemp) 136
+             162:     12(int) Load 161
+                              Store 69(ElementsU) 162
+             167:         164 Load 166(g_tTex3df4)
+             168:  124(ivec3) ImageQuerySize 167
+                              Store 163(sizeQueryTemp) 168
+             169:     13(ptr) AccessChain 163(sizeQueryTemp) 66
+             170:     12(int) Load 169
+                              Store 20(WidthU) 170
+             171:     13(ptr) AccessChain 163(sizeQueryTemp) 70
+             172:     12(int) Load 171
+                              Store 101(HeightU) 172
+             174:     13(ptr) AccessChain 163(sizeQueryTemp) 136
+             175:     12(int) Load 174
+                              Store 173(DepthU) 175
+             180:         177 Load 179(g_tTex3di4)
+             181:  124(ivec3) ImageQuerySize 180
+                              Store 176(sizeQueryTemp) 181
+             182:     13(ptr) AccessChain 176(sizeQueryTemp) 66
+             183:     12(int) Load 182
+                              Store 20(WidthU) 183
+             184:     13(ptr) AccessChain 176(sizeQueryTemp) 70
+             185:     12(int) Load 184
+                              Store 101(HeightU) 185
+             186:     13(ptr) AccessChain 176(sizeQueryTemp) 136
+             187:     12(int) Load 186
+                              Store 173(DepthU) 187
+             192:         189 Load 191(g_tTex3du4)
+             193:  124(ivec3) ImageQuerySize 192
+                              Store 188(sizeQueryTemp) 193
+             194:     13(ptr) AccessChain 188(sizeQueryTemp) 66
+             195:     12(int) Load 194
+                              Store 20(WidthU) 195
+             196:     13(ptr) AccessChain 188(sizeQueryTemp) 70
+             197:     12(int) Load 196
+                              Store 101(HeightU) 197
+             198:     13(ptr) AccessChain 188(sizeQueryTemp) 136
+             199:     12(int) Load 198
+                              Store 173(DepthU) 199
+             206:    205(ptr) AccessChain 201(psout) 202
+                              Store 206 204
+             209:    208(ptr) AccessChain 201(psout) 207
+                              Store 209 203
+             210:8(PS_OUTPUT) Load 201(psout)
+                              ReturnValue 210
+                              FunctionEnd

@@ -1,0 +1,292 @@
+hlsl.numericsuffixes.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:5  Function Definition: @main( ( temp structure{ temp 4-component vector of float color})
+0:5    Function Parameters: 
+0:?     Sequence
+0:7      Sequence
+0:7        move second child to first child ( temp float)
+0:7          'r00' ( temp float)
+0:7          Constant:
+0:7            1.000000
+0:8      Sequence
+0:8        move second child to first child ( temp uint)
+0:8          'r01' ( temp uint)
+0:8          Constant:
+0:8            1 (const uint)
+0:9      Sequence
+0:9        move second child to first child ( temp uint)
+0:9          'r02' ( temp uint)
+0:9          Constant:
+0:9            2 (const uint)
+0:10      Sequence
+0:10        move second child to first child ( temp uint)
+0:10          'r03' ( temp uint)
+0:10          Constant:
+0:10            2748 (const uint)
+0:11      Sequence
+0:11        move second child to first child ( temp uint)
+0:11          'r04' ( temp uint)
+0:11          Constant:
+0:11            2748 (const uint)
+0:12      Sequence
+0:12        move second child to first child ( temp int)
+0:12          'r05' ( temp int)
+0:12          Constant:
+0:12            5 (const int)
+0:13      Sequence
+0:13        move second child to first child ( temp int)
+0:13          'r06' ( temp int)
+0:13          Constant:
+0:13            6 (const int)
+0:14      Sequence
+0:14        move second child to first child ( temp int)
+0:14          'r07' ( temp int)
+0:14          Constant:
+0:14            57 (const int)
+0:15      Sequence
+0:15        move second child to first child ( temp uint)
+0:15          'r08' ( temp uint)
+0:15          Constant:
+0:15            58 (const uint)
+0:16      Sequence
+0:16        move second child to first child ( temp float)
+0:16          'r09' ( temp float)
+0:16          Constant:
+0:16            1.000000
+0:17      Sequence
+0:17        move second child to first child ( temp float)
+0:17          'r10' ( temp float)
+0:17          Constant:
+0:17            1.000000
+0:18      Sequence
+0:18        move second child to first child ( temp float)
+0:18          'r11' ( temp float)
+0:18          Constant:
+0:18            1.100000
+0:19      Sequence
+0:19        move second child to first child ( temp float)
+0:19          'r12' ( temp float)
+0:19          Constant:
+0:19            1.100000
+0:22      move second child to first child ( temp 4-component vector of float)
+0:22        color: direct index for structure ( temp 4-component vector of float)
+0:22          'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:22          Constant:
+0:22            0 (const int)
+0:22        Construct vec4 ( temp 4-component vector of float)
+0:22          Convert int to float ( temp float)
+0:22            'r07' ( temp int)
+0:23      Branch: Return with expression
+0:23        'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:5  Function Definition: main( ( temp void)
+0:5    Function Parameters: 
+0:?     Sequence
+0:5      Sequence
+0:5        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:5          color: direct index for structure ( temp 4-component vector of float)
+0:5            Function Call: @main( ( temp structure{ temp 4-component vector of float color})
+0:5            Constant:
+0:5              0 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:5  Function Definition: @main( ( temp structure{ temp 4-component vector of float color})
+0:5    Function Parameters: 
+0:?     Sequence
+0:7      Sequence
+0:7        move second child to first child ( temp float)
+0:7          'r00' ( temp float)
+0:7          Constant:
+0:7            1.000000
+0:8      Sequence
+0:8        move second child to first child ( temp uint)
+0:8          'r01' ( temp uint)
+0:8          Constant:
+0:8            1 (const uint)
+0:9      Sequence
+0:9        move second child to first child ( temp uint)
+0:9          'r02' ( temp uint)
+0:9          Constant:
+0:9            2 (const uint)
+0:10      Sequence
+0:10        move second child to first child ( temp uint)
+0:10          'r03' ( temp uint)
+0:10          Constant:
+0:10            2748 (const uint)
+0:11      Sequence
+0:11        move second child to first child ( temp uint)
+0:11          'r04' ( temp uint)
+0:11          Constant:
+0:11            2748 (const uint)
+0:12      Sequence
+0:12        move second child to first child ( temp int)
+0:12          'r05' ( temp int)
+0:12          Constant:
+0:12            5 (const int)
+0:13      Sequence
+0:13        move second child to first child ( temp int)
+0:13          'r06' ( temp int)
+0:13          Constant:
+0:13            6 (const int)
+0:14      Sequence
+0:14        move second child to first child ( temp int)
+0:14          'r07' ( temp int)
+0:14          Constant:
+0:14            57 (const int)
+0:15      Sequence
+0:15        move second child to first child ( temp uint)
+0:15          'r08' ( temp uint)
+0:15          Constant:
+0:15            58 (const uint)
+0:16      Sequence
+0:16        move second child to first child ( temp float)
+0:16          'r09' ( temp float)
+0:16          Constant:
+0:16            1.000000
+0:17      Sequence
+0:17        move second child to first child ( temp float)
+0:17          'r10' ( temp float)
+0:17          Constant:
+0:17            1.000000
+0:18      Sequence
+0:18        move second child to first child ( temp float)
+0:18          'r11' ( temp float)
+0:18          Constant:
+0:18            1.100000
+0:19      Sequence
+0:19        move second child to first child ( temp float)
+0:19          'r12' ( temp float)
+0:19          Constant:
+0:19            1.100000
+0:22      move second child to first child ( temp 4-component vector of float)
+0:22        color: direct index for structure ( temp 4-component vector of float)
+0:22          'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:22          Constant:
+0:22            0 (const int)
+0:22        Construct vec4 ( temp 4-component vector of float)
+0:22          Convert int to float ( temp float)
+0:22            'r07' ( temp int)
+0:23      Branch: Return with expression
+0:23        'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:5  Function Definition: main( ( temp void)
+0:5    Function Parameters: 
+0:?     Sequence
+0:5      Sequence
+0:5        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:5          color: direct index for structure ( temp 4-component vector of float)
+0:5            Function Call: @main( ( temp structure{ temp 4-component vector of float color})
+0:5            Constant:
+0:5              0 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 54
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 51
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "PS_OUTPUT"
+                              MemberName 8(PS_OUTPUT) 0  "color"
+                              Name 10  "@main("
+                              Name 13  "r00"
+                              Name 17  "r01"
+                              Name 19  "r02"
+                              Name 21  "r03"
+                              Name 23  "r04"
+                              Name 26  "r05"
+                              Name 28  "r06"
+                              Name 30  "r07"
+                              Name 32  "r08"
+                              Name 34  "r09"
+                              Name 35  "r10"
+                              Name 36  "r11"
+                              Name 38  "r12"
+                              Name 40  "ps_output"
+                              Name 51  "@entryPointOutput.color"
+                              Decorate 51(@entryPointOutput.color) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+    8(PS_OUTPUT):             TypeStruct 7(fvec4)
+               9:             TypeFunction 8(PS_OUTPUT)
+              12:             TypePointer Function 6(float)
+              14:    6(float) Constant 1065353216
+              15:             TypeInt 32 0
+              16:             TypePointer Function 15(int)
+              18:     15(int) Constant 1
+              20:     15(int) Constant 2
+              22:     15(int) Constant 2748
+              24:             TypeInt 32 1
+              25:             TypePointer Function 24(int)
+              27:     24(int) Constant 5
+              29:     24(int) Constant 6
+              31:     24(int) Constant 57
+              33:     15(int) Constant 58
+              37:    6(float) Constant 1066192077
+              39:             TypePointer Function 8(PS_OUTPUT)
+              41:     24(int) Constant 0
+              45:             TypePointer Function 7(fvec4)
+              50:             TypePointer Output 7(fvec4)
+51(@entryPointOutput.color):     50(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              52:8(PS_OUTPUT) FunctionCall 10(@main()
+              53:    7(fvec4) CompositeExtract 52 0
+                              Store 51(@entryPointOutput.color) 53
+                              Return
+                              FunctionEnd
+      10(@main():8(PS_OUTPUT) Function None 9
+              11:             Label
+         13(r00):     12(ptr) Variable Function
+         17(r01):     16(ptr) Variable Function
+         19(r02):     16(ptr) Variable Function
+         21(r03):     16(ptr) Variable Function
+         23(r04):     16(ptr) Variable Function
+         26(r05):     25(ptr) Variable Function
+         28(r06):     25(ptr) Variable Function
+         30(r07):     25(ptr) Variable Function
+         32(r08):     16(ptr) Variable Function
+         34(r09):     12(ptr) Variable Function
+         35(r10):     12(ptr) Variable Function
+         36(r11):     12(ptr) Variable Function
+         38(r12):     12(ptr) Variable Function
+   40(ps_output):     39(ptr) Variable Function
+                              Store 13(r00) 14
+                              Store 17(r01) 18
+                              Store 19(r02) 20
+                              Store 21(r03) 22
+                              Store 23(r04) 22
+                              Store 26(r05) 27
+                              Store 28(r06) 29
+                              Store 30(r07) 31
+                              Store 32(r08) 33
+                              Store 34(r09) 14
+                              Store 35(r10) 14
+                              Store 36(r11) 37
+                              Store 38(r12) 37
+              42:     24(int) Load 30(r07)
+              43:    6(float) ConvertSToF 42
+              44:    7(fvec4) CompositeConstruct 43 43 43 43
+              46:     45(ptr) AccessChain 40(ps_output) 41
+                              Store 46 44
+              47:8(PS_OUTPUT) Load 40(ps_output)
+                              ReturnValue 47
+                              FunctionEnd

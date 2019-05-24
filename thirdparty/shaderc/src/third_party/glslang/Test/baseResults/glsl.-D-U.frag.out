@@ -1,0 +1,55 @@
+glsl.-D-U.frag
+Shader version: 450
+0:? Sequence
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:10    Sequence
+0:10      move second child to first child ( temp 4-component vector of float)
+0:10        'color' (layout( location=0) out 4-component vector of float)
+0:10        Constant:
+0:10          1.000000
+0:10          1.000000
+0:10          1.000000
+0:10          1.000000
+0:16      Post-Increment ( temp 4-component vector of float)
+0:16        'color' (layout( location=0) out 4-component vector of float)
+0:24      vector scale second child into first child ( temp 4-component vector of float)
+0:24        'color' (layout( location=0) out 4-component vector of float)
+0:24        Constant:
+0:24          3.000000
+0:28      vector scale second child into first child ( temp 4-component vector of float)
+0:28        'color' (layout( location=0) out 4-component vector of float)
+0:28        Constant:
+0:28          400.000000
+0:?   Linker Objects
+0:?     'color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 450
+0:? Sequence
+0:7  Function Definition: main( ( global void)
+0:7    Function Parameters: 
+0:10    Sequence
+0:10      move second child to first child ( temp 4-component vector of float)
+0:10        'color' (layout( location=0) out 4-component vector of float)
+0:10        Constant:
+0:10          1.000000
+0:10          1.000000
+0:10          1.000000
+0:10          1.000000
+0:16      Post-Increment ( temp 4-component vector of float)
+0:16        'color' (layout( location=0) out 4-component vector of float)
+0:24      vector scale second child into first child ( temp 4-component vector of float)
+0:24        'color' (layout( location=0) out 4-component vector of float)
+0:24        Constant:
+0:24          3.000000
+0:28      vector scale second child into first child ( temp 4-component vector of float)
+0:28        'color' (layout( location=0) out 4-component vector of float)
+0:28        Constant:
+0:28          400.000000
+0:?   Linker Objects
+0:?     'color' (layout( location=0) out 4-component vector of float)
+

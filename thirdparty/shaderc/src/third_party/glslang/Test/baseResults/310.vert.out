@@ -1,0 +1,1272 @@
+310.vert
+ERROR: 0:3: 'shared' : not supported in this stage: vertex
+ERROR: 0:4: 'local_size_x' : there is no such layout identifier for this stage taking an assigned value 
+ERROR: 0:5: 'buffer' : buffers can be declared only as blocks 
+ERROR: 0:10: 'location' : overlapping use of location 3
+ERROR: 0:58: 'usampler2DMSArray' : Reserved word. 
+ERROR: 0:58: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:67: 'textureSamples' : no matching overloaded function found 
+ERROR: 0:69: 'assign' :  l-value required "ini" (can't modify shader input)
+ERROR: 0:69: 'out' : Non-L-value cannot be passed for 'out' or 'inout' parameters. 
+ERROR: 0:72: 'out' : cannot be bool 
+ERROR: 0:73: 'sampler2D' : sampler/image types can only be used in uniform variables or function parameters: outo
+ERROR: 0:75: 'vertex-shader array-of-array output' : not supported with this profile: es
+ERROR: 0:78: 'vertex-shader array-of-struct output' : not supported with this profile: es
+ERROR: 0:79: 'vertex-shader array-of-struct output' : not supported with this profile: es
+ERROR: 0:81: 'vertex-shader struct output containing an array' : not supported with this profile: es
+ERROR: 0:83: 'vertex-shader struct output containing structure' : not supported with this profile: es
+ERROR: 0:85: 'std430 requires the buffer storage qualifier' : required extension not requested: GL_EXT_scalar_block_layout
+ERROR: 0:97: 's' : member of block cannot be or contain a sampler, image, or atomic_uint type 
+ERROR: 0:105: 'location' : overlapping use of location 12
+ERROR: 0:107: 'input block' : not supported in this stage: vertex
+ERROR: 0:109: 'gl_PerVertex' : block redeclaration has extra members 
+ERROR: 0:119: 'gl_PointSize' : member of nameless block was not redeclared 
+ERROR: 0:119: 'assign' :  cannot convert from ' const float' to ' gl_PointSize highp void PointSize'
+ERROR: 0:122: 'gl_PerVertex' : can only redeclare a built-in block once, and before any use 
+ERROR: 0:127: 'flat/smooth/noperspective' : cannot use interpolation qualifiers on an interface block 
+ERROR: 0:131: 'flat/smooth/noperspective' : cannot use interpolation qualifiers on an interface block 
+ERROR: 0:135: 'centroid' : cannot use centroid qualifier on an interface block 
+ERROR: 0:139: 'invariant' : cannot use invariant qualifier on an interface block 
+ERROR: 0:155: 'precise' : Reserved word. 
+ERROR: 0:155: 'precise' : not supported for this version or the enabled extensions 
+ERROR: 0:156: 'fma' : required extension not requested: Possible extensions include:
+GL_EXT_gpu_shader5
+GL_OES_gpu_shader5
+ERROR: 0:157: 'variable indexing sampler array' : not supported for this version or the enabled extensions 
+ERROR: 0:161: 'variable indexing uniform block array' : not supported for this version or the enabled extensions 
+ERROR: 0:162: 'variable indexing buffer block array' : not supported with this profile: es
+ERROR: 0:164: 'variable indexing sampler array' : not supported for this version or the enabled extensions 
+ERROR: 0:165: 'non-constant offset argument' : not supported for this version or the enabled extensions 
+ERROR: 0:166: 'textureGatherOffsets' : required extension not requested: Possible extensions include:
+GL_EXT_gpu_shader5
+GL_OES_gpu_shader5
+ERROR: 0:177: 'variable indexing buffer block array' : not supported with this profile: es
+ERROR: 0:182: 'textureGatherOffsets(...)' : must be a compile-time constant: offsets argument
+ERROR: 0:185: 'samplerBuffer' : Reserved word. 
+ERROR: 0:185: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:186: 'isamplerBuffer' : Reserved word. 
+ERROR: 0:186: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:187: 'usamplerBuffer' : Reserved word. 
+ERROR: 0:187: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:188: 'imageBuffer' : Reserved word. 
+ERROR: 0:188: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:189: 'iimageBuffer' : Reserved word. 
+ERROR: 0:189: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:190: 'uimageBuffer' : Reserved word. 
+ERROR: 0:190: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:195: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:196: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:197: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:198: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:199: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:200: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:235: 'imageCubeArray' : Reserved word. 
+ERROR: 0:235: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:236: 'iimageCubeArray' : Reserved word. 
+ERROR: 0:236: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:237: 'uimageCubeArray' : Reserved word. 
+ERROR: 0:237: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:239: 'samplerCubeArray' : Reserved word. 
+ERROR: 0:239: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:240: 'samplerCubeArrayShadow' : Reserved word. 
+ERROR: 0:240: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:241: 'isamplerCubeArray' : Reserved word. 
+ERROR: 0:241: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:242: 'usamplerCubeArray' : Reserved word. 
+ERROR: 0:242: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:246: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:247: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:248: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:250: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:251: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:252: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:253: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:321: 'sampler2DMSArray' : Reserved word. 
+ERROR: 0:321: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:322: 'isampler2DMSArray' : Reserved word. 
+ERROR: 0:322: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:323: 'usampler2DMSArray' : Reserved word. 
+ERROR: 0:323: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:329: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:330: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:331: 'sampler/image' : type requires declaration of default precision qualifier 
+ERROR: 0:351: 'textureSize' : no matching overloaded function found 
+ERROR: 0:351: '=' :  cannot convert from ' const float' to ' temp highp 3-component vector of int'
+ERROR: 0:389: 'sample' : Reserved word. 
+ERROR: 0:400: 'interpolateAtCentroid' : no matching overloaded function found 
+ERROR: 0:401: 'interpolateAtSample' : no matching overloaded function found 
+ERROR: 0:402: 'interpolateAtOffset' : no matching overloaded function found 
+ERROR: 93 compilation errors.  No code generated.
+
+
+Shader version: 310
+Requested GL_EXT_texture_buffer
+Requested GL_OES_gpu_shader5
+Requested GL_OES_shader_image_atomic
+Requested GL_OES_shader_io_blocks
+Requested GL_OES_shader_multisample_interpolation
+Requested GL_OES_texture_buffer
+Requested GL_OES_texture_cube_map_array
+Requested GL_OES_texture_storage_multisample_2d_array
+ERROR: node is still EOpNull!
+0:12  Function Definition: main( ( global void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:15      move second child to first child ( temp highp 2-component vector of uint)
+0:15        'u2' ( temp highp 2-component vector of uint)
+0:15        addCarry ( global highp 2-component vector of uint)
+0:15          'u2' ( temp highp 2-component vector of uint)
+0:15          'u2' ( temp highp 2-component vector of uint)
+0:15          'u2' ( temp highp 2-component vector of uint)
+0:17      move second child to first child ( temp highp uint)
+0:17        'u1' ( temp highp uint)
+0:17        subBorrow ( global highp uint)
+0:17          'u1' ( temp highp uint)
+0:17          'u1' ( temp highp uint)
+0:17          'u1' ( temp highp uint)
+0:19      uMulExtended ( global highp void)
+0:19        'u4' ( temp highp 4-component vector of uint)
+0:19        'u4' ( temp highp 4-component vector of uint)
+0:19        'u4' ( temp highp 4-component vector of uint)
+0:19        'u4' ( temp highp 4-component vector of uint)
+0:21      iMulExtended ( global highp void)
+0:21        'i4' ( temp highp 4-component vector of int)
+0:21        'i4' ( temp highp 4-component vector of int)
+0:21        'i4' ( temp highp 4-component vector of int)
+0:21        'i4' ( temp highp 4-component vector of int)
+0:23      move second child to first child ( temp highp int)
+0:23        'i1' ( temp highp int)
+0:23        bitfieldExtract ( global highp int)
+0:23          'i1' ( temp highp int)
+0:23          Constant:
+0:23            4 (const int)
+0:23          Constant:
+0:23            5 (const int)
+0:25      move second child to first child ( temp highp 3-component vector of uint)
+0:25        'u3' ( temp highp 3-component vector of uint)
+0:25        bitfieldExtract ( global highp 3-component vector of uint)
+0:25          'u3' ( temp highp 3-component vector of uint)
+0:25          Constant:
+0:25            4 (const int)
+0:25          Constant:
+0:25            5 (const int)
+0:27      move second child to first child ( temp highp 3-component vector of int)
+0:27        'i3' ( temp highp 3-component vector of int)
+0:27        bitfieldInsert ( global highp 3-component vector of int)
+0:27          'i3' ( temp highp 3-component vector of int)
+0:27          'i3' ( temp highp 3-component vector of int)
+0:27          Constant:
+0:27            4 (const int)
+0:27          Constant:
+0:27            5 (const int)
+0:28      move second child to first child ( temp highp uint)
+0:28        'u1' ( temp highp uint)
+0:28        bitfieldInsert ( global highp uint)
+0:28          'u1' ( temp highp uint)
+0:28          'u1' ( temp highp uint)
+0:28          Constant:
+0:28            4 (const int)
+0:28          Constant:
+0:28            5 (const int)
+0:30      move second child to first child ( temp highp 2-component vector of int)
+0:30        'i2' ( temp highp 2-component vector of int)
+0:30        bitFieldReverse ( global highp 2-component vector of int)
+0:30          'i2' ( temp highp 2-component vector of int)
+0:31      move second child to first child ( temp highp 4-component vector of uint)
+0:31        'u4' ( temp highp 4-component vector of uint)
+0:31        bitFieldReverse ( global highp 4-component vector of uint)
+0:31          'u4' ( temp highp 4-component vector of uint)
+0:32      move second child to first child ( temp highp int)
+0:32        'i1' ( temp highp int)
+0:32        bitCount ( global lowp int, operation at highp)
+0:32          'i1' ( temp highp int)
+0:33      move second child to first child ( temp highp 3-component vector of int)
+0:33        'i3' ( temp highp 3-component vector of int)
+0:33        bitCount ( global lowp 3-component vector of int, operation at highp)
+0:33          'u3' ( temp highp 3-component vector of uint)
+0:34      move second child to first child ( temp highp 2-component vector of int)
+0:34        'i2' ( temp highp 2-component vector of int)
+0:34        findLSB ( global lowp 2-component vector of int, operation at highp)
+0:34          'i2' ( temp highp 2-component vector of int)
+0:35      move second child to first child ( temp highp 4-component vector of int)
+0:35        'i4' ( temp highp 4-component vector of int)
+0:35        findLSB ( global lowp 4-component vector of int, operation at highp)
+0:35          'u4' ( temp highp 4-component vector of uint)
+0:36      move second child to first child ( temp highp int)
+0:36        'i1' ( temp highp int)
+0:36        findMSB ( global lowp int, operation at highp)
+0:36          'i1' ( temp highp int)
+0:37      move second child to first child ( temp highp 2-component vector of int)
+0:37        'i2' ( temp highp 2-component vector of int)
+0:37        findMSB ( global lowp 2-component vector of int, operation at highp)
+0:37          'u2' ( temp highp 2-component vector of uint)
+0:40      move second child to first child ( temp highp 3-component vector of float)
+0:40        'v3' ( temp highp 3-component vector of float)
+0:40        frexp ( global highp 3-component vector of float)
+0:40          'v3' ( temp highp 3-component vector of float)
+0:40          'i3' ( temp highp 3-component vector of int)
+0:42      move second child to first child ( temp highp 2-component vector of float)
+0:42        'v2' ( temp highp 2-component vector of float)
+0:42        ldexp ( global highp 2-component vector of float)
+0:42          'v2' ( temp highp 2-component vector of float)
+0:42          'i2' ( temp highp 2-component vector of int)
+0:45      move second child to first child ( temp highp uint)
+0:45        'u1' ( temp highp uint)
+0:45        PackUnorm4x8 ( global highp uint, operation at mediump)
+0:45          'v4' ( temp mediump 4-component vector of float)
+0:46      move second child to first child ( temp highp uint)
+0:46        'u1' ( temp highp uint)
+0:46        PackSnorm4x8 ( global highp uint, operation at mediump)
+0:46          'v4' ( temp mediump 4-component vector of float)
+0:47      move second child to first child ( temp mediump 4-component vector of float)
+0:47        'v4' ( temp mediump 4-component vector of float)
+0:47        UnpackUnorm4x8 ( global mediump 4-component vector of float, operation at highp)
+0:47          'u1' ( temp highp uint)
+0:48      move second child to first child ( temp mediump 4-component vector of float)
+0:48        'v4' ( temp mediump 4-component vector of float)
+0:48        UnpackSnorm4x8 ( global mediump 4-component vector of float, operation at highp)
+0:48          'u1' ( temp highp uint)
+0:60  Function Definition: foo( ( global void)
+0:60    Function Parameters: 
+0:?     Sequence
+0:63      move second child to first child ( temp highp 2-component vector of int)
+0:63        'v2' ( temp highp 2-component vector of int)
+0:63        textureSize ( global highp 2-component vector of int)
+0:63          's2dms' ( uniform highp sampler2DMS)
+0:64      move second child to first child ( temp highp 2-component vector of int)
+0:64        'v2' ( temp highp 2-component vector of int)
+0:64        textureSize ( global highp 2-component vector of int)
+0:64          'us2dms' ( uniform highp usampler2DMS)
+0:65      Sequence
+0:65        move second child to first child ( temp highp 4-component vector of float)
+0:65          'v4' ( temp highp 4-component vector of float)
+0:65          textureFetch ( global highp 4-component vector of float)
+0:65            's2dms' ( uniform highp sampler2DMS)
+0:65            'v2' ( temp highp 2-component vector of int)
+0:65            Constant:
+0:65              2 (const int)
+0:66      Sequence
+0:66        move second child to first child ( temp highp 4-component vector of int)
+0:66          'iv4' ( temp highp 4-component vector of int)
+0:66          textureFetch ( global highp 4-component vector of int)
+0:66            'is2dms' ( uniform highp isampler2DMS)
+0:66            'v2' ( temp highp 2-component vector of int)
+0:66            Constant:
+0:66              2 (const int)
+0:67      Constant:
+0:67        0.000000
+0:69      frexp ( global highp float)
+0:69        'f' ( temp highp float)
+0:69        'ini' ( in highp int)
+0:114  Function Definition: foo_IO( ( global void)
+0:114    Function Parameters: 
+0:116    Sequence
+0:116      Sequence
+0:116        move second child to first child ( temp highp int)
+0:116          'sum' ( temp highp int)
+0:116          add ( temp highp int)
+0:116            'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:117            'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+0:118      move second child to first child ( temp highp 4-component vector of float)
+0:118        gl_Position: direct index for structure ( gl_Position highp 4-component vector of float Position)
+0:118          'anon@1' ( out block{ gl_Position highp 4-component vector of float Position gl_Position, })
+0:118          Constant:
+0:118            0 (const uint)
+0:118        Constant:
+0:118          1.000000
+0:118          1.000000
+0:118          1.000000
+0:118          1.000000
+0:119      gl_PointSize: direct index for structure ( gl_PointSize highp void PointSize)
+0:119        'anon@1' ( out block{ gl_Position highp 4-component vector of float Position gl_Position, })
+0:119        Constant:
+0:119          1 (const uint)
+0:153  Function Definition: pfooBad( ( global void)
+0:153    Function Parameters: 
+0:?     Sequence
+0:156      move second child to first child ( temp highp 2-component vector of float)
+0:156        'h' ( noContraction temp highp 2-component vector of float)
+0:156        fma ( global highp 2-component vector of float)
+0:156          'inf' ( in highp 2-component vector of float)
+0:156          'ing' ( in highp 2-component vector of float)
+0:156          'h' ( noContraction temp highp 2-component vector of float)
+0:157      indirect index ( temp lowp sampler2D)
+0:157        'sArray' ( uniform 4-element array of lowp sampler2D)
+0:157        add ( temp highp int)
+0:157          'sIndex' ( uniform highp int)
+0:157          Constant:
+0:157            1 (const int)
+0:158      indirect index (layout( binding=0 offset=0) temp highp atomic_uint)
+0:158        'auArray' (layout( binding=0 offset=0) uniform 2-element array of highp atomic_uint)
+0:158        add ( temp highp int)
+0:158          'sIndex' ( uniform highp int)
+0:158          Constant:
+0:158            1 (const int)
+0:159      direct index (layout( column_major shared) temp block{layout( column_major shared) uniform highp int i})
+0:159        'ubInst' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform highp int i})
+0:159        Constant:
+0:159          1 (const int)
+0:160      direct index (layout( column_major shared) temp block{layout( column_major shared) buffer highp int i})
+0:160        'bbInst' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp int i})
+0:160        Constant:
+0:160          2 (const int)
+0:161      indirect index (layout( column_major shared) temp block{layout( column_major shared) uniform highp int i})
+0:161        'ubInst' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform highp int i})
+0:161        add ( temp highp int)
+0:161          'sIndex' ( uniform highp int)
+0:161          Constant:
+0:161            1 (const int)
+0:162      indirect index (layout( column_major shared) temp block{layout( column_major shared) buffer highp int i})
+0:162        'bbInst' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp int i})
+0:162        'sIndex' ( uniform highp int)
+0:163      direct index ( writeonly temp highp image2D)
+0:163        'iArray' ( writeonly uniform 5-element array of highp image2D)
+0:163        Constant:
+0:163          2 (const int)
+0:164      indirect index ( writeonly temp highp image2D)
+0:164        'iArray' ( writeonly uniform 5-element array of highp image2D)
+0:164        component-wise multiply ( temp highp int)
+0:164          'sIndex' ( uniform highp int)
+0:164          Constant:
+0:164            2 (const int)
+0:165      textureGatherOffset ( global lowp 4-component vector of float)
+0:165        direct index ( temp lowp sampler2D)
+0:165          'sArray' ( uniform 4-element array of lowp sampler2D)
+0:165          Constant:
+0:165            0 (const int)
+0:165        Constant:
+0:165          0.100000
+0:165          0.100000
+0:165        Convert float to int ( temp lowp 2-component vector of int)
+0:165          'inf' ( in highp 2-component vector of float)
+0:166      textureGatherOffsets ( global lowp 4-component vector of float, operation at highp)
+0:166        direct index ( temp lowp sampler2D)
+0:166          'sArray' ( uniform 4-element array of lowp sampler2D)
+0:166          Constant:
+0:166            0 (const int)
+0:166        Constant:
+0:166          0.100000
+0:166          0.100000
+0:166        Constant:
+0:166          0 (const int)
+0:166          0 (const int)
+0:166          0 (const int)
+0:166          0 (const int)
+0:166          0 (const int)
+0:166          0 (const int)
+0:166          0 (const int)
+0:166          0 (const int)
+0:171  Function Definition: pfoo( ( global void)
+0:171    Function Parameters: 
+0:?     Sequence
+0:174      move second child to first child ( temp highp 2-component vector of float)
+0:174        'h' ( noContraction temp highp 2-component vector of float)
+0:174        fma ( global highp 2-component vector of float)
+0:174          'inf' ( in highp 2-component vector of float)
+0:174          'ing' ( in highp 2-component vector of float)
+0:174          'h' ( noContraction temp highp 2-component vector of float)
+0:175      indirect index ( temp lowp sampler2D)
+0:175        'sArray' ( uniform 4-element array of lowp sampler2D)
+0:175        add ( temp highp int)
+0:175          'sIndex' ( uniform highp int)
+0:175          Constant:
+0:175            1 (const int)
+0:176      indirect index (layout( column_major shared) temp block{layout( column_major shared) uniform highp int i})
+0:176        'ubInst' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform highp int i})
+0:176        add ( temp highp int)
+0:176          'sIndex' ( uniform highp int)
+0:176          Constant:
+0:176            1 (const int)
+0:177      indirect index (layout( column_major shared) temp block{layout( column_major shared) buffer highp int i})
+0:177        'bbInst' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp int i})
+0:177        subtract ( temp highp int)
+0:177          'sIndex' ( uniform highp int)
+0:177          Constant:
+0:177            2 (const int)
+0:178      direct index ( writeonly temp highp image2D)
+0:178        'iArray' ( writeonly uniform 5-element array of highp image2D)
+0:178        Constant:
+0:178          2 (const int)
+0:179      indirect index ( writeonly temp highp image2D)
+0:179        'iArray' ( writeonly uniform 5-element array of highp image2D)
+0:179        subtract ( temp highp int)
+0:179          'sIndex' ( uniform highp int)
+0:179          Constant:
+0:179            2 (const int)
+0:180      textureGatherOffset ( global lowp 4-component vector of float)
+0:180        direct index ( temp lowp sampler2D)
+0:180          'sArray' ( uniform 4-element array of lowp sampler2D)
+0:180          Constant:
+0:180            0 (const int)
+0:180        Constant:
+0:180          0.100000
+0:180          0.100000
+0:180        Convert float to int ( temp lowp 2-component vector of int)
+0:180          'inf' ( in highp 2-component vector of float)
+0:181      textureGatherOffsets ( global lowp 4-component vector of float, operation at highp)
+0:181        direct index ( temp lowp sampler2D)
+0:181          'sArray' ( uniform 4-element array of lowp sampler2D)
+0:181          Constant:
+0:181            0 (const int)
+0:181        Constant:
+0:181          0.100000
+0:181          0.100000
+0:181        Constant:
+0:181          0 (const int)
+0:181          0 (const int)
+0:181          0 (const int)
+0:181          0 (const int)
+0:181          0 (const int)
+0:181          0 (const int)
+0:181          0 (const int)
+0:181          0 (const int)
+0:182      textureGatherOffsets ( global lowp 4-component vector of float, operation at highp)
+0:182        direct index ( temp lowp sampler2D)
+0:182          'sArray' ( uniform 4-element array of lowp sampler2D)
+0:182          Constant:
+0:182            0 (const int)
+0:182        Constant:
+0:182          0.100000
+0:182          0.100000
+0:182        'offsets' ( uniform 4-element array of highp 2-component vector of int)
+0:220  Function Definition: bufferT( ( global void)
+0:220    Function Parameters: 
+0:222    Sequence
+0:222      Sequence
+0:222        move second child to first child ( temp highp int)
+0:222          's1' ( temp highp int)
+0:222          textureSize ( global highp int)
+0:222            'bufSamp1' ( uniform highp samplerBuffer)
+0:223      Sequence
+0:223        move second child to first child ( temp highp int)
+0:223          's2' ( temp highp int)
+0:223          textureSize ( global highp int)
+0:223            'bufSamp2' ( uniform highp isamplerBuffer)
+0:224      Sequence
+0:224        move second child to first child ( temp highp int)
+0:224          's3' ( temp highp int)
+0:224          textureSize ( global highp int)
+0:224            'bufSamp3' ( uniform highp usamplerBuffer)
+0:226      Sequence
+0:226        move second child to first child ( temp highp int)
+0:226          's4' ( temp highp int)
+0:226          imageQuerySize ( global highp int)
+0:226            'bufSamp4' ( writeonly uniform highp imageBuffer)
+0:227      Sequence
+0:227        move second child to first child ( temp highp int)
+0:227          's5' ( temp highp int)
+0:227          imageQuerySize ( global highp int)
+0:227            'bufSamp5' ( writeonly uniform highp iimageBuffer)
+0:228      Sequence
+0:228        move second child to first child ( temp highp int)
+0:228          's6' ( temp highp int)
+0:228          imageQuerySize ( global highp int)
+0:228            'bufSamp6' ( writeonly uniform highp uimageBuffer)
+0:230      Sequence
+0:230        move second child to first child ( temp highp 4-component vector of float)
+0:230          'f1' ( temp highp 4-component vector of float)
+0:230          textureFetch ( global highp 4-component vector of float)
+0:230            'bufSamp1' ( uniform highp samplerBuffer)
+0:230            's1' ( temp highp int)
+0:231      Sequence
+0:231        move second child to first child ( temp highp 4-component vector of int)
+0:231          'f2' ( temp highp 4-component vector of int)
+0:231          textureFetch ( global highp 4-component vector of int)
+0:231            'bufSamp2' ( uniform highp isamplerBuffer)
+0:231            's2' ( temp highp int)
+0:232      Sequence
+0:232        move second child to first child ( temp highp 4-component vector of uint)
+0:232          'f3' ( temp highp 4-component vector of uint)
+0:232          textureFetch ( global highp 4-component vector of uint)
+0:232            'bufSamp3' ( uniform highp usamplerBuffer)
+0:232            's3' ( temp highp int)
+0:279  Function Definition: CAT( ( global void)
+0:279    Function Parameters: 
+0:281    Sequence
+0:281      Sequence
+0:281        move second child to first child ( temp highp 3-component vector of int)
+0:281          's4' ( temp highp 3-component vector of int)
+0:281          textureSize ( global highp 3-component vector of int)
+0:281            'CA4' ( uniform highp samplerCubeArray)
+0:281            Constant:
+0:281              1 (const int)
+0:282      Sequence
+0:282        move second child to first child ( temp highp 3-component vector of int)
+0:282          's5' ( temp highp 3-component vector of int)
+0:282          textureSize ( global highp 3-component vector of int)
+0:282            'CA5' ( uniform highp samplerCubeArrayShadow)
+0:282            Constant:
+0:282              1 (const int)
+0:283      Sequence
+0:283        move second child to first child ( temp highp 3-component vector of int)
+0:283          's6' ( temp highp 3-component vector of int)
+0:283          textureSize ( global highp 3-component vector of int)
+0:283            'CA6' ( uniform highp isamplerCubeArray)
+0:283            Constant:
+0:283              1 (const int)
+0:284      Sequence
+0:284        move second child to first child ( temp highp 3-component vector of int)
+0:284          's7' ( temp highp 3-component vector of int)
+0:284          textureSize ( global highp 3-component vector of int)
+0:284            'CA7' ( uniform highp usamplerCubeArray)
+0:284            Constant:
+0:284              1 (const int)
+0:286      Sequence
+0:286        move second child to first child ( temp highp 4-component vector of float)
+0:286          't4' ( temp highp 4-component vector of float)
+0:286          texture ( global highp 4-component vector of float)
+0:286            'CA4' ( uniform highp samplerCubeArray)
+0:286            Constant:
+0:286              0.500000
+0:286              0.500000
+0:286              0.500000
+0:286              0.500000
+0:287      Sequence
+0:287        move second child to first child ( temp highp float)
+0:287          't5' ( temp highp float)
+0:287          texture ( global highp float)
+0:287            'CA5' ( uniform highp samplerCubeArrayShadow)
+0:287            Constant:
+0:287              0.500000
+0:287              0.500000
+0:287              0.500000
+0:287              0.500000
+0:287            Constant:
+0:287              3.000000
+0:288      Sequence
+0:288        move second child to first child ( temp highp 4-component vector of int)
+0:288          't6' ( temp highp 4-component vector of int)
+0:288          texture ( global highp 4-component vector of int)
+0:288            'CA6' ( uniform highp isamplerCubeArray)
+0:288            Constant:
+0:288              0.500000
+0:288              0.500000
+0:288              0.500000
+0:288              0.500000
+0:289      Sequence
+0:289        move second child to first child ( temp highp 4-component vector of uint)
+0:289          't7' ( temp highp 4-component vector of uint)
+0:289          texture ( global highp 4-component vector of uint)
+0:289            'CA7' ( uniform highp usamplerCubeArray)
+0:289            Constant:
+0:289              0.500000
+0:289              0.500000
+0:289              0.500000
+0:289              0.500000
+0:291      Sequence
+0:291        move second child to first child ( temp highp 4-component vector of float)
+0:291          'L4' ( temp highp 4-component vector of float)
+0:291          textureLod ( global highp 4-component vector of float)
+0:291            'CA4' ( uniform highp samplerCubeArray)
+0:291            Constant:
+0:291              0.500000
+0:291              0.500000
+0:291              0.500000
+0:291              0.500000
+0:291            Constant:
+0:291              0.240000
+0:292      Sequence
+0:292        move second child to first child ( temp highp 4-component vector of int)
+0:292          'L6' ( temp highp 4-component vector of int)
+0:292          textureLod ( global highp 4-component vector of int)
+0:292            'CA6' ( uniform highp isamplerCubeArray)
+0:292            Constant:
+0:292              0.500000
+0:292              0.500000
+0:292              0.500000
+0:292              0.500000
+0:292            Constant:
+0:292              0.260000
+0:293      Sequence
+0:293        move second child to first child ( temp highp 4-component vector of uint)
+0:293          'L7' ( temp highp 4-component vector of uint)
+0:293          textureLod ( global highp 4-component vector of uint)
+0:293            'CA7' ( uniform highp usamplerCubeArray)
+0:293            Constant:
+0:293              0.500000
+0:293              0.500000
+0:293              0.500000
+0:293              0.500000
+0:293            Constant:
+0:293              0.270000
+0:295      Sequence
+0:295        move second child to first child ( temp highp 4-component vector of float)
+0:295          'g4' ( temp highp 4-component vector of float)
+0:295          textureGrad ( global highp 4-component vector of float)
+0:295            'CA4' ( uniform highp samplerCubeArray)
+0:295            Constant:
+0:295              0.500000
+0:295              0.500000
+0:295              0.500000
+0:295              0.500000
+0:295            Constant:
+0:295              0.100000
+0:295              0.100000
+0:295              0.100000
+0:295            Constant:
+0:295              0.200000
+0:295              0.200000
+0:295              0.200000
+0:296      Sequence
+0:296        move second child to first child ( temp highp 4-component vector of int)
+0:296          'g6' ( temp highp 4-component vector of int)
+0:296          textureGrad ( global highp 4-component vector of int)
+0:296            'CA6' ( uniform highp isamplerCubeArray)
+0:296            Constant:
+0:296              0.500000
+0:296              0.500000
+0:296              0.500000
+0:296              0.500000
+0:296            Constant:
+0:296              0.100000
+0:296              0.100000
+0:296              0.100000
+0:296            Constant:
+0:296              0.200000
+0:296              0.200000
+0:296              0.200000
+0:297      Sequence
+0:297        move second child to first child ( temp highp 4-component vector of uint)
+0:297          'g7' ( temp highp 4-component vector of uint)
+0:297          textureGrad ( global highp 4-component vector of uint)
+0:297            'CA7' ( uniform highp usamplerCubeArray)
+0:297            Constant:
+0:297              0.500000
+0:297              0.500000
+0:297              0.500000
+0:297              0.500000
+0:297            Constant:
+0:297              0.100000
+0:297              0.100000
+0:297              0.100000
+0:297            Constant:
+0:297              0.200000
+0:297              0.200000
+0:297              0.200000
+0:299      Sequence
+0:299        move second child to first child ( temp highp 4-component vector of float)
+0:299          'gath4' ( temp highp 4-component vector of float)
+0:299          textureGather ( global highp 4-component vector of float)
+0:299            'CA4' ( uniform highp samplerCubeArray)
+0:299            Constant:
+0:299              0.500000
+0:299              0.500000
+0:299              0.500000
+0:299              0.500000
+0:300      Sequence
+0:300        move second child to first child ( temp highp 4-component vector of float)
+0:300          'gathC4' ( temp highp 4-component vector of float)
+0:300          textureGather ( global highp 4-component vector of float)
+0:300            'CA4' ( uniform highp samplerCubeArray)
+0:300            Constant:
+0:300              0.500000
+0:300              0.500000
+0:300              0.500000
+0:300              0.500000
+0:300            Constant:
+0:300              2 (const int)
+0:301      Sequence
+0:301        move second child to first child ( temp highp 4-component vector of int)
+0:301          'gath6' ( temp highp 4-component vector of int)
+0:301          textureGather ( global highp 4-component vector of int)
+0:301            'CA6' ( uniform highp isamplerCubeArray)
+0:301            Constant:
+0:301              0.500000
+0:301              0.500000
+0:301              0.500000
+0:301              0.500000
+0:302      Sequence
+0:302        move second child to first child ( temp highp 4-component vector of int)
+0:302          'gathC6' ( temp highp 4-component vector of int)
+0:302          textureGather ( global highp 4-component vector of int)
+0:302            'CA6' ( uniform highp isamplerCubeArray)
+0:302            Constant:
+0:302              0.500000
+0:302              0.500000
+0:302              0.500000
+0:302              0.500000
+0:302            Constant:
+0:302              1 (const int)
+0:303      Sequence
+0:303        move second child to first child ( temp highp 4-component vector of uint)
+0:303          'gath7' ( temp highp 4-component vector of uint)
+0:303          textureGather ( global highp 4-component vector of uint)
+0:303            'CA7' ( uniform highp usamplerCubeArray)
+0:303            Constant:
+0:303              0.500000
+0:303              0.500000
+0:303              0.500000
+0:303              0.500000
+0:304      Sequence
+0:304        move second child to first child ( temp highp 4-component vector of uint)
+0:304          'gathC7' ( temp highp 4-component vector of uint)
+0:304          textureGather ( global highp 4-component vector of uint)
+0:304            'CA7' ( uniform highp usamplerCubeArray)
+0:304            Constant:
+0:304              0.500000
+0:304              0.500000
+0:304              0.500000
+0:304              0.500000
+0:304            Constant:
+0:304              0 (const int)
+0:306      Sequence
+0:306        move second child to first child ( temp highp 4-component vector of float)
+0:306          'gath5' ( temp highp 4-component vector of float)
+0:306          textureGather ( global highp 4-component vector of float)
+0:306            'CA5' ( uniform highp samplerCubeArrayShadow)
+0:306            Constant:
+0:306              0.500000
+0:306              0.500000
+0:306              0.500000
+0:306              0.500000
+0:306            Constant:
+0:306              2.500000
+0:308      Sequence
+0:308        move second child to first child ( temp highp 3-component vector of int)
+0:308          's1' ( temp highp 3-component vector of int)
+0:308          imageQuerySize ( global highp 3-component vector of int)
+0:308            'CA1' ( writeonly uniform highp imageCubeArray)
+0:309      Sequence
+0:309        move second child to first child ( temp highp 3-component vector of int)
+0:309          's2' ( temp highp 3-component vector of int)
+0:309          imageQuerySize ( global highp 3-component vector of int)
+0:309            'CA2' ( writeonly uniform highp iimageCubeArray)
+0:310      Sequence
+0:310        move second child to first child ( temp highp 3-component vector of int)
+0:310          's3' ( temp highp 3-component vector of int)
+0:310          imageQuerySize ( global highp 3-component vector of int)
+0:310            'CA3' ( writeonly uniform highp uimageCubeArray)
+0:312      imageStore ( global highp void)
+0:312        'CA1' ( writeonly uniform highp imageCubeArray)
+0:312        's3' ( temp highp 3-component vector of int)
+0:312        Constant:
+0:312          1.000000
+0:312          1.000000
+0:312          1.000000
+0:312          1.000000
+0:313      imageStore ( global highp void)
+0:313        'CA2' ( writeonly uniform highp iimageCubeArray)
+0:313        's3' ( temp highp 3-component vector of int)
+0:313        Constant:
+0:313          1 (const int)
+0:313          1 (const int)
+0:313          1 (const int)
+0:313          1 (const int)
+0:314      imageStore ( global highp void)
+0:314        'CA3' ( writeonly uniform highp uimageCubeArray)
+0:314        's3' ( temp highp 3-component vector of int)
+0:314        Constant:
+0:314          1 (const uint)
+0:314          1 (const uint)
+0:314          1 (const uint)
+0:314          1 (const uint)
+0:316      Sequence
+0:316        move second child to first child ( temp highp 4-component vector of float)
+0:316          'cl1' ( temp highp 4-component vector of float)
+0:316          imageLoad ( global highp 4-component vector of float)
+0:316            'rCA1' (layout( rgba16f) readonly uniform highp imageCubeArray)
+0:316            's3' ( temp highp 3-component vector of int)
+0:317      Sequence
+0:317        move second child to first child ( temp highp 4-component vector of int)
+0:317          'cl2' ( temp highp 4-component vector of int)
+0:317          imageLoad ( global highp 4-component vector of int)
+0:317            'rCA2' (layout( rgba32i) readonly uniform highp iimageCubeArray)
+0:317            's3' ( temp highp 3-component vector of int)
+0:318      Sequence
+0:318        move second child to first child ( temp highp 4-component vector of uint)
+0:318          'cl3' ( temp highp 4-component vector of uint)
+0:318          imageLoad ( global highp 4-component vector of uint)
+0:318            'rCA3' (layout( r32ui) readonly uniform highp uimageCubeArray)
+0:318            's3' ( temp highp 3-component vector of int)
+0:343  Function Definition: MSA( ( global void)
+0:343    Function Parameters: 
+0:345    Sequence
+0:345      Sequence
+0:345        move second child to first child ( temp highp 4-component vector of float)
+0:345          'tf' ( temp highp 4-component vector of float)
+0:345          textureFetch ( global highp 4-component vector of float)
+0:345            'samp2DMSA' ( uniform highp sampler2DMSArray)
+0:345            Constant:
+0:345              5 (const int)
+0:345              5 (const int)
+0:345              5 (const int)
+0:345            Constant:
+0:345              2 (const int)
+0:346      Sequence
+0:346        move second child to first child ( temp highp 4-component vector of int)
+0:346          'tfi' ( temp highp 4-component vector of int)
+0:346          textureFetch ( global highp 4-component vector of int)
+0:346            'samp2DMSAi' ( uniform highp isampler2DMSArray)
+0:346            Constant:
+0:346              5 (const int)
+0:346              5 (const int)
+0:346              5 (const int)
+0:346            Constant:
+0:346              2 (const int)
+0:347      Sequence
+0:347        move second child to first child ( temp highp 4-component vector of uint)
+0:347          'tfu' ( temp highp 4-component vector of uint)
+0:347          textureFetch ( global highp 4-component vector of uint)
+0:347            'samp2DMSAu' ( uniform highp usampler2DMSArray)
+0:347            Constant:
+0:347              5 (const int)
+0:347              5 (const int)
+0:347              5 (const int)
+0:347            Constant:
+0:347              2 (const int)
+0:349      Sequence
+0:349        move second child to first child ( temp highp 3-component vector of int)
+0:349          'tfs' ( temp highp 3-component vector of int)
+0:349          textureSize ( global highp 3-component vector of int)
+0:349            'samp2DMSA' ( uniform highp sampler2DMSArray)
+0:350      Sequence
+0:350        move second child to first child ( temp highp 3-component vector of int)
+0:350          'tfsi' ( temp highp 3-component vector of int)
+0:350          textureSize ( global highp 3-component vector of int)
+0:350            'samp2DMSAi' ( uniform highp isampler2DMSArray)
+0:352      Sequence
+0:352        move second child to first child ( temp highp 3-component vector of int)
+0:352          'tfsu' ( temp highp 3-component vector of int)
+0:352          textureSize ( global highp 3-component vector of int)
+0:352            'samp2DMSAu' ( uniform highp usampler2DMSArray)
+0:364  Function Definition: goodImageAtom( ( global void)
+0:364    Function Parameters: 
+0:?     Sequence
+0:370      imageAtomicAdd ( global highp int)
+0:370        'im2Di' (layout( r32i) uniform highp iimage2D)
+0:370        'P' ( uniform highp 2-component vector of int)
+0:370        'dati' ( temp highp int)
+0:371      imageAtomicAdd ( global highp uint)
+0:371        'im2Du' (layout( r32ui) uniform highp uimage2D)
+0:371        'P' ( uniform highp 2-component vector of int)
+0:371        'datu' ( temp highp uint)
+0:372      imageAtomicMin ( global highp int)
+0:372        'im2Di' (layout( r32i) uniform highp iimage2D)
+0:372        'P' ( uniform highp 2-component vector of int)
+0:372        'dati' ( temp highp int)
+0:373      imageAtomicMin ( global highp uint)
+0:373        'im2Du' (layout( r32ui) uniform highp uimage2D)
+0:373        'P' ( uniform highp 2-component vector of int)
+0:373        'datu' ( temp highp uint)
+0:374      imageAtomicMax ( global highp int)
+0:374        'im2Di' (layout( r32i) uniform highp iimage2D)
+0:374        'P' ( uniform highp 2-component vector of int)
+0:374        'dati' ( temp highp int)
+0:375      imageAtomicMax ( global highp uint)
+0:375        'im2Du' (layout( r32ui) uniform highp uimage2D)
+0:375        'P' ( uniform highp 2-component vector of int)
+0:375        'datu' ( temp highp uint)
+0:376      imageAtomicAnd ( global highp int)
+0:376        'im2Di' (layout( r32i) uniform highp iimage2D)
+0:376        'P' ( uniform highp 2-component vector of int)
+0:376        'dati' ( temp highp int)
+0:377      imageAtomicAnd ( global highp uint)
+0:377        'im2Du' (layout( r32ui) uniform highp uimage2D)
+0:377        'P' ( uniform highp 2-component vector of int)
+0:377        'datu' ( temp highp uint)
+0:378      imageAtomicOr ( global highp int)
+0:378        'im2Di' (layout( r32i) uniform highp iimage2D)
+0:378        'P' ( uniform highp 2-component vector of int)
+0:378        'dati' ( temp highp int)
+0:379      imageAtomicOr ( global highp uint)
+0:379        'im2Du' (layout( r32ui) uniform highp uimage2D)
+0:379        'P' ( uniform highp 2-component vector of int)
+0:379        'datu' ( temp highp uint)
+0:380      imageAtomicXor ( global highp int)
+0:380        'im2Di' (layout( r32i) uniform highp iimage2D)
+0:380        'P' ( uniform highp 2-component vector of int)
+0:380        'dati' ( temp highp int)
+0:381      imageAtomicXor ( global highp uint)
+0:381        'im2Du' (layout( r32ui) uniform highp uimage2D)
+0:381        'P' ( uniform highp 2-component vector of int)
+0:381        'datu' ( temp highp uint)
+0:382      imageAtomicExchange ( global highp int)
+0:382        'im2Di' (layout( r32i) uniform highp iimage2D)
+0:382        'P' ( uniform highp 2-component vector of int)
+0:382        'dati' ( temp highp int)
+0:383      imageAtomicExchange ( global highp uint)
+0:383        'im2Du' (layout( r32ui) uniform highp uimage2D)
+0:383        'P' ( uniform highp 2-component vector of int)
+0:383        'datu' ( temp highp uint)
+0:384      imageAtomicExchange ( global highp float)
+0:384        'im2Df' (layout( r32f) uniform highp image2D)
+0:384        'P' ( uniform highp 2-component vector of int)
+0:384        'datf' ( temp highp float)
+0:385      imageAtomicCompSwap ( global highp int)
+0:385        'im2Di' (layout( r32i) uniform highp iimage2D)
+0:385        'P' ( uniform highp 2-component vector of int)
+0:385        Constant:
+0:385          3 (const int)
+0:385        'dati' ( temp highp int)
+0:386      imageAtomicCompSwap ( global highp uint)
+0:386        'im2Du' (layout( r32ui) uniform highp uimage2D)
+0:386        'P' ( uniform highp 2-component vector of int)
+0:386        Constant:
+0:386          5 (const uint)
+0:386        'datu' ( temp highp uint)
+0:398  Function Definition: badInterp( ( global void)
+0:398    Function Parameters: 
+0:400    Sequence
+0:400      Constant:
+0:400        0.000000
+0:401      Constant:
+0:401        0.000000
+0:402      Constant:
+0:402        0.000000
+0:?   Linker Objects
+0:?     's' ( shared highp 4-component vector of float)
+0:?     'v' ( buffer highp 4-component vector of float)
+0:?     'ini' ( in highp int)
+0:?     'x' (layout( location=2) uniform highp 4X4 matrix of float)
+0:?     'y' (layout( location=3) uniform highp 4X4 matrix of float)
+0:?     'xi' (layout( location=2) smooth out highp 4X4 matrix of float)
+0:?     'yi' (layout( location=3) smooth out highp 4X4 matrix of float)
+0:?     's2dms' ( uniform highp sampler2DMS)
+0:?     'is2dms' ( uniform highp isampler2DMS)
+0:?     'us2dms' ( uniform highp usampler2DMS)
+0:?     'us2dmsa' ( uniform mediump usampler2DMSArray)
+0:?     'outb' ( smooth out bool)
+0:?     'outo' ( smooth out lowp sampler2D)
+0:?     'outa' ( smooth out 4-element array of highp float)
+0:?     'outaa' ( smooth out 4-element array of 2-element array of highp float)
+0:?     'outs' ( smooth out structure{ global highp float f})
+0:?     'outasa' ( smooth out 4-element array of structure{ global highp float f})
+0:?     'outsa' ( smooth out 4-element array of structure{ global highp float f})
+0:?     'outSA' ( smooth out structure{ global 4-element array of highp float f})
+0:?     'outSS' ( smooth out structure{ global highp float f,  global structure{ global highp float f} s})
+0:?     'U430i' (layout( column_major std430) uniform block{layout( column_major std430 offset=0) uniform highp int a})
+0:?     'B430i' (layout( column_major std430) buffer block{layout( column_major std430 offset=0) buffer highp int a})
+0:?     'outbinst' ( out block{ out highp int a,  out highp 4-component vector of float v,  out highp sampler2D s})
+0:?     'anon@0' ( out block{layout( location=12) out highp int aAnon, layout( location=13) out highp 4-component vector of float vAnon})
+0:?     'aliased' (layout( location=12) smooth out highp int)
+0:?     'inbinst' ( in block{ in highp int a})
+0:?     'anon@1' ( out block{ gl_Position highp 4-component vector of float Position gl_Position, })
+0:?     'smon' ( smooth out block{ out highp int i})
+0:?     'fmon' ( flat out block{ out highp int i})
+0:?     'cmon' ( centroid out block{ out highp int i})
+0:?     'imon' ( invariant out block{ out highp int i})
+0:?     'inf' ( in highp 2-component vector of float)
+0:?     'ing' ( in highp 2-component vector of float)
+0:?     'offsets' ( uniform 4-element array of highp 2-component vector of int)
+0:?     'sArray' ( uniform 4-element array of lowp sampler2D)
+0:?     'sIndex' ( uniform highp int)
+0:?     'auArray' (layout( binding=0 offset=0) uniform 2-element array of highp atomic_uint)
+0:?     'ubInst' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform highp int i})
+0:?     'bbInst' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp int i})
+0:?     'iArray' ( writeonly uniform 5-element array of highp image2D)
+0:?     'constOffsets' ( const 4-element array of highp 2-component vector of int)
+0:?       0 (const int)
+0:?       0 (const int)
+0:?       0 (const int)
+0:?       0 (const int)
+0:?       0 (const int)
+0:?       0 (const int)
+0:?       0 (const int)
+0:?       0 (const int)
+0:?     'badSamp1' ( uniform mediump samplerBuffer)
+0:?     'badSamp2' ( uniform mediump isamplerBuffer)
+0:?     'badSamp3' ( uniform mediump usamplerBuffer)
+0:?     'badSamp4' ( writeonly uniform mediump imageBuffer)
+0:?     'badSamp5' ( writeonly uniform mediump iimageBuffer)
+0:?     'badSamp6' ( writeonly uniform mediump uimageBuffer)
+0:?     'noPreSamp1' ( uniform mediump samplerBuffer)
+0:?     'noPreSamp2' ( uniform mediump isamplerBuffer)
+0:?     'noPreSamp3' ( uniform mediump usamplerBuffer)
+0:?     'noPreSamp4' ( writeonly uniform mediump imageBuffer)
+0:?     'noPreSamp5' ( writeonly uniform mediump iimageBuffer)
+0:?     'noPreSamp6' ( writeonly uniform mediump uimageBuffer)
+0:?     'bufSamp1' ( uniform highp samplerBuffer)
+0:?     'bufSamp2' ( uniform highp isamplerBuffer)
+0:?     'bufSamp3' ( uniform highp usamplerBuffer)
+0:?     'bufSamp4' ( writeonly uniform highp imageBuffer)
+0:?     'bufSamp5' ( writeonly uniform highp iimageBuffer)
+0:?     'bufSamp6' ( writeonly uniform highp uimageBuffer)
+0:?     'badCA1' ( writeonly uniform mediump imageCubeArray)
+0:?     'badCA2' ( writeonly uniform mediump iimageCubeArray)
+0:?     'badCA3' ( writeonly uniform mediump uimageCubeArray)
+0:?     'badCA4' ( uniform mediump samplerCubeArray)
+0:?     'badCA5' ( uniform mediump samplerCubeArrayShadow)
+0:?     'badCA6' ( uniform mediump isamplerCubeArray)
+0:?     'badCA7' ( uniform mediump usamplerCubeArray)
+0:?     'noPreCA1' ( writeonly uniform mediump imageCubeArray)
+0:?     'noPreCA2' ( writeonly uniform mediump iimageCubeArray)
+0:?     'noPreCA3' ( writeonly uniform mediump uimageCubeArray)
+0:?     'noPreCA4' ( uniform mediump samplerCubeArray)
+0:?     'noPreCA5' ( uniform mediump samplerCubeArrayShadow)
+0:?     'noPreCA6' ( uniform mediump isamplerCubeArray)
+0:?     'noPreCA7' ( uniform mediump usamplerCubeArray)
+0:?     'CA1' ( writeonly uniform highp imageCubeArray)
+0:?     'CA2' ( writeonly uniform highp iimageCubeArray)
+0:?     'CA3' ( writeonly uniform highp uimageCubeArray)
+0:?     'rCA1' (layout( rgba16f) readonly uniform highp imageCubeArray)
+0:?     'rCA2' (layout( rgba32i) readonly uniform highp iimageCubeArray)
+0:?     'rCA3' (layout( r32ui) readonly uniform highp uimageCubeArray)
+0:?     'CA4' ( uniform highp samplerCubeArray)
+0:?     'CA5' ( uniform highp samplerCubeArrayShadow)
+0:?     'CA6' ( uniform highp isamplerCubeArray)
+0:?     'CA7' ( uniform highp usamplerCubeArray)
+0:?     'bad2DMS' ( uniform mediump sampler2DMSArray)
+0:?     'bad2DMSi' ( uniform mediump isampler2DMSArray)
+0:?     'bad2DMSu' ( uniform mediump usampler2DMSArray)
+0:?     'noPrec2DMS' ( uniform mediump sampler2DMSArray)
+0:?     'noPrec2DMSi' ( uniform mediump isampler2DMSArray)
+0:?     'noPrec2DMSu' ( uniform mediump usampler2DMSArray)
+0:?     'samp2DMSA' ( uniform highp sampler2DMSArray)
+0:?     'samp2DMSAi' ( uniform highp isampler2DMSArray)
+0:?     'samp2DMSAu' ( uniform highp usampler2DMSArray)
+0:?     'im2Df' (layout( r32f) uniform highp image2D)
+0:?     'im2Du' (layout( r32ui) uniform highp uimage2D)
+0:?     'im2Di' (layout( r32i) uniform highp iimage2D)
+0:?     'P' ( uniform highp 2-component vector of int)
+0:?     'colorSampInBad' ( smooth sample out highp 4-component vector of float)
+0:?     'colorSample' ( smooth sample out highp 4-component vector of float)
+0:?     'colorfsi' ( flat sample out highp 4-component vector of float)
+0:?     'sampInArray' ( smooth sample out 4-element array of highp 3-component vector of float)
+0:?     'inv4' ( in highp 4-component vector of float)
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 310
+Requested GL_EXT_texture_buffer
+Requested GL_OES_gpu_shader5
+Requested GL_OES_shader_image_atomic
+Requested GL_OES_shader_io_blocks
+Requested GL_OES_shader_multisample_interpolation
+Requested GL_OES_texture_buffer
+Requested GL_OES_texture_cube_map_array
+Requested GL_OES_texture_storage_multisample_2d_array
+ERROR: node is still EOpNull!
+0:12  Function Definition: main( ( global void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:15      move second child to first child ( temp highp 2-component vector of uint)
+0:15        'u2' ( temp highp 2-component vector of uint)
+0:15        addCarry ( global highp 2-component vector of uint)
+0:15          'u2' ( temp highp 2-component vector of uint)
+0:15          'u2' ( temp highp 2-component vector of uint)
+0:15          'u2' ( temp highp 2-component vector of uint)
+0:17      move second child to first child ( temp highp uint)
+0:17        'u1' ( temp highp uint)
+0:17        subBorrow ( global highp uint)
+0:17          'u1' ( temp highp uint)
+0:17          'u1' ( temp highp uint)
+0:17          'u1' ( temp highp uint)
+0:19      uMulExtended ( global highp void)
+0:19        'u4' ( temp highp 4-component vector of uint)
+0:19        'u4' ( temp highp 4-component vector of uint)
+0:19        'u4' ( temp highp 4-component vector of uint)
+0:19        'u4' ( temp highp 4-component vector of uint)
+0:21      iMulExtended ( global highp void)
+0:21        'i4' ( temp highp 4-component vector of int)
+0:21        'i4' ( temp highp 4-component vector of int)
+0:21        'i4' ( temp highp 4-component vector of int)
+0:21        'i4' ( temp highp 4-component vector of int)
+0:23      move second child to first child ( temp highp int)
+0:23        'i1' ( temp highp int)
+0:23        bitfieldExtract ( global highp int)
+0:23          'i1' ( temp highp int)
+0:23          Constant:
+0:23            4 (const int)
+0:23          Constant:
+0:23            5 (const int)
+0:25      move second child to first child ( temp highp 3-component vector of uint)
+0:25        'u3' ( temp highp 3-component vector of uint)
+0:25        bitfieldExtract ( global highp 3-component vector of uint)
+0:25          'u3' ( temp highp 3-component vector of uint)
+0:25          Constant:
+0:25            4 (const int)
+0:25          Constant:
+0:25            5 (const int)
+0:27      move second child to first child ( temp highp 3-component vector of int)
+0:27        'i3' ( temp highp 3-component vector of int)
+0:27        bitfieldInsert ( global highp 3-component vector of int)
+0:27          'i3' ( temp highp 3-component vector of int)
+0:27          'i3' ( temp highp 3-component vector of int)
+0:27          Constant:
+0:27            4 (const int)
+0:27          Constant:
+0:27            5 (const int)
+0:28      move second child to first child ( temp highp uint)
+0:28        'u1' ( temp highp uint)
+0:28        bitfieldInsert ( global highp uint)
+0:28          'u1' ( temp highp uint)
+0:28          'u1' ( temp highp uint)
+0:28          Constant:
+0:28            4 (const int)
+0:28          Constant:
+0:28            5 (const int)
+0:30      move second child to first child ( temp highp 2-component vector of int)
+0:30        'i2' ( temp highp 2-component vector of int)
+0:30        bitFieldReverse ( global highp 2-component vector of int)
+0:30          'i2' ( temp highp 2-component vector of int)
+0:31      move second child to first child ( temp highp 4-component vector of uint)
+0:31        'u4' ( temp highp 4-component vector of uint)
+0:31        bitFieldReverse ( global highp 4-component vector of uint)
+0:31          'u4' ( temp highp 4-component vector of uint)
+0:32      move second child to first child ( temp highp int)
+0:32        'i1' ( temp highp int)
+0:32        bitCount ( global lowp int, operation at highp)
+0:32          'i1' ( temp highp int)
+0:33      move second child to first child ( temp highp 3-component vector of int)
+0:33        'i3' ( temp highp 3-component vector of int)
+0:33        bitCount ( global lowp 3-component vector of int, operation at highp)
+0:33          'u3' ( temp highp 3-component vector of uint)
+0:34      move second child to first child ( temp highp 2-component vector of int)
+0:34        'i2' ( temp highp 2-component vector of int)
+0:34        findLSB ( global lowp 2-component vector of int, operation at highp)
+0:34          'i2' ( temp highp 2-component vector of int)
+0:35      move second child to first child ( temp highp 4-component vector of int)
+0:35        'i4' ( temp highp 4-component vector of int)
+0:35        findLSB ( global lowp 4-component vector of int, operation at highp)
+0:35          'u4' ( temp highp 4-component vector of uint)
+0:36      move second child to first child ( temp highp int)
+0:36        'i1' ( temp highp int)
+0:36        findMSB ( global lowp int, operation at highp)
+0:36          'i1' ( temp highp int)
+0:37      move second child to first child ( temp highp 2-component vector of int)
+0:37        'i2' ( temp highp 2-component vector of int)
+0:37        findMSB ( global lowp 2-component vector of int, operation at highp)
+0:37          'u2' ( temp highp 2-component vector of uint)
+0:40      move second child to first child ( temp highp 3-component vector of float)
+0:40        'v3' ( temp highp 3-component vector of float)
+0:40        frexp ( global highp 3-component vector of float)
+0:40          'v3' ( temp highp 3-component vector of float)
+0:40          'i3' ( temp highp 3-component vector of int)
+0:42      move second child to first child ( temp highp 2-component vector of float)
+0:42        'v2' ( temp highp 2-component vector of float)
+0:42        ldexp ( global highp 2-component vector of float)
+0:42          'v2' ( temp highp 2-component vector of float)
+0:42          'i2' ( temp highp 2-component vector of int)
+0:45      move second child to first child ( temp highp uint)
+0:45        'u1' ( temp highp uint)
+0:45        PackUnorm4x8 ( global highp uint, operation at mediump)
+0:45          'v4' ( temp mediump 4-component vector of float)
+0:46      move second child to first child ( temp highp uint)
+0:46        'u1' ( temp highp uint)
+0:46        PackSnorm4x8 ( global highp uint, operation at mediump)
+0:46          'v4' ( temp mediump 4-component vector of float)
+0:47      move second child to first child ( temp mediump 4-component vector of float)
+0:47        'v4' ( temp mediump 4-component vector of float)
+0:47        UnpackUnorm4x8 ( global mediump 4-component vector of float, operation at highp)
+0:47          'u1' ( temp highp uint)
+0:48      move second child to first child ( temp mediump 4-component vector of float)
+0:48        'v4' ( temp mediump 4-component vector of float)
+0:48        UnpackSnorm4x8 ( global mediump 4-component vector of float, operation at highp)
+0:48          'u1' ( temp highp uint)
+0:?   Linker Objects
+0:?     's' ( shared highp 4-component vector of float)
+0:?     'v' ( buffer highp 4-component vector of float)
+0:?     'ini' ( in highp int)
+0:?     'x' (layout( location=2) uniform highp 4X4 matrix of float)
+0:?     'y' (layout( location=3) uniform highp 4X4 matrix of float)
+0:?     'xi' (layout( location=2) smooth out highp 4X4 matrix of float)
+0:?     'yi' (layout( location=3) smooth out highp 4X4 matrix of float)
+0:?     's2dms' ( uniform highp sampler2DMS)
+0:?     'is2dms' ( uniform highp isampler2DMS)
+0:?     'us2dms' ( uniform highp usampler2DMS)
+0:?     'us2dmsa' ( uniform mediump usampler2DMSArray)
+0:?     'outb' ( smooth out bool)
+0:?     'outo' ( smooth out lowp sampler2D)
+0:?     'outa' ( smooth out 4-element array of highp float)
+0:?     'outaa' ( smooth out 4-element array of 2-element array of highp float)
+0:?     'outs' ( smooth out structure{ global highp float f})
+0:?     'outasa' ( smooth out 4-element array of structure{ global highp float f})
+0:?     'outsa' ( smooth out 4-element array of structure{ global highp float f})
+0:?     'outSA' ( smooth out structure{ global 4-element array of highp float f})
+0:?     'outSS' ( smooth out structure{ global highp float f,  global structure{ global highp float f} s})
+0:?     'U430i' (layout( column_major std430) uniform block{layout( column_major std430 offset=0) uniform highp int a})
+0:?     'B430i' (layout( column_major std430) buffer block{layout( column_major std430 offset=0) buffer highp int a})
+0:?     'outbinst' ( out block{ out highp int a,  out highp 4-component vector of float v,  out highp sampler2D s})
+0:?     'anon@0' ( out block{layout( location=12) out highp int aAnon, layout( location=13) out highp 4-component vector of float vAnon})
+0:?     'aliased' (layout( location=12) smooth out highp int)
+0:?     'inbinst' ( in block{ in highp int a})
+0:?     'anon@1' ( out block{ gl_Position highp 4-component vector of float Position gl_Position, })
+0:?     'smon' ( smooth out block{ out highp int i})
+0:?     'fmon' ( flat out block{ out highp int i})
+0:?     'cmon' ( centroid out block{ out highp int i})
+0:?     'imon' ( invariant out block{ out highp int i})
+0:?     'inf' ( in highp 2-component vector of float)
+0:?     'ing' ( in highp 2-component vector of float)
+0:?     'offsets' ( uniform 4-element array of highp 2-component vector of int)
+0:?     'sArray' ( uniform 4-element array of lowp sampler2D)
+0:?     'sIndex' ( uniform highp int)
+0:?     'auArray' (layout( binding=0 offset=0) uniform 2-element array of highp atomic_uint)
+0:?     'ubInst' (layout( column_major shared) uniform 4-element array of block{layout( column_major shared) uniform highp int i})
+0:?     'bbInst' (layout( column_major shared) buffer 4-element array of block{layout( column_major shared) buffer highp int i})
+0:?     'iArray' ( writeonly uniform 5-element array of highp image2D)
+0:?     'constOffsets' ( const 4-element array of highp 2-component vector of int)
+0:?       0 (const int)
+0:?       0 (const int)
+0:?       0 (const int)
+0:?       0 (const int)
+0:?       0 (const int)
+0:?       0 (const int)
+0:?       0 (const int)
+0:?       0 (const int)
+0:?     'badSamp1' ( uniform mediump samplerBuffer)
+0:?     'badSamp2' ( uniform mediump isamplerBuffer)
+0:?     'badSamp3' ( uniform mediump usamplerBuffer)
+0:?     'badSamp4' ( writeonly uniform mediump imageBuffer)
+0:?     'badSamp5' ( writeonly uniform mediump iimageBuffer)
+0:?     'badSamp6' ( writeonly uniform mediump uimageBuffer)
+0:?     'noPreSamp1' ( uniform mediump samplerBuffer)
+0:?     'noPreSamp2' ( uniform mediump isamplerBuffer)
+0:?     'noPreSamp3' ( uniform mediump usamplerBuffer)
+0:?     'noPreSamp4' ( writeonly uniform mediump imageBuffer)
+0:?     'noPreSamp5' ( writeonly uniform mediump iimageBuffer)
+0:?     'noPreSamp6' ( writeonly uniform mediump uimageBuffer)
+0:?     'bufSamp1' ( uniform highp samplerBuffer)
+0:?     'bufSamp2' ( uniform highp isamplerBuffer)
+0:?     'bufSamp3' ( uniform highp usamplerBuffer)
+0:?     'bufSamp4' ( writeonly uniform highp imageBuffer)
+0:?     'bufSamp5' ( writeonly uniform highp iimageBuffer)
+0:?     'bufSamp6' ( writeonly uniform highp uimageBuffer)
+0:?     'badCA1' ( writeonly uniform mediump imageCubeArray)
+0:?     'badCA2' ( writeonly uniform mediump iimageCubeArray)
+0:?     'badCA3' ( writeonly uniform mediump uimageCubeArray)
+0:?     'badCA4' ( uniform mediump samplerCubeArray)
+0:?     'badCA5' ( uniform mediump samplerCubeArrayShadow)
+0:?     'badCA6' ( uniform mediump isamplerCubeArray)
+0:?     'badCA7' ( uniform mediump usamplerCubeArray)
+0:?     'noPreCA1' ( writeonly uniform mediump imageCubeArray)
+0:?     'noPreCA2' ( writeonly uniform mediump iimageCubeArray)
+0:?     'noPreCA3' ( writeonly uniform mediump uimageCubeArray)
+0:?     'noPreCA4' ( uniform mediump samplerCubeArray)
+0:?     'noPreCA5' ( uniform mediump samplerCubeArrayShadow)
+0:?     'noPreCA6' ( uniform mediump isamplerCubeArray)
+0:?     'noPreCA7' ( uniform mediump usamplerCubeArray)
+0:?     'CA1' ( writeonly uniform highp imageCubeArray)
+0:?     'CA2' ( writeonly uniform highp iimageCubeArray)
+0:?     'CA3' ( writeonly uniform highp uimageCubeArray)
+0:?     'rCA1' (layout( rgba16f) readonly uniform highp imageCubeArray)
+0:?     'rCA2' (layout( rgba32i) readonly uniform highp iimageCubeArray)
+0:?     'rCA3' (layout( r32ui) readonly uniform highp uimageCubeArray)
+0:?     'CA4' ( uniform highp samplerCubeArray)
+0:?     'CA5' ( uniform highp samplerCubeArrayShadow)
+0:?     'CA6' ( uniform highp isamplerCubeArray)
+0:?     'CA7' ( uniform highp usamplerCubeArray)
+0:?     'bad2DMS' ( uniform mediump sampler2DMSArray)
+0:?     'bad2DMSi' ( uniform mediump isampler2DMSArray)
+0:?     'bad2DMSu' ( uniform mediump usampler2DMSArray)
+0:?     'noPrec2DMS' ( uniform mediump sampler2DMSArray)
+0:?     'noPrec2DMSi' ( uniform mediump isampler2DMSArray)
+0:?     'noPrec2DMSu' ( uniform mediump usampler2DMSArray)
+0:?     'samp2DMSA' ( uniform highp sampler2DMSArray)
+0:?     'samp2DMSAi' ( uniform highp isampler2DMSArray)
+0:?     'samp2DMSAu' ( uniform highp usampler2DMSArray)
+0:?     'im2Df' (layout( r32f) uniform highp image2D)
+0:?     'im2Du' (layout( r32ui) uniform highp uimage2D)
+0:?     'im2Di' (layout( r32i) uniform highp iimage2D)
+0:?     'P' ( uniform highp 2-component vector of int)
+0:?     'colorSampInBad' ( smooth sample out highp 4-component vector of float)
+0:?     'colorSample' ( smooth sample out highp 4-component vector of float)
+0:?     'colorfsi' ( flat sample out highp 4-component vector of float)
+0:?     'sampInArray' ( smooth sample out 4-element array of highp 3-component vector of float)
+0:?     'inv4' ( in highp 4-component vector of float)
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+

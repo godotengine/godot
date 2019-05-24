@@ -1,0 +1,353 @@
+matrix2.frag
+WARNING: 0:4: varying deprecated in version 130; may be removed in future release
+WARNING: 0:13: varying deprecated in version 130; may be removed in future release
+WARNING: 0:15: varying deprecated in version 130; may be removed in future release
+
+Shader version: 150
+0:? Sequence
+0:19  Function Definition: main( ( global void)
+0:19    Function Parameters: 
+0:21    Sequence
+0:21      Sequence
+0:21        move second child to first child ( temp 3X4 matrix of float)
+0:21          'm34' ( temp 3X4 matrix of float)
+0:21          outer product ( global 3X4 matrix of float)
+0:21            'v' ( smooth in 4-component vector of float)
+0:21            'u' ( smooth in 3-component vector of float)
+0:23      add second child into first child ( temp 3X4 matrix of float)
+0:23        'm34' ( temp 3X4 matrix of float)
+0:23        Constant:
+0:23          4.300000
+0:23          0.000000
+0:23          0.000000
+0:23          0.000000
+0:23          0.000000
+0:23          4.300000
+0:23          0.000000
+0:23          0.000000
+0:23          0.000000
+0:23          0.000000
+0:23          4.300000
+0:23          0.000000
+0:25      move second child to first child ( temp 4-component vector of float)
+0:25        'FragColor' ( out 4-component vector of float)
+0:25        Construct vec4 ( temp 4-component vector of float)
+0:25          'Color' ( smooth in 3-component vector of float)
+0:25          Constant:
+0:25            1.000000
+0:26      multiply second child into first child ( temp 4-component vector of float)
+0:26        'FragColor' ( out 4-component vector of float)
+0:26        Construct vec4 ( temp 4-component vector of float)
+0:26          vector-times-matrix ( temp 3-component vector of float)
+0:26            'FragColor' ( out 4-component vector of float)
+0:26            'm34' ( temp 3X4 matrix of float)
+0:26          Constant:
+0:26            1.000000
+0:28      matrix scale second child into first child ( temp 3X4 matrix of float)
+0:28        'm34' ( temp 3X4 matrix of float)
+0:28        direct index ( temp float)
+0:28          'v' ( smooth in 4-component vector of float)
+0:28          Constant:
+0:28            0 (const int)
+0:30      Sequence
+0:30        move second child to first child ( temp 4X4 matrix of float)
+0:30          'm44' ( temp 4X4 matrix of float)
+0:30          Construct mat4 ( temp 4X4 matrix of float)
+0:30            'un34' ( uniform 3X4 matrix of float)
+0:32      add second child into first child ( temp 4X4 matrix of float)
+0:32        'm44' ( temp 4X4 matrix of float)
+0:32        matrix-multiply ( temp 4X4 matrix of float)
+0:32          'm34' ( temp 3X4 matrix of float)
+0:32          'um43' ( uniform 4X3 matrix of float)
+0:34      add second child into first child ( temp 4-component vector of float)
+0:34        'FragColor' ( out 4-component vector of float)
+0:34        matrix-times-vector ( temp 4-component vector of float)
+0:34          Negate value ( temp 4X4 matrix of float)
+0:34            'm44' ( temp 4X4 matrix of float)
+0:34          'v' ( smooth in 4-component vector of float)
+0:36      matrix mult second child into first child ( temp 4-component vector of float)
+0:36        'FragColor' ( out 4-component vector of float)
+0:36        component-wise multiply ( global 4X4 matrix of float)
+0:36          'm44' ( temp 4X4 matrix of float)
+0:36          'm44' ( temp 4X4 matrix of float)
+0:38      move second child to first child ( temp 3X4 matrix of float)
+0:38        'm34' ( temp 3X4 matrix of float)
+0:38        transpose ( global 3X4 matrix of float)
+0:38          'um43' ( uniform 4X3 matrix of float)
+0:39      multiply second child into first child ( temp 4-component vector of float)
+0:39        'FragColor' ( out 4-component vector of float)
+0:39        Construct vec4 ( temp 4-component vector of float)
+0:39          vector-times-matrix ( temp 3-component vector of float)
+0:39            'FragColor' ( out 4-component vector of float)
+0:39            'm34' ( temp 3X4 matrix of float)
+0:39          Constant:
+0:39            1.000000
+0:40      multiply second child into first child ( temp 4-component vector of float)
+0:40        'FragColor' ( out 4-component vector of float)
+0:40        Construct vec4 ( temp 4-component vector of float)
+0:40          determinant ( global float)
+0:40            'um4' ( uniform 4X4 matrix of float)
+0:41      Sequence
+0:41        move second child to first child ( temp 2X2 matrix of float)
+0:41          'inv' ( temp 2X2 matrix of float)
+0:41          inverse ( global 2X2 matrix of float)
+0:41            'um2' ( uniform 2X2 matrix of float)
+0:42      multiply second child into first child ( temp 4-component vector of float)
+0:42        'FragColor' ( out 4-component vector of float)
+0:42        Construct vec4 ( temp 4-component vector of float)
+0:42          direct index ( temp float)
+0:42            direct index ( temp 2-component vector of float)
+0:42              'inv' ( temp 2X2 matrix of float)
+0:42              Constant:
+0:42                0 (const int)
+0:42            Constant:
+0:42              0 (const int)
+0:42          direct index ( temp float)
+0:42            direct index ( temp 2-component vector of float)
+0:42              'inv' ( temp 2X2 matrix of float)
+0:42              Constant:
+0:42                1 (const int)
+0:42            Constant:
+0:42              0 (const int)
+0:42          direct index ( temp float)
+0:42            direct index ( temp 2-component vector of float)
+0:42              'inv' ( temp 2X2 matrix of float)
+0:42              Constant:
+0:42                0 (const int)
+0:42            Constant:
+0:42              1 (const int)
+0:42          direct index ( temp float)
+0:42            direct index ( temp 2-component vector of float)
+0:42              'inv' ( temp 2X2 matrix of float)
+0:42              Constant:
+0:42                1 (const int)
+0:42            Constant:
+0:42              1 (const int)
+0:43      Sequence
+0:43        move second child to first child ( temp 3X3 matrix of float)
+0:43          'inv3' ( temp 3X3 matrix of float)
+0:43          inverse ( global 3X3 matrix of float)
+0:43            'um3' ( uniform 3X3 matrix of float)
+0:44      multiply second child into first child ( temp 4-component vector of float)
+0:44        'FragColor' ( out 4-component vector of float)
+0:44        Construct vec4 ( temp 4-component vector of float)
+0:44          direct index ( temp float)
+0:44            direct index ( temp 3-component vector of float)
+0:44              'inv3' ( temp 3X3 matrix of float)
+0:44              Constant:
+0:44                2 (const int)
+0:44            Constant:
+0:44              1 (const int)
+0:46      Sequence
+0:46        move second child to first child ( temp 4X4 matrix of float)
+0:46          'inv4' ( temp 4X4 matrix of float)
+0:46          inverse ( global 4X4 matrix of float)
+0:46            'um4' ( uniform 4X4 matrix of float)
+0:47      matrix mult second child into first child ( temp 4-component vector of float)
+0:47        'FragColor' ( out 4-component vector of float)
+0:47        'inv4' ( temp 4X4 matrix of float)
+0:49      move second child to first child ( temp 4-component vector of float)
+0:49        'FragColor' ( out 4-component vector of float)
+0:49        Construct vec4 ( temp 4-component vector of float)
+0:49          vector-times-matrix ( temp 3-component vector of float)
+0:49            'FragColor' ( out 4-component vector of float)
+0:49            component-wise multiply ( global 3X4 matrix of float)
+0:49              'un34' ( uniform 3X4 matrix of float)
+0:49              'un34' ( uniform 3X4 matrix of float)
+0:49          direct index ( temp float)
+0:49            'FragColor' ( out 4-component vector of float)
+0:49            Constant:
+0:49              3 (const int)
+0:50      matrix mult second child into first child ( temp 3X4 matrix of float)
+0:50        'm34' ( temp 3X4 matrix of float)
+0:50        'colorTransform' ( uniform 3X3 matrix of float)
+0:?   Linker Objects
+0:?     'colorTransform' ( uniform 3X3 matrix of float)
+0:?     'Color' ( smooth in 3-component vector of float)
+0:?     'm' ( uniform 4X4 matrix of float)
+0:?     'n' ( uniform 4X4 matrix of float)
+0:?     'um43' ( uniform 4X3 matrix of float)
+0:?     'un34' ( uniform 3X4 matrix of float)
+0:?     'um2' ( uniform 2X2 matrix of float)
+0:?     'um3' ( uniform 3X3 matrix of float)
+0:?     'um4' ( uniform 4X4 matrix of float)
+0:?     'v' ( smooth in 4-component vector of float)
+0:?     'u' ( smooth in 3-component vector of float)
+0:?     'FragColor' ( out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 150
+0:? Sequence
+0:19  Function Definition: main( ( global void)
+0:19    Function Parameters: 
+0:21    Sequence
+0:21      Sequence
+0:21        move second child to first child ( temp 3X4 matrix of float)
+0:21          'm34' ( temp 3X4 matrix of float)
+0:21          outer product ( global 3X4 matrix of float)
+0:21            'v' ( smooth in 4-component vector of float)
+0:21            'u' ( smooth in 3-component vector of float)
+0:23      add second child into first child ( temp 3X4 matrix of float)
+0:23        'm34' ( temp 3X4 matrix of float)
+0:23        Constant:
+0:23          4.300000
+0:23          0.000000
+0:23          0.000000
+0:23          0.000000
+0:23          0.000000
+0:23          4.300000
+0:23          0.000000
+0:23          0.000000
+0:23          0.000000
+0:23          0.000000
+0:23          4.300000
+0:23          0.000000
+0:25      move second child to first child ( temp 4-component vector of float)
+0:25        'FragColor' ( out 4-component vector of float)
+0:25        Construct vec4 ( temp 4-component vector of float)
+0:25          'Color' ( smooth in 3-component vector of float)
+0:25          Constant:
+0:25            1.000000
+0:26      multiply second child into first child ( temp 4-component vector of float)
+0:26        'FragColor' ( out 4-component vector of float)
+0:26        Construct vec4 ( temp 4-component vector of float)
+0:26          vector-times-matrix ( temp 3-component vector of float)
+0:26            'FragColor' ( out 4-component vector of float)
+0:26            'm34' ( temp 3X4 matrix of float)
+0:26          Constant:
+0:26            1.000000
+0:28      matrix scale second child into first child ( temp 3X4 matrix of float)
+0:28        'm34' ( temp 3X4 matrix of float)
+0:28        direct index ( temp float)
+0:28          'v' ( smooth in 4-component vector of float)
+0:28          Constant:
+0:28            0 (const int)
+0:30      Sequence
+0:30        move second child to first child ( temp 4X4 matrix of float)
+0:30          'm44' ( temp 4X4 matrix of float)
+0:30          Construct mat4 ( temp 4X4 matrix of float)
+0:30            'un34' ( uniform 3X4 matrix of float)
+0:32      add second child into first child ( temp 4X4 matrix of float)
+0:32        'm44' ( temp 4X4 matrix of float)
+0:32        matrix-multiply ( temp 4X4 matrix of float)
+0:32          'm34' ( temp 3X4 matrix of float)
+0:32          'um43' ( uniform 4X3 matrix of float)
+0:34      add second child into first child ( temp 4-component vector of float)
+0:34        'FragColor' ( out 4-component vector of float)
+0:34        matrix-times-vector ( temp 4-component vector of float)
+0:34          Negate value ( temp 4X4 matrix of float)
+0:34            'm44' ( temp 4X4 matrix of float)
+0:34          'v' ( smooth in 4-component vector of float)
+0:36      matrix mult second child into first child ( temp 4-component vector of float)
+0:36        'FragColor' ( out 4-component vector of float)
+0:36        component-wise multiply ( global 4X4 matrix of float)
+0:36          'm44' ( temp 4X4 matrix of float)
+0:36          'm44' ( temp 4X4 matrix of float)
+0:38      move second child to first child ( temp 3X4 matrix of float)
+0:38        'm34' ( temp 3X4 matrix of float)
+0:38        transpose ( global 3X4 matrix of float)
+0:38          'um43' ( uniform 4X3 matrix of float)
+0:39      multiply second child into first child ( temp 4-component vector of float)
+0:39        'FragColor' ( out 4-component vector of float)
+0:39        Construct vec4 ( temp 4-component vector of float)
+0:39          vector-times-matrix ( temp 3-component vector of float)
+0:39            'FragColor' ( out 4-component vector of float)
+0:39            'm34' ( temp 3X4 matrix of float)
+0:39          Constant:
+0:39            1.000000
+0:40      multiply second child into first child ( temp 4-component vector of float)
+0:40        'FragColor' ( out 4-component vector of float)
+0:40        Construct vec4 ( temp 4-component vector of float)
+0:40          determinant ( global float)
+0:40            'um4' ( uniform 4X4 matrix of float)
+0:41      Sequence
+0:41        move second child to first child ( temp 2X2 matrix of float)
+0:41          'inv' ( temp 2X2 matrix of float)
+0:41          inverse ( global 2X2 matrix of float)
+0:41            'um2' ( uniform 2X2 matrix of float)
+0:42      multiply second child into first child ( temp 4-component vector of float)
+0:42        'FragColor' ( out 4-component vector of float)
+0:42        Construct vec4 ( temp 4-component vector of float)
+0:42          direct index ( temp float)
+0:42            direct index ( temp 2-component vector of float)
+0:42              'inv' ( temp 2X2 matrix of float)
+0:42              Constant:
+0:42                0 (const int)
+0:42            Constant:
+0:42              0 (const int)
+0:42          direct index ( temp float)
+0:42            direct index ( temp 2-component vector of float)
+0:42              'inv' ( temp 2X2 matrix of float)
+0:42              Constant:
+0:42                1 (const int)
+0:42            Constant:
+0:42              0 (const int)
+0:42          direct index ( temp float)
+0:42            direct index ( temp 2-component vector of float)
+0:42              'inv' ( temp 2X2 matrix of float)
+0:42              Constant:
+0:42                0 (const int)
+0:42            Constant:
+0:42              1 (const int)
+0:42          direct index ( temp float)
+0:42            direct index ( temp 2-component vector of float)
+0:42              'inv' ( temp 2X2 matrix of float)
+0:42              Constant:
+0:42                1 (const int)
+0:42            Constant:
+0:42              1 (const int)
+0:43      Sequence
+0:43        move second child to first child ( temp 3X3 matrix of float)
+0:43          'inv3' ( temp 3X3 matrix of float)
+0:43          inverse ( global 3X3 matrix of float)
+0:43            'um3' ( uniform 3X3 matrix of float)
+0:44      multiply second child into first child ( temp 4-component vector of float)
+0:44        'FragColor' ( out 4-component vector of float)
+0:44        Construct vec4 ( temp 4-component vector of float)
+0:44          direct index ( temp float)
+0:44            direct index ( temp 3-component vector of float)
+0:44              'inv3' ( temp 3X3 matrix of float)
+0:44              Constant:
+0:44                2 (const int)
+0:44            Constant:
+0:44              1 (const int)
+0:46      Sequence
+0:46        move second child to first child ( temp 4X4 matrix of float)
+0:46          'inv4' ( temp 4X4 matrix of float)
+0:46          inverse ( global 4X4 matrix of float)
+0:46            'um4' ( uniform 4X4 matrix of float)
+0:47      matrix mult second child into first child ( temp 4-component vector of float)
+0:47        'FragColor' ( out 4-component vector of float)
+0:47        'inv4' ( temp 4X4 matrix of float)
+0:49      move second child to first child ( temp 4-component vector of float)
+0:49        'FragColor' ( out 4-component vector of float)
+0:49        Construct vec4 ( temp 4-component vector of float)
+0:49          vector-times-matrix ( temp 3-component vector of float)
+0:49            'FragColor' ( out 4-component vector of float)
+0:49            component-wise multiply ( global 3X4 matrix of float)
+0:49              'un34' ( uniform 3X4 matrix of float)
+0:49              'un34' ( uniform 3X4 matrix of float)
+0:49          direct index ( temp float)
+0:49            'FragColor' ( out 4-component vector of float)
+0:49            Constant:
+0:49              3 (const int)
+0:50      matrix mult second child into first child ( temp 3X4 matrix of float)
+0:50        'm34' ( temp 3X4 matrix of float)
+0:50        'colorTransform' ( uniform 3X3 matrix of float)
+0:?   Linker Objects
+0:?     'colorTransform' ( uniform 3X3 matrix of float)
+0:?     'Color' ( smooth in 3-component vector of float)
+0:?     'm' ( uniform 4X4 matrix of float)
+0:?     'n' ( uniform 4X4 matrix of float)
+0:?     'um43' ( uniform 4X3 matrix of float)
+0:?     'un34' ( uniform 3X4 matrix of float)
+0:?     'um2' ( uniform 2X2 matrix of float)
+0:?     'um3' ( uniform 3X3 matrix of float)
+0:?     'um4' ( uniform 4X4 matrix of float)
+0:?     'v' ( smooth in 4-component vector of float)
+0:?     'u' ( smooth in 3-component vector of float)
+0:?     'FragColor' ( out 4-component vector of float)
+

@@ -1,0 +1,295 @@
+hlsl.promote.binary.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:14  Function Definition: @main( ( temp structure{ temp 4-component vector of float Color})
+0:14    Function Parameters: 
+0:?     Sequence
+0:15      mod ( temp float)
+0:15        Convert int to float ( temp float)
+0:15          ival: direct index for structure ( uniform int)
+0:15            'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:15            Constant:
+0:15              2 (const uint)
+0:15        fval: direct index for structure ( uniform float)
+0:15          'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:15          Constant:
+0:15            4 (const uint)
+0:16      mod ( temp 4-component vector of float)
+0:16        Convert int to float ( temp 4-component vector of float)
+0:16          ival4: direct index for structure ( uniform 4-component vector of int)
+0:16            'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:16            Constant:
+0:16              3 (const uint)
+0:16        fval4: direct index for structure ( uniform 4-component vector of float)
+0:16          'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:16          Constant:
+0:16            5 (const uint)
+0:18      mod ( temp float)
+0:18        Convert bool to float ( temp float)
+0:18          bval: direct index for structure ( uniform bool)
+0:18            'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:18            Constant:
+0:18              0 (const uint)
+0:18        fval: direct index for structure ( uniform float)
+0:18          'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:18          Constant:
+0:18            4 (const uint)
+0:19      mod ( temp 4-component vector of float)
+0:19        Convert bool to float ( temp 4-component vector of float)
+0:19          bval4: direct index for structure ( uniform 4-component vector of bool)
+0:19            'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:19            Constant:
+0:19              1 (const uint)
+0:19        fval4: direct index for structure ( uniform 4-component vector of float)
+0:19          'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:19          Constant:
+0:19            5 (const uint)
+0:21      Sequence
+0:21        move second child to first child ( temp int)
+0:21          'l_int' ( temp int)
+0:21          Constant:
+0:21            1 (const int)
+0:22      mod second child into first child ( temp int)
+0:22        'l_int' ( temp int)
+0:22        Convert float to int ( temp int)
+0:22          fval: direct index for structure ( uniform float)
+0:22            'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:22            Constant:
+0:22              4 (const uint)
+0:25      move second child to first child ( temp 4-component vector of float)
+0:25        Color: direct index for structure ( temp 4-component vector of float)
+0:25          'psout' ( temp structure{ temp 4-component vector of float Color})
+0:25          Constant:
+0:25            0 (const int)
+0:25        Constant:
+0:25          0.000000
+0:25          0.000000
+0:25          0.000000
+0:25          0.000000
+0:26      Branch: Return with expression
+0:26        'psout' ( temp structure{ temp 4-component vector of float Color})
+0:14  Function Definition: main( ( temp void)
+0:14    Function Parameters: 
+0:?     Sequence
+0:14      Sequence
+0:14        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+0:14          Color: direct index for structure ( temp 4-component vector of float)
+0:14            Function Call: @main( ( temp structure{ temp 4-component vector of float Color})
+0:14            Constant:
+0:14              0 (const int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:?     '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:14  Function Definition: @main( ( temp structure{ temp 4-component vector of float Color})
+0:14    Function Parameters: 
+0:?     Sequence
+0:15      mod ( temp float)
+0:15        Convert int to float ( temp float)
+0:15          ival: direct index for structure ( uniform int)
+0:15            'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:15            Constant:
+0:15              2 (const uint)
+0:15        fval: direct index for structure ( uniform float)
+0:15          'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:15          Constant:
+0:15            4 (const uint)
+0:16      mod ( temp 4-component vector of float)
+0:16        Convert int to float ( temp 4-component vector of float)
+0:16          ival4: direct index for structure ( uniform 4-component vector of int)
+0:16            'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:16            Constant:
+0:16              3 (const uint)
+0:16        fval4: direct index for structure ( uniform 4-component vector of float)
+0:16          'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:16          Constant:
+0:16            5 (const uint)
+0:18      mod ( temp float)
+0:18        Convert bool to float ( temp float)
+0:18          bval: direct index for structure ( uniform bool)
+0:18            'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:18            Constant:
+0:18              0 (const uint)
+0:18        fval: direct index for structure ( uniform float)
+0:18          'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:18          Constant:
+0:18            4 (const uint)
+0:19      mod ( temp 4-component vector of float)
+0:19        Convert bool to float ( temp 4-component vector of float)
+0:19          bval4: direct index for structure ( uniform 4-component vector of bool)
+0:19            'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:19            Constant:
+0:19              1 (const uint)
+0:19        fval4: direct index for structure ( uniform 4-component vector of float)
+0:19          'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:19          Constant:
+0:19            5 (const uint)
+0:21      Sequence
+0:21        move second child to first child ( temp int)
+0:21          'l_int' ( temp int)
+0:21          Constant:
+0:21            1 (const int)
+0:22      mod second child into first child ( temp int)
+0:22        'l_int' ( temp int)
+0:22        Convert float to int ( temp int)
+0:22          fval: direct index for structure ( uniform float)
+0:22            'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:22            Constant:
+0:22              4 (const uint)
+0:25      move second child to first child ( temp 4-component vector of float)
+0:25        Color: direct index for structure ( temp 4-component vector of float)
+0:25          'psout' ( temp structure{ temp 4-component vector of float Color})
+0:25          Constant:
+0:25            0 (const int)
+0:25        Constant:
+0:25          0.000000
+0:25          0.000000
+0:25          0.000000
+0:25          0.000000
+0:26      Branch: Return with expression
+0:26        'psout' ( temp structure{ temp 4-component vector of float Color})
+0:14  Function Definition: main( ( temp void)
+0:14    Function Parameters: 
+0:?     Sequence
+0:14      Sequence
+0:14        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+0:14          Color: direct index for structure ( temp 4-component vector of float)
+0:14            Function Call: @main( ( temp structure{ temp 4-component vector of float Color})
+0:14            Constant:
+0:14              0 (const int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform bool bval,  uniform 4-component vector of bool bval4,  uniform int ival,  uniform 4-component vector of int ival4,  uniform float fval,  uniform 4-component vector of float fval4})
+0:?     '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 83
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 80
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "PS_OUTPUT"
+                              MemberName 8(PS_OUTPUT) 0  "Color"
+                              Name 10  "@main("
+                              Name 16  "$Global"
+                              MemberName 16($Global) 0  "bval"
+                              MemberName 16($Global) 1  "bval4"
+                              MemberName 16($Global) 2  "ival"
+                              MemberName 16($Global) 3  "ival4"
+                              MemberName 16($Global) 4  "fval"
+                              MemberName 16($Global) 5  "fval4"
+                              Name 18  ""
+                              Name 66  "l_int"
+                              Name 73  "psout"
+                              Name 80  "@entryPointOutput.Color"
+                              MemberDecorate 16($Global) 0 Offset 0
+                              MemberDecorate 16($Global) 1 Offset 16
+                              MemberDecorate 16($Global) 2 Offset 32
+                              MemberDecorate 16($Global) 3 Offset 48
+                              MemberDecorate 16($Global) 4 Offset 64
+                              MemberDecorate 16($Global) 5 Offset 80
+                              Decorate 16($Global) Block
+                              Decorate 18 DescriptorSet 0
+                              Decorate 18 Binding 0
+                              Decorate 80(@entryPointOutput.Color) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+    8(PS_OUTPUT):             TypeStruct 7(fvec4)
+               9:             TypeFunction 8(PS_OUTPUT)
+              12:             TypeInt 32 0
+              13:             TypeVector 12(int) 4
+              14:             TypeInt 32 1
+              15:             TypeVector 14(int) 4
+     16($Global):             TypeStruct 12(int) 13(ivec4) 14(int) 15(ivec4) 6(float) 7(fvec4)
+              17:             TypePointer Uniform 16($Global)
+              18:     17(ptr) Variable Uniform
+              19:     14(int) Constant 2
+              20:             TypePointer Uniform 14(int)
+              24:     14(int) Constant 4
+              25:             TypePointer Uniform 6(float)
+              29:     14(int) Constant 3
+              30:             TypePointer Uniform 15(ivec4)
+              34:     14(int) Constant 5
+              35:             TypePointer Uniform 7(fvec4)
+              39:     14(int) Constant 0
+              40:             TypePointer Uniform 12(int)
+              43:             TypeBool
+              44:     12(int) Constant 0
+              46:    6(float) Constant 0
+              47:    6(float) Constant 1065353216
+              52:     14(int) Constant 1
+              53:             TypePointer Uniform 13(ivec4)
+              56:             TypeVector 43(bool) 4
+              57:   13(ivec4) ConstantComposite 44 44 44 44
+              59:    7(fvec4) ConstantComposite 46 46 46 46
+              60:    7(fvec4) ConstantComposite 47 47 47 47
+              65:             TypePointer Function 14(int)
+              72:             TypePointer Function 8(PS_OUTPUT)
+              74:             TypePointer Function 7(fvec4)
+              79:             TypePointer Output 7(fvec4)
+80(@entryPointOutput.Color):     79(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              81:8(PS_OUTPUT) FunctionCall 10(@main()
+              82:    7(fvec4) CompositeExtract 81 0
+                              Store 80(@entryPointOutput.Color) 82
+                              Return
+                              FunctionEnd
+      10(@main():8(PS_OUTPUT) Function None 9
+              11:             Label
+       66(l_int):     65(ptr) Variable Function
+       73(psout):     72(ptr) Variable Function
+              21:     20(ptr) AccessChain 18 19
+              22:     14(int) Load 21
+              23:    6(float) ConvertSToF 22
+              26:     25(ptr) AccessChain 18 24
+              27:    6(float) Load 26
+              28:    6(float) FMod 23 27
+              31:     30(ptr) AccessChain 18 29
+              32:   15(ivec4) Load 31
+              33:    7(fvec4) ConvertSToF 32
+              36:     35(ptr) AccessChain 18 34
+              37:    7(fvec4) Load 36
+              38:    7(fvec4) FMod 33 37
+              41:     40(ptr) AccessChain 18 39
+              42:     12(int) Load 41
+              45:    43(bool) INotEqual 42 44
+              48:    6(float) Select 45 47 46
+              49:     25(ptr) AccessChain 18 24
+              50:    6(float) Load 49
+              51:    6(float) FMod 48 50
+              54:     53(ptr) AccessChain 18 52
+              55:   13(ivec4) Load 54
+              58:   56(bvec4) INotEqual 55 57
+              61:    7(fvec4) Select 58 60 59
+              62:     35(ptr) AccessChain 18 34
+              63:    7(fvec4) Load 62
+              64:    7(fvec4) FMod 61 63
+                              Store 66(l_int) 52
+              67:     25(ptr) AccessChain 18 24
+              68:    6(float) Load 67
+              69:     14(int) ConvertFToS 68
+              70:     14(int) Load 66(l_int)
+              71:     14(int) SMod 70 69
+                              Store 66(l_int) 71
+              75:     74(ptr) AccessChain 73(psout) 39
+                              Store 75 59
+              76:8(PS_OUTPUT) Load 73(psout)
+                              ReturnValue 76
+                              FunctionEnd

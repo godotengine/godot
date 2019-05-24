@@ -1,0 +1,192 @@
+300samplerExternalYUV.frag
+ERROR: 0:12: 'texture2D' : no matching overloaded function found 
+ERROR: 0:13: 'texture2D' : no matching overloaded function found 
+ERROR: 0:14: 'texture2D' : no matching overloaded function found 
+ERROR: 0:15: 'texture2DProj' : no matching overloaded function found 
+ERROR: 0:16: 'texture2DProj' : no matching overloaded function found 
+ERROR: 0:29: 'texture3D' : no matching overloaded function found 
+ERROR: 0:30: 'texture2DProjLod' : no matching overloaded function found 
+ERROR: 0:31: 'texture' : no matching overloaded function found 
+ERROR: 0:32: 'textureProjLod' : no matching overloaded function found 
+ERROR: 0:37: '' :  syntax error, unexpected IDENTIFIER, expecting LEFT_BRACE or COMMA or SEMICOLON
+ERROR: 10 compilation errors.  No code generated.
+
+
+Shader version: 300
+Requested GL_EXT_YUV_target
+ERROR: node is still EOpNull!
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      Constant:
+0:12        0.000000
+0:13      Constant:
+0:13        0.000000
+0:14      Constant:
+0:14        0.000000
+0:15      Constant:
+0:15        0.000000
+0:16      Constant:
+0:16        0.000000
+0:18      Sequence
+0:18        move second child to first child ( temp mediump int)
+0:18          'lod' ( temp mediump int)
+0:18          Constant:
+0:18            0 (const int)
+0:19      Sequence
+0:19        move second child to first child ( temp highp float)
+0:19          'bias' ( temp highp float)
+0:19          Constant:
+0:19            0.010000
+0:20      textureSize ( global highp 2-component vector of int, operation at mediump)
+0:20        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:20        'lod' ( temp mediump int)
+0:21      texture ( global lowp 4-component vector of float)
+0:21        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:21        Constant:
+0:21          0.200000
+0:21          0.200000
+0:22      texture ( global lowp 4-component vector of float, operation at highp)
+0:22        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:22        Constant:
+0:22          0.200000
+0:22          0.200000
+0:22        'bias' ( temp highp float)
+0:23      textureProj ( global lowp 4-component vector of float)
+0:23        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:23        Constant:
+0:23          0.200000
+0:23          0.200000
+0:23          0.200000
+0:24      textureProj ( global lowp 4-component vector of float, operation at highp)
+0:24        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:24        Constant:
+0:24          0.200000
+0:24          0.200000
+0:24          0.200000
+0:24        'bias' ( temp highp float)
+0:25      textureProj ( global lowp 4-component vector of float)
+0:25        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:25        Constant:
+0:25          0.200000
+0:25          0.200000
+0:25          0.200000
+0:25          0.200000
+0:26      textureProj ( global lowp 4-component vector of float, operation at highp)
+0:26        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:26        Constant:
+0:26          0.200000
+0:26          0.200000
+0:26          0.200000
+0:26          0.200000
+0:26        'bias' ( temp highp float)
+0:27      textureFetch ( global lowp 4-component vector of float, operation at mediump)
+0:27        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:27        Constant:
+0:27          4 (const int)
+0:27          4 (const int)
+0:27        'lod' ( temp mediump int)
+0:29      Constant:
+0:29        0.000000
+0:30      Constant:
+0:30        0.000000
+0:31      Constant:
+0:31        0.000000
+0:32      Constant:
+0:32        0.000000
+0:?   Linker Objects
+0:?     'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:?     'mediumExt' ( uniform mediump __samplerExternal2DY2YEXT)
+0:?     'highExt' ( uniform highp __samplerExternal2DY2YEXT)
+
+
+Linked fragment stage:
+
+
+Shader version: 300
+Requested GL_EXT_YUV_target
+ERROR: node is still EOpNull!
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      Constant:
+0:12        0.000000
+0:13      Constant:
+0:13        0.000000
+0:14      Constant:
+0:14        0.000000
+0:15      Constant:
+0:15        0.000000
+0:16      Constant:
+0:16        0.000000
+0:18      Sequence
+0:18        move second child to first child ( temp mediump int)
+0:18          'lod' ( temp mediump int)
+0:18          Constant:
+0:18            0 (const int)
+0:19      Sequence
+0:19        move second child to first child ( temp highp float)
+0:19          'bias' ( temp highp float)
+0:19          Constant:
+0:19            0.010000
+0:20      textureSize ( global highp 2-component vector of int, operation at mediump)
+0:20        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:20        'lod' ( temp mediump int)
+0:21      texture ( global lowp 4-component vector of float)
+0:21        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:21        Constant:
+0:21          0.200000
+0:21          0.200000
+0:22      texture ( global lowp 4-component vector of float, operation at highp)
+0:22        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:22        Constant:
+0:22          0.200000
+0:22          0.200000
+0:22        'bias' ( temp highp float)
+0:23      textureProj ( global lowp 4-component vector of float)
+0:23        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:23        Constant:
+0:23          0.200000
+0:23          0.200000
+0:23          0.200000
+0:24      textureProj ( global lowp 4-component vector of float, operation at highp)
+0:24        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:24        Constant:
+0:24          0.200000
+0:24          0.200000
+0:24          0.200000
+0:24        'bias' ( temp highp float)
+0:25      textureProj ( global lowp 4-component vector of float)
+0:25        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:25        Constant:
+0:25          0.200000
+0:25          0.200000
+0:25          0.200000
+0:25          0.200000
+0:26      textureProj ( global lowp 4-component vector of float, operation at highp)
+0:26        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:26        Constant:
+0:26          0.200000
+0:26          0.200000
+0:26          0.200000
+0:26          0.200000
+0:26        'bias' ( temp highp float)
+0:27      textureFetch ( global lowp 4-component vector of float, operation at mediump)
+0:27        'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:27        Constant:
+0:27          4 (const int)
+0:27          4 (const int)
+0:27        'lod' ( temp mediump int)
+0:29      Constant:
+0:29        0.000000
+0:30      Constant:
+0:30        0.000000
+0:31      Constant:
+0:31        0.000000
+0:32      Constant:
+0:32        0.000000
+0:?   Linker Objects
+0:?     'sExt' ( uniform lowp __samplerExternal2DY2YEXT)
+0:?     'mediumExt' ( uniform mediump __samplerExternal2DY2YEXT)
+0:?     'highExt' ( uniform highp __samplerExternal2DY2YEXT)
+

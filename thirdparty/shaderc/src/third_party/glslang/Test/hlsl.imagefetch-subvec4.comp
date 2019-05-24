@@ -1,0 +1,8 @@
+Texture3D<int> IN: register(t0);
+RWTexture3D<uint> OUT: register(u1);
+
+[numthreads(8,8,8)]
+void main(uint3 tid: SV_DispatchThreadID)
+{
+    OUT[tid] = IN[tid];
+}

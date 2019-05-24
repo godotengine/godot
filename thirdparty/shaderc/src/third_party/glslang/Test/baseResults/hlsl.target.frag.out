@@ -1,0 +1,209 @@
+hlsl.target.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:7  Function Definition: @main(struct-PSInput-f1-u11;vf4;vf4; ( temp void)
+0:7    Function Parameters: 
+0:7      'input' ( in structure{ temp float interp,  temp uint no_interp})
+0:7      'out1' ( out 4-component vector of float)
+0:7      'out2' ( out 4-component vector of float)
+0:?     Sequence
+0:8      move second child to first child ( temp 4-component vector of float)
+0:8        'out1' ( out 4-component vector of float)
+0:8        Constant:
+0:8          1.000000
+0:8          1.000000
+0:8          1.000000
+0:8          1.000000
+0:9      move second child to first child ( temp 4-component vector of float)
+0:9        'out2' ( out 4-component vector of float)
+0:9        Constant:
+0:9          0.000000
+0:9          0.000000
+0:9          0.000000
+0:9          0.000000
+0:7  Function Definition: main( ( temp void)
+0:7    Function Parameters: 
+0:?     Sequence
+0:7      Sequence
+0:7        move second child to first child ( temp float)
+0:7          interp: direct index for structure ( temp float)
+0:?             'input' ( temp structure{ temp float interp,  temp uint no_interp})
+0:7            Constant:
+0:7              0 (const int)
+0:?           'input.interp' (layout( location=0) in float)
+0:7        move second child to first child ( temp uint)
+0:7          no_interp: direct index for structure ( temp uint)
+0:?             'input' ( temp structure{ temp float interp,  temp uint no_interp})
+0:7            Constant:
+0:7              1 (const int)
+0:?           'input.no_interp' (layout( location=1) flat in uint)
+0:7      Function Call: @main(struct-PSInput-f1-u11;vf4;vf4; ( temp void)
+0:?         'input' ( temp structure{ temp float interp,  temp uint no_interp})
+0:?         'out1' ( temp 4-component vector of float)
+0:?         'out2' ( temp 4-component vector of float)
+0:7      move second child to first child ( temp 4-component vector of float)
+0:?         'out1' (layout( location=1) out 4-component vector of float)
+0:?         'out1' ( temp 4-component vector of float)
+0:7      move second child to first child ( temp 4-component vector of float)
+0:?         'out2' (layout( location=3) out 4-component vector of float)
+0:?         'out2' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'input.interp' (layout( location=0) in float)
+0:?     'input.no_interp' (layout( location=1) flat in uint)
+0:?     'out1' (layout( location=1) out 4-component vector of float)
+0:?     'out2' (layout( location=3) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:7  Function Definition: @main(struct-PSInput-f1-u11;vf4;vf4; ( temp void)
+0:7    Function Parameters: 
+0:7      'input' ( in structure{ temp float interp,  temp uint no_interp})
+0:7      'out1' ( out 4-component vector of float)
+0:7      'out2' ( out 4-component vector of float)
+0:?     Sequence
+0:8      move second child to first child ( temp 4-component vector of float)
+0:8        'out1' ( out 4-component vector of float)
+0:8        Constant:
+0:8          1.000000
+0:8          1.000000
+0:8          1.000000
+0:8          1.000000
+0:9      move second child to first child ( temp 4-component vector of float)
+0:9        'out2' ( out 4-component vector of float)
+0:9        Constant:
+0:9          0.000000
+0:9          0.000000
+0:9          0.000000
+0:9          0.000000
+0:7  Function Definition: main( ( temp void)
+0:7    Function Parameters: 
+0:?     Sequence
+0:7      Sequence
+0:7        move second child to first child ( temp float)
+0:7          interp: direct index for structure ( temp float)
+0:?             'input' ( temp structure{ temp float interp,  temp uint no_interp})
+0:7            Constant:
+0:7              0 (const int)
+0:?           'input.interp' (layout( location=0) in float)
+0:7        move second child to first child ( temp uint)
+0:7          no_interp: direct index for structure ( temp uint)
+0:?             'input' ( temp structure{ temp float interp,  temp uint no_interp})
+0:7            Constant:
+0:7              1 (const int)
+0:?           'input.no_interp' (layout( location=1) flat in uint)
+0:7      Function Call: @main(struct-PSInput-f1-u11;vf4;vf4; ( temp void)
+0:?         'input' ( temp structure{ temp float interp,  temp uint no_interp})
+0:?         'out1' ( temp 4-component vector of float)
+0:?         'out2' ( temp 4-component vector of float)
+0:7      move second child to first child ( temp 4-component vector of float)
+0:?         'out1' (layout( location=1) out 4-component vector of float)
+0:?         'out1' ( temp 4-component vector of float)
+0:7      move second child to first child ( temp 4-component vector of float)
+0:?         'out2' (layout( location=3) out 4-component vector of float)
+0:?         'out2' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'input.interp' (layout( location=0) in float)
+0:?     'input.no_interp' (layout( location=1) flat in uint)
+0:?     'out1' (layout( location=1) out 4-component vector of float)
+0:?     'out2' (layout( location=3) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 50
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 26 32 46 48
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "PSInput"
+                              MemberName 8(PSInput) 0  "interp"
+                              MemberName 8(PSInput) 1  "no_interp"
+                              Name 16  "@main(struct-PSInput-f1-u11;vf4;vf4;"
+                              Name 13  "input"
+                              Name 14  "out1"
+                              Name 15  "out2"
+                              Name 22  "input"
+                              Name 26  "input.interp"
+                              Name 32  "input.no_interp"
+                              Name 36  "out1"
+                              Name 37  "out2"
+                              Name 38  "param"
+                              Name 40  "param"
+                              Name 41  "param"
+                              Name 46  "out1"
+                              Name 48  "out2"
+                              Decorate 26(input.interp) Location 0
+                              Decorate 32(input.no_interp) Flat
+                              Decorate 32(input.no_interp) Location 1
+                              Decorate 46(out1) Location 1
+                              Decorate 48(out2) Location 3
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeInt 32 0
+      8(PSInput):             TypeStruct 6(float) 7(int)
+               9:             TypePointer Function 8(PSInput)
+              10:             TypeVector 6(float) 4
+              11:             TypePointer Function 10(fvec4)
+              12:             TypeFunction 2 9(ptr) 11(ptr) 11(ptr)
+              18:    6(float) Constant 1065353216
+              19:   10(fvec4) ConstantComposite 18 18 18 18
+              20:    6(float) Constant 0
+              21:   10(fvec4) ConstantComposite 20 20 20 20
+              23:             TypeInt 32 1
+              24:     23(int) Constant 0
+              25:             TypePointer Input 6(float)
+26(input.interp):     25(ptr) Variable Input
+              28:             TypePointer Function 6(float)
+              30:     23(int) Constant 1
+              31:             TypePointer Input 7(int)
+32(input.no_interp):     31(ptr) Variable Input
+              34:             TypePointer Function 7(int)
+              45:             TypePointer Output 10(fvec4)
+        46(out1):     45(ptr) Variable Output
+        48(out2):     45(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+       22(input):      9(ptr) Variable Function
+        36(out1):     11(ptr) Variable Function
+        37(out2):     11(ptr) Variable Function
+       38(param):      9(ptr) Variable Function
+       40(param):     11(ptr) Variable Function
+       41(param):     11(ptr) Variable Function
+              27:    6(float) Load 26(input.interp)
+              29:     28(ptr) AccessChain 22(input) 24
+                              Store 29 27
+              33:      7(int) Load 32(input.no_interp)
+              35:     34(ptr) AccessChain 22(input) 30
+                              Store 35 33
+              39:  8(PSInput) Load 22(input)
+                              Store 38(param) 39
+              42:           2 FunctionCall 16(@main(struct-PSInput-f1-u11;vf4;vf4;) 38(param) 40(param) 41(param)
+              43:   10(fvec4) Load 40(param)
+                              Store 36(out1) 43
+              44:   10(fvec4) Load 41(param)
+                              Store 37(out2) 44
+              47:   10(fvec4) Load 36(out1)
+                              Store 46(out1) 47
+              49:   10(fvec4) Load 37(out2)
+                              Store 48(out2) 49
+                              Return
+                              FunctionEnd
+16(@main(struct-PSInput-f1-u11;vf4;vf4;):           2 Function None 12
+       13(input):      9(ptr) FunctionParameter
+        14(out1):     11(ptr) FunctionParameter
+        15(out2):     11(ptr) FunctionParameter
+              17:             Label
+                              Store 14(out1) 19
+                              Store 15(out2) 21
+                              Return
+                              FunctionEnd

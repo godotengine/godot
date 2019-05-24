@@ -1,0 +1,15 @@
+#version 450
+#extension GL_ARB_gpu_shader_int64 : require
+
+layout(local_size_x = 54) in;
+
+layout(location=4) uniform int64_t arg0;
+layout(location=5) uniform uint arg1;
+
+void main()
+{
+    uint64_t result = arg0 << arg1;
+    result = arg0 >> arg1;
+    result <<= arg1;
+    result >>= arg1;
+}

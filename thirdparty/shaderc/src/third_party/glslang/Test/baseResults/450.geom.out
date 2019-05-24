@@ -1,0 +1,85 @@
+450.geom
+ERROR: 0:15: '[' :  array index out of range '3'
+ERROR: 0:15: 'gl_Position' : no such field in structure 
+ERROR: 0:19: 'points' : can only apply to a standalone qualifier 
+ERROR: 3 compilation errors.  No code generated.
+
+
+Shader version: 450
+invocations = -1
+max_vertices = -1
+input primitive = triangles
+output primitive = none
+ERROR: node is still EOpNull!
+0:13  Function Definition: main( ( global void)
+0:13    Function Parameters: 
+0:15    Sequence
+0:15      direct index ( temp block{ in 3-element array of float CullDistance gl_CullDistance})
+0:15        'gl_in' ( in 3-element array of block{ in 3-element array of float CullDistance gl_CullDistance})
+0:15        Constant:
+0:15          3 (const int)
+0:16      move second child to first child ( temp float)
+0:16        direct index (layout( stream=0) temp float CullDistance)
+0:16          gl_CullDistance: direct index for structure (layout( stream=0) out 3-element array of float CullDistance)
+0:16            'anon@0' (layout( stream=0) out block{layout( stream=0) out 3-element array of float CullDistance gl_CullDistance})
+0:16            Constant:
+0:16              3 (const uint)
+0:16          Constant:
+0:16            2 (const int)
+0:16        direct index ( temp float CullDistance)
+0:16          gl_CullDistance: direct index for structure ( in 3-element array of float CullDistance)
+0:16            direct index ( temp block{ in 3-element array of float CullDistance gl_CullDistance})
+0:16              'gl_in' ( in 3-element array of block{ in 3-element array of float CullDistance gl_CullDistance})
+0:16              Constant:
+0:16                1 (const int)
+0:16            Constant:
+0:16              0 (const int)
+0:16          Constant:
+0:16            2 (const int)
+0:?   Linker Objects
+0:?     'gl_in' ( in 3-element array of block{ in 3-element array of float CullDistance gl_CullDistance})
+0:?     'anon@0' (layout( stream=0) out block{layout( stream=0) out 3-element array of float CullDistance gl_CullDistance})
+0:?     'f' ( in 3-element array of float)
+
+
+Linked geometry stage:
+
+ERROR: Linking geometry stage: At least one shader must specify an output layout primitive
+ERROR: Linking geometry stage: At least one shader must specify a layout(max_vertices = value)
+
+Shader version: 450
+invocations = 1
+max_vertices = -1
+input primitive = triangles
+output primitive = none
+ERROR: node is still EOpNull!
+0:13  Function Definition: main( ( global void)
+0:13    Function Parameters: 
+0:15    Sequence
+0:15      direct index ( temp block{ in 3-element array of float CullDistance gl_CullDistance})
+0:15        'gl_in' ( in 3-element array of block{ in 3-element array of float CullDistance gl_CullDistance})
+0:15        Constant:
+0:15          3 (const int)
+0:16      move second child to first child ( temp float)
+0:16        direct index (layout( stream=0) temp float CullDistance)
+0:16          gl_CullDistance: direct index for structure (layout( stream=0) out 3-element array of float CullDistance)
+0:16            'anon@0' (layout( stream=0) out block{layout( stream=0) out 3-element array of float CullDistance gl_CullDistance})
+0:16            Constant:
+0:16              3 (const uint)
+0:16          Constant:
+0:16            2 (const int)
+0:16        direct index ( temp float CullDistance)
+0:16          gl_CullDistance: direct index for structure ( in 3-element array of float CullDistance)
+0:16            direct index ( temp block{ in 3-element array of float CullDistance gl_CullDistance})
+0:16              'gl_in' ( in 3-element array of block{ in 3-element array of float CullDistance gl_CullDistance})
+0:16              Constant:
+0:16                1 (const int)
+0:16            Constant:
+0:16              0 (const int)
+0:16          Constant:
+0:16            2 (const int)
+0:?   Linker Objects
+0:?     'gl_in' ( in 3-element array of block{ in 3-element array of float CullDistance gl_CullDistance})
+0:?     'anon@0' (layout( stream=0) out block{layout( stream=0) out 3-element array of float CullDistance gl_CullDistance})
+0:?     'f' ( in 3-element array of float)
+

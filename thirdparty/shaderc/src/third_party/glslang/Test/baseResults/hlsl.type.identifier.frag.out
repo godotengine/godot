@@ -1,0 +1,436 @@
+hlsl.type.identifier.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:6  Function Definition: fn(f1; ( temp float)
+0:6    Function Parameters: 
+0:6      'float' ( in float)
+0:?     Sequence
+0:6      Branch: Return with expression
+0:6        'float' ( in float)
+0:9  Function Definition: @main( ( temp 4-component vector of float)
+0:9    Function Parameters: 
+0:?     Sequence
+0:10      Sequence
+0:10        move second child to first child ( temp float)
+0:10          'float' ( temp float)
+0:10          Constant:
+0:10            7.000000
+0:11      Sequence
+0:11        move second child to first child ( temp 2-element array of bool)
+0:11          'bool' ( temp 2-element array of bool)
+0:11          Construct bool ( temp 2-element array of bool)
+0:11            Convert float to bool ( temp bool)
+0:11              'float' ( temp float)
+0:11            Convert float to bool ( temp bool)
+0:11              'float' ( temp float)
+0:12      Sequence
+0:12        move second child to first child ( temp int)
+0:12          'int' ( temp int)
+0:12          Convert bool to int ( temp int)
+0:12            direct index ( temp bool)
+0:12              'bool' ( temp 2-element array of bool)
+0:12              Constant:
+0:12                1 (const int)
+0:13      Sequence
+0:13        move second child to first child ( temp uint)
+0:13          'uint' ( temp uint)
+0:13          Convert float to uint ( temp uint)
+0:13            add ( temp float)
+0:13              'float' ( temp float)
+0:13              Convert int to float ( temp float)
+0:13                'int' ( temp int)
+0:14      Sequence
+0:14        move second child to first child ( temp mediump float)
+0:14          'min16float' ( temp mediump float)
+0:14          Convert uint to float ( temp mediump float)
+0:14            'uint' ( temp mediump uint)
+0:15      Sequence
+0:15        move second child to first child ( temp mediump float)
+0:15          'min10float' ( temp mediump float)
+0:15          'min16float' ( temp mediump float)
+0:16      Sequence
+0:16        move second child to first child ( temp float)
+0:16          'half' ( temp float)
+0:16          Constant:
+0:16            0.500000
+0:?       Sequence
+0:20        move second child to first child ( temp float)
+0:20          float: direct index for structure ( temp float)
+0:20            'float' ( temp structure{ temp float float})
+0:20            Constant:
+0:20              0 (const int)
+0:20          Constant:
+0:20            42.000000
+0:23      move second child to first child ( temp bool)
+0:23        direct index ( temp bool)
+0:23          'bool' ( temp 2-element array of bool)
+0:23          Constant:
+0:23            0 (const int)
+0:23        direct index ( temp bool)
+0:23          'bool' ( temp 2-element array of bool)
+0:23          Constant:
+0:23            1 (const int)
+0:25      move second child to first child ( temp mediump float)
+0:25        'float' ( temp mediump float)
+0:25        add ( temp mediump float)
+0:25          add ( temp mediump float)
+0:25            add ( temp mediump float)
+0:25              add ( temp mediump float)
+0:25                add ( temp mediump float)
+0:25                  add ( temp mediump float)
+0:25                    'float' ( temp mediump float)
+0:25                    Convert int to float ( temp mediump float)
+0:25                      'int' ( temp mediump int)
+0:25                  Convert uint to float ( temp mediump float)
+0:25                    'uint' ( temp mediump uint)
+0:25                'min16float' ( temp mediump float)
+0:25              'min10float' ( temp mediump float)
+0:25            Test condition and select ( temp mediump float): no shortcircuit
+0:25              Condition
+0:25              direct index ( temp bool)
+0:25                'bool' ( temp 2-element array of bool)
+0:25                Constant:
+0:25                  0 (const int)
+0:25              true case
+0:25              Convert int to float ( temp mediump float)
+0:25                'int' ( temp mediump int)
+0:25              false case
+0:25              'float' ( temp mediump float)
+0:25          Function Call: fn(f1; ( temp mediump float)
+0:25            'float' ( temp mediump float)
+0:28      move second child to first child ( temp float)
+0:28        direct index ( temp float)
+0:28          direct index ( temp 3-component vector of float)
+0:28            'half2x3' ( temp 2X3 matrix of float)
+0:28            Constant:
+0:28              0 (const int)
+0:28          Constant:
+0:28            0 (const int)
+0:28        component-wise multiply ( temp float)
+0:28          'float' ( temp float)
+0:28          'float' ( temp float)
+0:30      Branch: Return with expression
+0:30        Construct vec4 ( temp 4-component vector of float)
+0:30          add ( temp float)
+0:30            'float' ( temp float)
+0:30            direct index ( temp float)
+0:30              direct index ( temp 3-component vector of float)
+0:30                'half2x3' ( temp 2X3 matrix of float)
+0:30                Constant:
+0:30                  0 (const int)
+0:30              Constant:
+0:30                0 (const int)
+0:9  Function Definition: main( ( temp void)
+0:9    Function Parameters: 
+0:?     Sequence
+0:9      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:9        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:6  Function Definition: fn(f1; ( temp float)
+0:6    Function Parameters: 
+0:6      'float' ( in float)
+0:?     Sequence
+0:6      Branch: Return with expression
+0:6        'float' ( in float)
+0:9  Function Definition: @main( ( temp 4-component vector of float)
+0:9    Function Parameters: 
+0:?     Sequence
+0:10      Sequence
+0:10        move second child to first child ( temp float)
+0:10          'float' ( temp float)
+0:10          Constant:
+0:10            7.000000
+0:11      Sequence
+0:11        move second child to first child ( temp 2-element array of bool)
+0:11          'bool' ( temp 2-element array of bool)
+0:11          Construct bool ( temp 2-element array of bool)
+0:11            Convert float to bool ( temp bool)
+0:11              'float' ( temp float)
+0:11            Convert float to bool ( temp bool)
+0:11              'float' ( temp float)
+0:12      Sequence
+0:12        move second child to first child ( temp int)
+0:12          'int' ( temp int)
+0:12          Convert bool to int ( temp int)
+0:12            direct index ( temp bool)
+0:12              'bool' ( temp 2-element array of bool)
+0:12              Constant:
+0:12                1 (const int)
+0:13      Sequence
+0:13        move second child to first child ( temp uint)
+0:13          'uint' ( temp uint)
+0:13          Convert float to uint ( temp uint)
+0:13            add ( temp float)
+0:13              'float' ( temp float)
+0:13              Convert int to float ( temp float)
+0:13                'int' ( temp int)
+0:14      Sequence
+0:14        move second child to first child ( temp mediump float)
+0:14          'min16float' ( temp mediump float)
+0:14          Convert uint to float ( temp mediump float)
+0:14            'uint' ( temp mediump uint)
+0:15      Sequence
+0:15        move second child to first child ( temp mediump float)
+0:15          'min10float' ( temp mediump float)
+0:15          'min16float' ( temp mediump float)
+0:16      Sequence
+0:16        move second child to first child ( temp float)
+0:16          'half' ( temp float)
+0:16          Constant:
+0:16            0.500000
+0:?       Sequence
+0:20        move second child to first child ( temp float)
+0:20          float: direct index for structure ( temp float)
+0:20            'float' ( temp structure{ temp float float})
+0:20            Constant:
+0:20              0 (const int)
+0:20          Constant:
+0:20            42.000000
+0:23      move second child to first child ( temp bool)
+0:23        direct index ( temp bool)
+0:23          'bool' ( temp 2-element array of bool)
+0:23          Constant:
+0:23            0 (const int)
+0:23        direct index ( temp bool)
+0:23          'bool' ( temp 2-element array of bool)
+0:23          Constant:
+0:23            1 (const int)
+0:25      move second child to first child ( temp mediump float)
+0:25        'float' ( temp mediump float)
+0:25        add ( temp mediump float)
+0:25          add ( temp mediump float)
+0:25            add ( temp mediump float)
+0:25              add ( temp mediump float)
+0:25                add ( temp mediump float)
+0:25                  add ( temp mediump float)
+0:25                    'float' ( temp mediump float)
+0:25                    Convert int to float ( temp mediump float)
+0:25                      'int' ( temp mediump int)
+0:25                  Convert uint to float ( temp mediump float)
+0:25                    'uint' ( temp mediump uint)
+0:25                'min16float' ( temp mediump float)
+0:25              'min10float' ( temp mediump float)
+0:25            Test condition and select ( temp mediump float): no shortcircuit
+0:25              Condition
+0:25              direct index ( temp bool)
+0:25                'bool' ( temp 2-element array of bool)
+0:25                Constant:
+0:25                  0 (const int)
+0:25              true case
+0:25              Convert int to float ( temp mediump float)
+0:25                'int' ( temp mediump int)
+0:25              false case
+0:25              'float' ( temp mediump float)
+0:25          Function Call: fn(f1; ( temp mediump float)
+0:25            'float' ( temp mediump float)
+0:28      move second child to first child ( temp float)
+0:28        direct index ( temp float)
+0:28          direct index ( temp 3-component vector of float)
+0:28            'half2x3' ( temp 2X3 matrix of float)
+0:28            Constant:
+0:28              0 (const int)
+0:28          Constant:
+0:28            0 (const int)
+0:28        component-wise multiply ( temp float)
+0:28          'float' ( temp float)
+0:28          'float' ( temp float)
+0:30      Branch: Return with expression
+0:30        Construct vec4 ( temp 4-component vector of float)
+0:30          add ( temp float)
+0:30            'float' ( temp float)
+0:30            direct index ( temp float)
+0:30              direct index ( temp 3-component vector of float)
+0:30                'half2x3' ( temp 2X3 matrix of float)
+0:30                Constant:
+0:30                  0 (const int)
+0:30              Constant:
+0:30                0 (const int)
+0:9  Function Definition: main( ( temp void)
+0:9    Function Parameters: 
+0:?     Sequence
+0:9      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:9        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 105
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 103
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 10  "fn(f1;"
+                              Name 9  "float"
+                              Name 14  "@main("
+                              Name 19  "float"
+                              Name 26  "bool"
+                              Name 35  "int"
+                              Name 43  "uint"
+                              Name 49  "min16float"
+                              Name 52  "min10float"
+                              Name 54  "half"
+                              Name 56  "foo_t"
+                              MemberName 56(foo_t) 0  "float"
+                              Name 58  "float"
+                              Name 82  "param"
+                              Name 89  "half2x3"
+                              Name 103  "@entryPointOutput"
+                              Decorate 49(min16float) RelaxedPrecision
+                              Decorate 50 RelaxedPrecision
+                              Decorate 51 RelaxedPrecision
+                              Decorate 52(min10float) RelaxedPrecision
+                              Decorate 53 RelaxedPrecision
+                              Decorate 64 RelaxedPrecision
+                              Decorate 65 RelaxedPrecision
+                              Decorate 66 RelaxedPrecision
+                              Decorate 67 RelaxedPrecision
+                              Decorate 68 RelaxedPrecision
+                              Decorate 69 RelaxedPrecision
+                              Decorate 70 RelaxedPrecision
+                              Decorate 71 RelaxedPrecision
+                              Decorate 72 RelaxedPrecision
+                              Decorate 73 RelaxedPrecision
+                              Decorate 74 RelaxedPrecision
+                              Decorate 77 RelaxedPrecision
+                              Decorate 78 RelaxedPrecision
+                              Decorate 79 RelaxedPrecision
+                              Decorate 81 RelaxedPrecision
+                              Decorate 83 RelaxedPrecision
+                              Decorate 84 RelaxedPrecision
+                              Decorate 85 RelaxedPrecision
+                              Decorate 103(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypePointer Function 6(float)
+               8:             TypeFunction 6(float) 7(ptr)
+              12:             TypeVector 6(float) 4
+              13:             TypeFunction 12(fvec4)
+              20:    6(float) Constant 1088421888
+              21:             TypeBool
+              22:             TypeInt 32 0
+              23:     22(int) Constant 2
+              24:             TypeArray 21(bool) 23
+              25:             TypePointer Function 24
+              28:    6(float) Constant 0
+              33:             TypeInt 32 1
+              34:             TypePointer Function 33(int)
+              36:     33(int) Constant 1
+              37:             TypePointer Function 21(bool)
+              40:     33(int) Constant 0
+              42:             TypePointer Function 22(int)
+              55:    6(float) Constant 1056964608
+       56(foo_t):             TypeStruct 6(float)
+              57:             TypePointer Function 56(foo_t)
+              59:    6(float) Constant 1109917696
+              86:             TypeVector 6(float) 3
+              87:             TypeMatrix 86(fvec3) 2
+              88:             TypePointer Function 87
+              93:     22(int) Constant 0
+             102:             TypePointer Output 12(fvec4)
+103(@entryPointOutput):    102(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+             104:   12(fvec4) FunctionCall 14(@main()
+                              Store 103(@entryPointOutput) 104
+                              Return
+                              FunctionEnd
+      10(fn(f1;):    6(float) Function None 8
+        9(float):      7(ptr) FunctionParameter
+              11:             Label
+              16:    6(float) Load 9(float)
+                              ReturnValue 16
+                              FunctionEnd
+      14(@main():   12(fvec4) Function None 13
+              15:             Label
+       19(float):      7(ptr) Variable Function
+        26(bool):     25(ptr) Variable Function
+         35(int):     34(ptr) Variable Function
+        43(uint):     42(ptr) Variable Function
+  49(min16float):      7(ptr) Variable Function
+  52(min10float):      7(ptr) Variable Function
+        54(half):      7(ptr) Variable Function
+       58(float):     57(ptr) Variable Function
+       82(param):      7(ptr) Variable Function
+     89(half2x3):     88(ptr) Variable Function
+                              Store 19(float) 20
+              27:    6(float) Load 19(float)
+              29:    21(bool) FOrdNotEqual 27 28
+              30:    6(float) Load 19(float)
+              31:    21(bool) FOrdNotEqual 30 28
+              32:          24 CompositeConstruct 29 31
+                              Store 26(bool) 32
+              38:     37(ptr) AccessChain 26(bool) 36
+              39:    21(bool) Load 38
+              41:     33(int) Select 39 36 40
+                              Store 35(int) 41
+              44:    6(float) Load 19(float)
+              45:     33(int) Load 35(int)
+              46:    6(float) ConvertSToF 45
+              47:    6(float) FAdd 44 46
+              48:     22(int) ConvertFToU 47
+                              Store 43(uint) 48
+              50:     22(int) Load 43(uint)
+              51:    6(float) ConvertUToF 50
+                              Store 49(min16float) 51
+              53:    6(float) Load 49(min16float)
+                              Store 52(min10float) 53
+                              Store 54(half) 55
+              60:      7(ptr) AccessChain 58(float) 40
+                              Store 60 59
+              61:     37(ptr) AccessChain 26(bool) 36
+              62:    21(bool) Load 61
+              63:     37(ptr) AccessChain 26(bool) 40
+                              Store 63 62
+              64:    6(float) Load 19(float)
+              65:     33(int) Load 35(int)
+              66:    6(float) ConvertSToF 65
+              67:    6(float) FAdd 64 66
+              68:     22(int) Load 43(uint)
+              69:    6(float) ConvertUToF 68
+              70:    6(float) FAdd 67 69
+              71:    6(float) Load 49(min16float)
+              72:    6(float) FAdd 70 71
+              73:    6(float) Load 52(min10float)
+              74:    6(float) FAdd 72 73
+              75:     37(ptr) AccessChain 26(bool) 40
+              76:    21(bool) Load 75
+              77:     33(int) Load 35(int)
+              78:    6(float) ConvertSToF 77
+              79:    6(float) Load 19(float)
+              80:    6(float) Select 76 78 79
+              81:    6(float) FAdd 74 80
+              83:    6(float) Load 19(float)
+                              Store 82(param) 83
+              84:    6(float) FunctionCall 10(fn(f1;) 82(param)
+              85:    6(float) FAdd 81 84
+                              Store 19(float) 85
+              90:    6(float) Load 19(float)
+              91:    6(float) Load 19(float)
+              92:    6(float) FMul 90 91
+              94:      7(ptr) AccessChain 89(half2x3) 40 93
+                              Store 94 92
+              95:    6(float) Load 19(float)
+              96:      7(ptr) AccessChain 89(half2x3) 40 93
+              97:    6(float) Load 96
+              98:    6(float) FAdd 95 97
+              99:   12(fvec4) CompositeConstruct 98 98 98 98
+                              ReturnValue 99
+                              FunctionEnd

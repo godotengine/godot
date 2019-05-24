@@ -1,0 +1,6 @@
+glspv.version.vert
+ERROR: #version: Desktop shaders for OpenGL SPIR-V require version 330 or higher
+ERROR: 1 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

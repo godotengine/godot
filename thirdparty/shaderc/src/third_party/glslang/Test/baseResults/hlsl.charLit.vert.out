@@ -1,0 +1,233 @@
+hlsl.charLit.vert
+Shader version: 500
+0:? Sequence
+0:2  Function Definition: @main( ( temp 4-component vector of float)
+0:2    Function Parameters: 
+0:?     Sequence
+0:3      Sequence
+0:3        move second child to first child ( temp uint)
+0:3          'a1' ( temp uint)
+0:3          Constant:
+0:3            65 (const uint)
+0:4      Sequence
+0:4        move second child to first child ( temp int)
+0:4          'a2' ( temp int)
+0:4          Constant:
+0:4            48 (const int)
+0:6      Sequence
+0:6        move second child to first child ( temp int)
+0:6          'a3' ( temp int)
+0:6          Constant:
+0:6            7 (const int)
+0:7      add second child into first child ( temp int)
+0:7        'a3' ( temp int)
+0:7        Constant:
+0:7          8 (const int)
+0:8      add second child into first child ( temp int)
+0:8        'a3' ( temp int)
+0:8        Constant:
+0:8          9 (const int)
+0:9      add second child into first child ( temp int)
+0:9        'a3' ( temp int)
+0:9        Constant:
+0:9          10 (const int)
+0:10      add second child into first child ( temp int)
+0:10        'a3' ( temp int)
+0:10        Constant:
+0:10          11 (const int)
+0:11      add second child into first child ( temp int)
+0:11        'a3' ( temp int)
+0:11        Constant:
+0:11          12 (const int)
+0:12      add second child into first child ( temp int)
+0:12        'a3' ( temp int)
+0:12        Constant:
+0:12          13 (const int)
+0:14      Sequence
+0:14        move second child to first child ( temp int)
+0:14          'a10' ( temp int)
+0:14          Constant:
+0:14            99 (const int)
+0:16      Branch: Return with expression
+0:16        Construct vec4 ( temp 4-component vector of float)
+0:16          Convert uint to float ( temp float)
+0:16            add ( temp uint)
+0:16              add ( temp uint)
+0:16                add ( temp uint)
+0:16                  'a1' ( temp uint)
+0:16                  Convert int to uint ( temp uint)
+0:16                    'a2' ( temp int)
+0:16                Convert int to uint ( temp uint)
+0:16                  'a3' ( temp int)
+0:16              Convert int to uint ( temp uint)
+0:16                'a10' ( temp int)
+0:2  Function Definition: main( ( temp void)
+0:2    Function Parameters: 
+0:?     Sequence
+0:2      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' ( out 4-component vector of float Position)
+0:2        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' ( out 4-component vector of float Position)
+
+
+Linked vertex stage:
+
+
+Shader version: 500
+0:? Sequence
+0:2  Function Definition: @main( ( temp 4-component vector of float)
+0:2    Function Parameters: 
+0:?     Sequence
+0:3      Sequence
+0:3        move second child to first child ( temp uint)
+0:3          'a1' ( temp uint)
+0:3          Constant:
+0:3            65 (const uint)
+0:4      Sequence
+0:4        move second child to first child ( temp int)
+0:4          'a2' ( temp int)
+0:4          Constant:
+0:4            48 (const int)
+0:6      Sequence
+0:6        move second child to first child ( temp int)
+0:6          'a3' ( temp int)
+0:6          Constant:
+0:6            7 (const int)
+0:7      add second child into first child ( temp int)
+0:7        'a3' ( temp int)
+0:7        Constant:
+0:7          8 (const int)
+0:8      add second child into first child ( temp int)
+0:8        'a3' ( temp int)
+0:8        Constant:
+0:8          9 (const int)
+0:9      add second child into first child ( temp int)
+0:9        'a3' ( temp int)
+0:9        Constant:
+0:9          10 (const int)
+0:10      add second child into first child ( temp int)
+0:10        'a3' ( temp int)
+0:10        Constant:
+0:10          11 (const int)
+0:11      add second child into first child ( temp int)
+0:11        'a3' ( temp int)
+0:11        Constant:
+0:11          12 (const int)
+0:12      add second child into first child ( temp int)
+0:12        'a3' ( temp int)
+0:12        Constant:
+0:12          13 (const int)
+0:14      Sequence
+0:14        move second child to first child ( temp int)
+0:14          'a10' ( temp int)
+0:14          Constant:
+0:14            99 (const int)
+0:16      Branch: Return with expression
+0:16        Construct vec4 ( temp 4-component vector of float)
+0:16          Convert uint to float ( temp float)
+0:16            add ( temp uint)
+0:16              add ( temp uint)
+0:16                add ( temp uint)
+0:16                  'a1' ( temp uint)
+0:16                  Convert int to uint ( temp uint)
+0:16                    'a2' ( temp int)
+0:16                Convert int to uint ( temp uint)
+0:16                  'a3' ( temp int)
+0:16              Convert int to uint ( temp uint)
+0:16                'a10' ( temp int)
+0:2  Function Definition: main( ( temp void)
+0:2    Function Parameters: 
+0:?     Sequence
+0:2      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' ( out 4-component vector of float Position)
+0:2        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' ( out 4-component vector of float Position)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 58
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Vertex 4  "main" 56
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "@main("
+                              Name 13  "a1"
+                              Name 17  "a2"
+                              Name 19  "a3"
+                              Name 39  "a10"
+                              Name 56  "@entryPointOutput"
+                              Decorate 56(@entryPointOutput) BuiltIn Position
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeFunction 7(fvec4)
+              11:             TypeInt 32 0
+              12:             TypePointer Function 11(int)
+              14:     11(int) Constant 65
+              15:             TypeInt 32 1
+              16:             TypePointer Function 15(int)
+              18:     15(int) Constant 48
+              20:     15(int) Constant 7
+              21:     15(int) Constant 8
+              24:     15(int) Constant 9
+              27:     15(int) Constant 10
+              30:     15(int) Constant 11
+              33:     15(int) Constant 12
+              36:     15(int) Constant 13
+              40:     15(int) Constant 99
+              55:             TypePointer Output 7(fvec4)
+56(@entryPointOutput):     55(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              57:    7(fvec4) FunctionCall 9(@main()
+                              Store 56(@entryPointOutput) 57
+                              Return
+                              FunctionEnd
+       9(@main():    7(fvec4) Function None 8
+              10:             Label
+          13(a1):     12(ptr) Variable Function
+          17(a2):     16(ptr) Variable Function
+          19(a3):     16(ptr) Variable Function
+         39(a10):     16(ptr) Variable Function
+                              Store 13(a1) 14
+                              Store 17(a2) 18
+                              Store 19(a3) 20
+              22:     15(int) Load 19(a3)
+              23:     15(int) IAdd 22 21
+                              Store 19(a3) 23
+              25:     15(int) Load 19(a3)
+              26:     15(int) IAdd 25 24
+                              Store 19(a3) 26
+              28:     15(int) Load 19(a3)
+              29:     15(int) IAdd 28 27
+                              Store 19(a3) 29
+              31:     15(int) Load 19(a3)
+              32:     15(int) IAdd 31 30
+                              Store 19(a3) 32
+              34:     15(int) Load 19(a3)
+              35:     15(int) IAdd 34 33
+                              Store 19(a3) 35
+              37:     15(int) Load 19(a3)
+              38:     15(int) IAdd 37 36
+                              Store 19(a3) 38
+                              Store 39(a10) 40
+              41:     11(int) Load 13(a1)
+              42:     15(int) Load 17(a2)
+              43:     11(int) Bitcast 42
+              44:     11(int) IAdd 41 43
+              45:     15(int) Load 19(a3)
+              46:     11(int) Bitcast 45
+              47:     11(int) IAdd 44 46
+              48:     15(int) Load 39(a10)
+              49:     11(int) Bitcast 48
+              50:     11(int) IAdd 47 49
+              51:    6(float) ConvertUToF 50
+              52:    7(fvec4) CompositeConstruct 51 51 51 51
+                              ReturnValue 52
+                              FunctionEnd

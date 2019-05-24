@@ -1,0 +1,506 @@
+hlsl.scalar2matrix.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:2  Function Definition: Fn1(mf44; ( temp void)
+0:2    Function Parameters: 
+0:2      'p' ( in 4X4 matrix of float)
+0:5  Function Definition: @main( ( temp 4-component vector of float)
+0:5    Function Parameters: 
+0:?     Sequence
+0:10      Sequence
+0:10        move second child to first child ( temp 4X4 matrix of float)
+0:10          'mat1' ( temp 4X4 matrix of float)
+0:10          Constant:
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:11      Sequence
+0:11        move second child to first child ( temp 4X4 matrix of float)
+0:11          'mat2' ( temp 4X4 matrix of float)
+0:11          Constant:
+0:11            3.000000
+0:11            3.100000
+0:11            3.200000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:12      Sequence
+0:12        move second child to first child ( temp 4X4 matrix of float)
+0:12          'mat3' ( temp 4X4 matrix of float)
+0:12          Constant:
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:16      move second child to first child ( temp 4X4 matrix of float)
+0:16        'mat4' ( temp 4X4 matrix of float)
+0:16        Constant:
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:17      move second child to first child ( temp 4X4 matrix of float)
+0:17        'mat4' ( temp 4X4 matrix of float)
+0:?         Constant:
+0:?           4.000000
+0:?           4.100000
+0:?           4.200000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:18      move second child to first child ( temp 4X4 matrix of float)
+0:18        'mat4' ( temp 4X4 matrix of float)
+0:18        Constant:
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:20      matrix scale second child into first child ( temp 4X4 matrix of float)
+0:20        'mat4' ( temp 4X4 matrix of float)
+0:20        Constant:
+0:20          0.750000
+0:21      add second child into first child ( temp 4X4 matrix of float)
+0:21        'mat4' ( temp 4X4 matrix of float)
+0:21        Constant:
+0:21          0.750000
+0:22      subtract second child into first child ( temp 4X4 matrix of float)
+0:22        'mat4' ( temp 4X4 matrix of float)
+0:22        Constant:
+0:22          0.500000
+0:23      divide second child into first child ( temp 4X4 matrix of float)
+0:23        'mat4' ( temp 4X4 matrix of float)
+0:23        Constant:
+0:23          2.000000
+0:25      Function Call: Fn1(mf44; ( temp void)
+0:25        Constant:
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:27      Branch: Return with expression
+0:27        add ( temp 4-component vector of float)
+0:27          add ( temp 4-component vector of float)
+0:27            Constant:
+0:27              0.300000
+0:27              0.300000
+0:27              0.300000
+0:27              0.300000
+0:27            direct index ( temp 4-component vector of float)
+0:27              'mat1' ( temp 4X4 matrix of float)
+0:27              Constant:
+0:27                1 (const int)
+0:27          direct index ( temp 4-component vector of float)
+0:27            'mat4' ( temp 4X4 matrix of float)
+0:27            Constant:
+0:27              2 (const int)
+0:5  Function Definition: main( ( temp void)
+0:5    Function Parameters: 
+0:?     Sequence
+0:5      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:5        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:2  Function Definition: Fn1(mf44; ( temp void)
+0:2    Function Parameters: 
+0:2      'p' ( in 4X4 matrix of float)
+0:5  Function Definition: @main( ( temp 4-component vector of float)
+0:5    Function Parameters: 
+0:?     Sequence
+0:10      Sequence
+0:10        move second child to first child ( temp 4X4 matrix of float)
+0:10          'mat1' ( temp 4X4 matrix of float)
+0:10          Constant:
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:10            0.250000
+0:11      Sequence
+0:11        move second child to first child ( temp 4X4 matrix of float)
+0:11          'mat2' ( temp 4X4 matrix of float)
+0:11          Constant:
+0:11            3.000000
+0:11            3.100000
+0:11            3.200000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:11            0.000000
+0:12      Sequence
+0:12        move second child to first child ( temp 4X4 matrix of float)
+0:12          'mat3' ( temp 4X4 matrix of float)
+0:12          Constant:
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:12            0.375000
+0:16      move second child to first child ( temp 4X4 matrix of float)
+0:16        'mat4' ( temp 4X4 matrix of float)
+0:16        Constant:
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:16          0.750000
+0:17      move second child to first child ( temp 4X4 matrix of float)
+0:17        'mat4' ( temp 4X4 matrix of float)
+0:?         Constant:
+0:?           4.000000
+0:?           4.100000
+0:?           4.200000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:18      move second child to first child ( temp 4X4 matrix of float)
+0:18        'mat4' ( temp 4X4 matrix of float)
+0:18        Constant:
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:18          0.500000
+0:20      matrix scale second child into first child ( temp 4X4 matrix of float)
+0:20        'mat4' ( temp 4X4 matrix of float)
+0:20        Constant:
+0:20          0.750000
+0:21      add second child into first child ( temp 4X4 matrix of float)
+0:21        'mat4' ( temp 4X4 matrix of float)
+0:21        Constant:
+0:21          0.750000
+0:22      subtract second child into first child ( temp 4X4 matrix of float)
+0:22        'mat4' ( temp 4X4 matrix of float)
+0:22        Constant:
+0:22          0.500000
+0:23      divide second child into first child ( temp 4X4 matrix of float)
+0:23        'mat4' ( temp 4X4 matrix of float)
+0:23        Constant:
+0:23          2.000000
+0:25      Function Call: Fn1(mf44; ( temp void)
+0:25        Constant:
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:25          5.000000
+0:27      Branch: Return with expression
+0:27        add ( temp 4-component vector of float)
+0:27          add ( temp 4-component vector of float)
+0:27            Constant:
+0:27              0.300000
+0:27              0.300000
+0:27              0.300000
+0:27              0.300000
+0:27            direct index ( temp 4-component vector of float)
+0:27              'mat1' ( temp 4X4 matrix of float)
+0:27              Constant:
+0:27                1 (const int)
+0:27          direct index ( temp 4-component vector of float)
+0:27            'mat4' ( temp 4X4 matrix of float)
+0:27            Constant:
+0:27              2 (const int)
+0:5  Function Definition: main( ( temp void)
+0:5    Function Parameters: 
+0:?     Sequence
+0:5      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:5        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 96
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 94
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 12  "Fn1(mf44;"
+                              Name 11  "p"
+                              Name 15  "@main("
+                              Name 17  "mat1"
+                              Name 21  "mat2"
+                              Name 29  "mat3"
+                              Name 33  "mat4"
+                              Name 77  "param"
+                              Name 94  "@entryPointOutput"
+                              Decorate 94(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypeMatrix 7(fvec4) 4
+               9:             TypePointer Function 8
+              10:             TypeFunction 2 9(ptr)
+              14:             TypeFunction 7(fvec4)
+              18:    6(float) Constant 1048576000
+              19:    7(fvec4) ConstantComposite 18 18 18 18
+              20:           8 ConstantComposite 19 19 19 19
+              22:    6(float) Constant 1077936128
+              23:    6(float) Constant 1078355558
+              24:    6(float) Constant 1078774989
+              25:    6(float) Constant 0
+              26:    7(fvec4) ConstantComposite 22 23 24 25
+              27:    7(fvec4) ConstantComposite 25 25 25 25
+              28:           8 ConstantComposite 26 27 27 27
+              30:    6(float) Constant 1052770304
+              31:    7(fvec4) ConstantComposite 30 30 30 30
+              32:           8 ConstantComposite 31 31 31 31
+              34:    6(float) Constant 1061158912
+              35:    7(fvec4) ConstantComposite 34 34 34 34
+              36:           8 ConstantComposite 35 35 35 35
+              37:    6(float) Constant 1082130432
+              38:    6(float) Constant 1082340147
+              39:    6(float) Constant 1082549862
+              40:    7(fvec4) ConstantComposite 37 38 39 25
+              41:           8 ConstantComposite 40 27 27 27
+              42:    6(float) Constant 1056964608
+              43:    7(fvec4) ConstantComposite 42 42 42 42
+              44:           8 ConstantComposite 43 43 43 43
+              69:    6(float) Constant 1073741824
+              71:    6(float) Constant 1065353216
+              74:    6(float) Constant 1084227584
+              75:    7(fvec4) ConstantComposite 74 74 74 74
+              76:           8 ConstantComposite 75 75 75 75
+              79:    6(float) Constant 1050253722
+              80:    7(fvec4) ConstantComposite 79 79 79 79
+              81:             TypeInt 32 1
+              82:     81(int) Constant 1
+              83:             TypePointer Function 7(fvec4)
+              87:     81(int) Constant 2
+              93:             TypePointer Output 7(fvec4)
+94(@entryPointOutput):     93(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              95:    7(fvec4) FunctionCall 15(@main()
+                              Store 94(@entryPointOutput) 95
+                              Return
+                              FunctionEnd
+   12(Fn1(mf44;):           2 Function None 10
+           11(p):      9(ptr) FunctionParameter
+              13:             Label
+                              Return
+                              FunctionEnd
+      15(@main():    7(fvec4) Function None 14
+              16:             Label
+        17(mat1):      9(ptr) Variable Function
+        21(mat2):      9(ptr) Variable Function
+        29(mat3):      9(ptr) Variable Function
+        33(mat4):      9(ptr) Variable Function
+       77(param):      9(ptr) Variable Function
+                              Store 17(mat1) 20
+                              Store 21(mat2) 28
+                              Store 29(mat3) 32
+                              Store 33(mat4) 36
+                              Store 33(mat4) 41
+                              Store 33(mat4) 44
+              45:           8 Load 33(mat4)
+              46:           8 MatrixTimesScalar 45 34
+                              Store 33(mat4) 46
+              47:           8 Load 33(mat4)
+              48:    7(fvec4) CompositeConstruct 34 34 34 34
+              49:    7(fvec4) CompositeExtract 47 0
+              50:    7(fvec4) FAdd 49 48
+              51:    7(fvec4) CompositeExtract 47 1
+              52:    7(fvec4) FAdd 51 48
+              53:    7(fvec4) CompositeExtract 47 2
+              54:    7(fvec4) FAdd 53 48
+              55:    7(fvec4) CompositeExtract 47 3
+              56:    7(fvec4) FAdd 55 48
+              57:           8 CompositeConstruct 50 52 54 56
+                              Store 33(mat4) 57
+              58:           8 Load 33(mat4)
+              59:    7(fvec4) CompositeConstruct 42 42 42 42
+              60:    7(fvec4) CompositeExtract 58 0
+              61:    7(fvec4) FSub 60 59
+              62:    7(fvec4) CompositeExtract 58 1
+              63:    7(fvec4) FSub 62 59
+              64:    7(fvec4) CompositeExtract 58 2
+              65:    7(fvec4) FSub 64 59
+              66:    7(fvec4) CompositeExtract 58 3
+              67:    7(fvec4) FSub 66 59
+              68:           8 CompositeConstruct 61 63 65 67
+                              Store 33(mat4) 68
+              70:           8 Load 33(mat4)
+              72:    6(float) FDiv 71 69
+              73:           8 MatrixTimesScalar 70 72
+                              Store 33(mat4) 73
+                              Store 77(param) 76
+              78:           2 FunctionCall 12(Fn1(mf44;) 77(param)
+              84:     83(ptr) AccessChain 17(mat1) 82
+              85:    7(fvec4) Load 84
+              86:    7(fvec4) FAdd 80 85
+              88:     83(ptr) AccessChain 33(mat4) 87
+              89:    7(fvec4) Load 88
+              90:    7(fvec4) FAdd 86 89
+                              ReturnValue 90
+                              FunctionEnd

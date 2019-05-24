@@ -1,0 +1,15 @@
+#version 460
+#extension GL_NV_ray_tracing : enable
+layout(binding = 0, set = 0) uniform accelerationStructureNV accNV;
+layout(location = 0) rayPayloadNV vec4 payload;
+void main()
+{
+    const uint rayFlags = gl_RayFlagsNoneNV | gl_RayFlagsOpaqueNV |
+                          gl_RayFlagsNoOpaqueNV | gl_RayFlagsTerminateOnFirstHitNV |
+                          gl_RayFlagsSkipClosestHitShaderNV | gl_RayFlagsCullBackFacingTrianglesNV |
+                          gl_RayFlagsCullFrontFacingTrianglesNV | gl_RayFlagsCullOpaqueNV | 
+                          gl_RayFlagsCullNoOpaqueNV;
+
+    const int payloadId = 1;
+    traceNV(accNV, rayFlags, 0, 1, 1, 0, vec3(0.0f), 0.5f, vec3(1.0f), 0.75f, payloadId);
+}

@@ -1,0 +1,82 @@
+hlsl.reflection.vert
+Uniform reflection:
+anonMember3: offset 80, type 8b52, size 1, index 0, binding -1, stages 1
+s.a: offset 0, type 1404, size 1, index 1, binding -1, stages 1
+m23: offset 16, type 8b67, size 1, index 0, binding -1, stages 1
+scalarAfterm23: offset 48, type 1404, size 1, index 0, binding -1, stages 1
+c_m23: offset 16, type 8b67, size 1, index 2, binding -1, stages 1
+c_scalarAfterm23: offset 48, type 1404, size 1, index 2, binding -1, stages 1
+scalarBeforeArray: offset 96, type 1404, size 1, index 0, binding -1, stages 1
+floatArray: offset 112, type 1406, size 5, index 0, binding -1, stages 1, arrayStride 16, topLevelArrayStride 16
+scalarAfterArray: offset 192, type 1404, size 1, index 0, binding -1, stages 1
+m22: offset 208, type 8b5a, size 9, index 0, binding -1, stages 1, arrayStride 32, topLevelArrayStride 32
+dm22: offset 32, type 8b5a, size 4, index 1, binding -1, stages 1, arrayStride 32, topLevelArrayStride 32
+foo.n1.a: offset 0, type 1406, size 1, index 3, binding -1, stages 1
+foo.n2.b: offset 16, type 1406, size 1, index 3, binding -1, stages 1
+foo.n2.c: offset 20, type 1406, size 1, index 3, binding -1, stages 1
+foo.n2.d: offset 24, type 1406, size 1, index 3, binding -1, stages 1
+deepA.d2.d1[2].va: offset 440, type 8b50, size 2, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepB.d2.d1.va: offset 984, type 8b50, size 2, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepB.d2.d1[0].va: offset 984, type 8b50, size 2, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepB.d2.d1[1].va: offset 1016, type 8b50, size 2, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepB.d2.d1[2].va: offset 1048, type 8b50, size 2, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepB.d2.d1[3].va: offset 1080, type 8b50, size 2, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepC.iv4: offset 1568, type 8b52, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepC.d2.i: offset 1584, type 1404, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepC.d2.d1[0].va: offset 1592, type 8b50, size 3, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepC.d2.d1[0].b: offset 1616, type 8b56, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepC.d2.d1[1].va: offset 1624, type 8b50, size 3, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepC.d2.d1[1].b: offset 1648, type 8b56, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepC.d2.d1[2].va: offset 1656, type 8b50, size 3, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepC.d2.d1[2].b: offset 1680, type 8b56, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepC.d2.d1[3].va: offset 1688, type 8b50, size 3, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepC.d2.d1[3].b: offset 1712, type 8b56, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepC.v3: offset 1728, type 8b54, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepD[0].iv4: offset 2480, type 8b52, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepD[0].d2.i: offset 2496, type 1404, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepD[0].d2.d1[0].va: offset 2504, type 8b50, size 3, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepD[0].d2.d1[0].b: offset 2528, type 8b56, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepD[0].d2.d1[1].va: offset 2536, type 8b50, size 3, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepD[0].d2.d1[1].b: offset 2560, type 8b56, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepD[0].d2.d1[2].va: offset 2568, type 8b50, size 3, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepD[0].d2.d1[2].b: offset 2592, type 8b56, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepD[0].d2.d1[3].va: offset 2600, type 8b50, size 3, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepD[0].d2.d1[3].b: offset 2624, type 8b56, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepD[0].v3: offset 2640, type 8b54, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepD[1].iv4: offset 2784, type 8b52, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepD[1].d2.i: offset 2800, type 1404, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepD[1].d2.d1[0].va: offset 2808, type 8b50, size 3, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepD[1].d2.d1[0].b: offset 2832, type 8b56, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepD[1].d2.d1[1].va: offset 2840, type 8b50, size 3, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepD[1].d2.d1[1].b: offset 2864, type 8b56, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepD[1].d2.d1[2].va: offset 2872, type 8b50, size 3, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepD[1].d2.d1[2].b: offset 2896, type 8b56, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepD[1].d2.d1[3].va: offset 2904, type 8b50, size 3, index 1, binding -1, stages 1, arrayStride 8, topLevelArrayStride 304
+deepD[1].d2.d1[3].b: offset 2928, type 8b56, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+deepD[1].v3: offset 2944, type 8b54, size 1, index 1, binding -1, stages 1, topLevelArrayStride 304
+foo1: offset 0, type 1406, size 1, index 4, binding -1, stages 1
+foo2: offset 0, type 1406, size 1, index 5, binding -1, stages 1
+anonMember1: offset 0, type 8b51, size 1, index 0, binding -1, stages 1
+uf1: offset 16, type 1406, size 1, index 1, binding -1, stages 1
+
+Uniform block reflection:
+nameless: offset -1, type ffffffff, size 496, index -1, binding -1, stages 1, numMembers 9
+$Global: offset -1, type ffffffff, size 3088, index -1, binding -1, stages 1, numMembers 106
+c_nameless: offset -1, type ffffffff, size 96, index -1, binding -1, stages 1, numMembers 5
+nested: offset -1, type ffffffff, size 32, index -1, binding -1, stages 1, numMembers 4
+abl: offset -1, type ffffffff, size 4, index -1, binding -1, stages 1, numMembers 1
+abl2: offset -1, type ffffffff, size 4, index -1, binding -1, stages 1, numMembers 1
+
+Buffer variable reflection:
+
+Buffer block reflection:
+
+Pipeline input reflection:
+attributeFloat: offset 0, type 1406, size 1, index 0, binding -1, stages 1
+attributeFloat2: offset 0, type 8b50, size 1, index 0, binding -1, stages 1
+attributeFloat3: offset 0, type 8b51, size 1, index 0, binding -1, stages 1
+attributeFloat4: offset 0, type 8b52, size 1, index 0, binding -1, stages 1
+attributeMat4: offset 0, type 8b5c, size 1, index 0, binding -1, stages 1
+
+Pipeline output reflection:
+

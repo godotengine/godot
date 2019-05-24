@@ -1,0 +1,10 @@
+hlsl.includeNegative.vert
+ERROR: ./foo.h:1: '#error' : should not be included  
+ERROR: ./inc2/../foo.h:1: '#error' : should not be included  
+ERROR: ./parentBad:3: '#error' : bad parent  
+ERROR: hlsl.includeNegative.vert:7: '#error' : in main  
+hlsl.includeNegative.vert(8): error at column 0, HLSL parsing failed.
+ERROR: 5 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

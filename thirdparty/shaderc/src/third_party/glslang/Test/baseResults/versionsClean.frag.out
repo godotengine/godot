@@ -1,0 +1,44 @@
+versionsClean.frag
+ERROR: #version: statement must appear first in es-profile shader; before comments or newlines
+ERROR: 0:34: '#version' : must occur first in shader 
+ERROR: 2 compilation errors.  No code generated.
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:41  Function Definition: main( ( global void)
+0:41    Function Parameters: 
+0:43    Sequence
+0:43      move second child to first child ( temp highp 4-component vector of float)
+0:43        'foo' ( out highp 4-component vector of float)
+0:43        Construct vec4 ( temp highp 4-component vector of float)
+0:43          'color' ( smooth in highp 3-component vector of float)
+0:43          Constant:
+0:43            142.000000
+0:44      Branch: Kill
+0:?   Linker Objects
+0:?     'color' ( smooth in highp 3-component vector of float)
+0:?     'foo' ( out highp 4-component vector of float)
+0:?     'bar' ( uniform highp sampler2DArrayShadow)
+
+
+Linked fragment stage:
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:41  Function Definition: main( ( global void)
+0:41    Function Parameters: 
+0:43    Sequence
+0:43      move second child to first child ( temp highp 4-component vector of float)
+0:43        'foo' ( out highp 4-component vector of float)
+0:43        Construct vec4 ( temp highp 4-component vector of float)
+0:43          'color' ( smooth in highp 3-component vector of float)
+0:43          Constant:
+0:43            142.000000
+0:44      Branch: Kill
+0:?   Linker Objects
+0:?     'color' ( smooth in highp 3-component vector of float)
+0:?     'foo' ( out highp 4-component vector of float)
+0:?     'bar' ( uniform highp sampler2DArrayShadow)
+

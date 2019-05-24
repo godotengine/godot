@@ -1,0 +1,57 @@
+versionsErrors.vert
+WARNING: 0:38: attribute deprecated in version 130; may be removed in future release
+ERROR: 0:38: 'attribute' : no longer supported in core profile; removed in version 420
+ERROR: 0:45: 'discard' : not supported in this stage: vertex
+ERROR: 2 compilation errors.  No code generated.
+
+
+Shader version: 420
+Requested GL_ARB_texture_rectangle
+ERROR: node is still EOpNull!
+0:42  Function Definition: main( ( global void)
+0:42    Function Parameters: 
+0:44    Sequence
+0:44      move second child to first child ( temp 4-component vector of float)
+0:44        gl_Position: direct index for structure ( gl_Position 4-component vector of float Position)
+0:44          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out unsized 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:44          Constant:
+0:44            0 (const uint)
+0:44        Construct vec4 ( temp 4-component vector of float)
+0:44          'color' ( in 3-component vector of float)
+0:44          Constant:
+0:44            142.000000
+0:45      Branch: Kill
+0:?   Linker Objects
+0:?     'color' ( in 3-component vector of float)
+0:?     'foo' ( uniform sampler2DRect)
+0:?     'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out unsized 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out unsized 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+
+Shader version: 420
+Requested GL_ARB_texture_rectangle
+ERROR: node is still EOpNull!
+0:42  Function Definition: main( ( global void)
+0:42    Function Parameters: 
+0:44    Sequence
+0:44      move second child to first child ( temp 4-component vector of float)
+0:44        gl_Position: direct index for structure ( gl_Position 4-component vector of float Position)
+0:44          'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:44          Constant:
+0:44            0 (const uint)
+0:44        Construct vec4 ( temp 4-component vector of float)
+0:44          'color' ( in 3-component vector of float)
+0:44          Constant:
+0:44            142.000000
+0:45      Branch: Kill
+0:?   Linker Objects
+0:?     'color' ( in 3-component vector of float)
+0:?     'foo' ( uniform sampler2DRect)
+0:?     'anon@0' ( out block{ gl_Position 4-component vector of float Position gl_Position,  gl_PointSize float PointSize gl_PointSize,  out 1-element array of float ClipDistance gl_ClipDistance,  gl_ClipVertex 4-component vector of float ClipVertex gl_ClipVertex,  out 4-component vector of float FrontColor gl_FrontColor,  out 4-component vector of float BackColor gl_BackColor,  out 4-component vector of float FrontSecondaryColor gl_FrontSecondaryColor,  out 4-component vector of float BackSecondaryColor gl_BackSecondaryColor,  out 1-element array of 4-component vector of float TexCoord gl_TexCoord,  out float FogFragCoord gl_FogFragCoord})
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

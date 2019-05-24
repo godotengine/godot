@@ -1,0 +1,53 @@
+#version 450
+
+#define MAX_VER  81
+#define MAX_PRIM 32
+#define MAX_VIEWS gl_MaxMeshViewCountNV
+
+#define BARRIER() \
+    memoryBarrierShared(); \
+    barrier();
+
+#extension GL_NV_mesh_shader : enable
+
+layout(local_size_x = 32) in;
+
+layout(max_vertices=MAX_VER) out;
+layout(max_primitives=MAX_PRIM) out;
+layout(triangles) out;
+
+// test use of redeclared per-view builtin attributes
+
+out gl_MeshPerVertexNV {
+    perviewNV vec4 gl_PositionPerViewNV[MAX_VIEWS];         // explicitly sized view dim
+    perviewNV float gl_ClipDistancePerViewNV[MAX_VIEWS][4]; // explicitly sized view dim
+    perviewNV float gl_CullDistancePerViewNV[MAX_VIEWS][4]; // explicitly sized view dim
+} gl_MeshVerticesNV[];
+
+perprimitiveNV out gl_MeshPerPrimitiveNV {
+    perviewNV int gl_LayerPerViewNV[];                      // implicitly sized view dim
+    perviewNV int gl_ViewportMaskPerViewNV[][1];            // implicitly sized view dim
+} gl_MeshPrimitivesNV[];
+
+void main()
+{
+    uint iid = gl_LocalInvocationID.x;
+    uint viewID = gl_MeshViewIndicesNV[gl_MeshViewCountNV%MAX_VIEWS];
+
+    gl_MeshVerticesNV[iid].gl_PositionPerViewNV[viewID]          = vec4(1.0, 2.0, 3.0, 4.0);
+    gl_MeshVerticesNV[iid].gl_ClipDistancePerViewNV[viewID][2]   = 5.0;
+    gl_MeshVerticesNV[iid].gl_CullDistancePerViewNV[viewID][3]   = 6.0;
+    gl_MeshPrimitivesNV[iid].gl_LayerPerViewNV[viewID]           = 7;
+    gl_MeshPrimitivesNV[iid].gl_ViewportMaskPerViewNV[viewID][0] = 8;
+
+    BARRIER();
+
+    gl_MeshVerticesNV[iid+1].gl_PositionPerViewNV[viewID]          = gl_MeshVerticesNV[iid].gl_PositionPerViewNV[viewID];
+    gl_MeshVerticesNV[iid+1].gl_ClipDistancePerViewNV[viewID][2]   = gl_MeshVerticesNV[iid].gl_ClipDistancePerViewNV[viewID][2];
+    gl_MeshVerticesNV[iid+1].gl_CullDistancePerViewNV[viewID][3]   = gl_MeshVerticesNV[iid].gl_CullDistancePerViewNV[viewID][3];
+    gl_MeshPrimitivesNV[iid+1].gl_LayerPerViewNV[viewID]           = gl_MeshPrimitivesNV[iid].gl_LayerPerViewNV[viewID];
+    gl_MeshPrimitivesNV[iid+1].gl_ViewportMaskPerViewNV[viewID][0] = gl_MeshPrimitivesNV[iid].gl_ViewportMaskPerViewNV[viewID][0];
+
+    BARRIER();
+}
+

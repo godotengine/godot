@@ -1,0 +1,98 @@
+hlsl.samplecmp.negative.frag
+ERROR: 0:10: '' : expected: SamplerComparisonState 
+ERROR: 1 compilation errors.  No code generated.
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+ERROR: node is still EOpNull!
+0:8  Function Definition: @main( ( temp 4-component vector of float)
+0:8    Function Parameters: 
+0:?     Sequence
+0:9      texture ( temp float)
+0:9        Construct combined texture-sampler ( temp sampler2DShadow)
+0:9          'g_shadowTex' ( uniform texture2DShadow)
+0:9          'g_shadowSamplerComp' ( uniform sampler)
+0:9        Construct vec3 ( temp 3-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:9          Constant:
+0:9            0.000000
+0:10      ERROR: Bad aggregation op
+ ( temp float)
+0:10        'g_nonShadowTex' ( uniform texture2D)
+0:10        'g_shadowSampler' ( uniform sampler)
+0:?         Constant:
+0:?           0.000000
+0:?           0.000000
+0:10        Constant:
+0:10          0.000000
+0:12      Branch: Return with expression
+0:12        Constant:
+0:12          0.000000
+0:12          0.000000
+0:12          0.000000
+0:12          0.000000
+0:8  Function Definition: main( ( temp void)
+0:8    Function Parameters: 
+0:?     Sequence
+0:8      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:8        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'g_nonShadowTex' ( uniform texture2D)
+0:?     'g_shadowTex' ( uniform texture2DShadow)
+0:?     'g_shadowSampler' ( uniform sampler)
+0:?     'g_shadowSamplerComp' ( uniform sampler)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+ERROR: node is still EOpNull!
+0:8  Function Definition: @main( ( temp 4-component vector of float)
+0:8    Function Parameters: 
+0:?     Sequence
+0:9      texture ( temp float)
+0:9        Construct combined texture-sampler ( temp sampler2DShadow)
+0:9          'g_shadowTex' ( uniform texture2DShadow)
+0:9          'g_shadowSamplerComp' ( uniform sampler)
+0:9        Construct vec3 ( temp 3-component vector of float)
+0:?           Constant:
+0:?             0.000000
+0:?             0.000000
+0:9          Constant:
+0:9            0.000000
+0:10      ERROR: Bad aggregation op
+ ( temp float)
+0:10        'g_nonShadowTex' ( uniform texture2D)
+0:10        'g_shadowSampler' ( uniform sampler)
+0:?         Constant:
+0:?           0.000000
+0:?           0.000000
+0:10        Constant:
+0:10          0.000000
+0:12      Branch: Return with expression
+0:12        Constant:
+0:12          0.000000
+0:12          0.000000
+0:12          0.000000
+0:12          0.000000
+0:8  Function Definition: main( ( temp void)
+0:8    Function Parameters: 
+0:?     Sequence
+0:8      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:8        Function Call: @main( ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'g_nonShadowTex' ( uniform texture2D)
+0:?     'g_shadowTex' ( uniform texture2DShadow)
+0:?     'g_shadowSampler' ( uniform sampler)
+0:?     'g_shadowSamplerComp' ( uniform sampler)
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+
+SPIR-V is not generated for failed compile or link

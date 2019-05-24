@@ -1,0 +1,27 @@
+badChars.frag
+ERROR: 0:1: 'preprocessor evaluation' : bad expression 
+ERROR: 0:1: '#if' : unexpected tokens following directive 
+ERROR: 0:3: '#error' : A <bad token> B  
+ERROR: 0:4: 'preprocessor evaluation' : bad expression 
+ERROR: 0:4: '#if' : unexpected tokens following directive 
+ERROR: 0:6: '€' : unexpected token 
+ERROR: 0:7: 'string' : End of line in string 
+ERROR: 0:7: '' :  syntax error, unexpected INT, expecting COMMA or SEMICOLON
+ERROR: 8 compilation errors.  No code generated.
+
+
+Shader version: 100
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+0:?     'a' ( global mediump int)
+
+
+Linked fragment stage:
+
+ERROR: Linking fragment stage: Missing entry point: Each stage requires one entry point
+
+Shader version: 100
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+0:?     'a' ( global mediump int)
+

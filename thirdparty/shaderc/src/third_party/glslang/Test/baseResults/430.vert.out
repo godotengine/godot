@@ -1,0 +1,340 @@
+430.vert
+ERROR: 0:3: 'location' : can only apply to uniform, buffer, in, or out storage qualifiers 
+ERROR: 0:7: 'input block' : not supported in this stage: vertex
+ERROR: 0:7: 'location qualifier on in/out block' : not supported for this version or the enabled extensions 
+ERROR: 0:8: 'location qualifier on in/out block' : not supported for this version or the enabled extensions 
+ERROR: 0:23: 'invariant' : can only apply to an output 
+ERROR: 0:21: 'g' : cannot use storage or interpolation qualifiers on structure members 
+ERROR: 0:22: 'h' : cannot use storage or interpolation qualifiers on structure members 
+ERROR: 0:23: 'i' : cannot use invariant qualifier on structure members 
+ERROR: 0:24: 'j' : cannot use memory qualifiers on structure members 
+ERROR: 0:25: 'm3' : cannot use layout qualifiers on structure members 
+ERROR: 0:28: '' : cannot use invariant qualifier on a function parameter 
+ERROR: 0:30: '' : cannot use layout qualifiers on a function parameter 
+ERROR: 0:31: '' : cannot use auxiliary or interpolation qualifiers on a function parameter 
+ERROR: 0:42: 'location' : overlapping use of location 53
+ERROR: 0:47: 'gl_ClipDistance array size' : must be less than or equal to gl_MaxClipDistances (8)
+ERROR: 0:51: 'start' : undeclared identifier 
+ERROR: 0:51: '' : constant expression required 
+ERROR: 0:51: 'layout-id value' : scalar integer expression required 
+ERROR: 0:53: 'input block' : not supported in this stage: vertex
+ERROR: 0:54: 'location on block member' : not supported for this version or the enabled extensions 
+ERROR: 0:57: 'input block' : not supported in this stage: vertex
+ERROR: 0:58: 'location on block member' : not supported for this version or the enabled extensions 
+ERROR: 0:59: 'location on block member' : not supported for this version or the enabled extensions 
+ERROR: 0:62: 'uniform buffer-member align' : not supported for this version or the enabled extensions 
+ERROR: 0:64: 'uniform buffer-member align' : not supported for this version or the enabled extensions 
+ERROR: 0:65: 'uniform buffer-member align' : not supported for this version or the enabled extensions 
+ERROR: 0:65: 'offset on block member' : not supported for this version or the enabled extensions 
+ERROR: 0:66: 'offset on block member' : not supported for this version or the enabled extensions 
+ERROR: 0:64: 'align' : can only be used with std140, std430, or scalar layout packing 
+ERROR: 0:65: 'offset/align' : can only be used with std140, std430, or scalar layout packing 
+ERROR: 0:66: 'offset/align' : can only be used with std140, std430, or scalar layout packing 
+ERROR: 0:71: 'offset on block member' : not supported for this version or the enabled extensions 
+ERROR: 0:74: 'gl_MaxTransformFeedbackBuffers' : required extension not requested: GL_ARB_enhanced_layouts
+ERROR: 0:75: 'gl_MaxTransformFeedbackInterleavedComponents' : required extension not requested: GL_ARB_enhanced_layouts
+ERROR: 0:78: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:81: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:81: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:83: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:83: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:83: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:84: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:84: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:86: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:86: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:86: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:92: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:93: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:93: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:93: 'transform feedback qualifier' : not supported for this version or the enabled extensions 
+ERROR: 0:117: 'input block' : not supported in this stage: vertex
+ERROR: 0:123: 'input block' : not supported in this stage: vertex
+ERROR: 0:146: 'shared' : not supported in this stage: vertex
+ERROR: 0:150: 'barrier' : no matching overloaded function found 
+ERROR: 0:154: 'memoryBarrierShared' : no matching overloaded function found 
+ERROR: 0:156: 'groupMemoryBarrier' : no matching overloaded function found 
+ERROR: 0:159: 'buffer' : buffers can be declared only as blocks 
+ERROR: 0:168: 'textureSamples and imageSamples' : not supported for this version or the enabled extensions 
+ERROR: 0:169: 'textureSamples and imageSamples' : not supported for this version or the enabled extensions 
+ERROR: 0:170: 'textureSamples and imageSamples' : not supported for this version or the enabled extensions 
+ERROR: 0:171: 'textureSamples and imageSamples' : not supported for this version or the enabled extensions 
+ERROR: 0:221: 'textureQueryLevels' : no matching overloaded function found 
+ERROR: 0:221: 'assign' :  cannot convert from ' const float' to ' temp int'
+ERROR: 0:222: 'textureQueryLevels' : no matching overloaded function found 
+ERROR: 0:222: 'assign' :  cannot convert from ' const float' to ' temp int'
+ERROR: 64 compilation errors.  No code generated.
+
+
+Shader version: 430
+Requested GL_ARB_enhanced_layouts
+Requested GL_ARB_shader_texture_image_samples
+in xfb mode
+ERROR: node is still EOpNull!
+0:14  Function Definition: foo( ( global void)
+0:14    Function Parameters: 
+0:16    Sequence
+0:16      move second child to first child ( temp float)
+0:16        direct index ( temp float ClipDistance)
+0:16          gl_ClipDistance: direct index for structure ( out 17-element array of float ClipDistance)
+0:16            'anon@0' ( out block{ out 17-element array of float ClipDistance gl_ClipDistance, })
+0:16            Constant:
+0:16              2 (const uint)
+0:16          Constant:
+0:16            2 (const int)
+0:16        Constant:
+0:16          3.700000
+0:31  Function Definition: foo3(vf4;vf3;vf2;vf3; ( global void)
+0:31    Function Parameters: 
+0:31      'v4' ( in 4-component vector of float)
+0:31      'v3' ( volatile in 3-component vector of float)
+0:31      'v2' ( in 2-component vector of float)
+0:31      'cv3' ( in 3-component vector of float)
+0:148  Function Definition: fooBarrier( ( global void)
+0:148    Function Parameters: 
+0:150    Sequence
+0:150      Constant:
+0:150        0.000000
+0:151      MemoryBarrier ( global void)
+0:152      MemoryBarrierAtomicCounter ( global void)
+0:153      MemoryBarrierBuffer ( global void)
+0:154      Constant:
+0:154        0.000000
+0:155      MemoryBarrierImage ( global void)
+0:156      Constant:
+0:156        0.000000
+0:166  Function Definition: fooq( ( global void)
+0:166    Function Parameters: 
+0:168    Sequence
+0:168      Sequence
+0:168        move second child to first child ( temp int)
+0:168          's' ( temp int)
+0:168          textureSamples ( global int)
+0:168            's2dms' ( uniform sampler2DMS)
+0:169      add second child into first child ( temp int)
+0:169        's' ( temp int)
+0:169        textureSamples ( global int)
+0:169          'us2dmsa' ( uniform usampler2DMSArray)
+0:170      add second child into first child ( temp int)
+0:170        's' ( temp int)
+0:170        imageQuerySamples ( global int)
+0:170          'ii2dms' (layout( rgba32i) uniform iimage2DMS)
+0:171      add second child into first child ( temp int)
+0:171        's' ( temp int)
+0:171        imageQuerySamples ( global int)
+0:171          'i2dmsa' (layout( rgba32f) uniform image2DMSArray)
+0:176  Function Definition: fooq2( ( global void)
+0:176    Function Parameters: 
+0:178    Sequence
+0:178      Sequence
+0:178        move second child to first child ( temp int)
+0:178          's' ( temp int)
+0:178          textureSamples ( global int)
+0:178            's2dms' ( uniform sampler2DMS)
+0:179      add second child into first child ( temp int)
+0:179        's' ( temp int)
+0:179        textureSamples ( global int)
+0:179          'us2dmsa' ( uniform usampler2DMSArray)
+0:180      add second child into first child ( temp int)
+0:180        's' ( temp int)
+0:180        imageQuerySamples ( global int)
+0:180          'ii2dms' (layout( rgba32i) uniform iimage2DMS)
+0:181      add second child into first child ( temp int)
+0:181        's' ( temp int)
+0:181        imageQuerySamples ( global int)
+0:181          'i2dmsa' (layout( rgba32f) uniform image2DMSArray)
+0:202  Function Definition: qlod( ( global void)
+0:202    Function Parameters: 
+0:?     Sequence
+0:206      move second child to first child ( temp int)
+0:206        'levels' ( temp int)
+0:206        textureQueryLevels ( global int)
+0:206          'samp1D' ( uniform sampler1D)
+0:207      move second child to first child ( temp int)
+0:207        'levels' ( temp int)
+0:207        textureQueryLevels ( global int)
+0:207          'usamp2D' ( uniform usampler2D)
+0:208      move second child to first child ( temp int)
+0:208        'levels' ( temp int)
+0:208        textureQueryLevels ( global int)
+0:208          'isamp3D' ( uniform isampler3D)
+0:209      move second child to first child ( temp int)
+0:209        'levels' ( temp int)
+0:209        textureQueryLevels ( global int)
+0:209          'isampCube' ( uniform isamplerCube)
+0:210      move second child to first child ( temp int)
+0:210        'levels' ( temp int)
+0:210        textureQueryLevels ( global int)
+0:210          'isamp1DA' ( uniform isampler1DArray)
+0:211      move second child to first child ( temp int)
+0:211        'levels' ( temp int)
+0:211        textureQueryLevels ( global int)
+0:211          'samp2DA' ( uniform sampler2DArray)
+0:212      move second child to first child ( temp int)
+0:212        'levels' ( temp int)
+0:212        textureQueryLevels ( global int)
+0:212          'usampCubeA' ( uniform usamplerCubeArray)
+0:214      move second child to first child ( temp int)
+0:214        'levels' ( temp int)
+0:214        textureQueryLevels ( global int)
+0:214          'samp1Ds' ( uniform sampler1DShadow)
+0:215      move second child to first child ( temp int)
+0:215        'levels' ( temp int)
+0:215        textureQueryLevels ( global int)
+0:215          'samp2Ds' ( uniform sampler2DShadow)
+0:216      move second child to first child ( temp int)
+0:216        'levels' ( temp int)
+0:216        textureQueryLevels ( global int)
+0:216          'sampCubes' ( uniform samplerCubeShadow)
+0:217      move second child to first child ( temp int)
+0:217        'levels' ( temp int)
+0:217        textureQueryLevels ( global int)
+0:217          'samp1DAs' ( uniform sampler1DArrayShadow)
+0:218      move second child to first child ( temp int)
+0:218        'levels' ( temp int)
+0:218        textureQueryLevels ( global int)
+0:218          'samp2DAs' ( uniform sampler2DArrayShadow)
+0:219      move second child to first child ( temp int)
+0:219        'levels' ( temp int)
+0:219        textureQueryLevels ( global int)
+0:219          'sampCubeAs' ( uniform samplerCubeArrayShadow)
+0:221      'levels' ( temp int)
+0:222      'levels' ( temp int)
+0:?   Linker Objects
+0:?     'v4' (layout( location=3) temp 4-component vector of float)
+0:?     'uv4' (layout( location=4) uniform 4-component vector of float)
+0:?     'b1' (layout( location=2) in block{ in 4-component vector of float v})
+0:?     'b2' (layout( location=2) out block{ out 4-component vector of float v})
+0:?     'anon@0' ( out block{ out 17-element array of float ClipDistance gl_ClipDistance, })
+0:?     'cs' (layout( location=10) smooth out 2-element array of structure{ global 7-element array of 3X2 matrix of float m,  global float f})
+0:?     'cf' (layout( location=54) smooth out float)
+0:?     'cg' (layout( location=53) smooth out float)
+0:?     'alias1' (layout( location=10) in 4-component vector of float)
+0:?     'alias2' (layout( location=10) in 4-component vector of float)
+0:?     'v6e' (layout( location=0) in 4-component vector of float)
+0:?     'ininst2e' ( in block{layout( location=25) in float f2})
+0:?     'in4e' ( in block{layout( location=50) in float f1, layout( location=51) in float f2})
+0:?     'inst4e' (layout( column_major std140 align=16) uniform block{layout( column_major std140 offset=0 align=16) uniform int a})
+0:?     'inst9e' (layout( column_major shared align=32) uniform block{layout( column_major shared offset=12 align=4) uniform float f, layout( column_major shared offset=20) uniform float g})
+0:?     'spinste' (layout( column_major std140) uniform block{layout( column_major std140 offset=0) uniform 4-component vector of float a, layout( column_major std140 offset=32) uniform 3-component vector of float b})
+0:?     'aconste' ( global 4-element array of int)
+0:?     'bconste' ( global 64-element array of int)
+0:?     'bbinst2' ( out block{layout( xfb_buffer=0 xfb_offset=64) out 4-component vector of float bbv})
+0:?     'bge' (layout( xfb_buffer=2 xfb_offset=48 xfb_stride=80) smooth out 4-component vector of float)
+0:?     'bhe' (layout( xfb_buffer=3 xfb_offset=32 xfb_stride=64) smooth out 4-component vector of float)
+0:?     'bbinst4e' (layout( xfb_stride=80) out block{layout( xfb_buffer=2 xfb_offset=16) out 4-component vector of float bbv1, layout( xfb_buffer=2 xfb_offset=32) out 4-component vector of float bbv2})
+0:?     'bbinst5e' ( out block{layout( xfb_buffer=3 xfb_offset=0) out 4-component vector of float bbv1, layout( xfb_buffer=3 xfb_offset=48 xfb_stride=64) out 4-component vector of float bbv2})
+0:?     'inst4' (layout( column_major std140 align=16) uniform block{layout( column_major std140 offset=0 align=16) uniform int a})
+0:?     'inst9' (layout( column_major std430 align=32) uniform block{layout( column_major std430 offset=12 align=4) uniform float f, layout( column_major std430 offset=20 align=32) uniform float g})
+0:?     'spinst' (layout( column_major std140) uniform block{layout( column_major std140 offset=0) uniform 4-component vector of float a, layout( column_major std140 offset=32) uniform 3-component vector of float b})
+0:?     'aconst' ( global 4-element array of int)
+0:?     'bconst' ( global 64-element array of int)
+0:?     'start2' ( const int)
+0:?       5 (const int)
+0:?     'v6' (layout( location=19) in 4-component vector of float)
+0:?     'ininst2' ( in block{layout( location=28) in bool b1, layout( location=29) in float f1, layout( location=25) in float f2})
+0:?     'in4' ( in block{layout( location=50) in float f1, layout( location=51) in float f2})
+0:?     'bbinst2g' ( out block{layout( xfb_buffer=3 xfb_offset=64) out 4-component vector of float bbv})
+0:?     'bg' (layout( xfb_buffer=1 xfb_offset=48 xfb_stride=80) smooth out 4-component vector of float)
+0:?     'bh' (layout( xfb_buffer=1 xfb_offset=32 xfb_stride=80) smooth out 4-component vector of float)
+0:?     'bbinst4' (layout( xfb_stride=80) out block{layout( xfb_buffer=1 xfb_offset=16) out 4-component vector of float bbv1})
+0:?     'bbinst5' ( out block{layout( xfb_buffer=1 xfb_offset=0) out 4-component vector of float bbv1, layout( xfb_buffer=1 xfb_offset=64 xfb_stride=80) out 4-component vector of float bbv2})
+0:?     'sharedv' ( shared 4-component vector of float)
+0:?     'v' ( buffer 4-component vector of float)
+0:?     's2dms' ( uniform sampler2DMS)
+0:?     'us2dmsa' ( uniform usampler2DMSArray)
+0:?     'ii2dms' (layout( rgba32i) uniform iimage2DMS)
+0:?     'i2dmsa' (layout( rgba32f) uniform image2DMSArray)
+0:?     'samp1D' ( uniform sampler1D)
+0:?     'usamp2D' ( uniform usampler2D)
+0:?     'isamp3D' ( uniform isampler3D)
+0:?     'isampCube' ( uniform isamplerCube)
+0:?     'isamp1DA' ( uniform isampler1DArray)
+0:?     'samp2DA' ( uniform sampler2DArray)
+0:?     'usampCubeA' ( uniform usamplerCubeArray)
+0:?     'samp1Ds' ( uniform sampler1DShadow)
+0:?     'samp2Ds' ( uniform sampler2DShadow)
+0:?     'sampCubes' ( uniform samplerCubeShadow)
+0:?     'samp1DAs' ( uniform sampler1DArrayShadow)
+0:?     'samp2DAs' ( uniform sampler2DArrayShadow)
+0:?     'sampCubeAs' ( uniform samplerCubeArrayShadow)
+0:?     'sampBuf' ( uniform samplerBuffer)
+0:?     'sampRect' ( uniform sampler2DRect)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+ERROR: Linking vertex stage: Missing entry point: Each stage requires one entry point
+ERROR: Linking vertex stage: xfb_stride is too small to hold all buffer entries:
+ERROR:     xfb_buffer 3, xfb_stride 64, minimum stride needed: 80
+
+Shader version: 430
+Requested GL_ARB_enhanced_layouts
+Requested GL_ARB_shader_texture_image_samples
+in xfb mode
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+0:?     'v4' (layout( location=3) temp 4-component vector of float)
+0:?     'uv4' (layout( location=4) uniform 4-component vector of float)
+0:?     'b1' (layout( location=2) in block{ in 4-component vector of float v})
+0:?     'b2' (layout( location=2) out block{ out 4-component vector of float v})
+0:?     'anon@0' ( out block{ out 17-element array of float ClipDistance gl_ClipDistance, })
+0:?     'cs' (layout( location=10) smooth out 2-element array of structure{ global 7-element array of 3X2 matrix of float m,  global float f})
+0:?     'cf' (layout( location=54) smooth out float)
+0:?     'cg' (layout( location=53) smooth out float)
+0:?     'alias1' (layout( location=10) in 4-component vector of float)
+0:?     'alias2' (layout( location=10) in 4-component vector of float)
+0:?     'v6e' (layout( location=0) in 4-component vector of float)
+0:?     'ininst2e' ( in block{layout( location=25) in float f2})
+0:?     'in4e' ( in block{layout( location=50) in float f1, layout( location=51) in float f2})
+0:?     'inst4e' (layout( column_major std140 align=16) uniform block{layout( column_major std140 offset=0 align=16) uniform int a})
+0:?     'inst9e' (layout( column_major shared align=32) uniform block{layout( column_major shared offset=12 align=4) uniform float f, layout( column_major shared offset=20) uniform float g})
+0:?     'spinste' (layout( column_major std140) uniform block{layout( column_major std140 offset=0) uniform 4-component vector of float a, layout( column_major std140 offset=32) uniform 3-component vector of float b})
+0:?     'aconste' ( global 4-element array of int)
+0:?     'bconste' ( global 64-element array of int)
+0:?     'bbinst2' ( out block{layout( xfb_buffer=0 xfb_offset=64) out 4-component vector of float bbv})
+0:?     'bge' (layout( xfb_buffer=2 xfb_offset=48 xfb_stride=80) smooth out 4-component vector of float)
+0:?     'bhe' (layout( xfb_buffer=3 xfb_offset=32 xfb_stride=64) smooth out 4-component vector of float)
+0:?     'bbinst4e' (layout( xfb_stride=80) out block{layout( xfb_buffer=2 xfb_offset=16) out 4-component vector of float bbv1, layout( xfb_buffer=2 xfb_offset=32) out 4-component vector of float bbv2})
+0:?     'bbinst5e' ( out block{layout( xfb_buffer=3 xfb_offset=0) out 4-component vector of float bbv1, layout( xfb_buffer=3 xfb_offset=48 xfb_stride=64) out 4-component vector of float bbv2})
+0:?     'inst4' (layout( column_major std140 align=16) uniform block{layout( column_major std140 offset=0 align=16) uniform int a})
+0:?     'inst9' (layout( column_major std430 align=32) uniform block{layout( column_major std430 offset=12 align=4) uniform float f, layout( column_major std430 offset=20 align=32) uniform float g})
+0:?     'spinst' (layout( column_major std140) uniform block{layout( column_major std140 offset=0) uniform 4-component vector of float a, layout( column_major std140 offset=32) uniform 3-component vector of float b})
+0:?     'aconst' ( global 4-element array of int)
+0:?     'bconst' ( global 64-element array of int)
+0:?     'start2' ( const int)
+0:?       5 (const int)
+0:?     'v6' (layout( location=19) in 4-component vector of float)
+0:?     'ininst2' ( in block{layout( location=28) in bool b1, layout( location=29) in float f1, layout( location=25) in float f2})
+0:?     'in4' ( in block{layout( location=50) in float f1, layout( location=51) in float f2})
+0:?     'bbinst2g' ( out block{layout( xfb_buffer=3 xfb_offset=64) out 4-component vector of float bbv})
+0:?     'bg' (layout( xfb_buffer=1 xfb_offset=48 xfb_stride=80) smooth out 4-component vector of float)
+0:?     'bh' (layout( xfb_buffer=1 xfb_offset=32 xfb_stride=80) smooth out 4-component vector of float)
+0:?     'bbinst4' (layout( xfb_stride=80) out block{layout( xfb_buffer=1 xfb_offset=16) out 4-component vector of float bbv1})
+0:?     'bbinst5' ( out block{layout( xfb_buffer=1 xfb_offset=0) out 4-component vector of float bbv1, layout( xfb_buffer=1 xfb_offset=64 xfb_stride=80) out 4-component vector of float bbv2})
+0:?     'sharedv' ( shared 4-component vector of float)
+0:?     'v' ( buffer 4-component vector of float)
+0:?     's2dms' ( uniform sampler2DMS)
+0:?     'us2dmsa' ( uniform usampler2DMSArray)
+0:?     'ii2dms' (layout( rgba32i) uniform iimage2DMS)
+0:?     'i2dmsa' (layout( rgba32f) uniform image2DMSArray)
+0:?     'samp1D' ( uniform sampler1D)
+0:?     'usamp2D' ( uniform usampler2D)
+0:?     'isamp3D' ( uniform isampler3D)
+0:?     'isampCube' ( uniform isamplerCube)
+0:?     'isamp1DA' ( uniform isampler1DArray)
+0:?     'samp2DA' ( uniform sampler2DArray)
+0:?     'usampCubeA' ( uniform usamplerCubeArray)
+0:?     'samp1Ds' ( uniform sampler1DShadow)
+0:?     'samp2Ds' ( uniform sampler2DShadow)
+0:?     'sampCubes' ( uniform samplerCubeShadow)
+0:?     'samp1DAs' ( uniform sampler1DArrayShadow)
+0:?     'samp2DAs' ( uniform sampler2DArrayShadow)
+0:?     'sampCubeAs' ( uniform samplerCubeArrayShadow)
+0:?     'sampBuf' ( uniform samplerBuffer)
+0:?     'sampRect' ( uniform sampler2DRect)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

@@ -1,0 +1,12 @@
+remap.basic.dcevartype.frag
+ERROR: #version: ES shaders for Vulkan SPIR-V require version 310 or higher
+Warning, version 310 is not yet complete; most version-specific features are present, but some are missing.
+ERROR: 1 compilation errors.  No code generated.
+
+
+
+Linked fragment stage:
+
+ERROR: Linking fragment stage: Missing entry point: Each stage requires one "void main()" entry point
+
+SPIR-V is not generated for failed compile or link

@@ -1,0 +1,225 @@
+hlsl.array.multidim.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:10  Function Definition: @main( ( temp structure{ temp 4-component vector of float Color})
+0:10    Function Parameters: 
+0:?     Sequence
+0:14      move second child to first child ( temp 4-component vector of float)
+0:14        direct index ( temp 4-component vector of float)
+0:14          direct index ( temp 3-element array of 4-component vector of float)
+0:14            'float4_array_1' ( temp 2-element array of 3-element array of 4-component vector of float)
+0:14            Constant:
+0:14              1 (const int)
+0:14          Constant:
+0:14            2 (const int)
+0:14        Construct vec4 ( temp 4-component vector of float)
+0:14          direct index ( temp float)
+0:14            direct index ( temp 3-element array of float)
+0:14              direct index ( temp 4-element array of 3-element array of float)
+0:14                float_array: direct index for structure ( uniform 5-element array of 4-element array of 3-element array of float)
+0:14                  'anon@0' (layout( row_major std140) uniform block{ uniform 5-element array of 4-element array of 3-element array of float float_array})
+0:14                  Constant:
+0:14                    0 (const uint)
+0:14                Constant:
+0:14                  2 (const int)
+0:14              Constant:
+0:14                3 (const int)
+0:14            Constant:
+0:14              1 (const int)
+0:15      move second child to first child ( temp 3-element array of 4-component vector of float)
+0:15        direct index ( temp 3-element array of 4-component vector of float)
+0:15          'float4_array_2' ( temp 5-element array of 3-element array of 4-component vector of float)
+0:15          Constant:
+0:15            1 (const int)
+0:15        direct index ( temp 3-element array of 4-component vector of float)
+0:15          'float4_array_1' ( temp 2-element array of 3-element array of 4-component vector of float)
+0:15          Constant:
+0:15            0 (const int)
+0:18      move second child to first child ( temp 4-component vector of float)
+0:18        Color: direct index for structure ( temp 4-component vector of float)
+0:18          'psout' ( temp structure{ temp 4-component vector of float Color})
+0:18          Constant:
+0:18            0 (const int)
+0:18        direct index ( temp 4-component vector of float)
+0:18          direct index ( temp 3-element array of 4-component vector of float)
+0:18            'float4_array_1' ( temp 2-element array of 3-element array of 4-component vector of float)
+0:18            Constant:
+0:18              1 (const int)
+0:18          Constant:
+0:18            2 (const int)
+0:19      Branch: Return with expression
+0:19        'psout' ( temp structure{ temp 4-component vector of float Color})
+0:10  Function Definition: main( ( temp void)
+0:10    Function Parameters: 
+0:?     Sequence
+0:10      Sequence
+0:10        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+0:10          Color: direct index for structure ( temp 4-component vector of float)
+0:10            Function Call: @main( ( temp structure{ temp 4-component vector of float Color})
+0:10            Constant:
+0:10              0 (const int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform 5-element array of 4-element array of 3-element array of float float_array})
+0:?     '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:10  Function Definition: @main( ( temp structure{ temp 4-component vector of float Color})
+0:10    Function Parameters: 
+0:?     Sequence
+0:14      move second child to first child ( temp 4-component vector of float)
+0:14        direct index ( temp 4-component vector of float)
+0:14          direct index ( temp 3-element array of 4-component vector of float)
+0:14            'float4_array_1' ( temp 2-element array of 3-element array of 4-component vector of float)
+0:14            Constant:
+0:14              1 (const int)
+0:14          Constant:
+0:14            2 (const int)
+0:14        Construct vec4 ( temp 4-component vector of float)
+0:14          direct index ( temp float)
+0:14            direct index ( temp 3-element array of float)
+0:14              direct index ( temp 4-element array of 3-element array of float)
+0:14                float_array: direct index for structure ( uniform 5-element array of 4-element array of 3-element array of float)
+0:14                  'anon@0' (layout( row_major std140) uniform block{ uniform 5-element array of 4-element array of 3-element array of float float_array})
+0:14                  Constant:
+0:14                    0 (const uint)
+0:14                Constant:
+0:14                  2 (const int)
+0:14              Constant:
+0:14                3 (const int)
+0:14            Constant:
+0:14              1 (const int)
+0:15      move second child to first child ( temp 3-element array of 4-component vector of float)
+0:15        direct index ( temp 3-element array of 4-component vector of float)
+0:15          'float4_array_2' ( temp 5-element array of 3-element array of 4-component vector of float)
+0:15          Constant:
+0:15            1 (const int)
+0:15        direct index ( temp 3-element array of 4-component vector of float)
+0:15          'float4_array_1' ( temp 2-element array of 3-element array of 4-component vector of float)
+0:15          Constant:
+0:15            0 (const int)
+0:18      move second child to first child ( temp 4-component vector of float)
+0:18        Color: direct index for structure ( temp 4-component vector of float)
+0:18          'psout' ( temp structure{ temp 4-component vector of float Color})
+0:18          Constant:
+0:18            0 (const int)
+0:18        direct index ( temp 4-component vector of float)
+0:18          direct index ( temp 3-element array of 4-component vector of float)
+0:18            'float4_array_1' ( temp 2-element array of 3-element array of 4-component vector of float)
+0:18            Constant:
+0:18              1 (const int)
+0:18          Constant:
+0:18            2 (const int)
+0:19      Branch: Return with expression
+0:19        'psout' ( temp structure{ temp 4-component vector of float Color})
+0:10  Function Definition: main( ( temp void)
+0:10    Function Parameters: 
+0:?     Sequence
+0:10      Sequence
+0:10        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+0:10          Color: direct index for structure ( temp 4-component vector of float)
+0:10            Function Call: @main( ( temp structure{ temp 4-component vector of float Color})
+0:10            Constant:
+0:10              0 (const int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform 5-element array of 4-element array of 3-element array of float float_array})
+0:?     '@entryPointOutput.Color' (layout( location=0) out 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 57
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 54
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "PS_OUTPUT"
+                              MemberName 8(PS_OUTPUT) 0  "Color"
+                              Name 10  "@main("
+                              Name 18  "float4_array_1"
+                              Name 27  "$Global"
+                              MemberName 27($Global) 0  "float_array"
+                              Name 29  ""
+                              Name 40  "float4_array_2"
+                              Name 46  "psout"
+                              Name 54  "@entryPointOutput.Color"
+                              Decorate 22 ArrayStride 16
+                              Decorate 24 ArrayStride 48
+                              Decorate 26 ArrayStride 192
+                              MemberDecorate 27($Global) 0 Offset 0
+                              Decorate 27($Global) Block
+                              Decorate 29 DescriptorSet 0
+                              Decorate 29 Binding 0
+                              Decorate 54(@entryPointOutput.Color) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+    8(PS_OUTPUT):             TypeStruct 7(fvec4)
+               9:             TypeFunction 8(PS_OUTPUT)
+              12:             TypeInt 32 0
+              13:     12(int) Constant 3
+              14:             TypeArray 7(fvec4) 13
+              15:     12(int) Constant 2
+              16:             TypeArray 14 15
+              17:             TypePointer Function 16
+              19:             TypeInt 32 1
+              20:     19(int) Constant 1
+              21:     19(int) Constant 2
+              22:             TypeArray 6(float) 13
+              23:     12(int) Constant 4
+              24:             TypeArray 22 23
+              25:     12(int) Constant 5
+              26:             TypeArray 24 25
+     27($Global):             TypeStruct 26
+              28:             TypePointer Uniform 27($Global)
+              29:     28(ptr) Variable Uniform
+              30:     19(int) Constant 0
+              31:     19(int) Constant 3
+              32:             TypePointer Uniform 6(float)
+              36:             TypePointer Function 7(fvec4)
+              38:             TypeArray 14 25
+              39:             TypePointer Function 38
+              41:             TypePointer Function 14
+              45:             TypePointer Function 8(PS_OUTPUT)
+              53:             TypePointer Output 7(fvec4)
+54(@entryPointOutput.Color):     53(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+              55:8(PS_OUTPUT) FunctionCall 10(@main()
+              56:    7(fvec4) CompositeExtract 55 0
+                              Store 54(@entryPointOutput.Color) 56
+                              Return
+                              FunctionEnd
+      10(@main():8(PS_OUTPUT) Function None 9
+              11:             Label
+18(float4_array_1):     17(ptr) Variable Function
+40(float4_array_2):     39(ptr) Variable Function
+       46(psout):     45(ptr) Variable Function
+              33:     32(ptr) AccessChain 29 30 21 31 20
+              34:    6(float) Load 33
+              35:    7(fvec4) CompositeConstruct 34 34 34 34
+              37:     36(ptr) AccessChain 18(float4_array_1) 20 21
+                              Store 37 35
+              42:     41(ptr) AccessChain 18(float4_array_1) 30
+              43:          14 Load 42
+              44:     41(ptr) AccessChain 40(float4_array_2) 20
+                              Store 44 43
+              47:     36(ptr) AccessChain 18(float4_array_1) 20 21
+              48:    7(fvec4) Load 47
+              49:     36(ptr) AccessChain 46(psout) 30
+                              Store 49 48
+              50:8(PS_OUTPUT) Load 46(psout)
+                              ReturnValue 50
+                              FunctionEnd

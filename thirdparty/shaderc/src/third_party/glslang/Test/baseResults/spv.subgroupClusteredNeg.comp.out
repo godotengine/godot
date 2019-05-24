@@ -1,0 +1,13 @@
+spv.subgroupClusteredNeg.comp
+ERROR: 0:22: 'cluster size' : argument must be at least 1 
+ERROR: 0:24: 'cluster size' : argument must be a power of 2 
+ERROR: 0:27: 'cluster size' : argument must be a power of 2 
+ERROR: 0:29: 'cluster size' : argument must be at least 1 
+ERROR: 0:31: 'cluster size' : argument must be at least 1 
+ERROR: 0:33: 'cluster size' : argument must be compile-time constant 
+ERROR: 0:36: 'cluster size' : argument must be compile-time constant 
+ERROR: 0:37: 'cluster size' : argument must be compile-time constant 
+ERROR: 8 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

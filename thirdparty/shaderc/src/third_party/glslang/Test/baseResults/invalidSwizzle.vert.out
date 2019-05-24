@@ -1,0 +1,38 @@
+invalidSwizzle.vert
+ERROR: 0:7: 'rr' : does not apply to this type:  uniform sampler2D
+ERROR: 0:7: '=' :  cannot convert from ' uniform sampler2D' to ' temp 2-component vector of float'
+ERROR: 0:8: 'xx' : does not apply to this type:  global void
+ERROR: 0:9: 'xy' : does not apply to this type:  global void
+ERROR: 4 compilation errors.  No code generated.
+
+
+Shader version: 420
+ERROR: node is still EOpNull!
+0:6  Function Definition: main( ( global void)
+0:6    Function Parameters: 
+0:?     Sequence
+0:8      Function Call: f( ( global void)
+0:9      Function Call: f( ( global void)
+0:?   Linker Objects
+0:?     's' ( uniform sampler2D)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+ERROR: Linking vertex stage: No function definition (body) found: 
+    f(
+
+Shader version: 420
+ERROR: node is still EOpNull!
+0:6  Function Definition: main( ( global void)
+0:6    Function Parameters: 
+0:?     Sequence
+0:8      Function Call: f( ( global void)
+0:9      Function Call: f( ( global void)
+0:?   Linker Objects
+0:?     's' ( uniform sampler2D)
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

@@ -1,0 +1,348 @@
+hlsl.struct.split.call.vert
+Shader version: 500
+0:? Sequence
+0:17  Function Definition: Fn1(struct-VS_INPUT-i1-vf4-i11;struct-VS_OUTPUT-i1-vf4-i11; ( temp void)
+0:17    Function Parameters: 
+0:17      'fn1_in' ( in structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:17      'fn1_out' ( in structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:?     Sequence
+0:18      add ( temp 4-component vector of float)
+0:18        Pos_in: direct index for structure ( temp 4-component vector of float)
+0:18          'fn1_in' ( in structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:18          Constant:
+0:18            1 (const int)
+0:18        Pos_out: direct index for structure ( temp 4-component vector of float)
+0:18          'fn1_out' ( in structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:18          Constant:
+0:18            1 (const int)
+0:22  Function Definition: @main(struct-VS_INPUT-i1-vf4-i11; ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:22    Function Parameters: 
+0:22      'vsin' ( in structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:?     Sequence
+0:25      move second child to first child ( temp int)
+0:25        x0_out: direct index for structure ( temp int)
+0:25          'vsout' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:25          Constant:
+0:25            0 (const int)
+0:25        x0_in: direct index for structure ( temp int)
+0:25          'vsin' ( in structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:25          Constant:
+0:25            0 (const int)
+0:26      move second child to first child ( temp 4-component vector of float)
+0:26        Pos_out: direct index for structure ( temp 4-component vector of float)
+0:26          'vsout' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:26          Constant:
+0:26            1 (const int)
+0:26        Pos_in: direct index for structure ( temp 4-component vector of float)
+0:26          'vsin' ( in structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:26          Constant:
+0:26            1 (const int)
+0:27      move second child to first child ( temp int)
+0:27        x1_out: direct index for structure ( temp int)
+0:27          'vsout' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:27          Constant:
+0:27            2 (const int)
+0:27        x1_in: direct index for structure ( temp int)
+0:27          'vsin' ( in structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:27          Constant:
+0:27            2 (const int)
+0:29      Function Call: Fn1(struct-VS_INPUT-i1-vf4-i11;struct-VS_OUTPUT-i1-vf4-i11; ( temp void)
+0:29        'vsin' ( in structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:29        'vsout' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:31      Branch: Return with expression
+0:31        'vsout' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:22  Function Definition: main( ( temp void)
+0:22    Function Parameters: 
+0:?     Sequence
+0:22      Sequence
+0:22        move second child to first child ( temp int)
+0:22          x0_in: direct index for structure ( temp int)
+0:?             'vsin' ( temp structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:22            Constant:
+0:22              0 (const int)
+0:?           'vsin.x0_in' (layout( location=0) in int)
+0:22        move second child to first child ( temp 4-component vector of float)
+0:22          Pos_in: direct index for structure ( temp 4-component vector of float)
+0:?             'vsin' ( temp structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:22            Constant:
+0:22              1 (const int)
+0:?           'vsin.Pos_in' (layout( location=1) in 4-component vector of float)
+0:22        move second child to first child ( temp int)
+0:22          x1_in: direct index for structure ( temp int)
+0:?             'vsin' ( temp structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:22            Constant:
+0:22              2 (const int)
+0:?           'vsin.x1_in' (layout( location=2) in int)
+0:22      Sequence
+0:22        move second child to first child ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:22          'flattenTemp' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:22          Function Call: @main(struct-VS_INPUT-i1-vf4-i11; ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:?             'vsin' ( temp structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:22        move second child to first child ( temp int)
+0:?           '@entryPointOutput.x0_out' (layout( location=0) out int)
+0:22          x0_out: direct index for structure ( temp int)
+0:22            'flattenTemp' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:22            Constant:
+0:22              0 (const int)
+0:22        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Pos_out' ( out 4-component vector of float Position)
+0:22          Pos_out: direct index for structure ( temp 4-component vector of float)
+0:22            'flattenTemp' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:22            Constant:
+0:22              1 (const int)
+0:22        move second child to first child ( temp int)
+0:?           '@entryPointOutput.x1_out' (layout( location=1) out int)
+0:22          x1_out: direct index for structure ( temp int)
+0:22            'flattenTemp' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:22            Constant:
+0:22              2 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.Pos_out' ( out 4-component vector of float Position)
+0:?     '@entryPointOutput.x0_out' (layout( location=0) out int)
+0:?     '@entryPointOutput.x1_out' (layout( location=1) out int)
+0:?     'vsin.x0_in' (layout( location=0) in int)
+0:?     'vsin.Pos_in' (layout( location=1) in 4-component vector of float)
+0:?     'vsin.x1_in' (layout( location=2) in int)
+
+
+Linked vertex stage:
+
+
+Shader version: 500
+0:? Sequence
+0:17  Function Definition: Fn1(struct-VS_INPUT-i1-vf4-i11;struct-VS_OUTPUT-i1-vf4-i11; ( temp void)
+0:17    Function Parameters: 
+0:17      'fn1_in' ( in structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:17      'fn1_out' ( in structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:?     Sequence
+0:18      add ( temp 4-component vector of float)
+0:18        Pos_in: direct index for structure ( temp 4-component vector of float)
+0:18          'fn1_in' ( in structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:18          Constant:
+0:18            1 (const int)
+0:18        Pos_out: direct index for structure ( temp 4-component vector of float)
+0:18          'fn1_out' ( in structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:18          Constant:
+0:18            1 (const int)
+0:22  Function Definition: @main(struct-VS_INPUT-i1-vf4-i11; ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:22    Function Parameters: 
+0:22      'vsin' ( in structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:?     Sequence
+0:25      move second child to first child ( temp int)
+0:25        x0_out: direct index for structure ( temp int)
+0:25          'vsout' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:25          Constant:
+0:25            0 (const int)
+0:25        x0_in: direct index for structure ( temp int)
+0:25          'vsin' ( in structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:25          Constant:
+0:25            0 (const int)
+0:26      move second child to first child ( temp 4-component vector of float)
+0:26        Pos_out: direct index for structure ( temp 4-component vector of float)
+0:26          'vsout' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:26          Constant:
+0:26            1 (const int)
+0:26        Pos_in: direct index for structure ( temp 4-component vector of float)
+0:26          'vsin' ( in structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:26          Constant:
+0:26            1 (const int)
+0:27      move second child to first child ( temp int)
+0:27        x1_out: direct index for structure ( temp int)
+0:27          'vsout' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:27          Constant:
+0:27            2 (const int)
+0:27        x1_in: direct index for structure ( temp int)
+0:27          'vsin' ( in structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:27          Constant:
+0:27            2 (const int)
+0:29      Function Call: Fn1(struct-VS_INPUT-i1-vf4-i11;struct-VS_OUTPUT-i1-vf4-i11; ( temp void)
+0:29        'vsin' ( in structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:29        'vsout' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:31      Branch: Return with expression
+0:31        'vsout' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:22  Function Definition: main( ( temp void)
+0:22    Function Parameters: 
+0:?     Sequence
+0:22      Sequence
+0:22        move second child to first child ( temp int)
+0:22          x0_in: direct index for structure ( temp int)
+0:?             'vsin' ( temp structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:22            Constant:
+0:22              0 (const int)
+0:?           'vsin.x0_in' (layout( location=0) in int)
+0:22        move second child to first child ( temp 4-component vector of float)
+0:22          Pos_in: direct index for structure ( temp 4-component vector of float)
+0:?             'vsin' ( temp structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:22            Constant:
+0:22              1 (const int)
+0:?           'vsin.Pos_in' (layout( location=1) in 4-component vector of float)
+0:22        move second child to first child ( temp int)
+0:22          x1_in: direct index for structure ( temp int)
+0:?             'vsin' ( temp structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:22            Constant:
+0:22              2 (const int)
+0:?           'vsin.x1_in' (layout( location=2) in int)
+0:22      Sequence
+0:22        move second child to first child ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:22          'flattenTemp' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:22          Function Call: @main(struct-VS_INPUT-i1-vf4-i11; ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:?             'vsin' ( temp structure{ temp int x0_in,  temp 4-component vector of float Pos_in,  temp int x1_in})
+0:22        move second child to first child ( temp int)
+0:?           '@entryPointOutput.x0_out' (layout( location=0) out int)
+0:22          x0_out: direct index for structure ( temp int)
+0:22            'flattenTemp' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:22            Constant:
+0:22              0 (const int)
+0:22        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.Pos_out' ( out 4-component vector of float Position)
+0:22          Pos_out: direct index for structure ( temp 4-component vector of float)
+0:22            'flattenTemp' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:22            Constant:
+0:22              1 (const int)
+0:22        move second child to first child ( temp int)
+0:?           '@entryPointOutput.x1_out' (layout( location=1) out int)
+0:22          x1_out: direct index for structure ( temp int)
+0:22            'flattenTemp' ( temp structure{ temp int x0_out,  temp 4-component vector of float Pos_out,  temp int x1_out})
+0:22            Constant:
+0:22              2 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.Pos_out' ( out 4-component vector of float Position)
+0:?     '@entryPointOutput.x0_out' (layout( location=0) out int)
+0:?     '@entryPointOutput.x1_out' (layout( location=1) out int)
+0:?     'vsin.x0_in' (layout( location=0) in int)
+0:?     'vsin.Pos_in' (layout( location=1) in 4-component vector of float)
+0:?     'vsin.x1_in' (layout( location=2) in int)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 77
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Vertex 4  "main" 52 56 59 67 71 74
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 9  "VS_INPUT"
+                              MemberName 9(VS_INPUT) 0  "x0_in"
+                              MemberName 9(VS_INPUT) 1  "Pos_in"
+                              MemberName 9(VS_INPUT) 2  "x1_in"
+                              Name 11  "VS_OUTPUT"
+                              MemberName 11(VS_OUTPUT) 0  "x0_out"
+                              MemberName 11(VS_OUTPUT) 1  "Pos_out"
+                              MemberName 11(VS_OUTPUT) 2  "x1_out"
+                              Name 16  "Fn1(struct-VS_INPUT-i1-vf4-i11;struct-VS_OUTPUT-i1-vf4-i11;"
+                              Name 14  "fn1_in"
+                              Name 15  "fn1_out"
+                              Name 20  "@main(struct-VS_INPUT-i1-vf4-i11;"
+                              Name 19  "vsin"
+                              Name 29  "vsout"
+                              Name 42  "param"
+                              Name 44  "param"
+                              Name 50  "vsin"
+                              Name 52  "vsin.x0_in"
+                              Name 56  "vsin.Pos_in"
+                              Name 59  "vsin.x1_in"
+                              Name 62  "flattenTemp"
+                              Name 63  "param"
+                              Name 67  "@entryPointOutput.x0_out"
+                              Name 71  "@entryPointOutput.Pos_out"
+                              Name 74  "@entryPointOutput.x1_out"
+                              Decorate 52(vsin.x0_in) Location 0
+                              Decorate 56(vsin.Pos_in) Location 1
+                              Decorate 59(vsin.x1_in) Location 2
+                              Decorate 67(@entryPointOutput.x0_out) Location 0
+                              Decorate 71(@entryPointOutput.Pos_out) BuiltIn Position
+                              Decorate 74(@entryPointOutput.x1_out) Location 1
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeInt 32 1
+               7:             TypeFloat 32
+               8:             TypeVector 7(float) 4
+     9(VS_INPUT):             TypeStruct 6(int) 8(fvec4) 6(int)
+              10:             TypePointer Function 9(VS_INPUT)
+   11(VS_OUTPUT):             TypeStruct 6(int) 8(fvec4) 6(int)
+              12:             TypePointer Function 11(VS_OUTPUT)
+              13:             TypeFunction 2 10(ptr) 12(ptr)
+              18:             TypeFunction 11(VS_OUTPUT) 10(ptr)
+              22:      6(int) Constant 1
+              23:             TypePointer Function 8(fvec4)
+              30:      6(int) Constant 0
+              31:             TypePointer Function 6(int)
+              38:      6(int) Constant 2
+              51:             TypePointer Input 6(int)
+  52(vsin.x0_in):     51(ptr) Variable Input
+              55:             TypePointer Input 8(fvec4)
+ 56(vsin.Pos_in):     55(ptr) Variable Input
+  59(vsin.x1_in):     51(ptr) Variable Input
+              66:             TypePointer Output 6(int)
+67(@entryPointOutput.x0_out):     66(ptr) Variable Output
+              70:             TypePointer Output 8(fvec4)
+71(@entryPointOutput.Pos_out):     70(ptr) Variable Output
+74(@entryPointOutput.x1_out):     66(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+        50(vsin):     10(ptr) Variable Function
+ 62(flattenTemp):     12(ptr) Variable Function
+       63(param):     10(ptr) Variable Function
+              53:      6(int) Load 52(vsin.x0_in)
+              54:     31(ptr) AccessChain 50(vsin) 30
+                              Store 54 53
+              57:    8(fvec4) Load 56(vsin.Pos_in)
+              58:     23(ptr) AccessChain 50(vsin) 22
+                              Store 58 57
+              60:      6(int) Load 59(vsin.x1_in)
+              61:     31(ptr) AccessChain 50(vsin) 38
+                              Store 61 60
+              64: 9(VS_INPUT) Load 50(vsin)
+                              Store 63(param) 64
+              65:11(VS_OUTPUT) FunctionCall 20(@main(struct-VS_INPUT-i1-vf4-i11;) 63(param)
+                              Store 62(flattenTemp) 65
+              68:     31(ptr) AccessChain 62(flattenTemp) 30
+              69:      6(int) Load 68
+                              Store 67(@entryPointOutput.x0_out) 69
+              72:     23(ptr) AccessChain 62(flattenTemp) 22
+              73:    8(fvec4) Load 72
+                              Store 71(@entryPointOutput.Pos_out) 73
+              75:     31(ptr) AccessChain 62(flattenTemp) 38
+              76:      6(int) Load 75
+                              Store 74(@entryPointOutput.x1_out) 76
+                              Return
+                              FunctionEnd
+16(Fn1(struct-VS_INPUT-i1-vf4-i11;struct-VS_OUTPUT-i1-vf4-i11;):           2 Function None 13
+      14(fn1_in):     10(ptr) FunctionParameter
+     15(fn1_out):     12(ptr) FunctionParameter
+              17:             Label
+              24:     23(ptr) AccessChain 14(fn1_in) 22
+              25:    8(fvec4) Load 24
+              26:     23(ptr) AccessChain 15(fn1_out) 22
+              27:    8(fvec4) Load 26
+              28:    8(fvec4) FAdd 25 27
+                              Return
+                              FunctionEnd
+20(@main(struct-VS_INPUT-i1-vf4-i11;):11(VS_OUTPUT) Function None 18
+        19(vsin):     10(ptr) FunctionParameter
+              21:             Label
+       29(vsout):     12(ptr) Variable Function
+       42(param):     10(ptr) Variable Function
+       44(param):     12(ptr) Variable Function
+              32:     31(ptr) AccessChain 19(vsin) 30
+              33:      6(int) Load 32
+              34:     31(ptr) AccessChain 29(vsout) 30
+                              Store 34 33
+              35:     23(ptr) AccessChain 19(vsin) 22
+              36:    8(fvec4) Load 35
+              37:     23(ptr) AccessChain 29(vsout) 22
+                              Store 37 36
+              39:     31(ptr) AccessChain 19(vsin) 38
+              40:      6(int) Load 39
+              41:     31(ptr) AccessChain 29(vsout) 38
+                              Store 41 40
+              43: 9(VS_INPUT) Load 19(vsin)
+                              Store 42(param) 43
+              45:11(VS_OUTPUT) Load 29(vsout)
+                              Store 44(param) 45
+              46:           2 FunctionCall 16(Fn1(struct-VS_INPUT-i1-vf4-i11;struct-VS_OUTPUT-i1-vf4-i11;) 42(param) 44(param)
+              47:11(VS_OUTPUT) Load 29(vsout)
+                              ReturnValue 47
+                              FunctionEnd

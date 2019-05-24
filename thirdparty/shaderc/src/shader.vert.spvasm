@@ -1,0 +1,27 @@
+; SPIR-V
+; Version: 1.0
+; Generator: Google Shaderc over Glslang; 7
+; Bound: 7
+; Schema: 0
+               OpCapability Shader
+          %2 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Vertex %main "main"
+          %1 = OpString "../shader.vert"
+               OpSource ESSL 310 %1 "// OpModuleProcessed entry-point main
+// OpModuleProcessed client vulkan100
+// OpModuleProcessed target-env vulkan1.0
+// OpModuleProcessed entry-point main
+#line 1
+#version 310 es
+void main() {}
+"
+               OpSourceExtension "GL_GOOGLE_cpp_style_line_directive"
+               OpSourceExtension "GL_GOOGLE_include_directive"
+               OpName %main "main"
+       %void = OpTypeVoid
+          %4 = OpTypeFunction %void
+       %main = OpFunction %void None %4
+          %6 = OpLabel
+               OpReturn
+               OpFunctionEnd

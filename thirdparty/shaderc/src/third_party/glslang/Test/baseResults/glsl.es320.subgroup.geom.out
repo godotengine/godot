@@ -1,0 +1,59 @@
+glsl.es320.subgroup.geom
+Shader version: 320
+Requested GL_KHR_shader_subgroup_basic
+invocations = -1
+max_vertices = 1
+input primitive = points
+output primitive = points
+0:? Sequence
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      move second child to first child ( temp highp 4-component vector of uint)
+0:12        indirect index (layout( column_major std430 offset=0) temp highp 4-component vector of uint)
+0:12          result: direct index for structure (layout( column_major std430 offset=0) buffer runtime-sized array of highp 4-component vector of uint)
+0:12            'anon@0' (layout( set=0 binding=0 column_major std430) buffer block{layout( column_major std430 offset=0) buffer runtime-sized array of highp 4-component vector of uint result})
+0:12            Constant:
+0:12              0 (const uint)
+0:12          'gl_PrimitiveIDIn' ( in highp int PrimitiveID)
+0:12        Construct uvec4 ( temp highp 4-component vector of uint)
+0:12          'gl_SubgroupSize' ( in mediump uint unknown built-in variable)
+0:12          'gl_SubgroupInvocationID' ( in mediump uint unknown built-in variable)
+0:12          Constant:
+0:12            0 (const uint)
+0:12          Constant:
+0:12            0 (const uint)
+0:?   Linker Objects
+0:?     'anon@0' (layout( set=0 binding=0 column_major std430) buffer block{layout( column_major std430 offset=0) buffer runtime-sized array of highp 4-component vector of uint result})
+
+
+Linked geometry stage:
+
+
+Shader version: 320
+Requested GL_KHR_shader_subgroup_basic
+invocations = 1
+max_vertices = 1
+input primitive = points
+output primitive = points
+0:? Sequence
+0:10  Function Definition: main( ( global void)
+0:10    Function Parameters: 
+0:12    Sequence
+0:12      move second child to first child ( temp highp 4-component vector of uint)
+0:12        indirect index (layout( column_major std430 offset=0) temp highp 4-component vector of uint)
+0:12          result: direct index for structure (layout( column_major std430 offset=0) buffer runtime-sized array of highp 4-component vector of uint)
+0:12            'anon@0' (layout( set=0 binding=0 column_major std430) buffer block{layout( column_major std430 offset=0) buffer runtime-sized array of highp 4-component vector of uint result})
+0:12            Constant:
+0:12              0 (const uint)
+0:12          'gl_PrimitiveIDIn' ( in highp int PrimitiveID)
+0:12        Construct uvec4 ( temp highp 4-component vector of uint)
+0:12          'gl_SubgroupSize' ( in mediump uint unknown built-in variable)
+0:12          'gl_SubgroupInvocationID' ( in mediump uint unknown built-in variable)
+0:12          Constant:
+0:12            0 (const uint)
+0:12          Constant:
+0:12            0 (const uint)
+0:?   Linker Objects
+0:?     'anon@0' (layout( set=0 binding=0 column_major std430) buffer block{layout( column_major std430 offset=0) buffer runtime-sized array of highp 4-component vector of uint result})
+

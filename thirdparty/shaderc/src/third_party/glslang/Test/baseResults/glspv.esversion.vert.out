@@ -1,0 +1,6 @@
+glspv.esversion.vert
+ERROR: #version: ES shaders for OpenGL SPIR-V are not supported
+ERROR: 1 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

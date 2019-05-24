@@ -1,0 +1,152 @@
+dce.frag
+Shader version: 400
+0:? Sequence
+0:5  Sequence
+0:5    move second child to first child ( temp int)
+0:5      'c' ( global int)
+0:5      Constant:
+0:5        0 (const int)
+0:7  Function Definition: bar( ( global void)
+0:7    Function Parameters: 
+0:9    Sequence
+0:9      Test condition and select ( temp void)
+0:9        Condition
+0:9        Constant:
+0:9          false (const bool)
+0:9        true case
+0:10        Pre-Increment ( temp int)
+0:10          'c' ( global int)
+0:9        false case
+0:12        Pre-Increment ( temp int)
+0:12          'c' ( global int)
+0:14      Test condition and select ( temp int)
+0:14        Condition
+0:14        Constant:
+0:14          false (const bool)
+0:14        true case
+0:14        Pre-Increment ( temp int)
+0:14          'c' ( global int)
+0:14        false case
+0:14        Pre-Increment ( temp int)
+0:14          'c' ( global int)
+0:16      switch
+0:16      condition
+0:16        'c' ( global int)
+0:16      body
+0:16        Sequence
+0:17          case:  with expression
+0:17            Constant:
+0:17              1 (const int)
+0:?           Sequence
+0:18            Pre-Increment ( temp int)
+0:18              'c' ( global int)
+0:19            Branch: Break
+0:20            Pre-Increment ( temp int)
+0:20              'c' ( global int)
+0:21          case:  with expression
+0:21            Constant:
+0:21              2 (const int)
+0:?           Sequence
+0:22            Branch: Break
+0:23            Pre-Increment ( temp int)
+0:23              'c' ( global int)
+0:24          default: 
+0:?           Sequence
+0:25            Branch: Break
+0:28      Sequence
+0:28        Sequence
+0:28          move second child to first child ( temp int)
+0:28            'i' ( temp int)
+0:28            Constant:
+0:28              0 (const int)
+0:28        Loop with condition tested first
+0:28          Loop Condition
+0:28          Compare Less Than ( temp bool)
+0:28            'i' ( temp int)
+0:28            Constant:
+0:28              0 (const int)
+0:28          Loop Body
+0:29          Pre-Increment ( temp int)
+0:29            'c' ( global int)
+0:28          Loop Terminal Expression
+0:28          Pre-Increment ( temp int)
+0:28            'i' ( temp int)
+0:31      Sequence
+0:31        Sequence
+0:31          move second child to first child ( temp int)
+0:31            'i' ( temp int)
+0:31            Constant:
+0:31              0 (const int)
+0:31        Loop with condition tested first
+0:31          Loop Condition
+0:31          Compare Less Than ( temp bool)
+0:31            'i' ( temp int)
+0:31            Constant:
+0:31              10 (const int)
+0:31          Loop Body
+0:32          Sequence
+0:32            Test condition and select ( temp void)
+0:32              Condition
+0:32              Compare Less Than ( temp bool)
+0:32                'c' ( global int)
+0:32                Constant:
+0:32                  3 (const int)
+0:32              true case
+0:33              Sequence
+0:33                Branch: Break
+0:34                Pre-Increment ( temp int)
+0:34                  'c' ( global int)
+0:32              false case
+0:36              Sequence
+0:36                Branch: Continue
+0:37                Pre-Increment ( temp int)
+0:37                  'c' ( global int)
+0:31          Loop Terminal Expression
+0:31          Pre-Increment ( temp int)
+0:31            'i' ( temp int)
+0:41      Branch: Return
+0:43      Pre-Increment ( temp int)
+0:43        'c' ( global int)
+0:46  Function Definition: foo( ( global int)
+0:46    Function Parameters: 
+0:48    Sequence
+0:48      Test condition and select ( temp void)
+0:48        Condition
+0:48        Compare Greater Than ( temp bool)
+0:48          'c' ( global int)
+0:48          Constant:
+0:48            4 (const int)
+0:48        true case
+0:49        Sequence
+0:49          Branch: Return with expression
+0:49            Constant:
+0:49              4 (const int)
+0:50          Pre-Increment ( temp int)
+0:50            'c' ( global int)
+0:53      Branch: Return with expression
+0:53        Constant:
+0:53          5 (const int)
+0:55      Pre-Increment ( temp int)
+0:55        'c' ( global int)
+0:?   Linker Objects
+0:?     'flag' ( const bool)
+0:?       false (const bool)
+0:?     'c' ( global int)
+
+
+Linked fragment stage:
+
+ERROR: Linking fragment stage: Missing entry point: Each stage requires one entry point
+
+Shader version: 400
+0:? Sequence
+0:5  Sequence
+0:5    move second child to first child ( temp int)
+0:5      'c' ( global int)
+0:5      Constant:
+0:5        0 (const int)
+0:?   Linker Objects
+0:?     'flag' ( const bool)
+0:?       false (const bool)
+0:?     'c' ( global int)
+

@@ -1,0 +1,41 @@
+#version 450
+
+#define MAX_VER  81
+#define MAX_PRIM 32
+
+#define BARRIER() \
+    memoryBarrierShared(); \
+    barrier();
+
+#extension GL_NV_mesh_shader : enable
+
+layout(local_size_x = 32) in;
+
+layout(max_vertices=MAX_VER) out;
+layout(max_primitives=MAX_PRIM) out;
+layout(triangles) out;
+
+// test use of task memory in mesh shaders:
+
+taskNV in taskBlock {
+    float gid1[2];
+    vec4 gid2;
+} mytask;
+
+buffer bufferBlock {
+    float gid3[2];
+    vec4 gid4;
+} mybuf;
+
+layout(location=0) out outBlock {
+    float gid5;
+    vec4 gid6;
+} myblk[];
+
+void main()
+{
+    uint iid = gl_LocalInvocationID.x;
+
+    myblk[iid].gid5 = mytask.gid1[1] + mybuf.gid3[1];
+    myblk[iid].gid6 = mytask.gid2    + mybuf.gid4;
+}

@@ -1,0 +1,370 @@
+hlsl.if.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:2  Function Definition: @PixelShaderFunction(vf4; ( temp 4-component vector of float)
+0:2    Function Parameters: 
+0:2      'input' ( in 4-component vector of float)
+0:?     Sequence
+0:3      Test condition and select ( temp void)
+0:3        Condition
+0:3        all ( temp bool)
+0:3          Equal ( temp 4-component vector of bool)
+0:3            'input' ( in 4-component vector of float)
+0:3            'input' ( in 4-component vector of float)
+0:3        true case
+0:4        Branch: Return with expression
+0:4          'input' ( in 4-component vector of float)
+0:6      Test condition and select ( temp void)
+0:6        Condition
+0:6        all ( temp bool)
+0:6          Equal ( temp 4-component vector of bool)
+0:6            'input' ( in 4-component vector of float)
+0:6            'input' ( in 4-component vector of float)
+0:6        true case
+0:7        Branch: Return with expression
+0:7          'input' ( in 4-component vector of float)
+0:6        false case
+0:9        Branch: Return with expression
+0:9          Negate value ( temp 4-component vector of float)
+0:9            'input' ( in 4-component vector of float)
+0:11      Test condition and select ( temp void)
+0:11        Condition
+0:11        all ( temp bool)
+0:11          Equal ( temp 4-component vector of bool)
+0:11            'input' ( in 4-component vector of float)
+0:11            'input' ( in 4-component vector of float)
+0:11        true case is null
+0:14      Test condition and select ( temp void)
+0:14        Condition
+0:14        all ( temp bool)
+0:14          Equal ( temp 4-component vector of bool)
+0:14            'input' ( in 4-component vector of float)
+0:14            'input' ( in 4-component vector of float)
+0:14        true case is null
+0:19      Test condition and select ( temp void): Flatten
+0:19        Condition
+0:19        all ( temp bool)
+0:19          Equal ( temp 4-component vector of bool)
+0:19            'input' ( in 4-component vector of float)
+0:19            'input' ( in 4-component vector of float)
+0:19        true case
+0:?         Sequence
+0:20          Branch: Return with expression
+0:20            'input' ( in 4-component vector of float)
+0:23      Test condition and select ( temp void)
+0:23        Condition
+0:23        all ( temp bool)
+0:23          Equal ( temp 4-component vector of bool)
+0:23            'input' ( in 4-component vector of float)
+0:23            'input' ( in 4-component vector of float)
+0:23        true case
+0:?         Sequence
+0:24          Branch: Return with expression
+0:24            'input' ( in 4-component vector of float)
+0:23        false case
+0:?         Sequence
+0:26          Branch: Return with expression
+0:26            Negate value ( temp 4-component vector of float)
+0:26              'input' ( in 4-component vector of float)
+0:30      Test condition and select ( temp void)
+0:30        Condition
+0:30        Convert float to bool ( temp bool)
+0:30          move second child to first child ( temp float)
+0:30            'ii' ( temp float)
+0:30            direct index ( temp float)
+0:30              'input' ( in 4-component vector of float)
+0:30              Constant:
+0:30                2 (const int)
+0:30        true case
+0:31        Pre-Increment ( temp float)
+0:31          'ii' ( temp float)
+0:32      Pre-Increment ( temp int)
+0:32        'ii' ( temp int)
+0:33      Test condition and select ( temp void)
+0:33        Condition
+0:33        Compare Equal ( temp bool)
+0:33          Convert int to float ( temp float)
+0:33            'ii' ( temp int)
+0:33          Constant:
+0:33            1.000000
+0:33        true case
+0:34        Pre-Increment ( temp int)
+0:34          'ii' ( temp int)
+0:2  Function Definition: PixelShaderFunction( ( temp void)
+0:2    Function Parameters: 
+0:?     Sequence
+0:2      move second child to first child ( temp 4-component vector of float)
+0:?         'input' ( temp 4-component vector of float)
+0:?         'input' (layout( location=0) in 4-component vector of float)
+0:2      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:2        Function Call: @PixelShaderFunction(vf4; ( temp 4-component vector of float)
+0:?           'input' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'input' (layout( location=0) in 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:2  Function Definition: @PixelShaderFunction(vf4; ( temp 4-component vector of float)
+0:2    Function Parameters: 
+0:2      'input' ( in 4-component vector of float)
+0:?     Sequence
+0:3      Test condition and select ( temp void)
+0:3        Condition
+0:3        all ( temp bool)
+0:3          Equal ( temp 4-component vector of bool)
+0:3            'input' ( in 4-component vector of float)
+0:3            'input' ( in 4-component vector of float)
+0:3        true case
+0:4        Branch: Return with expression
+0:4          'input' ( in 4-component vector of float)
+0:6      Test condition and select ( temp void)
+0:6        Condition
+0:6        all ( temp bool)
+0:6          Equal ( temp 4-component vector of bool)
+0:6            'input' ( in 4-component vector of float)
+0:6            'input' ( in 4-component vector of float)
+0:6        true case
+0:7        Branch: Return with expression
+0:7          'input' ( in 4-component vector of float)
+0:6        false case
+0:9        Branch: Return with expression
+0:9          Negate value ( temp 4-component vector of float)
+0:9            'input' ( in 4-component vector of float)
+0:11      Test condition and select ( temp void)
+0:11        Condition
+0:11        all ( temp bool)
+0:11          Equal ( temp 4-component vector of bool)
+0:11            'input' ( in 4-component vector of float)
+0:11            'input' ( in 4-component vector of float)
+0:11        true case is null
+0:14      Test condition and select ( temp void)
+0:14        Condition
+0:14        all ( temp bool)
+0:14          Equal ( temp 4-component vector of bool)
+0:14            'input' ( in 4-component vector of float)
+0:14            'input' ( in 4-component vector of float)
+0:14        true case is null
+0:19      Test condition and select ( temp void): Flatten
+0:19        Condition
+0:19        all ( temp bool)
+0:19          Equal ( temp 4-component vector of bool)
+0:19            'input' ( in 4-component vector of float)
+0:19            'input' ( in 4-component vector of float)
+0:19        true case
+0:?         Sequence
+0:20          Branch: Return with expression
+0:20            'input' ( in 4-component vector of float)
+0:23      Test condition and select ( temp void)
+0:23        Condition
+0:23        all ( temp bool)
+0:23          Equal ( temp 4-component vector of bool)
+0:23            'input' ( in 4-component vector of float)
+0:23            'input' ( in 4-component vector of float)
+0:23        true case
+0:?         Sequence
+0:24          Branch: Return with expression
+0:24            'input' ( in 4-component vector of float)
+0:23        false case
+0:?         Sequence
+0:26          Branch: Return with expression
+0:26            Negate value ( temp 4-component vector of float)
+0:26              'input' ( in 4-component vector of float)
+0:30      Test condition and select ( temp void)
+0:30        Condition
+0:30        Convert float to bool ( temp bool)
+0:30          move second child to first child ( temp float)
+0:30            'ii' ( temp float)
+0:30            direct index ( temp float)
+0:30              'input' ( in 4-component vector of float)
+0:30              Constant:
+0:30                2 (const int)
+0:30        true case
+0:31        Pre-Increment ( temp float)
+0:31          'ii' ( temp float)
+0:32      Pre-Increment ( temp int)
+0:32        'ii' ( temp int)
+0:33      Test condition and select ( temp void)
+0:33        Condition
+0:33        Compare Equal ( temp bool)
+0:33          Convert int to float ( temp float)
+0:33            'ii' ( temp int)
+0:33          Constant:
+0:33            1.000000
+0:33        true case
+0:34        Pre-Increment ( temp int)
+0:34          'ii' ( temp int)
+0:2  Function Definition: PixelShaderFunction( ( temp void)
+0:2    Function Parameters: 
+0:?     Sequence
+0:2      move second child to first child ( temp 4-component vector of float)
+0:?         'input' ( temp 4-component vector of float)
+0:?         'input' (layout( location=0) in 4-component vector of float)
+0:2      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:2        Function Call: @PixelShaderFunction(vf4; ( temp 4-component vector of float)
+0:?           'input' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'input' (layout( location=0) in 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 103
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "PixelShaderFunction" 96 99
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "PixelShaderFunction"
+                              Name 11  "@PixelShaderFunction(vf4;"
+                              Name 10  "input"
+                              Name 68  "ii"
+                              Name 82  "ii"
+                              Name 94  "input"
+                              Name 96  "input"
+                              Name 99  "@entryPointOutput"
+                              Name 100  "param"
+                              Decorate 96(input) Location 0
+                              Decorate 99(@entryPointOutput) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+               8:             TypePointer Function 7(fvec4)
+               9:             TypeFunction 7(fvec4) 8(ptr)
+              15:             TypeBool
+              16:             TypeVector 15(bool) 4
+              67:             TypePointer Function 6(float)
+              69:             TypeInt 32 0
+              70:     69(int) Constant 2
+              73:    6(float) Constant 0
+              78:    6(float) Constant 1065353216
+              80:             TypeInt 32 1
+              81:             TypePointer Function 80(int)
+              84:     80(int) Constant 1
+              95:             TypePointer Input 7(fvec4)
+       96(input):     95(ptr) Variable Input
+              98:             TypePointer Output 7(fvec4)
+99(@entryPointOutput):     98(ptr) Variable Output
+4(PixelShaderFunction):           2 Function None 3
+               5:             Label
+       94(input):      8(ptr) Variable Function
+      100(param):      8(ptr) Variable Function
+              97:    7(fvec4) Load 96(input)
+                              Store 94(input) 97
+             101:    7(fvec4) Load 94(input)
+                              Store 100(param) 101
+             102:    7(fvec4) FunctionCall 11(@PixelShaderFunction(vf4;) 100(param)
+                              Store 99(@entryPointOutput) 102
+                              Return
+                              FunctionEnd
+11(@PixelShaderFunction(vf4;):    7(fvec4) Function None 9
+       10(input):      8(ptr) FunctionParameter
+              12:             Label
+          68(ii):     67(ptr) Variable Function
+          82(ii):     81(ptr) Variable Function
+              13:    7(fvec4) Load 10(input)
+              14:    7(fvec4) Load 10(input)
+              17:   16(bvec4) FOrdEqual 13 14
+              18:    15(bool) All 17
+                              SelectionMerge 20 None
+                              BranchConditional 18 19 20
+              19:               Label
+              21:    7(fvec4)   Load 10(input)
+                                ReturnValue 21
+              20:             Label
+              23:    7(fvec4) Load 10(input)
+              24:    7(fvec4) Load 10(input)
+              25:   16(bvec4) FOrdEqual 23 24
+              26:    15(bool) All 25
+                              SelectionMerge 28 None
+                              BranchConditional 26 27 31
+              27:               Label
+              29:    7(fvec4)   Load 10(input)
+                                ReturnValue 29
+              31:               Label
+              32:    7(fvec4)   Load 10(input)
+              33:    7(fvec4)   FNegate 32
+                                ReturnValue 33
+              28:             Label
+              35:    7(fvec4) Load 10(input)
+              36:    7(fvec4) Load 10(input)
+              37:   16(bvec4) FOrdEqual 35 36
+              38:    15(bool) All 37
+                              SelectionMerge 40 None
+                              BranchConditional 38 39 40
+              39:               Label
+                                Branch 40
+              40:             Label
+              41:    7(fvec4) Load 10(input)
+              42:    7(fvec4) Load 10(input)
+              43:   16(bvec4) FOrdEqual 41 42
+              44:    15(bool) All 43
+                              SelectionMerge 46 None
+                              BranchConditional 44 45 46
+              45:               Label
+                                Branch 46
+              46:             Label
+              47:    7(fvec4) Load 10(input)
+              48:    7(fvec4) Load 10(input)
+              49:   16(bvec4) FOrdEqual 47 48
+              50:    15(bool) All 49
+                              SelectionMerge 52 Flatten 
+                              BranchConditional 50 51 52
+              51:               Label
+              53:    7(fvec4)   Load 10(input)
+                                ReturnValue 53
+              52:             Label
+              55:    7(fvec4) Load 10(input)
+              56:    7(fvec4) Load 10(input)
+              57:   16(bvec4) FOrdEqual 55 56
+              58:    15(bool) All 57
+                              SelectionMerge 60 None
+                              BranchConditional 58 59 63
+              59:               Label
+              61:    7(fvec4)   Load 10(input)
+                                ReturnValue 61
+              63:               Label
+              64:    7(fvec4)   Load 10(input)
+              65:    7(fvec4)   FNegate 64
+                                ReturnValue 65
+              60:             Label
+              71:     67(ptr) AccessChain 10(input) 70
+              72:    6(float) Load 71
+                              Store 68(ii) 72
+              74:    15(bool) FOrdNotEqual 72 73
+                              SelectionMerge 76 None
+                              BranchConditional 74 75 76
+              75:               Label
+              77:    6(float)   Load 68(ii)
+              79:    6(float)   FAdd 77 78
+                                Store 68(ii) 79
+                                Branch 76
+              76:             Label
+              83:     80(int) Load 82(ii)
+              85:     80(int) IAdd 83 84
+                              Store 82(ii) 85
+              86:     80(int) Load 82(ii)
+              87:    6(float) ConvertSToF 86
+              88:    15(bool) FOrdEqual 87 78
+                              SelectionMerge 90 None
+                              BranchConditional 88 89 90
+              89:               Label
+              91:     80(int)   Load 82(ii)
+              92:     80(int)   IAdd 91 84
+                                Store 82(ii) 92
+                                Branch 90
+              90:             Label
+              93:    7(fvec4) Undef
+                              ReturnValue 93
+                              FunctionEnd

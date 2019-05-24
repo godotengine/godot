@@ -1,0 +1,26 @@
+hlsl.reflection.binding.frag
+Uniform reflection:
+t1: offset -1, type 8b5d, size 1, index -1, binding 15, stages 16
+s1: offset -1, type 0, size 1, index -1, binding 5, stages 16
+t1a: offset -1, type 8b5d, size 1, index -1, binding 16, stages 16, arrayStride 4, topLevelArrayStride 4
+s1a: offset -1, type 0, size 1, index -1, binding 6, stages 16, arrayStride 4, topLevelArrayStride 4
+c1_a: offset 0, type 8b52, size 1, index 0, binding -1, stages 16
+c1_b: offset 16, type 1404, size 1, index 0, binding -1, stages 16
+c1_c: offset 20, type 1406, size 1, index 0, binding -1, stages 16
+c2_a: offset 0, type 8b52, size 1, index 1, binding -1, stages 16
+c2_b: offset 16, type 1404, size 1, index 1, binding -1, stages 16
+c2_c: offset 20, type 1406, size 1, index 1, binding -1, stages 16
+
+Uniform block reflection:
+cbuff1: offset -1, type ffffffff, size 24, index -1, binding 2, stages 16, numMembers 3
+cbuff2: offset -1, type ffffffff, size 24, index -1, binding 3, stages 16, numMembers 3
+
+Buffer variable reflection:
+
+Buffer block reflection:
+
+Pipeline input reflection:
+
+Pipeline output reflection:
+psout.Color: offset 0, type 8b52, size 1, index 0, binding -1, stages 16
+

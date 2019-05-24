@@ -1,0 +1,19 @@
+#version 460
+#extension GL_NV_ray_tracing : enable
+layout(binding = 0, set = 0) uniform accelerationStructureNV accNV0;
+layout(binding = 1, set = 0) uniform accelerationStructureNV accNV1; // Unused
+layout(location = 0) rayPayloadNV vec4 payload;
+layout(shaderRecordNV) buffer block
+{
+	vec3 dir;
+	vec3 origin;
+
+};
+void main()
+{
+    uint lx = gl_LaunchIDNV.x;
+    uint ly = gl_LaunchIDNV.y;
+    uint sx = gl_LaunchSizeNV.x;
+    uint sy = gl_LaunchSizeNV.y;
+    traceNV(accNV0, lx, ly, sx, sy, 0u, origin, 0.5f, dir, 0.75f, 1);
+}

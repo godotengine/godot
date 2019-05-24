@@ -1,0 +1,125 @@
+forwardRef.frag
+Shader version: 110
+0:? Sequence
+0:11  Function Definition: main( ( global void)
+0:11    Function Parameters: 
+0:13    Sequence
+0:13      Sequence
+0:13        move second child to first child ( temp 4-component vector of float)
+0:13          'color' ( temp 4-component vector of float)
+0:13          Construct vec4 ( temp 4-component vector of float)
+0:13            Function Call: foo(vf4; ( global float)
+0:13              'BaseColor' ( smooth in 4-component vector of float)
+0:15      Function Call: bar( ( global void)
+0:16      Sequence
+0:16        move second child to first child ( temp float)
+0:16          'f' ( temp float)
+0:16          Function Call: unreachableReturn( ( global float)
+0:18      move second child to first child ( temp 4-component vector of float)
+0:18        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:18        vector-scale ( temp 4-component vector of float)
+0:18          'color' ( temp 4-component vector of float)
+0:18          'f' ( temp float)
+0:21  Function Definition: bar( ( global void)
+0:21    Function Parameters: 
+0:25  Function Definition: unreachableReturn( ( global float)
+0:25    Function Parameters: 
+0:27    Sequence
+0:27      Function Call: bar( ( global void)
+0:28      Test condition and select ( temp void)
+0:28        Condition
+0:28        Compare Less Than ( temp bool)
+0:28          'd' ( uniform float)
+0:28          Constant:
+0:28            4.200000
+0:28        true case
+0:29        Branch: Return with expression
+0:29          Constant:
+0:29            1.200000
+0:28        false case
+0:31        Branch: Return with expression
+0:31          Constant:
+0:31            4.500000
+0:34  Function Definition: foo(vf4; ( global float)
+0:34    Function Parameters: 
+0:34      'bar' ( in 4-component vector of float)
+0:36    Sequence
+0:36      Branch: Return with expression
+0:36        add ( temp float)
+0:36          direct index ( temp float)
+0:36            'bar' ( in 4-component vector of float)
+0:36            Constant:
+0:36              0 (const int)
+0:36          direct index ( temp float)
+0:36            'bar' ( in 4-component vector of float)
+0:36            Constant:
+0:36              1 (const int)
+0:?   Linker Objects
+0:?     'bigColor' ( uniform 4-component vector of float)
+0:?     'BaseColor' ( smooth in 4-component vector of float)
+0:?     'd' ( uniform float)
+
+
+Linked fragment stage:
+
+
+Shader version: 110
+0:? Sequence
+0:11  Function Definition: main( ( global void)
+0:11    Function Parameters: 
+0:13    Sequence
+0:13      Sequence
+0:13        move second child to first child ( temp 4-component vector of float)
+0:13          'color' ( temp 4-component vector of float)
+0:13          Construct vec4 ( temp 4-component vector of float)
+0:13            Function Call: foo(vf4; ( global float)
+0:13              'BaseColor' ( smooth in 4-component vector of float)
+0:15      Function Call: bar( ( global void)
+0:16      Sequence
+0:16        move second child to first child ( temp float)
+0:16          'f' ( temp float)
+0:16          Function Call: unreachableReturn( ( global float)
+0:18      move second child to first child ( temp 4-component vector of float)
+0:18        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:18        vector-scale ( temp 4-component vector of float)
+0:18          'color' ( temp 4-component vector of float)
+0:18          'f' ( temp float)
+0:21  Function Definition: bar( ( global void)
+0:21    Function Parameters: 
+0:25  Function Definition: unreachableReturn( ( global float)
+0:25    Function Parameters: 
+0:27    Sequence
+0:27      Function Call: bar( ( global void)
+0:28      Test condition and select ( temp void)
+0:28        Condition
+0:28        Compare Less Than ( temp bool)
+0:28          'd' ( uniform float)
+0:28          Constant:
+0:28            4.200000
+0:28        true case
+0:29        Branch: Return with expression
+0:29          Constant:
+0:29            1.200000
+0:28        false case
+0:31        Branch: Return with expression
+0:31          Constant:
+0:31            4.500000
+0:34  Function Definition: foo(vf4; ( global float)
+0:34    Function Parameters: 
+0:34      'bar' ( in 4-component vector of float)
+0:36    Sequence
+0:36      Branch: Return with expression
+0:36        add ( temp float)
+0:36          direct index ( temp float)
+0:36            'bar' ( in 4-component vector of float)
+0:36            Constant:
+0:36              0 (const int)
+0:36          direct index ( temp float)
+0:36            'bar' ( in 4-component vector of float)
+0:36            Constant:
+0:36              1 (const int)
+0:?   Linker Objects
+0:?     'bigColor' ( uniform 4-component vector of float)
+0:?     'BaseColor' ( smooth in 4-component vector of float)
+0:?     'd' ( uniform float)
+

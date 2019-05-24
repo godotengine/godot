@@ -1,0 +1,21 @@
+spv.MissShader_Errors.rmiss
+ERROR: 0:3: 'hitAttributeNV' : not supported in this stage: miss
+ERROR: 0:6: 'gl_PrimitiveID' : undeclared identifier 
+ERROR: 0:6: '=' :  cannot convert from ' temp float' to ' temp highp int'
+ERROR: 0:7: 'gl_InstanceID' : undeclared identifier (Did you mean gl_InstanceIndex?)
+ERROR: 0:7: '=' :  cannot convert from ' temp float' to ' temp highp int'
+ERROR: 0:8: 'gl_InstanceCustomIndexNV' : undeclared identifier 
+ERROR: 0:8: '=' :  cannot convert from ' temp float' to ' temp highp int'
+ERROR: 0:9: 'gl_ObjectToWorldNV' : undeclared identifier 
+ERROR: 0:9: '=' :  cannot convert from ' temp float' to ' temp highp 4X3 matrix of float'
+ERROR: 0:10: 'gl_WorldToObjectNV' : undeclared identifier 
+ERROR: 0:10: '=' :  cannot convert from ' temp float' to ' temp highp 4X3 matrix of float'
+ERROR: 0:11: 'gl_HitTNV' : undeclared identifier 
+ERROR: 0:12: 'gl_HitKindNV' : undeclared identifier 
+ERROR: 0:13: 'reportIntersectionNV' : no matching overloaded function found 
+ERROR: 0:14: 'ignoreIntersectionNV' : no matching overloaded function found 
+ERROR: 0:15: 'terminateRayNV' : no matching overloaded function found 
+ERROR: 16 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

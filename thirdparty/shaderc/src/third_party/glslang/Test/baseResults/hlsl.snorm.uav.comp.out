@@ -1,0 +1,213 @@
+hlsl.snorm.uav.comp
+Shader version: 500
+local_size = (16, 16, 1)
+0:? Sequence
+0:12  Function Definition: @main(vu3; ( temp void)
+0:12    Function Parameters: 
+0:12      'tid' ( in 3-component vector of uint)
+0:?     Sequence
+0:13      Sequence
+0:13        move second child to first child ( temp 4-component vector of float)
+0:13          'storeTemp' ( temp 4-component vector of float)
+0:13          add ( temp 4-component vector of float)
+0:13            textureFetch ( temp 4-component vector of float)
+0:13              'ResultInS' (layout( binding=1) uniform texture3D)
+0:13              'tid' ( in 3-component vector of uint)
+0:13              Constant:
+0:13                0 (const int)
+0:13            uf4: direct index for structure ( uniform 4-component vector of float)
+0:13              'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of float uf4})
+0:13              Constant:
+0:13                0 (const uint)
+0:13        imageStore ( temp void)
+0:13          'ResultOutS' (layout( binding=1 rgba32f) uniform image3D)
+0:13          'tid' ( in 3-component vector of uint)
+0:13          'storeTemp' ( temp 4-component vector of float)
+0:13        'storeTemp' ( temp 4-component vector of float)
+0:14      Sequence
+0:14        move second child to first child ( temp 4-component vector of float)
+0:14          'storeTemp' ( temp 4-component vector of float)
+0:14          textureFetch ( temp 4-component vector of float)
+0:14            'ResultInU' (layout( binding=0) uniform texture3D)
+0:14            'tid' ( in 3-component vector of uint)
+0:14            Constant:
+0:14              0 (const int)
+0:14        imageStore ( temp void)
+0:14          'ResultOutU' (layout( binding=0 rgba32f) uniform image3D)
+0:14          'tid' ( in 3-component vector of uint)
+0:14          'storeTemp' ( temp 4-component vector of float)
+0:14        'storeTemp' ( temp 4-component vector of float)
+0:12  Function Definition: main( ( temp void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:12      move second child to first child ( temp 3-component vector of uint)
+0:?         'tid' ( temp 3-component vector of uint)
+0:?         'tid' ( in 3-component vector of uint GlobalInvocationID)
+0:12      Function Call: @main(vu3; ( temp void)
+0:?         'tid' ( temp 3-component vector of uint)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of float uf4})
+0:?     'ResultInU' (layout( binding=0) uniform texture3D)
+0:?     'ResultOutU' (layout( binding=0 rgba32f) uniform image3D)
+0:?     'ResultInS' (layout( binding=1) uniform texture3D)
+0:?     'ResultOutS' (layout( binding=1 rgba32f) uniform image3D)
+0:?     'tid' ( in 3-component vector of uint GlobalInvocationID)
+
+
+Linked compute stage:
+
+
+Shader version: 500
+local_size = (16, 16, 1)
+0:? Sequence
+0:12  Function Definition: @main(vu3; ( temp void)
+0:12    Function Parameters: 
+0:12      'tid' ( in 3-component vector of uint)
+0:?     Sequence
+0:13      Sequence
+0:13        move second child to first child ( temp 4-component vector of float)
+0:13          'storeTemp' ( temp 4-component vector of float)
+0:13          add ( temp 4-component vector of float)
+0:13            textureFetch ( temp 4-component vector of float)
+0:13              'ResultInS' (layout( binding=1) uniform texture3D)
+0:13              'tid' ( in 3-component vector of uint)
+0:13              Constant:
+0:13                0 (const int)
+0:13            uf4: direct index for structure ( uniform 4-component vector of float)
+0:13              'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of float uf4})
+0:13              Constant:
+0:13                0 (const uint)
+0:13        imageStore ( temp void)
+0:13          'ResultOutS' (layout( binding=1 rgba32f) uniform image3D)
+0:13          'tid' ( in 3-component vector of uint)
+0:13          'storeTemp' ( temp 4-component vector of float)
+0:13        'storeTemp' ( temp 4-component vector of float)
+0:14      Sequence
+0:14        move second child to first child ( temp 4-component vector of float)
+0:14          'storeTemp' ( temp 4-component vector of float)
+0:14          textureFetch ( temp 4-component vector of float)
+0:14            'ResultInU' (layout( binding=0) uniform texture3D)
+0:14            'tid' ( in 3-component vector of uint)
+0:14            Constant:
+0:14              0 (const int)
+0:14        imageStore ( temp void)
+0:14          'ResultOutU' (layout( binding=0 rgba32f) uniform image3D)
+0:14          'tid' ( in 3-component vector of uint)
+0:14          'storeTemp' ( temp 4-component vector of float)
+0:14        'storeTemp' ( temp 4-component vector of float)
+0:12  Function Definition: main( ( temp void)
+0:12    Function Parameters: 
+0:?     Sequence
+0:12      move second child to first child ( temp 3-component vector of uint)
+0:?         'tid' ( temp 3-component vector of uint)
+0:?         'tid' ( in 3-component vector of uint GlobalInvocationID)
+0:12      Function Call: @main(vu3; ( temp void)
+0:?         'tid' ( temp 3-component vector of uint)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform 4-component vector of float uf4})
+0:?     'ResultInU' (layout( binding=0) uniform texture3D)
+0:?     'ResultOutU' (layout( binding=0 rgba32f) uniform image3D)
+0:?     'ResultInS' (layout( binding=1) uniform texture3D)
+0:?     'ResultOutS' (layout( binding=1 rgba32f) uniform image3D)
+0:?     'tid' ( in 3-component vector of uint GlobalInvocationID)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 54
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint GLCompute 4  "main" 49
+                              ExecutionMode 4 LocalSize 16 16 1
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 11  "@main(vu3;"
+                              Name 10  "tid"
+                              Name 16  "storeTemp"
+                              Name 19  "ResultInS"
+                              Name 25  "$Global"
+                              MemberName 25($Global) 0  "uf4"
+                              Name 27  ""
+                              Name 34  "ResultOutS"
+                              Name 38  "storeTemp"
+                              Name 39  "ResultInU"
+                              Name 43  "ResultOutU"
+                              Name 47  "tid"
+                              Name 49  "tid"
+                              Name 51  "param"
+                              Decorate 19(ResultInS) DescriptorSet 0
+                              Decorate 19(ResultInS) Binding 1
+                              MemberDecorate 25($Global) 0 Offset 0
+                              Decorate 25($Global) Block
+                              Decorate 27 DescriptorSet 0
+                              Decorate 27 Binding 0
+                              Decorate 34(ResultOutS) DescriptorSet 0
+                              Decorate 34(ResultOutS) Binding 1
+                              Decorate 39(ResultInU) DescriptorSet 0
+                              Decorate 39(ResultInU) Binding 0
+                              Decorate 43(ResultOutU) DescriptorSet 0
+                              Decorate 43(ResultOutU) Binding 0
+                              Decorate 49(tid) BuiltIn GlobalInvocationId
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeInt 32 0
+               7:             TypeVector 6(int) 3
+               8:             TypePointer Function 7(ivec3)
+               9:             TypeFunction 2 8(ptr)
+              13:             TypeFloat 32
+              14:             TypeVector 13(float) 4
+              15:             TypePointer Function 14(fvec4)
+              17:             TypeImage 13(float) 3D sampled format:Unknown
+              18:             TypePointer UniformConstant 17
+   19(ResultInS):     18(ptr) Variable UniformConstant
+              22:             TypeInt 32 1
+              23:     22(int) Constant 0
+     25($Global):             TypeStruct 14(fvec4)
+              26:             TypePointer Uniform 25($Global)
+              27:     26(ptr) Variable Uniform
+              28:             TypePointer Uniform 14(fvec4)
+              32:             TypeImage 13(float) 3D nonsampled format:Rgba32f
+              33:             TypePointer UniformConstant 32
+  34(ResultOutS):     33(ptr) Variable UniformConstant
+   39(ResultInU):     18(ptr) Variable UniformConstant
+  43(ResultOutU):     33(ptr) Variable UniformConstant
+              48:             TypePointer Input 7(ivec3)
+         49(tid):     48(ptr) Variable Input
+         4(main):           2 Function None 3
+               5:             Label
+         47(tid):      8(ptr) Variable Function
+       51(param):      8(ptr) Variable Function
+              50:    7(ivec3) Load 49(tid)
+                              Store 47(tid) 50
+              52:    7(ivec3) Load 47(tid)
+                              Store 51(param) 52
+              53:           2 FunctionCall 11(@main(vu3;) 51(param)
+                              Return
+                              FunctionEnd
+  11(@main(vu3;):           2 Function None 9
+         10(tid):      8(ptr) FunctionParameter
+              12:             Label
+   16(storeTemp):     15(ptr) Variable Function
+   38(storeTemp):     15(ptr) Variable Function
+              20:          17 Load 19(ResultInS)
+              21:    7(ivec3) Load 10(tid)
+              24:   14(fvec4) ImageFetch 20 21 Lod 23
+              29:     28(ptr) AccessChain 27 23
+              30:   14(fvec4) Load 29
+              31:   14(fvec4) FAdd 24 30
+                              Store 16(storeTemp) 31
+              35:          32 Load 34(ResultOutS)
+              36:    7(ivec3) Load 10(tid)
+              37:   14(fvec4) Load 16(storeTemp)
+                              ImageWrite 35 36 37
+              40:          17 Load 39(ResultInU)
+              41:    7(ivec3) Load 10(tid)
+              42:   14(fvec4) ImageFetch 40 41 Lod 23
+                              Store 38(storeTemp) 42
+              44:          32 Load 43(ResultOutU)
+              45:    7(ivec3) Load 10(tid)
+              46:   14(fvec4) Load 38(storeTemp)
+                              ImageWrite 44 45 46
+                              Return
+                              FunctionEnd

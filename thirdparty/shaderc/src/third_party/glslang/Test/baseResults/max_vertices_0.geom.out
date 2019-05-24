@@ -1,0 +1,35 @@
+max_vertices_0.geom
+Shader version: 330
+invocations = -1
+max_vertices = 0
+input primitive = points
+output primitive = triangle_strip
+0:? Sequence
+0:8  Function Definition: main( ( global void)
+0:8    Function Parameters: 
+0:10    Sequence
+0:10      EndPrimitive ( global void)
+0:11      EndPrimitive ( global void)
+0:?   Linker Objects
+0:?     'v_geom_FragColor' ( in 1-element array of 4-component vector of float)
+0:?     'v_frag_FragColor' (layout( stream=0) out 4-component vector of float)
+
+
+Linked geometry stage:
+
+
+Shader version: 330
+invocations = 1
+max_vertices = 0
+input primitive = points
+output primitive = triangle_strip
+0:? Sequence
+0:8  Function Definition: main( ( global void)
+0:8    Function Parameters: 
+0:10    Sequence
+0:10      EndPrimitive ( global void)
+0:11      EndPrimitive ( global void)
+0:?   Linker Objects
+0:?     'v_geom_FragColor' ( in 1-element array of 4-component vector of float)
+0:?     'v_frag_FragColor' (layout( stream=0) out 4-component vector of float)
+

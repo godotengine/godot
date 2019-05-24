@@ -1,0 +1,121 @@
+always-discard2.frag
+Shader version: 110
+0:? Sequence
+0:4  Function Definition: main( ( global void)
+0:4    Function Parameters: 
+0:6    Sequence
+0:6      Sequence
+0:6        move second child to first child ( temp 4-component vector of float)
+0:6          'white' ( temp 4-component vector of float)
+0:6          Constant:
+0:6            1.000000
+0:6            1.000000
+0:6            1.000000
+0:6            1.000000
+0:7      Sequence
+0:7        move second child to first child ( temp 4-component vector of float)
+0:7          'black' ( temp 4-component vector of float)
+0:7          Constant:
+0:7            0.200000
+0:7            0.200000
+0:7            0.200000
+0:7            0.200000
+0:8      Sequence
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          'color' ( temp 4-component vector of float)
+0:8          'white' ( temp 4-component vector of float)
+0:11      Sequence
+0:11        move second child to first child ( temp float)
+0:11          'x' ( temp float)
+0:11          subtract ( temp float)
+0:11            component-wise multiply ( temp float)
+0:11              direct index ( temp float)
+0:11                'tex_coord' ( smooth in 2-component vector of float)
+0:11                Constant:
+0:11                  0 (const int)
+0:11              Constant:
+0:11                2.000000
+0:11            Constant:
+0:11              1.000000
+0:12      Sequence
+0:12        move second child to first child ( temp float)
+0:12          'y' ( temp float)
+0:12          subtract ( temp float)
+0:12            component-wise multiply ( temp float)
+0:12              direct index ( temp float)
+0:12                'tex_coord' ( smooth in 2-component vector of float)
+0:12                Constant:
+0:12                  1 (const int)
+0:12              Constant:
+0:12                2.000000
+0:12            Constant:
+0:12              1.000000
+0:14      Branch: Kill
+0:17      move second child to first child ( temp 4-component vector of float)
+0:17        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:17        'color' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'tex_coord' ( smooth in 2-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 110
+0:? Sequence
+0:4  Function Definition: main( ( global void)
+0:4    Function Parameters: 
+0:6    Sequence
+0:6      Sequence
+0:6        move second child to first child ( temp 4-component vector of float)
+0:6          'white' ( temp 4-component vector of float)
+0:6          Constant:
+0:6            1.000000
+0:6            1.000000
+0:6            1.000000
+0:6            1.000000
+0:7      Sequence
+0:7        move second child to first child ( temp 4-component vector of float)
+0:7          'black' ( temp 4-component vector of float)
+0:7          Constant:
+0:7            0.200000
+0:7            0.200000
+0:7            0.200000
+0:7            0.200000
+0:8      Sequence
+0:8        move second child to first child ( temp 4-component vector of float)
+0:8          'color' ( temp 4-component vector of float)
+0:8          'white' ( temp 4-component vector of float)
+0:11      Sequence
+0:11        move second child to first child ( temp float)
+0:11          'x' ( temp float)
+0:11          subtract ( temp float)
+0:11            component-wise multiply ( temp float)
+0:11              direct index ( temp float)
+0:11                'tex_coord' ( smooth in 2-component vector of float)
+0:11                Constant:
+0:11                  0 (const int)
+0:11              Constant:
+0:11                2.000000
+0:11            Constant:
+0:11              1.000000
+0:12      Sequence
+0:12        move second child to first child ( temp float)
+0:12          'y' ( temp float)
+0:12          subtract ( temp float)
+0:12            component-wise multiply ( temp float)
+0:12              direct index ( temp float)
+0:12                'tex_coord' ( smooth in 2-component vector of float)
+0:12                Constant:
+0:12                  1 (const int)
+0:12              Constant:
+0:12                2.000000
+0:12            Constant:
+0:12              1.000000
+0:14      Branch: Kill
+0:17      move second child to first child ( temp 4-component vector of float)
+0:17        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:17        'color' ( temp 4-component vector of float)
+0:?   Linker Objects
+0:?     'tex_coord' ( smooth in 2-component vector of float)
+

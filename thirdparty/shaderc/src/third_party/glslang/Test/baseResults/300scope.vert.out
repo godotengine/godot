@@ -1,0 +1,231 @@
+300scope.vert
+ERROR: 0:5: 'a' : redefinition 
+ERROR: 0:17: 'b' : function name is redeclaration of existing name 
+ERROR: 0:20: 'c' : redefinition 
+ERROR: 0:22: 'f' : redefinition 
+ERROR: 0:23: 'tan' : redefinition 
+ERROR: 0:24: 'redefinition of built-in function' : not supported with this profile: es
+ERROR: 0:24: 'highp' : overloaded functions must have the same parameter precision qualifiers for argument 1
+ERROR: 0:24: 'sin' : function name is redeclaration of existing name 
+ERROR: 0:25: 'redefinition of built-in function' : not supported with this profile: es
+ERROR: 0:25: 'highp' : overloaded functions must have the same parameter precision qualifiers for argument 1
+ERROR: 0:25: 'cos' : function name is redeclaration of existing name 
+ERROR: 0:25: 'cos' : function already has a body 
+ERROR: 0:27: 'return' : void function cannot return a value 
+ERROR: 0:29: 'radians' : function name is redeclaration of existing name 
+ERROR: 0:29: 'radians' : can't find function 
+ERROR: 0:31: 'return' : void function cannot return a value 
+ERROR: 0:38: 'local function declaration' : not supported with this profile: es
+ERROR: 0:43: 'sin' : can't use function syntax on variable 
+ERROR: 0:57: 'z' : undeclared identifier 
+ERROR: 0:57: 'z' : redefinition 
+ERROR: 0:73: 'degrees' : can't use function syntax on variable 
+ERROR: 21 compilation errors.  No code generated.
+
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:3  Function Definition: f(i1;i1;i1; ( global highp int)
+0:3    Function Parameters: 
+0:3      'a' ( in highp int)
+0:3      'b' ( in highp int)
+0:3      'c' ( in highp int)
+0:?     Sequence
+0:8      Sequence
+0:8        Sequence
+0:8          move second child to first child ( temp highp float)
+0:8            'a' ( temp highp float)
+0:8            add ( temp highp float)
+0:8              Convert int to float ( temp highp float)
+0:8                'a' ( in highp int)
+0:8              Constant:
+0:8                1.000000
+0:11      Branch: Return with expression
+0:11        'a' ( in highp int)
+0:25  Function Definition: cos(f1; ( global highp float)
+0:25    Function Parameters: 
+0:25      'x' ( in highp float)
+0:27    Sequence
+0:27      Branch: Return
+0:29  Function Definition: radians(b1; ( global bool)
+0:29    Function Parameters: 
+0:29      'x' ( in bool)
+0:31    Sequence
+0:31      Branch: Return
+0:36  Function Definition: main( ( global void)
+0:36    Function Parameters: 
+0:?     Sequence
+0:39      Function Call: g( ( temp highp int)
+0:42      'sin' ( temp highp float)
+0:43      Constant:
+0:43        0.000000
+0:44      Function Call: f(i1;i1;i1; ( global highp int)
+0:44        Constant:
+0:44          1 (const int)
+0:44        Constant:
+0:44          2 (const int)
+0:44        Constant:
+0:44          3 (const int)
+0:47      move second child to first child ( temp highp float)
+0:47        'f' ( temp highp float)
+0:47        Constant:
+0:47          3.000000
+0:49      move second child to first child ( temp highp 4-component vector of float)
+0:49        'gl_Position' ( invariant gl_Position highp 4-component vector of float Position)
+0:49        Construct vec4 ( temp highp 4-component vector of float)
+0:49          'f' ( temp highp float)
+0:51      Sequence
+0:51        Sequence
+0:51          move second child to first child ( temp highp int)
+0:51            'f' ( temp highp int)
+0:51            Constant:
+0:51              0 (const int)
+0:51        Loop with condition tested first
+0:51          Loop Condition
+0:51          Compare Less Than ( temp bool)
+0:51            'f' ( temp highp int)
+0:51            Constant:
+0:51              10 (const int)
+0:51          Loop Body
+0:52          Pre-Increment ( temp highp int)
+0:52            'f' ( temp highp int)
+0:51          Loop Terminal Expression
+0:51          Pre-Increment ( temp highp int)
+0:51            'f' ( temp highp int)
+0:54      Sequence
+0:54        move second child to first child ( temp highp int)
+0:54          'x' ( temp highp int)
+0:54          Constant:
+0:54            1 (const int)
+0:56      Sequence
+0:56        Sequence
+0:56          move second child to first child ( temp highp float)
+0:56            'x' ( temp highp float)
+0:56            Constant:
+0:56              2.000000
+0:56          move second child to first child ( temp highp float)
+0:56            'y' ( temp highp float)
+0:56            'x' ( temp highp float)
+0:60      Sequence
+0:60        Sequence
+0:60          move second child to first child ( temp highp int)
+0:60            'x' ( temp highp int)
+0:60            'x' ( temp highp int)
+0:68      Sequence
+0:68        Sequence
+0:68          move second child to first child ( temp structure{ temp highp int x})
+0:68            'S' ( temp structure{ temp highp int x})
+0:68            Constant:
+0:68              0 (const int)
+0:69        x: direct index for structure ( temp highp int)
+0:69          'S' ( temp structure{ temp highp int x})
+0:69          Constant:
+0:69            0 (const int)
+0:73      Constant:
+0:73        0.000000
+0:?   Linker Objects
+0:?     'b' ( global bool)
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+
+
+Linked vertex stage:
+
+ERROR: Linking vertex stage: No function definition (body) found: 
+    g(
+
+Shader version: 300
+ERROR: node is still EOpNull!
+0:3  Function Definition: f(i1;i1;i1; ( global highp int)
+0:3    Function Parameters: 
+0:3      'a' ( in highp int)
+0:3      'b' ( in highp int)
+0:3      'c' ( in highp int)
+0:?     Sequence
+0:8      Sequence
+0:8        Sequence
+0:8          move second child to first child ( temp highp float)
+0:8            'a' ( temp highp float)
+0:8            add ( temp highp float)
+0:8              Convert int to float ( temp highp float)
+0:8                'a' ( in highp int)
+0:8              Constant:
+0:8                1.000000
+0:11      Branch: Return with expression
+0:11        'a' ( in highp int)
+0:36  Function Definition: main( ( global void)
+0:36    Function Parameters: 
+0:?     Sequence
+0:39      Function Call: g( ( temp highp int)
+0:42      'sin' ( temp highp float)
+0:43      Constant:
+0:43        0.000000
+0:44      Function Call: f(i1;i1;i1; ( global highp int)
+0:44        Constant:
+0:44          1 (const int)
+0:44        Constant:
+0:44          2 (const int)
+0:44        Constant:
+0:44          3 (const int)
+0:47      move second child to first child ( temp highp float)
+0:47        'f' ( temp highp float)
+0:47        Constant:
+0:47          3.000000
+0:49      move second child to first child ( temp highp 4-component vector of float)
+0:49        'gl_Position' ( invariant gl_Position highp 4-component vector of float Position)
+0:49        Construct vec4 ( temp highp 4-component vector of float)
+0:49          'f' ( temp highp float)
+0:51      Sequence
+0:51        Sequence
+0:51          move second child to first child ( temp highp int)
+0:51            'f' ( temp highp int)
+0:51            Constant:
+0:51              0 (const int)
+0:51        Loop with condition tested first
+0:51          Loop Condition
+0:51          Compare Less Than ( temp bool)
+0:51            'f' ( temp highp int)
+0:51            Constant:
+0:51              10 (const int)
+0:51          Loop Body
+0:52          Pre-Increment ( temp highp int)
+0:52            'f' ( temp highp int)
+0:51          Loop Terminal Expression
+0:51          Pre-Increment ( temp highp int)
+0:51            'f' ( temp highp int)
+0:54      Sequence
+0:54        move second child to first child ( temp highp int)
+0:54          'x' ( temp highp int)
+0:54          Constant:
+0:54            1 (const int)
+0:56      Sequence
+0:56        Sequence
+0:56          move second child to first child ( temp highp float)
+0:56            'x' ( temp highp float)
+0:56            Constant:
+0:56              2.000000
+0:56          move second child to first child ( temp highp float)
+0:56            'y' ( temp highp float)
+0:56            'x' ( temp highp float)
+0:60      Sequence
+0:60        Sequence
+0:60          move second child to first child ( temp highp int)
+0:60            'x' ( temp highp int)
+0:60            'x' ( temp highp int)
+0:68      Sequence
+0:68        Sequence
+0:68          move second child to first child ( temp structure{ temp highp int x})
+0:68            'S' ( temp structure{ temp highp int x})
+0:68            Constant:
+0:68              0 (const int)
+0:69        x: direct index for structure ( temp highp int)
+0:69          'S' ( temp structure{ temp highp int x})
+0:69          Constant:
+0:69            0 (const int)
+0:73      Constant:
+0:73        0.000000
+0:?   Linker Objects
+0:?     'b' ( global bool)
+0:?     'gl_VertexID' ( gl_VertexId highp int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId highp int InstanceId)
+

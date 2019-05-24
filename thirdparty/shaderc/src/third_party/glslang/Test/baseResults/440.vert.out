@@ -1,0 +1,247 @@
+440.vert
+ERROR: 0:8: 'component' : type overflows the available 4 components 
+ERROR: 0:15: 'component' : component is too large 
+ERROR: 0:23: 'location' : overlapping use of location 4
+ERROR: 0:26: 'location' : overlapping use of location 2
+ERROR: 0:31: 'location' : overlapping use of location 15
+ERROR: 0:32: 'location' : overlapping use of location 10
+ERROR: 0:37: 'location' : overlapping use of location 20
+ERROR: 0:39: 'component' : type overflows the available 4 components 
+ERROR: 0:40: 'component' : type overflows the available 4 components 
+ERROR: 0:42: 'component' : cannot apply to a matrix, structure, or block 
+ERROR: 0:43: 'component' : cannot apply to a matrix, structure, or block 
+ERROR: 0:44: 'component' : cannot apply to a matrix, structure, or block 
+ERROR: 0:46: 'component' : must specify 'location' to use 'component' 
+ERROR: 0:52: 'location' : overlapping use of location 40
+ERROR: 0:54: 'component' : type overflows the available 4 components 
+ERROR: 0:55: 'component' : type overflows the available 4 components 
+ERROR: 0:57: 'component' : cannot apply to a matrix, structure, or block 
+ERROR: 0:58: 'component' : cannot apply to a matrix, structure, or block 
+ERROR: 0:61: 'location/component/index' : cannot declare a default, use a full declaration 
+ERROR: 0:66: 'component' : doubles cannot start on an odd-numbered component 
+ERROR: 0:67: 'component' : type overflows the available 4 components 
+ERROR: 0:71: 'location' : overlapping use of location 55
+ERROR: 0:75: 'location' : overlapping use of location 57
+ERROR: 0:78: 'location' : overlapping use of location 59
+ERROR: 0:95: 'xfb layout qualifier' : can only be used on an output 
+ERROR: 0:101: 'xfb_offset' : cannot declare a default, use a full declaration 
+ERROR: 0:111: 'xfb_buffer' : member cannot contradict block (or what block inherited from global) 
+ERROR: 0:116: 'xfb_buffer' : member cannot contradict block (or what block inherited from global) 
+ERROR: 0:116: 'xfb_offset' : overlapping offsets at offset 32 in buffer 3
+ERROR: 0:117: 'xfb_offset' : overlapping offsets at offset 0 in buffer 2
+ERROR: 0:119: 'xfb_offset' : overlapping offsets at offset 24 in buffer 2
+ERROR: 0:122: 'xfb_stride' : all stride settings must match for xfb buffer 15
+ERROR: 0:126: 'xfb_offset' : overlapping offsets at offset 4 in buffer 1
+ERROR: 0:128: 'xfb_stride' : all stride settings must match for xfb buffer 3
+ERROR: 0:129: 'xfb_stride' : all stride settings must match for xfb buffer 3
+ERROR: 0:133: 'xfb_stride' : all stride settings must match for xfb buffer 3
+ERROR: 0:131: 'xfb_stride' : all stride settings must match for xfb buffer 3
+ERROR: 0:152: 'xfb_offset' : overlapping offsets at offset 64 in buffer 0
+ERROR: 0:157: 'xfb_buffer' : buffer is too large: gl_MaxTransformFeedbackBuffers is 4
+ERROR: 0:158: 'xfb_offset' : must be a multiple of size of first component 
+ERROR: 0:159: 'xfb_offset' : type contains double or 64-bit integer; xfb_offset must be a multiple of 8 
+ERROR: 0:161: 'xfb_offset' : must be a multiple of size of first component 
+ERROR: 0:162: 'xfb_offset' : type contains double or 64-bit integer; xfb_offset must be a multiple of 8 
+ERROR: 0:166: 'xfb_buffer' : buffer is too large: gl_MaxTransformFeedbackBuffers is 4
+ERROR: 0:169: 'xfb_buffer' : buffer is too large: gl_MaxTransformFeedbackBuffers is 4
+ERROR: 0:169: 'xfb_stride' : 1/4 stride is too large: gl_MaxTransformFeedbackInterleavedComponents is 64
+ERROR: 0:171: 'xfb_buffer' : buffer is too large: gl_MaxTransformFeedbackBuffers is 4
+ERROR: 0:178: 'xfb_offset' : overlapping offsets at offset 36 in buffer 3
+ERROR: 0:179: 'xfb_buffer' : member cannot contradict block (or what block inherited from global) 
+ERROR: 0:178: 'xfb_offset' : overlapping offsets at offset 32 in buffer 3
+ERROR: 0:185: 'gl_BaseVertexARB' : required extension not requested: GL_ARB_shader_draw_parameters
+ERROR: 0:185: 'gl_BaseInstanceARB' : required extension not requested: GL_ARB_shader_draw_parameters
+ERROR: 0:185: 'gl_DrawIDARB' : required extension not requested: GL_ARB_shader_draw_parameters
+ERROR: 0:193: 'assign' :  l-value required "gl_BaseVertexARB" (can't modify shader input)
+ERROR: 0:194: 'assign' :  l-value required "gl_BaseInstanceARB" (can't modify shader input)
+ERROR: 0:195: 'assign' :  l-value required "gl_DrawIDARB" (can't modify shader input)
+ERROR: 0:196: 'glBaseInstanceARB' : undeclared identifier 
+ERROR: 57 compilation errors.  No code generated.
+
+
+Shader version: 440
+Requested GL_ARB_shader_draw_parameters
+in xfb mode
+ERROR: node is still EOpNull!
+0:183  Function Definition: drawParamsBad( ( global int)
+0:183    Function Parameters: 
+0:185    Sequence
+0:185      Branch: Return with expression
+0:185        add ( temp int)
+0:185          add ( temp int)
+0:185            'gl_BaseVertexARB' ( in int BaseVertex)
+0:185            'gl_BaseInstanceARB' ( in int BaseInstance)
+0:185          'gl_DrawIDARB' ( in int DrawId)
+0:190  Function Definition: drawParams( ( global int)
+0:190    Function Parameters: 
+0:192    Sequence
+0:192      Branch: Return with expression
+0:192        add ( temp int)
+0:192          add ( temp int)
+0:192            'gl_BaseVertexARB' ( in int BaseVertex)
+0:192            'gl_BaseInstanceARB' ( in int BaseInstance)
+0:192          'gl_DrawIDARB' ( in int DrawId)
+0:193      move second child to first child ( temp int)
+0:193        'gl_BaseVertexARB' ( in int BaseVertex)
+0:193        Constant:
+0:193          3 (const int)
+0:194      move second child to first child ( temp int)
+0:194        'gl_BaseInstanceARB' ( in int BaseInstance)
+0:194        Constant:
+0:194          3 (const int)
+0:195      move second child to first child ( temp int)
+0:195        'gl_DrawIDARB' ( in int DrawId)
+0:195        Constant:
+0:195          3 (const int)
+0:196      'glBaseInstanceARB' ( temp float)
+0:?   Linker Objects
+0:?     'a' (layout( location=2 component=2) in 2-component vector of float)
+0:?     'b' (layout( location=2 component=1) in float)
+0:?     'c' (layout( location=3 component=2) in 3-component vector of float)
+0:?     'd' (layout( location=0 component=3) in 4-element array of float)
+0:?     'e' (layout( location=4 component=0) in 5-element array of 3-component vector of float)
+0:?     'f' (layout( location=4 component=3) in 5-element array of float)
+0:?     'g' (layout( location=9) in 6-element array of float)
+0:?     'h' (layout( location=4 component=2) in 2-component vector of float)
+0:?     'i' (layout( location=3 component=2) smooth out 2-component vector of float)
+0:?     'j' (layout( location=3 component=0) smooth out 2-component vector of float)
+0:?     'k' (layout( location=4 component=2) smooth out 2-component vector of float)
+0:?     'm' (layout( location=4 component=2) smooth out 2-component vector of float)
+0:?     'n' (layout( location=2 component=2) smooth out 2-component vector of float)
+0:?     'p' (layout( location=2 component=0) smooth out 3-component vector of float)
+0:?     'q' (layout( location=10 component=3) smooth out 6-element array of float)
+0:?     'r' (layout( location=10 component=0) smooth out 6-element array of 3-component vector of float)
+0:?     's' (layout( location=15 component=3) smooth out float)
+0:?     't' (layout( location=10 component=1) smooth out float)
+0:?     'u' (layout( location=20 component=2) smooth out float)
+0:?     'v' (layout( location=20 component=0) smooth out float)
+0:?     'w' (layout( location=20 component=3) smooth out float)
+0:?     'x' (layout( location=20 component=1) smooth out 2-component vector of float)
+0:?     'y' (layout( location=30 component=3) smooth out 2-component vector of float)
+0:?     'z' (layout( location=31 component=1) smooth out 4-component vector of float)
+0:?     'ba' (layout( location=32 component=1) smooth out 4X4 matrix of float)
+0:?     'Ss' (layout( location=33 component=1) smooth out structure{ global int a})
+0:?     'bb' (layout( location=34 component=1) out block{ out int a})
+0:?     'bc' (layout( location=4095 component=1) smooth out float)
+0:?     'bd' ( out block{layout( location=40 component=2) out float u, layout( location=40 component=0) out float v, layout( location=40 component=3) out float w, layout( location=40 component=1) out 2-component vector of float x, layout( location=41 component=3) out 2-component vector of float y, layout( location=42 component=1) out 4-component vector of float z, layout( location=42 component=1) out 4X4 matrix of float ba, layout( location=43 component=1) out structure{ global int a} Ss})
+0:?     'be' (layout( location=50 component=3) smooth out int)
+0:?     'bf' (layout( location=50 component=0) smooth out 3-component vector of float)
+0:?     'dfo' (layout( location=51 component=1) smooth out double)
+0:?     'dvo' (layout( location=52 component=2) smooth out 2-component vector of double)
+0:?     'dfo2' (layout( location=53) smooth out double)
+0:?     'ffv2' (layout( location=53 component=2) smooth out 2-component vector of float)
+0:?     'dvec4out' (layout( location=54) smooth out 4-component vector of double)
+0:?     'overf' (layout( location=55) smooth out float)
+0:?     'df2o' (layout( location=56 component=1) smooth out 2-component vector of float)
+0:?     'sf2o' (layout( location=56 component=3) smooth out float)
+0:?     'dv3o' (layout( location=57 component=2) smooth out 2-component vector of float)
+0:?     'sf4o' (layout( location=57 component=3) smooth out float)
+0:?     'dv3o2' (layout( location=58) flat out 3-component vector of double)
+0:?     'dfo3' (layout( location=59 component=2) flat out double)
+0:?     'dfo4' (layout( location=59 component=0) flat out double)
+0:?     'bbinst1' ( out block{ out 4-component vector of float bbv})
+0:?     'bbinst2' ( out block{layout( xfb_buffer=0 xfb_offset=64) out 4-component vector of float bbv})
+0:?     'bbinst3' ( out block{layout( xfb_buffer=3 xfb_offset=16) out 4-component vector of float bbv})
+0:?     'ubbinst3' (layout( column_major shared) uniform block{layout( column_major shared xfb_offset=16) uniform 4-component vector of float bbv})
+0:?     'bg' (layout( xfb_buffer=2 xfb_offset=48 xfb_stride=80) smooth out 4-component vector of float)
+0:?     'bh' (layout( xfb_buffer=3 xfb_offset=32 xfb_stride=64) smooth out 4-component vector of float)
+0:?     'bbinst4' (layout( xfb_stride=80) out block{layout( xfb_buffer=2 xfb_offset=16) out 4-component vector of float bbv1, layout( xfb_buffer=2 xfb_offset=32) out 4-component vector of float bbv2})
+0:?     'bbinst5' ( out block{layout( xfb_buffer=3 xfb_offset=0) out 4-component vector of float bbv1, layout( xfb_buffer=3 xfb_offset=48 xfb_stride=64) out 4-component vector of float bbv2,  out 4-component vector of float bbv3})
+0:?     'bbinst6' ( out block{layout( xfb_buffer=2 xfb_offset=0) out 4-component vector of float bbv1, layout( xfb_buffer=3 xfb_offset=32 xfb_stride=64) out 4-component vector of float bbv2, layout( xfb_buffer=2 xfb_offset=0) out 4-component vector of float bbv3,  out 4-component vector of float bbv5, layout( xfb_buffer=2 xfb_offset=24) out float bbf6})
+0:?     'bj' (layout( xfb_buffer=1 xfb_offset=4) smooth out float)
+0:?     'bk' (layout( xfb_buffer=1 xfb_offset=0) smooth out 2-component vector of int)
+0:?     'bl' (layout( xfb_stride=48) smooth out float)
+0:?     'bbinst7' (layout( xfb_stride=48) out block{layout( xfb_stride=64) out 4-component vector of float bbv1, layout( xfb_stride=32) out 4-component vector of float bbv2})
+0:?     'bbinst8' (layout( xfb_stride=92) out block{layout( xfb_buffer=0 xfb_offset=0) out bool b, layout( xfb_buffer=0 xfb_offset=8) out structure{ global bool b,  global structure{ global int i,  global double d,  global float f} s,  global 2-component vector of float v2} t, layout( xfb_buffer=0 xfb_offset=48) out int i, layout( xfb_buffer=0 xfb_offset=52) out 3X3 matrix of float m3, layout( xfb_buffer=0 xfb_offset=88) out float f, layout( xfb_buffer=0 xfb_offset=92) out float g})
+0:?     'bbinst9' ( out block{layout( xfb_buffer=4 xfb_offset=1) out bool b, layout( xfb_buffer=4 xfb_offset=12) out structure{ global bool b,  global structure{ global int i,  global double d,  global float f} s,  global 2-component vector of float v2} t, layout( xfb_buffer=4 xfb_offset=52) out 3X3 matrix of float m3, layout( xfb_buffer=4 xfb_offset=90) out int i, layout( xfb_buffer=4 xfb_offset=98) out double d, layout( xfb_buffer=4 xfb_offset=108) out structure{ global int a} s})
+0:?     'bm' (layout( xfb_buffer=5 xfb_offset=0) smooth out float)
+0:?     'bbinst10' ( out block{layout( xfb_buffer=7 xfb_offset=0) out 4X4 matrix of double m1, layout( xfb_buffer=7 xfb_offset=128) out 4X4 matrix of double m2, layout( xfb_buffer=7 xfb_offset=256) out float f})
+0:?     'anon@0' ( out block{layout( xfb_buffer=3 xfb_offset=36) gl_Position 4-component vector of float Position gl_Position, layout( xfb_buffer=3 xfb_offset=32) gl_PointSize float PointSize gl_PointSize, })
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+
+
+Linked vertex stage:
+
+ERROR: Linking vertex stage: Missing entry point: Each stage requires one entry point
+ERROR: Linking vertex stage: xfb_stride is too small to hold all buffer entries:
+ERROR:     xfb_buffer 0, xfb_stride 92, minimum stride needed: 96
+ERROR: Linking vertex stage: xfb_stride must be multiple of 8 for buffer holding a double or 64-bit integer:
+ERROR:     xfb_buffer 0, xfb_stride 92
+ERROR: Linking vertex stage: xfb_stride must be multiple of 4:
+ERROR:     xfb_buffer 5, xfb_stride 6
+ERROR: Linking vertex stage: xfb_stride is too large:
+ERROR:     xfb_buffer 6, components (1/4 stride) needed are 500, gl_MaxTransformFeedbackInterleavedComponents is 64
+ERROR: Linking vertex stage: xfb_stride is too large:
+ERROR:     xfb_buffer 7, components (1/4 stride) needed are 66, gl_MaxTransformFeedbackInterleavedComponents is 64
+
+Shader version: 440
+Requested GL_ARB_shader_draw_parameters
+in xfb mode
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+0:?     'a' (layout( location=2 component=2) in 2-component vector of float)
+0:?     'b' (layout( location=2 component=1) in float)
+0:?     'c' (layout( location=3 component=2) in 3-component vector of float)
+0:?     'd' (layout( location=0 component=3) in 4-element array of float)
+0:?     'e' (layout( location=4 component=0) in 5-element array of 3-component vector of float)
+0:?     'f' (layout( location=4 component=3) in 5-element array of float)
+0:?     'g' (layout( location=9) in 6-element array of float)
+0:?     'h' (layout( location=4 component=2) in 2-component vector of float)
+0:?     'i' (layout( location=3 component=2) smooth out 2-component vector of float)
+0:?     'j' (layout( location=3 component=0) smooth out 2-component vector of float)
+0:?     'k' (layout( location=4 component=2) smooth out 2-component vector of float)
+0:?     'm' (layout( location=4 component=2) smooth out 2-component vector of float)
+0:?     'n' (layout( location=2 component=2) smooth out 2-component vector of float)
+0:?     'p' (layout( location=2 component=0) smooth out 3-component vector of float)
+0:?     'q' (layout( location=10 component=3) smooth out 6-element array of float)
+0:?     'r' (layout( location=10 component=0) smooth out 6-element array of 3-component vector of float)
+0:?     's' (layout( location=15 component=3) smooth out float)
+0:?     't' (layout( location=10 component=1) smooth out float)
+0:?     'u' (layout( location=20 component=2) smooth out float)
+0:?     'v' (layout( location=20 component=0) smooth out float)
+0:?     'w' (layout( location=20 component=3) smooth out float)
+0:?     'x' (layout( location=20 component=1) smooth out 2-component vector of float)
+0:?     'y' (layout( location=30 component=3) smooth out 2-component vector of float)
+0:?     'z' (layout( location=31 component=1) smooth out 4-component vector of float)
+0:?     'ba' (layout( location=32 component=1) smooth out 4X4 matrix of float)
+0:?     'Ss' (layout( location=33 component=1) smooth out structure{ global int a})
+0:?     'bb' (layout( location=34 component=1) out block{ out int a})
+0:?     'bc' (layout( location=4095 component=1) smooth out float)
+0:?     'bd' ( out block{layout( location=40 component=2) out float u, layout( location=40 component=0) out float v, layout( location=40 component=3) out float w, layout( location=40 component=1) out 2-component vector of float x, layout( location=41 component=3) out 2-component vector of float y, layout( location=42 component=1) out 4-component vector of float z, layout( location=42 component=1) out 4X4 matrix of float ba, layout( location=43 component=1) out structure{ global int a} Ss})
+0:?     'be' (layout( location=50 component=3) smooth out int)
+0:?     'bf' (layout( location=50 component=0) smooth out 3-component vector of float)
+0:?     'dfo' (layout( location=51 component=1) smooth out double)
+0:?     'dvo' (layout( location=52 component=2) smooth out 2-component vector of double)
+0:?     'dfo2' (layout( location=53) smooth out double)
+0:?     'ffv2' (layout( location=53 component=2) smooth out 2-component vector of float)
+0:?     'dvec4out' (layout( location=54) smooth out 4-component vector of double)
+0:?     'overf' (layout( location=55) smooth out float)
+0:?     'df2o' (layout( location=56 component=1) smooth out 2-component vector of float)
+0:?     'sf2o' (layout( location=56 component=3) smooth out float)
+0:?     'dv3o' (layout( location=57 component=2) smooth out 2-component vector of float)
+0:?     'sf4o' (layout( location=57 component=3) smooth out float)
+0:?     'dv3o2' (layout( location=58) flat out 3-component vector of double)
+0:?     'dfo3' (layout( location=59 component=2) flat out double)
+0:?     'dfo4' (layout( location=59 component=0) flat out double)
+0:?     'bbinst1' ( out block{ out 4-component vector of float bbv})
+0:?     'bbinst2' ( out block{layout( xfb_buffer=0 xfb_offset=64) out 4-component vector of float bbv})
+0:?     'bbinst3' ( out block{layout( xfb_buffer=3 xfb_offset=16) out 4-component vector of float bbv})
+0:?     'ubbinst3' (layout( column_major shared) uniform block{layout( column_major shared xfb_offset=16) uniform 4-component vector of float bbv})
+0:?     'bg' (layout( xfb_buffer=2 xfb_offset=48 xfb_stride=80) smooth out 4-component vector of float)
+0:?     'bh' (layout( xfb_buffer=3 xfb_offset=32 xfb_stride=64) smooth out 4-component vector of float)
+0:?     'bbinst4' (layout( xfb_stride=80) out block{layout( xfb_buffer=2 xfb_offset=16) out 4-component vector of float bbv1, layout( xfb_buffer=2 xfb_offset=32) out 4-component vector of float bbv2})
+0:?     'bbinst5' ( out block{layout( xfb_buffer=3 xfb_offset=0) out 4-component vector of float bbv1, layout( xfb_buffer=3 xfb_offset=48 xfb_stride=64) out 4-component vector of float bbv2,  out 4-component vector of float bbv3})
+0:?     'bbinst6' ( out block{layout( xfb_buffer=2 xfb_offset=0) out 4-component vector of float bbv1, layout( xfb_buffer=3 xfb_offset=32 xfb_stride=64) out 4-component vector of float bbv2, layout( xfb_buffer=2 xfb_offset=0) out 4-component vector of float bbv3,  out 4-component vector of float bbv5, layout( xfb_buffer=2 xfb_offset=24) out float bbf6})
+0:?     'bj' (layout( xfb_buffer=1 xfb_offset=4) smooth out float)
+0:?     'bk' (layout( xfb_buffer=1 xfb_offset=0) smooth out 2-component vector of int)
+0:?     'bl' (layout( xfb_stride=48) smooth out float)
+0:?     'bbinst7' (layout( xfb_stride=48) out block{layout( xfb_stride=64) out 4-component vector of float bbv1, layout( xfb_stride=32) out 4-component vector of float bbv2})
+0:?     'bbinst8' (layout( xfb_stride=92) out block{layout( xfb_buffer=0 xfb_offset=0) out bool b, layout( xfb_buffer=0 xfb_offset=8) out structure{ global bool b,  global structure{ global int i,  global double d,  global float f} s,  global 2-component vector of float v2} t, layout( xfb_buffer=0 xfb_offset=48) out int i, layout( xfb_buffer=0 xfb_offset=52) out 3X3 matrix of float m3, layout( xfb_buffer=0 xfb_offset=88) out float f, layout( xfb_buffer=0 xfb_offset=92) out float g})
+0:?     'bbinst9' ( out block{layout( xfb_buffer=4 xfb_offset=1) out bool b, layout( xfb_buffer=4 xfb_offset=12) out structure{ global bool b,  global structure{ global int i,  global double d,  global float f} s,  global 2-component vector of float v2} t, layout( xfb_buffer=4 xfb_offset=52) out 3X3 matrix of float m3, layout( xfb_buffer=4 xfb_offset=90) out int i, layout( xfb_buffer=4 xfb_offset=98) out double d, layout( xfb_buffer=4 xfb_offset=108) out structure{ global int a} s})
+0:?     'bm' (layout( xfb_buffer=5 xfb_offset=0) smooth out float)
+0:?     'bbinst10' ( out block{layout( xfb_buffer=7 xfb_offset=0) out 4X4 matrix of double m1, layout( xfb_buffer=7 xfb_offset=128) out 4X4 matrix of double m2, layout( xfb_buffer=7 xfb_offset=256) out float f})
+0:?     'anon@0' ( out block{layout( xfb_buffer=3 xfb_offset=36) gl_Position 4-component vector of float Position gl_Position, layout( xfb_buffer=3 xfb_offset=32) gl_PointSize float PointSize gl_PointSize, })
+0:?     'gl_VertexID' ( gl_VertexId int VertexId)
+0:?     'gl_InstanceID' ( gl_InstanceId int InstanceId)
+

@@ -1,0 +1,480 @@
+array.frag
+ERROR: 0:21: '[' :  array index out of range '2'
+ERROR: 0:27: '[' :  array must be redeclared with a size before being indexed with a variable
+ERROR: 0:30: 'assign' :  cannot convert from ' global 4-element array of float' to ' global 5-element array of float'
+ERROR: 0:31: 'assign' :  cannot convert from ' global 4-element array of float' to ' global runtime-sized array of float'
+ERROR: 0:33: 'foo' : no matching overloaded function found 
+ERROR: 0:42: '[' :  array index out of range '5'
+ERROR: 0:45: '[' :  array index out of range '1000'
+ERROR: 0:46: '[' :  index out of range '-1'
+ERROR: 0:52: '[' :  array index out of range '2'
+ERROR: 0:54: 'const' : non-matching or non-convertible constant type for const initializer 
+ERROR: 0:56: '=' :  cannot convert from ' const 2-element array of int' to ' temp 3-element array of int'
+ERROR: 0:57: '[]' : scalar integer expression required 
+ERROR: 0:57: '[' :  index out of range '-858993459'
+ERROR: 0:58: '[]' : scalar integer expression required 
+ERROR: 0:61: '' : array size required 
+ERROR: 0:62: '' : array size required 
+ERROR: 0:63: '' : array size required 
+ERROR: 0:66: '=' :  cannot convert from ' temp 3-component vector of float' to ' global float'
+ERROR: 0:76: 'bar' : no matching overloaded function found 
+ERROR: 0:79: '' : array size required 
+ERROR: 0:84: 'return' : type does not match, or is not convertible to, the function's return type 
+ERROR: 0:93: 'length' :  array must be declared with a size before using this method
+ERROR: 0:101: '[' :  array index out of range '5'
+ERROR: 0:104: 'constructor' : array constructor must have at least one argument 
+ERROR: 0:104: '=' :  cannot convert from ' const float' to ' global unsized 1-element array of int'
+ERROR: 0:106: 'constructor' : array argument must be sized 
+ERROR: 0:111: 'variable index' : required extension not requested: GL_EXT_nonuniform_qualifier
+ERROR: 0:111: 'variable indexing sampler array' : not supported with this profile: none
+ERROR: 0:112: '[]' : array initializer must be sized 
+ERROR: 29 compilation errors.  No code generated.
+
+
+Shader version: 130
+ERROR: node is still EOpNull!
+0:9  Function Definition: foo(f1[5]; ( global 4-element array of float)
+0:9    Function Parameters: 
+0:9      'a' ( in 5-element array of float)
+0:11    Sequence
+0:11      Branch: Return with expression
+0:11        Construct float ( temp 4-element array of float)
+0:11          direct index ( temp float)
+0:11            'a' ( in 5-element array of float)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( temp float)
+0:11            'a' ( in 5-element array of float)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( temp float)
+0:11            'a' ( in 5-element array of float)
+0:11            Constant:
+0:11              2 (const int)
+0:11          direct index ( temp float)
+0:11            'a' ( in 5-element array of float)
+0:11            Constant:
+0:11              3 (const int)
+0:14  Function Definition: bar(f1[5]; ( global void)
+0:14    Function Parameters: 
+0:14      '' ( in 5-element array of float)
+0:16  Function Definition: main( ( global void)
+0:16    Function Parameters: 
+0:?     Sequence
+0:?       Sequence
+0:21        move second child to first child ( temp float)
+0:21          direct index ( temp float)
+0:21            'gu' ( temp 2-element array of float)
+0:21            Constant:
+0:21              2 (const int)
+0:21          Constant:
+0:21            4.000000
+0:24      move second child to first child ( temp float)
+0:24        direct index ( temp float)
+0:24          'gu' ( global runtime-sized array of float)
+0:24          Constant:
+0:24            2 (const int)
+0:24        Constant:
+0:24          4.000000
+0:26      move second child to first child ( temp float)
+0:26        direct index ( temp float)
+0:26          'gu' ( global runtime-sized array of float)
+0:26          Constant:
+0:26            3 (const int)
+0:26        Constant:
+0:26          3.000000
+0:27      move second child to first child ( temp float)
+0:27        indirect index ( temp float)
+0:27          'gu' ( global runtime-sized array of float)
+0:27          'a' ( uniform int)
+0:27        Constant:
+0:27          5.000000
+0:29      move second child to first child ( temp 4-element array of float)
+0:29        'g4' ( global 4-element array of float)
+0:29        Function Call: foo(f1[5]; ( global 4-element array of float)
+0:29          'g5' ( global 5-element array of float)
+0:30      'g5' ( global 5-element array of float)
+0:31      'gu' ( global runtime-sized array of float)
+0:33      Constant:
+0:33        0.000000
+0:34      Function Call: bar(f1[5]; ( global void)
+0:34        'g5' ( global 5-element array of float)
+0:36      Test condition and select ( temp void)
+0:36        Condition
+0:36        Compare Equal ( temp bool)
+0:36          Constant:
+0:36            1.000000
+0:36            2.000000
+0:36            3.000000
+0:36            4.000000
+0:36          'g4' ( global 4-element array of float)
+0:36        true case
+0:37        move second child to first child ( temp float)
+0:37          direct index ( temp float)
+0:37            'gu' ( global runtime-sized array of float)
+0:37            Constant:
+0:37              0 (const int)
+0:37          Constant:
+0:37            2.000000
+0:40      move second child to first child ( temp float)
+0:40        direct index ( temp float)
+0:40          'u' ( temp 5-element array of float)
+0:40          Constant:
+0:40            2 (const int)
+0:40        Constant:
+0:40          3.000000
+0:42      move second child to first child ( temp float)
+0:42        direct index ( temp float)
+0:42          'u' ( temp 5-element array of float)
+0:42          Constant:
+0:42            5 (const int)
+0:42        Constant:
+0:42          5.000000
+0:43      Function Call: foo(f1[5]; ( global 4-element array of float)
+0:43        'u' ( temp 5-element array of float)
+0:45      move second child to first child ( temp 4-component vector of float)
+0:45        direct index ( temp 4-component vector of float FragData)
+0:45          'gl_FragData' ( fragColor 32-element array of 4-component vector of float FragData)
+0:45          Constant:
+0:45            1000 (const int)
+0:45        Constant:
+0:45          1.000000
+0:45          1.000000
+0:45          1.000000
+0:45          1.000000
+0:46      move second child to first child ( temp 4-component vector of float)
+0:46        direct index ( temp 4-component vector of float FragData)
+0:46          'gl_FragData' ( fragColor 32-element array of 4-component vector of float FragData)
+0:46          Constant:
+0:46            -1 (const int)
+0:46        Constant:
+0:46          1.000000
+0:46          1.000000
+0:46          1.000000
+0:46          1.000000
+0:47      move second child to first child ( temp 4-component vector of float)
+0:47        direct index ( temp 4-component vector of float FragData)
+0:47          'gl_FragData' ( fragColor 32-element array of 4-component vector of float FragData)
+0:47          Constant:
+0:47            3 (const int)
+0:47        Constant:
+0:47          1.000000
+0:47          1.000000
+0:47          1.000000
+0:47          1.000000
+0:50      Sequence
+0:50        move second child to first child ( temp int)
+0:50          'sum' ( temp int)
+0:50          Constant:
+0:50            3 (const int)
+0:51      add second child into first child ( temp int)
+0:51        'sum' ( temp int)
+0:51        Constant:
+0:51          2 (const int)
+0:52      add second child into first child ( temp int)
+0:52        'sum' ( temp int)
+0:52        Constant:
+0:52          2 (const int)
+0:55      Sequence
+0:55        move second child to first child ( temp 2-element array of int)
+0:55          'ica' ( temp 2-element array of int)
+0:55          Constant:
+0:55            3 (const int)
+0:55            2 (const int)
+0:57      move second child to first child ( temp int)
+0:57        direct index ( temp int)
+0:57          'ica' ( temp 2-element array of int)
+0:57          Constant:
+0:57            3.100000
+0:57        Constant:
+0:57          3 (const int)
+0:58      move second child to first child ( temp int)
+0:58        indirect index ( temp int)
+0:58          'ica' ( temp 2-element array of int)
+0:58          direct index ( temp float)
+0:58            'u' ( temp 5-element array of float)
+0:58            Constant:
+0:58              1 (const int)
+0:58        Constant:
+0:58          4 (const int)
+0:68  Function Definition: foo( ( global void)
+0:68    Function Parameters: 
+0:?     Sequence
+0:71      move second child to first child ( temp int)
+0:71        direct index ( temp int)
+0:71          'uns' ( temp unsized 4-element array of int)
+0:71          Constant:
+0:71            3 (const int)
+0:71        Constant:
+0:71          40 (const int)
+0:72      move second child to first child ( temp int)
+0:72        direct index ( temp int)
+0:72          'uns' ( temp unsized 4-element array of int)
+0:72          Constant:
+0:72            1 (const int)
+0:72        Constant:
+0:72          30 (const int)
+0:73      move second child to first child ( temp 3-component vector of float)
+0:73        direct index ( temp 3-component vector of float)
+0:73          'guns' ( global unsized 8-element array of 3-component vector of float)
+0:73          Constant:
+0:73            2 (const int)
+0:73        Constant:
+0:73          2.400000
+0:73          2.400000
+0:73          2.400000
+0:76      Constant:
+0:76        0.000000
+0:79  Function Definition: foo2( ( global unsized 1-element array of float)
+0:79    Function Parameters: 
+0:?     Sequence
+0:82      Branch: Return with expression
+0:82        'f' ( temp unsized 1-element array of float)
+0:84      Branch: Return with expression
+0:84        'g' ( temp 9-element array of float)
+0:89  Function Definition: foo3( ( global void)
+0:89    Function Parameters: 
+0:?     Sequence
+0:92      move second child to first child ( temp float)
+0:92        direct index ( temp float)
+0:92          'resize1' ( temp 3-element array of float)
+0:92          Constant:
+0:92            2 (const int)
+0:92        Constant:
+0:92          4.000000
+0:93      Constant:
+0:93        1 (const int)
+0:95      Constant:
+0:95        3 (const int)
+0:98      move second child to first child ( temp float)
+0:98        direct index ( temp float)
+0:98          'resize2' ( temp 5-element array of float)
+0:98          Constant:
+0:98            5 (const int)
+0:98        Constant:
+0:98          4.000000
+0:100      Constant:
+0:100        5 (const int)
+0:101      move second child to first child ( temp float)
+0:101        direct index ( temp float)
+0:101          'resize2' ( temp 5-element array of float)
+0:101          Constant:
+0:101            5 (const int)
+0:101        Constant:
+0:101          4.000000
+0:106  Sequence
+0:106    move second child to first child ( temp float)
+0:106      'b' ( global float)
+0:106      Constant:
+0:106        0.000000
+0:109  Function Definition: foo4( ( global void)
+0:109    Function Parameters: 
+0:111    Sequence
+0:111      indirect index ( temp sampler2D)
+0:111        's2d' ( uniform runtime-sized array of sampler2D)
+0:111        'a' ( uniform int)
+0:112      Sequence
+0:112        move second child to first child ( temp unsized 1-element array of float)
+0:112          'local' ( temp unsized 1-element array of float)
+0:112          'gUnusedUnsized' ( global unsized 1-element array of float)
+0:?   Linker Objects
+0:?     'gu' ( global runtime-sized array of float)
+0:?     'g4' ( global 4-element array of float)
+0:?     'g5' ( global 5-element array of float)
+0:?     'a' ( uniform int)
+0:?     'guns' ( global unsized 8-element array of 3-component vector of float)
+0:?     'f' ( global float)
+0:?     'gUnusedUnsized' ( global unsized 1-element array of float)
+0:?     'i' ( global unsized 1-element array of int)
+0:?     'emptyA' ( global unsized 1-element array of float)
+0:?     'b' ( global float)
+0:?     's2d' ( uniform runtime-sized array of sampler2D)
+
+
+Linked fragment stage:
+
+
+Shader version: 130
+ERROR: node is still EOpNull!
+0:9  Function Definition: foo(f1[5]; ( global 4-element array of float)
+0:9    Function Parameters: 
+0:9      'a' ( in 5-element array of float)
+0:11    Sequence
+0:11      Branch: Return with expression
+0:11        Construct float ( temp 4-element array of float)
+0:11          direct index ( temp float)
+0:11            'a' ( in 5-element array of float)
+0:11            Constant:
+0:11              0 (const int)
+0:11          direct index ( temp float)
+0:11            'a' ( in 5-element array of float)
+0:11            Constant:
+0:11              1 (const int)
+0:11          direct index ( temp float)
+0:11            'a' ( in 5-element array of float)
+0:11            Constant:
+0:11              2 (const int)
+0:11          direct index ( temp float)
+0:11            'a' ( in 5-element array of float)
+0:11            Constant:
+0:11              3 (const int)
+0:14  Function Definition: bar(f1[5]; ( global void)
+0:14    Function Parameters: 
+0:14      '' ( in 5-element array of float)
+0:16  Function Definition: main( ( global void)
+0:16    Function Parameters: 
+0:?     Sequence
+0:?       Sequence
+0:21        move second child to first child ( temp float)
+0:21          direct index ( temp float)
+0:21            'gu' ( temp 2-element array of float)
+0:21            Constant:
+0:21              2 (const int)
+0:21          Constant:
+0:21            4.000000
+0:24      move second child to first child ( temp float)
+0:24        direct index ( temp float)
+0:24          'gu' ( global runtime-sized array of float)
+0:24          Constant:
+0:24            2 (const int)
+0:24        Constant:
+0:24          4.000000
+0:26      move second child to first child ( temp float)
+0:26        direct index ( temp float)
+0:26          'gu' ( global runtime-sized array of float)
+0:26          Constant:
+0:26            3 (const int)
+0:26        Constant:
+0:26          3.000000
+0:27      move second child to first child ( temp float)
+0:27        indirect index ( temp float)
+0:27          'gu' ( global runtime-sized array of float)
+0:27          'a' ( uniform int)
+0:27        Constant:
+0:27          5.000000
+0:29      move second child to first child ( temp 4-element array of float)
+0:29        'g4' ( global 4-element array of float)
+0:29        Function Call: foo(f1[5]; ( global 4-element array of float)
+0:29          'g5' ( global 5-element array of float)
+0:30      'g5' ( global 5-element array of float)
+0:31      'gu' ( global runtime-sized array of float)
+0:33      Constant:
+0:33        0.000000
+0:34      Function Call: bar(f1[5]; ( global void)
+0:34        'g5' ( global 5-element array of float)
+0:36      Test condition and select ( temp void)
+0:36        Condition
+0:36        Compare Equal ( temp bool)
+0:36          Constant:
+0:36            1.000000
+0:36            2.000000
+0:36            3.000000
+0:36            4.000000
+0:36          'g4' ( global 4-element array of float)
+0:36        true case
+0:37        move second child to first child ( temp float)
+0:37          direct index ( temp float)
+0:37            'gu' ( global runtime-sized array of float)
+0:37            Constant:
+0:37              0 (const int)
+0:37          Constant:
+0:37            2.000000
+0:40      move second child to first child ( temp float)
+0:40        direct index ( temp float)
+0:40          'u' ( temp 5-element array of float)
+0:40          Constant:
+0:40            2 (const int)
+0:40        Constant:
+0:40          3.000000
+0:42      move second child to first child ( temp float)
+0:42        direct index ( temp float)
+0:42          'u' ( temp 5-element array of float)
+0:42          Constant:
+0:42            5 (const int)
+0:42        Constant:
+0:42          5.000000
+0:43      Function Call: foo(f1[5]; ( global 4-element array of float)
+0:43        'u' ( temp 5-element array of float)
+0:45      move second child to first child ( temp 4-component vector of float)
+0:45        direct index ( temp 4-component vector of float FragData)
+0:45          'gl_FragData' ( fragColor 32-element array of 4-component vector of float FragData)
+0:45          Constant:
+0:45            1000 (const int)
+0:45        Constant:
+0:45          1.000000
+0:45          1.000000
+0:45          1.000000
+0:45          1.000000
+0:46      move second child to first child ( temp 4-component vector of float)
+0:46        direct index ( temp 4-component vector of float FragData)
+0:46          'gl_FragData' ( fragColor 32-element array of 4-component vector of float FragData)
+0:46          Constant:
+0:46            -1 (const int)
+0:46        Constant:
+0:46          1.000000
+0:46          1.000000
+0:46          1.000000
+0:46          1.000000
+0:47      move second child to first child ( temp 4-component vector of float)
+0:47        direct index ( temp 4-component vector of float FragData)
+0:47          'gl_FragData' ( fragColor 32-element array of 4-component vector of float FragData)
+0:47          Constant:
+0:47            3 (const int)
+0:47        Constant:
+0:47          1.000000
+0:47          1.000000
+0:47          1.000000
+0:47          1.000000
+0:50      Sequence
+0:50        move second child to first child ( temp int)
+0:50          'sum' ( temp int)
+0:50          Constant:
+0:50            3 (const int)
+0:51      add second child into first child ( temp int)
+0:51        'sum' ( temp int)
+0:51        Constant:
+0:51          2 (const int)
+0:52      add second child into first child ( temp int)
+0:52        'sum' ( temp int)
+0:52        Constant:
+0:52          2 (const int)
+0:55      Sequence
+0:55        move second child to first child ( temp 2-element array of int)
+0:55          'ica' ( temp 2-element array of int)
+0:55          Constant:
+0:55            3 (const int)
+0:55            2 (const int)
+0:57      move second child to first child ( temp int)
+0:57        direct index ( temp int)
+0:57          'ica' ( temp 2-element array of int)
+0:57          Constant:
+0:57            3.100000
+0:57        Constant:
+0:57          3 (const int)
+0:58      move second child to first child ( temp int)
+0:58        indirect index ( temp int)
+0:58          'ica' ( temp 2-element array of int)
+0:58          direct index ( temp float)
+0:58            'u' ( temp 5-element array of float)
+0:58            Constant:
+0:58              1 (const int)
+0:58        Constant:
+0:58          4 (const int)
+0:106  Sequence
+0:106    move second child to first child ( temp float)
+0:106      'b' ( global float)
+0:106      Constant:
+0:106        0.000000
+0:?   Linker Objects
+0:?     'gu' ( global runtime-sized array of float)
+0:?     'g4' ( global 4-element array of float)
+0:?     'g5' ( global 5-element array of float)
+0:?     'a' ( uniform int)
+0:?     'guns' ( global 8-element array of 3-component vector of float)
+0:?     'f' ( global float)
+0:?     'gUnusedUnsized' ( global 1-element array of float)
+0:?     'i' ( global 1-element array of int)
+0:?     'emptyA' ( global 1-element array of float)
+0:?     'b' ( global float)
+0:?     's2d' ( uniform runtime-sized array of sampler2D)
+

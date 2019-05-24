@@ -1,0 +1,29 @@
+nonVulkan.frag
+ERROR: 0:3: 'constant_id' : only allowed when generating SPIR-V 
+ERROR: 0:4: 'input_attachment_index' : only allowed when using GLSL for Vulkan 
+ERROR: 0:4: 'input_attachment_index' : can only be used with a subpass 
+ERROR: 0:5: 'push_constant' : only allowed when using GLSL for Vulkan 
+ERROR: 4 compilation errors.  No code generated.
+
+
+Shader version: 450
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+0:?     'arraySize' ( specialization-constant const int)
+0:?       12 (const int)
+0:?     'foo' ( temp int)
+0:?     'ubi' (layout( column_major std430 push_constant) uniform block{layout( column_major std430 offset=0) uniform int a})
+
+
+Linked fragment stage:
+
+ERROR: Linking fragment stage: Missing entry point: Each stage requires one entry point
+
+Shader version: 450
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+0:?     'arraySize' ( specialization-constant const int)
+0:?       12 (const int)
+0:?     'foo' ( temp int)
+0:?     'ubi' (layout( column_major std430 push_constant) uniform block{layout( column_major std430 offset=0) uniform int a})
+

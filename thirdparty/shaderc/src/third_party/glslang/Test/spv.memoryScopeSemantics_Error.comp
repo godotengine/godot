@@ -1,0 +1,28 @@
+#version 450
+#extension GL_KHR_memory_scope_semantics : require
+
+
+shared uint value;
+shared int atomi;
+shared uint atomu;
+layout(binding = 0, r32ui) workgroupcoherent uniform uimage2D imageu;
+layout(binding = 1, r32i) coherent uniform iimage2D imagei;
+layout (binding = 2) buffer BufferU { workgroupcoherent uint x; } bufferu;
+layout (binding = 3) subgroupcoherent buffer BufferI { uint x; } bufferi;
+
+void main()
+{
+    atomicStore(atomu, value, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsAcquire);
+    int origi = imageAtomicLoad(imagei, ivec2(0,0), gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelease);
+    atomicStore(atomu, value, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsAcquireRelease);
+    atomicStore(atomu, value, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_StorageSemanticsBuffer);
+    origi = imageAtomicLoad(imagei, ivec2(0,0), gl_ScopeDevice, gl_SemanticsAcquire, gl_SemanticsAcquire);
+    memoryBarrier(gl_ScopeWorkgroup, gl_StorageSemanticsBuffer | gl_StorageSemanticsShared, 0);
+    memoryBarrier(gl_ScopeWorkgroup, 0, gl_SemanticsRelease);
+    memoryBarrier(gl_ScopeWorkgroup, gl_StorageSemanticsBuffer | gl_StorageSemanticsShared, gl_SemanticsRelease | gl_SemanticsAcquire);
+    atomicAdd(atomu, value, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelease | gl_SemanticsAcquire);
+    uint origu = atomicCompSwap(atomu, 10u, value, gl_ScopeDevice, gl_StorageSemanticsBuffer | gl_StorageSemanticsShared, gl_SemanticsAcquire, gl_StorageSemanticsBuffer | gl_StorageSemanticsShared, gl_SemanticsAcquireRelease);
+    memoryBarrier(gl_ScopeWorkgroup, gl_StorageSemanticsBuffer, gl_SemanticsRelease | gl_SemanticsMakeVisible);
+    memoryBarrier(gl_ScopeWorkgroup, gl_StorageSemanticsBuffer, gl_SemanticsAcquire | gl_SemanticsMakeAvailable);
+}
+

@@ -1,0 +1,434 @@
+hlsl.matType.bool.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:3  Function Definition: TestBoolMatTypes( ( temp void)
+0:3    Function Parameters: 
+0:?     Sequence
+0:25      Sequence
+0:25        move second child to first child ( temp 1X1 matrix of bool)
+0:25          'r00' ( temp 1X1 matrix of bool)
+0:25          transpose ( temp 1X1 matrix of bool)
+0:25            'b1x1' ( temp 1X1 matrix of bool)
+0:26      Sequence
+0:26        move second child to first child ( temp 1X2 matrix of bool)
+0:26          'r01' ( temp 1X2 matrix of bool)
+0:26          transpose ( temp 1X2 matrix of bool)
+0:26            'b2x1' ( temp 2X1 matrix of bool)
+0:27      Sequence
+0:27        move second child to first child ( temp 1X3 matrix of bool)
+0:27          'r02' ( temp 1X3 matrix of bool)
+0:27          transpose ( temp 1X3 matrix of bool)
+0:27            'b3x1' ( temp 3X1 matrix of bool)
+0:28      Sequence
+0:28        move second child to first child ( temp 1X4 matrix of bool)
+0:28          'r03' ( temp 1X4 matrix of bool)
+0:28          transpose ( temp 1X4 matrix of bool)
+0:28            'b4x1' ( temp 4X1 matrix of bool)
+0:30      Sequence
+0:30        move second child to first child ( temp 2X1 matrix of bool)
+0:30          'r10' ( temp 2X1 matrix of bool)
+0:30          transpose ( temp 2X1 matrix of bool)
+0:30            'b1x2' ( temp 1X2 matrix of bool)
+0:31      Sequence
+0:31        move second child to first child ( temp 2X2 matrix of bool)
+0:31          'r11' ( temp 2X2 matrix of bool)
+0:31          transpose ( temp 2X2 matrix of bool)
+0:31            'b2x2' ( temp 2X2 matrix of bool)
+0:32      Sequence
+0:32        move second child to first child ( temp 2X3 matrix of bool)
+0:32          'r12' ( temp 2X3 matrix of bool)
+0:32          transpose ( temp 2X3 matrix of bool)
+0:32            'b3x2' ( temp 3X2 matrix of bool)
+0:33      Sequence
+0:33        move second child to first child ( temp 2X4 matrix of bool)
+0:33          'r13' ( temp 2X4 matrix of bool)
+0:33          transpose ( temp 2X4 matrix of bool)
+0:33            'b4x2' ( temp 4X2 matrix of bool)
+0:35      Sequence
+0:35        move second child to first child ( temp 3X1 matrix of bool)
+0:35          'r20' ( temp 3X1 matrix of bool)
+0:35          transpose ( temp 3X1 matrix of bool)
+0:35            'b1x3' ( temp 1X3 matrix of bool)
+0:36      Sequence
+0:36        move second child to first child ( temp 3X2 matrix of bool)
+0:36          'r21' ( temp 3X2 matrix of bool)
+0:36          transpose ( temp 3X2 matrix of bool)
+0:36            'b2x3' ( temp 2X3 matrix of bool)
+0:37      Sequence
+0:37        move second child to first child ( temp 3X3 matrix of bool)
+0:37          'r22' ( temp 3X3 matrix of bool)
+0:37          transpose ( temp 3X3 matrix of bool)
+0:37            'b3x3' ( temp 3X3 matrix of bool)
+0:38      Sequence
+0:38        move second child to first child ( temp 3X4 matrix of bool)
+0:38          'r23' ( temp 3X4 matrix of bool)
+0:38          transpose ( temp 3X4 matrix of bool)
+0:38            'b4x3' ( temp 4X3 matrix of bool)
+0:40      Sequence
+0:40        move second child to first child ( temp 4X1 matrix of bool)
+0:40          'r30' ( temp 4X1 matrix of bool)
+0:40          transpose ( temp 4X1 matrix of bool)
+0:40            'b1x4' ( temp 1X4 matrix of bool)
+0:41      Sequence
+0:41        move second child to first child ( temp 4X2 matrix of bool)
+0:41          'r31' ( temp 4X2 matrix of bool)
+0:41          transpose ( temp 4X2 matrix of bool)
+0:41            'b2x4' ( temp 2X4 matrix of bool)
+0:42      Sequence
+0:42        move second child to first child ( temp 4X3 matrix of bool)
+0:42          'r32' ( temp 4X3 matrix of bool)
+0:42          transpose ( temp 4X3 matrix of bool)
+0:42            'b3x4' ( temp 3X4 matrix of bool)
+0:43      Sequence
+0:43        move second child to first child ( temp 4X4 matrix of bool)
+0:43          'r33' ( temp 4X4 matrix of bool)
+0:43          transpose ( temp 4X4 matrix of bool)
+0:43            'b4x4' ( temp 4X4 matrix of bool)
+0:49  Function Definition: @main( ( temp structure{ temp 4-component vector of float color})
+0:49    Function Parameters: 
+0:?     Sequence
+0:51      move second child to first child ( temp 4-component vector of float)
+0:51        color: direct index for structure ( temp 4-component vector of float)
+0:51          'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:51          Constant:
+0:51            0 (const int)
+0:?         Constant:
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:52      Branch: Return with expression
+0:52        'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:49  Function Definition: main( ( temp void)
+0:49    Function Parameters: 
+0:?     Sequence
+0:49      Sequence
+0:49        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:49          color: direct index for structure ( temp 4-component vector of float)
+0:49            Function Call: @main( ( temp structure{ temp 4-component vector of float color})
+0:49            Constant:
+0:49              0 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+0:? Sequence
+0:3  Function Definition: TestBoolMatTypes( ( temp void)
+0:3    Function Parameters: 
+0:?     Sequence
+0:25      Sequence
+0:25        move second child to first child ( temp 1X1 matrix of bool)
+0:25          'r00' ( temp 1X1 matrix of bool)
+0:25          transpose ( temp 1X1 matrix of bool)
+0:25            'b1x1' ( temp 1X1 matrix of bool)
+0:26      Sequence
+0:26        move second child to first child ( temp 1X2 matrix of bool)
+0:26          'r01' ( temp 1X2 matrix of bool)
+0:26          transpose ( temp 1X2 matrix of bool)
+0:26            'b2x1' ( temp 2X1 matrix of bool)
+0:27      Sequence
+0:27        move second child to first child ( temp 1X3 matrix of bool)
+0:27          'r02' ( temp 1X3 matrix of bool)
+0:27          transpose ( temp 1X3 matrix of bool)
+0:27            'b3x1' ( temp 3X1 matrix of bool)
+0:28      Sequence
+0:28        move second child to first child ( temp 1X4 matrix of bool)
+0:28          'r03' ( temp 1X4 matrix of bool)
+0:28          transpose ( temp 1X4 matrix of bool)
+0:28            'b4x1' ( temp 4X1 matrix of bool)
+0:30      Sequence
+0:30        move second child to first child ( temp 2X1 matrix of bool)
+0:30          'r10' ( temp 2X1 matrix of bool)
+0:30          transpose ( temp 2X1 matrix of bool)
+0:30            'b1x2' ( temp 1X2 matrix of bool)
+0:31      Sequence
+0:31        move second child to first child ( temp 2X2 matrix of bool)
+0:31          'r11' ( temp 2X2 matrix of bool)
+0:31          transpose ( temp 2X2 matrix of bool)
+0:31            'b2x2' ( temp 2X2 matrix of bool)
+0:32      Sequence
+0:32        move second child to first child ( temp 2X3 matrix of bool)
+0:32          'r12' ( temp 2X3 matrix of bool)
+0:32          transpose ( temp 2X3 matrix of bool)
+0:32            'b3x2' ( temp 3X2 matrix of bool)
+0:33      Sequence
+0:33        move second child to first child ( temp 2X4 matrix of bool)
+0:33          'r13' ( temp 2X4 matrix of bool)
+0:33          transpose ( temp 2X4 matrix of bool)
+0:33            'b4x2' ( temp 4X2 matrix of bool)
+0:35      Sequence
+0:35        move second child to first child ( temp 3X1 matrix of bool)
+0:35          'r20' ( temp 3X1 matrix of bool)
+0:35          transpose ( temp 3X1 matrix of bool)
+0:35            'b1x3' ( temp 1X3 matrix of bool)
+0:36      Sequence
+0:36        move second child to first child ( temp 3X2 matrix of bool)
+0:36          'r21' ( temp 3X2 matrix of bool)
+0:36          transpose ( temp 3X2 matrix of bool)
+0:36            'b2x3' ( temp 2X3 matrix of bool)
+0:37      Sequence
+0:37        move second child to first child ( temp 3X3 matrix of bool)
+0:37          'r22' ( temp 3X3 matrix of bool)
+0:37          transpose ( temp 3X3 matrix of bool)
+0:37            'b3x3' ( temp 3X3 matrix of bool)
+0:38      Sequence
+0:38        move second child to first child ( temp 3X4 matrix of bool)
+0:38          'r23' ( temp 3X4 matrix of bool)
+0:38          transpose ( temp 3X4 matrix of bool)
+0:38            'b4x3' ( temp 4X3 matrix of bool)
+0:40      Sequence
+0:40        move second child to first child ( temp 4X1 matrix of bool)
+0:40          'r30' ( temp 4X1 matrix of bool)
+0:40          transpose ( temp 4X1 matrix of bool)
+0:40            'b1x4' ( temp 1X4 matrix of bool)
+0:41      Sequence
+0:41        move second child to first child ( temp 4X2 matrix of bool)
+0:41          'r31' ( temp 4X2 matrix of bool)
+0:41          transpose ( temp 4X2 matrix of bool)
+0:41            'b2x4' ( temp 2X4 matrix of bool)
+0:42      Sequence
+0:42        move second child to first child ( temp 4X3 matrix of bool)
+0:42          'r32' ( temp 4X3 matrix of bool)
+0:42          transpose ( temp 4X3 matrix of bool)
+0:42            'b3x4' ( temp 3X4 matrix of bool)
+0:43      Sequence
+0:43        move second child to first child ( temp 4X4 matrix of bool)
+0:43          'r33' ( temp 4X4 matrix of bool)
+0:43          transpose ( temp 4X4 matrix of bool)
+0:43            'b4x4' ( temp 4X4 matrix of bool)
+0:49  Function Definition: @main( ( temp structure{ temp 4-component vector of float color})
+0:49    Function Parameters: 
+0:?     Sequence
+0:51      move second child to first child ( temp 4-component vector of float)
+0:51        color: direct index for structure ( temp 4-component vector of float)
+0:51          'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:51          Constant:
+0:51            0 (const int)
+0:?         Constant:
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:?           0.000000
+0:52      Branch: Return with expression
+0:52        'ps_output' ( temp structure{ temp 4-component vector of float color})
+0:49  Function Definition: main( ( temp void)
+0:49    Function Parameters: 
+0:?     Sequence
+0:49      Sequence
+0:49        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+0:49          color: direct index for structure ( temp 4-component vector of float)
+0:49            Function Call: @main( ( temp structure{ temp 4-component vector of float color})
+0:49            Constant:
+0:49              0 (const int)
+0:?   Linker Objects
+0:?     '@entryPointOutput.color' (layout( location=0) out 4-component vector of float)
+
+Validation failed
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 130
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 127
+                              ExecutionMode 4 OriginUpperLeft
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 6  "TestBoolMatTypes("
+                              Name 10  "PS_OUTPUT"
+                              MemberName 10(PS_OUTPUT) 0  "color"
+                              Name 12  "@main("
+                              Name 18  "r00"
+                              Name 19  "b1x1"
+                              Name 25  "r01"
+                              Name 28  "b2x1"
+                              Name 34  "r02"
+                              Name 37  "b3x1"
+                              Name 43  "r03"
+                              Name 46  "b4x1"
+                              Name 49  "r10"
+                              Name 50  "b1x2"
+                              Name 55  "r11"
+                              Name 56  "b2x2"
+                              Name 61  "r12"
+                              Name 64  "b3x2"
+                              Name 69  "r13"
+                              Name 72  "b4x2"
+                              Name 75  "r20"
+                              Name 76  "b1x3"
+                              Name 79  "r21"
+                              Name 80  "b2x3"
+                              Name 85  "r22"
+                              Name 86  "b3x3"
+                              Name 91  "r23"
+                              Name 94  "b4x3"
+                              Name 97  "r30"
+                              Name 98  "b1x4"
+                              Name 101  "r31"
+                              Name 102  "b2x4"
+                              Name 105  "r32"
+                              Name 106  "b3x4"
+                              Name 111  "r33"
+                              Name 112  "b4x4"
+                              Name 116  "ps_output"
+                              Name 127  "@entryPointOutput.color"
+                              Decorate 127(@entryPointOutput.color) Location 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               8:             TypeFloat 32
+               9:             TypeVector 8(float) 4
+   10(PS_OUTPUT):             TypeStruct 9(fvec4)
+              11:             TypeFunction 10(PS_OUTPUT)
+              14:             TypeBool
+              15:             TypeVector 14(bool) 1
+              16:             TypeMatrix 15(bvec) 1
+              17:             TypePointer Function 16
+              22:             TypeVector 14(bool) 2
+              23:             TypeMatrix 22(bvec2) 1
+              24:             TypePointer Function 23
+              26:             TypeMatrix 15(bvec) 2
+              27:             TypePointer Function 26
+              31:             TypeVector 14(bool) 3
+              32:             TypeMatrix 31(bvec3) 1
+              33:             TypePointer Function 32
+              35:             TypeMatrix 15(bvec) 3
+              36:             TypePointer Function 35
+              40:             TypeVector 14(bool) 4
+              41:             TypeMatrix 40(bvec4) 1
+              42:             TypePointer Function 41
+              44:             TypeMatrix 15(bvec) 4
+              45:             TypePointer Function 44
+              53:             TypeMatrix 22(bvec2) 2
+              54:             TypePointer Function 53
+              59:             TypeMatrix 31(bvec3) 2
+              60:             TypePointer Function 59
+              62:             TypeMatrix 22(bvec2) 3
+              63:             TypePointer Function 62
+              67:             TypeMatrix 40(bvec4) 2
+              68:             TypePointer Function 67
+              70:             TypeMatrix 22(bvec2) 4
+              71:             TypePointer Function 70
+              83:             TypeMatrix 31(bvec3) 3
+              84:             TypePointer Function 83
+              89:             TypeMatrix 40(bvec4) 3
+              90:             TypePointer Function 89
+              92:             TypeMatrix 31(bvec3) 4
+              93:             TypePointer Function 92
+             109:             TypeMatrix 40(bvec4) 4
+             110:             TypePointer Function 109
+             115:             TypePointer Function 10(PS_OUTPUT)
+             117:             TypeInt 32 1
+             118:    117(int) Constant 0
+             119:    8(float) Constant 0
+             120:    9(fvec4) ConstantComposite 119 119 119 119
+             121:             TypePointer Function 9(fvec4)
+             126:             TypePointer Output 9(fvec4)
+127(@entryPointOutput.color):    126(ptr) Variable Output
+         4(main):           2 Function None 3
+               5:             Label
+             128:10(PS_OUTPUT) FunctionCall 12(@main()
+             129:    9(fvec4) CompositeExtract 128 0
+                              Store 127(@entryPointOutput.color) 129
+                              Return
+                              FunctionEnd
+6(TestBoolMatTypes():           2 Function None 3
+               7:             Label
+         18(r00):     17(ptr) Variable Function
+        19(b1x1):     17(ptr) Variable Function
+         25(r01):     24(ptr) Variable Function
+        28(b2x1):     27(ptr) Variable Function
+         34(r02):     33(ptr) Variable Function
+        37(b3x1):     36(ptr) Variable Function
+         43(r03):     42(ptr) Variable Function
+        46(b4x1):     45(ptr) Variable Function
+         49(r10):     27(ptr) Variable Function
+        50(b1x2):     24(ptr) Variable Function
+         55(r11):     54(ptr) Variable Function
+        56(b2x2):     54(ptr) Variable Function
+         61(r12):     60(ptr) Variable Function
+        64(b3x2):     63(ptr) Variable Function
+         69(r13):     68(ptr) Variable Function
+        72(b4x2):     71(ptr) Variable Function
+         75(r20):     36(ptr) Variable Function
+        76(b1x3):     33(ptr) Variable Function
+         79(r21):     63(ptr) Variable Function
+        80(b2x3):     60(ptr) Variable Function
+         85(r22):     84(ptr) Variable Function
+        86(b3x3):     84(ptr) Variable Function
+         91(r23):     90(ptr) Variable Function
+        94(b4x3):     93(ptr) Variable Function
+         97(r30):     45(ptr) Variable Function
+        98(b1x4):     42(ptr) Variable Function
+        101(r31):     71(ptr) Variable Function
+       102(b2x4):     68(ptr) Variable Function
+        105(r32):     93(ptr) Variable Function
+       106(b3x4):     90(ptr) Variable Function
+        111(r33):    110(ptr) Variable Function
+       112(b4x4):    110(ptr) Variable Function
+              20:          16 Load 19(b1x1)
+              21:          16 Transpose 20
+                              Store 18(r00) 21
+              29:          26 Load 28(b2x1)
+              30:          23 Transpose 29
+                              Store 25(r01) 30
+              38:          35 Load 37(b3x1)
+              39:          32 Transpose 38
+                              Store 34(r02) 39
+              47:          44 Load 46(b4x1)
+              48:          41 Transpose 47
+                              Store 43(r03) 48
+              51:          23 Load 50(b1x2)
+              52:          26 Transpose 51
+                              Store 49(r10) 52
+              57:          53 Load 56(b2x2)
+              58:          53 Transpose 57
+                              Store 55(r11) 58
+              65:          62 Load 64(b3x2)
+              66:          59 Transpose 65
+                              Store 61(r12) 66
+              73:          70 Load 72(b4x2)
+              74:          67 Transpose 73
+                              Store 69(r13) 74
+              77:          32 Load 76(b1x3)
+              78:          35 Transpose 77
+                              Store 75(r20) 78
+              81:          59 Load 80(b2x3)
+              82:          62 Transpose 81
+                              Store 79(r21) 82
+              87:          83 Load 86(b3x3)
+              88:          83 Transpose 87
+                              Store 85(r22) 88
+              95:          92 Load 94(b4x3)
+              96:          89 Transpose 95
+                              Store 91(r23) 96
+              99:          41 Load 98(b1x4)
+             100:          44 Transpose 99
+                              Store 97(r30) 100
+             103:          67 Load 102(b2x4)
+             104:          70 Transpose 103
+                              Store 101(r31) 104
+             107:          89 Load 106(b3x4)
+             108:          92 Transpose 107
+                              Store 105(r32) 108
+             113:         109 Load 112(b4x4)
+             114:         109 Transpose 113
+                              Store 111(r33) 114
+                              Return
+                              FunctionEnd
+      12(@main():10(PS_OUTPUT) Function None 11
+              13:             Label
+  116(ps_output):    115(ptr) Variable Function
+             122:    121(ptr) AccessChain 116(ps_output) 118
+                              Store 122 120
+             123:10(PS_OUTPUT) Load 116(ps_output)
+                              ReturnValue 123
+                              FunctionEnd

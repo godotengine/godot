@@ -1,0 +1,165 @@
+structure.frag
+WARNING: 0:3: varying deprecated in version 130; may be removed in future release
+
+Shader version: 130
+0:? Sequence
+0:20  Function Definition: main( ( global void)
+0:20    Function Parameters: 
+0:22    Sequence
+0:22      Sequence
+0:22        move second child to first child ( temp float)
+0:22          'scale' ( temp float)
+0:22          Constant:
+0:22            0.000000
+0:24      Test condition and select ( temp void)
+0:24        Condition
+0:24        Compare Greater Than ( temp bool)
+0:24          direct index ( temp int)
+0:24            i: direct index for structure ( global 5-element array of int)
+0:24              direct index ( temp structure{ global 5-element array of int i,  global float f,  global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color} s1_1})
+0:24                'foo2' ( uniform 5-element array of structure{ global 5-element array of int i,  global float f,  global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color} s1_1})
+0:24                Constant:
+0:24                  3 (const int)
+0:24              Constant:
+0:24                0 (const int)
+0:24            Constant:
+0:24              4 (const int)
+0:24          Constant:
+0:24            0 (const int)
+0:24        true case
+0:25        move second child to first child ( temp float)
+0:25          'scale' ( temp float)
+0:25          direct index ( temp float)
+0:25            direct index ( temp 4-component vector of float)
+0:25              color: direct index for structure ( global 5-element array of 4-component vector of float)
+0:25                direct index ( temp structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color})
+0:25                  s1_1: direct index for structure ( global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color})
+0:25                    direct index ( temp structure{ global 5-element array of int i,  global float f,  global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color} s1_1})
+0:25                      'foo2' ( uniform 5-element array of structure{ global 5-element array of int i,  global float f,  global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color} s1_1})
+0:25                      Constant:
+0:25                        3 (const int)
+0:25                    Constant:
+0:25                      2 (const int)
+0:25                  Constant:
+0:25                    2 (const int)
+0:25                Constant:
+0:25                  2 (const int)
+0:25              Constant:
+0:25                3 (const int)
+0:25            Constant:
+0:25              0 (const int)
+0:24        false case
+0:27        move second child to first child ( temp float)
+0:27          'scale' ( temp float)
+0:27          direct index ( temp float)
+0:27            f: direct index for structure ( global 4-element array of float)
+0:27              direct index ( temp structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color})
+0:27                s1_1: direct index for structure ( global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color})
+0:27                  direct index ( temp structure{ global 5-element array of int i,  global float f,  global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color} s1_1})
+0:27                    'foo2' ( uniform 5-element array of structure{ global 5-element array of int i,  global float f,  global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color} s1_1})
+0:27                    Constant:
+0:27                      3 (const int)
+0:27                  Constant:
+0:27                    2 (const int)
+0:27                Constant:
+0:27                  2 (const int)
+0:27              Constant:
+0:27                1 (const int)
+0:27            Constant:
+0:27              3 (const int)
+0:29      move second child to first child ( temp 4-component vector of float)
+0:29        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:29        vector-scale ( temp 4-component vector of float)
+0:29          'scale' ( temp float)
+0:29          texture ( global 4-component vector of float)
+0:29            'sampler' ( uniform sampler2D)
+0:29            'coord' ( smooth in 2-component vector of float)
+0:?   Linker Objects
+0:?     'sampler' ( uniform sampler2D)
+0:?     'coord' ( smooth in 2-component vector of float)
+0:?     'foo' ( uniform structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color})
+0:?     'foo2' ( uniform 5-element array of structure{ global 5-element array of int i,  global float f,  global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color} s1_1})
+
+
+Linked fragment stage:
+
+
+Shader version: 130
+0:? Sequence
+0:20  Function Definition: main( ( global void)
+0:20    Function Parameters: 
+0:22    Sequence
+0:22      Sequence
+0:22        move second child to first child ( temp float)
+0:22          'scale' ( temp float)
+0:22          Constant:
+0:22            0.000000
+0:24      Test condition and select ( temp void)
+0:24        Condition
+0:24        Compare Greater Than ( temp bool)
+0:24          direct index ( temp int)
+0:24            i: direct index for structure ( global 5-element array of int)
+0:24              direct index ( temp structure{ global 5-element array of int i,  global float f,  global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color} s1_1})
+0:24                'foo2' ( uniform 5-element array of structure{ global 5-element array of int i,  global float f,  global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color} s1_1})
+0:24                Constant:
+0:24                  3 (const int)
+0:24              Constant:
+0:24                0 (const int)
+0:24            Constant:
+0:24              4 (const int)
+0:24          Constant:
+0:24            0 (const int)
+0:24        true case
+0:25        move second child to first child ( temp float)
+0:25          'scale' ( temp float)
+0:25          direct index ( temp float)
+0:25            direct index ( temp 4-component vector of float)
+0:25              color: direct index for structure ( global 5-element array of 4-component vector of float)
+0:25                direct index ( temp structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color})
+0:25                  s1_1: direct index for structure ( global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color})
+0:25                    direct index ( temp structure{ global 5-element array of int i,  global float f,  global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color} s1_1})
+0:25                      'foo2' ( uniform 5-element array of structure{ global 5-element array of int i,  global float f,  global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color} s1_1})
+0:25                      Constant:
+0:25                        3 (const int)
+0:25                    Constant:
+0:25                      2 (const int)
+0:25                  Constant:
+0:25                    2 (const int)
+0:25                Constant:
+0:25                  2 (const int)
+0:25              Constant:
+0:25                3 (const int)
+0:25            Constant:
+0:25              0 (const int)
+0:24        false case
+0:27        move second child to first child ( temp float)
+0:27          'scale' ( temp float)
+0:27          direct index ( temp float)
+0:27            f: direct index for structure ( global 4-element array of float)
+0:27              direct index ( temp structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color})
+0:27                s1_1: direct index for structure ( global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color})
+0:27                  direct index ( temp structure{ global 5-element array of int i,  global float f,  global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color} s1_1})
+0:27                    'foo2' ( uniform 5-element array of structure{ global 5-element array of int i,  global float f,  global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color} s1_1})
+0:27                    Constant:
+0:27                      3 (const int)
+0:27                  Constant:
+0:27                    2 (const int)
+0:27                Constant:
+0:27                  2 (const int)
+0:27              Constant:
+0:27                1 (const int)
+0:27            Constant:
+0:27              3 (const int)
+0:29      move second child to first child ( temp 4-component vector of float)
+0:29        'gl_FragColor' ( fragColor 4-component vector of float FragColor)
+0:29        vector-scale ( temp 4-component vector of float)
+0:29          'scale' ( temp float)
+0:29          texture ( global 4-component vector of float)
+0:29            'sampler' ( uniform sampler2D)
+0:29            'coord' ( smooth in 2-component vector of float)
+0:?   Linker Objects
+0:?     'sampler' ( uniform sampler2D)
+0:?     'coord' ( smooth in 2-component vector of float)
+0:?     'foo' ( uniform structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color})
+0:?     'foo2' ( uniform 5-element array of structure{ global 5-element array of int i,  global float f,  global 7-element array of structure{ global int i,  global 4-element array of float f,  global 5-element array of 4-component vector of float color} s1_1})
+

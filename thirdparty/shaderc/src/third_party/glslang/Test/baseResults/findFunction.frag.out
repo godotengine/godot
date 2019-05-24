@@ -1,0 +1,233 @@
+findFunction.frag
+ERROR: 0:39: 'func' : ambiguous best function under implicit type conversion 
+ERROR: 0:40: 'func' : no matching overloaded function found 
+ERROR: 0:40: '=' :  cannot convert from ' const float' to ' temp int64_t'
+ERROR: 0:41: 'func' : no matching overloaded function found 
+ERROR: 0:41: '=' :  cannot convert from ' const float' to ' temp int64_t'
+ERROR: 0:44: 'func' : no matching overloaded function found 
+ERROR: 0:44: '=' :  cannot convert from ' const float' to ' temp int64_t'
+ERROR: 0:45: 'func' : ambiguous best function under implicit type conversion 
+ERROR: 8 compilation errors.  No code generated.
+
+
+Shader version: 450
+Requested GL_EXT_shader_explicit_arithmetic_types
+ERROR: node is still EOpNull!
+0:5  Function Definition: func(i81;i161;i161; ( global int64_t)
+0:5    Function Parameters: 
+0:5      'a' ( in int8_t)
+0:5      'b' ( in int16_t)
+0:5      'c' ( in int16_t)
+0:7    Sequence
+0:7      Branch: Return with expression
+0:7        Convert int16_t to int64 ( temp int64_t)
+0:7          inclusive-or ( temp int16_t)
+0:7            Convert int8_t to int16_t ( temp int16_t)
+0:7              'a' ( in int8_t)
+0:7            add ( temp int16_t)
+0:7              'b' ( in int16_t)
+0:7              'c' ( in int16_t)
+0:10  Function Definition: func(i81;i161;i1; ( global int64_t)
+0:10    Function Parameters: 
+0:10      'a' ( in int8_t)
+0:10      'b' ( in int16_t)
+0:10      'c' ( in int)
+0:12    Sequence
+0:12      Branch: Return with expression
+0:12        Convert int to int64 ( temp int64_t)
+0:12          inclusive-or ( temp int)
+0:12            Convert int8_t to int ( temp int)
+0:12              'a' ( in int8_t)
+0:12            subtract ( temp int)
+0:12              Convert int16_t to int ( temp int)
+0:12                'b' ( in int16_t)
+0:12              'c' ( in int)
+0:15  Function Definition: func(i1;i1;i1; ( global int64_t)
+0:15    Function Parameters: 
+0:15      'a' ( in int)
+0:15      'b' ( in int)
+0:15      'c' ( in int)
+0:17    Sequence
+0:17      Branch: Return with expression
+0:17        Convert int to int64 ( temp int64_t)
+0:17          add ( temp int)
+0:17            divide ( temp int)
+0:17              'a' ( in int)
+0:17              'b' ( in int)
+0:17            'c' ( in int)
+0:20  Function Definition: func(f161;f161;f1; ( global int64_t)
+0:20    Function Parameters: 
+0:20      'a' ( in float16_t)
+0:20      'b' ( in float16_t)
+0:20      'c' ( in float)
+0:22    Sequence
+0:22      Branch: Return with expression
+0:22        Convert float to int64 ( temp int64_t)
+0:22          subtract ( temp float)
+0:22            Convert float16_t to float ( temp float)
+0:22              'a' ( in float16_t)
+0:22            component-wise multiply ( temp float)
+0:22              Convert float16_t to float ( temp float)
+0:22                'b' ( in float16_t)
+0:22              'c' ( in float)
+0:25  Function Definition: func(f161;i161;f1; ( global int64_t)
+0:25    Function Parameters: 
+0:25      'a' ( in float16_t)
+0:25      'b' ( in int16_t)
+0:25      'c' ( in float)
+0:27    Sequence
+0:27      Branch: Return with expression
+0:27        Convert float to int64 ( temp int64_t)
+0:27          subtract ( temp float)
+0:27            Convert float16_t to float ( temp float)
+0:27              'a' ( in float16_t)
+0:27            component-wise multiply ( temp float)
+0:27              Convert int16_t to float ( temp float)
+0:27                'b' ( in int16_t)
+0:27              'c' ( in float)
+0:30  Function Definition: main( ( global void)
+0:30    Function Parameters: 
+0:?     Sequence
+0:38      Sequence
+0:38        move second child to first child ( temp int64_t)
+0:38          'b1' ( temp int64_t)
+0:38          Function Call: func(i81;i161;i1; ( global int64_t)
+0:38            'x' ( temp int8_t)
+0:38            'y' ( temp int16_t)
+0:38            'z' ( temp int)
+0:39      Sequence
+0:39        move second child to first child ( temp int64_t)
+0:39          'b2' ( temp int64_t)
+0:39          Function Call: func(f161;i161;f1; ( global int64_t)
+0:39            Convert int16_t to float16_t ( temp float16_t)
+0:39              'y' ( temp int16_t)
+0:39            'y' ( temp int16_t)
+0:39            Convert int to float ( temp float)
+0:39              'z' ( temp int)
+0:42      Sequence
+0:42        move second child to first child ( temp int64_t)
+0:42          'b5' ( temp int64_t)
+0:42          Function Call: func(f161;i161;f1; ( global int64_t)
+0:42            Convert int16_t to float16_t ( temp float16_t)
+0:42              'y' ( temp int16_t)
+0:42            'y' ( temp int16_t)
+0:42            Convert float16_t to float ( temp float)
+0:42              'f16' ( temp float16_t)
+0:43      Sequence
+0:43        move second child to first child ( temp int64_t)
+0:43          'b7' ( temp int64_t)
+0:43          Function Call: func(f161;f161;f1; ( global int64_t)
+0:43            'f16' ( temp float16_t)
+0:43            'f16' ( temp float16_t)
+0:43            Convert int16_t to float ( temp float)
+0:43              'y' ( temp int16_t)
+0:45      Sequence
+0:45        move second child to first child ( temp int64_t)
+0:45          'b9' ( temp int64_t)
+0:45          Function Call: func(f161;f161;f1; ( global int64_t)
+0:45            'f16' ( temp float16_t)
+0:45            Convert int8_t to float16_t ( temp float16_t)
+0:45              'x' ( temp int8_t)
+0:45            Convert float16_t to float ( temp float)
+0:45              'f16' ( temp float16_t)
+0:?   Linker Objects
+
+
+Linked fragment stage:
+
+
+Shader version: 450
+Requested GL_EXT_shader_explicit_arithmetic_types
+ERROR: node is still EOpNull!
+0:10  Function Definition: func(i81;i161;i1; ( global int64_t)
+0:10    Function Parameters: 
+0:10      'a' ( in int8_t)
+0:10      'b' ( in int16_t)
+0:10      'c' ( in int)
+0:12    Sequence
+0:12      Branch: Return with expression
+0:12        Convert int to int64 ( temp int64_t)
+0:12          inclusive-or ( temp int)
+0:12            Convert int8_t to int ( temp int)
+0:12              'a' ( in int8_t)
+0:12            subtract ( temp int)
+0:12              Convert int16_t to int ( temp int)
+0:12                'b' ( in int16_t)
+0:12              'c' ( in int)
+0:20  Function Definition: func(f161;f161;f1; ( global int64_t)
+0:20    Function Parameters: 
+0:20      'a' ( in float16_t)
+0:20      'b' ( in float16_t)
+0:20      'c' ( in float)
+0:22    Sequence
+0:22      Branch: Return with expression
+0:22        Convert float to int64 ( temp int64_t)
+0:22          subtract ( temp float)
+0:22            Convert float16_t to float ( temp float)
+0:22              'a' ( in float16_t)
+0:22            component-wise multiply ( temp float)
+0:22              Convert float16_t to float ( temp float)
+0:22                'b' ( in float16_t)
+0:22              'c' ( in float)
+0:25  Function Definition: func(f161;i161;f1; ( global int64_t)
+0:25    Function Parameters: 
+0:25      'a' ( in float16_t)
+0:25      'b' ( in int16_t)
+0:25      'c' ( in float)
+0:27    Sequence
+0:27      Branch: Return with expression
+0:27        Convert float to int64 ( temp int64_t)
+0:27          subtract ( temp float)
+0:27            Convert float16_t to float ( temp float)
+0:27              'a' ( in float16_t)
+0:27            component-wise multiply ( temp float)
+0:27              Convert int16_t to float ( temp float)
+0:27                'b' ( in int16_t)
+0:27              'c' ( in float)
+0:30  Function Definition: main( ( global void)
+0:30    Function Parameters: 
+0:?     Sequence
+0:38      Sequence
+0:38        move second child to first child ( temp int64_t)
+0:38          'b1' ( temp int64_t)
+0:38          Function Call: func(i81;i161;i1; ( global int64_t)
+0:38            'x' ( temp int8_t)
+0:38            'y' ( temp int16_t)
+0:38            'z' ( temp int)
+0:39      Sequence
+0:39        move second child to first child ( temp int64_t)
+0:39          'b2' ( temp int64_t)
+0:39          Function Call: func(f161;i161;f1; ( global int64_t)
+0:39            Convert int16_t to float16_t ( temp float16_t)
+0:39              'y' ( temp int16_t)
+0:39            'y' ( temp int16_t)
+0:39            Convert int to float ( temp float)
+0:39              'z' ( temp int)
+0:42      Sequence
+0:42        move second child to first child ( temp int64_t)
+0:42          'b5' ( temp int64_t)
+0:42          Function Call: func(f161;i161;f1; ( global int64_t)
+0:42            Convert int16_t to float16_t ( temp float16_t)
+0:42              'y' ( temp int16_t)
+0:42            'y' ( temp int16_t)
+0:42            Convert float16_t to float ( temp float)
+0:42              'f16' ( temp float16_t)
+0:43      Sequence
+0:43        move second child to first child ( temp int64_t)
+0:43          'b7' ( temp int64_t)
+0:43          Function Call: func(f161;f161;f1; ( global int64_t)
+0:43            'f16' ( temp float16_t)
+0:43            'f16' ( temp float16_t)
+0:43            Convert int16_t to float ( temp float)
+0:43              'y' ( temp int16_t)
+0:45      Sequence
+0:45        move second child to first child ( temp int64_t)
+0:45          'b9' ( temp int64_t)
+0:45          Function Call: func(f161;f161;f1; ( global int64_t)
+0:45            'f16' ( temp float16_t)
+0:45            Convert int8_t to float16_t ( temp float16_t)
+0:45              'x' ( temp int8_t)
+0:45            Convert float16_t to float ( temp float)
+0:45              'f16' ( temp float16_t)
+0:?   Linker Objects
+

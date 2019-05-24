@@ -1,0 +1,24 @@
+syntaxError.frag
+ERROR: 0:9: 'vec5' : undeclared identifier 
+ERROR: 0:9: '' :  syntax error, unexpected IDENTIFIER, expecting COMMA or SEMICOLON
+ERROR: 2 compilation errors.  No code generated.
+
+
+Shader version: 120
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+0:?     'bigColor' ( uniform 4-component vector of float)
+0:?     'BaseColor' ( smooth in 4-component vector of float)
+0:?     'd' ( uniform float)
+
+
+Linked fragment stage:
+
+
+Shader version: 120
+ERROR: node is still EOpNull!
+0:?   Linker Objects
+0:?     'bigColor' ( uniform 4-component vector of float)
+0:?     'BaseColor' ( smooth in 4-component vector of float)
+0:?     'd' ( uniform float)
+

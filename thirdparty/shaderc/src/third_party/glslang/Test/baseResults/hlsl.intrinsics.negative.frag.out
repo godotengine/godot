@@ -1,0 +1,986 @@
+hlsl.intrinsics.negative.frag
+ERROR: 0:10: 'determinant' : ambiguous best function under implicit type conversion 
+ERROR: 0:25: 'normalize' : ambiguous best function under implicit type conversion 
+ERROR: 0:26: 'reflect' : ambiguous best function under implicit type conversion 
+ERROR: 0:27: 'refract' : ambiguous best function under implicit type conversion 
+ERROR: 0:28: 'refract' : no matching overloaded function found 
+ERROR: 0:30: 'transpose' : ambiguous best function under implicit type conversion 
+ERROR: 0:39: 'GetRenderTargetSamplePosition' : no matching overloaded function found 
+ERROR: 0:46: 'asdouble' : double2 conversion not implemented 
+ERROR: 0:47: 'CheckAccessFullyMapped' : no matching overloaded function found 
+ERROR: 0:49: 'cross' : no matching overloaded function found 
+ERROR: 0:50: 'D3DCOLORtoUBYTE4' : no matching overloaded function found 
+ERROR: 0:51: 'determinant' : no matching overloaded function found 
+ERROR: 0:57: 'transpose' : no matching overloaded function found 
+ERROR: 0:64: 'CheckAccessFullyMapped' : no matching overloaded function found 
+ERROR: 0:66: 'D3DCOLORtoUBYTE4' : no matching overloaded function found 
+ERROR: 0:67: 'determinant' : no matching overloaded function found 
+ERROR: 0:73: 'transpose' : no matching overloaded function found 
+ERROR: 0:81: 'CheckAccessFullyMapped' : no matching overloaded function found 
+ERROR: 0:84: 'determinant' : no matching overloaded function found 
+ERROR: 0:90: 'transpose' : no matching overloaded function found 
+ERROR: 0:117: 'countbits' : no matching overloaded function found 
+ERROR: 0:117: 'D3DCOLORtoUBYTE4' : no matching overloaded function found 
+ERROR: 0:117: 'cross' : no matching overloaded function found 
+ERROR: 0:117: 'f16tof32' : no matching overloaded function found 
+ERROR: 0:117: 'firstbithigh' : no matching overloaded function found 
+ERROR: 0:117: 'firstbitlow' : no matching overloaded function found 
+ERROR: 0:117: 'reversebits' : no matching overloaded function found 
+ERROR: 0:117: 'length' : no matching overloaded function found 
+ERROR: 0:117: 'noise' : no matching overloaded function found 
+ERROR: 0:117: 'normalize' : no matching overloaded function found 
+ERROR: 0:117: 'reflect' : no matching overloaded function found 
+ERROR: 0:117: 'refract' : no matching overloaded function found 
+ERROR: 0:117: 'reversebits' : no matching overloaded function found 
+ERROR: 0:125: 'countbits' : no matching overloaded function found 
+ERROR: 0:125: 'D3DCOLORtoUBYTE4' : no matching overloaded function found 
+ERROR: 0:125: 'cross' : no matching overloaded function found 
+ERROR: 0:125: 'f16tof32' : no matching overloaded function found 
+ERROR: 0:125: 'firstbithigh' : no matching overloaded function found 
+ERROR: 0:125: 'firstbitlow' : no matching overloaded function found 
+ERROR: 0:125: 'reversebits' : no matching overloaded function found 
+ERROR: 0:125: 'length' : no matching overloaded function found 
+ERROR: 0:125: 'noise' : no matching overloaded function found 
+ERROR: 0:125: 'normalize' : no matching overloaded function found 
+ERROR: 0:125: 'reflect' : no matching overloaded function found 
+ERROR: 0:125: 'refract' : no matching overloaded function found 
+ERROR: 0:125: 'reversebits' : no matching overloaded function found 
+ERROR: 0:133: 'countbits' : no matching overloaded function found 
+ERROR: 0:133: 'D3DCOLORtoUBYTE4' : no matching overloaded function found 
+ERROR: 0:133: 'cross' : no matching overloaded function found 
+ERROR: 0:133: 'f16tof32' : no matching overloaded function found 
+ERROR: 0:133: 'firstbithigh' : no matching overloaded function found 
+ERROR: 0:133: 'firstbitlow' : no matching overloaded function found 
+ERROR: 0:133: 'reversebits' : no matching overloaded function found 
+ERROR: 0:133: 'length' : no matching overloaded function found 
+ERROR: 0:133: 'noise' : no matching overloaded function found 
+ERROR: 0:133: 'normalize' : no matching overloaded function found 
+ERROR: 0:133: 'reflect' : no matching overloaded function found 
+ERROR: 0:133: 'refract' : no matching overloaded function found 
+ERROR: 0:133: 'reversebits' : no matching overloaded function found 
+ERROR: 59 compilation errors.  No code generated.
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+ERROR: node is still EOpNull!
+0:2  Function Definition: PixelShaderFunctionS(f1;f1;f1;i1; ( temp float)
+0:2    Function Parameters: 
+0:2      'inF0' ( in float)
+0:2      'inF1' ( in float)
+0:2      'inF2' ( in float)
+0:2      'inI0' ( in int)
+0:?     Sequence
+0:5      uint64BitsToDouble ( temp double)
+0:5        Construct uvec2 ( temp 2-component vector of uint)
+0:5          Convert float to uint ( temp uint)
+0:5            'inF0' ( in float)
+0:5          Convert float to uint ( temp uint)
+0:5            'inF1' ( in float)
+0:6      Function Call: CheckAccessFullyMapped(u1; ( temp bool)
+0:6        Constant:
+0:6          3 (const uint)
+0:7      bitCount ( temp uint)
+0:7        Convert float to uint ( temp uint)
+0:7          'inF0' ( in float)
+0:8      cross-product ( temp 3-component vector of float)
+0:8        Construct vec3 ( in 3-component vector of float)
+0:8          'inF0' ( in float)
+0:8        Construct vec3 ( in 3-component vector of float)
+0:8          'inF1' ( in float)
+0:9      Convert float to int ( temp 4-component vector of int)
+0:9        vector-scale ( temp 4-component vector of float)
+0:9          Constant:
+0:9            255.001953
+0:9          vector swizzle ( temp 4-component vector of float)
+0:9            Construct vec4 ( in 4-component vector of float)
+0:9              'inF0' ( in float)
+0:9            Sequence
+0:9              Constant:
+0:9                2 (const int)
+0:9              Constant:
+0:9                1 (const int)
+0:9              Constant:
+0:9                0 (const int)
+0:9              Constant:
+0:9                3 (const int)
+0:10      determinant ( temp float)
+ERROR: node is still EOpNull!
+0:10          'inF0' ( in float)
+0:12      direct index ( temp float)
+0:12        unpackHalf2x16 ( temp 2-component vector of float)
+0:12          Convert float to uint ( temp uint)
+0:12            'inF0' ( in float)
+0:12        Constant:
+0:12          0 (const int)
+0:13      findMSB ( temp uint)
+0:13        Convert float to uint ( temp uint)
+0:13          'inF0' ( in float)
+0:14      findLSB ( temp uint)
+0:14        Convert float to uint ( temp uint)
+0:14          'inF0' ( in float)
+0:23      length ( temp float)
+0:23        'inF0' ( in float)
+0:24      Function Call: msad4(u1;vu2;vu4; ( temp 4-component vector of uint)
+0:24        Convert float to uint ( temp uint)
+0:24          'inF0' ( in float)
+0:24        Constant:
+0:24          0 (const uint)
+0:24          0 (const uint)
+0:24        Constant:
+0:24          0 (const uint)
+0:24          0 (const uint)
+0:24          0 (const uint)
+0:24          0 (const uint)
+0:25      normalize ( temp 2-component vector of float)
+0:25        Construct vec2 ( in 2-component vector of float)
+0:25          'inF0' ( in float)
+0:26      reflect ( temp 2-component vector of float)
+0:26        Construct vec2 ( in 2-component vector of float)
+0:26          'inF0' ( in float)
+0:26        Construct vec2 ( in 2-component vector of float)
+0:26          'inF1' ( in float)
+0:27      refract ( temp 2-component vector of float)
+0:27        Construct vec2 ( in 2-component vector of float)
+0:27          'inF0' ( in float)
+0:27        Construct vec2 ( in 2-component vector of float)
+0:27          'inF1' ( in float)
+0:27        'inF2' ( in float)
+0:28      Constant:
+0:28        0.000000
+0:29      bitFieldReverse ( temp uint)
+0:29        Convert float to uint ( temp uint)
+0:29          'inF0' ( in float)
+0:30      transpose ( temp 1X1 matrix of float)
+ERROR: node is still EOpNull!
+0:30          'inF0' ( in float)
+0:32      Branch: Return with expression
+0:32        Constant:
+0:32          0.000000
+0:36  Function Definition: PixelShaderFunction1(vf1;vf1;vf1;vi1; ( temp 1-component vector of float)
+0:36    Function Parameters: 
+0:36      'inF0' ( in 1-component vector of float)
+0:36      'inF1' ( in 1-component vector of float)
+0:36      'inF2' ( in 1-component vector of float)
+0:36      'inI0' ( in 1-component vector of int)
+0:?     Sequence
+0:39      Constant:
+0:39        0.000000
+0:41      Branch: Return with expression
+0:41        Constant:
+0:41          0.000000
+0:45  Function Definition: PixelShaderFunction2(vf2;vf2;vf2;vi2; ( temp 2-component vector of float)
+0:45    Function Parameters: 
+0:45      'inF0' ( in 2-component vector of float)
+0:45      'inF1' ( in 2-component vector of float)
+0:45      'inF2' ( in 2-component vector of float)
+0:45      'inI0' ( in 2-component vector of int)
+0:?     Sequence
+0:46      ERROR: Bad aggregation op
+ ( temp 2-component vector of double)
+0:46        Convert float to uint ( temp 2-component vector of uint)
+0:46          'inF0' ( in 2-component vector of float)
+0:46        Convert float to uint ( temp 2-component vector of uint)
+0:46          'inF1' ( in 2-component vector of float)
+0:47      Constant:
+0:47        0.000000
+0:48      bitCount ( temp 2-component vector of uint)
+0:48        Convert float to uint ( temp 2-component vector of uint)
+0:48          'inF0' ( in 2-component vector of float)
+0:49      Constant:
+0:49        0.000000
+0:50      Constant:
+0:50        0.000000
+0:51      Constant:
+0:51        0.000000
+0:52      Construct vec2 ( temp 2-component vector of float)
+0:52        direct index ( temp float)
+0:52          unpackHalf2x16 ( temp 2-component vector of float)
+0:52            direct index ( temp uint)
+0:52              Convert float to uint ( temp 2-component vector of uint)
+0:52                'inF0' ( in 2-component vector of float)
+0:52              Constant:
+0:52                0 (const int)
+0:52          Constant:
+0:52            0 (const int)
+0:52        direct index ( temp float)
+0:52          unpackHalf2x16 ( temp 2-component vector of float)
+0:52            direct index ( temp uint)
+0:52              Convert float to uint ( temp 2-component vector of uint)
+0:52                'inF0' ( in 2-component vector of float)
+0:52              Constant:
+0:52                1 (const int)
+0:52          Constant:
+0:52            0 (const int)
+0:53      findMSB ( temp 2-component vector of uint)
+0:53        Convert float to uint ( temp 2-component vector of uint)
+0:53          'inF0' ( in 2-component vector of float)
+0:54      findLSB ( temp 2-component vector of uint)
+0:54        Convert float to uint ( temp 2-component vector of uint)
+0:54          'inF0' ( in 2-component vector of float)
+0:56      bitFieldReverse ( temp 2-component vector of uint)
+0:56        Convert float to uint ( temp 2-component vector of uint)
+0:56          'inF0' ( in 2-component vector of float)
+0:57      Constant:
+0:57        0.000000
+0:59      Branch: Return with expression
+0:?         Constant:
+0:?           1.000000
+0:?           2.000000
+0:63  Function Definition: PixelShaderFunction3(vf3;vf3;vf3;vi3; ( temp 3-component vector of float)
+0:63    Function Parameters: 
+0:63      'inF0' ( in 3-component vector of float)
+0:63      'inF1' ( in 3-component vector of float)
+0:63      'inF2' ( in 3-component vector of float)
+0:63      'inI0' ( in 3-component vector of int)
+0:?     Sequence
+0:64      Constant:
+0:64        0.000000
+0:65      bitCount ( temp 3-component vector of uint)
+0:65        Convert float to uint ( temp 3-component vector of uint)
+0:65          'inF0' ( in 3-component vector of float)
+0:66      Constant:
+0:66        0.000000
+0:67      Constant:
+0:67        0.000000
+0:68      Construct vec3 ( temp 3-component vector of float)
+0:68        direct index ( temp float)
+0:68          unpackHalf2x16 ( temp 2-component vector of float)
+0:68            direct index ( temp uint)
+0:68              Convert float to uint ( temp 3-component vector of uint)
+0:68                'inF0' ( in 3-component vector of float)
+0:68              Constant:
+0:68                0 (const int)
+0:68          Constant:
+0:68            0 (const int)
+0:68        direct index ( temp float)
+0:68          unpackHalf2x16 ( temp 2-component vector of float)
+0:68            direct index ( temp uint)
+0:68              Convert float to uint ( temp 3-component vector of uint)
+0:68                'inF0' ( in 3-component vector of float)
+0:68              Constant:
+0:68                1 (const int)
+0:68          Constant:
+0:68            0 (const int)
+0:68        direct index ( temp float)
+0:68          unpackHalf2x16 ( temp 2-component vector of float)
+0:68            direct index ( temp uint)
+0:68              Convert float to uint ( temp 3-component vector of uint)
+0:68                'inF0' ( in 3-component vector of float)
+0:68              Constant:
+0:68                2 (const int)
+0:68          Constant:
+0:68            0 (const int)
+0:69      findMSB ( temp 3-component vector of uint)
+0:69        Convert float to uint ( temp 3-component vector of uint)
+0:69          'inF0' ( in 3-component vector of float)
+0:70      findLSB ( temp 3-component vector of uint)
+0:70        Convert float to uint ( temp 3-component vector of uint)
+0:70          'inF0' ( in 3-component vector of float)
+0:72      bitFieldReverse ( temp 3-component vector of uint)
+0:72        Convert float to uint ( temp 3-component vector of uint)
+0:72          'inF0' ( in 3-component vector of float)
+0:73      Constant:
+0:73        0.000000
+0:76      Branch: Return with expression
+0:?         Constant:
+0:?           1.000000
+0:?           2.000000
+0:?           3.000000
+0:80  Function Definition: @PixelShaderFunction(vf4;vf4;vf4;vi4; ( temp 4-component vector of float)
+0:80    Function Parameters: 
+0:80      'inF0' ( in 4-component vector of float)
+0:80      'inF1' ( in 4-component vector of float)
+0:80      'inF2' ( in 4-component vector of float)
+0:80      'inI0' ( in 4-component vector of int)
+0:?     Sequence
+0:81      Constant:
+0:81        0.000000
+0:82      bitCount ( temp 4-component vector of uint)
+0:82        Convert float to uint ( temp 4-component vector of uint)
+0:82          'inF0' ( in 4-component vector of float)
+0:83      cross-product ( temp 3-component vector of float)
+0:83        Construct vec3 ( in 3-component vector of float)
+0:83          'inF0' ( in 4-component vector of float)
+0:83        Construct vec3 ( in 3-component vector of float)
+0:83          'inF1' ( in 4-component vector of float)
+0:84      Constant:
+0:84        0.000000
+0:85      Construct vec4 ( temp 4-component vector of float)
+0:85        direct index ( temp float)
+0:85          unpackHalf2x16 ( temp 2-component vector of float)
+0:85            direct index ( temp uint)
+0:85              Convert float to uint ( temp 4-component vector of uint)
+0:85                'inF0' ( in 4-component vector of float)
+0:85              Constant:
+0:85                0 (const int)
+0:85          Constant:
+0:85            0 (const int)
+0:85        direct index ( temp float)
+0:85          unpackHalf2x16 ( temp 2-component vector of float)
+0:85            direct index ( temp uint)
+0:85              Convert float to uint ( temp 4-component vector of uint)
+0:85                'inF0' ( in 4-component vector of float)
+0:85              Constant:
+0:85                1 (const int)
+0:85          Constant:
+0:85            0 (const int)
+0:85        direct index ( temp float)
+0:85          unpackHalf2x16 ( temp 2-component vector of float)
+0:85            direct index ( temp uint)
+0:85              Convert float to uint ( temp 4-component vector of uint)
+0:85                'inF0' ( in 4-component vector of float)
+0:85              Constant:
+0:85                2 (const int)
+0:85          Constant:
+0:85            0 (const int)
+0:85        direct index ( temp float)
+0:85          unpackHalf2x16 ( temp 2-component vector of float)
+0:85            direct index ( temp uint)
+0:85              Convert float to uint ( temp 4-component vector of uint)
+0:85                'inF0' ( in 4-component vector of float)
+0:85              Constant:
+0:85                3 (const int)
+0:85          Constant:
+0:85            0 (const int)
+0:86      findMSB ( temp 4-component vector of uint)
+0:86        Convert float to uint ( temp 4-component vector of uint)
+0:86          'inF0' ( in 4-component vector of float)
+0:87      findLSB ( temp 4-component vector of uint)
+0:87        Convert float to uint ( temp 4-component vector of uint)
+0:87          'inF0' ( in 4-component vector of float)
+0:89      bitFieldReverse ( temp 4-component vector of uint)
+0:89        Convert float to uint ( temp 4-component vector of uint)
+0:89          'inF0' ( in 4-component vector of float)
+0:90      Constant:
+0:90        0.000000
+0:92      Branch: Return with expression
+0:?         Constant:
+0:?           1.000000
+0:?           2.000000
+0:?           3.000000
+0:?           4.000000
+0:80  Function Definition: PixelShaderFunction( ( temp void)
+0:80    Function Parameters: 
+0:?     Sequence
+0:80      move second child to first child ( temp 4-component vector of float)
+0:?         'inF0' ( temp 4-component vector of float)
+0:?         'inF0' (layout( location=0) in 4-component vector of float)
+0:80      move second child to first child ( temp 4-component vector of float)
+0:?         'inF1' ( temp 4-component vector of float)
+0:?         'inF1' (layout( location=1) in 4-component vector of float)
+0:80      move second child to first child ( temp 4-component vector of float)
+0:?         'inF2' ( temp 4-component vector of float)
+0:?         'inF2' (layout( location=2) in 4-component vector of float)
+0:80      move second child to first child ( temp 4-component vector of int)
+0:?         'inI0' ( temp 4-component vector of int)
+0:?         'inI0' (layout( location=3) flat in 4-component vector of int)
+0:80      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:80        Function Call: @PixelShaderFunction(vf4;vf4;vf4;vi4; ( temp 4-component vector of float)
+0:?           'inF0' ( temp 4-component vector of float)
+0:?           'inF1' ( temp 4-component vector of float)
+0:?           'inF2' ( temp 4-component vector of float)
+0:?           'inI0' ( temp 4-component vector of int)
+0:115  Function Definition: PixelShaderFunction2x2(mf22;mf22;mf22; ( temp 2X2 matrix of float)
+0:115    Function Parameters: 
+0:115      'inF0' ( in 2X2 matrix of float)
+0:115      'inF1' ( in 2X2 matrix of float)
+0:115      'inF2' ( in 2X2 matrix of float)
+0:?     Sequence
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:119      Branch: Return with expression
+0:?         Constant:
+0:?           2.000000
+0:?           2.000000
+0:?           2.000000
+0:?           2.000000
+0:123  Function Definition: PixelShaderFunction3x3(mf33;mf33;mf33; ( temp 3X3 matrix of float)
+0:123    Function Parameters: 
+0:123      'inF0' ( in 3X3 matrix of float)
+0:123      'inF1' ( in 3X3 matrix of float)
+0:123      'inF2' ( in 3X3 matrix of float)
+0:?     Sequence
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:127      Branch: Return with expression
+0:?         Constant:
+0:?           3.000000
+0:?           3.000000
+0:?           3.000000
+0:?           3.000000
+0:?           3.000000
+0:?           3.000000
+0:?           3.000000
+0:?           3.000000
+0:?           3.000000
+0:131  Function Definition: PixelShaderFunction4x4(mf44;mf44;mf44; ( temp 4X4 matrix of float)
+0:131    Function Parameters: 
+0:131      'inF0' ( in 4X4 matrix of float)
+0:131      'inF1' ( in 4X4 matrix of float)
+0:131      'inF2' ( in 4X4 matrix of float)
+0:?     Sequence
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:135      Branch: Return with expression
+0:?         Constant:
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'inF0' (layout( location=0) in 4-component vector of float)
+0:?     'inF1' (layout( location=1) in 4-component vector of float)
+0:?     'inF2' (layout( location=2) in 4-component vector of float)
+0:?     'inI0' (layout( location=3) flat in 4-component vector of int)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+ERROR: node is still EOpNull!
+0:2  Function Definition: PixelShaderFunctionS(f1;f1;f1;i1; ( temp float)
+0:2    Function Parameters: 
+0:2      'inF0' ( in float)
+0:2      'inF1' ( in float)
+0:2      'inF2' ( in float)
+0:2      'inI0' ( in int)
+0:?     Sequence
+0:5      uint64BitsToDouble ( temp double)
+0:5        Construct uvec2 ( temp 2-component vector of uint)
+0:5          Convert float to uint ( temp uint)
+0:5            'inF0' ( in float)
+0:5          Convert float to uint ( temp uint)
+0:5            'inF1' ( in float)
+0:6      Function Call: CheckAccessFullyMapped(u1; ( temp bool)
+0:6        Constant:
+0:6          3 (const uint)
+0:7      bitCount ( temp uint)
+0:7        Convert float to uint ( temp uint)
+0:7          'inF0' ( in float)
+0:8      cross-product ( temp 3-component vector of float)
+0:8        Construct vec3 ( in 3-component vector of float)
+0:8          'inF0' ( in float)
+0:8        Construct vec3 ( in 3-component vector of float)
+0:8          'inF1' ( in float)
+0:9      Convert float to int ( temp 4-component vector of int)
+0:9        vector-scale ( temp 4-component vector of float)
+0:9          Constant:
+0:9            255.001953
+0:9          vector swizzle ( temp 4-component vector of float)
+0:9            Construct vec4 ( in 4-component vector of float)
+0:9              'inF0' ( in float)
+0:9            Sequence
+0:9              Constant:
+0:9                2 (const int)
+0:9              Constant:
+0:9                1 (const int)
+0:9              Constant:
+0:9                0 (const int)
+0:9              Constant:
+0:9                3 (const int)
+0:10      determinant ( temp float)
+ERROR: node is still EOpNull!
+0:10          'inF0' ( in float)
+0:12      direct index ( temp float)
+0:12        unpackHalf2x16 ( temp 2-component vector of float)
+0:12          Convert float to uint ( temp uint)
+0:12            'inF0' ( in float)
+0:12        Constant:
+0:12          0 (const int)
+0:13      findMSB ( temp uint)
+0:13        Convert float to uint ( temp uint)
+0:13          'inF0' ( in float)
+0:14      findLSB ( temp uint)
+0:14        Convert float to uint ( temp uint)
+0:14          'inF0' ( in float)
+0:23      length ( temp float)
+0:23        'inF0' ( in float)
+0:24      Function Call: msad4(u1;vu2;vu4; ( temp 4-component vector of uint)
+0:24        Convert float to uint ( temp uint)
+0:24          'inF0' ( in float)
+0:24        Constant:
+0:24          0 (const uint)
+0:24          0 (const uint)
+0:24        Constant:
+0:24          0 (const uint)
+0:24          0 (const uint)
+0:24          0 (const uint)
+0:24          0 (const uint)
+0:25      normalize ( temp 2-component vector of float)
+0:25        Construct vec2 ( in 2-component vector of float)
+0:25          'inF0' ( in float)
+0:26      reflect ( temp 2-component vector of float)
+0:26        Construct vec2 ( in 2-component vector of float)
+0:26          'inF0' ( in float)
+0:26        Construct vec2 ( in 2-component vector of float)
+0:26          'inF1' ( in float)
+0:27      refract ( temp 2-component vector of float)
+0:27        Construct vec2 ( in 2-component vector of float)
+0:27          'inF0' ( in float)
+0:27        Construct vec2 ( in 2-component vector of float)
+0:27          'inF1' ( in float)
+0:27        'inF2' ( in float)
+0:28      Constant:
+0:28        0.000000
+0:29      bitFieldReverse ( temp uint)
+0:29        Convert float to uint ( temp uint)
+0:29          'inF0' ( in float)
+0:30      transpose ( temp 1X1 matrix of float)
+ERROR: node is still EOpNull!
+0:30          'inF0' ( in float)
+0:32      Branch: Return with expression
+0:32        Constant:
+0:32          0.000000
+0:36  Function Definition: PixelShaderFunction1(vf1;vf1;vf1;vi1; ( temp 1-component vector of float)
+0:36    Function Parameters: 
+0:36      'inF0' ( in 1-component vector of float)
+0:36      'inF1' ( in 1-component vector of float)
+0:36      'inF2' ( in 1-component vector of float)
+0:36      'inI0' ( in 1-component vector of int)
+0:?     Sequence
+0:39      Constant:
+0:39        0.000000
+0:41      Branch: Return with expression
+0:41        Constant:
+0:41          0.000000
+0:45  Function Definition: PixelShaderFunction2(vf2;vf2;vf2;vi2; ( temp 2-component vector of float)
+0:45    Function Parameters: 
+0:45      'inF0' ( in 2-component vector of float)
+0:45      'inF1' ( in 2-component vector of float)
+0:45      'inF2' ( in 2-component vector of float)
+0:45      'inI0' ( in 2-component vector of int)
+0:?     Sequence
+0:46      ERROR: Bad aggregation op
+ ( temp 2-component vector of double)
+0:46        Convert float to uint ( temp 2-component vector of uint)
+0:46          'inF0' ( in 2-component vector of float)
+0:46        Convert float to uint ( temp 2-component vector of uint)
+0:46          'inF1' ( in 2-component vector of float)
+0:47      Constant:
+0:47        0.000000
+0:48      bitCount ( temp 2-component vector of uint)
+0:48        Convert float to uint ( temp 2-component vector of uint)
+0:48          'inF0' ( in 2-component vector of float)
+0:49      Constant:
+0:49        0.000000
+0:50      Constant:
+0:50        0.000000
+0:51      Constant:
+0:51        0.000000
+0:52      Construct vec2 ( temp 2-component vector of float)
+0:52        direct index ( temp float)
+0:52          unpackHalf2x16 ( temp 2-component vector of float)
+0:52            direct index ( temp uint)
+0:52              Convert float to uint ( temp 2-component vector of uint)
+0:52                'inF0' ( in 2-component vector of float)
+0:52              Constant:
+0:52                0 (const int)
+0:52          Constant:
+0:52            0 (const int)
+0:52        direct index ( temp float)
+0:52          unpackHalf2x16 ( temp 2-component vector of float)
+0:52            direct index ( temp uint)
+0:52              Convert float to uint ( temp 2-component vector of uint)
+0:52                'inF0' ( in 2-component vector of float)
+0:52              Constant:
+0:52                1 (const int)
+0:52          Constant:
+0:52            0 (const int)
+0:53      findMSB ( temp 2-component vector of uint)
+0:53        Convert float to uint ( temp 2-component vector of uint)
+0:53          'inF0' ( in 2-component vector of float)
+0:54      findLSB ( temp 2-component vector of uint)
+0:54        Convert float to uint ( temp 2-component vector of uint)
+0:54          'inF0' ( in 2-component vector of float)
+0:56      bitFieldReverse ( temp 2-component vector of uint)
+0:56        Convert float to uint ( temp 2-component vector of uint)
+0:56          'inF0' ( in 2-component vector of float)
+0:57      Constant:
+0:57        0.000000
+0:59      Branch: Return with expression
+0:?         Constant:
+0:?           1.000000
+0:?           2.000000
+0:63  Function Definition: PixelShaderFunction3(vf3;vf3;vf3;vi3; ( temp 3-component vector of float)
+0:63    Function Parameters: 
+0:63      'inF0' ( in 3-component vector of float)
+0:63      'inF1' ( in 3-component vector of float)
+0:63      'inF2' ( in 3-component vector of float)
+0:63      'inI0' ( in 3-component vector of int)
+0:?     Sequence
+0:64      Constant:
+0:64        0.000000
+0:65      bitCount ( temp 3-component vector of uint)
+0:65        Convert float to uint ( temp 3-component vector of uint)
+0:65          'inF0' ( in 3-component vector of float)
+0:66      Constant:
+0:66        0.000000
+0:67      Constant:
+0:67        0.000000
+0:68      Construct vec3 ( temp 3-component vector of float)
+0:68        direct index ( temp float)
+0:68          unpackHalf2x16 ( temp 2-component vector of float)
+0:68            direct index ( temp uint)
+0:68              Convert float to uint ( temp 3-component vector of uint)
+0:68                'inF0' ( in 3-component vector of float)
+0:68              Constant:
+0:68                0 (const int)
+0:68          Constant:
+0:68            0 (const int)
+0:68        direct index ( temp float)
+0:68          unpackHalf2x16 ( temp 2-component vector of float)
+0:68            direct index ( temp uint)
+0:68              Convert float to uint ( temp 3-component vector of uint)
+0:68                'inF0' ( in 3-component vector of float)
+0:68              Constant:
+0:68                1 (const int)
+0:68          Constant:
+0:68            0 (const int)
+0:68        direct index ( temp float)
+0:68          unpackHalf2x16 ( temp 2-component vector of float)
+0:68            direct index ( temp uint)
+0:68              Convert float to uint ( temp 3-component vector of uint)
+0:68                'inF0' ( in 3-component vector of float)
+0:68              Constant:
+0:68                2 (const int)
+0:68          Constant:
+0:68            0 (const int)
+0:69      findMSB ( temp 3-component vector of uint)
+0:69        Convert float to uint ( temp 3-component vector of uint)
+0:69          'inF0' ( in 3-component vector of float)
+0:70      findLSB ( temp 3-component vector of uint)
+0:70        Convert float to uint ( temp 3-component vector of uint)
+0:70          'inF0' ( in 3-component vector of float)
+0:72      bitFieldReverse ( temp 3-component vector of uint)
+0:72        Convert float to uint ( temp 3-component vector of uint)
+0:72          'inF0' ( in 3-component vector of float)
+0:73      Constant:
+0:73        0.000000
+0:76      Branch: Return with expression
+0:?         Constant:
+0:?           1.000000
+0:?           2.000000
+0:?           3.000000
+0:80  Function Definition: @PixelShaderFunction(vf4;vf4;vf4;vi4; ( temp 4-component vector of float)
+0:80    Function Parameters: 
+0:80      'inF0' ( in 4-component vector of float)
+0:80      'inF1' ( in 4-component vector of float)
+0:80      'inF2' ( in 4-component vector of float)
+0:80      'inI0' ( in 4-component vector of int)
+0:?     Sequence
+0:81      Constant:
+0:81        0.000000
+0:82      bitCount ( temp 4-component vector of uint)
+0:82        Convert float to uint ( temp 4-component vector of uint)
+0:82          'inF0' ( in 4-component vector of float)
+0:83      cross-product ( temp 3-component vector of float)
+0:83        Construct vec3 ( in 3-component vector of float)
+0:83          'inF0' ( in 4-component vector of float)
+0:83        Construct vec3 ( in 3-component vector of float)
+0:83          'inF1' ( in 4-component vector of float)
+0:84      Constant:
+0:84        0.000000
+0:85      Construct vec4 ( temp 4-component vector of float)
+0:85        direct index ( temp float)
+0:85          unpackHalf2x16 ( temp 2-component vector of float)
+0:85            direct index ( temp uint)
+0:85              Convert float to uint ( temp 4-component vector of uint)
+0:85                'inF0' ( in 4-component vector of float)
+0:85              Constant:
+0:85                0 (const int)
+0:85          Constant:
+0:85            0 (const int)
+0:85        direct index ( temp float)
+0:85          unpackHalf2x16 ( temp 2-component vector of float)
+0:85            direct index ( temp uint)
+0:85              Convert float to uint ( temp 4-component vector of uint)
+0:85                'inF0' ( in 4-component vector of float)
+0:85              Constant:
+0:85                1 (const int)
+0:85          Constant:
+0:85            0 (const int)
+0:85        direct index ( temp float)
+0:85          unpackHalf2x16 ( temp 2-component vector of float)
+0:85            direct index ( temp uint)
+0:85              Convert float to uint ( temp 4-component vector of uint)
+0:85                'inF0' ( in 4-component vector of float)
+0:85              Constant:
+0:85                2 (const int)
+0:85          Constant:
+0:85            0 (const int)
+0:85        direct index ( temp float)
+0:85          unpackHalf2x16 ( temp 2-component vector of float)
+0:85            direct index ( temp uint)
+0:85              Convert float to uint ( temp 4-component vector of uint)
+0:85                'inF0' ( in 4-component vector of float)
+0:85              Constant:
+0:85                3 (const int)
+0:85          Constant:
+0:85            0 (const int)
+0:86      findMSB ( temp 4-component vector of uint)
+0:86        Convert float to uint ( temp 4-component vector of uint)
+0:86          'inF0' ( in 4-component vector of float)
+0:87      findLSB ( temp 4-component vector of uint)
+0:87        Convert float to uint ( temp 4-component vector of uint)
+0:87          'inF0' ( in 4-component vector of float)
+0:89      bitFieldReverse ( temp 4-component vector of uint)
+0:89        Convert float to uint ( temp 4-component vector of uint)
+0:89          'inF0' ( in 4-component vector of float)
+0:90      Constant:
+0:90        0.000000
+0:92      Branch: Return with expression
+0:?         Constant:
+0:?           1.000000
+0:?           2.000000
+0:?           3.000000
+0:?           4.000000
+0:80  Function Definition: PixelShaderFunction( ( temp void)
+0:80    Function Parameters: 
+0:?     Sequence
+0:80      move second child to first child ( temp 4-component vector of float)
+0:?         'inF0' ( temp 4-component vector of float)
+0:?         'inF0' (layout( location=0) in 4-component vector of float)
+0:80      move second child to first child ( temp 4-component vector of float)
+0:?         'inF1' ( temp 4-component vector of float)
+0:?         'inF1' (layout( location=1) in 4-component vector of float)
+0:80      move second child to first child ( temp 4-component vector of float)
+0:?         'inF2' ( temp 4-component vector of float)
+0:?         'inF2' (layout( location=2) in 4-component vector of float)
+0:80      move second child to first child ( temp 4-component vector of int)
+0:?         'inI0' ( temp 4-component vector of int)
+0:?         'inI0' (layout( location=3) flat in 4-component vector of int)
+0:80      move second child to first child ( temp 4-component vector of float)
+0:?         '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:80        Function Call: @PixelShaderFunction(vf4;vf4;vf4;vi4; ( temp 4-component vector of float)
+0:?           'inF0' ( temp 4-component vector of float)
+0:?           'inF1' ( temp 4-component vector of float)
+0:?           'inF2' ( temp 4-component vector of float)
+0:?           'inI0' ( temp 4-component vector of int)
+0:115  Function Definition: PixelShaderFunction2x2(mf22;mf22;mf22; ( temp 2X2 matrix of float)
+0:115    Function Parameters: 
+0:115      'inF0' ( in 2X2 matrix of float)
+0:115      'inF1' ( in 2X2 matrix of float)
+0:115      'inF2' ( in 2X2 matrix of float)
+0:?     Sequence
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:117      Constant:
+0:117        0.000000
+0:119      Branch: Return with expression
+0:?         Constant:
+0:?           2.000000
+0:?           2.000000
+0:?           2.000000
+0:?           2.000000
+0:123  Function Definition: PixelShaderFunction3x3(mf33;mf33;mf33; ( temp 3X3 matrix of float)
+0:123    Function Parameters: 
+0:123      'inF0' ( in 3X3 matrix of float)
+0:123      'inF1' ( in 3X3 matrix of float)
+0:123      'inF2' ( in 3X3 matrix of float)
+0:?     Sequence
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:125      Constant:
+0:125        0.000000
+0:127      Branch: Return with expression
+0:?         Constant:
+0:?           3.000000
+0:?           3.000000
+0:?           3.000000
+0:?           3.000000
+0:?           3.000000
+0:?           3.000000
+0:?           3.000000
+0:?           3.000000
+0:?           3.000000
+0:131  Function Definition: PixelShaderFunction4x4(mf44;mf44;mf44; ( temp 4X4 matrix of float)
+0:131    Function Parameters: 
+0:131      'inF0' ( in 4X4 matrix of float)
+0:131      'inF1' ( in 4X4 matrix of float)
+0:131      'inF2' ( in 4X4 matrix of float)
+0:?     Sequence
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:133      Constant:
+0:133        0.000000
+0:135      Branch: Return with expression
+0:?         Constant:
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?           4.000000
+0:?   Linker Objects
+0:?     '@entryPointOutput' (layout( location=0) out 4-component vector of float)
+0:?     'inF0' (layout( location=0) in 4-component vector of float)
+0:?     'inF1' (layout( location=1) in 4-component vector of float)
+0:?     'inF2' (layout( location=2) in 4-component vector of float)
+0:?     'inI0' (layout( location=3) flat in 4-component vector of int)
+
+SPIR-V is not generated for failed compile or link

@@ -1,0 +1,76 @@
+#version 450 core
+#extension GL_KHR_memory_scope_semantics : enable
+#extension GL_NV_cooperative_matrix : enable
+#extension GL_EXT_shader_explicit_arithmetic_types_float16 : enable
+
+layout (local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+float<16> ftemplate16;
+
+fcoopmatNV fnoparams;
+
+fcoopmatNV<8, gl_ScopeSubgroup, 8, 8> fbadbits;
+
+fcoopmatNV<16, gl_ScopeSubgroup, 8> fbadnumparams;
+
+int X = 8;
+
+fcoopmatNV<16, gl_ScopeSubgroup, 8, X> fbadparam;
+
+layout(constant_id = 0) int Y = 1;
+
+shared fcoopmatNV<16, gl_ScopeSubgroup, 16, 16> sharedmat;
+
+layout(set = 0, binding = 0) buffer InvBlock {
+    fcoopmatNV<16, gl_ScopeSubgroup, 16, 16> bufmat;
+} invblock;
+
+void main()
+{
+    fcoopmatNV<32, gl_ScopeSubgroup, 16, 8> f32_16_8;
+    fcoopmatNV<16, gl_ScopeSubgroup, 16, 8> f16_16_8;
+
+    // invalid implicit conversions
+    f32_16_8 = f16_16_8;
+    f32_16_8 = f16_16_8 + f16_16_8;
+
+    fcoopmatNV<16, gl_ScopeSubgroup, 8, 8> f16_8_8;
+
+    // mismatching dimensions
+    f16_16_8 = f16_8_8;
+
+    fcoopmatNV<16, gl_ScopeSubgroup, 8, Y> f16_8_Y;
+    fcoopmatNV<16, gl_ScopeSubgroup, 8, (Y+1)> f16_8_Y1;
+
+    // mismatching dimensions with specialization constants
+    f16_8_Y = f16_8_Y1;
+
+    // wrong arguments for constructor
+    f16_8_8 = fcoopmatNV<16, gl_ScopeSubgroup, 8, 8>(1, 1);
+
+    // can't construct from a builtin type
+    mat4 m4;
+    fcoopmatNV<32, gl_ScopeSubgroup, 4, 4> f32_4_4 = fcoopmatNV<32, gl_ScopeSubgroup, 4, 4>(m4);
+
+    // only support a single array subscript
+    f16_16_8[0][0];
+
+    // don't support scalar component selection
+    f16_16_8.x;
+
+    f16_16_8 * f16_16_8;
+
+    f16_16_8 + 1.0;
+    f16_16_8 - 1.0;
+    f16_16_8 / 1.0;
+    f16_16_8 += 1.0;
+    f16_16_8 -= 1.0;
+    f16_16_8 /= 1.0;
+
+    f16_16_8*2.0;
+    2.0*f16_16_8;
+    f32_16_8*float16_t(2.0);
+    float16_t(2.0)*f32_16_8;
+
+    transpose(f16_8_8);
+}

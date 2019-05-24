@@ -1,0 +1,19 @@
+struct sb_t
+{
+    float4 color;
+    uint2  threadId;
+};
+
+RWTexture2D<float4> outtx;
+ConsumeStructuredBuffer<sb_t> csb : register(u1);
+RWStructuredBuffer<float4> rwsb;
+
+[numthreads(1, 1, 1)]
+void main(uint3 nThreadId : SV_DispatchThreadID)
+{
+    sb_t data = csb.Consume();
+    float2 coord = float2(data.threadId.xy);
+    outtx[coord] = data.color;
+
+    rwsb[coord.x] = rwsb.Load(coord.y);
+}

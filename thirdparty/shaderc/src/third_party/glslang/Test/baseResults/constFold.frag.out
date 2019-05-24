@@ -1,0 +1,660 @@
+constFold.frag
+ERROR: 0:109: '[' :  index out of range '-1'
+ERROR: 0:110: '[' :  vector index out of range '4'
+ERROR: 0:111: '[' :  index out of range '-2'
+ERROR: 0:112: '[' :  index out of range '-1'
+ERROR: 0:113: '[' :  vector index out of range '3'
+ERROR: 0:114: '[' :  matrix index out of range '3'
+ERROR: 6 compilation errors.  No code generated.
+
+
+Shader version: 430
+ERROR: node is still EOpNull!
+0:28  Function Definition: main( ( global void)
+0:28    Function Parameters: 
+0:30    Sequence
+0:30      Sequence
+0:30        move second child to first child ( temp 4-component vector of float)
+0:30          'dx' ( temp 4-component vector of float)
+0:30          dPdx ( global 4-component vector of float)
+0:30            'inv' ( smooth in 4-component vector of float)
+0:37      move second child to first child ( temp 4-component vector of float)
+0:37        'FragColor' ( out 4-component vector of float)
+0:37        Constant:
+0:37          2.000000
+0:37          6.000000
+0:37          3.000000
+0:37          171.887339
+0:42      move second child to first child ( temp 4-component vector of float)
+0:42        'FragColor' ( out 4-component vector of float)
+0:42        Constant:
+0:42          3.000000
+0:42          2.000000
+0:42          0.001593
+0:42          -0.999999
+0:43      move second child to first child ( temp 2-component vector of float)
+0:43        'out2' ( out 2-component vector of float)
+0:43        Constant:
+0:43          5.600000
+0:43          5.800000
+0:44      move second child to first child ( temp 4-component vector of float)
+0:44        'out3' ( out 4-component vector of float)
+0:44        Constant:
+0:44          20.085537
+0:44          2.302585
+0:44          16.000000
+0:44          8.000000
+0:45      move second child to first child ( temp 4-component vector of float)
+0:45        'out4' ( out 4-component vector of float)
+0:45        Constant:
+0:45          10.000000
+0:45          0.100000
+0:45          4.700000
+0:45          10.900000
+0:46      move second child to first child ( temp 4-component vector of int)
+0:46        'out5' ( out 4-component vector of int)
+0:46        Constant:
+0:46          8 (const int)
+0:46          17 (const int)
+0:46          -1 (const int)
+0:46          1 (const int)
+0:47      move second child to first child ( temp 3-component vector of float)
+0:47        'out6' ( out 3-component vector of float)
+0:47        Constant:
+0:47          -1.000000
+0:47          1.000000
+0:47          0.000000
+0:48      move second child to first child ( temp 4-component vector of float)
+0:48        'out7' ( out 4-component vector of float)
+0:48        Constant:
+0:48          4.000000
+0:48          -4.000000
+0:48          5.000000
+0:48          -5.000000
+0:49      move second child to first child ( temp 4-component vector of float)
+0:49        'out8' ( out 4-component vector of float)
+0:49        Constant:
+0:49          4.000000
+0:49          5.000000
+0:49          4.000000
+0:49          -6.000000
+0:50      move second child to first child ( temp 4-component vector of float)
+0:50        'out9' ( out 4-component vector of float)
+0:50        Constant:
+0:50          8.000000
+0:50          -4.000000
+0:50          0.345000
+0:50          0.400000
+0:51      move second child to first child ( temp 4-component vector of float)
+0:51        'out10' ( out 4-component vector of float)
+0:51        Constant:
+0:51          1.000000
+0:51          1.000000
+0:51          0.000000
+0:51          0.000000
+0:52      move second child to first child ( temp 4-component vector of float)
+0:52        'out11' ( out 4-component vector of float)
+0:52        Constant:
+0:52          0.000000
+0:52          0.000000
+0:52          1.000000
+0:52          0.000000
+0:53      move second child to first child ( temp 4-component vector of float)
+0:53        'out11' ( out 4-component vector of float)
+0:53        Constant:
+0:53          1.029639
+0:53          0.799690
+0:53          0.674741
+0:53          1.570696
+0:54      move second child to first child ( temp 4-component vector of float)
+0:54        'out11' ( out 4-component vector of float)
+0:54        Constant:
+0:54          0.000000
+0:54          0.523599
+0:54          1.570796
+0:54          1.047198
+0:58      move second child to first child ( temp 4-component vector of float)
+0:58        'out11' ( out 4-component vector of float)
+0:58        Constant:
+0:58          1.373401
+0:58          0.000000
+0:58          0.896055
+0:58          -0.380506
+0:62      move second child to first child ( temp 2-component vector of int)
+0:62        'out12' ( out 2-component vector of int)
+0:62        Constant:
+0:62          15 (const int)
+0:62          16 (const int)
+0:63      move second child to first child ( temp 2-component vector of int)
+0:63        'out12' ( out 2-component vector of int)
+0:63        Constant:
+0:63          17 (const int)
+0:63          17 (const int)
+0:64      move second child to first child ( temp 2-component vector of float)
+0:64        'out2' ( out 2-component vector of float)
+0:64        Constant:
+0:64          871.421253
+0:64          4913.000000
+0:65      move second child to first child ( temp 3-component vector of uint)
+0:65        'out13' ( out 3-component vector of uint)
+0:65        Constant:
+0:65          10 (const uint)
+0:65          20 (const uint)
+0:65          30 (const uint)
+0:66      move second child to first child ( temp 2-component vector of float)
+0:66        'out2' ( out 2-component vector of float)
+0:66        Constant:
+0:66          3.000000
+0:66          6.000000
+0:67      move second child to first child ( temp 2-component vector of float)
+0:67        'out2' ( out 2-component vector of float)
+0:67        Constant:
+0:67          3.500000
+0:67          4.500000
+0:68      move second child to first child ( temp 2-component vector of float)
+0:68        'out2' ( out 2-component vector of float)
+0:68        Constant:
+0:68          0.000000
+0:68          1.000000
+0:69      move second child to first child ( temp 4-component vector of float)
+0:69        'out11' ( out 4-component vector of float)
+0:69        Constant:
+0:69          0.000000
+0:69          0.028000
+0:69          0.500000
+0:69          1.000000
+0:78  Function Definition: foo( ( global void)
+0:78    Function Parameters: 
+0:?     Sequence
+0:81      move second child to first child ( temp float)
+0:81        direct index ( temp float)
+0:81          'a' ( temp 3-element array of float)
+0:81          Constant:
+0:81            0 (const int)
+0:81        Constant:
+0:81          7.000000
+0:82      Constant:
+0:82        2 (const int)
+0:83      Constant:
+0:83        2147483647 (const int)
+0:84      Constant:
+0:84        +1.#INF
+0:84      Constant:
+0:84        -1.#INF
+0:84      Constant:
+0:84        1.#IND
+0:88      Constant:
+0:88        2 (const uint)
+0:88        3 (const uint)
+0:89      Constant:
+0:89        0 (const uint)
+0:90      Constant:
+0:90        6 (const uint)
+0:90        7 (const uint)
+0:103  Function Definition: foo2( ( global void)
+0:103    Function Parameters: 
+0:105    Sequence
+0:105      direct index ( temp float)
+0:105        'a1' ( global 1-element array of float)
+0:105        Constant:
+0:105          0 (const int)
+0:106      direct index ( temp float)
+0:106        'a2' ( global 2-element array of float)
+0:106        Constant:
+0:106          0 (const int)
+0:107      direct index ( temp float)
+0:107        'a3' ( global 4-element array of float)
+0:107        Constant:
+0:107          0 (const int)
+0:108      direct index ( temp float)
+0:108        'a4' ( global 2-element array of float)
+0:108        Constant:
+0:108          0 (const int)
+0:109      Constant:
+0:109        1.000000
+0:110      Constant:
+0:110        5.000000
+0:111      Constant:
+0:111        2.000000
+0:112      Constant:
+0:112        3.000000
+0:113      Constant:
+0:113        0.000000
+0:114      Constant:
+0:114        0.000000
+0:116      move second child to first child ( temp int)
+0:116        'p' ( temp int)
+0:116        Constant:
+0:116          2147483647 (const int)
+0:117      move second child to first child ( temp int)
+0:117        'p' ( temp int)
+0:117        Constant:
+0:117          -2147483648 (const int)
+0:118      move second child to first child ( temp int)
+0:118        'p' ( temp int)
+0:118        Constant:
+0:118          -2147483647 (const int)
+0:119      Sequence
+0:119        move second child to first child ( temp float)
+0:119          'f' ( temp float)
+0:119          Constant:
+0:119            1.444000
+0:120      move second child to first child ( temp float)
+0:120        'f' ( temp float)
+0:120        direct index ( temp float)
+0:120          Construct vec4 ( temp 4-component vector of float)
+0:120            Test condition and select ( temp float)
+0:120              Condition
+0:120              Compare Less Than ( temp bool)
+0:120                direct index ( temp float)
+0:120                  'inv' ( smooth in 4-component vector of float)
+0:120                  Constant:
+0:120                    0 (const int)
+0:120                Constant:
+0:120                  2.400000
+0:120              true case
+0:120              Constant:
+0:120                -1.000000
+0:120              false case
+0:120              Constant:
+0:120                1.000000
+0:120          Constant:
+0:120            3 (const int)
+0:126  Function Definition: foo3( ( global void)
+0:126    Function Parameters: 
+0:128    Sequence
+0:128      Sequence
+0:128        move second child to first child ( temp 3X2 matrix of float)
+0:128          'r32' ( temp 3X2 matrix of float)
+0:128          Constant:
+0:128            43.000000
+0:128            64.000000
+0:128            51.000000
+0:128            76.000000
+0:128            59.000000
+0:128            88.000000
+0:138  Function Definition: foo4( ( global void)
+0:138    Function Parameters: 
+0:140    Sequence
+0:140      Sequence
+0:140        move second child to first child ( temp int)
+0:140          'a' ( temp int)
+0:140          Constant:
+0:140            9 (const int)
+0:?   Linker Objects
+0:?     'a' ( const int)
+0:?       1 (const int)
+0:?     'b' ( const int)
+0:?       2 (const int)
+0:?     'c' ( const int)
+0:?       3 (const int)
+0:?     'd' ( const int)
+0:?       2 (const int)
+0:?     'e' ( const float)
+0:?       2.000000
+0:?     'f' ( const float)
+0:?       6.000000
+0:?     'g' ( const float)
+0:?       3.000000
+0:?     'pytho' ( const 2-component vector of float)
+0:?       3.000000
+0:?       4.000000
+0:?     'inv' ( smooth in 4-component vector of float)
+0:?     'FragColor' ( out 4-component vector of float)
+0:?     'out2' ( out 2-component vector of float)
+0:?     'out3' ( out 4-component vector of float)
+0:?     'out4' ( out 4-component vector of float)
+0:?     'out5' ( out 4-component vector of int)
+0:?     'out6' ( out 3-component vector of float)
+0:?     'out7' ( out 4-component vector of float)
+0:?     'out8' ( out 4-component vector of float)
+0:?     'out9' ( out 4-component vector of float)
+0:?     'out10' ( out 4-component vector of float)
+0:?     'out11' ( out 4-component vector of float)
+0:?     'out12' ( out 2-component vector of int)
+0:?     'out13' ( out 3-component vector of uint)
+0:?     's' ( const structure{ global 3-component vector of float v3,  global 2-component vector of int iv2,  global 2X4 matrix of float m})
+0:?       3.000000
+0:?       3.000000
+0:?       3.000000
+0:?       3 (const int)
+0:?       3 (const int)
+0:?       1.000000
+0:?       2.000000
+0:?       3.000000
+0:?       4.000000
+0:?       5.000000
+0:?       6.000000
+0:?       7.000000
+0:?       8.000000
+0:?     'm2' ( const 2X2 matrix of float)
+0:?       2.000000
+0:?       3.000000
+0:?       4.000000
+0:?       5.000000
+0:?     'm3' ( const 3X3 matrix of float)
+0:?       2.000000
+0:?       3.000000
+0:?       0.000000
+0:?       4.000000
+0:?       5.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       1.000000
+0:?     'mc' ( const int)
+0:?       1 (const int)
+0:?     'a1' ( global 1-element array of float)
+0:?     'a2' ( global 2-element array of float)
+0:?     'a3' ( global 4-element array of float)
+0:?     'v2' ( const 2-component vector of float)
+0:?       1.000000
+0:?       2.000000
+0:?     'v3' ( const 3-component vector of float)
+0:?       3.000000
+0:?       4.000000
+0:?       5.000000
+0:?     'a4' ( global 2-element array of float)
+0:?     'mm2' ( const 2X2 matrix of float)
+0:?       1.000000
+0:?       2.000000
+0:?       3.000000
+0:?       4.000000
+0:?     'mm32' ( const 3X2 matrix of float)
+0:?       10.000000
+0:?       11.000000
+0:?       12.000000
+0:?       13.000000
+0:?       14.000000
+0:?       15.000000
+0:?     'a0' ( const 3-element array of structure{ global int i,  global float f,  global bool b})
+0:?       3 (const int)
+0:?       2.000000
+0:?       true (const bool)
+0:?       1 (const int)
+0:?       5.000000
+0:?       true (const bool)
+0:?       1 (const int)
+0:?       9.000000
+0:?       false (const bool)
+0:?     'cval1' ( const bool)
+0:?       true (const bool)
+0:?     'cval2' ( const bool)
+0:?       false (const bool)
+0:?     'cval3' ( const bool)
+0:?       false (const bool)
+0:?     'cval4' ( const bool)
+0:?       true (const bool)
+0:?     'cval5' ( const bool)
+0:?       false (const bool)
+0:?     'cval6' ( const bool)
+0:?       true (const bool)
+
+
+Linked fragment stage:
+
+
+Shader version: 430
+ERROR: node is still EOpNull!
+0:28  Function Definition: main( ( global void)
+0:28    Function Parameters: 
+0:30    Sequence
+0:30      Sequence
+0:30        move second child to first child ( temp 4-component vector of float)
+0:30          'dx' ( temp 4-component vector of float)
+0:30          dPdx ( global 4-component vector of float)
+0:30            'inv' ( smooth in 4-component vector of float)
+0:37      move second child to first child ( temp 4-component vector of float)
+0:37        'FragColor' ( out 4-component vector of float)
+0:37        Constant:
+0:37          2.000000
+0:37          6.000000
+0:37          3.000000
+0:37          171.887339
+0:42      move second child to first child ( temp 4-component vector of float)
+0:42        'FragColor' ( out 4-component vector of float)
+0:42        Constant:
+0:42          3.000000
+0:42          2.000000
+0:42          0.001593
+0:42          -0.999999
+0:43      move second child to first child ( temp 2-component vector of float)
+0:43        'out2' ( out 2-component vector of float)
+0:43        Constant:
+0:43          5.600000
+0:43          5.800000
+0:44      move second child to first child ( temp 4-component vector of float)
+0:44        'out3' ( out 4-component vector of float)
+0:44        Constant:
+0:44          20.085537
+0:44          2.302585
+0:44          16.000000
+0:44          8.000000
+0:45      move second child to first child ( temp 4-component vector of float)
+0:45        'out4' ( out 4-component vector of float)
+0:45        Constant:
+0:45          10.000000
+0:45          0.100000
+0:45          4.700000
+0:45          10.900000
+0:46      move second child to first child ( temp 4-component vector of int)
+0:46        'out5' ( out 4-component vector of int)
+0:46        Constant:
+0:46          8 (const int)
+0:46          17 (const int)
+0:46          -1 (const int)
+0:46          1 (const int)
+0:47      move second child to first child ( temp 3-component vector of float)
+0:47        'out6' ( out 3-component vector of float)
+0:47        Constant:
+0:47          -1.000000
+0:47          1.000000
+0:47          0.000000
+0:48      move second child to first child ( temp 4-component vector of float)
+0:48        'out7' ( out 4-component vector of float)
+0:48        Constant:
+0:48          4.000000
+0:48          -4.000000
+0:48          5.000000
+0:48          -5.000000
+0:49      move second child to first child ( temp 4-component vector of float)
+0:49        'out8' ( out 4-component vector of float)
+0:49        Constant:
+0:49          4.000000
+0:49          5.000000
+0:49          4.000000
+0:49          -6.000000
+0:50      move second child to first child ( temp 4-component vector of float)
+0:50        'out9' ( out 4-component vector of float)
+0:50        Constant:
+0:50          8.000000
+0:50          -4.000000
+0:50          0.345000
+0:50          0.400000
+0:51      move second child to first child ( temp 4-component vector of float)
+0:51        'out10' ( out 4-component vector of float)
+0:51        Constant:
+0:51          1.000000
+0:51          1.000000
+0:51          0.000000
+0:51          0.000000
+0:52      move second child to first child ( temp 4-component vector of float)
+0:52        'out11' ( out 4-component vector of float)
+0:52        Constant:
+0:52          0.000000
+0:52          0.000000
+0:52          1.000000
+0:52          0.000000
+0:53      move second child to first child ( temp 4-component vector of float)
+0:53        'out11' ( out 4-component vector of float)
+0:53        Constant:
+0:53          1.029639
+0:53          0.799690
+0:53          0.674741
+0:53          1.570696
+0:54      move second child to first child ( temp 4-component vector of float)
+0:54        'out11' ( out 4-component vector of float)
+0:54        Constant:
+0:54          0.000000
+0:54          0.523599
+0:54          1.570796
+0:54          1.047198
+0:58      move second child to first child ( temp 4-component vector of float)
+0:58        'out11' ( out 4-component vector of float)
+0:58        Constant:
+0:58          1.373401
+0:58          0.000000
+0:58          0.896055
+0:58          -0.380506
+0:62      move second child to first child ( temp 2-component vector of int)
+0:62        'out12' ( out 2-component vector of int)
+0:62        Constant:
+0:62          15 (const int)
+0:62          16 (const int)
+0:63      move second child to first child ( temp 2-component vector of int)
+0:63        'out12' ( out 2-component vector of int)
+0:63        Constant:
+0:63          17 (const int)
+0:63          17 (const int)
+0:64      move second child to first child ( temp 2-component vector of float)
+0:64        'out2' ( out 2-component vector of float)
+0:64        Constant:
+0:64          871.421253
+0:64          4913.000000
+0:65      move second child to first child ( temp 3-component vector of uint)
+0:65        'out13' ( out 3-component vector of uint)
+0:65        Constant:
+0:65          10 (const uint)
+0:65          20 (const uint)
+0:65          30 (const uint)
+0:66      move second child to first child ( temp 2-component vector of float)
+0:66        'out2' ( out 2-component vector of float)
+0:66        Constant:
+0:66          3.000000
+0:66          6.000000
+0:67      move second child to first child ( temp 2-component vector of float)
+0:67        'out2' ( out 2-component vector of float)
+0:67        Constant:
+0:67          3.500000
+0:67          4.500000
+0:68      move second child to first child ( temp 2-component vector of float)
+0:68        'out2' ( out 2-component vector of float)
+0:68        Constant:
+0:68          0.000000
+0:68          1.000000
+0:69      move second child to first child ( temp 4-component vector of float)
+0:69        'out11' ( out 4-component vector of float)
+0:69        Constant:
+0:69          0.000000
+0:69          0.028000
+0:69          0.500000
+0:69          1.000000
+0:?   Linker Objects
+0:?     'a' ( const int)
+0:?       1 (const int)
+0:?     'b' ( const int)
+0:?       2 (const int)
+0:?     'c' ( const int)
+0:?       3 (const int)
+0:?     'd' ( const int)
+0:?       2 (const int)
+0:?     'e' ( const float)
+0:?       2.000000
+0:?     'f' ( const float)
+0:?       6.000000
+0:?     'g' ( const float)
+0:?       3.000000
+0:?     'pytho' ( const 2-component vector of float)
+0:?       3.000000
+0:?       4.000000
+0:?     'inv' ( smooth in 4-component vector of float)
+0:?     'FragColor' ( out 4-component vector of float)
+0:?     'out2' ( out 2-component vector of float)
+0:?     'out3' ( out 4-component vector of float)
+0:?     'out4' ( out 4-component vector of float)
+0:?     'out5' ( out 4-component vector of int)
+0:?     'out6' ( out 3-component vector of float)
+0:?     'out7' ( out 4-component vector of float)
+0:?     'out8' ( out 4-component vector of float)
+0:?     'out9' ( out 4-component vector of float)
+0:?     'out10' ( out 4-component vector of float)
+0:?     'out11' ( out 4-component vector of float)
+0:?     'out12' ( out 2-component vector of int)
+0:?     'out13' ( out 3-component vector of uint)
+0:?     's' ( const structure{ global 3-component vector of float v3,  global 2-component vector of int iv2,  global 2X4 matrix of float m})
+0:?       3.000000
+0:?       3.000000
+0:?       3.000000
+0:?       3 (const int)
+0:?       3 (const int)
+0:?       1.000000
+0:?       2.000000
+0:?       3.000000
+0:?       4.000000
+0:?       5.000000
+0:?       6.000000
+0:?       7.000000
+0:?       8.000000
+0:?     'm2' ( const 2X2 matrix of float)
+0:?       2.000000
+0:?       3.000000
+0:?       4.000000
+0:?       5.000000
+0:?     'm3' ( const 3X3 matrix of float)
+0:?       2.000000
+0:?       3.000000
+0:?       0.000000
+0:?       4.000000
+0:?       5.000000
+0:?       0.000000
+0:?       0.000000
+0:?       0.000000
+0:?       1.000000
+0:?     'mc' ( const int)
+0:?       1 (const int)
+0:?     'a1' ( global 1-element array of float)
+0:?     'a2' ( global 2-element array of float)
+0:?     'a3' ( global 4-element array of float)
+0:?     'v2' ( const 2-component vector of float)
+0:?       1.000000
+0:?       2.000000
+0:?     'v3' ( const 3-component vector of float)
+0:?       3.000000
+0:?       4.000000
+0:?       5.000000
+0:?     'a4' ( global 2-element array of float)
+0:?     'mm2' ( const 2X2 matrix of float)
+0:?       1.000000
+0:?       2.000000
+0:?       3.000000
+0:?       4.000000
+0:?     'mm32' ( const 3X2 matrix of float)
+0:?       10.000000
+0:?       11.000000
+0:?       12.000000
+0:?       13.000000
+0:?       14.000000
+0:?       15.000000
+0:?     'a0' ( const 3-element array of structure{ global int i,  global float f,  global bool b})
+0:?       3 (const int)
+0:?       2.000000
+0:?       true (const bool)
+0:?       1 (const int)
+0:?       5.000000
+0:?       true (const bool)
+0:?       1 (const int)
+0:?       9.000000
+0:?       false (const bool)
+0:?     'cval1' ( const bool)
+0:?       true (const bool)
+0:?     'cval2' ( const bool)
+0:?       false (const bool)
+0:?     'cval3' ( const bool)
+0:?       false (const bool)
+0:?     'cval4' ( const bool)
+0:?       true (const bool)
+0:?     'cval5' ( const bool)
+0:?       false (const bool)
+0:?     'cval6' ( const bool)
+0:?       true (const bool)
+

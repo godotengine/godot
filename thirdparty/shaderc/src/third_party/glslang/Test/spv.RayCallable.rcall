@@ -1,0 +1,13 @@
+#version 460
+#extension GL_NV_ray_tracing : enable
+layout(location = 0) callableDataNV vec4 data0;
+layout(location = 1) callableDataInNV dataBlock {
+	uint data1;
+};
+void main()
+{
+	uvec3 id = gl_LaunchIDNV;
+	uvec3 size = gl_LaunchSizeNV;
+	data1 = 256U;
+	executeCallableNV(2,1);
+}

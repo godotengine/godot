@@ -1,0 +1,302 @@
+hlsl.structIoFourWay.frag
+Shader version: 500
+gl_FragCoord origin is upper left
+using depth_greater
+0:? Sequence
+0:15  Function Definition: @main(struct-T-f1-f1-f1-vf41; ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15    Function Parameters: 
+0:15      't' ( in structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:?     Sequence
+0:17      Branch: Return with expression
+0:17        'local' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15  Function Definition: main( ( temp void)
+0:15    Function Parameters: 
+0:?     Sequence
+0:15      Sequence
+0:15        move second child to first child ( temp float)
+0:15          f: direct index for structure ( temp float)
+0:?             't' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              0 (const int)
+0:?           't.f' (layout( location=0) in float)
+0:15        move second child to first child ( temp float)
+0:15          g: direct index for structure ( temp float)
+0:?             't' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              1 (const int)
+0:?           't.g' (layout( location=1) centroid in float)
+0:15        move second child to first child ( temp float)
+0:15          d: direct index for structure ( temp float)
+0:?             't' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              2 (const int)
+0:?           't.d' (layout( location=2) in float)
+0:15        move second child to first child ( temp 4-component vector of float)
+0:15          normal: direct index for structure ( temp 4-component vector of float)
+0:?             't' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              3 (const int)
+0:?           't.normal' (layout( location=3) in 4-component vector of float)
+0:15      Sequence
+0:15        move second child to first child ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15          'flattenTemp' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15          Function Call: @main(struct-T-f1-f1-f1-vf41; ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:?             't' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15        move second child to first child ( temp float)
+0:?           '@entryPointOutput.f' (layout( location=0) out float)
+0:15          f: direct index for structure ( temp float)
+0:15            'flattenTemp' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              0 (const int)
+0:15        move second child to first child ( temp float)
+0:?           '@entryPointOutput.g' (layout( location=1) out float)
+0:15          g: direct index for structure ( temp float)
+0:15            'flattenTemp' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              1 (const int)
+0:15        move second child to first child ( temp float)
+0:?           '@entryPointOutput.d' ( out float FragDepth)
+0:15          d: direct index for structure ( temp float)
+0:15            'flattenTemp' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              2 (const int)
+0:15        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.normal' (layout( location=2) out 4-component vector of float)
+0:15          normal: direct index for structure ( temp 4-component vector of float)
+0:15            'flattenTemp' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              3 (const int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform structure{layout( offset=68) temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal} s})
+0:?     'anon@1' (layout( row_major std140) uniform block{layout( row_major std140 offset=88) uniform structure{layout( offset=68) temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal} t})
+0:?     '@entryPointOutput.d' ( out float FragDepth)
+0:?     '@entryPointOutput.f' (layout( location=0) out float)
+0:?     '@entryPointOutput.g' (layout( location=1) out float)
+0:?     '@entryPointOutput.normal' (layout( location=2) out 4-component vector of float)
+0:?     't.f' (layout( location=0) in float)
+0:?     't.g' (layout( location=1) centroid in float)
+0:?     't.d' (layout( location=2) in float)
+0:?     't.normal' (layout( location=3) in 4-component vector of float)
+
+
+Linked fragment stage:
+
+
+Shader version: 500
+gl_FragCoord origin is upper left
+using depth_greater
+0:? Sequence
+0:15  Function Definition: @main(struct-T-f1-f1-f1-vf41; ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15    Function Parameters: 
+0:15      't' ( in structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:?     Sequence
+0:17      Branch: Return with expression
+0:17        'local' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15  Function Definition: main( ( temp void)
+0:15    Function Parameters: 
+0:?     Sequence
+0:15      Sequence
+0:15        move second child to first child ( temp float)
+0:15          f: direct index for structure ( temp float)
+0:?             't' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              0 (const int)
+0:?           't.f' (layout( location=0) in float)
+0:15        move second child to first child ( temp float)
+0:15          g: direct index for structure ( temp float)
+0:?             't' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              1 (const int)
+0:?           't.g' (layout( location=1) centroid in float)
+0:15        move second child to first child ( temp float)
+0:15          d: direct index for structure ( temp float)
+0:?             't' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              2 (const int)
+0:?           't.d' (layout( location=2) in float)
+0:15        move second child to first child ( temp 4-component vector of float)
+0:15          normal: direct index for structure ( temp 4-component vector of float)
+0:?             't' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              3 (const int)
+0:?           't.normal' (layout( location=3) in 4-component vector of float)
+0:15      Sequence
+0:15        move second child to first child ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15          'flattenTemp' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15          Function Call: @main(struct-T-f1-f1-f1-vf41; ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:?             't' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15        move second child to first child ( temp float)
+0:?           '@entryPointOutput.f' (layout( location=0) out float)
+0:15          f: direct index for structure ( temp float)
+0:15            'flattenTemp' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              0 (const int)
+0:15        move second child to first child ( temp float)
+0:?           '@entryPointOutput.g' (layout( location=1) out float)
+0:15          g: direct index for structure ( temp float)
+0:15            'flattenTemp' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              1 (const int)
+0:15        move second child to first child ( temp float)
+0:?           '@entryPointOutput.d' ( out float FragDepth)
+0:15          d: direct index for structure ( temp float)
+0:15            'flattenTemp' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              2 (const int)
+0:15        move second child to first child ( temp 4-component vector of float)
+0:?           '@entryPointOutput.normal' (layout( location=2) out 4-component vector of float)
+0:15          normal: direct index for structure ( temp 4-component vector of float)
+0:15            'flattenTemp' ( temp structure{ temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal})
+0:15            Constant:
+0:15              3 (const int)
+0:?   Linker Objects
+0:?     'anon@0' (layout( row_major std140) uniform block{ uniform structure{layout( offset=68) temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal} s})
+0:?     'anon@1' (layout( row_major std140) uniform block{layout( row_major std140 offset=88) uniform structure{layout( offset=68) temp float f,  temp float g,  temp float d,  temp 4-component vector of float normal} t})
+0:?     '@entryPointOutput.d' ( out float FragDepth)
+0:?     '@entryPointOutput.f' (layout( location=0) out float)
+0:?     '@entryPointOutput.g' (layout( location=1) out float)
+0:?     '@entryPointOutput.normal' (layout( location=2) out 4-component vector of float)
+0:?     't.f' (layout( location=0) in float)
+0:?     't.g' (layout( location=1) centroid in float)
+0:?     't.d' (layout( location=2) in float)
+0:?     't.normal' (layout( location=3) in 4-component vector of float)
+
+// Module Version 10000
+// Generated by (magic number): 80007
+// Id's are bound by 65
+
+                              Capability Shader
+               1:             ExtInstImport  "GLSL.std.450"
+                              MemoryModel Logical GLSL450
+                              EntryPoint Fragment 4  "main" 22 27 31 36 45 48 51 55
+                              ExecutionMode 4 OriginUpperLeft
+                              ExecutionMode 4 DepthGreater
+                              ExecutionMode 4 DepthReplacing
+                              Source HLSL 500
+                              Name 4  "main"
+                              Name 8  "T"
+                              MemberName 8(T) 0  "f"
+                              MemberName 8(T) 1  "g"
+                              MemberName 8(T) 2  "d"
+                              MemberName 8(T) 3  "normal"
+                              Name 12  "@main(struct-T-f1-f1-f1-vf41;"
+                              Name 11  "t"
+                              Name 14  "local"
+                              Name 18  "t"
+                              Name 22  "t.f"
+                              Name 27  "t.g"
+                              Name 31  "t.d"
+                              Name 36  "t.normal"
+                              Name 40  "flattenTemp"
+                              Name 41  "param"
+                              Name 45  "@entryPointOutput.f"
+                              Name 48  "@entryPointOutput.g"
+                              Name 51  "@entryPointOutput.d"
+                              Name 55  "@entryPointOutput.normal"
+                              Name 58  "T"
+                              MemberName 58(T) 0  "f"
+                              MemberName 58(T) 1  "g"
+                              MemberName 58(T) 2  "d"
+                              MemberName 58(T) 3  "normal"
+                              Name 59  "$Global"
+                              MemberName 59($Global) 0  "s"
+                              Name 61  ""
+                              Name 62  "buff"
+                              MemberName 62(buff) 0  "t"
+                              Name 64  ""
+                              Decorate 22(t.f) Location 0
+                              Decorate 27(t.g) Centroid
+                              Decorate 27(t.g) Location 1
+                              Decorate 31(t.d) Location 2
+                              Decorate 36(t.normal) Location 3
+                              Decorate 45(@entryPointOutput.f) Location 0
+                              Decorate 48(@entryPointOutput.g) Location 1
+                              Decorate 51(@entryPointOutput.d) BuiltIn FragDepth
+                              Decorate 55(@entryPointOutput.normal) Location 2
+                              MemberDecorate 58(T) 0 Offset 68
+                              MemberDecorate 58(T) 1 Offset 72
+                              MemberDecorate 58(T) 2 Offset 76
+                              MemberDecorate 58(T) 3 Offset 80
+                              MemberDecorate 59($Global) 0 Offset 0
+                              Decorate 59($Global) Block
+                              Decorate 61 DescriptorSet 0
+                              Decorate 61 Binding 0
+                              MemberDecorate 62(buff) 0 Offset 96
+                              Decorate 62(buff) Block
+                              Decorate 64 DescriptorSet 0
+                              Decorate 64 Binding 0
+               2:             TypeVoid
+               3:             TypeFunction 2
+               6:             TypeFloat 32
+               7:             TypeVector 6(float) 4
+            8(T):             TypeStruct 6(float) 6(float) 6(float) 7(fvec4)
+               9:             TypePointer Function 8(T)
+              10:             TypeFunction 8(T) 9(ptr)
+              19:             TypeInt 32 1
+              20:     19(int) Constant 0
+              21:             TypePointer Input 6(float)
+         22(t.f):     21(ptr) Variable Input
+              24:             TypePointer Function 6(float)
+              26:     19(int) Constant 1
+         27(t.g):     21(ptr) Variable Input
+              30:     19(int) Constant 2
+         31(t.d):     21(ptr) Variable Input
+              34:     19(int) Constant 3
+              35:             TypePointer Input 7(fvec4)
+    36(t.normal):     35(ptr) Variable Input
+              38:             TypePointer Function 7(fvec4)
+              44:             TypePointer Output 6(float)
+45(@entryPointOutput.f):     44(ptr) Variable Output
+48(@entryPointOutput.g):     44(ptr) Variable Output
+51(@entryPointOutput.d):     44(ptr) Variable Output
+              54:             TypePointer Output 7(fvec4)
+55(@entryPointOutput.normal):     54(ptr) Variable Output
+           58(T):             TypeStruct 6(float) 6(float) 6(float) 7(fvec4)
+     59($Global):             TypeStruct 58(T)
+              60:             TypePointer Uniform 59($Global)
+              61:     60(ptr) Variable Uniform
+        62(buff):             TypeStruct 58(T)
+              63:             TypePointer Uniform 62(buff)
+              64:     63(ptr) Variable Uniform
+         4(main):           2 Function None 3
+               5:             Label
+           18(t):      9(ptr) Variable Function
+ 40(flattenTemp):      9(ptr) Variable Function
+       41(param):      9(ptr) Variable Function
+              23:    6(float) Load 22(t.f)
+              25:     24(ptr) AccessChain 18(t) 20
+                              Store 25 23
+              28:    6(float) Load 27(t.g)
+              29:     24(ptr) AccessChain 18(t) 26
+                              Store 29 28
+              32:    6(float) Load 31(t.d)
+              33:     24(ptr) AccessChain 18(t) 30
+                              Store 33 32
+              37:    7(fvec4) Load 36(t.normal)
+              39:     38(ptr) AccessChain 18(t) 34
+                              Store 39 37
+              42:        8(T) Load 18(t)
+                              Store 41(param) 42
+              43:        8(T) FunctionCall 12(@main(struct-T-f1-f1-f1-vf41;) 41(param)
+                              Store 40(flattenTemp) 43
+              46:     24(ptr) AccessChain 40(flattenTemp) 20
+              47:    6(float) Load 46
+                              Store 45(@entryPointOutput.f) 47
+              49:     24(ptr) AccessChain 40(flattenTemp) 26
+              50:    6(float) Load 49
+                              Store 48(@entryPointOutput.g) 50
+              52:     24(ptr) AccessChain 40(flattenTemp) 30
+              53:    6(float) Load 52
+                              Store 51(@entryPointOutput.d) 53
+              56:     38(ptr) AccessChain 40(flattenTemp) 34
+              57:    7(fvec4) Load 56
+                              Store 55(@entryPointOutput.normal) 57
+                              Return
+                              FunctionEnd
+12(@main(struct-T-f1-f1-f1-vf41;):        8(T) Function None 10
+           11(t):      9(ptr) FunctionParameter
+              13:             Label
+       14(local):      9(ptr) Variable Function
+              15:        8(T) Load 14(local)
+                              ReturnValue 15
+                              FunctionEnd
