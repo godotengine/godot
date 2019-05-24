@@ -13,7 +13,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the number of packets currently available in the ring-buffer.
+				Returns the number of packets currently available in the ring-buffer.
 			</description>
 		</method>
 		<method name="get_packet">
@@ -27,7 +27,7 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Return the error state of the last packet received (via [method get_packet] and [method get_var]).
+				Returns the error state of the last packet received (via [method get_packet] and [method get_var]).
 			</description>
 		</method>
 		<method name="get_var">

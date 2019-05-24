@@ -123,7 +123,7 @@
 			<return type="EditorSpatialGizmoPlugin">
 			</return>
 			<description>
-				Return the [EditorSpatialGizmoPlugin] that owns this gizmo. It's useful to retrieve materials using [method EditorSpatialGizmoPlugin.get_material].
+				Returns the [EditorSpatialGizmoPlugin] that owns this gizmo. It's useful to retrieve materials using [method EditorSpatialGizmoPlugin.get_material].
 			</description>
 		</method>
 		<method name="get_spatial_node" qualifiers="const">

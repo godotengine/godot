@@ -29,14 +29,14 @@
 			<return type="int" enum="BaseButton.DrawMode">
 			</return>
 			<description>
-				Return the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding _draw() or connecting to "draw" signal. The visual state of the button is defined by the DRAW_* enum.
+				Returns the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding _draw() or connecting to "draw" signal. The visual state of the button is defined by the DRAW_* enum.
 			</description>
 		</method>
 		<method name="is_hovered" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return [code]true[/code] if the mouse has entered the button and has not left it yet.
+				Returns [code]true[/code] if the mouse has entered the button and has not left it yet.
 			</description>
 		</method>
 	</methods>

@@ -13,7 +13,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return [code]true[/code] if a connection is available for taking.
+				Returns [code]true[/code] if a connection is available for taking.
 			</description>
 		</method>
 		<method name="listen">

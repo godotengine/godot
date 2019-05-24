@@ -144,7 +144,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Return [code]true[/code] whether you want the blend tree editor to display filter editing on this node.
+				Returns [code]true[/code] whether you want the blend tree editor to display filter editing on this node.
 			</description>
 		</method>
 		<method name="is_path_filtered" qualifiers="const">
@@ -153,7 +153,7 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
-				Return [code]true[/code] whether a given path is filtered.
+				Returns [code]true[/code] whether a given path is filtered.
 			</description>
 		</method>
 		<method name="process" qualifiers="virtual">
@@ -204,7 +204,7 @@
 	</methods>
 	<members>
 		<member name="filter_enabled" type="bool" setter="set_filter_enabled" getter="is_filter_enabled">
-			Return whether filtering is enabled.
+			Returns whether filtering is enabled.
 		</member>
 	</members>
 	<signals>

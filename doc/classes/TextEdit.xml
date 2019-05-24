@@ -69,14 +69,14 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the column the editing cursor is at.
+				Returns the column the editing cursor is at.
 			</description>
 		</method>
 		<method name="cursor_get_line" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the line the editing cursor is at.
+				Returns the line the editing cursor is at.
 			</description>
 		</method>
 		<method name="cursor_set_column">
@@ -137,7 +137,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return an array containing the line number of each breakpoint.
+				Returns an array containing the line number of each breakpoint.
 			</description>
 		</method>
 		<method name="get_keyword_color" qualifiers="const">
@@ -154,14 +154,14 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
-				Return the text of a specific line.
+				Returns the text of a specific line.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of total lines in the text.
+				Returns the amount of total lines in the text.
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
@@ -175,35 +175,35 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the selection begin column.
+				Returns the selection begin column.
 			</description>
 		</method>
 		<method name="get_selection_from_line" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the selection begin line.
+				Returns the selection begin line.
 			</description>
 		</method>
 		<method name="get_selection_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Return the text inside the selection.
+				Returns the text inside the selection.
 			</description>
 		</method>
 		<method name="get_selection_to_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the selection end column.
+				Returns the selection end column.
 			</description>
 		</method>
 		<method name="get_selection_to_line" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the selection end line.
+				Returns the selection end line.
 			</description>
 		</method>
 		<method name="get_word_under_cursor" qualifiers="const">
@@ -250,7 +250,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return [code]true[/code] if the selection is active.
+				Returns [code]true[/code] if the selection is active.
 			</description>
 		</method>
 		<method name="menu_option">

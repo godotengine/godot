@@ -178,14 +178,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the accelerator of the item at index "idx". Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+				Returns the accelerator of the item at index "idx". Accelerators are special combinations of keys that activate the item, no matter which control is focused.
 			</description>
 		</method>
 		<method name="get_item_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of items.
+				Returns the amount of items.
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
@@ -194,7 +194,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the icon of the item at index "idx".
+				Returns the icon of the item at index "idx".
 			</description>
 		</method>
 		<method name="get_item_id" qualifiers="const">
@@ -203,7 +203,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the id of the item at index "idx".
+				Returns the id of the item at index "idx".
 			</description>
 		</method>
 		<method name="get_item_index" qualifiers="const">
@@ -221,7 +221,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the metadata of an item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
+				Returns the metadata of an item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
 			</description>
 		</method>
 		<method name="get_item_shortcut" qualifiers="const">
@@ -238,7 +238,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the submenu name of the item at index "idx".
+				Returns the submenu name of the item at index "idx".
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
@@ -247,7 +247,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the text of the item at index "idx".
+				Returns the text of the item at index "idx".
 			</description>
 		</method>
 		<method name="get_item_tooltip" qualifiers="const">
@@ -270,7 +270,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return whether the item at index "idx" is checkable in some way, i.e., whether has a checkbox or radio button. Note that checkable items just display a checkmark or radio button, but don't have any built-in checking behavior and must be checked/unchecked manually.
+				Returns whether the item at index "idx" is checkable in some way, i.e., whether has a checkbox or radio button. Note that checkable items just display a checkmark or radio button, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="is_item_checked" qualifiers="const">
@@ -279,7 +279,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return whether the item at index "idx" is checked.
+				Returns whether the item at index "idx" is checked.
 			</description>
 		</method>
 		<method name="is_item_disabled" qualifiers="const">
@@ -288,7 +288,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return whether the item at index "idx" is disabled. When it is disabled it can't be selected, or its action invoked.
+				Returns whether the item at index "idx" is disabled. When it is disabled it can't be selected, or its action invoked.
 			</description>
 		</method>
 		<method name="is_item_radio_checkable" qualifiers="const">
@@ -297,7 +297,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return whether the item at index "idx" has radio-button-style checkability. Remember this is just cosmetic and you have to add the logic for checking/unchecking items in radio groups.
+				Returns whether the item at index "idx" has radio-button-style checkability. Remember this is just cosmetic and you have to add the logic for checking/unchecking items in radio groups.
 			</description>
 		</method>
 		<method name="is_item_separator" qualifiers="const">
@@ -306,7 +306,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return whether the item is a separator. If it is, it would be displayed as a line.
+				Returns whether the item is a separator. If it is, it would be displayed as a line.
 			</description>
 		</method>
 		<method name="is_item_shortcut_disabled" qualifiers="const">

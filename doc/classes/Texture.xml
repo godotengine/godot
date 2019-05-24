@@ -74,21 +74,21 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the texture height.
+				Returns the texture height.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the texture size.
+				Returns the texture size.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the texture width.
+				Returns the texture width.
 			</description>
 		</method>
 		<method name="has_alpha" qualifiers="const">
