@@ -13,7 +13,7 @@
 			<return type="Button">
 			</return>
 			<description>
-				Return the cancel button.
+				Returns the cancel button.
 			</description>
 		</method>
 	</methods>

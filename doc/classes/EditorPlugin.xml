@@ -241,7 +241,7 @@
 			<return type="EditorInterface">
 			</return>
 			<description>
-				Return the [EditorInterface] object that gives you control over Godot editor's window and its functionalities.
+				Returns the [EditorInterface] object that gives you control over Godot editor's window and its functionalities.
 			</description>
 		</method>
 		<method name="get_plugin_icon" qualifiers="virtual">
@@ -299,7 +299,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return [code]true[/code] if this is a main screen editor plugin (it goes in the workspaces selector together with '2D', '3D', and 'Script').
+				Returns [code]true[/code] if this is a main screen editor plugin (it goes in the workspaces selector together with '2D', '3D', and 'Script').
 			</description>
 		</method>
 		<method name="hide_bottom_panel">

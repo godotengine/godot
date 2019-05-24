@@ -31,21 +31,21 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the IP of this peer.
+				Returns the IP of this peer.
 			</description>
 		</method>
 		<method name="get_connected_port" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the port of this peer.
+				Returns the port of this peer.
 			</description>
 		</method>
 		<method name="get_status">
 			<return type="int" enum="StreamPeerTCP.Status">
 			</return>
 			<description>
-				Return the status of the connection, see [enum StreamPeerTCP.Status].
+				Returns the status of the connection, see [enum StreamPeerTCP.Status].
 			</description>
 		</method>
 		<method name="is_connected_to_host" qualifiers="const">

@@ -256,7 +256,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
-				Return the input count for a given node. Different types of nodes have different amount of inputs.
+				Returns the input count for a given node. Different types of nodes have different amount of inputs.
 			</description>
 		</method>
 		<method name="node_get_input_source" qualifiers="const">
@@ -267,7 +267,7 @@
 			<argument index="1" name="idx" type="int">
 			</argument>
 			<description>
-				Return the input source for a given node input.
+				Returns the input source for a given node input.
 			</description>
 		</method>
 		<method name="node_get_position" qualifiers="const">

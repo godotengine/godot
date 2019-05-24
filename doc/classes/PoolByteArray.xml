@@ -116,7 +116,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the size of the array.
+				Returns the size of the array.
 			</description>
 		</method>
 		<method name="subarray">

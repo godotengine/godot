@@ -13,7 +13,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return [code]true[/code] if an animation if currently being played.
+				Returns [code]true[/code] if an animation if currently being played.
 			</description>
 		</method>
 		<method name="play">

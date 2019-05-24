@@ -38,14 +38,14 @@
 			<return type="float">
 			</return>
 			<description>
-				Return the scan progress for 0 to 1 if the FS is being scanned.
+				Returns the scan progress for 0 to 1 if the FS is being scanned.
 			</description>
 		</method>
 		<method name="is_scanning" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return [code]true[/code] of the filesystem is being scanned.
+				Returns [code]true[/code] of the filesystem is being scanned.
 			</description>
 		</method>
 		<method name="scan">

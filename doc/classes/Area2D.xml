@@ -15,7 +15,7 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
-				Return an individual bit on the layer mask. Describes whether other areas will collide with this one on the given layer.
+				Returns an individual bit on the layer mask. Describes whether other areas will collide with this one on the given layer.
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
@@ -24,7 +24,7 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
-				Return an individual bit on the collision mask. Describes whether this area will collide with others on the given layer.
+				Returns an individual bit on the collision mask. Describes whether this area will collide with others on the given layer.
 			</description>
 		</method>
 		<method name="get_overlapping_areas" qualifiers="const">

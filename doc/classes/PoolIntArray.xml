@@ -82,7 +82,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the array size.
+				Returns the array size.
 			</description>
 		</method>
 	</methods>

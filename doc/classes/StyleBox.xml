@@ -37,7 +37,7 @@
 			<argument index="0" name="margin" type="int" enum="Margin">
 			</argument>
 			<description>
-				Return the content margin offset for the specified margin
+				Returns the content margin offset for the specified margin
 				Positive values reduce size inwards, unlike [Control]'s margin values.
 			</description>
 		</method>
@@ -45,14 +45,14 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the minimum size that this stylebox can be shrunk to.
+				Returns the minimum size that this stylebox can be shrunk to.
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the "offset" of a stylebox, this is a helper function, like writing [code]Vector2(style.get_margin(MARGIN_LEFT), style.get_margin(MARGIN_TOP))[/code].
+				Returns the "offset" of a stylebox, this is a helper function, like writing [code]Vector2(style.get_margin(MARGIN_LEFT), style.get_margin(MARGIN_TOP))[/code].
 			</description>
 		</method>
 		<method name="test_mask" qualifiers="const">
