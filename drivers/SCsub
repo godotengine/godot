@@ -28,6 +28,7 @@ if (env["platform"] != "server"):
     SConscript('gles2/SCsub')
     SConscript('gl_context/SCsub')
     SConscript('shaderc/SCsub')
+    SConscript('spirv-cross/SCsub')
 else:
     SConscript('dummy/SCsub')
 
