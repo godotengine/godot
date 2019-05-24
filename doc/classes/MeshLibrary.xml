@@ -37,7 +37,7 @@
 			<return type="PoolIntArray">
 			</return>
 			<description>
-				Return the list of items.
+				Returns the list of items.
 			</description>
 		</method>
 		<method name="get_item_mesh" qualifiers="const">
@@ -46,7 +46,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the mesh of the item.
+				Returns the mesh of the item.
 			</description>
 		</method>
 		<method name="get_item_name" qualifiers="const">
@@ -55,7 +55,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the name of the item.
+				Returns the name of the item.
 			</description>
 		</method>
 		<method name="get_item_navmesh" qualifiers="const">

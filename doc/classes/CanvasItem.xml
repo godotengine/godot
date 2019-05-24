@@ -342,14 +342,14 @@
 			<return type="RID">
 			</return>
 			<description>
-				Return the [RID] of the [World2D] canvas where this item is in.
+				Returns the [RID] of the [World2D] canvas where this item is in.
 			</description>
 		</method>
 		<method name="get_canvas_item" qualifiers="const">
 			<return type="RID">
 			</return>
 			<description>
-				Return the canvas item RID used by [VisualServer] for this item.
+				Returns the canvas item RID used by [VisualServer] for this item.
 			</description>
 		</method>
 		<method name="get_canvas_transform" qualifiers="const">

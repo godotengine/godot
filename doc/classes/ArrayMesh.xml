@@ -98,7 +98,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Return the index of the first surface with this name held within this [ArrayMesh]. If none are found -1 is returned.
+				Returns the index of the first surface with this name held within this [ArrayMesh]. If none are found -1 is returned.
 			</description>
 		</method>
 		<method name="surface_get_array_index_len" qualifiers="const">
@@ -107,7 +107,7 @@
 			<argument index="0" name="surf_idx" type="int">
 			</argument>
 			<description>
-				Return the length in indices of the index array in the requested surface (see [method add_surface_from_arrays]).
+				Returns the length in indices of the index array in the requested surface (see [method add_surface_from_arrays]).
 			</description>
 		</method>
 		<method name="surface_get_array_len" qualifiers="const">
@@ -116,7 +116,7 @@
 			<argument index="0" name="surf_idx" type="int">
 			</argument>
 			<description>
-				Return the length in vertices of the vertex array in the requested surface (see [method add_surface_from_arrays]).
+				Returns the length in vertices of the vertex array in the requested surface (see [method add_surface_from_arrays]).
 			</description>
 		</method>
 		<method name="surface_get_format" qualifiers="const">
@@ -125,7 +125,7 @@
 			<argument index="0" name="surf_idx" type="int">
 			</argument>
 			<description>
-				Return the format mask of the requested surface (see [method add_surface_from_arrays]).
+				Returns the format mask of the requested surface (see [method add_surface_from_arrays]).
 			</description>
 		</method>
 		<method name="surface_get_name" qualifiers="const">
@@ -143,7 +143,7 @@
 			<argument index="0" name="surf_idx" type="int">
 			</argument>
 			<description>
-				Return the primitive type of the requested surface (see [method add_surface_from_arrays]).
+				Returns the primitive type of the requested surface (see [method add_surface_from_arrays]).
 			</description>
 		</method>
 		<method name="surface_remove">

@@ -51,21 +51,21 @@
 			<return type="float">
 			</return>
 			<description>
-				Return the font ascent (number of pixels above the baseline).
+				Returns the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
 		<method name="get_descent" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Return the font descent (number of pixels below the baseline).
+				Returns the font descent (number of pixels below the baseline).
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Return the total font height (ascent plus descent) in pixels.
+				Returns the total font height (ascent plus descent) in pixels.
 			</description>
 		</method>
 		<method name="get_string_size" qualifiers="const">
@@ -74,7 +74,7 @@
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
-				Return the size of a string, taking kerning and advance into account.
+				Returns the size of a string, taking kerning and advance into account.
 			</description>
 		</method>
 		<method name="get_wordwrap_string_size" qualifiers="const">

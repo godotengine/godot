@@ -13,7 +13,7 @@
 			<return type="TextureButton">
 			</return>
 			<description>
-				Return the close [TextureButton].
+				Returns the close [TextureButton].
 			</description>
 		</method>
 	</methods>

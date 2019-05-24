@@ -31,7 +31,7 @@
 			<return type="PoolColorArray">
 			</return>
 			<description>
-				Return the list of colors in the presets of the color picker.
+				Returns the list of colors in the presets of the color picker.
 			</description>
 		</method>
 	</methods>

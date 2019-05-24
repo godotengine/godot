@@ -44,14 +44,14 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Return the bone index that matches "name" as its name.
+				Returns the bone index that matches "name" as its name.
 			</description>
 		</method>
 		<method name="get_bone_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of bones in the skeleton.
+				Returns the amount of bones in the skeleton.
 			</description>
 		</method>
 		<method name="get_bone_custom_pose" qualifiers="const">
@@ -60,7 +60,7 @@
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<description>
-				Return the custom pose of the specified bone. Custom pose is applied on top of the rest pose.
+				Returns the custom pose of the specified bone. Custom pose is applied on top of the rest pose.
 			</description>
 		</method>
 		<method name="get_bone_global_pose" qualifiers="const">
@@ -69,7 +69,7 @@
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<description>
-				Return the overall transform of the specified bone, with respect to the skeleton. Being relative to the skeleton frame, this is not the actual "global" transform of the bone.
+				Returns the overall transform of the specified bone, with respect to the skeleton. Being relative to the skeleton frame, this is not the actual "global" transform of the bone.
 			</description>
 		</method>
 		<method name="get_bone_name" qualifiers="const">
@@ -78,7 +78,7 @@
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<description>
-				Return the name of the bone at index "index".
+				Returns the name of the bone at index "index".
 			</description>
 		</method>
 		<method name="get_bone_parent" qualifiers="const">
@@ -87,7 +87,7 @@
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<description>
-				Return the bone index which is the parent of the bone at "bone_idx". If -1, then bone has no parent. Note that the parent bone returned will always be less than "bone_idx".
+				Returns the bone index which is the parent of the bone at "bone_idx". If -1, then bone has no parent. Note that the parent bone returned will always be less than "bone_idx".
 			</description>
 		</method>
 		<method name="get_bone_pose" qualifiers="const">
@@ -96,7 +96,7 @@
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<description>
-				Return the pose transform of the specified bone. Pose is applied on top of the custom pose, which is applied on top the rest pose.
+				Returns the pose transform of the specified bone. Pose is applied on top of the custom pose, which is applied on top the rest pose.
 			</description>
 		</method>
 		<method name="get_bone_rest" qualifiers="const">
@@ -105,7 +105,7 @@
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<description>
-				Return the rest transform for a bone "bone_idx".
+				Returns the rest transform for a bone "bone_idx".
 			</description>
 		</method>
 		<method name="get_bone_transform" qualifiers="const">
@@ -114,7 +114,7 @@
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<description>
-				Return the combination of custom pose and pose. The returned transform is in skeleton's reference frame.
+				Returns the combination of custom pose and pose. The returned transform is in skeleton's reference frame.
 			</description>
 		</method>
 		<method name="get_bound_child_nodes_to_bone" qualifiers="const">
@@ -229,7 +229,7 @@
 			<argument index="1" name="pose" type="Transform">
 			</argument>
 			<description>
-				Return the pose transform for bone "bone_idx".
+				Returns the pose transform for bone "bone_idx".
 			</description>
 		</method>
 		<method name="set_bone_rest">

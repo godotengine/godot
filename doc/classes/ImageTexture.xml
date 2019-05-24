@@ -40,7 +40,7 @@
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
-				Return the format of the [ImageTexture], one of [enum Image.Format].
+				Returns the format of the [ImageTexture], one of [enum Image.Format].
 			</description>
 		</method>
 		<method name="load">

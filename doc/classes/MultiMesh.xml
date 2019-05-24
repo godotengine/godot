@@ -17,7 +17,7 @@
 			<return type="AABB">
 			</return>
 			<description>
-				Return the visibility AABB.
+				Returns the visibility AABB.
 			</description>
 		</method>
 		<method name="get_instance_color" qualifiers="const">
@@ -35,7 +35,7 @@
 			<argument index="0" name="instance" type="int">
 			</argument>
 			<description>
-				Return the custom data that has been set for a specific instance.
+				Returns the custom data that has been set for a specific instance.
 			</description>
 		</method>
 		<method name="get_instance_transform" qualifiers="const">
@@ -44,7 +44,7 @@
 			<argument index="0" name="instance" type="int">
 			</argument>
 			<description>
-				Return the [Transform] of a specific instance.
+				Returns the [Transform] of a specific instance.
 			</description>
 		</method>
 		<method name="get_instance_transform_2d" qualifiers="const">
@@ -53,7 +53,7 @@
 			<argument index="0" name="instance" type="int">
 			</argument>
 			<description>
-				Return the [Transform2D] of a specific instance.
+				Returns the [Transform2D] of a specific instance.
 			</description>
 		</method>
 		<method name="set_as_bulk_array">

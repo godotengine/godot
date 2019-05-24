@@ -64,7 +64,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return count of items currently in the item list.
+				Returns count of items currently in the item list.
 			</description>
 		</method>
 		<method name="get_item_custom_bg_color" qualifiers="const">
@@ -122,7 +122,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the text for specified item index.
+				Returns the text for specified item index.
 			</description>
 		</method>
 		<method name="get_item_tooltip" qualifiers="const">
@@ -131,7 +131,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return tooltip hint for specified item index.
+				Returns tooltip hint for specified item index.
 			</description>
 		</method>
 		<method name="get_selected_items">

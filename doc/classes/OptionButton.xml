@@ -51,7 +51,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of items in the OptionButton.
+				Returns the amount of items in the OptionButton.
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
@@ -60,7 +60,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the icon of the item at index "idx".
+				Returns the icon of the item at index "idx".
 			</description>
 		</method>
 		<method name="get_item_id" qualifiers="const">
@@ -69,7 +69,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the ID of the item at index [code]idx[/code].
+				Returns the ID of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_item_index" qualifiers="const">
@@ -78,7 +78,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the index of the item with the given [code]id[/code].
+				Returns the index of the item with the given [code]id[/code].
 			</description>
 		</method>
 		<method name="get_item_metadata" qualifiers="const">
@@ -95,14 +95,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the text of the item at index "idx".
+				Returns the text of the item at index "idx".
 			</description>
 		</method>
 		<method name="get_popup" qualifiers="const">
 			<return type="PopupMenu">
 			</return>
 			<description>
-				Return the [PopupMenu] contained in this button.
+				Returns the [PopupMenu] contained in this button.
 			</description>
 		</method>
 		<method name="get_selected_id" qualifiers="const">

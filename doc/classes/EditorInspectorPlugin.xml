@@ -54,7 +54,7 @@
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<description>
-				Return true if this object can be handled by this plugin.
+				Returns true if this object can be handled by this plugin.
 			</description>
 		</method>
 		<method name="parse_begin" qualifiers="virtual">

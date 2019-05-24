@@ -42,7 +42,7 @@
 			<return type="int" enum="StreamPeerSSL.Status">
 			</return>
 			<description>
-				Return the status of the connection, one of STATUS_* enum.
+				Returns the status of the connection, one of STATUS_* enum.
 			</description>
 		</method>
 		<method name="poll">

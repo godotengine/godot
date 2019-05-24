@@ -43,7 +43,7 @@
 			<return type="VBoxContainer">
 			</return>
 			<description>
-				Return the vertical box container of the dialog, custom controls can be added to it.
+				Returns the vertical box container of the dialog, custom controls can be added to it.
 			</description>
 		</method>
 		<method name="invalidate">

@@ -116,14 +116,14 @@
 			<return type="String">
 			</return>
 			<description>
-				Return SHA256 string of the PoolByteArray.
+				Returns SHA256 string of the PoolByteArray.
 			</description>
 		</method>
 		<method name="size">
 			<return type="int">
 			</return>
 			<description>
-				Return the size of the array.
+				Returns the size of the array.
 			</description>
 		</method>
 		<method name="subarray">
