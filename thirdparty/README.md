@@ -489,11 +489,23 @@ Files extracted from upstream source:
 - `Recast/` folder
 - License.txt
 
+## SPIRV-Cross
+
+- Upstream: https://github.com/KhronosGroup/SPIRV-Cross
+- version: git (2ece908e1,2019)
+- License: Apache-2.0
 
 ## shaderc
 
 - Upstream: https://github.com/google/shaderc
 - version: git (10530a08b, 2019)
+- License: Apache-2.0
+
+
+## SPIRV-Cross
+
+- Upstream: https://github.com/KhronosGroup/SPIRV-Cross
+- version: git (2ece908e1, 2019)
 - License: Apache-2.0
 
 
