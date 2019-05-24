@@ -2102,8 +2102,6 @@ FRAGMENT_SHADER_CODE
 #endif
 	// gl_FragColor = vec4(normal, 1.0);
 
-#endif //unshaded
-
 //apply fog
 #if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
 
@@ -2157,6 +2155,8 @@ FRAGMENT_SHADER_CODE
 #endif //use vertex lit
 
 #endif // defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
+
+#endif //unshaded
 
 #else // not RENDER_DEPTH
 //depth render
