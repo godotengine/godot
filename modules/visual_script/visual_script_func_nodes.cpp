@@ -1026,7 +1026,6 @@ void VisualScriptPropertySet::_adjust_input_index(PropertyInfo &pinfo) const {
 }
 
 PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const {
-
 	if (call_mode == CALL_MODE_INSTANCE || call_mode == CALL_MODE_BASIC_TYPE) {
 		if (p_idx == 0) {
 			PropertyInfo pi;
@@ -1034,6 +1033,16 @@ PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const
 			pi.name = (call_mode == CALL_MODE_INSTANCE ? String("instance") : Variant::get_type_name(basic_type).to_lower());
 			_adjust_input_index(pi);
 			return pi;
+		}
+	}
+
+	List<PropertyInfo> props;
+	ClassDB::get_property_list(_get_base_type(), &props, true);
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+		if (E->get().name == property) {
+			PropertyInfo pinfo = PropertyInfo(E->get().type, "value", PROPERTY_HINT_TYPE_STRING, E->get().hint_string);
+			_adjust_input_index(pinfo);
+			return pinfo;
 		}
 	}
 
@@ -1047,6 +1056,13 @@ PropertyInfo VisualScriptPropertySet::get_output_value_port_info(int p_idx) cons
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
 		return PropertyInfo(basic_type, "out");
 	} else if (call_mode == CALL_MODE_INSTANCE) {
+		List<PropertyInfo> props;
+		ClassDB::get_property_list(_get_base_type(), &props, true);
+		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+			if (E->get().name == property) {
+				return PropertyInfo(E->get().type, "pass", PROPERTY_HINT_TYPE_STRING, E->get().hint_string);
+			}
+		}
 		return PropertyInfo(Variant::OBJECT, "pass", PROPERTY_HINT_TYPE_STRING, get_base_type());
 	} else {
 		return PropertyInfo();
@@ -1796,14 +1812,12 @@ PropertyInfo VisualScriptPropertyGet::get_input_value_port_info(int p_idx) const
 }
 
 PropertyInfo VisualScriptPropertyGet::get_output_value_port_info(int p_idx) const {
-
-	if (index != StringName()) {
-
-		Variant v;
-		Variant::CallError ce;
-		v = Variant::construct(type_cache, NULL, 0, ce);
-		Variant i = v.get(index);
-		return PropertyInfo(i.get_type(), "value." + String(index));
+	List<PropertyInfo> props;
+	ClassDB::get_property_list(_get_base_type(), &props, true);
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+		if (E->get().name == property) {
+			return PropertyInfo(E->get().type, "value." + String(index));
+		}
 	}
 
 	return PropertyInfo(type_cache, "value");
