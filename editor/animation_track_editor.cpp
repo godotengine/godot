@@ -63,8 +63,6 @@ public:
 		ClassDB::bind_method("_dont_undo_redo", &AnimationTrackKeyEdit::_dont_undo_redo);
 	}
 
-	//PopupDialog *ke_dialog;
-
 	void _fix_node_path(Variant &value) {
 
 		NodePath np = value;
@@ -3456,7 +3454,7 @@ void AnimationTrackEditor::_update_tracks() {
 				Ref<Texture> icon = get_icon("Node", "EditorIcons");
 				String name = base_path;
 				String tooltip;
-				if (root) {
+				if (root && root->has_node(base_path)) {
 					Node *n = root->get_node(base_path);
 					if (n) {
 						if (has_icon(n->get_class(), "EditorIcons")) {
