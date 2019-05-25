@@ -54,11 +54,7 @@ void AnimationPlayerEditor::_node_removed(Node *p_node) {
 		track_editor->set_root(NULL);
 		track_editor->show_select_node_warning(true);
 		_update_player();
-		//editor->animation_editor_make_visible(false);
 	}
-}
-
-void AnimationPlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void AnimationPlayerEditor::_notification(int p_what) {
@@ -694,10 +690,14 @@ Dictionary AnimationPlayerEditor::get_state() const {
 }
 void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 
-	if (p_state.has("visible") && p_state["visible"]) {
+	if (!p_state.has("visible") || !p_state["visible"]) {
+		return;
+	}
+	if (!EditorNode::get_singleton()->get_edited_scene()) {
+		return;
+	}
 
-		if (!EditorNode::get_singleton()->get_edited_scene())
-			return;
+	if (p_state.has("player")) {
 
 		Node *n = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["player"]);
 		if (Object::cast_to<AnimationPlayer>(n) && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
@@ -706,7 +706,6 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 			show();
 			set_process(true);
 			ensure_visibility();
-			//EditorNode::get_singleton()->animation_panel_make_visible(true);
 
 			if (p_state.has("animation")) {
 				String anim = p_state["animation"];
@@ -714,10 +713,10 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 				_animation_edit();
 			}
 		}
+	}
 
-		if (p_state.has("track_editor_state")) {
-			track_editor->set_state(p_state["track_editor_state"]);
-		}
+	if (p_state.has("track_editor_state")) {
+		track_editor->set_state(p_state["track_editor_state"]);
 	}
 }
 
@@ -736,17 +735,17 @@ void AnimationPlayerEditor::_animation_edit() {
 		String current = animation->get_item_text(animation->get_selected());
 		Ref<Animation> anim = player->get_animation(current);
 		track_editor->set_animation(anim);
+
 		Node *root = player->get_node(player->get_root());
 		if (root) {
 			track_editor->set_root(root);
 		}
-
 	} else {
-
 		track_editor->set_animation(Ref<Animation>());
 		track_editor->set_root(NULL);
 	}
 }
+
 void AnimationPlayerEditor::_dialog_action(String p_file) {
 
 	switch (current_option) {
@@ -896,8 +895,6 @@ void AnimationPlayerEditor::_update_player() {
 		_animation_selected(0);
 	}
 
-	//pause->set_pressed(player->is_paused());
-
 	if (animation->get_item_count()) {
 		String current = animation->get_item_text(animation->get_selected());
 		Ref<Animation> anim = player->get_animation(current);
@@ -925,8 +922,6 @@ void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 		track_editor->show_select_node_warning(false);
 	} else {
 		track_editor->show_select_node_warning(true);
-
-		//hide();
 	}
 }
 
@@ -1127,7 +1122,6 @@ void AnimationPlayerEditor::_hide_anim_editors() {
 	track_editor->set_animation(Ref<Animation>());
 	track_editor->set_root(NULL);
 	track_editor->show_select_node_warning(true);
-	//editor->animation_editor_make_visible(false);
 }
 
 void AnimationPlayerEditor::_animation_about_to_show_menu() {
@@ -1565,7 +1559,6 @@ void AnimationPlayerEditor::_pin_pressed() {
 
 void AnimationPlayerEditor::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_gui_input"), &AnimationPlayerEditor::_gui_input);
 	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationPlayerEditor::_node_removed);
 	ClassDB::bind_method(D_METHOD("_play_pressed"), &AnimationPlayerEditor::_play_pressed);
 	ClassDB::bind_method(D_METHOD("_play_from_pressed"), &AnimationPlayerEditor::_play_from_pressed);
@@ -1628,12 +1621,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	player = NULL;
 
-	Label *l;
-
-	/*l= memnew( Label );
-	l->set_text("Animation Player:");
-	add_child(l);*/
-
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
 
@@ -1657,10 +1644,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	play_from = memnew(ToolButton);
 	play_from->set_tooltip(TTR("Play selected animation from current pos. (D)"));
 	hb->add_child(play_from);
-
-	//pause = memnew( Button );
-	//pause->set_toggle_mode(true);
-	//hb->add_child(pause);
 
 	frame = memnew(SpinBox);
 	hb->add_child(frame);
@@ -1687,7 +1670,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	tool_anim = memnew(MenuButton);
 	tool_anim->set_flat(false);
-	//tool_anim->set_flat(false);
 	tool_anim->set_tooltip(TTR("Animation Tools"));
 	tool_anim->set_text(TTR("Animation"));
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/new_animation", TTR("New")), TOOL_NEW_ANIM);
@@ -1717,9 +1699,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	autoplay = memnew(ToolButton);
 	hb->add_child(autoplay);
 	autoplay->set_tooltip(TTR("Autoplay on Load"));
-
-	//tool_anim->get_popup()->add_separator();
-	//tool_anim->get_popup()->add_item("Edit Anim Resource",TOOL_PASTE_ANIM);
 
 	hb->add_child(memnew(VSeparator));
 
@@ -1770,10 +1749,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	VBoxContainer *vb = memnew(VBoxContainer);
 	name_dialog->add_child(vb);
 
-	l = memnew(Label);
-	l->set_text(TTR("Animation Name:"));
-	vb->add_child(l);
-	name_title = l;
+	name_title = memnew(Label(TTR("Animation Name:")));
+	vb->add_child(name_title);
 
 	name = memnew(LineEdit);
 	vb->add_child(name);
@@ -1792,7 +1769,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	blend_editor.dialog->set_hide_on_ok(true);
 	VBoxContainer *blend_vb = memnew(VBoxContainer);
 	blend_editor.dialog->add_child(blend_vb);
-	//blend_editor.dialog->set_child_rect(blend_vb);
 	blend_editor.tree = memnew(Tree);
 	blend_editor.tree->set_columns(2);
 	blend_vb->add_margin_child(TTR("Blend Times:"), blend_editor.tree, true);
@@ -1810,8 +1786,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	play_bw->connect("pressed", this, "_play_bw_pressed");
 	play_bw_from->connect("pressed", this, "_play_bw_from_pressed");
 	stop->connect("pressed", this, "_stop_pressed");
-	//pause->connect("pressed", this,"_pause_pressed");
-	//frame->connect("text_entered", this,"_seek_frame_changed");
 
 	animation->connect("item_selected", this, "_animation_selected", Vector<Variant>(), true);
 
@@ -1900,6 +1874,8 @@ void AnimationPlayerEditorPlugin::edit(Object *p_object) {
 	if (!p_object)
 		return;
 	anim_editor->edit(Object::cast_to<AnimationPlayer>(p_object));
+	// In case switching to a scene with an AnimationPlayer selected but with the animation editor closed.
+	button->set_pressed(true);
 }
 
 bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
@@ -1914,11 +1890,6 @@ void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 		editor->make_bottom_panel_item_visible(anim_editor);
 		anim_editor->set_process(true);
 		anim_editor->ensure_visibility();
-		//editor->animation_panel_make_visible(true);
-	} else {
-
-		//anim_editor->hide();
-		//anim_editor->set_idle_process(false);
 	}
 }
 
@@ -1927,16 +1898,7 @@ AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	anim_editor = memnew(AnimationPlayerEditor(editor, this));
 	anim_editor->set_undo_redo(editor->get_undo_redo());
-
-	editor->add_bottom_panel_item(TTR("Animation"), anim_editor);
-	/*
-	editor->get_viewport()->add_child(anim_editor);
-	anim_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	anim_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
-	anim_editor->set_margin( MARGIN_TOP, 75 );
-	anim_editor->set_anchor( MARGIN_RIGHT, Control::ANCHOR_END);
-	anim_editor->set_margin( MARGIN_RIGHT, 0 );*/
-	anim_editor->hide();
+	button = editor->add_bottom_panel_item(TTR("Animation"), anim_editor);
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {
