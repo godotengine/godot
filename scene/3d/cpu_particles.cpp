@@ -212,7 +212,7 @@ String CPUParticles::get_configuration_warning() const {
 										get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid())) {
 		if (warnings != String())
 			warnings += "\n";
-		warnings += "- " + TTR("CPUParticles animation requires the usage of a SpatialMaterial with \"Billboard Particles\" enabled.");
+		warnings += "- " + TTR("CPUParticles animation requires the usage of a SpatialMaterial whose Billboard Mode is set to \"Particle Billboard\".");
 	}
 
 	return warnings;

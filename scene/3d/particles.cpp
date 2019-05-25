@@ -268,7 +268,7 @@ String Particles::get_configuration_warning() const {
 						process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
 			if (warnings != String())
 				warnings += "\n";
-			warnings += "- " + TTR("Particles animation requires the usage of a SpatialMaterial with \"Billboard Particles\" enabled.");
+			warnings += "- " + TTR("Particles animation requires the usage of a SpatialMaterial whose Billboard Mode is set to \"Particle Billboard\".");
 		}
 	}
 
