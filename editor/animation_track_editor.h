@@ -325,6 +325,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _name_limit_changed();
 	void _timeline_changed(float p_new_pos, bool p_drag);
 	void _track_remove_request(int p_track);
+	void _track_grab_focus(int p_track);
 
 	UndoRedo *undo_redo;
 
@@ -513,6 +514,7 @@ public:
 	float get_moving_selection_offset() const;
 	bool is_snap_enabled();
 	float snap_time(float p_value);
+	bool is_grouping_tracks();
 
 	MenuButton *get_edit_menu();
 	AnimationTrackEditor();
