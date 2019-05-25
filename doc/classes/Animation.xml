@@ -450,6 +450,17 @@
 				Move a track down.
 			</description>
 		</method>
+		<method name="track_move_to">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="to_idx" type="int">
+			</argument>
+			<description>
+				Changes the index position of track [code]idx[/code] to the one defined in [code]to_idx[/code].
+			</description>
+		</method>
 		<method name="track_move_up">
 			<return type="void">
 			</return>
@@ -571,6 +582,7 @@
 			<argument index="1" name="with_idx" type="int">
 			</argument>
 			<description>
+				Swaps the track [code]idx[/code]'s index position with the track [code]with_idx[/code].
 			</description>
 		</method>
 		<method name="transform_track_insert_key">

@@ -2559,17 +2559,6 @@ bool Animation::has_loop() const {
 	return loop;
 }
 
-void Animation::track_move_up(int p_track) {
-
-	if (p_track >= 0 && p_track < (tracks.size() - 1)) {
-
-		SWAP(tracks.write[p_track], tracks.write[p_track + 1]);
-	}
-
-	emit_changed();
-	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
-}
-
 void Animation::track_set_imported(int p_track, bool p_imported) {
 
 	ERR_FAIL_INDEX(p_track, tracks.size());
@@ -2595,12 +2584,40 @@ bool Animation::track_is_enabled(int p_track) const {
 	return tracks[p_track]->enabled;
 }
 
+void Animation::track_move_up(int p_track) {
+
+	if (p_track >= 0 && p_track < (tracks.size() - 1)) {
+
+		SWAP(tracks.write[p_track], tracks.write[p_track + 1]);
+	}
+
+	emit_changed();
+	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
+}
+
 void Animation::track_move_down(int p_track) {
 
 	if (p_track > 0 && p_track < tracks.size()) {
 
 		SWAP(tracks.write[p_track], tracks.write[p_track - 1]);
 	}
+
+	emit_changed();
+	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
+}
+
+void Animation::track_move_to(int p_track, int p_to_index) {
+
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	ERR_FAIL_INDEX(p_to_index, tracks.size() + 1);
+	if (p_track == p_to_index || p_track == p_to_index - 1)
+		return;
+
+	Track *track = tracks.get(p_track);
+	tracks.remove(p_track);
+	// Take into account that the position of the tracks that come after the one removed will change.
+	tracks.insert(p_to_index > p_track ? p_to_index - 1 : p_to_index, track);
+
 	emit_changed();
 	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
@@ -2612,6 +2629,7 @@ void Animation::track_swap(int p_track, int p_with_track) {
 	if (p_track == p_with_track)
 		return;
 	SWAP(tracks.write[p_track], tracks.write[p_with_track]);
+
 	emit_changed();
 	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
@@ -2656,6 +2674,7 @@ void Animation::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("track_move_up", "idx"), &Animation::track_move_up);
 	ClassDB::bind_method(D_METHOD("track_move_down", "idx"), &Animation::track_move_down);
+	ClassDB::bind_method(D_METHOD("track_move_to", "idx", "to_idx"), &Animation::track_move_to);
 	ClassDB::bind_method(D_METHOD("track_swap", "idx", "with_idx"), &Animation::track_swap);
 
 	ClassDB::bind_method(D_METHOD("track_set_imported", "idx", "imported"), &Animation::track_set_imported);

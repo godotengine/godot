@@ -293,6 +293,7 @@ public:
 
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);
+	void track_move_to(int p_track, int p_to_index);
 	void track_swap(int p_track, int p_with_track);
 
 	void track_set_imported(int p_track, bool p_imported);
