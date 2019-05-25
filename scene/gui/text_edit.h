@@ -244,6 +244,8 @@ private:
 	void _clear_redo();
 	void _do_text_op(const TextOperation &p_op, bool p_reverse);
 
+	void _size_changed() override;
+
 	//syntax coloring
 	SyntaxHighlighter *syntax_highlighter;
 	HashMap<String, Color> keywords;

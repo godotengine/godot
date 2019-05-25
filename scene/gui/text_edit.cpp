@@ -5547,6 +5547,11 @@ void TextEdit::_do_text_op(const TextOperation &p_op, bool p_reverse) {
 	}
 }
 
+void TextEdit::_size_changed() {
+	Control::_size_changed();
+	_update_wrap_at();
+}
+
 void TextEdit::_clear_redo() {
 
 	if (undo_stack_pos == NULL)

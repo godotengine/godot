@@ -48,6 +48,8 @@ class Panel;
 
 class Control : public CanvasItem {
 
+	friend class TextEdit;
+
 	GDCLASS(Control, CanvasItem);
 	OBJ_CATEGORY("GUI Nodes");
 
@@ -234,7 +236,7 @@ private:
 	void _compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]);
 	void _compute_anchors(Rect2 p_rect, const float p_margins[4], float (&r_anchors)[4]);
 
-	void _size_changed();
+	virtual void _size_changed();
 	String _get_tooltip() const;
 
 	void _override_changed();
