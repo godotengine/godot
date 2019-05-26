@@ -379,6 +379,12 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	}
 
 	if (!keep) {
+		if (editor_selection) {
+			Node *n = get_node(item->get_metadata(0));
+			if (n) {
+				editor_selection->remove_node(n);
+			}
+		}
 		memdelete(item);
 		return false;
 	} else {
