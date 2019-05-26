@@ -226,6 +226,23 @@ if env_base['platform'] != "":
 elif env_base['p'] != "":
     selected_platform = env_base['p']
     env_base["platform"] = selected_platform
+else:
+    # Missing `platform` argument, try to detect platform automatically
+    if sys.platform.startswith('linux'):
+        selected_platform = 'linux'
+    elif sys.platform == 'darwin':
+        selected_platform = 'osx'
+    elif sys.platform == 'win32':
+        selected_platform = 'windows'
+    else:
+        print("Could not detect platform automatically. Supported platforms:")
+        for x in platform_list:
+            print("\t" + x)
+        print("\nPlease run SCons again and select a valid platform: platform=<string>")
+    
+    if selected_platform != "":
+        print("Automatically detected platform: " + selected_platform)
+        env_base["platform"] = selected_platform
 
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform
@@ -492,13 +509,13 @@ if selected_platform in platform_list:
             if (conf.CheckCHeader(header[0])):
                 env.AppendUnique(CPPDEFINES=[header[1]])
 
-else:
+elif selected_platform != "":
 
-    print("No valid target platform selected.")
+    print("Invalid target platform: " + selected_platform)
     print("The following platforms were detected:")
     for x in platform_list:
         print("\t" + x)
-    print("\nPlease run SCons again with the argument: platform=<string>")
+    print("\nPlease run SCons again and select a valid platform: platform=<string>")
 
 # The following only makes sense when the env is defined, and assumes it is
 if 'env' in locals():
