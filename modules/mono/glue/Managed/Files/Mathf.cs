@@ -44,9 +44,9 @@ namespace Godot
             return (real_t)Math.Atan(s);
         }
 
-        public static real_t Atan2(real_t x, real_t y)
+        public static real_t Atan2(real_t y, real_t x)
         {
-            return (real_t)Math.Atan2(x, y);
+            return (real_t)Math.Atan2(y, x);
         }
 
         public static Vector2 Cartesian2Polar(real_t x, real_t y)
