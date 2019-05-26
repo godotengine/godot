@@ -2166,6 +2166,19 @@ ProjectManager::ProjectManager() {
 	Button *cancel = memnew(Button);
 	cancel->set_text(TTR("Exit"));
 	cancel->set_custom_minimum_size(Size2(100, 1) * EDSCALE);
+
+#ifndef OSX_ENABLED
+	// Pressing Command + Q quits the Project Manager
+	// This is handled by the platform implementation on macOS,
+	// so only define the shortcut on other platforms
+	InputEventKey *quit_key = memnew(InputEventKey);
+	quit_key->set_command(true);
+	quit_key->set_scancode(KEY_Q);
+	ShortCut *quit_shortcut = memnew(ShortCut);
+	quit_shortcut->set_shortcut(quit_key);
+	cancel->set_shortcut(quit_shortcut);
+#endif
+
 	cc->add_child(cancel);
 	cancel->connect("pressed", this, "_exit_dialog");
 	vb->add_child(cc);
