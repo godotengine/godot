@@ -8158,7 +8158,7 @@ void RasterizerStorageGLES3::initialize() {
 	}
 
 	shaders.cubemap_filter.init();
-	bool ggx_hq = GLOBAL_GET("rendering/quality/reflections/high_quality_ggx.mobile");
+	bool ggx_hq = GLOBAL_GET("rendering/quality/reflections/high_quality_ggx");
 	shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::LOW_QUALITY, !ggx_hq);
 	shaders.particles.init();
 
