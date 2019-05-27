@@ -113,7 +113,7 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 	}
 
 	if (!(p_child->get_v_size_flags() & SIZE_FILL)) {
-		r.size.y = minsize.y;
+		r.size.y = minsize.height;
 		if (p_child->get_v_size_flags() & SIZE_SHRINK_END) {
 			r.position.y += p_rect.size.height - minsize.height;
 		} else if (p_child->get_v_size_flags() & SIZE_SHRINK_CENTER) {
