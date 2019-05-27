@@ -119,30 +119,9 @@ void GraphNode::_resort() {
 
 	int sep = get_constant("separation");
 	Ref<StyleBox> sb = get_stylebox("frame");
-	bool first = true;
-
-	Size2 minsize;
-
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
-			continue;
-		if (c->is_set_as_toplevel())
-			continue;
-
-		Size2i size = c->get_combined_minimum_size();
-
-		minsize.y += size.y;
-		minsize.x = MAX(minsize.x, size.x);
-
-		if (first)
-			first = false;
-		else
-			minsize.y += sep;
-	}
-
 	int vofs = 0;
 	int w = get_size().x - sb->get_minimum_size().x;
+	int h = get_size().y - sb->get_minimum_size().y;
 
 	cache_y.clear();
 	for (int i = 0; i < get_child_count(); i++) {
@@ -154,7 +133,7 @@ void GraphNode::_resort() {
 
 		Size2i size = c->get_combined_minimum_size();
 
-		Rect2 r(sb->get_margin(MARGIN_LEFT), sb->get_margin(MARGIN_TOP) + vofs, w, size.y);
+		Rect2 r(sb->get_margin(MARGIN_LEFT), sb->get_margin(MARGIN_TOP) + vofs, w, h);
 
 		fit_child_in_rect(c, r);
 		cache_y.push_back(vofs + size.y * 0.5);
