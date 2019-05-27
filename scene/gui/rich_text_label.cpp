@@ -2336,6 +2336,7 @@ RichTextLabel::RichTextLabel() {
 	tab_size = 4;
 	default_align = ALIGN_LEFT;
 	underline_meta = true;
+	meta_hovering = NULL;
 	override_selected_font_color = false;
 
 	scroll_visible = false;
