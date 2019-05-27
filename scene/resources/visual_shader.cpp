@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "visual_shader.h"
+
 #include "core/vmap.h"
 #include "servers/visual/shader_types.h"
 
