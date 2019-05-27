@@ -430,10 +430,28 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					_RETURN_FAIL;
 				}
 
-				const Dictionary *arr_a = reinterpret_cast<const Dictionary *>(p_a._data._mem);
-				const Dictionary *arr_b = reinterpret_cast<const Dictionary *>(p_b._data._mem);
+				const Dictionary *dict_a = reinterpret_cast<const Dictionary *>(p_a._data._mem);
+				const Dictionary *dict_b = reinterpret_cast<const Dictionary *>(p_b._data._mem);
 
-				_RETURN(*arr_a == *arr_b);
+				int size_a = dict_a->size();
+				if (size_a != dict_b->size())
+					_RETURN(false);
+
+				List<Pair<Variant, Variant> > entries_a;
+				dict_a->get_entry_list(&entries_a);
+
+				for (int i = 0; i < size_a; i++) {
+					const Pair<Variant, Variant> &entry_a = entries_a[i];
+					const Variant *value_b = dict_b->getptr(entry_a.first);
+					if (value_b == NULL) {
+						_RETURN(false);
+					}
+					if (*value_b != entry_a.second) {
+						_RETURN(false);
+					}
+				}
+
+				_RETURN(true);
 			}
 
 			CASE_TYPE(math, OP_EQUAL, ARRAY) {
@@ -518,10 +536,28 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					_RETURN_FAIL;
 				}
 
-				const Dictionary *arr_a = reinterpret_cast<const Dictionary *>(p_a._data._mem);
-				const Dictionary *arr_b = reinterpret_cast<const Dictionary *>(p_b._data._mem);
+				const Dictionary *dict_a = reinterpret_cast<const Dictionary *>(p_a._data._mem);
+				const Dictionary *dict_b = reinterpret_cast<const Dictionary *>(p_b._data._mem);
 
-				_RETURN(*arr_a != *arr_b);
+				int size_a = dict_a->size();
+				if (size_a != dict_b->size())
+					_RETURN(true);
+
+				List<Pair<Variant, Variant> > entries_a;
+				dict_a->get_entry_list(&entries_a);
+
+				for (int i = 0; i < size_a; i++) {
+					const Pair<Variant, Variant> &entry_a = entries_a[i];
+					const Variant *value_b = dict_b->getptr(entry_a.first);
+					if (value_b == NULL) {
+						_RETURN(true);
+					}
+					if (*value_b != entry_a.second) {
+						_RETURN(true);
+					}
+				}
+
+				_RETURN(false);
 			}
 
 			CASE_TYPE(math, OP_NOT_EQUAL, ARRAY) {

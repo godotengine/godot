@@ -33,6 +33,7 @@
 
 #include "core/array.h"
 #include "core/list.h"
+#include "core/pair.h"
 #include "core/ustring.h"
 
 class Variant;
@@ -50,6 +51,8 @@ public:
 	void get_key_list(List<Variant> *p_keys) const;
 	Variant get_key_at_index(int p_index) const;
 	Variant get_value_at_index(int p_index) const;
+
+	void get_entry_list(List<Pair<Variant, Variant> > *p_entries) const;
 
 	Variant &operator[](const Variant &p_key);
 	const Variant &operator[](const Variant &p_key) const;

@@ -76,6 +76,16 @@ Variant Dictionary::get_value_at_index(int p_index) const {
 	return Variant();
 }
 
+void Dictionary::get_entry_list(List<Pair<Variant, Variant> > *p_entries) const {
+
+	if (_p->variant_map.empty())
+		return;
+
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
+		p_entries->push_back(Pair<Variant, Variant>(E.key(), E.get()));
+	}
+}
+
 Variant &Dictionary::operator[](const Variant &p_key) {
 
 	return _p->variant_map[p_key];
