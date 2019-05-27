@@ -703,7 +703,7 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 		if (Object::cast_to<AnimationPlayer>(n) && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
 			player = Object::cast_to<AnimationPlayer>(n);
 			_update_player();
-			show();
+			editor->make_bottom_panel_item_visible(this);
 			set_process(true);
 			ensure_visibility();
 
@@ -1874,8 +1874,6 @@ void AnimationPlayerEditorPlugin::edit(Object *p_object) {
 	if (!p_object)
 		return;
 	anim_editor->edit(Object::cast_to<AnimationPlayer>(p_object));
-	// In case switching to a scene with an AnimationPlayer selected but with the animation editor closed.
-	button->set_pressed(true);
 }
 
 bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
@@ -1898,7 +1896,7 @@ AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	anim_editor = memnew(AnimationPlayerEditor(editor, this));
 	anim_editor->set_undo_redo(editor->get_undo_redo());
-	button = editor->add_bottom_panel_item(TTR("Animation"), anim_editor);
+	editor->add_bottom_panel_item(TTR("Animation"), anim_editor);
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {
