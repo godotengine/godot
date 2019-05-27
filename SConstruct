@@ -229,7 +229,7 @@ elif env_base['p'] != "":
 else:
     # Missing `platform` argument, try to detect platform automatically
     if sys.platform.startswith('linux'):
-        selected_platform = 'linux'
+        selected_platform = 'x11'
     elif sys.platform == 'darwin':
         selected_platform = 'osx'
     elif sys.platform == 'win32':
@@ -239,7 +239,7 @@ else:
         for x in platform_list:
             print("\t" + x)
         print("\nPlease run SCons again and select a valid platform: platform=<string>")
-    
+
     if selected_platform != "":
         print("Automatically detected platform: " + selected_platform)
         env_base["platform"] = selected_platform
