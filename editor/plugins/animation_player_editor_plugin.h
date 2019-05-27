@@ -257,7 +257,6 @@ class AnimationPlayerEditorPlugin : public EditorPlugin {
 
 	AnimationPlayerEditor *anim_editor;
 	EditorNode *editor;
-	Button *button;
 
 protected:
 	void _notification(int p_what);
