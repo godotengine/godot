@@ -611,6 +611,11 @@ uint64_t _OS::get_dynamic_memory_usage() const {
 	return OS::get_singleton()->get_dynamic_memory_usage();
 }
 
+void _OS::set_native_icon(const String &p_filename) {
+
+	OS::get_singleton()->set_native_icon(p_filename);
+}
+
 void _OS::set_icon(const Ref<Image> &p_icon) {
 
 	OS::get_singleton()->set_icon(p_icon);
@@ -1199,6 +1204,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_system_time_secs"), &_OS::get_system_time_secs);
 	ClassDB::bind_method(D_METHOD("get_system_time_msecs"), &_OS::get_system_time_msecs);
 
+	ClassDB::bind_method(D_METHOD("set_native_icon", "filename"), &_OS::set_native_icon);
 	ClassDB::bind_method(D_METHOD("set_icon", "icon"), &_OS::set_icon);
 
 	ClassDB::bind_method(D_METHOD("get_exit_code"), &_OS::get_exit_code);
