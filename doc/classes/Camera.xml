@@ -39,6 +39,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_camera_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+				Returns the camera's RID from the [VisualServer].
+			</description>
+		</method>
 		<method name="is_position_behind" qualifiers="const">
 			<return type="bool">
 			</return>
