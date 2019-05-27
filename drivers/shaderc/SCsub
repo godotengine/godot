@@ -1,0 +1,322 @@
+#!/usr/bin/env python
+
+import os
+Import('env')
+
+env_shaderc = env.Clone()
+
+if (not env.msvc):
+	env_shaderc.Append(CXXFLAGS=['-std=c++11'])
+	env_shaderc.Append(CXXFLAGS=['-Wno-missing-field-initializers'])
+	env_shaderc.Append(CXXFLAGS=['-fno-exceptions'])
+	env_shaderc.Append(CXXFLAGS=['-fno-rtti'])
+	env_shaderc.Append(CXXFLAGS=['-Wno-reorder'])
+
+env_shaderc.Append(CXXFLAGS=['-DSPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS=1'])
+
+shaderc_dir = "#thirdparty/shaderc/src/libshaderc/"
+shaderc_sources = [
+    "src/shaderc.cc",
+]
+#shaderc
+shaderc_sources = [shaderc_dir + file for file in shaderc_sources]
+
+env_shaderc.add_source_files(env.drivers_sources, shaderc_sources)
+env_shaderc.Prepend(CPPPATH=shaderc_dir + "include/")
+env_shaderc.Prepend(CPPPATH="#thirdparty/shaderc/src/libshaderc/src/")
+env_shaderc.Prepend(CPPPATH="#thirdparty/shaderc/src/libshaderc_util/include/")
+env_shaderc.Prepend(CPPPATH="#thirdparty/shaderc/src/third_party/glslang/")
+env_shaderc.Prepend(CPPPATH="#thirdparty/shaderc/src/third_party/spirv-tools/include/")
+
+#glslang
+#env_shaderc.Append(CPPDEFINES = ['AMD_EXTENSIONS', 'NV_EXTENSIONS', 'ENABLE_HLSL', 'GLSLANG_OSINCLUDE_WIN32', 'ENABLE_OPT=1']) 
+env_shaderc.Append(CPPDEFINES = ['AMD_EXTENSIONS', 'NV_EXTENSIONS', 'ENABLE_HLSL', 'ENABLE_OPT=1']) 
+glslang_dir = "#thirdparty/shaderc/src/third_party/glslang/glslang/"
+glslang_sources = [
+#    "MachineIndependent/glslang.y",
+    "MachineIndependent/glslang_tab.cpp",
+    "MachineIndependent/attribute.cpp",
+    "MachineIndependent/Constant.cpp",
+    "MachineIndependent/iomapper.cpp",
+    "MachineIndependent/InfoSink.cpp",
+    "MachineIndependent/Initialize.cpp",
+    "MachineIndependent/IntermTraverse.cpp",
+    "MachineIndependent/Intermediate.cpp",
+    "MachineIndependent/ParseContextBase.cpp",
+    "MachineIndependent/ParseHelper.cpp",
+    "MachineIndependent/PoolAlloc.cpp",
+    "MachineIndependent/RemoveTree.cpp",
+    "MachineIndependent/Scan.cpp",
+    "MachineIndependent/ShaderLang.cpp",
+    "MachineIndependent/SymbolTable.cpp",
+    "MachineIndependent/Versions.cpp",
+    "MachineIndependent/intermOut.cpp",
+    "MachineIndependent/limits.cpp",
+    "MachineIndependent/linkValidate.cpp",
+    "MachineIndependent/parseConst.cpp",
+    "MachineIndependent/reflection.cpp",
+    "MachineIndependent/preprocessor/Pp.cpp",
+    "MachineIndependent/preprocessor/PpAtom.cpp",
+    "MachineIndependent/preprocessor/PpContext.cpp",
+    "MachineIndependent/preprocessor/PpScanner.cpp",
+    "MachineIndependent/preprocessor/PpTokens.cpp",
+    "MachineIndependent/propagateNoContraction.cpp",
+    "GenericCodeGen/CodeGen.cpp",
+    "GenericCodeGen/Link.cpp",
+]
+glslang_sources = [glslang_dir + file for file in glslang_sources]
+env_shaderc.add_source_files(env.drivers_sources, glslang_sources)
+env_shaderc.Prepend(CPPPATH=[glslang_dir])
+
+#glslang OSDependent
+
+glslang_os_dependent_sources = []
+
+if (not env.msvc):
+    glslang_os_dependent_dir = "#thirdparty/shaderc/src/third_party/glslang/glslang/OSDependent/Unix/"
+else:
+    glslang_os_dependent_dir = "#thirdparty/shaderc/src/third_party/glslang/glslang/OSDependent/Windows/"
+
+glslang_os_dependent_sources = [
+	"ossource.cpp"
+]
+
+glslang_os_dependent_sources = [glslang_os_dependent_dir + file for file in glslang_os_dependent_sources]
+env_shaderc.add_source_files(env.drivers_sources, glslang_os_dependent_sources)
+env_shaderc.Append(CPPPATH=[glslang_os_dependent_dir])
+
+#OSDependent Unix TODO
+#OGLCompilersDLL
+ogl_compilers_dll_dir = "#thirdparty/shaderc/src/third_party/glslang/OGLCompilersDLL/"
+ogl_compilers_dll_sources = [
+    "InitializeDll.cpp",
+]
+ogl_compilers_dll_sources = [ogl_compilers_dll_dir + file for file in ogl_compilers_dll_sources]
+env_shaderc.add_source_files(env.drivers_sources, ogl_compilers_dll_sources)
+env_shaderc.Prepend(CPPPATH=[ogl_compilers_dll_dir])
+
+#mingw
+#LINK_FLAGS "-static -static-libgcc -static-libstdc++")
+
+if (os.name == "posix"):
+    env_shaderc.Append(CPPDEFINES = ['GLSLANG_OSINCLUDE_UNIX'])
+
+#libshaderc_util
+libshaderc_util_dir = "#thirdparty/shaderc/src/libshaderc_util/"
+libshaderc_util_sources = [
+  "src/compiler.cc",
+  "src/file_finder.cc",
+  "src/io.cc",
+  "src/message.cc",
+  "src/resources.cc",
+  "src/shader_stage.cc",
+  "src/spirv_tools_wrapper.cc",
+  "src/version_profile.cc",
+]
+libshaderc_util_sources = [libshaderc_util_dir + file for file in libshaderc_util_sources]
+env_shaderc.add_source_files(env.drivers_sources, libshaderc_util_sources)
+env_shaderc.Prepend(CPPPATH=[libshaderc_util_dir])
+env_shaderc.Prepend(CPPPATH="#thirdparty/shaderc/src/libshaderc_util/include/")
+
+#SPIRV
+spirv_dir= "#thirdparty/shaderc/src/third_party/glslang/SPIRV/"
+spirv_sources = [
+   "GlslangToSpv.cpp",
+   "InReadableOrder.cpp",
+   "Logger.cpp",
+   "SpvBuilder.cpp",
+   "doc.cpp",
+   "disassemble.cpp",
+   "SPVRemapper.cpp",
+   "doc.cpp",
+]
+spirv_sources = [spirv_dir + file for file in spirv_sources]
+env_shaderc.add_source_files(env.drivers_sources, spirv_sources)
+env_shaderc.Prepend(CPPPATH=[spirv_dir])
+env_shaderc.Prepend(CPPPATH="#thirdparty/shaderc/src/third_party/spirv-tools/source/")
+
+#hlsl
+hlsl_dir= "#thirdparty/shaderc/src/third_party/glslang/hlsl/"
+hlsl_sources = [
+    "hlslAttributes.cpp",
+    "hlslParseHelper.cpp",
+    "hlslScanContext.cpp",
+    "hlslOpMap.cpp",
+    "hlslTokenStream.cpp",
+    "hlslGrammar.cpp",
+    "hlslParseables.cpp",
+]
+hlsl_sources = [hlsl_dir + file for file in hlsl_sources]
+env_shaderc.add_source_files(env.drivers_sources, hlsl_sources)
+env_shaderc.Prepend(CPPPATH=[hlsl_dir])
+#libSPIRV-Tools-opt
+spirv_tools_opt_dir= "#thirdparty/shaderc/src/third_party/spirv-tools/source/"
+spirv_tools_opt_sources = [
+	"opt/aggressive_dead_code_elim_pass.cpp",
+	"opt/basic_block.cpp",
+	"opt/block_merge_pass.cpp",
+	"opt/build_module.cpp",
+	"opt/ccp_pass.cpp",
+	"opt/cfg_cleanup_pass.cpp",
+	"opt/cfg.cpp",
+	"opt/common_uniform_elim_pass.cpp",
+	"opt/compact_ids_pass.cpp",
+	"opt/composite.cpp",
+	"opt/const_folding_rules.cpp",
+	"opt/constants.cpp",
+	"opt/copy_prop_arrays.cpp",
+	"opt/dead_branch_elim_pass.cpp",
+	"opt/dead_insert_elim_pass.cpp",
+	"opt/dead_variable_elimination.cpp",
+	"opt/decoration_manager.cpp",
+	"opt/def_use_manager.cpp",
+	"opt/dominator_analysis.cpp",
+	"opt/dominator_tree.cpp",
+	"opt/eliminate_dead_constant_pass.cpp",
+	"opt/eliminate_dead_functions_pass.cpp",
+	"opt/feature_manager.cpp",
+	"opt/flatten_decoration_pass.cpp",
+	"opt/fold.cpp",
+	"opt/folding_rules.cpp",
+	"opt/fold_spec_constant_op_and_composite_pass.cpp",
+	"opt/freeze_spec_constant_value_pass.cpp",
+	"opt/function.cpp",
+	"opt/if_conversion.cpp",
+	"opt/inline_exhaustive_pass.cpp",
+	"opt/inline_opaque_pass.cpp",
+	"opt/inline_pass.cpp",
+	"opt/instruction.cpp",
+	"opt/instruction_list.cpp",
+	"opt/ir_context.cpp",
+	"opt/ir_loader.cpp",
+	"opt/licm_pass.cpp",
+	"opt/local_access_chain_convert_pass.cpp",
+	"opt/local_redundancy_elimination.cpp",
+	"opt/local_single_block_elim_pass.cpp",
+	"opt/local_single_store_elim_pass.cpp",
+	"opt/local_ssa_elim_pass.cpp",
+	"opt/loop_dependence.cpp",
+	"opt/loop_dependence_helpers.cpp",
+	"opt/loop_descriptor.cpp",
+	"opt/loop_fission.cpp",
+	"opt/loop_fusion.cpp",
+	"opt/loop_fusion_pass.cpp",
+	"opt/loop_peeling.cpp",
+	"opt/loop_utils.cpp",
+	"opt/loop_unroller.cpp",
+	"opt/loop_unswitch_pass.cpp",
+	"opt/mem_pass.cpp",
+	"opt/merge_return_pass.cpp",
+	"opt/module.cpp",
+	"opt/optimizer.cpp",
+	"opt/pass.cpp",
+	"opt/pass_manager.cpp",
+	"opt/private_to_local_pass.cpp",
+	"opt/propagator.cpp",
+	"opt/reduce_load_size.cpp",
+	"opt/redundancy_elimination.cpp",
+	"opt/register_pressure.cpp",
+	"opt/remove_duplicates_pass.cpp",
+	"opt/replace_invalid_opc.cpp",
+	"opt/scalar_analysis.cpp",
+	"opt/scalar_analysis_simplification.cpp",
+	"opt/scalar_replacement_pass.cpp",
+	"opt/set_spec_constant_default_value_pass.cpp",
+	"opt/simplification_pass.cpp",
+	"opt/ssa_rewrite_pass.cpp",
+	"opt/strength_reduction_pass.cpp",
+	"opt/strip_debug_info_pass.cpp",
+	"opt/strip_reflect_info_pass.cpp",
+	"opt/type_manager.cpp",
+	"opt/types.cpp",
+	"opt/unify_const_pass.cpp",
+	"opt/value_number_table.cpp",
+	"opt/vector_dce.cpp",
+	"opt/workaround1209.cpp",
+]
+spirv_tools_opt_sources = [spirv_tools_opt_dir + file for file in spirv_tools_opt_sources]
+env_shaderc.add_source_files(env.drivers_sources, spirv_tools_opt_sources)
+env_shaderc.Prepend(CPPPATH=spirv_tools_opt_dir)
+env_shaderc.Prepend(CPPPATH="#thirdparty/shaderc/src/third_party/spirv-tools/external/spirv-headers/include/")
+env_shaderc.Prepend(CPPPATH="#thirdparty/shaderc/SPIRV-Tools-Generated/")
+env_shaderc.Prepend(CPPPATH="#thirdparty/shaderc/src/third_party/spirv-tools/")
+env_shaderc.Prepend(CPPPATH="#thirdparty/shaderc/src/third_party/spirv-tools/source/")
+
+#libSPIRV-Tools
+spirv_tools_dir= "#thirdparty/shaderc/src/third_party/spirv-tools/source/"
+spirv_tools_sources = [
+	"util/bit_vector.cpp",
+	"util/parse_number.cpp",
+	"util/string_utils.cpp",
+	"util/timer.cpp",
+	"assembly_grammar.cpp",
+	"binary.cpp",
+	"diagnostic.cpp",
+	"disassemble.cpp",
+	"enum_string_mapping.cpp",
+	"ext_inst.cpp",
+	"extensions.cpp",
+	"id_descriptor.cpp",
+	"libspirv.cpp",
+	"name_mapper.cpp",
+	"opcode.cpp",
+	"operand.cpp",
+	"parsed_operand.cpp",
+	"print.cpp",
+	"software_version.cpp",
+	"spirv_endian.cpp",
+	"spirv_target_env.cpp",
+	"spirv_validator_options.cpp",
+	"table.cpp",
+	"text.cpp",
+	"text_handler.cpp",
+	"val/validate.cpp",
+	"val/validate_adjacency.cpp",
+	"val/validate_arithmetics.cpp",
+	"val/validate_atomics.cpp",
+	"val/validate_barriers.cpp",
+	"val/validate_bitwise.cpp",
+	"val/validate_builtins.cpp",
+	"val/validate_capability.cpp",
+	"val/validate_cfg.cpp",
+	"val/validate_composites.cpp",
+	"val/validate_conversion.cpp",
+	"val/validate_datarules.cpp",
+	"val/validate_decorations.cpp",
+	"val/validate_derivatives.cpp",
+	"val/validate_id.cpp",
+	"val/validate_image.cpp",
+	"val/validate_interfaces.cpp",
+	"val/validate_instruction.cpp",
+	"val/validate_layout.cpp",
+	"val/validate_literals.cpp",
+	"val/validate_logicals.cpp",
+	"val/validate_non_uniform.cpp",
+	"val/validate_primitives.cpp",
+	"val/basic_block.cpp",
+	"val/construct.cpp",
+	"val/function.cpp",
+	"val/instruction.cpp",
+	"val/validation_state.cpp",
+	"software_version.cpp",
+]
+
+env_shaderc.Prepend(CPPPATH=[spirv_tools_dir])
+env_shaderc.Prepend(CPPPATH="#thirdparty/shaderc/src/third_party/spirv-tools/")
+
+if (os.name == "posix"):
+    env_shaderc.Append(CPPDEFINES = ['SPIRV_LINUX'])
+#    env_shaderc.Append(CPPDEFINES = ['SPIRV_TIMER_ENABLED'])
+
+if (os.name == "nt"):
+    env_shaderc.Append(CPPDEFINES = ['SPIRV_WINDOWS'])
+
+# TODO SPIRV_BUILD_COMPRESSION
+
+env_thirdparty = env_shaderc.Clone()
+env_thirdparty.disable_warnings()
+spirv_tools_sources = [spirv_tools_dir + file for file in spirv_tools_sources] 
+env_thirdparty.add_source_files(env.drivers_sources, spirv_tools_sources)
+
+# Godot's own source files
+env_shaderc.add_source_files(env.drivers_sources, "*.cpp")
