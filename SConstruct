@@ -149,7 +149,7 @@ opts.Add(BoolVariable('builtin_libwebsockets', "Use the built-in libwebsockets l
 opts.Add(BoolVariable('builtin_mbedtls', "Use the built-in mbedTLS library", True))
 opts.Add(BoolVariable('builtin_miniupnpc', "Use the built-in miniupnpc library", True))
 opts.Add(BoolVariable('builtin_opus', "Use the built-in Opus library", True))
-opts.Add(BoolVariable('builtin_pcre2', "Use the built-in PCRE2 library)", True))
+opts.Add(BoolVariable('builtin_pcre2', "Use the built-in PCRE2 library", True))
 opts.Add(BoolVariable('builtin_recast', "Use the built-in Recast library", True))
 opts.Add(BoolVariable('builtin_squish', "Use the built-in squish library", True))
 opts.Add(BoolVariable('builtin_xatlas', "Use the built-in xatlas library", True))
