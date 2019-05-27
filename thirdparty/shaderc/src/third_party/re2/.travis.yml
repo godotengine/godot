@@ -1,0 +1,170 @@
+language: cpp
+sudo: false
+dist: trusty
+script:
+  - make
+  - make test
+matrix:
+  include:
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.8
+      env:
+         - MATRIX_EVAL="CC=gcc-4.8 CXX=g++-4.8"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env:
+         - MATRIX_EVAL="CC=gcc-4.9 CXX=g++-4.9"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+         - MATRIX_EVAL="CC=gcc-5 CXX=g++-5"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+      env:
+        - MATRIX_EVAL="CC=gcc-6 CXX=g++-6"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 CXX=g++-7"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env:
+        - MATRIX_EVAL="CC=gcc-8 CXX=g++-8"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.5
+          packages:
+            - clang-3.5
+      env:
+        - MATRIX_EVAL="CC=clang-3.5 CXX=clang++-3.5"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6
+      env:
+        - MATRIX_EVAL="CC=clang-3.6 CXX=clang++-3.6"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.7
+          packages:
+            - clang-3.7
+      env:
+        - MATRIX_EVAL="CC=clang-3.7 CXX=clang++-3.7"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+          packages:
+            - clang-3.8
+      env:
+        - MATRIX_EVAL="CC=clang-3.8 CXX=clang++-3.8"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.9
+          packages:
+            - clang-3.9
+      env:
+        - MATRIX_EVAL="CC=clang-3.9 CXX=clang++-3.9"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-4.0
+          packages:
+            - clang-4.0
+      env:
+        - MATRIX_EVAL="CC=clang-4.0 CXX=clang++-4.0"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env:
+        - MATRIX_EVAL="CC=clang-5.0 CXX=clang++-5.0"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb https://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-6.0
+      env:
+        - MATRIX_EVAL="CC=clang-6.0 CXX=clang++-6.0"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb https://apt.llvm.org/trusty/ llvm-toolchain-trusty-7 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-7
+      env:
+        - MATRIX_EVAL="CC=clang-7 CXX=clang++-7"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb https://apt.llvm.org/trusty/ llvm-toolchain-trusty-8 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-8
+      env:
+        - MATRIX_EVAL="CC=clang-8 CXX=clang++-8"
+
+before_install:
+  - eval "${MATRIX_EVAL}"

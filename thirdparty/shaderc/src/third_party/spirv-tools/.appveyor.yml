@@ -1,0 +1,89 @@
+# Windows Build Configuration for AppVeyor
+# http://www.appveyor.com/docs/appveyor-yml
+
+# version format
+version: "{build}"
+
+# The most recent compiler gives the most interesting new results.
+# Put it first so we get its feedback first.
+os:
+  - Visual Studio 2017
+  #- Visual Studio 2013
+
+platform:
+  - x64
+
+configuration:
+  - Debug
+  #- Release
+
+branches:
+  only:
+    - master
+
+# Travis advances the master-tot tag to current top of the tree after
+# each push into the master branch, because it relies on that tag to
+# upload build artifacts to the master-tot release. This will cause
+# double testing for each push on Appveyor: one for the push, one for
+# the tag advance. Disable testing tags.
+skip_tags: true
+
+clone_depth: 1
+
+matrix:
+  fast_finish: true # Show final status immediately if a test fails.
+  #exclude:
+  #  - os: Visual Studio 2013
+  #    configuration: Debug
+
+# scripts that run after cloning repository
+install:
+  # Install ninja
+  - set NINJA_URL="https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-win.zip"
+  - appveyor DownloadFile %NINJA_URL% -FileName ninja.zip
+  - 7z x ninja.zip -oC:\ninja > nul
+  - set PATH=C:\ninja;C:\Python36;%PATH%
+
+before_build:
+  - git clone --depth=1 https://github.com/KhronosGroup/SPIRV-Headers.git external/spirv-headers
+  - git clone --depth=1 https://github.com/google/googletest.git external/googletest
+  - git clone --depth=1 https://github.com/google/effcee.git external/effcee
+  - git clone --depth=1 https://github.com/google/re2.git external/re2
+  # Set path and environment variables for the current Visual Studio version
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" (call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64)
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" (call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64)
+
+build:
+  parallel: true  # enable MSBuild parallel builds
+  verbosity: minimal
+
+build_script:
+  - mkdir build && cd build
+  - cmake -GNinja -DSPIRV_BUILD_COMPRESSION=ON -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_INSTALL_PREFIX=install -DRE2_BUILD_TESTING=OFF ..
+  - ninja install
+
+test_script:
+  - ctest -C %CONFIGURATION% --output-on-failure --timeout 300
+
+after_test:
+  # Zip build artifacts for uploading and deploying
+  - cd install
+  - 7z a SPIRV-Tools-master-windows-"%PLATFORM%"-"%CONFIGURATION%".zip *\*
+
+artifacts:
+  - path: build\install\*.zip
+    name: artifacts-zip
+
+deploy:
+  - provider: GitHub
+    auth_token:
+      secure: TMfcScKzzFIm1YgeV/PwCRXFDCw8Xm0wY2Vb2FU6WKlbzb5eUITTpr6I5vHPnAxS
+    release: master-tot
+    description: "Continuous build of the latest master branch by Appveyor and Travis CI"
+    artifact: artifacts-zip
+    draft: false
+    prerelease: false
+    force_update: true
+    on:
+      branch: master
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017

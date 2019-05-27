@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<registry>
+    <!--
+    Copyright (c) 2015 The Khronos Group Inc.
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and/or associated documentation files (the
+    "Materials"), to deal in the Materials without restriction, including
+    without limitation the rights to use, copy, modify, merge, publish,
+    distribute, sublicense, and/or sell copies of the Materials, and to
+    permit persons to whom the Materials are furnished to do so, subject to
+    the following conditions:
+
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Materials.
+
+    THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+    MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
+    -->
+    <!--
+    This file, spir-v.xml, is the SPIR-V Tool ID and Opcode registry. The
+    canonical version of the registry, together with related schema and
+    documentation, can be found in the Khronos Registry at
+        http://www.khronos.org/registry/spir-v/
+    -->
+
+    <!-- SECTION: SPIR-V Tool ID Definitions  -->
+
+    <!-- A SPIR-V Generator Magic Number is a 32 bit word: The high order 16
+         bits are a tool ID, which should be unique across all SPIR-V
+         generators. The low order 16 bits are reserved for use as a tool
+         version number, or any other purpose the tool supplier chooses.
+         Only the tool IDs are reserved with Khronos.
+
+         Add new tool ID reservations contiguously with the first available
+         number (the "start" attribute of the <unused> tag below), and
+         modify that <unused> tag accordingly. Please add a vendor/tool
+         supplier name in a 'vendor="name"' attribute; a tool name in a
+         'tool="name"' attribute; and a contact person/address in a
+         'comment' attribute. Remember that this value is the high 16 bits
+         of a 32-bit word.
+
+         Note: a single vendor/tool supplier may have multiple tool IDs
+         reserved for different SPIR-V generators -->
+
+    <ids type="vendor" start="0" end="0xFFFF" comment="SPIR-V Tool IDs">
+        <id value="0"   vendor="Khronos"    comment="Reserved by Khronos"/>
+        <id value="1"   vendor="LunarG"     comment="Contact TBD"/>
+        <id value="2"   vendor="Valve"      comment="Contact TBD"/>
+        <id value="3"   vendor="Codeplay"   comment="Contact Victor Lomuller, victor@codeplay.com"/>
+        <id value="4"   vendor="NVIDIA"     comment="Contact Kerch Holt, kholt@nvidia.com"/>
+        <id value="5"   vendor="ARM"        comment="Contact Alexander Galazin, alexander.galazin@arm.com"/>
+        <id value="6"   vendor="Khronos" tool="LLVM/SPIR-V Translator" comment="Contact Yaxun (Sam) Liu, yaxun.liu@amd.com"/>
+        <id value="7"   vendor="Khronos" tool="SPIR-V Tools Assembler" comment="Contact David Neto, dneto@google.com"/>
+        <id value="8"   vendor="Khronos" tool="Glslang Reference Front End" comment="Contact John Kessenich, johnkessenich@google.com"/>
+        <id value="9"   vendor="Qualcomm"   comment="Contact weifengz@qti.qualcomm.com"/>
+        <id value="10"  vendor="AMD"        comment="Contact Daniel Rakos, daniel.rakos@amd.com"/>
+        <id value="11"  vendor="Intel"      comment="Contact Alexey, alexey.bader@intel.com"/>
+        <id value="12"  vendor="Imagination" comment="Contact James Jones"/>
+        <id value="13"  vendor="Google" tool="Shaderc over Glslang" comment="Contact David Neto, dneto@google.com"/>
+        <id value="14"  vendor="Google" tool="spiregg" comment="Contact Lei Zhang, antiagainst@google.com"/>
+        <id value="15"  vendor="Google" tool="rspirv" comment="Contact Lei Zhang, antiagainst@gmail.com"/>
+        <id value="16"  vendor="X-LEGEND"   tool="Mesa-IR/SPIR-V Translator" comment="Contact Metora Wang, github:metora/MesaGLSLCompiler"/>
+        <id value="17"  vendor="Khronos" tool="SPIR-V Tools Linker" comment="Contact David Neto, dneto@google.com"/>
+        <id value="18"  vendor="Wine" tool="VKD3D Shader Compiler" comment="Contact wine-devel@winehq.org"/>
+        <id value="19"  vendor="Clay" tool="Clay Shader Compiler" comment="Contact info@clayengine.com"/>
+        <id value="20"  vendor="W3C WebGPU Group" tool="WHLSL Shader Translator" comment="https://github.com/gpuweb/WHLSL"/>
+        <unused start="21" end="0xFFFF" comment="Tool ID range reservable for future use by vendors"/>
+    </ids>
+
+    <!-- SECTION: SPIR-V Opcodes and Enumerants -->
+    <!-- Reserve new ranges for vendors in contiguous blocks of 64
+         preceding the "Future use" block below, and modify that block
+         accordingly.
+
+         Each vendor determines the use of values in their own ranges.
+         Vendors are not required to disclose those uses.  If the use of a
+         value is included in an extension that is adopted by a Khronos
+         extension or specification, then that value's use may be permanently
+         fixed as if originally reserved in a Khronos range.
+
+         The SPIR Working Group strongly recommends:
+         - Each value is used for only one purpose.
+         - All values in a range should be used before allocating a new range.
+           For example, to avoid unused gaps in ranges, it is customary for
+           several extensions to use values from the same range.
+
+         The Id type "enum" is a synonym for "opcode".
+
+         Note that SPIR-V restricts opcode values to 16 bits.
+         -->
+
+    <!-- Reserved opcode & enumerant blocks -->
+    <ids type="opcode" start="0" end="4095" vendor="Khronos" comment="Reserved opcodes, not available to vendors - see the SPIR-V Specification"/>
+    <ids type="opcode" start="4096" end="4159" vendor="Mesa" comment="Contact TBD"/>
+    <ids type="opcode" start="4160" end="4415" vendor="ARM"/>
+    <ids type="opcode" start="4416" end="4479" vendor="Khronos" comment="SPV_ARB_shader_ballot - contact Neil Henning, neil.henning@amd.com"/>
+    <ids type="opcode" start="4480" end="4991" vendor="Qualcomm" comment="Contact weifengz@qti.qualcomm.com"/>
+    <ids type="opcode" start="4992" end="5247" vendor="AMD"/>
+    <ids type="opcode" start="5248" end="5503" vendor="NVIDIA"/>
+    <ids type="opcode" start="5504" end="5567" vendor="Imagination"/>
+    <ids type="opcode" start="5568" end="5631" vendor="Intel" comment="Contact ben.ashbaugh@intel.com"/>
+    <ids type="opcode" start="5632" end="5695" vendor="Google" comment="Contact dneto@google.com"/>
+    <ids type="opcode" start="5696" end="5823" vendor="Intel" comment="Contact ben.ashbaugh@intel.com"/>
+    <ids type="opcode" start="5824" end="5951" vendor="Intel" comment="Contact michael.kinsner@intel.com"/>
+    <!-- Opcodes & enumerants reservable for future use. To get a block, allocate
+         multiples of 64 starting at the lowest available point in this
+         block and add a corresponding <ids> tag immediately above. Make
+         sure to fill in the vendor attribute, and preferably add a contact
+         person/address in a comment attribute. -->
+
+    <!-- Example new block: <ids type="opcode" start="XXXX" end="XXXX+64n-1" vendor="Add vendor" comment="Contact TBD"/> -->
+
+    <ids type="opcode" start="5952" end="4294967295" comment="Opcode range reservable for future use by vendors"/>
+
+</registry>

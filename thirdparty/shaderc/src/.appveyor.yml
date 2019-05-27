@@ -1,0 +1,83 @@
+# Windows Build Configuration for AppVeyor
+# http://www.appveyor.com/docs/appveyor-yml
+
+# version format
+version: "{build}"
+
+os:
+  - Visual Studio 2015
+  - Visual Studio 2013
+  - Visual Studio 2017
+
+platform:
+  - x64
+
+environment:
+  PYTHON_PATH: "C:/Python27"
+
+configuration:
+  - Debug
+  - Release
+
+matrix:
+  fast_finish: true
+  exclude:
+    - os: Visual Studio 2015
+      configuration: Debug
+    - os: Visual Studio 2013
+      configuration: Debug
+
+branches:
+  only:
+    - master
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - "%PYTHON_PATH%/Scripts/pip.exe install nose"
+
+# scripts that run after cloning repository
+install:
+  - git clone https://github.com/google/googletest.git          third_party/googletest
+  - git clone https://github.com/google/glslang.git             third_party/glslang
+  - git clone https://github.com/KhronosGroup/SPIRV-Tools.git   third_party/spirv-tools
+  - git clone https://github.com/KhronosGroup/SPIRV-Headers.git third_party/spirv-headers
+
+build:
+  parallel: true  # enable MSBuild parallel builds
+  verbosity: minimal
+
+build_script:
+  - mkdir build && cd build
+  - cmake .. -DCMAKE_INSTALL_PREFIX=install
+  - cmake --build . --target install --config %CONFIGURATION%
+
+test_script:
+  - ctest -C %CONFIGURATION% --output-on-failure
+
+after_test:
+  - ps: >-
+      If ($env:configuration -Match "Debug") {
+        $env:ZIP_FILENAME="shaderc-tot-windows-x64-debug.zip"
+      } Else {
+        $env:ZIP_FILENAME="shaderc-tot-windows-x64-release.zip"
+      }
+  - cp libshaderc\%CONFIGURATION%\shaderc_shared.dll install\lib\
+  - cd install
+  - 7z a %ZIP_FILENAME% bin\glslc.exe include\shaderc\* lib\shaderc_combined.lib lib\shaderc_shared.dll
+
+artifacts:
+  - path: build\install\$(ZIP_FILENAME)
+    name: shaderc-artifacts
+  - path: build\install\bin\glslc.exe
+
+notifications:
+  - provider: Email
+    to:
+      - antiagainst@google.com
+      - awoloszyn@google.com
+      - dneto@google.com
+      - qining@google.com
+    subject: 'Shaderc Windows Build #{{buildVersion}}: {{status}}'
+    on_build_success: false
+    on_build_failure: true
+    on_build_status_changed: true

@@ -1,0 +1,12 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: SPIRV-Tools
+Description: Tools for SPIR-V
+Version: @CURRENT_VERSION@
+URL: https://github.com/KhronosGroup/SPIRV-Tools
+
+Libs: -L${libdir} @SPIRV_LIBRARIES@
+Cflags: -I${includedir}

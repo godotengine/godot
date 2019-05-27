@@ -1,0 +1,91 @@
+Revision history for Shaderc
+
+v2018.1-dev 2018-10-01
+ - Start v2018.1 development
+
+v2018.0 2018-10-01
+ - Support -fhlsl_functionality1 (also -fhlsl-functionality1)
+ - Support NVIDIA Turing extensions. Requires updated Glslang and SPIRV-Tools.
+ - Use SPIR-V optimization and HLSL legalization recipes from SPIRV-Tools.
+   - Pass target environment into SPIRV-Tools code, e.g. from --target-env vulkan1.1
+ - Add SONAME=1 property to shared library
+ - Support GN build for Chromium
+ Fixes:
+  #469: Add virtual dtor to classes with virtual functions.
+  #457: Fix writing SPIR-V binaries to standard output on Windows.
+
+v2017.2 2018-02-27
+ - Add a shared library version of libshaderc
+ - Support GLSL 4.6 and ESSL 3.2
+ - Fail compilation if a resource does not have a binding.
+ - Add options for automatically setting bindings for (uniform) resources that
+   don't have bindings set in shader source.
+ - Add options for automatically setting locations for pipline inputs and outputs.
+ - Add option for using HLSL IO mappings as expressed in source.
+ - Add options for setting resource binding base numbers.
+ - Add option to use HLSL resource register numbers for bindings.
+ - HLSL compilation now defaults to HLSL packing rules.
+   (This change is inherited from Glslang commit 7cca140.)
+ - HLSL compilation runs SPIR-V "legalization" transforms to reduce
+   manipulation of opaque handles (e.g. images), to satisfy Vulkan rules.
+ - Adapt to Glslang generator version numbers:
+   - To 2: a fix for code generation for atomicCounterDecrement.
+   - To 3: change memory barrier semantics masks
+   - To 4: generate more access chains for swizzles
+ - CMake install rules uses GNUInstallDirs.  For example, install to lib64
+   when that is the norm for the target system.
+
+v2017.1 2017-03-10
+ - Add option to automatically assign bindings to uniform variables
+   that don't have an explicit 'binding' layout in the shader source.
+ - Enable NVIDIA extensions by default in GLSL compilation
+ - README mentions language bindings provided by 3rd parties.
+ - README describes the known-good branch on GitHub
+ - Fixed examples in shaderc.h; added C API use to examples/online-compile
+ - Fixes issues:
+   #289: Don't output an object file when compilation fails.
+   #296: Enable use of the CMake in Android Studio.
+
+v2016.2 2016-12-13
+ - Describe Shaderc's level of stability.
+ - Support HLSL compilation, exposing functionality in Glslang.
+   - Supported in C, C++ API
+   - glslc accepts "-x hlsl", and assumes .hlsl files are HLSL.
+   - glslc accepts "-fentry-point=<name>" to set entry point name,
+     overriding default value "main".
+ - Support setting shader resource limits in C, C++ APIs, and in
+   glslc
+   - glslc adds -flimit=<setting>
+   - glslc adds --show-limits to display defaults and valid resource
+     limit syntax.
+   - glslc adds "-flimit-file <file>" support to read Glslang resource
+     configuration files, i.e. the output of "glslangValidator -c".
+ - Enable AMD extensions by default in GLSL compilation
+ - Fixes issues:
+   #281: Work around Android build issue with abspath on Windows
+   #283: Increase default maxDrawBuffers to 4, to match Vulkan/GLES3.0
+
+v2016.1 2016-10-12
+ - C API for assembling now takes an options object
+ - Support compilation options to optimize for size.
+ - Maintain compatibility with recent SPIRV-Tools and Glslang versions.
+ - Update examples.
+ - Build cleanups.
+ - Fixes issues:
+   #238: Fix invocation of python scripts during build
+
+v2016.0 2016-07-07
+
+ - Adds v<year>.<index> versioning, with "-dev" suffix to indicate work in
+   progress. The intent is to summarize and report functionalities more easily
+   for incorporating into downstream projects.
+
+ - Summary of functionalities (See the README.md for more details):
+   - Provides libraries and command line tools for generating SPIR-V modules
+   - Supports GLSL source code or SPIR-V assembly as input
+   - Supports SPIR-V binary or assembly text as output
+   - Command line options follow GCC/Clang conventions
+   - Supports various semantics (OpenGL, OpenGL Compatible and Vulkan)
+   - Supports #include
+   - Supports user-defined macros
+   - Supports dependency information dumping

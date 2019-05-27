@@ -1,0 +1,16 @@
+{
+	global:
+		# re2::RE2*
+		_ZN3re23RE2*;
+		_ZNK3re23RE2*;
+		# re2::StringPiece*
+		_ZN3re211StringPiece*;
+		_ZNK3re211StringPiece*;
+		# re2::operator<<*
+		_ZN3re2ls*;
+		# re2::FilteredRE2*
+		_ZN3re211FilteredRE2*;
+		_ZNK3re211FilteredRE2*;
+	local:
+		*;
+};
