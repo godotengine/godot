@@ -400,6 +400,18 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 			EditorNode::get_singleton()->get_inspector_dock_addon_area()->add_child(p_control);
 
 		} break;
+		case CONTAINER_PROJECT_SETTING_TAB_LEFT: {
+
+			ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(p_control);
+			ProjectSettingsEditor::get_singleton()->get_tabs()->move_child(p_control, 0);
+
+		} break;
+		case CONTAINER_PROJECT_SETTING_TAB_RIGHT: {
+
+			ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(p_control);
+			ProjectSettingsEditor::get_singleton()->get_tabs()->move_child(p_control, 1);
+
+		} break;
 	}
 }
 
@@ -448,6 +460,12 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 		case CONTAINER_PROPERTY_EDITOR_BOTTOM: {
 
 			EditorNode::get_singleton()->get_inspector_dock_addon_area()->remove_child(p_control);
+
+		} break;
+		case CONTAINER_PROJECT_SETTING_TAB_LEFT:
+		case CONTAINER_PROJECT_SETTING_TAB_RIGHT: {
+
+			ProjectSettingsEditor::get_singleton()->get_tabs()->remove_child(p_control);
 
 		} break;
 	}
@@ -863,6 +881,8 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_SIDE_RIGHT);
 	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_BOTTOM);
 	BIND_ENUM_CONSTANT(CONTAINER_PROPERTY_EDITOR_BOTTOM);
+	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_LEFT);
+	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_RIGHT);
 
 	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UL);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BL);
