@@ -347,7 +347,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!profile_allow_editing) {
 				break;
 			}
-			create_dialog->popup_create(false, true);
+			create_dialog->popup_create(false, true, scene_tree->get_selected()->get_class());
 		} break;
 		case TOOL_ATTACH_SCRIPT: {
 
