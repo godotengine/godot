@@ -25,9 +25,14 @@ void AudioStreamPlaylist::set_stream_count(int count) {
 	stream_count = count;
 }
 
+void AudioStreamPlaylist::set_bpm(int beats) {
+	bpm = beats;
+}
+
 void AudioStreamPlaylist::play(Vector<Ref<AudioStream> > audio_streams, int stream_count) {
 	for (int i = 0; i < stream_count; i++) {
-		//do something with audio_streams
+		//do something with audio_streams, looping through them and writing to a buffer?
+		//
 
 
 	}

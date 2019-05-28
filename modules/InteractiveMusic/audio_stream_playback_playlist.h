@@ -16,7 +16,7 @@ private:
 		MIX_FRAC_MASK = MIX_FRAC_LEN - 1,
 	};
 	void *pcm_buffer;
-	Ref<AudioStreamPlaylist> base;
+	Ref<AudioStreamPlaylist> instance;
 	bool active;
 
 public:
