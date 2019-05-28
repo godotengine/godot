@@ -27,6 +27,17 @@
 				Popup (show the control in modal form) in the center of the screen relative to its current canvas transform, at the current size, or at a size determined by "size".
 			</description>
 		</method>
+		<method name="popup_centered_clamped">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<argument index="1" name="fallback_ratio" type="float" default="0.75">
+			</argument>
+			<description>
+				Popup (show the control in modal form) in the center of the screen relative to the current canvas transform, clamping the size to [code]size[/code], then ensuring the popup is no larger than the viewport size multiplied by [code]fallback_ratio[/code].
+			</description>
+		</method>
 		<method name="popup_centered_minsize">
 			<return type="void">
 			</return>
