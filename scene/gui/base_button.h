@@ -71,6 +71,8 @@ private:
 	Ref<ButtonGroup> button_group;
 
 	void _unpress_group();
+	void _pressed();
+	void _toggled(bool p_pressed);
 
 protected:
 	virtual void pressed();
