@@ -359,6 +359,12 @@
 				Emitted whenever a node is removed from the SceneTree.
 			</description>
 		</signal>
+		<signal name="node_renamed">
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="physics_frame">
 			<description>
 				Emitted immediately before [method Node._physics_process] is called on every node in the SceneTree.

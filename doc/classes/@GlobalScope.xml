@@ -45,6 +45,8 @@
 		<member name="Marshalls" type="Reference" setter="" getter="">
 			[Marshalls] singleton
 		</member>
+		<member name="NavigationMeshGenerator" type="EditorNavigationMeshGenerator" setter="" getter="">
+		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			[OS] singleton
 		</member>

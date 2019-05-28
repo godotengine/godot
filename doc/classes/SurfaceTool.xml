@@ -169,6 +169,12 @@
 				Returns a constructed [ArrayMesh] from current information passed in. If an existing [ArrayMesh] is passed in as an argument, will add an extra surface to the existing [ArrayMesh].
 			</description>
 		</method>
+		<method name="commit_to_arrays">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="create_from">
 			<return type="void">
 			</return>
@@ -178,6 +184,18 @@
 			</argument>
 			<description>
 				Creates a vertex array from an existing [Mesh].
+			</description>
+		</method>
+		<method name="create_from_blend_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="existing" type="Mesh">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<argument index="2" name="blend_shape" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="deindex">
