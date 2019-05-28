@@ -180,6 +180,8 @@
 		<member name="application/config/icon" type="String" setter="" getter="">
 			Icon used for the project, set when project loads. Exporters will also use this icon when possible.
 		</member>
+		<member name="application/config/macos_native_icon" type="String" setter="" getter="">
+		</member>
 		<member name="application/config/name" type="String" setter="" getter="">
 			The project's name. It is used both by the Project Manager and by exporters. The project name can be translated by translating its value in localization files.
 		</member>
@@ -188,6 +190,8 @@
 		</member>
 		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="">
 			If [code]true[/code], the project will save user data to its own user directory (see [member application/config/custom_user_dir_name]). This setting is only effective on desktop platforms. A name must be set in the [member application/config/custom_user_dir_name] setting for this to take effect. If [code]false[/code], the project will save user data to [code](OS user data directory)/Godot/app_userdata/(project name)[/code].
+		</member>
+		<member name="application/config/windows_native_icon" type="String" setter="" getter="">
 		</member>
 		<member name="application/run/disable_stderr" type="bool" setter="" getter="">
 			If [code]true[/code], disables printing to standard error in an exported build.

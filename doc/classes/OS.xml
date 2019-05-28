@@ -97,6 +97,8 @@
 			</argument>
 			<argument index="3" name="output" type="Array" default="[  ]">
 			</argument>
+			<argument index="4" name="read_stderr" type="bool" default="false">
+			</argument>
 			<description>
 				Execute the file at the given path with the arguments passed as an array of strings. Platform path resolution will take place. The resolved file must exist and be executable.
 				The arguments are used in the given order and separated by a space, so [code]OS.execute('ping', ['-w', '3', 'godotengine.org'], false)[/code] will resolve to [code]ping -w 3 godotengine.org[/code] in the system's shell.
@@ -701,17 +703,6 @@
 				The same image is used for window caption, taskbar/dock and window selection dialog. Image is scaled as needed.
 			</description>
 		</method>
-		<method name="set_native_icon">
-			<return type="void">
-			</return>
-			<argument index="0" name="filename" type="String">
-			</argument>
-			<description>
-				Sets the game's icon using a multi-size platform-specific icon file ([code]*.ico[/code] on Windows and [code]*.icns[/code] on macOS).
-				Appropriate size sub-icons are used for window caption, taskbar/dock and window selection dialog.
-				Note: This method is only implemented on macOS and Windows.
-			</description>
-		</method>
 		<method name="set_ime_active">
 			<return type="void">
 			</return>
@@ -728,6 +719,17 @@
 			</argument>
 			<description>
 				Sets position of IME suggestion list popup (in window coordinates).
+			</description>
+		</method>
+		<method name="set_native_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="filename" type="String">
+			</argument>
+			<description>
+				Sets the game's icon using a multi-size platform-specific icon file ([code]*.ico[/code] on Windows and [code]*.icns[/code] on macOS).
+				Appropriate size sub-icons are used for window caption, taskbar/dock and window selection dialog.
+				Note: This method is only implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="set_thread_name">
