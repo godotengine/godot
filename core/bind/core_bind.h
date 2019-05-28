@@ -214,7 +214,7 @@ public:
 	bool is_in_low_processor_usage_mode() const;
 
 	String get_executable_path() const;
-	int execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, Array p_output = Array());
+	int execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, Array p_output = Array(), bool p_read_stderr = false);
 
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
