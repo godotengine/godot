@@ -12,7 +12,7 @@ private:
 	int sample_rate;
 	bool stereo;
 	int stream_count;
-	double bpm;
+	int bpm;
 	enum order; 
 	Vector<Ref<AudioStream> > audio_streams;
 
@@ -20,6 +20,7 @@ public:
 	void reset();
 	void set_position(uint64_t pos);
 	void set_stereo();
+	void set_bpm(int beats);
 	void set_stream_count(int count);
 	virtual void play(Vector<Ref<AudioStream> > audio_streams, int stream_count);
 	virtual Ref<AudioStreamPlayback> instance_playback();

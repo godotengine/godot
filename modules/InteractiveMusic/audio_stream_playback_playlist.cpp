@@ -20,7 +20,7 @@ AudioStreamPlaybackPlaylist::~AudioStreamPlaybackPlaylist() {
 
 void AudioStreamPlaybackPlaylist::stop() {
 	active = false;
-	base->reset;
+	instance->reset;
 }
 
 void AudioStreamPlaybackPlaylist::start(float p_from_pos) {
@@ -33,10 +33,21 @@ void AudioStreamPlaybackPlaylist::seek(float p_time) {
 	if (p_time < 0) {
 		p_time = 0;
 	}
-	base->set_position(uint64_t(p_time * base->mix_rate) << MIX_FRAC_BITS);
+	instance->set_position(uint64_t(p_time * instance->mix_rate) << MIX_FRAC_BITS);
 }
 
 void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+	ERR_FAIL_COND(!active);
+	if (!active) {
+		return;
+	}
+	zeromem(pcm_buffer, PCM_BUFFER_SIZE);
+	int16_t *buf = (int16_t *)pcm_buffer;
+	instance->; //function from audiostreamplaylist which fills the buffer 
 
+	for (int i = 0; i < p_frames; i++) {
+		float sample = float(buf[i]) / 32767.0;
+		p_buffer[i] = AudioFrame(sample, sample);
+	}
 }
 
