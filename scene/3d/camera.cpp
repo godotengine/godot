@@ -391,11 +391,15 @@ Point2 Camera::unproject_position(const Vector3 &p_pos) const {
 	return res;
 }
 
-Vector3 Camera::project_position(const Point2 &p_point) const {
+Vector3 Camera::project_position(const Point2 &p_point, float p_z_depth) const {
 
 	if (!is_inside_tree()) {
 		ERR_EXPLAIN("Camera is not inside scene.");
 		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
+	}
+
+	if (p_z_depth == 0) {
+		return get_global_transform().origin;
 	}
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
@@ -415,7 +419,7 @@ Vector3 Camera::project_position(const Point2 &p_point) const {
 	point.y = (1.0 - (p_point.y / viewport_size.y)) * 2.0 - 1.0;
 	point *= vp_size;
 
-	Vector3 p(point.x, point.y, -near);
+	Vector3 p(point.x, point.y, -p_z_depth);
 
 	return get_camera_transform().xform(p);
 }
@@ -490,7 +494,7 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("project_ray_origin", "screen_point"), &Camera::project_ray_origin);
 	ClassDB::bind_method(D_METHOD("unproject_position", "world_point"), &Camera::unproject_position);
 	ClassDB::bind_method(D_METHOD("is_position_behind", "world_point"), &Camera::is_position_behind);
-	ClassDB::bind_method(D_METHOD("project_position", "screen_point"), &Camera::project_position);
+	ClassDB::bind_method(D_METHOD("project_position", "screen_point", "z_depth"), &Camera::project_position, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("set_perspective", "fov", "z_near", "z_far"), &Camera::set_perspective);
 	ClassDB::bind_method(D_METHOD("set_orthogonal", "size", "z_near", "z_far"), &Camera::set_orthogonal);
 	ClassDB::bind_method(D_METHOD("set_frustum", "size", "offset", "z_near", "z_far"), &Camera::set_frustum);
