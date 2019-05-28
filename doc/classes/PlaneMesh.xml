@@ -4,7 +4,7 @@
 		Class representing a planar [PrimitiveMesh].
 	</brief_description>
 	<description>
-		Class representing a planar [PrimitiveMesh]. This flat mesh does not have a thickness.
+		Class representing a planar [PrimitiveMesh]. This flat mesh does not have a thickness. By default, this mesh is aligned on the X and Z axes; this default rotation isn't suited for use with billboarded materials. For billboarded materials, use [QuadMesh] instead.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,10 +15,10 @@
 			Size of the generated plane. Defaults to (2.0, 2.0).
 		</member>
 		<member name="subdivide_depth" type="int" setter="set_subdivide_depth" getter="get_subdivide_depth">
-			Number of subdivision along the z-axis. Defaults to 0.
+			Number of subdivision along the Z axis. Defaults to 0.
 		</member>
 		<member name="subdivide_width" type="int" setter="set_subdivide_width" getter="get_subdivide_width">
-			Number of subdivision along the x-axis. Defaults to 0.
+			Number of subdivision along the X axis. Defaults to 0.
 		</member>
 	</members>
 	<constants>
