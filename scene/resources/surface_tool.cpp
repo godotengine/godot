@@ -769,6 +769,26 @@ void SurfaceTool::create_from(const Ref<Mesh> &p_existing, int p_surface) {
 	material = p_existing->surface_get_material(p_surface);
 }
 
+void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String p_blend_shape_name) {
+	clear();
+	primitive = p_existing->surface_get_primitive_type(p_surface);
+	Array arr = p_existing->surface_get_blend_shape_arrays(p_surface);
+	Array blend_shape_names;
+	int32_t shape_idx = -1;
+	for (int32_t i = 0; i < p_existing->get_blend_shape_count(); i++) {
+		String name = p_existing->get_blend_shape_name(i);
+		if (name == p_blend_shape_name) {
+			shape_idx = i;
+			break;
+		}
+	}
+	ERR_FAIL_COND(shape_idx == -1);
+	ERR_FAIL_COND(shape_idx >= arr.size());
+	Array mesh = arr[shape_idx];
+	ERR_FAIL_COND(mesh.size() != VS::ARRAY_MAX);
+	_create_list_from_arrays(arr[shape_idx], &vertex_array, &index_array, format);
+}
+
 void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform &p_xform) {
 
 	if (vertex_array.size() == 0) {
@@ -1071,8 +1091,10 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &SurfaceTool::clear);
 
 	ClassDB::bind_method(D_METHOD("create_from", "existing", "surface"), &SurfaceTool::create_from);
+	ClassDB::bind_method(D_METHOD("create_from_blend_shape", "existing", "surface", "blend_shape"), &SurfaceTool::create_from_blend_shape);
 	ClassDB::bind_method(D_METHOD("append_from", "existing", "surface", "transform"), &SurfaceTool::append_from);
 	ClassDB::bind_method(D_METHOD("commit", "existing", "flags"), &SurfaceTool::commit, DEFVAL(Variant()), DEFVAL(Mesh::ARRAY_COMPRESS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("commit_to_arrays"), &SurfaceTool::commit_to_arrays);
 }
 
 SurfaceTool::SurfaceTool() {
