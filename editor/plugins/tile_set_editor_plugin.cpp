@@ -372,6 +372,15 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tool_editmode[EDITMODE_COLLISION]->set_pressed(true);
 	edit_mode = EDITMODE_COLLISION;
 
+	tool_editmode[EDITMODE_REGION]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_region", TTR("Region Mode"), KEY_1));
+	tool_editmode[EDITMODE_COLLISION]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_collision", TTR("Collision Mode"), KEY_2));
+	tool_editmode[EDITMODE_OCCLUSION]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_occlusion", TTR("Occlusion Mode"), KEY_3));
+	tool_editmode[EDITMODE_NAVIGATION]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_navigation", TTR("Navigation Mode"), KEY_4));
+	tool_editmode[EDITMODE_BITMASK]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_bitmask", TTR("Bitmask Mode"), KEY_5));
+	tool_editmode[EDITMODE_PRIORITY]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_priority", TTR("Priority Mode"), KEY_6));
+	tool_editmode[EDITMODE_ICON]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_icon", TTR("Icon Mode"), KEY_7));
+	tool_editmode[EDITMODE_Z_INDEX]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_z_index", TTR("Z Index Mode"), KEY_8));
+
 	main_vb->add_child(tool_hb);
 	separator_editmode = memnew(HSeparator);
 	main_vb->add_child(separator_editmode);
