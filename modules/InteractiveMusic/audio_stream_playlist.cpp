@@ -29,6 +29,10 @@ void AudioStreamPlaylist::set_bpm(int beats) {
 	bpm = beats;
 }
 
+void AudioStreamPlaylist::set_order(OrderMode p_order) {
+	p_order = order_mode;
+}
+
 void AudioStreamPlaylist::play(Vector<Ref<AudioStream> > audio_streams, int stream_count) {
 	for (int i = 0; i < stream_count; i++) {
 		//do something with audio_streams, looping through them and writing to a buffer?
@@ -40,7 +44,7 @@ void AudioStreamPlaylist::play(Vector<Ref<AudioStream> > audio_streams, int stre
 
 void AudioStreamPlaylist::_get_property_list(List<PropertyInfo> *p_list) {
 	p_list->push_back(PropertyInfo(Variant::INT, "bpm", PROPERTY_HINT_RANGE, "50,250,1"));
-	p_list->push_back(PropertyInfo(Variant::INT, "order", PROPERTY_HINT_ENUM, "Sequence,Shuffle"));
+	p_list->push_back(PropertyInfo(Variant::INT, "order_mode", PROPERTY_HINT_ENUM, "Sequence,Shuffle"));
 	p_list->push_back(PropertyInfo(Variant::INT, "stream_count", PROPERTY_HINT_RANGE, "0,100,1"));
 
 	for (int i = 0; i < stream_count; i++) {

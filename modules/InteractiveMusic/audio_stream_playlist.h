@@ -13,7 +13,11 @@ private:
 	bool stereo;
 	int stream_count;
 	int bpm;
-	enum order; 
+	enum OrderMode {
+		Sequence,
+		Shuffle
+	};
+	OrderMode order_mode;
 	Vector<Ref<AudioStream> > audio_streams;
 
 public:
@@ -22,6 +26,7 @@ public:
 	void set_stereo();
 	void set_bpm(int beats);
 	void set_stream_count(int count);
+	void set_order(OrderMode p_order);
 	virtual void play(Vector<Ref<AudioStream> > audio_streams, int stream_count);
 	virtual Ref<AudioStreamPlayback> instance_playback();
 	virtual String get_stream_name() const;
