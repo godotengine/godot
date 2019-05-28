@@ -297,6 +297,7 @@ public:
 				target(GL_TEXTURE_2D),
 				data_size(0),
 				compressed(false),
+				srgb(false),
 				total_data_size(0),
 				ignore_mipmaps(false),
 				mipmaps(0),

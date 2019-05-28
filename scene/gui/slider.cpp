@@ -295,6 +295,7 @@ Slider::Slider(Orientation p_orientation) {
 	mouse_inside = false;
 	grab.active = false;
 	ticks = 0;
+	ticks_on_borders = false;
 	custom_step = -1;
 	editable = true;
 	scrollable = true;
