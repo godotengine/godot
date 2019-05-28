@@ -99,6 +99,7 @@ public:
 	virtual void set_executing_line(int p_line) = 0;
 	virtual void clear_executing_line() = 0;
 	virtual void trim_trailing_whitespace() = 0;
+	virtual void insert_final_newline() = 0;
 	virtual void convert_indent_to_spaces() = 0;
 	virtual void convert_indent_to_tabs() = 0;
 	virtual void ensure_focus() = 0;

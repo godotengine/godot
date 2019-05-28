@@ -266,6 +266,7 @@ public:
 	virtual void set_executing_line(int p_line);
 	virtual void clear_executing_line();
 	virtual void trim_trailing_whitespace();
+	virtual void insert_final_newline();
 	virtual void convert_indent_to_spaces();
 	virtual void convert_indent_to_tabs();
 	virtual void ensure_focus();
