@@ -2063,7 +2063,9 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		}
 	}
 
-	node->set_name(get_name());
+	if (get_name() != String()) {
+		node->set_name(get_name());
+	}
 
 #ifdef TOOLS_ENABLED
 	if ((p_flags & DUPLICATE_FROM_EDITOR) && r_duplimap)
