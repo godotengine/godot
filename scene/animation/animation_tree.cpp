@@ -1580,6 +1580,7 @@ AnimationTree::AnimationTree() {
 	active = false;
 	cache_valid = false;
 	setup_pass = 1;
+	process_pass = 1;
 	started = true;
 	properties_dirty = true;
 	last_animation_player = 0;

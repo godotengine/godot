@@ -273,6 +273,7 @@ void AudioStreamOGGVorbis::_bind_methods() {
 AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
 
 	data = NULL;
+	data_len = 0;
 	length = 0;
 	sample_rate = 1;
 	channels = 1;
