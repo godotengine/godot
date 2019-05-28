@@ -97,6 +97,7 @@ public:
 	virtual void set_edit_state(const Variant &p_state) = 0;
 	virtual void goto_line(int p_line, bool p_with_error = false) = 0;
 	virtual void trim_trailing_whitespace() = 0;
+	virtual void insert_final_newline() = 0;
 	virtual void convert_indent_to_spaces() = 0;
 	virtual void convert_indent_to_tabs() = 0;
 	virtual void ensure_focus() = 0;

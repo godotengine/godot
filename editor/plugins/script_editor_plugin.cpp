@@ -681,6 +681,8 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 			se->trim_trailing_whitespace();
 		}
 
+		se->insert_final_newline();
+
 		if (convert_indent_on_save) {
 			if (use_space_indentation) {
 				se->convert_indent_to_spaces();
@@ -1033,6 +1035,8 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (trim_trailing_whitespace_on_save)
 					current->trim_trailing_whitespace();
 
+				current->insert_final_newline();
+
 				if (convert_indent_on_save) {
 					if (use_space_indentation) {
 						current->convert_indent_to_spaces();
@@ -1052,7 +1056,10 @@ void ScriptEditor::_menu_option(int p_option) {
 			} break;
 			case FILE_SAVE_AS: {
 
-				current->trim_trailing_whitespace();
+				if (trim_trailing_whitespace_on_save)
+					current->trim_trailing_whitespace();
+
+				current->insert_final_newline();
 
 				if (convert_indent_on_save) {
 					if (use_space_indentation) {
@@ -2045,6 +2052,8 @@ void ScriptEditor::save_all_scripts() {
 		if (trim_trailing_whitespace_on_save) {
 			se->trim_trailing_whitespace();
 		}
+
+		se->insert_final_newline();
 
 		if (!se->is_unsaved())
 			continue;

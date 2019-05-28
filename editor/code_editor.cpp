@@ -801,6 +801,24 @@ void CodeTextEditor::trim_trailing_whitespace() {
 	}
 }
 
+void CodeTextEditor::insert_final_newline() {
+	int final_line = text_editor->get_line_count() - 1;
+
+	String line = text_editor->get_line(final_line);
+
+	//length 0 means it's already an empty line,
+	//no need to add a newline
+	if (line.length() > 0 && !line.ends_with("\n")) {
+		text_editor->begin_complex_operation();
+
+		line += "\n";
+		text_editor->set_line(final_line, line);
+
+		text_editor->end_complex_operation();
+		text_editor->update();
+	}
+}
+
 void CodeTextEditor::convert_indent_to_spaces() {
 	int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
 	String indent = "";
