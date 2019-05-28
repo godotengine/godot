@@ -795,6 +795,25 @@ const char *OS_JavaScript::get_audio_driver_name(int p_driver) const {
 	return "JavaScript";
 }
 
+// Clipboard
+void OS_JavaScript::set_clipboard(const String &p_text) {
+	OS::set_clipboard(p_text);
+	/* clang-format off */
+	int err = EM_ASM_INT({
+		var text = UTF8ToString($0);
+		if (!navigator.clipboard || !navigator.clipboard.writeText)
+			return 1;
+		navigator.clipboard.writeText(text).catch(e => {
+			// Setting OS clipboard is only possible from an input callback.
+			console.error("Setting OS clipboard is only possible from an input callback for the HTML5 plafrom. Exception:", e);
+		});
+		return 0;
+	}, p_text.utf8().get_data());
+	/* clang-format on */
+	ERR_EXPLAIN("Clipboard API is not supported.");
+	ERR_FAIL_COND(err);
+}
+
 // Lifecycle
 int OS_JavaScript::get_current_video_driver() const {
 	return video_driver_index;

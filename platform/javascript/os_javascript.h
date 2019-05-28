@@ -133,6 +133,8 @@ public:
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
+	virtual void set_clipboard(const String &p_text);
+
 	virtual MainLoop *get_main_loop() const;
 	void run_async();
 	bool main_loop_iterate();
