@@ -334,6 +334,8 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	template <class T>
 	T _interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time, GLTFAnimation::Interpolation p_interp);
 
+	String _canonicalize_name(String p_name);
+
 public:
 	virtual uint32_t get_import_flags() const;
 	virtual void get_extensions(List<String> *r_extensions) const;

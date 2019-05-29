@@ -178,6 +178,9 @@ Error EditorSceneImporterGLTF::_parse_scenes(GLTFState &state) {
 
 	ERR_FAIL_COND_V(!state.json.has("scenes"), ERR_FILE_CORRUPT);
 	Array scenes = state.json["scenes"];
+	if (scenes.size() < 1) {
+		return FAILED;
+	}
 	for (int i = 0; i < 1; i++) { //only first scene is imported
 		Dictionary s = scenes[i];
 		ERR_FAIL_COND_V(!s.has("nodes"), ERR_UNAVAILABLE);
@@ -204,7 +207,7 @@ Error EditorSceneImporterGLTF::_parse_nodes(GLTFState &state) {
 		Dictionary n = nodes[i];
 
 		if (n.has("name")) {
-			node->name = n["name"];
+			node->name = _canonicalize_name(n["name"]);
 		}
 		if (n.has("camera")) {
 			node->camera = n["camera"];
@@ -1388,6 +1391,7 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 			String am = d["alphaMode"];
 			if (am != "OPAQUE") {
 				material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+				material->set_depth_draw_mode(SpatialMaterial::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
 			}
 		}
 
@@ -1437,16 +1441,9 @@ Error EditorSceneImporterGLTF::_parse_skins(GLTFState &state) {
 			skin.bones.push_back(bone);
 		}
 
-		print_verbose("glTF: Skin has skeleton? " + itos(d.has("skeleton")));
 		if (d.has("skeleton")) {
-			int skeleton = d["skeleton"];
-			ERR_FAIL_INDEX_V(skeleton, state.nodes.size(), ERR_PARSE_ERROR);
-			print_verbose("glTF: Setting skeleton skin to" + itos(skeleton));
-			skin.skeleton = skeleton;
-			if (!state.skeleton_nodes.has(skeleton)) {
-				state.skeleton_nodes[skeleton] = Vector<int>();
-			}
-			state.skeleton_nodes[skeleton].push_back(i);
+			print_verbose("The skeleton element is ignored.");
+			// https://github.com/KhronosGroup/glTF/issues/1270
 		}
 
 		if (d.has("name")) {
@@ -1810,11 +1807,14 @@ void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vecto
 		const GLTFNode *gltf_bone_node = state.nodes[state.skins[skin].bones[n->joints[i].bone].node];
 		const String bone_name = gltf_bone_node->name;
 		const int parent = gltf_bone_node->parent;
+		if (parent == -1) {
+			continue;
+		}
 		const int parent_index = s->find_bone(state.nodes[parent]->name);
-
 		const int bone_index = s->find_bone(bone_name);
+		ERR_CONTINUE_MSG(parent_index == -1, "GLTF can't find bone parent: " + state.nodes[parent]->name)
+		ERR_CONTINUE_MSG(bone_index == -1, "GLTF can't find bone: " + bone_name);
 		s->set_bone_parent(bone_index, parent_index);
-
 		n->godot_nodes.push_back(s);
 		n->joints.write[i].godot_bone_index = bone_index;
 	}
@@ -2276,4 +2276,8 @@ Ref<Animation> EditorSceneImporterGLTF::import_animation(const String &p_path, u
 }
 
 EditorSceneImporterGLTF::EditorSceneImporterGLTF() {
+}
+
+String EditorSceneImporterGLTF::_canonicalize_name(String p_name) {
+	return p_name.replace(":", "_");
 }
