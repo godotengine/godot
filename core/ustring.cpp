@@ -1725,6 +1725,45 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 	return hex * sign;
 }
 
+int64_t String::bin_to_int64(bool p_with_prefix) const {
+
+	if (p_with_prefix && length() < 3)
+		return 0;
+
+	const CharType *s = ptr();
+
+	int64_t sign = s[0] == '-' ? -1 : 1;
+
+	if (sign < 0) {
+		s++;
+	}
+
+	if (p_with_prefix) {
+		if (s[0] != '0' || s[1] != 'b')
+			return 0;
+		s += 2;
+	}
+
+	int64_t binary = 0;
+
+	while (*s) {
+
+		CharType c = LOWERCASE(*s);
+		int64_t n;
+		if (c == '0' || c == '1') {
+			n = c - '0';
+		} else {
+			return 0;
+		}
+
+		binary *= 2;
+		binary += n;
+		s++;
+	}
+
+	return binary * sign;
+}
+
 int String::to_int() const {
 
 	if (length() == 0)
