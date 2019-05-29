@@ -204,7 +204,8 @@ void finalize_physics() {
 
 void Main::print_help(const char *p_binary) {
 
-	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - https://godotengine.org");
+	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+	OS::get_singleton()->print("Free and open source software under the terms of the MIT license.\n");
 	OS::get_singleton()->print("(c) 2007-2019 Juan Linietsky, Ariel Manzur.\n");
 	OS::get_singleton()->print("(c) 2014-2019 Godot Engine contributors.\n");
 	OS::get_singleton()->print("\n");
@@ -1090,6 +1091,9 @@ error:
 }
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
+
+	// Print engine name and version
+	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 
 	if (p_main_tid_override) {
 		Thread::_main_thread_id = p_main_tid_override;
