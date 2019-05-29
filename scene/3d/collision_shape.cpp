@@ -228,7 +228,9 @@ void CollisionShape::_update_debug_shape() {
 
 void CollisionShape::_shape_changed() {
 	// If this is a heightfield shape our center may have changed
-	_update_in_shape_owner(true);
+	if (parent) {
+		_update_in_shape_owner(true);
+	}
 
 	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint() && !debug_shape_dirty) {
 		debug_shape_dirty = true;
