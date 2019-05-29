@@ -819,6 +819,23 @@ void OS_JavaScript::set_clipboard(const String &p_text) {
 	ERR_FAIL_COND(err);
 }
 
+String OS_JavaScript::get_clipboard() const {
+	/* clang-format off */
+	EM_ASM({
+		try {
+			navigator.clipboard.readText().then(function (result) {
+				ccall('update_clipboard', 'void', ['string'], [result]);
+			}).catch(function (e) {
+				// Fail graciously.
+			});
+		} catch (e) {
+			// Fail graciously.
+		}
+	});
+	/* clang-format on */
+	return this->OS::get_clipboard();
+}
+
 // Lifecycle
 int OS_JavaScript::get_current_video_driver() const {
 	return video_driver_index;

@@ -134,6 +134,7 @@ public:
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
 	virtual void set_clipboard(const String &p_text);
+	virtual String get_clipboard() const;
 
 	virtual MainLoop *get_main_loop() const;
 	void run_async();
