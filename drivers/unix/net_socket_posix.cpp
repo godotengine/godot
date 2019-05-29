@@ -235,7 +235,6 @@ void NetSocketPosix::_set_socket(SOCKET_TYPE p_sock, IP::Type p_ip_type, bool p_
 
 Error NetSocketPosix::open(Type p_sock_type, IP::Type &ip_type) {
 	ERR_FAIL_COND_V(is_open(), ERR_ALREADY_IN_USE);
-	ERR_FAIL_COND_V(ip_type > IP::TYPE_ANY || ip_type < IP::TYPE_NONE, ERR_INVALID_PARAMETER);
 
 #if defined(__OpenBSD__)
 	// OpenBSD does not support dual stacking, fallback to IPv4 only.

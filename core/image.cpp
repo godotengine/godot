@@ -944,7 +944,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 		case INTERPOLATE_NEAREST: {
 
-			if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
+			if (format <= FORMAT_RGBA8) {
 				switch (get_format_pixel_size(format)) {
 					case 1: _scale_nearest<1, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
 					case 2: _scale_nearest<2, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
@@ -1008,7 +1008,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 					}
 				}
 
-				if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
+				if (format <= FORMAT_RGBA8) {
 					switch (get_format_pixel_size(format)) {
 						case 1: _scale_bilinear<1, uint8_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
 						case 2: _scale_bilinear<2, uint8_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
@@ -1041,7 +1041,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 		} break;
 		case INTERPOLATE_CUBIC: {
 
-			if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
+			if (format <= FORMAT_RGBA8) {
 				switch (get_format_pixel_size(format)) {
 					case 1: _scale_cubic<1, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
 					case 2: _scale_cubic<2, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
@@ -1066,7 +1066,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 		} break;
 		case INTERPOLATE_LANCZOS: {
 
-			if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
+			if (format <= FORMAT_RGBA8) {
 				switch (get_format_pixel_size(format)) {
 					case 1: _scale_lanczos<1, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
 					case 2: _scale_lanczos<2, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;

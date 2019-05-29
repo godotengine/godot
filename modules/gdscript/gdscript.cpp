@@ -1092,7 +1092,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 					ERR_CONTINUE(!d.has("type"));
 					PropertyInfo pinfo;
 					pinfo.type = Variant::Type(d["type"].operator int());
-					ERR_CONTINUE(pinfo.type < 0 || pinfo.type >= Variant::VARIANT_MAX);
+					ERR_CONTINUE(pinfo.type >= Variant::VARIANT_MAX);
 					pinfo.name = d["name"];
 					ERR_CONTINUE(pinfo.name == "");
 					if (d.has("hint"))
@@ -2068,7 +2068,7 @@ String GDScriptWarning::get_name() const {
 }
 
 String GDScriptWarning::get_name_from_code(Code p_code) {
-	ERR_FAIL_COND_V(p_code < 0 || p_code >= WARNING_MAX, String());
+	ERR_FAIL_COND_V(p_code >= WARNING_MAX, String());
 
 	static const char *names[] = {
 		"UNASSIGNED_VARIABLE",

@@ -663,7 +663,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			if (left_ok) {
 
 				Ref<Texture> t;
-				if (left_type >= 0 && left_type < Variant::VARIANT_MAX) {
+				if (left_type < Variant::VARIANT_MAX) {
 					t = type_icons[left_type];
 				}
 				if (t.is_valid()) {
@@ -730,7 +730,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				hbc->add_child(memnew(Label(right_name)));
 
 				Ref<Texture> t;
-				if (right_type >= 0 && right_type < Variant::VARIANT_MAX) {
+				if (right_type < Variant::VARIANT_MAX) {
 					t = type_icons[right_type];
 				}
 				if (t.is_valid()) {

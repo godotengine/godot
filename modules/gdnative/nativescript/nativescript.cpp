@@ -670,7 +670,7 @@ void NativeScriptInstance::get_property_list(List<PropertyInfo> *p_properties) c
 				PropertyInfo info;
 
 				info.type = Variant::Type(d["type"].operator int64_t());
-				ERR_CONTINUE(info.type < 0 || info.type >= Variant::VARIANT_MAX);
+				ERR_CONTINUE(info.type >= Variant::VARIANT_MAX);
 
 				info.name = d["name"];
 				ERR_CONTINUE(info.name == "");

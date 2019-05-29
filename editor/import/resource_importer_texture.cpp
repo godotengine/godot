@@ -469,7 +469,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 
 		bool ok_on_pc = false;
 		bool is_hdr = (image->get_format() >= Image::FORMAT_RF && image->get_format() <= Image::FORMAT_RGBE9995);
-		bool is_ldr = (image->get_format() >= Image::FORMAT_L8 && image->get_format() <= Image::FORMAT_RGBA5551);
+		bool is_ldr = (image->get_format() <= Image::FORMAT_RGBA5551);
 		bool can_bptc = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_bptc");
 		bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc");
 
