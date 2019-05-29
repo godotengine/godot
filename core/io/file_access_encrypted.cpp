@@ -100,6 +100,7 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 		MD5Update(&md5, (uint8_t *)data.ptr(), data.size());
 		MD5Final(&md5);
 
+		ERR_EXPLAIN("The MD5 sum of the decrypted file does not match the expected value. It could be that the file is corrupt, or that the provided decryption key is invalid.");
 		ERR_FAIL_COND_V(String::md5(md5.digest) != String::md5(md5d), ERR_FILE_CORRUPT);
 
 		file = p_base;
