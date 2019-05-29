@@ -7,14 +7,18 @@ doc/_build/
 # Javascript specific
 *.bc
 
+# CLion
+cmake-build-debug
+
 # Android specific
-platform/android/java/.gradle
-platform/android/java/.gradletasknamecache
-platform/android/java/local.properties
-platform/android/java/project.properties
+.gradle
+local.properties
+*.iml
+.idea
+.gradletasknamecache
+project.properties
 platform/android/java/libs/*
 platform/android/java/assets
-platform/android/java/*.iml
 
 # General c++ generated files
 *.lib
