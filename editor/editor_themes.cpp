@@ -556,7 +556,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	Ref<StyleBoxFlat> style_menu_hover_bg = style_widget->duplicate();
 	style_menu_hover_bg->set_border_width_all(0);
-	style_menu_hover_bg->set_bg_color(dark_color_1);
+	style_menu_hover_bg->set_bg_color(dark_color_1.lightened(dark_theme ? 0.01 : 0.0));
+
+	Ref<StyleBoxFlat> style_menu_pressed_bg = style_widget->duplicate();
+	style_menu_pressed_bg->set_border_width_all(0);
+	style_menu_pressed_bg->set_bg_color(dark_color_2.darkened(0.06));
 
 	theme->set_stylebox("normal", "MenuButton", style_menu);
 	theme->set_stylebox("hover", "MenuButton", style_menu);
@@ -566,7 +570,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_stylebox("normal", "PopupMenu", style_menu);
 	theme->set_stylebox("hover", "PopupMenu", style_menu_hover_bg);
-	theme->set_stylebox("pressed", "PopupMenu", style_menu);
+	theme->set_stylebox("pressed", "PopupMenu", style_menu_pressed_bg);
 	theme->set_stylebox("focus", "PopupMenu", style_menu);
 	theme->set_stylebox("disabled", "PopupMenu", style_menu);
 
@@ -662,6 +666,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("font_color", "PopupMenu", font_color);
 	theme->set_color("font_color_hover", "PopupMenu", font_color_hl);
+	theme->set_color("font_color_pressed", "PopupMenu", font_color_hl);
 	theme->set_color("font_color_accel", "PopupMenu", font_color_disabled);
 	theme->set_color("font_color_disabled", "PopupMenu", font_color_disabled);
 	theme->set_icon("checked", "PopupMenu", theme->get_icon("GuiChecked", "EditorIcons"));

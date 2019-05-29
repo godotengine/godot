@@ -509,6 +509,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 		selected->set_expand_margin_size(Margin(i), 2 * scale);
 	}
 
+	Ref<StyleBoxTexture> pressed = make_stylebox(button_pressed_png, 6, 6, 6, 6);
+	for (int i = 0; i < 4; i++) {
+		pressed->set_expand_margin_size(Margin(i), 2 * scale);
+	}
+
 	theme->set_stylebox("panel", "PopupPanel", style_pp);
 
 	// PopupDialog
@@ -521,6 +526,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("panel", "PopupMenu", style_pd);
 	theme->set_stylebox("panel_disabled", "PopupMenu", make_stylebox(popup_bg_disabled_png, 4, 4, 4, 4));
 	theme->set_stylebox("hover", "PopupMenu", selected);
+	theme->set_stylebox("pressed", "PopupMenu", pressed);
 	theme->set_stylebox("separator", "PopupMenu", make_stylebox(vseparator_png, 3, 3, 3, 3));
 	theme->set_stylebox("labeled_separator_left", "PopupMenu", make_stylebox(vseparator_png, 0, 0, 0, 0));
 	theme->set_stylebox("labeled_separator_right", "PopupMenu", make_stylebox(vseparator_png, 0, 0, 0, 0));
@@ -537,6 +543,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_accel", "PopupMenu", Color(0.7, 0.7, 0.7, 0.8));
 	theme->set_color("font_color_disabled", "PopupMenu", Color(0.4, 0.4, 0.4, 0.8));
 	theme->set_color("font_color_hover", "PopupMenu", control_font_color);
+	theme->set_color("font_color_pressed", "PopupMenu", control_font_color);
 
 	theme->set_constant("hseparation", "PopupMenu", 4 * scale);
 	theme->set_constant("vseparation", "PopupMenu", 4 * scale);

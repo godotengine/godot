@@ -285,11 +285,20 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
+		const int button_idx = b->get_button_index();
+
 		if (b->is_pressed()) {
+			if (button_idx == BUTTON_LEFT) {
+				is_mouse_down = true;
+				// Update to display the "pressed" stylebox
+				control->update();
+			}
+
 			return;
+		} else {
+			is_mouse_down = false;
 		}
 
-		int button_idx = b->get_button_index();
 		switch (button_idx) {
 			case BUTTON_WHEEL_DOWN: {
 				_scroll(-b->get_factor(), b->get_position());
@@ -329,8 +338,6 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		}
-
-		//control->update();
 	}
 
 	Ref<InputEventMouseMotion> m = p_event;
@@ -421,6 +428,7 @@ void PopupMenu::_draw() {
 
 	Ref<StyleBox> style = get_theme_stylebox("panel");
 	Ref<StyleBox> hover = get_theme_stylebox("hover");
+	Ref<StyleBox> pressed = get_theme_stylebox("pressed");
 	Ref<Font> font = get_theme_font("font");
 	// In Item::checkable_type enum order (less the non-checkable member)
 	Ref<Texture2D> check[] = { get_theme_icon("checked"), get_theme_icon("radio_checked") };
@@ -438,6 +446,7 @@ void PopupMenu::_draw() {
 	Color font_color_disabled = get_theme_color("font_color_disabled");
 	Color font_color_accel = get_theme_color("font_color_accel");
 	Color font_color_hover = get_theme_color("font_color_hover");
+	Color font_color_pressed = get_theme_color("font_color_pressed");
 	float font_h = font->get_height();
 
 	// Add the check and the wider icon to the offset of all items.
@@ -477,7 +486,8 @@ void PopupMenu::_draw() {
 		}
 
 		if (i == mouse_over) {
-			hover->draw(ci, Rect2(item_ofs + Point2(-hseparation, -vseparation / 2), Size2(get_size().width - style->get_minimum_size().width + hseparation * 2, h + vseparation)));
+			Ref<StyleBox> hover_pressed = is_mouse_down ? pressed : hover;
+			hover_pressed->draw(ci, Rect2(item_ofs + Point2(-hseparation, -vseparation / 2), Size2(get_size().width - style->get_minimum_size().width + hseparation * 2, h + vseparation)));
 		}
 
 		String text = items[i].xl_text;
@@ -524,7 +534,16 @@ void PopupMenu::_draw() {
 			}
 		} else {
 			item_ofs.x += icon_ofs + check_ofs;
-			font->draw(ci, item_ofs + Point2(0, Math::floor((h - font_h) / 2.0)), text, items[i].disabled ? font_color_disabled : (i == mouse_over ? font_color_hover : font_color));
+
+			Color item_font_color;
+			if (is_mouse_down && i == mouse_over) {
+				item_font_color = font_color_pressed;
+			} else if (i == mouse_over) {
+				item_font_color = font_color_hover;
+			} else {
+				item_font_color = font_color;
+			}
+			font->draw(ci, item_ofs + Point2(0, Math::floor((h - font_h) / 2.0)), text, items[i].disabled ? font_color_disabled : item_font_color);
 		}
 
 		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->is_valid())) {
