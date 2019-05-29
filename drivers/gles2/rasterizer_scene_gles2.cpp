@@ -2695,7 +2695,8 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	Environment *env = NULL;
 
 	int viewport_width, viewport_height;
-	int viewport_x, viewport_y;
+	int viewport_x = 0;
+	int viewport_y = 0;
 	bool probe_interior = false;
 	bool reverse_cull = false;
 
