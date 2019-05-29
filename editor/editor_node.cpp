@@ -288,6 +288,7 @@ void EditorNode::_notification(int p_what) {
 
 		Engine::get_singleton()->set_editor_hint(true);
 
+		OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
 		get_tree()->get_root()->set_usage(Viewport::USAGE_2D_NO_SAMPLING); //reduce memory usage
 		get_tree()->get_root()->set_disable_3d(true);
 		get_tree()->get_root()->set_as_audio_listener(false);
@@ -323,7 +324,16 @@ void EditorNode::_notification(int p_what) {
 
 	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
 
+		// Restore the original FPS cap after focusing back on the editor
+		OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
+
 		EditorFileSystem::get_singleton()->scan_changes();
+	}
+
+	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT) {
+
+		// Set a low FPS cap to decrease CPU/GPU usage while the editor is unfocused
+		OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/unfocused_low_processor_mode_sleep_usec")));
 	}
 
 	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
