@@ -369,7 +369,11 @@ bool GodotSharpBuilds::build_project_blocking(const String &p_config, const Vect
 	MonoBuildInfo build_info(GodotSharpDirs::get_project_sln_path(), p_config);
 
 	// Add Godot defines
+#ifdef WINDOWS_ENABLED
 	String constants = "GodotDefineConstants=\"";
+#else
+	String constants = "GodotDefineConstants=\\\"";
+#endif
 
 	for (int i = 0; i < p_godot_defines.size(); i++) {
 		constants += "GODOT_" + p_godot_defines[i].to_upper().replace("-", "_").replace(" ", "_").replace(";", "_") + ";";
@@ -379,7 +383,11 @@ bool GodotSharpBuilds::build_project_blocking(const String &p_config, const Vect
 	constants += "GODOT_REAL_T_IS_DOUBLE;";
 #endif
 
+#ifdef WINDOWS_ENABLED
 	constants += "\"";
+#else
+	constants += "\\\"";
+#endif
 	build_info.custom_props.push_back(constants);
 
 	if (!GodotSharpBuilds::get_singleton()->build(build_info)) {
