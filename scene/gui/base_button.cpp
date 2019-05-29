@@ -76,12 +76,12 @@ void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 					}
 					status.pressed = !status.pressed;
 					_unpress_group();
-					toggled(status.pressed);
-					pressed();
+					_toggled(status.pressed);
+					_pressed();
 				}
 			} else {
 				if (!p_event->is_pressed()) {
-					pressed();
+					_pressed();
 				}
 			}
 		}
@@ -159,20 +159,28 @@ void BaseButton::_notification(int p_what) {
 	}
 }
 
-void BaseButton::pressed() {
+void BaseButton::_pressed() {
 
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_pressed);
 	}
+	pressed();
 	emit_signal("pressed");
 }
 
-void BaseButton::toggled(bool p_pressed) {
+void BaseButton::_toggled(bool p_pressed) {
 
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_toggled, p_pressed);
 	}
+	toggled(p_pressed);
 	emit_signal("toggled", p_pressed);
+}
+
+void BaseButton::pressed() {
+}
+
+void BaseButton::toggled(bool p_pressed) {
 }
 
 void BaseButton::set_disabled(bool p_disabled) {
@@ -209,7 +217,7 @@ void BaseButton::set_pressed(bool p_pressed) {
 		_unpress_group();
 	}
 	if (toggle_mode) {
-		toggled(status.pressed);
+		_toggled(status.pressed);
 	}
 
 	update();
