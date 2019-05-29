@@ -710,7 +710,6 @@ void EditorFileDialog::update_file_list() {
 	}
 
 	String cdir = dir_access->get_current_dir();
-	bool skip_pp = access == ACCESS_RESOURCES && cdir == "res://";
 
 	dir_access->list_dir_begin();
 
@@ -733,7 +732,7 @@ void EditorFileDialog::update_file_list() {
 		if (show_hidden || !ishidden) {
 			if (!isdir)
 				files.push_back(item);
-			else if (item != ".." || !skip_pp)
+			else
 				dirs.push_back(item);
 		}
 	}
@@ -763,8 +762,6 @@ void EditorFileDialog::update_file_list() {
 
 		dirs.pop_front();
 	}
-
-	dirs.clear();
 
 	List<String> patterns;
 	// build filter
@@ -864,8 +861,6 @@ void EditorFileDialog::update_file_list() {
 			break;
 		}
 	}
-
-	files.clear();
 }
 
 void EditorFileDialog::_filter_selected(int) {
