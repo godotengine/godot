@@ -69,6 +69,7 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 			}
 		}
 		visual_shader = Ref<VisualShader>(p_visual_shader);
+		visual_shader->set_graph_offset(graph->get_scroll_ofs() / EDSCALE);
 	} else {
 		visual_shader.unref();
 	}
