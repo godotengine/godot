@@ -3633,6 +3633,9 @@ void AnimationTrackEditor::_animation_update() {
 	bezier_edit->update();
 
 	_update_step_spinbox();
+	emit_signal("animation_step_changed", animation->get_step());
+	emit_signal("animation_len_changed", animation->get_length());
+	EditorNode::get_singleton()->get_inspector()->refresh();
 
 	animation_changing_awaiting_update = false;
 }
