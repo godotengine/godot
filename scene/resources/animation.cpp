@@ -1298,6 +1298,78 @@ float Animation::track_get_key_time(int p_track, int p_key_idx) const {
 	ERR_FAIL_V(-1);
 }
 
+void Animation::track_set_key_time(int p_track, int p_key_idx, float p_time) {
+
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+
+	switch (t->type) {
+
+		case TYPE_TRANSFORM: {
+
+			TransformTrack *tt = static_cast<TransformTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, tt->transforms.size());
+			TKey<TransformKey> key = tt->transforms[p_key_idx];
+			key.time = p_time;
+			tt->transforms.remove(p_key_idx);
+			_insert(p_time, tt->transforms, key);
+			return;
+		}
+		case TYPE_VALUE: {
+
+			ValueTrack *vt = static_cast<ValueTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, vt->values.size());
+			TKey<Variant> key = vt->values[p_key_idx];
+			key.time = p_time;
+			vt->values.remove(p_key_idx);
+			_insert(p_time, vt->values, key);
+			return;
+		}
+		case TYPE_METHOD: {
+
+			MethodTrack *mt = static_cast<MethodTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, mt->methods.size());
+			MethodKey key = mt->methods[p_key_idx];
+			key.time = p_time;
+			mt->methods.remove(p_key_idx);
+			_insert(p_time, mt->methods, key);
+			return;
+		}
+		case TYPE_BEZIER: {
+
+			BezierTrack *bt = static_cast<BezierTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, bt->values.size());
+			TKey<BezierKey> key = bt->values[p_key_idx];
+			key.time = p_time;
+			bt->values.remove(p_key_idx);
+			_insert(p_time, bt->values, key);
+			return;
+		}
+		case TYPE_AUDIO: {
+
+			AudioTrack *at = static_cast<AudioTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, at->values.size());
+			TKey<AudioKey> key = at->values[p_key_idx];
+			key.time = p_time;
+			at->values.remove(p_key_idx);
+			_insert(p_time, at->values, key);
+			return;
+		}
+		case TYPE_ANIMATION: {
+
+			AnimationTrack *at = static_cast<AnimationTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, at->values.size());
+			TKey<StringName> key = at->values[p_key_idx];
+			key.time = p_time;
+			at->values.remove(p_key_idx);
+			_insert(p_time, at->values, key);
+			return;
+		}
+	}
+
+	ERR_FAIL();
+}
+
 float Animation::track_get_key_transition(int p_track, int p_key_idx) const {
 
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
@@ -2691,6 +2763,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("track_remove_key_at_position", "idx", "position"), &Animation::track_remove_key_at_position);
 	ClassDB::bind_method(D_METHOD("track_set_key_value", "idx", "key", "value"), &Animation::track_set_key_value);
 	ClassDB::bind_method(D_METHOD("track_set_key_transition", "idx", "key_idx", "transition"), &Animation::track_set_key_transition);
+	ClassDB::bind_method(D_METHOD("track_set_key_time", "idx", "key_idx", "time"), &Animation::track_set_key_time);
 	ClassDB::bind_method(D_METHOD("track_get_key_transition", "idx", "key_idx"), &Animation::track_get_key_transition);
 
 	ClassDB::bind_method(D_METHOD("track_get_key_count", "idx"), &Animation::track_get_key_count);
