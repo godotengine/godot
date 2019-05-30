@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_name_dialog.h                                                 */
+/*  editor_layouts_dialog.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_NAME_DIALOG_H
-#define EDITOR_NAME_DIALOG_H
+#ifndef EDITOR_LAYOUTS_DIALOG_H
+#define EDITOR_LAYOUTS_DIALOG_H
 
 #include "scene/gui/dialogs.h"
-#include "scene/gui/line_edit.h"
 
-class EditorNameDialog : public ConfirmationDialog {
+class LineEdit;
+class ItemList;
 
-	GDCLASS(EditorNameDialog, ConfirmationDialog);
+class EditorLayoutsDialog : public ConfirmationDialog {
 
-	VBoxContainer *makevb;
+	GDCLASS(EditorLayoutsDialog, ConfirmationDialog);
+
 	LineEdit *name;
+	ItemList *layout_names;
+	VBoxContainer *makevb;
 
 	void _line_gui_input(const Ref<InputEvent> &p_event);
 
@@ -49,9 +52,9 @@ protected:
 	virtual void _post_popup();
 
 public:
-	LineEdit *get_line_edit() { return name; }
+	EditorLayoutsDialog();
 
-	EditorNameDialog();
+	void set_name_line_enabled(bool p_enabled);
 };
 
-#endif // EDITOR_NAME_DIALOG_H
+#endif // EDITOR_LAYOUTS_DIALOG_H
