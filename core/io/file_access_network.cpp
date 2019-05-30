@@ -118,7 +118,10 @@ void FileAccessNetworkClient::_thread_func() {
 		FileAccessNetwork *fa = NULL;
 
 		if (response != FileAccessNetwork::RESPONSE_DATA) {
-			ERR_FAIL_COND(!accesses.has(id));
+			if (!accesses.has(id)) {
+				unlock_mutex();
+				ERR_FAIL_COND(!accesses.has(id));
+			}
 		}
 
 		if (accesses.has(id))
