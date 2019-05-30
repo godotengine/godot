@@ -675,14 +675,14 @@ void CodeTextEditor::_line_col_changed() {
 		}
 	}
 
-	StringBuilder *sb = memnew(StringBuilder);
-	sb->append("(");
-	sb->append(itos(text_editor->cursor_get_line() + 1).lpad(3));
-	sb->append(",");
-	sb->append(itos(positional_column + 1).lpad(3));
-	sb->append(")");
+	StringBuilder sb;
+	sb.append("(");
+	sb.append(itos(text_editor->cursor_get_line() + 1).lpad(3));
+	sb.append(",");
+	sb.append(itos(positional_column + 1).lpad(3));
+	sb.append(")");
 
-	line_and_col_txt->set_text(sb->as_string());
+	line_and_col_txt->set_text(sb.as_string());
 }
 
 void CodeTextEditor::_text_changed() {
