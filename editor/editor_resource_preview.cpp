@@ -203,7 +203,9 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			if (has_small_texture) {
 				ResourceSaver::save(cache_base + "_small.png", r_small_texture);
 			}
-			FileAccess *f = FileAccess::open(cache_base + ".txt", FileAccess::WRITE);
+			Error err;
+			FileAccess *f = FileAccess::open(cache_base + ".txt", FileAccess::WRITE, &err);
+			ERR_FAIL_COND(err != OK);
 			f->store_line(itos(thumbnail_size));
 			f->store_line(itos(has_small_texture));
 			f->store_line(itos(FileAccess::get_modified_time(p_item.path)));
