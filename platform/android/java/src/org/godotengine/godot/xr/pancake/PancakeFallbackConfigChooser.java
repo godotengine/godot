@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  android_gdn.cpp                                                      */
+/*  PancakeFallbackConfigChooser.java                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,59 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "modules/gdnative/gdnative.h"
+package org.godotengine.godot.xr.pancake;
 
-// Code by Paritosh97 with minor tweaks by Mux213
-// These entry points are only for the android platform and are simple stubs in all others.
+import android.util.Log;
+import javax.microedition.khronos.egl.EGL10;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLDisplay;
+import org.godotengine.godot.utils.GLUtils;
 
-#ifdef __ANDROID__
-#include "platform/android/java_godot_wrapper.h"
-#include "platform/android/os_android.h"
-#include "platform/android/thread_jandroid.h"
-#else
-#define JNIEnv void
-#define jobject void *
-#endif
+/* Fallback if 32bit View is not supported*/
+public class PancakeFallbackConfigChooser extends PancakeConfigChooser {
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+	private static final String TAG = PancakeFallbackConfigChooser.class.getSimpleName();
 
-JNIEnv *GDAPI godot_android_get_env() {
-#ifdef __ANDROID__
-	return ThreadAndroid::get_env();
-#else
-	return NULL;
-#endif
+	private PancakeConfigChooser fallback;
+
+	public PancakeFallbackConfigChooser(int r, int g, int b, int a, int depth, int stencil, PancakeConfigChooser fallback) {
+		super(r, g, b, a, depth, stencil);
+		this.fallback = fallback;
+	}
+
+	@Override
+	public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display, EGLConfig[] configs) {
+		EGLConfig ec = super.chooseConfig(egl, display, configs);
+		if (ec == null) {
+			Log.w(TAG, "Trying ConfigChooser fallback");
+			ec = fallback.chooseConfig(egl, display, configs);
+			GLUtils.use_32 = false;
+		}
+		return ec;
+	}
 }
-
-jobject GDAPI godot_android_get_activity() {
-#ifdef __ANDROID__
-	OS_Android *os_android = (OS_Android *)OS::get_singleton();
-	return os_android->get_godot_java()->get_activity();
-#else
-	return NULL;
-#endif
-}
-
-jobject GDAPI godot_android_get_surface() {
-#ifdef __ANDROID__
-	OS_Android *os_android = (OS_Android *)OS::get_singleton();
-	return os_android->get_godot_java()->get_surface();
-#else
-	return NULL;
-#endif
-}
-
-bool GDAPI godot_android_is_activity_resumed() {
-#ifdef __ANDROID__
-	OS_Android *os_android = (OS_Android *)OS::get_singleton();
-	return os_android->get_godot_java()->is_activity_resumed();
-#else
-	return false;
-#endif
-}
-
-#ifdef __cplusplus
-}
-#endif
