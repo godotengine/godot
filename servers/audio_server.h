@@ -149,7 +149,7 @@ class AudioServer : public Object {
 
 	GDCLASS(AudioServer, Object)
 public:
-	//re-expose this her, as AudioDriver is not exposed to script
+	//re-expose this here, as AudioDriver is not exposed to script
 	enum SpeakerMode {
 		SPEAKER_MODE_STEREO,
 		SPEAKER_SURROUND_31,
