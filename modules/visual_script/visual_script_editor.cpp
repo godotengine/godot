@@ -1099,6 +1099,9 @@ void VisualScriptEditor::_expression_text_changed(const String &p_text, int p_id
 
 void VisualScriptEditor::_available_node_doubleclicked() {
 
+	if (edited_func == String())
+		return;
+
 	TreeItem *item = nodes->get_selected();
 
 	if (!item)
@@ -1107,7 +1110,6 @@ void VisualScriptEditor::_available_node_doubleclicked() {
 	String which = item->get_metadata(0);
 	if (which == String())
 		return;
-
 	Vector2 ofs = graph->get_scroll_ofs() + graph->get_size() * 0.5;
 
 	if (graph->is_using_snap()) {
