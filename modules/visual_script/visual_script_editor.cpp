@@ -3619,7 +3619,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_signal_dialog = memnew(AcceptDialog);
 	edit_signal_dialog->get_ok()->set_text(TTR("Close"));
 	add_child(edit_signal_dialog);
-	edit_signal_dialog->set_title(TTR("Edit Signal Arguments:"));
 
 	signal_editor = memnew(VisualScriptEditorSignalEdit);
 	edit_signal_edit = memnew(EditorInspector);
@@ -3630,7 +3629,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_variable_dialog = memnew(AcceptDialog);
 	edit_variable_dialog->get_ok()->set_text(TTR("Close"));
 	add_child(edit_variable_dialog);
-	edit_variable_dialog->set_title(TTR("Edit Variable:"));
 
 	variable_editor = memnew(VisualScriptEditorVariableEdit);
 	edit_variable_edit = memnew(EditorInspector);
@@ -3641,7 +3639,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	select_base_type = memnew(CreateDialog);
 	select_base_type->set_base_type("Object"); //anything goes
 	select_base_type->connect("create", this, "_change_base_type_callback");
-	select_base_type->get_ok()->set_text(TTR("Change"));
 	add_child(select_base_type);
 
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
