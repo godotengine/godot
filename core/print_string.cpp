@@ -68,8 +68,8 @@ void remove_print_handler(PrintHandlerList *p_handler) {
 	}
 	//OS::get_singleton()->print("print handler list is %p\n",print_handler_list);
 
-	ERR_FAIL_COND(l == NULL);
 	_global_unlock();
+	ERR_FAIL_COND(l == NULL);
 }
 
 void print_line(String p_string) {
