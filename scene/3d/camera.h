@@ -64,6 +64,7 @@ public:
 private:
 	bool force_change;
 	bool current;
+	Viewport *viewport;
 
 	Projection mode;
 
