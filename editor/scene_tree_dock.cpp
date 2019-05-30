@@ -1082,7 +1082,7 @@ void SceneTreeDock::_notification(int p_what) {
 
 			bool show_create_root = bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection")) && get_tree()->get_edited_scene_root() == NULL;
 
-			if (show_create_root != create_root_dialog->is_visible_in_tree()) {
+			if (show_create_root != create_root_dialog->is_visible_in_tree() && !remote_tree->is_visible()) {
 				if (show_create_root) {
 					create_root_dialog->show();
 					scene_tree->hide();
@@ -2367,6 +2367,7 @@ void SceneTreeDock::hide_tab_buttons() {
 void SceneTreeDock::_remote_tree_selected() {
 
 	scene_tree->hide();
+	create_root_dialog->hide();
 	if (remote_tree)
 		remote_tree->show();
 	edit_remote->set_pressed(true);
