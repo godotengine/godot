@@ -312,7 +312,13 @@ void ParticlesEditor::_menu_option(int p_option) {
 			cpu_particles->set_visible(node->is_visible());
 			cpu_particles->set_pause_mode(node->get_pause_mode());
 
-			EditorNode::get_singleton()->get_scene_tree_dock()->replace_node(node, cpu_particles, false);
+			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			ur->create_action(TTR("Convert to CPUParticles"));
+			ur->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", node, cpu_particles, true, false);
+			ur->add_do_reference(node);
+			ur->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", cpu_particles, node, false, false);
+			ur->add_undo_reference(this);
+			ur->commit_action();
 
 		} break;
 	}
