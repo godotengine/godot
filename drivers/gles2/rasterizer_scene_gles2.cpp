@@ -1027,6 +1027,7 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 	e->light_index = RenderList::MAX_LIGHTS;
 	e->use_accum_ptr = &e->use_accum;
 	e->instancing = (e->instance->base_type == VS::INSTANCE_MULTIMESH) ? 1 : 0;
+	e->front_facing = false;
 
 	if (e->geometry->last_pass != render_pass) {
 		e->geometry->last_pass = render_pass;
@@ -1045,6 +1046,10 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 	}
 
 	e->material_index = e->material->index;
+
+	if (mirror) {
+		e->front_facing = true;
+	}
 
 	e->refprobe_0_index = RenderList::MAX_REFLECTION_PROBES; //refprobe disabled by default
 	e->refprobe_1_index = RenderList::MAX_REFLECTION_PROBES; //refprobe disabled by default
@@ -1257,7 +1262,29 @@ static const GLenum gl_primitive[] = {
 	GL_TRIANGLE_FAN
 };
 
-bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_material, bool p_reverse_cull, bool p_alpha_pass, Size2i p_skeleton_tex_size) {
+void RasterizerSceneGLES2::_set_cull(bool p_front, bool p_disabled, bool p_reverse_cull) {
+
+	bool front = p_front;
+	if (p_reverse_cull)
+		front = !front;
+
+	if (p_disabled != state.cull_disabled) {
+		if (p_disabled)
+			glDisable(GL_CULL_FACE);
+		else
+			glEnable(GL_CULL_FACE);
+
+		state.cull_disabled = p_disabled;
+	}
+
+	if (front != state.cull_front) {
+
+		glCullFace(front ? GL_FRONT : GL_BACK);
+		state.cull_front = front;
+	}
+}
+
+bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_material, bool p_alpha_pass, Size2i p_skeleton_tex_size) {
 
 	// material parameters
 
@@ -1292,21 +1319,6 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 		} break;
 		case RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_NEVER: {
 			glDepthMask(GL_FALSE);
-		} break;
-	}
-
-	switch (p_material->shader->spatial.cull_mode) {
-		case RasterizerStorageGLES2::Shader::Spatial::CULL_MODE_DISABLED: {
-			glDisable(GL_CULL_FACE);
-		} break;
-
-		case RasterizerStorageGLES2::Shader::Spatial::CULL_MODE_BACK: {
-			glEnable(GL_CULL_FACE);
-			glCullFace(p_reverse_cull ? GL_FRONT : GL_BACK);
-		} break;
-		case RasterizerStorageGLES2::Shader::Spatial::CULL_MODE_FRONT: {
-			glEnable(GL_CULL_FACE);
-			glCullFace(p_reverse_cull ? GL_BACK : GL_FRONT);
 		} break;
 	}
 
@@ -2202,6 +2214,11 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 	int prev_blend_mode = -2; //will always catch the first go
 
+	state.cull_front = false;
+	state.cull_disabled = false;
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+
 	if (p_alpha_pass) {
 		glEnable(GL_BLEND);
 	} else {
@@ -2441,11 +2458,13 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		if (rebind || material != prev_material) {
 
 			storage->info.render.material_switch_count++;
-			shader_rebind = _setup_material(material, p_reverse_cull, p_alpha_pass, Size2i(skeleton ? skeleton->size * 3 : 0, 0));
+			shader_rebind = _setup_material(material, p_alpha_pass, Size2i(skeleton ? skeleton->size * 3 : 0, 0));
 			if (shader_rebind) {
 				storage->info.render.shader_rebind_count++;
 			}
 		}
+
+		_set_cull(e->front_facing, material->shader->spatial.cull_mode == RasterizerStorageGLES2::Shader::Spatial::CULL_MODE_DISABLED, p_reverse_cull);
 
 		if (i == 0 || shader_rebind) { //first time must rebind
 
