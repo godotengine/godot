@@ -3280,6 +3280,7 @@ void CanvasItemEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
 		EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
 
+		bool has_container_parents = false;
 		int nb_control = 0;
 		int nb_having_pivot = 0;
 
@@ -3323,6 +3324,10 @@ void CanvasItemEditor::_notification(int p_what) {
 					viewport->update();
 				}
 				nb_control++;
+
+				if (Object::cast_to<Container>(control->get_parent())) {
+					has_container_parents = true;
+				}
 			}
 
 			if (canvas_item->_edit_use_pivot()) {
@@ -3336,25 +3341,22 @@ void CanvasItemEditor::_notification(int p_what) {
 		// Show / Hide the layout and anchors mode buttons
 		if (nb_control > 0 && nb_control == selection.size()) {
 			presets_menu->set_visible(true);
-			presets_menu->set_tooltip(TTR("Presets for the anchors and margins values of a Control node."));
 			anchor_mode_button->set_visible(true);
-			anchor_mode_button->set_tooltip(TTR("When active, moving Control nodes changes their anchors instead of their margins."));
 
 			// Set the pressed state of the node
 			anchor_mode_button->set_pressed(anchors_mode);
 
 			// Disable if the selected node is child of a container
-			presets_menu->set_disabled(false);
-			anchor_mode_button->set_disabled(false);
-			for (List<CanvasItem *>::Element *E = selection.front(); E; E = E->next()) {
-				Control *control = Object::cast_to<Control>(E->get());
-				if (!control || Object::cast_to<Container>(control->get_parent())) {
-					presets_menu->set_disabled(true);
-					presets_menu->set_tooltip(TTR("Children of containers have their anchors and margins values overridden by their parent."));
-					anchor_mode_button->set_disabled(true);
-					anchor_mode_button->set_tooltip(TTR("Children of containers have their anchors and margins values overridden by their parent."));
-					break;
-				}
+			if (has_container_parents) {
+				presets_menu->set_disabled(true);
+				presets_menu->set_tooltip(TTR("Children of containers have their anchors and margins values overridden by their parent."));
+				anchor_mode_button->set_disabled(true);
+				anchor_mode_button->set_tooltip(TTR("Children of containers have their anchors and margins values overridden by their parent."));
+			} else {
+				presets_menu->set_disabled(false);
+				presets_menu->set_tooltip(TTR("Presets for the anchors and margins values of a Control node."));
+				anchor_mode_button->set_disabled(false);
+				anchor_mode_button->set_tooltip(TTR("When active, moving Control nodes changes their anchors instead of their margins."));
 			}
 		} else {
 			presets_menu->set_visible(false);
