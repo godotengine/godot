@@ -119,10 +119,10 @@
 			Lock the body's movement in the x-axis.
 		</member>
 		<member name="axis_lock_linear_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-			Lock the body's movement in the x-axis.
+			Lock the body's movement in the y-axis.
 		</member>
 		<member name="axis_lock_linear_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-			Lock the body's movement in the x-axis.
+			Lock the body's movement in the z-axis.
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
 			RigidBody's bounciness.
