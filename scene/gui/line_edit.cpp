@@ -923,7 +923,8 @@ void LineEdit::cut_text() {
 
 void LineEdit::paste_text() {
 
-	String paste_buffer = OS::get_singleton()->get_clipboard();
+	// Strip escape characters like \n and \t as they can't be displayed on LineEdit.
+	String paste_buffer = OS::get_singleton()->get_clipboard().strip_escapes();
 
 	if (paste_buffer != "") {
 
