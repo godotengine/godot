@@ -1283,7 +1283,7 @@ void EditorNode::_dialog_action(String p_file) {
 			Node *scene = editor_data.get_edited_scene_root();
 			// If the previous scene is rootless, just close it in favor of the new one.
 			if (!scene)
-				_menu_option_confirm(FILE_CLOSE, false);
+				_menu_option_confirm(FILE_CLOSE, true);
 
 			load_scene(p_file, false, true);
 		} break;
