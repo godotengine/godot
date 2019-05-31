@@ -265,6 +265,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(String, right);
 	VCALL_LOCALMEM0R(String, dedent);
 	VCALL_LOCALMEM2R(String, strip_edges);
+	VCALL_LOCALMEM0R(String, strip_escapes);
 	VCALL_LOCALMEM1R(String, lstrip);
 	VCALL_LOCALMEM1R(String, rstrip);
 	VCALL_LOCALMEM0R(String, get_extension);
@@ -1526,6 +1527,7 @@ void register_variant_methods() {
 	ADDFUNC1R(STRING, STRING, String, left, INT, "position", varray());
 	ADDFUNC1R(STRING, STRING, String, right, INT, "position", varray());
 	ADDFUNC2R(STRING, STRING, String, strip_edges, BOOL, "left", BOOL, "right", varray(true, true));
+	ADDFUNC0R(STRING, STRING, String, strip_escapes, varray());
 	ADDFUNC1R(STRING, STRING, String, lstrip, STRING, "chars", varray());
 	ADDFUNC1R(STRING, STRING, String, rstrip, STRING, "chars", varray());
 	ADDFUNC0R(STRING, STRING, String, get_extension, varray());

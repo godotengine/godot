@@ -375,7 +375,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	while (I) {
 
-		I->get() = unescape_cmdline(I->get().strip_escapes());
+		I->get() = unescape_cmdline(I->get().strip_edges());
 		I = I->next();
 	}
 

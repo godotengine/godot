@@ -741,7 +741,14 @@
 			<argument index="1" name="right" type="bool" default="True">
 			</argument>
 			<description>
-				Returns a copy of the string stripped of any non-printable character at the beginning and the end. The optional arguments are used to toggle stripping on the left and right edges respectively.
+				Returns a copy of the string stripped of any non-printable character (including tabulations, spaces and line breaks) at the beginning and the end. The optional arguments are used to toggle stripping on the left and right edges respectively.
+			</description>
+		</method>
+		<method name="strip_escapes">
+			<return type="String">
+			</return>
+			<description>
+				Returns a copy of the string stripped of any escape character. These include all non-printable control characters of the first page of the ASCII table (&lt; 32), such as tabulation ([code]\t[/code] in C) and newline ([code]\n[/code] and [code]\r[/code]) characters, but not spaces.
 			</description>
 		</method>
 		<method name="substr">

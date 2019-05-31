@@ -3102,29 +3102,16 @@ String String::strip_edges(bool left, bool right) const {
 
 String String::strip_escapes() const {
 
-	int len = length();
-	int beg = 0, end = len;
-
+	String new_string;
 	for (int i = 0; i < length(); i++) {
 
-		if (operator[](i) <= 31)
-			beg++;
-		else
-			break;
+		// Escape characters on first page of the ASCII table, before 32 (Space).
+		if (operator[](i) < 32)
+			continue;
+		new_string += operator[](i);
 	}
 
-	for (int i = (int)(length() - 1); i >= 0; i--) {
-
-		if (operator[](i) <= 31)
-			end--;
-		else
-			break;
-	}
-
-	if (beg == 0 && end == len)
-		return *this;
-
-	return substr(beg, end - beg);
+	return new_string;
 }
 
 String String::lstrip(const String &p_chars) const {

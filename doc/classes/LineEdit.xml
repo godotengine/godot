@@ -166,6 +166,7 @@
 		</constant>
 		<constant name="MENU_PASTE" value="2" enum="MenuItems">
 			Pastes the clipboard text over the selected text (or at the cursor's position).
+			Non-printable escape characters are automatically stripped from the OS clipboard via [method String.strip_escapes].
 		</constant>
 		<constant name="MENU_CLEAR" value="3" enum="MenuItems">
 			Erases the whole [LineEdit] text.
