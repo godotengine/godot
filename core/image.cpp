@@ -749,7 +749,7 @@ static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict 
 		float scale_factor = MAX(x_scale, 1); // A larger kernel is required only when downscaling
 		int32_t half_kernel = LANCZOS_TYPE * scale_factor;
 
-		float *kernel = memnew_arr(float, half_kernel * 2 - 1);
+		float *kernel = memnew_arr(float, half_kernel * 2);
 
 		for (int32_t buffer_x = 0; buffer_x < dst_width; buffer_x++) {
 
@@ -800,7 +800,7 @@ static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict 
 		float scale_factor = MAX(y_scale, 1);
 		int32_t half_kernel = LANCZOS_TYPE * scale_factor;
 
-		float *kernel = memnew_arr(float, half_kernel * 2 - 1);
+		float *kernel = memnew_arr(float, half_kernel * 2);
 
 		for (int32_t dst_y = 0; dst_y < dst_height; dst_y++) {
 
