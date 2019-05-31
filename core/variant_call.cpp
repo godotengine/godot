@@ -1204,7 +1204,13 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 				return (Transform(p_args[0]->operator Transform()));
 
 			// misc types
-			case COLOR: return p_args[0]->type == Variant::STRING ? Color::html(*p_args[0]) : Color();
+			case COLOR:
+				if (p_args[0]->type == Variant::STRING) {
+					return Color::html(*p_args[0]);
+				} else if (p_args[0]->type == Variant::INT) {
+					return Color::hex(*p_args[0]);
+				}
+				return Color();
 			case NODE_PATH:
 				return (NodePath(p_args[0]->operator NodePath())); // 15
 			case _RID: return (RID(*p_args[0]));
