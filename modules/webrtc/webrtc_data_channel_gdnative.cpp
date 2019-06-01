@@ -35,6 +35,7 @@
 #include "modules/gdnative/nativescript/nativescript.h"
 
 void WebRTCDataChannelGDNative::_bind_methods() {
+	ADD_PROPERTY_DEFAULT("write_mode", WRITE_MODE_BINARY);
 }
 
 WebRTCDataChannelGDNative::WebRTCDataChannelGDNative() {

@@ -49,6 +49,8 @@ protected:
 	const godot_arvr_interface_gdnative *interface;
 	void *data;
 
+	static void _bind_methods();
+
 public:
 	/** general interface information **/
 	ARVRInterfaceGDNative();

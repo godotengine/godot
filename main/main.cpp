@@ -1375,6 +1375,8 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 	if (doc_tool != "") {
 
+		Engine::get_singleton()->set_editor_hint(true); // Needed to instance editor-only classes for their default values
+
 		{
 			DirAccessRef da = DirAccess::open(doc_tool);
 			if (!da) {

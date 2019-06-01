@@ -614,6 +614,7 @@ void SceneTree::finish() {
 		root->_set_tree(NULL);
 		root->_propagate_after_exit_tree();
 		memdelete(root); //delete root
+		root = NULL;
 	}
 }
 
@@ -1889,6 +1890,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_navigation_hint"), "set_debug_navigation_hint", "is_debugging_navigation_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_pause", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_network_connections"), "set_refuse_new_network_connections", "is_refusing_new_network_connections");
+	ADD_PROPERTY_DEFAULT("refuse_new_network_connections", false);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_font_oversampling"), "set_use_font_oversampling", "is_using_font_oversampling");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_edited_scene_root", "get_edited_scene_root");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_scene", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_current_scene", "get_current_scene");
@@ -1962,7 +1964,7 @@ bool SceneTree::is_using_font_oversampling() const {
 
 SceneTree::SceneTree() {
 
-	singleton = this;
+	if (singleton == NULL) singleton = this;
 	_quit = false;
 	accept_quit = true;
 	quit_on_go_back = true;
@@ -2107,4 +2109,11 @@ SceneTree::SceneTree() {
 }
 
 SceneTree::~SceneTree() {
+	if (root) {
+		root->_set_tree(NULL);
+		root->_propagate_after_exit_tree();
+		memdelete(root);
+	}
+
+	if (singleton == this) singleton = NULL;
 }
