@@ -388,6 +388,14 @@ void ScriptEditor::_save_history() {
 
 void ScriptEditor::_go_to_tab(int p_idx) {
 
+	ScriptEditorBase *current = _get_current_editor();
+	if (current) {
+		if (current->is_unsaved()) {
+
+			current->apply_code();
+		}
+	}
+
 	Control *c = Object::cast_to<Control>(tab_container->get_child(p_idx));
 	if (!c)
 		return;
