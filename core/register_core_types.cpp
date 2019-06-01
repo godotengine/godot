@@ -273,6 +273,7 @@ void unregister_core_types() {
 
 	ResourceLoader::finalize();
 
+	ClassDB::cleanup_defaults();
 	ObjectDB::cleanup();
 
 	unregister_variant_methods();

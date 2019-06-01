@@ -248,6 +248,21 @@ void DocData::generate(bool p_basic_types) {
 			prop.setter = setter;
 			prop.getter = getter;
 
+			if (ClassDB::can_instance(name)) { // Cannot get default value of classes that can't be instanced
+				Variant default_value = ClassDB::class_get_default_property_value(name, E->get().name);
+				prop.default_value = default_value.get_construct_string();
+			} else {
+				List<StringName> inheriting_classes;
+				ClassDB::get_direct_inheriters_from_class(name, &inheriting_classes);
+				for (List<StringName>::Element *E2 = inheriting_classes.front(); E2; E2 = E2->next()) {
+					if (ClassDB::can_instance(E2->get())) {
+						Variant default_value = ClassDB::class_get_default_property_value(E2->get(), E->get().name);
+						prop.default_value = default_value.get_construct_string();
+						break;
+					}
+				}
+			}
+
 			bool found_type = false;
 			if (getter != StringName()) {
 				MethodBind *mb = ClassDB::get_method(name, getter);
@@ -412,6 +427,7 @@ void DocData::generate(bool p_basic_types) {
 				PropertyDoc pd;
 				pd.name = E->get();
 				pd.type = "int";
+				pd.default_value = itos(Theme::get_default()->get_constant(E->get(), cname));
 				c.theme_properties.push_back(pd);
 			}
 
@@ -422,6 +438,7 @@ void DocData::generate(bool p_basic_types) {
 				PropertyDoc pd;
 				pd.name = E->get();
 				pd.type = "Color";
+				pd.default_value = Variant(Theme::get_default()->get_color(E->get(), cname)).get_construct_string();
 				c.theme_properties.push_back(pd);
 			}
 
@@ -530,6 +547,7 @@ void DocData::generate(bool p_basic_types) {
 			PropertyDoc property;
 			property.name = pi.name;
 			property.type = Variant::get_type_name(pi.type);
+			property.default_value = v.get(pi.name).get_construct_string();
 
 			c.properties.push_back(property);
 		}
@@ -1063,12 +1081,15 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 
 			for (int i = 0; i < c.properties.size(); i++) {
 
-				String enum_text;
+				String additional_attributes;
 				if (c.properties[i].enumeration != String()) {
-					enum_text = " enum=\"" + c.properties[i].enumeration + "\"";
+					additional_attributes += " enum=\"" + c.properties[i].enumeration + "\"";
+				}
+				if (c.properties[i].default_value != String()) {
+					additional_attributes += " default=\"" + c.properties[i].default_value.xml_escape(true) + "\"";
 				}
 				const PropertyDoc &p = c.properties[i];
-				_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\"" + enum_text + ">");
+				_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\"" + additional_attributes + ">");
 				_write_string(f, 3, p.description.strip_edges().xml_escape());
 				_write_string(f, 2, "</member>");
 			}
@@ -1125,8 +1146,14 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 			for (int i = 0; i < c.theme_properties.size(); i++) {
 
 				const PropertyDoc &p = c.theme_properties[i];
-				_write_string(f, 2, "<theme_item name=\"" + p.name + "\" type=\"" + p.type + "\">");
+
+				if (p.default_value != "")
+					_write_string(f, 2, "<theme_item name=\"" + p.name + "\" type=\"" + p.type + "\" default=\"" + p.default_value.xml_escape(true) + "\">");
+				else
+					_write_string(f, 2, "<theme_item name=\"" + p.name + "\" type=\"" + p.type + "\">");
+
 				_write_string(f, 3, p.description.strip_edges().xml_escape());
+
 				_write_string(f, 2, "</theme_item>");
 			}
 			_write_string(f, 1, "</theme_items>");
