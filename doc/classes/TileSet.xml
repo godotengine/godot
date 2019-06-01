@@ -10,6 +10,18 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_forward_atlas_subtile_selection" qualifiers="virtual">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="atlastile_id" type="int">
+			</argument>
+			<argument index="1" name="tilemap" type="Object">
+			</argument>
+			<argument index="2" name="tile_location" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="_forward_subtile_selection" qualifiers="virtual">
 			<return type="Vector2">
 			</return>
