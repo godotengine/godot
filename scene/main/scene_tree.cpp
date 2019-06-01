@@ -1998,6 +1998,7 @@ SceneTree::SceneTree() {
 	//create with mainloop
 
 	root = memnew(Viewport);
+	root->set_pause_mode(Node::PAUSE_MODE_SELF_PROCESS);
 	root->set_name("root");
 	root->set_handle_input_locally(false);
 	if (!root->get_world().is_valid())

@@ -366,6 +366,10 @@ void Viewport::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 
+			if (get_tree()->is_paused()) {
+				break;
+			}
+
 			if (get_tree()->is_debugging_collisions_hint() && contact_2d_debug.is_valid()) {
 
 				VisualServer::get_singleton()->canvas_item_clear(contact_2d_debug);
