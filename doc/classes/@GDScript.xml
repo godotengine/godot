@@ -640,6 +640,23 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="move_toward">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="delta" type="float">
+			</argument>
+			<description>
+				Moves [code]from[/code] toward [code]to[/code] by the [code]delta[/code] value.
+				Use a negative [code]delta[/code] value to move away.
+				[codeblock]
+				move_toward(10, 5, 4) # returns 6
+				[/codeblock]
+			</description>
+		</method>
 		<method name="nearest_po2">
 			<return type="int">
 			</return>

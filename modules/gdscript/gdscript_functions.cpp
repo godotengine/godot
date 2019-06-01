@@ -78,6 +78,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"inverse_lerp",
 		"range_lerp",
 		"smoothstep",
+		"move_toward",
 		"dectime",
 		"randomize",
 		"randi",
@@ -397,6 +398,13 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			r_ret = Math::smoothstep((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
+		} break;
+		case MATH_MOVE_TOWARD: {
+			VALIDATE_ARG_COUNT(3);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			r_ret = Math::move_toward((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
 		} break;
 		case MATH_DECTIME: {
 			VALIDATE_ARG_COUNT(3);
@@ -1466,6 +1474,7 @@ bool GDScriptFunctions::is_deterministic(Function p_func) {
 		case MATH_INVERSE_LERP:
 		case MATH_RANGE_LERP:
 		case MATH_SMOOTHSTEP:
+		case MATH_MOVE_TOWARD:
 		case MATH_DECTIME:
 		case MATH_DEG2RAD:
 		case MATH_RAD2DEG:
@@ -1666,6 +1675,11 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		} break;
 		case MATH_SMOOTHSTEP: {
 			MethodInfo mi("smoothstep", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "weight"));
+			mi.return_val.type = Variant::REAL;
+			return mi;
+		} break;
+		case MATH_MOVE_TOWARD: {
+			MethodInfo mi("move_toward", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "delta"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
