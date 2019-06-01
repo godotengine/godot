@@ -1971,7 +1971,7 @@ ProjectManager::ProjectManager() {
 	l = memnew(Label);
 	String hash = String(VERSION_HASH);
 	if (hash.length() != 0)
-		hash = "." + hash.left(7);
+		hash = "." + hash.left(9);
 	l->set_text("v" VERSION_FULL_BUILD "" + hash);
 	l->set_align(Label::ALIGN_CENTER);
 	top_hb->add_child(l);
