@@ -543,6 +543,7 @@ void RigidBodyBullet::set_mode(PhysicsServer::BodyMode p_mode) {
 	// This is necessary to block force_integration untile next move
 	can_integrate_forces = false;
 	destroy_kinematic_utilities();
+	PhysicsServer::BodyMode prev = mode;
 	// The mode change is relevant to its mass
 	switch (p_mode) {
 		case PhysicsServer::BODY_MODE_KINEMATIC:
@@ -561,6 +562,7 @@ void RigidBodyBullet::set_mode(PhysicsServer::BodyMode p_mode) {
 			reload_axis_lock();
 			_internal_set_mass(0 == mass ? 1 : mass);
 			scratch_space_override_modificator();
+			if (prev != mode) set_activation_state(true);
 			break;
 		case PhysicsServer::BODY_MODE_CHARACTER:
 			mode = PhysicsServer::BODY_MODE_CHARACTER;
@@ -594,12 +596,6 @@ void RigidBodyBullet::set_state(PhysicsServer::BodyState p_state, const Variant 
 			break;
 		case PhysicsServer::BODY_STATE_CAN_SLEEP:
 			can_sleep = bool(p_variant);
-			if (!can_sleep) {
-				// Can't sleep
-				btBody->forceActivationState(DISABLE_DEACTIVATION);
-			} else {
-				btBody->forceActivationState(ACTIVE_TAG);
-			}
 			break;
 	}
 }

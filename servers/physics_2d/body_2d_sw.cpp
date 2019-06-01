@@ -238,6 +238,7 @@ void Body2DSW::set_mode(Physics2DServer::BodyMode p_mode) {
 
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_set_static(false);
+			if (prev != mode) set_active(true);
 
 		} break;
 		case Physics2DServer::BODY_MODE_CHARACTER: {
@@ -332,8 +333,6 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant &p_va
 		} break;
 		case Physics2DServer::BODY_STATE_CAN_SLEEP: {
 			can_sleep = p_variant;
-			if (mode == Physics2DServer::BODY_MODE_RIGID && !active && !can_sleep)
-				set_active(true);
 
 		} break;
 	}
@@ -690,7 +689,7 @@ Body2DSW::Body2DSW() :
 
 	still_time = 0;
 	continuous_cd_mode = Physics2DServer::CCD_MODE_DISABLED;
-	can_sleep = false;
+	can_sleep = true;
 	fi_callback = NULL;
 }
 

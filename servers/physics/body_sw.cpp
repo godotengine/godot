@@ -260,6 +260,7 @@ void BodySW::set_mode(PhysicsServer::BodyMode p_mode) {
 
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_set_static(false);
+			if (prev != mode) set_active(true);
 
 		} break;
 		case PhysicsServer::BODY_MODE_CHARACTER: {
@@ -352,8 +353,6 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant &p_varian
 		} break;
 		case PhysicsServer::BODY_STATE_CAN_SLEEP: {
 			can_sleep = p_variant;
-			if (mode == PhysicsServer::BODY_MODE_RIGID && !active && !can_sleep)
-				set_active(true);
 
 		} break;
 	}
@@ -794,7 +793,7 @@ BodySW::BodySW() :
 
 	still_time = 0;
 	continuous_cd = false;
-	can_sleep = false;
+	can_sleep = true;
 	fi_callback = NULL;
 }
 

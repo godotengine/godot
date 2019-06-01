@@ -128,7 +128,7 @@
 			RigidBody's bounciness.
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep">
-			If [code]true[/code], the RigidBody will not calculate forces and will act as a static body while there is no movement. It will wake up when forces are applied through other collisions or when the [code]apply_impulse[/code] method is used.
+			If [code]true[/code], the RigidBody will auto enter [member sleeping] state if it stays still for some time. Default value: [code]true[/code].
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled">
 			If [code]true[/code], the RigidBody will emit signals when it collides with another RigidBody.
