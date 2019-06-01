@@ -238,8 +238,8 @@ public:
 	TreeItem *get_parent();
 	TreeItem *get_children();
 
-	TreeItem *get_prev_visible();
-	TreeItem *get_next_visible();
+	TreeItem *get_prev_visible(bool p_wrap = false);
+	TreeItem *get_next_visible(bool p_wrap = false);
 
 	void remove_child(TreeItem *p_item);
 

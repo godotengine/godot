@@ -524,6 +524,9 @@
 		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay">
 			Sets the delay time for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item. Default value: [code]0.3[/code] seconds.
 		</member>
+		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search">
+			If [code]true[/code], allows to navigate [PopupMenu] with letter keys. Default value: [code]false[/code].
+		</member>
 	</members>
 	<signals>
 		<signal name="id_focused">
