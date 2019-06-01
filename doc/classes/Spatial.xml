@@ -8,7 +8,7 @@
 		Affine operations (rotate, scale, translate) happen in parent's local coordinate system, unless the [code]Spatial[/code] object is set as top level. Affine operations in this coordinate system correspond to direct affine operations on the [code]Spatial[/code]'s transform. The word local below refers to this coordinate system. The coordinate system that is attached to the [code]Spatial[/code] object itself is referred to as object-local coordinate system.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html</link>
+		<link>https://docs.godotengine.org/en/3.1/tutorials/3d/introduction_to_3d.html</link>
 	</tutorials>
 	<methods>
 		<method name="force_update_transform">
