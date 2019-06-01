@@ -7,7 +7,7 @@
 		A Singleton that deals with inputs. This includes key presses, mouse buttons and movement, joypads, and input actions. Actions and their events can be set in the Project Settings / Input Map tab. Or be set with [InputMap].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/index.html</link>
+		<link>https://docs.godotengine.org/en/3.1/tutorials/inputs/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="action_press">
