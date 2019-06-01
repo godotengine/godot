@@ -536,6 +536,19 @@
 				Set the interpolation type of a given track, from the INTERPOLATION_* enum.
 			</description>
 		</method>
+		<method name="track_set_key_time">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<argument index="2" name="time" type="float">
+			</argument>
+			<description>
+				Set the time of an existing key.
+			</description>
+		</method>
 		<method name="track_set_key_transition">
 			<return type="void">
 			</return>
@@ -560,19 +573,6 @@
 			</argument>
 			<description>
 				Set the value of an existing key.
-			</description>
-		</method>
-		<method name="track_set_key_time">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="key_idx" type="int">
-			</argument>
-			<argument index="2" name="time" type="float">
-			</argument>
-			<description>
-				Set the time of an existing key.
 			</description>
 		</method>
 		<method name="track_set_path">

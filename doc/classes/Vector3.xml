@@ -178,9 +178,9 @@
 		<method name="move_toward">
 			<return type="Vector3">
 			</return>
-			<argument index="0" name="b" type="Vector3">
+			<argument index="0" name="to" type="Vector3">
 			</argument>
-			<argument index="1" name="t" type="float">
+			<argument index="1" name="delta" type="float">
 			</argument>
 			<description>
 				Moves the vector toward [code]to[/code] by the fixed [code]delta[/code] amount.

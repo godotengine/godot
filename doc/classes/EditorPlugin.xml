@@ -525,6 +525,10 @@
 		</constant>
 		<constant name="CONTAINER_PROPERTY_EDITOR_BOTTOM" value="9" enum="CustomControlContainer">
 		</constant>
+		<constant name="CONTAINER_PROJECT_SETTING_TAB_LEFT" value="10" enum="CustomControlContainer">
+		</constant>
+		<constant name="CONTAINER_PROJECT_SETTING_TAB_RIGHT" value="11" enum="CustomControlContainer">
+		</constant>
 		<constant name="DOCK_SLOT_LEFT_UL" value="0" enum="DockSlot">
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_BL" value="1" enum="DockSlot">

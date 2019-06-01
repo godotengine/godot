@@ -410,6 +410,8 @@
 		<member name="editor/active" type="bool" setter="" getter="">
 			Internal editor setting, don't touch.
 		</member>
+		<member name="editor/search_in_file_extensions" type="PoolStringArray" setter="" getter="">
+		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="">
 		</member>
 		<member name="gui/common/swap_ok_cancel" type="bool" setter="" getter="">
