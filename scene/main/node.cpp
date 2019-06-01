@@ -72,7 +72,7 @@ void Node::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (data.pause_mode == PAUSE_MODE_INHERIT) {
+			if (data.pause_mode == PAUSE_MODE_INHERIT || data.pause_mode == PAUSE_MODE_SELF_PROCESS) {
 
 				if (data.parent)
 					data.pause_owner = data.parent->data.pause_owner;
@@ -448,7 +448,7 @@ void Node::set_pause_mode(PauseMode p_mode) {
 
 	Node *owner = NULL;
 
-	if (data.pause_mode == PAUSE_MODE_INHERIT) {
+	if (data.pause_mode == PAUSE_MODE_INHERIT || data.pause_mode == PAUSE_MODE_SELF_PROCESS) {
 
 		if (data.parent)
 			owner = data.parent->data.pause_owner;
@@ -466,7 +466,7 @@ Node::PauseMode Node::get_pause_mode() const {
 
 void Node::_propagate_pause_owner(Node *p_owner) {
 
-	if (this != p_owner && data.pause_mode != PAUSE_MODE_INHERIT)
+	if (this != p_owner && data.pause_mode != PAUSE_MODE_INHERIT && data.pause_mode != PAUSE_MODE_SELF_PROCESS)
 		return;
 	data.pause_owner = p_owner;
 	for (int i = 0; i < data.children.size(); i++) {
@@ -763,6 +763,8 @@ bool Node::can_process() const {
 			return false;
 		if (data.pause_mode == PAUSE_MODE_PROCESS)
 			return true;
+		if (data.pause_mode == PAUSE_MODE_SELF_PROCESS)
+			return true;
 		if (data.pause_mode == PAUSE_MODE_INHERIT) {
 
 			if (!data.pause_owner)
@@ -773,6 +775,8 @@ bool Node::can_process() const {
 
 			if (data.pause_owner->data.pause_mode == PAUSE_MODE_STOP)
 				return false;
+
+			ERR_FAIL_V(false);
 		}
 	}
 
@@ -2872,6 +2876,7 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(PAUSE_MODE_INHERIT);
 	BIND_ENUM_CONSTANT(PAUSE_MODE_STOP);
 	BIND_ENUM_CONSTANT(PAUSE_MODE_PROCESS);
+	BIND_ENUM_CONSTANT(PAUSE_MODE_SELF_PROCESS);
 
 	BIND_ENUM_CONSTANT(DUPLICATE_SIGNALS);
 	BIND_ENUM_CONSTANT(DUPLICATE_GROUPS);
@@ -2889,7 +2894,7 @@ void Node::_bind_methods() {
 	//ADD_PROPERTY( PropertyInfo( Variant::BOOL, "process/input" ), "set_process_input","is_processing_input" ) ;
 	//ADD_PROPERTY( PropertyInfo( Variant::BOOL, "process/unhandled_input" ), "set_process_unhandled_input","is_processing_unhandled_input" ) ;
 	ADD_GROUP("Pause", "pause_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process"), "set_pause_mode", "get_pause_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process,Self Process"), "set_pause_mode", "get_pause_mode");
 
 #ifdef ENABLE_DEPRECATED
 	//no longer exists, but remains for compatibility (keep previous scenes folded
