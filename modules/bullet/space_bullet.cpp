@@ -44,6 +44,7 @@
 
 #include <BulletCollision/CollisionDispatch/btCollisionObject.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
+#include <BulletCollision/CollisionDispatch/btSimulationIslandManager.h>
 #include <BulletCollision/NarrowPhaseCollision/btGjkEpaPenetrationDepthSolver.h>
 #include <BulletCollision/NarrowPhaseCollision/btGjkPairDetector.h>
 #include <BulletCollision/NarrowPhaseCollision/btPointCollector.h>
@@ -795,6 +796,33 @@ void SpaceBullet::check_body_collision() {
 #endif
 
 	const int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
+
+	int contacts(0);
+	for (int i = 0; i < numManifolds; ++i) {
+
+		const btPersistentManifold *contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
+		const int numContacts = contactManifold->getNumContacts();
+		contacts += numContacts * 2;
+	}
+	set_debug_contacts(contacts);
+
+	for (int i = 0; i < numManifolds; ++i) {
+		btPersistentManifold *contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
+		const int numContacts = contactManifold->getNumContacts();
+		for (int j = 0; j < numContacts; j++) {
+
+			btManifoldPoint &pt = contactManifold->getContactPoint(j);
+
+			Vector3 v;
+
+			B_TO_G(pt.getPositionWorldOnA(), v);
+			add_debug_contact(v);
+
+			B_TO_G(pt.getPositionWorldOnB(), v);
+			add_debug_contact(v);
+		}
+	}
+
 	for (int i = 0; i < numManifolds; ++i) {
 		btPersistentManifold *contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
 
@@ -853,6 +881,18 @@ void SpaceBullet::check_body_collision() {
 			}
 		}
 	}
+}
+
+int SpaceBullet::get_collision_object_count() const {
+	return dynamicsWorld->getNumCollisionObjects();
+}
+
+CollisionObjectBullet *SpaceBullet::get_collision_object(int p_index) const {
+	return static_cast<CollisionObjectBullet *>(dynamicsWorld->getCollisionObjectArray()[p_index]->getUserPointer());
+}
+
+int SpaceBullet::get_island_count() const {
+	return dynamicsWorld->getSimulationIslandManager()->getUnionFind().getNumElements();
 }
 
 void SpaceBullet::update_gravity() {

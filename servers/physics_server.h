@@ -287,6 +287,9 @@ public:
 	virtual Vector<Vector3> space_get_contacts(RID p_space) const = 0;
 	virtual int space_get_contact_count(RID p_space) const = 0;
 
+	virtual int space_get_body_count(RID p_space) const = 0;
+	virtual RID space_get_body(RID p_space, int p_index) const = 0;
+
 	//missing space parameters
 
 	/* AREA API */
@@ -399,6 +402,8 @@ public:
 
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags) = 0;
 	virtual uint32_t body_get_user_flags(RID p_body) const = 0;
+
+	virtual AABB body_get_aabb(RID p_body) const = 0;
 
 	// common body variables
 	enum BodyParameter {

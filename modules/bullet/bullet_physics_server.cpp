@@ -34,6 +34,7 @@
 #include "cone_twist_joint_bullet.h"
 #include "core/class_db.h"
 #include "core/error_macros.h"
+#include "core/script_language.h"
 #include "core/ustring.h"
 #include "generic_6dof_joint_bullet.h"
 #include "hinge_joint_bullet.h"
@@ -41,6 +42,7 @@
 #include "shape_bullet.h"
 #include "slider_joint_bullet.h"
 
+#include <LinearMath/btQuickprof.h>
 #include <LinearMath/btVector3.h>
 
 #include <assert.h>
@@ -81,7 +83,13 @@ void BulletPhysicsServer::_bind_methods() {
 BulletPhysicsServer::BulletPhysicsServer() :
 		PhysicsServer(),
 		active(true),
-		active_spaces_count(0) {}
+		active_spaces_count(0) {
+
+#ifndef BT_NO_PROFILE
+	btSetCustomEnterProfileZoneFunc(CProfileManager::Start_Profile);
+	btSetCustomLeaveProfileZoneFunc(CProfileManager::Stop_Profile);
+#endif
+}
 
 BulletPhysicsServer::~BulletPhysicsServer() {}
 
@@ -240,6 +248,20 @@ int BulletPhysicsServer::space_get_contact_count(RID p_space) const {
 	ERR_FAIL_COND_V(!space, 0);
 
 	return space->get_debug_contact_count();
+}
+
+int BulletPhysicsServer::space_get_body_count(RID p_space) const {
+	SpaceBullet *space = space_owner.get(p_space);
+	ERR_FAIL_COND_V(!space, 0);
+
+	return space->get_collision_object_count();
+}
+
+RID BulletPhysicsServer::space_get_body(RID p_space, int p_index) const {
+	SpaceBullet *space = space_owner.get(p_space);
+	ERR_FAIL_COND_V(!space, RID());
+
+	return space->get_collision_object(p_index)->get_self();
 }
 
 RID BulletPhysicsServer::area_create() {
@@ -632,6 +654,13 @@ void BulletPhysicsServer::body_set_user_flags(RID p_body, uint32_t p_flags) {
 uint32_t BulletPhysicsServer::body_get_user_flags(RID p_body) const {
 	// This function si not currently supported
 	return 0;
+}
+
+AABB BulletPhysicsServer::body_get_aabb(RID p_body) const {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, AABB());
+
+	return body->get_aabb();
 }
 
 void BulletPhysicsServer::body_set_param(RID p_body, BodyParameter p_param, float p_value) {
@@ -1569,10 +1598,68 @@ void BulletPhysicsServer::step(float p_deltaTime) {
 	}
 }
 
-void BulletPhysicsServer::sync() {
+void BulletPhysicsServer::sync() {}
+
+#ifndef BT_NO_PROFILE
+void do_profiling_print(Array &p_values, CProfileIterator *p_profile_iterator) {
+
+	p_profile_iterator->First();
+	if (p_profile_iterator->Is_Done())
+		return;
+
+	real_t accumulated_time = 0;
+	real_t parent_time = p_profile_iterator->Is_Root() ? CProfileManager::Get_Time_Since_Reset() : p_profile_iterator->Get_Current_Parent_Total_Time();
+	int i;
+	int frames_since_reset = CProfileManager::Get_Frame_Count_Since_Reset();
+
+	String parent_name(p_profile_iterator->Get_Current_Parent_Name());
+	p_values.push_back(parent_name + " total run time");
+	p_values.push_back(parent_time / 1000);
+	real_t totalTime = 0.f;
+
+	int numChildren = 0;
+
+	for (i = 0; !p_profile_iterator->Is_Done(); i++, p_profile_iterator->Next()) {
+
+		++numChildren;
+		real_t current_total_time = p_profile_iterator->Get_Current_Total_Time();
+		accumulated_time += current_total_time;
+		real_t fraction = parent_time > SIMD_EPSILON ? (current_total_time / parent_time) * 100 : 0.f;
+
+		p_values.push_back(parent_name + "::" + p_profile_iterator->Get_Current_Name() + " - Fraction (%)");
+		p_values.push_back(fraction);
+		p_values.push_back(parent_name + "::" + p_profile_iterator->Get_Current_Name() + " - Time");
+		p_values.push_back((current_total_time / (double)frames_since_reset) / 1000);
+		p_values.push_back(parent_name + "::" + p_profile_iterator->Get_Current_Name() + " - Calls");
+		p_values.push_back(p_profile_iterator->Get_Current_Total_Calls());
+
+		totalTime += current_total_time;
+	}
+
+	for (i = 0; i < numChildren; i++) {
+		p_profile_iterator->Enter_Child(i);
+		do_profiling_print(p_values, p_profile_iterator);
+		p_profile_iterator->Enter_Parent();
+	}
 }
+#endif
 
 void BulletPhysicsServer::flush_queries() {
+
+#ifndef _3D_DISABLED
+#ifndef BT_NO_PROFILE
+	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_profiling()) {
+
+		Array values;
+
+		CProfileIterator *profileIterator = CProfileManager::Get_Iterator();
+		do_profiling_print(values, profileIterator);
+		CProfileManager::Release_Iterator(profileIterator);
+
+		ScriptDebugger::get_singleton()->add_profiling_frame_data("physics", values);
+	}
+#endif
+#endif
 }
 
 void BulletPhysicsServer::finish() {
@@ -1580,7 +1667,33 @@ void BulletPhysicsServer::finish() {
 }
 
 int BulletPhysicsServer::get_process_info(ProcessInfo p_info) {
-	return 0;
+	switch (p_info) {
+		case INFO_ACTIVE_OBJECTS: {
+			int active_objects(0);
+			for (int i(0); i < active_spaces_count; ++i) {
+				const SpaceBullet *sb = active_spaces[i];
+				active_objects += sb->get_collision_object_count();
+			}
+			return active_objects;
+		} break;
+		case INFO_COLLISION_PAIRS: {
+			int collision_pairs(0);
+			for (int i(0); i < active_spaces_count; ++i) {
+				const SpaceBullet *sb = active_spaces[i];
+				collision_pairs += sb->get_debug_contact_count();
+			}
+			return collision_pairs;
+		} break;
+		case INFO_ISLAND_COUNT: {
+			int island_count(0);
+			for (int i(0); i < active_spaces_count; ++i) {
+				const SpaceBullet *sb = active_spaces[i];
+				island_count += sb->get_island_count();
+			}
+			return island_count;
+		} break;
+	}
+	ERR_FAIL_V(0);
 }
 
 CollisionObjectBullet *BulletPhysicsServer::get_collisin_object(RID p_object) const {

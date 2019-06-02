@@ -184,8 +184,16 @@ private:
 	Rect2 to_screen_rect;
 
 	RID contact_2d_debug;
+#ifndef _3D_DISABLED
 	RID contact_3d_debug_multimesh;
 	RID contact_3d_debug_instance;
+	SpatialMaterial *contact_3d_debug_mat;
+	RID contact_3d_debug_line_immediate_g_instance;
+	RID contact_3d_debug_line_immediate_g;
+	SpatialMaterial *contact_3d_debug_aabb_mat;
+	RID contact_3d_debug_aabb_immediate_g_instance;
+	RID contact_3d_debug_aabb_immediate_g;
+#endif
 
 	bool size_override;
 	bool size_override_stretch;

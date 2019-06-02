@@ -283,6 +283,7 @@ RigidBodyBullet::RigidBodyBullet() :
 	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, godotMotionState, NULL, localInertia);
 
 	btBody = bulletnew(btRigidBody(cInfo));
+
 	reload_shapes();
 	setupBulletCollisionObject(btBody);
 
@@ -422,6 +423,18 @@ void RigidBodyBullet::on_collision_checker_start() {
 	Vector<RigidBodyBullet *> *s = prev_collision_traces;
 	prev_collision_traces = curr_collision_traces;
 	curr_collision_traces = s;
+}
+
+AABB RigidBodyBullet::get_aabb() const {
+	btVector3 min(0, 0, 0);
+	btVector3 max(0, 0, 0);
+	btBody->getAabb(min, max);
+	AABB aabb;
+	Vector3 v;
+	B_TO_G(min, aabb.position);
+	B_TO_G(max, v);
+	aabb.expand_to(v);
+	return aabb;
 }
 
 void RigidBodyBullet::on_collision_checker_end() {

@@ -169,7 +169,12 @@ public:
 		if (contactDebugCount < contactDebug.size()) contactDebug.write[contactDebugCount++] = p_contact;
 	}
 	_FORCE_INLINE_ Vector<Vector3> get_debug_contacts() { return contactDebug; }
-	_FORCE_INLINE_ int get_debug_contact_count() { return contactDebugCount; }
+	_FORCE_INLINE_ int get_debug_contact_count() const { return contactDebugCount; }
+
+	int get_collision_object_count() const;
+	CollisionObjectBullet *get_collision_object(int p_index) const;
+
+	int get_island_count() const;
 
 	const Vector3 &get_gravity_direction() const { return gravityDirection; }
 	real_t get_gravity_magnitude() const { return gravityMagnitude; }

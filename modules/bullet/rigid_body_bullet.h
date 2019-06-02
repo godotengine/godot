@@ -249,6 +249,8 @@ public:
 	virtual void on_collision_checker_start();
 	virtual void on_collision_checker_end();
 
+	AABB get_aabb() const;
+
 	void set_max_collisions_detection(int p_maxCollisionsDetection) {
 
 		ERR_FAIL_COND(0 > p_maxCollisionsDetection);

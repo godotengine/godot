@@ -275,10 +275,13 @@ void Viewport::_notification(int p_what) {
 
 			add_to_group("_viewports");
 			if (get_tree()->is_debugging_collisions_hint()) {
+
 				//2D
 				Physics2DServer::get_singleton()->space_set_debug_contacts(find_world_2d()->get_space(), get_tree()->get_collision_debug_contact_count());
 				contact_2d_debug = VisualServer::get_singleton()->canvas_item_create();
 				VisualServer::get_singleton()->canvas_item_set_parent(contact_2d_debug, find_world_2d()->get_canvas());
+
+#ifndef _3D_DISABLED
 				//3D
 				PhysicsServer::get_singleton()->space_set_debug_contacts(find_world()->get_space(), get_tree()->get_collision_debug_contact_count());
 				contact_3d_debug_multimesh = VisualServer::get_singleton()->multimesh_create();
@@ -289,6 +292,34 @@ void Viewport::_notification(int p_what) {
 				VisualServer::get_singleton()->instance_set_base(contact_3d_debug_instance, contact_3d_debug_multimesh);
 				VisualServer::get_singleton()->instance_set_scenario(contact_3d_debug_instance, find_world()->get_scenario());
 				//VisualServer::get_singleton()->instance_geometry_set_flag(contact_3d_debug_instance, VS::INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS, true);
+
+				contact_3d_debug_mat = memnew(SpatialMaterial);
+				contact_3d_debug_mat->set_albedo(Color(1, 0, 0, 1));
+				contact_3d_debug_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+				contact_3d_debug_mat->set_on_top_of_alpha();
+
+				contact_3d_debug_line_immediate_g = VS::get_singleton()->immediate_create();
+				VS::get_singleton()->immediate_set_material(contact_3d_debug_line_immediate_g, contact_3d_debug_mat->get_rid());
+				contact_3d_debug_line_immediate_g_instance = VisualServer::get_singleton()->instance_create();
+				VS::get_singleton()->instance_set_base(contact_3d_debug_line_immediate_g_instance, contact_3d_debug_line_immediate_g);
+				VS::get_singleton()->instance_set_scenario(contact_3d_debug_line_immediate_g_instance, find_world()->get_scenario());
+				VS::get_singleton()->instance_set_transform(contact_3d_debug_line_immediate_g_instance, Transform());
+				VS::get_singleton()->instance_set_custom_aabb(contact_3d_debug_line_immediate_g_instance, AABB(Vector3(-99999, -99999, -99999), Vector3(199998, 199998, 199998)));
+
+				contact_3d_debug_aabb_mat = memnew(SpatialMaterial);
+				contact_3d_debug_aabb_mat->set_albedo(Color(1, 1, 0, 0.65));
+				contact_3d_debug_aabb_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+				contact_3d_debug_aabb_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+				contact_3d_debug_aabb_mat->set_on_top_of_alpha();
+
+				contact_3d_debug_aabb_immediate_g = VS::get_singleton()->immediate_create();
+				VS::get_singleton()->immediate_set_material(contact_3d_debug_aabb_immediate_g, contact_3d_debug_aabb_mat->get_rid());
+				contact_3d_debug_aabb_immediate_g_instance = VisualServer::get_singleton()->instance_create();
+				VS::get_singleton()->instance_set_base(contact_3d_debug_aabb_immediate_g_instance, contact_3d_debug_aabb_immediate_g);
+				VS::get_singleton()->instance_set_scenario(contact_3d_debug_aabb_immediate_g_instance, find_world()->get_scenario());
+				VS::get_singleton()->instance_set_transform(contact_3d_debug_aabb_immediate_g_instance, Transform());
+				VS::get_singleton()->instance_set_custom_aabb(contact_3d_debug_aabb_immediate_g_instance, AABB(Vector3(-99999, -99999, -99999), Vector3(199998, 199998, 199998)));
+#endif
 			}
 
 			VS::get_singleton()->viewport_set_active(viewport, true);
@@ -342,12 +373,26 @@ void Viewport::_notification(int p_what) {
 				contact_2d_debug = RID();
 			}
 
+#ifndef _3D_DISABLED
 			if (contact_3d_debug_multimesh.is_valid()) {
 				VisualServer::get_singleton()->free(contact_3d_debug_multimesh);
 				VisualServer::get_singleton()->free(contact_3d_debug_instance);
+				VisualServer::get_singleton()->free(contact_3d_debug_line_immediate_g);
+				VisualServer::get_singleton()->free(contact_3d_debug_line_immediate_g_instance);
+				VisualServer::get_singleton()->free(contact_3d_debug_aabb_immediate_g);
+				VisualServer::get_singleton()->free(contact_3d_debug_aabb_immediate_g_instance);
+				memdelete(contact_3d_debug_mat);
+				memdelete(contact_3d_debug_aabb_mat);
 				contact_3d_debug_instance = RID();
 				contact_3d_debug_multimesh = RID();
+				contact_3d_debug_line_immediate_g_instance = RID();
+				contact_3d_debug_line_immediate_g = RID();
+				contact_3d_debug_aabb_immediate_g_instance = RID();
+				contact_3d_debug_aabb_immediate_g = RID();
+				contact_3d_debug_mat = NULL;
+				contact_3d_debug_aabb_mat = NULL;
 			}
+#endif
 
 			remove_from_group("_viewports");
 
@@ -381,13 +426,44 @@ void Viewport::_notification(int p_what) {
 				}
 			}
 
+#ifndef _3D_DISABLED
 			if (get_tree()->is_debugging_collisions_hint() && contact_3d_debug_multimesh.is_valid()) {
 
 				Vector<Vector3> points = PhysicsServer::get_singleton()->space_get_contacts(find_world()->get_space());
 				int point_count = PhysicsServer::get_singleton()->space_get_contact_count(find_world()->get_space());
 
+				// Drows collision points and lines
 				VS::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh, point_count);
+
+				VS::get_singleton()->immediate_clear(contact_3d_debug_line_immediate_g);
+				VS::get_singleton()->immediate_begin(contact_3d_debug_line_immediate_g, VS::PRIMITIVE_LINES);
+
+				for (int i = 0; i < point_count; ++i) {
+					VS::get_singleton()->multimesh_instance_set_transform(contact_3d_debug_multimesh, i, Transform(Basis(), points[i]));
+					VS::get_singleton()->immediate_vertex(contact_3d_debug_line_immediate_g, points[i]);
+				}
+
+				VS::get_singleton()->immediate_end(contact_3d_debug_line_immediate_g);
+
+				// Draws AABB
+				VS::get_singleton()->immediate_clear(contact_3d_debug_aabb_immediate_g);
+				VS::get_singleton()->immediate_begin(contact_3d_debug_aabb_immediate_g, VS::PRIMITIVE_LINES);
+				RID space = find_world()->get_space();
+				for (int i(PhysicsServer::get_singleton()->space_get_body_count(space) - 1); 0 <= i; --i) {
+					RID b_rid = PhysicsServer::get_singleton()->space_get_body(space, i);
+					AABB aabb = PhysicsServer::get_singleton()->body_get_aabb(b_rid);
+
+					for (int j = 0; j < 12; j++) {
+						Vector3 a, b;
+						aabb.get_edge(j, a, b);
+						VS::get_singleton()->immediate_vertex(contact_3d_debug_aabb_immediate_g, a);
+						VS::get_singleton()->immediate_vertex(contact_3d_debug_aabb_immediate_g, b);
+					}
+				}
+
+				VS::get_singleton()->immediate_end(contact_3d_debug_aabb_immediate_g);
 			}
+#endif
 
 			if (physics_object_picking && (to_screen_rect == Rect2() || Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED)) {
 
