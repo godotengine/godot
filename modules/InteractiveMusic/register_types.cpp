@@ -9,7 +9,7 @@ void register_InteractiveMusic_types() {
        
 		ClassDB::register_class<AudioStreamPlaylist>();
        
-		ClassDB::register_class<AudioStreamPlaylistPlayback>();
+		ClassDB::register_class<AudioStreamPlaybackPlaylist>();
 }
 
 void unregister_InteractiveMusic_types() {
