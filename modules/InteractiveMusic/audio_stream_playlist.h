@@ -13,6 +13,8 @@ private:
 	bool stereo;
 	int stream_count;
 	int bpm;
+	//double beat_size = 60 / bpm;
+	//double time;
 	enum OrderMode {
 		Sequence,
 		Shuffle
@@ -34,6 +36,36 @@ public:
 	AudioStreamPlaylist();
 
 protected:
-	static void _get_property_list(List<PropertyInfo> *p_list);
+	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const;
+};
 
+///////////////////////////////////////
+
+class AudioStreamPlaybackPlaylist : public AudioStreamPlayback {
+	GDCLASS(AudioStreamPlaybackPlaylist, AudioStreamPlayback)
+	friend class AudioStreamPlaylist;
+
+private:
+	int buffer_size = 256;
+	enum {
+		MIX_FRAC_BITS = 13,
+		MIX_FRAC_LEN = (1 << MIX_FRAC_BITS),
+		MIX_FRAC_MASK = MIX_FRAC_LEN - 1,
+	};
+	AudioFrame *pcm_buffer;
+	Ref<AudioStreamPlaylist> instance;
+	bool active;
+
+public:
+	virtual void start(float p_from_pos = 0.0);
+	virtual void stop();
+	virtual bool is_playing() const;
+	virtual int get_loop_count() const; // times it looped
+	virtual float get_playback_position() const;
+	virtual void seek(float p_time);
+	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
+	virtual float get_length() const;
+	AudioStreamPlaybackPlaylist();
+	~AudioStreamPlaybackPlaylist();
 };
