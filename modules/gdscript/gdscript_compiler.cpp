@@ -1977,12 +1977,12 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 
 	for (int i = 0; i < p_class->subclasses.size(); i++) {
 		StringName name = p_class->subclasses[i]->name;
-
-		GDScript *subclass = p_script->subclasses[name].ptr();
+		Ref<GDScript> &subclass = p_script->subclasses[name];
+		GDScript *subclass_ptr = subclass.ptr();
 
 		// Subclass might still be parsing, just skip it
-		if (!parsed_classes.has(subclass) && !parsing_classes.has(subclass)) {
-			Error err = _parse_class_level(subclass, p_class->subclasses[i], p_keep_state);
+		if (!parsed_classes.has(subclass_ptr) && !parsing_classes.has(subclass_ptr)) {
+			Error err = _parse_class_level(subclass_ptr, p_class->subclasses[i], p_keep_state);
 			if (err)
 				return err;
 		}
