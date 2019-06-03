@@ -136,9 +136,6 @@ void DocData::merge_from(const DocData &p_data) {
 				const PropertyDoc &pf = cf.properties[j];
 
 				p.description = pf.description;
-				p.setter = pf.setter;
-				p.getter = pf.getter;
-
 				break;
 			}
 		}
