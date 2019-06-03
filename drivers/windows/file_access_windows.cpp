@@ -340,13 +340,11 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 }
 
 uint32_t FileAccessWindows::_get_unix_permissions(const String &p_file) {
-	ERR_PRINT("Windows does not support unix permissions");
 	return 0;
 }
 
 Error FileAccessWindows::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
-	ERR_PRINT("Windows does not support unix permissions");
-	return FAILED;
+	return ERR_UNAVAILABLE;
 }
 
 FileAccessWindows::FileAccessWindows() :
