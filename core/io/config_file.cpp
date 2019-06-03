@@ -198,10 +198,6 @@ Error ConfigFile::load(const String &p_path) {
 			section = next_tag.name;
 		}
 	}
-
-	memdelete(f);
-
-	return OK;
 }
 
 void ConfigFile::_bind_methods() {

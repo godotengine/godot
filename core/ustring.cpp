@@ -2956,26 +2956,12 @@ String String::replace(const char *p_key, const char *p_with) const {
 
 String String::replace_first(const String &p_key, const String &p_with) const {
 
-	String new_string;
-	int search_from = 0;
-	int result = 0;
-
-	while ((result = find(p_key, search_from)) >= 0) {
-
-		new_string += substr(search_from, result - search_from);
-		new_string += p_with;
-		search_from = result + p_key.length();
-		break;
+	int pos = find(p_key);
+	if (pos >= 0) {
+		return substr(0, pos) + p_with + substr(pos + p_key.length(), length());
 	}
 
-	if (search_from == 0) {
-
-		return *this;
-	}
-
-	new_string += substr(search_from, length() - search_from);
-
-	return new_string;
+	return *this;
 }
 String String::replacen(const String &p_key, const String &p_with) const {
 

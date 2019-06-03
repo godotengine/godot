@@ -44,15 +44,16 @@ void Camera2D::_update_scroll() {
 		return;
 	}
 
+	if (!viewport)
+		return;
+
 	if (current) {
 
 		ERR_FAIL_COND(custom_viewport && !ObjectDB::get_instance(custom_viewport_id));
 
 		Transform2D xform = get_camera_transform();
 
-		if (viewport) {
-			viewport->set_canvas_transform(xform);
-		}
+		viewport->set_canvas_transform(xform);
 
 		Size2 screen_size = viewport->get_visible_rect().size;
 		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5) : Point2());

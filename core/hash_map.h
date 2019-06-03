@@ -162,20 +162,21 @@ private:
 			new_hash_table[i] = 0;
 		}
 
-		for (int i = 0; i < (1 << hash_table_power); i++) {
+		if (hash_table) {
+			for (int i = 0; i < (1 << hash_table_power); i++) {
 
-			while (hash_table[i]) {
+				while (hash_table[i]) {
 
-				Element *se = hash_table[i];
-				hash_table[i] = se->next;
-				int new_pos = se->hash & ((1 << new_hash_table_power) - 1);
-				se->next = new_hash_table[new_pos];
-				new_hash_table[new_pos] = se;
+					Element *se = hash_table[i];
+					hash_table[i] = se->next;
+					int new_pos = se->hash & ((1 << new_hash_table_power) - 1);
+					se->next = new_hash_table[new_pos];
+					new_hash_table[new_pos] = se;
+				}
 			}
-		}
 
-		if (hash_table)
 			memdelete_arr(hash_table);
+		}
 		hash_table = new_hash_table;
 		hash_table_power = new_hash_table_power;
 	}
