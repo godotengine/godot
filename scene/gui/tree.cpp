@@ -3532,14 +3532,14 @@ TreeItem *Tree::_search_item_text(TreeItem *p_at, const String &p_find, int *r_c
 
 TreeItem *Tree::search_item_text(const String &p_find, int *r_col, bool p_selectable) {
 
-	TreeItem *from = get_selected()->get_next_visible();
+	TreeItem *from = get_selected();
 
-	if (!root)
+	if (!from)
 		from = root;
 	if (!from)
 		return NULL;
 
-	return _search_item_text(from, p_find, r_col, p_selectable);
+	return _search_item_text(from->get_next_visible(true), p_find, r_col, p_selectable);
 }
 
 void Tree::_do_incr_search(const String &p_add) {
