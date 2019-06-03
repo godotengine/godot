@@ -144,7 +144,6 @@
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/mesh_data_tool.h"
-#include "scene/resources/mesh_library.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particles_material.h"
 #include "scene/resources/physics_material.h"
@@ -209,6 +208,7 @@
 #include "scene/3d/visibility_notifier.h"
 #include "scene/animation/skeleton_ik.h"
 #include "scene/resources/environment.h"
+#include "scene/resources/mesh_library.h"
 #endif
 
 static Ref<ResourceFormatSaverText> resource_saver_text;
@@ -468,7 +468,7 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 #endif
-	ClassDB::register_class<MeshLibrary>();
+
 	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF("gui/common/swap_ok_cancel", bool(OS::get_singleton()->get_swap_ok_cancel())));
 
 	ClassDB::register_class<Shader>();
