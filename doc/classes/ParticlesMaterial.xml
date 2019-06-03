@@ -214,14 +214,19 @@
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set animation offset properties.
 		</constant>
 		<constant name="PARAM_MAX" value="12" enum="Parameter">
+			Represents the size of the [enum Parameter] enum.
 		</constant>
 		<constant name="FLAG_ALIGN_Y_TO_VELOCITY" value="0" enum="Flags">
 			Use with [method set_flag] to set [member flag_align_y].
 		</constant>
 		<constant name="FLAG_ROTATE_Y" value="1" enum="Flags">
-			Use with [method set_flag] to set [member flag_rotate_y]
+			Use with [method set_flag] to set [member flag_rotate_y].
+		</constant>
+		<constant name="FLAG_DISABLE_Z" value="2" enum="Flags">
+			Use with [method set_flag] to set [member flag_disable_z].
 		</constant>
 		<constant name="FLAG_MAX" value="3" enum="Flags">
+			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="EMISSION_SHAPE_POINT" value="0" enum="EmissionShape">
 			All particles will be emitted from a single point.
