@@ -396,6 +396,8 @@ void TileMapEditor::_update_palette() {
 
 	// Update the palette
 	Vector<int> selected = get_selected_tiles();
+	int selected_single = palette->get_current();
+	int selected_manual = manual_palette->get_current();
 	palette->clear();
 	manual_palette->clear();
 	manual_palette->hide();
@@ -545,9 +547,10 @@ void TileMapEditor::_update_palette() {
 
 	if (manual_palette->get_item_count() > 0) {
 		// Only show the manual palette if at least tile exists in it
-		int selected2 = manual_palette->get_current();
-		if (selected2 == -1) selected2 = 0;
-		manual_palette->set_current(selected2);
+		if (selected_manual == -1 || selected_single != palette->get_current())
+			selected_manual = 0;
+		if (selected_manual < manual_palette->get_item_count())
+			manual_palette->set_current(selected_manual);
 		manual_palette->show();
 	}
 
@@ -1980,31 +1983,31 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	p->connect("id_pressed", this, "_menu_option");
 
 	rotate_left_button = memnew(ToolButton);
-	rotate_left_button->set_tooltip(TTR("Rotate left"));
+	rotate_left_button->set_tooltip(TTR("Rotate Left"));
 	rotate_left_button->set_focus_mode(FOCUS_NONE);
 	rotate_left_button->connect("pressed", this, "_rotate", varray(-1));
 	tool_hb->add_child(rotate_left_button);
 
 	rotate_right_button = memnew(ToolButton);
-	rotate_right_button->set_tooltip(TTR("Rotate right"));
+	rotate_right_button->set_tooltip(TTR("Rotate Right"));
 	rotate_right_button->set_focus_mode(FOCUS_NONE);
 	rotate_right_button->connect("pressed", this, "_rotate", varray(1));
 	tool_hb->add_child(rotate_right_button);
 
 	flip_horizontal_button = memnew(ToolButton);
-	flip_horizontal_button->set_tooltip(TTR("Flip horizontally"));
+	flip_horizontal_button->set_tooltip(TTR("Flip Horizontally"));
 	flip_horizontal_button->set_focus_mode(FOCUS_NONE);
 	flip_horizontal_button->connect("pressed", this, "_flip_horizontal");
 	tool_hb->add_child(flip_horizontal_button);
 
 	flip_vertical_button = memnew(ToolButton);
-	flip_vertical_button->set_tooltip(TTR("Flip vertically"));
+	flip_vertical_button->set_tooltip(TTR("Flip Vertically"));
 	flip_vertical_button->set_focus_mode(FOCUS_NONE);
 	flip_vertical_button->connect("pressed", this, "_flip_vertical");
 	tool_hb->add_child(flip_vertical_button);
 
 	clear_transform_button = memnew(ToolButton);
-	clear_transform_button->set_tooltip(TTR("Clear transform"));
+	clear_transform_button->set_tooltip(TTR("Clear Transform"));
 	clear_transform_button->set_focus_mode(FOCUS_NONE);
 	clear_transform_button->connect("pressed", this, "_clear_transform");
 	tool_hb->add_child(clear_transform_button);
