@@ -308,8 +308,8 @@ uint32_t FileAccessEncrypted::_get_unix_permissions(const String &p_file) {
 }
 
 Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
-
-	return FAILED;
+	ERR_PRINT("Setting UNIX permissions on encrypted files is not implemented yet");
+	return ERR_UNAVAILABLE;
 }
 
 FileAccessEncrypted::FileAccessEncrypted() {
