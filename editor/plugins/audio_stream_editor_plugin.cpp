@@ -53,7 +53,6 @@ void AudioStreamEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
 		_current = _player->get_playback_position();
 		_indicator->update();
-		_preview->update();
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
@@ -121,15 +120,19 @@ void AudioStreamEditor::_play() {
 void AudioStreamEditor::_stop() {
 
 	_player->stop();
-	_on_finished();
+	_play_button->set_icon(get_icon("MainPlay", "EditorIcons"));
+	_current = 0;
+	_indicator->update();
+	set_process(false);
 }
 
 void AudioStreamEditor::_on_finished() {
 
 	_play_button->set_icon(get_icon("MainPlay", "EditorIcons"));
-	_current = 0;
-	_indicator->update();
-	set_process(false);
+	if (_current == _player->get_stream()->get_length()) {
+		_current = 0;
+		_indicator->update();
+	}
 }
 
 void AudioStreamEditor::_draw_indicator() {
