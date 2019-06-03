@@ -92,13 +92,13 @@
 			<argument index="0" name="condition" type="bool">
 			</argument>
 			<description>
-				Assert that the [code]condition[/code] is [code]true[/code] . If the [code]condition[/code] is [code]false[/code] a fatal error is generated and the program is halted. Useful for debugging to make sure a value is always [code]true[/code].
+				Asserts that the [code]condition[/code] is [code]true[/code] . If the [code]condition[/code] is [code]false[/code], an error is generated and the program is halted until you resume it. Only executes in debug builds, or when running the game from the editor. Use it for debugging purposes, to make sure a statement is [code]true[/code] during development.
 				[codeblock]
-				# Speed should always be between 0 and 20
+				# Imagine we always want speed to be between 0 and 20
 				speed = -10
-				assert(speed &lt; 20) # Is true and program continues
-				assert(speed &gt;= 0) # Is false and program stops
-				assert(speed &gt;= 0 &amp;&amp; speed &lt; 20) # Or combined
+				assert(speed &lt; 20) # True, the program will continue
+				assert(speed &gt;= 0) # False, the program will stop
+				assert(speed &gt;= 0 &amp;&amp; speed &lt; 20) # You can also combine the two conditional statements in one check
 				[/codeblock]
 			</description>
 		</method>
