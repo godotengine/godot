@@ -1249,7 +1249,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (p_option >= WINDOW_SELECT_BASE) {
 
 					tab_container->set_current_tab(p_option - WINDOW_SELECT_BASE);
-					script_list->select(p_option - WINDOW_SELECT_BASE);
+					_update_script_names();
 				}
 			}
 		}
@@ -1376,6 +1376,8 @@ void ScriptEditor::_notification(int p_what) {
 			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
 			script_back->set_icon(get_icon("Back", "EditorIcons"));
 			members_overview_alphabeta_sort_button->set_icon(get_icon("Sort", "EditorIcons"));
+			filter_scripts->set_right_icon(get_icon("Search", "EditorIcons"));
+			filter_methods->set_right_icon(get_icon("Search", "EditorIcons"));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1633,8 +1635,12 @@ void ScriptEditor::_update_members_overview() {
 	}
 
 	for (int i = 0; i < functions.size(); i++) {
-		members_overview->add_item(functions[i].get_slice(":", 0));
-		members_overview->set_item_metadata(i, functions[i].get_slice(":", 1).to_int() - 1);
+		String filter = filter_methods->get_text();
+		String name = functions[i].get_slice(":", 0);
+		if (filter == "" || filter.is_subsequence_ofi(name)) {
+			members_overview->add_item(name);
+			members_overview->set_item_metadata(members_overview->get_item_count() - 1, functions[i].get_slice(":", 1).to_int() - 1);
+		}
 	}
 
 	String path = se->get_edited_resource()->get_path();
@@ -1853,20 +1859,26 @@ void ScriptEditor::_update_script_names() {
 		_sort_list_on_update = false;
 	}
 
+	Vector<_ScriptEditorItemData> sedata_filtered;
 	for (int i = 0; i < sedata.size(); i++) {
+		String filter = filter_scripts->get_text();
+		if (filter == "" || filter.is_subsequence_ofi(sedata[i].name)) {
+			sedata_filtered.push_back(sedata[i]);
+		}
+	}
 
-		script_list->add_item(sedata[i].name, sedata[i].icon);
+	for (int i = 0; i < sedata_filtered.size(); i++) {
+		script_list->add_item(sedata_filtered[i].name, sedata_filtered[i].icon);
 		int index = script_list->get_item_count() - 1;
-		script_list->set_item_tooltip(index, sedata[i].tooltip);
-		script_list->set_item_metadata(index, sedata[i].index);
-		if (sedata[i].used) {
-
+		script_list->set_item_tooltip(index, sedata_filtered[i].tooltip);
+		script_list->set_item_metadata(index, sedata_filtered[i].index); /* Saving as metadata the script's index in the tab container and not the filtered one */
+		if (sedata_filtered[i].used) {
 			script_list->set_item_custom_bg_color(index, Color(88 / 255.0, 88 / 255.0, 60 / 255.0));
 		}
-		if (tab_container->get_current_tab() == sedata[i].index) {
+		if (tab_container->get_current_tab() == sedata_filtered[i].index) {
 			script_list->select(index);
-			script_name_label->set_text(sedata[i].name);
-			script_icon->set_texture(sedata[i].icon);
+			script_name_label->set_text(sedata_filtered[i].name);
+			script_icon->set_texture(sedata_filtered[i].icon);
 		}
 	}
 
@@ -2049,7 +2061,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 			if (should_open) {
 				if (tab_container->get_current_tab() != i) {
 					_go_to_tab(i);
-					script_list->select(script_list->find_metadata(i));
+					_update_script_names();
 				}
 				if (is_visible_in_tree())
 					se->ensure_focus();
@@ -2427,7 +2439,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(node);
 		EditorHelp *eh = Object::cast_to<EditorHelp>(node);
 		if (se || eh) {
-			int new_index = script_list->get_item_at_position(p_point);
+			int new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
 			tab_container->move_child(node, new_index);
 			tab_container->set_current_tab(new_index);
 			_update_script_names();
@@ -2444,7 +2456,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(node);
 		EditorHelp *eh = Object::cast_to<EditorHelp>(node);
 		if (se || eh) {
-			int new_index = script_list->get_item_at_position(p_point);
+			int new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
 			tab_container->move_child(node, new_index);
 			tab_container->set_current_tab(new_index);
 			_update_script_names();
@@ -2455,7 +2467,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 
 		Vector<String> files = d["files"];
 
-		int new_index = script_list->get_item_at_position(p_point);
+		int new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
 		int num_tabs_before = tab_container->get_child_count();
 		for (int i = 0; i < files.size(); i++) {
 			String file = files[i];
@@ -2467,7 +2479,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 				if (tab_container->get_child_count() > num_tabs_before) {
 					tab_container->move_child(tab_container->get_child(tab_container->get_child_count() - 1), new_index);
 					num_tabs_before = tab_container->get_child_count();
-				} else {
+				} else { /* Maybe script was already open */
 					tab_container->move_child(tab_container->get_child(tab_container->get_current_tab()), new_index);
 				}
 			}
@@ -2962,6 +2974,14 @@ void ScriptEditor::_on_find_in_files_modified_files(PoolStringArray paths) {
 	_update_modified_scripts_for_external_editor();
 }
 
+void ScriptEditor::_filter_scripts_text_changed(const String &p_newtext) {
+	_update_script_names();
+}
+
+void ScriptEditor::_filter_methods_text_changed(const String &p_newtext) {
+	_update_members_overview();
+}
+
 void ScriptEditor::_bind_methods() {
 
 	ClassDB::bind_method("_file_dialog_action", &ScriptEditor::_file_dialog_action);
@@ -3013,6 +3033,8 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_toggle_members_overview_alpha_sort", &ScriptEditor::_toggle_members_overview_alpha_sort);
 	ClassDB::bind_method("_update_members_overview", &ScriptEditor::_update_members_overview);
 	ClassDB::bind_method("_script_changed", &ScriptEditor::_script_changed);
+	ClassDB::bind_method("_filter_scripts_text_changed", &ScriptEditor::_filter_scripts_text_changed);
+	ClassDB::bind_method("_filter_methods_text_changed", &ScriptEditor::_filter_methods_text_changed);
 	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
 	ClassDB::bind_method("_on_find_in_files_requested", &ScriptEditor::_on_find_in_files_requested);
 	ClassDB::bind_method("_start_find_in_files", &ScriptEditor::_start_find_in_files);
@@ -3059,8 +3081,18 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_split->add_child(list_split);
 	list_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	scripts_vbox = memnew(VBoxContainer);
+	scripts_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+	list_split->add_child(scripts_vbox);
+
+	filter_scripts = memnew(LineEdit);
+	filter_scripts->set_placeholder(TTR("Filter scripts"));
+	filter_scripts->set_clear_button_enabled(true);
+	filter_scripts->connect("text_changed", this, "_filter_scripts_text_changed");
+	scripts_vbox->add_child(filter_scripts);
+
 	script_list = memnew(ItemList);
-	list_split->add_child(script_list);
+	scripts_vbox->add_child(script_list);
 	script_list->set_custom_minimum_size(Size2(150, 90) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
 	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	script_split->set_split_offset(140);
@@ -3095,6 +3127,12 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	members_overview_alphabeta_sort_button->connect("toggled", this, "_toggle_members_overview_alpha_sort");
 
 	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
+
+	filter_methods = memnew(LineEdit);
+	filter_methods->set_placeholder(TTR("Filter methods"));
+	filter_methods->set_clear_button_enabled(true);
+	filter_methods->connect("text_changed", this, "_filter_methods_text_changed");
+	overview_vbox->add_child(filter_methods);
 
 	members_overview = memnew(ItemList);
 	overview_vbox->add_child(members_overview);
