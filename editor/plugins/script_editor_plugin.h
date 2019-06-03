@@ -38,6 +38,7 @@
 #include "editor/editor_plugin.h"
 #include "editor/script_create_dialog.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
@@ -210,6 +211,9 @@ class ScriptEditor : public PanelContainer {
 	ItemList *script_list;
 	HSplitContainer *script_split;
 	ItemList *members_overview;
+	LineEdit *filter_scripts;
+	LineEdit *filter_methods;
+	VBoxContainer *scripts_vbox;
 	VBoxContainer *overview_vbox;
 	HBoxContainer *buttons_hbox;
 	Label *filename;
@@ -337,6 +341,8 @@ class ScriptEditor : public PanelContainer {
 	void _update_members_overview_visibility();
 	void _update_members_overview();
 	void _toggle_members_overview_alpha_sort(bool p_alphabetic_sort);
+	void _filter_scripts_text_changed(const String &p_newtext);
+	void _filter_methods_text_changed(const String &p_newtext);
 	void _update_script_names();
 	void _update_script_connections();
 	bool _sort_list_on_update;
