@@ -394,15 +394,17 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 
-	if (p_node != get_scene_node() && !p_node->get_owner()) {
+	if (!p_node || (p_node != get_scene_node() && !p_node->get_owner())) {
 
 		return;
 	}
-	TreeItem *item = p_node ? _find(tree->get_root(), p_node->get_path()) : NULL;
+
+	TreeItem *item = _find(tree->get_root(), p_node->get_path());
+
 	if (!item) {
-
 		return;
 	}
+
 	int idx = item->get_button_by_id(0, BUTTON_VISIBILITY);
 	ERR_FAIL_COND(idx == -1);
 

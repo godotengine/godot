@@ -571,10 +571,6 @@ Error ProjectSettings::_load_settings_text(const String p_path) {
 			section = next_tag.name;
 		}
 	}
-
-	memdelete(f);
-
-	return OK;
 }
 
 Error ProjectSettings::_load_settings_text_or_binary(const String p_text_path, const String p_bin_path) {

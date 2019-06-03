@@ -129,7 +129,7 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 			float max = -1000;
 			float min = 1000;
 			int from = uint64_t(i) * to_read / to_write;
-			int to = uint64_t(i + 1) * to_read / to_write;
+			int to = (uint64_t(i) + 1) * to_read / to_write;
 			to = MIN(to, to_read);
 			from = MIN(from, to_read - 1);
 			if (to == from) {

@@ -1049,7 +1049,7 @@ AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node
 		return CONNECTION_ERROR_NO_INPUT;
 	}
 
-	if (!nodes.has(p_input_node)) {
+	if (p_input_node == p_output_node) {
 		return CONNECTION_ERROR_SAME_NODE;
 	}
 

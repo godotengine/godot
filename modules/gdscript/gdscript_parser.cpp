@@ -1995,7 +1995,6 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 				}
 			}
 
-			ERR_FAIL_V(op);
 		} break;
 		default: {
 			return p_node;

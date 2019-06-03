@@ -2244,7 +2244,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		bool rebind_reflection = false;
 		bool rebind_lightmap = false;
 
-		if (!p_shadow) {
+		if (!p_shadow && material->shader) {
 
 			bool unshaded = material->shader->spatial.unshaded;
 
@@ -2264,7 +2264,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 			bool depth_prepass = false;
 
-			if (!p_alpha_pass && material->shader && material->shader->spatial.depth_draw_mode == RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
+			if (!p_alpha_pass && material->shader->spatial.depth_draw_mode == RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
 				depth_prepass = true;
 			}
 
@@ -2900,7 +2900,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	if (storage->frame.current_rt && state.used_screen_texture) {
 		//copy screen texture
 
-		if (storage->frame.current_rt && storage->frame.current_rt->multisample_active) {
+		if (storage->frame.current_rt->multisample_active) {
 			// Resolve framebuffer to front buffer before copying
 #ifdef GLES_OVER_GL
 
