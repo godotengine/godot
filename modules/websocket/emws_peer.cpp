@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,16 +27,17 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifdef JAVASCRIPT_ENABLED
 
 #include "emws_peer.h"
 #include "core/io/ip.h"
 
-void EMWSPeer::set_sock(int p_sock) {
+void EMWSPeer::set_sock(int p_sock, unsigned int p_in_buf_size, unsigned int p_in_pkt_size) {
 
 	peer_sock = p_sock;
-	in_buffer.clear();
-	queue_count = 0;
+	_in_buffer.resize(p_in_pkt_size, p_in_buf_size);
+	_packet_buffer.resize((1 << p_in_buf_size));
 }
 
 void EMWSPeer::set_write_mode(WriteMode p_mode) {
@@ -47,18 +48,10 @@ EMWSPeer::WriteMode EMWSPeer::get_write_mode() const {
 	return write_mode;
 }
 
-void EMWSPeer::read_msg(uint8_t *p_data, uint32_t p_size, bool p_is_string) {
-
-	if (in_buffer.space_left() < p_size + 5) {
-		ERR_EXPLAIN("Buffer full! Dropping data");
-		ERR_FAIL();
-	}
+Error EMWSPeer::read_msg(uint8_t *p_data, uint32_t p_size, bool p_is_string) {
 
 	uint8_t is_string = p_is_string ? 1 : 0;
-	in_buffer.write((uint8_t *)&p_size, 4);
-	in_buffer.write((uint8_t *)&is_string, 1);
-	in_buffer.write(p_data, p_size);
-	queue_count++;
+	return _in_buffer.write_packet(p_data, p_size, &is_string);
 }
 
 Error EMWSPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
@@ -89,40 +82,28 @@ Error EMWSPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 
 Error EMWSPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 
-	if (queue_count == 0)
+	if (_in_buffer.packets_left() == 0)
 		return ERR_UNAVAILABLE;
 
-	uint32_t to_read = 0;
-	uint32_t left = 0;
-	uint8_t is_string = 0;
-	r_buffer_size = 0;
+	PoolVector<uint8_t>::Write rw = _packet_buffer.write();
+	int read = 0;
+	Error err = _in_buffer.read_packet(rw.ptr(), _packet_buffer.size(), &_is_string, read);
+	ERR_FAIL_COND_V(err != OK, err);
 
-	in_buffer.read((uint8_t *)&to_read, 4);
-	--queue_count;
-	left = in_buffer.data_left();
-
-	if (left < to_read + 1) {
-		in_buffer.advance_read(left);
-		return FAILED;
-	}
-
-	in_buffer.read(&is_string, 1);
-	_was_string = is_string == 1;
-	in_buffer.read(packet_buffer, to_read);
-	*r_buffer = packet_buffer;
-	r_buffer_size = to_read;
+	*r_buffer = rw.ptr();
+	r_buffer_size = read;
 
 	return OK;
 };
 
 int EMWSPeer::get_available_packet_count() const {
 
-	return queue_count;
+	return _in_buffer.packets_left();
 };
 
 bool EMWSPeer::was_string_packet() const {
 
-	return _was_string;
+	return _is_string;
 };
 
 bool EMWSPeer::is_connected_to_host() const {
@@ -130,20 +111,22 @@ bool EMWSPeer::is_connected_to_host() const {
 	return peer_sock != -1;
 };
 
-void EMWSPeer::close() {
+void EMWSPeer::close(int p_code, String p_reason) {
 
 	if (peer_sock != -1) {
 		/* clang-format off */
 		EM_ASM({
 			var sock = Module.IDHandler.get($0);
-			sock.close();
+			var code = $1;
+			var reason = UTF8ToString($2);
+			sock.close(code, reason);
 			Module.IDHandler.remove($0);
-		}, peer_sock);
+		}, peer_sock, p_code, p_reason.utf8().get_data());
 		/* clang-format on */
 	}
+	_is_string = 0;
+	_in_buffer.clear();
 	peer_sock = -1;
-	queue_count = 0;
-	in_buffer.clear();
 };
 
 IP_Address EMWSPeer::get_connected_host() const {
@@ -160,15 +143,12 @@ uint16_t EMWSPeer::get_connected_port() const {
 
 EMWSPeer::EMWSPeer() {
 	peer_sock = -1;
-	queue_count = 0;
-	_was_string = false;
-	in_buffer.resize(16);
 	write_mode = WRITE_MODE_BINARY;
+	close();
 };
 
 EMWSPeer::~EMWSPeer() {
 
-	in_buffer.resize(0);
 	close();
 };
 

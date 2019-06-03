@@ -1,33 +1,33 @@
-/***************************************************************************/
-/*                                                                         */
-/*  fttrigon.c                                                             */
-/*                                                                         */
-/*    FreeType trigonometric functions (body).                             */
-/*                                                                         */
-/*  Copyright 2001-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * fttrigon.c
+ *
+ *   FreeType trigonometric functions (body).
+ *
+ * Copyright (C) 2001-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* This is a fixed-point CORDIC implementation of trigonometric          */
-  /* functions as well as transformations between Cartesian and polar      */
-  /* coordinates.  The angles are represented as 16.16 fixed-point values  */
-  /* in degrees, i.e., the angular resolution is 2^-16 degrees.  Note that */
-  /* only vectors longer than 2^16*180/pi (or at least 22 bits) on a       */
-  /* discrete Cartesian grid can have the same or better angular           */
-  /* resolution.  Therefore, to maintain this precision, some functions    */
-  /* require an interim upscaling of the vectors, whereas others operate   */
-  /* with 24-bit long vectors directly.                                    */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * This is a fixed-point CORDIC implementation of trigonometric
+   * functions as well as transformations between Cartesian and polar
+   * coordinates.  The angles are represented as 16.16 fixed-point values
+   * in degrees, i.e., the angular resolution is 2^-16 degrees.  Note that
+   * only vectors longer than 2^16*180/pi (or at least 22 bits) on a
+   * discrete Cartesian grid can have the same or better angular
+   * resolution.  Therefore, to maintain this precision, some functions
+   * require an interim upscaling of the vectors, whereas others operate
+   * with 24-bit long vectors directly.
+   *
+   */
 
 #include <ft2build.h>
 #include FT_INTERNAL_OBJECTS_H
@@ -325,10 +325,10 @@
   FT_EXPORT_DEF( FT_Fixed )
   FT_Tan( FT_Angle  angle )
   {
-    FT_Vector  v;
+    FT_Vector  v = { 1 << 24, 0 };
 
 
-    FT_Vector_Unit( &v, angle );
+    ft_trig_pseudo_rotate( &v, angle );
 
     return FT_DivFix( v.y, v.x );
   }
@@ -372,14 +372,6 @@
   }
 
 
-  /* these macros return 0 for positive numbers,
-     and -1 for negative ones */
-#define FT_SIGN_LONG( x )   ( (x) >> ( FT_SIZEOF_LONG * 8 - 1 ) )
-#define FT_SIGN_INT( x )    ( (x) >> ( FT_SIZEOF_INT * 8 - 1 ) )
-#define FT_SIGN_INT32( x )  ( (x) >> 31 )
-#define FT_SIGN_INT16( x )  ( (x) >> 15 )
-
-
   /* documentation is in fttrigon.h */
 
   FT_EXPORT_DEF( void )
@@ -408,8 +400,8 @@
       FT_Int32  half = (FT_Int32)1L << ( shift - 1 );
 
 
-      vec->x = ( v.x + half + FT_SIGN_LONG( v.x ) ) >> shift;
-      vec->y = ( v.y + half + FT_SIGN_LONG( v.y ) ) >> shift;
+      vec->x = ( v.x + half - ( v.x < 0 ) ) >> shift;
+      vec->y = ( v.y + half - ( v.y < 0 ) ) >> shift;
     }
     else
     {

@@ -17,288 +17,415 @@ generous deed immortalized in the next stable release of Godot Engine.
 ## Gold sponsors
 
     Gamblify <https://www.gamblify.com>
-    GameDev.TV <https://www.gamedev.tv>
+    Image Campus <https://www.imagecampus.edu.ar>
 
 ## Mini sponsors
 
+    Alan Beauchamp
+    Anandarup Mallik
+    Andrew Dunai
     Brandon Lamb
     Christian Uldall Pedersen
-    Christopher Igoe
     Christoph Woinke
-    E Hewert
+    Connor Hill
+    Denis Malyavin
+    Edward Flick
     GameDev.net
+    GameDev.tv
     Hein-Pieter van Braam
-    Jamal Alyafei
+    Jacob McKenney
+    Javary Games
     Jay Sistar
-    Loreshaper Games
+    Justin Arnold
+    Kyle Szklenski
+    Leonard Meagher
     Matthieu Huvé
+    Maxim Karsten
     Mike King
-    Nathan Warden
     Neal Gompa (Conan Kudo)
-    Pascal Julien
     Patrick Aarstad
-    rottis
-    Ruslan Mustakov
-    Sébastien Manin
+    "Rainway "
     Slobodan Milnovic
+    StarFlare Software
     Stephan Lanfermann
-    Stoney Meyerhoeffer
-    Thomas Mathews
+    Stephen Telford
+    Steve
+    TigerJ
     VilliHaukka
+    Xananax
+    Zashi
 
 ## Gold donors
 
-    3Dexplorer
-    Alexander Otto
-    Asdf
+    Andrei
+    Brandon Waite
     cheese65536
+    David Gehrig
+    Ed Morley
+    Florian Krick
+    Grady
+    Jakub Grzesik
     K9Kraken
-    Kris Michael
     Manuele Finocchiaro
-    Nathanael Beisiegel
     Officine Pixel S.n.c.
+    Retro Village
+    Sofox
     Zaven Muradyan
 
+    Alexander Trey Saunders
     Allen Schade
     Andreas Schüle
+    Asher Glick
     Austen McRae
-    David Gehrig
-    DeepSquid
-    Fidget Sinner
+    Daniel James
+    David Giardi
+    David Graham
+    Edward E
     Florian Breisch
-    Gary Oberbrunner
-    Johannes Wuensch
-    Josep G. Camarasa
+    Gero
+    Jay Horton
+    Jon Smith
+    Jon Woodward
+    Jorge Bernal
     Joshua Lesperance
-    Kyle Szklenski
-    Libre-Dépanne
-    Matthew Bennett
+    Justo Delgado Baudí
+    Karl Werf
+    Kommentgames
+    Krzysztof Dluzniewski
+    Luke
+    Moonwards
+    Mored1984
+    paul gruenbacher
     Paul LaMotte
-    Ranoller
+    Rob Messick
+    Ross Esmond
+    Ryan Badour
+    Scott Wadden
     Sergey
     Svenne Krap
-    Timothy Hagberg
+    Tom Langwaldt
+    William Wold
+    Wyatt Goodin
 
-    BanjoNode2D
-    Beliar
+    Chris Goddard
     Chris Serino
     Christian Padilla
     Conrad Curry
     Craig Smith
     Daniel Egger
-    David Churchill
     Dean Harmon
-    John
-    Justo Delgado Baudí
-    KTL
-    Laurence Bannister
-    paul gruenbacher
+    Ian Richard Kunert
+    Ivan Trombley
+    Joan Fons
+    Krzysztof Jankowski
+    Lord Bloodhound
+    Lucas Ferreira Franca
+    Michele Zilli
+    Nathan Lundquist
+    Pascal Grüter
+    Petr Malac
     Rami
+    Reneator
     Robert Willes
     Robin Arys
-    Rodrigo Loli
     Ronnie Ashlock
     ScottMakesGames
     Thomas Bjarnelöf
+    Vincent Henderson
     Wojciech Chojnacki
     Xavier PATRICELLI
-    Zaq Poi
 
     Alessandra Pereyra
     Alexey Dyadchenko
-    Amanda Haldy
-    Anthony Ryan
-    Chris Brown
+    Andrew Bowen
+    Asdf
+    Benjamin W Flint
+    Carlos de Sousa Marques
     Chris Petrich
-    Chris Wilson
+    Christian Leth Jeppesen
+    Christoph Schröder
     Cody Parker
-    Corey Auger
+    ComicSads
     D
+    Daniel
+    Daniel Eichler
     Deadly Lampshade
-    E.G.
     Eric
     Eric Monson
+    Ethan Bennis
+    Eugenio Hugo Salgüero Jáñez
     flesk
-    floopf
-    G Barnes
+    Francisco Javier Moreno Carracedo
+    gavlig
     GGGames.org
+    Giles Montgomery
     Giovanni Solimeno
     Guilherme Felipe de C. G. da Silva
-    Hasen Judy
     Heath Hayes
-    Jan Čejka
-    Jay Horton
-    Jeppe Zapp
-    joe513
+    Hysteria
+    Jose Malheiro
+    Joshua Flores
+    Juan T Chen
     Juraj Móza
-    Justin Arnold
-    Lars Wuethrich
+    Kasper Jeppesen
+    Klaus The.
+    Klavdij Voncina
     Leandro Voltolino
-    Lisandro Lorea
+    Maarten Elings
+    Malcolm Peralty
+    Marius Kamm
+    Markus Fehr
     Markus Wiesner
+    Martin Eigel
     Marvin
-    Mohammad Taleb
-    Neal Barry
+    Matt Eunson
+    Matthew Hillier
+    Max R.R. Collada
+    M H
     Nick Nikitin
-    Pablo Cholaky
-    Patrick Schnorbus
+    Oliver Dick
+    Paul Hocker
+    Paul Von Zimmerman
     Pete Goodwin
-    Ruben Soares Luis
-    Rufus Xavier Sarsaparilla
-    Sindre Sømme
-    Sofox
+    Ranoller
+    Samuel Judd
+    Scott Pilet
+    spilldata
     Stoned Xander
-    Tim Dalporto
-    Trent McPheron
-    Wyatt Walker
+    Thomas Krampl
+    Tobias Bocanegra
+    Urho
+    WytRabbit
+    Xavier Fumado Beltran
+    yuanzhe zhou
 
 ## Silver donors
 
     1D_Inc
+    Abraham Haskins
+    Adam Brunnmeier
     Adam  Carr
+    Adam Nakonieczny
     Adam Smeltzer
     Adisibio
+    Aidan O'Flannagain
     Alder Stefano
     Alessandro Senese
+    Alexander Gillberg
     Alexander Koppe
-    Anders Jensen-Urstad
+    Alex Davies-Moore
+    Alice Robinson
+    Andreas Evers
+    Andreas Krampitz
+    Andrew Peart
     Anthony Bongiovanni
+    Anthony Staunton
+    Antony K. Jones
     Arda Erol
     Arthur S. Muszynski
-    Artur Barichello
     Aubrey Falconer
     Avencherus
+    Balázs Batári
     Bastian Böhm
+    Beliar
     Benedikt
-    Benjamin Beshara
+    Ben Phelan
     Ben Vercammen
+    Bernd Jänichen
+    Black Block
     Blair Allen
-    Brandon
+    Bobby CC Wong
+    Boyquotes
+    Branwen Zak
     Bryan Stevenson
     Carl Winder
     Carwyn Edwards
-    Casey Foote
+    Chris Brown
     Chris Chapin
     Christian Baune
     Christian Winter
-    Christopher Schmitt
+    Christoffer Sundbom
+    Christopher Fisher
+    Chris Wilson
+    Clay Heaton
+    Cobaltum
     Collin Shooltz
+    Dag Sundin Söderström
     Daniel Johnson
-    Daniel Kaplan
-    DanielMaximiano
-    Daniel Mircea
-    David
+    Daniel Reed
+    Danny Welch
+    Dave Watts
+    David Bullock
     David Cravens
     David May
-    Disktra
+    Dimitri Stanojevic
     Dominik Wetzel
-    Duy Kevin Nguyen
+    Duobix
     Edward Herbert
-    Elias Nykrem
+    E.G.
+    Egon Elbre
+    Ellen Marie Dash
+    Elmeri '- Duy Kevin Nguyen
+    Emanuel Kotzayan
+    Eric Ellingson
     Eric Martini
-    Fabian Becker
+    Eric McCarthy
+    Eric Williams
+    Fabian Lökes
+    Felix Kollmann
     fengjiongmax
-    Francesco Lisi
+    Foomf
     G3Dev sàrl
+    Gary Hulst
     Gerrit Großkopf
-    Gerrit Procee
-    Gilberto K. Otubo
+    gmmath
+    Grant Clarke
     Greg Olson
-    Guillaume Laforte
+    Greg Pennefather
     Guldoman
-    Gumichan01
     Heribert Hirth
+    Hiroshi Naruo
+    HMan
     Hunter Jones
     ialex32x
-    Ivan Vodopiviz
-    Jahn Johansen
+    Igor Buzatovic
+    Iiari
+    Isaac Morton
     Jaime Ruiz-Borau Vizárraga
-    Jake Huxell
-    Jed
+    Jako Danar
+    James A F Manley
+    Jax
     Jeff Hungerford
+    Jeff Nyte
+    Jeremy Kahn
+    Jesse Dubay
+    Joe Alden
     Joel Fivat
-    Johan Lindberg
+    Joel Setterberg
+    Johannes Wuensch
     Jonas Rudlang
     Jonas Yamazaki
-    Jonathan Martin
+    Jonathan G
     Jonathan Nieto
     Jonathon
+    Jon Bonazza
     Jon Sully
+    Jose Aleman
     Josh 'Cheeseness' Bush
     Juanfran
     Juan Negrier
     Judd
     Julian Murgia
-    Justin Luk
     KC Chan
-    Kevin Boyer
-    Kevin Kamper Meejach Petersen
-    Klavdij Voncina
-    Krzysztof Jankowski
+    kickmaniac
+    Kiyohiro Kawamura (kyorohiro)
+    Klagsam
+    KR McGinley
+    KsyTek Games
+    Kuan Cheang
+    kycho
+    Levi Lindsey
     Linus Lind Lundgren
-    Luc Magitem
+    Lionel Gaillard
     Luis Moraes
     Macil
     magodev
-    Manolis Makris
-    Martin Eigel
-    Martins Odabi
-    Max R.R. Collada
+    Major Haul
+    Malcolm
+    Malik Ahmed
+    Markus Michael Egger
+    Martin Holas
+    Matthew Little
     Maxwell
+    medecau
+    Menno Finlay-Smits
     Mertcan Mermerkaya
     mhilbrunner
     Michael Dürwald
     Michael Gringauz
     Michael Labbe
     Mikael Olsson
+    Mikayla Hutchinson
+    Mike Cunningham
     MoM
     Moritz Laass
+    Moritz Weissenberger
+    MuffinManKen
     Natrim
     nee
     Neil Blakey-Milner
-    Nick Pavlica
+    Nerdforge
     Niclas Eriksen
+    Nicolás Montaña
     Nicolas SAN AGUSTIN
-    Niko Leopold
-    Noi Sek
-    Pablo Seibelt
+    Nithin Jino
+    NZ
+    Oscar Norlander
     Pan Ip
-    Pascal Grüter
-    Pat LaBine
+    Patrick Forringer
     Patrick Nafarrete
-    Paul E Hansen
+    Paul Gieske
     Paul Mason
     Paweł Kowal
+    Philip O. Staiger
     Pierre-Igor Berthet
     Pietro Vertechi
     Piotr Kaczmarski
+    Pitsanu Tongprasin
+    Poryg
+    Raphael Leroux
+    Red Hara
     Rémi Verschelde
-    Richman Stewart
+    Ricardo Alcantara
+    Rob Crowle
+    Robert Farr (Larington)
+    Robert Hernandez
+    Rodrigo Loli
     Roger Burgess
     Roger Smith
+    Roland Rząsa
     Roman Tinkov
+    Ryan Groom
+    Ryan Hentz
+    Saad Khoudmi
+    Samdze
     Sasori Olkof
+    Scott D. Yelich
+    Sebastian Michailidis
+    Shane Sicienski
+    Shane Spoor
+    Simon Wenner
+    SK
     Sootstone
-    Stefan Butucea
-    The K-B
     Theo Cranmore
-    Thibaud Galloy
     Thibault Barbaroux
+    thomas
     Thomas Bell
-    Thomas Holmes
+    Thomas Kelly
     Thomas Kurz
     tiansheng li
+    Tim
+    Tim Drumheller
+    Tim Gudex
+    Timo Schmidt
     Tom Larrow
-    Tristan Crawford
-    Trym Nilsen
-    Tyler Stafos
+    Torsten Crass
+    Travis O'Brien
+    Tryggve Sollid
+    Tyler Strafos
     UltyX
+    Vaiktorg
+    Veodok
     Victor
+    Vigilant Watch
     Viktor Ferenczi
     waka nya
+    Wayne Haak
     werner mendizabal
+    Wiley Thompson
+    Will
+    William Hogben
     Wout Standaert
-    Yu He
 
 ## Bronze donors
 

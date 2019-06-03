@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "input_map.h"
 
-#include "os/keyboard.h"
-#include "project_settings.h"
+#include "core/os/keyboard.h"
+#include "core/project_settings.h"
 
 InputMap *InputMap::singleton = NULL;
 
@@ -44,7 +44,7 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::add_action, DEFVAL(0.5f));
 	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
 
-	ClassDB::bind_method(D_METHOD("action_set_deadzone", "deadzone"), &InputMap::action_set_deadzone);
+	ClassDB::bind_method(D_METHOD("action_set_deadzone", "action", "deadzone"), &InputMap::action_set_deadzone);
 	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event"), &InputMap::action_add_event);
 	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event"), &InputMap::action_has_event);
 	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event"), &InputMap::action_erase_event);
@@ -199,6 +199,10 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 
 	Ref<InputEventAction> input_event_action = p_event;
 	if (input_event_action.is_valid()) {
+		if (p_pressed != NULL)
+			*p_pressed = input_event_action->is_pressed();
+		if (p_strength != NULL)
+			*p_strength = (*p_pressed) ? input_event_action->get_strength() : 0.0f;
 		return input_event_action->get_action() == p_action;
 	}
 

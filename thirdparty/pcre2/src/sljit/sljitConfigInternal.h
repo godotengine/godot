@@ -66,7 +66,7 @@
      SLJIT_RETURN_ADDRESS_OFFSET : a return instruction always adds this offset to the return address
 
    Other macros:
-     SLJIT_FUNC : calling convention attribute for both calling JIT form C and C calling back from JIT
+     SLJIT_FUNC : calling convention attribute for both calling JIT from C and C calling back from JIT
      SLJIT_W(number) : defining 64 bit constants on 64 bit architectures (compiler independent helper)
 */
 
@@ -147,17 +147,23 @@
 #define SLJIT_CONFIG_UNSUPPORTED 1
 #endif
 
-#else /* !_WIN32 */
+#else /* _WIN32 */
 
 #if defined(_M_X64) || defined(__x86_64__)
 #define SLJIT_CONFIG_X86_64 1
+#elif (defined(_M_ARM) && _M_ARM >= 7 && defined(_M_ARMT)) || defined(__thumb2__)
+#define SLJIT_CONFIG_ARM_THUMB2 1
+#elif (defined(_M_ARM) && _M_ARM >= 7)
+#define SLJIT_CONFIG_ARM_V7 1
 #elif defined(_ARM_)
 #define SLJIT_CONFIG_ARM_V5 1
+#elif defined(_M_ARM64) || defined(__aarch64__)
+#define SLJIT_CONFIG_ARM_64 1
 #else
 #define SLJIT_CONFIG_X86_32 1
 #endif
 
-#endif /* !WIN32 */
+#endif /* !_WIN32 */
 #endif /* SLJIT_CONFIG_AUTO */
 
 #if (defined SLJIT_CONFIG_UNSUPPORTED && SLJIT_CONFIG_UNSUPPORTED)
@@ -324,6 +330,11 @@
 	sparc_cache_flush((from), (to))
 #define SLJIT_CACHE_FLUSH_OWN_IMPL 1
 
+#elif defined _WIN32
+
+#define SLJIT_CACHE_FLUSH(from, to) \
+	FlushInstructionCache(GetCurrentProcess(), (char*)(from), (char*)(to) - (char*)(from))
+
 #else
 
 /* Calls __ARM_NR_cacheflush on ARM-Linux. */
@@ -371,12 +382,18 @@ typedef int sljit_sw;
 #define SLJIT_64BIT_ARCHITECTURE 1
 #define SLJIT_WORD_SHIFT 3
 #ifdef _WIN32
+#ifdef __GNUC__
+/* These types do not require windows.h */
+typedef unsigned long long sljit_uw;
+typedef long long sljit_sw;
+#else
 typedef unsigned __int64 sljit_uw;
 typedef __int64 sljit_sw;
-#else
+#endif
+#else /* !_WIN32 */
 typedef unsigned long int sljit_uw;
 typedef long int sljit_sw;
-#endif
+#endif /* _WIN32 */
 #endif
 
 typedef sljit_uw sljit_p;
@@ -590,7 +607,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_sw sljit_exec_offset(void* ptr);
 
 #define SLJIT_NUMBER_OF_REGISTERS 26
 #define SLJIT_NUMBER_OF_SAVED_REGISTERS 10
-#define SLJIT_LOCALS_OFFSET_BASE (2 * sizeof(sljit_sw))
+#define SLJIT_LOCALS_OFFSET_BASE 0
 
 #elif (defined SLJIT_CONFIG_PPC && SLJIT_CONFIG_PPC)
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,31 +43,31 @@ static void *godot_open(void *data, const char *p_fname, int mode) {
 
 	if (mode & ZLIB_FILEFUNC_MODE_WRITE) {
 		return NULL;
-	};
+	}
 
 	FileAccess *f = (FileAccess *)data;
 	f->open(p_fname, FileAccess::READ);
 
 	return f->is_open() ? data : NULL;
-};
+}
 
 static uLong godot_read(void *data, void *fdata, void *buf, uLong size) {
 
 	FileAccess *f = (FileAccess *)data;
 	f->get_buffer((uint8_t *)buf, size);
 	return size;
-};
+}
 
 static uLong godot_write(voidpf opaque, voidpf stream, const void *buf, uLong size) {
 
 	return 0;
-};
+}
 
 static long godot_tell(voidpf opaque, voidpf stream) {
 
 	FileAccess *f = (FileAccess *)opaque;
 	return f->get_position();
-};
+}
 
 static long godot_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 
@@ -84,36 +84,36 @@ static long godot_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 			break;
 		default:
 			break;
-	};
+	}
 
 	f->seek(pos);
 	return 0;
-};
+}
 
 static int godot_close(voidpf opaque, voidpf stream) {
 
 	FileAccess *f = (FileAccess *)opaque;
 	f->close();
 	return 0;
-};
+}
 
 static int godot_testerror(voidpf opaque, voidpf stream) {
 
 	FileAccess *f = (FileAccess *)opaque;
 	return f->get_error() != OK ? 1 : 0;
-};
+}
 
 static voidpf godot_alloc(voidpf opaque, uInt items, uInt size) {
 
 	return memalloc(items * size);
-};
+}
 
 static void godot_free(voidpf opaque, voidpf address) {
 
 	memfree(address);
-};
+}
 
-}; // extern "C"
+} // extern "C"
 
 void ZipArchive::close_handle(unzFile p_file) const {
 
@@ -122,7 +122,7 @@ void ZipArchive::close_handle(unzFile p_file) const {
 	unzCloseCurrentFile(p_file);
 	unzClose(p_file);
 	memdelete(f);
-};
+}
 
 unzFile ZipArchive::get_file_handle(String p_file) const {
 
@@ -155,10 +155,10 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 
 		unzClose(pkg);
 		ERR_FAIL_V(NULL);
-	};
+	}
 
 	return pkg;
-};
+}
 
 bool ZipArchive::try_open_pack(const String &p_path) {
 
@@ -168,10 +168,10 @@ bool ZipArchive::try_open_pack(const String &p_path) {
 
 	zlib_filefunc_def io;
 
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	if (!f)
+	FileAccess *fa = FileAccess::open(p_path, FileAccess::READ);
+	if (!fa)
 		return false;
-	io.opaque = f;
+	io.opaque = fa;
 	io.zopen_file = godot_open;
 	io.zread_file = godot_read;
 	io.zwrite_file = godot_write;
@@ -215,36 +215,36 @@ bool ZipArchive::try_open_pack(const String &p_path) {
 
 		if ((i + 1) < gi.number_entry) {
 			unzGoToNextFile(zfile);
-		};
-	};
+		}
+	}
 
 	return true;
-};
+}
 
 bool ZipArchive::file_exists(String p_name) const {
 
 	return files.has(p_name);
-};
+}
 
 FileAccess *ZipArchive::get_file(const String &p_path, PackedData::PackedFile *p_file) {
 
 	return memnew(FileAccessZip(p_path, *p_file));
-};
+}
 
 ZipArchive *ZipArchive::get_singleton() {
 
 	if (instance == NULL) {
 		instance = memnew(ZipArchive);
-	};
+	}
 
 	return instance;
-};
+}
 
 ZipArchive::ZipArchive() {
 
 	instance = this;
 	//fa_create_func = FileAccess::get_create_func();
-};
+}
 
 ZipArchive::~ZipArchive() {
 
@@ -253,10 +253,10 @@ ZipArchive::~ZipArchive() {
 		FileAccess *f = (FileAccess *)unzGetOpaque(packages[i].zfile);
 		unzClose(packages[i].zfile);
 		memdelete(f);
-	};
+	}
 
 	packages.clear();
-};
+}
 
 Error FileAccessZip::_open(const String &p_path, int p_mode_flags) {
 
@@ -272,7 +272,7 @@ Error FileAccessZip::_open(const String &p_path, int p_mode_flags) {
 	ERR_FAIL_COND_V(err != UNZ_OK, FAILED);
 
 	return OK;
-};
+}
 
 void FileAccessZip::close() {
 
@@ -283,50 +283,50 @@ void FileAccessZip::close() {
 	ERR_FAIL_COND(!arch);
 	arch->close_handle(zfile);
 	zfile = NULL;
-};
+}
 
 bool FileAccessZip::is_open() const {
 
 	return zfile != NULL;
-};
+}
 
 void FileAccessZip::seek(size_t p_position) {
 
 	ERR_FAIL_COND(!zfile);
 	unzSeekCurrentFile(zfile, p_position);
-};
+}
 
 void FileAccessZip::seek_end(int64_t p_position) {
 
 	ERR_FAIL_COND(!zfile);
 	unzSeekCurrentFile(zfile, get_len() + p_position);
-};
+}
 
 size_t FileAccessZip::get_position() const {
 
 	ERR_FAIL_COND_V(!zfile, 0);
 	return unztell(zfile);
-};
+}
 
 size_t FileAccessZip::get_len() const {
 
 	ERR_FAIL_COND_V(!zfile, 0);
 	return file_info.uncompressed_size;
-};
+}
 
 bool FileAccessZip::eof_reached() const {
 
 	ERR_FAIL_COND_V(!zfile, true);
 
 	return at_eof;
-};
+}
 
 uint8_t FileAccessZip::get_8() const {
 
 	uint8_t ret = 0;
 	get_buffer(&ret, 1);
 	return ret;
-};
+}
 
 int FileAccessZip::get_buffer(uint8_t *p_dst, int p_length) const {
 
@@ -339,20 +339,20 @@ int FileAccessZip::get_buffer(uint8_t *p_dst, int p_length) const {
 	if (read < p_length)
 		at_eof = true;
 	return read;
-};
+}
 
 Error FileAccessZip::get_error() const {
 
 	if (!zfile) {
 
 		return ERR_UNCONFIGURED;
-	};
+	}
 	if (eof_reached()) {
 		return ERR_FILE_EOF;
-	};
+	}
 
 	return OK;
-};
+}
 
 void FileAccessZip::flush() {
 
@@ -362,22 +362,21 @@ void FileAccessZip::flush() {
 void FileAccessZip::store_8(uint8_t p_dest) {
 
 	ERR_FAIL();
-};
+}
 
 bool FileAccessZip::file_exists(const String &p_name) {
 
 	return false;
-};
+}
 
-FileAccessZip::FileAccessZip(const String &p_path, const PackedData::PackedFile &p_file) {
-
-	zfile = NULL;
+FileAccessZip::FileAccessZip(const String &p_path, const PackedData::PackedFile &p_file) :
+		zfile(NULL) {
 	_open(p_path, FileAccess::READ);
-};
+}
 
 FileAccessZip::~FileAccessZip() {
 
 	close();
-};
+}
 
 #endif

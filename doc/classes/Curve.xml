@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Curve" inherits="Resource" category="Core" version="3.1">
+<class name="Curve" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		A mathematic curve.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_point">
 			<return type="int">
@@ -47,6 +45,13 @@
 			</return>
 			<description>
 				Removes all points from the curve.
+			</description>
+		</method>
+		<method name="get_point_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of points describing the curve.
 			</description>
 		</method>
 		<method name="get_point_left_mode" qualifiers="const">

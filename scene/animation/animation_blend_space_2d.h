@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  animation_blend_space_2d.h                                           */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #ifndef ANIMATION_BLEND_SPACE_2D_H
 #define ANIMATION_BLEND_SPACE_2D_H
 
@@ -5,12 +35,20 @@
 
 class AnimationNodeBlendSpace2D : public AnimationRootNode {
 	GDCLASS(AnimationNodeBlendSpace2D, AnimationRootNode)
+public:
+	enum BlendMode {
+		BLEND_MODE_INTERPOLATED,
+		BLEND_MODE_DISCRETE,
+		BLEND_MODE_DISCRETE_CARRY,
+	};
 
+protected:
 	enum {
 		MAX_BLEND_POINTS = 64
 	};
 
 	struct BlendPoint {
+		StringName name;
 		Ref<AnimationRootNode> node;
 		Vector2 position;
 	};
@@ -24,12 +62,15 @@ class AnimationNodeBlendSpace2D : public AnimationRootNode {
 
 	Vector<BlendTriangle> triangles;
 
-	Vector2 blend_pos;
+	StringName blend_position;
+	StringName closest;
+	StringName length_internal;
 	Vector2 max_space;
 	Vector2 min_space;
 	Vector2 snap;
 	String x_label;
 	String y_label;
+	BlendMode blend_mode;
 
 	void _add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node);
 	void _set_triangles(const Vector<int> &p_triangles);
@@ -41,13 +82,19 @@ class AnimationNodeBlendSpace2D : public AnimationRootNode {
 	bool trianges_dirty;
 
 	void _update_triangles();
+	void _queue_auto_triangles();
+
+	void _tree_changed();
 
 protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 	static void _bind_methods();
 
 public:
-	virtual void set_tree(AnimationTree *p_player);
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
+
+	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
 
 	void add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index = -1);
 	void set_blend_point_position(int p_point, const Vector2 &p_position);
@@ -72,9 +119,6 @@ public:
 	void set_snap(const Vector2 &p_snap);
 	Vector2 get_snap() const;
 
-	void set_blend_position(const Vector2 &p_pos);
-	Vector2 get_blend_position() const;
-
 	void set_x_label(const String &p_label);
 	String get_x_label() const;
 
@@ -89,8 +133,15 @@ public:
 	void set_auto_triangles(bool p_enable);
 	bool get_auto_triangles() const;
 
+	void set_blend_mode(BlendMode p_blend_mode);
+	BlendMode get_blend_mode() const;
+
+	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name);
+
 	AnimationNodeBlendSpace2D();
 	~AnimationNodeBlendSpace2D();
 };
+
+VARIANT_ENUM_CAST(AnimationNodeBlendSpace2D::BlendMode)
 
 #endif // ANIMATION_BLEND_SPACE_2D_H

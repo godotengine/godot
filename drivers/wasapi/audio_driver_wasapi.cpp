@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,8 @@
 
 #include "audio_driver_wasapi.h"
 
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 #include <functiondiscoverykeys.h>
 
@@ -65,7 +65,6 @@ const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
 #define CAPTURE_BUFFER_CHANNELS 2
 
-static StringName capture_device_id;
 static bool default_render_device_changed = false;
 static bool default_capture_device_changed = false;
 
@@ -128,7 +127,6 @@ public:
 				default_render_device_changed = true;
 			} else if (flow == eCapture) {
 				default_capture_device_changed = true;
-				capture_device_id = String(pwstrDeviceId);
 			}
 		}
 
@@ -240,6 +238,32 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 	hr = p_device->audio_client->GetMixFormat(&pwfex);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
+	print_verbose("WASAPI: wFormatTag = " + itos(pwfex->wFormatTag));
+	print_verbose("WASAPI: nChannels = " + itos(pwfex->nChannels));
+	print_verbose("WASAPI: nSamplesPerSec = " + itos(pwfex->nSamplesPerSec));
+	print_verbose("WASAPI: nAvgBytesPerSec = " + itos(pwfex->nAvgBytesPerSec));
+	print_verbose("WASAPI: nBlockAlign = " + itos(pwfex->nBlockAlign));
+	print_verbose("WASAPI: wBitsPerSample = " + itos(pwfex->wBitsPerSample));
+	print_verbose("WASAPI: cbSize = " + itos(pwfex->cbSize));
+
+	WAVEFORMATEX *closest = NULL;
+	hr = p_device->audio_client->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, pwfex, &closest);
+	if (hr == S_FALSE) {
+		WARN_PRINT("WASAPI: Mix format is not supported by the Device");
+		if (closest) {
+			print_verbose("WASAPI: closest->wFormatTag = " + itos(closest->wFormatTag));
+			print_verbose("WASAPI: closest->nChannels = " + itos(closest->nChannels));
+			print_verbose("WASAPI: closest->nSamplesPerSec = " + itos(closest->nSamplesPerSec));
+			print_verbose("WASAPI: closest->nAvgBytesPerSec = " + itos(closest->nAvgBytesPerSec));
+			print_verbose("WASAPI: closest->nBlockAlign = " + itos(closest->nBlockAlign));
+			print_verbose("WASAPI: closest->wBitsPerSample = " + itos(closest->wBitsPerSample));
+			print_verbose("WASAPI: closest->cbSize = " + itos(closest->cbSize));
+
+			WARN_PRINT("WASAPI: Using closest match instead");
+			pwfex = closest;
+		}
+	}
+
 	// Since we're using WASAPI Shared Mode we can't control any of these, we just tag along
 	p_device->channels = pwfex->nChannels;
 	p_device->format_tag = pwfex->wFormatTag;
@@ -272,6 +296,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 	}
 
 	hr = p_device->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, streamflags, p_capture ? REFTIMES_PER_SEC : 0, 0, pwfex, NULL);
+	ERR_EXPLAIN("WASAPI: Initialize failed with error 0x" + String::num_uint64(hr, 16));
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
 	if (p_capture) {
@@ -321,10 +346,8 @@ Error AudioDriverWASAPI::init_render_device(bool reinit) {
 	input_position = 0;
 	input_size = 0;
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("WASAPI: detected " + itos(channels) + " channels");
-		print_line("WASAPI: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
-	}
+	print_verbose("WASAPI: detected " + itos(channels) + " channels");
+	print_verbose("WASAPI: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	return OK;
 }
@@ -340,10 +363,7 @@ Error AudioDriverWASAPI::init_capture_device(bool reinit) {
 	HRESULT hr = audio_input.audio_client->GetBufferSize(&max_frames);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
-	// Set the buffer size
-	input_buffer.resize(max_frames * CAPTURE_BUFFER_CHANNELS);
-	input_position = 0;
-	input_size = 0;
+	input_buffer_init(max_frames);
 
 	return OK;
 }
@@ -661,6 +681,9 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			if (err == OK) {
 				ad->start();
 			}
+
+			avail_frames = 0;
+			write_ofs = 0;
 		}
 
 		if (ad->audio_input.active) {
@@ -797,19 +820,18 @@ Error AudioDriverWASAPI::capture_start() {
 		return err;
 	}
 
-	if (audio_input.active == false) {
-		audio_input.audio_client->Start();
-		audio_input.active = true;
-
-		return OK;
+	if (audio_input.active) {
+		return FAILED;
 	}
 
-	return FAILED;
+	audio_input.audio_client->Start();
+	audio_input.active = true;
+	return OK;
 }
 
 Error AudioDriverWASAPI::capture_stop() {
 
-	if (audio_input.active == true) {
+	if (audio_input.active) {
 		audio_input.audio_client->Stop();
 		audio_input.active = false;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "register_types.h"
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 
 #include "nativescript.h"
 
@@ -39,8 +39,8 @@
 
 NativeScriptLanguage *native_script_language;
 
-ResourceFormatLoaderNativeScript *resource_loader_gdns = NULL;
-ResourceFormatSaverNativeScript *resource_saver_gdns = NULL;
+Ref<ResourceFormatLoaderNativeScript> resource_loader_gdns;
+Ref<ResourceFormatSaverNativeScript> resource_saver_gdns;
 
 void register_nativescript_types() {
 	native_script_language = memnew(NativeScriptLanguage);
@@ -50,18 +50,20 @@ void register_nativescript_types() {
 	native_script_language->set_language_index(ScriptServer::get_language_count());
 	ScriptServer::register_language(native_script_language);
 
-	resource_saver_gdns = memnew(ResourceFormatSaverNativeScript);
+	resource_saver_gdns.instance();
 	ResourceSaver::add_resource_format_saver(resource_saver_gdns);
 
-	resource_loader_gdns = memnew(ResourceFormatLoaderNativeScript);
+	resource_loader_gdns.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_gdns);
 }
 
 void unregister_nativescript_types() {
 
-	memdelete(resource_loader_gdns);
+	ResourceLoader::remove_resource_format_loader(resource_loader_gdns);
+	resource_loader_gdns.unref();
 
-	memdelete(resource_saver_gdns);
+	ResourceSaver::remove_resource_format_saver(resource_saver_gdns);
+	resource_saver_gdns.unref();
 
 	if (native_script_language) {
 		ScriptServer::unregister_language(native_script_language);

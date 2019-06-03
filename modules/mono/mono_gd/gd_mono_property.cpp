@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "gd_mono_property.h"
 
 #include "gd_mono_class.h"
@@ -79,24 +80,24 @@ bool GDMonoProperty::is_static() {
 	return mono_method_get_flags(prop_method, NULL) & MONO_METHOD_ATTR_STATIC;
 }
 
-GDMonoClassMember::Visibility GDMonoProperty::get_visibility() {
+IMonoClassMember::Visibility GDMonoProperty::get_visibility() {
 	MonoMethod *prop_method = mono_property_get_get_method(mono_property);
 	if (prop_method == NULL)
 		prop_method = mono_property_get_set_method(mono_property);
 
 	switch (mono_method_get_flags(prop_method, NULL) & MONO_METHOD_ATTR_ACCESS_MASK) {
 		case MONO_METHOD_ATTR_PRIVATE:
-			return GDMonoClassMember::PRIVATE;
+			return IMonoClassMember::PRIVATE;
 		case MONO_METHOD_ATTR_FAM_AND_ASSEM:
-			return GDMonoClassMember::PROTECTED_AND_INTERNAL;
+			return IMonoClassMember::PROTECTED_AND_INTERNAL;
 		case MONO_METHOD_ATTR_ASSEM:
-			return GDMonoClassMember::INTERNAL;
+			return IMonoClassMember::INTERNAL;
 		case MONO_METHOD_ATTR_FAMILY:
-			return GDMonoClassMember::PROTECTED;
+			return IMonoClassMember::PROTECTED;
 		case MONO_METHOD_ATTR_PUBLIC:
-			return GDMonoClassMember::PUBLIC;
+			return IMonoClassMember::PUBLIC;
 		default:
-			ERR_FAIL_V(GDMonoClassMember::PRIVATE);
+			ERR_FAIL_V(IMonoClassMember::PRIVATE);
 	}
 }
 

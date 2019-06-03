@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "translation_loader_po.h"
-#include "os/file_access.h"
-#include "translation.h"
+
+#include "core/os/file_access.h"
+#include "core/translation.h"
 
 RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const String &p_path) {
 

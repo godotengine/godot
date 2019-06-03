@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Font" inherits="Resource" category="Core" version="3.1">
+<class name="Font" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		Internationalized font and text drawing support.
 	</brief_description>
 	<description>
-		Font contains a unicode compatible character set, as well as the ability to draw it with variable width, ascent, descent and kerning. For creating fonts from TTF files (or other font formats), see the editor support for fonts. TODO check wikipedia for graph of ascent/baseline/descent/height/etc.
+		Font contains a unicode compatible character set, as well as the ability to draw it with variable width, ascent, descent and kerning. For creating fonts from TTF files (or other font formats), see the editor support for fonts.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="draw" qualifiers="const">
 			<return type="void">
@@ -53,21 +51,21 @@
 			<return type="float">
 			</return>
 			<description>
-				Return the font ascent (number of pixels above the baseline).
+				Returns the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
 		<method name="get_descent" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Return the font descent (number of pixels below the baseline).
+				Returns the font descent (number of pixels below the baseline).
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Return the total font height (ascent plus descent) in pixels.
+				Returns the total font height (ascent plus descent) in pixels.
 			</description>
 		</method>
 		<method name="get_string_size" qualifiers="const">
@@ -76,7 +74,17 @@
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
-				Return the size of a string, taking kerning and advance into account.
+				Returns the size of a string, taking kerning and advance into account.
+			</description>
+		</method>
+		<method name="get_wordwrap_string_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<argument index="1" name="p_width" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="has_outline" qualifiers="const">

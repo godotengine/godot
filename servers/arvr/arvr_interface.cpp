@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -122,6 +122,11 @@ ARVRInterface::ARVRInterface() {
 };
 
 ARVRInterface::~ARVRInterface(){};
+
+// optional render to external texture which enhances performance on those platforms that require us to submit our end result into special textures.
+unsigned int ARVRInterface::get_external_texture_for_eye(ARVRInterface::Eyes p_eye) {
+	return 0;
+};
 
 /** these will only be implemented on AR interfaces, so we want dummies for VR **/
 bool ARVRInterface::get_anchor_detection_is_enabled() const {

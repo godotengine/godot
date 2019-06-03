@@ -28,10 +28,17 @@
 #if defined(MBEDTLS_ECP_C)
 
 #include "mbedtls/ecp.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
 #if !defined(MBEDTLS_ECP_ALT)
+
+/* Parameter validation macros based on platform_util.h */
+#define ECP_VALIDATE_RET( cond )    \
+    MBEDTLS_INTERNAL_VALIDATE_RET( cond, MBEDTLS_ERR_ECP_BAD_INPUT_DATA )
+#define ECP_VALIDATE( cond )        \
+    MBEDTLS_INTERNAL_VALIDATE( cond )
 
 #if ( defined(__ARMCC_VERSION) || defined(_MSC_VER) ) && \
     !defined(inline) && !defined(__cplusplus)
@@ -746,6 +753,7 @@ cleanup:
  */
 int mbedtls_ecp_group_load( mbedtls_ecp_group *grp, mbedtls_ecp_group_id id )
 {
+    ECP_VALIDATE_RET( grp != NULL );
     mbedtls_ecp_group_free( grp );
 
     grp->id = id;

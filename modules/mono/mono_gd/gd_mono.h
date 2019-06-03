@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,7 +95,9 @@ class GDMono {
 #endif
 
 	bool core_api_assembly_out_of_sync;
+#ifdef TOOLS_ENABLED
 	bool editor_api_assembly_out_of_sync;
+#endif
 
 	GDMonoAssembly *corlib_assembly;
 	GDMonoAssembly *core_api_assembly;
@@ -123,6 +125,8 @@ class GDMono {
 	String _get_api_assembly_metadata_path();
 #endif
 
+	void _install_trace_listener();
+
 	void _register_internal_calls();
 
 	Error _load_scripts_domain();
@@ -132,29 +136,35 @@ class GDMono {
 	Error _load_tools_domain();
 #endif
 
-#ifdef DEBUG_METHODS_ENABLED
 	uint64_t api_core_hash;
 #ifdef TOOLS_ENABLED
 	uint64_t api_editor_hash;
 #endif
 	void _initialize_and_check_api_hashes();
-#endif
 
 	GDMonoLog *gdmono_log;
 
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	MonoRegInfo mono_reg_info;
 #endif
+
+	void add_mono_shared_libs_dir_to_path();
 
 protected:
 	static GDMono *singleton;
 
 public:
-#ifdef DEBUG_METHODS_ENABLED
-	uint64_t get_api_core_hash() { return api_core_hash; }
+	uint64_t get_api_core_hash() {
+		if (api_core_hash == 0)
+			api_core_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
+		return api_core_hash;
+	}
 #ifdef TOOLS_ENABLED
-	uint64_t get_api_editor_hash() { return api_editor_hash; }
-#endif
+	uint64_t get_api_editor_hash() {
+		if (api_editor_hash == 0)
+			api_editor_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
+		return api_editor_hash;
+	}
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -170,8 +180,9 @@ public:
 	void add_assembly(uint32_t p_domain_id, GDMonoAssembly *p_assembly);
 	GDMonoAssembly **get_loaded_assembly(const String &p_name);
 
-	_FORCE_INLINE_ bool is_runtime_initialized() const { return runtime_initialized; }
-	_FORCE_INLINE_ bool is_finalizing_scripts_domain() const { return finalizing_scripts_domain; }
+	_FORCE_INLINE_ bool is_runtime_initialized() const { return runtime_initialized && !mono_runtime_is_shutting_down() /* stays true after shutdown finished */; }
+
+	_FORCE_INLINE_ bool is_finalizing_scripts_domain() { return finalizing_scripts_domain; }
 
 	_FORCE_INLINE_ MonoDomain *get_scripts_domain() { return scripts_domain; }
 #ifdef TOOLS_ENABLED
@@ -186,18 +197,20 @@ public:
 	_FORCE_INLINE_ GDMonoAssembly *get_editor_tools_assembly() const { return editor_tools_assembly; }
 #endif
 
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	const MonoRegInfo &get_mono_reg_info() { return mono_reg_info; }
 #endif
 
 	GDMonoClass *get_class(MonoClass *p_raw_class);
 
-#ifdef TOOLS_ENABLED
+#ifdef GD_MONO_HOT_RELOAD
 	Error reload_scripts_domain();
 #endif
 
 	bool load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly = false);
 	bool load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly = false);
+	bool load_assembly_from(const String &p_name, const String &p_path, GDMonoAssembly **r_assembly, bool p_refonly = false);
+
 	Error finalize_and_unload_domain(MonoDomain *p_domain);
 
 	void initialize();
@@ -206,12 +219,14 @@ public:
 	~GDMono();
 };
 
-class GDMonoScopeDomain {
+namespace gdmono {
+
+class ScopeDomain {
 
 	MonoDomain *prev_domain;
 
 public:
-	GDMonoScopeDomain(MonoDomain *p_domain) {
+	ScopeDomain(MonoDomain *p_domain) {
 		MonoDomain *prev_domain = mono_domain_get();
 		if (prev_domain != p_domain) {
 			this->prev_domain = prev_domain;
@@ -221,34 +236,45 @@ public:
 		}
 	}
 
-	~GDMonoScopeDomain() {
+	~ScopeDomain() {
 		if (prev_domain)
 			mono_domain_set(prev_domain, false);
 	}
 };
 
-#define _GDMONO_SCOPE_DOMAIN_(m_mono_domain)                    \
-	GDMonoScopeDomain __gdmono__scope__domain__(m_mono_domain); \
+class ScopeExitDomainUnload {
+	MonoDomain *domain;
+
+public:
+	ScopeExitDomainUnload(MonoDomain *p_domain) :
+			domain(p_domain) {
+	}
+
+	~ScopeExitDomainUnload() {
+		if (domain)
+			GDMono::get_singleton()->finalize_and_unload_domain(domain);
+	}
+};
+
+} // namespace gdmono
+
+#define _GDMONO_SCOPE_DOMAIN_(m_mono_domain)                      \
+	gdmono::ScopeDomain __gdmono__scope__domain__(m_mono_domain); \
 	(void)__gdmono__scope__domain__;
+
+#define _GDMONO_SCOPE_EXIT_DOMAIN_UNLOAD_(m_mono_domain)                                  \
+	gdmono::ScopeExitDomainUnload __gdmono__scope__exit__domain__unload__(m_mono_domain); \
+	(void)__gdmono__scope__exit__domain__unload__;
 
 class _GodotSharp : public Object {
 	GDCLASS(_GodotSharp, Object)
 
 	friend class GDMono;
 
-	void _dispose_object(Object *p_object);
+	bool _is_domain_finalizing_for_unload(int32_t p_domain_id);
 
-	void _dispose_callback();
-
-	List<Object *> obj_delete_queue;
 	List<NodePath *> np_delete_queue;
 	List<RID *> rid_delete_queue;
-
-	bool queue_empty;
-
-#ifndef NO_THREADS
-	Mutex *queue_mutex;
-#endif
 
 protected:
 	static _GodotSharp *singleton;
@@ -260,12 +286,17 @@ public:
 	void attach_thread();
 	void detach_thread();
 
-	bool is_finalizing_domain();
-	bool is_domain_loaded();
+	int32_t get_domain_id();
+	int32_t get_scripts_domain_id();
 
-	void queue_dispose(MonoObject *p_mono_object, Object *p_object);
-	void queue_dispose(NodePath *p_node_path);
-	void queue_dispose(RID *p_rid);
+	bool is_scripts_domain_loaded();
+
+	bool is_domain_finalizing_for_unload();
+	bool is_domain_finalizing_for_unload(int32_t p_domain_id);
+	bool is_domain_finalizing_for_unload(MonoDomain *p_domain);
+
+	bool is_runtime_shutting_down();
+	bool is_runtime_initialized();
 
 	_GodotSharp();
 	~_GodotSharp();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,83 +31,44 @@
 #ifndef LIGHT_OCCLUDER_2D_EDITOR_PLUGIN_H
 #define LIGHT_OCCLUDER_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/abstract_polygon_2d_editor.h"
 #include "scene/2d/light_occluder_2d.h"
-#include "scene/gui/tool_button.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class CanvasItemEditor;
+class LightOccluder2DEditor : public AbstractPolygon2DEditor {
 
-class LightOccluder2DEditor : public HBoxContainer {
+	GDCLASS(LightOccluder2DEditor, AbstractPolygon2DEditor);
 
-	GDCLASS(LightOccluder2DEditor, HBoxContainer);
-
-	UndoRedo *undo_redo;
-	enum Mode {
-
-		MODE_CREATE,
-		MODE_EDIT,
-
-	};
-
-	Mode mode;
-
-	ToolButton *button_create;
-	ToolButton *button_edit;
-
-	CanvasItemEditor *canvas_item_editor;
-	EditorNode *editor;
-	Panel *panel;
 	LightOccluder2D *node;
-	MenuButton *options;
 
-	int edited_point;
-	Vector2 edited_point_pos;
-	Vector<Vector2> pre_move_edit;
-	Vector<Vector2> wip;
-	bool wip_active;
-
-	ConfirmationDialog *create_poly;
-
-	void _wip_close(bool p_closed);
-	void _menu_option(int p_option);
-	void _create_poly();
+	Ref<OccluderPolygon2D> _ensure_occluder() const;
 
 protected:
-	void _notification(int p_what);
-	void _node_removed(Node *p_node);
-	static void _bind_methods();
+	virtual Node2D *_get_node() const;
+	virtual void _set_node(Node *p_polygon);
+
+	virtual bool _is_line() const;
+	virtual int _get_polygon_count() const;
+	virtual Variant _get_polygon(int p_idx) const;
+	virtual void _set_polygon(int p_idx, const Variant &p_polygon) const;
+
+	virtual void _action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon);
+
+	virtual bool _has_resource() const;
+	virtual void _create_resource();
 
 public:
-	Vector2 snap_point(const Vector2 &p_point) const;
-	void forward_draw_over_viewport(Control *p_overlay);
-	bool forward_gui_input(const Ref<InputEvent> &p_event);
-	void edit(Node *p_collision_polygon);
 	LightOccluder2DEditor(EditorNode *p_editor);
 };
 
-class LightOccluder2DEditorPlugin : public EditorPlugin {
+class LightOccluder2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
 
-	GDCLASS(LightOccluder2DEditorPlugin, EditorPlugin);
-
-	LightOccluder2DEditor *light_occluder_editor;
-	EditorNode *editor;
+	GDCLASS(LightOccluder2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return light_occluder_editor->forward_gui_input(p_event); }
-	virtual void forward_draw_over_viewport(Control *p_overlay) { return light_occluder_editor->forward_draw_over_viewport(p_overlay); }
-
-	virtual String get_name() const { return "LightOccluder2D"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
 	LightOccluder2DEditorPlugin(EditorNode *p_node);
-	~LightOccluder2DEditorPlugin();
 };
 
 #endif // LIGHT_OCCLUDER_2D_EDITOR_PLUGIN_H

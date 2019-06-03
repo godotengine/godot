@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,14 @@
 /*************************************************************************/
 
 #include "geometry.h"
-#include "print_string.h"
 
+#include "core/print_string.h"
+#include "thirdparty/misc/clipper.hpp"
+#include "thirdparty/misc/triangulator.h"
+
+#define SCALE_FACTOR 100000.0 // based on CMP_EPSILON
+
+/* this implementation is very inefficient, commenting unless bugs happen. See the other one.
 bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon) {
 
 	Vector<int> indices = Geometry::triangulate_polygon(p_polygon);
@@ -41,6 +47,7 @@ bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2>
 	}
 	return false;
 }
+*/
 
 void Geometry::MeshData::optimize_vertices() {
 
@@ -511,7 +518,7 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 		Vector3(1,1,1),
 	};
 */
-#define vert(m_idx) Vector3((m_idx & 4) >> 2, (m_idx & 2) >> 1, m_idx & 1)
+#define vert(m_idx) Vector3(((m_idx)&4) >> 2, ((m_idx)&2) >> 1, (m_idx)&1)
 
 	static const uint8_t indices[6][4] = {
 		{ 7, 6, 4, 5 },
@@ -626,7 +633,6 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 	voxelsize.z /= div_z;
 
 	// create and initialize cells to zero
-	//print_line("Wrapper: Initializing Cells");
 
 	uint8_t ***cell_status = memnew_arr(uint8_t **, div_x);
 	for (int i = 0; i < div_x; i++) {
@@ -645,7 +651,6 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 	}
 
 	// plot faces into cells
-	//print_line("Wrapper (1/6): Plotting Faces");
 
 	for (int i = 0; i < face_count; i++) {
 
@@ -658,8 +663,6 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 	}
 
 	// determine which cells connect to the outside by traversing the outside and recursively flood-fill marking
-
-	//print_line("Wrapper (2/6): Flood Filling");
 
 	for (int i = 0; i < div_x; i++) {
 
@@ -690,8 +693,6 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 
 	// build faces for the inside-outside cell divisors
 
-	//print_line("Wrapper (3/6): Building Faces");
-
 	PoolVector<Face3> wrapped_faces;
 
 	for (int i = 0; i < div_x; i++) {
@@ -704,8 +705,6 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 			}
 		}
 	}
-
-	//print_line("Wrapper (4/6): Transforming Back Vertices");
 
 	// transform face vertices to global coords
 
@@ -724,7 +723,6 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 	}
 
 	// clean up grid
-	//print_line("Wrapper (5/6): Grid Cleanup");
 
 	for (int i = 0; i < div_x; i++) {
 
@@ -740,8 +738,41 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 	if (p_error)
 		*p_error = voxelsize.length();
 
-	//print_line("Wrapper (6/6): Finished.");
 	return wrapped_faces;
+}
+
+Vector<Vector<Vector2> > Geometry::decompose_polygon_in_convex(Vector<Point2> polygon) {
+	Vector<Vector<Vector2> > decomp;
+	List<TriangulatorPoly> in_poly, out_poly;
+
+	TriangulatorPoly inp;
+	inp.Init(polygon.size());
+	for (int i = 0; i < polygon.size(); i++) {
+		inp.GetPoint(i) = polygon[i];
+	}
+	inp.SetOrientation(TRIANGULATOR_CCW);
+	in_poly.push_back(inp);
+	TriangulatorPartition tpart;
+	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //failed!
+		ERR_PRINT("Convex decomposing failed!");
+		return decomp;
+	}
+
+	decomp.resize(out_poly.size());
+	int idx = 0;
+	for (List<TriangulatorPoly>::Element *I = out_poly.front(); I; I = I->next()) {
+		TriangulatorPoly &tp = I->get();
+
+		decomp.write[idx].resize(tp.GetNumPoints());
+
+		for (int i = 0; i < tp.GetNumPoints(); i++) {
+			decomp.write[idx].write[i] = tp.GetPoint(i);
+		}
+
+		idx++;
+	}
+
+	return decomp;
 }
 
 Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes) {
@@ -808,7 +839,7 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 					Vector3 rel = edge1_A - edge0_A;
 
 					real_t den = clip.normal.dot(rel);
-					if (Math::abs(den) < CMP_EPSILON)
+					if (Math::is_zero_approx(den))
 						continue; // point too short
 
 					real_t dist = -(clip.normal.dot(edge0_A) - clip.d) / den;
@@ -1105,4 +1136,107 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 	}
 
 	r_size = Size2(results[best].max_w, results[best].max_h);
+}
+
+Vector<Vector<Point2> > Geometry::_polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open) {
+
+	using namespace ClipperLib;
+
+	ClipType op = ctUnion;
+
+	switch (p_op) {
+		case OPERATION_UNION: op = ctUnion; break;
+		case OPERATION_DIFFERENCE: op = ctDifference; break;
+		case OPERATION_INTERSECTION: op = ctIntersection; break;
+		case OPERATION_XOR: op = ctXor; break;
+	}
+	Path path_a, path_b;
+
+	// Need to scale points (Clipper's requirement for robust computation)
+	for (int i = 0; i != p_polypath_a.size(); ++i) {
+		path_a << IntPoint(p_polypath_a[i].x * SCALE_FACTOR, p_polypath_a[i].y * SCALE_FACTOR);
+	}
+	for (int i = 0; i != p_polypath_b.size(); ++i) {
+		path_b << IntPoint(p_polypath_b[i].x * SCALE_FACTOR, p_polypath_b[i].y * SCALE_FACTOR);
+	}
+	Clipper clp;
+	clp.AddPath(path_a, ptSubject, !is_a_open); // forward compatible with Clipper 10.0.0
+	clp.AddPath(path_b, ptClip, true); // polylines cannot be set as clip
+
+	Paths paths;
+
+	if (is_a_open) {
+		PolyTree tree; // needed to populate polylines
+		clp.Execute(op, tree);
+		OpenPathsFromPolyTree(tree, paths);
+	} else {
+		clp.Execute(op, paths); // works on closed polygons only
+	}
+	// Have to scale points down now
+	Vector<Vector<Point2> > polypaths;
+
+	for (Paths::size_type i = 0; i < paths.size(); ++i) {
+		Vector<Vector2> polypath;
+
+		const Path &scaled_path = paths[i];
+
+		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
+			polypath.push_back(Point2(
+					static_cast<real_t>(scaled_path[j].X) / SCALE_FACTOR,
+					static_cast<real_t>(scaled_path[j].Y) / SCALE_FACTOR));
+		}
+		polypaths.push_back(polypath);
+	}
+	return polypaths;
+}
+
+Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+
+	using namespace ClipperLib;
+
+	JoinType jt = jtSquare;
+
+	switch (p_join_type) {
+		case JOIN_SQUARE: jt = jtSquare; break;
+		case JOIN_ROUND: jt = jtRound; break;
+		case JOIN_MITER: jt = jtMiter; break;
+	}
+
+	EndType et = etClosedPolygon;
+
+	switch (p_end_type) {
+		case END_POLYGON: et = etClosedPolygon; break;
+		case END_JOINED: et = etClosedLine; break;
+		case END_BUTT: et = etOpenButt; break;
+		case END_SQUARE: et = etOpenSquare; break;
+		case END_ROUND: et = etOpenRound; break;
+	}
+	ClipperOffset co;
+	Path path;
+
+	// Need to scale points (Clipper's requirement for robust computation)
+	for (int i = 0; i != p_polypath.size(); ++i) {
+		path << IntPoint(p_polypath[i].x * SCALE_FACTOR, p_polypath[i].y * SCALE_FACTOR);
+	}
+	co.AddPath(path, jt, et);
+
+	Paths paths;
+	co.Execute(paths, p_delta * SCALE_FACTOR); // inflate/deflate
+
+	// Have to scale points down now
+	Vector<Vector<Point2> > polypaths;
+
+	for (Paths::size_type i = 0; i < paths.size(); ++i) {
+		Vector<Vector2> polypath;
+
+		const Path &scaled_path = paths[i];
+
+		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
+			polypath.push_back(Point2(
+					static_cast<real_t>(scaled_path[j].X) / SCALE_FACTOR,
+					static_cast<real_t>(scaled_path[j].Y) / SCALE_FACTOR));
+		}
+		polypaths.push_back(polypath);
+	}
+	return polypaths;
 }

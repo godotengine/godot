@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CPUParticles" inherits="GeometryInstance" category="Core" version="3.1">
+<class name="CPUParticles" inherits="GeometryInstance" category="Core" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="convert_from_particles">
 			<return type="void">
@@ -39,8 +37,6 @@
 		</member>
 		<member name="angular_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
-		<member name="anim_loop" type="bool" setter="set_particle_flag" getter="get_particle_flag">
-		</member>
 		<member name="anim_offset" type="float" setter="set_param" getter="get_param">
 		</member>
 		<member name="anim_offset_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
@@ -56,6 +52,7 @@
 		<member name="color" type="Color" setter="set_color" getter="get_color">
 		</member>
 		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
+			Each particle's vertex color will vary along this [GradientTexture].
 		</member>
 		<member name="damping" type="float" setter="set_param" getter="get_param">
 		</member>
@@ -129,11 +126,11 @@
 		</member>
 		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio">
 		</member>
-		<member name="scale" type="float" setter="set_param" getter="get_param">
+		<member name="scale_amount" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="scale_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+		<member name="scale_amount_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 		</member>
-		<member name="scale_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+		<member name="scale_amount_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale">
 		</member>
@@ -181,7 +178,7 @@
 		</constant>
 		<constant name="FLAG_ROTATE_Y" value="1" enum="Flags">
 		</constant>
-		<constant name="FLAG_MAX" value="4" enum="Flags">
+		<constant name="FLAG_MAX" value="3" enum="Flags">
 		</constant>
 		<constant name="EMISSION_SHAPE_POINT" value="0" enum="EmissionShape">
 		</constant>

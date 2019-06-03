@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,24 +64,30 @@ public:
 
 	Dictionary undo_state;
 
-	CanvasItemEditorSelectedItem() { prev_rot = 0; }
+	CanvasItemEditorSelectedItem() :
+			prev_anchors() {
+		prev_rot = 0;
+	}
 };
 
 class CanvasItemEditor : public VBoxContainer {
 
 	GDCLASS(CanvasItemEditor, VBoxContainer);
 
-	EditorNode *editor;
-
+public:
 	enum Tool {
 		TOOL_SELECT,
 		TOOL_LIST_SELECT,
 		TOOL_MOVE,
+		TOOL_SCALE,
 		TOOL_ROTATE,
 		TOOL_EDIT_PIVOT,
 		TOOL_PAN,
 		TOOL_MAX
 	};
+
+private:
+	EditorNode *editor;
 
 	enum MenuOption {
 		SNAP_USE,
@@ -102,6 +108,7 @@ class CanvasItemEditor : public VBoxContainer {
 		SHOW_GUIDES,
 		SHOW_ORIGIN,
 		SHOW_VIEWPORT,
+		SHOW_EDIT_LOCKS,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
@@ -122,6 +129,7 @@ class CanvasItemEditor : public VBoxContainer {
 		ANCHORS_AND_MARGINS_PRESET_VCENTER_WIDE,
 		ANCHORS_AND_MARGINS_PRESET_HCENTER_WIDE,
 		ANCHORS_AND_MARGINS_PRESET_WIDE,
+		ANCHORS_AND_MARGINS_PRESET_KEEP_RATIO,
 		ANCHORS_PRESET_TOP_LEFT,
 		ANCHORS_PRESET_TOP_RIGHT,
 		ANCHORS_PRESET_BOTTOM_LEFT,
@@ -164,6 +172,7 @@ class CanvasItemEditor : public VBoxContainer {
 		ANIM_CLEAR_POSE,
 		VIEW_CENTER_TO_SELECTION,
 		VIEW_FRAME_TO_SELECTION,
+		PREVIEW_CANVAS_SCALE,
 		SKELETON_MAKE_BONES,
 		SKELETON_CLEAR_BONES,
 		SKELETON_SHOW_BONES,
@@ -188,14 +197,16 @@ class CanvasItemEditor : public VBoxContainer {
 		DRAG_ANCHOR_BOTTOM_RIGHT,
 		DRAG_ANCHOR_BOTTOM_LEFT,
 		DRAG_ANCHOR_ALL,
-		DRAG_ALL,
+		DRAG_MOVE,
+		DRAG_SCALE_X,
+		DRAG_SCALE_Y,
+		DRAG_SCALE_BOTH,
 		DRAG_ROTATE,
 		DRAG_PIVOT,
 		DRAG_V_GUIDE,
 		DRAG_H_GUIDE,
 		DRAG_DOUBLE_GUIDE,
-		DRAG_KEY_MOVE,
-		DRAG_PAN
+		DRAG_KEY_MOVE
 	};
 
 	EditorSelection *editor_selection;
@@ -213,6 +224,11 @@ class CanvasItemEditor : public VBoxContainer {
 	ToolButton *zoom_reset;
 	ToolButton *zoom_plus;
 
+	Map<Control *, Timer *> popup_temporarily_timers;
+
+	Label *warning_child_of_container;
+	VBoxContainer *info_overlay;
+
 	Transform2D transform;
 	bool show_grid;
 	bool show_rulers;
@@ -220,9 +236,12 @@ class CanvasItemEditor : public VBoxContainer {
 	bool show_origin;
 	bool show_viewport;
 	bool show_helpers;
+	bool show_edit_locks;
 	float zoom;
 	Point2 view_offset;
 	Point2 previous_update_view_offset;
+
+	bool anchors_mode;
 
 	Point2 grid_offset;
 	Point2 grid_step;
@@ -245,6 +264,7 @@ class CanvasItemEditor : public VBoxContainer {
 	bool key_pos;
 	bool key_rot;
 	bool key_scale;
+	bool panning;
 
 	MenuOption last_option;
 
@@ -272,6 +292,10 @@ class CanvasItemEditor : public VBoxContainer {
 		Transform2D xform;
 		float length;
 		uint64_t last_pass;
+
+		BoneList() :
+				length(0.f),
+				last_pass(0) {}
 	};
 
 	uint64_t bone_last_frame;
@@ -298,16 +322,18 @@ class CanvasItemEditor : public VBoxContainer {
 	List<PoseClipboard> pose_clipboard;
 
 	ToolButton *select_button;
-	ToolButton *list_select_button;
+
 	ToolButton *move_button;
+	ToolButton *scale_button;
 	ToolButton *rotate_button;
+
+	ToolButton *list_select_button;
+	ToolButton *pivot_button;
+	ToolButton *pan_button;
 
 	ToolButton *snap_button;
 	MenuButton *snap_config_menu;
 	PopupMenu *smartsnap_config_popup;
-
-	ToolButton *pivot_button;
-	ToolButton *pan_button;
 
 	ToolButton *lock_button;
 	ToolButton *unlock_button;
@@ -324,10 +350,13 @@ class CanvasItemEditor : public VBoxContainer {
 	PopupMenu *anchors_and_margins_popup;
 	PopupMenu *anchors_popup;
 
+	ToolButton *anchor_mode_button;
+
 	Button *key_loc_button;
 	Button *key_rot_button;
 	Button *key_scale_button;
 	Button *key_insert_button;
+	Button *key_auto_insert_button;
 
 	PopupMenu *selection_menu;
 
@@ -355,8 +384,10 @@ class CanvasItemEditor : public VBoxContainer {
 	Ref<ShortCut> multiply_grid_step_shortcut;
 	Ref<ShortCut> divide_grid_step_shortcut;
 
-	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, int p_limit = 0, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
-	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, int p_limit = 0);
+	bool _is_node_locked(const Node *p_node);
+	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
+	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
 	void _get_bones_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
 
 	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
@@ -368,7 +399,9 @@ class CanvasItemEditor : public VBoxContainer {
 
 	void _add_canvas_item(CanvasItem *p_canvas_item);
 
+	void _save_canvas_item_ik_chain(const CanvasItem *p_canvas_item, List<float> *p_bones_length, List<Dictionary> *p_bones_state);
 	void _save_canvas_item_state(List<CanvasItem *> p_canvas_items, bool save_bones = false);
+	void _restore_canvas_item_ik_chain(CanvasItem *p_canvas_item, const List<Dictionary> *p_bones_state);
 	void _restore_canvas_item_state(List<CanvasItem *> p_canvas_items, bool restore_bones = false);
 	void _commit_canvas_item_state(List<CanvasItem *> p_canvas_items, String action_name, bool commit_bones = false);
 
@@ -395,6 +428,8 @@ class CanvasItemEditor : public VBoxContainer {
 
 	Object *_get_editor_data(Object *p_what);
 
+	void _insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing);
+
 	void _keying_changed();
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
@@ -408,6 +443,8 @@ class CanvasItemEditor : public VBoxContainer {
 	void _draw_guides();
 	void _draw_focus();
 	void _draw_grid();
+	void _draw_control_anchors(Control *control);
+	void _draw_control_helpers(Control *control);
 	void _draw_selection();
 	void _draw_axis();
 	void _draw_bones();
@@ -420,6 +457,7 @@ class CanvasItemEditor : public VBoxContainer {
 	bool _gui_input_anchors(const Ref<InputEvent> &p_event);
 	bool _gui_input_move(const Ref<InputEvent> &p_event);
 	bool _gui_input_open_scene_on_double_click(const Ref<InputEvent> &p_event);
+	bool _gui_input_scale(const Ref<InputEvent> &p_event);
 	bool _gui_input_pivot(const Ref<InputEvent> &p_event);
 	bool _gui_input_resize(const Ref<InputEvent> &p_event);
 	bool _gui_input_rotate(const Ref<InputEvent> &p_event);
@@ -429,6 +467,8 @@ class CanvasItemEditor : public VBoxContainer {
 	bool _gui_input_hover(const Ref<InputEvent> &p_event);
 
 	void _gui_input_viewport(const Ref<InputEvent> &p_event);
+
+	void _selection_changed();
 
 	void _focus_selection(int p_op);
 
@@ -441,6 +481,9 @@ class CanvasItemEditor : public VBoxContainer {
 	void _set_anchors_preset(Control::LayoutPreset p_preset);
 	void _set_margins_preset(Control::LayoutPreset p_preset);
 	void _set_anchors_and_margins_preset(Control::LayoutPreset p_preset);
+	void _set_anchors_and_margins_to_keep_ratio();
+
+	void _button_toggle_anchor_mode(bool p_status);
 
 	HBoxContainer *zoom_hb;
 	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
@@ -457,6 +500,9 @@ class CanvasItemEditor : public VBoxContainer {
 	void _queue_update_bone_list();
 	void _update_bone_list();
 	void _tree_changed(Node *);
+
+	void _popup_warning_temporarily(Control *p_control, const float p_duration);
+	void _popup_warning_depop(Control *p_control);
 
 	friend class CanvasItemEditorPlugin;
 
@@ -523,15 +569,24 @@ public:
 	void add_control_to_menu_panel(Control *p_control);
 	void remove_control_from_menu_panel(Control *p_control);
 
+	void add_control_to_info_overlay(Control *p_control);
+	void remove_control_from_info_overlay(Control *p_control);
+
 	HSplitContainer *get_palette_split();
 	VSplitContainer *get_bottom_split();
 
 	Control *get_viewport_control() { return viewport; }
 
+	void update_viewport();
+
+	Tool get_current_tool() { return tool; }
+
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	void edit(CanvasItem *p_canvas_item);
 
 	void focus_selection();
+
+	bool is_anchors_mode_enabled() { return anchors_mode; };
 
 	CanvasItemEditor(EditorNode *p_editor);
 };
@@ -570,7 +625,7 @@ class CanvasItemEditorViewport : public Control {
 
 	EditorNode *editor;
 	EditorData *editor_data;
-	CanvasItemEditor *canvas;
+	CanvasItemEditor *canvas_item_editor;
 	Node2D *preview_node;
 	AcceptDialog *accept;
 	WindowDialog *selector;
@@ -604,7 +659,7 @@ public:
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
 
-	CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor *p_canvas);
+	CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor *p_canvas_item_editor);
 	~CanvasItemEditorViewport();
 };
 

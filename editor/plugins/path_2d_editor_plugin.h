@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,6 +73,7 @@ class Path2DEditor : public HBoxContainer {
 
 	bool mirror_handle_angle;
 	bool mirror_handle_length;
+	bool on_edge;
 
 	enum HandleOption {
 		HANDLE_OPTION_ANGLE,
@@ -93,6 +94,7 @@ class Path2DEditor : public HBoxContainer {
 	Point2 moving_screen_from;
 	float orig_in_length;
 	float orig_out_length;
+	Vector2 edge_point;
 
 	void _mode_selected(int p_mode);
 	void _handle_option_pressed(int p_option);
@@ -107,7 +109,7 @@ protected:
 
 public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
-	void forward_draw_over_viewport(Control *p_overlay);
+	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void edit(Node *p_path2d);
 	Path2DEditor(EditorNode *p_editor);
 };
@@ -121,7 +123,7 @@ class Path2DEditorPlugin : public EditorPlugin {
 
 public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return path2d_editor->forward_gui_input(p_event); }
-	virtual void forward_draw_over_viewport(Control *p_overlay) { return path2d_editor->forward_draw_over_viewport(p_overlay); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) { return path2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
 	virtual String get_name() const { return "Path2D"; }
 	bool has_main_screen() const { return false; }

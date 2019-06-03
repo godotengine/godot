@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,10 +33,10 @@
 
 #include "scene/gui/color_picker.h"
 #include "scene/gui/popup.h"
-#include "scene/resources/color_ramp.h"
 #include "scene/resources/default_theme/theme_data.h"
+#include "scene/resources/gradient.h"
 
-#define POINT_WIDTH 8
+#define POINT_WIDTH (8 * EDSCALE)
 
 class GradientEdit : public Control {
 

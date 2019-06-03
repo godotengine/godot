@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,8 @@
 
 #include "shader_compiler_gles3.h"
 
-#include "os/os.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 #define SL ShaderLanguage
 
@@ -78,6 +79,12 @@ static int _get_datatype_size(SL::DataType p_type) {
 		case SL::TYPE_SAMPLER2D: return 16;
 		case SL::TYPE_ISAMPLER2D: return 16;
 		case SL::TYPE_USAMPLER2D: return 16;
+		case SL::TYPE_SAMPLER2DARRAY: return 16;
+		case SL::TYPE_ISAMPLER2DARRAY: return 16;
+		case SL::TYPE_USAMPLER2DARRAY: return 16;
+		case SL::TYPE_SAMPLER3D: return 16;
+		case SL::TYPE_ISAMPLER3D: return 16;
+		case SL::TYPE_USAMPLER3D: return 16;
 		case SL::TYPE_SAMPLERCUBE: return 16;
 	}
 
@@ -111,6 +118,12 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 		case SL::TYPE_SAMPLER2D: return 16;
 		case SL::TYPE_ISAMPLER2D: return 16;
 		case SL::TYPE_USAMPLER2D: return 16;
+		case SL::TYPE_SAMPLER2DARRAY: return 16;
+		case SL::TYPE_ISAMPLER2DARRAY: return 16;
+		case SL::TYPE_USAMPLER2DARRAY: return 16;
+		case SL::TYPE_SAMPLER3D: return 16;
+		case SL::TYPE_ISAMPLER3D: return 16;
+		case SL::TYPE_USAMPLER3D: return 16;
 		case SL::TYPE_SAMPLERCUBE: return 16;
 	}
 
@@ -120,8 +133,7 @@ static String _interpstr(SL::DataInterpolation p_interp) {
 
 	switch (p_interp) {
 		case SL::INTERPOLATION_FLAT: return "flat ";
-		case SL::INTERPOLATION_NO_PERSPECTIVE: return "noperspective ";
-		case SL::INTERPOLATION_SMOOTH: return "smooth ";
+		case SL::INTERPOLATION_SMOOTH: return "";
 	}
 	return "";
 }
@@ -154,15 +166,17 @@ static String _opstr(SL::Operator p_op) {
 
 static String _mkid(const String &p_id) {
 
-	return "m_" + p_id;
+	String id = "m_" + p_id;
+	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
 }
 
 static String f2sp0(float p_float) {
 
-	if (int(p_float) == p_float)
-		return itos(p_float) + ".0";
-	else
-		return rtoss(p_float);
+	String num = rtoss(p_float);
+	if (num.find(".") == -1 && num.find("e") == -1) {
+		num += ".0";
+	}
+	return num;
 }
 
 static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNode::Value> &p_values) {
@@ -215,7 +229,7 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			text += ")";
 			return text;
 		} break;
-		case SL::TYPE_FLOAT: return f2sp0(p_values[0].real) + "f";
+		case SL::TYPE_FLOAT: return f2sp0(p_values[0].real);
 		case SL::TYPE_VEC2:
 		case SL::TYPE_VEC3:
 		case SL::TYPE_VEC4: {
@@ -359,7 +373,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					ucode = "uniform ";
 				}
 
-				ucode += _prestr(E->get().precission);
+				ucode += _prestr(E->get().precision);
 				ucode += _typestr(E->get().type);
 				ucode += " " + _mkid(E->key());
 				ucode += ";\n";
@@ -436,8 +450,6 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					continue;
 				}
 
-				print_line("u - "+String(E->key())+" offset: "+itos(r_gen_code.uniform_offsets[E->get().order]));
-
 			}
 
 */
@@ -452,7 +464,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 				String vcode;
 				String interp_mode = _interpstr(E->get().interpolation);
-				vcode += _prestr(E->get().precission);
+				vcode += _prestr(E->get().precision);
 				vcode += _typestr(E->get().type);
 				vcode += " " + _mkid(E->key());
 				vcode += ";\n";
@@ -465,6 +477,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			//code for functions
 			for (int i = 0; i < pnode->functions.size(); i++) {
 				SL::FunctionNode *fnode = pnode->functions[i].function;
+				current_func_name = fnode->name;
 				function_code[fnode->name] = _dump_node_code(fnode->body, p_level + 1, r_gen_code, p_actions, p_default_actions, p_assigning);
 			}
 
@@ -735,7 +748,7 @@ Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String &p_code, 
 
 		Vector<String> shader = p_code.split("\n");
 		for (int i = 0; i < shader.size(); i++) {
-			print_line(itos(i) + " " + shader[i]);
+			print_line(itos(i + 1) + " " + shader[i]);
 		}
 
 		_err_print_error(NULL, p_path.utf8().get_data(), parser.get_error_line(), parser.get_error_text().utf8().get_data(), ERR_HANDLER_SHADER);
@@ -773,7 +786,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	/** CANVAS ITEM SHADER **/
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["VERTEX"] = "outvec.xy";
-	actions[VS::SHADER_CANVAS_ITEM].renames["UV"] = "uv_interp";
+	actions[VS::SHADER_CANVAS_ITEM].renames["UV"] = "uv";
 	actions[VS::SHADER_CANVAS_ITEM].renames["POINT_SIZE"] = "gl_PointSize";
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["WORLD_MATRIX"] = "modelview_matrix";
@@ -825,6 +838,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["NORMAL"] = "normal";
 	actions[VS::SHADER_SPATIAL].renames["TANGENT"] = "tangent";
 	actions[VS::SHADER_SPATIAL].renames["BINORMAL"] = "binormal";
+	actions[VS::SHADER_SPATIAL].renames["POSITION"] = "position";
 	actions[VS::SHADER_SPATIAL].renames["UV"] = "uv_interp";
 	actions[VS::SHADER_SPATIAL].renames["UV2"] = "uv2_interp";
 	actions[VS::SHADER_SPATIAL].renames["COLOR"] = "color_interp";
@@ -861,7 +875,9 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"] = "screen_uv";
 	actions[VS::SHADER_SPATIAL].renames["SCREEN_TEXTURE"] = "screen_texture";
 	actions[VS::SHADER_SPATIAL].renames["DEPTH_TEXTURE"] = "depth_buffer";
+	actions[VS::SHADER_SPATIAL].renames["DEPTH"] = "gl_FragDepth";
 	actions[VS::SHADER_SPATIAL].renames["ALPHA_SCISSOR"] = "alpha_scissor";
+	actions[VS::SHADER_SPATIAL].renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 
 	//for light
 	actions[VS::SHADER_SPATIAL].renames["VIEW"] = "view";
@@ -888,6 +904,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].usage_defines["COLOR"] = "#define ENABLE_COLOR_INTERP\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["ALPHA_SCISSOR"] = "#define ALPHA_SCISSOR_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
 
 	actions[VS::SHADER_SPATIAL].usage_defines["SSS_STRENGTH"] = "#define ENABLE_SSS\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["TRANSMISSION"] = "#define TRANSMISSION_USED\n";
@@ -903,25 +920,38 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].render_mode_defines["cull_front"] = "#define DO_SIDE_CHECK\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["cull_disabled"] = "#define DO_SIDE_CHECK\n";
 
-	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_burley"] = "#define DIFFUSE_BURLEY\n";
+	bool force_lambert = GLOBAL_GET("rendering/quality/shading/force_lambert_over_burley");
+
+	if (!force_lambert) {
+		actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_burley"] = "#define DIFFUSE_BURLEY\n";
+	}
+
 	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_oren_nayar"] = "#define DIFFUSE_OREN_NAYAR\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_lambert_wrap"] = "#define DIFFUSE_LAMBERT_WRAP\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_toon"] = "#define DIFFUSE_TOON\n";
 
-	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
+	bool force_blinn = GLOBAL_GET("rendering/quality/shading/force_blinn_over_ggx");
+
+	if (!force_blinn) {
+		actions[VS::SHADER_SPATIAL].render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
+	} else {
+		actions[VS::SHADER_SPATIAL].render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_BLINN\n";
+	}
+
 	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_blinn"] = "#define SPECULAR_BLINN\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_phong"] = "#define SPECULAR_PHONG\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_toon"] = "#define SPECULAR_TOON\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_disabled"] = "#define SPECULAR_DISABLED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["shadows_disabled"] = "#define SHADOWS_DISABLED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["ambient_light_disabled"] = "#define AMBIENT_LIGHT_DISABLED\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
 
 	/* PARTICLES SHADER */
 
 	actions[VS::SHADER_PARTICLES].renames["COLOR"] = "out_color";
 	actions[VS::SHADER_PARTICLES].renames["VELOCITY"] = "out_velocity_active.xyz";
 	actions[VS::SHADER_PARTICLES].renames["MASS"] = "mass";
-	actions[VS::SHADER_PARTICLES].renames["ACTIVE"] = "active";
+	actions[VS::SHADER_PARTICLES].renames["ACTIVE"] = "shader_active";
 	actions[VS::SHADER_PARTICLES].renames["RESTART"] = "restart";
 	actions[VS::SHADER_PARTICLES].renames["CUSTOM"] = "out_custom";
 	actions[VS::SHADER_PARTICLES].renames["TRANSFORM"] = "xform";
@@ -934,9 +964,9 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_PARTICLES].renames["EMISSION_TRANSFORM"] = "emission_transform";
 	actions[VS::SHADER_PARTICLES].renames["RANDOM_SEED"] = "random_seed";
 
-	actions[VS::SHADER_SPATIAL].render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
-	actions[VS::SHADER_SPATIAL].render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
-	actions[VS::SHADER_SPATIAL].render_mode_defines["keep_data"] = "#define ENABLE_KEEP_DATA\n";
+	actions[VS::SHADER_PARTICLES].render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
+	actions[VS::SHADER_PARTICLES].render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
+	actions[VS::SHADER_PARTICLES].render_mode_defines["keep_data"] = "#define ENABLE_KEEP_DATA\n";
 
 	vertex_name = "vertex";
 	fragment_name = "fragment";

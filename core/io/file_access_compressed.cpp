@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "file_access_compressed.h"
-#include "print_string.h"
+
+#include "core/print_string.h"
+
 void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, int p_block_size) {
 
 	magic = p_magic.ascii().get_data();
@@ -291,7 +293,6 @@ uint8_t FileAccessCompressed::get_8() const {
 		} else {
 			read_block--;
 			at_end = true;
-			ret = 0;
 		}
 	}
 
@@ -372,24 +373,36 @@ uint64_t FileAccessCompressed::_get_modified_time(const String &p_file) {
 		return 0;
 }
 
-FileAccessCompressed::FileAccessCompressed() {
+uint32_t FileAccessCompressed::_get_unix_permissions(const String &p_file) {
+	if (f)
+		return f->_get_unix_permissions(p_file);
+	return 0;
+}
 
-	f = NULL;
-	magic = "GCMP";
-	cmode = Compression::MODE_ZSTD;
-	writing = false;
-	write_ptr = 0;
-	write_buffer_size = 0;
-	write_max = 0;
-	block_size = 0;
-	read_eof = false;
-	at_end = false;
-	read_total = 0;
-	read_ptr = NULL;
-	read_block = 0;
-	read_block_count = 0;
-	read_block_size = 0;
-	read_pos = 0;
+Error FileAccessCompressed::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+	if (f) {
+		return f->_set_unix_permissions(p_file, p_permissions);
+	}
+	return FAILED;
+}
+
+FileAccessCompressed::FileAccessCompressed() :
+		cmode(Compression::MODE_ZSTD),
+		writing(false),
+		write_ptr(0),
+		write_buffer_size(0),
+		write_max(0),
+		block_size(0),
+		read_eof(false),
+		at_end(false),
+		read_ptr(NULL),
+		read_block(0),
+		read_block_count(0),
+		read_block_size(0),
+		read_pos(0),
+		read_total(0),
+		magic("GCMP"),
+		f(NULL) {
 }
 
 FileAccessCompressed::~FileAccessCompressed() {

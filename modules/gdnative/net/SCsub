@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-import os
-import methods
-
 Import('env')
-Import('env_modules')
+Import('env_gdnative')
 
-env_net_gdnative = env_modules.Clone()
+env_net = env_gdnative.Clone()
 
-env_net_gdnative.Append(CPPPATH=['#modules/gdnative/include/'])
-env_net_gdnative.add_source_files(env.modules_sources, '*.cpp')
+has_webrtc = env_net["module_webrtc_enabled"]
+if has_webrtc:
+    env_net.Append(CPPDEFINES=['WEBRTC_GDNATIVE_ENABLED'])
+
+env_net.add_source_files(env.modules_sources, '*.cpp')
+

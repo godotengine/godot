@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  animation_blend_tree.h                                               */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #ifndef ANIMATION_BLEND_TREE_H
 #define ANIMATION_BLEND_TREE_H
 
@@ -8,10 +38,9 @@ class AnimationNodeAnimation : public AnimationRootNode {
 	GDCLASS(AnimationNodeAnimation, AnimationRootNode);
 
 	StringName animation;
+	StringName time;
 
 	uint64_t last_version;
-	float time;
-	float step;
 	bool skip;
 
 protected:
@@ -20,13 +49,15 @@ protected:
 	static void _bind_methods();
 
 public:
+	void get_parameter_list(List<PropertyInfo> *r_list) const;
+
+	static Vector<String> (*get_editable_animation_list)();
+
 	virtual String get_caption() const;
 	virtual float process(float p_time, bool p_seek);
 
 	void set_animation(const StringName &p_name);
 	StringName get_animation() const;
-
-	float get_playback_time() const;
 
 	AnimationNodeAnimation();
 };
@@ -41,8 +72,6 @@ public:
 	};
 
 private:
-	bool active;
-	bool do_start;
 	float fade_in;
 	float fade_out;
 
@@ -51,15 +80,26 @@ private:
 	float autorestart_random_delay;
 	MixMode mix;
 
-	float time;
-	float remaining;
-	float autorestart_remaining;
 	bool sync;
+
+	/*	bool active;
+	bool do_start;
+	float time;
+	float remaining;*/
+
+	StringName active;
+	StringName prev_active;
+	StringName time;
+	StringName remaining;
+	StringName time_to_restart;
 
 protected:
 	static void _bind_methods();
 
 public:
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
+
 	virtual String get_caption() const;
 
 	void set_fadein_time(float p_time);
@@ -79,10 +119,6 @@ public:
 	void set_mix_mode(MixMode p_mix);
 	MixMode get_mix_mode() const;
 
-	void start();
-	void stop();
-	bool is_active() const;
-
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
 
@@ -97,17 +133,17 @@ VARIANT_ENUM_CAST(AnimationNodeOneShot::MixMode)
 class AnimationNodeAdd2 : public AnimationNode {
 	GDCLASS(AnimationNodeAdd2, AnimationNode);
 
-	float amount;
+	StringName add_amount;
 	bool sync;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	void get_parameter_list(List<PropertyInfo> *r_list) const;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
 
-	void set_amount(float p_amount);
-	float get_amount() const;
+	virtual String get_caption() const;
 
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
@@ -121,17 +157,17 @@ public:
 class AnimationNodeAdd3 : public AnimationNode {
 	GDCLASS(AnimationNodeAdd3, AnimationNode);
 
-	float amount;
+	StringName add_amount;
 	bool sync;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	void get_parameter_list(List<PropertyInfo> *r_list) const;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
 
-	void set_amount(float p_amount);
-	float get_amount() const;
+	virtual String get_caption() const;
 
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
@@ -145,18 +181,18 @@ public:
 class AnimationNodeBlend2 : public AnimationNode {
 	GDCLASS(AnimationNodeBlend2, AnimationNode);
 
-	float amount;
+	StringName blend_amount;
 	bool sync;
 
 protected:
 	static void _bind_methods();
 
 public:
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
+
 	virtual String get_caption() const;
 	virtual float process(float p_time, bool p_seek);
-
-	void set_amount(float p_amount);
-	float get_amount() const;
 
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
@@ -168,17 +204,17 @@ public:
 class AnimationNodeBlend3 : public AnimationNode {
 	GDCLASS(AnimationNodeBlend3, AnimationNode);
 
-	float amount;
+	StringName blend_amount;
 	bool sync;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
 
-	void set_amount(float p_amount);
-	float get_amount() const;
+	virtual String get_caption() const;
 
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
@@ -190,16 +226,16 @@ public:
 class AnimationNodeTimeScale : public AnimationNode {
 	GDCLASS(AnimationNodeTimeScale, AnimationNode);
 
-	float scale;
+	StringName scale;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
 
-	void set_scale(float p_scale);
-	float get_scale() const;
+	virtual String get_caption() const;
 
 	float process(float p_time, bool p_seek);
 
@@ -209,16 +245,16 @@ public:
 class AnimationNodeTimeSeek : public AnimationNode {
 	GDCLASS(AnimationNodeTimeSeek, AnimationNode);
 
-	float seek_pos;
+	StringName seek_pos;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
 
-	void set_seek_pos(float p_sec);
-	float get_seek_pos() const;
+	virtual String get_caption() const;
 
 	float process(float p_time, bool p_seek);
 
@@ -241,13 +277,18 @@ class AnimationNodeTransition : public AnimationNode {
 	InputData inputs[MAX_INPUTS];
 	int enabled_inputs;
 
-	float prev_time;
+	/*
 	float prev_xfading;
 	int prev;
-	bool switched;
-
 	float time;
 	int current;
+	int prev_current; */
+
+	StringName prev_xfading;
+	StringName prev;
+	StringName time;
+	StringName current;
+	StringName prev_current;
 
 	float xfade;
 
@@ -258,6 +299,9 @@ protected:
 	void _validate_property(PropertyInfo &property) const;
 
 public:
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
+
 	virtual String get_caption() const;
 
 	void set_enabled_inputs(int p_inputs);
@@ -268,9 +312,6 @@ public:
 
 	void set_input_caption(int p_input, const String &p_name);
 	String get_input_caption(int p_input) const;
-
-	void set_current(int p_current);
-	int get_current() const;
 
 	void set_cross_fade_time(float p_fade);
 	float get_cross_fade_time() const;
@@ -293,9 +334,18 @@ public:
 class AnimationNodeBlendTree : public AnimationRootNode {
 	GDCLASS(AnimationNodeBlendTree, AnimationRootNode)
 
-	Map<StringName, Ref<AnimationNode> > nodes;
+	struct Node {
+		Ref<AnimationNode> node;
+		Vector2 position;
+		Vector<StringName> connections;
+	};
+
+	Map<StringName, Node> nodes;
 
 	Vector2 graph_offset;
+
+	void _tree_changed();
+	void _node_changed(const StringName &p_node);
 
 protected:
 	static void _bind_methods();
@@ -314,16 +364,21 @@ public:
 		//no need to check for cycles due to tree topology
 	};
 
-	void add_node(const StringName &p_name, Ref<AnimationNode> p_node);
+	void add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position = Vector2());
 	Ref<AnimationNode> get_node(const StringName &p_name) const;
 	void remove_node(const StringName &p_name);
 	void rename_node(const StringName &p_name, const StringName &p_new_name);
 	bool has_node(const StringName &p_name) const;
 	StringName get_node_name(const Ref<AnimationNode> &p_node) const;
+	Vector<StringName> get_node_connection_array(const StringName &p_name) const;
+
+	void set_node_position(const StringName &p_node, const Vector2 &p_position);
+	Vector2 get_node_position(const StringName &p_node) const;
+
+	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
 
 	void connect_node(const StringName &p_input_node, int p_input_index, const StringName &p_output_node);
 	void disconnect_node(const StringName &p_node, int p_input_index);
-	float get_connection_activity(const StringName &p_input_node, int p_input_index) const;
 
 	struct NodeConnection {
 		StringName input_node;
@@ -342,7 +397,8 @@ public:
 	void set_graph_offset(const Vector2 &p_graph_offset);
 	Vector2 get_graph_offset() const;
 
-	virtual void set_tree(AnimationTree *p_player);
+	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name);
+
 	AnimationNodeBlendTree();
 	~AnimationNodeBlendTree();
 };

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,24 @@
 #define SCRIPT_TEXT_EDITOR_H
 
 #include "scene/gui/color_picker.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/tree.h"
 #include "script_editor_plugin.h"
+
+class ConnectionInfoDialog : public AcceptDialog {
+
+	GDCLASS(ConnectionInfoDialog, AcceptDialog);
+
+	Label *method;
+	Tree *tree;
+
+	virtual void ok_pressed();
+
+public:
+	void popup_connections(String p_method, Vector<Node *> p_nodes);
+
+	ConnectionInfoDialog();
+};
 
 class ScriptTextEditor : public ScriptEditorBase {
 
@@ -45,6 +62,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	Vector<String> functions;
 
+	List<Connection> missing_connections;
+
 	Vector<String> member_keywords;
 
 	HBoxContainer *edit_hb;
@@ -56,6 +75,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	GotoLineDialog *goto_line_dialog;
 	ScriptEditorQuickOpen *quick_open;
+	ConnectionInfoDialog *connection_info_dialog;
 
 	PopupPanel *color_panel;
 	ColorPicker *color_picker;
@@ -108,6 +128,10 @@ class ScriptTextEditor : public ScriptEditorBase {
 		SEARCH_LOCATE_FUNCTION,
 		SEARCH_GOTO_LINE,
 		SEARCH_IN_FILES,
+		BOOKMARK_TOGGLE,
+		BOOKMARK_GOTO_NEXT,
+		BOOKMARK_GOTO_PREV,
+		BOOKMARK_REMOVE_ALL,
 		DEBUG_TOGGLE_BREAKPOINT,
 		DEBUG_REMOVE_ALL_BREAKPOINTS,
 		DEBUG_GOTO_NEXT_BREAKPOINT,
@@ -125,7 +149,8 @@ protected:
 	void _code_complete_script(const String &p_code, List<String> *r_options, bool &r_force);
 	void _load_theme_settings();
 	void _set_theme_for_script();
-	void _toggle_warning_pannel(const Ref<InputEvent> &p_event);
+	void _show_warnings_panel(bool p_show);
+	void _error_pressed();
 	void _warning_clicked(Variant p_line);
 
 	void _notification(int p_what);
@@ -135,12 +160,15 @@ protected:
 	void _change_syntax_highlighter(int p_idx);
 
 	void _edit_option(int p_op);
+	void _edit_option_toggle_inline_comment();
 	void _make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 	void _color_changed(const Color &p_color);
 
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
+
+	void _lookup_connections(int p_row, String p_method);
 
 	void _convert_case(CodeTextEditor::CaseStyle p_case);
 
@@ -149,6 +177,8 @@ protected:
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 public:
+	void _update_connected_methods();
+
 	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter);
 	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter);
 
@@ -170,6 +200,8 @@ public:
 
 	virtual void goto_line(int p_line, bool p_with_error = false);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
+	virtual void set_executing_line(int p_line);
+	virtual void clear_executing_line();
 
 	virtual void reload(bool p_soft);
 	virtual void get_breakpoints(List<int> *p_breakpoints);

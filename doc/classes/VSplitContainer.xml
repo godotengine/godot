@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VSplitContainer" inherits="SplitContainer" category="Core" version="3.1">
+<class name="VSplitContainer" inherits="SplitContainer" category="Core" version="3.2">
 	<brief_description>
 		Vertical split container.
 	</brief_description>
 	<description>
-		Vertical split container. See [SplitContainer]. This goes from left to right.
+		Vertical split container. See [SplitContainer]. This goes from top to bottom.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<constants>

@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  animation_tree.h                                                     */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #ifndef ANIMATION_GRAPH_PLAYER_H
 #define ANIMATION_GRAPH_PLAYER_H
 
@@ -23,9 +53,6 @@ public:
 	struct Input {
 
 		String name;
-		StringName connected_to;
-		float activity;
-		uint64_t last_pass;
 	};
 
 	Vector<Input> inputs;
@@ -51,30 +78,33 @@ public:
 		List<AnimationState> animation_states;
 		bool valid;
 		AnimationPlayer *player;
+		AnimationTree *tree;
 		String invalid_reasons;
 		uint64_t last_pass;
 	};
 
 	Vector<float> blends;
 	State *state;
-	float _pre_process(State *p_state, float p_time, bool p_seek);
+
+	float _pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, float p_time, bool p_seek, const Vector<StringName> &p_connections);
 	void _pre_update_animations(HashMap<NodePath, int> *track_map);
-	Vector2 position;
 
+	//all this is temporary
+	StringName base_path;
+	Vector<StringName> connections;
 	AnimationNode *parent;
-	AnimationTree *player;
-
-	float _blend_node(Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, float *r_max = NULL);
 
 	HashMap<NodePath, bool> filter;
 	bool filter_enabled;
 
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
+	friend class AnimationNodeBlendTree;
+	float _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, float *r_max = NULL);
 
 protected:
 	void blend_animation(const StringName &p_animation, float p_time, float p_delta, bool p_seeked, float p_blend);
-	float blend_node(Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
+	float blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
 	float blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
 	void make_invalid(const String &p_reason);
 
@@ -85,20 +115,24 @@ protected:
 	void _set_parent(Object *p_parent);
 
 public:
-	void set_parent(AnimationNode *p_parent);
-	Ref<AnimationNode> get_parent() const;
-	virtual void set_tree(AnimationTree *p_player);
-	AnimationTree *get_tree() const;
-	AnimationPlayer *get_player() const;
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
+
+	void set_parameter(const StringName &p_name, const Variant &p_value);
+	Variant get_parameter(const StringName &p_name) const;
+
+	struct ChildNode {
+		StringName name;
+		Ref<AnimationNode> node;
+	};
+
+	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
 
 	virtual float process(float p_time, bool p_seek);
 	virtual String get_caption() const;
 
 	int get_input_count() const;
 	String get_input_name(int p_input);
-	StringName get_input_connection(int p_input);
-	void set_input_connection(int p_input, const StringName &p_connection);
-	float get_input_activity(int p_input) const;
 
 	void add_input(const String &p_name);
 	void set_input_name(int p_input, const String &p_name);
@@ -112,8 +146,7 @@ public:
 
 	virtual bool has_filter() const;
 
-	void set_position(const Vector2 &p_position);
-	Vector2 get_position() const;
+	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name);
 
 	AnimationNode();
 };
@@ -245,7 +278,31 @@ private:
 	NodePath root_motion_track;
 	Transform root_motion_transform;
 
+	friend class AnimationNode;
+	bool properties_dirty;
+	void _tree_changed();
+	void _update_properties();
+	List<PropertyInfo> properties;
+	HashMap<StringName, HashMap<StringName, StringName> > property_parent_map;
+	HashMap<StringName, Variant> property_map;
+
+	struct Activity {
+		uint64_t last_pass;
+		float activity;
+	};
+
+	HashMap<StringName, Vector<Activity> > input_activity_map;
+	HashMap<StringName, Vector<Activity> *> input_activity_map_get;
+
+	void _update_properties_for_node(const String &p_base_path, Ref<AnimationNode> node);
+
+	ObjectID last_animation_player;
+
 protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -272,7 +329,10 @@ public:
 
 	Transform get_root_motion_transform() const;
 
+	float get_connection_activity(const StringName &p_path, int p_connection) const;
 	void advance(float p_time);
+
+	void rename_parameter(const String &p_base, const String &p_new_base);
 
 	uint64_t get_last_process_pass() const;
 	AnimationTree();

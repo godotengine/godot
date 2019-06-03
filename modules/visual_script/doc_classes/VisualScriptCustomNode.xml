@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptCustomNode" inherits="VisualScriptNode" category="Core" version="3.1">
+<class name="VisualScriptCustomNode" inherits="VisualScriptNode" category="Core" version="3.2">
 	<brief_description>
 		A scripted Visual Script node.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_get_caption" qualifiers="virtual">
 			<return type="String">
@@ -125,12 +123,10 @@
 			</argument>
 			<description>
 				Execute the custom node's logic, returning the index of the output sequence port to use or a [String] when there is an error.
-				
 				The [code]inputs[/code] array contains the values of the input ports.
 				[code]outputs[/code] is an array whose indices should be set to the respective outputs.
 				The [code]start_mode[/code] is usually [code]START_MODE_BEGIN_SEQUENCE[/code], unless you have used the STEP_* constants.
 				[code]working_mem[/code] is an array which can be used to persist information between runs of the custom node.
-				
 				When returning, you can mask the returned value with one of the STEP_* constants.
 			</description>
 		</method>
@@ -147,7 +143,7 @@
 		</constant>
 		<constant name="STEP_PUSH_STACK_BIT" value="16777216">
 			Hint used by [method _step] to tell that control should return to it when there is no other node left to execute.
-			This is used by [VisualScriptCondition] to redirect the sequence to the "Done" port after the true/false branch has finished execution.
+			This is used by [VisualScriptCondition] to redirect the sequence to the "Done" port after the [code]true[/code]/[code]false[/code] branch has finished execution.
 		</constant>
 		<constant name="STEP_GO_BACK_BIT" value="33554432">
 			Hint used by [method _step] to tell that control should return back, either hitting a previous STEP_PUSH_STACK_BIT or exiting the function.

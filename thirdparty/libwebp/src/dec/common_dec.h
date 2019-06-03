@@ -51,4 +51,4 @@ enum { MB_FEATURE_TREE_PROBS = 3,
        NUM_PROBAS = 11
      };
 
-#endif    // WEBP_DEC_COMMON_DEC_H_
+#endif  // WEBP_DEC_COMMON_DEC_H_

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,15 +41,17 @@ class GodotSharpExport : public EditorExportPlugin {
 
 	MonoAssemblyName *aname_prealloc;
 
-	bool _add_assembly(const String &p_src_path, const String &p_dst_path);
+	bool _add_file(const String &p_src_path, const String &p_dst_path, bool p_remap = false);
 
-	Error _get_assembly_dependencies(GDMonoAssembly *p_assembly, Map<String, String> &r_dependencies);
+	Error _get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String> &p_search_dirs, Map<String, String> &r_dependencies);
 
 protected:
 	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features);
 	virtual void _export_begin(const Set<String> &p_features, bool p_debug, const String &p_path, int p_flags);
 
 public:
+	static void register_internal_calls();
+
 	GodotSharpExport();
 	~GodotSharpExport();
 };

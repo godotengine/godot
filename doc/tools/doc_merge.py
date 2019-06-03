@@ -82,7 +82,7 @@ def find_signal_descr(old_class, name):
 
 def find_constant_descr(old_class, name):
 
-    if (old_class == None):
+    if (old_class is None):
         return None
     constants = old_class.find("constants")
     if(constants != None and len(list(constants)) > 0):

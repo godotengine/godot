@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 
 #include "scene/resources/theme.h"
 
-#include "os/os.h"
+#include "core/os/os.h"
 #include "theme_data.h"
 
 #include "font_hidpi.inc"
@@ -120,41 +120,7 @@ static Ref<Texture> make_icon(T p_src) {
 	return texture;
 }
 
-static Ref<Shader> make_shader(const char *vertex_code, const char *fragment_code, const char *lighting_code) {
-	Ref<Shader> shader = (memnew(Shader()));
-	//shader->set_code(vertex_code, fragment_code, lighting_code);
-
-	return shader;
-}
-
-static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p_charcount, const int *p_chars, const Ref<Texture> &p_texture) {
-
-	Ref<BitmapFont> font(memnew(BitmapFont));
-	font->add_texture(p_texture);
-
-	for (int i = 0; i < p_charcount; i++) {
-
-		const int *c = &p_chars[i * 8];
-
-		int chr = c[0];
-		Rect2 frect;
-		frect.position.x = c[1];
-		frect.position.y = c[2];
-		frect.size.x = c[3];
-		frect.size.y = c[4];
-		Point2 align(c[5], c[6] + p_valign);
-		int advance = c[7];
-
-		font->add_char(chr, 0, frect, align, advance);
-	}
-
-	font->set_height(p_height);
-	font->set_ascent(p_ascent);
-
-	return font;
-}
-
-static Ref<BitmapFont> make_font2(int p_height, int p_ascent, int p_charcount, const int *p_char_rects, int p_kerning_count, const int *p_kernings, int p_w, int p_h, const unsigned char *p_img) {
+static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_charcount, const int *p_char_rects, int p_kerning_count, const int *p_kernings, int p_w, int p_h, const unsigned char *p_img) {
 
 	Ref<BitmapFont> font(memnew(BitmapFont));
 
@@ -208,8 +174,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	scale = p_scale;
 
 	tex_cache = memnew(TexCacheMap);
-
-	//Ref<BitmapFont> default_font = make_font(_bi_font_normal_height,_bi_font_normal_ascent,_bi_font_normal_valign,_bi_font_normal_charcount,_bi_font_normal_characters,make_icon(font_normal_png));
 
 	// Font Colors
 
@@ -343,10 +307,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("hseparation", "MenuButton", 3 * scale);
 
-	// ButtonGroup
-
-	theme->set_stylebox("panel", "ButtonGroup", memnew(StyleBoxEmpty));
-
 	// CheckBox
 
 	Ref<StyleBox> cbx_empty = memnew(StyleBoxEmpty);
@@ -364,6 +324,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("pressed", "CheckBox", cbx_empty);
 	theme->set_stylebox("disabled", "CheckBox", cbx_empty);
 	theme->set_stylebox("hover", "CheckBox", cbx_empty);
+	theme->set_stylebox("hover_pressed", "CheckBox", cbx_empty);
 	theme->set_stylebox("focus", "CheckBox", cbx_focus);
 
 	theme->set_icon("checked", "CheckBox", make_icon(checked_png));
@@ -376,6 +337,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color", "CheckBox", control_font_color);
 	theme->set_color("font_color_pressed", "CheckBox", control_font_color_pressed);
 	theme->set_color("font_color_hover", "CheckBox", control_font_color_hover);
+	theme->set_color("font_color_hover_pressed", "CheckBox", control_font_color_pressed);
 	theme->set_color("font_color_disabled", "CheckBox", control_font_color_disabled);
 
 	theme->set_constant("hseparation", "CheckBox", 4 * scale);
@@ -393,16 +355,20 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("pressed", "CheckButton", cb_empty);
 	theme->set_stylebox("disabled", "CheckButton", cb_empty);
 	theme->set_stylebox("hover", "CheckButton", cb_empty);
+	theme->set_stylebox("hover_pressed", "CheckButton", cb_empty);
 	theme->set_stylebox("focus", "CheckButton", focus);
 
 	theme->set_icon("on", "CheckButton", make_icon(toggle_on_png));
+	theme->set_icon("on_disabled", "CheckButton", make_icon(toggle_on_disabled_png));
 	theme->set_icon("off", "CheckButton", make_icon(toggle_off_png));
+	theme->set_icon("off_disabled", "CheckButton", make_icon(toggle_off_disabled_png));
 
 	theme->set_font("font", "CheckButton", default_font);
 
 	theme->set_color("font_color", "CheckButton", control_font_color);
 	theme->set_color("font_color_pressed", "CheckButton", control_font_color_pressed);
 	theme->set_color("font_color_hover", "CheckButton", control_font_color_hover);
+	theme->set_color("font_color_hover_pressed", "CheckButton", control_font_color_pressed);
 	theme->set_color("font_color_disabled", "CheckButton", control_font_color_disabled);
 
 	theme->set_constant("hseparation", "CheckButton", 4 * scale);
@@ -459,6 +425,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("completion", "TextEdit", make_stylebox(tree_bg_png, 3, 3, 3, 3, 0, 0, 0, 0));
 
 	theme->set_icon("tab", "TextEdit", make_icon(tab_png));
+	theme->set_icon("space", "TextEdit", make_icon(space_png));
+	theme->set_icon("folded", "TextEdit", make_icon(arrow_right_png));
+	theme->set_icon("fold", "TextEdit", make_icon(arrow_down_png));
 
 	theme->set_font("font", "TextEdit", default_font);
 
@@ -472,7 +441,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_selected", "TextEdit", Color(0, 0, 0));
 	theme->set_color("selection_color", "TextEdit", font_color_selection);
 	theme->set_color("mark_color", "TextEdit", Color(1.0, 0.4, 0.4, 0.4));
+	theme->set_color("bookmark_color", "TextEdit", Color(0.08, 0.49, 0.98));
 	theme->set_color("breakpoint_color", "TextEdit", Color(0.8, 0.8, 0.4, 0.2));
+	theme->set_color("executing_line_color", "TextEdit", Color(0.2, 0.8, 0.2, 0.4));
 	theme->set_color("code_folding_color", "TextEdit", Color(0.8, 0.8, 0.8, 0.8));
 	theme->set_color("current_line_color", "TextEdit", Color(0.25, 0.25, 0.26, 0.8));
 	theme->set_color("caret_color", "TextEdit", control_font_color);
@@ -636,6 +607,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("resizer", "GraphNode", make_icon(window_resizer_png));
 	theme->set_font("title_font", "GraphNode", default_font);
 	theme->set_color("title_color", "GraphNode", Color(0, 0, 0, 1));
+	theme->set_color("close_color", "GraphNode", Color(0, 0, 0, 1));
 	theme->set_constant("title_offset", "GraphNode", 20 * scale);
 	theme->set_constant("close_offset", "GraphNode", 18 * scale);
 	theme->set_constant("port_offset", "GraphNode", 3 * scale);
@@ -685,6 +657,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("item_margin", "Tree", 12 * scale);
 	theme->set_constant("button_margin", "Tree", 4 * scale);
 	theme->set_constant("draw_relationship_lines", "Tree", 0);
+	theme->set_constant("draw_guides", "Tree", 1);
 	theme->set_constant("scroll_border", "Tree", 4);
 	theme->set_constant("scroll_speed", "Tree", 12);
 
@@ -716,6 +689,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("tab_fg", "TabContainer", sb_expand(make_stylebox(tab_current_png, 4, 4, 4, 1, 16, 4, 16, 4), 2, 2, 2, 2));
 	theme->set_stylebox("tab_bg", "TabContainer", sb_expand(make_stylebox(tab_behind_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
+	theme->set_stylebox("tab_disabled", "TabContainer", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
 	theme->set_stylebox("panel", "TabContainer", tc_sb);
 
 	theme->set_icon("increment", "TabContainer", make_icon(scroll_button_right_png));
@@ -741,6 +715,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("tab_fg", "Tabs", sb_expand(make_stylebox(tab_current_png, 4, 3, 4, 1, 16, 3, 16, 2), 2, 2, 2, 2));
 	theme->set_stylebox("tab_bg", "Tabs", sb_expand(make_stylebox(tab_behind_png, 5, 4, 5, 1, 16, 5, 16, 2), 3, 3, 3, 3));
+	theme->set_stylebox("tab_disabled", "Tabs", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
 	theme->set_stylebox("panel", "Tabs", tc_sb);
 	theme->set_stylebox("button_pressed", "Tabs", make_stylebox(button_pressed_png, 4, 4, 4, 4));
 	theme->set_stylebox("button", "Tabs", make_stylebox(button_normal_png, 4, 4, 4, 4));
@@ -827,7 +802,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("bold_italics_font", "RichTextLabel", default_font);
 	theme->set_font("mono_font", "RichTextLabel", default_font);
 
-	theme->set_color("default_color", "RichTextLabel", control_font_color);
+	theme->set_color("default_color", "RichTextLabel", Color(1, 1, 1));
 	theme->set_color("font_color_selected", "RichTextLabel", font_color_selection);
 	theme->set_color("selection_color", "RichTextLabel", Color(0.1, 0.1, 1, 0.8));
 
@@ -861,14 +836,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("separation", "VSplitContainer", 12 * scale);
 	theme->set_constant("autohide", "HSplitContainer", 1 * scale);
 	theme->set_constant("autohide", "VSplitContainer", 1 * scale);
-
-	// ReferenceRect
-
-	Ref<StyleBoxTexture> ttnc = make_stylebox(full_panel_bg_png, 8, 8, 8, 8);
-	ttnc->set_draw_center(false);
-
-	theme->set_stylebox("panelnc", "Panel", ttnc);
-	theme->set_stylebox("panelf", "Panel", tc_sb);
 
 	Ref<StyleBoxTexture> sb_pc = make_stylebox(tab_container_bg_png, 4, 4, 4, 4, 7, 7, 7, 7);
 	theme->set_stylebox("panel", "PanelContainer", sb_pc);
@@ -909,9 +876,9 @@ void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 	if (p_font.is_valid()) {
 		default_font = p_font;
 	} else if (p_hidpi) {
-		default_font = make_font2(_hidpi_font_height, _hidpi_font_ascent, _hidpi_font_charcount, &_hidpi_font_charrects[0][0], _hidpi_font_kerning_pair_count, &_hidpi_font_kerning_pairs[0][0], _hidpi_font_img_width, _hidpi_font_img_height, _hidpi_font_img_data);
+		default_font = make_font(_hidpi_font_height, _hidpi_font_ascent, _hidpi_font_charcount, &_hidpi_font_charrects[0][0], _hidpi_font_kerning_pair_count, &_hidpi_font_kerning_pairs[0][0], _hidpi_font_img_width, _hidpi_font_img_height, _hidpi_font_img_data);
 	} else {
-		default_font = make_font2(_lodpi_font_height, _lodpi_font_ascent, _lodpi_font_charcount, &_lodpi_font_charrects[0][0], _lodpi_font_kerning_pair_count, &_lodpi_font_kerning_pairs[0][0], _lodpi_font_img_width, _lodpi_font_img_height, _lodpi_font_img_data);
+		default_font = make_font(_lodpi_font_height, _lodpi_font_ascent, _lodpi_font_charcount, &_lodpi_font_charrects[0][0], _lodpi_font_kerning_pair_count, &_lodpi_font_kerning_pairs[0][0], _lodpi_font_img_width, _lodpi_font_img_height, _lodpi_font_img_data);
 	}
 	Ref<Font> large_font = default_font;
 	fill_default_theme(t, default_font, large_font, default_icon, default_style, p_hidpi ? 2.0 : 1.0);

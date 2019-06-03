@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInterface" inherits="Node" category="Core" version="3.1">
+<class name="EditorInterface" inherits="Node" category="Core" version="3.2">
 	<brief_description>
-		Editor interface and main components.
+		Godot editor's interface.
 	</brief_description>
 	<description>
-		Editor interface. Allows saving and (re-)loading scenes, rendering mesh previews, inspecting and editing resources and objects and provides access to [EditorSettings], [EditorFileSystem], [EditorResourcePreview], [ScriptEditor], the editor viewport, as well as information about scenes. Also see [EditorPlugin] and [EditorScript].
+		EditorInterface gives you control over Godot editor's window. It allows customizing the window, saving and (re-)loading scenes, rendering mesh previews, inspecting and editing resources and objects, and provides access to [EditorSettings], [EditorFileSystem], [EditorResourcePreview], [ScriptEditor], the editor viewport, and information about scenes.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="edit_resource">
 			<return type="void">
@@ -24,14 +22,14 @@
 			<return type="Control">
 			</return>
 			<description>
-				Returns the base [Control].
+				Returns the main container of Godot editor's window. You can use it, for example, to retrieve the size of the container and place your controls accordingly.
 			</description>
 		</method>
 		<method name="get_edited_scene_root">
 			<return type="Node">
 			</return>
 			<description>
-				Returns the edited scene's root [Node].
+				Returns the edited (current) scene's root [Node].
 			</description>
 		</method>
 		<method name="get_editor_settings">
@@ -48,11 +46,17 @@
 				Returns the editor [Viewport].
 			</description>
 		</method>
+		<method name="get_inspector" qualifiers="const">
+			<return type="EditorInspector">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_open_scenes" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Returns an [Array] of the currently opened scenes.
+				Returns an [Array] with the file paths of the currently opened scenes.
 			</description>
 		</method>
 		<method name="get_resource_filesystem">
@@ -66,7 +70,7 @@
 			<return type="EditorResourcePreview">
 			</return>
 			<description>
-				Returns the [EditorResourcePreview]\ er.
+				Returns the [EditorResourcePreview].
 			</description>
 		</method>
 		<method name="get_script_editor">
@@ -159,7 +163,7 @@
 		<method name="select_file">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_file" type="String">
+			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
 			</description>

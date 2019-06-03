@@ -10,8 +10,9 @@
 # all corresponding files (also recursively in subfolders), apart from those
 # with a more explicit copyright statement.
 #
-# Licenses are given with their SPDX identifier, and are all included in
-# plain text at the end of this file (in alphabetical order).
+# Licenses are given with their debian/copyright short name (or SPDX identifier
+# if no standard short name exists) and are all included in plain text at the
+# end of this file (in alphabetical order).
 #
 # Disclaimer for thirdparty libraries:
 # ------------------------------------
@@ -42,8 +43,8 @@ Source: https://github.com/godotengine/godot
 
 Files: *
 Comment: Godot Engine
-Copyright: 2007-2018, Juan Linietsky, Ariel Manzur.
-  2014-2018, Godot Engine contributors.
+Copyright: 2007-2019, Juan Linietsky, Ariel Manzur.
+ 2014-2019, Godot Engine contributors.
 License: Expat
 
 Files: ./icon.png
@@ -54,30 +55,15 @@ Comment: Godot Engine logo
 Copyright: 2017, Andrea Calabró
 License: CC-BY-3.0
 
-Files: ./platform/android/android_native_app_glue.c
- ./platform/android/android_native_app_glue.h
- ./platform/android/java/aidl/com/android/vending/billing/IInAppBillingService.aidl
+Files: ./platform/android/java/aidl/com/android/vending/billing/IInAppBillingService.aidl
  ./platform/android/java/res/layout/status_bar_ongoing_event_progress_bar.xml
- ./platform/android/java/src/com/android/vending/licensing/*
  ./platform/android/java/src/com/google/android/vending/expansion/downloader/*
+ ./platform/android/java/src/com/google/android/vending/licensing/*
  ./platform/android/java/src/org/godotengine/godot/input/InputManagerCompat.java
  ./platform/android/java/src/org/godotengine/godot/input/InputManagerV16.java
- ./platform/android/java/src/org/godotengine/godot/input/InputManagerV9.java
 Comment: The Android Open Source Project
 Copyright: 2008-2013, The Android Open Source Project
 License: Apache-2.0
-
-Files: ./platform/android/cpu-features.c
- ./platform/android/cpu-features.h
-Comment: The Android Open Source Project
-Copyright: 2010, The Android Open Source Project
-License: BSD-2-clause
-
-Files: ./platform/android/ifaddrs_android.cpp
- ./platform/android/ifaddrs_android.h
-Comment: The Android Open Source Project
-Copyright: 2012-2013, Google Inc.
-License: BSD-3-clause
 
 Files: ./platform/android/java/src/com/android/vending/licensing/util/Base64.java
  ./platform/android/java/src/com/android/vending/licensing/util/Base64DecoderException.java
@@ -91,9 +77,14 @@ Files: ./platform/android/power_android.cpp
  ./platform/x11/power_x11.cpp
 Comment: Simple DirectMedia Layer
 Copyright: 1997-2017, Sam Lantinga
-  2007-2018, Juan Linietsky, Ariel Manzur.
-  2014-2018, Godot Engine contributors.
+ 2007-2019, Juan Linietsky, Ariel Manzur.
+ 2014-2019, Godot Engine contributors.
 License: Expat and Zlib
+
+Files: ./scene/animation/tween_interpolaters.cpp
+Comment: Penner Easing
+Copyright: 2001, Robert Penner
+License: BSD-3-clause
 
 Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/joints/generic_6dof_joint_sw.cpp
@@ -107,33 +98,44 @@ Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/joints/slider_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
-  2007-2018, Juan Linietsky, Ariel Manzur.
-  2014-2018, Godot Engine contributors.
+ 2007-2019, Juan Linietsky, Ariel Manzur.
+ 2014-2019, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics/joints/cone_twist_joint_sw.cpp
  ./servers/physics/joints/cone_twist_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
-  2007-2018, Juan Linietsky, Ariel Manzur.
-  2014-2018, Godot Engine contributors.
+ 2007-2019, Juan Linietsky, Ariel Manzur.
+ 2014-2019, Godot Engine contributors.
 License: Expat and Zlib
+
+Files: ./thirdparty/assimp/
+Comment: Open Asset Import Library (assimp)
+Copyright: 2006-2016, assimp team
+License: BSD-3-clause
 
 Files: ./thirdparty/b2d_convexdecomp/
 Comment: Box2D (ConvexDecomp)
 Copyright: 2007, Eric Jordan
-  2006-2009, Erin Catto
+ 2006-2009, Erin Catto
 License: Zlib
 
 Files: ./thirdparty/bullet/
 Comment: Bullet Continuous Collision Detection and Physics Library
-Copyright: 2003-2008, Erwin Coumans
+Copyright: 2003-2013, Erwin Coumans
 License: Zlib
 
 Files: ./thirdparty/certs/ca-certificates.crt
 Comment: CA certificates
 Copyright: Mozilla Contributors
 License: MPL-2.0
+
+Files: ./thirdparty/cvtt/
+Comment: Convection Texture Tools Stand-Alone Kernels
+Copyright: 2018, Eric Lasota
+ 2018, Microsoft Corp.
+License: Expat
 
 Files: ./thirdparty/enet/
 Comment: ENet
@@ -163,12 +165,12 @@ License: Expat and Bitstream Vera Fonts Copyright
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2017, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2018, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: ./thirdparty/glad/
 Comment: glad
-Copyright: 2013, David Herberth
+Copyright: 2013-2018, David Herberth
 License: Expat
 
 Files: ./thirdparty/jpeg_compressor/
@@ -183,9 +185,11 @@ License: BSD-3-clause
 
 Files: ./thirdparty/libpng/
 Comment: libpng
-Copyright: 1995-1996, Guy Eric Schalnat, Group 42, Inc.
- 1996-1997, Andreas Dilger
- 1998-2018, Glenn Randers-Pehrson
+Copyright: 1995-2019, The PNG Reference Library Authors.
+ 2018-2019, Cosmin Truta.
+ 2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
+ 1996-1997, Andreas Dilger.
+ 1995-1996, Guy Eric Schalnat, Group 42, Inc.
 License: Zlib
 
 Files: ./thirdparty/libsimplewebm/
@@ -213,6 +217,12 @@ Comment: The WebM Project
 Copyright: 2010, The WebM Project authors.
 License: BSD-3-clause
 
+Files: ./thirdparty/libvpx/third_party/android/cpu-features.c
+ ./thirdparty/libvpx/third_party/android/cpu-features.h
+Comment: The Android Open Source Project
+Copyright: 2010, The Android Open Source Project
+License: BSD-2-clause
+
 Files: ./thirdparty/libwebp/
 Comment: WebP codec
 Copyright: 2010, Google Inc.
@@ -220,24 +230,24 @@ License: BSD-3-clause
 
 Files: ./thirdparty/libwebsockets/
 Comment: libwebsockets
-Copyright: 2010-2017, Andy Green
+Copyright: 2010-2018, Andy Green
 License: LGPL-2.1+SLE (libwebsockets)
 
 Files: ./thirdparty/mbedtls/
 Comment: Mbed TLS
-Copyright: 2006-2015, ARM Limited
+Copyright: 2006-2018, Arm Limited (or its affiliates)
 License: Apache-2.0
 
 Files: ./thirdparty/miniupnpc/
 Comment: MiniUPnPc
-Copyright: 2005-2016, Thomas Bernard
+Copyright: 2005-2018, Thomas Bernard
 License: BSD-3-clause
 
 Files: ./thirdparty/minizip/
 Comment: MiniZip
 Copyright: 1998-2010, Gilles Vollant
-  2007-2008, Even Rouault
-  2009-2010, Mathias Svensson
+ 2007-2008, Even Rouault
+ 2009-2010, Mathias Svensson
 License: Zlib
 
 Files: ./thirdparty/misc/aes256.cpp
@@ -266,6 +276,11 @@ Comment: curl
 Copyright: 1998-2012, Daniel Stenberg et al.
 License: curl
 
+Files: ./thirdparty/misc/easing_equations.cpp
+Comment: Robert Penner's Easing Functions
+Copyright: 2001, Robert Penner
+License: BSD-3-clause
+
 Files: ./thirdparty/misc/fastlz.c
  ./thirdparty/misc/fastlz.h
 Comment: FastLZ
@@ -277,6 +292,12 @@ Files: ./thirdparty/misc/hq2x.cpp
 Comment: hq2x implementation
 Copyright: 2016, Bruno Ribeiro
 License: Apache-2.0
+
+Files: ./thirdparty/misc/ifaddrs-android.cc
+ ./thirdparty/misc/ifaddrs-android.h
+Comment: libjingle
+Copyright: 2012-2013, Google Inc.
+License: BSD-3-clause
 
 Files: ./thirdparty/misc/md5.cpp
  ./thirdparty/misc/md5.h
@@ -334,8 +355,8 @@ License: BSD-3-clause
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2017, University of Cambridge,
- 2009-2017, Zoltan Herczeg
+Copyright: 1997-2018, University of Cambridge,
+ 2009-2018, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/pvrtccompressor/
@@ -348,26 +369,29 @@ Comment: Recast
 Copyright: 2009, Mikko Mononen
 License: Zlib
 
-Files: ./thirdparty/rtaudio/
-Comment: RtAudio
-Copyright: 2001-2016, Gary P. Scavone
-License: Expat
-
 Files: ./thirdparty/squish/
 Comment: libSquish
 Copyright: 2006, Simon Brown
 License: Expat
 
-Files: ./thirdparty/thekla_atlas/
-Comment: Thekla Atlas
-Copyright: 2013, Thekla, Inc
-License: Expat
-
 Files: ./thirdparty/tinyexr/
 Comment: TinyEXR
-Copyright: 2014-2017, Syoyo Fujita
+Copyright: 2014-2018, Syoyo Fujita
   2002, Industrial Light & Magic, a division of Lucas Digital Ltd. LLC
-License: BSD-3-Clause
+License: BSD-3-clause
+
+Files: ./thirdparty/vhacd/
+Comment: V-HACD
+Copyright: 2011, Khaled Mamou
+  2003-2009, Erwin Coumans
+License: BSD-3-clause
+
+Files: ./thirdparty/xatlas/
+Comment: xatlas
+Copyright: 2018, Jonathan Young
+  2013, Thekla, Inc
+  2006, NVIDIA Corporation, Ignacio Castano
+License: Expat
 
 Files: ./thirdparty/zlib/
 Comment: zlib
@@ -376,8 +400,8 @@ License: Zlib
 
 Files: ./thirdparty/zstd/
 Comment: Zstandard
-Copyright: 2016-2018, Facebook, Inc.
-License: BSD-3-Clause
+Copyright: 2016-2019, Facebook, Inc.
+License: BSD-3-clause
 
 
 

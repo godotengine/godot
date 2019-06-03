@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,11 @@
 #ifndef SCRIPT_LANGUAGE_H
 #define SCRIPT_LANGUAGE_H
 
-#include "io/multiplayer_api.h"
-#include "map.h"
-#include "pair.h"
-#include "resource.h"
+#include "core/io/multiplayer_api.h"
+#include "core/map.h"
+#include "core/pair.h"
+#include "core/resource.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -53,6 +54,7 @@ class ScriptServer {
 	static int _language_count;
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
+	static bool languages_finished;
 
 	struct GlobalScriptClass {
 		StringName language;
@@ -85,11 +87,14 @@ public:
 	static StringName get_global_class_language(const StringName &p_class);
 	static String get_global_class_path(const String &p_class);
 	static StringName get_global_class_base(const String &p_class);
+	static StringName get_global_class_native_base(const String &p_class);
 	static void get_global_class_list(List<StringName> *r_global_classes);
 	static void save_global_classes();
 
 	static void init_languages();
 	static void finish_languages();
+
+	static bool are_languages_finished() { return languages_finished; }
 };
 
 class ScriptInstance;
@@ -127,6 +132,7 @@ public:
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
 	virtual bool is_tool() const = 0;
+	virtual bool is_valid() const = 0;
 
 	virtual ScriptLanguage *get_language() const = 0;
 
@@ -143,6 +149,8 @@ public:
 
 	virtual void get_constants(Map<StringName, Variant> *p_constants) {}
 	virtual void get_members(Set<StringName> *p_constants) {}
+
+	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
 	Script() {}
 };
@@ -165,6 +173,11 @@ public:
 	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);
 	virtual void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount);
 	virtual void notification(int p_notification) = 0;
+	virtual String to_string(bool *r_valid) {
+		if (r_valid)
+			*r_valid = false;
+		return String();
+	}
 
 	//this is used by script languages that keep a reference counter of their own
 	//you can make make Ref<> not die when it reaches zero, so deleting the reference
@@ -197,6 +210,8 @@ public:
 	static ScriptCodeCompletionCache *get_singleton() { return singleton; }
 
 	ScriptCodeCompletionCache();
+
+	virtual ~ScriptCodeCompletionCache() {}
 };
 
 class ScriptLanguage {
@@ -311,11 +326,13 @@ public:
 
 	virtual void *alloc_instance_binding_data(Object *p_object) { return NULL; } //optional, not used by all languages
 	virtual void free_instance_binding_data(void *p_data) {} //optional, not used by all languages
+	virtual void refcount_incremented_instance_binding(Object *p_object) {} //optional, not used by all languages
+	virtual bool refcount_decremented_instance_binding(Object *p_object) { return true; } //return true if it can die //optional, not used by all languages
 
 	virtual void frame();
 
 	virtual bool handles_global_class_type(const String &p_type) const { return false; }
-	virtual String get_global_class_name(const String &p_path, String *r_base_type = NULL) const { return String(); }
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = NULL, String *r_icon_path = NULL) const { return String(); }
 
 	virtual ~ScriptLanguage() {}
 };
@@ -327,10 +344,9 @@ class PlaceHolderScriptInstance : public ScriptInstance {
 	Object *owner;
 	List<PropertyInfo> properties;
 	Map<StringName, Variant> values;
+	Map<StringName, Variant> constants;
 	ScriptLanguage *language;
 	Ref<Script> script;
-
-	bool build_failed;
 
 public:
 	virtual bool set(const StringName &p_name, const Variant &p_value);
@@ -357,13 +373,10 @@ public:
 
 	void update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values); //likely changed in editor
 
-	void set_build_failed(bool p_build_failed) { build_failed = p_build_failed; }
-	bool get_build_failed() const { return build_failed; }
-
 	virtual bool is_placeholder() const { return true; }
 
-	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
-	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
+	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid = NULL);
+	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid = NULL);
 
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const { return MultiplayerAPI::RPC_MODE_DISABLED; }

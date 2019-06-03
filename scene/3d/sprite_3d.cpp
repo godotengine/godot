@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "sprite_3d.h"
-#include "core_string_names.h"
+#include "core/core_string_names.h"
 #include "scene/scene_string_names.h"
 
 Color SpriteBase3D::_get_color_accum() {
@@ -382,36 +382,30 @@ void Sprite3D::_draw() {
 
 	VS::get_singleton()->immediate_clear(immediate);
 	if (!texture.is_valid())
-		return; //no texuture no life
+		return;
 	Vector2 tsize = texture->get_size();
 	if (tsize.x == 0 || tsize.y == 0)
 		return;
 
-	Size2i s;
-	Rect2i src_rect;
+	Rect2 base_rect;
+	if (region)
+		base_rect = region_rect;
+	else
+		base_rect = Rect2(0, 0, texture->get_width(), texture->get_height());
 
-	if (region) {
+	Size2 frame_size = base_rect.size / Size2(hframes, vframes);
+	Point2 frame_offset = Point2(frame % hframes, frame / hframes);
+	frame_offset *= frame_size;
 
-		s = region_rect.size;
-		src_rect = region_rect;
-	} else {
-		s = texture->get_size();
-		s = s / Size2i(hframes, vframes);
-
-		src_rect.size = s;
-		src_rect.position.x += (frame % hframes) * s.x;
-		src_rect.position.y += (frame / hframes) * s.y;
-	}
-
-	Point2i ofs = get_offset();
+	Point2 dest_offset = get_offset();
 	if (is_centered())
-		ofs -= s / 2;
+		dest_offset -= frame_size / 2;
 
-	Rect2i dst_rect(ofs, s);
-
+	Rect2 src_rect(base_rect.position + frame_offset, frame_size);
+	Rect2 final_dst_rect(dest_offset, frame_size);
 	Rect2 final_rect;
 	Rect2 final_src_rect;
-	if (!texture->get_rect_region(dst_rect, src_rect, final_rect, final_src_rect))
+	if (!texture->get_rect_region(final_dst_rect, src_rect, final_rect, final_src_rect))
 		return;
 
 	if (final_rect.size.x == 0 || final_rect.size.y == 0)
@@ -431,7 +425,7 @@ void Sprite3D::_draw() {
 
 	};
 
-	Vector2 src_tsize = Vector2(texture->get_width(), texture->get_height());
+	Vector2 src_tsize = tsize;
 
 	// Properly setup UVs for impostor textures (AtlasTexture).
 	Ref<AtlasTexture> atlas_tex = texture;
@@ -441,10 +435,10 @@ void Sprite3D::_draw() {
 	}
 
 	Vector2 uvs[4] = {
-		final_src_rect.position / tsize,
-		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / tsize,
-		(final_src_rect.position + final_src_rect.size) / tsize,
-		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / tsize,
+		final_src_rect.position / src_tsize,
+		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / src_tsize,
+		(final_src_rect.position + final_src_rect.size) / src_tsize,
+		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / src_tsize,
 	};
 
 	if (is_flipped_h()) {
@@ -460,6 +454,13 @@ void Sprite3D::_draw() {
 	Vector3 normal;
 	int axis = get_axis();
 	normal[axis] = 1.0;
+
+	Plane tangent;
+	if (axis == Vector3::AXIS_X) {
+		tangent = Plane(0, 0, -1, 1);
+	} else {
+		tangent = Plane(1, 0, 0, 1);
+	}
 
 	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
 	VS::get_singleton()->immediate_set_material(immediate, mat);
@@ -487,6 +488,7 @@ void Sprite3D::_draw() {
 
 	for (int i = 0; i < 4; i++) {
 		VS::get_singleton()->immediate_normal(immediate, normal);
+		VS::get_singleton()->immediate_tangent(immediate, tangent);
 		VS::get_singleton()->immediate_color(immediate, color);
 		VS::get_singleton()->immediate_uv(immediate, uvs[i]);
 
@@ -612,7 +614,7 @@ Rect2 Sprite3D::get_item_rect() const {
 		s = s / Point2(hframes, vframes);
 	}
 
-	Point2i ofs = get_offset();
+	Point2 ofs = get_offset();
 	if (is_centered())
 		ofs -= s / 2;
 
@@ -699,15 +701,15 @@ void AnimatedSprite3D::_draw() {
 		return;
 
 	Size2i s = tsize;
-	Rect2i src_rect;
+	Rect2 src_rect;
 
 	src_rect.size = s;
 
-	Point2i ofs = get_offset();
+	Point2 ofs = get_offset();
 	if (is_centered())
 		ofs -= s / 2;
 
-	Rect2i dst_rect(ofs, s);
+	Rect2 dst_rect(ofs, s);
 
 	Rect2 final_rect;
 	Rect2 final_src_rect;
@@ -731,7 +733,7 @@ void AnimatedSprite3D::_draw() {
 
 	};
 
-	Vector2 src_tsize = Vector2(texture->get_width(), texture->get_height());
+	Vector2 src_tsize = tsize;
 
 	// Properly setup UVs for impostor textures (AtlasTexture).
 	Ref<AtlasTexture> atlas_tex = texture;
@@ -741,10 +743,10 @@ void AnimatedSprite3D::_draw() {
 	}
 
 	Vector2 uvs[4] = {
-		final_src_rect.position / tsize,
-		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / tsize,
-		(final_src_rect.position + final_src_rect.size) / tsize,
-		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / tsize,
+		final_src_rect.position / src_tsize,
+		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / src_tsize,
+		(final_src_rect.position + final_src_rect.size) / src_tsize,
+		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / src_tsize,
 	};
 
 	if (is_flipped_h()) {
@@ -760,6 +762,13 @@ void AnimatedSprite3D::_draw() {
 	Vector3 normal;
 	int axis = get_axis();
 	normal[axis] = 1.0;
+
+	Plane tangent;
+	if (axis == Vector3::AXIS_X) {
+		tangent = Plane(0, 0, -1, -1);
+	} else {
+		tangent = Plane(1, 0, 0, -1);
+	}
 
 	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
 
@@ -788,6 +797,7 @@ void AnimatedSprite3D::_draw() {
 
 	for (int i = 0; i < 4; i++) {
 		VS::get_singleton()->immediate_normal(immediate, normal);
+		VS::get_singleton()->immediate_tangent(immediate, tangent);
 		VS::get_singleton()->immediate_color(immediate, color);
 		VS::get_singleton()->immediate_uv(immediate, uvs[i]);
 
@@ -1078,10 +1088,10 @@ void AnimatedSprite3D::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
 }
 
 AnimatedSprite3D::AnimatedSprite3D() {

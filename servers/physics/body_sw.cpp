@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,6 +86,10 @@ void BodySW::update_inertias() {
 			inertia_tensor.set_zero();
 
 			for (int i = 0; i < get_shape_count(); i++) {
+
+				if (is_shape_disabled(i)) {
+					continue;
+				}
 
 				const ShapeSW *shape = get_shape(i);
 
@@ -192,7 +196,8 @@ void BodySW::set_param(PhysicsServer::BodyParameter p_param, real_t p_value) {
 
 			angular_damp = p_value;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -222,7 +227,8 @@ real_t BodySW::get_param(PhysicsServer::BodyParameter p_param) const {
 			return angular_damp;
 		} break;
 
-		default: {}
+		default: {
+		}
 	}
 
 	return 0;
@@ -470,7 +476,8 @@ void BodySW::integrate_forces(real_t p_step) {
 					_compute_area_gravity_and_dampenings(aa[i].area);
 					stopped = mode == PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE;
 				} break;
-				default: {}
+				default: {
+				}
 			}
 		}
 	}
@@ -648,7 +655,7 @@ void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
 	linear_velocity=(p_xform.origin - get_transform().origin)/p_step;
 
 	//compute a FAKE angular velocity, not so easy
-	Matrix3 rot=get_transform().basis.orthonormalized().transposed() * p_xform.basis.orthonormalized();
+	Basis rot=get_transform().basis.orthonormalized().transposed() * p_xform.basis.orthonormalized();
 	Vector3 axis;
 	real_t angle;
 
@@ -755,10 +762,10 @@ void BodySW::set_kinematic_margin(real_t p_margin) {
 
 BodySW::BodySW() :
 		CollisionObjectSW(TYPE_BODY),
+		locked_axis(0),
 		active_list(this),
 		inertia_update_list(this),
-		direct_state_query_list(this),
-		locked_axis(0) {
+		direct_state_query_list(this) {
 
 	mode = PhysicsServer::BODY_MODE_RIGID;
 	active = true;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef PHYSICS_BODY_2D_H
 #define PHYSICS_BODY_2D_H
 
+#include "core/vset.h"
 #include "scene/2d/collision_object_2d.h"
 #include "scene/resources/physics_material.h"
 #include "servers/physics_2d_server.h"
-#include "vset.h"
 
 class KinematicCollision2D;
 
@@ -67,6 +67,7 @@ public:
 	void set_collision_layer_bit(int p_bit, bool p_value);
 	bool get_collision_layer_bit(int p_bit) const;
 
+	Array get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
 	void remove_collision_exception_with(Node *p_node);
 
@@ -331,15 +332,15 @@ protected:
 public:
 	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 
-	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia);
+	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia = true);
 
 	bool separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision);
 
 	void set_safe_margin(float p_margin);
 	float get_safe_margin() const;
 
-	Vector2 move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction = Vector2(0, 0), bool p_infinite_inertia = true, float p_slope_stop_min_velocity = 5, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45));
-	Vector2 move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_floor_direction = Vector2(0, 0), bool p_infinite_inertia = true, float p_slope_stop_min_velocity = 5, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45));
+	Vector2 move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction = Vector2(0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
+	Vector2 move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_floor_direction = Vector2(0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
 	bool is_on_floor() const;
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;

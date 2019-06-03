@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Texture" inherits="Resource" category="Core" version="3.1">
+<class name="Texture" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		Texture for 2D and 3D.
 	</brief_description>
@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="draw" qualifiers="const">
 			<return type="void">
@@ -76,21 +74,21 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the texture height.
+				Returns the texture height.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the texture size.
+				Returns the texture size.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the texture width.
+				Returns the texture width.
 			</description>
 		</method>
 		<method name="has_alpha" qualifiers="const">
@@ -128,7 +126,7 @@
 		<constant name="FLAG_MIRRORED_REPEAT" value="32" enum="Flags">
 			Repeats texture with alternate sections mirrored.
 		</constant>
-		<constant name="FLAG_VIDEO_SURFACE" value="4096" enum="Flags">
+		<constant name="FLAG_VIDEO_SURFACE" value="2048" enum="Flags">
 			Texture is a video surface.
 		</constant>
 	</constants>

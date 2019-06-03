@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "node_path.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
 
 void NodePath::_update_hash_cache() const {
 
@@ -276,7 +276,7 @@ NodePath NodePath::get_as_property_path() const {
 
 		String initial_subname = data->path[0];
 
-		for (size_t i = 1; i < data->path.size(); i++) {
+		for (int i = 1; i < data->path.size(); i++) {
 			initial_subname += "/" + data->path[i];
 		}
 		new_path.insert(0, initial_subname);

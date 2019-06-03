@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2017 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -505,7 +505,7 @@ Arguments:
   utf         TRUE in UTF mode
   cb          compile data block
   base_list   the data list of the base opcode
-  base_end    the end of the data list
+  base_end    the end of the base opcode
   rec_limit   points to recursion depth counter
 
 Returns:      TRUE if the auto-possessification is possible
@@ -730,7 +730,7 @@ for(;;)
       if ((*xclass_flags & XCL_MAP) == 0)
         {
         /* No bits are set for characters < 256. */
-        if (list[1] == 0) return TRUE;
+        if (list[1] == 0) return (*xclass_flags & XCL_NOT) == 0;
         /* Might be an empty repeat. */
         continue;
         }
@@ -1235,6 +1235,7 @@ for (;;)
 #endif
 
     case OP_MARK:
+    case OP_COMMIT_ARG:
     case OP_PRUNE_ARG:
     case OP_SKIP_ARG:
     case OP_THEN_ARG:

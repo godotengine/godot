@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,10 +29,10 @@
 /*************************************************************************/
 
 #include "editor_scene_importer_gltf.h"
-#include "io/json.h"
-#include "math_defs.h"
-#include "os/file_access.h"
-#include "os/os.h"
+#include "core/io/json.h"
+#include "core/math/math_defs.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/animation/animation_player.h"
@@ -237,15 +237,14 @@ Error EditorSceneImporterGLTF::_parse_nodes(GLTFState &state) {
 				node->scale = _arr_to_vec3(n["scale"]);
 			}
 
-			node->xform.basis = Basis(node->rotation);
-			node->xform.basis.scale(node->scale);
+			node->xform.basis.set_quat_scale(node->rotation, node->scale);
 			node->xform.origin = node->translation;
 		}
 
 		if (n.has("children")) {
 			Array children = n["children"];
-			for (int i = 0; i < children.size(); i++) {
-				node->children.push_back(children[i]);
+			for (int j = 0; j < children.size(); j++) {
+				node->children.push_back(children[j]);
 			}
 		}
 
@@ -323,7 +322,7 @@ Error EditorSceneImporterGLTF::_parse_buffers(GLTFState &state, const String &p_
 		}
 	}
 
-	print_line("total buffers: " + itos(state.buffers.size()));
+	print_verbose("glTF: Total buffers: " + itos(state.buffers.size()));
 
 	return OK;
 }
@@ -359,7 +358,7 @@ Error EditorSceneImporterGLTF::_parse_buffer_views(GLTFState &state) {
 		state.buffer_views.push_back(buffer_view);
 	}
 
-	print_line("total buffer views: " + itos(state.buffer_views.size()));
+	print_verbose("glTF: Total buffer views: " + itos(state.buffer_views.size()));
 
 	return OK;
 }
@@ -451,7 +450,7 @@ Error EditorSceneImporterGLTF::_parse_accessors(GLTFState &state) {
 		state.accessors.push_back(accessor);
 	}
 
-	print_line("total accessors: " + itos(state.accessors.size()));
+	print_verbose("glTF: Total accessors: " + itos(state.accessors.size()));
 
 	return OK;
 }
@@ -501,8 +500,8 @@ Error EditorSceneImporterGLTF::_decode_buffer_view(GLTFState &state, int p_buffe
 	const uint8_t *bufptr = buffer.ptr();
 
 	//use to debug
-	//print_line("type " + _get_type_name(type) + " component type: " + _get_component_type_name(component_type) + " stride: " + itos(stride) + " amount " + itos(count));
-	print_line("accessor offset" + itos(byte_offset) + " view offset: " + itos(bv.byte_offset) + " total buffer len: " + itos(buffer.size()) + " view len " + itos(bv.byte_length));
+	print_verbose("glTF: type " + _get_type_name(type) + " component type: " + _get_component_type_name(component_type) + " stride: " + itos(stride) + " amount " + itos(count));
+	print_verbose("glTF: accessor offset" + itos(byte_offset) + " view offset: " + itos(bv.byte_offset) + " total buffer len: " + itos(buffer.size()) + " view len " + itos(bv.byte_length));
 
 	int buffer_end = (stride * (count - 1)) + element_size;
 	ERR_FAIL_COND_V(buffer_end > bv.byte_length, ERR_PARSE_ERROR);
@@ -582,7 +581,9 @@ int EditorSceneImporterGLTF::_get_component_type_size(int component_type) {
 		case COMPONENT_TYPE_UNSIGNED_SHORT: return 2; break;
 		case COMPONENT_TYPE_INT: return 4; break;
 		case COMPONENT_TYPE_FLOAT: return 4; break;
-		default: { ERR_FAIL_V(0); }
+		default: {
+			ERR_FAIL_V(0);
+		}
 	}
 	return 0;
 }
@@ -632,7 +633,8 @@ Vector<double> EditorSceneImporterGLTF::_decode_accessor(GLTFState &state, int p
 				element_size = 16; //override for this case
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	Vector<double> dst_buffer;
@@ -793,7 +795,7 @@ Vector<Quat> EditorSceneImporterGLTF::_decode_accessor_as_quat(GLTFState &state,
 	ret.resize(ret_size);
 	{
 		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = Quat(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]);
+			ret.write[i] = Quat(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]).normalized();
 		}
 	}
 	return ret;
@@ -853,7 +855,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 	Array meshes = state.json["meshes"];
 	for (int i = 0; i < meshes.size(); i++) {
 
-		print_line("on mesh: " + itos(i));
+		print_verbose("glTF: Parsing mesh: " + itos(i));
 		Dictionary d = meshes[i];
 
 		GLTFMesh mesh;
@@ -879,7 +881,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 			if (p.has("mode")) {
 				int mode = p["mode"];
 				ERR_FAIL_INDEX_V(mode, 7, ERR_FILE_CORRUPT);
-				static const Mesh::PrimitiveType primitives[7] = {
+				static const Mesh::PrimitiveType primitives2[7] = {
 					Mesh::PRIMITIVE_POINTS,
 					Mesh::PRIMITIVE_LINES,
 					Mesh::PRIMITIVE_LINE_LOOP,
@@ -889,12 +891,14 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 					Mesh::PRIMITIVE_TRIANGLE_FAN,
 				};
 
-				primitive = primitives[mode];
+				primitive = primitives2[mode];
 			}
 
+			ERR_FAIL_COND_V(!a.has("POSITION"), ERR_PARSE_ERROR);
 			if (a.has("POSITION")) {
 				array[Mesh::ARRAY_VERTEX] = _decode_accessor_as_vec3(state, a["POSITION"], true);
 			}
+
 			if (a.has("NORMAL")) {
 				array[Mesh::ARRAY_NORMAL] = _decode_accessor_as_vec3(state, a["NORMAL"], true);
 			}
@@ -922,20 +926,20 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 					//PoolVector<int> v = array[Mesh::ARRAY_BONES];
 					//PoolVector<int>::Read r = v.read();
 
-					for (int j = 0; j < wc; j += 4) {
+					for (int k = 0; k < wc; k += 4) {
 						float total = 0.0;
-						total += w[j + 0];
-						total += w[j + 1];
-						total += w[j + 2];
-						total += w[j + 3];
+						total += w[k + 0];
+						total += w[k + 1];
+						total += w[k + 2];
+						total += w[k + 3];
 						if (total > 0.0) {
-							w[j + 0] /= total;
-							w[j + 1] /= total;
-							w[j + 2] /= total;
-							w[j + 3] /= total;
+							w[k + 0] /= total;
+							w[k + 1] /= total;
+							w[k + 2] /= total;
+							w[k + 3] /= total;
 						}
 
-						//print_line(itos(j / 4) + ": " + itos(r[j + 0]) + ":" + rtos(w[j + 0]) + ", " + itos(r[j + 1]) + ":" + rtos(w[j + 1]) + ", " + itos(r[j + 2]) + ":" + rtos(w[j + 2]) + ", " + itos(r[j + 3]) + ":" + rtos(w[j + 3]));
+						//print_verbose(itos(j / 4) + ": " + itos(r[j + 0]) + ":" + rtos(w[j + 0]) + ", " + itos(r[j + 1]) + ":" + rtos(w[j + 1]) + ", " + itos(r[j + 2]) + ":" + rtos(w[j + 2]) + ", " + itos(r[j + 3]) + ":" + rtos(w[j + 3]));
 					}
 				}
 				array[Mesh::ARRAY_WEIGHTS] = weights;
@@ -950,8 +954,8 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 
 					int is = indices.size();
 					PoolVector<int>::Write w = indices.write();
-					for (int i = 0; i < is; i += 3) {
-						SWAP(w[i + 1], w[i + 2]);
+					for (int k = 0; k < is; k += 3) {
+						SWAP(w[k + 1], w[k + 2]);
 					}
 				}
 				array[Mesh::ARRAY_INDEX] = indices;
@@ -964,10 +968,10 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				indices.resize(vs);
 				{
 					PoolVector<int>::Write w = indices.write();
-					for (int i = 0; i < vs; i += 3) {
-						w[i] = i;
-						w[i + 1] = i + 2;
-						w[i + 2] = i + 1;
+					for (int k = 0; k < vs; k += 3) {
+						w[k] = k;
+						w[k + 1] = k + 2;
+						w[k + 2] = k + 1;
 					}
 				}
 				array[Mesh::ARRAY_INDEX] = indices;
@@ -996,8 +1000,12 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 			Array morphs;
 			//blend shapes
 			if (p.has("targets")) {
-				print_line("has targets!");
+				print_verbose("glTF: Mesh has targets");
 				Array targets = p["targets"];
+
+				//ideally BLEND_SHAPE_MODE_RELATIVE since gltf2 stores in displacement
+				//but it could require a larger refactor?
+				mesh.mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
 
 				if (j == 0) {
 					Array target_names = extras.has("targetNames") ? (Array)extras["targetNames"] : Array();
@@ -1021,10 +1029,49 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 					array_copy[Mesh::ARRAY_INDEX] = Variant();
 
 					if (t.has("POSITION")) {
-						array_copy[Mesh::ARRAY_VERTEX] = _decode_accessor_as_vec3(state, t["POSITION"], true);
+						PoolVector<Vector3> varr = _decode_accessor_as_vec3(state, t["POSITION"], true);
+						PoolVector<Vector3> src_varr = array[Mesh::ARRAY_VERTEX];
+						int size = src_varr.size();
+						ERR_FAIL_COND_V(size == 0, ERR_PARSE_ERROR);
+						{
+
+							int max_idx = varr.size();
+							varr.resize(size);
+
+							PoolVector<Vector3>::Write w_varr = varr.write();
+							PoolVector<Vector3>::Read r_varr = varr.read();
+							PoolVector<Vector3>::Read r_src_varr = src_varr.read();
+							for (int l = 0; l < size; l++) {
+								if (l < max_idx) {
+									w_varr[l] = r_varr[l] + r_src_varr[l];
+								} else {
+									w_varr[l] = r_src_varr[l];
+								}
+							}
+						}
+						array_copy[Mesh::ARRAY_VERTEX] = varr;
 					}
 					if (t.has("NORMAL")) {
-						array_copy[Mesh::ARRAY_NORMAL] = _decode_accessor_as_vec3(state, t["NORMAL"], true);
+						PoolVector<Vector3> narr = _decode_accessor_as_vec3(state, t["NORMAL"], true);
+						PoolVector<Vector3> src_narr = array[Mesh::ARRAY_NORMAL];
+						int size = src_narr.size();
+						ERR_FAIL_COND_V(size == 0, ERR_PARSE_ERROR);
+						{
+							int max_idx = narr.size();
+							narr.resize(size);
+
+							PoolVector<Vector3>::Write w_narr = narr.write();
+							PoolVector<Vector3>::Read r_narr = narr.read();
+							PoolVector<Vector3>::Read r_src_narr = src_narr.read();
+							for (int l = 0; l < size; l++) {
+								if (l < max_idx) {
+									w_narr[l] = r_narr[l] + r_src_narr[l];
+								} else {
+									w_narr[l] = r_src_narr[l];
+								}
+							}
+						}
+						array_copy[Mesh::ARRAY_NORMAL] = narr;
 					}
 					if (t.has("TANGENT")) {
 						PoolVector<Vector3> tangents_v3 = _decode_accessor_as_vec3(state, t["TANGENT"], true);
@@ -1033,6 +1080,8 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 						ERR_FAIL_COND_V(src_tangents.size() == 0, ERR_PARSE_ERROR);
 
 						{
+
+							int max_idx = tangents_v3.size();
 
 							int size4 = src_tangents.size();
 							tangents_v4.resize(size4);
@@ -1043,9 +1092,15 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 
 							for (int l = 0; l < size4 / 4; l++) {
 
-								w4[l * 4 + 0] = r3[l].x;
-								w4[l * 4 + 1] = r3[l].y;
-								w4[l * 4 + 2] = r3[l].z;
+								if (l < max_idx) {
+									w4[l * 4 + 0] = r3[l].x + r4[l * 4 + 0];
+									w4[l * 4 + 1] = r3[l].y + r4[l * 4 + 1];
+									w4[l * 4 + 2] = r3[l].z + r4[l * 4 + 2];
+								} else {
+									w4[l * 4 + 0] = r4[l * 4 + 0];
+									w4[l * 4 + 1] = r4[l * 4 + 1];
+									w4[l * 4 + 2] = r4[l * 4 + 2];
+								}
 								w4[l * 4 + 3] = r4[l * 4 + 3]; //copy flip value
 							}
 						}
@@ -1091,7 +1146,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 		state.meshes.push_back(mesh);
 	}
 
-	print_line("total meshes: " + itos(state.meshes.size()));
+	print_verbose("glTF: Total meshes: " + itos(state.meshes.size()));
 
 	return OK;
 }
@@ -1183,7 +1238,7 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 		ERR_FAIL_V(ERR_FILE_CORRUPT);
 	}
 
-	print_line("total images: " + itos(state.images.size()));
+	print_verbose("Total images: " + itos(state.images.size()));
 
 	return OK;
 }
@@ -1338,7 +1393,7 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 		state.materials.push_back(material);
 	}
 
-	print_line("total materials: " + itos(state.materials.size()));
+	print_verbose("Total materials: " + itos(state.materials.size()));
 
 	return OK;
 }
@@ -1381,12 +1436,11 @@ Error EditorSceneImporterGLTF::_parse_skins(GLTFState &state) {
 			skin.bones.push_back(bone);
 		}
 
-		print_line("skin has skeleton? " + itos(d.has("skeleton")));
+		print_verbose("glTF: Skin has skeleton? " + itos(d.has("skeleton")));
 		if (d.has("skeleton")) {
 			int skeleton = d["skeleton"];
 			ERR_FAIL_INDEX_V(skeleton, state.nodes.size(), ERR_PARSE_ERROR);
-			//state.nodes[skeleton]->skeleton_skin = state.skins.size();
-			print_line("setting skeleton skin to" + itos(skeleton));
+			print_verbose("glTF: Setting skeleton skin to" + itos(skeleton));
 			skin.skeleton = skeleton;
 			if (!state.skeleton_nodes.has(skeleton)) {
 				state.skeleton_nodes[skeleton] = Vector<int>();
@@ -1443,7 +1497,7 @@ Error EditorSceneImporterGLTF::_parse_skins(GLTFState &state) {
 		*/
 		state.skins.push_back(skin);
 	}
-	print_line("total skins: " + itos(state.skins.size()));
+	print_verbose("glTF: Total skins: " + itos(state.skins.size()));
 
 	//now
 
@@ -1496,7 +1550,7 @@ Error EditorSceneImporterGLTF::_parse_cameras(GLTFState &state) {
 		state.cameras.push_back(camera);
 	}
 
-	print_line("total cameras: " + itos(state.cameras.size()));
+	print_verbose("glTF: Total cameras: " + itos(state.cameras.size()));
 
 	return OK;
 }
@@ -1574,7 +1628,6 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 				}
 			}
 
-			print_line("path: " + path);
 			PoolVector<float> times = _decode_accessor_as_floats(state, input, false);
 			if (path == "translation") {
 				PoolVector<Vector3> translations = _decode_accessor_as_vec3(state, output, false);
@@ -1624,7 +1677,7 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 		state.animations.push_back(animation);
 	}
 
-	print_line("total animations: " + itos(state.animations.size()));
+	print_verbose("glTF: Total animations: " + itos(state.animations.size()));
 
 	return OK;
 }
@@ -1647,6 +1700,22 @@ void EditorSceneImporterGLTF::_assign_scene_names(GLTFState &state) {
 	}
 }
 
+void EditorSceneImporterGLTF::_reparent_skeleton(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, Node *p_parent_node) {
+	//reparent skeletons to proper place
+	Vector<int> nodes = state.skeleton_nodes[p_node];
+	for (int i = 0; i < nodes.size(); i++) {
+		Skeleton *skeleton = skeletons[nodes[i]];
+		Node *owner = skeleton->get_owner();
+		skeleton->get_parent()->remove_child(skeleton);
+		p_parent_node->add_child(skeleton);
+		skeleton->set_owner(owner);
+		//may have meshes as children, set owner in them too
+		for (int j = 0; j < skeleton->get_child_count(); j++) {
+			skeleton->get_child(j)->set_owner(owner);
+		}
+	}
+}
+
 void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node *p_parent, Node *p_owner, Vector<Skeleton *> &skeletons) {
 	ERR_FAIL_INDEX(p_node, state.nodes.size());
 
@@ -1656,7 +1725,7 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 	if (n->mesh >= 0) {
 		ERR_FAIL_INDEX(n->mesh, state.meshes.size());
 		MeshInstance *mi = memnew(MeshInstance);
-		print_line("**creating mesh for: " + n->name);
+		print_verbose("glTF: Creating mesh for: " + n->name);
 		GLTFMesh &mesh = state.meshes.write[n->mesh];
 		mi->set_mesh(mesh.mesh);
 		if (mesh.mesh->get_name() == "") {
@@ -1688,7 +1757,7 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 
 	n->godot_nodes.push_back(node);
 
-	if (n->skin >= 0 && Object::cast_to<MeshInstance>(node)) {
+	if (n->skin >= 0 && n->skin < skeletons.size() && Object::cast_to<MeshInstance>(node)) {
 		MeshInstance *mi = Object::cast_to<MeshInstance>(node);
 
 		Skeleton *s = skeletons[n->skin];
@@ -1718,24 +1787,17 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 			_generate_node(state, n->children[i], node, p_owner, skeletons);
 		}
 	}
+
+	if (state.skeleton_nodes.has(p_node)) {
+		_reparent_skeleton(state, p_node, skeletons, node);
+	}
 }
 
 void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, Node *p_parent_node) {
 	ERR_FAIL_INDEX(p_node, state.nodes.size());
 
 	if (state.skeleton_nodes.has(p_node)) {
-		//reparent skeletons to proper place
-		Vector<int> nodes = state.skeleton_nodes[p_node];
-		for (int i = 0; i < nodes.size(); i++) {
-			Node *owner = skeletons[i]->get_owner();
-			skeletons[i]->get_parent()->remove_child(skeletons[i]);
-			p_parent_node->add_child(skeletons[i]);
-			skeletons[i]->set_owner(owner);
-			//may have meshes as children, set owner in them too
-			for (int j = 0; j < skeletons[i]->get_child_count(); j++) {
-				skeletons[i]->get_child(j)->set_owner(owner);
-			}
-		}
+		_reparent_skeleton(state, p_node, skeletons, p_parent_node);
 	}
 
 	GLTFNode *n = state.nodes[p_node];
@@ -1795,17 +1857,24 @@ template <>
 struct EditorSceneImporterGLTFInterpolate<Quat> {
 
 	Quat lerp(const Quat &a, const Quat &b, float c) const {
+		ERR_FAIL_COND_V(!a.is_normalized(), Quat());
+		ERR_FAIL_COND_V(!b.is_normalized(), Quat());
 
-		return a.slerp(b, c);
+		return a.slerp(b, c).normalized();
 	}
 
 	Quat catmull_rom(const Quat &p0, const Quat &p1, const Quat &p2, const Quat &p3, float c) {
+		ERR_FAIL_COND_V(!p1.is_normalized(), Quat());
+		ERR_FAIL_COND_V(!p2.is_normalized(), Quat());
 
-		return p1.slerp(p2, c);
+		return p1.slerp(p2, c).normalized();
 	}
 
 	Quat bezier(Quat start, Quat control_1, Quat control_2, Quat end, float t) {
-		return start.slerp(end, t);
+		ERR_FAIL_COND_V(!start.is_normalized(), Quat());
+		ERR_FAIL_COND_V(!end.is_normalized(), Quat());
+
+		return start.slerp(end, t).normalized();
 	}
 };
 
@@ -1871,9 +1940,9 @@ T EditorSceneImporterGLTF::_interpolate_track(const Vector<float> &p_times, cons
 			float c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
 
 			T from = p_values[idx * 3 + 1];
-			T c1 = from + p_values[idx * 3 + 0];
-			T to = p_values[idx * 3 + 3];
-			T c2 = to + p_values[idx * 3 + 2];
+			T c1 = from + p_values[idx * 3 + 2];
+			T to = p_values[idx * 3 + 4];
+			T c2 = to + p_values[idx * 3 + 3];
 
 			return interp.bezier(from, c1, c2, to, c);
 
@@ -1905,15 +1974,15 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 		NodePath node_path;
 
 		GLTFNode *node = state.nodes[E->key()];
-		for (int i = 0; i < node->godot_nodes.size(); i++) {
+		for (int n = 0; n < node->godot_nodes.size(); n++) {
 
 			if (node->joints.size()) {
-				Skeleton *sk = (Skeleton *)node->godot_nodes[i];
+				Skeleton *sk = (Skeleton *)node->godot_nodes[n];
 				String path = ap->get_parent()->get_path_to(sk);
-				String bone = sk->get_bone_name(node->joints[i].godot_bone_index);
+				String bone = sk->get_bone_name(node->joints[n].godot_bone_index);
 				node_path = path + ":" + bone;
 			} else {
-				node_path = ap->get_parent()->get_path_to(node->godot_nodes[i]);
+				node_path = ap->get_parent()->get_path_to(node->godot_nodes[n]);
 			}
 
 			for (int i = 0; i < track.rotation_track.times.size(); i++) {
@@ -1947,7 +2016,7 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 				Vector3 base_scale = Vector3(1, 1, 1);
 
 				if (!track.rotation_track.values.size()) {
-					base_rot = state.nodes[E->key()]->rotation;
+					base_rot = state.nodes[E->key()]->rotation.normalized();
 				}
 
 				if (!track.translation_track.values.size()) {
@@ -1988,11 +2057,12 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 						xform.basis.set_quat_scale(rot, scale);
 						xform.origin = pos;
 
-						Skeleton *skeleton = skeletons[node->joints[i].skin];
-						int bone = node->joints[i].godot_bone_index;
+						Skeleton *skeleton = skeletons[node->joints[n].skin];
+						int bone = node->joints[n].godot_bone_index;
 						xform = skeleton->get_bone_rest(bone).affine_inverse() * xform;
 
 						rot = xform.basis.get_rotation_quat();
+						rot.normalize();
 						scale = xform.basis.get_scale();
 						pos = xform.origin;
 					}
@@ -2062,6 +2132,7 @@ Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, int p_bake_f
 	Vector<Skeleton *> skeletons;
 	for (int i = 0; i < state.skins.size(); i++) {
 		Skeleton *s = memnew(Skeleton);
+		s->set_use_bones_in_world_transform(false); //GLTF does not need this since meshes are always local
 		String name = state.skins[i].name;
 		if (name == "") {
 			name = _gen_unique_name(state, "Skeleton");

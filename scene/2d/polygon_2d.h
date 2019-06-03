@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,8 @@ class Polygon2D : public Node2D {
 	PoolVector<Vector2> polygon;
 	PoolVector<Vector2> uv;
 	PoolVector<Color> vertex_colors;
-	PoolVector<int> splits;
+	Array polygons;
+	int internal_vertices;
 
 	struct Bone {
 		NodePath path;
@@ -64,9 +65,12 @@ class Polygon2D : public Node2D {
 	mutable Rect2 item_rect;
 
 	NodePath skeleton;
+	ObjectID current_skeleton_id;
 
 	Array _get_bones() const;
 	void _set_bones(const Array &p_bones);
+
+	void _skeleton_bone_setup_changed();
 
 protected:
 	void _notification(int p_what);
@@ -87,11 +91,14 @@ public:
 	void set_polygon(const PoolVector<Vector2> &p_polygon);
 	PoolVector<Vector2> get_polygon() const;
 
+	void set_internal_vertex_count(int p_count);
+	int get_internal_vertex_count() const;
+
 	void set_uv(const PoolVector<Vector2> &p_uv);
 	PoolVector<Vector2> get_uv() const;
 
-	void set_splits(const PoolVector<int> &p_uv);
-	PoolVector<int> get_splits() const;
+	void set_polygons(const Array &p_polygons);
+	Array get_polygons() const;
 
 	void set_color(const Color &p_color);
 	Color get_color() const;

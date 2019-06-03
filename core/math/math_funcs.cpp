@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,34 +30,31 @@
 
 #include "math_funcs.h"
 
-#include "core/os/os.h"
-
-pcg32_random_t Math::default_pcg = { 12047754176567800795ULL, PCG_DEFAULT_INC_64 };
+RandomPCG Math::default_rand(RandomPCG::DEFAULT_SEED, RandomPCG::DEFAULT_INC);
 
 #define PHI 0x9e3779b9
 
-// TODO: we should eventually expose pcg.inc too
 uint32_t Math::rand_from_seed(uint64_t *seed) {
-	pcg32_random_t pcg = { *seed, PCG_DEFAULT_INC_64 };
-	uint32_t r = pcg32_random_r(&pcg);
-	*seed = pcg.state;
+	RandomPCG rng = RandomPCG(*seed, RandomPCG::DEFAULT_INC);
+	uint32_t r = rng.rand();
+	*seed = rng.get_seed();
 	return r;
 }
 
 void Math::seed(uint64_t x) {
-	default_pcg.state = x;
+	default_rand.seed(x);
 }
 
 void Math::randomize() {
-	seed(OS::get_singleton()->get_ticks_usec() * default_pcg.state + PCG_DEFAULT_INC_64);
+	default_rand.randomize();
 }
 
 uint32_t Math::rand() {
-	return pcg32_random_r(&default_pcg);
+	return default_rand.rand();
 }
 
 int Math::step_decimals(double p_step) {
-	static const int maxn = 9;
+	static const int maxn = 10;
 	static const double sd[maxn] = {
 		0.9999, // somehow compensate for floating point error
 		0.09999,
@@ -67,17 +64,19 @@ int Math::step_decimals(double p_step) {
 		0.000009999,
 		0.0000009999,
 		0.00000009999,
-		0.000000009999
+		0.000000009999,
+		0.0000000009999
 	};
 
-	double as = Math::abs(p_step);
+	double abs = Math::abs(p_step);
+	double decs = abs - (int)abs; // Strip away integer part
 	for (int i = 0; i < maxn; i++) {
-		if (as >= sd[i]) {
+		if (decs >= sd[i]) {
 			return i;
 		}
 	}
 
-	return maxn;
+	return 0;
 }
 
 double Math::dectime(double p_value, double p_amount, double p_step) {
@@ -167,13 +166,9 @@ uint32_t Math::larger_prime(uint32_t p_val) {
 }
 
 double Math::random(double from, double to) {
-	unsigned int r = Math::rand();
-	double ret = (double)r / (double)RANDOM_MAX;
-	return (ret) * (to - from) + from;
+	return default_rand.random(from, to);
 }
 
 float Math::random(float from, float to) {
-	unsigned int r = Math::rand();
-	float ret = (float)r / (float)RANDOM_MAX;
-	return (ret) * (to - from) + from;
+	return default_rand.random(from, to);
 }

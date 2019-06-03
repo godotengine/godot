@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +63,8 @@ public:
 		ROTATION_NONE,
 		ROTATION_Y,
 		ROTATION_XY,
-		ROTATION_XYZ
+		ROTATION_XYZ,
+		ROTATION_ORIENTED
 	};
 
 private:
@@ -106,52 +107,11 @@ public:
 	void set_cubic_interpolation(bool p_enable);
 	bool get_cubic_interpolation() const;
 
+	String get_configuration_warning() const;
+
 	PathFollow();
 };
 
 VARIANT_ENUM_CAST(PathFollow::RotationMode);
-
-class OrientedPathFollow : public Spatial {
-
-	GDCLASS(OrientedPathFollow, Spatial);
-
-private:
-	Path *path;
-	real_t delta_offset; // change in offset since last _update_transform
-	real_t offset;
-	real_t h_offset;
-	real_t v_offset;
-	bool cubic;
-	bool loop;
-
-	void _update_transform();
-
-protected:
-	virtual void _validate_property(PropertyInfo &property) const;
-
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	void set_offset(float p_offset);
-	float get_offset() const;
-
-	void set_h_offset(float p_h_offset);
-	float get_h_offset() const;
-
-	void set_v_offset(float p_v_offset);
-	float get_v_offset() const;
-
-	void set_unit_offset(float p_unit_offset);
-	float get_unit_offset() const;
-
-	void set_loop(bool p_loop);
-	bool has_loop() const;
-
-	void set_cubic_interpolation(bool p_enable);
-	bool get_cubic_interpolation() const;
-
-	OrientedPathFollow();
-};
 
 #endif // PATH_H

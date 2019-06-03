@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 #include "visual_script_nodes.h"
 
-#include "engine.h"
-#include "global_constants.h"
-#include "os/input.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/engine.h"
+#include "core/global_constants.h"
+#include "core/os/input.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 
@@ -167,7 +167,7 @@ void VisualScriptFunction::_get_property_list(List<PropertyInfo> *p_list) const 
 		p_list->push_back(PropertyInfo(Variant::INT, "stack/size", PROPERTY_HINT_RANGE, "1,100000"));
 	}
 	p_list->push_back(PropertyInfo(Variant::BOOL, "stack/stackless"));
-	p_list->push_back(PropertyInfo(Variant::INT, "rpc/mode", PROPERTY_HINT_ENUM, "Disabled,Remote,Sync,Master,Slave"));
+	p_list->push_back(PropertyInfo(Variant::INT, "rpc/mode", PROPERTY_HINT_ENUM, "Disabled,Remote,Master,Puppet,Remote Sync,Master Sync,Puppet Sync"));
 }
 
 int VisualScriptFunction::get_output_sequence_port_count() const {
@@ -853,7 +853,7 @@ public:
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 
-		if (instance->get_variable(variable, p_outputs[0]) == false) {
+		if (!instance->get_variable(variable, p_outputs[0])) {
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = RTR("VariableGet not found in script: ") + "'" + String(variable) + "'";
 			return false;
@@ -975,7 +975,7 @@ public:
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 
-		if (instance->set_variable(variable, *p_inputs[0]) == false) {
+		if (!instance->set_variable(variable, *p_inputs[0])) {
 
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = RTR("VariableSet not found in script: ") + "'" + String(variable) + "'";
@@ -3708,18 +3708,18 @@ void register_visual_script_nodes() {
 		for (List<MethodInfo>::Element *E = constructors.front(); E; E = E->next()) {
 
 			if (E->get().arguments.size() > 0) {
-
-				String name = "functions/constructors/" + Variant::get_type_name(Variant::Type(i)) + " ( ";
+				String name = "functions/constructors/" + Variant::get_type_name(Variant::Type(i)) + "(";
 				for (int j = 0; j < E->get().arguments.size(); j++) {
-					if (j > 0)
+					if (j > 0) {
 						name += ", ";
-					if (E->get().arguments.size() == 1)
+					}
+					if (E->get().arguments.size() == 1) {
 						name += Variant::get_type_name(E->get().arguments[j].type);
-					else
+					} else {
 						name += E->get().arguments[j].name;
+					}
 				}
-				name += ") ";
-
+				name += ")";
 				VisualScriptLanguage::singleton->add_register_func(name, create_constructor_node);
 				Pair<Variant::Type, MethodInfo> pair;
 				pair.first = Variant::Type(i);

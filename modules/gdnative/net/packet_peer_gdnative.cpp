@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ void PacketPeerGDNative::_bind_methods() {
 
 Error PacketPeerGDNative::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	ERR_FAIL_COND_V(interface == NULL, ERR_UNCONFIGURED);
-	return (Error)interface->get_packet(interface->data, r_buffer, r_buffer_size);
+	return (Error)interface->get_packet(interface->data, r_buffer, &r_buffer_size);
 }
 
 Error PacketPeerGDNative::put_packet(const uint8_t *p_buffer, int p_buffer_size) {

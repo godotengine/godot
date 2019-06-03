@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,10 +75,13 @@ public:
 			int width_cache : 24;
 			bool marked : 1;
 			bool breakpoint : 1;
+			bool bookmark : 1;
 			bool hidden : 1;
 			bool safe : 1;
 			int wrap_amount_cache : 24;
 			Map<int, ColorRegionInfo> region_info;
+			Ref<Texture> info_icon;
+			String info;
 			String data;
 		};
 
@@ -103,12 +106,21 @@ public:
 		void set(int p_line, const String &p_text);
 		void set_marked(int p_line, bool p_marked) { text.write[p_line].marked = p_marked; }
 		bool is_marked(int p_line) const { return text[p_line].marked; }
+		void set_bookmark(int p_line, bool p_bookmark) { text.write[p_line].bookmark = p_bookmark; }
+		bool is_bookmark(int p_line) const { return text[p_line].bookmark; }
 		void set_breakpoint(int p_line, bool p_breakpoint) { text.write[p_line].breakpoint = p_breakpoint; }
 		bool is_breakpoint(int p_line) const { return text[p_line].breakpoint; }
 		void set_hidden(int p_line, bool p_hidden) { text.write[p_line].hidden = p_hidden; }
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
 		void set_safe(int p_line, bool p_safe) { text.write[p_line].safe = p_safe; }
 		bool is_safe(int p_line) const { return text[p_line].safe; }
+		void set_info_icon(int p_line, Ref<Texture> p_icon, String p_info) {
+			text.write[p_line].info_icon = p_icon;
+			text.write[p_line].info = p_info;
+		}
+		bool has_info_icon(int p_line) const { return text[p_line].info_icon.is_valid(); }
+		const Ref<Texture> &get_info_icon(int p_line) const { return text[p_line].info_icon; }
+		const String &get_info(int p_line) const { return text[p_line].info; }
 		void insert(int p_at, const String &p_text);
 		void remove(int p_at);
 		int size() const { return text.size(); }
@@ -154,9 +166,11 @@ private:
 	struct Cache {
 
 		Ref<Texture> tab_icon;
+		Ref<Texture> space_icon;
 		Ref<Texture> can_fold_icon;
 		Ref<Texture> folded_icon;
 		Ref<Texture> folded_eol_icon;
+		Ref<Texture> executing_icon;
 		Ref<StyleBox> style_normal;
 		Ref<StyleBox> style_focus;
 		Ref<StyleBox> style_readonly;
@@ -177,7 +191,9 @@ private:
 		Color member_variable_color;
 		Color selection_color;
 		Color mark_color;
+		Color bookmark_color;
 		Color breakpoint_color;
+		Color executing_line_color;
 		Color code_folding_color;
 		Color current_line_color;
 		Color line_length_guideline_color;
@@ -193,7 +209,7 @@ private:
 		int line_number_w;
 		int breakpoint_gutter_width;
 		int fold_gutter_width;
-		Size2 size;
+		int info_gutter_width;
 	} cache;
 
 	Map<int, int> color_region_cache;
@@ -276,8 +292,10 @@ private:
 	int wrap_at;
 	int wrap_right_offset;
 
+	bool first_draw;
 	bool setting_row;
 	bool draw_tabs;
+	bool draw_spaces;
 	bool override_selected_font_color;
 	bool cursor_changed_dirty;
 	bool text_changed_dirty;
@@ -286,11 +304,14 @@ private:
 	bool line_numbers_zero_padded;
 	bool line_length_guideline;
 	int line_length_guideline_col;
+	bool draw_bookmark_gutter;
 	bool draw_breakpoint_gutter;
 	int breakpoint_gutter_width;
 	bool draw_fold_gutter;
 	int fold_gutter_width;
 	bool hiding_enabled;
+	bool draw_info_gutter;
+	int info_gutter_width;
 
 	bool highlight_all_occurrences;
 	bool scroll_past_end_of_file_enabled;
@@ -306,8 +327,6 @@ private:
 	bool scrolling;
 	float target_v_scroll;
 	float v_scroll_speed;
-
-	bool raised_from_completion;
 
 	String highlighted_word;
 
@@ -335,11 +354,13 @@ private:
 
 	bool context_menu_enabled;
 
+	int executing_line;
+
 	int get_visible_rows() const;
 	int get_total_visible_rows() const;
 
 	void update_cursor_wrap_offset();
-	void update_wrap_at();
+	void _update_wrap_at();
 	bool line_wraps(int line) const;
 	int times_line_wraps(int line) const;
 	Vector<String> get_wrap_rows_text(int p_line) const;
@@ -373,6 +394,7 @@ private:
 	void _update_selection_mode_word();
 	void _update_selection_mode_line();
 
+	void _uncomment_line(int p_line);
 	void _scroll_up(real_t p_delta);
 	void _scroll_down(real_t p_delta);
 
@@ -381,8 +403,6 @@ private:
 
 	void _scroll_lines_up();
 	void _scroll_lines_down();
-
-	static void _ime_text_callback(void *p_self, String p_text, Point2 p_selection);
 
 	//void mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask);
 	Size2 get_minimum_size() const;
@@ -417,6 +437,9 @@ private:
 	void _confirm_completion();
 	void _update_completion_candidates();
 
+	int _calculate_spaces_till_next_left_indent(int column);
+	int _calculate_spaces_till_next_right_indent(int column);
+
 protected:
 	virtual String get_tooltip(const Point2 &p_pos) const;
 
@@ -446,6 +469,7 @@ public:
 		MENU_CLEAR,
 		MENU_SELECT_ALL,
 		MENU_UNDO,
+		MENU_REDO,
 		MENU_MAX
 
 	};
@@ -474,13 +498,22 @@ public:
 	void insert_at(const String &p_text, int at);
 	int get_line_count() const;
 	void set_line_as_marked(int p_line, bool p_marked);
+	void set_line_as_bookmark(int p_line, bool p_bookmark);
+	bool is_line_set_as_bookmark(int p_line) const;
+	void get_bookmarks(List<int> *p_bookmarks) const;
+	Array get_bookmarks_array() const;
 	void set_line_as_breakpoint(int p_line, bool p_breakpoint);
 	bool is_line_set_as_breakpoint(int p_line) const;
+	void set_executing_line(int p_line);
+	void clear_executing_line();
 	void set_line_as_safe(int p_line, bool p_safe);
 	bool is_line_set_as_safe(int p_line) const;
 	void get_breakpoints(List<int> *p_breakpoints) const;
 	Array get_breakpoints_array() const;
 	void remove_breakpoints();
+
+	void set_line_info_icon(int p_line, Ref<Texture> p_icon, String p_info = "");
+	void clear_info_icons();
 
 	void set_line_as_hidden(int p_line, bool p_hidden);
 	bool is_line_hidden(int p_line) const;
@@ -492,6 +525,7 @@ public:
 
 	bool can_fold(int p_line) const;
 	bool is_folded(int p_line) const;
+	Vector<int> get_folded_lines() const;
 	void fold_line(int p_line);
 	void unfold_line(int p_line);
 	void toggle_fold_line(int p_line);
@@ -593,6 +627,8 @@ public:
 	int get_indent_size();
 	void set_draw_tabs(bool p_draw);
 	bool is_drawing_tabs() const;
+	void set_draw_spaces(bool p_draw);
+	bool is_drawing_spaces() const;
 	void set_override_selected_font_color(bool p_override_selected_font_color);
 	bool is_overriding_selected_font_color() const;
 
@@ -640,6 +676,9 @@ public:
 	void set_show_line_length_guideline(bool p_show);
 	void set_line_length_guideline_column(int p_column);
 
+	void set_bookmark_gutter_enabled(bool p_draw);
+	bool is_bookmark_gutter_enabled() const;
+
 	void set_breakpoint_gutter_enabled(bool p_draw);
 	bool is_breakpoint_gutter_enabled() const;
 
@@ -651,6 +690,12 @@ public:
 
 	void set_fold_gutter_width(int p_gutter_width);
 	int get_fold_gutter_width() const;
+
+	void set_draw_info_gutter(bool p_draw);
+	bool is_drawing_info_gutter() const;
+
+	void set_info_gutter_width(int p_gutter_width);
+	int get_info_gutter_width() const;
 
 	void set_hiding_enabled(int p_enabled);
 	int is_hiding_enabled() const;
@@ -686,10 +731,11 @@ protected:
 	TextEdit *text_editor;
 
 public:
+	virtual ~SyntaxHighlighter() {}
 	virtual void _update_cache() = 0;
 	virtual Map<int, TextEdit::HighlighterInfo> _get_line_syntax_highlighting(int p_line) = 0;
 
-	virtual String get_name() = 0;
+	virtual String get_name() const = 0;
 	virtual List<String> get_supported_languages() = 0;
 
 	void set_text_editor(TextEdit *p_text_editor);

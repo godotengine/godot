@@ -227,6 +227,7 @@ struct _lws_http_mode_related {
 #if defined(LWS_WITH_HTTP_PROXY)
 	unsigned int perform_rewrite:1;
 #endif
+	unsigned int deferred_transaction_completed:1;
 };
 
 

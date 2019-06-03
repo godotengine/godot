@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "editor_spin_slider.h"
+#include "core/math/expression.h"
+#include "core/os/input.h"
 #include "editor_scale.h"
-#include "math/expression.h"
-#include "os/input.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	return rtos(get_value());
@@ -63,6 +63,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 
 				grabbing_spinner_attempt = true;
 				grabbing_spinner_dist_cache = 0;
+				pre_grab_value = get_value();
 				grabbing_spinner = false;
 				grabbing_spinner_mouse_pos = Input::get_singleton()->get_mouse_position();
 			}
@@ -107,10 +108,10 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 					if (ABS(grabbing_spinner_dist_cache) > 6) {
 						set_value(get_value() + SGN(grabbing_spinner_dist_cache));
 						grabbing_spinner_dist_cache = 0;
+						pre_grab_value = get_value();
 					}
 				} else {
-					set_value(get_value() + get_step() * grabbing_spinner_dist_cache * 10);
-					grabbing_spinner_dist_cache = 0;
+					set_value(pre_grab_value + get_step() * grabbing_spinner_dist_cache * 10);
 				}
 			}
 		} else if (updown_offset != -1) {
@@ -154,7 +155,9 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 
 void EditorSpinSlider::_notification(int p_what) {
 
-	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT || p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT) {
+	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT ||
+			p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN ||
+			p_what == NOTIFICATION_EXIT_TREE) {
 		if (grabbing_spinner) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 			grabbing_spinner = false;
@@ -210,14 +213,14 @@ void EditorSpinSlider::_notification(int p_what) {
 		draw_string(font, Vector2(sb->get_offset().x + string_width + sep, vofs), numstr, fc, number_width);
 
 		if (get_step() == 1) {
-			Ref<Texture> updown = get_icon("updown", "SpinBox");
-			int updown_vofs = (get_size().height - updown->get_height()) / 2;
-			updown_offset = get_size().width - sb->get_margin(MARGIN_RIGHT) - updown->get_width();
+			Ref<Texture> updown2 = get_icon("updown", "SpinBox");
+			int updown_vofs = (get_size().height - updown2->get_height()) / 2;
+			updown_offset = get_size().width - sb->get_margin(MARGIN_RIGHT) - updown2->get_width();
 			Color c(1, 1, 1);
 			if (hover_updown) {
 				c *= Color(1.2, 1.2, 1.2);
 			}
-			draw_texture(updown, Vector2(updown_offset, updown_vofs), c);
+			draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
 			if (grabber->is_visible()) {
 				grabber->hide();
 			}
@@ -274,7 +277,7 @@ void EditorSpinSlider::_notification(int p_what) {
 		update();
 	}
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		/* Sorry, I dont like this, it makes navigating the different fields with arrows more difficult.
+		/* Sorry, I don't like this, it makes navigating the different fields with arrows more difficult.
 		 * Just press enter to edit.
 		 * if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && !value_input_just_closed) {
 			_focus_entered();
@@ -434,6 +437,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	grabbing_spinner_attempt = false;
 	grabbing_spinner = false;
 	grabbing_spinner_dist_cache = 0;
+	pre_grab_value = 0;
 	set_focus_mode(FOCUS_ALL);
 	updown_offset = -1;
 	hover_updown = false;

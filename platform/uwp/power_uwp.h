@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PLATFORM_UWP_POWER_UWP_H_
-#define PLATFORM_UWP_POWER_UWP_H_
+#ifndef POWER_UWP_H
+#define POWER_UWP_H
 
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "os/os.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 
 class PowerUWP {
 
@@ -53,4 +53,4 @@ public:
 	int get_power_percent_left();
 };
 
-#endif /* PLATFORM_UWP_POWER_UWP_H_ */
+#endif // POWER_UWP_H

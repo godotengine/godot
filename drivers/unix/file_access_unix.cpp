@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,8 @@
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
 #include "core/os/os.h"
-#include "print_string.h"
+#include "core/print_string.h"
+
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -106,7 +107,6 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	if (is_backup_save_enabled() && (p_mode_flags & WRITE) && !(p_mode_flags & READ)) {
 		save_path = path;
 		path = path + ".tmp";
-		//print_line("saving instead to "+path);
 	}
 
 	f = fopen(path.utf8().get_data(), mode_string);
@@ -134,9 +134,6 @@ void FileAccessUnix::close() {
 	}
 
 	if (save_path != "") {
-
-		//unlink(save_path.utf8().get_data());
-		//print_line("renaming...");
 		int rename_error = rename((save_path + ".tmp").utf8().get_data(), save_path.utf8().get_data());
 
 		if (rename_error && close_fail_notify) {
@@ -249,7 +246,7 @@ void FileAccessUnix::store_8(uint8_t p_dest) {
 
 void FileAccessUnix::store_buffer(const uint8_t *p_src, int p_length) {
 	ERR_FAIL_COND(!f);
-	ERR_FAIL_COND(fwrite(p_src, 1, p_length, f) != p_length);
+	ERR_FAIL_COND((int)fwrite(p_src, 1, p_length, f) != p_length);
 }
 
 bool FileAccessUnix::file_exists(const String &p_path) {
@@ -291,14 +288,30 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	if (!err) {
 		return flags.st_mtime;
 	} else {
-		print_line("ERROR IN: " + p_file);
-
+		ERR_EXPLAIN("Failed to get modified time for: " + p_file);
 		ERR_FAIL_V(0);
 	};
 }
 
-Error FileAccessUnix::_chmod(const String &p_path, int p_mod) {
-	int err = chmod(p_path.utf8().get_data(), p_mod);
+uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
+
+	String file = fix_path(p_file);
+	struct stat flags;
+	int err = stat(file.utf8().get_data(), &flags);
+
+	if (!err) {
+		return flags.st_mode & 0x7FF; //only permissions
+	} else {
+		ERR_EXPLAIN("Failed to get unix permissions for: " + p_file);
+		ERR_FAIL_V(0);
+	};
+}
+
+Error FileAccessUnix::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+
+	String file = fix_path(p_file);
+
+	int err = chmod(file.utf8().get_data(), p_permissions);
 	if (!err) {
 		return OK;
 	}
@@ -313,11 +326,10 @@ FileAccess *FileAccessUnix::create_libc() {
 
 CloseNotificationFunc FileAccessUnix::close_notification_func = NULL;
 
-FileAccessUnix::FileAccessUnix() {
-
-	f = NULL;
-	flags = 0;
-	last_error = OK;
+FileAccessUnix::FileAccessUnix() :
+		f(NULL),
+		flags(0),
+		last_error(OK) {
 }
 
 FileAccessUnix::~FileAccessUnix() {

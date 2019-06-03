@@ -1,3 +1,6 @@
+		// The following is concatenated with generated code, and acts as the end
+		// of a wrapper for said code. See pre.js for the other part of the
+		// wrapper.
 		exposedLibs['PATH'] = PATH;
 		exposedLibs['FS'] = FS;
 		return Module;
@@ -196,7 +199,8 @@
 					}
 					LIBS.FS.mkdirTree(dir);
 				}
-				LIBS.FS.createDataFile('/', file.path, new Uint8Array(file.buffer), true, true, true);
+				// With memory growth, canOwn should be false.
+				LIBS.FS.createDataFile(file.path, null, new Uint8Array(file.buffer), true, true, false);
 			}, this);
 
 			preloadedFiles = null;

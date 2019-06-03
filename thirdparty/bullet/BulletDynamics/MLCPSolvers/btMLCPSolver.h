@@ -23,15 +23,13 @@ subject to the following restrictions:
 
 class btMLCPSolver : public btSequentialImpulseConstraintSolver
 {
-
 protected:
-	
 	btMatrixXu m_A;
 	btVectorXu m_b;
 	btVectorXu m_x;
 	btVectorXu m_lo;
 	btVectorXu m_hi;
-	
+
 	///when using 'split impulse' we solve two separate (M)LCPs
 	btVectorXu m_bSplit;
 	btVectorXu m_xSplit;
@@ -39,24 +37,23 @@ protected:
 	btVectorXu m_xSplit2;
 
 	btAlignedObjectArray<int> m_limitDependencies;
-	btAlignedObjectArray<btSolverConstraint*>	m_allConstraintPtrArray;
+	btAlignedObjectArray<btSolverConstraint*> m_allConstraintPtrArray;
 	btMLCPSolverInterface* m_solver;
 	int m_fallback;
 
-    /// The following scratch variables are not stateful -- contents are cleared prior to each use.
-    /// They are only cached here to avoid extra memory allocations and deallocations and to ensure
-    /// that multiple instances of the solver can be run in parallel.
-    btMatrixXu m_scratchJ3;
-    btMatrixXu m_scratchJInvM3;
-    btAlignedObjectArray<int> m_scratchOfs;
-    btMatrixXu m_scratchMInv;
-    btMatrixXu m_scratchJ;
-    btMatrixXu m_scratchJTranspose;
-    btMatrixXu m_scratchTmp;
+	/// The following scratch variables are not stateful -- contents are cleared prior to each use.
+	/// They are only cached here to avoid extra memory allocations and deallocations and to ensure
+	/// that multiple instances of the solver can be run in parallel.
+	btMatrixXu m_scratchJ3;
+	btMatrixXu m_scratchJInvM3;
+	btAlignedObjectArray<int> m_scratchOfs;
+	btMatrixXu m_scratchMInv;
+	btMatrixXu m_scratchJ;
+	btMatrixXu m_scratchJTranspose;
+	btMatrixXu m_scratchTmp;
 
-	virtual btScalar solveGroupCacheFriendlySetup(btCollisionObject** bodies, int numBodies, btPersistentManifold** manifoldPtr, int numManifolds,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal,btIDebugDraw* debugDrawer);
-	virtual btScalar solveGroupCacheFriendlyIterations(btCollisionObject** bodies ,int numBodies,btPersistentManifold** manifoldPtr, int numManifolds,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal,btIDebugDraw* debugDrawer);
-
+	virtual btScalar solveGroupCacheFriendlySetup(btCollisionObject** bodies, int numBodies, btPersistentManifold** manifoldPtr, int numManifolds, btTypedConstraint** constraints, int numConstraints, const btContactSolverInfo& infoGlobal, btIDebugDraw* debugDrawer);
+	virtual btScalar solveGroupCacheFriendlyIterations(btCollisionObject** bodies, int numBodies, btPersistentManifold** manifoldPtr, int numManifolds, btTypedConstraint** constraints, int numConstraints, const btContactSolverInfo& infoGlobal, btIDebugDraw* debugDrawer);
 
 	virtual void createMLCP(const btContactSolverInfo& infoGlobal);
 	virtual void createMLCPFast(const btContactSolverInfo& infoGlobal);
@@ -65,8 +62,7 @@ protected:
 	virtual bool solveMLCP(const btContactSolverInfo& infoGlobal);
 
 public:
-
-	btMLCPSolver(	 btMLCPSolverInterface* solver);
+	btMLCPSolver(btMLCPSolverInterface* solver);
 	virtual ~btMLCPSolver();
 
 	void setMLCPSolver(btMLCPSolverInterface* solver)
@@ -83,12 +79,10 @@ public:
 		m_fallback = num;
 	}
 
-	virtual btConstraintSolverType	getSolverType() const
+	virtual btConstraintSolverType getSolverType() const
 	{
 		return BT_MLCP_SOLVER;
 	}
-
 };
 
-
-#endif //BT_MLCP_SOLVER_H
+#endif  //BT_MLCP_SOLVER_H

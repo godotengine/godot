@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" category="Core" version="3.1">
+<class name="OS" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		Operating System functions.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="alert">
 			<return type="void">
@@ -41,6 +39,12 @@
 			</return>
 			<description>
 				Centers the window on the screen if in windowed mode.
+			</description>
+		</method>
+		<method name="close_midi_inputs">
+			<return type="void">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
@@ -93,9 +97,11 @@
 			</argument>
 			<argument index="3" name="output" type="Array" default="[  ]">
 			</argument>
+			<argument index="4" name="read_stderr" type="bool" default="false">
+			</argument>
 			<description>
 				Execute the file at the given path with the arguments passed as an array of strings. Platform path resolution will take place. The resolved file must exist and be executable.
-				The arguments are used in the given order and separated by a space, so [code]OS.execute('ping', ['-c', '3', 'godotengine.org'])[/code] will resolve to [code]ping -c 3 godotengine.org[/code] in the system's shell.
+				The arguments are used in the given order and separated by a space, so [code]OS.execute('ping', ['-w', '3', 'godotengine.org'], false)[/code] will resolve to [code]ping -w 3 godotengine.org[/code] in the system's shell.
 				This method has slightly different behaviour based on whether the [code]blocking[/code] mode is enabled.
 				When [code]blocking[/code] is enabled, the Godot thread will pause its execution while waiting for the process to terminate. The shell output of the process will be written to the [code]output[/code] array as a single string. When the process terminates, the Godot thread will resume execution.
 				When [code]blocking[/code] is disabled, the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so [code]output[/code] will be empty.
@@ -153,6 +159,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_current_video_driver" qualifiers="const">
+			<return type="int" enum="OS.VideoDriver">
+			</return>
+			<description>
+				Returns the currently used video driver, using one of the values from [enum OS.VideoDriver].
+			</description>
+		</method>
 		<method name="get_date" qualifiers="const">
 			<return type="Dictionary">
 			</return>
@@ -202,6 +215,20 @@
 			</return>
 			<description>
 				Returns the path to the current engine executable.
+			</description>
+		</method>
+		<method name="get_ime_selection" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns IME selection range.
+			</description>
+		</method>
+		<method name="get_ime_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns IME intermediate text.
 			</description>
 		</method>
 		<method name="get_latin_keyboard_variant" qualifiers="const">
@@ -351,7 +378,14 @@
 			<argument index="0" name="dir" type="int" enum="OS.SystemDir">
 			</argument>
 			<description>
-				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [OS.SystemDir].
+				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [enum OS.SystemDir].
+			</description>
+		</method>
+		<method name="get_system_time_msecs" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the epoch time of the operating system in milliseconds.
 			</description>
 		</method>
 		<method name="get_system_time_secs" qualifiers="const">
@@ -432,14 +466,16 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of video drivers supported on the current platform.
 			</description>
 		</method>
 		<method name="get_video_driver_name" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="driver" type="int">
+			<argument index="0" name="driver" type="int" enum="OS.VideoDriver">
 			</argument>
 			<description>
+				Returns the name of the video driver matching the given [code]driver[/code] index. This index is a value from [enum OS.VideoDriver], and you can use [method get_current_video_driver] to get the current backend's index.
 			</description>
 		</method>
 		<method name="get_virtual_keyboard_height">
@@ -550,6 +586,13 @@
 				Note that this method can also be used to kill processes that were not spawned by the game.
 			</description>
 		</method>
+		<method name="move_window_to_foreground">
+			<return type="void">
+			</return>
+			<description>
+				Moves the window to the front.
+			</description>
+		</method>
 		<method name="native_video_is_playing">
 			<return type="bool">
 			</return>
@@ -577,6 +620,7 @@
 			</argument>
 			<description>
 				Plays native video from the specified path, at the given volume and with audio and subtitle tracks.
+				Note: This method is only implemented on Android and iOS, and the current Android implementation does not support the [code]volume[/code], [code]audio_track[/code] and [code]subtitle_track[/code] options.
 			</description>
 		</method>
 		<method name="native_video_stop">
@@ -591,6 +635,12 @@
 			</return>
 			<description>
 				Resumes native video playback.
+			</description>
+		</method>
+		<method name="open_midi_inputs">
+			<return type="void">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="print_all_resources">
@@ -634,13 +684,32 @@
 				Request the user attention to the window. It'll flash the taskbar button on Windows or bounce the dock icon on OSX.
 			</description>
 		</method>
+		<method name="request_permission">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				At the moment this function is only used by [code]AudioDriverOpenSL[/code] to request permission for [code]RECORD_AUDIO[/code] on Android.
+			</description>
+		</method>
 		<method name="set_icon">
 			<return type="void">
 			</return>
 			<argument index="0" name="icon" type="Image">
 			</argument>
 			<description>
-				Sets the game's icon.
+				Sets the game's icon using an [Image] resource.
+				The same image is used for window caption, taskbar/dock and window selection dialog. Image is scaled as needed.
+			</description>
+		</method>
+		<method name="set_ime_active">
+			<return type="void">
+			</return>
+			<argument index="0" name="active" type="bool">
+			</argument>
+			<description>
+				Sets whether IME input mode should be enabled.
 			</description>
 		</method>
 		<method name="set_ime_position">
@@ -649,6 +718,18 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
+				Sets position of IME suggestion list popup (in window coordinates).
+			</description>
+		</method>
+		<method name="set_native_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="filename" type="String">
+			</argument>
+			<description>
+				Sets the game's icon using a multi-size platform-specific icon file ([code]*.ico[/code] on Windows and [code]*.icns[/code] on macOS).
+				Appropriate size sub-icons are used for window caption, taskbar/dock and window selection dialog.
+				Note: This method is only implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="set_thread_name">
@@ -695,7 +776,7 @@
 			<description>
 				Requests the OS to open a resource with the most appropriate program. For example.
 					[code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the downloads folders of the user.
-					[code]OS.shell_open("http://godotengine.org")[/code] opens the default web browser on the official Godot website.
+					[code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
 			</description>
 		</method>
 		<method name="show_virtual_keyboard">
@@ -719,28 +800,28 @@
 			The exit code passed to the OS when the main loop exits.
 		</member>
 		<member name="keep_screen_on" type="bool" setter="set_keep_screen_on" getter="is_keep_screen_on">
-			If [code]true[/code] the engine tries to keep the screen on while the game is running. Useful on mobile.
+			If [code]true[/code], the engine tries to keep the screen on while the game is running. Useful on mobile.
 		</member>
 		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode">
-			If [code]true[/code] the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
+			If [code]true[/code], the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
 		</member>
 		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation">
 			The current screen orientation.
 		</member>
 		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled">
-			If [code]true[/code] vertical synchronization (Vsync) is enabled.
+			If [code]true[/code], vertical synchronization (Vsync) is enabled.
 		</member>
 		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window">
-			If [code]true[/code] removes the window frame.
+			If [code]true[/code], removes the window frame.
 		</member>
 		<member name="window_fullscreen" type="bool" setter="set_window_fullscreen" getter="is_window_fullscreen">
-			If [code]true[/code] the window is fullscreen.
+			If [code]true[/code], the window is fullscreen.
 		</member>
 		<member name="window_maximized" type="bool" setter="set_window_maximized" getter="is_window_maximized">
-			If [code]true[/code] the window is maximized.
+			If [code]true[/code], the window is maximized.
 		</member>
 		<member name="window_minimized" type="bool" setter="set_window_minimized" getter="is_window_minimized">
-			If [code]true[/code] the window is minimized.
+			If [code]true[/code], the window is minimized.
 		</member>
 		<member name="window_per_pixel_transparency_enabled" type="bool" setter="set_window_per_pixel_transparency_enabled" getter="get_window_per_pixel_transparency_enabled">
 		</member>
@@ -755,6 +836,12 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="VIDEO_DRIVER_GLES2" value="1" enum="VideoDriver">
+			The GLES2 rendering backend. It uses OpenGL ES 2.0 on mobile devices, OpenGL 2.1 on desktop platforms and WebGL 1.0 on the web.
+		</constant>
+		<constant name="VIDEO_DRIVER_GLES3" value="0" enum="VideoDriver">
+			The GLES3 rendering backend. It uses OpenGL ES 3.0 on mobile devices, OpenGL 3.3 on desktop platforms and WebGL 2.0 on the web.
+		</constant>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
 			Sunday.
 		</constant>

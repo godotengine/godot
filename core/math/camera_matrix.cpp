@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "camera_matrix.h"
-#include "math_funcs.h"
-#include "print_string.h"
+
+#include "core/math/math_funcs.h"
+#include "core/print_string.h"
 
 void CameraMatrix::set_identity() {
 
@@ -207,6 +208,14 @@ void CameraMatrix::set_frustum(real_t p_left, real_t p_right, real_t p_bottom, r
 	te[13] = 0;
 	te[14] = d;
 	te[15] = 0;
+}
+
+void CameraMatrix::set_frustum(real_t p_size, real_t p_aspect, Vector2 p_offset, real_t p_near, real_t p_far, bool p_flip_fov) {
+	if (!p_flip_fov) {
+		p_size *= p_aspect;
+	}
+
+	set_frustum(-p_size / 2 + p_offset.x, +p_size / 2 + p_offset.x, -p_size / p_aspect / 2 + p_offset.y, +p_size / p_aspect / 2 + p_offset.y, p_near, p_far);
 }
 
 real_t CameraMatrix::get_z_far() const {

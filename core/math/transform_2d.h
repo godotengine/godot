@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef TRANSFORM_2D_H
 #define TRANSFORM_2D_H
 
-#include "rect2.h" // also includes vector2, math_funcs, and ustring
+#include "core/math/rect2.h" // also includes vector2, math_funcs, and ustring
 
 struct Transform2D {
 	// Warning #1: basis of Transform2D is stored differently from Basis. In terms of elements array, the basis matrix looks like "on paper":
@@ -81,6 +81,7 @@ struct Transform2D {
 	real_t basis_determinant() const;
 
 	Size2 get_scale() const;
+	void set_scale(const Size2 &p_scale);
 
 	_FORCE_INLINE_ const Vector2 &get_origin() const { return elements[2]; }
 	_FORCE_INLINE_ void set_origin(const Vector2 &p_origin) { elements[2] = p_origin; }

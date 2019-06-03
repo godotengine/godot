@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSettings" inherits="Resource" category="Core" version="3.1">
+<class name="EditorSettings" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		Object that holds the project-independent editor settings.
 	</brief_description>
@@ -14,8 +14,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_property_info">
 			<return type="void">
@@ -48,11 +46,11 @@
 				Erase a given setting (pass full property path).
 			</description>
 		</method>
-		<method name="get_favorite_dirs" qualifiers="const">
+		<method name="get_favorites" qualifiers="const">
 			<return type="PoolStringArray">
 			</return>
 			<description>
-				Get the list of favorite directories for this project.
+				Get the list of favorite files and directories for this project.
 			</description>
 		</method>
 		<method name="get_project_metadata" qualifiers="const">
@@ -122,13 +120,13 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_favorite_dirs">
+		<method name="set_favorites">
 			<return type="void">
 			</return>
 			<argument index="0" name="dirs" type="PoolStringArray">
 			</argument>
 			<description>
-				Set the list of favorite directories for this project.
+				Set the list of favorite files and directories for this project.
 			</description>
 		</method>
 		<method name="set_initial_value">

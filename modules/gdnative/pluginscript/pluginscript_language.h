@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,8 +48,8 @@ class PluginScriptLanguage : public ScriptLanguage {
 	friend class PluginScript;
 	friend class PluginScriptInstance;
 
-	ResourceFormatLoaderPluginScript *_resource_loader;
-	ResourceFormatSaverPluginScript *_resource_saver;
+	Ref<ResourceFormatLoaderPluginScript> _resource_loader;
+	Ref<ResourceFormatSaverPluginScript> _resource_saver;
 	const godot_pluginscript_language_desc _desc;
 	godot_pluginscript_language_data *_data;
 
@@ -59,8 +59,8 @@ class PluginScriptLanguage : public ScriptLanguage {
 public:
 	virtual String get_name() const;
 
-	_FORCE_INLINE_ ResourceFormatLoaderPluginScript *get_resource_loader() { return _resource_loader; };
-	_FORCE_INLINE_ ResourceFormatSaverPluginScript *get_resource_saver() { return _resource_saver; };
+	_FORCE_INLINE_ Ref<ResourceFormatLoaderPluginScript> get_resource_loader() { return _resource_loader; }
+	_FORCE_INLINE_ Ref<ResourceFormatSaverPluginScript> get_resource_saver() { return _resource_saver; }
 
 	/* LANGUAGE FUNCTIONS */
 	virtual void init();

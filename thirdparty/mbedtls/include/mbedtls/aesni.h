@@ -2,6 +2,9 @@
  * \file aesni.h
  *
  * \brief AES-NI for hardware AES acceleration on some Intel processors
+ *
+ * \warning These functions are only for internal use by other library
+ *          functions; you must not call them directly.
  */
 /*
  *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
@@ -42,7 +45,10 @@ extern "C" {
 #endif
 
 /**
- * \brief          AES-NI features detection routine
+ * \brief          Internal function to detect the AES-NI feature in CPUs.
+ *
+ * \note           This function is only for internal use by other library
+ *                 functions; you must not call it directly.
  *
  * \param what     The feature to detect
  *                 (MBEDTLS_AESNI_AES or MBEDTLS_AESNI_CLMUL)
@@ -52,7 +58,10 @@ extern "C" {
 int mbedtls_aesni_has_support( unsigned int what );
 
 /**
- * \brief          AES-NI AES-ECB block en(de)cryption
+ * \brief          Internal AES-NI AES-ECB block encryption and decryption
+ *
+ * \note           This function is only for internal use by other library
+ *                 functions; you must not call it directly.
  *
  * \param ctx      AES context
  * \param mode     MBEDTLS_AES_ENCRYPT or MBEDTLS_AES_DECRYPT
@@ -62,12 +71,15 @@ int mbedtls_aesni_has_support( unsigned int what );
  * \return         0 on success (cannot fail)
  */
 int mbedtls_aesni_crypt_ecb( mbedtls_aes_context *ctx,
-                     int mode,
-                     const unsigned char input[16],
-                     unsigned char output[16] );
+                             int mode,
+                             const unsigned char input[16],
+                             unsigned char output[16] );
 
 /**
- * \brief          GCM multiplication: c = a * b in GF(2^128)
+ * \brief          Internal GCM multiplication: c = a * b in GF(2^128)
+ *
+ * \note           This function is only for internal use by other library
+ *                 functions; you must not call it directly.
  *
  * \param c        Result
  * \param a        First operand
@@ -77,21 +89,29 @@ int mbedtls_aesni_crypt_ecb( mbedtls_aes_context *ctx,
  *                 elements of GF(2^128) as per the GCM spec.
  */
 void mbedtls_aesni_gcm_mult( unsigned char c[16],
-                     const unsigned char a[16],
-                     const unsigned char b[16] );
+                             const unsigned char a[16],
+                             const unsigned char b[16] );
 
 /**
- * \brief           Compute decryption round keys from encryption round keys
+ * \brief           Internal round key inversion. This function computes
+ *                  decryption round keys from the encryption round keys.
+ *
+ * \note            This function is only for internal use by other library
+ *                  functions; you must not call it directly.
  *
  * \param invkey    Round keys for the equivalent inverse cipher
  * \param fwdkey    Original round keys (for encryption)
  * \param nr        Number of rounds (that is, number of round keys minus one)
  */
 void mbedtls_aesni_inverse_key( unsigned char *invkey,
-                        const unsigned char *fwdkey, int nr );
+                                const unsigned char *fwdkey,
+                                int nr );
 
 /**
- * \brief           Perform key expansion (for encryption)
+ * \brief           Internal key expansion for encryption
+ *
+ * \note            This function is only for internal use by other library
+ *                  functions; you must not call it directly.
  *
  * \param rk        Destination buffer where the round keys are written
  * \param key       Encryption key
@@ -100,8 +120,8 @@ void mbedtls_aesni_inverse_key( unsigned char *invkey,
  * \return          0 if successful, or MBEDTLS_ERR_AES_INVALID_KEY_LENGTH
  */
 int mbedtls_aesni_setkey_enc( unsigned char *rk,
-                      const unsigned char *key,
-                      size_t bits );
+                              const unsigned char *key,
+                              size_t bits );
 
 #ifdef __cplusplus
 }

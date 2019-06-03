@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "message_queue.h"
 
-#include "project_settings.h"
-#include "script_language.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
 
 MessageQueue *MessageQueue::singleton = NULL;
 
@@ -50,15 +50,15 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, const V
 		String type;
 		if (ObjectDB::get_instance(p_id))
 			type = ObjectDB::get_instance(p_id)->get_class();
-		print_line("failed method: " + type + ":" + p_method + " target ID: " + itos(p_id));
+		print_line("Failed method: " + type + ":" + p_method + " target ID: " + itos(p_id));
 		statistics();
-		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings");
+		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
 		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 	msg->args = p_argcount;
-	msg->instance_ID = p_id;
+	msg->instance_id = p_id;
 	msg->target = p_method;
 	msg->type = TYPE_CALL;
 	if (p_show_error)
@@ -101,15 +101,15 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Vari
 		String type;
 		if (ObjectDB::get_instance(p_id))
 			type = ObjectDB::get_instance(p_id)->get_class();
-		print_line("failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
+		print_line("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
 		statistics();
-		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings");
+		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
 		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 	msg->args = 1;
-	msg->instance_ID = p_id;
+	msg->instance_id = p_id;
 	msg->target = p_prop;
 	msg->type = TYPE_SET;
 
@@ -134,16 +134,16 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 		String type;
 		if (ObjectDB::get_instance(p_id))
 			type = ObjectDB::get_instance(p_id)->get_class();
-		print_line("failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
+		print_line("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
 		statistics();
-		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings");
+		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
 		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 
 	msg->type = TYPE_NOTIFICATION;
-	msg->instance_ID = p_id;
+	msg->instance_id = p_id;
 	//msg->target;
 	msg->notification = p_notification;
 
@@ -177,7 +177,7 @@ void MessageQueue::statistics() {
 	while (read_pos < buffer_end) {
 		Message *message = (Message *)&buffer[read_pos];
 
-		Object *target = ObjectDB::get_instance(message->instance_ID);
+		Object *target = ObjectDB::get_instance(message->instance_id);
 
 		if (target != NULL) {
 
@@ -209,10 +209,9 @@ void MessageQueue::statistics() {
 				} break;
 			}
 
-			//object was deleted
-			//WARN_PRINT("Object was deleted while awaiting a callback")
-			//should it print a warning?
 		} else {
+			//object was deleted
+			print_line("Object was deleted while awaiting a callback");
 
 			null_count++;
 		}
@@ -226,17 +225,14 @@ void MessageQueue::statistics() {
 	print_line("NULL count: " + itos(null_count));
 
 	for (Map<StringName, int>::Element *E = set_count.front(); E; E = E->next()) {
-
 		print_line("SET " + E->key() + ": " + itos(E->get()));
 	}
 
 	for (Map<StringName, int>::Element *E = call_count.front(); E; E = E->next()) {
-
 		print_line("CALL " + E->key() + ": " + itos(E->get()));
 	}
 
 	for (Map<int, int>::Element *E = notify_count.front(); E; E = E->next()) {
-
 		print_line("NOTIFY " + itos(E->key()) + ": " + itos(E->get()));
 	}
 }
@@ -268,13 +264,15 @@ void MessageQueue::flush() {
 
 	if (buffer_end > buffer_max_used) {
 		buffer_max_used = buffer_end;
-		//statistics();
 	}
 
 	uint32_t read_pos = 0;
 
 	//using reverse locking strategy
 	_THREAD_SAFE_LOCK_
+
+	ERR_FAIL_COND(flushing); //already flushing, you did something odd
+	flushing = true;
 
 	while (read_pos < buffer_end) {
 
@@ -291,7 +289,7 @@ void MessageQueue::flush() {
 
 		_THREAD_SAFE_UNLOCK_
 
-		Object *target = ObjectDB::get_instance(message->instance_ID);
+		Object *target = ObjectDB::get_instance(message->instance_id);
 
 		if (target != NULL) {
 
@@ -303,10 +301,6 @@ void MessageQueue::flush() {
 					// messages don't expect a return value
 
 					_call_function(target, message->target, args, message->args, message->type & FLAG_SHOW_ERROR);
-
-					for (int i = 0; i < message->args; i++) {
-						args[i].~Variant();
-					}
 
 				} break;
 				case TYPE_NOTIFICATION: {
@@ -321,8 +315,14 @@ void MessageQueue::flush() {
 					// messages don't expect a return value
 					target->set(message->target, *arg);
 
-					arg->~Variant();
 				} break;
+			}
+		}
+
+		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
+			Variant *args = (Variant *)(message + 1);
+			for (int i = 0; i < message->args; i++) {
+				args[i].~Variant();
 			}
 		}
 
@@ -332,17 +332,25 @@ void MessageQueue::flush() {
 	}
 
 	buffer_end = 0; // reset buffer
+	flushing = false;
 	_THREAD_SAFE_UNLOCK_
+}
+
+bool MessageQueue::is_flushing() const {
+
+	return flushing;
 }
 
 MessageQueue::MessageQueue() {
 
 	ERR_FAIL_COND(singleton != NULL);
 	singleton = this;
+	flushing = false;
 
 	buffer_end = 0;
 	buffer_max_used = 0;
 	buffer_size = GLOBAL_DEF_RST("memory/limits/message_queue/max_size_kb", DEFAULT_QUEUE_SIZE_KB);
+	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/message_queue/max_size_kb", PropertyInfo(Variant::INT, "memory/limits/message_queue/max_size_kb", PROPERTY_HINT_RANGE, "0,2048,1,or_greater"));
 	buffer_size *= 1024;
 	buffer = memnew_arr(uint8_t, buffer_size);
 }

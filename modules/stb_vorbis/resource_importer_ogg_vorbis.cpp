@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "resource_importer_ogg_vorbis.h"
 
-#include "io/resource_saver.h"
-#include "os/file_access.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
 #include "scene/resources/texture.h"
 
 String ResourceImporterOGGVorbis::get_importer_name() const {
@@ -76,7 +76,7 @@ void ResourceImporterOGGVorbis::get_import_options(List<ImportOption> *r_options
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "loop_offset"), 0));
 }
 
-Error ResourceImporterOGGVorbis::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
+Error ResourceImporterOGGVorbis::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 
 	bool loop = p_options["loop"];
 	float loop_offset = p_options["loop_offset"];

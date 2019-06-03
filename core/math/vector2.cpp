@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,7 +65,7 @@ Vector2 Vector2::normalized() const {
 
 bool Vector2::is_normalized() const {
 	// use length_squared() instead of length() to avoid sqrt(), makes it more stringent.
-	return Math::is_equal_approx(length_squared(), 1.0);
+	return Math::is_equal_approx(length_squared(), 1.0, UNIT_EPSILON);
 }
 
 real_t Vector2::distance_to(const Vector2 &p_vector2) const {
@@ -121,11 +121,8 @@ Vector2 Vector2::rotated(real_t p_by) const {
 	return v;
 }
 
-Vector2 Vector2::project(const Vector2 &p_vec) const {
-
-	Vector2 v1 = p_vec;
-	Vector2 v2 = *this;
-	return v2 * (v1.dot(v2) / v2.dot(v2));
+Vector2 Vector2::project(const Vector2 &p_b) const {
+	return p_b * (dot(p_b) / p_b.length_squared());
 }
 
 Vector2 Vector2::snapped(const Vector2 &p_by) const {
@@ -167,10 +164,17 @@ Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, c
 	return out;
 }
 
+Vector2 Vector2::move_toward(const Vector2 &p_to, const real_t p_delta) const {
+	Vector2 v = *this;
+	Vector2 vd = p_to - v;
+	real_t len = vd.length();
+	return len <= p_delta || len < CMP_EPSILON ? p_to : v + vd / len * p_delta;
+}
+
 // slide returns the component of the vector along the given plane, specified by its normal vector.
 Vector2 Vector2::slide(const Vector2 &p_normal) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(p_normal.is_normalized() == false, Vector2());
+	ERR_FAIL_COND_V(!p_normal.is_normalized(), Vector2());
 #endif
 	return *this - p_normal * this->dot(p_normal);
 }
@@ -181,7 +185,7 @@ Vector2 Vector2::bounce(const Vector2 &p_normal) const {
 
 Vector2 Vector2::reflect(const Vector2 &p_normal) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(p_normal.is_normalized() == false, Vector2());
+	ERR_FAIL_COND_V(!p_normal.is_normalized(), Vector2());
 #endif
 	return 2.0 * p_normal * this->dot(p_normal) - *this;
 }

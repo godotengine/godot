@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -90,12 +90,7 @@ void GroupDialog::_load_nodes(Node *p_current) {
 		node->set_metadata(0, path);
 		node->set_tooltip(0, path);
 
-		Ref<Texture> icon;
-		if (p_current->has_meta("_editor_icon")) {
-			icon = p_current->get_meta("_editor_icon");
-		} else {
-			icon = get_icon((has_icon(p_current->get_class(), "EditorIcons") ? p_current->get_class() : String("Object")), "EditorIcons");
-		}
+		Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(p_current, "Node");
 		node->set_icon(0, icon);
 
 		if (!_can_edit(p_current, selected_group)) {
@@ -194,7 +189,7 @@ void GroupDialog::_group_renamed() {
 
 	if (name == "") {
 		renamed_group->set_text(0, selected_group);
-		error->set_text(TTR("invalid Group name."));
+		error->set_text(TTR("Invalid group name."));
 		error->popup_centered();
 		return;
 	}

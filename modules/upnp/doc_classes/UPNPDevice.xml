@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="UPNPDevice" inherits="Reference" category="Core" version="3.1">
+<class name="UPNPDevice" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		UPNP device.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_port_mapping" qualifiers="const">
 			<return type="int">

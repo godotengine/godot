@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XMLParser" inherits="Reference" category="Core" version="3.1">
+<class name="XMLParser" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		Low-level class for creating parsers for XML files.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_attribute_count" qualifiers="const">
 			<return type="int">

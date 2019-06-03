@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H
 
-#include "resource.h"
-#include "scene/resources/sky_box.h"
+#include "core/resource.h"
+#include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
 #include "servers/visual_server.h"
 
@@ -91,6 +91,7 @@ private:
 	BGMode bg_mode;
 	Ref<Sky> bg_sky;
 	float bg_sky_custom_fov;
+	Basis bg_sky_orientation;
 	Color bg_color;
 	float bg_energy;
 	int bg_canvas_max_layer;
@@ -141,6 +142,7 @@ private:
 	GlowBlendMode glow_blend_mode;
 	float glow_hdr_bleed_threshold;
 	float glow_hdr_bleed_scale;
+	float glow_hdr_luminance_cap;
 	bool glow_bicubic_upscale;
 
 	bool dof_blur_far_enabled;
@@ -162,6 +164,7 @@ private:
 
 	bool fog_depth_enabled;
 	float fog_depth_begin;
+	float fog_depth_end;
 	float fog_depth_curve;
 
 	bool fog_transmit_enabled;
@@ -180,6 +183,9 @@ public:
 	void set_background(BGMode p_bg);
 	void set_sky(const Ref<Sky> &p_sky);
 	void set_sky_custom_fov(float p_scale);
+	void set_sky_orientation(const Basis &p_orientation);
+	void set_sky_rotation(const Vector3 &p_euler_rad);
+	void set_sky_rotation_degrees(const Vector3 &p_euler_deg);
 	void set_bg_color(const Color &p_color);
 	void set_bg_energy(float p_energy);
 	void set_canvas_max_layer(int p_max_layer);
@@ -190,6 +196,9 @@ public:
 	BGMode get_background() const;
 	Ref<Sky> get_sky() const;
 	float get_sky_custom_fov() const;
+	Basis get_sky_orientation() const;
+	Vector3 get_sky_rotation() const;
+	Vector3 get_sky_rotation_degrees() const;
 	Color get_bg_color() const;
 	float get_bg_energy() const;
 	int get_canvas_max_layer() const;
@@ -311,6 +320,9 @@ public:
 	void set_glow_hdr_bleed_threshold(float p_threshold);
 	float get_glow_hdr_bleed_threshold() const;
 
+	void set_glow_hdr_luminance_cap(float p_amount);
+	float get_glow_hdr_luminance_cap() const;
+
 	void set_glow_hdr_bleed_scale(float p_scale);
 	float get_glow_hdr_bleed_scale() const;
 
@@ -364,6 +376,9 @@ public:
 
 	void set_fog_depth_begin(float p_distance);
 	float get_fog_depth_begin() const;
+
+	void set_fog_depth_end(float p_distance);
+	float get_fog_depth_end() const;
 
 	void set_fog_depth_curve(float p_curve);
 	float get_fog_depth_curve() const;

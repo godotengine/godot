@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  psmodule.c                                                             */
-/*                                                                         */
-/*    PSNames module implementation (body).                                */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * psmodule.c
+ *
+ *   psnames module implementation (body).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -24,16 +24,16 @@
 #include "psmodule.h"
 
   /*
-   *  The file `pstables.h' with its arrays and its function
-   *  `ft_get_adobe_glyph_index' is useful for other projects also (for
-   *  example, `pdfium' is using it).  However, if used as a C++ header,
-   *  including it in two different source files makes it necessary to use
-   *  `extern const' for the declaration of its arrays, otherwise the data
-   *  would be duplicated as mandated by the C++ standard.
+   * The file `pstables.h' with its arrays and its function
+   * `ft_get_adobe_glyph_index' is useful for other projects also (for
+   * example, `pdfium' is using it).  However, if used as a C++ header,
+   * including it in two different source files makes it necessary to use
+   * `extern const' for the declaration of its arrays, otherwise the data
+   * would be duplicated as mandated by the C++ standard.
    *
-   *  For this reason, we use `DEFINE_PS_TABLES' to guard the function
-   *  definitions, and `DEFINE_PS_TABLES_DATA' to provide both proper array
-   *  declarations and definitions.
+   * For this reason, we use `DEFINE_PS_TABLES' to guard the function
+   * definitions, and `DEFINE_PS_TABLES_DATA' to provide both proper array
+   * declarations and definitions.
    */
 #include "pstables.h"
 #define  DEFINE_PS_TABLES
@@ -41,7 +41,6 @@
 #include "pstables.h"
 
 #include "psnamerr.h"
-#include "pspic.h"
 
 
 #ifdef FT_CONFIG_OPTION_POSTSCRIPT_NAMES
@@ -393,7 +392,9 @@
         /* Reallocate if the number of used entries is much smaller. */
         if ( count < num_glyphs / 2 )
         {
-          (void)FT_RENEW_ARRAY( table->maps, num_glyphs, count );
+          (void)FT_RENEW_ARRAY( table->maps,
+                                num_glyphs + EXTRA_GLYPH_LIST_SIZE,
+                                count );
           error = FT_Err_Ok;
         }
 
@@ -577,28 +578,16 @@
   FT_DEFINE_SERVICEDESCREC1(
     pscmaps_services,
 
-    FT_SERVICE_ID_POSTSCRIPT_CMAPS, &PSCMAPS_INTERFACE_GET )
+    FT_SERVICE_ID_POSTSCRIPT_CMAPS, &pscmaps_interface )
 
 
   static FT_Pointer
   psnames_get_service( FT_Module    module,
                        const char*  service_id )
   {
-    /* PSCMAPS_SERVICES_GET dereferences `library' in PIC mode */
-#ifdef FT_CONFIG_OPTION_PIC
-    FT_Library  library;
-
-
-    if ( !module )
-      return NULL;
-    library = module->library;
-    if ( !library )
-      return NULL;
-#else
     FT_UNUSED( module );
-#endif
 
-    return ft_service_list_lookup( PSCMAPS_SERVICES_GET, service_id );
+    return ft_service_list_lookup( pscmaps_services, service_id );
   }
 
 #endif /* FT_CONFIG_OPTION_POSTSCRIPT_NAMES */
@@ -621,7 +610,7 @@
     0x20000L,   /* driver requires FreeType 2 or above */
 
     PUT_PS_NAMES_SERVICE(
-      (void*)&PSCMAPS_INTERFACE_GET ),   /* module specific interface */
+      (void*)&pscmaps_interface ),   /* module specific interface */
 
     (FT_Module_Constructor)NULL,                                       /* module_init   */
     (FT_Module_Destructor) NULL,                                       /* module_done   */

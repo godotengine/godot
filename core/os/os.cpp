@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,13 +30,13 @@
 
 #include "os.h"
 
-#include "dir_access.h"
-#include "input.h"
-#include "os/file_access.h"
-#include "os/midi_driver.h"
-#include "project_settings.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/input.h"
+#include "core/os/midi_driver.h"
+#include "core/project_settings.h"
+#include "core/version_generated.gen.h"
 #include "servers/audio_server.h"
-#include "version_generated.gen.h"
 
 #include <stdarg.h>
 
@@ -59,6 +59,9 @@ uint64_t OS::get_unix_time() const {
 	return 0;
 };
 uint64_t OS::get_system_time_secs() const {
+	return 0;
+}
+uint64_t OS::get_system_time_msecs() const {
 	return 0;
 }
 void OS::debug_break(){
@@ -215,6 +218,16 @@ void OS::hide_virtual_keyboard() {
 
 int OS::get_virtual_keyboard_height() const {
 	return 0;
+}
+
+void OS::set_cursor_shape(CursorShape p_shape) {
+}
+
+OS::CursorShape OS::get_cursor_shape() const {
+	return CURSOR_ARROW;
+}
+
+void OS::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 }
 
 void OS::print_all_resources(String p_to_file) {
@@ -390,16 +403,16 @@ Error OS::dialog_input_text(String p_title, String p_description, String p_parti
 	return OK;
 };
 
-int OS::get_static_memory_usage() const {
+uint64_t OS::get_static_memory_usage() const {
 
 	return Memory::get_mem_usage();
 }
-int OS::get_dynamic_memory_usage() const {
+uint64_t OS::get_dynamic_memory_usage() const {
 
 	return MemoryPool::total_memory;
 }
 
-int OS::get_static_memory_peak_usage() const {
+uint64_t OS::get_static_memory_peak_usage() const {
 
 	return Memory::get_mem_max_usage();
 }
@@ -415,7 +428,7 @@ bool OS::has_touchscreen_ui_hint() const {
 	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
 }
 
-int OS::get_free_static_memory() const {
+uint64_t OS::get_free_static_memory() const {
 
 	return Memory::get_mem_available();
 }
@@ -450,6 +463,9 @@ void OS::_ensure_user_data_dir() {
 	ERR_FAIL_COND(err != OK);
 
 	memdelete(da);
+}
+
+void OS::set_native_icon(const String &p_filename) {
 }
 
 void OS::set_icon(const Ref<Image> &p_icon) {
@@ -566,6 +582,11 @@ int OS::get_power_percent_left() {
 	return -1;
 }
 
+void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
+
+	has_server_feature_callback = p_callback;
+}
+
 bool OS::has_feature(const String &p_feature) {
 
 	if (p_feature == get_name())
@@ -622,6 +643,10 @@ bool OS::has_feature(const String &p_feature) {
 	if (_check_internal_feature_support(p_feature))
 		return true;
 
+	if (has_server_feature_callback && has_server_feature_callback(p_feature)) {
+		return true;
+	}
+
 	if (ProjectSettings::get_singleton()->has_custom_feature(p_feature))
 		return true;
 
@@ -632,10 +657,13 @@ void OS::center_window() {
 
 	if (is_window_fullscreen()) return;
 
+	Point2 sp = get_screen_position(get_current_screen());
 	Size2 scr = get_screen_size(get_current_screen());
 	Size2 wnd = get_real_window_size();
-	int x = scr.width / 2 - wnd.width / 2;
-	int y = scr.height / 2 - wnd.height / 2;
+
+	int x = sp.width + (scr.width - wnd.width) / 2;
+	int y = sp.height + (scr.height - wnd.height) / 2;
+
 	set_window_position(Vector2(x, y));
 }
 
@@ -689,6 +717,18 @@ PoolStringArray OS::get_connected_midi_inputs() {
 	return list;
 }
 
+void OS::open_midi_inputs() {
+
+	if (MIDIDriver::get_singleton())
+		MIDIDriver::get_singleton()->open();
+}
+
+void OS::close_midi_inputs() {
+
+	if (MIDIDriver::get_singleton())
+		MIDIDriver::get_singleton()->close();
+}
+
 OS::OS() {
 	void *volatile stack_bottom;
 
@@ -710,6 +750,8 @@ OS::OS() {
 	_stack_bottom = (void *)(&stack_bottom);
 
 	_logger = NULL;
+
+	has_server_feature_callback = NULL;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));

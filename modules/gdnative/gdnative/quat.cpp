@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,18 @@ void GDAPI godot_quat_new_with_axis_angle(godot_quat *r_dest, const godot_vector
 	const Vector3 *axis = (const Vector3 *)p_axis;
 	Quat *dest = (Quat *)r_dest;
 	*dest = Quat(*axis, p_angle);
+}
+
+void GDAPI godot_quat_new_with_basis(godot_quat *r_dest, const godot_basis *p_basis) {
+	const Basis *basis = (const Basis *)p_basis;
+	Quat *dest = (Quat *)r_dest;
+	*dest = Quat(*basis);
+}
+
+void GDAPI godot_quat_new_with_euler(godot_quat *r_dest, const godot_vector3 *p_euler) {
+	const Vector3 *euler = (const Vector3 *)p_euler;
+	Quat *dest = (Quat *)r_dest;
+	*dest = Quat(*euler);
 }
 
 godot_real GDAPI godot_quat_get_x(const godot_quat *p_self) {
@@ -211,6 +223,12 @@ godot_quat GDAPI godot_quat_operator_neg(const godot_quat *p_self) {
 	const Quat *self = (const Quat *)p_self;
 	*dest = -(*self);
 	return raw_dest;
+}
+
+void GDAPI godot_quat_set_axis_angle(godot_quat *p_self, const godot_vector3 *p_axis, const godot_real p_angle) {
+	Quat *self = (Quat *)p_self;
+	const Vector3 *axis = (const Vector3 *)p_axis;
+	self->set_axis_angle(*axis, p_angle);
 }
 
 #ifdef __cplusplus

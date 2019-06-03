@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CheckBox" inherits="Button" category="Core" version="3.1">
+<class name="CheckBox" inherits="Button" category="Core" version="3.2">
 	<brief_description>
 		Binary choice user interface widget.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<constants>
@@ -31,9 +29,13 @@
 		</theme_item>
 		<theme_item name="font_color_hover" type="Color">
 		</theme_item>
+		<theme_item name="font_color_hover_pressed" type="Color">
+		</theme_item>
 		<theme_item name="font_color_pressed" type="Color">
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">
+		</theme_item>
+		<theme_item name="hover_pressed" type="StyleBox">
 		</theme_item>
 		<theme_item name="hseparation" type="int">
 		</theme_item>

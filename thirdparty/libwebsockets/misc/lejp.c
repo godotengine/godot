@@ -20,6 +20,7 @@
  */
 
 #include <libwebsockets.h>
+#include "core/private.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -30,7 +31,7 @@
  * \param callback:	your user callback which will received parsed tokens
  * \param user:	optional user data pointer untouched by lejp
  * \param paths:	your array of name elements you are interested in
- * \param count_paths:	ARRAY_SIZE() of @paths
+ * \param count_paths:	LWS_ARRAY_SIZE() of @paths
  *
  * Prepares your context struct for use with lejp
  */
@@ -250,7 +251,7 @@ lejp_parse(struct lejp_ctx *ctx, const unsigned char *json, int len)
 
 		case LEJP_MP_STRING:
 			if (c == '\"') {
-				if (!ctx->sp) {
+				if (!ctx->sp) { /* JSON can't end on quote */
 					ret = LEJP_REJECT_MP_STRING_UNDERRUN;
 					goto reject;
 				}
@@ -417,7 +418,7 @@ lejp_parse(struct lejp_ctx *ctx, const unsigned char *json, int len)
 					goto reject;
 				}
 				ctx->i[ctx->ipos++] = 0;
-				if (ctx->ipos > ARRAY_SIZE(ctx->i)) {
+				if (ctx->ipos > LWS_ARRAY_SIZE(ctx->i)) {
 					ret = LEJP_REJECT_MP_DELIM_ISTACK;
 					goto reject;
 				}
@@ -425,17 +426,23 @@ lejp_parse(struct lejp_ctx *ctx, const unsigned char *json, int len)
 
 			case ']':
 				/* pop */
+				if (!ctx->sp) { /* JSON can't end on ] */
+					ret = LEJP_REJECT_MP_C_OR_E_UNDERF;
+					goto reject;
+				}
 				ctx->sp--;
 				if (ctx->st[ctx->sp].s != LEJP_MP_ARRAY_END) {
 					ret = LEJP_REJECT_MP_C_OR_E_NOTARRAY;
 					goto reject;
 				}
 				/* drop the path [n] bit */
-				ctx->ppos = ctx->st[ctx->sp - 1].p;
-				ctx->ipos = ctx->st[ctx->sp - 1].i;
+				if (ctx->sp) {
+					ctx->ppos = ctx->st[ctx->sp - 1].p;
+					ctx->ipos = ctx->st[ctx->sp - 1].i;
+				}
 				ctx->path[ctx->ppos] = '\0';
 				if (ctx->path_match &&
-					       ctx->ppos <= ctx->path_match_len)
+				    ctx->ppos <= ctx->path_match_len)
 					/*
 					 * we shrank the path to be
 					 * smaller than the matching point
@@ -603,7 +610,7 @@ lejp_parse(struct lejp_ctx *ctx, const unsigned char *json, int len)
 				break;
 			}
 			if (c == ']') {
-				if (!ctx->sp) {
+				if (!ctx->sp) {  /* JSON can't end on ] */
 					ret = LEJP_REJECT_MP_C_OR_E_UNDERF;
 					goto reject;
 				}
@@ -631,7 +638,7 @@ lejp_parse(struct lejp_ctx *ctx, const unsigned char *json, int len)
 				goto redo_character;
 			}
 			if (c == '}') {
-				if (ctx->sp == 0) {
+				if (!ctx->sp) {
 					lejp_check_path_match(ctx);
 					if (ctx->callback(ctx, LEJPCB_OBJECT_END)) {
 						ret = LEJP_REJECT_CALLBACK;
@@ -716,7 +723,7 @@ add_stack_level:
 
 		ctx->st[ctx->sp].p = ctx->ppos;
 		ctx->st[ctx->sp].i = ctx->ipos;
-		if (++ctx->sp == ARRAY_SIZE(ctx->st)) {
+		if (++ctx->sp == LWS_ARRAY_SIZE(ctx->st)) {
 			ret = LEJP_REJECT_STACK_OVERFLOW;
 			goto reject;
 		}

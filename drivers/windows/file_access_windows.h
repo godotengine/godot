@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,18 +33,21 @@
 
 #ifdef WINDOWS_ENABLED
 
-#include "os/file_access.h"
-#include "os/memory.h"
+#include "core/os/file_access.h"
+#include "core/os/memory.h"
+
 #include <stdio.h>
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
 class FileAccessWindows : public FileAccess {
 
 	FILE *f;
 	int flags;
 	void check_errors() const;
+	mutable int prev_op;
 	mutable Error last_error;
 	String path;
 	String path_src;
@@ -77,6 +80,8 @@ public:
 	virtual bool file_exists(const String &p_name); ///< return true if a file exists
 
 	uint64_t _get_modified_time(const String &p_file);
+	virtual uint32_t _get_unix_permissions(const String &p_file);
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions);
 
 	FileAccessWindows();
 	virtual ~FileAccessWindows();

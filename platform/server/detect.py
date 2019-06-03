@@ -2,6 +2,8 @@ import os
 import platform
 import sys
 
+# This file is mostly based on platform/x11/detect.py.
+# If editing this file, make sure to apply relevant changes here too.
 
 def is_active():
     return True
@@ -11,27 +13,37 @@ def get_name():
     return "Server"
 
 
+def get_program_suffix():
+    if (sys.platform == "darwin"):
+        return "osx"
+    return "x11"
+
+
 def can_build():
 
-    if (os.name != "posix" or sys.platform == "darwin"):
+    if (os.name != "posix"):
         return False
 
     return True
 
 
 def get_opts():
-    from SCons.Variables import BoolVariable
+    from SCons.Variables import BoolVariable, EnumVariable
     return [
         BoolVariable('use_llvm', 'Use the LLVM compiler', False),
         BoolVariable('use_static_cpp', 'Link libgcc and libstdc++ statically for better portability', False),
+        BoolVariable('use_ubsan', 'Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)', False),
+        BoolVariable('use_asan', 'Use LLVM/GCC compiler address sanitizer (ASAN))', False),
+        BoolVariable('use_lsan', 'Use LLVM/GCC compiler leak sanitizer (LSAN))', False),
+        EnumVariable('debug_symbols', 'Add debugging symbols to release builds', 'yes', ('yes', 'no', 'full')),
+        BoolVariable('separate_debug_symbols', 'Create a separate file containing debugging symbols', False),
+        BoolVariable('execinfo', 'Use libexecinfo on systems where glibc is not available', False),
     ]
 
 
 def get_flags():
 
-    return [
-            ("module_mobile_vr_enabled", False),
-    ]
+    return []
 
 
 def configure(env):
@@ -39,13 +51,32 @@ def configure(env):
     ## Build type
 
     if (env["target"] == "release"):
-        env.Append(CCFLAGS=['-O2', '-ffast-math', '-fomit-frame-pointer'])
+        if (env["optimize"] == "speed"): #optimize for speed (default)
+            env.Prepend(CCFLAGS=['-O3'])
+        else: #optimize for size
+            env.Prepend(CCFLAGS=['-Os'])
+
+        if (env["debug_symbols"] == "yes"):
+            env.Prepend(CCFLAGS=['-g1'])
+        if (env["debug_symbols"] == "full"):
+            env.Prepend(CCFLAGS=['-g2'])
 
     elif (env["target"] == "release_debug"):
-        env.Append(CCFLAGS=['-O2', '-ffast-math', '-DDEBUG_ENABLED'])
+        if (env["optimize"] == "speed"): #optimize for speed (default)
+            env.Prepend(CCFLAGS=['-O2'])
+        else: #optimize for size
+            env.Prepend(CCFLAGS=['-Os'])
+        env.Prepend(CPPFLAGS=['-DDEBUG_ENABLED'])
+
+        if (env["debug_symbols"] == "yes"):
+            env.Prepend(CCFLAGS=['-g1'])
+        if (env["debug_symbols"] == "full"):
+            env.Prepend(CCFLAGS=['-g2'])
 
     elif (env["target"] == "debug"):
-        env.Append(CCFLAGS=['-g2', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Prepend(CCFLAGS=['-g3'])
+        env.Prepend(CPPFLAGS=['-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Append(LINKFLAGS=['-rdynamic'])
 
     ## Architecture
 
@@ -55,13 +86,46 @@ def configure(env):
 
     ## Compiler configuration
 
+    if 'CXX' in env and 'clang' in os.path.basename(env['CXX']):
+        # Convenience check to enforce the use_llvm overrides when CXX is clang(++)
+        env['use_llvm'] = True
+
     if env['use_llvm']:
-        if ('clang++' not in env['CXX']):
+        if ('clang++' not in os.path.basename(env['CXX'])):
             env["CC"] = "clang"
             env["CXX"] = "clang++"
             env["LINK"] = "clang++"
         env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
         env.extra_suffix = ".llvm" + env.extra_suffix
+
+
+    if env['use_ubsan'] or env['use_asan'] or env['use_lsan']:
+        env.extra_suffix += "s"
+
+        if env['use_ubsan']:
+            env.Append(CCFLAGS=['-fsanitize=undefined'])
+            env.Append(LINKFLAGS=['-fsanitize=undefined'])
+
+        if env['use_asan']:
+            env.Append(CCFLAGS=['-fsanitize=address'])
+            env.Append(LINKFLAGS=['-fsanitize=address'])
+
+        if env['use_lsan']:
+            env.Append(CCFLAGS=['-fsanitize=leak'])
+            env.Append(LINKFLAGS=['-fsanitize=leak'])
+
+    if env['use_lto']:
+        env.Append(CCFLAGS=['-flto'])
+        if not env['use_llvm'] and env.GetOption("num_jobs") > 1:
+            env.Append(LINKFLAGS=['-flto=' + str(env.GetOption("num_jobs"))])
+        else:
+            env.Append(LINKFLAGS=['-flto'])
+        if not env['use_llvm']:
+            env['RANLIB'] = 'gcc-ranlib'
+            env['AR'] = 'gcc-ar'
+
+    env.Append(CCFLAGS=['-pipe'])
+    env.Append(LINKFLAGS=['-pipe'])
 
     ## Dependencies
 
@@ -84,7 +148,7 @@ def configure(env):
         # We need at least version 2.88
         import subprocess
         bullet_version = subprocess.check_output(['pkg-config', 'bullet', '--modversion']).strip()
-        if bullet_version < "2.88":
+        if str(bullet_version) < "2.88":
             # Abort as system bullet was requested but too old
             print("Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(bullet_version, "2.88"))
             sys.exit(255)
@@ -106,6 +170,10 @@ def configure(env):
         env['builtin_libogg'] = False  # Needed to link against system libtheora
         env['builtin_libvorbis'] = False  # Needed to link against system libtheora
         env.ParseConfig('pkg-config theora theoradec --cflags --libs')
+    else:
+        list_of_x86 = ['x86_64', 'x86', 'i386', 'i586']
+        if any(platform.machine() in s for s in list_of_x86):
+            env["x86_libtheora_opt_gcc"] = True
 
     if not env['builtin_libvpx']:
         env.ParseConfig('pkg-config vpx --cflags --libs')
@@ -133,7 +201,7 @@ def configure(env):
 
     if not env['builtin_miniupnpc']:
         # No pkgconfig file so far, hardcode default paths.
-        env.Append(CPPPATH=["/usr/include/miniupnpc"])
+        env.Prepend(CPPPATH=["/usr/include/miniupnpc"])
         env.Append(LIBS=["miniupnpc"])
 
     # On Linux wchar_t should be 32-bits
@@ -147,14 +215,21 @@ def configure(env):
     if not env['builtin_zlib']:
         env.ParseConfig('pkg-config zlib --cflags --libs')
 
-    env.Append(CPPPATH=['#platform/server'])
+    env.Prepend(CPPPATH=['#platform/server'])
     env.Append(CPPFLAGS=['-DSERVER_ENABLED', '-DUNIX_ENABLED'])
+
+    if (platform.system() == "Darwin"):
+        env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-lz', '-framework', 'IOKit'])
+
     env.Append(LIBS=['pthread'])
 
     if (platform.system() == "Linux"):
         env.Append(LIBS=['dl'])
 
     if (platform.system().find("BSD") >= 0):
+        env["execinfo"] = True
+
+    if env["execinfo"]:
         env.Append(LIBS=['execinfo'])
 
     # Link those statically for portability

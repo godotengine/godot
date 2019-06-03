@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,9 +29,11 @@
 /*************************************************************************/
 
 #include "memory.h"
-#include "copymem.h"
+
+#include "core/error_macros.h"
+#include "core/os/copymem.h"
 #include "core/safe_refcount.h"
-#include "error_macros.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -170,9 +172,9 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 
 	if (prepad) {
 		mem -= PAD_ALIGN;
-		uint64_t *s = (uint64_t *)mem;
 
 #ifdef DEBUG_ENABLED
+		uint64_t *s = (uint64_t *)mem;
 		atomic_sub(&mem_usage, *s);
 #endif
 

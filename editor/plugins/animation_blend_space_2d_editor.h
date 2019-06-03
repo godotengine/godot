@@ -1,8 +1,39 @@
+/*************************************************************************/
+/*  animation_blend_space_2d_editor.h                                    */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #ifndef ANIMATION_BLEND_SPACE_2D_EDITOR_H
 #define ANIMATION_BLEND_SPACE_2D_EDITOR_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/property_editor.h"
 #include "scene/animation/animation_blend_space_2d.h"
 #include "scene/gui/button.h"
@@ -13,14 +44,11 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class AnimationNodeBlendSpace2DEditor : public VBoxContainer {
+class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 
-	GDCLASS(AnimationNodeBlendSpace2DEditor, VBoxContainer);
+	GDCLASS(AnimationNodeBlendSpace2DEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeBlendSpace2D> blend_space;
-
-	HBoxContainer *goto_parent_hb;
-	ToolButton *goto_parent;
 
 	PanelContainer *panel;
 	ToolButton *tool_blend;
@@ -32,6 +60,7 @@ class AnimationNodeBlendSpace2DEditor : public VBoxContainer {
 	ToolButton *snap;
 	SpinBox *snap_x;
 	SpinBox *snap_y;
+	OptionButton *interpolation;
 
 	ToolButton *auto_triangles;
 
@@ -93,11 +122,23 @@ class AnimationNodeBlendSpace2DEditor : public VBoxContainer {
 	void _edit_point_pos(double);
 	void _open_editor();
 
-	void _goto_parent();
-
 	void _removed_from_graph();
 
 	void _auto_triangles_toggled();
+
+	StringName get_blend_position_path() const;
+
+	EditorFileDialog *open_file;
+	Ref<AnimationNode> file_loaded;
+	void _file_opened(const String &p_file);
+
+	enum {
+		MENU_LOAD_FILE = 1000,
+		MENU_PASTE = 1001,
+		MENU_LOAD_FILE_CONFIRM = 1002
+	};
+
+	void _blend_space_changed();
 
 protected:
 	void _notification(int p_what);
@@ -105,26 +146,9 @@ protected:
 
 public:
 	static AnimationNodeBlendSpace2DEditor *get_singleton() { return singleton; }
-	void edit(AnimationNodeBlendSpace2D *p_blend_space);
+	virtual bool can_edit(const Ref<AnimationNode> &p_node);
+	virtual void edit(const Ref<AnimationNode> &p_node);
 	AnimationNodeBlendSpace2DEditor();
 };
 
-class AnimationNodeBlendSpace2DEditorPlugin : public EditorPlugin {
-
-	GDCLASS(AnimationNodeBlendSpace2DEditorPlugin, EditorPlugin);
-
-	AnimationNodeBlendSpace2DEditor *anim_tree_editor;
-	EditorNode *editor;
-	Button *button;
-
-public:
-	virtual String get_name() const { return "BlendSpace2D"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
-	AnimationNodeBlendSpace2DEditorPlugin(EditorNode *p_node);
-	~AnimationNodeBlendSpace2DEditorPlugin();
-};
 #endif // ANIMATION_BLEND_SPACE_2D_EDITOR_H

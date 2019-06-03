@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Camera" inherits="Spatial" category="Core" version="3.1">
+<class name="Camera" inherits="Spatial" category="Core" version="3.2">
 	<brief_description>
 		Camera node, displays from a point of view.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="clear_current">
 			<return type="void">
@@ -17,7 +15,14 @@
 			<argument index="0" name="enable_next" type="bool" default="true">
 			</argument>
 			<description>
-				If this is the current Camera, remove it from being current. If [code]enable_next[/code] is true, request to make the next Camera current, if any.
+				If this is the current Camera, remove it from being current. If [code]enable_next[/code] is [code]true[/code], request to make the next Camera current, if any.
+			</description>
+		</method>
+		<method name="get_camera_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+				Returns the camera's RID from the [VisualServer].
 			</description>
 		</method>
 		<method name="get_camera_transform" qualifiers="const">
@@ -25,6 +30,20 @@
 			</return>
 			<description>
 				Gets the camera transform. Subclassed cameras (such as CharacterCamera) may provide different transforms than the [Node] transform.
+			</description>
+		</method>
+		<method name="get_cull_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="layer" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_frustum" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="is_position_behind" qualifiers="const">
@@ -57,8 +76,10 @@
 			</return>
 			<argument index="0" name="screen_point" type="Vector2">
 			</argument>
+			<argument index="1" name="z_depth" type="float" default="0">
+			</argument>
 			<description>
-				Returns the 3D point in worldspace that maps to the given 2D coordinate in the [Viewport] rectangle.
+				Returns the 3D point in worldspace that maps to the given 2D coordinate in the [Viewport] rectangle on a plane that is the given distance into the scene away from the camera.
 			</description>
 		</method>
 		<method name="project_ray_normal" qualifiers="const">
@@ -77,6 +98,30 @@
 			</argument>
 			<description>
 				Returns a 3D position in worldspace, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
+			</description>
+		</method>
+		<method name="set_cull_mask_bit">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_frustum">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="float">
+			</argument>
+			<argument index="1" name="offset" type="Vector2">
+			</argument>
+			<argument index="2" name="z_near" type="float">
+			</argument>
+			<argument index="3" name="z_far" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_orthogonal">
@@ -120,7 +165,7 @@
 			The culling mask that describes which 3D render layers are rendered by this camera.
 		</member>
 		<member name="current" type="bool" setter="set_current" getter="is_current">
-			If [code]true[/code] the ancestor [Viewport] is currently using this Camera. Default value: [code]false[/code].
+			If [code]true[/code], the ancestor [Viewport] is currently using this Camera. Default value: [code]false[/code].
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="Camera.DopplerTracking">
 			If not [code]DOPPLER_TRACKING_DISABLED[/code] this Camera will simulate the Doppler effect for objects changed in particular [code]_process[/code] methods. Default value: [code]DOPPLER_TRACKING_DISABLED[/code].
@@ -133,6 +178,8 @@
 		</member>
 		<member name="fov" type="float" setter="set_fov" getter="get_fov">
 			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [code]fov[/code] sets the other axis' field of view angle.
+		</member>
+		<member name="frustum_offset" type="Vector2" setter="set_frustum_offset" getter="get_frustum_offset">
 		</member>
 		<member name="h_offset" type="float" setter="set_h_offset" getter="get_h_offset">
 			The horizontal (X) offset of the Camera viewport.
@@ -158,7 +205,9 @@
 			Perspective Projection (object's size on the screen becomes smaller when far away).
 		</constant>
 		<constant name="PROJECTION_ORTHOGONAL" value="1" enum="Projection">
-			Orthogonal Projection (objects remain the same size on the screen no matter how far away they are).
+			Orthogonal Projection (objects remain the same size on the screen no matter how far away they are; also known as orthographic projection).
+		</constant>
+		<constant name="PROJECTION_FRUSTUM" value="2" enum="Projection">
 		</constant>
 		<constant name="KEEP_WIDTH" value="0" enum="KeepAspect">
 			Preserves the horizontal aspect ratio.

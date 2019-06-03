@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 #include "engine.h"
 
-#include "authors.gen.h"
-#include "donors.gen.h"
-#include "license.gen.h"
-#include "version.h"
-#include "version_hash.gen.h"
+#include "core/authors.gen.h"
+#include "core/donors.gen.h"
+#include "core/license.gen.h"
+#include "core/version.h"
+#include "core/version_hash.gen.h"
 
 void Engine::set_iterations_per_second(int p_ips) {
 
@@ -98,6 +98,7 @@ Dictionary Engine::get_version_info() const {
 #else
 	dict["patch"] = 0;
 #endif
+	dict["hex"] = VERSION_HEX;
 	dict["status"] = VERSION_STATUS;
 	dict["build"] = VERSION_BUILD;
 	dict["year"] = VERSION_YEAR;

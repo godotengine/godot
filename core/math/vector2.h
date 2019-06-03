@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef VECTOR2_H
 #define VECTOR2_H
 
-#include "math_funcs.h"
-#include "ustring.h"
+#include "core/math/math_funcs.h"
+#include "core/ustring.h"
 
 struct Vector2i;
 
@@ -65,10 +65,11 @@ struct Vector2 {
 	real_t distance_squared_to(const Vector2 &p_vector2) const;
 	real_t angle_to(const Vector2 &p_vector2) const;
 	real_t angle_to_point(const Vector2 &p_vector2) const;
+	_FORCE_INLINE_ Vector2 direction_to(const Vector2 &p_b) const;
 
 	real_t dot(const Vector2 &p_other) const;
 	real_t cross(const Vector2 &p_other) const;
-	Vector2 project(const Vector2 &p_vec) const;
+	Vector2 project(const Vector2 &p_b) const;
 
 	Vector2 plane_project(real_t p_d, const Vector2 &p_vec) const;
 
@@ -78,6 +79,7 @@ struct Vector2 {
 	_FORCE_INLINE_ Vector2 linear_interpolate(const Vector2 &p_b, real_t p_t) const;
 	_FORCE_INLINE_ Vector2 slerp(const Vector2 &p_b, real_t p_t) const;
 	Vector2 cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_t) const;
+	Vector2 move_toward(const Vector2 &p_to, const real_t p_delta) const;
 
 	Vector2 slide(const Vector2 &p_normal) const;
 	Vector2 bounce(const Vector2 &p_normal) const;
@@ -98,14 +100,15 @@ struct Vector2 {
 	Vector2 operator/(const real_t &rvalue) const;
 
 	void operator/=(const real_t &rvalue);
+	void operator/=(const Vector2 &rvalue) { *this = *this / rvalue; }
 
 	Vector2 operator-() const;
 
 	bool operator==(const Vector2 &p_vec2) const;
 	bool operator!=(const Vector2 &p_vec2) const;
 
-	bool operator<(const Vector2 &p_vec2) const { return (x == p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x); }
-	bool operator<=(const Vector2 &p_vec2) const { return (x == p_vec2.x) ? (y <= p_vec2.y) : (x <= p_vec2.x); }
+	bool operator<(const Vector2 &p_vec2) const { return (Math::is_equal_approx(x, p_vec2.x)) ? (y < p_vec2.y) : (x < p_vec2.x); }
+	bool operator<=(const Vector2 &p_vec2) const { return (Math::is_equal_approx(x, p_vec2.x)) ? (y <= p_vec2.y) : (x < p_vec2.x); }
 
 	real_t angle() const;
 
@@ -211,11 +214,11 @@ _FORCE_INLINE_ Vector2 Vector2::operator-() const {
 
 _FORCE_INLINE_ bool Vector2::operator==(const Vector2 &p_vec2) const {
 
-	return x == p_vec2.x && y == p_vec2.y;
+	return Math::is_equal_approx(x, p_vec2.x) && Math::is_equal_approx(y, p_vec2.y);
 }
 _FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
 
-	return x != p_vec2.x || y != p_vec2.y;
+	return !Math::is_equal_approx(x, p_vec2.x) || !Math::is_equal_approx(y, p_vec2.y);
 }
 
 Vector2 Vector2::linear_interpolate(const Vector2 &p_b, real_t p_t) const {
@@ -230,10 +233,16 @@ Vector2 Vector2::linear_interpolate(const Vector2 &p_b, real_t p_t) const {
 
 Vector2 Vector2::slerp(const Vector2 &p_b, real_t p_t) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(is_normalized() == false, Vector2());
+	ERR_FAIL_COND_V(!is_normalized(), Vector2());
 #endif
 	real_t theta = angle_to(p_b);
 	return rotated(theta * p_t);
+}
+
+Vector2 Vector2::direction_to(const Vector2 &p_b) const {
+	Vector2 ret(p_b.x - x, p_b.y - y);
+	ret.normalize();
+	return ret;
 }
 
 Vector2 Vector2::linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_t) {

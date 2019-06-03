@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +31,14 @@
 #include "collision_shape_2d.h"
 
 #include "collision_object_2d.h"
-#include "engine.h"
+#include "core/engine.h"
 #include "scene/resources/capsule_shape_2d.h"
 #include "scene/resources/circle_shape_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
+#include "scene/resources/line_shape_2d.h"
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/segment_shape_2d.h"
-#include "scene/resources/shape_line_2d.h"
 
 void CollisionShape2D::_shape_changed() {
 
@@ -52,6 +52,7 @@ void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
 		return;
 	parent->shape_owner_set_disabled(owner_id, disabled);
 	parent->shape_owner_set_one_way_collision(owner_id, one_way_collision);
+	parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
 }
 
 void CollisionShape2D::_notification(int p_what) {
@@ -119,7 +120,7 @@ void CollisionShape2D::_notification(int p_what) {
 
 			Color draw_col = get_tree()->get_debug_collisions_color();
 			if (disabled) {
-				float g = draw_col.gray();
+				float g = draw_col.get_v();
 				draw_col.r = g;
 				draw_col.g = g;
 				draw_col.b = g;
@@ -219,6 +220,17 @@ bool CollisionShape2D::is_one_way_collision_enabled() const {
 	return one_way_collision;
 }
 
+void CollisionShape2D::set_one_way_collision_margin(float p_margin) {
+	one_way_collision_margin = p_margin;
+	if (parent) {
+		parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
+	}
+}
+
+float CollisionShape2D::get_one_way_collision_margin() const {
+	return one_way_collision_margin;
+}
+
 void CollisionShape2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape2D::set_shape);
@@ -227,11 +239,14 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionShape2D::is_disabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision", "enabled"), &CollisionShape2D::set_one_way_collision);
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionShape2D::is_one_way_collision_enabled);
+	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionShape2D::set_one_way_collision_margin);
+	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionShape2D::get_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("_shape_changed"), &CollisionShape2D::_shape_changed);
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1"), "set_one_way_collision_margin", "get_one_way_collision_margin");
 }
 
 CollisionShape2D::CollisionShape2D() {
@@ -242,4 +257,5 @@ CollisionShape2D::CollisionShape2D() {
 	parent = NULL;
 	disabled = false;
 	one_way_collision = false;
+	one_way_collision_margin = 1.0;
 }

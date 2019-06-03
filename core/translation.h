@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef TRANSLATION_H
 #define TRANSLATION_H
 
-#include "resource.h"
+#include "core/resource.h"
 
 class Translation : public Resource {
 
@@ -93,6 +93,8 @@ public:
 	String get_locale() const;
 
 	String get_locale_name(const String &p_locale) const;
+
+	Array get_loaded_locales() const;
 
 	void add_translation(const Ref<Translation> &p_translation);
 	void remove_translation(const Ref<Translation> &p_translation);

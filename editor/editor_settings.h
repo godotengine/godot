@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,13 @@
 #ifndef EDITOR_SETTINGS_H
 #define EDITOR_SETTINGS_H
 
-#include "object.h"
+#include "core/object.h"
 
 #include "core/io/config_file.h"
-#include "os/thread_safe.h"
-#include "resource.h"
+#include "core/os/thread_safe.h"
+#include "core/resource.h"
+#include "core/translation.h"
 #include "scene/gui/shortcut.h"
-#include "translation.h"
 
 class EditorPlugin;
 
@@ -71,23 +71,23 @@ private:
 		bool hide_from_editor;
 		bool save;
 		bool restart_if_changed;
-		VariantContainer() {
-			variant = Variant();
-			initial = Variant();
-			order = 0;
-			hide_from_editor = false;
-			has_default_value = false;
-			save = false;
-			restart_if_changed = false;
+		VariantContainer() :
+				order(0),
+				variant(Variant()),
+				initial(Variant()),
+				has_default_value(false),
+				hide_from_editor(false),
+				save(false),
+				restart_if_changed(false) {
 		}
-		VariantContainer(const Variant &p_variant, int p_order) {
-			variant = p_variant;
-			initial = Variant();
-			order = p_order;
-			hide_from_editor = false;
-			has_default_value = false;
-			save = false;
-			restart_if_changed = false;
+		VariantContainer(const Variant &p_variant, int p_order) :
+				order(p_order),
+				variant(p_variant),
+				initial(Variant()),
+				has_default_value(false),
+				hide_from_editor(false),
+				save(false),
+				restart_if_changed(false) {
 		}
 	};
 
@@ -107,7 +107,7 @@ private:
 	String config_file_path;
 	String project_config_dir;
 
-	Vector<String> favorite_dirs;
+	Vector<String> favorites;
 	Vector<String> recent_dirs;
 
 	bool save_changed_setting;
@@ -169,12 +169,13 @@ public:
 	String get_text_editor_themes_dir() const;
 	String get_script_templates_dir() const;
 	String get_cache_dir() const;
+	String get_feature_profiles_dir() const;
 
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
 	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const;
 
-	void set_favorite_dirs(const Vector<String> &p_favorites_dirs);
-	Vector<String> get_favorite_dirs() const;
+	void set_favorites(const Vector<String> &p_favorites);
+	Vector<String> get_favorites() const;
 	void set_recent_dirs(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
 	void load_favorites();

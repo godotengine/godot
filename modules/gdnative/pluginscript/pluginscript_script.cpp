@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 #include "pluginscript_instance.h"
 #include "pluginscript_script.h"
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 #define __ASSERT_SCRIPT_REASON "Cannot retrieve pluginscript class for this script, is you code correct ?"
 #define ASSERT_SCRIPT_VALID()                \
 	{                                        \
@@ -52,6 +52,79 @@
 #endif
 
 void PluginScript::_bind_methods() {
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &PluginScript::_new, MethodInfo(Variant::OBJECT, "new"));
+}
+
+PluginScriptInstance *PluginScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, Variant::CallError &r_error) {
+
+	r_error.error = Variant::CallError::CALL_OK;
+
+	// Create instance
+	PluginScriptInstance *instance = memnew(PluginScriptInstance());
+
+	if (instance->init(this, p_owner)) {
+		_language->lock();
+		_instances.insert(instance->get_owner());
+		_language->unlock();
+	} else {
+		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		memdelete(instance);
+		ERR_FAIL_V(NULL);
+	}
+
+	// Construct
+	// TODO: Support arguments in the constructor?
+	// There is currently no way to get the constructor function name of the script.
+	// instance->call("__init__", p_args, p_argcount, r_error);
+	if (p_argcount > 0) {
+		WARN_PRINT("PluginScript doesn't support arguments in the constructor")
+	}
+
+	return instance;
+}
+
+Variant PluginScript::_new(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+
+	r_error.error = Variant::CallError::CALL_OK;
+
+	if (!_valid) {
+		r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
+	}
+
+	REF ref;
+	Object *owner = NULL;
+
+	if (get_instance_base_type() == "") {
+		owner = memnew(Reference);
+	} else {
+		owner = ClassDB::instance(get_instance_base_type());
+	}
+
+	if (!owner) {
+		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		return Variant();
+	}
+
+	Reference *r = Object::cast_to<Reference>(owner);
+	if (r) {
+		ref = REF(r);
+	}
+
+	PluginScriptInstance *instance = _create_instance(p_args, p_argcount, owner, r_error);
+
+	if (!instance) {
+		if (ref.is_null()) {
+			memdelete(owner); //no owner, sorry
+		}
+		return Variant();
+	}
+
+	if (ref.is_valid()) {
+		return ref;
+	} else {
+		return owner;
+	}
 }
 
 #ifdef TOOLS_ENABLED
@@ -129,17 +202,8 @@ ScriptInstance *PluginScript::instance_create(Object *p_this) {
 		}
 	}
 
-	PluginScriptInstance *instance = memnew(PluginScriptInstance());
-	const bool success = instance->init(this, p_this);
-	if (success) {
-		_language->lock();
-		_instances.insert(instance->get_owner());
-		_language->unlock();
-		return instance;
-	} else {
-		memdelete(instance);
-		ERR_FAIL_V(NULL);
-	}
+	Variant::CallError unchecked_error;
+	return _create_instance(NULL, 0, p_this, unchecked_error);
 }
 
 bool PluginScript::instance_has(const Object *p_this) const {

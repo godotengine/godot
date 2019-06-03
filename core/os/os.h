@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,24 +31,21 @@
 #ifndef OS_H
 #define OS_H
 
-#include "engine.h"
-#include "image.h"
-#include "io/logger.h"
-#include "list.h"
-#include "os/main_loop.h"
-#include "ustring.h"
-#include "vector.h"
+#include "core/engine.h"
+#include "core/image.h"
+#include "core/io/logger.h"
+#include "core/list.h"
+#include "core/os/main_loop.h"
+#include "core/ustring.h"
+#include "core/vector.h"
+
 #include <stdarg.h>
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-enum VideoDriver {
-	VIDEO_DRIVER_GLES3,
-	VIDEO_DRIVER_GLES2,
-	VIDEO_DRIVER_MAX,
-};
+class Mutex;
 
 class OS {
 
@@ -82,6 +79,7 @@ protected:
 
 public:
 	typedef void (*ImeCallback)(void *p_inp, String p_text, Point2 p_selection);
+	typedef bool (*HasServerFeatureCallback)(const String &p_feature);
 
 	enum PowerState {
 		POWERSTATE_UNKNOWN, /**< cannot determine power status */
@@ -126,9 +124,10 @@ public:
 protected:
 	friend class Main;
 
+	HasServerFeatureCallback has_server_feature_callback;
 	RenderThreadMode _render_thread_mode;
 
-	// functions used by main to initialize/deintialize the OS
+	// functions used by main to initialize/deinitialize the OS
 	void add_logger(Logger *p_logger);
 
 	virtual void initialize_core() = 0;
@@ -151,8 +150,8 @@ public:
 	static OS *get_singleton();
 
 	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type = Logger::ERR_ERROR);
-	void print(const char *p_format, ...);
-	void printerr(const char *p_format, ...);
+	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
+	void printerr(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") = 0;
 	virtual String get_stdin_string(bool p_block = true) = 0;
@@ -183,13 +182,22 @@ public:
 	virtual VideoMode get_video_mode(int p_screen = 0) const = 0;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const = 0;
 
+	enum VideoDriver {
+		VIDEO_DRIVER_GLES3,
+		VIDEO_DRIVER_GLES2,
+		VIDEO_DRIVER_MAX,
+	};
+
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
 	virtual int get_current_video_driver() const = 0;
+
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
 	virtual PoolStringArray get_connected_midi_inputs();
+	virtual void open_midi_inputs();
+	virtual void close_midi_inputs();
 
 	virtual int get_screen_count() const { return 1; }
 	virtual int get_current_screen() const { return 0; }
@@ -239,7 +247,8 @@ public:
 
 	virtual void set_ime_active(const bool p_active) {}
 	virtual void set_ime_position(const Point2 &p_pos) {}
-	virtual void set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp) {}
+	virtual Point2 get_ime_selection() const { return Point2(); }
+	virtual String get_ime_text() const { return String(); }
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) { return ERR_UNAVAILABLE; }
 	virtual Error close_dynamic_library(void *p_library_handle) { return ERR_UNAVAILABLE; }
@@ -253,7 +262,7 @@ public:
 	virtual int get_low_processor_usage_mode_sleep_usec() const;
 
 	virtual String get_executable_path() const;
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false) = 0;
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL) = 0;
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 
@@ -262,8 +271,9 @@ public:
 
 	virtual bool has_environment(const String &p_var) const = 0;
 	virtual String get_environment(const String &p_var) const = 0;
+	virtual bool set_environment(const String &p_var, const String &p_value) const = 0;
 
-	virtual String get_name() = 0;
+	virtual String get_name() const = 0;
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
 	virtual String get_model_name() const;
 
@@ -324,6 +334,7 @@ public:
 	virtual TimeZoneInfo get_time_zone_info() const = 0;
 	virtual uint64_t get_unix_time() const;
 	virtual uint64_t get_system_time_secs() const;
+	virtual uint64_t get_system_time_msecs() const;
 
 	virtual void delay_usec(uint32_t p_usec) const = 0;
 	virtual uint64_t get_ticks_usec() const = 0;
@@ -368,8 +379,9 @@ public:
 	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
 	virtual int get_virtual_keyboard_height() const;
 
-	virtual void set_cursor_shape(CursorShape p_shape) = 0;
-	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) = 0;
+	virtual void set_cursor_shape(CursorShape p_shape);
+	virtual CursorShape get_cursor_shape() const;
+	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 
 	virtual bool get_swap_ok_cancel() { return false; }
 	virtual void dump_memory_to_file(const char *p_file);
@@ -377,10 +389,10 @@ public:
 	virtual void print_resources_in_use(bool p_short = false);
 	virtual void print_all_resources(String p_to_file = "");
 
-	virtual int get_static_memory_usage() const;
-	virtual int get_static_memory_peak_usage() const;
-	virtual int get_dynamic_memory_usage() const;
-	virtual int get_free_static_memory() const;
+	virtual uint64_t get_static_memory_usage() const;
+	virtual uint64_t get_static_memory_peak_usage() const;
+	virtual uint64_t get_dynamic_memory_usage() const;
+	virtual uint64_t get_free_static_memory() const;
 
 	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
 
@@ -439,6 +451,7 @@ public:
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
 
+	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
 
 	virtual int get_exit_code() const;
@@ -477,6 +490,7 @@ public:
 	enum EngineContext {
 		CONTEXT_EDITOR,
 		CONTEXT_PROJECTMAN,
+		CONTEXT_ENGINE,
 	};
 
 	virtual void set_context(int p_context);
@@ -499,6 +513,8 @@ public:
 	virtual void force_process_input(){};
 	bool has_feature(const String &p_feature);
 
+	void set_has_server_feature_callback(HasServerFeatureCallback p_callback);
+
 	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
 
@@ -506,6 +522,9 @@ public:
 	bool is_restart_on_exit_set() const;
 	List<String> get_restart_on_exit_arguments() const;
 
+	virtual bool request_permission(const String &p_name) { return true; }
+
+	virtual void process_and_drop_events() {}
 	OS();
 	virtual ~OS();
 };

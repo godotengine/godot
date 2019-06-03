@@ -1,20 +1,20 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ttkern.c                                                               */
-/*                                                                         */
-/*    Load the basic TrueType kerning table.  This doesn't handle          */
-/*    kerning data within the GPOS table at the moment.                    */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ttkern.c
+ *
+ *   Load the basic TrueType kerning table.  This doesn't handle
+ *   kerning data within the GPOS table at the moment.
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -26,14 +26,14 @@
 #include "sferrors.h"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_ttkern
+#define FT_COMPONENT  ttkern
 
 
 #undef  TT_KERN_INDEX
@@ -127,8 +127,8 @@
       avail |= mask;
 
       /*
-       *  Now check whether the pairs in this table are ordered.
-       *  We then can use binary search.
+       * Now check whether the pairs in this table are ordered.
+       * We then can use binary search.
        */
       if ( num_pairs > 0 )
       {
@@ -283,8 +283,8 @@
         break;
 
        /*
-        *  We don't support format 2 because we haven't seen a single font
-        *  using it in real life...
+        * We don't support format 2 because we haven't seen a single font
+        * using it in real life...
         */
 
       default:

@@ -59,21 +59,18 @@ def include_file_in_legacygl_header(filename, header_data, depth):
             included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
             if not included_file in header_data.vertex_included_files and header_data.reading == "vertex":
                 header_data.vertex_included_files += [included_file]
-                if include_file_in_legacygl_header(included_file, header_data, depth + 1) == None:
+                if include_file_in_legacygl_header(included_file, header_data, depth + 1) is None:
                     print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
             elif not included_file in header_data.fragment_included_files and header_data.reading == "fragment":
                 header_data.fragment_included_files += [included_file]
-                if include_file_in_legacygl_header(included_file, header_data, depth + 1) == None:
+                if include_file_in_legacygl_header(included_file, header_data, depth + 1) is None:
                     print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
 
             line = fs.readline()
 
-        if line.find("#ifdef ") != -1 or line.find("#elif defined(") != -1:
+        if line.find("#ifdef ") != -1:
             if line.find("#ifdef ") != -1:
                 ifdefline = line.replace("#ifdef ", "").strip()
-            else:
-                ifdefline = line.replace("#elif defined(", "").strip()
-                ifdefline = ifdefline.replace(")", "").strip()
 
             if line.find("_EN_") != -1:
                 enumbase = ifdefline[:ifdefline.find("_EN_")]
@@ -232,7 +229,11 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
     fd.write("\t_FORCE_INLINE_ int get_uniform(Uniforms p_uniform) const { return _get_uniform(p_uniform); }\n\n")
     if header_data.conditionals:
         fd.write("\t_FORCE_INLINE_ void set_conditional(Conditionals p_conditional,bool p_enable)  {  _set_conditional(p_conditional,p_enable); }\n\n")
-    fd.write("\t#define _FU if (get_uniform(p_uniform)<0) return; ERR_FAIL_COND( get_active()!=this );\n\n ")
+    fd.write("\t#ifdef DEBUG_ENABLED\n ")
+    fd.write("\t#define _FU if (get_uniform(p_uniform)<0) return; if (!is_version_valid()) return; ERR_FAIL_COND( get_active()!=this ); \n\n ")
+    fd.write("\t#else\n ")
+    fd.write("\t#define _FU if (get_uniform(p_uniform)<0) return; \n\n ")
+    fd.write("\t#endif\n")
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_value) { _FU glUniform1f(get_uniform(p_uniform),p_value); }\n\n")
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, double p_value) { _FU glUniform1f(get_uniform(p_uniform),p_value); }\n\n")
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint8_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")

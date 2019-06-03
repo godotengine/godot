@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "command_queue_mt.h"
 
-#include "os/os.h"
+#include "core/os/os.h"
 
 void CommandQueueMT::lock() {
 
@@ -97,7 +97,7 @@ tryagain:
 		return false;
 	}
 
-	dealloc_ptr += (size >> 1) + sizeof(uint32_t);
+	dealloc_ptr += (size >> 1) + 8;
 	return true;
 }
 
@@ -107,6 +107,7 @@ CommandQueueMT::CommandQueueMT(bool p_sync) {
 	write_ptr = 0;
 	dealloc_ptr = 0;
 	mutex = Mutex::create();
+	command_mem = (uint8_t *)memalloc(COMMAND_MEM_SIZE);
 
 	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
 
@@ -128,4 +129,5 @@ CommandQueueMT::~CommandQueueMT() {
 
 		memdelete(sync_sems[i].sem);
 	}
+	memfree(command_mem);
 }

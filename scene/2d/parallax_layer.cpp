@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "parallax_layer.h"
 
-#include "engine.h"
+#include "core/engine.h"
 #include "parallax_background.h"
 
 void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {
@@ -104,6 +104,11 @@ void ParallaxLayer::_notification(int p_what) {
 			orig_offset = get_position();
 			orig_scale = get_scale();
 			_update_mirroring();
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+
+			set_position(orig_offset);
+			set_scale(orig_scale);
 		} break;
 	}
 }

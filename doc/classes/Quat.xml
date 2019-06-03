@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Quat" category="Built-In Types" version="3.1">
+<class name="Quat" category="Built-In Types" version="3.2">
 	<brief_description>
 		Quaternion.
 	</brief_description>
@@ -9,11 +9,8 @@
 		Quaternions need to be (re)normalized.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html#interpolating-with-quaternions</link>
-		<link>http://docs.godotengine.org/en/latest/tutorials/math/rotations.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html#interpolating-with-quaternions</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="Quat">
 			<return type="Quat">
@@ -87,7 +84,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Return Euler angles (in the YXZ convention: first Z, then X, and Y last) corresponding to the rotation represented by the unit quaternion. Returned vector contains the rotation angles in the format (X-angle, Y-angle, Z-angle).
+				Returns Euler angles (in the YXZ convention: first Z, then X, and Y last) corresponding to the rotation represented by the unit quaternion. Returned vector contains the rotation angles in the format (X-angle, Y-angle, Z-angle).
 			</description>
 		</method>
 		<method name="inverse">
@@ -188,5 +185,7 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="IDENTITY" value="Quat( 0, 0, 0, 1 )">
+		</constant>
 	</constants>
 </class>

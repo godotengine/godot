@@ -170,19 +170,19 @@
 
 #define MULADDC_INIT                        \
     asm(                                    \
-        "xorq   %%r8, %%r8          \n\t"
+        "xorq   %%r8, %%r8\n"
 
 #define MULADDC_CORE                        \
-        "movq   (%%rsi), %%rax      \n\t"   \
-        "mulq   %%rbx               \n\t"   \
-        "addq   $8,      %%rsi      \n\t"   \
-        "addq   %%rcx,   %%rax      \n\t"   \
-        "movq   %%r8,    %%rcx      \n\t"   \
-        "adcq   $0,      %%rdx      \n\t"   \
-        "nop                        \n\t"   \
-        "addq   %%rax,   (%%rdi)    \n\t"   \
-        "adcq   %%rdx,   %%rcx      \n\t"   \
-        "addq   $8,      %%rdi      \n\t"
+        "movq   (%%rsi), %%rax\n"           \
+        "mulq   %%rbx\n"                    \
+        "addq   $8, %%rsi\n"                \
+        "addq   %%rcx, %%rax\n"             \
+        "movq   %%r8, %%rcx\n"              \
+        "adcq   $0, %%rdx\n"                \
+        "nop    \n"                         \
+        "addq   %%rax, (%%rdi)\n"           \
+        "adcq   %%rdx, %%rcx\n"             \
+        "addq   $8, %%rdi\n"
 
 #define MULADDC_STOP                        \
         : "+c" (c), "+D" (d), "+S" (s)      \
@@ -565,9 +565,8 @@
 #endif /* TriCore */
 
 /*
- * gcc -O0 by default uses r7 for the frame pointer, so it complains about our
- * use of r7 below, unless -fomit-frame-pointer is passed. Unfortunately,
- * passing that option is not easy when building with yotta.
+ * Note, gcc -O0 by default uses r7 for the frame pointer, so it complains about
+ * our use of r7 below, unless -fomit-frame-pointer is passed.
  *
  * On the other hand, -fomit-frame-pointer is implied by any -Ox options with
  * x !=0, which we can detect using __OPTIMIZE__ (which is also defined by
@@ -635,6 +634,23 @@
          : "m" (s), "m" (d), "m" (c), "m" (b)   \
          : "r0", "r1", "r2", "r3", "r4", "r5",  \
            "r6", "r7", "r8", "r9", "cc"         \
+         );
+
+#elif defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1)
+
+#define MULADDC_INIT                            \
+    asm(
+
+#define MULADDC_CORE                            \
+            "ldr    r0, [%0], #4        \n\t"   \
+            "ldr    r1, [%1]            \n\t"   \
+            "umaal  r1, %2, %3, r0      \n\t"   \
+            "str    r1, [%1], #4        \n\t"
+
+#define MULADDC_STOP                            \
+         : "=r" (s),  "=r" (d), "=r" (c)        \
+         : "r" (b), "0" (s), "1" (d), "2" (c)   \
+         : "r0", "r1", "memory"                 \
          );
 
 #else

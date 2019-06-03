@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef VISUAL_SCRIPT_H
 #define VISUAL_SCRIPT_H
 
-#include "os/thread.h"
-#include "script_language.h"
+#include "core/os/thread.h"
+#include "core/script_language.h"
 
 class VisualScriptInstance;
 class VisualScriptNodeInstance;
@@ -54,7 +54,6 @@ class VisualScriptNode : public Resource {
 	void validate_input_default_values();
 
 protected:
-	void _notification(int p_what);
 	void ports_changed_notify();
 	static void _bind_methods();
 
@@ -340,6 +339,7 @@ public:
 	virtual Error reload(bool p_keep_state = false);
 
 	virtual bool is_tool() const;
+	virtual bool is_valid() const;
 
 	virtual ScriptLanguage *get_language() const;
 
@@ -404,6 +404,7 @@ public:
 	virtual bool has_method(const StringName &p_method) const;
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	virtual void notification(int p_notification);
+	String to_string(bool *r_valid);
 
 	bool set_variable(const StringName &p_variable, const Variant &p_value) {
 

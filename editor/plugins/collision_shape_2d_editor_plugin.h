@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,7 +75,7 @@ protected:
 
 public:
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
-	void forward_draw_over_viewport(Control *p_overlay);
+	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void edit(Node *p_node);
 
 	CollisionShape2DEditor(EditorNode *p_editor);
@@ -89,7 +89,7 @@ class CollisionShape2DEditorPlugin : public EditorPlugin {
 
 public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return collision_shape_2d_editor->forward_canvas_gui_input(p_event); }
-	virtual void forward_draw_over_viewport(Control *p_overlay) { return collision_shape_2d_editor->forward_draw_over_viewport(p_overlay); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) { return collision_shape_2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
 	virtual String get_name() const { return "CollisionShape2D"; }
 	bool has_main_screen() const { return false; }

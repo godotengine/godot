@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -100,27 +100,25 @@ enum {
   ucp_Zs     /* Space separator */
 };
 
-/* These are grapheme break properties. */
+/* These are grapheme break properties. The Extended Pictographic property
+comes from the emoji-data.txt file. */
 
 enum {
-  ucp_gbCR,                /*  0 */
-  ucp_gbLF,                /*  1 */
-  ucp_gbControl,           /*  2 */
-  ucp_gbExtend,            /*  3 */
-  ucp_gbPrepend,           /*  4 */
-  ucp_gbSpacingMark,       /*  5 */
-  ucp_gbL,                 /*  6 Hangul syllable type L */
-  ucp_gbV,                 /*  7 Hangul syllable type V */
-  ucp_gbT,                 /*  8 Hangul syllable type T */
-  ucp_gbLV,                /*  9 Hangul syllable type LV */
-  ucp_gbLVT,               /* 10 Hangul syllable type LVT */
-  ucp_gbRegionalIndicator, /* 11 */
-  ucp_gbOther,             /* 12 */
-  ucp_gbE_Base,            /* 13 */
-  ucp_gbE_Modifier,        /* 14 */
-  ucp_gbE_Base_GAZ,        /* 15 */
-  ucp_gbZWJ,               /* 16 */
-  ucp_gbGlue_After_Zwj     /* 17 */
+  ucp_gbCR,                    /*  0 */
+  ucp_gbLF,                    /*  1 */
+  ucp_gbControl,               /*  2 */
+  ucp_gbExtend,                /*  3 */
+  ucp_gbPrepend,               /*  4 */
+  ucp_gbSpacingMark,           /*  5 */
+  ucp_gbL,                     /*  6 Hangul syllable type L */
+  ucp_gbV,                     /*  7 Hangul syllable type V */
+  ucp_gbT,                     /*  8 Hangul syllable type T */
+  ucp_gbLV,                    /*  9 Hangul syllable type LV */
+  ucp_gbLVT,                   /* 10 Hangul syllable type LVT */
+  ucp_gbRegionalIndicator,     /* 11 */
+  ucp_gbOther,                 /* 12 */
+  ucp_gbZWJ,                   /* 13 */
+  ucp_gbExtended_Pictographic  /* 14 */
 };
 
 /* These are the script identifications. */
@@ -274,7 +272,15 @@ enum {
   ucp_Masaram_Gondi,
   ucp_Nushu,
   ucp_Soyombo,
-  ucp_Zanabazar_Square
+  ucp_Zanabazar_Square,
+  /* New for Unicode 11.0.0 */
+  ucp_Dogra,
+  ucp_Gunjala_Gondi,
+  ucp_Hanifi_Rohingya,
+  ucp_Makasar,
+  ucp_Medefaidrin,
+  ucp_Old_Sogdian,
+  ucp_Sogdian
 };
 
 #endif  /* PCRE2_UCP_H_IDEMPOTENT_GUARD */

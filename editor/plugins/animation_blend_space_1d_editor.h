@@ -1,8 +1,39 @@
+/*************************************************************************/
+/*  animation_blend_space_1d_editor.h                                    */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #ifndef ANIMATION_BLEND_SPACE_1D_EDITOR_H
 #define ANIMATION_BLEND_SPACE_1D_EDITOR_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/property_editor.h"
 #include "scene/animation/animation_blend_space_1d.h"
 #include "scene/gui/button.h"
@@ -10,9 +41,9 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 
-class AnimationNodeBlendSpace1DEditor : public VBoxContainer {
+class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 
-	GDCLASS(AnimationNodeBlendSpace1DEditor, VBoxContainer)
+	GDCLASS(AnimationNodeBlendSpace1DEditor, AnimationTreeNodeEditorPlugin)
 
 	Ref<AnimationNodeBlendSpace1D> blend_space;
 
@@ -81,7 +112,17 @@ class AnimationNodeBlendSpace1DEditor : public VBoxContainer {
 
 	void _goto_parent();
 
-	void _removed_from_graph();
+	EditorFileDialog *open_file;
+	Ref<AnimationNode> file_loaded;
+	void _file_opened(const String &p_file);
+
+	enum {
+		MENU_LOAD_FILE = 1000,
+		MENU_PASTE = 1001,
+		MENU_LOAD_FILE_CONFIRM = 1002
+	};
+
+	StringName get_blend_position_path() const;
 
 protected:
 	void _notification(int p_what);
@@ -89,29 +130,9 @@ protected:
 
 public:
 	static AnimationNodeBlendSpace1DEditor *get_singleton() { return singleton; }
-	void edit(AnimationNodeBlendSpace1D *p_blend_space);
+	virtual bool can_edit(const Ref<AnimationNode> &p_node);
+	virtual void edit(const Ref<AnimationNode> &p_node);
 	AnimationNodeBlendSpace1DEditor();
-};
-
-class AnimationNodeBlendSpace1DEditorPlugin : public EditorPlugin {
-
-	GDCLASS(AnimationNodeBlendSpace1DEditorPlugin, EditorPlugin)
-
-	AnimationNodeBlendSpace1DEditor *anim_tree_editor;
-	EditorNode *editor;
-	Button *button;
-
-public:
-	virtual String get_name() const { return "BlendSpace1D"; }
-
-	bool has_main_screen() const { return false; }
-
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
-	AnimationNodeBlendSpace1DEditorPlugin(EditorNode *p_node);
-	~AnimationNodeBlendSpace1DEditorPlugin();
 };
 
 #endif // ANIMATION_BLEND_SPACE_1D_EDITOR_H

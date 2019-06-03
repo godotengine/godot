@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ARVRServer" inherits="Object" category="Core" version="3.1">
+<class name="ARVRServer" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		This is our AR/VR Server.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="center_on_hmd">
 			<return type="void">
@@ -56,7 +54,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Get the number of interfaces currently registered with the AR/VR server. If you're game supports multiple AR/VR platforms you can look through the available interface and either present the user with a selection or simply try an initialize each interface and use the first one that returns true.
+				Get the number of interfaces currently registered with the AR/VR server. If your game supports multiple AR/VR platforms, you can look through the available interface, and either present the user with a selection or simply try an initialize each interface and use the first one that returns [code]true[/code].
 			</description>
 		</method>
 		<method name="get_interfaces" qualifiers="const">

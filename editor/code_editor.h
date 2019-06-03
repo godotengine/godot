@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +63,6 @@ class FindReplaceBar : public HBoxContainer {
 
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
-	MarginContainer *container;
 	LineEdit *search_text;
 	ToolButton *find_prev;
 	ToolButton *find_next;
@@ -76,7 +75,6 @@ class FindReplaceBar : public HBoxContainer {
 	Button *replace_all;
 	CheckBox *selection_only;
 
-	HBoxContainer *hbc;
 	VBoxContainer *vbc_lineedit;
 	HBoxContainer *hbc_button_replace;
 	HBoxContainer *hbc_option_replace;
@@ -142,22 +140,23 @@ class CodeTextEditor : public VBoxContainer {
 	TextEdit *text_editor;
 	FindReplaceBar *find_replace_bar;
 	HBoxContainer *status_bar;
-	Label *warning_label;
+
+	ToolButton *warning_button;
 	Label *warning_count_label;
 
-	Label *line_nb;
-	Label *col_nb;
-	Label *zoom_nb;
+	Label *line_and_col_txt;
+
 	Label *info;
 	Timer *idle;
 	Timer *code_complete_timer;
-	bool enable_complete_timer;
 
 	Timer *font_resize_timer;
 	int font_resize_val;
 	real_t font_size;
 
 	Label *error;
+	int error_line;
+	int error_column;
 
 	void _on_settings_change();
 
@@ -175,6 +174,11 @@ class CodeTextEditor : public VBoxContainer {
 	CodeTextEditorCodeCompleteFunc code_complete_func;
 	void *code_complete_ud;
 
+	void _warning_label_gui_input(const Ref<InputEvent> &p_event);
+	void _warning_button_pressed();
+	void _set_show_warnings_panel(bool p_show);
+	void _error_pressed(const Ref<InputEvent> &p_event);
+
 protected:
 	virtual void _load_theme_settings() {}
 	virtual void _validate_script() {}
@@ -186,6 +190,8 @@ protected:
 	void _line_col_changed();
 	void _notification(int);
 	static void _bind_methods();
+
+	bool is_warnings_panel_opened;
 
 public:
 	void trim_trailing_whitespace();
@@ -203,22 +209,35 @@ public:
 	void move_lines_up();
 	void move_lines_down();
 	void delete_lines();
-	void code_lines_down();
+	void clone_lines_down();
+
+	/// Toggle inline comment on currently selected lines, or on current line if nothing is selected,
+	/// by adding or removing comment delimiter
+	void toggle_inline_comment(const String &delimiter);
 
 	void goto_line(int p_line);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
+	void set_executing_line(int p_line);
+	void clear_executing_line();
 
 	Variant get_edit_state();
 	void set_edit_state(const Variant &p_state);
 
+	void set_warning_nb(int p_warning_nb);
+
 	void update_editor_settings();
 	void set_error(const String &p_error);
+	void set_error_pos(int p_line, int p_column);
 	void update_line_and_column() { _line_col_changed(); }
 	TextEdit *get_text_edit() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
-	Label *get_warning_label() const { return warning_label; }
-	Label *get_warning_count_label() const { return warning_count_label; }
 	virtual void apply_code() {}
+	void goto_error();
+
+	void toggle_bookmark();
+	void goto_next_bookmark();
+	void goto_prev_bookmark();
+	void remove_all_bookmarks();
 
 	void set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 #include "register_types.h"
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/dir_access.h"
+#include "core/os/os.h"
 #include "core/project_settings.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/dir_access.h"
-#include "os/os.h"
 #include "scene/main/scene_tree.h"
 
 #include "pluginscript_language.h"

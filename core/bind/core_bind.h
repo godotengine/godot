@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,15 +31,15 @@
 #ifndef CORE_BIND_H
 #define CORE_BIND_H
 
-#include "image.h"
-#include "io/compression.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "os/semaphore.h"
-#include "os/thread.h"
+#include "core/image.h"
+#include "core/io/compression.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/os/semaphore.h"
+#include "core/os/thread.h"
 
 class _ResourceLoader : public Object {
 	GDCLASS(_ResourceLoader, Object);
@@ -80,11 +80,12 @@ public:
 		FLAG_OMIT_EDITOR_PROPERTIES = 8,
 		FLAG_SAVE_BIG_ENDIAN = 16,
 		FLAG_COMPRESS = 32,
+		FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
 	};
 
 	static _ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags);
+	Error save(const String &p_path, const RES &p_resource, SaverFlags p_flags);
 	PoolVector<String> get_recognized_extensions(const RES &p_resource);
 
 	_ResourceSaver();
@@ -102,6 +103,11 @@ protected:
 	static _OS *singleton;
 
 public:
+	enum VideoDriver {
+		VIDEO_DRIVER_GLES3,
+		VIDEO_DRIVER_GLES2,
+	};
+
 	enum PowerState {
 		POWERSTATE_UNKNOWN, /**< cannot determine power status */
 		POWERSTATE_ON_BATTERY, /**< Not plugged in, running on the battery */
@@ -151,12 +157,15 @@ public:
 	Array get_fullscreen_mode_list(int p_screen = 0) const;
 
 	virtual int get_video_driver_count() const;
-	virtual String get_video_driver_name(int p_driver) const;
+	virtual String get_video_driver_name(VideoDriver p_driver) const;
+	virtual VideoDriver get_current_video_driver() const;
 
 	virtual int get_audio_driver_count() const;
 	virtual String get_audio_driver_name(int p_driver) const;
 
 	virtual PoolStringArray get_connected_midi_inputs();
+	virtual void open_midi_inputs();
+	virtual void close_midi_inputs();
 
 	virtual int get_screen_count() const;
 	virtual int get_current_screen() const;
@@ -182,6 +191,7 @@ public:
 	virtual bool is_window_always_on_top() const;
 	virtual void request_attention();
 	virtual void center_window();
+	virtual void move_window_to_foreground();
 
 	virtual void set_borderless_window(bool p_borderless);
 	virtual bool get_borderless_window() const;
@@ -191,6 +201,8 @@ public:
 
 	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
+	virtual Point2 get_ime_selection() const;
+	virtual String get_ime_text() const;
 
 	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	bool native_video_is_playing();
@@ -202,7 +214,7 @@ public:
 	bool is_in_low_processor_usage_mode() const;
 
 	String get_executable_path() const;
-	int execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, Array p_output = Array());
+	int execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, Array p_output = Array(), bool p_read_stderr = false);
 
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
@@ -263,6 +275,7 @@ public:
 
 	void set_use_file_access_save_and_swap(bool p_enable);
 
+	void set_native_icon(const String &p_filename);
 	void set_icon(const Ref<Image> &p_icon);
 
 	int get_exit_code() const;
@@ -275,10 +288,11 @@ public:
 	Dictionary get_time_zone_info() const;
 	uint64_t get_unix_time() const;
 	uint64_t get_system_time_secs() const;
+	uint64_t get_system_time_msecs() const;
 
-	int get_static_memory_usage() const;
-	int get_static_memory_peak_usage() const;
-	int get_dynamic_memory_usage() const;
+	uint64_t get_static_memory_usage() const;
+	uint64_t get_static_memory_peak_usage() const;
+	uint64_t get_dynamic_memory_usage() const;
 
 	void delay_usec(uint32_t p_usec) const;
 	void delay_msec(uint32_t p_msec) const;
@@ -343,11 +357,14 @@ public:
 
 	bool has_feature(const String &p_feature) const;
 
+	bool request_permission(const String &p_name);
+
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();
 };
 
+VARIANT_ENUM_CAST(_OS::VideoDriver);
 VARIANT_ENUM_CAST(_OS::PowerState);
 VARIANT_ENUM_CAST(_OS::Weekday);
 VARIANT_ENUM_CAST(_OS::Month);
@@ -386,14 +403,54 @@ public:
 	real_t segment_intersects_circle(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_circle_pos, real_t p_circle_radius);
 	int get_uv84_normal_bit(const Vector3 &p_vector);
 
+	bool is_polygon_clockwise(const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon);
+	Vector<int> triangulate_delaunay_2d(const Vector<Vector2> &p_points);
 	Vector<Point2> convex_hull_2d(const Vector<Point2> &p_points);
 	Vector<Vector3> clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane);
+
+	enum PolyBooleanOperation {
+		OPERATION_UNION,
+		OPERATION_DIFFERENCE,
+		OPERATION_INTERSECTION,
+		OPERATION_XOR
+	};
+	// 2D polygon boolean operations
+	Array merge_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // union (add)
+	Array clip_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // difference (subtract)
+	Array intersect_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // common area (multiply)
+	Array exclude_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // all but common area (xor)
+
+	// 2D polyline vs polygon operations
+	Array clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // cut
+	Array intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // chop
+
+	// 2D offset polygons/polylines
+	enum PolyJoinType {
+		JOIN_SQUARE,
+		JOIN_ROUND,
+		JOIN_MITER
+	};
+	enum PolyEndType {
+		END_POLYGON,
+		END_JOINED,
+		END_BUTT,
+		END_SQUARE,
+		END_ROUND
+	};
+	Array offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE);
+	Array offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE, PolyEndType p_end_type = END_SQUARE);
+
+	Vector<Point2> transform_points_2d(const Vector<Point2> &p_points, const Transform2D &p_mat);
 
 	Dictionary make_atlas(const Vector<Size2> &p_rects);
 
 	_Geometry();
 };
+
+VARIANT_ENUM_CAST(_Geometry::PolyBooleanOperation);
+VARIANT_ENUM_CAST(_Geometry::PolyJoinType);
+VARIANT_ENUM_CAST(_Geometry::PolyEndType);
 
 class _File : public Reference {
 
@@ -420,11 +477,11 @@ public:
 		COMPRESSION_GZIP = Compression::MODE_GZIP
 	};
 
-	Error open_encrypted(const String &p_path, int p_mode_flags, const Vector<uint8_t> &p_key);
-	Error open_encrypted_pass(const String &p_path, int p_mode_flags, const String &p_pass);
-	Error open_compressed(const String &p_path, int p_mode_flags, int p_compress_mode = 0);
+	Error open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
+	Error open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, const String &p_pass);
+	Error open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode = COMPRESSION_FASTLZ);
 
-	Error open(const String &p_path, int p_mode_flags); ///< open a file
+	Error open(const String &p_path, ModeFlags p_mode_flags); ///< open a file
 	void close(); ///< close a file
 	bool is_open() const; ///< true when file is open
 
@@ -447,10 +504,11 @@ public:
 	double get_double() const;
 	real_t get_real() const;
 
-	Variant get_var() const;
+	Variant get_var(bool p_allow_objects = false) const;
 
 	PoolVector<uint8_t> get_buffer(int p_length) const; ///< get an array of bytes
 	String get_line() const;
+	Vector<String> get_csv_line(const String &p_delim = ",") const;
 	String get_as_text() const;
 	String get_md5(const String &p_path) const;
 	String get_sha256(const String &p_path) const;
@@ -476,15 +534,14 @@ public:
 
 	void store_string(const String &p_string);
 	void store_line(const String &p_string);
+	void store_csv_line(const Vector<String> &p_values, const String &p_delim = ",");
 
 	virtual void store_pascal_string(const String &p_string);
 	virtual String get_pascal_string();
 
-	Vector<String> get_csv_line(String delim = ",") const;
-
 	void store_buffer(const PoolVector<uint8_t> &p_buffer); ///< store an array of bytes
 
-	void store_var(const Variant &p_var);
+	void store_var(const Variant &p_var, bool p_full_objects = false);
 
 	bool file_exists(const String &p_name) const; ///< return true if a file exists
 
@@ -553,8 +610,8 @@ protected:
 public:
 	static _Marshalls *get_singleton();
 
-	String variant_to_base64(const Variant &p_var);
-	Variant base64_to_variant(const String &p_str);
+	String variant_to_base64(const Variant &p_var, bool p_full_objects = false);
+	Variant base64_to_variant(const String &p_str, bool p_allow_objects = false);
 
 	String raw_to_base64(const PoolVector<uint8_t> &p_arr);
 	PoolVector<uint8_t> base64_to_raw(const String &p_str);
@@ -616,10 +673,11 @@ public:
 
 		PRIORITY_LOW,
 		PRIORITY_NORMAL,
-		PRIORITY_HIGH
+		PRIORITY_HIGH,
+		PRIORITY_MAX
 	};
 
-	Error start(Object *p_instance, const StringName &p_method, const Variant &p_userdata = Variant(), int p_priority = PRIORITY_NORMAL);
+	Error start(Object *p_instance, const StringName &p_method, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
 	String get_id() const;
 	bool is_active() const;
 	Variant wait_to_finish();

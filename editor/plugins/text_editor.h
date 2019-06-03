@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,6 +87,10 @@ private:
 		SEARCH_FIND_PREV,
 		SEARCH_REPLACE,
 		SEARCH_GOTO_LINE,
+		BOOKMARK_TOGGLE,
+		BOOKMARK_GOTO_NEXT,
+		BOOKMARK_GOTO_PREV,
+		BOOKMARK_REMOVE_ALL,
 	};
 
 protected:
@@ -123,6 +127,8 @@ public:
 	virtual Vector<String> get_functions();
 	virtual void get_breakpoints(List<int> *p_breakpoints);
 	virtual void goto_line(int p_line, bool p_with_error = false);
+	virtual void set_executing_line(int p_line);
+	virtual void clear_executing_line();
 	virtual void trim_trailing_whitespace();
 	virtual void convert_indent_to_spaces();
 	virtual void convert_indent_to_tabs();

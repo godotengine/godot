@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftpsprop.h                                                             */
-/*                                                                         */
-/*    Get and set properties of PostScript drivers (specification).        */
-/*                                                                         */
-/*  Copyright 2017-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftpsprop.h
+ *
+ *   Get and set properties of PostScript drivers (specification).
+ *
+ * Copyright (C) 2017-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef FTPSPROP_H_

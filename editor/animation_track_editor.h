@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  animation_track_editor.h                                             */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #ifndef ANIMATION_TRACK_EDITOR_H
 #define ANIMATION_TRACK_EDITOR_H
 
@@ -46,7 +76,7 @@ class AnimationTimelineEdit : public Range {
 	Rect2 hsize_rect;
 
 	bool editing;
-	bool *block_animation_update_ptr; //used to block all tracks re-gen (speed up)
+	bool use_fps;
 
 	bool panning_timeline;
 	float panning_timeline_from;
@@ -74,13 +104,15 @@ public:
 	void set_zoom(Range *p_zoom);
 	Range *get_zoom() const { return zoom; }
 	void set_undo_redo(UndoRedo *p_undo_redo);
-	void set_block_animation_update_ptr(bool *p_block_ptr);
 
 	void set_play_position(float p_pos);
 	float get_play_position() const;
 	void update_play_position();
 
 	void update_values();
+
+	void set_use_fps(bool p_use_fps);
+	bool is_using_fps() const;
 
 	void set_hscroll(HScrollBar *p_hscroll);
 
@@ -113,6 +145,7 @@ class AnimationTrackEdit : public Control {
 	Node *root;
 	Control *play_position; //separate control used to draw so updates for only position changed are much faster
 	float play_position_pos;
+	NodePath node_path;
 
 	Ref<Animation> animation;
 	int track;
@@ -139,8 +172,6 @@ class AnimationTrackEdit : public Control {
 	String path_cache;
 
 	void _menu_selected(int p_index);
-
-	bool *block_animation_update_ptr; //used to block all tracks re-gen (speed up)
 
 	void _path_entered(const String &p_text);
 	void _play_position_draw();
@@ -186,8 +217,7 @@ public:
 	AnimationTimelineEdit *get_timeline() const { return timeline; }
 	AnimationTrackEditor *get_editor() const { return editor; }
 	UndoRedo *get_undo_redo() const { return undo_redo; }
-	bool *get_block_animation_update_ptr() { return block_animation_update_ptr; }
-
+	NodePath get_path() const;
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track);
 	virtual Size2 get_minimum_size() const;
 
@@ -195,8 +225,6 @@ public:
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
 	void set_root(Node *p_root);
-
-	void set_block_animation_update_ptr(bool *p_block_ptr);
 
 	void set_play_position(float p_pos);
 	void update_play_position();
@@ -279,12 +307,17 @@ class AnimationTrackEditor : public VBoxContainer {
 	EditorSpinSlider *step;
 	TextureRect *zoom_icon;
 	ToolButton *snap;
+	OptionButton *snap_mode;
 
+	Button *imported_anim_warning;
+	void _show_imported_anim_warning() const;
+
+	void _snap_mode_changed(int p_mode);
 	Vector<AnimationTrackEdit *> track_edits;
 	Vector<AnimationTrackEditGroup *> groups;
 
-	bool block_animation_update;
-
+	bool animation_changing_awaiting_update;
+	void _animation_update();
 	int _get_track_selected();
 	void _animation_changed();
 	void _update_tracks();
@@ -292,6 +325,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _name_limit_changed();
 	void _timeline_changed(float p_new_pos, bool p_drag);
 	void _track_remove_request(int p_track);
+	void _track_grab_focus(int p_track);
 
 	UndoRedo *undo_redo;
 
@@ -303,6 +337,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _add_track(int p_type);
 	void _new_track_node_selected(NodePath p_path);
 	void _new_track_property_selected(String p_name);
+
+	void _update_step_spinbox();
 
 	PropertySelector *prop_selector;
 	PropertySelector *method_selector;
@@ -460,6 +496,9 @@ public:
 	void update_keying();
 	bool has_keying() const;
 
+	Dictionary get_state() const;
+	void set_state(const Dictionary &p_state);
+
 	void cleanup();
 
 	void set_anim_pos(float p_pos);
@@ -475,6 +514,7 @@ public:
 	float get_moving_selection_offset() const;
 	bool is_snap_enabled();
 	float snap_time(float p_value);
+	bool is_grouping_tracks();
 
 	MenuButton *get_edit_menu();
 	AnimationTrackEditor();

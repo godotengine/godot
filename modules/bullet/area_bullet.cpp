@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "area_bullet.h"
 
+#include "bullet_physics_server.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 #include "collision_object_bullet.h"
@@ -45,7 +46,6 @@
 AreaBullet::AreaBullet() :
 		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_AREA),
 		monitorable(true),
-		isScratched(false),
 		spOv_mode(PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED),
 		spOv_gravityPoint(false),
 		spOv_gravityPointDistanceScale(0),
@@ -54,10 +54,11 @@ AreaBullet::AreaBullet() :
 		spOv_gravityMag(10),
 		spOv_linearDump(0.1),
 		spOv_angularDump(1),
-		spOv_priority(0) {
+		spOv_priority(0),
+		isScratched(false) {
 
 	btGhost = bulletnew(btGhostObject);
-	btGhost->setCollisionShape(compoundShape);
+	reload_shapes();
 	setupBulletCollisionObject(btGhost);
 	/// Collision objects with a callback still have collision response with dynamic rigid bodies.
 	/// In order to use collision objects as trigger, you have to disable the collision response.
@@ -92,6 +93,9 @@ void AreaBullet::dispatch_callbacks() {
 				call_event(otherObj.object, PhysicsServer::AREA_BODY_REMOVED);
 				otherObj.object->on_exit_area(this);
 				overlappingObjects.remove(i); // Remove after callback
+				break;
+			case OVERLAP_STATE_DIRTY:
+			case OVERLAP_STATE_INSIDE:
 				break;
 		}
 	}
@@ -160,6 +164,11 @@ void AreaBullet::set_monitorable(bool p_monitorable) {
 
 bool AreaBullet::is_monitoring() const {
 	return get_godot_object_flags() & GOF_IS_MONITORING_AREA;
+}
+
+void AreaBullet::main_shape_changed() {
+	CRASH_COND(!get_main_shape())
+	btGhost->setCollisionShape(get_main_shape());
 }
 
 void AreaBullet::reload_body() {
@@ -236,7 +245,7 @@ void AreaBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &
 			set_spOv_gravityPointAttenuation(p_value);
 			break;
 		default:
-			print_line("The Bullet areas doesn't suppot this param: " + itos(p_param));
+			WARN_PRINTS("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
 	}
 }
 
@@ -259,7 +268,7 @@ Variant AreaBullet::get_param(PhysicsServer::AreaParameter p_param) const {
 		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			return spOv_gravityPointAttenuation;
 		default:
-			print_line("The Bullet areas doesn't suppot this param: " + itos(p_param));
+			WARN_PRINTS("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
 			return Variant();
 	}
 }

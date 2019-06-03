@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,17 @@
 #ifndef CLASS_DB_H
 #define CLASS_DB_H
 
-#include "method_bind.h"
-#include "object.h"
-#include "print_string.h"
+#include "core/method_bind.h"
+#include "core/object.h"
+#include "core/print_string.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
+/**	To bind more then 6 parameters include this:
+ *  #include "core/method_bind_ext.gen.inc"
+ */
 
 #define DEFVAL(m_defval) (m_defval)
 
@@ -157,6 +161,8 @@ public:
 
 	static void _add_class2(const StringName &p_class, const StringName &p_inherits);
 
+	static HashMap<StringName, HashMap<StringName, Variant> > default_values;
+
 public:
 	// DO NOT USE THIS!!!!!! NEEDS TO BE PUBLIC BUT DO NOT USE NO MATTER WHAT!!!
 	template <class T>
@@ -208,6 +214,7 @@ public:
 
 	static void get_class_list(List<StringName> *p_classes);
 	static void get_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
+	static void get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
 	static StringName get_parent_class_nocheck(const StringName &p_class);
 	static StringName get_parent_class(const StringName &p_class);
 	static bool class_exists(const StringName &p_class);
@@ -348,6 +355,8 @@ public:
 	static void get_enum_list(const StringName &p_class, List<StringName> *p_enums, bool p_no_inheritance = false);
 	static void get_enum_constants(const StringName &p_class, const StringName &p_enum, List<StringName> *p_constants, bool p_no_inheritance = false);
 
+	static Variant class_get_default_property_value(const StringName &p_class, const StringName &p_property);
+
 	static StringName get_category(const StringName &p_node);
 
 	static void set_class_enabled(StringName p_class, bool p_enable);
@@ -363,6 +372,7 @@ public:
 	static void init();
 
 	static void set_current_api(APIType p_api);
+	static APIType get_current_api();
 	static void cleanup();
 };
 

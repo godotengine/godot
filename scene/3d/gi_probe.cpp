@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "gi_probe.h"
+
+#include "core/os/os.h"
 
 #include "mesh_instance.h"
 #include "voxel_light_baker.h"
@@ -488,6 +490,14 @@ AABB GIProbe::get_aabb() const {
 PoolVector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
 
 	return PoolVector<Face3>();
+}
+
+String GIProbe::get_configuration_warning() const {
+
+	if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
+		return TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
+	}
+	return String();
 }
 
 void GIProbe::_bind_methods() {

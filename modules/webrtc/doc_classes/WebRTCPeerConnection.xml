@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WebRTCPeerConnection" inherits="Reference" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_ice_candidate">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="media" type="String">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<argument index="2" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="close">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="create_data_channel">
+			<return type="WebRTCDataChannel">
+			</return>
+			<argument index="0" name="label" type="String">
+			</argument>
+			<argument index="1" name="options" type="Dictionary" default="{
+
+}">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="create_offer">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_connection_state" qualifiers="const">
+			<return type="int" enum="WebRTCPeerConnection.ConnectionState">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="initialize">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="configuration" type="Dictionary" default="{
+
+}">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="poll">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_local_description">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<argument index="1" name="sdp" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_remote_description">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<argument index="1" name="sdp" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="data_channel_received">
+			<argument index="0" name="channel" type="Object">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="ice_candidate_created">
+			<argument index="0" name="media" type="String">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<argument index="2" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="session_description_created">
+			<argument index="0" name="type" type="String">
+			</argument>
+			<argument index="1" name="sdp" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="STATE_NEW" value="0" enum="ConnectionState">
+		</constant>
+		<constant name="STATE_CONNECTING" value="1" enum="ConnectionState">
+		</constant>
+		<constant name="STATE_CONNECTED" value="2" enum="ConnectionState">
+		</constant>
+		<constant name="STATE_DISCONNECTED" value="3" enum="ConnectionState">
+		</constant>
+		<constant name="STATE_FAILED" value="4" enum="ConnectionState">
+		</constant>
+		<constant name="STATE_CLOSED" value="5" enum="ConnectionState">
+		</constant>
+	</constants>
+</class>

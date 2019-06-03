@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  cffobjs.c                                                              */
-/*                                                                         */
-/*    OpenType objects manager (body).                                     */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * cffobjs.c
+ *
+ *   OpenType objects manager (body).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -37,7 +37,6 @@
 #include "cffobjs.h"
 #include "cffload.h"
 #include "cffcmap.h"
-#include "cffpic.h"
 
 #include "cfferrs.h"
 
@@ -45,21 +44,21 @@
 #include FT_SERVICE_CFF_TABLE_LOAD_H
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_cffobjs
+#define FT_COMPONENT  cffobjs
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*                            SIZE FUNCTIONS                             */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   *                           SIZE FUNCTIONS
+   *
+   */
 
 
   static PSH_Globals_Funcs
@@ -341,11 +340,11 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*                            SLOT  FUNCTIONS                            */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   *                           SLOT  FUNCTIONS
+   *
+   */
 
   FT_LOCAL_DEF( void )
   cff_slot_done( FT_GlyphSlot  slot )
@@ -383,11 +382,11 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*                           FACE  FUNCTIONS                             */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   *                          FACE  FUNCTIONS
+   *
+   */
 
   static FT_String*
   cff_strcpy( FT_Memory         memory,
@@ -645,14 +644,14 @@
 
       dict = &cff->top_font.font_dict;
 
-      /* we need the `PSNames' module for CFF and CEF formats */
+      /* we need the `psnames' module for CFF and CEF formats */
       /* which aren't CID-keyed                               */
       if ( dict->cid_registry == 0xFFFFU && !psnames )
       {
         FT_ERROR(( "cff_face_init:"
                    " cannot open CFF & CEF fonts\n"
                    "              "
-                   " without the `PSNames' module\n" ));
+                   " without the `psnames' module\n" ));
         error = FT_THROW( Missing_Module );
         goto Exit;
       }
@@ -965,10 +964,10 @@
           /* assume "Regular" style if we don't know better */
           cffface->style_name = cff_strcpy( memory, (char *)"Regular" );
 
-        /*******************************************************************/
-        /*                                                                 */
-        /* Compute face flags.                                             */
-        /*                                                                 */
+        /********************************************************************
+         *
+         * Compute face flags.
+         */
         flags = FT_FACE_FLAG_SCALABLE   | /* scalable outlines */
                 FT_FACE_FLAG_HORIZONTAL | /* horizontal data   */
                 FT_FACE_FLAG_HINTER;      /* has native hinter */
@@ -989,10 +988,10 @@
 
         cffface->face_flags |= flags;
 
-        /*******************************************************************/
-        /*                                                                 */
-        /* Compute style flags.                                            */
-        /*                                                                 */
+        /********************************************************************
+         *
+         * Compute style flags.
+         */
         flags = 0;
 
         if ( dict->italic_angle )
@@ -1028,10 +1027,10 @@
       if ( dict->cid_registry != 0xFFFFU && pure_cff )
         cffface->face_flags |= FT_FACE_FLAG_CID_KEYED;
 
-      /*******************************************************************/
-      /*                                                                 */
-      /* Compute char maps.                                              */
-      /*                                                                 */
+      /********************************************************************
+       *
+       * Compute char maps.
+       */
 
       /* Try to synthesize a Unicode charmap if there is none available */
       /* already.  If an OpenType font contains a Unicode "cmap", we    */
@@ -1070,10 +1069,11 @@
 
         nn = (FT_UInt)cffface->num_charmaps;
 
-        error = FT_CMap_New( &CFF_CMAP_UNICODE_CLASS_REC_GET, NULL,
+        error = FT_CMap_New( &cff_cmap_unicode_class_rec, NULL,
                              &cmaprec, NULL );
         if ( error                                      &&
-             FT_ERR_NEQ( error, No_Unicode_Glyph_Name ) )
+             FT_ERR_NEQ( error, No_Unicode_Glyph_Name ) &&
+             FT_ERR_NEQ( error, Unimplemented_Feature ) )
           goto Exit;
         error = FT_Err_Ok;
 
@@ -1094,19 +1094,19 @@
           {
             cmaprec.encoding_id = TT_ADOBE_ID_STANDARD;
             cmaprec.encoding    = FT_ENCODING_ADOBE_STANDARD;
-            clazz               = &CFF_CMAP_ENCODING_CLASS_REC_GET;
+            clazz               = &cff_cmap_encoding_class_rec;
           }
           else if ( encoding->offset == 1 )
           {
             cmaprec.encoding_id = TT_ADOBE_ID_EXPERT;
             cmaprec.encoding    = FT_ENCODING_ADOBE_EXPERT;
-            clazz               = &CFF_CMAP_ENCODING_CLASS_REC_GET;
+            clazz               = &cff_cmap_encoding_class_rec;
           }
           else
           {
             cmaprec.encoding_id = TT_ADOBE_ID_CUSTOM;
             cmaprec.encoding    = FT_ENCODING_ADOBE_CUSTOM;
-            clazz               = &CFF_CMAP_ENCODING_CLASS_REC_GET;
+            clazz               = &cff_cmap_encoding_class_rec;
           }
 
           error = FT_CMap_New( clazz, NULL, &cmaprec, NULL );

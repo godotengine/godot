@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftcalc.h                                                               */
-/*                                                                         */
-/*    Arithmetic computations (specification).                             */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftcalc.h
+ *
+ *   Arithmetic computations (specification).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef FTCALC_H_
@@ -27,11 +27,11 @@
 FT_BEGIN_HEADER
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* FT_MulDiv() and FT_MulFix() are declared in freetype.h.               */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * FT_MulDiv() and FT_MulFix() are declared in freetype.h.
+   *
+   */
 
 #ifndef  FT_CONFIG_OPTION_NO_ASSEMBLER
   /* Provide assembler fragments for performance-critical functions. */
@@ -246,29 +246,32 @@ FT_BEGIN_HEADER
 #endif
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    FT_MulDiv_No_Round                                                 */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A very simple function used to perform the computation `(a*b)/c'   */
-  /*    (without rounding) with maximum accuracy (it uses a 64-bit         */
-  /*    intermediate integer whenever necessary).                          */
-  /*                                                                       */
-  /*    This function isn't necessarily as fast as some processor specific */
-  /*    operations, but is at least completely portable.                   */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    a :: The first multiplier.                                         */
-  /*    b :: The second multiplier.                                        */
-  /*    c :: The divisor.                                                  */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    The result of `(a*b)/c'.  This function never traps when trying to */
-  /*    divide by zero; it simply returns `MaxInt' or `MinInt' depending   */
-  /*    on the signs of `a' and `b'.                                       */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @function:
+   *   FT_MulDiv_No_Round
+   *
+   * @description:
+   *   A very simple function used to perform the computation '(a*b)/c'
+   *   (without rounding) with maximum accuracy (it uses a 64-bit
+   *   intermediate integer whenever necessary).
+   *
+   *   This function isn't necessarily as fast as some processor-specific
+   *   operations, but is at least completely portable.
+   *
+   * @input:
+   *   a ::
+   *     The first multiplier.
+   *   b ::
+   *     The second multiplier.
+   *   c ::
+   *     The divisor.
+   *
+   * @return:
+   *   The result of '(a*b)/c'.  This function never traps when trying to
+   *   divide by zero; it simply returns 'MaxInt' or 'MinInt' depending on
+   *   the signs of 'a' and 'b'.
+   */
   FT_BASE( FT_Long )
   FT_MulDiv_No_Round( FT_Long  a,
                       FT_Long  b,
@@ -276,12 +279,11 @@ FT_BEGIN_HEADER
 
 
   /*
-   *  A variant of FT_Matrix_Multiply which scales its result afterwards.
-   *  The idea is that both `a' and `b' are scaled by factors of 10 so that
-   *  the values are as precise as possible to get a correct result during
-   *  the 64bit multiplication.  Let `sa' and `sb' be the scaling factors of
-   *  `a' and `b', respectively, then the scaling factor of the result is
-   *  `sa*sb'.
+   * A variant of FT_Matrix_Multiply which scales its result afterwards.  The
+   * idea is that both `a' and `b' are scaled by factors of 10 so that the
+   * values are as precise as possible to get a correct result during the
+   * 64bit multiplication.  Let `sa' and `sb' be the scaling factors of `a'
+   * and `b', respectively, then the scaling factor of the result is `sa*sb'.
    */
   FT_BASE( void )
   FT_Matrix_Multiply_Scaled( const FT_Matrix*  a,
@@ -290,8 +292,23 @@ FT_BEGIN_HEADER
 
 
   /*
-   *  A variant of FT_Vector_Transform.  See comments for
-   *  FT_Matrix_Multiply_Scaled.
+   * Check a matrix.  If the transformation would lead to extreme shear or
+   * extreme scaling, for example, return 0.  If everything is OK, return 1.
+   *
+   * Based on geometric considerations we use the following inequality to
+   * identify a degenerate matrix.
+   *
+   *   50 * abs(xx*yy - xy*yx) < xx^2 + xy^2 + yx^2 + yy^2
+   *
+   * Value 50 is heuristic.
+   */
+  FT_BASE( FT_Bool )
+  FT_Matrix_Check( const FT_Matrix*  matrix );
+
+
+  /*
+   * A variant of FT_Vector_Transform.  See comments for
+   * FT_Matrix_Multiply_Scaled.
    */
   FT_BASE( void )
   FT_Vector_Transform_Scaled( FT_Vector*        vector,
@@ -300,22 +317,22 @@ FT_BEGIN_HEADER
 
 
   /*
-   *  This function normalizes a vector and returns its original length.
-   *  The normalized vector is a 16.16 fixed-point unit vector with length
-   *  close to 0x10000.  The accuracy of the returned length is limited to
-   *  16 bits also.  The function utilizes quick inverse square root
-   *  approximation without divisions and square roots relying on Newton's
-   *  iterations instead.
+   * This function normalizes a vector and returns its original length.  The
+   * normalized vector is a 16.16 fixed-point unit vector with length close
+   * to 0x10000.  The accuracy of the returned length is limited to 16 bits
+   * also.  The function utilizes quick inverse square root approximation
+   * without divisions and square roots relying on Newton's iterations
+   * instead.
    */
   FT_BASE( FT_UInt32 )
   FT_Vector_NormLen( FT_Vector*  vector );
 
 
   /*
-   *  Return -1, 0, or +1, depending on the orientation of a given corner.
-   *  We use the Cartesian coordinate system, with positive vertical values
-   *  going upwards.  The function returns +1 if the corner turns to the
-   *  left, -1 to the right, and 0 for undecidable cases.
+   * Return -1, 0, or +1, depending on the orientation of a given corner.  We
+   * use the Cartesian coordinate system, with positive vertical values going
+   * upwards.  The function returns +1 if the corner turns to the left, -1 to
+   * the right, and 0 for undecidable cases.
    */
   FT_BASE( FT_Int )
   ft_corner_orientation( FT_Pos  in_x,
@@ -325,9 +342,9 @@ FT_BEGIN_HEADER
 
 
   /*
-   *  Return TRUE if a corner is flat or nearly flat.  This is equivalent to
-   *  saying that the corner point is close to its neighbors, or inside an
-   *  ellipse defined by the neighbor focal points to be more precise.
+   * Return TRUE if a corner is flat or nearly flat.  This is equivalent to
+   * saying that the corner point is close to its neighbors, or inside an
+   * ellipse defined by the neighbor focal points to be more precise.
    */
   FT_BASE( FT_Int )
   ft_corner_is_flat( FT_Pos  in_x,
@@ -337,10 +354,11 @@ FT_BEGIN_HEADER
 
 
   /*
-   *  Return the most significant bit index.
+   * Return the most significant bit index.
    */
 
 #ifndef  FT_CONFIG_OPTION_NO_ASSEMBLER
+
 #if defined( __GNUC__ )                                          && \
     ( __GNUC__ > 3 || ( __GNUC__ == 3 && __GNUC_MINOR__ >= 4 ) )
 
@@ -352,9 +370,34 @@ FT_BEGIN_HEADER
 
 #define FT_MSB( x )  ( 31 - __builtin_clzl( x ) )
 
+#endif /* __GNUC__ */
+
+
+#elif defined( _MSC_VER ) && ( _MSC_VER >= 1400 )
+
+#if FT_SIZEOF_INT == 4
+
+#include <intrin.h>
+
+  static __inline FT_Int32
+  FT_MSB_i386( FT_UInt32  x )
+  {
+    unsigned long  where;
+
+
+    /* not available in older VC versions */
+    _BitScanReverse( &where, x );
+
+    return (FT_Int32)where;
+  }
+
+#define FT_MSB( x )  ( FT_MSB_i386( x ) )
+
 #endif
 
-#endif /* __GNUC__ */
+#endif /* _MSC_VER */
+
+
 #endif /* !FT_CONFIG_OPTION_NO_ASSEMBLER */
 
 #ifndef FT_MSB
@@ -366,8 +409,8 @@ FT_BEGIN_HEADER
 
 
   /*
-   *  Return sqrt(x*x+y*y), which is the same as `FT_Vector_Length' but uses
-   *  two fixed-point arguments instead.
+   * Return sqrt(x*x+y*y), which is the same as `FT_Vector_Length' but uses
+   * two fixed-point arguments instead.
    */
   FT_BASE( FT_Fixed )
   FT_Hypot( FT_Fixed  x,
@@ -376,23 +419,24 @@ FT_BEGIN_HEADER
 
 #if 0
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    FT_SqrtFixed                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Computes the square root of a 16.16 fixed-point value.             */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    x :: The value to compute the root for.                            */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    The result of `sqrt(x)'.                                           */
-  /*                                                                       */
-  /* <Note>                                                                */
-  /*    This function is not very fast.                                    */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @function:
+   *   FT_SqrtFixed
+   *
+   * @description:
+   *   Computes the square root of a 16.16 fixed-point value.
+   *
+   * @input:
+   *   x ::
+   *     The value to compute the root for.
+   *
+   * @return:
+   *   The result of 'sqrt(x)'.
+   *
+   * @note:
+   *   This function is not very fast.
+   */
   FT_BASE( FT_Int32 )
   FT_SqrtFixed( FT_Int32  x );
 
@@ -409,14 +453,23 @@ FT_BEGIN_HEADER
                                         : ( -( ( 32 - (x) ) & -64 ) ) )
 
   /*
-   *  The following macros have two purposes.
+   * The following macros have two purposes.
    *
-   *  . Tag places where overflow is expected and harmless.
+   * - Tag places where overflow is expected and harmless.
    *
-   *  . Avoid run-time sanitizer errors.
+   * - Avoid run-time sanitizer errors.
    *
-   *  Use with care!
+   * Use with care!
    */
+#define ADD_INT( a, b )                           \
+          (FT_Int)( (FT_UInt)(a) + (FT_UInt)(b) )
+#define SUB_INT( a, b )                           \
+          (FT_Int)( (FT_UInt)(a) - (FT_UInt)(b) )
+#define MUL_INT( a, b )                           \
+          (FT_Int)( (FT_UInt)(a) * (FT_UInt)(b) )
+#define NEG_INT( a )                              \
+          (FT_Int)( (FT_UInt)0 - (FT_UInt)(a) )
+
 #define ADD_LONG( a, b )                             \
           (FT_Long)( (FT_ULong)(a) + (FT_ULong)(b) )
 #define SUB_LONG( a, b )                             \
@@ -434,6 +487,19 @@ FT_BEGIN_HEADER
           (FT_Int32)( (FT_UInt32)(a) * (FT_UInt32)(b) )
 #define NEG_INT32( a )                                  \
           (FT_Int32)( (FT_UInt32)0 - (FT_UInt32)(a) )
+
+#ifdef FT_LONG64
+
+#define ADD_INT64( a, b )                               \
+          (FT_Int64)( (FT_UInt64)(a) + (FT_UInt64)(b) )
+#define SUB_INT64( a, b )                               \
+          (FT_Int64)( (FT_UInt64)(a) - (FT_UInt64)(b) )
+#define MUL_INT64( a, b )                               \
+          (FT_Int64)( (FT_UInt64)(a) * (FT_UInt64)(b) )
+#define NEG_INT64( a )                                  \
+          (FT_Int64)( (FT_UInt64)0 - (FT_UInt64)(a) )
+
+#endif /* FT_LONG64 */
 
 
 FT_END_HEADER

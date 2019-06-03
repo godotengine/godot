@@ -84,7 +84,10 @@
 #define MBEDTLS_ERR_DHM_INVALID_FORMAT                    -0x3380  /**< The ASN.1 data is not formatted correctly. */
 #define MBEDTLS_ERR_DHM_ALLOC_FAILED                      -0x3400  /**< Allocation of memory failed. */
 #define MBEDTLS_ERR_DHM_FILE_IO_ERROR                     -0x3480  /**< Read or write of file failed. */
+
+/* MBEDTLS_ERR_DHM_HW_ACCEL_FAILED is deprecated and should not be used. */
 #define MBEDTLS_ERR_DHM_HW_ACCEL_FAILED                   -0x3500  /**< DHM hardware accelerator failed. */
+
 #define MBEDTLS_ERR_DHM_SET_GROUP_FAILED                  -0x3580  /**< Setting the modulus and generator failed. */
 
 #ifdef __cplusplus
@@ -96,7 +99,7 @@ extern "C" {
 /**
  * \brief          The DHM context structure.
  */
-typedef struct
+typedef struct mbedtls_dhm_context
 {
     size_t len;         /*!<  The size of \p P in Bytes. */
     mbedtls_mpi P;      /*!<  The prime modulus. */
@@ -124,9 +127,15 @@ mbedtls_dhm_context;
 void mbedtls_dhm_init( mbedtls_dhm_context *ctx );
 
 /**
- * \brief          This function parses the ServerKeyExchange parameters.
+ * \brief          This function parses the DHM parameters in a
+ *                 TLS ServerKeyExchange handshake message
+ *                 (DHM modulus, generator, and public key).
  *
- * \param ctx      The DHM context.
+ * \note           In a TLS handshake, this is the how the client
+ *                 sets up its DHM context from the server's public
+ *                 DHM key material.
+ *
+ * \param ctx      The DHM context to use. This must be initialized.
  * \param p        On input, *p must be the start of the input buffer.
  *                 On output, *p is updated to point to the end of the data
  *                 that has been read. On success, this is the first byte
@@ -140,31 +149,37 @@ void mbedtls_dhm_init( mbedtls_dhm_context *ctx );
  * \return         An \c MBEDTLS_ERR_DHM_XXX error code on failure.
  */
 int mbedtls_dhm_read_params( mbedtls_dhm_context *ctx,
-                     unsigned char **p,
-                     const unsigned char *end );
+                             unsigned char **p,
+                             const unsigned char *end );
 
 /**
- * \brief          This function sets up and writes the ServerKeyExchange
- *                 parameters.
+ * \brief          This function generates a DHM key pair and exports its
+ *                 public part together with the DHM parameters in the format
+ *                 used in a TLS ServerKeyExchange handshake message.
  *
- * \note           The destination buffer must be large enough to hold
- *                 the reduced binary presentation of the modulus, the generator
- *                 and the public key, each wrapped with a 2-byte length field.
- *                 It is the responsibility of the caller to ensure that enough
- *                 space is available. Refer to \c mbedtls_mpi_size to computing
- *                 the byte-size of an MPI.
- *
- * \note           This function assumes that \c ctx->P and \c ctx->G
- *                 have already been properly set. For that, use
+ * \note           This function assumes that the DHM parameters \c ctx->P
+ *                 and \c ctx->G have already been properly set. For that, use
  *                 mbedtls_dhm_set_group() below in conjunction with
  *                 mbedtls_mpi_read_binary() and mbedtls_mpi_read_string().
  *
- * \param ctx      The DHM context.
+ * \note           In a TLS handshake, this is the how the server generates
+ *                 and exports its DHM key material.
+ *
+ * \param ctx      The DHM context to use. This must be initialized
+ *                 and have the DHM parameters set. It may or may not
+ *                 already have imported the peer's public key.
  * \param x_size   The private key size in Bytes.
- * \param olen     The number of characters written.
- * \param output   The destination buffer.
- * \param f_rng    The RNG function.
- * \param p_rng    The RNG context.
+ * \param olen     The address at which to store the number of Bytes
+ *                 written on success. This must not be \c NULL.
+ * \param output   The destination buffer. This must be a writable buffer of
+ *                 sufficient size to hold the reduced binary presentation of
+ *                 the modulus, the generator and the public key, each wrapped
+ *                 with a 2-byte length field. It is the responsibility of the
+ *                 caller to ensure that enough space is available. Refer to
+ *                 mbedtls_mpi_size() to computing the byte-size of an MPI.
+ * \param f_rng    The RNG function. Must not be \c NULL.
+ * \param p_rng    The RNG context to be passed to \p f_rng. This may be
+ *                 \c NULL if \p f_rng doesn't need a context parameter.
  *
  * \return         \c 0 on success.
  * \return         An \c MBEDTLS_ERR_DHM_XXX error code on failure.
@@ -177,12 +192,14 @@ int mbedtls_dhm_make_params( mbedtls_dhm_context *ctx, int x_size,
 /**
  * \brief          This function sets the prime modulus and generator.
  *
- * \note           This function can be used to set \p P, \p G
+ * \note           This function can be used to set \c ctx->P, \c ctx->G
  *                 in preparation for mbedtls_dhm_make_params().
  *
- * \param ctx      The DHM context.
- * \param P        The MPI holding the DHM prime modulus.
- * \param G        The MPI holding the DHM generator.
+ * \param ctx      The DHM context to configure. This must be initialized.
+ * \param P        The MPI holding the DHM prime modulus. This must be
+ *                 an initialized MPI.
+ * \param G        The MPI holding the DHM generator. This must be an
+ *                 initialized MPI.
  *
  * \return         \c 0 if successful.
  * \return         An \c MBEDTLS_ERR_DHM_XXX error code on failure.
@@ -192,11 +209,17 @@ int mbedtls_dhm_set_group( mbedtls_dhm_context *ctx,
                            const mbedtls_mpi *G );
 
 /**
- * \brief          This function imports the public value of the peer, G^Y.
+ * \brief          This function imports the raw public value of the peer.
  *
- * \param ctx      The DHM context.
- * \param input    The input buffer containing the G^Y value of the peer.
- * \param ilen     The size of the input buffer.
+ * \note           In a TLS handshake, this is the how the server imports
+ *                 the Client's public DHM key.
+ *
+ * \param ctx      The DHM context to use. This must be initialized and have
+ *                 its DHM parameters set, e.g. via mbedtls_dhm_set_group().
+ *                 It may or may not already have generated its own private key.
+ * \param input    The input buffer containing the \c G^Y value of the peer.
+ *                 This must be a readable buffer of size \p ilen Bytes.
+ * \param ilen     The size of the input buffer \p input in Bytes.
  *
  * \return         \c 0 on success.
  * \return         An \c MBEDTLS_ERR_DHM_XXX error code on failure.
@@ -205,21 +228,25 @@ int mbedtls_dhm_read_public( mbedtls_dhm_context *ctx,
                      const unsigned char *input, size_t ilen );
 
 /**
- * \brief          This function creates its own private key, \c X, and
- *                 exports \c G^X.
+ * \brief          This function creates a DHM key pair and exports
+ *                 the raw public key in big-endian format.
  *
  * \note           The destination buffer is always fully written
  *                 so as to contain a big-endian representation of G^X mod P.
- *                 If it is larger than ctx->len, it is padded accordingly
+ *                 If it is larger than \c ctx->len, it is padded accordingly
  *                 with zero-bytes at the beginning.
  *
- * \param ctx      The DHM context.
+ * \param ctx      The DHM context to use. This must be initialized and
+ *                 have the DHM parameters set. It may or may not already
+ *                 have imported the peer's public key.
  * \param x_size   The private key size in Bytes.
- * \param output   The destination buffer.
- * \param olen     The length of the destination buffer. Must be at least
- *                  equal to ctx->len (the size of \c P).
- * \param f_rng    The RNG function.
- * \param p_rng    The RNG context.
+ * \param output   The destination buffer. This must be a writable buffer of
+ *                 size \p olen Bytes.
+ * \param olen     The length of the destination buffer. This must be at least
+ *                 equal to `ctx->len` (the size of \c P).
+ * \param f_rng    The RNG function. This must not be \c NULL.
+ * \param p_rng    The RNG context to be passed to \p f_rng. This may be \c NULL
+ *                 if \p f_rng doesn't need a context argument.
  *
  * \return         \c 0 on success.
  * \return         An \c MBEDTLS_ERR_DHM_XXX error code on failure.
@@ -230,22 +257,27 @@ int mbedtls_dhm_make_public( mbedtls_dhm_context *ctx, int x_size,
                      void *p_rng );
 
 /**
- * \brief               This function derives and exports the shared secret
- *                      \c (G^Y)^X mod \c P.
+ * \brief          This function derives and exports the shared secret
+ *                 \c (G^Y)^X mod \c P.
  *
- * \note                If \p f_rng is not NULL, it is used to blind the input as
- *                      a countermeasure against timing attacks. Blinding is used
- *                      only if our private key \c X is re-used, and not used
- *                      otherwise. We recommend always passing a non-NULL
- *                      \p f_rng argument.
+ * \note           If \p f_rng is not \c NULL, it is used to blind the input as
+ *                 a countermeasure against timing attacks. Blinding is used
+ *                 only if our private key \c X is re-used, and not used
+ *                 otherwise. We recommend always passing a non-NULL
+ *                 \p f_rng argument.
  *
- * \param ctx           The DHM context.
- * \param output        The destination buffer.
- * \param output_size   The size of the destination buffer. Must be at least
- *                      the size of ctx->len (the size of \c P).
+ * \param ctx           The DHM context to use. This must be initialized
+ *                      and have its own private key generated and the peer's
+ *                      public key imported.
+ * \param output        The buffer to write the generated shared key to. This
+ *                      must be a writable buffer of size \p output_size Bytes.
+ * \param output_size   The size of the destination buffer. This must be at
+ *                      least the size of \c ctx->len (the size of \c P).
  * \param olen          On exit, holds the actual number of Bytes written.
- * \param f_rng         The RNG function, for blinding purposes.
- * \param p_rng         The RNG context.
+ * \param f_rng         The RNG function, for blinding purposes. This may
+ *                      b \c NULL if blinding isn't needed.
+ * \param p_rng         The RNG context. This may be \c NULL if \p f_rng
+ *                      doesn't need a context argument.
  *
  * \return              \c 0 on success.
  * \return              An \c MBEDTLS_ERR_DHM_XXX error code on failure.
@@ -256,9 +288,12 @@ int mbedtls_dhm_calc_secret( mbedtls_dhm_context *ctx,
                      void *p_rng );
 
 /**
- * \brief          This function frees and clears the components of a DHM context.
+ * \brief          This function frees and clears the components
+ *                 of a DHM context.
  *
- * \param ctx      The DHM context to free and clear.
+ * \param ctx      The DHM context to free and clear. This may be \c NULL,
+ *                 in which case this function is a no-op. If it is not \c NULL,
+ *                 it must point to an initialized DHM context.
  */
 void mbedtls_dhm_free( mbedtls_dhm_context *ctx );
 
@@ -267,17 +302,19 @@ void mbedtls_dhm_free( mbedtls_dhm_context *ctx );
 /**
  * \brief             This function parses DHM parameters in PEM or DER format.
  *
- * \param dhm         The DHM context to initialize.
- * \param dhmin       The input buffer.
- * \param dhminlen    The size of the buffer, including the terminating null
- *                    Byte for PEM data.
+ * \param dhm         The DHM context to import the DHM parameters into.
+ *                    This must be initialized.
+ * \param dhmin       The input buffer. This must be a readable buffer of
+ *                    length \p dhminlen Bytes.
+ * \param dhminlen    The size of the input buffer \p dhmin, including the
+ *                    terminating \c NULL Byte for PEM data.
  *
  * \return            \c 0 on success.
- * \return            An \c MBEDTLS_ERR_DHM_XXX or \c MBEDTLS_ERR_PEM_XXX error code
- *                    error code on failure.
+ * \return            An \c MBEDTLS_ERR_DHM_XXX or \c MBEDTLS_ERR_PEM_XXX error
+ *                    code on failure.
  */
 int mbedtls_dhm_parse_dhm( mbedtls_dhm_context *dhm, const unsigned char *dhmin,
-                   size_t dhminlen );
+                           size_t dhminlen );
 
 #if defined(MBEDTLS_FS_IO)
 /** \ingroup x509_module */
@@ -285,11 +322,13 @@ int mbedtls_dhm_parse_dhm( mbedtls_dhm_context *dhm, const unsigned char *dhmin,
  * \brief          This function loads and parses DHM parameters from a file.
  *
  * \param dhm      The DHM context to load the parameters to.
+ *                 This must be initialized.
  * \param path     The filename to read the DHM parameters from.
+ *                 This must not be \c NULL.
  *
  * \return         \c 0 on success.
- * \return            An \c MBEDTLS_ERR_DHM_XXX or \c MBEDTLS_ERR_PEM_XXX error code
- *                    error code on failure.
+ * \return         An \c MBEDTLS_ERR_DHM_XXX or \c MBEDTLS_ERR_PEM_XXX
+ *                 error code on failure.
  */
 int mbedtls_dhm_parse_dhmfile( mbedtls_dhm_context *dhm, const char *path );
 #endif /* MBEDTLS_FS_IO */
@@ -349,15 +388,6 @@ int mbedtls_dhm_self_test( int verbose );
  */
 
 #if !defined(MBEDTLS_DEPRECATED_REMOVED)
-
-#if defined(MBEDTLS_DEPRECATED_WARNING)
-#define MBEDTLS_DEPRECATED __attribute__((deprecated))
-MBEDTLS_DEPRECATED typedef char const * mbedtls_deprecated_constant_t;
-#define MBEDTLS_DEPRECATED_STRING_CONSTANT( VAL )       \
-    ( (mbedtls_deprecated_constant_t) ( VAL ) )
-#else
-#define MBEDTLS_DEPRECATED_STRING_CONSTANT( VAL ) VAL
-#endif /* ! MBEDTLS_DEPRECATED_WARNING */
 
 /**
  * \warning The origin of the primes in RFC 5114 is not documented and

@@ -43,11 +43,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "config.h"
 #endif
 
-/* These defines enables debugging code */
+/* These defines enable debugging code */
 
-//#define DEBUG_FRAMES_DISPLAY
-//#define DEBUG_SHOW_OPS
-//#define DEBUG_SHOW_RMATCH
+/* #define DEBUG_FRAMES_DISPLAY */
+/* #define DEBUG_SHOW_OPS */
+/* #define DEBUG_SHOW_RMATCH */
 
 #ifdef DEBUG_FRAME_DISPLAY
 #include <stdarg.h>
@@ -149,7 +149,7 @@ changed, the code at RETURN_SWITCH below must be updated in sync.  */
 enum { RM1=1, RM2,  RM3,  RM4,  RM5,  RM6,  RM7,  RM8,  RM9,  RM10,
        RM11,  RM12, RM13, RM14, RM15, RM16, RM17, RM18, RM19, RM20,
        RM21,  RM22, RM23, RM24, RM25, RM26, RM27, RM28, RM29, RM30,
-       RM31,  RM32, RM33, RM34, RM35 };
+       RM31,  RM32, RM33, RM34, RM35, RM36 };
 
 #ifdef SUPPORT_WIDE_CHARS
 enum { RM100=100, RM101 };
@@ -770,7 +770,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
     /* ===================================================================== */
     /* Real or forced end of the pattern, assertion, or recursion. In an
     assertion ACCEPT, update the last used pointer and remember the current
-    frame so that the captures can be fished out of it. */
+    frame so that the captures and mark can be fished out of it. */
 
     case OP_ASSERT_ACCEPT:
     if (Feptr > mb->last_used_ptr) mb->last_used_ptr = Feptr;
@@ -1776,7 +1776,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
 
 
     /* ===================================================================== */
-    /* Match a bit-mapped character class, possibly repeatedly. These op codes
+    /* Match a bit-mapped character class, possibly repeatedly. These opcodes
     are used when all the characters in the class have values in the range
     0-255, and either the matching is caseful, or the characters are in the
     range 0-127 when UTF processing is enabled. The only difference between
@@ -1962,11 +1962,15 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
 
           if (reptype == REPTYPE_POS) continue;    /* No backtracking */
 
+          /* After \C in UTF mode, Lstart_eptr might be in the middle of a
+          Unicode character. Use <= Lstart_eptr to ensure backtracking doesn't
+          go too far. */
+
           for (;;)
             {
             RMATCH(Fecode, RM201);
             if (rrc != MATCH_NOMATCH) RRETURN(rrc);
-            if (Feptr-- == Lstart_eptr) break;  /* Tried at original position */
+            if (Feptr-- <= Lstart_eptr) break;  /* Tried at original position */
             BACKCHAR(Feptr);
             }
           }
@@ -2126,11 +2130,15 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
 
         if (reptype == REPTYPE_POS) continue;    /* No backtracking */
 
+        /* After \C in UTF mode, Lstart_eptr might be in the middle of a
+        Unicode character. Use <= Lstart_eptr to ensure backtracking doesn't
+        go too far. */
+
         for(;;)
           {
           RMATCH(Fecode, RM101);
           if (rrc != MATCH_NOMATCH) RRETURN(rrc);
-          if (Feptr-- == Lstart_eptr) break;  /* Tried at original position */
+          if (Feptr-- <= Lstart_eptr) break;  /* Tried at original position */
 #ifdef SUPPORT_UNICODE
           if (utf) BACKCHAR(Feptr);
 #endif
@@ -2456,7 +2464,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
 
     /* ===================================================================== */
     /* Match a single character type repeatedly. Note that the property type
-    does not need to be in a stack frame as it not used within an RMATCH()
+    does not need to be in a stack frame as it is not used within an RMATCH()
     loop. */
 
 #define Lstart_eptr  F->temp_sptr[0]
@@ -4002,8 +4010,8 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
         if (reptype == REPTYPE_POS) continue;    /* No backtracking */
 
         /* After \C in UTF mode, Lstart_eptr might be in the middle of a
-        Unicode character. Use <= pp to ensure backtracking doesn't go too far.
-        */
+        Unicode character. Use <= Lstart_eptr to ensure backtracking doesn't
+        go too far. */
 
         for(;;)
           {
@@ -4135,7 +4143,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
             }
           break;
 
-          /* The "byte" (i.e. "code unit")  case is the same as non-UTF */
+          /* The "byte" (i.e. "code unit") case is the same as non-UTF */
 
           case OP_ANYBYTE:
           fc = Lmax - Lmin;
@@ -5111,7 +5119,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
     /* Positive assertions are like other groups except that PCRE doesn't allow
     the effect of (*THEN) to escape beyond an assertion; it is therefore
     treated as NOMATCH. (*ACCEPT) is treated as successful assertion, with its
-    captures retained. Any other return is an error. */
+    captures and mark retained. Any other return is an error. */
 
 #define Lframe_type  F->temp_32[0]
 
@@ -5128,6 +5136,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
               (char *)assert_accept_frame + offsetof(heapframe, ovector),
               assert_accept_frame->offset_top * sizeof(PCRE2_SIZE));
         Foffset_top = assert_accept_frame->offset_top;
+        Fmark = assert_accept_frame->mark;
         break;
         }
       if (rrc != MATCH_NOMATCH && rrc != MATCH_THEN) RRETURN(rrc);
@@ -5416,7 +5425,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
       Feptr -= number;
       }
 
-    /* Save the earliest consulted character, then skip to next op code */
+    /* Save the earliest consulted character, then skip to next opcode */
 
     if (Feptr < mb->start_used_ptr) mb->start_used_ptr = Feptr;
     Fecode += 1 + LINK_SIZE;
@@ -5501,7 +5510,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
       frame so that it points to the final branch. */
 
       case OP_ONCE:
-      Fback_frame = ((char *)F - (char *)P) + frame_size;
+      Fback_frame = ((char *)F - (char *)P);
       for (;;)
         {
         uint32_t y = GET(P->ecode,1);
@@ -5829,6 +5838,13 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
     mb->verb_current_recurse = Fcurrent_recurse;
     RRETURN(MATCH_COMMIT);
 
+    case OP_COMMIT_ARG:
+    Fmark = mb->nomatch_mark = Fecode + 2;
+    RMATCH(Fecode + PRIV(OP_lengths)[*Fecode] + Fecode[1], RM36);
+    if (rrc != MATCH_NOMATCH) RRETURN(rrc);
+    mb->verb_current_recurse = Fcurrent_recurse;
+    RRETURN(MATCH_COMMIT);
+
     case OP_PRUNE:
     RMATCH(Fecode + PRIV(OP_lengths)[*Fecode], RM14);
     if (rrc != MATCH_NOMATCH) RRETURN(rrc);
@@ -5921,7 +5937,7 @@ in rrc. */
 
 RETURN_SWITCH:
 if (Frdepth == 0) return rrc;                     /* Exit from the top level */
-F = (heapframe *)((char *)F - Fback_frame);       /* Back track */
+F = (heapframe *)((char *)F - Fback_frame);       /* Backtrack */
 mb->cb->callout_flags |= PCRE2_CALLOUT_BACKTRACK; /* Note for callouts */
 
 #ifdef DEBUG_SHOW_RMATCH
@@ -5934,7 +5950,7 @@ switch (Freturn_id)
   LBL( 9) LBL(10) LBL(11) LBL(12) LBL(13) LBL(14) LBL(15) LBL(16)
   LBL(17) LBL(18) LBL(19) LBL(20) LBL(21) LBL(22) LBL(23) LBL(24)
   LBL(25) LBL(26) LBL(27) LBL(28) LBL(29) LBL(30) LBL(31) LBL(32)
-  LBL(33) LBL(34) LBL(35)
+  LBL(33) LBL(34) LBL(35) LBL(36)
 
 #ifdef SUPPORT_WIDE_CHARS
   LBL(100) LBL(101)
@@ -6275,7 +6291,7 @@ mb->match_limit_depth = (mcontext->depth_limit < re->limit_depth)?
 /* If a pattern has very many capturing parentheses, the frame size may be very
 large. Ensure that there are at least 10 available frames by getting an initial
 vector on the heap if necessary, except when the heap limit prevents this. Get
-fewer if possible. (The heap limit is in kilobytes.) */
+fewer if possible. (The heap limit is in kibibytes.) */
 
 if (frame_size <= START_FRAMES_SIZE/10)
   {

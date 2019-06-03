@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,7 +79,7 @@ void GDAPI godot_string_new(godot_string *r_dest);
 void GDAPI godot_string_new_copy(godot_string *r_dest, const godot_string *p_src);
 void GDAPI godot_string_new_with_wide_string(godot_string *r_dest, const wchar_t *p_contents, const int p_size);
 
-wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx);
+const wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx);
 wchar_t GDAPI godot_string_operator_index_const(const godot_string *p_self, const godot_int p_idx);
 const wchar_t GDAPI *godot_string_wide_str(const godot_string *p_self);
 
@@ -245,6 +245,12 @@ godot_bool GDAPI godot_string_is_valid_html_color(const godot_string *p_self);
 godot_bool GDAPI godot_string_is_valid_identifier(const godot_string *p_self);
 godot_bool GDAPI godot_string_is_valid_integer(const godot_string *p_self);
 godot_bool GDAPI godot_string_is_valid_ip_address(const godot_string *p_self);
+
+godot_string GDAPI godot_string_dedent(const godot_string *p_self);
+godot_string GDAPI godot_string_trim_prefix(const godot_string *p_self, const godot_string *p_prefix);
+godot_string GDAPI godot_string_trim_suffix(const godot_string *p_self, const godot_string *p_suffix);
+godot_string GDAPI godot_string_rstrip(const godot_string *p_self, const godot_string *p_chars);
+godot_pool_string_array GDAPI godot_string_rsplit(const godot_string *p_self, const godot_string *p_divisor, const godot_bool p_allow_empty, const godot_int p_maxsplit);
 
 void GDAPI godot_string_destroy(godot_string *p_self);
 

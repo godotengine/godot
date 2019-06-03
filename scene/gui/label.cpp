@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "label.h"
-#include "print_string.h"
-#include "project_settings.h"
-#include "translation.h"
+#include "core/print_string.h"
+#include "core/project_settings.h"
+#include "core/translation.h"
 
 void Label::set_autowrap(bool p_autowrap) {
 
@@ -244,7 +244,7 @@ void Label::_notification(int p_what) {
 							CharType n = xl_text[i + pos + 1];
 							if (uppercase) {
 								c = String::char_uppercase(c);
-								n = String::char_uppercase(c);
+								n = String::char_uppercase(n);
 							}
 
 							float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + shadow_ofs, c, n, font_color_shadow, false);
@@ -265,7 +265,7 @@ void Label::_notification(int p_what) {
 						CharType n = xl_text[i + pos + 1];
 						if (uppercase) {
 							c = String::char_uppercase(c);
-							n = String::char_uppercase(c);
+							n = String::char_uppercase(n);
 						}
 
 						x_ofs += drawer.draw_char(ci, Point2(x_ofs, y_ofs), c, n, font_color);
@@ -295,14 +295,13 @@ Size2 Label::get_minimum_size() const {
 
 	Size2 min_style = get_stylebox("normal")->get_minimum_size();
 
+	// don't want to mutable everything
+	if (word_cache_dirty)
+		const_cast<Label *>(this)->regenerate_word_cache();
+
 	if (autowrap)
 		return Size2(1, clip ? 1 : minsize.height) + min_style;
 	else {
-
-		// don't want to mutable everything
-		if (word_cache_dirty)
-			const_cast<Label *>(this)->regenerate_word_cache();
-
 		Size2 ms = minsize;
 		if (clip)
 			ms.width = 1;
@@ -394,9 +393,9 @@ void Label::regenerate_word_cache() {
 
 	WordCache *last = NULL;
 
-	for (int i = 0; i < xl_text.size() + 1; i++) {
+	for (int i = 0; i <= xl_text.length(); i++) {
 
-		CharType current = i < xl_text.length() ? xl_text[i] : ' '; //always a space at the end, so the algo works
+		CharType current = i < xl_text.length() ? xl_text[i] : L' '; //always a space at the end, so the algo works
 
 		if (uppercase)
 			current = String::char_uppercase(current);
@@ -430,12 +429,11 @@ void Label::regenerate_word_cache() {
 
 			if (current == '\n') {
 				insert_newline = true;
-			} else {
+			} else if (current != ' ') {
 				total_char_cache++;
 			}
 
 			if (i < xl_text.length() && xl_text[i] == ' ') {
-				total_char_cache--; // do not count spaces
 				if (line_width > 0 || last == NULL || last->char_pos != WordCache::CHAR_WRAPLINE) {
 					space_count++;
 					line_width += space_width;
@@ -512,7 +510,7 @@ void Label::regenerate_word_cache() {
 
 void Label::set_align(Align p_align) {
 
-	ERR_FAIL_INDEX(p_align, 4);
+	ERR_FAIL_INDEX((int)p_align, 4);
 	align = p_align;
 	update();
 }
@@ -524,7 +522,7 @@ Label::Align Label::get_align() const {
 
 void Label::set_valign(VAlign p_align) {
 
-	ERR_FAIL_INDEX(p_align, 4);
+	ERR_FAIL_INDEX((int)p_align, 4);
 	valign = p_align;
 	update();
 }
@@ -666,12 +664,12 @@ void Label::_bind_methods() {
 	BIND_ENUM_CONSTANT(VALIGN_BOTTOM);
 	BIND_ENUM_CONSTANT(VALIGN_FILL);
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "valign", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_valign", "get_valign");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "autowrap"), "set_autowrap", "has_autowrap");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "valign", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_valign", "get_valign");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autowrap"), "set_autowrap", "has_autowrap");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1", PROPERTY_USAGE_EDITOR), "set_visible_characters", "get_visible_characters");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE, "0,999,1"), "set_lines_skipped", "get_lines_skipped");

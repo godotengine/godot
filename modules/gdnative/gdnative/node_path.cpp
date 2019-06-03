@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,6 +108,15 @@ godot_bool GDAPI godot_node_path_operator_equal(const godot_node_path *p_self, c
 	const NodePath *self = (const NodePath *)p_self;
 	const NodePath *b = (const NodePath *)p_b;
 	return *self == *b;
+}
+
+godot_node_path godot_node_path_get_as_property_path(const godot_node_path *p_self) {
+	const NodePath *self = (const NodePath *)p_self;
+	godot_node_path res;
+	NodePath *val = (NodePath *)&res;
+	memnew_placement(val, NodePath);
+	*val = self->get_as_property_path();
+	return res;
 }
 
 #ifdef __cplusplus

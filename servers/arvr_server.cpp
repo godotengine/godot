@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "arvr_server.h"
 #include "arvr/arvr_interface.h"
 #include "arvr/arvr_positional_tracker.h"
-#include "project_settings.h"
+#include "core/project_settings.h"
 
 ARVRServer *ARVRServer::singleton = NULL;
 
@@ -178,7 +178,7 @@ void ARVRServer::remove_interface(const Ref<ARVRInterface> &p_interface) {
 
 	ERR_FAIL_COND(idx == -1);
 
-	print_line("Removed interface" + p_interface->get_name());
+	print_verbose("ARVR: Removed interface" + p_interface->get_name());
 
 	emit_signal("interface_removed", p_interface->get_name());
 	interfaces.remove(idx);
@@ -320,12 +320,12 @@ Ref<ARVRInterface> ARVRServer::get_primary_interface() const {
 void ARVRServer::set_primary_interface(const Ref<ARVRInterface> &p_primary_interface) {
 	primary_interface = p_primary_interface;
 
-	print_line("Primary interface set to: " + primary_interface->get_name());
+	print_verbose("ARVR: Primary interface set to: " + primary_interface->get_name());
 };
 
 void ARVRServer::clear_primary_interface_if(const Ref<ARVRInterface> &p_primary_interface) {
 	if (primary_interface == p_primary_interface) {
-		print_line("Clearing primary interface");
+		print_verbose("ARVR: Clearing primary interface");
 		primary_interface.unref();
 	};
 };

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include <UnicodeChar.h>
 
+#include "core/os/keyboard.h"
 #include "haiku_direct_window.h"
 #include "key_mapping_haiku.h"
 #include "main/main.h"
-#include "os/keyboard.h"
 
 HaikuDirectWindow::HaikuDirectWindow(BRect p_frame) :
 		BDirectWindow(p_frame, "Godot", B_TITLED_WINDOW, B_QUIT_ON_WINDOW_CLOSE) {
@@ -86,7 +86,7 @@ void HaikuDirectWindow::DirectConnected(direct_buffer_info *info) {
 void HaikuDirectWindow::MessageReceived(BMessage *message) {
 	switch (message->what) {
 		case REDRAW_MSG:
-			if (Main::iteration() == true) {
+			if (Main::iteration()) {
 				view->EnableDirectMode(false);
 				Quit();
 			}

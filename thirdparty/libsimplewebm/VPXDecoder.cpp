@@ -33,7 +33,8 @@
 VPXDecoder::VPXDecoder(const WebMDemuxer &demuxer, unsigned threads) :
 	m_ctx(NULL),
 	m_iter(NULL),
-	m_delay(0)
+	m_delay(0),
+	m_last_space(VPX_CS_UNKNOWN)
 {
 	if (threads > 8)
 		threads = 8;
@@ -86,6 +87,11 @@ VPXDecoder::IMAGE_ERROR VPXDecoder::getImage(Image &image)
 	IMAGE_ERROR err = NO_FRAME;
 	if (vpx_image_t *img = vpx_codec_get_frame(m_ctx, &m_iter))
 	{
+		// It seems to be a common problem that UNKNOWN comes up a lot, yet FFMPEG is somehow getting accurate colour-space information.
+		// After checking FFMPEG code, *they're* getting colour-space information, so I'm assuming something like this is going on.
+		// It appears to work, at least.
+		if (img->cs != VPX_CS_UNKNOWN)
+			m_last_space = img->cs;
 		if ((img->fmt & VPX_IMG_FMT_PLANAR) && !(img->fmt & (VPX_IMG_FMT_HAS_ALPHA | VPX_IMG_FMT_HIGHBITDEPTH)))
 		{
 			if (img->stride[0] && img->stride[1] && img->stride[2])
@@ -95,6 +101,7 @@ VPXDecoder::IMAGE_ERROR VPXDecoder::getImage(Image &image)
 
 				image.w = img->d_w;
 				image.h = img->d_h;
+				image.cs = m_last_space;
 				image.chromaShiftW = img->x_chroma_shift;
 				image.chromaShiftH = img->y_chroma_shift;
 
@@ -119,7 +126,9 @@ VPXDecoder::IMAGE_ERROR VPXDecoder::getImage(Image &image)
 
 /**/
 
+// -- GODOT begin --
 #if 0
+// -- GODOT end --
 
 static inline int ceilRshift(int val, int shift)
 {
@@ -139,4 +148,7 @@ int VPXDecoder::Image::getHeight(int plane) const
 	return ceilRshift(h, chromaShiftH);
 }
 
+// -- GODOT begin --
 #endif
+// -- GODOT end --
+

@@ -22,26 +22,24 @@ subject to the following restrictions:
 
 class b3RigidBody;
 
-
 #ifdef B3_USE_DOUBLE_PRECISION
-#define b3Point2PointConstraintData	b3Point2PointConstraintDoubleData
-#define b3Point2PointConstraintDataName	"b3Point2PointConstraintDoubleData"
+#define b3Point2PointConstraintData b3Point2PointConstraintDoubleData
+#define b3Point2PointConstraintDataName "b3Point2PointConstraintDoubleData"
 #else
-#define b3Point2PointConstraintData	b3Point2PointConstraintFloatData
-#define b3Point2PointConstraintDataName	"b3Point2PointConstraintFloatData"
-#endif //B3_USE_DOUBLE_PRECISION
+#define b3Point2PointConstraintData b3Point2PointConstraintFloatData
+#define b3Point2PointConstraintDataName "b3Point2PointConstraintFloatData"
+#endif  //B3_USE_DOUBLE_PRECISION
 
-struct	b3ConstraintSetting
+struct b3ConstraintSetting
 {
-	b3ConstraintSetting()	:
-		m_tau(b3Scalar(0.3)),
-		m_damping(b3Scalar(1.)),
-		m_impulseClamp(b3Scalar(0.))
+	b3ConstraintSetting() : m_tau(b3Scalar(0.3)),
+							m_damping(b3Scalar(1.)),
+							m_impulseClamp(b3Scalar(0.))
 	{
 	}
-	b3Scalar		m_tau;
-	b3Scalar		m_damping;
-	b3Scalar		m_impulseClamp;
+	b3Scalar m_tau;
+	b3Scalar m_damping;
+	b3Scalar m_impulseClamp;
 };
 
 enum b3Point2PointFlags
@@ -51,47 +49,45 @@ enum b3Point2PointFlags
 };
 
 /// point to point constraint between two rigidbodies each with a pivotpoint that descibes the 'ballsocket' location in local space
-B3_ATTRIBUTE_ALIGNED16(class) b3Point2PointConstraint : public b3TypedConstraint
+B3_ATTRIBUTE_ALIGNED16(class)
+b3Point2PointConstraint : public b3TypedConstraint
 {
 #ifdef IN_PARALLELL_SOLVER
 public:
 #endif
-	
-	b3Vector3	m_pivotInA;
-	b3Vector3	m_pivotInB;
-	
-	int			m_flags;
-	b3Scalar	m_erp;
-	b3Scalar	m_cfm;
-	
-public:
 
+	b3Vector3 m_pivotInA;
+	b3Vector3 m_pivotInB;
+
+	int m_flags;
+	b3Scalar m_erp;
+	b3Scalar m_cfm;
+
+public:
 	B3_DECLARE_ALIGNED_ALLOCATOR();
 
-	b3ConstraintSetting	m_setting;
+	b3ConstraintSetting m_setting;
 
-	b3Point2PointConstraint(int  rbA,int rbB, const b3Vector3& pivotInA,const b3Vector3& pivotInB);
+	b3Point2PointConstraint(int rbA, int rbB, const b3Vector3& pivotInA, const b3Vector3& pivotInB);
 
 	//b3Point2PointConstraint(int  rbA,const b3Vector3& pivotInA);
 
+	virtual void getInfo1(b3ConstraintInfo1 * info, const b3RigidBodyData* bodies);
 
+	void getInfo1NonVirtual(b3ConstraintInfo1 * info, const b3RigidBodyData* bodies);
 
-	virtual void getInfo1 (b3ConstraintInfo1* info,const b3RigidBodyData* bodies);
+	virtual void getInfo2(b3ConstraintInfo2 * info, const b3RigidBodyData* bodies);
 
-	void getInfo1NonVirtual (b3ConstraintInfo1* info,const b3RigidBodyData* bodies);
+	void getInfo2NonVirtual(b3ConstraintInfo2 * info, const b3Transform& body0_trans, const b3Transform& body1_trans);
 
-	virtual void getInfo2 (b3ConstraintInfo2* info, const b3RigidBodyData* bodies);
+	void updateRHS(b3Scalar timeStep);
 
-	void getInfo2NonVirtual (b3ConstraintInfo2* info, const b3Transform& body0_trans, const b3Transform& body1_trans);
-
-	void	updateRHS(b3Scalar	timeStep);
-
-	void	setPivotA(const b3Vector3& pivotA)
+	void setPivotA(const b3Vector3& pivotA)
 	{
 		m_pivotInA = pivotA;
 	}
 
-	void	setPivotB(const b3Vector3& pivotB)
+	void setPivotB(const b3Vector3& pivotB)
 	{
 		m_pivotInB = pivotB;
 	}
@@ -106,34 +102,32 @@ public:
 		return m_pivotInB;
 	}
 
-	///override the default global value of a parameter (such as ERP or CFM), optionally provide the axis (0..5). 
+	///override the default global value of a parameter (such as ERP or CFM), optionally provide the axis (0..5).
 	///If no axis is provided, it uses the default axis for this constraint.
-	virtual	void	setParam(int num, b3Scalar value, int axis = -1);
+	virtual void setParam(int num, b3Scalar value, int axis = -1);
 	///return the local value of parameter
-	virtual	b3Scalar getParam(int num, int axis = -1) const;
+	virtual b3Scalar getParam(int num, int axis = -1) const;
 
-//	virtual	int	calculateSerializeBufferSize() const;
+	//	virtual	int	calculateSerializeBufferSize() const;
 
 	///fills the dataBuffer and returns the struct name (and 0 on failure)
-//	virtual	const char*	serialize(void* dataBuffer, b3Serializer* serializer) const;
-
-
+	//	virtual	const char*	serialize(void* dataBuffer, b3Serializer* serializer) const;
 };
 
 ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
-struct	b3Point2PointConstraintFloatData
+struct b3Point2PointConstraintFloatData
 {
-	b3TypedConstraintData	m_typeConstraintData;
-	b3Vector3FloatData	m_pivotInA;
-	b3Vector3FloatData	m_pivotInB;
+	b3TypedConstraintData m_typeConstraintData;
+	b3Vector3FloatData m_pivotInA;
+	b3Vector3FloatData m_pivotInB;
 };
 
 ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
-struct	b3Point2PointConstraintDoubleData
+struct b3Point2PointConstraintDoubleData
 {
-	b3TypedConstraintData	m_typeConstraintData;
-	b3Vector3DoubleData	m_pivotInA;
-	b3Vector3DoubleData	m_pivotInB;
+	b3TypedConstraintData m_typeConstraintData;
+	b3Vector3DoubleData m_pivotInA;
+	b3Vector3DoubleData m_pivotInB;
 };
 
 /*
@@ -156,4 +150,4 @@ B3_FORCE_INLINE	const char*	b3Point2PointConstraint::serialize(void* dataBuffer,
 }
 */
 
-#endif //B3_POINT2POINTCONSTRAINT_H
+#endif  //B3_POINT2POINTCONSTRAINT_H

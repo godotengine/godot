@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,10 +54,10 @@ class SpinBox : public Range {
 
 	struct Drag {
 		float base_val;
+		bool allowed;
 		bool enabled;
-		Vector2 from;
-		Vector2 mouse_pos;
 		Vector2 capture_pos;
+		float diff_y;
 	} drag;
 
 	void _line_edit_focus_exit();
@@ -75,6 +75,9 @@ public:
 	LineEdit *get_line_edit();
 
 	virtual Size2 get_minimum_size() const;
+
+	void set_align(LineEdit::Align p_align);
+	LineEdit::Align get_align() const;
 
 	void set_editable(bool p_editable);
 	bool is_editable() const;

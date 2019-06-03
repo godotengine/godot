@@ -1,0 +1,14 @@
+diff --git a/thirdparty/xatlas/xatlas.h b/thirdparty/xatlas/xatlas.h
+index 7e556c6c3..dbf8ca08c 100644
+--- a/thirdparty/xatlas/xatlas.h
++++ b/thirdparty/xatlas/xatlas.h
+@@ -3,6 +3,9 @@
+ #ifndef XATLAS_H
+ #define XATLAS_H
+ #include <float.h> // FLT_MAX
++// -- GODOT start --
++#include <limits.h> // INT_MAX, UINT_MAX
++// -- GODOT end --
+ 
+ namespace xatlas {
+ 

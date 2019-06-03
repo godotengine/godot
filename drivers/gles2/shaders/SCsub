@@ -6,7 +6,7 @@ if 'GLES2_GLSL' in env['BUILDERS']:
     env.GLES2_GLSL('copy.glsl');
 #    env.GLES2_GLSL('resolve.glsl');
     env.GLES2_GLSL('canvas.glsl');
-#    env.GLES2_GLSL('canvas_shadow.glsl');
+    env.GLES2_GLSL('canvas_shadow.glsl');
     env.GLES2_GLSL('scene.glsl');
     env.GLES2_GLSL('cubemap_filter.glsl');
     env.GLES2_GLSL('cube_to_dp.glsl');
@@ -20,3 +20,4 @@ if 'GLES2_GLSL' in env['BUILDERS']:
 #    env.GLES2_GLSL('exposure.glsl');
 #    env.GLES2_GLSL('tonemap.glsl');
 #    env.GLES2_GLSL('particles.glsl');
+    env.GLES2_GLSL('lens_distorted.glsl');

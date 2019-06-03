@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,9 @@
 
 #include "class_db.h"
 
-#include "os/mutex.h"
-#include "version.h"
+#include "core/engine.h"
+#include "core/os/mutex.h"
+#include "core/version.h"
 
 #define OBJTYPE_RLOCK RWLockRead _rw_lockr_(lock);
 #define OBJTYPE_WLOCK RWLockWrite _rw_lockw_(lock);
@@ -248,6 +249,11 @@ void ClassDB::set_current_api(APIType p_api) {
 	current_api = p_api;
 }
 
+ClassDB::APIType ClassDB::get_current_api() {
+
+	return current_api;
+}
+
 HashMap<StringName, ClassDB::ClassInfo> ClassDB::classes;
 HashMap<StringName, StringName> ClassDB::resource_base_extensions;
 HashMap<StringName, StringName> ClassDB::compat_classes;
@@ -302,6 +308,19 @@ void ClassDB::get_inheriters_from_class(const StringName &p_class, List<StringNa
 	while ((k = classes.next(k))) {
 
 		if (*k != p_class && is_parent_class(*k, p_class))
+			p_classes->push_back(*k);
+	}
+}
+
+void ClassDB::get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes) {
+
+	OBJTYPE_RLOCK;
+
+	const StringName *k = NULL;
+
+	while ((k = classes.next(k))) {
+
+		if (*k != p_class && get_parent_class(*k) == p_class)
 			p_classes->push_back(*k);
 	}
 }
@@ -512,7 +531,12 @@ Object *ClassDB::instance(const StringName &p_class) {
 		ERR_FAIL_COND_V(ti->disabled, NULL);
 		ERR_FAIL_COND_V(!ti->creation_func, NULL);
 	}
-
+#ifdef TOOLS_ENABLED
+	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
+		ERR_PRINTS("Class '" + String(p_class) + "' can only be instantiated by editor.");
+		return NULL;
+	}
+#endif
 	return ti->creation_func();
 }
 bool ClassDB::can_instance(const StringName &p_class) {
@@ -803,10 +827,10 @@ void ClassDB::add_signal(StringName p_class, const MethodInfo &p_signal) {
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_COND(!type);
 
-	ClassInfo *check = type;
 	StringName sname = p_signal.name;
-#ifdef DEBUG_METHODS_ENABLED
 
+#ifdef DEBUG_METHODS_ENABLED
+	ClassInfo *check = type;
 	while (check) {
 		if (check->signal_map.has(sname)) {
 			ERR_EXPLAIN("Type " + String(p_class) + " already has signal: " + String(sname));
@@ -930,9 +954,8 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 	}
 
 #ifdef DEBUG_METHODS_ENABLED
-
 	if (type->property_setget.has(p_pinfo.name)) {
-		ERR_EXPLAIN("Object already has property: " + p_class);
+		ERR_EXPLAIN("Object " + p_class + " already has property: " + p_pinfo.name);
 		ERR_FAIL();
 	}
 #endif
@@ -1361,6 +1384,41 @@ void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p
 	}
 }
 
+HashMap<StringName, HashMap<StringName, Variant> > ClassDB::default_values;
+
+Variant ClassDB::class_get_default_property_value(const StringName &p_class, const StringName &p_property) {
+
+	if (!default_values.has(p_class)) {
+
+		default_values[p_class] = HashMap<StringName, Variant>();
+
+		if (ClassDB::can_instance(p_class)) {
+
+			Object *c = ClassDB::instance(p_class);
+			List<PropertyInfo> plist;
+			c->get_property_list(&plist);
+			for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
+				if (E->get().usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) {
+
+					Variant v = c->get(E->get().name);
+					default_values[p_class][E->get().name] = v;
+				}
+			}
+			memdelete(c);
+		}
+	}
+
+	if (!default_values.has(p_class)) {
+		return Variant();
+	}
+
+	if (!default_values[p_class].has(p_property)) {
+		return Variant();
+	}
+
+	return default_values[p_class][p_property];
+}
+
 RWLock *ClassDB::lock = NULL;
 
 void ClassDB::init() {
@@ -1387,6 +1445,7 @@ void ClassDB::cleanup() {
 	classes.clear();
 	resource_base_extensions.clear();
 	compat_classes.clear();
+	default_values.clear();
 
 	memdelete(lock);
 }

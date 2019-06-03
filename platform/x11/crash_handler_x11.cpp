@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "crash_handler_x11.h"
+
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "main/main.h"
+
 #ifdef DEBUG_ENABLED
 #define CRASH_HANDLER_ENABLED 1
 #endif
-
-#include "crash_handler_x11.h"
-#include "main/main.h"
-#include "os/os.h"
-#include "project_settings.h"
 
 #ifdef CRASH_HANDLER_ENABLED
 #include <cxxabi.h>
@@ -45,13 +46,19 @@
 #include <stdlib.h>
 
 static void handle_crash(int sig) {
-	if (OS::get_singleton() == NULL)
-		return;
+	if (OS::get_singleton() == NULL) {
+		abort();
+	}
 
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
 	String _execpath = OS::get_singleton()->get_executable_path();
-	String msg = GLOBAL_GET("debug/settings/crash_handler/message");
+
+	String msg;
+	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
+	if (proj_settings) {
+		msg = proj_settings->get("debug/settings/crash_handler/message");
+	}
 
 	// Dump the backtrace to stderr with a message to the user
 	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);
@@ -94,12 +101,10 @@ static void handle_crash(int sig) {
 			String output = "";
 
 			// Try to get the file/line number using addr2line
-			if (OS::get_singleton()) {
-				int ret;
-				Error err = OS::get_singleton()->execute(String("addr2line"), args, true, NULL, &output, &ret);
-				if (err == OK) {
-					output.erase(output.length() - 1, 1);
-				}
+			int ret;
+			Error err = OS::get_singleton()->execute(String("addr2line"), args, true, NULL, &output, &ret);
+			if (err == OK) {
+				output.erase(output.length() - 1, 1);
 			}
 
 			fprintf(stderr, "[%ld] %s (%ls)\n", i, fname, output.c_str());
@@ -119,6 +124,7 @@ CrashHandler::CrashHandler() {
 }
 
 CrashHandler::~CrashHandler() {
+	disable();
 }
 
 void CrashHandler::disable() {

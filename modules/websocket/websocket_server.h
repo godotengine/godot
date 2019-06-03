@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,11 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef WEBSOCKET_H
 #define WEBSOCKET_H
 
 #include "core/reference.h"
-#include "websocket_multiplayer.h"
+#include "websocket_multiplayer_peer.h"
 #include "websocket_peer.h"
 
 class WebSocketServer : public WebSocketMultiplayerPeer {
@@ -54,11 +55,12 @@ public:
 
 	virtual IP_Address get_peer_address(int p_peer_id) const = 0;
 	virtual int get_peer_port(int p_peer_id) const = 0;
-	virtual void disconnect_peer(int p_peer_id) = 0;
+	virtual void disconnect_peer(int p_peer_id, int p_code = 1000, String p_reason = "") = 0;
 
 	void _on_peer_packet(int32_t p_peer_id);
 	void _on_connect(int32_t p_peer_id, String p_protocol);
-	void _on_disconnect(int32_t p_peer_id);
+	void _on_disconnect(int32_t p_peer_id, bool p_was_clean);
+	void _on_close_request(int32_t p_peer_id, int p_code, String p_reason);
 
 	WebSocketServer();
 	~WebSocketServer();

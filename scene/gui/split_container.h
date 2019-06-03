@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,9 +45,10 @@ public:
 	};
 
 private:
-	bool vertical;
+	bool should_clamp_split_offset;
 	int split_offset;
 	int middle_sep;
+	bool vertical;
 	bool dragging;
 	int drag_from;
 	int drag_ofs;
@@ -67,6 +68,7 @@ protected:
 public:
 	void set_split_offset(int p_offset);
 	int get_split_offset() const;
+	void clamp_split_offset();
 
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed() const;

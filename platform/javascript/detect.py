@@ -1,5 +1,4 @@
 import os
-import sys
 
 
 def is_active():
@@ -25,7 +24,6 @@ def get_opts():
 def get_flags():
     return [
         ('tools', False),
-        ('module_theora_enabled', False),
         # Disabling the mbedtls module reduces file size.
         # The module has little use due to the limited networking functionality
         # in this platform. For the available networking methods, the browser
@@ -105,17 +103,19 @@ def configure(env):
 
     ## Compile flags
 
-    env.Append(CPPPATH=['#platform/javascript'])
+    env.Prepend(CPPPATH=['#platform/javascript'])
     env.Append(CPPDEFINES=['JAVASCRIPT_ENABLED', 'UNIX_ENABLED'])
 
     # No multi-threading (SharedArrayBuffer) available yet,
     # once feasible also consider memory buffer size issues.
     env.Append(CPPDEFINES=['NO_THREADS'])
 
-    # These flags help keep the file size down.
-    env.Append(CCFLAGS=['-fno-exceptions', '-fno-rtti'])
-    # Don't use dynamic_cast, necessary with no-rtti.
-    env.Append(CPPDEFINES=['NO_SAFE_CAST'])
+    # Disable exceptions and rtti on non-tools (template) builds
+    if not env['tools']:
+        # These flags help keep the file size down.
+        env.Append(CCFLAGS=['-fno-exceptions', '-fno-rtti'])
+        # Don't use dynamic_cast, necessary with no-rtti.
+        env.Append(CPPDEFINES=['NO_SAFE_CAST'])
 
     if env['javascript_eval']:
         env.Append(CPPDEFINES=['JAVASCRIPT_EVAL_ENABLED'])
@@ -123,6 +123,7 @@ def configure(env):
     ## Link flags
 
     env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
+    env.Append(LINKFLAGS=['-s', 'BINARYEN_TRAP_MODE=\'clamp\''])
 
     # Allow increasing memory buffer size during runtime. This is efficient
     # when using WebAssembly (in comparison to asm.js) and works well for
@@ -136,7 +137,3 @@ def configure(env):
 
     # TODO: Reevaluate usage of this setting now that engine.js manages engine runtime.
     env.Append(LINKFLAGS=['-s', 'NO_EXIT_RUNTIME=1'])
-
-    # TODO: Move that to opus module's config.
-    if 'module_opus_enabled' in env and env['module_opus_enabled']:
-        env.opus_fixed_point = 'yes'

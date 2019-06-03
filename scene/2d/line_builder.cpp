@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -279,6 +279,10 @@ void LineBuilder::build() {
 			}
 		} else {
 			// No intersection: fallback
+			if (current_joint_mode == Line2D::LINE_JOINT_SHARP) {
+				// There is no fallback implementation for LINE_JOINT_SHARP so switch to the LINE_JOINT_BEVEL
+				current_joint_mode = Line2D::LINE_JOINT_BEVEL;
+			}
 			pos_up1 = corner_pos_up;
 			pos_down1 = corner_pos_down;
 		}
@@ -294,7 +298,6 @@ void LineBuilder::build() {
 		if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
 			uvx1 = current_distance1 / (width * tile_aspect);
 		} else if (texture_mode == Line2D::LINE_TEXTURE_STRETCH) {
-			uvx0 = current_distance0 / total_distance;
 			uvx1 = current_distance1 / total_distance;
 		}
 

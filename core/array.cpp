@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "array.h"
 
-#include "hashfuncs.h"
-#include "object.h"
-#include "variant.h"
-#include "vector.h"
+#include "core/hashfuncs.h"
+#include "core/object.h"
+#include "core/variant.h"
+#include "core/vector.h"
 
 class ArrayPrivate {
 public:
@@ -355,11 +355,62 @@ Variant Array::pop_front() {
 	return Variant();
 }
 
+Variant Array::min() const {
+
+	Variant minval;
+	for (int i = 0; i < size(); i++) {
+		if (i == 0) {
+			minval = get(i);
+		} else {
+			bool valid;
+			Variant ret;
+			Variant test = get(i);
+			Variant::evaluate(Variant::OP_LESS, test, minval, ret, valid);
+			if (!valid) {
+				return Variant(); //not a valid comparison
+			}
+			if (bool(ret)) {
+				//is less
+				minval = test;
+			}
+		}
+	}
+	return minval;
+}
+
+Variant Array::max() const {
+
+	Variant maxval;
+	for (int i = 0; i < size(); i++) {
+		if (i == 0) {
+			maxval = get(i);
+		} else {
+			bool valid;
+			Variant ret;
+			Variant test = get(i);
+			Variant::evaluate(Variant::OP_GREATER, test, maxval, ret, valid);
+			if (!valid) {
+				return Variant(); //not a valid comparison
+			}
+			if (bool(ret)) {
+				//is less
+				maxval = test;
+			}
+		}
+	}
+	return maxval;
+}
+
+const void *Array::id() const {
+	return _p->array.ptr();
+}
+
 Array::Array(const Array &p_from) {
 
 	_p = NULL;
 	_ref(p_from);
 }
+
 Array::Array() {
 
 	_p = memnew(ArrayPrivate);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,7 +69,7 @@ void OS_Haiku::run() {
 	main_loop->finish();
 }
 
-String OS_Haiku::get_name() {
+String OS_Haiku::get_name() const {
 	return "Haiku";
 }
 
@@ -117,16 +117,13 @@ Error OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p
 
 #endif
 
-	visual_server = memnew(VisualServerRaster());
+	visual_server = memnew(VisualServerRaster);
+	// FIXME: Reimplement threaded rendering
+	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+		visual_server = memnew(VisualServerWrapMT(visual_server, false));
+	}
 
 	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
-
-	// TODO: enable multithreaded VS
-	/*
-	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
-	}
-	*/
 
 	video_driver_index = p_video_driver;
 
@@ -204,6 +201,10 @@ int OS_Haiku::get_mouse_button_state() const {
 
 void OS_Haiku::set_cursor_shape(CursorShape p_shape) {
 	//ERR_PRINT("set_cursor_shape() NOT IMPLEMENTED");
+}
+
+OS::CursorShape OS_Haiku::get_cursor_shape() const {
+	// TODO: implement get_cursor_shape
 }
 
 void OS_Haiku::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
@@ -325,7 +326,7 @@ String OS_Haiku::get_executable_path() const {
 
 bool OS_Haiku::_check_internal_feature_support(const String &p_feature) {
 
-	return p_feature == "pc" || p_feature == "s3tc";
+	return p_feature == "pc";
 }
 
 String OS_Haiku::get_config_path() const {

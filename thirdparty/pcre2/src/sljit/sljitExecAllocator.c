@@ -99,7 +99,14 @@ static SLJIT_INLINE void* alloc_chunk(sljit_uw size)
 	void *retval;
 
 #ifdef MAP_ANON
-	retval = mmap(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANON, -1, 0);
+
+	int flags = MAP_PRIVATE | MAP_ANON;
+
+#ifdef MAP_JIT
+	flags |= MAP_JIT;
+#endif
+
+	retval = mmap(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, flags, -1, 0);
 #else
 	if (dev_zero < 0) {
 		if (open_dev_zero())

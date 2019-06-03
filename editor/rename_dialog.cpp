@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +30,12 @@
 
 #include "rename_dialog.h"
 
+#include "core/print_string.h"
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "editor_themes.h"
 #include "modules/regex/regex.h"
 #include "plugins/script_editor_plugin.h"
-#include "print_string.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/tab_container.h"
@@ -113,7 +113,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	collapse_theme->set_icon("unchecked", "CheckBox", collapse_theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
 
 	CheckBox *chk_collapse_features = memnew(CheckBox);
-	chk_collapse_features->set_text(TTR("Advanced options"));
+	chk_collapse_features->set_text(TTR("Advanced Options"));
 	chk_collapse_features->set_theme(collapse_theme);
 	chk_collapse_features->set_focus_mode(FOCUS_NONE);
 	vbc->add_child(chk_collapse_features);
@@ -220,21 +220,21 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	Label *lbl_count_step = memnew(Label);
 	lbl_count_step->set_text(TTR("Step"));
-	lbl_count_step->set_tooltip(TTR("Ammount by which counter is incremented for each node"));
+	lbl_count_step->set_tooltip(TTR("Amount by which counter is incremented for each node"));
 	hbc_count_options->add_child(lbl_count_step);
 
 	spn_count_step = memnew(SpinBox);
-	spn_count_step->set_tooltip(TTR("Ammount by which counter is incremented for each node"));
+	spn_count_step->set_tooltip(TTR("Amount by which counter is incremented for each node"));
 	spn_count_step->set_step(1);
 	hbc_count_options->add_child(spn_count_step);
 
 	Label *lbl_count_padding = memnew(Label);
 	lbl_count_padding->set_text(TTR("Padding"));
-	lbl_count_padding->set_tooltip(TTR("Minium number of digits for the counter.\nMissing digits are padded with leading zeros."));
+	lbl_count_padding->set_tooltip(TTR("Minimum number of digits for the counter.\nMissing digits are padded with leading zeros."));
 	hbc_count_options->add_child(lbl_count_padding);
 
 	spn_count_padding = memnew(SpinBox);
-	spn_count_padding->set_tooltip(TTR("Minium number of digits for the counter.\nMissing digits are padded with leading zeros."));
+	spn_count_padding->set_tooltip(TTR("Minimum number of digits for the counter.\nMissing digits are padded with leading zeros."));
 	spn_count_padding->set_step(1);
 	hbc_count_options->add_child(spn_count_padding);
 

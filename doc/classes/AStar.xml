@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AStar" inherits="Reference" category="Core" version="3.1">
+<class name="AStar" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		AStar class representation that uses vectors as edges.
 	</brief_description>
@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_compute_cost" qualifiers="virtual">
 			<return type="float">
@@ -47,8 +45,7 @@
 				Adds a new point at the given position with the given identifier. The algorithm prefers points with lower [code]weight_scale[/code] to form a path. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 1 or larger.
 				[codeblock]
 				var as = AStar.new()
-
-				as.add_point(1, Vector3(1,0,0), 4) # Adds the point (1,0,0) with weight_scale=4 and id=1
+				as.add_point(1, Vector3(1, 0, 0), 4) # Adds the point (1, 0, 0) with weight_scale 4 and id 1
 				[/codeblock]
 				If there already exists a point for the given id, its position and weight scale are updated to the given values.
 			</description>
@@ -81,15 +78,12 @@
 			<argument index="2" name="bidirectional" type="bool" default="true">
 			</argument>
 			<description>
-				Creates a segment between the given points.
+				Creates a segment between the given points. If [code]bidirectional[/code] is [code]false[/code], only movement from [code]id[/code] to [code]to_id[/code] is allowed, not the reverse direction.
 				[codeblock]
 				var as = AStar.new()
-
-				as.add_point(1, Vector3(1,1,0))
-				as.add_point(2, Vector3(0,5,0))
-
-				as.connect_points(1, 2, false) # If bidirectional=false it's only possible to go from point 1 to point 2
-				                               # and not from point 2 to point 1.
+				as.add_point(1, Vector3(1, 1, 0))
+				as.add_point(2, Vector3(0, 5, 0))
+				as.connect_points(1, 2, false)
 				[/codeblock]
 			</description>
 		</method>
@@ -129,15 +123,12 @@
 				Returns the closest position to [code]to_position[/code] that resides inside a segment between two connected points.
 				[codeblock]
 				var as = AStar.new()
-
-				as.add_point(1, Vector3(0,0,0))
-				as.add_point(2, Vector3(0,5,0))
-
+				as.add_point(1, Vector3(0, 0, 0))
+				as.add_point(2, Vector3(0, 5, 0))
 				as.connect_points(1, 2)
-
-				var res = as.get_closest_position_in_segment(Vector3(3,3,0)) # returns (0, 3, 0)
+				var res = as.get_closest_position_in_segment(Vector3(3, 3, 0)) # returns (0, 3, 0)
 				[/codeblock]
-				The result is in the segment that goes from [code]y=0[/code] to [code]y=5[/code]. It's the closest position in the segment to the given point.
+				The result is in the segment that goes from [code]y = 0[/code] to [code]y = 5[/code]. It's the closest position in the segment to the given point.
 			</description>
 		</method>
 		<method name="get_id_path">
@@ -151,11 +142,10 @@
 				Returns an array with the ids of the points that form the path found by AStar between the given points. The array is ordered from the starting point to the ending point of the path.
 				[codeblock]
 				var as = AStar.new()
-
-				as.add_point(1, Vector3(0,0,0))
-				as.add_point(2, Vector3(0,1,0), 1) # default weight is 1
-				as.add_point(3, Vector3(1,1,0))
-				as.add_point(4, Vector3(2,0,0))
+				as.add_point(1, Vector3(0, 0, 0))
+				as.add_point(2, Vector3(0, 1, 0), 1) # default weight is 1
+				as.add_point(3, Vector3(1, 1, 0))
+				as.add_point(4, Vector3(2, 0, 0))
 
 				as.connect_points(1, 2, false)
 				as.connect_points(2, 3, false)
@@ -177,11 +167,10 @@
 				Returns an array with the ids of the points that form the connect with the given point.
 				[codeblock]
 				var as = AStar.new()
-
-				as.add_point(1, Vector3(0,0,0))
-				as.add_point(2, Vector3(0,1,0))
-				as.add_point(3, Vector3(1,1,0))
-				as.add_point(4, Vector3(2,0,0))
+				as.add_point(1, Vector3(0, 0, 0))
+				as.add_point(2, Vector3(0, 1, 0))
+				as.add_point(3, Vector3(1, 1, 0))
+				as.add_point(4, Vector3(2, 0, 0))
 
 				as.connect_points(1, 2, true)
 				as.connect_points(1, 3, true)
@@ -235,6 +224,15 @@
 				Returns whether a point associated with the given id exists.
 			</description>
 		</method>
+		<method name="is_point_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Returns whether a point is disabled or not for pathfinding. By default, all points are enabled.
+			</description>
+		</method>
 		<method name="remove_point">
 			<return type="void">
 			</return>
@@ -242,6 +240,17 @@
 			</argument>
 			<description>
 				Removes the point associated with the given id from the points pool.
+			</description>
+		</method>
+		<method name="set_point_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="disabled" type="bool" default="true">
+			</argument>
+			<description>
+				Disables or enables the specified point for pathfinding. Useful for making a temporary obstacle.
 			</description>
 		</method>
 		<method name="set_point_position">

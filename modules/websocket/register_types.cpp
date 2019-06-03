@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,8 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "register_types.h"
-#include "error_macros.h"
+#include "core/error_macros.h"
+#include "core/project_settings.h"
 #ifdef JAVASCRIPT_ENABLED
 #include "emscripten.h"
 #include "emws_client.h"
@@ -41,26 +43,23 @@
 #endif
 
 void register_websocket_types() {
+#define _SET_HINT(NAME, _VAL_, _MAX_) \
+	GLOBAL_DEF(NAME, _VAL_);          \
+	ProjectSettings::get_singleton()->set_custom_property_info(NAME, PropertyInfo(Variant::INT, NAME, PROPERTY_HINT_RANGE, "2," #_MAX_ ",1,or_greater"));
+
+	// Client buffers project settings
+	_SET_HINT(WSC_IN_BUF, 64, 4096);
+	_SET_HINT(WSC_IN_PKT, 1024, 16384);
+	_SET_HINT(WSC_OUT_BUF, 64, 4096);
+	_SET_HINT(WSC_OUT_PKT, 1024, 16384);
+
+	// Server buffers project settings
+	_SET_HINT(WSS_IN_BUF, 64, 4096);
+	_SET_HINT(WSS_IN_PKT, 1024, 16384);
+	_SET_HINT(WSS_OUT_BUF, 64, 4096);
+	_SET_HINT(WSS_OUT_PKT, 1024, 16384);
+
 #ifdef JAVASCRIPT_ENABLED
-	EM_ASM({
-		var IDHandler = {};
-		IDHandler["ids"] = {};
-		IDHandler["has"] = function(id) {
-			return IDHandler.ids.hasOwnProperty(id);
-		};
-		IDHandler["add"] = function(obj) {
-			var id = crypto.getRandomValues(new Int32Array(32))[0];
-			IDHandler.ids[id] = obj;
-			return id;
-		};
-		IDHandler["get"] = function(id) {
-			return IDHandler.ids[id];
-		};
-		IDHandler["remove"] = function(id) {
-			delete IDHandler.ids[id];
-		};
-		Module["IDHandler"] = IDHandler;
-	});
 	EMWSPeer::make_default();
 	EMWSClient::make_default();
 	EMWSServer::make_default();

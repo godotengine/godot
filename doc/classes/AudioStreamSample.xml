@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamSample" inherits="AudioStream" category="Core" version="3.1">
+<class name="AudioStreamSample" inherits="AudioStream" category="Core" version="3.2">
 	<brief_description>
-		Plays audio.
+		Stores audio data loaded from [code].wav[/code] files.
 	</brief_description>
 	<description>
-		Plays audio, can loop.
+		AudioStreamSample stores sound samples loaded from [code].wav[/code] files. To play the stored sound use an [AudioStreamPlayer] (for background music) or [AudioStreamPlayer2D]/[AudioStreamPlayer3D] (for positional audio). The sound can be looped.
+		This class can also be used to store dynamically generated PCM audio data.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
+		<method name="save_to_wav">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Saves the AudioStreamSample as a WAV file to [code]path[/code]. Samples with IMA ADPCM format can't be saved.
+				Note that a [code].wav[/code] extension is automatically appended to [code]path[/code] if it is missing.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data">
@@ -53,6 +62,9 @@
 		</constant>
 		<constant name="LOOP_PING_PONG" value="2" enum="LoopMode">
 			Audio loops the data between loop_begin and loop_end playing back and forth.
+		</constant>
+		<constant name="LOOP_BACKWARD" value="3" enum="LoopMode">
+			Audio loops the data between loop_begin and loop_end playing backward only.
 		</constant>
 	</constants>
 </class>

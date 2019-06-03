@@ -1,30 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GridContainer" inherits="Container" category="Core" version="3.1">
+<class name="GridContainer" inherits="Container" category="Core" version="3.2">
 	<brief_description>
 		Grid container used to arrange elements in a grid like layout.
 	</brief_description>
 	<description>
-		Grid container will arrange its children in a grid like structure, the grid columns are specified using the [method set_columns] method and the number of rows will be equal to the number of children in the container divided by the number of columns, for example: if the container has 5 children, and 2 columns, there will be 3 rows in the container. Notice that grid layout will preserve the columns and rows for every size of the container.
+		Grid container will arrange its children in a grid like structure, the grid columns are specified using the [member columns] property and the number of rows will be equal to the number of children in the container divided by the number of columns, for example: if the container has 5 children, and 2 columns, there will be 3 rows in the container. Notice that grid layout will preserve the columns and rows for every size of the container.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
-		<method name="get_child_control_at_cell">
-			<return type="Control">
-			</return>
-			<argument index="0" name="row" type="int">
-			</argument>
-			<argument index="1" name="column" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="columns" type="int" setter="set_columns" getter="get_columns">
-			The number of columns in the [code]GridContainer[/code]. If modified, [code]GridContainer[/code] reorders its children to accommodate the new layout.
+			The number of columns in the [GridContainer]. If modified, [GridContainer] reorders its children to accommodate the new layout.
 		</member>
 	</members>
 	<constants>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GlobalScope" category="Core" version="3.1">
+<class name="@GlobalScope" category="Core" version="3.2">
 	<brief_description>
 		Global scope constants and variables.
 	</brief_description>
@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
@@ -46,6 +44,8 @@
 		</member>
 		<member name="Marshalls" type="Reference" setter="" getter="">
 			[Marshalls] singleton
+		</member>
+		<member name="NavigationMeshGenerator" type="EditorNavigationMeshGenerator" setter="" getter="">
 		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			[OS] singleton
@@ -884,8 +884,10 @@
 			Middle Mouse Button
 		</constant>
 		<constant name="BUTTON_XBUTTON1" value="8" enum="ButtonList">
+			Extra Mouse Button 1
 		</constant>
 		<constant name="BUTTON_XBUTTON2" value="9" enum="ButtonList">
+			Extra Mouse Button 2
 		</constant>
 		<constant name="BUTTON_WHEEL_UP" value="4" enum="ButtonList">
 			Mouse wheel up
@@ -909,8 +911,10 @@
 			Middle Mouse Button Mask
 		</constant>
 		<constant name="BUTTON_MASK_XBUTTON1" value="128" enum="ButtonList">
+			Extra Mouse Button 1 Mask
 		</constant>
 		<constant name="BUTTON_MASK_XBUTTON2" value="256" enum="ButtonList">
+			Extra Mouse Button 2 Mask
 		</constant>
 		<constant name="JOY_BUTTON_0" value="0" enum="JoystickList">
 			Joypad Button 0
@@ -1262,12 +1266,14 @@
 		</constant>
 		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="19" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="19" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="20" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="20" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="21" enum="PropertyHint">
 			Hints that the image is compressed using lossy compression.
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="21" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="22" enum="PropertyHint">
 			Hints that the image is compressed using lossless compression.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="1" enum="PropertyUsageFlags">
@@ -1289,10 +1295,6 @@
 		<constant name="PROPERTY_USAGE_GROUP" value="128" enum="PropertyUsageFlags">
 		</constant>
 		<constant name="PROPERTY_USAGE_CATEGORY" value="256" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_STORE_IF_NONZERO" value="512" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_STORE_IF_NONONE" value="1024" enum="PropertyUsageFlags">
 		</constant>
 		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="2048" enum="PropertyUsageFlags">
 		</constant>

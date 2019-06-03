@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,19 @@
 /*************************************************************************/
 
 #include "range.h"
+
+String Range::get_configuration_warning() const {
+	String warning = Control::get_configuration_warning();
+
+	if (shared->exp_ratio && shared->min <= 0) {
+		if (warning != String()) {
+			warning += "\n";
+		}
+		warning += TTR("If exp_edit is true min_value must be > 0.");
+	}
+
+	return warning;
+}
 
 void Range::_value_changed_notify() {
 
@@ -66,10 +79,11 @@ void Range::Shared::emit_changed(const char *p_what) {
 }
 
 void Range::set_value(double p_val) {
+	if (shared->step > 0)
+		p_val = Math::round(p_val / shared->step) * shared->step;
 
-	if (_rounded_values) {
+	if (_rounded_values)
 		p_val = Math::round(p_val);
-	}
 
 	if (!shared->allow_greater && p_val > shared->max - shared->page)
 		p_val = shared->max - shared->page;
@@ -90,6 +104,8 @@ void Range::set_min(double p_min) {
 	set_value(shared->val);
 
 	shared->emit_changed("min");
+
+	update_configuration_warning();
 }
 void Range::set_max(double p_max) {
 
@@ -260,8 +276,8 @@ void Range::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ratio", PROPERTY_HINT_RANGE, "0,1,0.01", 0), "set_as_ratio", "get_as_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exp_edit"), "set_exp_ratio", "is_ratio_exp");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rounded"), "set_use_rounded_values", "is_using_rounded_values");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "allow_greater"), "set_allow_greater", "is_greater_allowed");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "allow_lesser"), "set_allow_lesser", "is_lesser_allowed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_greater"), "set_allow_greater", "is_greater_allowed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_lesser"), "set_allow_lesser", "is_lesser_allowed");
 }
 
 void Range::set_use_rounded_values(bool p_enable) {
@@ -277,6 +293,8 @@ bool Range::is_using_rounded_values() const {
 void Range::set_exp_ratio(bool p_enable) {
 
 	shared->exp_ratio = p_enable;
+
+	update_configuration_warning();
 }
 
 bool Range::is_ratio_exp() const {

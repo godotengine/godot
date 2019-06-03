@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,26 +64,6 @@ ConeTwistJointBullet::ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet
 	setup(coneConstraint);
 }
 
-void ConeTwistJointBullet::set_angular_only(bool angularOnly) {
-	coneConstraint->setAngularOnly(angularOnly);
-}
-
-void ConeTwistJointBullet::set_limit(real_t _swingSpan1, real_t _swingSpan2, real_t _twistSpan, real_t _softness, real_t _biasFactor, real_t _relaxationFactor) {
-	coneConstraint->setLimit(_swingSpan1, _swingSpan2, _twistSpan, _softness, _biasFactor, _relaxationFactor);
-}
-
-int ConeTwistJointBullet::get_solve_twist_limit() {
-	return coneConstraint->getSolveTwistLimit();
-}
-
-int ConeTwistJointBullet::get_solve_swing_limit() {
-	return coneConstraint->getSolveSwingLimit();
-}
-
-real_t ConeTwistJointBullet::get_twist_limit_sign() {
-	return coneConstraint->getTwistLimitSign();
-}
-
 void ConeTwistJointBullet::set_param(PhysicsServer::ConeTwistJointParam p_param, real_t p_value) {
 	switch (p_param) {
 		case PhysicsServer::CONE_TWIST_JOINT_SWING_SPAN:
@@ -103,7 +83,9 @@ void ConeTwistJointBullet::set_param(PhysicsServer::ConeTwistJointParam p_param,
 			coneConstraint->setLimit(coneConstraint->getSwingSpan1(), coneConstraint->getSwingSpan2(), coneConstraint->getTwistSpan(), coneConstraint->getLimitSoftness(), coneConstraint->getBiasFactor(), p_value);
 			break;
 		default:
-			WARN_PRINT("This parameter is not supported by Bullet engine");
+			ERR_EXPLAIN("This parameter " + itos(p_param) + " is deprecated");
+			WARN_DEPRECATED
+			break;
 	}
 }
 
@@ -120,7 +102,8 @@ real_t ConeTwistJointBullet::get_param(PhysicsServer::ConeTwistJointParam p_para
 		case PhysicsServer::CONE_TWIST_JOINT_RELAXATION:
 			return coneConstraint->getRelaxationFactor();
 		default:
-			WARN_PRINT("This parameter is not supported by Bullet engine");
+			ERR_EXPLAIN("This parameter " + itos(p_param) + " is deprecated");
+			WARN_DEPRECATED;
 			return 0;
 	}
 }

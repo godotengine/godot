@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Popup" inherits="Control" category="Core" version="3.1">
+<class name="Popup" inherits="Control" category="Core" version="3.2">
 	<brief_description>
 		Base container control for popups and dialogs.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="popup">
 			<return type="void">
@@ -26,7 +24,18 @@
 			<argument index="0" name="size" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Popup (show the control in modal form) in the center of the screen, at the current size, or at a size determined by "size".
+				Popup (show the control in modal form) in the center of the screen relative to its current canvas transform, at the current size, or at a size determined by "size".
+			</description>
+		</method>
+		<method name="popup_centered_clamped">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<argument index="1" name="fallback_ratio" type="float" default="0.75">
+			</argument>
+			<description>
+				Popup (show the control in modal form) in the center of the screen relative to the current canvas transform, clamping the size to [code]size[/code], then ensuring the popup is no larger than the viewport size multiplied by [code]fallback_ratio[/code].
 			</description>
 		</method>
 		<method name="popup_centered_minsize">
@@ -35,7 +44,7 @@
 			<argument index="0" name="minsize" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Popup (show the control in modal form) in the center of the screen, ensuring the size is never smaller than [code]minsize[/code].
+				Popup (show the control in modal form) in the center of the screen relative to the current canvas transform, ensuring the size is never smaller than [code]minsize[/code].
 			</description>
 		</method>
 		<method name="popup_centered_ratio">
@@ -44,13 +53,13 @@
 			<argument index="0" name="ratio" type="float" default="0.75">
 			</argument>
 			<description>
-				Popup (show the control in modal form) in the center of the screen, scaled at a ratio of size of the screen.
+				Popup (show the control in modal form) in the center of the screen relative to the current canvas transform, scaled at a ratio of size of the screen.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="popup_exclusive" type="bool" setter="set_exclusive" getter="is_exclusive">
-			If [code]true[/code] the popup will not be hidden when a click event occurs outside of it, or when it receives the [code]ui_cancel[/code] action event.
+			If [code]true[/code], the popup will not be hidden when a click event occurs outside of it, or when it receives the [code]ui_cancel[/code] action event.
 		</member>
 	</members>
 	<signals>

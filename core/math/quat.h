@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,18 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "vector3.h"
+// Circular dependency between Vector3 and Basis :/
+#include "core/math/vector3.h"
 
 #ifndef QUAT_H
 #define QUAT_H
 
-#include "math_defs.h"
-#include "math_funcs.h"
-#include "ustring.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/ustring.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
 class Quat {
 public:
 	real_t x, y, z, w;
@@ -85,7 +87,7 @@ public:
 
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &v) const {
 #ifdef MATH_CHECKS
-		ERR_FAIL_COND_V(is_normalized() == false, v);
+		ERR_FAIL_COND_V(!is_normalized(), v);
 #endif
 		Vector3 u(x, y, z);
 		Vector3 uv = u.cross(v);
@@ -113,20 +115,28 @@ public:
 		z = p_z;
 		w = p_w;
 	}
-	inline Quat(real_t p_x, real_t p_y, real_t p_z, real_t p_w) {
-		x = p_x;
-		y = p_y;
-		z = p_z;
-		w = p_w;
+	inline Quat(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
+			x(p_x),
+			y(p_y),
+			z(p_z),
+			w(p_w) {
 	}
 	Quat(const Vector3 &axis, const real_t &angle) { set_axis_angle(axis, angle); }
 
 	Quat(const Vector3 &euler) { set_euler(euler); }
-	Quat(const Quat &q) {
+	Quat(const Quat &q) :
+			x(q.x),
+			y(q.y),
+			z(q.z),
+			w(q.w) {
+	}
+
+	Quat operator=(const Quat &q) {
 		x = q.x;
 		y = q.y;
 		z = q.z;
 		w = q.w;
+		return *this;
 	}
 
 	Quat(const Vector3 &v0, const Vector3 &v1) // shortest arc
@@ -151,9 +161,11 @@ public:
 		}
 	}
 
-	inline Quat() {
-		x = y = z = 0;
-		w = 1;
+	inline Quat() :
+			x(0),
+			y(0),
+			z(0),
+			w(1) {
 	}
 };
 

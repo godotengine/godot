@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeTransformMult" inherits="VisualShaderNode" category="Core" version="3.1">
+<class name="VisualShaderNodeTransformMult" inherits="VisualShaderNode" category="Core" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
@@ -18,6 +16,10 @@
 		<constant name="OP_AxB" value="0" enum="Operator">
 		</constant>
 		<constant name="OP_BxA" value="1" enum="Operator">
+		</constant>
+		<constant name="OP_AxB_COMP" value="2" enum="Operator">
+		</constant>
+		<constant name="OP_BxA_COMP" value="3" enum="Operator">
 		</constant>
 	</constants>
 </class>

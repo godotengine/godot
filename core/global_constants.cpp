@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "global_constants.h"
 
-#include "object.h"
-#include "os/input_event.h"
-#include "os/keyboard.h"
-#include "variant.h"
+#include "core/object.h"
+#include "core/os/input_event.h"
+#include "core/os/keyboard.h"
+#include "core/variant.h"
 
 struct _GlobalConstant {
 
@@ -532,6 +532,7 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_GLOBAL_DIR);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_RESOURCE_TYPE);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_MULTILINE_TEXT);
+	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_PLACEHOLDER_TEXT);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_COLOR_NO_ALPHA);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_IMAGE_COMPRESS_LOSSY);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS);
@@ -546,8 +547,9 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_INTERNATIONALIZED);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_GROUP);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_CATEGORY);
-	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_STORE_IF_NONZERO);
-	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_STORE_IF_NONONE);
+	//deprecated, replaced by ClassDB function to check default value
+	//BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_STORE_IF_NONZERO);
+	//BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_STORE_IF_NONONE);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_NO_INSTANCE_STATE);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_RESTART_IF_CHANGED);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_SCRIPT_VARIABLE);

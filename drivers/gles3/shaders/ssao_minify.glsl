@@ -1,20 +1,22 @@
+/* clang-format off */
 [vertex]
 
-
-layout(location=0) in highp vec4 vertex_attrib;
+layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 
 void main() {
 
 	gl_Position = vertex_attrib;
 }
 
+/* clang-format off */
 [fragment]
-
 
 #ifdef MINIFY_START
 
 #define SDEPTH_TYPE highp sampler2D
 uniform float camera_z_far;
+/* clang-format on */
 uniform float camera_z_near;
 
 #else
@@ -32,28 +34,23 @@ layout(location = 0) out mediump uint depth;
 
 void main() {
 
-
 	ivec2 ssP = ivec2(gl_FragCoord.xy);
 
-	  // Rotated grid subsampling to avoid XY directional bias or Z precision bias while downsampling.
-	  // On DX9, the bit-and can be implemented with floating-point modulo
+	// Rotated grid subsampling to avoid XY directional bias or Z precision bias while downsampling.
+	// On DX9, the bit-and can be implemented with floating-point modulo
 
 #ifdef MINIFY_START
 	float fdepth = texelFetch(source_depth, clamp(ssP * 2 + ivec2(ssP.y & 1, ssP.x & 1), ivec2(0), from_size - ivec2(1)), source_mipmap).r;
 	fdepth = fdepth * 2.0 - 1.0;
 #ifdef USE_ORTHOGONAL_PROJECTION
-	fdepth = ((fdepth + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+	fdepth = ((fdepth + (camera_z_far + camera_z_near) / (camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near)) / 2.0;
 #else
 	fdepth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - fdepth * (camera_z_far - camera_z_near));
 #endif
 	fdepth /= camera_z_far;
-	depth = uint(clamp(fdepth*65535.0,0.0,65535.0));
+	depth = uint(clamp(fdepth * 65535.0, 0.0, 65535.0));
 
 #else
 	depth = texelFetch(source_depth, clamp(ssP * 2 + ivec2(ssP.y & 1, ssP.x & 1), ivec2(0), from_size - ivec2(1)), source_mipmap).r;
 #endif
-
-
 }
-
-

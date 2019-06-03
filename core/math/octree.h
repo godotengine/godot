@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,12 @@
 #ifndef OCTREE_H
 #define OCTREE_H
 
-#include "aabb.h"
-#include "list.h"
-#include "map.h"
-#include "print_string.h"
-#include "variant.h"
-#include "vector3.h"
+#include "core/list.h"
+#include "core/map.h"
+#include "core/math/aabb.h"
+#include "core/math/vector3.h"
+#include "core/print_string.h"
+#include "core/variant.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -478,7 +478,7 @@ void Octree<T, use_pairs, AL>::_insert_element(Element *p_element, Octant *p_oct
 					splits++;
 				}
 			} else {
-				/* check againt AABB where child should be */
+				/* check against AABB where child should be */
 
 				AABB aabb = p_octant->aabb;
 				aabb.size *= 0.5;
@@ -916,34 +916,34 @@ void Octree<T, use_pairs, AL>::move(OctreeElementID p_id, const AABB &p_aabb) {
 
 	pass++;
 
-	for (typename List<typename Element::OctantOwner, AL>::Element *E = owners.front(); E;) {
+	for (typename List<typename Element::OctantOwner, AL>::Element *F = owners.front(); F;) {
 
-		Octant *o = E->get().octant;
-		typename List<typename Element::OctantOwner, AL>::Element *N = E->next();
+		Octant *o = F->get().octant;
+		typename List<typename Element::OctantOwner, AL>::Element *N = F->next();
 
 		/*
 		if (!use_pairs)
-			o->elements.erase( E->get().E );
+			o->elements.erase( F->get().E );
 		*/
 
 		if (use_pairs && e.pairable)
-			o->pairable_elements.erase(E->get().E);
+			o->pairable_elements.erase(F->get().E);
 		else
-			o->elements.erase(E->get().E);
+			o->elements.erase(F->get().E);
 
 		if (_remove_element_from_octant(&e, o, common_parent->parent)) {
 
-			owners.erase(E);
+			owners.erase(F);
 		}
 
-		E = N;
+		F = N;
 	}
 
 	if (use_pairs) {
 		//unpair child elements in anything that survived
-		for (typename List<typename Element::OctantOwner, AL>::Element *E = owners.front(); E; E = E->next()) {
+		for (typename List<typename Element::OctantOwner, AL>::Element *F = owners.front(); F; F = F->next()) {
 
-			Octant *o = E->get().octant;
+			Octant *o = F->get().octant;
 
 			// erase children pairs, unref ONCE
 			pass++;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +46,11 @@ public:
 		ALIGN_MAX
 	};
 
+	enum Position {
+		TOP,
+		BOTTOM
+	};
+
 	enum CloseButtonDisplayPolicy {
 
 		CLOSE_BUTTON_SHOW_NEVER,
@@ -80,6 +85,7 @@ private:
 	int current;
 	int _get_top_margin() const;
 	TabAlign tab_align;
+	Position position;
 	int rb_hover;
 	bool rb_pressing;
 
@@ -97,6 +103,8 @@ private:
 
 	int get_tab_width(int p_idx) const;
 	void _ensure_no_over_offset();
+
+	void _update_hover();
 	void _update_cache();
 
 protected:
@@ -126,6 +134,9 @@ public:
 
 	void set_tab_align(TabAlign p_align);
 	TabAlign get_tab_align() const;
+
+	void set_tab_position(Position p_position);
+	Position get_tab_position() const;
 
 	void move_tab(int from, int to);
 
@@ -165,6 +176,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(Tabs::TabAlign);
+VARIANT_ENUM_CAST(Tabs::Position);
 VARIANT_ENUM_CAST(Tabs::CloseButtonDisplayPolicy);
 
 #endif // TABS_H

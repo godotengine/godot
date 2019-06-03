@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -299,9 +299,7 @@ bool GrooveJoint2DSW::setup(real_t p_step) {
 
 	Vector2 delta = (B->get_transform().get_origin() + rB) - (A->get_transform().get_origin() + rA);
 
-	// FIXME: We used to do this assignment and then override it with 0.001 right after. Investigate why.
-	//real_t _b = get_bias();
-	real_t _b = 0.001;
+	real_t _b = get_bias();
 	gbias = (delta * -(_b == 0 ? space->get_constraint_bias() : _b) * (1.0 / p_step)).clamped(get_max_bias());
 
 	// apply accumulated impulse
@@ -321,7 +319,7 @@ void GrooveJoint2DSW::solve(real_t p_step) {
 	Vector2 jOld = jn_acc;
 	j += jOld;
 
-	jn_acc = (((clamp * j.cross(xf_normal)) > 0) ? j : xf_normal.project(j)).clamped(jn_max);
+	jn_acc = (((clamp * j.cross(xf_normal)) > 0) ? j : j.project(xf_normal)).clamped(jn_max);
 
 	j = jn_acc - jOld;
 

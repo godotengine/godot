@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SceneTree" inherits="MainLoop" category="Core" version="3.1">
+<class name="SceneTree" inherits="MainLoop" category="Core" version="3.2">
 	<brief_description>
 		SceneTree manages a hierarchy of nodes.
 	</brief_description>
 	<description>
-		As one of the most important classes, the [code]SceneTree[/code] manages the hierarchy of nodes in a scene as well as scenes themselves. Nodes can be added, retrieved and removed. The whole scene tree (and thus the current scene) can be paused. Scenes can be loaded, switched and reloaded. You can also use the SceneTree to organize your nodes into groups: every node can be assigned as many groups as you want to create, e.g. a "enemy" group. You can then iterate these groups or even call methods and set properties on all the group's members at once.
+		As one of the most important classes, the [SceneTree] manages the hierarchy of nodes in a scene as well as scenes themselves. Nodes can be added, retrieved and removed. The whole scene tree (and thus the current scene) can be paused. Scenes can be loaded, switched and reloaded. You can also use the SceneTree to organize your nodes into groups: every node can be assigned as many groups as you want to create, e.g. a "enemy" group. You can then iterate these groups or even call methods and set properties on all the group's members at once.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/getting_started/step_by_step/scene_tree.html</link>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/viewports/multiple_resolutions.html</link>
+		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/scene_tree.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/viewports/multiple_resolutions.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="call_group" qualifiers="vararg">
 			<return type="Variant">
@@ -63,13 +61,21 @@
 			<argument index="1" name="pause_mode_process" type="bool" default="true">
 			</argument>
 			<description>
-				Returns a [SceneTreeTimer] which will [signal SceneTreeTimer.timeout] after the given time in seconds elapsed in this SceneTree. If [code]pause_mode_process[/code] is set to false, pausing the SceneTree will also pause the timer.
+				Returns a [SceneTreeTimer] which will [signal SceneTreeTimer.timeout] after the given time in seconds elapsed in this SceneTree. If [code]pause_mode_process[/code] is set to [code]false[/code], pausing the SceneTree will also pause the timer.
+				Commonly used to create a one-shot delay timer as in the following example:
+				[codeblock]
+				func some_function():
+					print("start")
+					yield(get_tree().create_timer(1.0), "timeout")
+					print("end")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_frame" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the current frame, i.e. number of frames since the application started.
 			</description>
 		</method>
 		<method name="get_network_connected_peers" qualifiers="const">
@@ -192,7 +198,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the application automatically accepts quitting.
+				If [code]true[/code], the application automatically accepts quitting.
 			</description>
 		</method>
 		<method name="set_group">
@@ -236,7 +242,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the application quits automatically on going back (e.g. on Android).
+				If [code]true[/code], the application quits automatically on going back (e.g. on Android).
 			</description>
 		</method>
 		<method name="set_screen_stretch">
@@ -270,23 +276,27 @@
 			The default [MultiplayerAPI] instance for this SceneTree.
 		</member>
 		<member name="multiplayer_poll" type="bool" setter="set_multiplayer_poll_enabled" getter="is_multiplayer_poll_enabled">
-			If [code]true[/code] (default) enable the automatic polling of the [MultiplayerAPI] for this SceneTree during [signal idle_frame].
-			When [code]false[/code] you need to manually call [method MultiplayerAPI.poll] for processing network packets and delivering RPCs/RSETs. This allows to run RPCs/RSETs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protecion when accessing the [MultiplayerAPI] from threads.
+			If [code]true[/code], (default) enable the automatic polling of the [MultiplayerAPI] for this SceneTree during [signal idle_frame].
+			When [code]false[/code] you need to manually call [method MultiplayerAPI.poll] for processing network packets and delivering RPCs/RSETs. This allows to run RPCs/RSETs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protection when accessing the [MultiplayerAPI] from threads.
 		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
-			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the SceneTree will become a network server (check with [method is_network_server()]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to slave. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to SceneTree's signals.
+			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the SceneTree will become a network server (check with [method is_network_server]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to SceneTree's signals.
 		</member>
 		<member name="paused" type="bool" setter="set_pause" getter="is_paused">
-			If [code]true[/code] the SceneTree is paused.
+			If [code]true[/code], the SceneTree is paused.
+			Doing so will have the following behavior:
+			* 2D and 3D physics will be stopped.
+			* _process and _physics_process will not be called anymore in nodes.
+			* _input and _input_event will not be called anymore either.
 		</member>
 		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections">
-			If [code]true[/code] the SceneTree's [member network_peer] refuses new incoming connections.
+			If [code]true[/code], the SceneTree's [member network_peer] refuses new incoming connections.
 		</member>
 		<member name="root" type="Viewport" setter="" getter="get_root">
 			The SceneTree's [Viewport].
 		</member>
 		<member name="use_font_oversampling" type="bool" setter="set_use_font_oversampling" getter="is_using_font_oversampling">
-			If [code]true[/code] font oversampling is used.
+			If [code]true[/code], font oversampling is used.
 		</member>
 	</members>
 	<signals>
@@ -329,24 +339,30 @@
 			</description>
 		</signal>
 		<signal name="node_added">
-			<argument index="0" name="node" type="Object">
+			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
 				Emitted whenever a node is added to the SceneTree.
 			</description>
 		</signal>
 		<signal name="node_configuration_warning_changed">
-			<argument index="0" name="node" type="Object">
+			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
 				Emitted when a node's configuration changed. Only emitted in tool mode.
 			</description>
 		</signal>
 		<signal name="node_removed">
-			<argument index="0" name="node" type="Object">
+			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
 				Emitted whenever a node is removed from the SceneTree.
+			</description>
+		</signal>
+		<signal name="node_renamed">
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
 			</description>
 		</signal>
 		<signal name="physics_frame">

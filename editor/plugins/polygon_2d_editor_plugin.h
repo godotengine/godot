@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,23 +41,23 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(Polygon2DEditor, AbstractPolygon2DEditor);
 
 	enum Mode {
-
 		MODE_EDIT_UV = MODE_CONT,
 		UVEDIT_POLYGON_TO_UV,
 		UVEDIT_UV_TO_POLYGON,
 		UVEDIT_UV_CLEAR,
 		UVEDIT_GRID_SETTINGS
-
 	};
 
 	enum UVMode {
 		UV_MODE_CREATE,
+		UV_MODE_CREATE_INTERNAL,
+		UV_MODE_REMOVE_INTERNAL,
 		UV_MODE_EDIT_POINT,
 		UV_MODE_MOVE,
 		UV_MODE_ROTATE,
 		UV_MODE_SCALE,
-		UV_MODE_ADD_SPLIT,
-		UV_MODE_REMOVE_SPLIT,
+		UV_MODE_ADD_POLYGON,
+		UV_MODE_REMOVE_POLYGON,
 		UV_MODE_PAINT_WEIGHT,
 		UV_MODE_CLEAR_WEIGHT,
 		UV_MODE_MAX
@@ -73,7 +73,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	ToolButton *uv_button[UV_MODE_MAX];
 	ToolButton *b_snap_enable;
 	ToolButton *b_snap_grid;
-	Control *uv_edit_draw;
+	Panel *uv_edit_draw;
 	HSlider *uv_zoom;
 	SpinBox *uv_zoom_value;
 	HScrollBar *uv_hscroll;
@@ -102,14 +102,16 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	PoolVector<Vector2> points_prev;
 	PoolVector<Vector2> uv_create_uv_prev;
 	PoolVector<Vector2> uv_create_poly_prev;
+	PoolVector<Color> uv_create_colors_prev;
+	int uv_create_prev_internal_vertices;
 	Array uv_create_bones_prev;
-	PoolVector<int> splits_prev;
+	Array polygons_prev;
 
 	Vector2 uv_create_to;
 	int point_drag_index;
 	bool uv_drag;
 	bool uv_create;
-	bool split_create;
+	Vector<int> polygon_create;
 	UVMode uv_move_current;
 	Vector2 uv_drag_from;
 	bool updating_uv_scroll;
@@ -125,6 +127,9 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 
 	virtual void _menu_option(int p_option);
 
+	void _cancel_editing();
+	void _update_polygon_editing_state();
+
 	void _uv_scroll_changed(float);
 	void _uv_input(const Ref<InputEvent> &p_input);
 	void _uv_draw();
@@ -138,13 +143,19 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	void _set_snap_step_y(float p_val);
 
 	void _uv_edit_mode_select(int p_mode);
+	void _uv_edit_popup_hide();
 	void _bone_paint_selected(int p_index);
+
+	int _get_polygon_count() const;
 
 protected:
 	virtual Node2D *_get_node() const;
 	virtual void _set_node(Node *p_polygon);
 
 	virtual Vector2 _get_offset(int p_idx) const;
+
+	virtual bool _has_uv() const { return true; };
+	virtual void _commit_action();
 
 	void _notification(int p_what);
 	static void _bind_methods();

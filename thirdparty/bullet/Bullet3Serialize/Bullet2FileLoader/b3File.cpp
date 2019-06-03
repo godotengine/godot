@@ -29,39 +29,38 @@ subject to the following restrictions:
 using namespace bParse;
 #define MAX_STRLEN 1024
 
-const char* getCleanName(const char* memName, char* buffer)
+const char *getCleanName(const char *memName, char *buffer)
 {
 	int slen = strlen(memName);
-	assert(slen<MAX_STRLEN);
-	slen=b3Min(slen,MAX_STRLEN);
-	for (int i=0;i<slen;i++)
+	assert(slen < MAX_STRLEN);
+	slen = b3Min(slen, MAX_STRLEN);
+	for (int i = 0; i < slen; i++)
 	{
-		if (memName[i]==']'||memName[i]=='[')
+		if (memName[i] == ']' || memName[i] == '[')
 		{
-			buffer[i] = 0;//'_';
-		} else
+			buffer[i] = 0;  //'_';
+		}
+		else
 		{
 			buffer[i] = memName[i];
 		}
 	}
-	buffer[slen]=0;
+	buffer[slen] = 0;
 	return buffer;
 }
 
-
-
 // ----------------------------------------------------- //
 bFile::bFile(const char *filename, const char headerString[7])
-	:	mOwnsBuffer(true),
-		mFileBuffer(0),
-		mFileLen(0),
-		mVersion(0),
-		mDataStart(0),
-		mFileDNA(0),
-		mMemoryDNA(0),
-		mFlags(FD_INVALID)
+	: mOwnsBuffer(true),
+	  mFileBuffer(0),
+	  mFileLen(0),
+	  mVersion(0),
+	  mDataStart(0),
+	  mFileDNA(0),
+	  mMemoryDNA(0),
+	  mFlags(FD_INVALID)
 {
-	for (int i=0;i<7;i++)
+	for (int i = 0; i < 7; i++)
 	{
 		m_headerString[i] = headerString[i];
 	}
@@ -73,7 +72,7 @@ bFile::bFile(const char *filename, const char headerString[7])
 		mFileLen = ftell(fp);
 		fseek(fp, 0L, SEEK_SET);
 
-		mFileBuffer = (char*)malloc(mFileLen+1);
+		mFileBuffer = (char *)malloc(mFileLen + 1);
 		int bytesRead;
 		bytesRead = fread(mFileBuffer, mFileLen, 1, fp);
 
@@ -81,22 +80,21 @@ bFile::bFile(const char *filename, const char headerString[7])
 
 		//
 		parseHeader();
-
 	}
 }
 
 // ----------------------------------------------------- //
-bFile::bFile( char *memoryBuffer, int len, const char headerString[7])
-:	mOwnsBuffer(false),
-	mFileBuffer(0),
-		mFileLen(0),
-		mVersion(0),
-		mDataStart(0),
-		mFileDNA(0),
-		mMemoryDNA(0),
-		mFlags(FD_INVALID)
+bFile::bFile(char *memoryBuffer, int len, const char headerString[7])
+	: mOwnsBuffer(false),
+	  mFileBuffer(0),
+	  mFileLen(0),
+	  mVersion(0),
+	  mDataStart(0),
+	  mFileDNA(0),
+	  mMemoryDNA(0),
+	  mFlags(FD_INVALID)
 {
-	for (int i=0;i<7;i++)
+	for (int i = 0; i < 7; i++)
 	{
 		m_headerString[i] = headerString[i];
 	}
@@ -104,9 +102,7 @@ bFile::bFile( char *memoryBuffer, int len, const char headerString[7])
 	mFileLen = len;
 
 	parseHeader();
-
 }
-
 
 // ----------------------------------------------------- //
 bFile::~bFile()
@@ -117,14 +113,9 @@ bFile::~bFile()
 		mFileBuffer = 0;
 	}
 
-
 	delete mMemoryDNA;
 	delete mFileDNA;
 }
-
-
-
-
 
 // ----------------------------------------------------- //
 void bFile::parseHeader()
@@ -133,11 +124,11 @@ void bFile::parseHeader()
 		return;
 
 	char *blenderBuf = mFileBuffer;
-	char header[B3_SIZEOFBLENDERHEADER+1] ;
+	char header[B3_SIZEOFBLENDERHEADER + 1];
 	memcpy(header, blenderBuf, B3_SIZEOFBLENDERHEADER);
-	header[B3_SIZEOFBLENDERHEADER]='\0';
+	header[B3_SIZEOFBLENDERHEADER] = '\0';
 
-	if (strncmp(header, m_headerString, 6)!=0)
+	if (strncmp(header, m_headerString, 6) != 0)
 	{
 		memcpy(header, m_headerString, B3_SIZEOFBLENDERHEADER);
 		return;
@@ -148,35 +139,34 @@ void bFile::parseHeader()
 		mFlags |= FD_DOUBLE_PRECISION;
 	}
 
-	char *ver = header+9;
+	char *ver = header + 9;
 	mVersion = atoi(ver);
 	if (mVersion <= 241)
 	{
 		//printf("Warning, %d not fully tested : <= 242\n", mVersion);
 	}
 
-	int littleEndian= 1;
-	littleEndian= ((char*)&littleEndian)[0];
+	int littleEndian = 1;
+	littleEndian = ((char *)&littleEndian)[0];
 
 	// swap ptr sizes...
-	if (header[7]=='-')
+	if (header[7] == '-')
 	{
 		mFlags |= FD_FILE_64;
 		if (!VOID_IS_8)
 			mFlags |= FD_BITS_VARIES;
 	}
-	else if (VOID_IS_8) mFlags |= FD_BITS_VARIES;
+	else if (VOID_IS_8)
+		mFlags |= FD_BITS_VARIES;
 
 	// swap endian...
-	if (header[8]=='V')
+	if (header[8] == 'V')
 	{
-		if (littleEndian ==1)
+		if (littleEndian == 1)
 			mFlags |= FD_ENDIAN_SWAP;
 	}
-	else
-		if (littleEndian==0)
-			mFlags |= FD_ENDIAN_SWAP;
-
+	else if (littleEndian == 0)
+		mFlags |= FD_ENDIAN_SWAP;
 
 	mFlags |= FD_OK;
 }
@@ -184,13 +174,13 @@ void bFile::parseHeader()
 // ----------------------------------------------------- //
 bool bFile::ok()
 {
-	return (mFlags &FD_OK)!=0;
+	return (mFlags & FD_OK) != 0;
 }
 
 // ----------------------------------------------------- //
-void bFile::parseInternal(int verboseMode, char* memDna,int memDnaLength)
+void bFile::parseInternal(int verboseMode, char *memDna, int memDnaLength)
 {
-	if ( (mFlags &FD_OK) ==0)
+	if ((mFlags & FD_OK) == 0)
 		return;
 
 	char *blenderData = mFileBuffer;
@@ -198,38 +188,40 @@ void bFile::parseInternal(int verboseMode, char* memDna,int memDnaLength)
 	dna.oldPtr = 0;
 
 	char *tempBuffer = blenderData;
-	for (int i=0; i<mFileLen; i++)
+	for (int i = 0; i < mFileLen; i++)
 	{
 		// looking for the data's starting position
 		// and the start of SDNA decls
 
-		if (!mDataStart && strncmp(tempBuffer, "REND", 4)==0)
+		if (!mDataStart && strncmp(tempBuffer, "REND", 4) == 0)
 			mDataStart = i;
 
-		if (strncmp(tempBuffer, "DNA1", 4)==0)
+		if (strncmp(tempBuffer, "DNA1", 4) == 0)
 		{
 			// read the DNA1 block and extract SDNA
 			if (getNextBlock(&dna, tempBuffer, mFlags) > 0)
 			{
-				if (strncmp((tempBuffer + ChunkUtils::getOffset(mFlags)), "SDNANAME", 8) ==0)
+				if (strncmp((tempBuffer + ChunkUtils::getOffset(mFlags)), "SDNANAME", 8) == 0)
 					dna.oldPtr = (tempBuffer + ChunkUtils::getOffset(mFlags));
-				else dna.oldPtr = 0;
+				else
+					dna.oldPtr = 0;
 			}
-			else dna.oldPtr = 0;
+			else
+				dna.oldPtr = 0;
 		}
 		// Some Bullet files are missing the DNA1 block
 		// In Blender it's DNA1 + ChunkUtils::getOffset() + SDNA + NAME
 		// In Bullet tests its SDNA + NAME
-		else if (strncmp(tempBuffer, "SDNANAME", 8) ==0)
+		else if (strncmp(tempBuffer, "SDNANAME", 8) == 0)
 		{
 			dna.oldPtr = blenderData + i;
-			dna.len = mFileLen-i;
+			dna.len = mFileLen - i;
 
 			// Also no REND block, so exit now.
-			if (mVersion==276) break;
+			if (mVersion == 276) break;
 		}
 
-        if (mDataStart && dna.oldPtr) break;
+		if (mDataStart && dna.oldPtr) break;
 		tempBuffer++;
 	}
 	if (!dna.oldPtr || !dna.len)
@@ -239,43 +231,35 @@ void bFile::parseInternal(int verboseMode, char* memDna,int memDnaLength)
 		return;
 	}
 
-
 	mFileDNA = new bDNA();
 
-
 	///mFileDNA->init will convert part of DNA file endianness to current CPU endianness if necessary
-	mFileDNA->init((char*)dna.oldPtr, dna.len, (mFlags & FD_ENDIAN_SWAP)!=0);
+	mFileDNA->init((char *)dna.oldPtr, dna.len, (mFlags & FD_ENDIAN_SWAP) != 0);
 
-
-	if (mVersion==276)
+	if (mVersion == 276)
 	{
 		int i;
-		for (i=0;i<mFileDNA->getNumNames();i++)
+		for (i = 0; i < mFileDNA->getNumNames(); i++)
 		{
-			if (strcmp(mFileDNA->getName(i),"int")==0)
+			if (strcmp(mFileDNA->getName(i), "int") == 0)
 			{
 				mFlags |= FD_BROKEN_DNA;
 			}
 		}
-		if ((mFlags&FD_BROKEN_DNA)!=0)
+		if ((mFlags & FD_BROKEN_DNA) != 0)
 		{
 			//printf("warning: fixing some broken DNA version\n");
 		}
 	}
 
-
-
 	if (verboseMode & FD_VERBOSE_DUMP_DNA_TYPE_DEFINITIONS)
 		mFileDNA->dumpTypeDefinitions();
 
 	mMemoryDNA = new bDNA();
-	int littleEndian= 1;
-	littleEndian= ((char*)&littleEndian)[0];
+	int littleEndian = 1;
+	littleEndian = ((char *)&littleEndian)[0];
 
-	mMemoryDNA->init(memDna,memDnaLength,littleEndian==0);
-
-
-
+	mMemoryDNA->init(memDna, memDnaLength, littleEndian == 0);
 
 	///@todo we need a better version check, add version/sub version info from FileGlobal into memory DNA/header files
 	if (mMemoryDNA->getNumNames() != mFileDNA->getNumNames())
@@ -290,7 +274,6 @@ void bFile::parseInternal(int verboseMode, char* memDna,int memDnaLength)
 		//printf ("Warning, file DNA is newer than built in.");
 	}
 
-
 	mFileDNA->initCmpFlags(mMemoryDNA);
 
 	parseData();
@@ -298,102 +281,95 @@ void bFile::parseInternal(int verboseMode, char* memDna,int memDnaLength)
 	resolvePointers(verboseMode);
 
 	updateOldPointers();
-
-
 }
 
-
-
 // ----------------------------------------------------- //
-void bFile::swap(char *head, bChunkInd& dataChunk, bool ignoreEndianFlag)
+void bFile::swap(char *head, bChunkInd &dataChunk, bool ignoreEndianFlag)
 {
 	char *data = head;
 	short *strc = mFileDNA->getStruct(dataChunk.dna_nr);
 
-
-
 	const char s[] = "SoftBodyMaterialData";
 	int szs = sizeof(s);
-	if (strncmp((char*)&dataChunk.code,"ARAY",4)==0)
+	if (strncmp((char *)&dataChunk.code, "ARAY", 4) == 0)
 	{
 		short *oldStruct = mFileDNA->getStruct(dataChunk.dna_nr);
 		char *oldType = mFileDNA->getType(oldStruct[0]);
-		if (strncmp(oldType,s,szs)==0)
+		if (strncmp(oldType, s, szs) == 0)
 		{
 			return;
 		}
 	}
 
-
 	int len = mFileDNA->getLength(strc[0]);
 
-	for (int i=0; i<dataChunk.nr; i++)
+	for (int i = 0; i < dataChunk.nr; i++)
 	{
-		swapStruct(dataChunk.dna_nr, data,ignoreEndianFlag);
-		data+=len;
+		swapStruct(dataChunk.dna_nr, data, ignoreEndianFlag);
+		data += len;
 	}
 }
 
 void bFile::swapLen(char *dataPtr)
 {
-	const bool VOID_IS_8 = ((sizeof(void*)==8));
+	const bool VOID_IS_8 = ((sizeof(void *) == 8));
 	if (VOID_IS_8)
 	{
-		if (mFlags &FD_BITS_VARIES)
+		if (mFlags & FD_BITS_VARIES)
 		{
-			bChunkPtr4*c = (bChunkPtr4*) dataPtr;
-			if ((c->code & 0xFFFF)==0)
-					c->code >>=16;
+			bChunkPtr4 *c = (bChunkPtr4 *)dataPtr;
+			if ((c->code & 0xFFFF) == 0)
+				c->code >>= 16;
 			B3_SWITCH_INT(c->len);
 			B3_SWITCH_INT(c->dna_nr);
 			B3_SWITCH_INT(c->nr);
-		} else
-		{
-			bChunkPtr8* c = (bChunkPtr8*) dataPtr;
-			if ((c->code & 0xFFFF)==0)
-				c->code >>=16;
-			B3_SWITCH_INT(c->len);
-			B3_SWITCH_INT(c->dna_nr);
-			B3_SWITCH_INT(c->nr);
-
 		}
-	} else
-	{
-		if (mFlags &FD_BITS_VARIES)
+		else
 		{
-			bChunkPtr8*c = (bChunkPtr8*) dataPtr;
-			if ((c->code & 0xFFFF)==0)
-				c->code >>=16;
+			bChunkPtr8 *c = (bChunkPtr8 *)dataPtr;
+			if ((c->code & 0xFFFF) == 0)
+				c->code >>= 16;
 			B3_SWITCH_INT(c->len);
 			B3_SWITCH_INT(c->dna_nr);
 			B3_SWITCH_INT(c->nr);
-
-		} else
-		{
-			bChunkPtr4* c = (bChunkPtr4*) dataPtr;
-			if ((c->code & 0xFFFF)==0)
-				c->code >>=16;
-			B3_SWITCH_INT(c->len);
-
-			B3_SWITCH_INT(c->dna_nr);
-			B3_SWITCH_INT(c->nr);
-
 		}
 	}
+	else
+	{
+		if (mFlags & FD_BITS_VARIES)
+		{
+			bChunkPtr8 *c = (bChunkPtr8 *)dataPtr;
+			if ((c->code & 0xFFFF) == 0)
+				c->code >>= 16;
+			B3_SWITCH_INT(c->len);
+			B3_SWITCH_INT(c->dna_nr);
+			B3_SWITCH_INT(c->nr);
+		}
+		else
+		{
+			bChunkPtr4 *c = (bChunkPtr4 *)dataPtr;
+			if ((c->code & 0xFFFF) == 0)
+				c->code >>= 16;
+			B3_SWITCH_INT(c->len);
 
+			B3_SWITCH_INT(c->dna_nr);
+			B3_SWITCH_INT(c->nr);
+		}
+	}
 }
 
-
-void bFile::swapDNA(char* ptr)
+void bFile::swapDNA(char *ptr)
 {
-	bool swap = ((mFlags & FD_ENDIAN_SWAP)!=0);
+	bool swap = ((mFlags & FD_ENDIAN_SWAP) != 0);
 
-	char* data = &ptr[20];
-//	void bDNA::init(char *data, int len, bool swap)
-	int *intPtr=0;short *shtPtr=0;
-	char *cp = 0;int dataLen =0;
+	char *data = &ptr[20];
+	//	void bDNA::init(char *data, int len, bool swap)
+	int *intPtr = 0;
+	short *shtPtr = 0;
+	char *cp = 0;
+	int dataLen = 0;
 	//long nr=0;
-	intPtr = (int*)data;
+	intPtr = (int *)data;
 
 	/*
 		SDNA (4 bytes) (magic number)
@@ -403,13 +379,12 @@ void bFile::swapDNA(char* ptr)
 		<string>
 	*/
 
-	if (strncmp(data, "SDNA", 4)==0)
+	if (strncmp(data, "SDNA", 4) == 0)
 	{
 		// skip ++ NAME
-		intPtr++; intPtr++;
+		intPtr++;
+		intPtr++;
 	}
-
-
 
 	// Parse names
 	if (swap)
@@ -420,16 +395,15 @@ void bFile::swapDNA(char* ptr)
 	*intPtr = ChunkUtils::swapInt(*intPtr);
 	intPtr++;
 
-	cp = (char*)intPtr;
+	cp = (char *)intPtr;
 	int i;
-	for ( i=0; i<dataLen; i++)
+	for (i = 0; i < dataLen; i++)
 	{
-		while (*cp)cp++;
+		while (*cp) cp++;
 		cp++;
 	}
 
-
-	cp = b3AlignPointer(cp,4);
+	cp = b3AlignPointer(cp, 4);
 
 	/*
 		TYPE (4 bytes)
@@ -438,8 +412,9 @@ void bFile::swapDNA(char* ptr)
 		<string>
 	*/
 
-	intPtr = (int*)cp;
-	assert(strncmp(cp, "TYPE", 4)==0); intPtr++;
+	intPtr = (int *)cp;
+	assert(strncmp(cp, "TYPE", 4) == 0);
+	intPtr++;
 
 	if (swap)
 		dataLen = ChunkUtils::swapInt(*intPtr);
@@ -450,14 +425,14 @@ void bFile::swapDNA(char* ptr)
 
 	intPtr++;
 
-	cp = (char*)intPtr;
-	for ( i=0; i<dataLen; i++)
+	cp = (char *)intPtr;
+	for (i = 0; i < dataLen; i++)
 	{
-		while (*cp)cp++;
+		while (*cp) cp++;
 		cp++;
 	}
 
-	cp = b3AlignPointer(cp,4);
+	cp = b3AlignPointer(cp, 4);
 
 	/*
 		TLEN (4 bytes)
@@ -466,15 +441,15 @@ void bFile::swapDNA(char* ptr)
 	*/
 
 	// Parse type lens
-	intPtr = (int*)cp;
-	assert(strncmp(cp, "TLEN", 4)==0); intPtr++;
+	intPtr = (int *)cp;
+	assert(strncmp(cp, "TLEN", 4) == 0);
+	intPtr++;
 
-
-	shtPtr = (short*)intPtr;
-	for ( i=0; i<dataLen; i++, shtPtr++)
+	shtPtr = (short *)intPtr;
+	for (i = 0; i < dataLen; i++, shtPtr++)
 	{
 		//??????if (swap)
-			shtPtr[0] = ChunkUtils::swapShort(shtPtr[0]);
+		shtPtr[0] = ChunkUtils::swapShort(shtPtr[0]);
 	}
 
 	if (dataLen & 1)
@@ -491,9 +466,9 @@ void bFile::swapDNA(char* ptr)
 		<namenr>
 	*/
 
-	intPtr = (int*)shtPtr;
-	cp = (char*)intPtr;
-	assert(strncmp(cp, "STRC", 4)==0);
+	intPtr = (int *)shtPtr;
+	cp = (char *)intPtr;
+	assert(strncmp(cp, "STRC", 4) == 0);
 	intPtr++;
 
 	if (swap)
@@ -505,66 +480,56 @@ void bFile::swapDNA(char* ptr)
 
 	intPtr++;
 
-
-	shtPtr = (short*)intPtr;
-	for ( i=0; i<dataLen; i++)
+	shtPtr = (short *)intPtr;
+	for (i = 0; i < dataLen; i++)
 	{
-
 		//if (swap)
 		{
 			int len = shtPtr[1];
 
-			shtPtr[0]= ChunkUtils::swapShort(shtPtr[0]);
-			shtPtr[1]= ChunkUtils::swapShort(shtPtr[1]);
+			shtPtr[0] = ChunkUtils::swapShort(shtPtr[0]);
+			shtPtr[1] = ChunkUtils::swapShort(shtPtr[1]);
 
-			shtPtr+= 2;
+			shtPtr += 2;
 
-			for (int a=0; a<len; a++, shtPtr+=2)
+			for (int a = 0; a < len; a++, shtPtr += 2)
 			{
-				shtPtr[0]= ChunkUtils::swapShort(shtPtr[0]);
-				shtPtr[1]= ChunkUtils::swapShort(shtPtr[1]);
+				shtPtr[0] = ChunkUtils::swapShort(shtPtr[0]);
+				shtPtr[1] = ChunkUtils::swapShort(shtPtr[1]);
 			}
 		}
-//		else
-//			shtPtr+= (2*shtPtr[1])+2;
+		//		else
+		//			shtPtr+= (2*shtPtr[1])+2;
 	}
-
 }
 
-void bFile::writeFile(const char* fileName)
+void bFile::writeFile(const char *fileName)
 {
-	FILE* f = fopen(fileName,"wb");
-	fwrite(mFileBuffer,1,mFileLen,f);
+	FILE *f = fopen(fileName, "wb");
+	fwrite(mFileBuffer, 1, mFileLen, f);
 	fclose(f);
 }
 
 void bFile::preSwap()
 {
-
 	//const bool brokenDNA = (mFlags&FD_BROKEN_DNA)!=0;
 	//FD_ENDIAN_SWAP
 	//byte 8 determines the endianness of the file, little (v) versus big (V)
-	int littleEndian= 1;
-	littleEndian= ((char*)&littleEndian)[0];
+	int littleEndian = 1;
+	littleEndian = ((char *)&littleEndian)[0];
 
-
-	if (mFileBuffer[8]=='V')
+	if (mFileBuffer[8] == 'V')
 	{
-		mFileBuffer[8]='v';
+		mFileBuffer[8] = 'v';
 	}
 	else
 	{
-		mFileBuffer[8]='V';
+		mFileBuffer[8] = 'V';
 	}
-
-
-
-
-
 
 	mDataStart = 12;
 
-	char *dataPtr = mFileBuffer+mDataStart;
+	char *dataPtr = mFileBuffer + mDataStart;
 
 	bChunkInd dataChunk;
 	dataChunk.code = 0;
@@ -579,21 +544,22 @@ void bFile::preSwap()
 	while (1)
 	{
 		// one behind
-		if (dataChunk.code == B3_SDNA || dataChunk.code==B3_DNA1 || dataChunk.code == B3_TYPE || dataChunk.code == B3_TLEN || dataChunk.code==B3_STRC)
+		if (dataChunk.code == B3_SDNA || dataChunk.code == B3_DNA1 || dataChunk.code == B3_TYPE || dataChunk.code == B3_TLEN || dataChunk.code == B3_STRC)
 		{
-
 			swapDNA(dataPtr);
 			break;
-		} else
+		}
+		else
 		{
 			//if (dataChunk.code == DNA1) break;
-			dataPtrHead = dataPtr+ChunkUtils::getOffset(mFlags);
+			dataPtrHead = dataPtr + ChunkUtils::getOffset(mFlags);
 
 			swapLen(dataPtr);
-			if (dataChunk.dna_nr>=0)
+			if (dataChunk.dna_nr >= 0)
 			{
-				swap(dataPtrHead, dataChunk,ignoreEndianFlag);
-			} else
+				swap(dataPtrHead, dataChunk, ignoreEndianFlag);
+			}
+			else
 			{
 				//printf("unknown chunk\n");
 			}
@@ -602,7 +568,7 @@ void bFile::preSwap()
 		// next please!
 		dataPtr += seek;
 
-		seek =  getNextBlock(&dataChunk, dataPtr, mFlags);
+		seek = getNextBlock(&dataChunk, dataPtr, mFlags);
 		if (seek < 0)
 			break;
 	}
@@ -610,56 +576,50 @@ void bFile::preSwap()
 	if (mFlags & FD_ENDIAN_SWAP)
 	{
 		mFlags &= ~FD_ENDIAN_SWAP;
-	} else
+	}
+	else
 	{
 		mFlags |= FD_ENDIAN_SWAP;
 	}
-
-
-
 }
 
-
 // ----------------------------------------------------- //
-char* bFile::readStruct(char *head, bChunkInd&  dataChunk)
+char *bFile::readStruct(char *head, bChunkInd &dataChunk)
 {
 	bool ignoreEndianFlag = false;
 
 	if (mFlags & FD_ENDIAN_SWAP)
 		swap(head, dataChunk, ignoreEndianFlag);
 
-
-
 	if (!mFileDNA->flagEqual(dataChunk.dna_nr))
 	{
 		// Ouch! need to rebuild the struct
-		short *oldStruct,*curStruct;
+		short *oldStruct, *curStruct;
 		char *oldType, *newType;
 		int oldLen, curLen, reverseOld;
-
 
 		oldStruct = mFileDNA->getStruct(dataChunk.dna_nr);
 		oldType = mFileDNA->getType(oldStruct[0]);
 
 		oldLen = mFileDNA->getLength(oldStruct[0]);
 
-		if ((mFlags&FD_BROKEN_DNA)!=0)
+		if ((mFlags & FD_BROKEN_DNA) != 0)
 		{
-			if ((strcmp(oldType,"b3QuantizedBvhNodeData")==0)&&oldLen==20)
+			if ((strcmp(oldType, "b3QuantizedBvhNodeData") == 0) && oldLen == 20)
 			{
 				return 0;
 			}
-			if ((strcmp(oldType,"b3ShortIntIndexData")==0))
+			if ((strcmp(oldType, "b3ShortIntIndexData") == 0))
 			{
 				int allocLen = 2;
-	    		char *dataAlloc = new char[(dataChunk.nr*allocLen)+1];
-				memset(dataAlloc, 0, (dataChunk.nr*allocLen)+1);
-				short* dest = (short*) dataAlloc;
-				const short* src = (short*) head;
-				for (int i=0;i<dataChunk.nr;i++)
+				char *dataAlloc = new char[(dataChunk.nr * allocLen) + 1];
+				memset(dataAlloc, 0, (dataChunk.nr * allocLen) + 1);
+				short *dest = (short *)dataAlloc;
+				const short *src = (short *)head;
+				for (int i = 0; i < dataChunk.nr; i++)
 				{
 					dest[i] = src[i];
-					if (mFlags &FD_ENDIAN_SWAP)
+					if (mFlags & FD_ENDIAN_SWAP)
 					{
 						B3_SWITCH_SHORT(dest[i]);
 					}
@@ -669,14 +629,12 @@ char* bFile::readStruct(char *head, bChunkInd&  dataChunk)
 			}
 		}
 
-
-
 		///don't try to convert Link block data, just memcpy it. Other data can be converted.
-		if (strcmp("Link",oldType)!=0)
+		if (strcmp("Link", oldType) != 0)
 		{
 			reverseOld = mMemoryDNA->getReverseType(oldType);
 
-			if ((reverseOld!=-1))
+			if ((reverseOld != -1))
 			{
 				// make sure it's here
 				//assert(reverseOld!= -1 && "getReverseType() returned -1, struct required!");
@@ -686,39 +644,38 @@ char* bFile::readStruct(char *head, bChunkInd&  dataChunk)
 				newType = mMemoryDNA->getType(curStruct[0]);
 				curLen = mMemoryDNA->getLength(curStruct[0]);
 
-
-
 				// make sure it's the same
-				assert((strcmp(oldType, newType)==0) && "internal error, struct mismatch!");
-
+				assert((strcmp(oldType, newType) == 0) && "internal error, struct mismatch!");
 
 				// numBlocks * length
 
-                int allocLen = (curLen);
-    			char *dataAlloc = new char[(dataChunk.nr*allocLen)+1];
-				memset(dataAlloc, 0, (dataChunk.nr*allocLen));
+				int allocLen = (curLen);
+				char *dataAlloc = new char[(dataChunk.nr * allocLen) + 1];
+				memset(dataAlloc, 0, (dataChunk.nr * allocLen));
 
 				// track allocated
 				addDataBlock(dataAlloc);
 
 				char *cur = dataAlloc;
 				char *old = head;
-				for (int block=0; block<dataChunk.nr; block++)
+				for (int block = 0; block < dataChunk.nr; block++)
 				{
 					bool fixupPointers = true;
 					parseStruct(cur, old, dataChunk.dna_nr, reverseOld, fixupPointers);
-					mLibPointers.insert(old,(bStructHandle*)cur);
+					mLibPointers.insert(old, (bStructHandle *)cur);
 
 					cur += curLen;
 					old += oldLen;
 				}
 				return dataAlloc;
 			}
-		} else
+		}
+		else
 		{
 			//printf("Link found\n");
 		}
-	} else
+	}
+	else
 	{
 //#define DEBUG_EQUAL_STRUCTS
 #ifdef DEBUG_EQUAL_STRUCTS
@@ -726,23 +683,19 @@ char* bFile::readStruct(char *head, bChunkInd&  dataChunk)
 		char *oldType;
 		oldStruct = mFileDNA->getStruct(dataChunk.dna_nr);
 		oldType = mFileDNA->getType(oldStruct[0]);
-		printf("%s equal structure, just memcpy\n",oldType);
-#endif //
+		printf("%s equal structure, just memcpy\n", oldType);
+#endif  //
 	}
 
-
-	char *dataAlloc = new char[(dataChunk.len)+1];
-	memset(dataAlloc, 0, dataChunk.len+1);
-
+	char *dataAlloc = new char[(dataChunk.len) + 1];
+	memset(dataAlloc, 0, dataChunk.len + 1);
 
 	// track allocated
 	addDataBlock(dataAlloc);
 
 	memcpy(dataAlloc, head, dataChunk.len);
 	return dataAlloc;
-
 }
-
 
 // ----------------------------------------------------- //
 void bFile::parseStruct(char *strcPtr, char *dtPtr, int old_dna, int new_dna, bool fixupPointers)
@@ -751,7 +704,7 @@ void bFile::parseStruct(char *strcPtr, char *dtPtr, int old_dna, int new_dna, bo
 	if (new_dna == -1) return;
 
 	//disable this, because we need to fixup pointers/ListBase
-	if (0)//mFileDNA->flagEqual(old_dna))
+	if (0)  //mFileDNA->flagEqual(old_dna))
 	{
 		short *strc = mFileDNA->getStruct(old_dna);
 		int len = mFileDNA->getLength(strc[0]);
@@ -766,31 +719,29 @@ void bFile::parseStruct(char *strcPtr, char *dtPtr, int old_dna, int new_dna, bo
 	int elementLength, size, revType, old_nr, new_nr, fpLen;
 	short firstStructType;
 
-
 	// File to memory lookup
 	memoryStruct = mMemoryDNA->getStruct(new_dna);
 	fileStruct = mFileDNA->getStruct(old_dna);
 	firstStruct = fileStruct;
-
 
 	filePtrOld = fileStruct;
 	firstStructType = mMemoryDNA->getStruct(0)[0];
 
 	// Get number of elements
 	elementLength = memoryStruct[1];
-	memoryStruct+=2;
+	memoryStruct += 2;
 
-	cpc = strcPtr; cpo = 0;
-	for (int ele=0; ele<elementLength; ele++, memoryStruct+=2)
+	cpc = strcPtr;
+	cpo = 0;
+	for (int ele = 0; ele < elementLength; ele++, memoryStruct += 2)
 	{
 		memType = mMemoryDNA->getType(memoryStruct[0]);
 		memName = mMemoryDNA->getName(memoryStruct[1]);
 
-
 		size = mMemoryDNA->getElementSize(memoryStruct[0], memoryStruct[1]);
 		revType = mMemoryDNA->getReverseType(memoryStruct[0]);
 
-		if (revType != -1 && memoryStruct[0]>=firstStructType && memName[0] != '*')
+		if (revType != -1 && memoryStruct[0] >= firstStructType && memName[0] != '*')
 		{
 			cpo = getFileElement(firstStruct, memName, memType, dtPtr, &filePtrOld);
 			if (cpo)
@@ -799,94 +750,92 @@ void bFile::parseStruct(char *strcPtr, char *dtPtr, int old_dna, int new_dna, bo
 				old_nr = mFileDNA->getReverseType(memType);
 				new_nr = revType;
 				fpLen = mFileDNA->getElementSize(filePtrOld[0], filePtrOld[1]);
-				if (arrayLen==1)
+				if (arrayLen == 1)
 				{
-					parseStruct(cpc, cpo, old_nr, new_nr,fixupPointers);
-				} else
+					parseStruct(cpc, cpo, old_nr, new_nr, fixupPointers);
+				}
+				else
 				{
-					char* tmpCpc = cpc;
-					char* tmpCpo = cpo;
+					char *tmpCpc = cpc;
+					char *tmpCpo = cpo;
 
-					for (int i=0;i<arrayLen;i++)
+					for (int i = 0; i < arrayLen; i++)
 					{
-						parseStruct(tmpCpc, tmpCpo, old_nr, new_nr,fixupPointers);
-						tmpCpc += size/arrayLen;
-						tmpCpo += fpLen/arrayLen;
+						parseStruct(tmpCpc, tmpCpo, old_nr, new_nr, fixupPointers);
+						tmpCpc += size / arrayLen;
+						tmpCpo += fpLen / arrayLen;
 					}
 				}
-				cpc+=size;
-				cpo+=fpLen;
+				cpc += size;
+				cpo += fpLen;
 			}
 			else
-				cpc+=size;
+				cpc += size;
 		}
 		else
 		{
-			getMatchingFileDNA(fileStruct, memName, memType, cpc, dtPtr,fixupPointers);
-			cpc+=size;
+			getMatchingFileDNA(fileStruct, memName, memType, cpc, dtPtr, fixupPointers);
+			cpc += size;
 		}
-
 	}
 }
-
 
 // ----------------------------------------------------- //
 static void getElement(int arrayLen, const char *cur, const char *old, char *oldPtr, char *curData)
 {
-#define b3GetEle(value, current, type, cast, size, ptr)\
-	if (strcmp(current, type)==0)\
-	{\
-		value = (*(cast*)ptr);\
-		ptr += size;\
+#define b3GetEle(value, current, type, cast, size, ptr) \
+	if (strcmp(current, type) == 0)                     \
+	{                                                   \
+		value = (*(cast *)ptr);                         \
+		ptr += size;                                    \
 	}
 
-#define b3SetEle(value, current, type, cast, size, ptr)\
-	if (strcmp(current, type)==0)\
-	{\
-		(*(cast*)ptr) = (cast)value;\
-		ptr += size;\
+#define b3SetEle(value, current, type, cast, size, ptr) \
+	if (strcmp(current, type) == 0)                     \
+	{                                                   \
+		(*(cast *)ptr) = (cast)value;                   \
+		ptr += size;                                    \
 	}
 	double value = 0.0;
 
-	for (int i=0; i<arrayLen; i++)
+	for (int i = 0; i < arrayLen; i++)
 	{
-		b3GetEle(value, old, "char",   char,   sizeof(char),   oldPtr);
-		b3SetEle(value, cur, "char",   char,   sizeof(char),   curData);
-		b3GetEle(value, old, "short",  short,  sizeof(short),  oldPtr);
-		b3SetEle(value, cur, "short",  short,  sizeof(short),  curData);
-		b3GetEle(value, old, "ushort",  unsigned short,  sizeof(unsigned short),  oldPtr);
-		b3SetEle(value, cur, "ushort",  unsigned short,  sizeof(unsigned short),  curData);
-		b3GetEle(value, old, "int",    int,    sizeof(int),    oldPtr);
-		b3SetEle(value, cur, "int",    int,    sizeof(int),    curData);
-		b3GetEle(value, old, "long",   int,    sizeof(int),    oldPtr);
-		b3SetEle(value, cur, "long",   int,    sizeof(int),    curData);
-		b3GetEle(value, old, "float",  float,  sizeof(float),  oldPtr);
-		b3SetEle(value, cur, "float",  float,  sizeof(float),  curData);
+		b3GetEle(value, old, "char", char, sizeof(char), oldPtr);
+		b3SetEle(value, cur, "char", char, sizeof(char), curData);
+		b3GetEle(value, old, "short", short, sizeof(short), oldPtr);
+		b3SetEle(value, cur, "short", short, sizeof(short), curData);
+		b3GetEle(value, old, "ushort", unsigned short, sizeof(unsigned short), oldPtr);
+		b3SetEle(value, cur, "ushort", unsigned short, sizeof(unsigned short), curData);
+		b3GetEle(value, old, "int", int, sizeof(int), oldPtr);
+		b3SetEle(value, cur, "int", int, sizeof(int), curData);
+		b3GetEle(value, old, "long", int, sizeof(int), oldPtr);
+		b3SetEle(value, cur, "long", int, sizeof(int), curData);
+		b3GetEle(value, old, "float", float, sizeof(float), oldPtr);
+		b3SetEle(value, cur, "float", float, sizeof(float), curData);
 		b3GetEle(value, old, "double", double, sizeof(double), oldPtr);
 		b3SetEle(value, cur, "double", double, sizeof(double), curData);
 	}
 }
 
-
 // ----------------------------------------------------- //
-void bFile::swapData(char *data, short type, int arraySize,bool ignoreEndianFlag)
+void bFile::swapData(char *data, short type, int arraySize, bool ignoreEndianFlag)
 {
-	if (ignoreEndianFlag || (mFlags &FD_ENDIAN_SWAP))
+	if (ignoreEndianFlag || (mFlags & FD_ENDIAN_SWAP))
 	{
 		if (type == 2 || type == 3)
 		{
-			short *sp = (short*)data;
-			for (int i=0; i<arraySize; i++)
+			short *sp = (short *)data;
+			for (int i = 0; i < arraySize; i++)
 			{
 				sp[0] = ChunkUtils::swapShort(sp[0]);
 				sp++;
 			}
 		}
-		if (type>3 && type <8)
+		if (type > 3 && type < 8)
 		{
 			char c;
 			char *cp = data;
-			for (int i=0; i<arraySize; i++)
+			for (int i = 0; i < arraySize; i++)
 			{
 				c = cp[0];
 				cp[0] = cp[3];
@@ -894,13 +843,11 @@ void bFile::swapData(char *data, short type, int arraySize,bool ignoreEndianFlag
 				c = cp[1];
 				cp[1] = cp[2];
 				cp[2] = c;
-				cp+=4;
+				cp += 4;
 			}
 		}
 	}
 }
-
-
 
 void bFile::safeSwapPtr(char *dst, const char *src)
 {
@@ -910,84 +857,79 @@ void bFile::safeSwapPtr(char *dst, const char *src)
 	if (!src && !dst)
 		return;
 
-
 	if (ptrFile == ptrMem)
 	{
 		memcpy(dst, src, ptrMem);
 	}
-	else if (ptrMem==4 && ptrFile==8)
+	else if (ptrMem == 4 && ptrFile == 8)
 	{
-		b3PointerUid* oldPtr = (b3PointerUid*)src;
-		b3PointerUid* newPtr = (b3PointerUid*)dst;
+		b3PointerUid *oldPtr = (b3PointerUid *)src;
+		b3PointerUid *newPtr = (b3PointerUid *)dst;
 
 		if (oldPtr->m_uniqueIds[0] == oldPtr->m_uniqueIds[1])
 		{
 			//Bullet stores the 32bit unique ID in both upper and lower part of 64bit pointers
 			//so it can be used to distinguish between .blend and .bullet
 			newPtr->m_uniqueIds[0] = oldPtr->m_uniqueIds[0];
-		} else
+		}
+		else
 		{
 			//deal with pointers the Blender .blend style way, see
 			//readfile.c in the Blender source tree
-			b3Long64 longValue = *((b3Long64*)src);
+			b3Long64 longValue = *((b3Long64 *)src);
 			//endian swap for 64bit pointer otherwise truncation will fail due to trailing zeros
 			if (mFlags & FD_ENDIAN_SWAP)
 				B3_SWITCH_LONGINT(longValue);
-			*((int*)dst) = (int)(longValue>>3);
+			*((int *)dst) = (int)(longValue >> 3);
 		}
-
 	}
-	else if (ptrMem==8 && ptrFile==4)
+	else if (ptrMem == 8 && ptrFile == 4)
 	{
-		b3PointerUid* oldPtr = (b3PointerUid*)src;
-		b3PointerUid* newPtr = (b3PointerUid*)dst;
+		b3PointerUid *oldPtr = (b3PointerUid *)src;
+		b3PointerUid *newPtr = (b3PointerUid *)dst;
 		if (oldPtr->m_uniqueIds[0] == oldPtr->m_uniqueIds[1])
 		{
 			newPtr->m_uniqueIds[0] = oldPtr->m_uniqueIds[0];
 			newPtr->m_uniqueIds[1] = 0;
-		} else
+		}
+		else
 		{
-			*((b3Long64*)dst)= *((int*)src);
+			*((b3Long64 *)dst) = *((int *)src);
 		}
 	}
 	else
 	{
-		printf ("%d %d\n", ptrFile,ptrMem);
+		printf("%d %d\n", ptrFile, ptrMem);
 		assert(0 && "Invalid pointer len");
 	}
-
-
 }
 
-
 // ----------------------------------------------------- //
-void bFile::getMatchingFileDNA(short* dna_addr, const char* lookupName,  const char* lookupType, char *strcData, char *data, bool fixupPointers)
+void bFile::getMatchingFileDNA(short *dna_addr, const char *lookupName, const char *lookupType, char *strcData, char *data, bool fixupPointers)
 {
 	// find the matching memory dna data
 	// to the file being loaded. Fill the
 	// memory with the file data...
 
 	int len = dna_addr[1];
-	dna_addr+=2;
+	dna_addr += 2;
 
-	for (int i=0; i<len; i++, dna_addr+=2)
+	for (int i = 0; i < len; i++, dna_addr += 2)
 	{
-		const char* type = mFileDNA->getType(dna_addr[0]);
-		const char* name = mFileDNA->getName(dna_addr[1]);
-
-
+		const char *type = mFileDNA->getType(dna_addr[0]);
+		const char *name = mFileDNA->getName(dna_addr[1]);
 
 		int eleLen = mFileDNA->getElementSize(dna_addr[0], dna_addr[1]);
 
-		if ((mFlags&FD_BROKEN_DNA)!=0)
+		if ((mFlags & FD_BROKEN_DNA) != 0)
 		{
-			if ((strcmp(type,"short")==0)&&(strcmp(name,"int")==0))
+			if ((strcmp(type, "short") == 0) && (strcmp(name, "int") == 0))
 			{
 				eleLen = 0;
 			}
 		}
 
-		if (strcmp(lookupName, name)==0)
+		if (strcmp(lookupName, name) == 0)
 		{
 			//int arrayLenold = mFileDNA->getArraySize((char*)name.c_str());
 			int arrayLen = mFileDNA->getArraySizeNew(dna_addr[1]);
@@ -998,7 +940,7 @@ void bFile::getMatchingFileDNA(short* dna_addr, const char* lookupName,  const c
 				// cast pointers
 				int ptrFile = mFileDNA->getPointerSize();
 				int ptrMem = mMemoryDNA->getPointerSize();
-				safeSwapPtr(strcData,data);
+				safeSwapPtr(strcData, data);
 
 				if (fixupPointers)
 				{
@@ -1007,11 +949,11 @@ void bFile::getMatchingFileDNA(short* dna_addr, const char* lookupName,  const c
 						//void **sarray = (void**)strcData;
 						//void **darray = (void**)data;
 
-                        char *cpc, *cpo;
-						cpc = (char*)strcData;
-						cpo = (char*)data;
+						char *cpc, *cpo;
+						cpc = (char *)strcData;
+						cpo = (char *)data;
 
-						for (int a=0; a<arrayLen; a++)
+						for (int a = 0; a < arrayLen; a++)
 						{
 							safeSwapPtr(cpc, cpo);
 							m_pointerFixupArray.push_back(cpc);
@@ -1029,12 +971,11 @@ void bFile::getMatchingFileDNA(short* dna_addr, const char* lookupName,  const c
 				}
 				else
 				{
-//					printf("skipped %s %s : %x\n",type.c_str(),name.c_str(),strcData);
+					//					printf("skipped %s %s : %x\n",type.c_str(),name.c_str(),strcData);
 				}
-
 			}
 
-			else if (strcmp(type, lookupType)==0)
+			else if (strcmp(type, lookupType) == 0)
 				memcpy(strcData, data, eleLen);
 			else
 				getElement(arrayLen, lookupType, type, data, strcData);
@@ -1042,27 +983,26 @@ void bFile::getMatchingFileDNA(short* dna_addr, const char* lookupName,  const c
 			// --
 			return;
 		}
-		data+=eleLen;
+		data += eleLen;
 	}
 }
 
-
 // ----------------------------------------------------- //
-char* bFile::getFileElement(short *firstStruct, char *lookupName, char *lookupType, char *data, short **foundPos)
+char *bFile::getFileElement(short *firstStruct, char *lookupName, char *lookupType, char *data, short **foundPos)
 {
-	short *old = firstStruct;//mFileDNA->getStruct(old_nr);
+	short *old = firstStruct;  //mFileDNA->getStruct(old_nr);
 	int elementLength = old[1];
-	old+=2;
+	old += 2;
 
-	for (int i=0; i<elementLength; i++, old+=2)
+	for (int i = 0; i < elementLength; i++, old += 2)
 	{
-		char* type = mFileDNA->getType(old[0]);
-		char* name = mFileDNA->getName(old[1]);
+		char *type = mFileDNA->getType(old[0]);
+		char *name = mFileDNA->getName(old[1]);
 		int len = mFileDNA->getElementSize(old[0], old[1]);
 
-		if (strcmp(lookupName, name)==0)
+		if (strcmp(lookupName, name) == 0)
 		{
-			if (strcmp(type, lookupType)==0)
+			if (strcmp(type, lookupType) == 0)
 			{
 				if (foundPos)
 					*foundPos = old;
@@ -1070,46 +1010,46 @@ char* bFile::getFileElement(short *firstStruct, char *lookupName, char *lookupTy
 			}
 			return 0;
 		}
-		data+=len;
+		data += len;
 	}
 	return 0;
 }
 
-
 // ----------------------------------------------------- //
-void bFile::swapStruct(int dna_nr, char *data,bool ignoreEndianFlag)
+void bFile::swapStruct(int dna_nr, char *data, bool ignoreEndianFlag)
 {
 	if (dna_nr == -1) return;
 
 	short *strc = mFileDNA->getStruct(dna_nr);
 	//short *firstStrc = strc;
 
-	int elementLen= strc[1];
-	strc+=2;
+	int elementLen = strc[1];
+	strc += 2;
 
 	short first = mFileDNA->getStruct(0)[0];
 
 	char *buf = data;
-	for (int i=0; i<elementLen; i++, strc+=2)
+	for (int i = 0; i < elementLen; i++, strc += 2)
 	{
 		char *type = mFileDNA->getType(strc[0]);
 		char *name = mFileDNA->getName(strc[1]);
 
 		int size = mFileDNA->getElementSize(strc[0], strc[1]);
-		if (strc[0] >= first && name[0]!='*')
+		if (strc[0] >= first && name[0] != '*')
 		{
 			int old_nr = mFileDNA->getReverseType(type);
 			int arrayLen = mFileDNA->getArraySizeNew(strc[1]);
-			if (arrayLen==1)
+			if (arrayLen == 1)
 			{
-				swapStruct(old_nr,buf,ignoreEndianFlag);
-			} else
+				swapStruct(old_nr, buf, ignoreEndianFlag);
+			}
+			else
 			{
-				char* tmpBuf = buf;
-				for (int i=0;i<arrayLen;i++)
+				char *tmpBuf = buf;
+				for (int i = 0; i < arrayLen; i++)
 				{
-					swapStruct(old_nr,tmpBuf,ignoreEndianFlag);
-					tmpBuf+=size/arrayLen;
+					swapStruct(old_nr, tmpBuf, ignoreEndianFlag);
+					tmpBuf += size / arrayLen;
 				}
 			}
 		}
@@ -1118,46 +1058,45 @@ void bFile::swapStruct(int dna_nr, char *data,bool ignoreEndianFlag)
 			//int arrayLenOld = mFileDNA->getArraySize(name);
 			int arrayLen = mFileDNA->getArraySizeNew(strc[1]);
 			//assert(arrayLenOld == arrayLen);
-			swapData(buf, strc[0], arrayLen,ignoreEndianFlag);
+			swapData(buf, strc[0], arrayLen, ignoreEndianFlag);
 		}
-		buf+=size;
+		buf += size;
 	}
 }
 
 void bFile::resolvePointersMismatch()
 {
-//	printf("resolvePointersStructMismatch\n");
+	//	printf("resolvePointersStructMismatch\n");
 
 	int i;
 
-	for (i=0;i<	m_pointerFixupArray.size();i++)
+	for (i = 0; i < m_pointerFixupArray.size(); i++)
 	{
-		char* cur = m_pointerFixupArray.at(i);
-		void** ptrptr = (void**) cur;
-		void* ptr = *ptrptr;
+		char *cur = m_pointerFixupArray.at(i);
+		void **ptrptr = (void **)cur;
+		void *ptr = *ptrptr;
 		ptr = findLibPointer(ptr);
 		if (ptr)
 		{
 			//printf("Fixup pointer!\n");
 			*(ptrptr) = ptr;
-		} else
+		}
+		else
 		{
-//			printf("pointer not found: %x\n",cur);
+			//			printf("pointer not found: %x\n",cur);
 		}
 	}
 
-
-	for (i=0; i<m_pointerPtrFixupArray.size(); i++)
+	for (i = 0; i < m_pointerPtrFixupArray.size(); i++)
 	{
-		char* cur= m_pointerPtrFixupArray.at(i);
-		void** ptrptr = (void**)cur;
+		char *cur = m_pointerPtrFixupArray.at(i);
+		void **ptrptr = (void **)cur;
 
 		bChunkInd *block = m_chunkPtrPtrMap.find(*ptrptr);
 		if (block)
 		{
 			int ptrMem = mMemoryDNA->getPointerSize();
 			int ptrFile = mFileDNA->getPointerSize();
-
 
 			int blockLen = block->len / ptrFile;
 
@@ -1168,16 +1107,16 @@ void bFile::resolvePointersMismatch()
 				addDataBlock(newPtr);
 				memset(newPtr, 0, blockLen * ptrMem);
 
-				void **onarray = (void**)onptr;
-				char *oldPtr = (char*)onarray;
+				void **onarray = (void **)onptr;
+				char *oldPtr = (char *)onarray;
 
 				int p = 0;
 				while (blockLen-- > 0)
 				{
 					b3PointerUid dp = {{0}};
-					safeSwapPtr((char*)dp.m_uniqueIds, oldPtr);
+					safeSwapPtr((char *)dp.m_uniqueIds, oldPtr);
 
-					void **tptr = (void**)(newPtr + p * ptrMem);
+					void **tptr = (void **)(newPtr + p * ptrMem);
 					*tptr = findLibPointer(dp.m_ptr);
 
 					oldPtr += ptrFile;
@@ -1190,70 +1129,63 @@ void bFile::resolvePointersMismatch()
 	}
 }
 
-
 ///this loop only works fine if the Blender DNA structure of the file matches the headerfiles
-void bFile::resolvePointersChunk(const bChunkInd& dataChunk, int verboseMode)
+void bFile::resolvePointersChunk(const bChunkInd &dataChunk, int verboseMode)
 {
-	bParse::bDNA* fileDna = mFileDNA ? mFileDNA : mMemoryDNA;
+	bParse::bDNA *fileDna = mFileDNA ? mFileDNA : mMemoryDNA;
 
-	short int* oldStruct = fileDna->getStruct(dataChunk.dna_nr);
+	short int *oldStruct = fileDna->getStruct(dataChunk.dna_nr);
 	short oldLen = fileDna->getLength(oldStruct[0]);
 	//char* structType = fileDna->getType(oldStruct[0]);
 
-	char* cur	= (char*)findLibPointer(dataChunk.oldPtr);
-	for (int block=0; block<dataChunk.nr; block++)
+	char *cur = (char *)findLibPointer(dataChunk.oldPtr);
+	for (int block = 0; block < dataChunk.nr; block++)
 	{
-		resolvePointersStructRecursive(cur,dataChunk.dna_nr, verboseMode,1);
+		resolvePointersStructRecursive(cur, dataChunk.dna_nr, verboseMode, 1);
 		cur += oldLen;
 	}
 }
 
-
-int bFile::resolvePointersStructRecursive(char *strcPtr, int dna_nr, int verboseMode,int recursion)
+int bFile::resolvePointersStructRecursive(char *strcPtr, int dna_nr, int verboseMode, int recursion)
 {
+	bParse::bDNA *fileDna = mFileDNA ? mFileDNA : mMemoryDNA;
 
-	bParse::bDNA* fileDna = mFileDNA ? mFileDNA : mMemoryDNA;
+	char *memType;
+	char *memName;
+	short firstStructType = fileDna->getStruct(0)[0];
 
-	char* memType;
-	char* memName;
-	short	firstStructType = fileDna->getStruct(0)[0];
+	char *elemPtr = strcPtr;
 
-
-	char* elemPtr= strcPtr;
-
-	short int* oldStruct = fileDna->getStruct(dna_nr);
+	short int *oldStruct = fileDna->getStruct(dna_nr);
 
 	int elementLength = oldStruct[1];
-	oldStruct+=2;
+	oldStruct += 2;
 
 	int totalSize = 0;
 
-	for (int ele=0; ele<elementLength; ele++, oldStruct+=2)
+	for (int ele = 0; ele < elementLength; ele++, oldStruct += 2)
 	{
-
 		memType = fileDna->getType(oldStruct[0]);
 		memName = fileDna->getName(oldStruct[1]);
-
-
 
 		int arrayLen = fileDna->getArraySizeNew(oldStruct[1]);
 		if (memName[0] == '*')
 		{
 			if (arrayLen > 1)
 			{
-				void **array= (void**)elemPtr;
-				for (int a=0; a<arrayLen; a++)
+				void **array = (void **)elemPtr;
+				for (int a = 0; a < arrayLen; a++)
 				{
 					if (verboseMode & FD_VERBOSE_EXPORT_XML)
 					{
-						for (int i=0;i<recursion;i++)
+						for (int i = 0; i < recursion; i++)
 						{
 							printf("  ");
 						}
 						//skip the *
-						printf("<%s type=\"pointer\"> ",&memName[1]);
+						printf("<%s type=\"pointer\"> ", &memName[1]);
 						printf("%p ", array[a]);
-						printf("</%s>\n",&memName[1]);
+						printf("</%s>\n", &memName[1]);
 					}
 
 					array[a] = findLibPointer(array[a]);
@@ -1261,266 +1193,259 @@ int bFile::resolvePointersStructRecursive(char *strcPtr, int dna_nr, int verbose
 			}
 			else
 			{
-				void** ptrptr = (void**) elemPtr;
-				void* ptr = *ptrptr;
+				void **ptrptr = (void **)elemPtr;
+				void *ptr = *ptrptr;
 				if (verboseMode & FD_VERBOSE_EXPORT_XML)
 				{
-					for (int i=0;i<recursion;i++)
+					for (int i = 0; i < recursion; i++)
 					{
 						printf("  ");
 					}
-					printf("<%s type=\"pointer\"> ",&memName[1]);
+					printf("<%s type=\"pointer\"> ", &memName[1]);
 					printf("%p ", ptr);
-					printf("</%s>\n",&memName[1]);
+					printf("</%s>\n", &memName[1]);
 				}
 				ptr = findLibPointer(ptr);
 
 				if (ptr)
 				{
-	//				printf("Fixup pointer at 0x%x from 0x%x to 0x%x!\n",ptrptr,*ptrptr,ptr);
+					//				printf("Fixup pointer at 0x%x from 0x%x to 0x%x!\n",ptrptr,*ptrptr,ptr);
 					*(ptrptr) = ptr;
 					if (memName[1] == '*' && ptrptr && *ptrptr)
 					{
 						// This	will only work if the given	**array	is continuous
-						void **array= (void**)*(ptrptr);
-						void *np= array[0];
-						int	n=0;
+						void **array = (void **)*(ptrptr);
+						void *np = array[0];
+						int n = 0;
 						while (np)
 						{
-							np= findLibPointer(array[n]);
-							if (np) array[n]= np;
+							np = findLibPointer(array[n]);
+							if (np) array[n] = np;
 							n++;
 						}
 					}
-				} else
+				}
+				else
 				{
-	//				printf("Cannot fixup pointer at 0x%x from 0x%x to 0x%x!\n",ptrptr,*ptrptr,ptr);
+					//				printf("Cannot fixup pointer at 0x%x from 0x%x to 0x%x!\n",ptrptr,*ptrptr,ptr);
 				}
 			}
-		} else
+		}
+		else
 		{
 			int revType = fileDna->getReverseType(oldStruct[0]);
-			if (oldStruct[0]>=firstStructType) //revType != -1 &&
+			if (oldStruct[0] >= firstStructType)  //revType != -1 &&
 			{
 				char cleanName[MAX_STRLEN];
-				getCleanName(memName,cleanName);
+				getCleanName(memName, cleanName);
 
 				int arrayLen = fileDna->getArraySizeNew(oldStruct[1]);
 				int byteOffset = 0;
 
 				if (verboseMode & FD_VERBOSE_EXPORT_XML)
 				{
-					for (int i=0;i<recursion;i++)
+					for (int i = 0; i < recursion; i++)
 					{
 						printf("  ");
 					}
 
-					if (arrayLen>1)
+					if (arrayLen > 1)
 					{
-						printf("<%s type=\"%s\" count=%d>\n",cleanName,memType, arrayLen);
-					} else
+						printf("<%s type=\"%s\" count=%d>\n", cleanName, memType, arrayLen);
+					}
+					else
 					{
-						printf("<%s type=\"%s\">\n",cleanName,memType);
+						printf("<%s type=\"%s\">\n", cleanName, memType);
 					}
 				}
 
-				for (int i=0;i<arrayLen;i++)
+				for (int i = 0; i < arrayLen; i++)
 				{
-					byteOffset += resolvePointersStructRecursive(elemPtr+byteOffset,revType, verboseMode,recursion+1);
+					byteOffset += resolvePointersStructRecursive(elemPtr + byteOffset, revType, verboseMode, recursion + 1);
 				}
 				if (verboseMode & FD_VERBOSE_EXPORT_XML)
 				{
-					for (int i=0;i<recursion;i++)
+					for (int i = 0; i < recursion; i++)
 					{
 						printf("  ");
 					}
-					printf("</%s>\n",cleanName);
+					printf("</%s>\n", cleanName);
 				}
-			} else
+			}
+			else
 			{
 				//export a simple type
 				if (verboseMode & FD_VERBOSE_EXPORT_XML)
 				{
-
-					if (arrayLen>MAX_ARRAY_LENGTH)
+					if (arrayLen > MAX_ARRAY_LENGTH)
 					{
 						printf("too long\n");
-					} else
+					}
+					else
 					{
 						//printf("%s %s\n",memType,memName);
 
-						bool isIntegerType = (strcmp(memType,"char")==0) || (strcmp(memType,"int")==0) || (strcmp(memType,"short")==0);
+						bool isIntegerType = (strcmp(memType, "char") == 0) || (strcmp(memType, "int") == 0) || (strcmp(memType, "short") == 0);
 
 						if (isIntegerType)
 						{
-							const char* newtype="int";
+							const char *newtype = "int";
 							int dbarray[MAX_ARRAY_LENGTH];
-							int* dbPtr = 0;
-							char* tmp = elemPtr;
+							int *dbPtr = 0;
+							char *tmp = elemPtr;
 							dbPtr = &dbarray[0];
 							if (dbPtr)
 							{
 								char cleanName[MAX_STRLEN];
-								getCleanName(memName,cleanName);
+								getCleanName(memName, cleanName);
 
 								int i;
-								getElement(arrayLen, newtype,memType, tmp, (char*)dbPtr);
-								for (i=0;i<recursion;i++)
+								getElement(arrayLen, newtype, memType, tmp, (char *)dbPtr);
+								for (i = 0; i < recursion; i++)
 									printf("  ");
-								if (arrayLen==1)
-									printf("<%s type=\"%s\">",cleanName,memType);
+								if (arrayLen == 1)
+									printf("<%s type=\"%s\">", cleanName, memType);
 								else
-									printf("<%s type=\"%s\" count=%d>",cleanName,memType,arrayLen);
-								for (i=0;i<arrayLen;i++)
-									printf(" %d ",dbPtr[i]);
-								printf("</%s>\n",cleanName);
+									printf("<%s type=\"%s\" count=%d>", cleanName, memType, arrayLen);
+								for (i = 0; i < arrayLen; i++)
+									printf(" %d ", dbPtr[i]);
+								printf("</%s>\n", cleanName);
 							}
-						} else
+						}
+						else
 						{
-							const char* newtype="double";
+							const char *newtype = "double";
 							double dbarray[MAX_ARRAY_LENGTH];
-					 		double* dbPtr = 0;
-							char* tmp = elemPtr;
+							double *dbPtr = 0;
+							char *tmp = elemPtr;
 							dbPtr = &dbarray[0];
 							if (dbPtr)
 							{
 								int i;
-								getElement(arrayLen, newtype,memType, tmp, (char*)dbPtr);
-								for (i=0;i<recursion;i++)
+								getElement(arrayLen, newtype, memType, tmp, (char *)dbPtr);
+								for (i = 0; i < recursion; i++)
 									printf("  ");
 								char cleanName[MAX_STRLEN];
-								getCleanName(memName,cleanName);
+								getCleanName(memName, cleanName);
 
-								if (arrayLen==1)
+								if (arrayLen == 1)
 								{
-									printf("<%s type=\"%s\">",memName,memType);
+									printf("<%s type=\"%s\">", memName, memType);
 								}
 								else
 								{
-									printf("<%s type=\"%s\" count=%d>",cleanName,memType,arrayLen);
+									printf("<%s type=\"%s\" count=%d>", cleanName, memType, arrayLen);
 								}
-								for (i=0;i<arrayLen;i++)
-									printf(" %f ",dbPtr[i]);
-								printf("</%s>\n",cleanName);
+								for (i = 0; i < arrayLen; i++)
+									printf(" %f ", dbPtr[i]);
+								printf("</%s>\n", cleanName);
 							}
 						}
 					}
-
 				}
 			}
 		}
 
 		int size = fileDna->getElementSize(oldStruct[0], oldStruct[1]);
 		totalSize += size;
-		elemPtr+=size;
-
+		elemPtr += size;
 	}
 
 	return totalSize;
 }
 
-
 ///Resolve pointers replaces the original pointers in structures, and linked lists by the new in-memory structures
 void bFile::resolvePointers(int verboseMode)
 {
-	bParse::bDNA* fileDna = mFileDNA ? mFileDNA : mMemoryDNA;
+	bParse::bDNA *fileDna = mFileDNA ? mFileDNA : mMemoryDNA;
 
 	//char *dataPtr = mFileBuffer+mDataStart;
 
-	if (1) //mFlags & (FD_BITS_VARIES | FD_VERSION_VARIES))
+	if (1)  //mFlags & (FD_BITS_VARIES | FD_VERSION_VARIES))
 	{
 		resolvePointersMismatch();
 	}
 
 	{
-
 		if (verboseMode & FD_VERBOSE_EXPORT_XML)
 		{
 			printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
 			int numitems = m_chunks.size();
 			printf("<bullet_physics version=%d itemcount = %d>\n", b3GetVersion(), numitems);
 		}
-		for (int i=0;i<m_chunks.size();i++)
+		for (int i = 0; i < m_chunks.size(); i++)
 		{
-			const bChunkInd& dataChunk = m_chunks.at(i);
+			const bChunkInd &dataChunk = m_chunks.at(i);
 
 			if (!mFileDNA || fileDna->flagEqual(dataChunk.dna_nr))
 			{
 				//dataChunk.len
-				short int* oldStruct = fileDna->getStruct(dataChunk.dna_nr);
-				char* oldType = fileDna->getType(oldStruct[0]);
+				short int *oldStruct = fileDna->getStruct(dataChunk.dna_nr);
+				char *oldType = fileDna->getType(oldStruct[0]);
 
 				if (verboseMode & FD_VERBOSE_EXPORT_XML)
-					printf(" <%s pointer=%p>\n",oldType,dataChunk.oldPtr);
+					printf(" <%s pointer=%p>\n", oldType, dataChunk.oldPtr);
 
 				resolvePointersChunk(dataChunk, verboseMode);
 
 				if (verboseMode & FD_VERBOSE_EXPORT_XML)
-					printf(" </%s>\n",oldType);
-			} else
+					printf(" </%s>\n", oldType);
+			}
+			else
 			{
 				//printf("skipping mStruct\n");
 			}
 		}
-			if (verboseMode & FD_VERBOSE_EXPORT_XML)
-			{
-				printf("</bullet_physics>\n");
-			}
+		if (verboseMode & FD_VERBOSE_EXPORT_XML)
+		{
+			printf("</bullet_physics>\n");
+		}
 	}
-
-
 }
 
-
 // ----------------------------------------------------- //
-void* bFile::findLibPointer(void *ptr)
+void *bFile::findLibPointer(void *ptr)
 {
-
-	bStructHandle** ptrptr = getLibPointers().find(ptr);
+	bStructHandle **ptrptr = getLibPointers().find(ptr);
 	if (ptrptr)
 		return *ptrptr;
 	return 0;
 }
 
-
-void	bFile::updateOldPointers()
+void bFile::updateOldPointers()
 {
 	int i;
 
-	for (i=0;i<m_chunks.size();i++)
+	for (i = 0; i < m_chunks.size(); i++)
 	{
-		bChunkInd& dataChunk = m_chunks[i];
+		bChunkInd &dataChunk = m_chunks[i];
 		dataChunk.oldPtr = findLibPointer(dataChunk.oldPtr);
 	}
 }
-void	bFile::dumpChunks(bParse::bDNA* dna)
+void bFile::dumpChunks(bParse::bDNA *dna)
 {
 	int i;
 
-	for (i=0;i<m_chunks.size();i++)
+	for (i = 0; i < m_chunks.size(); i++)
 	{
-		bChunkInd& dataChunk = m_chunks[i];
-		char* codeptr = (char*)&dataChunk.code;
-		char codestr[5] = {codeptr[0],codeptr[1],codeptr[2],codeptr[3],0};
+		bChunkInd &dataChunk = m_chunks[i];
+		char *codeptr = (char *)&dataChunk.code;
+		char codestr[5] = {codeptr[0], codeptr[1], codeptr[2], codeptr[3], 0};
 
-		short* newStruct = dna->getStruct(dataChunk.dna_nr);
-		char* typeName = dna->getType(newStruct[0]);
-		printf("%3d: %s  ",i,typeName);
+		short *newStruct = dna->getStruct(dataChunk.dna_nr);
+		char *typeName = dna->getType(newStruct[0]);
+		printf("%3d: %s  ", i, typeName);
 
-		printf("code=%s  ",codestr);
+		printf("code=%s  ", codestr);
 
-		printf("ptr=%p  ",dataChunk.oldPtr);
-		printf("len=%d  ",dataChunk.len);
-		printf("nr=%d  ",dataChunk.nr);
-		if (dataChunk.nr!=1)
+		printf("ptr=%p  ", dataChunk.oldPtr);
+		printf("len=%d  ", dataChunk.len);
+		printf("nr=%d  ", dataChunk.nr);
+		if (dataChunk.nr != 1)
 		{
 			printf("not 1\n");
 		}
 		printf("\n");
-
-
-
-
 	}
 
 #if 0
@@ -1536,20 +1461,18 @@ void	bFile::dumpChunks(bParse::bDNA* dna)
 		printf("\n");
 	}
 #endif
-
 }
 
-
-void	bFile::writeChunks(FILE* fp, bool fixupPointers)
+void bFile::writeChunks(FILE *fp, bool fixupPointers)
 {
-	bParse::bDNA* fileDna = mFileDNA ? mFileDNA : mMemoryDNA;
+	bParse::bDNA *fileDna = mFileDNA ? mFileDNA : mMemoryDNA;
 
-	for (int i=0;i<m_chunks.size();i++)
+	for (int i = 0; i < m_chunks.size(); i++)
 	{
-		bChunkInd& dataChunk = m_chunks.at(i);
+		bChunkInd &dataChunk = m_chunks.at(i);
 
 		// Ouch! need to rebuild the struct
-		short *oldStruct,*curStruct;
+		short *oldStruct, *curStruct;
 		char *oldType, *newType;
 		int oldLen, curLen, reverseOld;
 
@@ -1559,8 +1482,7 @@ void	bFile::writeChunks(FILE* fp, bool fixupPointers)
 		///don't try to convert Link block data, just memcpy it. Other data can be converted.
 		reverseOld = mMemoryDNA->getReverseType(oldType);
 
-
-		if ((reverseOld!=-1))
+		if ((reverseOld != -1))
 		{
 			// make sure it's here
 			//assert(reverseOld!= -1 && "getReverseType() returned -1, struct required!");
@@ -1568,50 +1490,47 @@ void	bFile::writeChunks(FILE* fp, bool fixupPointers)
 			curStruct = mMemoryDNA->getStruct(reverseOld);
 			newType = mMemoryDNA->getType(curStruct[0]);
 			// make sure it's the same
-			assert((strcmp(oldType, newType)==0) && "internal error, struct mismatch!");
-
+			assert((strcmp(oldType, newType) == 0) && "internal error, struct mismatch!");
 
 			curLen = mMemoryDNA->getLength(curStruct[0]);
 			dataChunk.dna_nr = reverseOld;
-			if (strcmp("Link",oldType)!=0)
+			if (strcmp("Link", oldType) != 0)
 			{
 				dataChunk.len = curLen * dataChunk.nr;
-			} else
+			}
+			else
 			{
-//				printf("keep length of link = %d\n",dataChunk.len);
+				//				printf("keep length of link = %d\n",dataChunk.len);
 			}
 
 			//write the structure header
-			fwrite(&dataChunk,sizeof(bChunkInd),1,fp);
+			fwrite(&dataChunk, sizeof(bChunkInd), 1, fp);
 
-
-
-			short int* curStruct1;
+			short int *curStruct1;
 			curStruct1 = mMemoryDNA->getStruct(dataChunk.dna_nr);
 			assert(curStruct1 == curStruct);
 
-			char* cur	= fixupPointers  ?  (char*)findLibPointer(dataChunk.oldPtr) : (char*)dataChunk.oldPtr;
+			char *cur = fixupPointers ? (char *)findLibPointer(dataChunk.oldPtr) : (char *)dataChunk.oldPtr;
 
 			//write the actual contents of the structure(s)
-			fwrite(cur,dataChunk.len,1,fp);
-		} else
+			fwrite(cur, dataChunk.len, 1, fp);
+		}
+		else
 		{
 			printf("serious error, struct mismatch: don't write\n");
 		}
 	}
-
 }
 
-
 // ----------------------------------------------------- //
-int bFile::getNextBlock(bChunkInd *dataChunk,  const char *dataPtr, const int flags)
+int bFile::getNextBlock(bChunkInd *dataChunk, const char *dataPtr, const int flags)
 {
 	bool swap = false;
 	bool varies = false;
 
-	if (flags &FD_ENDIAN_SWAP)
+	if (flags & FD_ENDIAN_SWAP)
 		swap = true;
-	if (flags &FD_BITS_VARIES)
+	if (flags & FD_BITS_VARIES)
 		varies = true;
 
 	if (VOID_IS_8)
@@ -1621,26 +1540,24 @@ int bFile::getNextBlock(bChunkInd *dataChunk,  const char *dataPtr, const int fl
 			bChunkPtr4 head;
 			memcpy(&head, dataPtr, sizeof(bChunkPtr4));
 
-
 			bChunkPtr8 chunk;
 
-			chunk.code		= head.code;
-			chunk.len		= head.len;
+			chunk.code = head.code;
+			chunk.len = head.len;
 			chunk.m_uniqueInts[0] = head.m_uniqueInt;
 			chunk.m_uniqueInts[1] = 0;
-			chunk.dna_nr	= head.dna_nr;
-			chunk.nr		= head.nr;
+			chunk.dna_nr = head.dna_nr;
+			chunk.nr = head.nr;
 
 			if (swap)
 			{
-				if ((chunk.code & 0xFFFF)==0)
-					chunk.code >>=16;
+				if ((chunk.code & 0xFFFF) == 0)
+					chunk.code >>= 16;
 
 				B3_SWITCH_INT(chunk.len);
 				B3_SWITCH_INT(chunk.dna_nr);
 				B3_SWITCH_INT(chunk.nr);
 			}
-
 
 			memcpy(dataChunk, &chunk, sizeof(bChunkInd));
 		}
@@ -1651,8 +1568,8 @@ int bFile::getNextBlock(bChunkInd *dataChunk,  const char *dataPtr, const int fl
 
 			if (swap)
 			{
-				if ((c.code & 0xFFFF)==0)
-					c.code >>=16;
+				if ((c.code & 0xFFFF) == 0)
+					c.code >>= 16;
 
 				B3_SWITCH_INT(c.len);
 				B3_SWITCH_INT(c.dna_nr);
@@ -1669,31 +1586,30 @@ int bFile::getNextBlock(bChunkInd *dataChunk,  const char *dataPtr, const int fl
 			bChunkPtr8 head;
 			memcpy(&head, dataPtr, sizeof(bChunkPtr8));
 
-
 			bChunkPtr4 chunk;
 			chunk.code = head.code;
 			chunk.len = head.len;
 
-			if (head.m_uniqueInts[0]==head.m_uniqueInts[1])
+			if (head.m_uniqueInts[0] == head.m_uniqueInts[1])
 			{
 				chunk.m_uniqueInt = head.m_uniqueInts[0];
-			} else
+			}
+			else
 			{
-				b3Long64 oldPtr =0;
+				b3Long64 oldPtr = 0;
 				memcpy(&oldPtr, &head.m_uniqueInts[0], 8);
 				if (swap)
 					B3_SWITCH_LONGINT(oldPtr);
 				chunk.m_uniqueInt = (int)(oldPtr >> 3);
 			}
 
-
 			chunk.dna_nr = head.dna_nr;
 			chunk.nr = head.nr;
 
 			if (swap)
 			{
-				if ((chunk.code & 0xFFFF)==0)
-					chunk.code >>=16;
+				if ((chunk.code & 0xFFFF) == 0)
+					chunk.code >>= 16;
 
 				B3_SWITCH_INT(chunk.len);
 				B3_SWITCH_INT(chunk.dna_nr);
@@ -1709,8 +1625,8 @@ int bFile::getNextBlock(bChunkInd *dataChunk,  const char *dataPtr, const int fl
 
 			if (swap)
 			{
-				if ((c.code & 0xFFFF)==0)
-					c.code >>=16;
+				if ((c.code & 0xFFFF) == 0)
+					c.code >>= 16;
 
 				B3_SWITCH_INT(c.len);
 				B3_SWITCH_INT(c.dna_nr);
@@ -1731,9 +1647,7 @@ int bFile::getNextBlock(bChunkInd *dataChunk,  const char *dataPtr, const int fl
 	print (dataChunk->dna_nr);
 	print (dataChunk->nr);
 #endif
-	return (dataChunk->len+ChunkUtils::getOffset(flags));
+	return (dataChunk->len + ChunkUtils::getOffset(flags));
 }
-
-
 
 //eof

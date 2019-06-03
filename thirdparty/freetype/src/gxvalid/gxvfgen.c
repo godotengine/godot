@@ -1,62 +1,62 @@
-/***************************************************************************/
-/*                                                                         */
-/*  gxfgen.c                                                               */
-/*                                                                         */
-/*    Generate feature registry data for gxv `feat' validator.             */
-/*    This program is derived from gxfeatreg.c in gxlayout.                */
-/*                                                                         */
-/*  Copyright 2004-2018 by                                                 */
-/*  Masatake YAMATO and Redhat K.K.                                        */
-/*                                                                         */
-/*  This file may only be used,                                            */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * gxfgen.c
+ *
+ *   Generate feature registry data for gxv `feat' validator.
+ *   This program is derived from gxfeatreg.c in gxlayout.
+ *
+ * Copyright (C) 2004-2019 by
+ * Masatake YAMATO and Redhat K.K.
+ *
+ * This file may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
-/***************************************************************************/
-/*                                                                         */
-/*  gxfeatreg.c                                                            */
-/*                                                                         */
-/*    Database of font features pre-defined by Apple Computer, Inc.        */
-/*    https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html */
-/*    (body).                                                              */
-/*                                                                         */
-/*  Copyright 2003 by                                                      */
-/*  Masatake YAMATO and Redhat K.K.                                        */
-/*                                                                         */
-/*  This file may only be used,                                            */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * gxfeatreg.c
+ *
+ *   Database of font features pre-defined by Apple Computer, Inc.
+ *   https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html
+ *   (body).
+ *
+ * Copyright 2003 by
+ * Masatake YAMATO and Redhat K.K.
+ *
+ * This file may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
-/***************************************************************************/
-/*                                                                         */
-/* Development of gxfeatreg.c is supported by                              */
-/* Information-technology Promotion Agency, Japan.                         */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * Development of gxfeatreg.c is supported by
+ * Information-technology Promotion Agency, Japan.
+ *
+ */
 
 
-/***************************************************************************/
-/*                                                                         */
-/* This file is compiled as a stand-alone executable.                      */
-/* This file is never compiled into `libfreetype2'.                        */
-/* The output of this file is used in `gxvfeat.c'.                         */
-/* ----------------------------------------------------------------------- */
-/* Compile: gcc `pkg-config --cflags freetype2` gxvfgen.c -o gxvfgen       */
-/* Run: ./gxvfgen > tmp.c                                                  */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * This file is compiled as a stand-alone executable.
+ * This file is never compiled into `libfreetype2'.
+ * The output of this file is used in `gxvfeat.c'.
+ * -----------------------------------------------------------------------
+ * Compile: gcc `pkg-config --cflags freetype2` gxvfgen.c -o gxvfgen
+ * Run: ./gxvfgen > tmp.c
+ *
+ */
 
-  /*******************************************************************/
-  /* WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING */
-  /*******************************************************************/
+  /********************************************************************
+   * WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+   */
 
   /*
    * If you add a new setting to a feature, check the number of settings
@@ -65,9 +65,9 @@
    */
 #define FEATREG_MAX_SETTING  12
 
-  /*******************************************************************/
-  /* WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING */
-  /*******************************************************************/
+  /********************************************************************
+   * WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+   */
 
 
 #include <stdio.h>

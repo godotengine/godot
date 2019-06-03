@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +30,12 @@
 
 #include "gdnative/gdnative.h"
 
-#include "class_db.h"
-#include "engine.h"
-#include "error_macros.h"
-#include "global_constants.h"
-#include "os/os.h"
-#include "variant.h"
+#include "core/class_db.h"
+#include "core/engine.h"
+#include "core/error_macros.h"
+#include "core/global_constants.h"
+#include "core/os/os.h"
+#include "core/variant.h"
 
 #include "modules/gdnative/gdnative.h"
 
@@ -164,6 +164,10 @@ void _gdnative_report_loading_error(const godot_object *p_library, const char *p
 	message += library->get_current_library_path() + ": " + p_what;
 
 	_err_print_error("gdnative_init", library->get_current_library_path().utf8().ptr(), 0, message.utf8().ptr());
+}
+
+bool GDAPI godot_is_instance_valid(const godot_object *p_object) {
+	return ObjectDB::instance_validate((Object *)p_object);
 }
 
 #ifdef __cplusplus

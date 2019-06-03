@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Vector3" category="Built-In Types" version="3.1">
+<class name="Vector3" category="Built-In Types" version="3.2">
 	<brief_description>
 		Vector class, which performs basic 3D vector math operations.
 	</brief_description>
@@ -7,10 +7,8 @@
 		Vector3 is one of the core classes of the engine, and includes several built-in helper functions to perform basic vector math operations.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/math/index.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="Vector3">
 			<return type="Vector3">
@@ -78,7 +76,16 @@
 			<argument index="3" name="t" type="float">
 			</argument>
 			<description>
-				Performs a cubic interpolation between vectors [code]pre_a[/code], [code]a[/code], [code]b[/code], [code]post_b[/code] ([code]a[/code] is current), by the given amount (t). (t) should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
+				Performs a cubic interpolation between vectors [code]pre_a[/code], [code]a[/code], [code]b[/code], [code]post_b[/code] ([code]a[/code] is current), by the given amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
+			</description>
+		</method>
+		<method name="direction_to">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<description>
+				Returns the normalized vector pointing from this vector to [code]b[/code].
 			</description>
 		</method>
 		<method name="distance_squared_to">
@@ -151,7 +158,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], a percentage of how far along the interpolation is.
+				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation..
 			</description>
 		</method>
 		<method name="max_axis">
@@ -168,6 +175,17 @@
 				Returns the axis of the vector's smallest value. See [code]AXIS_*[/code] constants.
 			</description>
 		</method>
+		<method name="move_toward">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="to" type="Vector3">
+			</argument>
+			<argument index="1" name="delta" type="float">
+			</argument>
+			<description>
+				Moves the vector toward [code]to[/code] by the fixed [code]delta[/code] amount.
+			</description>
+		</method>
 		<method name="normalized">
 			<return type="Vector3">
 			</return>
@@ -182,6 +200,15 @@
 			</argument>
 			<description>
 				Returns the outer product with [code]b[/code].
+			</description>
+		</method>
+		<method name="project">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<description>
+				Returns the vector projected onto the vector [code]b[/code].
 			</description>
 		</method>
 		<method name="reflect">
@@ -219,7 +246,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of SLERP between this vector and "b", by amount "t". "t" should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
+				Returns the result of SLERP between this vector and [code]b[/code], by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
 				Both vectors need to be normalized.
 			</description>
 		</method>
@@ -251,13 +278,13 @@
 	</methods>
 	<members>
 		<member name="x" type="float" setter="" getter="">
-			The vector's x component.
+			The vector's x component. Also accessible by using the index position [code][0][/code].
 		</member>
 		<member name="y" type="float" setter="" getter="">
-			The vector's y component.
+			The vector's y component. Also accessible by using the index position [code][1][/code].
 		</member>
 		<member name="z" type="float" setter="" getter="">
-			The vector's z component.
+			The vector's z component. Also accessible by using the index position [code][2][/code].
 		</member>
 	</members>
 	<constants>
@@ -269,6 +296,33 @@
 		</constant>
 		<constant name="AXIS_Z" value="2">
 			Enumerated value for the Z axis.
+		</constant>
+		<constant name="ZERO" value="Vector3( 0, 0, 0 )">
+			Zero vector.
+		</constant>
+		<constant name="ONE" value="Vector3( 1, 1, 1 )">
+			One vector.
+		</constant>
+		<constant name="INF" value="Vector3( inf, inf, inf )">
+			Infinite vector.
+		</constant>
+		<constant name="LEFT" value="Vector3( -1, 0, 0 )">
+			Left unit vector.
+		</constant>
+		<constant name="RIGHT" value="Vector3( 1, 0, 0 )">
+			Right unit vector.
+		</constant>
+		<constant name="UP" value="Vector3( 0, 1, 0 )">
+			Up unit vector.
+		</constant>
+		<constant name="DOWN" value="Vector3( 0, -1, 0 )">
+			Down unit vector.
+		</constant>
+		<constant name="FORWARD" value="Vector3( 0, 0, -1 )">
+			Forward unit vector.
+		</constant>
+		<constant name="BACK" value="Vector3( 0, 0, 1 )">
+			Back unit vector.
 		</constant>
 	</constants>
 </class>

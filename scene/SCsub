@@ -4,16 +4,19 @@ Import('env')
 
 env.scene_sources = []
 
-
 # Thirdparty code
 thirdparty_dir = "#thirdparty/misc/"
 thirdparty_sources = [
+	# C++ sources
+	"easing_equations.cpp",
 	# C sources
 	"mikktspace.c",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
-env.add_source_files(env.scene_sources, thirdparty_sources)
 
+env_thirdparty = env.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(env.scene_sources, thirdparty_sources)
 
 # Godot's own sources
 env.add_source_files(env.scene_sources, "*.cpp")
@@ -32,5 +35,3 @@ SConscript('resources/SCsub')
 # Build it all as a library
 lib = env.add_library("scene", env.scene_sources)
 env.Prepend(LIBS=[lib])
-
-Export('env')

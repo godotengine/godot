@@ -19,21 +19,19 @@ subject to the following restrictions:
 #include "BulletCollision/CollisionDispatch/btCollisionDispatcher.h"
 #include "LinearMath/btThreads.h"
 
-
 class btCollisionDispatcherMt : public btCollisionDispatcher
 {
 public:
-    btCollisionDispatcherMt( btCollisionConfiguration* config, int grainSize = 40 );
+	btCollisionDispatcherMt(btCollisionConfiguration* config, int grainSize = 40);
 
-    virtual btPersistentManifold* getNewManifold( const btCollisionObject* body0, const btCollisionObject* body1 ) BT_OVERRIDE;
-    virtual void releaseManifold( btPersistentManifold* manifold ) BT_OVERRIDE;
+	virtual btPersistentManifold* getNewManifold(const btCollisionObject* body0, const btCollisionObject* body1) BT_OVERRIDE;
+	virtual void releaseManifold(btPersistentManifold* manifold) BT_OVERRIDE;
 
-    virtual void dispatchAllCollisionPairs( btOverlappingPairCache* pairCache, const btDispatcherInfo& info, btDispatcher* dispatcher ) BT_OVERRIDE;
+	virtual void dispatchAllCollisionPairs(btOverlappingPairCache* pairCache, const btDispatcherInfo& info, btDispatcher* dispatcher) BT_OVERRIDE;
 
 protected:
-    bool m_batchUpdating;
-    int m_grainSize;
+	bool m_batchUpdating;
+	int m_grainSize;
 };
 
-#endif //BT_COLLISION_DISPATCHER_MT_H
-
+#endif  //BT_COLLISION_DISPATCHER_MT_H

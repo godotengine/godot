@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Generic6DOFJoint" inherits="Joint" category="Core" version="3.1">
+<class name="Generic6DOFJoint" inherits="Joint" category="Core" version="3.2">
 	<brief_description>
 		The generic 6 degrees of freedom joint can implement a variety of joint-types by locking certain axes' rotation or translation.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
@@ -18,7 +16,7 @@
 			The lower, the longer an impulse from one side takes to travel to the other side.
 		</member>
 		<member name="angular_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
-			If [code]true[/code] rotation across the x-axis is limited.
+			If [code]true[/code], rotation across the x-axis is limited.
 		</member>
 		<member name="angular_limit_x/erp" type="float" setter="set_param_x" getter="get_param_x">
 			When rotating across x-axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
@@ -42,7 +40,7 @@
 			The amount of rotational damping across the y-axis. The lower, the more dampening occurs.
 		</member>
 		<member name="angular_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
-			If [code]true[/code] rotation across the y-axis is limited.
+			If [code]true[/code], rotation across the y-axis is limited.
 		</member>
 		<member name="angular_limit_y/erp" type="float" setter="set_param_y" getter="get_param_y">
 			When rotating across y-axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
@@ -66,7 +64,7 @@
 			The amount of rotational damping across the z-axis. The lower, the more dampening occurs.
 		</member>
 		<member name="angular_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
-			If [code]true[/code] rotation across the z-axis is limited.
+			If [code]true[/code], rotation across the z-axis is limited.
 		</member>
 		<member name="angular_limit_z/erp" type="float" setter="set_param_z" getter="get_param_z">
 			When rotating across z-axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
@@ -87,7 +85,7 @@
 			The minimum rotation in positive direction to break loose and rotate around the z-axis.
 		</member>
 		<member name="angular_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
-			If [code]true[/code] a rotating motor at the x-axis is enabled.
+			If [code]true[/code], a rotating motor at the x-axis is enabled.
 		</member>
 		<member name="angular_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x">
 			Maximum acceleration for the motor at the x-axis.
@@ -96,7 +94,7 @@
 			Target speed for the motor at the x-axis.
 		</member>
 		<member name="angular_motor_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
-			If [code]true[/code] a rotating motor at the y-axis is enabled.
+			If [code]true[/code], a rotating motor at the y-axis is enabled.
 		</member>
 		<member name="angular_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y">
 			Maximum acceleration for the motor at the y-axis.
@@ -105,7 +103,7 @@
 			Target speed for the motor at the y-axis.
 		</member>
 		<member name="angular_motor_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
-			If [code]true[/code] a rotating motor at the z-axis is enabled.
+			If [code]true[/code], a rotating motor at the z-axis is enabled.
 		</member>
 		<member name="angular_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z">
 			Maximum acceleration for the motor at the z-axis.
@@ -113,11 +111,35 @@
 		<member name="angular_motor_z/target_velocity" type="float" setter="set_param_z" getter="get_param_z">
 			Target speed for the motor at the z-axis.
 		</member>
+		<member name="angular_spring_x/damping" type="float" setter="set_param_x" getter="get_param_x">
+		</member>
+		<member name="angular_spring_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
+		</member>
+		<member name="angular_spring_x/equilibrium_point" type="float" setter="set_param_x" getter="get_param_x">
+		</member>
+		<member name="angular_spring_x/stiffness" type="float" setter="set_param_x" getter="get_param_x">
+		</member>
+		<member name="angular_spring_y/damping" type="float" setter="set_param_y" getter="get_param_y">
+		</member>
+		<member name="angular_spring_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
+		</member>
+		<member name="angular_spring_y/equilibrium_point" type="float" setter="set_param_y" getter="get_param_y">
+		</member>
+		<member name="angular_spring_y/stiffness" type="float" setter="set_param_y" getter="get_param_y">
+		</member>
+		<member name="angular_spring_z/damping" type="float" setter="set_param_z" getter="get_param_z">
+		</member>
+		<member name="angular_spring_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
+		</member>
+		<member name="angular_spring_z/equilibrium_point" type="float" setter="set_param_z" getter="get_param_z">
+		</member>
+		<member name="angular_spring_z/stiffness" type="float" setter="set_param_z" getter="get_param_z">
+		</member>
 		<member name="linear_limit_x/damping" type="float" setter="set_param_x" getter="get_param_x">
 			The amount of damping that happens at the x-motion.
 		</member>
 		<member name="linear_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
-			If [code]true[/code] the linear motion across the x-axis is limited.
+			If [code]true[/code], the linear motion across the x-axis is limited.
 		</member>
 		<member name="linear_limit_x/lower_distance" type="float" setter="set_param_x" getter="get_param_x">
 			The minimum difference between the pivot points' x-axis.
@@ -135,7 +157,7 @@
 			The amount of damping that happens at the y-motion.
 		</member>
 		<member name="linear_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
-			If [code]true[/code] the linear motion across the y-axis is limited.
+			If [code]true[/code], the linear motion across the y-axis is limited.
 		</member>
 		<member name="linear_limit_y/lower_distance" type="float" setter="set_param_y" getter="get_param_y">
 			The minimum difference between the pivot points' y-axis.
@@ -153,7 +175,7 @@
 			The amount of damping that happens at the z-motion.
 		</member>
 		<member name="linear_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
-			If [code]true[/code] the linear motion across the z-axis is limited.
+			If [code]true[/code], the linear motion across the z-axis is limited.
 		</member>
 		<member name="linear_limit_z/lower_distance" type="float" setter="set_param_z" getter="get_param_z">
 			The minimum difference between the pivot points' z-axis.
@@ -168,7 +190,7 @@
 			The maximum difference between the pivot points' z-axis.
 		</member>
 		<member name="linear_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
-			If [code]true[/code] then there is a linear motor on the x-axis. It will attempt to reach the target velocity while staying within the force limits.
+			If [code]true[/code], then there is a linear motor on the x-axis. It will attempt to reach the target velocity while staying within the force limits.
 		</member>
 		<member name="linear_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x">
 			The maximum force the linear motor can apply on the x-axis while trying to reach the target velocity.
@@ -177,7 +199,7 @@
 			The speed that the linear motor will attempt to reach on the x-axis.
 		</member>
 		<member name="linear_motor_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
-			If [code]true[/code] then there is a linear motor on the y-axis. It will attempt to reach the target velocity while staying within the force limits.
+			If [code]true[/code], then there is a linear motor on the y-axis. It will attempt to reach the target velocity while staying within the force limits.
 		</member>
 		<member name="linear_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y">
 			The maximum force the linear motor can apply on the y-axis while trying to reach the target velocity.
@@ -186,13 +208,39 @@
 			The speed that the linear motor will attempt to reach on the y-axis.
 		</member>
 		<member name="linear_motor_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
-			If [code]true[/code] then there is a linear motor on the z-axis. It will attempt to reach the target velocity while staying within the force limits.
+			If [code]true[/code], then there is a linear motor on the z-axis. It will attempt to reach the target velocity while staying within the force limits.
 		</member>
 		<member name="linear_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z">
 			The maximum force the linear motor can apply on the z-axis while trying to reach the target velocity.
 		</member>
 		<member name="linear_motor_z/target_velocity" type="float" setter="set_param_z" getter="get_param_z">
 			The speed that the linear motor will attempt to reach on the z-axis.
+		</member>
+		<member name="linear_spring_x/damping" type="float" setter="set_param_x" getter="get_param_x">
+		</member>
+		<member name="linear_spring_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
+		</member>
+		<member name="linear_spring_x/equilibrium_point" type="float" setter="set_param_x" getter="get_param_x">
+		</member>
+		<member name="linear_spring_x/stiffness" type="float" setter="set_param_x" getter="get_param_x">
+		</member>
+		<member name="linear_spring_y/damping" type="float" setter="set_param_y" getter="get_param_y">
+		</member>
+		<member name="linear_spring_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
+		</member>
+		<member name="linear_spring_y/equilibrium_point" type="float" setter="set_param_y" getter="get_param_y">
+		</member>
+		<member name="linear_spring_y/stiffness" type="float" setter="set_param_y" getter="get_param_y">
+		</member>
+		<member name="linear_spring_z/damping" type="float" setter="set_param_z" getter="get_param_z">
+		</member>
+		<member name="linear_spring_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
+		</member>
+		<member name="linear_spring_z/equilibrium_point" type="float" setter="set_param_z" getter="get_param_z">
+		</member>
+		<member name="linear_spring_z/stiffness" type="float" setter="set_param_z" getter="get_param_z">
+		</member>
+		<member name="precision" type="int" setter="set_precision" getter="get_precision">
 		</member>
 	</members>
 	<constants>
@@ -217,34 +265,34 @@
 		<constant name="PARAM_LINEAR_MOTOR_FORCE_LIMIT" value="6" enum="Param">
 			The maximum force the linear motor will apply while trying to reach the velocity target.
 		</constant>
-		<constant name="PARAM_ANGULAR_LOWER_LIMIT" value="7" enum="Param">
+		<constant name="PARAM_ANGULAR_LOWER_LIMIT" value="10" enum="Param">
 			The minimum rotation in negative direction to break loose and rotate around the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_UPPER_LIMIT" value="8" enum="Param">
+		<constant name="PARAM_ANGULAR_UPPER_LIMIT" value="11" enum="Param">
 			The minimum rotation in positive direction to break loose and rotate around the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_LIMIT_SOFTNESS" value="9" enum="Param">
+		<constant name="PARAM_ANGULAR_LIMIT_SOFTNESS" value="12" enum="Param">
 			The speed of all rotations across the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_DAMPING" value="10" enum="Param">
+		<constant name="PARAM_ANGULAR_DAMPING" value="13" enum="Param">
 			The amount of rotational damping across the axes. The lower, the more dampening occurs.
 		</constant>
-		<constant name="PARAM_ANGULAR_RESTITUTION" value="11" enum="Param">
+		<constant name="PARAM_ANGULAR_RESTITUTION" value="14" enum="Param">
 			The amount of rotational restitution across the axes. The lower, the more restitution occurs.
 		</constant>
-		<constant name="PARAM_ANGULAR_FORCE_LIMIT" value="12" enum="Param">
+		<constant name="PARAM_ANGULAR_FORCE_LIMIT" value="15" enum="Param">
 			The maximum amount of force that can occur, when rotating around the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_ERP" value="13" enum="Param">
+		<constant name="PARAM_ANGULAR_ERP" value="16" enum="Param">
 			When rotating across the axes, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
 		</constant>
-		<constant name="PARAM_ANGULAR_MOTOR_TARGET_VELOCITY" value="14" enum="Param">
+		<constant name="PARAM_ANGULAR_MOTOR_TARGET_VELOCITY" value="17" enum="Param">
 			Target speed for the motor at the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_MOTOR_FORCE_LIMIT" value="15" enum="Param">
+		<constant name="PARAM_ANGULAR_MOTOR_FORCE_LIMIT" value="18" enum="Param">
 			Maximum acceleration for the motor at the axes.
 		</constant>
-		<constant name="PARAM_MAX" value="16" enum="Param">
+		<constant name="PARAM_MAX" value="22" enum="Param">
 			End flag of PARAM_* constants, used internally.
 		</constant>
 		<constant name="FLAG_ENABLE_LINEAR_LIMIT" value="0" enum="Flag">
@@ -253,12 +301,16 @@
 		<constant name="FLAG_ENABLE_ANGULAR_LIMIT" value="1" enum="Flag">
 			If [code]set[/code] there is rotational motion possible.
 		</constant>
-		<constant name="FLAG_ENABLE_MOTOR" value="2" enum="Flag">
+		<constant name="FLAG_ENABLE_LINEAR_SPRING" value="3" enum="Flag">
+		</constant>
+		<constant name="FLAG_ENABLE_ANGULAR_SPRING" value="2" enum="Flag">
+		</constant>
+		<constant name="FLAG_ENABLE_MOTOR" value="4" enum="Flag">
 			If [code]set[/code] there is a rotational motor across these axes.
 		</constant>
-		<constant name="FLAG_ENABLE_LINEAR_MOTOR" value="3" enum="Flag">
+		<constant name="FLAG_ENABLE_LINEAR_MOTOR" value="5" enum="Flag">
 		</constant>
-		<constant name="FLAG_MAX" value="4" enum="Flag">
+		<constant name="FLAG_MAX" value="6" enum="Flag">
 			End flag of FLAG_* constants, used internally.
 		</constant>
 	</constants>

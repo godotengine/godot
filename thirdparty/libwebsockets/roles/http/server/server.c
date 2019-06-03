@@ -131,6 +131,17 @@ done_list:
 
 	(void)n;
 #if defined(__linux__)
+#ifdef LWS_WITH_UNIX_SOCK
+	/*
+	 * A Unix domain sockets cannot be bound for several times, even if we set
+	 * the SO_REUSE* options on.
+	 * However, fortunately, each thread is able to independently listen when
+	 * running on a reasonably new Linux kernel. So we can safely assume
+	 * creating just one listening socket for a multi-threaded environment won't
+	 * fail in most cases.
+	 */
+	if (!LWS_UNIX_SOCK_ENABLED(vhost))
+#endif
 	limit = vhost->context->count_threads;
 #endif
 
@@ -694,7 +705,7 @@ lws_find_string_in_file(const char *filename, const char *string, int stringlen)
 	char buf[128];
 	int fd, match = 0, pos = 0, n = 0, hit = 0;
 
-	fd = open(filename, O_RDONLY);
+	fd = lws_open(filename, O_RDONLY);
 	if (fd < 0) {
 		lwsl_err("can't open auth file: %s\n", filename);
 		return 0;
@@ -812,7 +823,7 @@ lws_http_get_uri_and_method(struct lws *wsi, char **puri_ptr, int *puri_len)
 {
 	int n, count = 0;
 
-	for (n = 0; n < (int)ARRAY_SIZE(methods); n++)
+	for (n = 0; n < (int)LWS_ARRAY_SIZE(methods); n++)
 		if (lws_hdr_total_length(wsi, methods[n]))
 			count++;
 	if (!count) {
@@ -827,7 +838,7 @@ lws_http_get_uri_and_method(struct lws *wsi, char **puri_ptr, int *puri_len)
 		return -1;
 	}
 
-	for (n = 0; n < (int)ARRAY_SIZE(methods); n++)
+	for (n = 0; n < (int)LWS_ARRAY_SIZE(methods); n++)
 		if (lws_hdr_total_length(wsi, methods[n])) {
 			*puri_ptr = lws_hdr_simple_ptr(wsi, methods[n]);
 			*puri_len = lws_hdr_total_length(wsi, methods[n]);
@@ -857,7 +868,7 @@ lws_http_action(struct lws *wsi)
 	};
 
 	meth = lws_http_get_uri_and_method(wsi, &uri_ptr, &uri_len);
-	if (meth < 0 || meth >= (int)ARRAY_SIZE(method_names))
+	if (meth < 0 || meth >= (int)LWS_ARRAY_SIZE(method_names))
 		goto bail_nuke_ah;
 
 	/* we insist on absolute paths */
@@ -1128,7 +1139,7 @@ lws_http_action(struct lws *wsi)
 		}
 		if (pcolon > pslash)
 			pcolon = NULL;
-		
+
 		if (pcolon)
 			n = pcolon - hit->origin;
 		else
@@ -1142,13 +1153,13 @@ lws_http_action(struct lws *wsi)
 
 		i.address = ads;
 		i.port = 80;
-		if (hit->origin_protocol == LWSMPRO_HTTPS) { 
+		if (hit->origin_protocol == LWSMPRO_HTTPS) {
 			i.port = 443;
 			i.ssl_connection = 1;
 		}
 		if (pcolon)
 			i.port = atoi(pcolon + 1);
-		
+
 		lws_snprintf(rpath, sizeof(rpath) - 1, "/%s/%s", pslash + 1,
 			     uri_ptr + hit->mountpoint_len);
 		lws_clean_url(rpath);
@@ -1164,7 +1175,7 @@ lws_http_action(struct lws *wsi)
 				p++;
 			}
 		}
-				
+
 
 		i.path = rpath;
 		i.host = i.address;
@@ -1178,7 +1189,7 @@ lws_http_action(struct lws *wsi)
 			    "from %s, to %s\n",
 			    i.address, i.port, i.path, i.ssl_connection,
 			    i.uri_replace_from, i.uri_replace_to);
-	
+
 		if (!lws_client_connect_via_info(&i)) {
 			lwsl_err("proxy connect fail\n");
 			return 1;
@@ -1714,12 +1725,31 @@ lws_http_transaction_completed(struct lws *wsi)
 {
 	int n = NO_PENDING_TIMEOUT;
 
+	if (wsi->trunc_len) {
+		/*
+		 * ...so he tried to send something large as the http reply,
+		 * it went as a partial, but he immediately said the
+		 * transaction was completed.
+		 *
+		 * Defer the transaction completed until the last part of the
+		 * partial is sent.
+		 */
+		lwsl_notice("%s: deferring due to partial\n", __func__);
+		wsi->http.deferred_transaction_completed = 1;
+
+		return 0;
+	}
+
 	lwsl_info("%s: wsi %p\n", __func__, wsi);
 
 	lws_access_log(wsi);
 
 	if (!wsi->hdr_parsing_completed) {
-		lwsl_notice("%s: ignoring, ah parsing incomplete\n", __func__);
+		char peer[64];
+		lws_get_peer_simple(wsi, peer, sizeof(peer) - 1);
+		peer[sizeof(peer) - 1] = '\0';
+		lwsl_notice("%s: (from %s) ignoring, ah parsing incomplete\n",
+				__func__, peer);
 		return 0;
 	}
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InterpolatedCamera" inherits="Camera" category="Core" version="3.1">
+<class name="InterpolatedCamera" inherits="Camera" category="Core" version="3.2">
 	<brief_description>
 		Camera which moves toward another node.
 	</brief_description>
@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="set_target">
 			<return type="void">
@@ -24,7 +22,7 @@
 	</methods>
 	<members>
 		<member name="enabled" type="bool" setter="set_interpolation_enabled" getter="is_interpolation_enabled">
-			If [code]true[/code] and a target is set, the camera will move automatically.
+			If [code]true[/code], and a target is set, the camera will move automatically.
 		</member>
 		<member name="speed" type="float" setter="set_speed" getter="get_speed">
 			How quickly the camera moves toward its target. Higher values will result in tighter camera motion.

@@ -1,7 +1,7 @@
 #ifndef __CONFIG_TYPES_H__
 #define __CONFIG_TYPES_H__
 
-#include "int_types.h"
+#include "core/int_types.h"
 
 typedef int16_t ogg_int16_t;
 typedef uint16_t ogg_uint16_t;

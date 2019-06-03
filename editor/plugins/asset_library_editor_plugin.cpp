@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -174,8 +174,11 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 					if (preview_images[i].is_video) {
 						Ref<Image> overlay = get_icon("PlayOverlay", "EditorIcons")->get_data();
 						Ref<Image> thumbnail = p_image->get_data();
-						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
+						thumbnail = thumbnail->duplicate();
+						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width() / 2) / 2, (thumbnail->get_height() - overlay->get_height() / 2) / 2);
 
+						// Overlay and thumbnail need the same format for `blend_rect` to work.
+						thumbnail->convert(Image::FORMAT_RGBA8);
 						thumbnail->lock();
 						thumbnail->blend_rect(overlay, overlay->get_used_rect(), overlay_pos);
 						thumbnail->unlock();
@@ -307,15 +310,20 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	description = memnew(RichTextLabel);
 	description->connect("meta_clicked", this, "_link_click");
+	description->set_custom_minimum_size(Size2(440 * EDSCALE, 300 * EDSCALE));
 	desc_bg->add_child(description);
+
+	VBoxContainer *previews_vbox = memnew(VBoxContainer);
+	hbox->add_child(previews_vbox);
+	previews_vbox->add_constant_override("separation", 15 * EDSCALE);
 
 	preview = memnew(TextureRect);
 	preview->set_custom_minimum_size(Size2(640 * EDSCALE, 345 * EDSCALE));
-	hbox->add_child(preview);
+	previews_vbox->add_child(preview);
 
 	previews_bg = memnew(PanelContainer);
-	vbox->add_child(previews_bg);
-	previews_bg->set_custom_minimum_size(Size2(0, 101 * EDSCALE));
+	previews_vbox->add_child(previews_bg);
+	previews_bg->set_custom_minimum_size(Size2(640 * EDSCALE, 101 * EDSCALE));
 
 	previews = memnew(ScrollContainer);
 	previews_bg->add_child(previews);
@@ -421,7 +429,16 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 		int cstatus = download->get_http_client_status();
 
 		if (cstatus == HTTPClient::STATUS_BODY) {
-			status->set_text(vformat(TTR("Downloading (%s / %s)..."), String::humanize_size(download->get_downloaded_bytes()), String::humanize_size(download->get_body_size())));
+			if (download->get_body_size() > 0) {
+				status->set_text(
+						vformat(
+								TTR("Downloading (%s / %s)..."),
+								String::humanize_size(download->get_downloaded_bytes()),
+								String::humanize_size(download->get_body_size())));
+			} else {
+				// Total file size is unknown, so it cannot be displayed
+				status->set_text(TTR("Downloading..."));
+			}
 		}
 
 		if (cstatus != prev_status) {
@@ -442,7 +459,8 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 					progress->set_max(1);
 					progress->set_value(0);
 				} break;
-				default: {}
+				default: {
+				}
 			}
 			prev_status = cstatus;
 		}
@@ -600,7 +618,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 					case HTTPClient::STATUS_BODY: {
 						load_status->set_value(0.4);
 					} break;
-					default: {}
+					default: {
+					}
 				}
 			}
 
@@ -806,7 +825,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		_image_update(p_code == HTTPClient::RESPONSE_NOT_MODIFIED, true, p_data, p_queue_id);
 
 	} else {
-		// WARN_PRINTS("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
+		WARN_PRINTS("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
 			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("DefaultProjectIcon", "EditorIcons"));
@@ -952,6 +971,9 @@ void EditorAssetLibrary::_search_text_entered(const String &p_text) {
 HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items) {
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
+
+	if (p_page_count < 2)
+		return hbc;
 
 	//do the mario
 	int from = p_page - 5;
@@ -1325,6 +1347,7 @@ void EditorAssetLibrary::_bind_methods() {
 
 EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
+	requesting = REQUESTING_NONE;
 	templates_only = p_templates_only;
 
 	VBoxContainer *library_main = memnew(VBoxContainer);

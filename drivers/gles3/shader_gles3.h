@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,10 @@
 #ifndef SHADER_GLES3_H
 #define SHADER_GLES3_H
 
-#include <stdio.h>
+#include "core/hash_map.h"
+#include "core/map.h"
+#include "core/math/camera_matrix.h"
+#include "core/variant.h"
 
 #include "platform_config.h"
 #ifndef GLES3_INCLUDE_H
@@ -40,10 +43,7 @@
 #include GLES3_INCLUDE_H
 #endif
 
-#include "camera_matrix.h"
-#include "hash_map.h"
-#include "map.h"
-#include "variant.h"
+#include <stdio.h>
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -117,6 +117,7 @@ private:
 		uint32_t version;
 		Vector<StringName> texture_uniforms;
 		Vector<CharString> custom_defines;
+		Set<uint32_t> versions;
 	};
 
 	struct Version {
@@ -128,11 +129,13 @@ private:
 		Vector<GLint> texture_uniform_locations;
 		uint32_t code_version;
 		bool ok;
-		Version() {
-			code_version = 0;
-			ok = false;
-			uniform_location = NULL;
-		}
+		Version() :
+				id(0),
+				vert_id(0),
+				frag_id(0),
+				uniform_location(NULL),
+				code_version(0),
+				ok(false) {}
 	};
 
 	Version *version;
@@ -286,7 +289,9 @@ private:
 
 				glUniformMatrix4fv(p_uniform, 1, false, matrix);
 			} break;
-			default: { ERR_FAIL(); } // do nothing
+			default: {
+				ERR_FAIL();
+			} // do nothing
 		}
 	}
 
@@ -336,6 +341,7 @@ public:
 	}
 
 	uint32_t get_version() const { return new_conditional_version.version; }
+	_FORCE_INLINE_ bool is_version_valid() const { return version && version->ok; }
 
 	void set_uniform_camera(int p_idx, const CameraMatrix &p_mat) {
 
