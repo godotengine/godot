@@ -58,6 +58,7 @@
 #include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/cylinder_shape.h"
+#include "scene/resources/height_map_shape.h"
 #include "scene/resources/plane_shape.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/ray_shape.h"
@@ -3636,6 +3637,14 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(0, 0, rs->get_length()));
 		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	if (Object::cast_to<HeightMapShape>(*s)) {
+
+		Ref<HeightMapShape> hms = s;
+
+		Ref<ArrayMesh> mesh = hms->get_debug_mesh();
+		p_gizmo->add_mesh(mesh, false, RID(), material);
 	}
 }
 

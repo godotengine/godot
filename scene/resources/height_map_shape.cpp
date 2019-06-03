@@ -85,6 +85,7 @@ void HeightMapShape::_update_shape() {
 	d["min_height"] = min_height;
 	d["max_height"] = max_height;
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), d);
+	Shape::_update_shape();
 }
 
 void HeightMapShape::set_map_width(int p_new) {
