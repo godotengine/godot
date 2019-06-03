@@ -602,9 +602,6 @@ public:
 
 			Element *next = current->next_ptr;
 
-			//disconnect
-			current->next_ptr = NULL;
-
 			if (from != current) {
 
 				current->prev_ptr = NULL;
