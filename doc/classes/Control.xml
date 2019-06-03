@@ -714,7 +714,7 @@
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents">
 			Enables whether rendering of children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered.
 		</member>
-		<member name="rect_global_position" type="Vector2" setter="set_global_position" getter="get_global_position">
+		<member name="rect_global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
 			The node's global position, relative to the world (usually to the top-left corner of the window).
 		</member>
 		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size">
@@ -723,7 +723,7 @@
 		<member name="rect_pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset">
 			By default, the node's pivot is its top-left corner. When you change its [member rect_scale], it will scale around this pivot. Set this property to [member rect_size] / 2 to center the pivot in the node's rectangle.
 		</member>
-		<member name="rect_position" type="Vector2" setter="set_position" getter="get_position">
+		<member name="rect_position" type="Vector2" setter="_set_position" getter="get_position">
 			The node's position, relative to its parent. It corresponds to the rectangle's top-left corner. The property is not affected by [member rect_pivot_offset].
 		</member>
 		<member name="rect_rotation" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees">
@@ -732,7 +732,7 @@
 		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale">
 			The node's scale, relative to its [member rect_size]. Change this property to scale the node around its [member rect_pivot_offset].
 		</member>
-		<member name="rect_size" type="Vector2" setter="set_size" getter="get_size">
+		<member name="rect_size" type="Vector2" setter="_set_size" getter="get_size">
 			The size of the node's bounding rectangle, in pixels. [Container] nodes update this property automatically.
 		</member>
 		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags">
