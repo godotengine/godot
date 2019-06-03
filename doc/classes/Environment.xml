@@ -217,7 +217,7 @@
 		</member>
 		<member name="ssao_bias" type="float" setter="set_ssao_bias" getter="get_ssao_bias">
 		</member>
-		<member name="ssao_blur" type="int" setter="set_ssao_blur" getter="is_ssao_blur_enabled" enum="Environment.SSAOBlur">
+		<member name="ssao_blur" type="int" setter="set_ssao_blur" getter="get_ssao_blur" enum="Environment.SSAOBlur">
 		</member>
 		<member name="ssao_color" type="Color" setter="set_ssao_color" getter="get_ssao_color">
 		</member>
