@@ -159,13 +159,13 @@ String PluginScriptLanguage::make_function(const String &p_class, const String &
 	return String();
 }
 
-Error PluginScriptLanguage::complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_force, String &r_call_hint) {
+Error PluginScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<String> *r_options, bool &r_force, String &r_call_hint) {
 	if (_desc.complete_code) {
 		Array options;
 		godot_error tmp = _desc.complete_code(
 				_data,
 				(godot_string *)&p_code,
-				(godot_string *)&p_base_path,
+				(godot_string *)&p_path,
 				(godot_object *)p_owner,
 				(godot_array *)&options,
 				&r_force,

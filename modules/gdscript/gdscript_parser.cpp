@@ -3497,7 +3497,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					_set_error("'class_name' is only valid for the main class namespace.");
 					return;
 				}
-				if (self_path.empty()) {
+				if (self_path.begins_with("res://") && self_path.find("::") != -1) {
 					_set_error("'class_name' not allowed in built-in scripts.");
 					return;
 				}
