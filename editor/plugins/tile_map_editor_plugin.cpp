@@ -363,6 +363,8 @@ void TileMapEditor::_update_palette() {
 
 	// Update the palette
 	Vector<int> selected = get_selected_tiles();
+	int selected_single = palette->get_current();
+	int selected_manual = manual_palette->get_current();
 	palette->clear();
 	manual_palette->clear();
 	manual_palette->hide();
@@ -511,9 +513,10 @@ void TileMapEditor::_update_palette() {
 
 	if (manual_palette->get_item_count() > 0) {
 		// Only show the manual palette if at least tile exists in it
-		int selected2 = manual_palette->get_current();
-		if (selected2 == -1) selected2 = 0;
-		manual_palette->set_current(selected2);
+		if (selected_manual == -1 || selected_single != palette->get_current())
+			selected_manual = 0;
+		if (selected_manual < manual_palette->get_item_count())
+			manual_palette->set_current(selected_manual);
 		manual_palette->show();
 	}
 
