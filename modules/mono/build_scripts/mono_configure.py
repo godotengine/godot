@@ -47,14 +47,6 @@ def copy_file(src_dir, dst_dir, name):
 
 
 def configure(env, env_mono):
-    from SCons.Script import BoolVariable, PathVariable, Variables
-
-    envvars = Variables()
-    envvars.Add(PathVariable('mono_prefix', 'Path to the mono installation directory for the target platform and architecture', '', PathVariable.PathAccept))
-    envvars.Add(BoolVariable('mono_static', 'Statically link mono', False))
-    envvars.Add(BoolVariable('copy_mono_root', 'Make a copy of the mono installation directory to bundle with the editor', False))
-    envvars.Update(env)
-
     bits = env['bits']
     is_android = env['platform'] == 'android'
 
