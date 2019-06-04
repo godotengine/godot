@@ -48,6 +48,7 @@
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/line_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
+#include "scene/2d/multimesh_instance_2d.h"
 #include "scene/2d/navigation_2d.h"
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
@@ -543,6 +544,7 @@ void register_scene_types() {
 	ClassDB::register_class<Position2D>();
 	ClassDB::register_class<Line2D>();
 	ClassDB::register_class<MeshInstance2D>();
+	ClassDB::register_class<MultiMeshInstance2D>();
 	ClassDB::register_virtual_class<CollisionObject2D>();
 	ClassDB::register_virtual_class<PhysicsBody2D>();
 	ClassDB::register_class<StaticBody2D>();
@@ -587,9 +589,13 @@ void register_scene_types() {
 	SceneTree::add_idle_callback(ParticlesMaterial::flush_changes);
 	ParticlesMaterial::init_shaders();
 
-#ifndef _3D_DISABLED
 	ClassDB::register_virtual_class<Mesh>();
 	ClassDB::register_class<ArrayMesh>();
+	ClassDB::register_class<MultiMesh>();
+	ClassDB::register_class<SurfaceTool>();
+	ClassDB::register_class<MeshDataTool>();
+
+#ifndef _3D_DISABLED
 	ClassDB::register_virtual_class<PrimitiveMesh>();
 	ClassDB::register_class<CapsuleMesh>();
 	ClassDB::register_class<CubeMesh>();
@@ -603,7 +609,6 @@ void register_scene_types() {
 	SceneTree::add_idle_callback(SpatialMaterial::flush_changes);
 	SpatialMaterial::init_shaders();
 
-	ClassDB::register_class<MultiMesh>();
 	ClassDB::register_class<MeshLibrary>();
 
 	OS::get_singleton()->yield(); //may take time to init
@@ -618,9 +623,6 @@ void register_scene_types() {
 	ClassDB::register_class<PlaneShape>();
 	ClassDB::register_class<ConvexPolygonShape>();
 	ClassDB::register_class<ConcavePolygonShape>();
-
-	ClassDB::register_class<SurfaceTool>();
-	ClassDB::register_class<MeshDataTool>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
