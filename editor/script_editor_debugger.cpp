@@ -1121,10 +1121,13 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				last_warning_count = warning_count;
 			}
 
-			if (connection.is_null()) {
-
-				if (server->is_connection_available()) {
-
+			if (server->is_connection_available()) {
+				if (connection.is_valid()) {
+					// We already have a valid connection. Disconnecting any new connecting client to prevent it from hanging.
+					// (If we don't keep a reference to the connection it will be destroyed and disconnect_from_host will be called internally)
+					server->take_connection();
+				} else {
+					// We just got the first connection.
 					connection = server->take_connection();
 					if (connection.is_null())
 						break;
@@ -1158,12 +1161,11 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					if (profiler->is_profiling()) {
 						_profiler_activate(true);
 					}
-
-				} else {
-
-					break;
 				}
-			};
+			}
+
+			if (connection.is_null())
+				break;
 
 			if (!connection->is_connected_to_host()) {
 				stop();
