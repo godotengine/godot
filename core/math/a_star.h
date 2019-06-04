@@ -54,6 +54,7 @@ class AStar : public Reference {
 		bool enabled;
 
 		Set<Point *> neighbours;
+		Set<Point *> unlinked_neighbours;
 
 		// Used for pathfinding
 		Point *prev_point;

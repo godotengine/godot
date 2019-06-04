@@ -99,14 +99,22 @@ void AStar::remove_point(int p_id) {
 
 	Point *p = points[p_id];
 
-	Map<int, Point *>::Element *PE = points.front();
-	while (PE) {
-		for (Set<Point *>::Element *E = PE->get()->neighbours.front(); E; E = E->next()) {
-			Segment s(p_id, E->get()->id);
-			segments.erase(s);
-			E->get()->neighbours.erase(p);
-		}
-		PE = PE->next();
+	for (Set<Point *>::Element *E = p->neighbours.front(); E; E = E->next()) {
+
+		Segment s(p_id, E->get()->id);
+		segments.erase(s);
+
+		E->get()->neighbours.erase(p);
+		E->get()->unlinked_neighbours.erase(p);
+	}
+
+	for (Set<Point *>::Element *E = p->unlinked_neighbours.front(); E; E = E->next()) {
+
+		Segment s(p_id, E->get()->id);
+		segments.erase(s);
+
+		E->get()->neighbours.erase(p);
+		E->get()->unlinked_neighbours.erase(p);
 	}
 
 	memdelete(p);
@@ -125,6 +133,8 @@ void AStar::connect_points(int p_id, int p_with_id, bool bidirectional) {
 
 	if (bidirectional)
 		b->neighbours.insert(a);
+	else
+		b->unlinked_neighbours.insert(a);
 
 	Segment s(p_id, p_with_id);
 	if (s.from == p_id) {
@@ -147,7 +157,9 @@ void AStar::disconnect_points(int p_id, int p_with_id) {
 	Point *a = points[p_id];
 	Point *b = points[p_with_id];
 	a->neighbours.erase(b);
+	a->unlinked_neighbours.erase(b);
 	b->neighbours.erase(a);
+	b->unlinked_neighbours.erase(a);
 }
 
 bool AStar::has_point(int p_id) const {
