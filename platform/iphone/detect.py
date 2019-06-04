@@ -24,7 +24,7 @@ def get_opts():
         ('IPHONEPLATFORM', 'name of the iphone platform', 'iPhoneOS'),
         ('IPHONEPATH', 'the path to iphone toolchain', '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain'),
         ('IPHONESDK', 'path to the iphone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/${IPHONEPLATFORM}.platform/Developer/SDKs/${IPHONEPLATFORM}.sdk/'),
-        ('SDKVERSION', 'SDK version to link against', '11.4'),
+        ('SDKVERSION', 'SDK version to link against', '12.1'),
         ('game_center', 'Support for game center', 'yes'),
         ('store_kit', 'Support for in-app store', 'yes'),
         ('icloud', 'Support for iCloud', 'yes'),
