@@ -503,7 +503,7 @@ void TileMapEditor::_update_palette() {
 	if (selected.get(0) != TileMap::INVALID_CELL) {
 		set_selected_tiles(selected);
 		sel_tile = selected.get(Math::rand() % selected.size());
-	} else {
+	} else if (palette->get_item_count() > 0) {
 		palette->select(0);
 	}
 
