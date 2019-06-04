@@ -931,10 +931,15 @@ void AnimationTree::_process_graph(float p_delta) {
 
 							a->transform_track_interpolate(i, time, &loc[1], &rot[1], &scale[1]);
 
-							t->loc += (loc[1] - loc[0]) * blend;
 							t->scale += (scale[1] - scale[0]) * blend;
 							Quat q = Quat().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
 							t->rot = (t->rot * q).normalized();
+
+							Basis b = Basis();
+							b.set_quat_scale(rot[0].slerp(rot[1], blend).normalized(), scale[0].linear_interpolate(scale[1], blend));
+							Vector3 l = (loc[1] - loc[0]) * blend;
+							l = b.xform_inv(l);
+							t->loc += l;
 
 							prev_time = 0;
 
