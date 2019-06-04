@@ -60,6 +60,7 @@ public:
 		unsigned int osx_state;
 		bool pressed;
 		bool echo;
+		bool raw;
 		uint32_t scancode;
 		uint32_t unicode;
 	};
