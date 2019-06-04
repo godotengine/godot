@@ -813,6 +813,7 @@
 		</member>
 		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window">
 			If [code]true[/code], removes the window frame.
+			Note: Setting [code]window_borderless[/code] to [code]false[/code] disables per-pixel transparency.
 		</member>
 		<member name="window_fullscreen" type="bool" setter="set_window_fullscreen" getter="is_window_fullscreen">
 			If [code]true[/code], the window is fullscreen.
@@ -824,6 +825,9 @@
 			If [code]true[/code], the window is minimized.
 		</member>
 		<member name="window_per_pixel_transparency_enabled" type="bool" setter="set_window_per_pixel_transparency_enabled" getter="get_window_per_pixel_transparency_enabled">
+			If [code]true[/code], the window background is transparent and window frame is removed.
+			Use [code]get_tree().get_root().set_transparent_background(true)[/code] to disable main viewport background rendering.
+			Note: This property has no effect if "Project &gt; Project Settings &gt; Display &gt; Window &gt; Per-pixel transparency &gt; Allowed" setting is disabled.
 		</member>
 		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position">
 			The window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.

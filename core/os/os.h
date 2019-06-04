@@ -104,7 +104,6 @@ public:
 		bool maximized;
 		bool always_on_top;
 		bool use_vsync;
-		bool layered_splash;
 		bool layered;
 		float get_aspect() const { return (float)width / (float)height; }
 		VideoMode(int p_width = 1024, int p_height = 600, bool p_fullscreen = false, bool p_resizable = true, bool p_borderless_window = false, bool p_maximized = false, bool p_always_on_top = false, bool p_use_vsync = false) {
@@ -117,7 +116,6 @@ public:
 			always_on_top = p_always_on_top;
 			use_vsync = p_use_vsync;
 			layered = false;
-			layered_splash = false;
 		}
 	};
 
