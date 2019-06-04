@@ -3,9 +3,13 @@
 
 ## b2d_convexdecomp
 
-- Upstream: https://github.com/erincatto/Box2D (Contributions/Utilities/ConvexDecomposition)
-- Version: TBD
+- Upstream: https://github.com/erincatto/Box2D/tree/master/Contributions/Utilities/ConvexDecomposition
+- Version: git (25615e0, 2015) with modifications
 - License: zlib
+
+The files were adapted to Godot by removing the dependency on b2Math (replacing
+it by b2Glue.h) and commenting out some verbose printf calls.
+Upstream code has not changed in 10 years, no need to keep track of changes.
 
 
 ## certs
@@ -38,7 +42,9 @@ Use UI font if exists, because it has tight vertial metrix and good for UI.
 
 ### DroidSans*.ttf
 
-- Upstream: ?
+- Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
+- Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
+- License: Apache 2.0
 
 
 ## freetype
