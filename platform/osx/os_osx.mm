@@ -1551,7 +1551,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	restore_rect = Rect2(get_window_position(), get_window_size());
 
-	if (p_desired.layered_splash) {
+	if (p_desired.layered) {
 		set_window_per_pixel_transparency_enabled(true);
 	}
 	return OK;

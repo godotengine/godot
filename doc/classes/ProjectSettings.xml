@@ -374,11 +374,10 @@
 			Default orientation on mobile devices.
 		</member>
 		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="">
-			If [code]true[/code], allows per-pixel transparency in a desktop window. This affects performance if not needed, so leave it on [code]false[/code] unless you need it.
+			If [code]true[/code], allows per-pixel transparency in a desktop window. This affects performance, so leave it on [code]false[/code] unless you need it.
 		</member>
 		<member name="display/window/per_pixel_transparency/enabled" type="bool" setter="" getter="">
-		</member>
-		<member name="display/window/per_pixel_transparency/splash" type="bool" setter="" getter="">
+			Set the window background to transparent when it starts.
 		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="">
 			Force the window to be always on top.

@@ -939,7 +939,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
 	video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
-	video_mode.layered_splash = GLOBAL_DEF("display/window/per_pixel_transparency/splash", false);
 
 	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_allocation", 2);
 	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_allocation.mobile", 3);

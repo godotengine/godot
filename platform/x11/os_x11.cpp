@@ -593,7 +593,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	power_manager = memnew(PowerX11);
 
-	if (p_desired.layered_splash) {
+	if (p_desired.layered) {
 		set_window_per_pixel_transparency_enabled(true);
 	}
 
