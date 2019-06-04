@@ -1104,6 +1104,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		return err;
 	}
 
+	print_line(" "); //add a blank line for readability
+
 	if (init_use_custom_pos) {
 		OS::get_singleton()->set_window_position(init_custom_pos);
 	}
