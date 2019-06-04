@@ -1167,6 +1167,21 @@ void FileSystemDock::_update_favorites_list_after_move(const Map<String, String>
 	EditorSettings::get_singleton()->set_favorites(new_favorites);
 }
 
+void FileSystemDock::_save_scenes_after_move(const Map<String, String> &p_renames) const {
+	Vector<String> remaps;
+	_find_remaps(EditorFileSystem::get_singleton()->get_filesystem(), p_renames, remaps);
+	Vector<String> new_filenames;
+
+	for (int i = 0; i < remaps.size(); ++i) {
+		String file = p_renames.has(remaps[i]) ? p_renames[remaps[i]] : remaps[i];
+		if (ResourceLoader::get_resource_type(file) == "PackedScene") {
+			new_filenames.push_back(file);
+		}
+	}
+
+	editor->save_scene_list(new_filenames);
+}
+
 void FileSystemDock::_make_dir_confirm() {
 	String dir_name = make_dir_dialog_text->get_text().strip_edges();
 
@@ -1241,14 +1256,21 @@ void FileSystemDock::_rename_operation_confirm() {
 	Map<String, String> file_renames;
 	Map<String, String> folder_renames;
 	_try_move_item(to_rename, new_path, file_renames, folder_renames);
+
+	int current_tab = editor->get_current_tab();
+
 	_update_dependencies_after_move(file_renames);
 	_update_resource_paths_after_move(file_renames);
 	_update_project_settings_after_move(file_renames);
 	_update_favorites_list_after_move(file_renames, folder_renames);
 
-	//Rescan everything
+	editor->set_current_tab(current_tab);
+
 	print_verbose("FileSystem: calling rescan.");
 	_rescan();
+
+	print_verbose("FileSystem: saving moved scenes.");
+	_save_scenes_after_move(file_renames);
 }
 
 void FileSystemDock::_duplicate_operation_confirm() {
@@ -1334,13 +1356,20 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool overw
 	}
 
 	if (is_moved) {
+		int current_tab = editor->get_current_tab();
+
 		_update_dependencies_after_move(file_renames);
 		_update_resource_paths_after_move(file_renames);
 		_update_project_settings_after_move(file_renames);
 		_update_favorites_list_after_move(file_renames, folder_renames);
 
+		editor->set_current_tab(current_tab);
+
 		print_verbose("FileSystem: calling rescan.");
 		_rescan();
+
+		print_verbose("FileSystem: saving moved scenes.");
+		_save_scenes_after_move(file_renames);
 	}
 }
 
