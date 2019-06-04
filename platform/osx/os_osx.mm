@@ -392,7 +392,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 @interface GodotContentView : NSView <NSTextInputClient> {
 	NSTrackingArea *trackingArea;
 	NSMutableAttributedString *markedText;
-	bool imeMode;
+	bool imeInputEventInProgress;
 }
 - (void)cancelComposition;
 - (BOOL)wantsUpdateLayer;
@@ -418,7 +418,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 - (id)init {
 	self = [super init];
 	trackingArea = nil;
-	imeMode = false;
+	imeInputEventInProgress = false;
 	[self updateTrackingAreas];
 	[self registerForDraggedTypes:[NSArray arrayWithObject:NSFilenamesPboardType]];
 	markedText = [[NSMutableAttributedString alloc] init];
@@ -452,7 +452,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		[markedText initWithString:aString];
 	}
 	if (OS_OSX::singleton->im_active) {
-		imeMode = true;
+		imeInputEventInProgress = true;
 		OS_OSX::singleton->im_text.parse_utf8([[markedText mutableString] UTF8String]);
 		OS_OSX::singleton->im_selection = Point2(selectedRange.location, selectedRange.length);
 
@@ -467,7 +467,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (void)unmarkText {
-	imeMode = false;
+	imeInputEventInProgress = false;
 	[[markedText mutableString] setString:@""];
 	if (OS_OSX::singleton->im_active) {
 		OS_OSX::singleton->im_text = String();
@@ -540,6 +540,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		ke.osx_state = [event modifierFlags];
 		ke.pressed = true;
 		ke.echo = false;
+		ke.raw = false; // IME input event
 		ke.scancode = 0;
 		ke.unicode = codepoint;
 
@@ -1045,29 +1046,52 @@ static int remapKey(unsigned int key) {
 
 - (void)keyDown:(NSEvent *)event {
 
-	//disable raw input in IME mode
-	if (!imeMode) {
-		OS_OSX::KeyEvent ke;
+	// Ignore all input if IME input is in progress
+	if (!imeInputEventInProgress) {
+		NSString *characters = [event characters];
+		NSUInteger length = [characters length];
 
-		ke.osx_state = [event modifierFlags];
-		ke.pressed = true;
-		ke.echo = [event isARepeat];
-		ke.scancode = remapKey([event keyCode]);
-		ke.unicode = 0;
+		if (!OS_OSX::singleton->im_active && length > 0 && keycode_has_unicode(remapKey([event keyCode]))) {
+			// Fallback unicode character handler used if IME is not active
+			for (NSUInteger i = 0; i < length; i++) {
+				OS_OSX::KeyEvent ke;
 
-		push_to_key_event_buffer(ke);
+				ke.osx_state = [event modifierFlags];
+				ke.pressed = true;
+				ke.echo = [event isARepeat];
+				ke.scancode = remapKey([event keyCode]);
+				ke.raw = true;
+				ke.unicode = [characters characterAtIndex:i];
+
+				push_to_key_event_buffer(ke);
+			}
+		} else {
+			OS_OSX::KeyEvent ke;
+
+			ke.osx_state = [event modifierFlags];
+			ke.pressed = true;
+			ke.echo = [event isARepeat];
+			ke.scancode = remapKey([event keyCode]);
+			ke.raw = false;
+			ke.unicode = 0;
+
+			push_to_key_event_buffer(ke);
+		}
 	}
 
-	if (OS_OSX::singleton->im_active == true)
+	// Pass events to IME handler
+	if (OS_OSX::singleton->im_active)
 		[self interpretKeyEvents:[NSArray arrayWithObject:event]];
 }
 
 - (void)flagsChanged:(NSEvent *)event {
 
-	if (!imeMode) {
+	// Ignore all input if IME input is in progress
+	if (!imeInputEventInProgress) {
 		OS_OSX::KeyEvent ke;
 
 		ke.echo = false;
+		ke.raw = true;
 
 		int key = [event keyCode];
 		int mod = [event modifierFlags];
@@ -1114,17 +1138,37 @@ static int remapKey(unsigned int key) {
 
 - (void)keyUp:(NSEvent *)event {
 
-	if (!imeMode) {
+	// Ignore all input if IME input is in progress
+	if (!imeInputEventInProgress) {
+		NSString *characters = [event characters];
+		NSUInteger length = [characters length];
 
-		OS_OSX::KeyEvent ke;
+		// Fallback unicode character handler used if IME is not active
+		if (!OS_OSX::singleton->im_active && length > 0 && keycode_has_unicode(remapKey([event keyCode]))) {
+			for (NSUInteger i = 0; i < length; i++) {
+				OS_OSX::KeyEvent ke;
 
-		ke.osx_state = [event modifierFlags];
-		ke.pressed = false;
-		ke.echo = false;
-		ke.scancode = remapKey([event keyCode]);
-		ke.unicode = 0;
+				ke.osx_state = [event modifierFlags];
+				ke.pressed = false;
+				ke.echo = [event isARepeat];
+				ke.scancode = remapKey([event keyCode]);
+				ke.raw = true;
+				ke.unicode = [characters characterAtIndex:i];
 
-		push_to_key_event_buffer(ke);
+				push_to_key_event_buffer(ke);
+			}
+		} else {
+			OS_OSX::KeyEvent ke;
+
+			ke.osx_state = [event modifierFlags];
+			ke.pressed = false;
+			ke.echo = [event isARepeat];
+			ke.scancode = remapKey([event keyCode]);
+			ke.raw = true;
+			ke.unicode = 0;
+
+			push_to_key_event_buffer(ke);
+		}
 	}
 }
 
@@ -2612,30 +2656,44 @@ void OS_OSX::process_key_events() {
 
 		const KeyEvent &ke = key_event_buffer[i];
 
-		if ((i == 0 && ke.scancode == 0) || (i > 0 && key_event_buffer[i - 1].scancode == 0)) {
-			k.instance();
-
-			get_key_modifier_state(ke.osx_state, k);
-			k->set_pressed(ke.pressed);
-			k->set_echo(ke.echo);
-			k->set_scancode(0);
-			k->set_unicode(ke.unicode);
-
-			push_input(k);
-		}
-		if (ke.scancode != 0) {
+		if (ke.raw) {
+			// Non IME input - no composite characters, pass events as is
 			k.instance();
 
 			get_key_modifier_state(ke.osx_state, k);
 			k->set_pressed(ke.pressed);
 			k->set_echo(ke.echo);
 			k->set_scancode(ke.scancode);
-
-			if (i + 1 < key_event_pos && key_event_buffer[i + 1].scancode == 0) {
-				k->set_unicode(key_event_buffer[i + 1].unicode);
-			}
+			k->set_unicode(ke.unicode);
 
 			push_input(k);
+		} else {
+			// IME input
+			if ((i == 0 && ke.scancode == 0) || (i > 0 && key_event_buffer[i - 1].scancode == 0)) {
+				k.instance();
+
+				get_key_modifier_state(ke.osx_state, k);
+				k->set_pressed(ke.pressed);
+				k->set_echo(ke.echo);
+				k->set_scancode(0);
+				k->set_unicode(ke.unicode);
+
+				push_input(k);
+			}
+			if (ke.scancode != 0) {
+				k.instance();
+
+				get_key_modifier_state(ke.osx_state, k);
+				k->set_pressed(ke.pressed);
+				k->set_echo(ke.echo);
+				k->set_scancode(ke.scancode);
+
+				if (i + 1 < key_event_pos && key_event_buffer[i + 1].scancode == 0) {
+					k->set_unicode(key_event_buffer[i + 1].unicode);
+				}
+
+				push_input(k);
+			}
 		}
 	}
 

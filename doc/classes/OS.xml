@@ -221,14 +221,16 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns IME selection range.
+				Returns IME cursor position (currently edited portion of the string) relative to the characters in the composition string.
+				[code]NOTIFICATION_OS_IME_UPDATE[/code] is sent to the application to notify it of changes to the IME cursor position.
 			</description>
 		</method>
 		<method name="get_ime_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Returns IME intermediate text.
+				Returns IME intermediate composition string.
+				[code]NOTIFICATION_OS_IME_UPDATE[/code] is sent to the application to notify it of changes to the IME composition string.
 			</description>
 		</method>
 		<method name="get_latin_keyboard_variant" qualifiers="const">
@@ -710,6 +712,9 @@
 			</argument>
 			<description>
 				Sets whether IME input mode should be enabled.
+				If active IME handles key events before the application and creates an composition string and suggestion list.
+				Application can retrieve the composition status by using [method get_ime_selection] and [method get_ime_text] functions.
+				Completed composition string is committed when input is finished.
 			</description>
 		</method>
 		<method name="set_ime_position">
