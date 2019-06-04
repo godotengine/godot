@@ -20,11 +20,6 @@ if env['tools']:
         'glue/cs_glue_version.gen.h'
     )
 
-vars = Variables()
-vars.Add(BoolVariable('mono_glue', 'Build with the mono glue sources', True))
-vars.Add(BoolVariable('xbuild_fallback', 'If MSBuild is not found, fallback to xbuild', False))
-vars.Update(env_mono)
-
 # Glue sources
 if env_mono['mono_glue']:
     env_mono.Append(CPPDEFINES=['MONO_GLUE_ENABLED'])
