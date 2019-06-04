@@ -96,6 +96,12 @@ def configure(env):
     env.Append(LINKFLAGS=['-O2'])
     # env.Append(LINKFLAGS=['-g4'])
 
+    # FIXME: This used to be the default in older emscripten, but now it would error out.
+    # We have two undefined symbols in the current 2.1 branch (since years):
+    # error: undefined symbol: popen
+    # error: undefined symbol: sem_getvalue
+    env.Append(LINKFLAGS=['-s', 'ERROR_ON_UNDEFINED_SYMBOLS=0'])
+
     # print "CCCOM is:", env.subst('$CCCOM')
     # print "P: ", env['p'], " Platofrm: ", env['platform']
 
