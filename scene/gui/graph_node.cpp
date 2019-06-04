@@ -159,9 +159,7 @@ void GraphNode::_resort() {
 		fit_child_in_rect(c, r);
 		cache_y.push_back(vofs + size.y * 0.5);
 
-		if (vofs > 0)
-			vofs += sep;
-		vofs += size.y;
+		vofs += size.y + sep;
 	}
 
 	update();
