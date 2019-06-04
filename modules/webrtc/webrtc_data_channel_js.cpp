@@ -205,30 +205,45 @@ String WebRTCDataChannelJS::get_label() const {
 }
 
 /* clang-format off */
-#define _JS_GET(PROP)				\
+#define _JS_GET(PROP, DEF)			\
 EM_ASM_INT({					\
 	var dict = Module.IDHandler.get($0);	\
 	if (!dict || !dict["channel"]) {	\
-		return 0;			\
-	};					\
-	return dict["channel"].PROP;		\
+		return DEF;			\
+	}					\
+	var out = dict["channel"].PROP;		\
+	return out === null ? DEF : out;	\
 }, _js_id)
 /* clang-format on */
 
 bool WebRTCDataChannelJS::is_ordered() const {
-	return _JS_GET(ordered);
+	return _JS_GET(ordered, true);
 }
 
 int WebRTCDataChannelJS::get_id() const {
-	return _JS_GET(id);
+	return _JS_GET(id, 65535);
 }
 
 int WebRTCDataChannelJS::get_max_packet_life_time() const {
-	return _JS_GET(maxPacketLifeTime);
+	// Can't use macro, webkit workaround.
+	/* clang-format off */
+	return EM_ASM_INT({
+		var dict = Module.IDHandler.get($0);
+		if (!dict || !dict["channel"]) {
+			return 65535;
+		}
+		if (dict["channel"].maxRetransmitTime !== undefined) {
+			// Guess someone didn't appreciate the standardization process.
+			return dict["channel"].maxRetransmitTime;
+		}
+		var out = dict["channel"].maxPacketLifeTime;
+		return out === null ? 65535 : out;
+	}, _js_id);
+	/* clang-format on */
 }
 
 int WebRTCDataChannelJS::get_max_retransmits() const {
-	return _JS_GET(maxRetransmits);
+	return _JS_GET(maxRetransmits, 65535);
 }
 
 String WebRTCDataChannelJS::get_protocol() const {
@@ -236,7 +251,7 @@ String WebRTCDataChannelJS::get_protocol() const {
 }
 
 bool WebRTCDataChannelJS::is_negotiated() const {
-	return _JS_GET(negotiated);
+	return _JS_GET(negotiated, false);
 }
 
 WebRTCDataChannelJS::WebRTCDataChannelJS() {
