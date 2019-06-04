@@ -56,7 +56,7 @@
  * [including the GNU Public Licence.]
  */
 /* ====================================================================
- * Copyright (c) 1998-2006 The OpenSSL Project.  All rights reserved.
+ * Copyright (c) 1998-2019 The OpenSSL Project.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -118,6 +118,7 @@
 #include <openssl/buffer.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
+#include "constant_time_locl.h"
 
 DECLARE_LHASH_OF(ERR_STRING_DATA);
 DECLARE_LHASH_OF(ERR_STATE);
@@ -826,8 +827,24 @@ static unsigned long get_error_values(int inc, int top, const char **file,
         return ERR_R_INTERNAL_ERROR;
     }
 
+    while (es->bottom != es->top) {
+        if (es->err_flags[es->top] & ERR_FLAG_CLEAR) {
+            err_clear(es, es->top);
+            es->top = es->top > 0 ? es->top - 1 : ERR_NUM_ERRORS - 1;
+            continue;
+        }
+        i = (es->bottom + 1) % ERR_NUM_ERRORS;
+        if (es->err_flags[i] & ERR_FLAG_CLEAR) {
+            es->bottom = i;
+            err_clear(es, es->bottom);
+            continue;
+        }
+        break;
+    }
+
     if (es->bottom == es->top)
         return 0;
+
     if (top)
         i = es->top;            /* last error */
     else
@@ -1155,4 +1172,24 @@ int ERR_pop_to_mark(void)
         return 0;
     es->err_flags[es->top] &= ~ERR_FLAG_MARK;
     return 1;
+}
+
+void err_clear_last_constant_time(int clear)
+{
+    ERR_STATE *es;
+    int top;
+
+    es = ERR_get_state();
+    if (es == NULL)
+        return;
+
+    top = es->top;
+
+    /*
+     * Flag error as cleared but remove it elsewhere to avoid two errors
+     * accessing the same error stack location, revealing timing information.
+     */
+    clear = constant_time_select_int(constant_time_eq_int(clear, 0),
+                                     0, ERR_FLAG_CLEAR);
+    es->err_flags[top] |= clear;
 }
