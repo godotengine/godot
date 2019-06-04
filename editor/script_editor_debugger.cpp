@@ -1025,7 +1025,9 @@ void ScriptEditorDebugger::_performance_draw() {
 		int pi = which[i];
 		Color c = get_color("accent_color", "Editor");
 		float h = (float)which[i] / (float)(perf_items.size());
-		c.set_hsv(Math::fmod(h + 0.4, 0.9), c.get_s() * 0.9, c.get_v() * 1.4);
+		// Use a darker color on light backgrounds for better visibility
+		float value_multiplier = EditorSettings::get_singleton()->is_dark_theme() ? 1.4 : 0.55;
+		c.set_hsv(Math::fmod(h + 0.4, 0.9), c.get_s() * 0.9, c.get_v() * value_multiplier);
 
 		c.a = 0.6;
 		perf_draw->draw_string(graph_font, r.position + Point2(0, graph_font->get_ascent()), perf_items[pi]->get_text(0), c, r.size.x);
@@ -1045,9 +1047,8 @@ void ScriptEditorDebugger::_performance_draw() {
 			float h2 = E->get()[pi] / m;
 			h2 = (1.0 - h2) * r.size.y;
 
-			c.a = 0.7;
 			if (E != perf_history.front())
-				perf_draw->draw_line(r.position + Point2(from, h2), r.position + Point2(from + spacing, prev), c, 2.0);
+				perf_draw->draw_line(r.position + Point2(from, h2), r.position + Point2(from + spacing, prev), c, Math::round(EDSCALE), true);
 			prev = h2;
 			E = E->next();
 			from -= spacing;
