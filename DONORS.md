@@ -17,7 +17,6 @@ generous deed immortalized in the next stable release of Godot Engine.
 ## Gold sponsors
 
     Gamblify <https://www.gamblify.com>
-    Image Campus <https://www.imagecampus.edu.ar>
 
 ## Mini sponsors
 
