@@ -271,6 +271,9 @@ void OS::clear_last_error() {
 	last_error = NULL;
 }
 
+void OS::add_shortcut(const String &p_name, const Ref<InputEvent> &p_shortcut_event) {
+}
+
 void OS::set_no_window_mode(bool p_enable) {
 
 	_no_window = p_enable;

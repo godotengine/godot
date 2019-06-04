@@ -160,6 +160,8 @@ public:
 	virtual const char *get_last_error() const;
 	virtual void clear_last_error();
 
+	virtual void add_shortcut(const String &p_name, const Ref<InputEvent> &p_shortcut_event);
+
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,

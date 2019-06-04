@@ -1425,6 +1425,7 @@ String EditorSettings::get_editor_layouts_config() const {
 
 void EditorSettings::add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut) {
 
+	OS::get_singleton()->add_shortcut(p_name, p_shortcut->get_shortcut());
 	shortcuts[p_name] = p_shortcut;
 }
 

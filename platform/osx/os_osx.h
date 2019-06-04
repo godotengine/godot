@@ -108,6 +108,12 @@ public:
 	NSOpenGLPixelFormat *pixelFormat;
 	NSOpenGLContext *context;
 
+	NSMenu *menu_bar;
+	NSMenu *shortcuts_menu;
+	Map<String, NSMenu*> shortcut_categories;
+	Map<String, NSMenuItem*> shortcuts;
+	Map<String, Ref<InputEventKey> > shortcut_inputevents;
+
 	bool layered_window;
 	bool waiting_for_vsync;
 	NSCondition *vsync_condition;
@@ -152,6 +158,8 @@ public:
 	int video_driver_index;
 	virtual int get_current_video_driver() const;
 
+	unichar get_key_equivalent(Ref<InputEventKey> &p_event_key);
+
 protected:
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
@@ -185,6 +193,8 @@ public:
 
 	virtual Size2 get_window_size() const;
 	virtual Size2 get_real_window_size() const;
+
+	virtual void add_shortcut(const String &p_name, const Ref<InputEvent> &p_shortcut_event);
 
 	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);

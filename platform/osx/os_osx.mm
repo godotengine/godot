@@ -247,6 +247,20 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_ABOUT);
 }
 
+- (void)menuItemDidTrigger:(id)sender {
+	// Get shortcut reference InputEvent and simulate it by adding it to the input buffer
+	String shortcut_name = String([((NSMenuItem*)sender).representedObject UTF8String]);
+	const Map<String, Ref<InputEventKey> >::Element *E = OS_OSX::singleton->shortcut_inputevents.find(shortcut_name);
+	if (E) {
+		Ref<InputEventKey> ke = E->get();
+		ke->set_pressed(true);
+		OS_OSX::singleton->push_input(ke);
+		// TODO: Is release event necessary
+		// ke->set_pressed(false);
+		// OS_OSX::singleton->push_input(ke);
+	}
+}
+
 @end
 
 @interface GodotWindowDelegate : NSObject {
@@ -1282,6 +1296,83 @@ int OS_OSX::get_current_video_driver() const {
 	return video_driver_index;
 }
 
+unichar OS_OSX::get_key_equivalent(Ref<InputEventKey> &p_event_key) {
+	// TODO: Does this require a mapping function?
+	// return p_shortcut->get_unicode();
+	switch (p_event_key->get_scancode())
+    {
+      case KEY_BACKSPACE:
+        return NSBackspaceCharacter;
+      case KEY_DELETE:
+        return NSDeleteFunctionKey;
+      case KEY_PAUSE:
+        return NSPauseFunctionKey;
+      case KEY_SCROLLLOCK:
+        return NSScrollLockFunctionKey;
+      case KEY_SYSREQ:
+        return NSSysReqFunctionKey;
+      case KEY_HOME:
+        return NSHomeFunctionKey;
+      case KEY_LEFT:
+        return NSLeftArrowFunctionKey;
+      case KEY_UP:
+        return NSUpArrowFunctionKey;
+      case KEY_RIGHT:
+        return NSRightArrowFunctionKey;
+      case KEY_DOWN:
+        return NSDownArrowFunctionKey;
+      case KEY_PAGEUP:
+        return NSPageUpFunctionKey;
+      case KEY_PAGEDOWN:
+        return NSPageDownFunctionKey;
+      case KEY_END:
+        return NSEndFunctionKey;
+      case KEY_PRINT:
+        return NSPrintFunctionKey;
+      case KEY_INSERT:
+        return NSInsertFunctionKey;
+      case KEY_MENU:
+        return NSMenuFunctionKey;
+      case KEY_HELP:
+        return NSHelpFunctionKey;
+      case KEY_F1:
+        return NSF1FunctionKey;
+      case KEY_F2:
+        return NSF2FunctionKey;
+      case KEY_F3:
+        return NSF3FunctionKey;
+      case KEY_F4:
+        return NSF4FunctionKey;
+      case KEY_F5:
+        return NSF5FunctionKey;
+      case KEY_F6:
+        return NSF6FunctionKey;
+      case KEY_F7:
+        return NSF7FunctionKey;
+      case KEY_F8:
+        return NSF8FunctionKey;
+      case KEY_F9:
+        return NSF9FunctionKey;
+      case KEY_F10:
+        return NSF10FunctionKey;
+      case KEY_F11:
+        return NSF11FunctionKey;
+      case KEY_F12:
+        return NSF12FunctionKey;
+      case KEY_F13:
+        return NSF13FunctionKey;
+      case KEY_F14:
+        return NSF14FunctionKey;
+      case KEY_F15:
+        return NSF15FunctionKey;
+      case KEY_F16:
+      default:
+        break;
+    }
+	return p_event_key->get_unicode();
+	return '\0';
+}
+
 Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	/*** OSX INITIALIZATION ***/
@@ -1856,6 +1947,55 @@ void OS_OSX::set_window_title(const String &p_title) {
 	title = p_title;
 
 	[window_object setTitle:[NSString stringWithUTF8String:p_title.utf8().get_data()]];
+}
+
+// TODO: Handle editing/removing shortcuts?
+// TODO: Handle invalid shortcuts?
+void OS_OSX::add_shortcut(const String &p_name, const Ref<InputEvent> &p_shortcut_event) {
+	Ref<InputEventKey> ke = p_shortcut_event;
+	if (ke.is_valid()) {
+		Vector<String> path = p_name.split("/", true, 1);
+		String category_name = path[0];
+		String shortcut_name = path[1];
+
+		// Get or create menu for shortcut category
+		NSMenu *category_menu = nil;
+		const Map<String, NSMenu*>::Element *E = shortcut_categories.find(category_name);
+		if (!E) {
+			NSString *category_title = [NSString stringWithUTF8String:category_name.capitalize().utf8().get_data()];
+			category_menu = [[NSMenu alloc] initWithTitle:category_title];
+			NSMenuItem *menu_item = [shortcuts_menu addItemWithTitle:NSLocalizedString(category_title, nil) action:nil keyEquivalent:@""];
+			[shortcuts_menu setSubmenu:category_menu forItem:menu_item];
+			shortcut_categories[category_name] = category_menu;
+		}
+		else {
+			category_menu = E->get();
+		}
+
+		NSString *ns_p_name = [[NSString alloc] initWithUTF8String:shortcut_name.replace("/", " / ").capitalize().utf8().get_data()];
+		unichar character = get_key_equivalent(ke);
+		NSMenuItem *menu_item = [category_menu addItemWithTitle:NSLocalizedString(ns_p_name, nil) action:@selector(menuItemDidTrigger:)
+			keyEquivalent:[NSString stringWithCharacters:&character length:1]];
+		menu_item.representedObject = [NSString stringWithUTF8String:p_name.utf8().get_data()];
+
+		// TODO: How does NSAlternativeKeyMask map to godot
+		// TODO: Where are phantom shifts coming from?
+		NSUInteger modifiers = 0;
+		if (ke->get_shift())
+			modifiers |= NSShiftKeyMask;
+		if (ke->get_alt())
+			modifiers |= NSAlternateKeyMask;
+		if (ke->get_control())
+			modifiers |= NSControlKeyMask;
+		//if (ke->get_metakey())
+		//	modifiers |= NSAlternateKeyMask;
+		if (ke->get_command())
+			modifiers |= NSCommandKeyMask;
+
+		[menu_item setKeyEquivalentModifierMask:modifiers];
+		shortcuts[p_name] = menu_item;
+		shortcut_inputevents[p_name] = ke;
+	}
 }
 
 void OS_OSX::set_native_icon(const String &p_filename) {
@@ -2840,12 +2980,15 @@ OS_OSX::OS_OSX() {
 	[apple_menu addItemWithTitle:title action:@selector(terminate:) keyEquivalent:@"q"];
 
 	// Setup menu bar
-	NSMenu *main_menu = [[NSMenu alloc] initWithTitle:@""];
-	menu_item = [main_menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
-	[main_menu setSubmenu:apple_menu forItem:menu_item];
-	[NSApp setMainMenu:main_menu];
+	menu_bar = [[NSMenu alloc] initWithTitle:@""];
+	menu_item = [menu_bar addItemWithTitle:@"" action:nil keyEquivalent:@""];
+	[menu_bar setSubmenu:apple_menu forItem:menu_item];
+	[NSApp setMainMenu:menu_bar];
 
-	[main_menu release];
+	shortcuts_menu = [[NSMenu alloc] initWithTitle:@"Shortcuts"];
+	menu_item = [menu_bar addItemWithTitle:@"Shortcuts" action:nil keyEquivalent:@""];
+	[menu_bar setSubmenu:shortcuts_menu forItem:menu_item];
+
 	[apple_menu release];
 
 	[NSApp finishLaunching];
