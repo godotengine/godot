@@ -69,9 +69,9 @@ def configure(env):
             exec(f.read(), em_config)
         except StandardError as e:
             raise RuntimeError("Emscripten configuration file '%s' is invalid:\n%s" % (em_config_file, e))
-    if 'EMSCRIPTEN_ROOT' not in em_config:
-        raise RuntimeError("'EMSCRIPTEN_ROOT' missing in Emscripten configuration file '%s'" % em_config_file)
-    env.PrependENVPath('PATH', em_config['EMSCRIPTEN_ROOT'])
+    if 'BINARYEN_ROOT' not in em_config and 'EMSCRIPTEN_ROOT' not in em_config:
+        raise RuntimeError("'BINARYEN_ROOT' or 'EMSCRIPTEN_ROOT' missing in Emscripten configuration file '%s'" % em_config_file)
+    env.PrependENVPath('PATH', em_config.get('BINARYEN_ROOT', em_config.get('EMSCRIPTEN_ROOT')))
 
     env['CC'] = 'emcc'
     env['CXX'] = 'em++'
