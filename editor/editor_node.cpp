@@ -523,6 +523,7 @@ void EditorNode::_fs_changed() {
 void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 
 	List<String> scenes; //will load later
+	int current_tab = scene_tabs->get_current_tab();
 
 	for (int i = 0; i < p_resources.size(); i++) {
 		String file_type = ResourceLoader::get_resource_type(p_resources[i]);
@@ -545,6 +546,8 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 	for (List<String>::Element *E = scenes.front(); E; E = E->next()) {
 		reload_scene(E->get());
 	}
+
+	scene_tabs->set_current_tab(current_tab);
 }
 
 void EditorNode::_sources_changed(bool p_exist) {
@@ -1212,6 +1215,17 @@ void EditorNode::save_all_scenes() {
 
 	_menu_option_confirm(RUN_STOP, true);
 	_save_all_scenes();
+}
+
+void EditorNode::save_scene_list(Vector<String> p_scene_filenames) {
+
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		Node *scene = editor_data.get_edited_scene_root(i);
+
+		if (scene && (p_scene_filenames.find(scene->get_filename()) >= 0)) {
+			_save_scene(scene->get_filename(), i);
+		}
+	}
 }
 
 void EditorNode::restart_editor() {
@@ -2859,7 +2873,7 @@ bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 	return plugin_addons.has(p_addon);
 }
 
-void EditorNode::_remove_edited_scene() {
+void EditorNode::_remove_edited_scene(bool p_change_tab) {
 	int new_index = editor_data.get_edited_scene();
 	int old_index = new_index;
 
@@ -2875,18 +2889,19 @@ void EditorNode::_remove_edited_scene() {
 	if (editor_data.get_scene_path(old_index) != String()) {
 		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(editor_data.get_scene_path(old_index));
 	}
-	_scene_tab_changed(new_index);
+
+	if (p_change_tab) _scene_tab_changed(new_index);
 	editor_data.remove_scene(old_index);
 	editor_data.get_undo_redo().clear_history(false);
 	_update_title();
 	_update_scene_tabs();
 }
 
-void EditorNode::_remove_scene(int index) {
+void EditorNode::_remove_scene(int index, bool p_change_tab) {
 
 	if (editor_data.get_edited_scene() == index) {
 		//Scene to remove is current scene
-		_remove_edited_scene();
+		_remove_edited_scene(p_change_tab);
 	} else {
 		//Scene to remove is not active scene
 		editor_data.remove_scene(index);
@@ -4182,6 +4197,14 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 	return true;
 }
 
+int EditorNode::get_current_tab() {
+	return scene_tabs->get_current_tab();
+}
+
+void EditorNode::set_current_tab(int p_tab) {
+	scene_tabs->set_current_tab(p_tab);
+}
+
 void EditorNode::_update_layouts_menu() {
 
 	editor_layouts->clear();
@@ -4809,8 +4832,7 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	if (scene_idx == -1) {
 		if (get_edited_scene()) {
-			//scene is not open, so at it might be instanced, just refresh, set tab to itself and it will reload
-			set_current_scene(current_tab);
+			//scene is not open, so at it might be instanced. We'll refresh the whole scene later.
 			editor_data.get_undo_redo().clear_history();
 		}
 		return;
@@ -4820,17 +4842,19 @@ void EditorNode::reload_scene(const String &p_path) {
 		editor_data.apply_changes_in_editors();
 		_set_scene_metadata(p_path);
 	}
-	//remove scene
-	_remove_scene(scene_idx);
-	//reload scene
 
+	//remove scene
+	_remove_scene(scene_idx, false);
+
+	//reload scene
 	load_scene(p_path, true, false, true, true);
+
 	//adjust index so tab is back a the previous position
 	editor_data.move_edited_scene_to_index(scene_idx);
 	get_undo_redo()->clear_history();
+
 	//recover the tab
 	scene_tabs->set_current_tab(current_tab);
-	_scene_tab_changed(current_tab);
 }
 
 int EditorNode::plugin_init_callback_count = 0;
