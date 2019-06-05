@@ -66,7 +66,7 @@ Size2 EditorProperty::get_minimum_size() const {
 
 	if (checkable) {
 		Ref<Texture> check = get_icon("checked", "CheckBox");
-		ms.width += check->get_width() + get_constant("hseparator", "Tree");
+		ms.width += check->get_width() + get_constant("hseparation", "CheckBox") + get_constant("hseparator", "Tree");
 	}
 
 	if (bottom_editor != NULL && bottom_editor->is_visible()) {
@@ -228,8 +228,7 @@ void EditorProperty::_notification(int p_what) {
 			}
 			check_rect = Rect2(ofs, ((size.height - checkbox->get_height()) / 2), checkbox->get_width(), checkbox->get_height());
 			draw_texture(checkbox, check_rect.position, color2);
-			ofs += get_constant("hseparator", "Tree");
-			ofs += checkbox->get_width();
+			ofs += get_constant("hseparator", "Tree") + checkbox->get_width() + get_constant("hseparation", "CheckBox");
 			text_limit -= ofs;
 		} else {
 			check_rect = Rect2();
