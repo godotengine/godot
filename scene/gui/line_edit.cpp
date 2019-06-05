@@ -539,7 +539,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 			if (handled) {
 				accept_event();
-			} else if (!k->get_alt() && !k->get_command()) {
+			} else if (!k->get_command()) {
 				if (k->get_unicode() >= 32 && k->get_scancode() != KEY_DELETE) {
 
 					if (editable) {
