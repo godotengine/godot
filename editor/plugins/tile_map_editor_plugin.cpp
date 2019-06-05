@@ -780,7 +780,8 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 		r.position += (r.size + Vector2(spacing, spacing)) * offset;
 	}
 	Size2 sc = p_xform.get_scale();
-	Size2 cell_size = node->get_cell_size();
+	/* For a future CheckBox to Center Texture:
+	Size2 cell_size = node->get_cell_size(); */
 	Rect2 rect = Rect2();
 	rect.position = node->map_to_world(p_point) + node->get_cell_draw_offset();
 
@@ -792,10 +793,11 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 
 	if (p_transpose) {
 		SWAP(tile_ofs.x, tile_ofs.y);
+		/* For a future CheckBox to Center Texture:
 		rect.position.x += cell_size.x / 2 - rect.size.y / 2;
 		rect.position.y += cell_size.y / 2 - rect.size.x / 2;
 	} else {
-		rect.position += cell_size / 2 - rect.size / 2;
+		rect.position += cell_size / 2 - rect.size / 2; */
 	}
 
 	if (p_flip_h) {

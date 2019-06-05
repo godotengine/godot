@@ -220,8 +220,8 @@ void TileMap::_fix_cell_transform(Transform2D &xform, const Cell &p_cell, const 
 		xform.elements[1].y = -xform.elements[1].y;
 		offset.y = s.y - offset.y;
 	}
-
-	offset += cell_size / 2 - s / 2;
+	/* For a future CheckBox to Center Texture:
+	offset += cell_size / 2 - s / 2; */
 	xform.elements[2] += offset;
 }
 
@@ -372,10 +372,11 @@ void TileMap::update_dirty_quadrants() {
 
 			if (c.transpose) {
 				SWAP(tile_ofs.x, tile_ofs.y);
+				/* For a future CheckBox to Center Texture:
 				rect.position.x += cell_size.x / 2 - rect.size.y / 2;
 				rect.position.y += cell_size.y / 2 - rect.size.x / 2;
 			} else {
-				rect.position += cell_size / 2 - rect.size / 2;
+				rect.position += cell_size / 2 - rect.size / 2; */
 			}
 
 			if (c.flip_h) {
