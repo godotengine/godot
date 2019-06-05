@@ -726,6 +726,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 				image_data = cached_data;
 				file->close();
+				memdelete(file);
 			}
 		}
 
@@ -800,6 +801,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 					if (file) {
 						file->store_line(new_etag);
 						file->close();
+						memdelete(file);
 					}
 
 					int len = p_data.size();
@@ -809,6 +811,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 						file->store_32(len);
 						file->store_buffer(r.ptr(), len);
 						file->close();
+						memdelete(file);
 					}
 
 					break;
@@ -848,6 +851,7 @@ void EditorAssetLibrary::_update_image_queue() {
 				if (file) {
 					headers.push_back("If-None-Match: " + file->get_line());
 					file->close();
+					memdelete(file);
 				}
 			}
 
