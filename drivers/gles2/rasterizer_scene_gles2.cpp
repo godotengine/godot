@@ -2931,14 +2931,16 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 #elif IPHONE_ENABLED
+
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->multisample_fbo);
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->fbo);
 			glResolveMultisampleFramebufferAPPLE();
 
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-#else
-			// In GLES2 Blit is not available, so just copy color texture manually
+#elif ANDROID_ENABLED
+
+			// In GLES2 AndroidBlit is not available, so just copy color texture manually
 			_copy_texture_to_front_buffer(storage->frame.current_rt->multisample_color);
 #endif
 		}
@@ -2972,8 +2974,17 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-#else
-		// In GLES2 Blit is not available, so just copy color texture manually
+#elif IPHONE_ENABLED
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->multisample_fbo);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->fbo);
+		glResolveMultisampleFramebufferAPPLE();
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+#elif ANDROID_ENABLED
+
+		// In GLES2 Android Blit is not available, so just copy color texture manually
 		_copy_texture_to_front_buffer(storage->frame.current_rt->multisample_color);
 #endif
 	}
