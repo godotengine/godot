@@ -265,6 +265,7 @@ private:
 	bool key_rot;
 	bool key_scale;
 	bool panning;
+	bool pan_pressed;
 
 	MenuOption last_option;
 
@@ -383,6 +384,7 @@ private:
 	Ref<ShortCut> set_pivot_shortcut;
 	Ref<ShortCut> multiply_grid_step_shortcut;
 	Ref<ShortCut> divide_grid_step_shortcut;
+	Ref<ShortCut> pan_view_shortcut;
 
 	bool _is_node_locked(const Node *p_node);
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
