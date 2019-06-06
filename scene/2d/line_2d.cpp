@@ -105,6 +105,7 @@ void Line2D::set_point_position(int i, Vector2 pos) {
 }
 
 Vector2 Line2D::get_point_position(int i) const {
+	ERR_FAIL_INDEX_V(i, _points.size(), Vector2())
 	return _points.get(i);
 }
 
