@@ -120,6 +120,10 @@ class ResourceImporterScene : public ResourceImporter {
 	};
 
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
+	void _keep_node(Node *p_current, Node *p_owner, Set<Node *> &r_keep_nodes);
+	void _clean_animation_player(Node *scene);
+	void _filter_node(Node *p_current, Node *p_owner, const Set<Node *> p_keep_nodes, Set<String> &r_removed_nodes);
+	void _fill_kept_node(Set<Node *> &keep_nodes);
 
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }
@@ -151,6 +155,8 @@ public:
 	void _create_clips(Node *scene, const Array &p_clips, bool p_bake_all);
 	void _filter_anim_tracks(Ref<Animation> anim, Set<String> &keep);
 	void _filter_tracks(Node *scene, const String &p_text);
+
+	void _optimize_scene(Node *scene);
 	void _optimize_animations(Node *scene, float p_max_lin_error, float p_max_ang_error, float p_max_angle);
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata = NULL);

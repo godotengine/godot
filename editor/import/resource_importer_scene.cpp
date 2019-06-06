@@ -1133,6 +1133,7 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/custom_script", PROPERTY_HINT_FILE, script_ext_hint), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "nodes/storage", PROPERTY_HINT_ENUM, "Single Scene,Instanced Sub-Scenes"), scenes_out ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/optimizer/remove_unused_nodes", PROPERTY_HINT_NONE), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/location", PROPERTY_HINT_ENUM, "Node,Mesh"), (meshes_out || materials_out) ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/storage", PROPERTY_HINT_ENUM, "Built-In,Files", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), materials_out ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "materials/keep_on_reimport"), materials_out ? true : false));
@@ -1342,6 +1343,10 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		_optimize_animations(scene, anim_optimizer_linerr, anim_optimizer_angerr, anim_optimizer_maxang);
 	}
 
+	if (p_options["nodes/optimizer/remove_unused_nodes"]) {
+		_optimize_scene(scene);
+	}
+
 	Array animation_clips;
 	{
 
@@ -1501,6 +1506,72 @@ ResourceImporterScene *ResourceImporterScene::singleton = NULL;
 ResourceImporterScene::ResourceImporterScene() {
 	singleton = this;
 }
+
+void ResourceImporterScene::_keep_node(Node *p_current, Node *p_owner, Set<Node *> &r_keep_nodes) {
+	if (p_current == p_owner) {
+		r_keep_nodes.insert(p_current);
+	}
+
+	if (p_current->get_class() != Spatial().get_class()) {
+		r_keep_nodes.insert(p_current);
+	}
+
+	for (int i = 0; i < p_current->get_child_count(); i++) {
+		_keep_node(p_current->get_child(i), p_owner, r_keep_nodes);
+	}
+}
+
+void ResourceImporterScene::_optimize_scene(Node *scene) {
+	Set<String> removed_nodes;
+	Set<Node *> keep_nodes;
+	_keep_node(scene, scene, keep_nodes);
+	_fill_kept_node(keep_nodes);
+	_filter_node(scene, scene, keep_nodes, removed_nodes);
+	_clean_animation_player(scene);
+}
+
+void ResourceImporterScene::_clean_animation_player(Node *scene) {
+	for (int32_t i = 0; i < scene->get_child_count(); i++) {
+		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(scene->get_child(i));
+		if (ap) {
+			List<StringName> animations;
+			ap->get_animation_list(&animations);
+			for (List<StringName>::Element *E = animations.front(); E; E = E->next()) {
+				Ref<Animation> animation = ap->get_animation(E->get());
+				for (int32_t k = 0; k < animation->get_track_count(); k++) {
+					NodePath path = animation->track_get_path(k);
+					if (!scene->has_node(path)) {
+						animation->remove_track(k);
+					}
+				}
+			}
+			break;
+		}
+	}
+}
+
+void ResourceImporterScene::_filter_node(Node *p_current, Node *p_owner, const Set<Node *> p_keep_nodes, Set<String> &r_removed_nodes) {
+	if (p_keep_nodes.has(p_current) == false) {
+		r_removed_nodes.insert(p_current->get_name());
+		p_current->queue_delete();
+	}
+	for (int i = 0; i < p_current->get_child_count(); i++) {
+		_filter_node(p_current->get_child(i), p_owner, p_keep_nodes, r_removed_nodes);
+	}
+}
+
+void ResourceImporterScene::_fill_kept_node(Set<Node *> &keep_nodes) {
+	for (Set<Node *>::Element *E = keep_nodes.front(); E; E = E->next()) {
+		Node *node = E->get();
+		while (node != NULL) {
+			if (keep_nodes.has(node) == false) {
+				keep_nodes.insert(node);
+			}
+			node = node->get_parent();
+		}
+	}
+}
+
 ///////////////////////////////////////
 
 uint32_t EditorSceneImporterESCN::get_import_flags() const {
