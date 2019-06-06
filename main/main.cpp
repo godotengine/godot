@@ -931,7 +931,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (!force_lowdpi) {
-		OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", false);
+		OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
 	}
 
 	video_mode.use_vsync = GLOBAL_DEF("display/window/vsync/use_vsync", true);
