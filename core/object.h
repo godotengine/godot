@@ -387,6 +387,53 @@ private:
 class ScriptInstance;
 typedef uint64_t ObjectID;
 
+class ObjectDB {
+
+	struct ObjectPtrHash {
+
+		static _FORCE_INLINE_ uint32_t hash(const Object *p_obj) {
+
+			union {
+				const Object *p;
+				unsigned long i;
+			} u;
+			u.p = p_obj;
+			return HashMapHasherDefault::hash((uint64_t)u.i);
+		}
+	};
+
+	static HashMap<ObjectID, Object *> instances;
+	static HashMap<Object *, ObjectID, ObjectPtrHash> instance_checks;
+
+	static ObjectID instance_counter;
+	friend class Object;
+	friend void unregister_core_types();
+
+	static RWLock *rw_lock;
+	static void cleanup();
+	static ObjectID add_instance(Object *p_object);
+	static void remove_instance(Object *p_object);
+	friend void register_core_types();
+	static void setup();
+
+public:
+	typedef void (*DebugFunc)(Object *p_obj);
+
+	static Object *get_instance(ObjectID p_instance_id);
+	static void debug_objects(DebugFunc p_func);
+	static int get_object_count();
+
+	_FORCE_INLINE_ static bool instance_validate(Object *p_ptr) {
+
+		return instance_checks.has(p_ptr);
+	}
+
+	_FORCE_INLINE_ static bool instance_validate(const Object *p_ptr) {
+
+		return instance_checks.has(const_cast<Object *>(p_ptr));
+	}
+};
+
 class Object {
 public:
 	enum ConnectFlags {
@@ -585,6 +632,8 @@ public:
 
 	template <class T>
 	static T *cast_to(Object *p_object) {
+		if (unlikely(!ObjectDB::instance_validate(p_object)))
+			return NULL;
 #ifndef NO_SAFE_CAST
 		return dynamic_cast<T *>(p_object);
 #else
@@ -600,6 +649,8 @@ public:
 	template <class T>
 	static const T *cast_to(const Object *p_object) {
 #ifndef NO_SAFE_CAST
+		if (unlikely(!ObjectDB::instance_validate(p_object)))
+			return NULL;
 		return dynamic_cast<const T *>(p_object);
 #else
 		if (!p_object)
@@ -744,48 +795,6 @@ public:
 
 bool predelete_handler(Object *p_object);
 void postinitialize_handler(Object *p_object);
-
-class ObjectDB {
-
-	struct ObjectPtrHash {
-
-		static _FORCE_INLINE_ uint32_t hash(const Object *p_obj) {
-
-			union {
-				const Object *p;
-				unsigned long i;
-			} u;
-			u.p = p_obj;
-			return HashMapHasherDefault::hash((uint64_t)u.i);
-		}
-	};
-
-	static HashMap<ObjectID, Object *> instances;
-	static HashMap<Object *, ObjectID, ObjectPtrHash> instance_checks;
-
-	static ObjectID instance_counter;
-	friend class Object;
-	friend void unregister_core_types();
-
-	static RWLock *rw_lock;
-	static void cleanup();
-	static ObjectID add_instance(Object *p_object);
-	static void remove_instance(Object *p_object);
-	friend void register_core_types();
-	static void setup();
-
-public:
-	typedef void (*DebugFunc)(Object *p_obj);
-
-	static Object *get_instance(ObjectID p_instance_id);
-	static void debug_objects(DebugFunc p_func);
-	static int get_object_count();
-
-	_FORCE_INLINE_ static bool instance_validate(Object *p_ptr) {
-
-		return instance_checks.has(p_ptr);
-	}
-};
 
 //needed by macros
 #include "core/class_db.h"
