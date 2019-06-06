@@ -68,6 +68,7 @@ class SceneTreeEditor : public Control {
 	AcceptDialog *warning;
 
 	bool connect_to_script_mode;
+	bool connecting_signal;
 
 	int blocked;
 
@@ -155,6 +156,7 @@ public:
 	void update_tree() { _update_tree(); }
 
 	void set_connect_to_script_mode(bool p_enable);
+	void set_connecting_signal(bool p_enable);
 
 	Tree *get_scene_tree() { return tree; }
 
