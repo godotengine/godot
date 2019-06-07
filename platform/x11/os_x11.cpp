@@ -33,8 +33,9 @@
 
 #include "core/os/dir_access.h"
 #include "core/print_string.h"
-#include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles3/rasterizer_gles3.h"
+//#include "drivers/gles2/rasterizer_gles2.h"
+//#include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/dummy/rasterizer_dummy.h"
 #include "errno.h"
 #include "key_mapping_x11.h"
 #include "servers/visual/visual_server_raster.h"
@@ -96,6 +97,14 @@ void OS_X11::initialize_core() {
 int OS_X11::get_current_video_driver() const {
 	return video_driver_index;
 }
+
+static RenderingDevice::ID test_pipeline = RenderingDevice::INVALID_ID;
+static RenderingDevice::ID test_index_array = RenderingDevice::INVALID_ID;
+static RenderingDevice::ID test_vertex_array = RenderingDevice::INVALID_ID;
+static RenderingDevice::ID test_uniform_set = RenderingDevice::INVALID_ID;
+static RenderingDevice::ID test_framebuffer_pipeline = RenderingDevice::INVALID_ID;
+static RenderingDevice::ID test_framebuffer_uniform_set = RenderingDevice::INVALID_ID;
+static RenderingDevice::ID test_framebuffer = RenderingDevice::INVALID_ID;
 
 Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
@@ -354,6 +363,286 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	video_driver_index = p_video_driver;
 
 	context_gl->set_use_vsync(current_videomode.use_vsync);
+
+#else
+	long visualMask = VisualScreenMask;
+	int numberOfVisuals;
+	XVisualInfo vInfoTemplate = {};
+	vInfoTemplate.screen = DefaultScreen(x11_display);
+	XVisualInfo *visualInfo = XGetVisualInfo(x11_display, visualMask, &vInfoTemplate, &numberOfVisuals);
+
+	Colormap colormap = XCreateColormap(x11_display, RootWindow(x11_display, vInfoTemplate.screen), visualInfo->visual, AllocNone);
+
+	XSetWindowAttributes windowAttributes = {};
+	windowAttributes.colormap = colormap;
+	windowAttributes.background_pixel = 0xFFFFFFFF;
+	windowAttributes.border_pixel = 0;
+	windowAttributes.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask;
+	/*
+	   window = XCreateWindow(demo->display, RootWindow(display, vInfoTemplate.screen), 0, 0, demo->width,
+					     demo->height, 0, visualInfo->depth, InputOutput, visualInfo->visual,
+					     CWBackPixel | CWBorderPixel | CWEventMask | CWColormap, &windowAttributes);
+  */
+	unsigned long valuemask = CWBorderPixel | CWColormap | CWEventMask;
+	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
+
+	//set_class_hint(x11_display, x11_window);
+	XMapWindow(x11_display, x11_window);
+	XFlush(x11_display);
+
+	XSync(x11_display, False);
+	//XSetErrorHandler(oldHandler);
+
+	XFree(visualInfo);
+
+	context_vulkan = memnew(VulkanContextX11(x11_window, x11_display));
+	context_vulkan->initialize(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, false);
+	//temporary
+	rendering_device = memnew(RenderingDeviceVulkan);
+	rendering_device->initialize(context_vulkan);
+	RasterizerDummy::make_current();
+
+	// test shader
+
+	RenderingDevice::ID shader;
+	{
+		RenderingDevice::ShaderStageSource vert;
+		vert.shader_stage = RenderingDevice::SHADER_STAGE_VERTEX;
+		vert.shader_source = "#version 450\n"
+							 "layout(location = 0) in vec4 vertex_pos;\n"
+							 "layout(location = 1) in vec2 uv_pos;\n"
+							 "layout(location = 0) out vec2 uv_interp;\n"
+							 "void main() { gl_Position = vertex_pos; uv_interp=uv_pos;\n }";
+		//"void main() { if (gl_VertexIndex==0) gl_Position=vec4(-0.8,-0.8,0.0,1.0); if (gl_VertexIndex==1) gl_Position=vec4(-0.8,-0.2,0.0,1.0); if (gl_VertexIndex==2) gl_Position=vec4(-0.2,-0.2,0.0,1.0); if (gl_VertexIndex==3) gl_Position=vec4(-0.2,-0.8,0.0,1.0);\n }";
+
+		RenderingDevice::ShaderStageSource frag;
+		frag.shader_stage = RenderingDevice::SHADER_STAGE_FRAGMENT;
+		frag.shader_source = "#version 450\n"
+							 "layout (location = 0) in vec2 uv_interp;\n"
+							 "layout (location = 0) out vec4 uFragColor;\n"
+							 "layout (binding = 0) uniform sampler2D t;\n"
+							 "void main() { uFragColor=texture(t,uv_interp); }\n";
+
+		Vector<RenderingDevice::ShaderStageSource> source;
+		source.push_back(vert);
+		source.push_back(frag);
+		String error;
+		shader = rendering_device->shader_create_from_source(source, &error);
+		if (shader == RenderingDevice::INVALID_ID) {
+			print_line("failed compilation: " + error);
+		} else {
+			print_line("compilation success");
+		}
+	}
+
+	RenderingDevice::ID vertex_desc;
+	{
+
+		PoolVector<uint8_t> pv;
+		pv.resize(24 * 4);
+		{
+			PoolVector<uint8_t>::Write w = pv.write();
+			float *p32 = (float *)w.ptr();
+			p32[0] = -0.8;
+			p32[1] = -0.8;
+			p32[2] = 0.0;
+			p32[3] = 1.0;
+
+			p32[4] = 0.0;
+			p32[5] = 0.0;
+
+			p32[6] = -0.8;
+			p32[7] = -0.2;
+			p32[8] = 0.0;
+			p32[9] = 1.0;
+
+			p32[10] = 0.0;
+			p32[11] = 1.0;
+
+			p32[12] = -0.2;
+			p32[13] = -0.2;
+			p32[14] = 0.0;
+			p32[15] = 1.0;
+
+			p32[16] = 1.0;
+			p32[17] = 1.0;
+
+			p32[18] = -0.2;
+			p32[19] = -0.8;
+			p32[20] = 0.0;
+			p32[21] = 1.0;
+
+			p32[22] = 1.0;
+			p32[23] = 0.0;
+		}
+
+		RenderingDevice::ID vertex_buffer = rendering_device->vertex_buffer_create(pv.size(), pv);
+		Vector<RenderingDevice::VertexDescription> vdarr;
+		RenderingDevice::VertexDescription vd;
+		vd.format = RenderingDevice::DATA_FORMAT_R32G32B32A32_SFLOAT;
+		vd.stride = 4 * 6; //vertex/uv
+		vd.offset = 0;
+		vd.location = 0;
+		vdarr.push_back(vd);
+		vd.format = RenderingDevice::DATA_FORMAT_R32G32_SFLOAT;
+		vd.stride = 4 * 6; //vertex/uv
+		vd.offset = 4 * 4; //offset to UV
+		vd.location = 1;
+		vdarr.push_back(vd);
+
+		vertex_desc = rendering_device->vertex_description_create(vdarr);
+
+		Vector<RenderingDevice::ID> buffers;
+		buffers.push_back(vertex_buffer);
+		buffers.push_back(vertex_buffer);
+
+		test_vertex_array = rendering_device->vertex_array_create(4, vertex_desc, buffers);
+	}
+
+	RenderingDevice::ID test_framebuffer_tex_id;
+
+	{
+		RenderingDevice::TextureFormat tex_format;
+		tex_format.format = RenderingDevice::DATA_FORMAT_R8G8B8A8_UNORM; //RenderingDevice::DATA_FORMAT_A8B8G8R8_UNORM_PACK32;
+		tex_format.width = 256;
+		tex_format.height = 256;
+		tex_format.mipmaps = 1;
+		tex_format.type = RenderingDevice::TEXTURE_TYPE_2D;
+		tex_format.usage_bits = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+
+		test_framebuffer_tex_id = rendering_device->texture_create(tex_format, RenderingDevice::TextureView());
+
+		Vector<RenderingDevice::ID> ids;
+		ids.push_back(test_framebuffer_tex_id);
+
+		test_framebuffer = rendering_device->framebuffer_create(ids);
+	}
+
+	test_pipeline = rendering_device->render_pipeline_create(shader, rendering_device->framebuffer_get_format(test_framebuffer), vertex_desc, RenderingDevice::RENDER_PRIMITIVE_TRIANGLES, RenderingDevice::PipelineRasterizationState(), RenderingDevice::PipelineMultisampleState(), RenderingDevice::PipelineDepthStencilState(), RenderingDevice::PipelineColorBlendState::create_disabled());
+
+	{
+
+		Ref<Image> img;
+		img.instance();
+		Error terr = img->load("../logo.png");
+		if (terr != OK) {
+			print_line("Cant load logo?");
+		}
+
+		img->convert(Image::FORMAT_RGBA8);
+
+		RenderingDevice::TextureFormat tex_format;
+		tex_format.format = RenderingDevice::DATA_FORMAT_R8G8B8A8_UNORM; //RenderingDevice::DATA_FORMAT_A8B8G8R8_UNORM_PACK32;
+		tex_format.width = img->get_width();
+		tex_format.height = img->get_height();
+		print_line("imgsize: " + Vector2(img->get_width(), img->get_height()));
+		tex_format.mipmaps = 1;
+		tex_format.type = RenderingDevice::TEXTURE_TYPE_2D;
+		tex_format.usage_bits = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_CAN_UPDATE_BIT;
+
+		Vector<PoolVector<uint8_t> > initial_data;
+		initial_data.push_back(img->get_data());
+
+		RenderingDevice::ID tex_id = rendering_device->texture_create(tex_format, RenderingDevice::TextureView(), initial_data);
+		RenderingDevice::ID sampler = rendering_device->sampler_create(RenderingDevice::SamplerState());
+
+		Vector<RenderingDevice::Uniform> uniform_description;
+
+		RenderingDevice::Uniform u;
+		u.type = RenderingDevice::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+		u.binding = 0;
+		u.ids.push_back(sampler);
+		u.ids.push_back(tex_id);
+
+		uniform_description.push_back(u);
+
+		test_uniform_set = rendering_device->uniform_set_create(uniform_description, shader, 0);
+	}
+
+	{
+		PoolVector<uint8_t> pv;
+		pv.resize(6 * 4);
+		{
+			PoolVector<uint8_t>::Write w = pv.write();
+			int *p32 = (int *)w.ptr();
+			p32[0] = 0;
+			p32[1] = 1;
+			p32[2] = 2;
+			p32[3] = 0;
+			p32[4] = 2;
+			p32[5] = 3;
+		}
+		RenderingDevice::ID index_buffer = rendering_device->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, pv);
+		test_index_array = rendering_device->index_array_create(index_buffer, 0, 6);
+	}
+
+	{
+
+		RenderingDevice::ID sampler = rendering_device->sampler_create(RenderingDevice::SamplerState());
+
+		Vector<RenderingDevice::Uniform> uniform_description;
+
+		RenderingDevice::Uniform u;
+		u.type = RenderingDevice::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+		u.binding = 0;
+		u.ids.push_back(sampler);
+		u.ids.push_back(test_framebuffer_tex_id);
+
+		uniform_description.push_back(u);
+
+		test_framebuffer_uniform_set = rendering_device->uniform_set_create(uniform_description, shader, 0);
+		test_framebuffer_pipeline = rendering_device->render_pipeline_create(shader, rendering_device->screen_get_framebuffer_format(), vertex_desc, RenderingDevice::RENDER_PRIMITIVE_TRIANGLES, RenderingDevice::PipelineRasterizationState(), RenderingDevice::PipelineMultisampleState(), RenderingDevice::PipelineDepthStencilState(), RenderingDevice::PipelineColorBlendState::create_disabled());
+	}
+
+#if 0
+	Vector<RenderingDevice::ShaderStageSource> source;
+	RenderingDevice::ShaderStageSource frag;
+	frag.shader_stage = RenderingDevice::SHADER_STAGE_FRAGMENT;
+	frag.shader_source = ""
+						 "#version 450\n"
+						 "#extension GL_ARB_separate_shader_objects : enable\n"
+						 "#extension GL_ARB_shading_language_420pack : enable\n"
+						 "layout (set =2, binding = 3) uniform sampler2D sampie;\n"
+						 "layout (set =2, binding = 4) uniform texture2D texie;\n"
+						 "layout (set =2, binding = 5) uniform sampler sampieonly;\n"
+						 "layout (set =2, binding = 6) uniform sampler2D sampiearr[2];\n"
+						 "layout (set =2, binding = 7) uniform texture2D texiearr[2];\n"
+						 "layout (set =2, binding = 8) uniform sampler sampieonlyarr[2];\n"
+						 "layout (set =2, binding = 9) uniform samplerBuffer sabufsa;\n"
+						 "layout (set =2, binding = 9) uniform textureBuffer texbufsa;\n"
+						 "layout (set=3,binding=1,rgba32f) uniform image2D img1;\n"
+						 "layout(std140, set=1,binding = 0) uniform buf {\n"
+						 "	mat4 MVP;\n"
+						 "	vec4 position[12*3];\n"
+						 "	vec4 attr[12*3];\n"
+						 "} ubuf;\n"
+						 "layout(std140, set=1,binding = 1) buffer popis {\n"
+						 "	int popitos;\n"
+						 "} popibuf;\n"
+						 "layout (location = 0) out vec4 uFragColor;\n"
+						 "		\n"
+						 "const vec3 lightDir= vec3(0.424, 0.566, 0.707);\n"
+						 "\n"
+						 "void main() {\n"
+						 "	uFragColor = texture(sampie, vec2(ubuf.attr[0].x));\n"
+						 "	uFragColor+= texture(sampler2D(texie,sampieonly), vec2(ubuf.attr[0].x));\n"
+						 "	uFragColor+= texture(sampiearr[1], vec2(ubuf.attr[0].x));\n"
+						 "	uFragColor+= texture(sampler2D(texiearr[1],sampieonlyarr[1]), vec2(ubuf.attr[0].x));\n"
+						 "	uFragColor+= texelFetch(sabufsa,0);\n"
+						 "	uFragColor+= texelFetch(samplerBuffer(texbufsa,sampieonly),0);\n"
+						 "	uFragColor+= texelFetch(texbufsa,0);\n"
+						 "	uFragColor.xy+= imageSize(img1);\n"
+						 "	uFragColor.x+= float(popibuf.popitos);\n"
+						 "}\n";
+	source.push_back(frag);
+	String error;
+	RenderingDevice::ID shader = rendering_device->shader_create_from_source(source, &error);
+	if (shader == RenderingDevice::INVALID_ID) {
+		print_line("failed compilation: " + error);
+	} else {
+		print_line("compilation success");
+	}
+#endif
 
 #endif
 
@@ -3019,6 +3308,27 @@ void OS_X11::swap_buffers() {
 #if defined(OPENGL_ENABLED)
 	context_gl->swap_buffers();
 #endif
+
+	Vector<Color> clear;
+	clear.push_back(Color(0.5, 0.8, 0.2));
+	RenderingDevice::ID cmd_list = rendering_device->draw_list_begin(test_framebuffer, RenderingDevice::INITIAL_ACTION_CLEAR, RenderingDevice::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, clear);
+	rendering_device->draw_list_bind_render_pipeline(cmd_list, test_pipeline);
+	rendering_device->draw_list_bind_index_array(cmd_list, test_index_array);
+	rendering_device->draw_list_bind_vertex_array(cmd_list, test_vertex_array);
+	rendering_device->draw_list_bind_uniform_set(cmd_list, test_uniform_set, 0);
+	rendering_device->draw_list_draw(cmd_list, true);
+	rendering_device->draw_list_end();
+
+	cmd_list = rendering_device->draw_list_begin_for_screen();
+	rendering_device->draw_list_bind_render_pipeline(cmd_list, test_framebuffer_pipeline);
+	rendering_device->draw_list_bind_index_array(cmd_list, test_index_array);
+	rendering_device->draw_list_bind_vertex_array(cmd_list, test_vertex_array);
+	rendering_device->draw_list_bind_uniform_set(cmd_list, test_framebuffer_uniform_set, 0);
+	rendering_device->draw_list_draw(cmd_list, true);
+	rendering_device->draw_list_end();
+	rendering_device->finalize_frame();
+	context_vulkan->swap_buffers();
+	rendering_device->advance_frame();
 }
 
 void OS_X11::alert(const String &p_alert, const String &p_title) {

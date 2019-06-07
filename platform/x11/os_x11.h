@@ -31,7 +31,7 @@
 #ifndef OS_X11_H
 #define OS_X11_H
 
-#include "context_gl_x11.h"
+//#include "context_gl_x11.h"
 #include "core/os/input.h"
 #include "crash_handler_x11.h"
 #include "drivers/alsa/audio_driver_alsa.h"
@@ -46,6 +46,8 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 //#include "servers/visual/visual_server_wrap_mt.h"
+#include "drivers/vulkan/rendering_device_vulkan.h"
+#include "platform/x11/vulkan_context_x11.h"
 
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/Xlib.h>
@@ -95,6 +97,11 @@ class OS_X11 : public OS_Unix {
 #if defined(OPENGL_ENABLED)
 	ContextGL_X11 *context_gl;
 #endif
+#if defined(VULKAN_ENABLED)
+	VulkanContextX11 *context_vulkan;
+	RenderingDeviceVulkan *rendering_device;
+#endif
+
 	//Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	VideoMode current_videomode;
