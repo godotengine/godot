@@ -1654,14 +1654,30 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create(const TextureFormat &p
 	texture.usage_flags = p_format.usage_bits;
 	texture.samples = p_format.samples;
 
+	//set bound and unbound layouts
 	if (p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 		texture.aspect_mask = TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-		texture.reading_layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
+
+		if (p_format.usage_bits & TEXTURE_USAGE_SAMPLING_BIT) {
+			texture.unbound_layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
+		} else {
+			texture.unbound_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		}
 		texture.bound_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+	} else if (p_format.usage_bits & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+
+		texture.aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
+		if (p_format.usage_bits & TEXTURE_USAGE_SAMPLING_BIT) {
+			texture.unbound_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		} else {
+			texture.unbound_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		}
+		texture.bound_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	} else {
 		texture.aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
-		texture.reading_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		texture.bound_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		texture.unbound_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		texture.bound_layout = VK_IMAGE_LAYOUT_UNDEFINED; //will never be bound
 	}
 
 	texture.bound = false;
@@ -1733,7 +1749,7 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create(const TextureFormat &p
 		image_memory_barrier.srcAccessMask = 0;
 		image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		image_memory_barrier.newLayout = texture.reading_layout;
+		image_memory_barrier.newLayout = texture.unbound_layout;
 		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.image = texture.image;
@@ -1888,7 +1904,7 @@ Error RenderingDeviceVulkan::texture_update(ID p_texture, uint32_t p_mipmap, uin
 		image_memory_barrier.pNext = NULL;
 		image_memory_barrier.srcAccessMask = 0;
 		image_memory_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		image_memory_barrier.oldLayout = texture->reading_layout;
+		image_memory_barrier.oldLayout = texture->unbound_layout;
 		image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
 		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -2017,7 +2033,7 @@ Error RenderingDeviceVulkan::texture_update(ID p_texture, uint32_t p_mipmap, uin
 		image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		image_memory_barrier.newLayout = texture->reading_layout;
+		image_memory_barrier.newLayout = texture->unbound_layout;
 		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.image = texture->image;
@@ -2093,6 +2109,8 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		ERR_FAIL_INDEX_V(p_format[i].samples, TEXTURE_SAMPLES_MAX, VK_NULL_HANDLE);
 		description.samples = rasterization_sample_count[p_format[i].samples];
 		//anything below does not really matter, as vulkan just ignores it when creating a pipeline
+		ERR_FAIL_COND_V_MSG(!(p_format[i].usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)), VK_NULL_HANDLE,
+				"Texture format for index (" + itos(i) + ") requires an attachment (depth, stencil or resolve) bit set.");
 
 		switch (p_initial_action) {
 
@@ -2243,8 +2261,11 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		}
 	}
 
-	ERR_FAIL_COND_V(depth_stencil_references.size() > 1, VK_NULL_HANDLE);
-	ERR_FAIL_COND_V(resolve_references.size() > 1, VK_NULL_HANDLE);
+	ERR_FAIL_COND_V_MSG(depth_stencil_references.size() > 1, VK_NULL_HANDLE,
+			"Formats can only have one depth/stencil attachment, supplied (" + itos(depth_stencil_references.size()) + ").");
+
+	ERR_FAIL_COND_V_MSG(resolve_references.size() > 1, VK_NULL_HANDLE,
+			"Formats can only have one resolve attachment, supplied (" + itos(resolve_references.size()) + ").");
 
 	VkSubpassDescription subpass;
 	subpass.flags = 0;
@@ -2295,6 +2316,9 @@ RenderingDevice::ID RenderingDeviceVulkan::framebuffer_format_create(const Vecto
 	int color_references;
 	VkRenderPass render_pass = _render_pass_create(p_format, INITIAL_ACTION_CLEAR, FINAL_ACTION_DISCARD, &color_references); //actions don't matter for this use case
 
+	if (render_pass == VK_NULL_HANDLE) { //was likely invalid
+		return INVALID_ID;
+	}
 	ID id = ID(framebuffer_format_cache.size()) | (ID(ID_TYPE_FRAMEBUFFER_FORMAT) << ID(ID_BASE_SHIFT));
 
 	E = framebuffer_format_cache.insert(key, id);
@@ -3406,10 +3430,8 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 	List<Vector<VkDescriptorBufferInfo> > buffer_infos;
 	List<Vector<VkBufferView> > buffer_views;
 	List<Vector<VkDescriptorImageInfo> > image_infos;
-#ifdef DEBUG_ENABLED
 	//used for verification to make sure a uniform set does not use a framebuffer bound texture
-	Vector<ID> bound_textures;
-#endif
+	Vector<ID> attachable_textures;
 
 	for (uint32_t i = 0; i < set_uniform_count; i++) {
 		const Shader::UniformInfo &set_uniform = set_uniforms[i];
@@ -3494,16 +3516,16 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 					img_info.sampler = *sampler;
 					img_info.imageView = texture->view;
 
-#ifdef DEBUG_ENABLED
-					bound_textures.push_back(texture->owner != INVALID_ID ? texture->owner : uniform.ids[j + 1]);
-#endif
+					if (texture->usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)) {
+						attachable_textures.push_back(texture->owner != INVALID_ID ? texture->owner : uniform.ids[j + 1]);
+					}
 
 					if (texture->owner != INVALID_ID) {
 						texture = texture_owner.getornull(texture->owner);
 						ERR_FAIL_COND_V(!texture, INVALID_ID); //bug, should never happen
 					}
 
-					img_info.imageLayout = texture->reading_layout;
+					img_info.imageLayout = texture->unbound_layout;
 
 					image_info.push_back(img_info);
 				}
@@ -3541,16 +3563,16 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 					img_info.sampler = NULL;
 					img_info.imageView = texture->view;
 
-#ifdef DEBUG_ENABLED
-					bound_textures.push_back(texture->owner != INVALID_ID ? texture->owner : uniform.ids[j]);
-#endif
+					if (texture->usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)) {
+						attachable_textures.push_back(texture->owner != INVALID_ID ? texture->owner : uniform.ids[j]);
+					}
 
 					if (texture->owner != INVALID_ID) {
 						texture = texture_owner.getornull(texture->owner);
 						ERR_FAIL_COND_V(!texture, INVALID_ID); //bug, should never happen
 					}
 
-					img_info.imageLayout = texture->reading_layout;
+					img_info.imageLayout = texture->unbound_layout;
 
 					image_info.push_back(img_info);
 				}
@@ -3719,6 +3741,7 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 	uniform_set.descriptor_set = descriptor_set;
 	uniform_set.pipeline_layout = shader->pipeline_layout;
 	uniform_set.hash = shader->set_hashes[p_shader_set];
+	uniform_set.attachable_textures = attachable_textures;
 
 	ID id = uniform_set_owner.make_id(uniform_set);
 	//add dependencies
@@ -4607,21 +4630,20 @@ void RenderingDeviceVulkan::draw_list_bind_uniform_set(ID p_list, ID p_uniform_s
 			dl->validation.set_hashes.write[i] = 0;
 		}
 	}
-#ifdef DEBUG_ENABLED
-	//validate that textures used are not bound
-	//this can be a bit slow in large descriptor sets,
-	//so it's disabled on release
-	uint32_t tb_count = uniform_set->textures.size();
-	const ID *tb_ptr = uniform_set->textures.ptr();
-	uint32_t bound_count = draw_list_bound_textures.size();
-	const ID *bound_ptr = draw_list_bound_textures.ptr();
-	for (uint32_t i = 0; i < tb_count; i++) {
-		for (uint32_t j = 0; j < bound_count; j++) {
-			ERR_FAIL_COND_MSG(tb_ptr[i] == bound_ptr[j],
-					"Attempted to use the same texture in framebuffer attachment and a uniform set, this is not allowed.");
+
+	{ //validate that textures bound are not attached as framebuffer bindings
+		uint32_t attachable_count = uniform_set->attachable_textures.size();
+		const ID *attachable_ptr = uniform_set->attachable_textures.ptr();
+		uint32_t bound_count = draw_list_bound_textures.size();
+		const ID *bound_ptr = draw_list_bound_textures.ptr();
+		for (uint32_t i = 0; i < attachable_count; i++) {
+			for (uint32_t j = 0; j < bound_count; j++) {
+				ERR_FAIL_COND_MSG(attachable_ptr[i] == bound_ptr[j],
+						"Attempted to use the same texture in framebuffer attachment and a uniform set, this is not allowed.");
+			}
 		}
 	}
-#endif
+
 	dl->validation.set_hashes.write[p_index] = uniform_set->hash;
 
 	vkCmdBindDescriptorSets(dl->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, uniform_set->pipeline_layout, p_index, 1, &uniform_set->descriptor_set, 0, NULL);
