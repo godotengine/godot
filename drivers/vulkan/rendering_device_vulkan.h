@@ -166,8 +166,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		uint32_t mipmaps;
 		uint32_t usage_flags;
 
-		VkImageLayout bound_layout; //layout used for reading
-		VkImageLayout reading_layout; //layout used for reading
+		VkImageLayout bound_layout; //layout used when bound to framebuffer being drawn
+		VkImageLayout unbound_layout; //layout used otherwise
 		uint32_t aspect_mask;
 		bool bound; //bound to framebffer
 		ID owner;
@@ -563,7 +563,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		DescriptorPoolKey pool_key;
 		VkDescriptorSet descriptor_set;
 		VkPipelineLayout pipeline_layout; //not owned, inherited from shader
-		Vector<ID> textures;
+		Vector<ID> attachable_textures; //used for validation
 	};
 
 	ID_Pool<UniformSet, ID_TYPE_UNIFORM_SET> uniform_set_owner;
