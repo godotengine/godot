@@ -592,7 +592,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					//assign actual widths
 					for (int i = 0; i < table->columns.size(); i++) {
 						table->columns.write[i].width = table->columns[i].min_width;
-						if (table->columns[i].expand)
+						if (table->columns[i].expand && total_ratio > 0)
 							table->columns.write[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
 						table->total_width += table->columns[i].width + hseparation;
 					}
