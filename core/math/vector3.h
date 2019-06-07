@@ -224,7 +224,7 @@ Vector3 Vector3::slerp(const Vector3 &p_b, real_t p_t) const {
 #endif
 
 	real_t theta = angle_to(p_b);
-	return rotated(cross(p_b), theta * p_t);
+	return rotated(cross(p_b).normalized(), theta * p_t);
 }
 
 real_t Vector3::distance_to(const Vector3 &p_b) const {
