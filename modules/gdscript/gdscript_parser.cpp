@@ -4068,6 +4068,50 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 										break;
 									}
 
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_2D_RENDER") {
+
+										tokenizer->advance();
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected ')' in layers 2D render hint.");
+											return;
+										}
+										current_export.hint = PROPERTY_HINT_LAYERS_2D_RENDER;
+										break;
+									}
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_2D_PHYSICS") {
+
+										tokenizer->advance();
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected ')' in layers 2D physics hint.");
+											return;
+										}
+										current_export.hint = PROPERTY_HINT_LAYERS_2D_PHYSICS;
+										break;
+									}
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_3D_RENDER") {
+
+										tokenizer->advance();
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected ')' in layers 3D render hint.");
+											return;
+										}
+										current_export.hint = PROPERTY_HINT_LAYERS_3D_RENDER;
+										break;
+									}
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_3D_PHYSICS") {
+
+										tokenizer->advance();
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected ')' in layers 3D physics hint.");
+											return;
+										}
+										current_export.hint = PROPERTY_HINT_LAYERS_3D_PHYSICS;
+										break;
+									}
+
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_CONSTANT && tokenizer->get_token_constant().get_type() == Variant::STRING) {
 										//enumeration
 										current_export.hint = PROPERTY_HINT_ENUM;
