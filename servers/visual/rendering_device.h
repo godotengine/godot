@@ -417,6 +417,24 @@ public:
 		float max_lod;
 		SamplerBorderColor border_color;
 		bool unnormalized_uvw;
+
+		SamplerState() {
+			mag_filter=SAMPLER_FILTER_NEAREST;
+			min_filter=SAMPLER_FILTER_NEAREST;
+			mip_filter=SAMPLER_FILTER_NEAREST;
+			repeat_u=SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+			repeat_v=SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+			repeat_w=SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+			lod_bias=0;
+			use_anisotropy=false;
+			anisotropy_max=1.0;
+			enable_compare=false;
+			compare_op=COMPARE_OP_ALWAYS;
+			min_lod=0;
+			max_lod=1e20; //something very large should do
+			border_color=SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+			unnormalized_uvw=false;
+		}
 	};
 
 	virtual ID sampler_create(const SamplerState &p_state) = 0;
@@ -479,6 +497,9 @@ public:
 	struct ShaderStageSource {
 		ShaderStage shader_stage;
 		String shader_source;
+		ShaderStageSource() {
+			shader_stage=SHADER_STAGE_VERTEX;
+		}
 	};
 
 	virtual ID shader_create_from_source(const Vector<ShaderStageSource> &p_stages,String *r_error=NULL,bool p_allow_cache=true) = 0;
@@ -516,6 +537,11 @@ public:
 		//for sampler with texture, supply two IDs for each.
 		//accepted IDs are: Sampler, Texture, Uniform Buffer and Texture Buffer
 		Vector<ID> ids;
+
+		Uniform() {
+			type=UNIFORM_TYPE_IMAGE;
+			binding=0;
+		}
 	};
 
 	virtual ID uniform_set_create(const Vector<Uniform>& p_uniforms,ID p_shader,uint32_t p_shader_set) = 0;
