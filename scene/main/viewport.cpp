@@ -2905,6 +2905,7 @@ bool Viewport::gui_is_dragging() const {
 }
 
 void Viewport::set_input_as_handled() {
+	_drop_physics_mouseover();
 	if (handle_input_locally) {
 		local_input_handled = true;
 	} else {
