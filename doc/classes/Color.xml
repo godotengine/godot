@@ -144,7 +144,7 @@
 			<return type="Color">
 			</return>
 			<description>
-				Returns the inverted color [code](1 - r, 1 - g, 1 - b, 1 - a)[/code].
+				Returns the inverted color [code](1 - r, 1 - g, 1 - b, a)[/code].
 				[codeblock]
 				var c = Color(0.3, 0.4, 0.9)
 				var inverted_color = c.inverted() # a color of an RGBA(178, 153, 26, 255)
