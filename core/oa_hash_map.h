@@ -62,7 +62,7 @@ private:
 	static const uint32_t EMPTY_HASH = 0;
 	static const uint32_t DELETED_HASH_BIT = 1 << 31;
 
-	_FORCE_INLINE_ uint32_t _hash(const TKey &p_key) {
+	_FORCE_INLINE_ uint32_t _hash(const TKey &p_key) const {
 		uint32_t hash = Hasher::hash(p_key);
 
 		if (hash == EMPTY_HASH) {
@@ -74,7 +74,7 @@ private:
 		return hash;
 	}
 
-	_FORCE_INLINE_ uint32_t _get_probe_length(uint32_t p_pos, uint32_t p_hash) {
+	_FORCE_INLINE_ uint32_t _get_probe_length(uint32_t p_pos, uint32_t p_hash) const {
 		p_hash = p_hash & ~DELETED_HASH_BIT; // we don't care if it was deleted or not
 
 		uint32_t original_pos = p_hash % capacity;
@@ -90,7 +90,7 @@ private:
 		num_elements++;
 	}
 
-	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) {
+	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) const {
 		uint32_t hash = _hash(p_key);
 		uint32_t pos = hash % capacity;
 		uint32_t distance = 0;
@@ -219,7 +219,7 @@ public:
 	 * if r_data is not NULL then the value will be written to the object
 	 * it points to.
 	 */
-	bool lookup(const TKey &p_key, TValue &r_data) {
+	bool lookup(const TKey &p_key, TValue &r_data) const {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 
@@ -232,7 +232,23 @@ public:
 		return false;
 	}
 
-	_FORCE_INLINE_ bool has(const TKey &p_key) {
+	/**
+	 * returns true if the value was found, false otherwise.
+	 *
+	 * if r_data is not NULL then the value will be written to the object
+	 * it points to.
+	 */
+	TValue *lookup_ptr(const TKey &p_key) const {
+		uint32_t pos = 0;
+		bool exists = _lookup_pos(p_key, pos);
+
+		if (exists) {
+			return &values[pos];
+		}
+		return NULL;
+	}
+
+	_FORCE_INLINE_ bool has(const TKey &p_key) const {
 		uint32_t _pos = 0;
 		return _lookup_pos(p_key, _pos);
 	}
