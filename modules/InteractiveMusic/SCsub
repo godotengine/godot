@@ -1,5 +1,5 @@
 # SCsub
 Import('env')
 
-src_list = ["audio_stream_playlist.cpp", "audio_stream_playback_playlist.cpp", "register_types.cpp"]
+src_list = ["audio_stream_playlist.cpp", "register_types.cpp"]
 env.add_source_files(env.modules_sources, src_list)

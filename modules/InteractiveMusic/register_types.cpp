@@ -2,7 +2,7 @@
 
 #include "core/class_db.h"
 #include "audio_stream_playlist.h"
-#include "audio_stream_playback_playlist.h"
+
 
 void register_InteractiveMusic_types() {
 
