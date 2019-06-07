@@ -4913,24 +4913,28 @@ String TextEdit::get_selection_text() const {
 
 String TextEdit::get_word_under_cursor() const {
 
-	int prev_cc = cursor.column;
-	while (prev_cc > 0) {
-		bool is_char = _is_text_char(text[cursor.line][prev_cc - 1]);
-		if (!is_char)
-			break;
-		--prev_cc;
-	}
+	if (cursor.column >= 0) {
+		int prev_cc = cursor.column;
+		while (prev_cc > 0) {
+			bool is_char = _is_text_char(text[cursor.line][prev_cc - 1]);
+			if (!is_char)
+				break;
+			--prev_cc;
+		}
 
-	int next_cc = cursor.column;
-	while (next_cc < text[cursor.line].length()) {
-		bool is_char = _is_text_char(text[cursor.line][next_cc]);
-		if (!is_char)
-			break;
-		++next_cc;
-	}
-	if (prev_cc == cursor.column || next_cc == cursor.column)
+		int next_cc = cursor.column;
+		while (next_cc < text[cursor.line].length()) {
+			bool is_char = _is_text_char(text[cursor.line][next_cc]);
+			if (!is_char)
+				break;
+			++next_cc;
+		}
+		if (prev_cc == cursor.column || next_cc == cursor.column)
+			return "";
+		return text[cursor.line].substr(prev_cc, next_cc - prev_cc);
+	} else {
 		return "";
-	return text[cursor.line].substr(prev_cc, next_cc - prev_cc);
+	}
 }
 
 void TextEdit::set_search_text(const String &p_search_text) {
