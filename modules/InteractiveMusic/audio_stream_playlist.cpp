@@ -5,14 +5,16 @@
 AudioStreamPlaylist::AudioStreamPlaylist() {
 	bpm = 120;
 	stream_count = 1;
-
+	sample_rate = 44100;
+	stereo = true;
+	beat_size = (60 / bpm) * sample_rate;
 }
 
 Ref<AudioStreamPlayback> AudioStreamPlaylist::instance_playback() {
-	Ref<AudioStreamPlaybackPlaylist> playlist;
-	playlist.instance();
-	playlist->instance = Ref<AudioStreamPlaylist>(this);
-	return playlist;
+	Ref<AudioStreamPlaybackPlaylist> playback_playlist;
+	playback_playlist.instance();
+	playback_playlist->instance = Ref<AudioStreamPlaylist>(this);
+	return playback_playlist;
 }
 
 String AudioStreamPlaylist::get_stream_name() const {
@@ -33,12 +35,13 @@ int AudioStreamPlaylist::get_stream_beats(int p_stream) {
 	return audio_streams[p_stream].beat_count;
 }
 
-void AudioStreamPlaylist::set_list_stream(int stream_number, const Ref<AudioStream> &p_stream) {
+void AudioStreamPlaylist::set_list_stream(int stream_number, Ref<AudioStream> p_stream) {
 	ERR_FAIL_COND(p_stream == this);
 	ERR_FAIL_INDEX(stream_number, MAX_STREAMS);
 
 
 	audio_streams[stream_number].stream = p_stream;
+	audio_streams[stream_number].playback = p_stream->instance_playback();
 }
 
 Ref<AudioStream> AudioStreamPlaylist::get_list_stream(int stream_number) {
@@ -97,8 +100,9 @@ void AudioStreamPlaylist::_bind_methods() {
 
 	for (int i = 0; i < MAX_STREAMS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "stream_" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_list_stream", "get_list_stream", i);
-
+		ADD_PROPERTYI(PropertyInfo(Variant::INT, "stream_" + itos(i) + "/beat_amount", PROPERTY_HINT_RANGE, "0,120", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_stream_beats", "get_stream_beats", i);
 	}
+	
 
 	BIND_CONSTANT(MAX_STREAMS);
 }
@@ -106,11 +110,9 @@ void AudioStreamPlaylist::_bind_methods() {
 //////////////////////
 //////////////////////
 
-AudioStreamPlaybackPlaylist::AudioStreamPlaybackPlaylist() :
-		active(false) {
-	AudioServer::get_singleton()->lock();
-	zeromem(pcm_buffer, buffer_size);
-	AudioServer::get_singleton()->unlock();
+AudioStreamPlaybackPlaylist::AudioStreamPlaybackPlaylist() {
+	buffer_size = 256;
+	active = false;
 }
 
 AudioStreamPlaybackPlaylist::~AudioStreamPlaybackPlaylist() {
@@ -127,17 +129,14 @@ void AudioStreamPlaybackPlaylist::stop() {
 
 void AudioStreamPlaybackPlaylist::start(float p_from_pos) {
 	seek(p_from_pos);
+	active = true;
 	current = 0;
 	fading = false;
-	fading_time = instance->beat_size / 128; //fading time was not set anywhere else in the pseudocode
-			// which made fading_samples_total=0 when the first fade is triggered
-			// that makes for a division by 0 when from_volume and to_volume are calculated in fade logic
-			// so i assigned a very small value based on BPM to fading time
-			// alternative would be to have the fading time set by the user
+	fading_time = 0; //instance->beat_size / 128; 
 	fading_samples_total = fading_time * instance->sample_rate;
 	beat_amount_remaining = instance->audio_streams[current].beat_count * instance->beat_size;
 	instance->audio_streams[current].playback->start();
-	active = true;
+	
 }
 
 void AudioStreamPlaybackPlaylist::seek(float p_time) {
