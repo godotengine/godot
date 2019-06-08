@@ -3235,7 +3235,7 @@ static int _humanize_digits(int p_num) {
 String String::humanize_size(size_t p_size) {
 
 	uint64_t _div = 1;
-	static const char *prefix[] = { " Bytes", " KB", " MB", " GB", "TB", " PB", "HB", "" };
+	static const char *prefix[] = { " Bytes", " KB", " MB", " GB", " TB", " PB", " EB", "" };
 	int prefix_idx = 0;
 
 	while (p_size > (_div * 1024) && prefix[prefix_idx][0]) {

@@ -727,20 +727,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				String tt = vs;
 				switch (Performance::MonitorType((int)perf_items[i]->get_metadata(1))) {
 					case Performance::MONITOR_TYPE_MEMORY: {
-						// for the time being, going above GBs is a bad sign.
-						String unit = "B";
-						if ((int)v > 1073741824) {
-							unit = "GB";
-							v /= 1073741824.0;
-						} else if ((int)v > 1048576) {
-							unit = "MB";
-							v /= 1048576.0;
-						} else if ((int)v > 1024) {
-							unit = "KB";
-							v /= 1024.0;
-						}
-						tt += " bytes";
-						vs = String::num(v, 2) + " " + unit;
+						vs = String::humanize_size(v);
+						tt = vs;
 					} break;
 					case Performance::MONITOR_TYPE_TIME: {
 						tt += " seconds";
