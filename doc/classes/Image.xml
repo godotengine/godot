@@ -361,7 +361,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Locks the data for writing access.
+				Locks the data for reading and writing access. Sends an error to the console if the image is not locked when reading or writing a pixel.
 			</description>
 		</method>
 		<method name="normalmap_to_xy">
