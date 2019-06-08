@@ -285,6 +285,8 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(String, get_file);
 	VCALL_LOCALMEM0R(String, xml_escape);
 	VCALL_LOCALMEM0R(String, xml_unescape);
+	VCALL_LOCALMEM0R(String, http_escape);
+	VCALL_LOCALMEM0R(String, http_unescape);
 	VCALL_LOCALMEM0R(String, c_escape);
 	VCALL_LOCALMEM0R(String, c_unescape);
 	VCALL_LOCALMEM0R(String, json_escape);
@@ -1550,6 +1552,8 @@ void register_variant_methods() {
 	ADDFUNC0R(STRING, STRING, String, get_file, varray());
 	ADDFUNC0R(STRING, STRING, String, xml_escape, varray());
 	ADDFUNC0R(STRING, STRING, String, xml_unescape, varray());
+	ADDFUNC0R(STRING, STRING, String, http_escape, varray());
+	ADDFUNC0R(STRING, STRING, String, http_unescape, varray());
 	ADDFUNC0R(STRING, STRING, String, c_escape, varray());
 	ADDFUNC0R(STRING, STRING, String, c_unescape, varray());
 	ADDFUNC0R(STRING, STRING, String, json_escape, varray());
