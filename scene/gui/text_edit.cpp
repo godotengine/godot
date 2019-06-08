@@ -6344,14 +6344,14 @@ int TextEdit::get_info_gutter_width() const {
 	return info_gutter_width;
 }
 
-void TextEdit::set_hiding_enabled(int p_enabled) {
+void TextEdit::set_hiding_enabled(bool p_enabled) {
 	if (!p_enabled)
 		unhide_all_lines();
 	hiding_enabled = p_enabled;
 	update();
 }
 
-int TextEdit::is_hiding_enabled() const {
+bool TextEdit::is_hiding_enabled() const {
 	return hiding_enabled;
 }
 

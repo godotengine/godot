@@ -391,7 +391,7 @@
 		<member name="fold_gutter" type="bool" setter="set_draw_fold_gutter" getter="is_drawing_fold_gutter">
 			If [code]true[/code], the fold gutter is visible. This enables folding groups of indented lines.
 		</member>
-		<member name="hiding_enabled" type="int" setter="set_hiding_enabled" getter="is_hiding_enabled">
+		<member name="hiding_enabled" type="bool" setter="set_hiding_enabled" getter="is_hiding_enabled">
 		</member>
 		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled">
 		</member>
