@@ -9,12 +9,12 @@ class AudioStreamPlaylist : public AudioStream {
 private:
 	friend class AudioStreamPlaybackPlaylist;
 	uint64_t pos;
-	int sample_rate=44100;
+	int sample_rate;
 	bool stereo;
 	int stream_count;
 	
 	int bpm;
-	double beat_size = (60 / bpm)*sample_rate;
+	double beat_size;
 	double time;
 	
 	enum OrderMode {
@@ -37,11 +37,6 @@ private:
 
 	OrderMode order_mode;
 
-
-	
-	
-	
-
 public:
 	void reset();
 	void set_position(uint64_t pos);
@@ -52,7 +47,7 @@ public:
 	int get_bpm();
 	void set_stream_count(int count);
 	int get_stream_count();
-	void set_list_stream(int stream_number, const Ref<AudioStream> &p_stream);
+	void set_list_stream(int stream_number, Ref<AudioStream> p_stream);
 	Ref<AudioStream> get_list_stream(int stream_number);
 	void set_order(OrderMode p_order);
 	OrderMode get_order(){
@@ -76,7 +71,7 @@ class AudioStreamPlaybackPlaylist : public AudioStreamPlayback {
 	friend class AudioStreamPlaylist;
 
 private:
-	int buffer_size = 256;
+	int buffer_size;
 	enum {
 		MIX_FRAC_BITS = 13,
 		MIX_FRAC_LEN = (1 << MIX_FRAC_BITS),
@@ -84,7 +79,6 @@ private:
 	};
 	AudioFrame *pcm_buffer;
 	AudioFrame *aux_buffer;
-	friend class AudioStreamPlaylist;
 	
 	Ref<AudioStreamPlaylist> instance;
 
