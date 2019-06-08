@@ -543,8 +543,12 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				if (k->get_unicode() >= 32 && k->get_scancode() != KEY_DELETE) {
 
 					if (editable) {
+
+						CharType c = (CharType)k->get_unicode();
+						if (_is_restricted_symbol(c)) return;
+
 						selection_delete();
-						CharType ucodestr[2] = { (CharType)k->get_unicode(), 0 };
+						CharType ucodestr[2] = { c, 0 };
 						append_at_cursor(ucodestr);
 						_text_changed();
 						accept_event();
@@ -560,6 +564,28 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 		return;
 	}
+}
+
+bool LineEdit::_is_restricted_symbol(CharType p_symbol) {
+	switch (input_filter) {
+		case INPUT_FILTER_DISABLED:
+			break;
+		case INPUT_FILTER_LATIN: // (A-Z) and (a-z) symbols only
+			if ((p_symbol < 0x41 || p_symbol > 0x5a) && (p_symbol < 0x61 || p_symbol > 0x7a))
+				return true;
+			break;
+		case INPUT_FILTER_NUMBERS: // (0-9) symbols only
+			if (p_symbol < 0x30 || p_symbol > 0x39)
+				return true;
+			break;
+		case INPUT_FILTER_LATIN_NUMBERS: // (A-Z) (a-z) and (0-9) symbols only
+			if ((p_symbol < 0x41 || p_symbol > 0x5a) && (p_symbol < 0x61 || p_symbol > 0x7a) && (p_symbol < 0x30 || p_symbol > 0x39))
+				return true;
+			break;
+		default:
+			break;
+	}
+	return false;
 }
 
 void LineEdit::set_align(Align p_align) {
@@ -927,9 +953,23 @@ void LineEdit::paste_text() {
 	String paste_buffer = OS::get_singleton()->get_clipboard().strip_escapes();
 
 	if (paste_buffer != "") {
+		String filtered_buffer = "";
+
+		if (input_filter != INPUT_FILTER_DISABLED) {
+			for (int i = 0; i < paste_buffer.size(); i++) {
+				if (!_is_restricted_symbol(paste_buffer[i])) {
+					filtered_buffer += paste_buffer[i];
+				}
+			}
+		}
 
 		if (selection.enabled) selection_delete();
-		append_at_cursor(paste_buffer);
+
+		if (input_filter != INPUT_FILTER_DISABLED) {
+			append_at_cursor(filtered_buffer);
+		} else {
+			append_at_cursor(paste_buffer);
+		}
 
 		if (!text_changed_dirty) {
 			if (is_inside_tree()) {
@@ -1129,7 +1169,17 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 void LineEdit::set_text(String p_text) {
 
 	clear_internal();
-	append_at_cursor(p_text);
+	if (input_filter != INPUT_FILTER_DISABLED) {
+		String filtered_text = "";
+		for (int i = 0; i < p_text.size(); i++) {
+			if (!_is_restricted_symbol(p_text[i])) {
+				filtered_text += p_text[i];
+			}
+		}
+		append_at_cursor(filtered_text);
+	} else {
+		append_at_cursor(p_text);
+	}
 	update();
 	cursor_pos = 0;
 	window_pos = 0;
@@ -1389,6 +1439,14 @@ bool LineEdit::is_editable() const {
 	return editable;
 }
 
+void LineEdit::set_input_filter(InputFilter p_input_filter) {
+	input_filter = p_input_filter;
+}
+
+LineEdit::InputFilter LineEdit::get_input_filter() const {
+	return input_filter;
+}
+
 void LineEdit::set_secret(bool p_secret) {
 
 	pass = p_secret;
@@ -1608,6 +1666,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("append_at_cursor", "text"), &LineEdit::append_at_cursor);
 	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &LineEdit::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &LineEdit::is_editable);
+	ClassDB::bind_method(D_METHOD("set_input_filter", "mode"), &LineEdit::set_input_filter);
+	ClassDB::bind_method(D_METHOD("get_input_filter"), &LineEdit::get_input_filter);
 	ClassDB::bind_method(D_METHOD("set_secret", "enabled"), &LineEdit::set_secret);
 	ClassDB::bind_method(D_METHOD("is_secret"), &LineEdit::is_secret);
 	ClassDB::bind_method(D_METHOD("set_secret_character", "character"), &LineEdit::set_secret_character);
@@ -1627,6 +1687,11 @@ void LineEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALIGN_RIGHT);
 	BIND_ENUM_CONSTANT(ALIGN_FILL);
 
+	BIND_ENUM_CONSTANT(INPUT_FILTER_DISABLED);
+	BIND_ENUM_CONSTANT(INPUT_FILTER_LATIN);
+	BIND_ENUM_CONSTANT(INPUT_FILTER_NUMBERS);
+	BIND_ENUM_CONSTANT(INPUT_FILTER_LATIN_NUMBERS);
+
 	BIND_ENUM_CONSTANT(MENU_CUT);
 	BIND_ENUM_CONSTANT(MENU_COPY);
 	BIND_ENUM_CONSTANT(MENU_PASTE);
@@ -1640,6 +1705,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_length"), "set_max_length", "get_max_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_filter", PROPERTY_HINT_ENUM, "Disabled,Latin Only,Numbers Only,Latin And Numbers"), "set_input_filter", "get_input_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "secret"), "set_secret", "is_secret");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "secret_character"), "set_secret_character", "get_secret_character");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_to_text_length"), "set_expand_to_text_length", "get_expand_to_text_length");
@@ -1671,6 +1737,7 @@ LineEdit::LineEdit() {
 	text_changed_dirty = false;
 	placeholder_alpha = 0.6;
 	clear_button_enabled = false;
+	input_filter = INPUT_FILTER_DISABLED;
 	clear_button_status.press_attempt = false;
 	clear_button_status.pressing_inside = false;
 

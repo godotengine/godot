@@ -62,8 +62,16 @@ public:
 
 	};
 
+	enum InputFilter {
+		INPUT_FILTER_DISABLED,
+		INPUT_FILTER_LATIN,
+		INPUT_FILTER_NUMBERS,
+		INPUT_FILTER_LATIN_NUMBERS
+	};
+
 private:
 	Align align;
+	InputFilter input_filter;
 
 	bool editable;
 	bool pass;
@@ -141,6 +149,8 @@ private:
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
 
+	bool _is_restricted_symbol(CharType p_symbol);
+
 	void clear_internal();
 	void changed_internal();
 
@@ -202,6 +212,9 @@ public:
 	void set_editable(bool p_editable);
 	bool is_editable() const;
 
+	void set_input_filter(InputFilter p_input_filter);
+	InputFilter get_input_filter() const;
+
 	void set_secret(bool p_secret);
 	bool is_secret() const;
 
@@ -225,5 +238,6 @@ public:
 
 VARIANT_ENUM_CAST(LineEdit::Align);
 VARIANT_ENUM_CAST(LineEdit::MenuItems);
+VARIANT_ENUM_CAST(LineEdit::InputFilter);
 
 #endif
