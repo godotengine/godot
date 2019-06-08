@@ -464,6 +464,13 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		Vector<int> vertex_input_locations; //inputs used, this is mostly for validation
 		int fragment_outputs;
 
+		struct PushConstant {
+			uint32_t push_constant_size;
+			uint32_t push_constants_vk_stage;
+		};
+
+		PushConstant push_constant;
+
 		int max_output;
 		Vector<Set> sets;
 		Vector<uint32_t> set_hashes;
@@ -471,7 +478,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkPipelineLayout pipeline_layout;
 	};
 
-	bool _uniform_add_binding(Vector<Vector<VkDescriptorSetLayoutBinding> > &bindings, Vector<Vector<Shader::UniformInfo> > &uniform_infos, const glslang::TObjectReflection &reflection, RenderingDevice::ShaderStage p_stage, String *r_error);
+	bool _uniform_add_binding(Vector<Vector<VkDescriptorSetLayoutBinding> > &bindings, Vector<Vector<Shader::UniformInfo> > &uniform_infos, const glslang::TObjectReflection &reflection, RenderingDevice::ShaderStage p_stage, Shader::PushConstant &push_constant, String *r_error);
 
 	ID_Pool<Shader, ID_TYPE_SHADER> shader_owner;
 
@@ -592,7 +599,10 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		uint32_t primitive_minimum;
 		uint32_t primitive_divisor;
 		Vector<uint32_t> set_hashes;
+		uint32_t push_constant_size;
+		uint32_t push_constant_stages;
 		//Actual pipeline
+		VkPipelineLayout pipeline_layout; // not owned, needed for push constants
 		VkPipeline pipeline;
 	};
 
@@ -645,6 +655,10 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			uint32_t pipeline_primitive_divisor;
 			uint32_t pipeline_primitive_minimum;
 			Vector<uint32_t> pipeline_set_hashes;
+			VkPipelineLayout pipeline_push_constant_layout;
+			uint32_t pipeline_push_constant_size;
+			uint32_t pipeline_push_constant_stages;
+			bool pipeline_push_constant_suppplied;
 
 			Validation() {
 				active = true;
@@ -662,6 +676,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 				pipeline_dynamic_state = 0;
 				pipeline_vertex_format = INVALID_ID;
 				pipeline_uses_restart_indices = false;
+				pipeline_push_constant_size = 0;
+				pipeline_push_constant_stages = 0;
+				pipeline_push_constant_suppplied = false;
 			}
 		} validation;
 	};
@@ -804,6 +821,7 @@ public:
 	virtual void draw_list_bind_uniform_set(ID p_list, ID p_uniform_set, uint32_t p_index);
 	virtual void draw_list_bind_vertex_array(ID p_list, ID p_vertex_array);
 	virtual void draw_list_bind_index_array(ID p_list, ID p_index_array);
+	virtual void draw_list_set_push_constant(ID p_list, void *p_data, uint32_t p_data_size);
 
 	virtual void draw_list_draw(ID p_list, bool p_use_indices, uint32_t p_instances = 1);
 
