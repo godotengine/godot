@@ -830,6 +830,7 @@ public:
 	virtual void draw_list_bind_uniform_set(ID p_list, ID p_uniform_set, uint32_t p_index) =0;
 	virtual void draw_list_bind_vertex_array(ID p_list, ID p_vertex_array) = 0;
 	virtual void draw_list_bind_index_array(ID p_list, ID p_index_array) = 0;
+	virtual void draw_list_set_push_constant(ID p_list, void *p_data,uint32_t p_data_size) =0;
 
 	virtual void draw_list_draw(ID p_list, bool p_use_indices, uint32_t p_instances=1) = 0;
 

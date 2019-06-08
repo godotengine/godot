@@ -421,7 +421,8 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 							 "layout (location = 0) in vec2 uv_interp;\n"
 							 "layout (location = 0) out vec4 uFragColor;\n"
 							 "layout (binding = 0) uniform sampler2D t;\n"
-							 "void main() { uFragColor=texture(t,uv_interp); }\n";
+							 "layout (push_constant, binding=1) uniform ColorMultiplier { vec4 color_mult; } color_multiplier;\n"
+							 "void main() { uFragColor=texture(t,uv_interp) * color_multiplier.color_mult; }\n";
 
 		Vector<RenderingDevice::ShaderStageSource> source;
 		source.push_back(vert);
@@ -3310,12 +3311,14 @@ void OS_X11::swap_buffers() {
 #endif
 
 	Vector<Color> clear;
+	float color[4] = { 1, 0, 1, 1 };
 	clear.push_back(Color(0.5, 0.8, 0.2));
 	RenderingDevice::ID cmd_list = rendering_device->draw_list_begin(test_framebuffer, RenderingDevice::INITIAL_ACTION_CLEAR, RenderingDevice::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, clear);
 	rendering_device->draw_list_bind_render_pipeline(cmd_list, test_pipeline);
 	rendering_device->draw_list_bind_index_array(cmd_list, test_index_array);
 	rendering_device->draw_list_bind_vertex_array(cmd_list, test_vertex_array);
 	rendering_device->draw_list_bind_uniform_set(cmd_list, test_uniform_set, 0);
+	rendering_device->draw_list_set_push_constant(cmd_list, color, 4 * 4);
 	rendering_device->draw_list_draw(cmd_list, true);
 	rendering_device->draw_list_end();
 
@@ -3324,6 +3327,7 @@ void OS_X11::swap_buffers() {
 	rendering_device->draw_list_bind_index_array(cmd_list, test_index_array);
 	rendering_device->draw_list_bind_vertex_array(cmd_list, test_vertex_array);
 	rendering_device->draw_list_bind_uniform_set(cmd_list, test_framebuffer_uniform_set, 0);
+	rendering_device->draw_list_set_push_constant(cmd_list, color, 4 * 4);
 	rendering_device->draw_list_draw(cmd_list, true);
 	rendering_device->draw_list_end();
 	rendering_device->finalize_frame();
