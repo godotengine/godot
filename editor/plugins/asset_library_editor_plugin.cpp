@@ -58,7 +58,7 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		icon->set_normal_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
+		icon->set_normal_texture(get_icon("ProjectIconLoading", "EditorIcons"));
 		category->add_color_override("font_color", Color(0.5, 0.5, 0.5));
 		author->add_color_override("font_color", Color(0.5, 0.5, 0.5));
 		price->add_color_override("font_color", Color(0.5, 0.5, 0.5));
