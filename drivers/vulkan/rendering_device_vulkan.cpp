@@ -2753,7 +2753,7 @@ static VkShaderStageFlagBits shader_stage_masks[RenderingDevice::SHADER_STAGE_MA
 	VK_SHADER_STAGE_COMPUTE_BIT,
 };
 
-bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLayoutBinding> > &bindings, Vector<Vector<Shader::UniformInfo> > &uniform_infos, const glslang::TObjectReflection &reflection, RenderingDevice::ShaderStage p_stage, String *r_error) {
+bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLayoutBinding> > &bindings, Vector<Vector<Shader::UniformInfo> > &uniform_infos, const glslang::TObjectReflection &reflection, RenderingDevice::ShaderStage p_stage, Shader::PushConstant &push_constant, String *r_error) {
 
 	VkDescriptorSetLayoutBinding layout_binding;
 	Shader::UniformInfo info;
@@ -2825,17 +2825,26 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 		case glslang::EbtBlock: {
 			print_line("DEBUG: Block");
 			if (reflection.getType()->getQualifier().storage == glslang::EvqUniform) {
+				if (reflection.getType()->getQualifier().layoutPushConstant) {
+					uint32_t len = reflection.size;
+					if (push_constant.push_constant_size != 0 && push_constant.push_constant_size != len) {
+						*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' push constants for different stages should all be the same size.";
+						return false;
+					}
+					push_constant.push_constant_size = len;
+					push_constant.push_constants_vk_stage |= shader_stage_masks[p_stage];
+					return true;
+				}
 				print_line("DEBUG: Uniform buffer");
 				layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				info.type = UNIFORM_TYPE_UNIFORM_BUFFER;
-
 			} else if (reflection.getType()->getQualifier().storage == glslang::EvqBuffer) {
 				layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 				info.type = UNIFORM_TYPE_STORAGE_BUFFER;
 				print_line("DEBUG: Storage buffer");
 			} else {
 				if (r_error) {
-					*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' is of unsupported block type.";
+					*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' is of unsupported block type: (" + itos(reflection.getType()->getQualifier().storage) + ").";
 				}
 				return false;
 			}
@@ -2959,6 +2968,10 @@ RenderingDevice::ID RenderingDeviceVulkan::shader_create_from_source(const Vecto
 	//descriptor layouts
 	Vector<Vector<VkDescriptorSetLayoutBinding> > bindings;
 	Vector<Vector<Shader::UniformInfo> > uniform_info;
+	Shader::PushConstant push_constant;
+	push_constant.push_constant_size = 0;
+	push_constant.push_constants_vk_stage = 0;
+
 	Vector<int> vertex_input_locations;
 	int fragment_outputs = 0;
 
@@ -3031,25 +3044,25 @@ RenderingDevice::ID RenderingDeviceVulkan::shader_create_from_source(const Vecto
 		program.dumpReflection();
 
 		for (int j = 0; j < program.getNumUniformVariables(); j++) {
-			if (!_uniform_add_binding(bindings, uniform_info, program.getUniform(j), p_stages[i].shader_stage, r_error)) {
+			if (!_uniform_add_binding(bindings, uniform_info, program.getUniform(j), p_stages[i].shader_stage, push_constant, r_error)) {
 				return INVALID_ID;
 			}
 		}
 
 		for (int j = 0; j < program.getNumUniformBlocks(); j++) {
-			if (!_uniform_add_binding(bindings, uniform_info, program.getUniformBlock(j), p_stages[i].shader_stage, r_error)) {
+			if (!_uniform_add_binding(bindings, uniform_info, program.getUniformBlock(j), p_stages[i].shader_stage, push_constant, r_error)) {
 				return INVALID_ID;
 			}
 		}
 
 		for (int j = 0; j < program.getNumBufferVariables(); j++) {
-			if (!_uniform_add_binding(bindings, uniform_info, program.getBufferVariable(j), p_stages[i].shader_stage, r_error)) {
+			if (!_uniform_add_binding(bindings, uniform_info, program.getBufferVariable(j), p_stages[i].shader_stage, push_constant, r_error)) {
 				return INVALID_ID;
 			}
 		}
 
 		for (int j = 0; j < program.getNumBufferBlocks(); j++) {
-			if (!_uniform_add_binding(bindings, uniform_info, program.getBufferBlock(j), p_stages[i].shader_stage, r_error)) {
+			if (!_uniform_add_binding(bindings, uniform_info, program.getBufferBlock(j), p_stages[i].shader_stage, push_constant, r_error)) {
 				return INVALID_ID;
 			}
 		}
@@ -3087,6 +3100,7 @@ RenderingDevice::ID RenderingDeviceVulkan::shader_create_from_source(const Vecto
 
 	shader.vertex_input_locations = vertex_input_locations;
 	shader.fragment_outputs = fragment_outputs;
+	shader.push_constant = push_constant;
 
 	bool success = true;
 	for (int i = 0; i < p_stages.size(); i++) {
@@ -3181,10 +3195,19 @@ RenderingDevice::ID RenderingDeviceVulkan::shader_create_from_source(const Vecto
 			layouts.write[i] = shader.sets[i].descriptor_set_layout;
 		}
 
-		//unsupported for now
 		pipeline_layout_create_info.pSetLayouts = layouts.ptr();
-		pipeline_layout_create_info.pushConstantRangeCount = 0;
-		pipeline_layout_create_info.pPushConstantRanges = NULL;
+		if (push_constant.push_constant_size) {
+			VkPushConstantRange push_constant_range;
+			push_constant_range.stageFlags = push_constant.push_constants_vk_stage;
+			push_constant_range.offset = 0;
+			push_constant_range.size = push_constant.push_constant_size;
+
+			pipeline_layout_create_info.pushConstantRangeCount = 1;
+			pipeline_layout_create_info.pPushConstantRanges = &push_constant_range;
+		} else {
+			pipeline_layout_create_info.pushConstantRangeCount = 0;
+			pipeline_layout_create_info.pPushConstantRanges = NULL;
+		}
 
 		VkResult err = vkCreatePipelineLayout(device, &pipeline_layout_create_info, NULL, &shader.pipeline_layout);
 
@@ -4118,6 +4141,9 @@ RenderingDevice::ID RenderingDeviceVulkan::render_pipeline_create(ID p_shader, I
 	pipeline.vertex_format = p_vertex_description;
 	pipeline.uses_restart_indices = input_assembly_create_info.primitiveRestartEnable;
 	pipeline.set_hashes = shader->set_hashes;
+	pipeline.push_constant_size = shader->push_constant.push_constant_size;
+	pipeline.push_constant_stages = shader->push_constant.push_constants_vk_stage;
+	pipeline.pipeline_layout = shader->pipeline_layout;
 
 	static const uint32_t primitive_divisor[RENDER_PRIMITIVE_MAX] = {
 		1, 2, 1, 1, 1, 3, 1, 1, 1, 1, 1
@@ -4610,6 +4636,12 @@ void RenderingDeviceVulkan::draw_list_bind_render_pipeline(ID p_list, ID p_rende
 
 	dl->validation.pipeline_primitive_minimum = pipeline->primitive_minimum;
 	dl->validation.pipeline_set_hashes = pipeline->set_hashes;
+	dl->validation.pipeline_push_constant_size = pipeline->push_constant_size;
+	if (pipeline->push_constant_size) {
+		dl->validation.pipeline_push_constant_stages = pipeline->push_constant_stages;
+		dl->validation.pipeline_push_constant_suppplied = false;
+		dl->validation.pipeline_push_constant_layout = pipeline->pipeline_layout;
+	}
 }
 
 void RenderingDeviceVulkan::draw_list_bind_uniform_set(ID p_list, ID p_uniform_set, uint32_t p_index) {
@@ -4678,6 +4710,17 @@ void RenderingDeviceVulkan::draw_list_bind_index_array(ID p_list, ID p_index_arr
 	vkCmdBindIndexBuffer(dl->command_buffer, index_array->buffer, index_array->offset, index_array->index_type);
 }
 
+void RenderingDeviceVulkan::draw_list_set_push_constant(ID p_list, void *p_data, uint32_t p_data_size) {
+	DrawList *dl = _get_draw_list_ptr(p_list);
+	ERR_FAIL_COND(!dl);
+
+	ERR_FAIL_COND_MSG(p_data_size != dl->validation.pipeline_push_constant_size,
+			"This render pipeline requires (" + itos(dl->validation.pipeline_push_constant_size) + ") bytes of push constant data, supplied: (" + itos(p_data_size) + ")");
+
+	vkCmdPushConstants(dl->command_buffer, dl->validation.pipeline_push_constant_layout, dl->validation.pipeline_push_constant_stages, 0, p_data_size, p_data);
+	dl->validation.pipeline_push_constant_suppplied = true;
+}
+
 void RenderingDeviceVulkan::draw_list_draw(ID p_list, bool p_use_indices, uint32_t p_instances) {
 
 	DrawList *dl = _get_draw_list_ptr(p_list);
@@ -4696,6 +4739,12 @@ void RenderingDeviceVulkan::draw_list_draw(ID p_list, bool p_use_indices, uint32
 		//make sure amount of instances is valid
 		ERR_FAIL_COND_MSG(p_instances > dl->validation.vertex_max_instances_allowed,
 				"Amount of instances requested (" + itos(p_instances) + " is larger than the maximum amount suported by the bound vertex array (" + itos(dl->validation.vertex_max_instances_allowed) + ").");
+	}
+
+	if (dl->validation.pipeline_push_constant_size > 0) {
+		//using push constants, check that they were supplied
+		ERR_FAIL_COND_MSG(!dl->validation.pipeline_push_constant_suppplied,
+				"The shader in this pipeline requires a push constant to be set before drawing, but it's not present.");
 	}
 	//compare hashes
 	if (dl->validation.pipeline_set_hashes.size()) {
