@@ -1214,7 +1214,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			Color accent = get_color("accent_color", "Editor");
 			accent.a *= 0.7;
 			// Offside so the horizontal sides aren't cutoff.
-			draw_rect(Rect2(Point2(1, 0), get_size() - Size2(1, 0)), accent, false);
+			draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), accent, false);
 		}
 
 		Ref<Font> font = get_font("font", "Label");
