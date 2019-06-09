@@ -116,11 +116,13 @@ private:
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
 	DependencyRemoveDialog *remove_dialog;
+
 	ToolButton *mode_thumbnails;
 	ToolButton *mode_list;
 
 	ToolButton *refresh;
 	ToolButton *favorite;
+	ToolButton *show_hidden;
 
 	ToolButton *fav_up;
 	ToolButton *fav_down;
