@@ -20,9 +20,11 @@ Ref<AudioStreamPlayback> AudioStreamPlaylist::instance_playback() {
 String AudioStreamPlaylist::get_stream_name() const {
 	return "Playlist";
 }
+
 void AudioStreamPlaylist::reset() {
 	set_position(0);
 }
+
 void AudioStreamPlaylist::set_position(uint64_t p) {
 	pos = p;
 }
@@ -41,7 +43,7 @@ void AudioStreamPlaylist::set_list_stream(int stream_number, Ref<AudioStream> p_
 
 
 	audio_streams[stream_number].stream = p_stream;
-	audio_streams[stream_number].playback = p_stream->instance_playback();
+	
 }
 
 Ref<AudioStream> AudioStreamPlaylist::get_list_stream(int stream_number) {
@@ -113,6 +115,7 @@ void AudioStreamPlaylist::_bind_methods() {
 AudioStreamPlaybackPlaylist::AudioStreamPlaybackPlaylist() {
 	buffer_size = 256;
 	active = false;
+	
 }
 
 AudioStreamPlaybackPlaylist::~AudioStreamPlaybackPlaylist() {
@@ -132,11 +135,11 @@ void AudioStreamPlaybackPlaylist::start(float p_from_pos) {
 	active = true;
 	current = 0;
 	fading = false;
-	fading_time = 0; //instance->beat_size / 128; 
+	fading_time = instance->beat_size / 128; 
 	fading_samples_total = fading_time * instance->sample_rate;
 	beat_amount_remaining = instance->audio_streams[current].beat_count * instance->beat_size;
-	instance->audio_streams[current].playback->start();
-	
+	playback[current] = instance->audio_streams[current].stream->instance_playback();
+	playback[current]->start();
 }
 
 void AudioStreamPlaybackPlaylist::seek(float p_time) {
@@ -165,12 +168,14 @@ void AudioStreamPlaybackPlaylist::clear_buffer(int samples) {
 void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	int dst_offset = 0;
 	int fading_samples = 0;
+	playback[current] = instance->audio_streams[current].stream->instance_playback();
 	while (p_frames > 0) {
 
 		if (beat_amount_remaining == 0) {
 			fading = true;
 			current = (current + 1) % instance->stream_count;
-			instance->audio_streams[current].playback->start();
+			
+			playback[current]->start();
 			fading_samples = fading_samples_total;
 			beat_amount_remaining = instance->audio_streams[current].beat_count * instance->beat_size;
 		}
@@ -183,15 +188,15 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 			int to_fade = MIN(fading_samples, to_mix);
 			float from_volume = 1.0 - float(fading_samples) / fading_samples_total;
 			float to_volume = 1.0 - float(fading_samples + to_fade) / fading_samples_total;
-			add_stream_to_buffer(instance->audio_streams[current-1].playback, to_fade, p_rate_scale, from_volume, to_volume);
+			add_stream_to_buffer(playback[current-1], to_fade, p_rate_scale, from_volume, to_volume);
 			fading_samples -= to_fade;
 			if (fading_samples == 0) {
 				fading = false;
-				instance->audio_streams[current - 1].playback->stop();
+				playback[current-1]->stop();
 			}
 		}
 
-		add_stream_to_buffer(instance->audio_streams[current].playback, to_mix, p_rate_scale, 1.0, 1.0);
+		add_stream_to_buffer(playback[current], to_mix, p_rate_scale, 1.0, 1.0);
 
 		for (int i = 0; i < to_mix; i++) {
 			p_buffer[i + dst_offset] = pcm_buffer[i];
@@ -205,12 +210,15 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 int AudioStreamPlaybackPlaylist::get_loop_count() const {
 	return 0;
 }
+
 float AudioStreamPlaybackPlaylist::get_playback_position() const {
 	return 0.0;
 }
+
 float AudioStreamPlaybackPlaylist::get_length() const {
 	return 0.0;
 }
+
 bool AudioStreamPlaybackPlaylist::is_playing() const {
 	return active;
 }

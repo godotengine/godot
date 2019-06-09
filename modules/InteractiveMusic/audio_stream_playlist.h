@@ -28,7 +28,7 @@ private:
 
 	struct Streams {
 		Ref<AudioStream> stream;
-		Ref<AudioStreamPlayback> playback;
+		
 
 		int beat_count;
 	};
@@ -81,6 +81,7 @@ private:
 	AudioFrame *aux_buffer;
 	
 	Ref<AudioStreamPlaylist> instance;
+	List<Ref<AudioStreamPlayback>> playback;
 
 	int current;
 	bool fading;
