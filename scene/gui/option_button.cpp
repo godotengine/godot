@@ -86,24 +86,7 @@ void OptionButton::_focused(int p_which) {
 
 void OptionButton::_selected(int p_which) {
 
-	int selid = -1;
-	for (int i = 0; i < popup->get_item_count(); i++) {
-
-		bool is_clicked = popup->get_item_id(i) == p_which;
-		if (is_clicked) {
-			selid = i;
-			break;
-		}
-	}
-
-	if (selid == -1 && p_which >= 0 && p_which < popup->get_item_count()) {
-		_select(p_which, true);
-	} else {
-
-		ERR_FAIL_COND(selid == -1);
-
-		_select(selid, true);
-	}
+	_select(p_which, true);
 }
 
 void OptionButton::pressed() {
@@ -355,7 +338,7 @@ OptionButton::OptionButton() {
 	popup->set_pass_on_modal_close_click(false);
 	popup->set_notify_transform(true);
 	popup->set_allow_search(true);
-	popup->connect("id_pressed", this, "_selected");
+	popup->connect("index_pressed", this, "_selected");
 	popup->connect("id_focused", this, "_focused");
 	popup->connect("popup_hide", this, "set_pressed", varray(false));
 }
