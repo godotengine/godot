@@ -961,7 +961,23 @@ void ProjectManager::_notification(int p_what) {
 
 			set_process_unhandled_input(is_visible_in_tree());
 		} break;
+		case NOTIFICATION_WM_QUIT_REQUEST: {
+
+			_dim_window();
+		} break;
 	}
+}
+
+void ProjectManager::_dim_window() {
+
+	// This method must be called before calling `get_tree()->quit()`.
+	// Otherwise, its effect won't be visible
+
+	// Dim the project manager window while it's quitting to make it clearer that it's busy.
+	// No transition is applied, as the effect needs to be visible immediately
+	float c = 1.0f - float(EDITOR_GET("interface/editor/dim_amount"));
+	Color dim_color = Color(c, c, c);
+	gui_base->set_modulate(dim_color);
 }
 
 void ProjectManager::_panel_draw(Node *p_hb) {
@@ -1514,6 +1530,7 @@ void ProjectManager::_open_selected_projects() {
 		ERR_FAIL_COND(err);
 	}
 
+	_dim_window();
 	get_tree()->quit();
 }
 
@@ -1780,11 +1797,13 @@ void ProjectManager::_restart_confirm() {
 	Error err = OS::get_singleton()->execute(exec, args, false, &pid);
 	ERR_FAIL_COND(err);
 
+	_dim_window();
 	get_tree()->quit();
 }
 
 void ProjectManager::_exit_dialog() {
 
+	_dim_window();
 	get_tree()->quit();
 }
 
