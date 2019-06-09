@@ -140,7 +140,7 @@ void EditorFileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 				handled = true;
 			}
 			if (ED_IS_SHORTCUT("file_dialog/toggle_favorite", p_event)) {
-				_favorite_toggled(favorite->is_pressed());
+				_favorite_pressed();
 				handled = true;
 			}
 			if (ED_IS_SHORTCUT("file_dialog/toggle_mode", p_event)) {
@@ -1222,7 +1222,7 @@ void EditorFileDialog::_update_favorites() {
 	}
 }
 
-void EditorFileDialog::_favorite_toggled(bool p_toggle) {
+void EditorFileDialog::_favorite_pressed() {
 	bool res = access == ACCESS_RESOURCES;
 
 	String cd = get_current_dir();
@@ -1251,12 +1251,6 @@ void EditorFileDialog::_favorite_toggled(bool p_toggle) {
 	EditorSettings::get_singleton()->set_favorites(favorited);
 
 	_update_favorites();
-}
-
-void EditorFileDialog::_favorite_pressed() {
-
-	favorite->set_pressed(!favorite->is_pressed());
-	_favorite_toggled(favorite->is_pressed());
 }
 
 void EditorFileDialog::_recent_selected(int p_idx) {
@@ -1381,7 +1375,6 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_go_forward"), &EditorFileDialog::_go_forward);
 	ClassDB::bind_method(D_METHOD("_go_up"), &EditorFileDialog::_go_up);
 
-	ClassDB::bind_method(D_METHOD("_favorite_toggled"), &EditorFileDialog::_favorite_toggled);
 	ClassDB::bind_method(D_METHOD("_favorite_pressed"), &EditorFileDialog::_favorite_pressed);
 	ClassDB::bind_method(D_METHOD("_favorite_selected"), &EditorFileDialog::_favorite_selected);
 	ClassDB::bind_method(D_METHOD("_favorite_move_up"), &EditorFileDialog::_favorite_move_up);
@@ -1523,7 +1516,6 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(refresh);
 
 	favorite = memnew(ToolButton);
-	favorite->set_flat(true);
 	favorite->set_toggle_mode(true);
 	favorite->set_tooltip(TTR("(Un)favorite current folder."));
 	favorite->connect("pressed", this, "_favorite_pressed");
