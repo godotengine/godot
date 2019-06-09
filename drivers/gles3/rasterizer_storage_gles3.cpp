@@ -3501,7 +3501,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 				if (p_vertex_count < (1 << 16)) {
 					//read 16 bit indices
 					const uint16_t *src_idx = (const uint16_t *)ir.ptr();
-					for (int i = 0; i < index_count; i += 6) {
+					for (int i = 0; i + 5 < index_count; i += 6) {
 
 						wr[i + 0] = src_idx[i / 2];
 						wr[i + 1] = src_idx[i / 2 + 1];
@@ -3515,7 +3515,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 					//read 16 bit indices
 					const uint32_t *src_idx = (const uint32_t *)ir.ptr();
-					for (int i = 0; i < index_count; i += 6) {
+					for (int i = 0; i + 5 < index_count; i += 6) {
 
 						wr[i + 0] = src_idx[i / 2];
 						wr[i + 1] = src_idx[i / 2 + 1];
@@ -3531,7 +3531,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 				index_count = p_vertex_count * 2;
 				wf_indices.resize(index_count);
 				PoolVector<uint32_t>::Write wr = wf_indices.write();
-				for (int i = 0; i < index_count; i += 6) {
+				for (int i = 0; i + 5 < index_count; i += 6) {
 
 					wr[i + 0] = i / 2;
 					wr[i + 1] = i / 2 + 1;
