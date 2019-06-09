@@ -110,6 +110,7 @@ class ProjectManager : public Control {
 
 	void _install_project(const String &p_zip_path, const String &p_title);
 
+	void _dim_window();
 	void _panel_draw(Node *p_hb);
 	void _panel_input(const Ref<InputEvent> &p_ev, Node *p_hb);
 	void _unhandled_input(const Ref<InputEvent> &p_ev);
