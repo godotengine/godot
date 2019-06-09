@@ -1253,6 +1253,12 @@ void EditorFileDialog::_favorite_toggled(bool p_toggle) {
 	_update_favorites();
 }
 
+void EditorFileDialog::_favorite_pressed() {
+
+	favorite->set_pressed(!favorite->is_pressed());
+	_favorite_toggled(favorite->is_pressed());
+}
+
 void EditorFileDialog::_recent_selected(int p_idx) {
 
 	Vector<String> recentd = EditorSettings::get_singleton()->get_recent_dirs();
@@ -1376,6 +1382,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_go_up"), &EditorFileDialog::_go_up);
 
 	ClassDB::bind_method(D_METHOD("_favorite_toggled"), &EditorFileDialog::_favorite_toggled);
+	ClassDB::bind_method(D_METHOD("_favorite_pressed"), &EditorFileDialog::_favorite_pressed);
 	ClassDB::bind_method(D_METHOD("_favorite_selected"), &EditorFileDialog::_favorite_selected);
 	ClassDB::bind_method(D_METHOD("_favorite_move_up"), &EditorFileDialog::_favorite_move_up);
 	ClassDB::bind_method(D_METHOD("_favorite_move_down"), &EditorFileDialog::_favorite_move_down);
@@ -1519,7 +1526,7 @@ EditorFileDialog::EditorFileDialog() {
 	favorite->set_flat(true);
 	favorite->set_toggle_mode(true);
 	favorite->set_tooltip(TTR("(Un)favorite current folder."));
-	favorite->connect("toggled", this, "_favorite_toggled");
+	favorite->connect("pressed", this, "_favorite_pressed");
 	pathhb->add_child(favorite);
 
 	Ref<ButtonGroup> view_mode_group;
