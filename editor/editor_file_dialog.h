@@ -150,7 +150,6 @@ private:
 	void update_filters();
 
 	void _update_favorites();
-	void _favorite_toggled(bool p_toggle);
 	void _favorite_pressed();
 	void _favorite_selected(int p_idx);
 	void _favorite_move_up();
