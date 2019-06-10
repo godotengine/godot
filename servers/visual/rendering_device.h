@@ -11,7 +11,6 @@ public:
 		INVALID_ID = -1
 	};
 
-	typedef int64_t ID;
 
 	/*****************/
 	/**** GENERIC ****/
@@ -349,9 +348,9 @@ public:
 		}
 	};
 
-	virtual ID texture_create(const TextureFormat &p_format,const TextureView& p_view, const Vector<PoolVector<uint8_t> >&p_data = Vector<PoolVector<uint8_t> >()) = 0;
-	virtual ID texture_create_shared(const TextureView& p_view, ID p_with_texture) = 0;
-	virtual Error texture_update(ID p_texture,uint32_t p_mipmap,uint32_t p_layer,const PoolVector<uint8_t>&p_data, bool p_sync_with_draw = false) =0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
+	virtual RID texture_create(const TextureFormat &p_format,const TextureView& p_view, const Vector<PoolVector<uint8_t> >&p_data = Vector<PoolVector<uint8_t> >()) = 0;
+	virtual RID texture_create_shared(const TextureView& p_view, RID p_with_texture) = 0;
+	virtual Error texture_update(RID p_texture,uint32_t p_mipmap,uint32_t p_layer,const PoolVector<uint8_t>&p_data, bool p_sync_with_draw = false) =0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
 
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format,TextureUsageBits p_usage) const = 0;
 
@@ -366,12 +365,14 @@ public:
 		uint32_t usage_flags;
 	};
 
+	typedef int64_t FramebufferFormatID;
+
 	// This ID is warranted to be unique for the same formats, does not need to be freed
-	virtual ID framebuffer_format_create(const Vector<AttachmentFormat>& p_format) =0;
+	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat>& p_format) =0;
 
-	virtual ID framebuffer_create(const Vector<ID> &p_texture_attachments,ID p_format_check=INVALID_ID) = 0;
+	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments,FramebufferFormatID p_format_check=INVALID_ID) = 0;
 
-	virtual ID framebuffer_get_format(ID p_framebuffer) = 0;
+	virtual FramebufferFormatID framebuffer_get_format(RID p_framebuffer) = 0;
 
 	/*****************/
 	/**** SAMPLER ****/
@@ -437,7 +438,7 @@ public:
 		}
 	};
 
-	virtual ID sampler_create(const SamplerState &p_state) = 0;
+	virtual RID sampler_create(const SamplerState &p_state) = 0;
 
 	/**********************/
 	/**** VERTEX ARRAY ****/
@@ -462,19 +463,21 @@ public:
 			frequency=VERTEX_FREQUENCY_VERTEX;
 		}
 	};
-	virtual ID vertex_buffer_create(uint32_t p_size_bytes, const PoolVector<uint8_t> &p_data = PoolVector<uint8_t>()) = 0;
+	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const PoolVector<uint8_t> &p_data = PoolVector<uint8_t>()) = 0;
+
+	typedef int64_t VertexFormatID;
 
 	// This ID is warranted to be unique for the same formats, does not need to be freed
-	virtual ID vertex_description_create(const Vector<VertexDescription> &p_vertex_descriptions) = 0;
-	virtual ID vertex_array_create(uint32_t p_vertex_count, ID p_vertex_description,const Vector<ID>& p_src_buffers) = 0;
+	virtual VertexFormatID vertex_format_create(const Vector<VertexDescription> &p_vertex_formats) = 0;
+	virtual RID vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format,const Vector<RID>& p_src_buffers) = 0;
 
 	enum IndexBufferFormat {
 		INDEX_BUFFER_FORMAT_UINT16,
 		INDEX_BUFFER_FORMAT_UINT32,
 	};
 
-	virtual ID index_buffer_create(uint32_t p_size_indices, IndexBufferFormat p_format, const PoolVector<uint8_t> &p_data = PoolVector<uint8_t>(),bool p_use_restart_indices=false) = 0;
-	virtual ID index_array_create(ID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count) =0;
+	virtual RID index_buffer_create(uint32_t p_size_indices, IndexBufferFormat p_format, const PoolVector<uint8_t> &p_data = PoolVector<uint8_t>(),bool p_use_restart_indices=false) = 0;
+	virtual RID index_array_create(RID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count) =0;
 
 	/****************/
 	/**** SHADER ****/
@@ -502,7 +505,7 @@ public:
 		}
 	};
 
-	virtual ID shader_create_from_source(const Vector<ShaderStageSource> &p_stages,String *r_error=NULL,bool p_allow_cache=true) = 0;
+	virtual RID shader_create_from_source(const Vector<ShaderStageSource> &p_stages,String *r_error=NULL,bool p_allow_cache=true) = 0;
 
 
 	/******************/
@@ -523,9 +526,9 @@ public:
 		UNIFORM_TYPE_MAX
 	};
 
-	virtual ID uniform_buffer_create(uint32_t p_size_bytes,const PoolVector<uint8_t>& p_data=PoolVector<uint8_t>()) =0;
-	virtual ID storage_buffer_create(uint32_t p_size,const PoolVector<uint8_t>& p_data=PoolVector<uint8_t>()) =0;
-	virtual ID texture_buffer_create(uint32_t p_size_elements,DataFormat p_format,const PoolVector<uint8_t>& p_data=PoolVector<uint8_t>()) =0;
+	virtual RID uniform_buffer_create(uint32_t p_size_bytes,const PoolVector<uint8_t>& p_data=PoolVector<uint8_t>()) =0;
+	virtual RID storage_buffer_create(uint32_t p_size,const PoolVector<uint8_t>& p_data=PoolVector<uint8_t>()) =0;
+	virtual RID texture_buffer_create(uint32_t p_size_elements,DataFormat p_format,const PoolVector<uint8_t>& p_data=PoolVector<uint8_t>()) =0;
 
 	struct Uniform {
 		UniformType type;
@@ -536,7 +539,7 @@ public:
 		//provide more
 		//for sampler with texture, supply two IDs for each.
 		//accepted IDs are: Sampler, Texture, Uniform Buffer and Texture Buffer
-		Vector<ID> ids;
+		Vector<RID> ids;
 
 		Uniform() {
 			type=UNIFORM_TYPE_IMAGE;
@@ -544,9 +547,9 @@ public:
 		}
 	};
 
-	virtual ID uniform_set_create(const Vector<Uniform>& p_uniforms,ID p_shader,uint32_t p_shader_set) = 0;
+	virtual RID uniform_set_create(const Vector<Uniform>& p_uniforms,RID p_shader,uint32_t p_shader_set) = 0;
 
-	virtual Error buffer_update(ID p_buffer, uint32_t p_offset, uint32_t p_size, void *p_data,bool p_sync_with_draw=false) =0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
+	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, void *p_data,bool p_sync_with_draw=false) =0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
 
 	/*************************/
 	/**** RENDER PIPELINE ****/
@@ -790,7 +793,7 @@ public:
 		DYNAMIC_STATE_STENCIL_REFERENCE = (1 << 6),
 	};
 
-	virtual ID render_pipeline_create(ID p_shader, ID p_framebuffer_format, ID p_vertex_description,RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags=0) = 0;
+	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format,RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags=0) = 0;
 
 	/****************/
 	/**** SCREEN ****/
@@ -798,7 +801,7 @@ public:
 
 	virtual int screen_get_width(int p_screen = 0) const = 0;
 	virtual int screen_get_height(int p_screen = 0) const = 0;
-	virtual ID screen_get_framebuffer_format() const = 0;
+	virtual FramebufferFormatID screen_get_framebuffer_format() const = 0;
 
 	/********************/
 	/**** DRAW LISTS ****/
@@ -821,21 +824,23 @@ public:
 		FINAL_ACTION_MAX
 	};
 
+	typedef int64_t DrawListID;
 
-	virtual ID draw_list_begin_for_screen(int p_screen = 0, const Color &p_clear_color = Color()) =0;
-	virtual ID draw_list_begin(ID p_framebuffer, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_color_values = Vector<Color>(),const Rect2& p_region=Rect2()) =0;
-	virtual Error draw_list_begin_split(ID p_framebuffer, uint32_t p_splits,ID *r_split_ids, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_color_values = Vector<Color>(),const Rect2& p_region=Rect2()) =0;
 
-	virtual void draw_list_bind_render_pipeline(ID p_list, ID p_render_pipeline) = 0;
-	virtual void draw_list_bind_uniform_set(ID p_list, ID p_uniform_set, uint32_t p_index) =0;
-	virtual void draw_list_bind_vertex_array(ID p_list, ID p_vertex_array) = 0;
-	virtual void draw_list_bind_index_array(ID p_list, ID p_index_array) = 0;
-	virtual void draw_list_set_push_constant(ID p_list, void *p_data,uint32_t p_data_size) =0;
+	virtual DrawListID draw_list_begin_for_screen(int p_screen = 0, const Color &p_clear_color = Color()) =0;
+	virtual DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_color_values = Vector<Color>(),const Rect2& p_region=Rect2()) =0;
+	virtual Error draw_list_begin_split(RID p_framebuffer, uint32_t p_splits,DrawListID *r_split_ids, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_color_values = Vector<Color>(),const Rect2& p_region=Rect2()) =0;
 
-	virtual void draw_list_draw(ID p_list, bool p_use_indices, uint32_t p_instances=1) = 0;
+	virtual void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline) = 0;
+	virtual void draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index) =0;
+	virtual void draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array) = 0;
+	virtual void draw_list_bind_index_array(DrawListID p_list, RID p_index_array) = 0;
+	virtual void draw_list_set_push_constant(DrawListID p_list, void *p_data,uint32_t p_data_size) =0;
 
-	virtual void draw_list_enable_scissor(ID p_list, const Rect2& p_rect) = 0;
-	virtual void draw_list_disable_scissor(ID p_list) = 0;
+	virtual void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances=1) = 0;
+
+	virtual void draw_list_enable_scissor(DrawListID p_list, const Rect2& p_rect) = 0;
+	virtual void draw_list_disable_scissor(DrawListID p_list) = 0;
 
 	virtual void draw_list_end() =0;
 
@@ -843,7 +848,7 @@ public:
 	/**** FREE! ****/
 	/***************/
 
-	virtual void free(ID p_id) =0;
+	virtual void free(RID p_id) =0;
 	RenderingDevice();
 };
 
