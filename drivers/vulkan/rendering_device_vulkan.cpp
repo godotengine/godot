@@ -6,29 +6,29 @@
 #include "thirdparty/glslang/SPIRV/GlslangToSpv.h"
 #include "thirdparty/glslang/glslang/Include/Types.h"
 
-void RenderingDeviceVulkan::_add_dependency(ID p_id, ID p_depends_on) {
+void RenderingDeviceVulkan::_add_dependency(RID p_id, RID p_depends_on) {
 
 	if (!dependency_map.has(p_depends_on)) {
-		dependency_map[p_depends_on] = Set<ID>();
+		dependency_map[p_depends_on] = Set<RID>();
 	}
 
 	dependency_map[p_depends_on].insert(p_id);
 
 	if (!reverse_dependency_map.has(p_id)) {
-		reverse_dependency_map[p_id] = Set<ID>();
+		reverse_dependency_map[p_id] = Set<RID>();
 	}
 
 	reverse_dependency_map[p_id].insert(p_depends_on);
 }
 
-void RenderingDeviceVulkan::_free_dependencies(ID p_id) {
+void RenderingDeviceVulkan::_free_dependencies(RID p_id) {
 
 	//direct dependencies must be freed
-	List<ID> to_free;
-	Map<ID, Set<ID> >::Element *E = dependency_map.find(p_id);
+	List<RID> to_free;
+	Map<RID, Set<RID> >::Element *E = dependency_map.find(p_id);
 	if (E) {
 
-		for (Set<ID>::Element *F = E->get().front(); F; F = F->next()) {
+		for (Set<RID>::Element *F = E->get().front(); F; F = F->next()) {
 			to_free.push_back(F->get());
 		}
 
@@ -45,8 +45,8 @@ void RenderingDeviceVulkan::_free_dependencies(ID p_id) {
 
 	if (E) {
 
-		for (Set<ID>::Element *F = E->get().front(); F; F = F->next()) {
-			Map<ID, Set<ID> >::Element *G = dependency_map.find(F->get());
+		for (Set<RID>::Element *F = E->get().front(); F; F = F->next()) {
+			Map<RID, Set<RID> >::Element *G = dependency_map.find(F->get());
 			if (G) {
 				G->get().erase(p_id);
 			}
@@ -1457,7 +1457,7 @@ Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, c
 /**** TEXTURE ****/
 /*****************/
 
-RenderingDevice::ID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<PoolVector<uint8_t> > &p_data) {
+RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<PoolVector<uint8_t> > &p_data) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -1483,30 +1483,30 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create(const TextureFormat &p
 		VK_IMAGE_TYPE_3D
 	};
 
-	ERR_FAIL_INDEX_V(p_format.type, TEXTURE_TYPE_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_format.type, TEXTURE_TYPE_MAX, RID());
 
 	image_create_info.imageType = image_type[p_format.type];
 
-	ERR_FAIL_COND_V_MSG(p_format.width < 1, INVALID_ID, "Width must be equal or greater than 1 for all textures");
+	ERR_FAIL_COND_V_MSG(p_format.width < 1, RID(), "Width must be equal or greater than 1 for all textures");
 
 	image_create_info.format = vulkan_formats[p_format.format];
 
 	image_create_info.extent.width = p_format.width;
 	if (image_create_info.imageType == VK_IMAGE_TYPE_3D || image_create_info.imageType == VK_IMAGE_TYPE_2D) {
-		ERR_FAIL_COND_V_MSG(p_format.height < 1, INVALID_ID, "Height must be equal or greater than 1 for 2D and 3D textures");
+		ERR_FAIL_COND_V_MSG(p_format.height < 1, RID(), "Height must be equal or greater than 1 for 2D and 3D textures");
 		image_create_info.extent.height = p_format.height;
 	} else {
 		image_create_info.extent.height = 1;
 	}
 
 	if (image_create_info.imageType == VK_IMAGE_TYPE_3D) {
-		ERR_FAIL_COND_V_MSG(p_format.depth < 1, INVALID_ID, "Depth must be equal or greater than 1 for 3D textures");
+		ERR_FAIL_COND_V_MSG(p_format.depth < 1, RID(), "Depth must be equal or greater than 1 for 3D textures");
 		image_create_info.extent.depth = p_format.depth;
 	} else {
 		image_create_info.extent.depth = 1;
 	}
 
-	ERR_FAIL_COND_V(p_format.mipmaps < 1, INVALID_ID);
+	ERR_FAIL_COND_V(p_format.mipmaps < 1, RID());
 
 	image_create_info.mipLevels = p_format.mipmaps;
 
@@ -1515,11 +1515,10 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create(const TextureFormat &p
 		array_layer_multiplier = 6;
 	}
 	if (p_format.type == TEXTURE_TYPE_1D_ARRAY || p_format.type == TEXTURE_TYPE_2D_ARRAY || p_format.type == TEXTURE_TYPE_CUBE_ARRAY || p_format.type == TEXTURE_TYPE_CUBE) {
-		ERR_FAIL_COND_V_MSG(p_format.array_layers < 1, INVALID_ID,
+		ERR_FAIL_COND_V_MSG(p_format.array_layers < 1, RID(),
 				"Amount of layers must be equal or greater than 1 for arrays and cubemaps.");
-		if ((p_format.type == TEXTURE_TYPE_CUBE_ARRAY || p_format.type == TEXTURE_TYPE_CUBE) && (p_format.array_layers % 6) != 0) {
-			ERR_FAIL_V_MSG(INVALID_ID, "Cubemap and cubemap array textures must provide a layer number that is multiple of 6");
-		}
+		ERR_FAIL_COND_V_MSG((p_format.type == TEXTURE_TYPE_CUBE_ARRAY || p_format.type == TEXTURE_TYPE_CUBE) && (p_format.array_layers % 6) != 0, RID(),
+				"Cubemap and cubemap array textures must provide a layer number that is multiple of 6");
 		image_create_info.arrayLayers = p_format.array_layers;
 	} else {
 		image_create_info.arrayLayers = 1;
@@ -1527,7 +1526,7 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create(const TextureFormat &p
 
 	image_create_info.arrayLayers = p_format.array_layers;
 
-	ERR_FAIL_INDEX_V(p_format.samples, TEXTURE_SAMPLES_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_format.samples, TEXTURE_SAMPLES_MAX, RID());
 
 	image_create_info.samples = rasterization_sample_count[p_format.samples];
 	image_create_info.tiling = (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
@@ -1558,16 +1557,16 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create(const TextureFormat &p
 
 	uint32_t required_mipmaps = get_image_required_mipmaps(image_create_info.extent.width, image_create_info.extent.height, image_create_info.extent.depth);
 
-	ERR_FAIL_COND_V_MSG(required_mipmaps < image_create_info.mipLevels, INVALID_ID,
+	ERR_FAIL_COND_V_MSG(required_mipmaps < image_create_info.mipLevels, RID(),
 			"Too many mipmaps requested for texture format and dimensions (" + itos(image_create_info.mipLevels) + "), maximum allowed: (" + itos(required_mipmaps) + ").");
 
 	if (p_data.size()) {
 
-		ERR_FAIL_COND_V_MSG(!(p_format.usage_bits & TEXTURE_USAGE_CAN_UPDATE_BIT), INVALID_ID,
+		ERR_FAIL_COND_V_MSG(!(p_format.usage_bits & TEXTURE_USAGE_CAN_UPDATE_BIT), RID(),
 				"Texture needs the TEXTURE_USAGE_CAN_UPDATE_BIT usage flag in order to be updated at initialization or later");
 
 		int expected_images = image_create_info.mipLevels * image_create_info.arrayLayers * array_layer_multiplier;
-		ERR_FAIL_COND_V_MSG(p_data.size() != expected_images, INVALID_ID,
+		ERR_FAIL_COND_V_MSG(p_data.size() != expected_images, RID(),
 				"Default supplied data for image format is of invalid length (" + itos(p_data.size()) + "), should be (" + itos(expected_images) + ").");
 
 		int idx = 0;
@@ -1575,7 +1574,7 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create(const TextureFormat &p
 			for (uint32_t j = 0; j < image_create_info.mipLevels; j++) {
 				print_line("computed size from " + Vector3(image_create_info.extent.width, image_create_info.extent.height, image_create_info.extent.depth));
 				uint32_t required_size = get_image_format_required_size(p_format.format, image_create_info.extent.width, image_create_info.extent.height, image_create_info.extent.depth, j);
-				ERR_FAIL_COND_V_MSG((uint32_t)p_data[idx].size() != required_size, INVALID_ID,
+				ERR_FAIL_COND_V_MSG((uint32_t)p_data[idx].size() != required_size, RID(),
 						"Data for slice index " + itos(idx) + " (mapped to layer " + itos(i) + ", mipmap " + itos(j) + ") differs in size (supplied: " + itos(p_data[idx].size()) + ") than what is required by the format (" + itos(required_size) + ").");
 				idx++;
 			}
@@ -1598,35 +1597,35 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create(const TextureFormat &p
 		}
 
 		if (p_format.usage_bits & TEXTURE_USAGE_SAMPLING_BIT && !(flags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)) {
-			ERR_FAIL_V_MSG(INVALID_ID, "Format " + format_text + " does not support usage as sampling texture.");
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as sampling texture.");
 		}
 
 		if (p_format.usage_bits & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT && !(flags & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT)) {
-			ERR_FAIL_V_MSG(INVALID_ID, "Format " + format_text + " does not support usage as color attachment.");
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as color attachment.");
 		}
 
 		if (p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT && !(flags & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
-			ERR_FAIL_V_MSG(INVALID_ID, "Format " + format_text + " does not support usage as depth-stencil attachment.");
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as depth-stencil attachment.");
 		}
 
 		if (p_format.usage_bits & TEXTURE_USAGE_STORAGE_BIT && !(flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) {
-			ERR_FAIL_V_MSG(INVALID_ID, "Format " + format_text + " does not support usage as storage image.");
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as storage image.");
 		}
 
 		if (p_format.usage_bits & TEXTURE_USAGE_STORAGE_ATOMIC_BIT && !(flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT)) {
-			ERR_FAIL_V_MSG(INVALID_ID, "Format " + format_text + " does not support usage as atomic storage image.");
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as atomic storage image.");
 		}
 	}
 
 	//some view validation
 
 	if (p_view.format_override != DATA_FORMAT_MAX) {
-		ERR_FAIL_INDEX_V(p_view.format_override, DATA_FORMAT_MAX, INVALID_ID);
+		ERR_FAIL_INDEX_V(p_view.format_override, DATA_FORMAT_MAX, RID());
 	}
-	ERR_FAIL_INDEX_V(p_view.swizzle_r, TEXTURE_SWIZZLE_MAX, INVALID_ID);
-	ERR_FAIL_INDEX_V(p_view.swizzle_g, TEXTURE_SWIZZLE_MAX, INVALID_ID);
-	ERR_FAIL_INDEX_V(p_view.swizzle_b, TEXTURE_SWIZZLE_MAX, INVALID_ID);
-	ERR_FAIL_INDEX_V(p_view.swizzle_a, TEXTURE_SWIZZLE_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_view.swizzle_r, TEXTURE_SWIZZLE_MAX, RID());
+	ERR_FAIL_INDEX_V(p_view.swizzle_g, TEXTURE_SWIZZLE_MAX, RID());
+	ERR_FAIL_INDEX_V(p_view.swizzle_b, TEXTURE_SWIZZLE_MAX, RID());
+	ERR_FAIL_INDEX_V(p_view.swizzle_a, TEXTURE_SWIZZLE_MAX, RID());
 
 	//allocate memory
 
@@ -1642,7 +1641,7 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create(const TextureFormat &p
 	Texture texture;
 
 	VkResult err = vmaCreateImage(allocator, &image_create_info, &allocInfo, &texture.image, &texture.allocation, &texture.allocation_info);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V(err, RID());
 
 	texture.type = p_format.type;
 	texture.format = p_format.format;
@@ -1681,7 +1680,6 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create(const TextureFormat &p
 	}
 
 	texture.bound = false;
-	texture.owner = INVALID_ID;
 
 	//create view
 
@@ -1738,7 +1736,7 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create(const TextureFormat &p
 	if (err) {
 		vmaDestroyImage(allocator, texture.image, texture.allocation);
 		vmaFreeMemory(allocator, texture.allocation);
-		ERR_FAIL_V(INVALID_ID);
+		ERR_FAIL_V(RID());
 	}
 
 	//barrier to set layout
@@ -1762,7 +1760,7 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create(const TextureFormat &p
 		vkCmdPipelineBarrier(frames[frame].setup_command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
 	}
 
-	ID id = texture_owner.make_id(texture);
+	RID id = texture_owner.make_rid(texture);
 
 	if (p_data.size()) {
 
@@ -1775,15 +1773,15 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create(const TextureFormat &p
 	return id;
 }
 
-RenderingDevice::ID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, ID p_with_texture) {
+RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID p_with_texture) {
 
 	Texture *src_texture = texture_owner.getornull(p_with_texture);
-	ERR_FAIL_COND_V(!src_texture, INVALID_ID);
+	ERR_FAIL_COND_V(!src_texture, RID());
 
-	if (src_texture->owner != INVALID_ID) { //ahh this is a share
+	if (src_texture->owner.is_valid()) { //ahh this is a share
 		p_with_texture = src_texture->owner;
 		src_texture = texture_owner.getornull(src_texture->owner);
-		ERR_FAIL_COND_V(!src_texture, INVALID_ID); //this is a bug
+		ERR_FAIL_COND_V(!src_texture, RID()); //this is a bug
 	}
 
 	//create view
@@ -1815,7 +1813,7 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create_shared(const TextureVi
 	if (p_view.format_override == DATA_FORMAT_MAX) {
 		image_view_create_info.format = vulkan_formats[texture.format];
 	} else {
-		ERR_FAIL_INDEX_V(p_view.format_override, DATA_FORMAT_MAX, INVALID_ID);
+		ERR_FAIL_INDEX_V(p_view.format_override, DATA_FORMAT_MAX, RID());
 		image_view_create_info.format = vulkan_formats[p_view.format_override];
 	}
 
@@ -1848,24 +1846,24 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_create_shared(const TextureVi
 	VkResult err = vkCreateImageView(device, &image_view_create_info, NULL, &texture.view);
 
 	if (err) {
-		ERR_FAIL_V(INVALID_ID);
+		ERR_FAIL_V(RID());
 	}
 
 	texture.owner = p_with_texture;
-	ID id = texture_owner.make_id(texture);
+	RID id = texture_owner.make_rid(texture);
 	_add_dependency(id, p_with_texture);
 
 	return id;
 }
 
-Error RenderingDeviceVulkan::texture_update(ID p_texture, uint32_t p_mipmap, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw) {
+Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_mipmap, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw) {
 
 	_THREAD_SAFE_METHOD_
 
 	Texture *texture = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND_V(!texture, ERR_INVALID_PARAMETER);
 
-	if (texture->owner != INVALID_ID) {
+	if (texture->owner != RID()) {
 		p_texture = texture->owner;
 		texture = texture_owner.getornull(texture->owner);
 		ERR_FAIL_COND_V(!texture, ERR_BUG); //this is a bug
@@ -2300,14 +2298,14 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	return render_pass;
 }
 
-RenderingDevice::ID RenderingDeviceVulkan::framebuffer_format_create(const Vector<AttachmentFormat> &p_format) {
+RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_create(const Vector<AttachmentFormat> &p_format) {
 
 	_THREAD_SAFE_METHOD_
 
 	FramebufferFormatKey key;
 	key.attachments = p_format;
 
-	const Map<FramebufferFormatKey, ID>::Element *E = framebuffer_format_cache.find(key);
+	const Map<FramebufferFormatKey, FramebufferFormatID>::Element *E = framebuffer_format_cache.find(key);
 	if (E) {
 		//exists, return
 		return E->get();
@@ -2319,7 +2317,7 @@ RenderingDevice::ID RenderingDeviceVulkan::framebuffer_format_create(const Vecto
 	if (render_pass == VK_NULL_HANDLE) { //was likely invalid
 		return INVALID_ID;
 	}
-	ID id = ID(framebuffer_format_cache.size()) | (ID(ID_TYPE_FRAMEBUFFER_FORMAT) << ID(ID_BASE_SHIFT));
+	FramebufferFormatID id = FramebufferFormatID(framebuffer_format_cache.size()) | (FramebufferFormatID(ID_TYPE_FRAMEBUFFER_FORMAT) << FramebufferFormatID(ID_BASE_SHIFT));
 
 	E = framebuffer_format_cache.insert(key, id);
 	FramebufferFormat fb_format;
@@ -2334,7 +2332,7 @@ RenderingDevice::ID RenderingDeviceVulkan::framebuffer_format_create(const Vecto
 /**** RENDER TARGET ****/
 /***********************/
 
-RenderingDevice::ID RenderingDeviceVulkan::framebuffer_create(const Vector<ID> &p_texture_attachments, ID p_format_check) {
+RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -2343,13 +2341,13 @@ RenderingDevice::ID RenderingDeviceVulkan::framebuffer_create(const Vector<ID> &
 
 	for (int i = 0; i < p_texture_attachments.size(); i++) {
 		Texture *texture = texture_owner.getornull(p_texture_attachments[i]);
-		ERR_FAIL_COND_V_MSG(!texture, INVALID_ID, "Texture index supplied for framebuffer (" + itos(i) + ") is not a valid texture.");
+		ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture index supplied for framebuffer (" + itos(i) + ") is not a valid texture.");
 
 		if (i == 0) {
 			size.width = texture->width;
 			size.height = texture->height;
 		} else {
-			ERR_FAIL_COND_V_MSG((uint32_t)size.width != texture->width || (uint32_t)size.height != texture->height, INVALID_ID,
+			ERR_FAIL_COND_V_MSG((uint32_t)size.width != texture->width || (uint32_t)size.height != texture->height, RID(),
 					"All textures in a framebuffer should be the same size.");
 		}
 
@@ -2360,12 +2358,12 @@ RenderingDevice::ID RenderingDeviceVulkan::framebuffer_create(const Vector<ID> &
 		attachments.push_back(af);
 	}
 
-	ID format_id = framebuffer_format_create(attachments);
+	FramebufferFormatID format_id = framebuffer_format_create(attachments);
 	if (format_id == INVALID_ID) {
-		return INVALID_ID;
+		return RID();
 	}
 
-	ERR_FAIL_COND_V_MSG(p_format_check != INVALID_ID && format_id != p_format_check, INVALID_ID,
+	ERR_FAIL_COND_V_MSG(p_format_check != INVALID_ID && format_id != p_format_check, RID(),
 			"The format used to check this framebuffer differs from the intended framebuffer format.");
 
 	Framebuffer framebuffer;
@@ -2373,7 +2371,7 @@ RenderingDevice::ID RenderingDeviceVulkan::framebuffer_create(const Vector<ID> &
 	framebuffer.texture_ids = p_texture_attachments;
 	framebuffer.size = size;
 
-	ID id = framebuffer_owner.make_id(framebuffer);
+	RID id = framebuffer_owner.make_rid(framebuffer);
 
 	for (int i = 0; i < p_texture_attachments.size(); i++) {
 		_add_dependency(id, p_texture_attachments[i]);
@@ -2382,7 +2380,7 @@ RenderingDevice::ID RenderingDeviceVulkan::framebuffer_create(const Vector<ID> &
 	return id;
 }
 
-RenderingDevice::ID RenderingDeviceVulkan::framebuffer_get_format(ID p_framebuffer) {
+RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_get_format(RID p_framebuffer) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -2396,7 +2394,7 @@ RenderingDevice::ID RenderingDeviceVulkan::framebuffer_get_format(ID p_framebuff
 /**** SAMPLER ****/
 /*****************/
 
-RenderingDevice::ID RenderingDeviceVulkan::sampler_create(const SamplerState &p_state) {
+RID RenderingDeviceVulkan::sampler_create(const SamplerState &p_state) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -2408,11 +2406,11 @@ RenderingDevice::ID RenderingDeviceVulkan::sampler_create(const SamplerState &p_
 	sampler_create_info.minFilter = p_state.min_filter == SAMPLER_FILTER_LINEAR ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
 	sampler_create_info.mipmapMode = p_state.mip_filter == SAMPLER_FILTER_LINEAR ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST;
 
-	ERR_FAIL_INDEX_V(p_state.repeat_u, SAMPLER_REPEAT_MODE_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_state.repeat_u, SAMPLER_REPEAT_MODE_MAX, RID());
 	sampler_create_info.addressModeU = address_modes[p_state.repeat_u];
-	ERR_FAIL_INDEX_V(p_state.repeat_v, SAMPLER_REPEAT_MODE_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_state.repeat_v, SAMPLER_REPEAT_MODE_MAX, RID());
 	sampler_create_info.addressModeV = address_modes[p_state.repeat_v];
-	ERR_FAIL_INDEX_V(p_state.repeat_w, SAMPLER_REPEAT_MODE_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_state.repeat_w, SAMPLER_REPEAT_MODE_MAX, RID());
 	sampler_create_info.addressModeW = address_modes[p_state.repeat_w];
 
 	sampler_create_info.mipLodBias = p_state.lod_bias;
@@ -2420,33 +2418,33 @@ RenderingDevice::ID RenderingDeviceVulkan::sampler_create(const SamplerState &p_
 	sampler_create_info.maxAnisotropy = p_state.anisotropy_max;
 	sampler_create_info.compareEnable = p_state.enable_compare;
 
-	ERR_FAIL_INDEX_V(p_state.compare_op, COMPARE_OP_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_state.compare_op, COMPARE_OP_MAX, RID());
 	sampler_create_info.compareOp = compare_operators[p_state.compare_op];
 
 	sampler_create_info.minLod = p_state.min_lod;
 	sampler_create_info.maxLod = p_state.max_lod;
 
-	ERR_FAIL_INDEX_V(p_state.border_color, SAMPLER_BORDER_COLOR_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_state.border_color, SAMPLER_BORDER_COLOR_MAX, RID());
 	sampler_create_info.borderColor = sampler_border_colors[p_state.border_color];
 
 	sampler_create_info.unnormalizedCoordinates = p_state.unnormalized_uvw;
 
 	VkSampler sampler;
 	VkResult res = vkCreateSampler(device, &sampler_create_info, NULL, &sampler);
-	ERR_FAIL_COND_V(res, INVALID_ID);
+	ERR_FAIL_COND_V(res, RID());
 
-	return sampler_owner.make_id(sampler);
+	return sampler_owner.make_rid(sampler);
 }
 
 /**********************/
 /**** VERTEX ARRAY ****/
 /**********************/
 
-RenderingDevice::ID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const PoolVector<uint8_t> &p_data) {
+RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const PoolVector<uint8_t> &p_data) {
 
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, INVALID_ID);
+	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
 	Buffer buffer;
 	_buffer_allocate(&buffer, p_size_bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
@@ -2455,95 +2453,95 @@ RenderingDevice::ID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_
 		PoolVector<uint8_t>::Read r = p_data.read();
 		_buffer_update(&buffer, 0, r.ptr(), data_size);
 	}
-	return vertex_buffer_owner.make_id(buffer);
+	return vertex_buffer_owner.make_rid(buffer);
 }
 
 // Internally reference counted, this ID is warranted to be unique for the same description, but needs to be freed as many times as it was allocated
-RenderingDevice::ID RenderingDeviceVulkan::vertex_description_create(const Vector<VertexDescription> &p_vertex_descriptions) {
+RenderingDevice::VertexFormatID RenderingDeviceVulkan::vertex_format_create(const Vector<VertexDescription> &p_vertex_formats) {
 
 	_THREAD_SAFE_METHOD_
 
 	VertexDescriptionKey key;
-	key.vertex_descriptions = p_vertex_descriptions;
-	const Map<VertexDescriptionKey, ID>::Element *E = vertex_description_cache.find(key);
+	key.vertex_formats = p_vertex_formats;
+	const Map<VertexDescriptionKey, VertexFormatID>::Element *E = vertex_format_cache.find(key);
 	if (E) {
 		return E->get();
 	}
 	//does not exist, create one and cache it
 	VertexDescriptionCache vdcache;
-	vdcache.bindings = memnew_arr(VkVertexInputBindingDescription, p_vertex_descriptions.size());
-	vdcache.attributes = memnew_arr(VkVertexInputAttributeDescription, p_vertex_descriptions.size());
+	vdcache.bindings = memnew_arr(VkVertexInputBindingDescription, p_vertex_formats.size());
+	vdcache.attributes = memnew_arr(VkVertexInputAttributeDescription, p_vertex_formats.size());
 	Set<int> used_locations;
-	for (int i = 0; i < p_vertex_descriptions.size(); i++) {
-		ERR_CONTINUE(p_vertex_descriptions[i].format >= DATA_FORMAT_MAX);
-		ERR_FAIL_COND_V(used_locations.has(p_vertex_descriptions[i].location), INVALID_ID);
+	for (int i = 0; i < p_vertex_formats.size(); i++) {
+		ERR_CONTINUE(p_vertex_formats[i].format >= DATA_FORMAT_MAX);
+		ERR_FAIL_COND_V(used_locations.has(p_vertex_formats[i].location), INVALID_ID);
 
-		ERR_FAIL_COND_V_MSG(get_format_vertex_size(p_vertex_descriptions[i].format) == 0, INVALID_ID,
+		ERR_FAIL_COND_V_MSG(get_format_vertex_size(p_vertex_formats[i].format) == 0, INVALID_ID,
 				"Data format for attachment (" + itos(i) + ") is not valid for a vertex array.");
 
 		vdcache.bindings[i].binding = i;
-		vdcache.bindings[i].stride = p_vertex_descriptions[i].stride;
-		vdcache.bindings[i].inputRate = p_vertex_descriptions[i].frequency == VERTEX_FREQUENCY_INSTANCE ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
+		vdcache.bindings[i].stride = p_vertex_formats[i].stride;
+		vdcache.bindings[i].inputRate = p_vertex_formats[i].frequency == VERTEX_FREQUENCY_INSTANCE ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
 		vdcache.attributes[i].binding = i;
-		vdcache.attributes[i].location = p_vertex_descriptions[i].location;
-		vdcache.attributes[i].format = vulkan_formats[p_vertex_descriptions[i].format];
-		vdcache.attributes[i].offset = p_vertex_descriptions[i].offset;
-		used_locations.insert(p_vertex_descriptions[i].location);
+		vdcache.attributes[i].location = p_vertex_formats[i].location;
+		vdcache.attributes[i].format = vulkan_formats[p_vertex_formats[i].format];
+		vdcache.attributes[i].offset = p_vertex_formats[i].offset;
+		used_locations.insert(p_vertex_formats[i].location);
 	}
 
 	vdcache.create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vdcache.create_info.pNext = NULL;
 	vdcache.create_info.flags = 0;
 
-	vdcache.create_info.vertexAttributeDescriptionCount = p_vertex_descriptions.size();
+	vdcache.create_info.vertexAttributeDescriptionCount = p_vertex_formats.size();
 	vdcache.create_info.pVertexAttributeDescriptions = vdcache.attributes;
 
-	vdcache.create_info.vertexBindingDescriptionCount = p_vertex_descriptions.size();
+	vdcache.create_info.vertexBindingDescriptionCount = p_vertex_formats.size();
 	vdcache.create_info.pVertexBindingDescriptions = vdcache.bindings;
 
-	ID id = ID(vertex_description_cache.size()) | (ID(ID_TYPE_VERTEX_DESCRIPTION) << ID_BASE_SHIFT);
-	vdcache.E = vertex_description_cache.insert(key, id);
-	vertex_descriptions[id] = vdcache;
+	VertexFormatID id = VertexFormatID(vertex_format_cache.size()) | (VertexFormatID(ID_TYPE_VERTEX_FORMAT) << ID_BASE_SHIFT);
+	vdcache.E = vertex_format_cache.insert(key, id);
+	vertex_formats[id] = vdcache;
 	return id;
 }
 
-RenderingDevice::ID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, ID p_vertex_description, const Vector<ID> &p_src_buffers) {
+RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers) {
 
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(!vertex_descriptions.has(p_vertex_description), INVALID_ID);
-	const VertexDescriptionCache &vd = vertex_descriptions[p_vertex_description];
+	ERR_FAIL_COND_V(!vertex_formats.has(p_vertex_format), RID());
+	const VertexDescriptionCache &vd = vertex_formats[p_vertex_format];
 
-	ERR_FAIL_COND_V(vd.E->key().vertex_descriptions.size() != p_src_buffers.size(), INVALID_ID);
+	ERR_FAIL_COND_V(vd.E->key().vertex_formats.size() != p_src_buffers.size(), RID());
 
 	for (int i = 0; i < p_src_buffers.size(); i++) {
-		ERR_FAIL_COND_V(!vertex_buffer_owner.owns(p_src_buffers[i]), INVALID_ID);
+		ERR_FAIL_COND_V(!vertex_buffer_owner.owns(p_src_buffers[i]), RID());
 	}
 
 	VertexArray vertex_array;
 
 	vertex_array.vertex_count = p_vertex_count;
-	vertex_array.description = p_vertex_description;
+	vertex_array.description = p_vertex_format;
 	vertex_array.max_instances_allowed = 0xFFFFFFFF; //by default as many as you want
 	for (int i = 0; i < p_src_buffers.size(); i++) {
 		Buffer *buffer = vertex_buffer_owner.getornull(p_src_buffers[i]);
 
 		//validate with buffer
 		{
-			const VertexDescription &atf = vd.E->key().vertex_descriptions[i];
+			const VertexDescription &atf = vd.E->key().vertex_formats[i];
 			uint32_t element_size = get_format_vertex_size(atf.format);
-			ERR_FAIL_COND_V(element_size == 0, INVALID_ID); //should never happens since this was prevalidated
+			ERR_FAIL_COND_V(element_size == 0, RID()); //should never happens since this was prevalidated
 
 			if (atf.frequency == VERTEX_FREQUENCY_VERTEX) {
 				//validate size for regular drawing
 				uint64_t total_size = uint64_t(atf.stride) * (p_vertex_count - 1) + atf.offset + element_size;
-				ERR_FAIL_COND_V_MSG(total_size > buffer->size, INVALID_ID,
+				ERR_FAIL_COND_V_MSG(total_size > buffer->size, RID(),
 						"Attachment (" + itos(i) + ") will read past the end of the buffer.");
 
 			} else {
 				//validate size for instances drawing
 				uint64_t available = buffer->size - atf.offset;
-				ERR_FAIL_COND_V_MSG(available < element_size, INVALID_ID,
+				ERR_FAIL_COND_V_MSG(available < element_size, RID(),
 						"Attachment (" + itos(i) + ") uses instancing, but it's just too small.");
 
 				uint32_t instances_allowed = available / atf.stride;
@@ -2555,7 +2553,7 @@ RenderingDevice::ID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex
 		vertex_array.offsets.push_back(0); //offset unused, but passing anyway
 	}
 
-	ID id = vertex_array_owner.make_id(vertex_array);
+	RID id = vertex_array_owner.make_rid(vertex_array);
 	for (int i = 0; i < p_src_buffers.size(); i++) {
 		_add_dependency(id, p_src_buffers[i]);
 	}
@@ -2563,11 +2561,11 @@ RenderingDevice::ID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex
 	return id;
 }
 
-RenderingDevice::ID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, const PoolVector<uint8_t> &p_data, bool p_use_restart_indices) {
+RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, const PoolVector<uint8_t> &p_data, bool p_use_restart_indices) {
 
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(p_index_count == 0, INVALID_ID);
+	ERR_FAIL_COND_V(p_index_count == 0, RID());
 
 	IndexBuffer index_buffer;
 	index_buffer.index_type = (p_format == INDEX_BUFFER_FORMAT_UINT16) ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32;
@@ -2577,7 +2575,7 @@ RenderingDevice::ID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_
 #ifdef DEBUG_ENABLED
 	if (p_data.size()) {
 		index_buffer.max_index = 0;
-		ERR_FAIL_COND_V_MSG((uint32_t)p_data.size() != size_bytes, INVALID_ID,
+		ERR_FAIL_COND_V_MSG((uint32_t)p_data.size() != size_bytes, RID(),
 				"Default index buffer initializer array size (" + itos(p_data.size()) + ") does not match format required size (" + itos(size_bytes) + ").");
 		PoolVector<uint8_t>::Read r = p_data.read();
 		if (p_format == INDEX_BUFFER_FORMAT_UINT16) {
@@ -2609,19 +2607,19 @@ RenderingDevice::ID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_
 		PoolVector<uint8_t>::Read r = p_data.read();
 		_buffer_update(&index_buffer, 0, r.ptr(), data_size);
 	}
-	return index_buffer_owner.make_id(index_buffer);
+	return index_buffer_owner.make_rid(index_buffer);
 }
 
-RenderingDevice::ID RenderingDeviceVulkan::index_array_create(ID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count) {
+RID RenderingDeviceVulkan::index_array_create(RID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count) {
 
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(!index_buffer_owner.owns(p_index_buffer), INVALID_ID);
+	ERR_FAIL_COND_V(!index_buffer_owner.owns(p_index_buffer), RID());
 
 	IndexBuffer *index_buffer = index_buffer_owner.getornull(p_index_buffer);
 
-	ERR_FAIL_COND_V(p_index_count == 0, INVALID_ID);
-	ERR_FAIL_COND_V(p_index_offset + p_index_count > index_buffer->index_count, INVALID_ID);
+	ERR_FAIL_COND_V(p_index_count == 0, RID());
+	ERR_FAIL_COND_V(p_index_offset + p_index_count > index_buffer->index_count, RID());
 
 	IndexArray index_array;
 	index_array.max_index = index_buffer->max_index;
@@ -2631,7 +2629,7 @@ RenderingDevice::ID RenderingDeviceVulkan::index_array_create(ID p_index_buffer,
 	index_array.index_type = index_buffer->index_type;
 	index_array.supports_restart_indices = index_buffer->supports_restart_indices;
 
-	ID id = index_array_owner.make_id(index_array);
+	RID id = index_array_owner.make_rid(index_array);
 	_add_dependency(id, p_index_buffer);
 	return id;
 }
@@ -2942,7 +2940,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 	return true;
 }
 
-RenderingDevice::ID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSource> &p_stages, String *r_error, bool p_allow_cache) {
+RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSource> &p_stages, String *r_error, bool p_allow_cache) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -2983,7 +2981,7 @@ RenderingDevice::ID RenderingDeviceVulkan::shader_create_from_source(const Vecto
 			if (r_error) {
 				(*r_error) = "Stage " + String(shader_stage_names[p_stages[i].shader_stage]) + " submitted more than once.";
 			}
-			return false;
+			return RID();
 		}
 		glslang::TShader shader(stages[p_stages[i].shader_stage]);
 		CharString cs = p_stages[i].shader_source.utf8();
@@ -3007,7 +3005,7 @@ RenderingDevice::ID RenderingDeviceVulkan::shader_create_from_source(const Vecto
 				(*r_error) += shader.getInfoDebugLog();
 			}
 
-			return INVALID_ID;
+			return RID();
 		}
 		//set back..
 		cs_strings = pre_processed_code.c_str();
@@ -3021,7 +3019,7 @@ RenderingDevice::ID RenderingDeviceVulkan::shader_create_from_source(const Vecto
 				(*r_error) += "\n";
 				(*r_error) += shader.getInfoDebugLog();
 			}
-			return INVALID_ID;
+			return RID();
 		}
 
 		//link
@@ -3035,7 +3033,7 @@ RenderingDevice::ID RenderingDeviceVulkan::shader_create_from_source(const Vecto
 				(*r_error) += "\n";
 				(*r_error) += program.getInfoDebugLog();
 			}
-			return INVALID_ID;
+			return RID();
 		}
 
 		//obtain bindings for descriptor layout
@@ -3045,25 +3043,25 @@ RenderingDevice::ID RenderingDeviceVulkan::shader_create_from_source(const Vecto
 
 		for (int j = 0; j < program.getNumUniformVariables(); j++) {
 			if (!_uniform_add_binding(bindings, uniform_info, program.getUniform(j), p_stages[i].shader_stage, push_constant, r_error)) {
-				return INVALID_ID;
+				return RID();
 			}
 		}
 
 		for (int j = 0; j < program.getNumUniformBlocks(); j++) {
 			if (!_uniform_add_binding(bindings, uniform_info, program.getUniformBlock(j), p_stages[i].shader_stage, push_constant, r_error)) {
-				return INVALID_ID;
+				return RID();
 			}
 		}
 
 		for (int j = 0; j < program.getNumBufferVariables(); j++) {
 			if (!_uniform_add_binding(bindings, uniform_info, program.getBufferVariable(j), p_stages[i].shader_stage, push_constant, r_error)) {
-				return INVALID_ID;
+				return RID();
 			}
 		}
 
 		for (int j = 0; j < program.getNumBufferBlocks(); j++) {
 			if (!_uniform_add_binding(bindings, uniform_info, program.getBufferBlock(j), p_stages[i].shader_stage, push_constant, r_error)) {
-				return INVALID_ID;
+				return RID();
 			}
 		}
 
@@ -3227,64 +3225,64 @@ RenderingDevice::ID RenderingDeviceVulkan::shader_create_from_source(const Vecto
 			vkDestroyDescriptorSetLayout(device, shader.sets[i].descriptor_set_layout, NULL);
 		}
 
-		return INVALID_ID;
+		return RID();
 	}
 
-	return shader_owner.make_id(shader);
+	return shader_owner.make_rid(shader);
 }
 
 /******************/
 /**** UNIFORMS ****/
 /******************/
 
-RenderingDevice::ID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const PoolVector<uint8_t> &p_data) {
+RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const PoolVector<uint8_t> &p_data) {
 
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, INVALID_ID);
+	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
 	Buffer buffer;
 	Error err = _buffer_allocate(&buffer, p_size_bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-	ERR_FAIL_COND_V(err != OK, INVALID_ID);
+	ERR_FAIL_COND_V(err != OK, RID());
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		PoolVector<uint8_t>::Read r = p_data.read();
 		_buffer_update(&buffer, 0, r.ptr(), data_size);
 	}
-	return uniform_buffer_owner.make_id(buffer);
+	return uniform_buffer_owner.make_rid(buffer);
 }
 
-RenderingDevice::ID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const PoolVector<uint8_t> &p_data) {
+RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const PoolVector<uint8_t> &p_data) {
 
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, INVALID_ID);
+	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
 	Buffer buffer;
 	Error err = _buffer_allocate(&buffer, p_size_bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-	ERR_FAIL_COND_V(err != OK, INVALID_ID);
+	ERR_FAIL_COND_V(err != OK, RID());
 
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		PoolVector<uint8_t>::Read r = p_data.read();
 		_buffer_update(&buffer, 0, r.ptr(), data_size);
 	}
-	return storage_buffer_owner.make_id(buffer);
+	return storage_buffer_owner.make_rid(buffer);
 }
 
-RenderingDevice::ID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const PoolVector<uint8_t> &p_data) {
+RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const PoolVector<uint8_t> &p_data) {
 
 	_THREAD_SAFE_METHOD_
 
 	uint32_t element_size = get_format_vertex_size(p_format);
-	ERR_FAIL_COND_V_MSG(element_size == 0, INVALID_ID, "Format requested is not supported for texture buffers");
+	ERR_FAIL_COND_V_MSG(element_size == 0, RID(), "Format requested is not supported for texture buffers");
 	uint64_t size_bytes = uint64_t(element_size) * p_size_elements;
 
-	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != size_bytes, INVALID_ID);
+	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != size_bytes, RID());
 
 	TextureBuffer texture_buffer;
 	Error err = _buffer_allocate(&texture_buffer.buffer, size_bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-	ERR_FAIL_COND_V(err != OK, INVALID_ID);
+	ERR_FAIL_COND_V(err != OK, RID());
 
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
@@ -3306,11 +3304,11 @@ RenderingDevice::ID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size
 	VkResult res = vkCreateBufferView(device, &view_create_info, NULL, &texture_buffer.view);
 	if (res) {
 		_buffer_free(&texture_buffer.buffer);
-		ERR_FAIL_V_MSG(INVALID_ID, "Unable to create buffer view");
+		ERR_FAIL_V_MSG(RID(), "Unable to create buffer view");
 	}
 
 	//allocate the view
-	return texture_buffer_owner.make_id(texture_buffer);
+	return texture_buffer_owner.make_rid(texture_buffer);
 }
 
 RenderingDeviceVulkan::DescriptorPool *RenderingDeviceVulkan::_descriptor_pool_allocate(const DescriptorPoolKey &p_key) {
@@ -3422,16 +3420,16 @@ void RenderingDeviceVulkan::_descriptor_pool_free(const DescriptorPoolKey &p_key
 	}
 }
 
-RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms, ID p_shader, uint32_t p_shader_set) {
+RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) {
 
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(p_uniforms.size() == 0, INVALID_ID);
+	ERR_FAIL_COND_V(p_uniforms.size() == 0, RID());
 
 	Shader *shader = shader_owner.getornull(p_shader);
-	ERR_FAIL_COND_V(!shader, INVALID_ID);
+	ERR_FAIL_COND_V(!shader, RID());
 
-	ERR_FAIL_COND_V_MSG(p_shader_set >= (uint32_t)shader->sets.size() || shader->sets[p_shader_set].uniform_info.size() == 0, INVALID_ID,
+	ERR_FAIL_COND_V_MSG(p_shader_set >= (uint32_t)shader->sets.size() || shader->sets[p_shader_set].uniform_info.size() == 0, RID(),
 			"Desired set (" + itos(p_shader_set) + ") not used by shader.");
 	//see that all sets in shader are satisfied
 
@@ -3454,7 +3452,7 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 	List<Vector<VkBufferView> > buffer_views;
 	List<Vector<VkDescriptorImageInfo> > image_infos;
 	//used for verification to make sure a uniform set does not use a framebuffer bound texture
-	Vector<ID> attachable_textures;
+	Vector<RID> attachable_textures;
 
 	for (uint32_t i = 0; i < set_uniform_count; i++) {
 		const Shader::UniformInfo &set_uniform = set_uniforms[i];
@@ -3464,12 +3462,12 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 				uniform_idx = j;
 			}
 		}
-		ERR_FAIL_COND_V_MSG(uniform_idx == -1, INVALID_ID,
+		ERR_FAIL_COND_V_MSG(uniform_idx == -1, RID(),
 				"All the shader bindings for the given set must be covered by the uniforms provided.");
 
 		const Uniform &uniform = uniforms[uniform_idx];
 
-		ERR_FAIL_COND_V_MSG(uniform.type != set_uniform.type, INVALID_ID,
+		ERR_FAIL_COND_V_MSG(uniform.type != set_uniform.type, RID(),
 				"Mismatch uniform type for binding (" + itos(set_uniform.binding) + ").");
 
 		VkWriteDescriptorSet write; //common header
@@ -3483,9 +3481,9 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 			case UNIFORM_TYPE_SAMPLER: {
 				if (uniform.ids.size() != set_uniform.length) {
 					if (set_uniform.length > 1) {
-						ERR_FAIL_V_MSG(INVALID_ID, "Sampler (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") sampler elements, so it should be provided equal number of sampler IDs to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "Sampler (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") sampler elements, so it should be provided equal number of sampler IDs to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
 					} else {
-						ERR_FAIL_V_MSG(INVALID_ID, "Sampler (binding: " + itos(uniform.binding) + ") should provide one ID referencing a sampler (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "Sampler (binding: " + itos(uniform.binding) + ") should provide one ID referencing a sampler (IDs provided: " + itos(uniform.ids.size()) + ").");
 					}
 				}
 
@@ -3493,7 +3491,7 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 
 				for (int j = 0; j < uniform.ids.size(); j++) {
 					VkSampler *sampler = sampler_owner.getornull(uniform.ids[j]);
-					ERR_FAIL_COND_V_MSG(!sampler, INVALID_ID, "Sampler (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid sampler.");
+					ERR_FAIL_COND_V_MSG(!sampler, RID(), "Sampler (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid sampler.");
 
 					VkDescriptorImageInfo img_info;
 					img_info.sampler = *sampler;
@@ -3517,9 +3515,9 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 
 				if (uniform.ids.size() != set_uniform.length * 2) {
 					if (set_uniform.length > 1) {
-						ERR_FAIL_V_MSG(INVALID_ID, "SamplerTexture (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") sampler&texture elements, so it should provided twice the amount of IDs (sampler,texture pairs) to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "SamplerTexture (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") sampler&texture elements, so it should provided twice the amount of IDs (sampler,texture pairs) to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
 					} else {
-						ERR_FAIL_V_MSG(INVALID_ID, "SamplerTexture (binding: " + itos(uniform.binding) + ") should provide two IDs referencing a sampler and then a texture (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "SamplerTexture (binding: " + itos(uniform.binding) + ") should provide two IDs referencing a sampler and then a texture (IDs provided: " + itos(uniform.ids.size()) + ").");
 					}
 				}
 
@@ -3527,12 +3525,12 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 
 				for (int j = 0; j < uniform.ids.size(); j += 2) {
 					VkSampler *sampler = sampler_owner.getornull(uniform.ids[j + 0]);
-					ERR_FAIL_COND_V_MSG(!sampler, INVALID_ID, "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
+					ERR_FAIL_COND_V_MSG(!sampler, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
 
 					Texture *texture = texture_owner.getornull(uniform.ids[j + 1]);
-					ERR_FAIL_COND_V_MSG(!texture, INVALID_ID, "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
+					ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
-					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), INVALID_ID,
+					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), RID(),
 							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs the TEXTURE_USAGE_SAMPLING_BIT usage flag set in order to be used as uniform.");
 
 					VkDescriptorImageInfo img_info;
@@ -3540,12 +3538,12 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 					img_info.imageView = texture->view;
 
 					if (texture->usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)) {
-						attachable_textures.push_back(texture->owner != INVALID_ID ? texture->owner : uniform.ids[j + 1]);
+						attachable_textures.push_back(texture->owner.is_valid() ? texture->owner : uniform.ids[j + 1]);
 					}
 
-					if (texture->owner != INVALID_ID) {
+					if (texture->owner.is_valid()) {
 						texture = texture_owner.getornull(texture->owner);
-						ERR_FAIL_COND_V(!texture, INVALID_ID); //bug, should never happen
+						ERR_FAIL_COND_V(!texture, RID()); //bug, should never happen
 					}
 
 					img_info.imageLayout = texture->unbound_layout;
@@ -3567,9 +3565,9 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 
 				if (uniform.ids.size() != set_uniform.length) {
 					if (set_uniform.length > 1) {
-						ERR_FAIL_V_MSG(INVALID_ID, "Texture (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") textures, so it should be provided equal number of texture IDs to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "Texture (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") textures, so it should be provided equal number of texture IDs to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
 					} else {
-						ERR_FAIL_V_MSG(INVALID_ID, "Texture (binding: " + itos(uniform.binding) + ") should provide one ID referencing a texture (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "Texture (binding: " + itos(uniform.binding) + ") should provide one ID referencing a texture (IDs provided: " + itos(uniform.ids.size()) + ").");
 					}
 				}
 
@@ -3577,9 +3575,9 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 
 				for (int j = 0; j < uniform.ids.size(); j++) {
 					Texture *texture = texture_owner.getornull(uniform.ids[j]);
-					ERR_FAIL_COND_V_MSG(!texture, INVALID_ID, "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
+					ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
-					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), INVALID_ID,
+					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), RID(),
 							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs the TEXTURE_USAGE_SAMPLING_BIT usage flag set in order to be used as uniform.");
 
 					VkDescriptorImageInfo img_info;
@@ -3587,12 +3585,12 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 					img_info.imageView = texture->view;
 
 					if (texture->usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)) {
-						attachable_textures.push_back(texture->owner != INVALID_ID ? texture->owner : uniform.ids[j]);
+						attachable_textures.push_back(texture->owner.is_valid() ? texture->owner : uniform.ids[j]);
 					}
 
-					if (texture->owner != INVALID_ID) {
+					if (texture->owner.is_valid()) {
 						texture = texture_owner.getornull(texture->owner);
-						ERR_FAIL_COND_V(!texture, INVALID_ID); //bug, should never happen
+						ERR_FAIL_COND_V(!texture, RID()); //bug, should never happen
 					}
 
 					img_info.imageLayout = texture->unbound_layout;
@@ -3615,9 +3613,9 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 			case UNIFORM_TYPE_TEXTURE_BUFFER: {
 				if (uniform.ids.size() != set_uniform.length) {
 					if (set_uniform.length > 1) {
-						ERR_FAIL_V_MSG(INVALID_ID, "Buffer (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") texture buffer elements, so it should be provided equal number of texture buffer IDs to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "Buffer (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") texture buffer elements, so it should be provided equal number of texture buffer IDs to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
 					} else {
-						ERR_FAIL_V_MSG(INVALID_ID, "Buffer (binding: " + itos(uniform.binding) + ") should provide one ID referencing a texture buffer (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "Buffer (binding: " + itos(uniform.binding) + ") should provide one ID referencing a texture buffer (IDs provided: " + itos(uniform.ids.size()) + ").");
 					}
 				}
 
@@ -3626,7 +3624,7 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 
 				for (int j = 0; j < uniform.ids.size(); j++) {
 					TextureBuffer *buffer = texture_buffer_owner.getornull(uniform.ids[j]);
-					ERR_FAIL_COND_V_MSG(!buffer, INVALID_ID, "Texture Buffer (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture buffer.");
+					ERR_FAIL_COND_V_MSG(!buffer, RID(), "Texture Buffer (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture buffer.");
 
 					buffer_info.push_back(buffer->buffer.buffer_info);
 					buffer_view.push_back(buffer->view);
@@ -3646,9 +3644,9 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 
 				if (uniform.ids.size() != set_uniform.length * 2) {
 					if (set_uniform.length > 1) {
-						ERR_FAIL_V_MSG(INVALID_ID, "SamplerBuffer (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") sampler buffer elements, so it should provided twice the amount of IDs (sampler,buffer pairs) to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") sampler buffer elements, so it should provided twice the amount of IDs (sampler,buffer pairs) to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
 					} else {
-						ERR_FAIL_V_MSG(INVALID_ID, "SamplerBuffer (binding: " + itos(uniform.binding) + ") should provide two IDs referencing a sampler and then a texture buffer (IDs provided: " + itos(uniform.ids.size()) + ").");
+						ERR_FAIL_V_MSG(RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ") should provide two IDs referencing a sampler and then a texture buffer (IDs provided: " + itos(uniform.ids.size()) + ").");
 					}
 				}
 
@@ -3658,7 +3656,7 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 
 				for (int j = 0; j < uniform.ids.size(); j += 2) {
 					VkSampler *sampler = sampler_owner.getornull(uniform.ids[j + 0]);
-					ERR_FAIL_COND_V_MSG(!sampler, INVALID_ID, "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
+					ERR_FAIL_COND_V_MSG(!sampler, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
 
 					TextureBuffer *buffer = texture_buffer_owner.getornull(uniform.ids[j + 1]);
 
@@ -3669,7 +3667,7 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 
 					image_info.push_back(img_info);
 
-					ERR_FAIL_COND_V_MSG(!buffer, INVALID_ID, "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid texture buffer.");
+					ERR_FAIL_COND_V_MSG(!buffer, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid texture buffer.");
 
 					buffer_info.push_back(buffer->buffer.buffer_info);
 					buffer_view.push_back(buffer->view);
@@ -3689,13 +3687,13 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 
 			} break;
 			case UNIFORM_TYPE_UNIFORM_BUFFER: {
-				ERR_FAIL_COND_V_MSG(uniform.ids.size() != 1, INVALID_ID,
+				ERR_FAIL_COND_V_MSG(uniform.ids.size() != 1, RID(),
 						"Uniform buffer (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.ids.size()) + " provided).");
 
 				Buffer *buffer = uniform_buffer_owner.getornull(uniform.ids[0]);
-				ERR_FAIL_COND_V_MSG(!buffer, INVALID_ID, "Uniform buffer (binding: " + itos(uniform.binding) + ") is invalid.");
+				ERR_FAIL_COND_V_MSG(!buffer, RID(), "Uniform buffer (binding: " + itos(uniform.binding) + ") is invalid.");
 
-				ERR_FAIL_COND_V_MSG(buffer->size != (uint32_t)set_uniform.length, INVALID_ID,
+				ERR_FAIL_COND_V_MSG(buffer->size != (uint32_t)set_uniform.length, RID(),
 						"Uniform buffer (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + " does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
 
 				write.dstArrayElement = 0;
@@ -3707,13 +3705,13 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 
 			} break;
 			case UNIFORM_TYPE_STORAGE_BUFFER: {
-				ERR_FAIL_COND_V_MSG(uniform.ids.size() != 1, INVALID_ID,
+				ERR_FAIL_COND_V_MSG(uniform.ids.size() != 1, RID(),
 						"Storage buffer (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.ids.size()) + " provided).");
 
 				Buffer *buffer = storage_buffer_owner.getornull(uniform.ids[0]);
-				ERR_FAIL_COND_V_MSG(!buffer, INVALID_ID, "Storage buffer (binding: " + itos(uniform.binding) + ") is invalid.");
+				ERR_FAIL_COND_V_MSG(!buffer, RID(), "Storage buffer (binding: " + itos(uniform.binding) + ") is invalid.");
 
-				ERR_FAIL_COND_V_MSG(buffer->size != (uint32_t)set_uniform.length, INVALID_ID,
+				ERR_FAIL_COND_V_MSG(buffer->size != (uint32_t)set_uniform.length, RID(),
 						"Storage buffer (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + " does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
 
 				write.dstArrayElement = 0;
@@ -3732,7 +3730,7 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 
 		writes.push_back(write);
 
-		ERR_FAIL_COND_V_MSG(pool_key.uniform_type[set_uniform.type] == MAX_DESCRIPTOR_POOL_ELEMENT, INVALID_ID,
+		ERR_FAIL_COND_V_MSG(pool_key.uniform_type[set_uniform.type] == MAX_DESCRIPTOR_POOL_ELEMENT, RID(),
 				"Uniform set reached the limit of bindings for the same type (" + itos(MAX_DESCRIPTOR_POOL_ELEMENT) + ").");
 		pool_key.uniform_type[set_uniform.type] += type_size;
 	}
@@ -3740,7 +3738,7 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 	//need a descriptor pool
 	DescriptorPool *pool = _descriptor_pool_allocate(pool_key);
 
-	ERR_FAIL_COND_V(!pool, INVALID_ID);
+	ERR_FAIL_COND_V(!pool, RID());
 
 	VkDescriptorSetAllocateInfo descriptor_set_allocate_info;
 
@@ -3755,7 +3753,7 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 	VkResult res = vkAllocateDescriptorSets(device, &descriptor_set_allocate_info, &descriptor_set);
 	if (res) {
 		_descriptor_pool_free(pool_key, pool); // meh
-		ERR_FAIL_V_MSG(INVALID_ID, "Cannot allocate descriptor sets.");
+		ERR_FAIL_V_MSG(RID(), "Cannot allocate descriptor sets.");
 	}
 
 	UniformSet uniform_set;
@@ -3766,13 +3764,13 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 	uniform_set.hash = shader->set_hashes[p_shader_set];
 	uniform_set.attachable_textures = attachable_textures;
 
-	ID id = uniform_set_owner.make_id(uniform_set);
+	RID id = uniform_set_owner.make_rid(uniform_set);
 	//add dependencies
 	_add_dependency(id, p_shader);
 	for (uint32_t i = 0; i < uniform_count; i++) {
 		const Uniform &uniform = uniforms[i];
 		int id_count = uniform.ids.size();
-		const ID *ids = uniform.ids.ptr();
+		const RID *ids = uniform.ids.ptr();
 		for (int j = 0; j < id_count; j++) {
 			_add_dependency(id, ids[j]);
 		}
@@ -3789,7 +3787,7 @@ RenderingDevice::ID RenderingDeviceVulkan::uniform_set_create(const Vector<Unifo
 	return id;
 }
 
-Error RenderingDeviceVulkan::buffer_update(ID p_buffer, uint32_t p_offset, uint32_t p_size, void *p_data, bool p_sync_with_draw) {
+Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, void *p_data, bool p_sync_with_draw) {
 	_THREAD_SAFE_METHOD_
 
 	Buffer *buffer = NULL;
@@ -3817,33 +3815,33 @@ Error RenderingDeviceVulkan::buffer_update(ID p_buffer, uint32_t p_offset, uint3
 /**** RENDER PIPELINE ****/
 /*************************/
 
-RenderingDevice::ID RenderingDeviceVulkan::render_pipeline_create(ID p_shader, ID p_framebuffer_format, ID p_vertex_description, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags) {
+RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags) {
 
 	_THREAD_SAFE_METHOD_
 
 	//needs a shader
 	Shader *shader = shader_owner.getornull(p_shader);
-	ERR_FAIL_COND_V(!shader, INVALID_ID);
+	ERR_FAIL_COND_V(!shader, RID());
 
 	if (p_framebuffer_format == INVALID_ID) {
 		//if nothing provided, use an empty one (no attachments)
 		p_framebuffer_format = framebuffer_format_create(Vector<AttachmentFormat>());
 	}
-	ERR_FAIL_COND_V(!framebuffer_formats.has(p_framebuffer_format), INVALID_ID);
+	ERR_FAIL_COND_V(!framebuffer_formats.has(p_framebuffer_format), RID());
 	const FramebufferFormat &fb_format = framebuffer_formats[p_framebuffer_format];
 
 	{ //validate shader vs framebuffer
 
-		ERR_FAIL_COND_V_MSG(shader->fragment_outputs != fb_format.color_attachments, INVALID_ID,
+		ERR_FAIL_COND_V_MSG(shader->fragment_outputs != fb_format.color_attachments, RID(),
 				"Mismatch fragment output bindings (" + itos(shader->fragment_outputs) + ") and framebuffer color buffers (" + itos(fb_format.color_attachments) + ") when binding both in render pipeline.");
 	}
 	//vertex
 	VkPipelineVertexInputStateCreateInfo pipeline_vertex_input_state_create_info;
 
-	if (p_vertex_description != INVALID_ID) {
+	if (p_vertex_format != INVALID_ID) {
 		//uses vertices, else it does not
-		ERR_FAIL_COND_V(!vertex_descriptions.has(p_vertex_description), INVALID_ID);
-		VertexDescriptionCache &vd = vertex_descriptions[p_vertex_description];
+		ERR_FAIL_COND_V(!vertex_formats.has(p_vertex_format), RID());
+		VertexDescriptionCache &vd = vertex_formats[p_vertex_format];
 
 		pipeline_vertex_input_state_create_info = vd.create_info;
 
@@ -3852,13 +3850,13 @@ RenderingDevice::ID RenderingDeviceVulkan::render_pipeline_create(ID p_shader, I
 			uint32_t location = shader->vertex_input_locations[i];
 			const VertexDescriptionKey &k = vd.E->key();
 			bool found = false;
-			for (int j = 0; j < k.vertex_descriptions.size(); j++) {
-				if (k.vertex_descriptions[j].location == location) {
+			for (int j = 0; j < k.vertex_formats.size(); j++) {
+				if (k.vertex_formats[j].location == location) {
 					found = true;
 				}
 			}
 
-			ERR_FAIL_COND_V_MSG(!found, INVALID_ID,
+			ERR_FAIL_COND_V_MSG(!found, RID(),
 					"Shader vertex input location (" + itos(location) + ") not provided in vertex input description for pipeline creation.");
 		}
 
@@ -3872,12 +3870,12 @@ RenderingDevice::ID RenderingDeviceVulkan::render_pipeline_create(ID p_shader, I
 		pipeline_vertex_input_state_create_info.vertexAttributeDescriptionCount = 0;
 		pipeline_vertex_input_state_create_info.pVertexAttributeDescriptions = NULL;
 
-		ERR_FAIL_COND_V_MSG(shader->vertex_input_locations.size(), INVALID_ID,
+		ERR_FAIL_COND_V_MSG(shader->vertex_input_locations.size(), RID(),
 				"Shader contains vertex inputs (" + itos(shader->vertex_input_locations.size()) + ") but no vertex input description was provided for pipeline creation.");
 	}
 	//input assembly
 
-	ERR_FAIL_INDEX_V(p_render_primitive, RENDER_PRIMITIVE_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_render_primitive, RENDER_PRIMITIVE_MAX, RID());
 
 	VkPipelineInputAssemblyStateCreateInfo input_assembly_create_info;
 	input_assembly_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -3906,7 +3904,7 @@ RenderingDevice::ID RenderingDeviceVulkan::render_pipeline_create(ID p_shader, I
 	tesselation_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
 	tesselation_create_info.pNext = NULL;
 	tesselation_create_info.flags = 0;
-	ERR_FAIL_COND_V(p_rasterization_state.patch_control_points < 1 || p_rasterization_state.patch_control_points > limits.maxTessellationPatchSize, INVALID_ID);
+	ERR_FAIL_COND_V(p_rasterization_state.patch_control_points < 1 || p_rasterization_state.patch_control_points > limits.maxTessellationPatchSize, RID());
 	tesselation_create_info.patchControlPoints = p_rasterization_state.patch_control_points;
 
 	VkPipelineViewportStateCreateInfo viewport_state_create_info;
@@ -3932,7 +3930,7 @@ RenderingDevice::ID RenderingDeviceVulkan::render_pipeline_create(ID p_shader, I
 		VK_CULL_MODE_BACK_BIT
 	};
 
-	ERR_FAIL_INDEX_V(p_rasterization_state.cull_mode, 3, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_rasterization_state.cull_mode, 3, RID());
 	rasterization_state_create_info.cullMode = cull_mode[p_rasterization_state.cull_mode];
 	rasterization_state_create_info.frontFace = (p_rasterization_state.front_face == POLYGON_FRONT_FACE_CLOCKWISE ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE);
 	rasterization_state_create_info.depthBiasEnable = p_rasterization_state.depth_bias_enable;
@@ -3956,7 +3954,7 @@ RenderingDevice::ID RenderingDeviceVulkan::render_pipeline_create(ID p_shader, I
 		int rasterization_sample_mask_expected_size[TEXTURE_SAMPLES_MAX] = {
 			1, 2, 4, 8, 16, 32, 64
 		};
-		ERR_FAIL_COND_V(rasterization_sample_mask_expected_size[p_multisample_state.sample_count] != p_multisample_state.sample_mask.size(), INVALID_ID);
+		ERR_FAIL_COND_V(rasterization_sample_mask_expected_size[p_multisample_state.sample_count] != p_multisample_state.sample_mask.size(), RID());
 		sample_mask.resize(p_multisample_state.sample_mask.size());
 		for (int i = 0; i < p_multisample_state.sample_mask.size(); i++) {
 			VkSampleMask mask = p_multisample_state.sample_mask[i];
@@ -3978,30 +3976,30 @@ RenderingDevice::ID RenderingDeviceVulkan::render_pipeline_create(ID p_shader, I
 	depth_stencil_state_create_info.flags = 0;
 	depth_stencil_state_create_info.depthTestEnable = p_depth_stencil_state.enable_depth_test;
 	depth_stencil_state_create_info.depthWriteEnable = p_depth_stencil_state.enable_depth_write;
-	ERR_FAIL_INDEX_V(p_depth_stencil_state.depth_compare_operator, COMPARE_OP_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_depth_stencil_state.depth_compare_operator, COMPARE_OP_MAX, RID());
 	depth_stencil_state_create_info.depthCompareOp = compare_operators[p_depth_stencil_state.depth_compare_operator];
 	depth_stencil_state_create_info.depthBoundsTestEnable = p_depth_stencil_state.enable_depth_range;
 	depth_stencil_state_create_info.stencilTestEnable = p_depth_stencil_state.enable_stencil;
 
-	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_front.fail, STENCIL_OP_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_front.fail, STENCIL_OP_MAX, RID());
 	depth_stencil_state_create_info.front.failOp = stencil_operations[p_depth_stencil_state.stencil_operation_front.fail];
-	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_front.pass, STENCIL_OP_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_front.pass, STENCIL_OP_MAX, RID());
 	depth_stencil_state_create_info.front.passOp = stencil_operations[p_depth_stencil_state.stencil_operation_front.pass];
-	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_front.depth_fail, STENCIL_OP_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_front.depth_fail, STENCIL_OP_MAX, RID());
 	depth_stencil_state_create_info.front.depthFailOp = stencil_operations[p_depth_stencil_state.stencil_operation_front.depth_fail];
-	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_front.compare, COMPARE_OP_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_front.compare, COMPARE_OP_MAX, RID());
 	depth_stencil_state_create_info.front.compareOp = compare_operators[p_depth_stencil_state.stencil_operation_front.compare];
 	depth_stencil_state_create_info.front.compareMask = p_depth_stencil_state.stencil_operation_front.compare_mask;
 	depth_stencil_state_create_info.front.writeMask = p_depth_stencil_state.stencil_operation_front.write_mask;
 	depth_stencil_state_create_info.front.reference = p_depth_stencil_state.stencil_operation_front.reference;
 
-	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_back.fail, STENCIL_OP_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_back.fail, STENCIL_OP_MAX, RID());
 	depth_stencil_state_create_info.back.failOp = stencil_operations[p_depth_stencil_state.stencil_operation_back.fail];
-	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_back.pass, STENCIL_OP_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_back.pass, STENCIL_OP_MAX, RID());
 	depth_stencil_state_create_info.back.passOp = stencil_operations[p_depth_stencil_state.stencil_operation_back.pass];
-	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_back.depth_fail, STENCIL_OP_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_back.depth_fail, STENCIL_OP_MAX, RID());
 	depth_stencil_state_create_info.back.depthFailOp = stencil_operations[p_depth_stencil_state.stencil_operation_back.depth_fail];
-	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_back.compare, COMPARE_OP_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_depth_stencil_state.stencil_operation_back.compare, COMPARE_OP_MAX, RID());
 	depth_stencil_state_create_info.back.compareOp = compare_operators[p_depth_stencil_state.stencil_operation_back.compare];
 	depth_stencil_state_create_info.back.compareMask = p_depth_stencil_state.stencil_operation_back.compare_mask;
 	depth_stencil_state_create_info.back.writeMask = p_depth_stencil_state.stencil_operation_back.write_mask;
@@ -4016,10 +4014,10 @@ RenderingDevice::ID RenderingDeviceVulkan::render_pipeline_create(ID p_shader, I
 	color_blend_state_create_info.pNext = NULL;
 	color_blend_state_create_info.flags = 0;
 	color_blend_state_create_info.logicOpEnable = p_blend_state.enable_logic_op;
-	ERR_FAIL_INDEX_V(p_blend_state.logic_op, LOGIC_OP_MAX, INVALID_ID);
+	ERR_FAIL_INDEX_V(p_blend_state.logic_op, LOGIC_OP_MAX, RID());
 	color_blend_state_create_info.logicOp = logic_operations[p_blend_state.logic_op];
 
-	ERR_FAIL_COND_V(fb_format.color_attachments != p_blend_state.attachments.size(), INVALID_ID);
+	ERR_FAIL_COND_V(fb_format.color_attachments != p_blend_state.attachments.size(), RID());
 
 	Vector<VkPipelineColorBlendAttachmentState> attachment_states;
 
@@ -4027,18 +4025,18 @@ RenderingDevice::ID RenderingDeviceVulkan::render_pipeline_create(ID p_shader, I
 		VkPipelineColorBlendAttachmentState state;
 		state.blendEnable = p_blend_state.attachments[i].enable_blend;
 
-		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].src_color_blend_factor, BLEND_FACTOR_MAX, INVALID_ID);
+		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].src_color_blend_factor, BLEND_FACTOR_MAX, RID());
 		state.srcColorBlendFactor = blend_factors[p_blend_state.attachments[i].src_color_blend_factor];
-		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].dst_color_blend_factor, BLEND_FACTOR_MAX, INVALID_ID);
+		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].dst_color_blend_factor, BLEND_FACTOR_MAX, RID());
 		state.dstColorBlendFactor = blend_factors[p_blend_state.attachments[i].dst_color_blend_factor];
-		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].color_blend_op, BLEND_OP_MAX, INVALID_ID);
+		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].color_blend_op, BLEND_OP_MAX, RID());
 		state.colorBlendOp = blend_operations[p_blend_state.attachments[i].color_blend_op];
 
-		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].src_alpha_blend_factor, BLEND_FACTOR_MAX, INVALID_ID);
+		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].src_alpha_blend_factor, BLEND_FACTOR_MAX, RID());
 		state.srcAlphaBlendFactor = blend_factors[p_blend_state.attachments[i].src_alpha_blend_factor];
-		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].dst_alpha_blend_factor, BLEND_FACTOR_MAX, INVALID_ID);
+		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].dst_alpha_blend_factor, BLEND_FACTOR_MAX, RID());
 		state.dstAlphaBlendFactor = blend_factors[p_blend_state.attachments[i].dst_alpha_blend_factor];
-		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].alpha_blend_op, BLEND_OP_MAX, INVALID_ID);
+		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].alpha_blend_op, BLEND_OP_MAX, RID());
 		state.alphaBlendOp = blend_operations[p_blend_state.attachments[i].alpha_blend_op];
 
 		state.colorWriteMask = 0;
@@ -4134,11 +4132,11 @@ RenderingDevice::ID RenderingDeviceVulkan::render_pipeline_create(ID p_shader, I
 
 	RenderPipeline pipeline;
 	VkResult err = vkCreateGraphicsPipelines(device, NULL, 1, &graphics_pipeline_create_info, NULL, &pipeline.pipeline);
-	ERR_FAIL_COND_V(err, INVALID_ID);
+	ERR_FAIL_COND_V(err, RID());
 
 	pipeline.dynamic_state = p_dynamic_state_flags;
 	pipeline.framebuffer_format = p_framebuffer_format;
-	pipeline.vertex_format = p_vertex_description;
+	pipeline.vertex_format = p_vertex_format;
 	pipeline.uses_restart_indices = input_assembly_create_info.primitiveRestartEnable;
 	pipeline.set_hashes = shader->set_hashes;
 	pipeline.push_constant_size = shader->push_constant.push_constant_size;
@@ -4165,7 +4163,7 @@ RenderingDevice::ID RenderingDeviceVulkan::render_pipeline_create(ID p_shader, I
 	pipeline.primitive_minimum = primitive_minimum[p_render_primitive];
 
 	//create ID to associate with this pipeline
-	ID id = pipeline_owner.make_id(pipeline);
+	RID id = pipeline_owner.make_rid(pipeline);
 	//now add aall the dependencies
 	_add_dependency(id, p_shader);
 	return id;
@@ -4185,7 +4183,7 @@ int RenderingDeviceVulkan::screen_get_height(int p_screen) const {
 
 	return context->get_screen_height(p_screen);
 }
-RenderingDevice::ID RenderingDeviceVulkan::screen_get_framebuffer_format() const {
+RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::screen_get_framebuffer_format() const {
 
 	_THREAD_SAFE_METHOD_
 
@@ -4214,7 +4212,7 @@ RenderingDevice::ID RenderingDeviceVulkan::screen_get_framebuffer_format() const
 /**** DRAW LIST ****/
 /*******************/
 
-RenderingDevice::ID RenderingDeviceVulkan::draw_list_begin_for_screen(int p_screen, const Color &p_clear_color) {
+RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(int p_screen, const Color &p_clear_color) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -4371,7 +4369,7 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 	return OK;
 }
 
-RenderingDevice::ID RenderingDeviceVulkan::draw_list_begin(ID p_framebuffer, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_colors, const Rect2 &p_region) {
+RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebuffer, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_colors, const Rect2 &p_region) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -4441,7 +4439,7 @@ RenderingDevice::ID RenderingDeviceVulkan::draw_list_begin(ID p_framebuffer, Ini
 	return ID_TYPE_DRAW_LIST;
 }
 
-Error RenderingDeviceVulkan::draw_list_begin_split(ID p_framebuffer, uint32_t p_splits, ID *r_split_ids, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_colors, const Rect2 &p_region) {
+Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_colors, const Rect2 &p_region) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -4579,13 +4577,13 @@ Error RenderingDeviceVulkan::draw_list_begin_split(ID p_framebuffer, uint32_t p_
 		scissor.extent.height = viewport_size.height;
 
 		vkCmdSetScissor(command_buffer, 0, 1, &scissor);
-		r_split_ids[i] = (ID(1) << ID(ID_TYPE_SPLIT_DRAW_LIST)) + i;
+		r_split_ids[i] = (DrawListID(1) << DrawListID(ID_TYPE_SPLIT_DRAW_LIST)) + i;
 	}
 
 	return OK;
 }
 
-RenderingDeviceVulkan::DrawList *RenderingDeviceVulkan::_get_draw_list_ptr(ID p_id) {
+RenderingDeviceVulkan::DrawList *RenderingDeviceVulkan::_get_draw_list_ptr(DrawListID p_id) {
 	if (p_id < 0) {
 		return NULL;
 	}
@@ -4597,12 +4595,12 @@ RenderingDeviceVulkan::DrawList *RenderingDeviceVulkan::_get_draw_list_ptr(ID p_
 			return NULL;
 		}
 		return draw_list;
-	} else if (p_id >> ID(ID_BASE_SHIFT) == ID_TYPE_SPLIT_DRAW_LIST) {
+	} else if (p_id >> DrawListID(ID_BASE_SHIFT) == ID_TYPE_SPLIT_DRAW_LIST) {
 		if (!draw_list_split) {
 			return NULL;
 		}
 
-		uint64_t index = p_id & ((ID(1) << ID(ID_BASE_SHIFT)) - 1); //mask
+		uint64_t index = p_id & ((DrawListID(1) << DrawListID(ID_BASE_SHIFT)) - 1); //mask
 
 		if (index >= draw_list_count) {
 			return NULL;
@@ -4614,7 +4612,7 @@ RenderingDeviceVulkan::DrawList *RenderingDeviceVulkan::_get_draw_list_ptr(ID p_
 	}
 }
 
-void RenderingDeviceVulkan::draw_list_bind_render_pipeline(ID p_list, ID p_render_pipeline) {
+void RenderingDeviceVulkan::draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline) {
 
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
@@ -4644,7 +4642,7 @@ void RenderingDeviceVulkan::draw_list_bind_render_pipeline(ID p_list, ID p_rende
 	}
 }
 
-void RenderingDeviceVulkan::draw_list_bind_uniform_set(ID p_list, ID p_uniform_set, uint32_t p_index) {
+void RenderingDeviceVulkan::draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index) {
 	ERR_FAIL_COND_MSG(p_index >= limits.maxBoundDescriptorSets,
 			"Attempting to bind a descriptor set (" + itos(p_index) + ") greater than what the hardware supports (" + itos(limits.maxBoundDescriptorSets) + ").");
 	DrawList *dl = _get_draw_list_ptr(p_list);
@@ -4656,7 +4654,7 @@ void RenderingDeviceVulkan::draw_list_bind_uniform_set(ID p_list, ID p_uniform_s
 
 	if ((uint32_t)dl->validation.set_hashes.size() <= p_index) {
 		uint32_t csize = dl->validation.set_hashes.size();
-		uint32_t new_size = p_uniform_set + 1;
+		uint32_t new_size = p_index + 1;
 		dl->validation.set_hashes.resize(new_size);
 		for (uint32_t i = csize; i < new_size; i++) {
 			dl->validation.set_hashes.write[i] = 0;
@@ -4665,9 +4663,9 @@ void RenderingDeviceVulkan::draw_list_bind_uniform_set(ID p_list, ID p_uniform_s
 
 	{ //validate that textures bound are not attached as framebuffer bindings
 		uint32_t attachable_count = uniform_set->attachable_textures.size();
-		const ID *attachable_ptr = uniform_set->attachable_textures.ptr();
+		const RID *attachable_ptr = uniform_set->attachable_textures.ptr();
 		uint32_t bound_count = draw_list_bound_textures.size();
-		const ID *bound_ptr = draw_list_bound_textures.ptr();
+		const RID *bound_ptr = draw_list_bound_textures.ptr();
 		for (uint32_t i = 0; i < attachable_count; i++) {
 			for (uint32_t j = 0; j < bound_count; j++) {
 				ERR_FAIL_COND_MSG(attachable_ptr[i] == bound_ptr[j],
@@ -4681,7 +4679,7 @@ void RenderingDeviceVulkan::draw_list_bind_uniform_set(ID p_list, ID p_uniform_s
 	vkCmdBindDescriptorSets(dl->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, uniform_set->pipeline_layout, p_index, 1, &uniform_set->descriptor_set, 0, NULL);
 }
 
-void RenderingDeviceVulkan::draw_list_bind_vertex_array(ID p_list, ID p_vertex_array) {
+void RenderingDeviceVulkan::draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
@@ -4694,7 +4692,7 @@ void RenderingDeviceVulkan::draw_list_bind_vertex_array(ID p_list, ID p_vertex_a
 
 	vkCmdBindVertexBuffers(dl->command_buffer, 0, vertex_array->buffers.size(), vertex_array->buffers.ptr(), vertex_array->offsets.ptr());
 }
-void RenderingDeviceVulkan::draw_list_bind_index_array(ID p_list, ID p_index_array) {
+void RenderingDeviceVulkan::draw_list_bind_index_array(DrawListID p_list, RID p_index_array) {
 
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
@@ -4710,7 +4708,7 @@ void RenderingDeviceVulkan::draw_list_bind_index_array(ID p_list, ID p_index_arr
 	vkCmdBindIndexBuffer(dl->command_buffer, index_array->buffer, index_array->offset, index_array->index_type);
 }
 
-void RenderingDeviceVulkan::draw_list_set_push_constant(ID p_list, void *p_data, uint32_t p_data_size) {
+void RenderingDeviceVulkan::draw_list_set_push_constant(DrawListID p_list, void *p_data, uint32_t p_data_size) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
 
@@ -4721,7 +4719,7 @@ void RenderingDeviceVulkan::draw_list_set_push_constant(ID p_list, void *p_data,
 	dl->validation.pipeline_push_constant_suppplied = true;
 }
 
-void RenderingDeviceVulkan::draw_list_draw(ID p_list, bool p_use_indices, uint32_t p_instances) {
+void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances) {
 
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
@@ -4806,9 +4804,9 @@ void RenderingDeviceVulkan::draw_list_draw(ID p_list, bool p_use_indices, uint32
 	}
 }
 
-void RenderingDeviceVulkan::draw_list_enable_scissor(ID p_list, const Rect2 &p_rect) {
+void RenderingDeviceVulkan::draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) {
 }
-void RenderingDeviceVulkan::draw_list_disable_scissor(ID p_list) {
+void RenderingDeviceVulkan::draw_list_disable_scissor(DrawListID p_list) {
 }
 
 void RenderingDeviceVulkan::draw_list_end() {
@@ -4905,7 +4903,7 @@ void RenderingDeviceVulkan::draw_list_render_secondary_to_framebuffer(ID p_frame
 }
 #endif
 
-void RenderingDeviceVulkan::_free_internal(ID p_id) {
+void RenderingDeviceVulkan::_free_internal(RID p_id) {
 
 	//push everything so it's disposed of next time this frame index is processed (means, it's safe to do it)
 	if (texture_owner.owns(p_id)) {
@@ -4961,10 +4959,10 @@ void RenderingDeviceVulkan::_free_internal(ID p_id) {
 		frames[frame].pipelines_to_dispose_of.push_back(*pipeline);
 		pipeline_owner.free(p_id);
 	} else {
-		ERR_PRINT("Attempted to free invalid ID: " + itos(p_id));
+		ERR_PRINT("Attempted to free invalid ID: " + itos(p_id.get_id()));
 	}
 }
-void RenderingDeviceVulkan::free(ID p_id) {
+void RenderingDeviceVulkan::free(RID p_id) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -5067,7 +5065,7 @@ void RenderingDeviceVulkan::_free_pending_resources() {
 			WARN_PRINT("Deleted a texture while it was bound..");
 		}
 		vkDestroyImageView(device, texture->view, NULL);
-		if (texture->owner == INVALID_ID) {
+		if (texture->owner.is_null()) {
 			//actually owns the image and the allocation too
 			vmaDestroyImage(allocator, texture->image, texture->allocation);
 			vmaFreeMemory(allocator, texture->allocation);
