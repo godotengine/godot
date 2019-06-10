@@ -231,6 +231,7 @@ void EditorFileDialog::_file_entered(const String &p_file) {
 }
 
 void EditorFileDialog::_save_confirm_pressed() {
+
 	String f = dir_access->get_current_dir().plus_file(file->get_text());
 	_save_to_recent();
 	hide();
@@ -1130,6 +1131,7 @@ void EditorFileDialog::_update_drives() {
 }
 
 void EditorFileDialog::_favorite_selected(int p_idx) {
+
 	dir_access->change_dir(favorites->get_item_metadata(p_idx));
 	file->set_text("");
 	update_dir();
@@ -1210,7 +1212,7 @@ void EditorFileDialog::_update_favorites() {
 
 			favorites->add_item(name, folder_icon);
 		} else {
-			continue; // We don't handle favorite files here
+			continue; // We don't handle favorite files here.
 		}
 
 		favorites->set_item_metadata(favorites->get_item_count() - 1, favorited[i]);
@@ -1218,6 +1220,7 @@ void EditorFileDialog::_update_favorites() {
 		if (setthis) {
 			favorite->set_pressed(true);
 			favorites->set_current(favorites->get_item_count() - 1);
+			recent->unselect_all();
 		}
 	}
 }
@@ -1593,6 +1596,7 @@ EditorFileDialog::EditorFileDialog() {
 	rec_vb->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
 	rec_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 	recent = memnew(ItemList);
+	recent->set_allow_reselect(true);
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
 	recent->connect("item_selected", this, "_recent_selected");
 
@@ -1609,7 +1613,7 @@ EditorFileDialog::EditorFileDialog() {
 	list_vb->add_child(memnew(Label(TTR("Directories & Files:"))));
 	preview_hb->add_child(list_vb);
 
-	// Item (files and folders) list with context menu
+	// Item (files and folders) list with context menu.
 
 	item_list = memnew(ItemList);
 	item_list->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1622,7 +1626,7 @@ EditorFileDialog::EditorFileDialog() {
 	item_menu->connect("id_pressed", this, "_item_menu_id_pressed");
 	add_child(item_menu);
 
-	// Other stuff
+	// Other stuff.
 
 	preview_vb = memnew(VBoxContainer);
 	preview_hb->add_child(preview_vb);
@@ -1641,7 +1645,7 @@ EditorFileDialog::EditorFileDialog() {
 	filter = memnew(OptionButton);
 	filter->set_stretch_ratio(3);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	filter->set_clip_text(true); // too many extensions overflow it
+	filter->set_clip_text(true); // Too many extensions overflow it.
 	filename_hbc->add_child(filter);
 	filename_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
 	item_vb->add_child(filename_hbc);
