@@ -733,6 +733,7 @@ CreateDialog::CreateDialog() {
 	fav_vb->add_margin_child(TTR("Favorites:"), favorites, true);
 	favorites->set_hide_root(true);
 	favorites->set_hide_folding(true);
+	favorites->set_allow_reselect(true);
 	favorites->connect("cell_selected", this, "_favorite_selected");
 	favorites->connect("item_activated", this, "_favorite_activated");
 	favorites->set_drag_forwarding(this);
@@ -747,6 +748,7 @@ CreateDialog::CreateDialog() {
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
 	recent->set_hide_root(true);
 	recent->set_hide_folding(true);
+	recent->set_allow_reselect(true);
 	recent->connect("cell_selected", this, "_history_selected");
 	recent->connect("item_activated", this, "_history_activated");
 	recent->add_constant_override("draw_guides", 1);
