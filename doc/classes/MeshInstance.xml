@@ -43,6 +43,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of surface materials.
 			</description>
 		</method>
 		<method name="set_surface_material">
