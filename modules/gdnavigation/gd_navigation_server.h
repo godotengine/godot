@@ -31,6 +31,8 @@
 #ifndef GD_NAVIGATION_SERVER_H
 #define GD_NAVIGATION_SERVER_H
 
+#include "core/rid.h"
+#include "core/rid_owner.h"
 #include "servers/navigation_server.h"
 
 #include "nav_map.h"
@@ -73,9 +75,9 @@ class GdNavigationServer : public NavigationServer {
 
 	std::vector<SetCommand *> commands;
 
-	mutable RID_Owner<NavMap> map_owner;
-	mutable RID_Owner<NavRegion> region_owner;
-	mutable RID_Owner<RvoAgent> agent_owner;
+	mutable RID_PtrOwner<NavMap> map_owner;
+	mutable RID_PtrOwner<NavRegion> region_owner;
+	mutable RID_PtrOwner<RvoAgent> agent_owner;
 
 	bool active;
 	Vector<NavMap *> active_maps;

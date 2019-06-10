@@ -37,6 +37,7 @@
 #include "core/math/octree.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
+#include "core/rid_owner.h"
 #include "core/self_list.h"
 #include "servers/arvr/arvr_interface.h"
 
@@ -57,7 +58,7 @@ public:
 
 	/* CAMERA API */
 
-	struct Camera : public RID_Data {
+	struct Camera {
 
 		enum Type {
 			PERSPECTIVE,
@@ -88,7 +89,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<Camera> camera_owner;
+	mutable RID_PtrOwner<Camera> camera_owner;
 
 	virtual RID camera_create();
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far);
@@ -103,7 +104,7 @@ public:
 
 	struct Instance;
 
-	struct Scenario : RID_Data {
+	struct Scenario {
 
 		VS::ScenarioDebugMode debug;
 		RID self;
@@ -121,7 +122,7 @@ public:
 		Scenario() { debug = VS::SCENARIO_DEBUG_DISABLED; }
 	};
 
-	mutable RID_Owner<Scenario> scenario_owner;
+	mutable RID_PtrOwner<Scenario> scenario_owner;
 
 	static void *_instance_pair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int);
 	static void _instance_unpair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int, void *);
@@ -432,7 +433,7 @@ public:
 	RID reflection_probe_instance_cull_result[MAX_REFLECTION_PROBES_CULLED];
 	int reflection_probe_cull_count;
 
-	RID_Owner<Instance> instance_owner;
+	RID_PtrOwner<Instance> instance_owner;
 
 	virtual RID instance_create();
 

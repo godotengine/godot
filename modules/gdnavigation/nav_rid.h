@@ -37,7 +37,7 @@
 	@author AndreaCatania
 */
 
-class NavRid : public RID_Data {
+class NavRid {
 	RID self;
 
 public:
