@@ -216,7 +216,7 @@ public:
 
 	/* SHADOW ATLAS API */
 
-	struct ShadowAtlas : public RID_Data {
+	struct ShadowAtlas  {
 
 		enum {
 			QUADRANT_SHIFT = 27,
@@ -267,7 +267,7 @@ public:
 
 	Vector<ShadowCubeMap> shadow_cubemaps;
 
-	RID_Owner<ShadowAtlas> shadow_atlas_owner;
+	RID_PtrOwner<ShadowAtlas> shadow_atlas_owner;
 
 	RID shadow_atlas_create();
 	void shadow_atlas_set_size(RID p_atlas, int p_size);
@@ -288,7 +288,7 @@ public:
 
 	/* REFLECTION PROBE ATLAS API */
 
-	struct ReflectionAtlas : public RID_Data {
+	struct ReflectionAtlas  {
 
 		int subdiv;
 		int size;
@@ -304,7 +304,7 @@ public:
 		Vector<Reflection> reflections;
 	};
 
-	mutable RID_Owner<ReflectionAtlas> reflection_atlas_owner;
+	mutable RID_PtrOwner<ReflectionAtlas> reflection_atlas_owner;
 
 	virtual RID reflection_atlas_create();
 	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_size);
@@ -324,7 +324,7 @@ public:
 
 	/* REFLECTION PROBE INSTANCE */
 
-	struct ReflectionProbeInstance : public RID_Data {
+	struct ReflectionProbeInstance  {
 
 		RasterizerStorageGLES3::ReflectionProbe *probe_ptr;
 		RID probe;
@@ -352,7 +352,7 @@ public:
 		//notes: for ambientblend, use distance to edge to blend between already existing global environment
 	};
 
-	mutable RID_Owner<ReflectionProbeInstance> reflection_probe_instance_owner;
+	mutable RID_PtrOwner<ReflectionProbeInstance> reflection_probe_instance_owner;
 
 	virtual RID reflection_probe_instance_create(RID p_probe);
 	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform);
@@ -364,7 +364,7 @@ public:
 
 	/* ENVIRONMENT API */
 
-	struct Environment : public RID_Data {
+	struct Environment  {
 
 		VS::EnvironmentBG bg_mode;
 
@@ -533,7 +533,7 @@ public:
 		}
 	};
 
-	RID_Owner<Environment> environment_owner;
+	RID_PtrOwner<Environment> environment_owner;
 
 	virtual RID environment_create();
 
@@ -590,7 +590,7 @@ public:
 		float shadow_split_offsets[4];
 	};
 
-	struct LightInstance : public RID_Data {
+	struct LightInstance  {
 
 		struct ShadowTransform {
 
@@ -630,7 +630,7 @@ public:
 		LightInstance() {}
 	};
 
-	mutable RID_Owner<LightInstance> light_instance_owner;
+	mutable RID_PtrOwner<LightInstance> light_instance_owner;
 
 	virtual RID light_instance_create(RID p_light);
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform);
@@ -639,7 +639,7 @@ public:
 
 	/* REFLECTION INSTANCE */
 
-	struct GIProbeInstance : public RID_Data {
+	struct GIProbeInstance  {
 		RID data;
 		RasterizerStorageGLES3::GIProbe *probe;
 		GLuint tex_cache;
@@ -653,7 +653,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<GIProbeInstance> gi_probe_instance_owner;
+	mutable RID_PtrOwner<GIProbeInstance> gi_probe_instance_owner;
 
 	virtual RID gi_probe_instance_create();
 	virtual void gi_probe_instance_set_light_data(RID p_probe, RID p_base, RID p_data);

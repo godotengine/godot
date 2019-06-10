@@ -332,7 +332,6 @@ void Main::print_help(const char *p_binary) {
  */
 
 Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_phase) {
-	RID_OwnerBase::init_rid();
 
 	OS::get_singleton()->initialize_core();
 

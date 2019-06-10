@@ -96,7 +96,7 @@ public:
 
 	RasterizerStorageGLES3 *storage;
 
-	struct LightInternal : public RID_Data {
+	struct LightInternal {
 
 		struct UBOData {
 
@@ -117,7 +117,7 @@ public:
 		GLuint ubo;
 	};
 
-	RID_Owner<LightInternal> light_internal_owner;
+	RID_PtrOwner<LightInternal> light_internal_owner;
 
 	virtual RID light_internal_create();
 	virtual void light_internal_update(RID p_rid, Light *p_light);
