@@ -90,6 +90,7 @@ private:
 	ToolButton *dir_up;
 
 	ToolButton *refresh;
+	ToolButton *show_hidden;
 
 	Vector<String> filters;
 
