@@ -31,6 +31,7 @@
 #ifndef VISUALSERVERVIEWPORT_H
 #define VISUALSERVERVIEWPORT_H
 
+#include "core/rid_owner.h"
 #include "core/self_list.h"
 #include "rasterizer.h"
 #include "servers/arvr/arvr_interface.h"
@@ -38,10 +39,10 @@
 
 class VisualServerViewport {
 public:
-	struct CanvasBase : public RID_Data {
+	struct CanvasBase {
 	};
 
-	struct Viewport : public RID_Data {
+	struct Viewport {
 
 		RID self;
 		RID parent;
@@ -127,7 +128,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<Viewport> viewport_owner;
+	mutable RID_PtrOwner<Viewport> viewport_owner;
 
 	struct ViewportSort {
 		_FORCE_INLINE_ bool operator()(const Viewport *p_left, const Viewport *p_right) const {
