@@ -98,13 +98,13 @@ int OS_X11::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-static RenderingDevice::ID test_pipeline = RenderingDevice::INVALID_ID;
-static RenderingDevice::ID test_index_array = RenderingDevice::INVALID_ID;
-static RenderingDevice::ID test_vertex_array = RenderingDevice::INVALID_ID;
-static RenderingDevice::ID test_uniform_set = RenderingDevice::INVALID_ID;
-static RenderingDevice::ID test_framebuffer_pipeline = RenderingDevice::INVALID_ID;
-static RenderingDevice::ID test_framebuffer_uniform_set = RenderingDevice::INVALID_ID;
-static RenderingDevice::ID test_framebuffer = RenderingDevice::INVALID_ID;
+static RID test_index_array;
+static RID test_vertex_array;
+static RID test_uniform_set;
+static RID test_pipeline;
+static RID test_framebuffer_pipeline;
+static RID test_framebuffer_uniform_set;
+static RID test_framebuffer;
 
 Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
@@ -404,7 +404,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	// test shader
 
-	RenderingDevice::ID shader;
+	RID shader;
 	{
 		RenderingDevice::ShaderStageSource vert;
 		vert.shader_stage = RenderingDevice::SHADER_STAGE_VERTEX;
@@ -429,14 +429,14 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		source.push_back(frag);
 		String error;
 		shader = rendering_device->shader_create_from_source(source, &error);
-		if (shader == RenderingDevice::INVALID_ID) {
+		if (!shader.is_valid()) {
 			print_line("failed compilation: " + error);
 		} else {
 			print_line("compilation success");
 		}
 	}
 
-	RenderingDevice::ID vertex_desc;
+	RenderingDevice::VertexFormatID vertex_desc;
 	{
 
 		PoolVector<uint8_t> pv;
@@ -477,7 +477,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			p32[23] = 0.0;
 		}
 
-		RenderingDevice::ID vertex_buffer = rendering_device->vertex_buffer_create(pv.size(), pv);
+		RID vertex_buffer = rendering_device->vertex_buffer_create(pv.size(), pv);
 		Vector<RenderingDevice::VertexDescription> vdarr;
 		RenderingDevice::VertexDescription vd;
 		vd.format = RenderingDevice::DATA_FORMAT_R32G32B32A32_SFLOAT;
@@ -491,16 +491,16 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		vd.location = 1;
 		vdarr.push_back(vd);
 
-		vertex_desc = rendering_device->vertex_description_create(vdarr);
+		vertex_desc = rendering_device->vertex_format_create(vdarr);
 
-		Vector<RenderingDevice::ID> buffers;
+		Vector<RID> buffers;
 		buffers.push_back(vertex_buffer);
 		buffers.push_back(vertex_buffer);
 
 		test_vertex_array = rendering_device->vertex_array_create(4, vertex_desc, buffers);
 	}
 
-	RenderingDevice::ID test_framebuffer_tex_id;
+	RID test_framebuffer_tex_id;
 
 	{
 		RenderingDevice::TextureFormat tex_format;
@@ -513,7 +513,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 		test_framebuffer_tex_id = rendering_device->texture_create(tex_format, RenderingDevice::TextureView());
 
-		Vector<RenderingDevice::ID> ids;
+		Vector<RID> ids;
 		ids.push_back(test_framebuffer_tex_id);
 
 		test_framebuffer = rendering_device->framebuffer_create(ids);
@@ -544,8 +544,8 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		Vector<PoolVector<uint8_t> > initial_data;
 		initial_data.push_back(img->get_data());
 
-		RenderingDevice::ID tex_id = rendering_device->texture_create(tex_format, RenderingDevice::TextureView(), initial_data);
-		RenderingDevice::ID sampler = rendering_device->sampler_create(RenderingDevice::SamplerState());
+		RID tex_id = rendering_device->texture_create(tex_format, RenderingDevice::TextureView(), initial_data);
+		RID sampler = rendering_device->sampler_create(RenderingDevice::SamplerState());
 
 		Vector<RenderingDevice::Uniform> uniform_description;
 
@@ -573,13 +573,13 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			p32[4] = 2;
 			p32[5] = 3;
 		}
-		RenderingDevice::ID index_buffer = rendering_device->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, pv);
+		RID index_buffer = rendering_device->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, pv);
 		test_index_array = rendering_device->index_array_create(index_buffer, 0, 6);
 	}
 
 	{
 
-		RenderingDevice::ID sampler = rendering_device->sampler_create(RenderingDevice::SamplerState());
+		RID sampler = rendering_device->sampler_create(RenderingDevice::SamplerState());
 
 		Vector<RenderingDevice::Uniform> uniform_description;
 
@@ -637,7 +637,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 						 "}\n";
 	source.push_back(frag);
 	String error;
-	RenderingDevice::ID shader = rendering_device->shader_create_from_source(source, &error);
+	RID shader = rendering_device->shader_create_from_source(source, &error);
 	if (shader == RenderingDevice::INVALID_ID) {
 		print_line("failed compilation: " + error);
 	} else {
@@ -3313,7 +3313,7 @@ void OS_X11::swap_buffers() {
 	Vector<Color> clear;
 	float color[4] = { 1, 0, 1, 1 };
 	clear.push_back(Color(0.5, 0.8, 0.2));
-	RenderingDevice::ID cmd_list = rendering_device->draw_list_begin(test_framebuffer, RenderingDevice::INITIAL_ACTION_CLEAR, RenderingDevice::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, clear);
+	RenderingDevice::DrawListID cmd_list = rendering_device->draw_list_begin(test_framebuffer, RenderingDevice::INITIAL_ACTION_CLEAR, RenderingDevice::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, clear);
 	rendering_device->draw_list_bind_render_pipeline(cmd_list, test_pipeline);
 	rendering_device->draw_list_bind_index_array(cmd_list, test_index_array);
 	rendering_device->draw_list_bind_vertex_array(cmd_list, test_vertex_array);
