@@ -54,18 +54,17 @@ bool AudioStreamPlaybackMusic::is_playing() const {
 	return active;
 }
 int AudioStreamPlaybackMusic::get_loop_count() const {
-	return 0;//jar_xm_get_loop_count(music_state_copy);
+	return jar_xm_get_loop_count(music_state_copy);
 }
 
 float AudioStreamPlaybackMusic::get_playback_position() const {
-	// uint8_t pattern_index;
-	// uint8_t pattern;
-	// uint8_t row;
-	// uint64_t samples;
+	uint8_t pattern_index;
+	uint8_t pattern;
+	uint8_t row;
+	uint64_t samples;
 
-	// jar_xm_get_position(music_state_copy, &pattern_index, &pattern, &row, &samples);
-	// return samples / base->mix_rate;
-	return 0;
+	jar_xm_get_position(music_state_copy, &pattern_index, &pattern, &row, &samples);
+	return samples / base->mix_rate;
 }
 void AudioStreamPlaybackMusic::seek(float p_time) {
 	//Figure out how to convert time to pattern position.
@@ -197,7 +196,6 @@ RES ResourceFormatLoaderAudioStreamMusic::load(const String &p_path, const Strin
 	Error file_err = music_stream->set_file(p_path);
 	if (file_err)
 		return NULL; //dont know what to return here really...
-
 
 	return Ref<AudioStreamMusic>(music_stream);
 }

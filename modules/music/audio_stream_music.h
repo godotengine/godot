@@ -70,7 +70,7 @@ public:
 
 class AudioStreamMusic : public AudioStream {
 	GDCLASS(AudioStreamMusic, AudioStream)
-	RES_BASE_EXTENSION("sample")
+	RES_BASE_EXTENSION("xm")
 
 private:
 	friend class AudioStreamPlaybackMusic;
