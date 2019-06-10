@@ -183,15 +183,19 @@ void EditorPropertyArray::_property_changed(const String &p_prop, Variant p_valu
 void EditorPropertyArray::_change_type(Object *p_button, int p_index) {
 
 	Button *button = Object::cast_to<Button>(p_button);
-
+	changing_type_idx = p_index;
 	Rect2 rect = button->get_global_rect();
 	change_type->set_as_minsize();
 	change_type->set_global_position(rect.position + rect.size - Vector2(change_type->get_combined_minimum_size().x, 0));
 	change_type->popup();
-	changing_type_idx = p_index;
 }
 
 void EditorPropertyArray::_change_type_menu(int p_index) {
+
+	if (p_index == Variant::VARIANT_MAX) {
+		_remove_pressed(changing_type_idx);
+		return;
+	}
 
 	Variant value;
 	Variant::CallError ce;
@@ -204,6 +208,7 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 	if (array.get_type() == Variant::ARRAY) {
 		array = array.call("duplicate"); //dupe, so undo/redo works better
 	}
+
 	object->set_array(array);
 	update_property();
 }
@@ -356,21 +361,27 @@ void EditorPropertyArray::update_property() {
 			prop->set_selectable(false);
 			prop->connect("property_changed", this, "_property_changed");
 			prop->connect("object_id_selected", this, "_object_id_selected");
-			if (array.get_type() == Variant::ARRAY) {
-				HBoxContainer *hb = memnew(HBoxContainer);
-				vbox->add_child(hb);
-				hb->add_child(prop);
-				prop->set_h_size_flags(SIZE_EXPAND_FILL);
+			prop->set_h_size_flags(SIZE_EXPAND_FILL);
 
-				if (subtype == Variant::NIL) {
-					Button *edit = memnew(Button);
-					edit->set_icon(get_icon("Edit", "EditorIcons"));
-					hb->add_child(edit);
-					edit->connect("pressed", this, "_change_type", varray(edit, i + offset));
-				}
+			HBoxContainer *hb = memnew(HBoxContainer);
 
+			vbox->add_child(hb);
+			hb->add_child(prop);
+
+			bool is_untyped_array = array.get_type() == Variant::ARRAY && subtype == Variant::NIL;
+
+			if (is_untyped_array) {
+
+				Button *edit = memnew(Button);
+				edit->set_icon(get_icon("Edit", "EditorIcons"));
+				hb->add_child(edit);
+				edit->connect("pressed", this, "_change_type", varray(edit, i + offset));
 			} else {
-				vbox->add_child(prop);
+
+				Button *remove = memnew(Button);
+				remove->set_icon(get_icon("Remove", "EditorIcons"));
+				remove->connect("pressed", this, "_remove_pressed", varray(i + offset));
+				hb->add_child(remove);
 			}
 
 			prop->update_property();
@@ -388,8 +399,21 @@ void EditorPropertyArray::update_property() {
 #endif
 }
 
-void EditorPropertyArray::_notification(int p_what) {
+void EditorPropertyArray::_remove_pressed(int p_index) {
 
+	Variant array = object->get_array();
+	array.call("remove", p_index);
+
+	if (array.get_type() == Variant::ARRAY) {
+		array = array.call("duplicate");
+	}
+
+	emit_changed(get_edited_property(), array, "", false);
+	object->set_array(array);
+	update_property();
+}
+
+void EditorPropertyArray::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 	}
 }
@@ -476,6 +500,7 @@ void EditorPropertyArray::_bind_methods() {
 	ClassDB::bind_method("_change_type", &EditorPropertyArray::_change_type);
 	ClassDB::bind_method("_change_type_menu", &EditorPropertyArray::_change_type_menu);
 	ClassDB::bind_method("_object_id_selected", &EditorPropertyArray::_object_id_selected);
+	ClassDB::bind_method("_remove_pressed", &EditorPropertyArray::_remove_pressed);
 }
 
 EditorPropertyArray::EditorPropertyArray() {
@@ -498,11 +523,13 @@ EditorPropertyArray::EditorPropertyArray() {
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
 	change_type->connect("id_pressed", this, "_change_type_menu");
-	changing_type_idx = -1;
+
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 		String type = Variant::get_type_name(Variant::Type(i));
 		change_type->add_item(type, i);
 	}
+	change_type->add_separator();
+	change_type->add_item(TTR("Remove Item"), Variant::VARIANT_MAX);
 	changing_type_idx = -1;
 
 	subtype = Variant::NIL;
@@ -995,7 +1022,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
 	change_type->connect("id_pressed", this, "_change_type_menu");
-	changing_type_idx = -1;
+
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 		String type = Variant::get_type_name(Variant::Type(i));
 		change_type->add_item(type, i);
