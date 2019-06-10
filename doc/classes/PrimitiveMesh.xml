@@ -4,7 +4,7 @@
 		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh.
 	</brief_description>
 	<description>
-		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh.
+		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh. Examples include [CapsuleMesh], [CubeMesh], [CylinderMesh], [PlaneMesh], [PrismMesh], [QuadMesh], and [SphereMesh].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,13 +13,16 @@
 			<return type="Array">
 			</return>
 			<description>
+				Returns mesh arrays used to constitute surface of [Mesh]. Mesh array can be used with [ArrayMesh] to create new surface.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb">
+			Overrides the [AABB] with one defined by user for use with frustum culling. Especially useful to avoid unnexpected culling when  using a shader to offset vertices.
 		</member>
 		<member name="flip_faces" type="bool" setter="set_flip_faces" getter="get_flip_faces">
+			If set, the order of the vertices in each triangle are reversed resulting in the backside of the mesh being drawn. Result is the same as using *CULL_BACK* in [SpatialMaterial]. Default is false.
 		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The current [Material] of the primitive mesh.
