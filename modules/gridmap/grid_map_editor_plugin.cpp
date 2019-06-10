@@ -1179,6 +1179,10 @@ void GridMapEditor::_floor_changed(float p_value) {
 	_update_selection_transform();
 }
 
+void GridMapEditor::_floor_mouse_exited() {
+	floor->get_line_edit()->release_focus();
+}
+
 void GridMapEditor::_bind_methods() {
 
 	ClassDB::bind_method("_text_changed", &GridMapEditor::_text_changed);
@@ -1188,6 +1192,7 @@ void GridMapEditor::_bind_methods() {
 	ClassDB::bind_method("_configure", &GridMapEditor::_configure);
 	ClassDB::bind_method("_item_selected_cbk", &GridMapEditor::_item_selected_cbk);
 	ClassDB::bind_method("_floor_changed", &GridMapEditor::_floor_changed);
+	ClassDB::bind_method("_floor_mouse_exited", &GridMapEditor::_floor_mouse_exited);
 	ClassDB::bind_method("_set_selection", &GridMapEditor::_set_selection);
 
 	ClassDB::bind_method(D_METHOD("_set_display_mode", "mode"), &GridMapEditor::_set_display_mode);
@@ -1221,6 +1226,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	spatial_editor_hb->add_child(floor);
 	floor->connect("value_changed", this, "_floor_changed");
+	floor->connect("mouse_exited", this, "_floor_mouse_exited");
+	floor->get_line_edit()->connect("mouse_exited", this, "_floor_mouse_exited");
 
 	spatial_editor_hb->add_child(memnew(VSeparator));
 

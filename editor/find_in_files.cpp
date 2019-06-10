@@ -367,28 +367,11 @@ FindInFilesDialog::FindInFilesDialog() {
 
 	Label *filter_label = memnew(Label);
 	filter_label->set_text(TTR("Filters:"));
+	filter_label->set_tooltip(TTR("Include the files with the following extensions. Add or remove them in ProjectSettings."));
 	gc->add_child(filter_label);
 
-	{
-		HBoxContainer *hbc = memnew(HBoxContainer);
-
-		// TODO: Unhardcode this.
-		Vector<String> exts;
-		exts.push_back("gd");
-		if (Engine::get_singleton()->has_singleton("GodotSharp"))
-			exts.push_back("cs");
-		exts.push_back("shader");
-
-		for (int i = 0; i < exts.size(); ++i) {
-			CheckBox *cb = memnew(CheckBox);
-			cb->set_text(exts[i]);
-			cb->set_pressed(true);
-			hbc->add_child(cb);
-			_filters.push_back(cb);
-		}
-
-		gc->add_child(hbc);
-	}
+	_filters_container = memnew(HBoxContainer);
+	gc->add_child(_filters_container);
 
 	_find_button = add_button(TTR("Find..."), false, "find");
 	_find_button->set_disabled(true);
@@ -424,11 +407,12 @@ String FindInFilesDialog::get_folder() const {
 }
 
 Set<String> FindInFilesDialog::get_filter() const {
+	// could check the _filters_preferences but it might not have been generated yet.
 	Set<String> filters;
-	for (int i = 0; i < _filters.size(); ++i) {
-		CheckBox *cb = _filters[i];
+	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
+		CheckBox *cb = (CheckBox *)_filters_container->get_child(i);
 		if (cb->is_pressed()) {
-			filters.insert(_filters[i]->get_text());
+			filters.insert(cb->get_text());
 		}
 	}
 	return filters;
@@ -440,6 +424,20 @@ void FindInFilesDialog::_notification(int p_what) {
 			// Doesn't work more than once if not deferred...
 			_search_text_line_edit->call_deferred("grab_focus");
 			_search_text_line_edit->select_all();
+			// Extensions might have changed in the meantime, we clean them and instance them again.
+			for (int i = 0; i < _filters_container->get_child_count(); i++) {
+				_filters_container->get_child(i)->queue_delete();
+			}
+			Array exts = ProjectSettings::get_singleton()->get("editor/search_in_file_extensions");
+			for (int i = 0; i < exts.size(); ++i) {
+				CheckBox *cb = memnew(CheckBox);
+				cb->set_text(exts[i]);
+				if (!_filters_preferences.has(exts[i])) {
+					_filters_preferences[exts[i]] = true;
+				}
+				cb->set_pressed(_filters_preferences[exts[i]]);
+				_filters_container->add_child(cb);
+			}
 		}
 	}
 }
@@ -449,6 +447,10 @@ void FindInFilesDialog::_on_folder_button_pressed() {
 }
 
 void FindInFilesDialog::custom_action(const String &p_action) {
+	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
+		CheckBox *cb = (CheckBox *)_filters_container->get_child(i);
+		_filters_preferences[cb->get_text()] = cb->is_pressed();
+	}
 	if (p_action == "find") {
 		emit_signal(SIGNAL_FIND_REQUESTED);
 		hide();
@@ -751,7 +753,6 @@ void FindInFilesPanel::_on_replace_text_changed(String text) {
 void FindInFilesPanel::_on_replace_all_clicked() {
 
 	String replace_text = get_replace_text();
-	ERR_FAIL_COND(replace_text.empty());
 
 	PoolStringArray modified_files;
 
@@ -887,7 +888,7 @@ String FindInFilesPanel::get_replace_text() {
 void FindInFilesPanel::update_replace_buttons() {
 
 	String text = get_replace_text();
-	bool disabled = text.empty() || _finder->is_searching();
+	bool disabled = _finder->is_searching();
 
 	_replace_all_button->set_disabled(disabled);
 }

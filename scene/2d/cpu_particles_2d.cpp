@@ -978,7 +978,7 @@ void CPUParticles2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 		if (!redraw)
-			return; // dont add to render list
+			return; // don't add to render list
 
 		RID texrid;
 		if (texture.is_valid()) {

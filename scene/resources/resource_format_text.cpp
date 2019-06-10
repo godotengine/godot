@@ -447,9 +447,8 @@ Error ResourceInteractiveLoaderText::poll() {
 			resource_cache.push_back(res);
 #ifdef TOOLS_ENABLED
 			//remember ID for saving
-			res->set_id_for_path(local_path,index);
+			res->set_id_for_path(local_path, index);
 #endif
-
 		}
 
 		ExtResource er;
@@ -1545,9 +1544,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	}
 
 	{
-
-
-
 	}
 
 #ifdef TOOLS_ENABLED
@@ -1569,7 +1565,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		}
 
 		int attempt = 1; //start from one, more readable format
-		while(cached_ids_found.has(attempt)) {
+		while (cached_ids_found.has(attempt)) {
 			attempt++;
 		}
 
@@ -1577,7 +1573,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		E->get() = attempt;
 		//update also in resource
 		Ref<Resource> res = E->key();
-		res->set_id_for_path(local_path,attempt);
+		res->set_id_for_path(local_path, attempt);
 	}
 #else
 	//make sure to start from one, as it makes format more readable
@@ -1597,7 +1593,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	}
 
 	sorted_er.sort();
-
 
 	for (int i = 0; i < sorted_er.size(); i++) {
 		String p = sorted_er[i].resource->get_path();
@@ -1717,15 +1712,15 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			Vector<StringName> groups = state->get_node_groups(i);
 
 			String header = "[node";
-			header += " name=\"" + String(name) + "\"";
+			header += " name=\"" + String(name).c_escape() + "\"";
 			if (type != StringName()) {
 				header += " type=\"" + String(type) + "\"";
 			}
 			if (path != NodePath()) {
-				header += " parent=\"" + String(path.simplified()) + "\"";
+				header += " parent=\"" + String(path.simplified()).c_escape() + "\"";
 			}
 			if (owner != NodePath() && owner != NodePath(".")) {
-				header += " owner=\"" + String(owner.simplified()) + "\"";
+				header += " owner=\"" + String(owner.simplified()).c_escape() + "\"";
 			}
 			if (index >= 0) {
 				header += " index=\"" + itos(index) + "\"";

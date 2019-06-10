@@ -153,12 +153,18 @@ msgid "Animation Playback Track"
 msgstr "සජීවීකරණ ධාවනය ලුහුබදින්න"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "ලුහුබදින්නෙක් එක් කරන්න"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "සජීවීකරණ කාලය (තප්පර)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "සජීවීකරණ කාලය (තප්පර)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "ලුහුබදින්නෙක් එක් කරන්න"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

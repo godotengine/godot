@@ -2054,7 +2054,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 
 				if (!p_only_functions) {
 					List<PropertyInfo> members;
-					tmp.get_property_list(&members);
+					p_base.value.get_property_list(&members);
 
 					for (List<PropertyInfo>::Element *E = members.front(); E; E = E->next()) {
 						if (String(E->get().name).find("/") == -1) {
@@ -2461,13 +2461,13 @@ static void _find_call_arguments(GDScriptCompletionContext &p_context, const GDS
 	r_forced = r_result.size() > 0;
 }
 
-Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
+Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
 
 	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 
 	GDScriptParser parser;
 
-	parser.parse(p_code, p_base_path, false, "", true);
+	parser.parse(p_code, p_path.get_base_dir(), false, p_path, true);
 	r_forced = false;
 	Set<String> options;
 	GDScriptCompletionContext context;
@@ -2478,7 +2478,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 
 	if (!context._class || context._class->owner == NULL) {
 		context.base = p_owner;
-		context.base_path = p_base_path;
+		context.base_path = p_path.get_base_dir();
 	}
 
 	bool is_function = false;
@@ -2884,7 +2884,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 
 #else
 
-Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
+Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
 	return OK;
 }
 
@@ -3155,7 +3155,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 	return ERR_CANT_RESOLVE;
 }
 
-Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol, const String &p_base_path, Object *p_owner, LookupResult &r_result) {
+Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) {
 
 	//before parsing, try the usual stuff
 	if (ClassDB::class_exists(p_symbol)) {
@@ -3197,7 +3197,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 	}
 
 	GDScriptParser parser;
-	parser.parse(p_code, p_base_path, false, "", true);
+	parser.parse(p_code, p_path.get_base_dir(), false, p_path, true);
 
 	if (parser.get_completion_type() == GDScriptParser::COMPLETION_NONE) {
 		return ERR_CANT_RESOLVE;
@@ -3209,7 +3209,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 	context.block = parser.get_completion_block();
 	context.line = parser.get_completion_line();
 	context.base = p_owner;
-	context.base_path = p_base_path;
+	context.base_path = p_path.get_base_dir();
 
 	if (context._class && context._class->extends_class.size() > 0) {
 		bool success = false;

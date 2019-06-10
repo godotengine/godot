@@ -593,7 +593,8 @@ struct CanvasItemPlotCurve {
 			color2(p_color2) {}
 
 	void operator()(Vector2 pos0, Vector2 pos1, bool in_definition) {
-		ci.draw_line(pos0, pos1, in_definition ? color1 : color2);
+		// FIXME: Using a line width greater than 1 breaks curve rendering
+		ci.draw_line(pos0, pos1, in_definition ? color1 : color2, 1, true);
 	}
 };
 
@@ -616,8 +617,8 @@ void CurveEditor::_draw() {
 	Vector2 min_edge = get_world_pos(Vector2(0, view_size.y));
 	Vector2 max_edge = get_world_pos(Vector2(view_size.x, 0));
 
-	const Color grid_color0 = Color(1.0, 1.0, 1.0, 0.15);
-	const Color grid_color1 = Color(1.0, 1.0, 1.0, 0.07);
+	const Color grid_color0 = get_color("mono_color", "Editor") * Color(1, 1, 1, 0.15);
+	const Color grid_color1 = get_color("mono_color", "Editor") * Color(1, 1, 1, 0.07);
 	draw_line(Vector2(min_edge.x, curve.get_min_value()), Vector2(max_edge.x, curve.get_min_value()), grid_color0);
 	draw_line(Vector2(max_edge.x, curve.get_max_value()), Vector2(min_edge.x, curve.get_max_value()), grid_color0);
 	draw_line(Vector2(0, min_edge.y), Vector2(0, max_edge.y), grid_color0);
@@ -674,13 +675,13 @@ void CurveEditor::_draw() {
 
 		if (i != 0) {
 			Vector2 control_pos = get_tangent_view_pos(i, TANGENT_LEFT);
-			draw_line(get_view_pos(pos), control_pos, tangent_color);
+			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE), true);
 			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(2), tangent_color);
 		}
 
 		if (i != curve.get_point_count() - 1) {
 			Vector2 control_pos = get_tangent_view_pos(i, TANGENT_RIGHT);
-			draw_line(get_view_pos(pos), control_pos, tangent_color);
+			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE), true);
 			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(2), tangent_color);
 		}
 	}
@@ -689,8 +690,8 @@ void CurveEditor::_draw() {
 
 	draw_set_transform_matrix(_world_to_view);
 
-	const Color line_color = get_color("highlight_color", "Editor");
-	const Color edge_line_color = get_color("font_color", "Editor");
+	const Color line_color = get_color("font_color", "Editor");
+	const Color edge_line_color = get_color("highlight_color", "Editor");
 
 	CanvasItemPlotCurve plot_func(*this, line_color, edge_line_color);
 	plot_curve_accurate(curve, 4.f / view_size.x, plot_func);
@@ -736,10 +737,10 @@ void CurveEditor::stroke_rect(Rect2 rect, Color color) {
 	Vector2 c(rect.position.x, rect.position.y + rect.size.y);
 	Vector2 d(rect.position + rect.size);
 
-	draw_line(a, b, color);
-	draw_line(b, d, color);
-	draw_line(d, c, color);
-	draw_line(c, a, color);
+	draw_line(a, b, color, Math::round(EDSCALE));
+	draw_line(b, d, color, Math::round(EDSCALE));
+	draw_line(d, c, color, Math::round(EDSCALE));
+	draw_line(c, a, color, Math::round(EDSCALE));
 }
 
 void CurveEditor::_bind_methods() {

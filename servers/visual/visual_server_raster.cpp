@@ -201,8 +201,10 @@ VisualServerRaster::VisualServerRaster() {
 	VSG::canvas_render = VSG::rasterizer->get_canvas();
 	VSG::scene_render = VSG::rasterizer->get_scene();
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++) {
 		black_margin[i] = 0;
+		black_image[i] = RID();
+	}
 }
 
 VisualServerRaster::~VisualServerRaster() {

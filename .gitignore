@@ -7,15 +7,18 @@ doc/_build/
 # Javascript specific
 *.bc
 
+# CLion
+cmake-build-debug
+
 # Android specific
-platform/android/java/.gradle
-platform/android/java/.gradletasknamecache
-platform/android/java/local.properties
-platform/android/java/project.properties
+.gradle
+local.properties
+*.iml
+.idea
+.gradletasknamecache
+project.properties
 platform/android/java/libs/*
 platform/android/java/assets
-platform/android/java/.idea/*
-platform/android/java/*.iml
 
 # General c++ generated files
 *.lib
@@ -52,20 +55,25 @@ gmon.out
 # Eclipse CDT files
 .cproject
 .settings/
+*.pydevproject
+*.launch
 
 # Geany/geany-plugins files
 *.geany
 .geanyprj
 
+# Jetbrains IDEs
+.idea/
+
 # Misc
 .DS_Store
+__MACOSX
 logs/
 
 # for projects that use SCons for building: http://http://www.scons.org/
 .sconf_temp
 .sconsign.dblite
 *.pyc
-
 
 # https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 ## Ignore Visual Studio temporary files, build results, and
@@ -123,6 +131,7 @@ TestResult.xml
 *.tlh
 *.tmp
 *.tmp_proj
+*.bak
 *.log
 *.vspscc
 *.vssscc
@@ -130,6 +139,7 @@ TestResult.xml
 *.pidb
 *.svclog
 *.scc
+*.nib
 
 # Chutzpah Test files
 _Chutzpah*
@@ -245,8 +255,11 @@ __pycache__/
 #Kdevelop project files
 *.kdev4
 
-# xCode
-xcuserdata
+# Xcode
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+*.xcodeproj/*
 
 # RIA/Silverlight projects
 Generated_Code/
@@ -275,11 +288,19 @@ FakesAssemblies/
 # =========================
 
 # Windows image file caches
-Thumbs.db
+[Tt]humbs.db
+[Tt]humbs.db:encryptable
 ehthumbs.db
+ehthumbs_vista.db
+
+# Windows stackdumps
+*.stackdump
+
+# Windows shortcuts
+*.lnk
 
 # Folder config file
-Desktop.ini
+[Dd]esktop.ini
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/

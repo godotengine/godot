@@ -13,7 +13,13 @@
 			<return type="Rect2">
 			</return>
 			<description>
-				Returns a Rect2 representing the Sprite's boundary relative to its local coordinates.
+				Returns a [Rect2] representing the Sprite's boundary in local coordinates. Can be used to detect if the Sprite was clicked. Example:
+				[codeblock]
+				func _input(event):
+				    if event is InputEventMouseButton and event.pressed and event.button_index == BUTTON_LEFT:
+				        if get_rect().has_point(to_local(event.position)):
+				            print("A click!")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_pixel_opaque" qualifiers="const">
@@ -48,7 +54,7 @@
 			The texture's drawing offset.
 		</member>
 		<member name="region_enabled" type="bool" setter="set_region" getter="is_region">
-			If [code]true[/code], texture is cut from a larger atlas texture. See [code]region_rect[/code]. Default value: [code]false[/code].
+			If [code]true[/code], texture is cut from a larger atlas texture. See [member region_rect]. Default value: [code]false[/code].
 		</member>
 		<member name="region_filter_clip" type="bool" setter="set_region_filter_clip" getter="is_region_filter_clip_enabled">
 			If [code]true[/code], the outermost pixels get blurred out.

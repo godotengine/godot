@@ -131,7 +131,7 @@ EditorAbout::EditorAbout() {
 
 	String hash = String(VERSION_HASH);
 	if (hash.length() != 0)
-		hash = "." + hash.left(7);
+		hash = "." + hash.left(9);
 
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);

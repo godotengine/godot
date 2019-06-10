@@ -166,11 +166,16 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	line.SizeOfStruct = sizeof(line);
 	IMAGE_NT_HEADERS *h = ImageNtHeader(base);
 	DWORD image_type = h->FileHeader.Machine;
-	int n = 0;
-	String msg = GLOBAL_GET("debug/settings/crash_handler/message");
+
+	String msg;
+	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
+	if (proj_settings) {
+		msg = proj_settings->get("debug/settings/crash_handler/message");
+	}
 
 	fprintf(stderr, "Dumping the backtrace. %ls\n", msg.c_str());
 
+	int n = 0;
 	do {
 		if (skip_first) {
 			skip_first = false;

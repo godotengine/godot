@@ -3590,7 +3590,14 @@
 			<argument index="2" name="screen" type="int" default="0">
 			</argument>
 			<description>
-				Attaches a viewport to a screen.
+				Copies viewport to a region of the screen specified by [code]rect[/code]. If Viewport.[member Viewport.render_direct_to_screen] is [code]true[/code], then viewport does not use a framebuffer and the contents of the viewport are rendered directly to screen. However, note that the root viewport is drawn last, therefore it will draw over the screen. Accordingly, you must set the root viewport to an area that does not cover the area that you have attached this viewport to.
+				For example, you can set the root viewport to not render at all with the following code:
+				[codeblock]
+				func _ready():
+				    get_viewport().set_attach_to_screen_rect(Rect2())
+				    $Viewport.set_attach_to_screen_rect(Rect2(0, 0, 600, 600))
+				[/codeblock]
+				Using this can result in significant optimization, especially on lower-end devices. However, it comes at the cost of having to manage your viewports manually. For a further optimization see, [method viewport_set_render_direct_to_screen].
 			</description>
 		</method>
 		<method name="viewport_create">
@@ -3787,6 +3794,17 @@
 			</argument>
 			<description>
 				Sets the viewport's parent to another viewport.
+			</description>
+		</method>
+		<method name="viewport_set_render_direct_to_screen">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+				If [code]true[/code], render the contents of the viewport directly to screen. This allows a low-level optimization where you can skip drawing a viewport to the root viewport. While this optimization can result in a significant increase in speed (especially on older devices), it comes at a cost of usability. When this is enabled, you cannot read from the viewport or from the [code]SCREEN_TEXTURE[/code]. You also lose the benefit of certain window settings, such as the various stretch modes. Another consequence to be aware of is that in 2D the rendering happens in window coordinates, so if you have a viewport that is double the size of the window, and you set this, then only the portion that fits within the window will be drawn, no automatic scaling is possible, even if your game scene is significantly larger than the window size.
 			</description>
 		</method>
 		<method name="viewport_set_scenario">

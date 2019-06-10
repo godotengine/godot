@@ -149,6 +149,7 @@ public:
 		bool tool;
 		StringName name;
 		bool extends_used;
+		bool classname_used;
 		StringName extends_file;
 		Vector<StringName> extends_class;
 		DataType base_type;
@@ -198,6 +199,7 @@ public:
 			tool = false;
 			type = TYPE_CLASS;
 			extends_used = false;
+			classname_used = false;
 			end_line = -1;
 			owner = NULL;
 		}

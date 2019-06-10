@@ -465,6 +465,9 @@ void OS::_ensure_user_data_dir() {
 	memdelete(da);
 }
 
+void OS::set_native_icon(const String &p_filename) {
+}
+
 void OS::set_icon(const Ref<Image> &p_icon) {
 }
 

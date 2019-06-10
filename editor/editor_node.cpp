@@ -288,6 +288,7 @@ void EditorNode::_notification(int p_what) {
 
 		Engine::get_singleton()->set_editor_hint(true);
 
+		OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
 		get_tree()->get_root()->set_usage(Viewport::USAGE_2D_NO_SAMPLING); //reduce memory usage
 		get_tree()->get_root()->set_disable_3d(true);
 		get_tree()->get_root()->set_as_audio_listener(false);
@@ -323,7 +324,16 @@ void EditorNode::_notification(int p_what) {
 
 	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
 
+		// Restore the original FPS cap after focusing back on the editor
+		OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
+
 		EditorFileSystem::get_singleton()->scan_changes();
+	}
+
+	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT) {
+
+		// Set a low FPS cap to decrease CPU/GPU usage while the editor is unfocused
+		OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/unfocused_low_processor_mode_sleep_usec")));
 	}
 
 	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
@@ -513,6 +523,7 @@ void EditorNode::_fs_changed() {
 void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 
 	List<String> scenes; //will load later
+	int current_tab = scene_tabs->get_current_tab();
 
 	for (int i = 0; i < p_resources.size(); i++) {
 		String file_type = ResourceLoader::get_resource_type(p_resources[i]);
@@ -535,6 +546,8 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 	for (List<String>::Element *E = scenes.front(); E; E = E->next()) {
 		reload_scene(E->get());
 	}
+
+	scene_tabs->set_current_tab(current_tab);
 }
 
 void EditorNode::_sources_changed(bool p_exist) {
@@ -1015,8 +1028,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			y = (img->get_height() - size) / 2;
 
 			img->crop_from_point(x, y, size, size);
-			// We could get better pictures with better filters
-			img->resize(preview_size, preview_size, Image::INTERPOLATE_CUBIC);
+			img->resize(preview_size, preview_size, Image::INTERPOLATE_LANCZOS);
 		}
 		img->convert(Image::FORMAT_RGB8);
 
@@ -1205,6 +1217,17 @@ void EditorNode::save_all_scenes() {
 	_save_all_scenes();
 }
 
+void EditorNode::save_scene_list(Vector<String> p_scene_filenames) {
+
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		Node *scene = editor_data.get_edited_scene_root(i);
+
+		if (scene && (p_scene_filenames.find(scene->get_filename()) >= 0)) {
+			_save_scene(scene->get_filename(), i);
+		}
+	}
+}
+
 void EditorNode::restart_editor() {
 
 	exiting = true;
@@ -1274,7 +1297,7 @@ void EditorNode::_dialog_action(String p_file) {
 			Node *scene = editor_data.get_edited_scene_root();
 			// If the previous scene is rootless, just close it in favor of the new one.
 			if (!scene)
-				_menu_option_confirm(FILE_CLOSE, false);
+				_menu_option_confirm(FILE_CLOSE, true);
 
 			load_scene(p_file, false, true);
 		} break;
@@ -1287,7 +1310,12 @@ void EditorNode::_dialog_action(String p_file) {
 			ProjectSettings::get_singleton()->set("application/run/main_scene", p_file);
 			ProjectSettings::get_singleton()->save();
 			//would be nice to show the project manager opened with the highlighted field..
-			_run(false, ""); // automatically run the project
+
+			if (pick_main_scene->has_meta("from_native") && (bool)pick_main_scene->get_meta("from_native")) {
+				run_native->resume_run_native();
+			} else {
+				_run(false, ""); // automatically run the project
+			}
 		} break;
 		case FILE_CLOSE:
 		case FILE_CLOSE_ALL_AND_QUIT:
@@ -1800,28 +1828,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	if (run_filename == "") {
 
 		//evidently, run the scene
-		main_scene = GLOBAL_DEF("application/run/main_scene", "");
-		if (main_scene == "") {
-
-			current_option = -1;
-			pick_main_scene->set_text(TTR("No main scene has ever been defined, select one?\nYou can change it later in \"Project Settings\" under the 'application' category."));
-			pick_main_scene->popup_centered_minsize();
-			return;
-		}
-
-		if (!FileAccess::exists(main_scene)) {
-
-			current_option = -1;
-			pick_main_scene->set_text(vformat(TTR("Selected scene '%s' does not exist, select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), main_scene));
-			pick_main_scene->popup_centered_minsize();
-			return;
-		}
-
-		if (ResourceLoader::get_resource_type(main_scene) != "PackedScene") {
-
-			current_option = -1;
-			pick_main_scene->set_text(vformat(TTR("Selected scene '%s' is not a scene file, select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), main_scene));
-			pick_main_scene->popup_centered_minsize();
+		if (!ensure_main_scene(false)) {
 			return;
 		}
 	}
@@ -1922,6 +1929,12 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			file->popup_centered_ratio();
 
 		} break;
+		case FILE_QUICK_OPEN: {
+
+			quick_open->popup_dialog("Resource", true);
+			quick_open->set_title(TTR("Quick Open..."));
+
+		} break;
 		case FILE_QUICK_OPEN_SCENE: {
 
 			quick_open->popup_dialog("PackedScene", true);
@@ -1955,6 +1968,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				else
 					_scene_tab_closed(editor_data.get_edited_scene());
 			}
+
+			if (p_confirmed)
+				_menu_option_confirm(SCENE_TAB_CLOSE, true);
 
 		} break;
 		case FILE_CLOSE_ALL_AND_QUIT:
@@ -2288,10 +2304,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			project_settings->popup_project_settings();
 		} break;
-		case RUN_PROJECT_DATA_FOLDER: {
-
-			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_user_data_dir());
-		} break;
 		case FILE_INSTALL_ANDROID_SOURCE: {
 
 			if (p_confirmed) {
@@ -2456,14 +2468,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case SETTINGS_MANAGE_FEATURE_PROFILES: {
 
-			Size2 popup_size = Size2(900, 800) * editor_get_scale();
-			Size2 window_size = get_viewport()->get_size();
-
-			popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
-			popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
-
-			feature_profile_manager->popup_centered(popup_size);
-
+			feature_profile_manager->popup_centered_clamped(Size2(900, 800) * EDSCALE, 0.8);
 		} break;
 		case SETTINGS_TOGGLE_FULLSCREEN: {
 
@@ -2527,6 +2532,9 @@ void EditorNode::_tool_menu_option(int p_idx) {
 	switch (tool_menu->get_item_id(p_idx)) {
 		case TOOLS_ORPHAN_RESOURCES: {
 			orphan_resources->show();
+		} break;
+		case RUN_PROJECT_DATA_FOLDER: {
+			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_user_data_dir());
 		} break;
 		case TOOLS_CUSTOM: {
 			if (tool_menu->get_item_submenu(p_idx) == "") {
@@ -2865,7 +2873,7 @@ bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 	return plugin_addons.has(p_addon);
 }
 
-void EditorNode::_remove_edited_scene() {
+void EditorNode::_remove_edited_scene(bool p_change_tab) {
 	int new_index = editor_data.get_edited_scene();
 	int old_index = new_index;
 
@@ -2881,18 +2889,19 @@ void EditorNode::_remove_edited_scene() {
 	if (editor_data.get_scene_path(old_index) != String()) {
 		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(editor_data.get_scene_path(old_index));
 	}
-	_scene_tab_changed(new_index);
+
+	if (p_change_tab) _scene_tab_changed(new_index);
 	editor_data.remove_scene(old_index);
 	editor_data.get_undo_redo().clear_history(false);
 	_update_title();
 	_update_scene_tabs();
 }
 
-void EditorNode::_remove_scene(int index) {
+void EditorNode::_remove_scene(int index, bool p_change_tab) {
 
 	if (editor_data.get_edited_scene() == index) {
 		//Scene to remove is current scene
-		_remove_edited_scene();
+		_remove_edited_scene(p_change_tab);
 	} else {
 		//Scene to remove is not active scene
 		editor_data.remove_scene(index);
@@ -4157,6 +4166,45 @@ bool EditorNode::has_scenes_in_session() {
 	return !scenes.empty();
 }
 
+bool EditorNode::ensure_main_scene(bool p_from_native) {
+	pick_main_scene->set_meta("from_native", p_from_native); //whether from play button or native run
+	String main_scene = GLOBAL_DEF("application/run/main_scene", "");
+
+	if (main_scene == "") {
+
+		current_option = -1;
+		pick_main_scene->set_text(TTR("No main scene has ever been defined, select one?\nYou can change it later in \"Project Settings\" under the 'application' category."));
+		pick_main_scene->popup_centered_minsize();
+		return false;
+	}
+
+	if (!FileAccess::exists(main_scene)) {
+
+		current_option = -1;
+		pick_main_scene->set_text(vformat(TTR("Selected scene '%s' does not exist, select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), main_scene));
+		pick_main_scene->popup_centered_minsize();
+		return false;
+	}
+
+	if (ResourceLoader::get_resource_type(main_scene) != "PackedScene") {
+
+		current_option = -1;
+		pick_main_scene->set_text(vformat(TTR("Selected scene '%s' is not a scene file, select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), main_scene));
+		pick_main_scene->popup_centered_minsize();
+		return false;
+	}
+
+	return true;
+}
+
+int EditorNode::get_current_tab() {
+	return scene_tabs->get_current_tab();
+}
+
+void EditorNode::set_current_tab(int p_tab) {
+	scene_tabs->set_current_tab(p_tab);
+}
+
 void EditorNode::_update_layouts_menu() {
 
 	editor_layouts->clear();
@@ -4784,8 +4832,7 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	if (scene_idx == -1) {
 		if (get_edited_scene()) {
-			//scene is not open, so at it might be instanced, just refresh, set tab to itself and it will reload
-			set_current_scene(current_tab);
+			//scene is not open, so at it might be instanced. We'll refresh the whole scene later.
 			editor_data.get_undo_redo().clear_history();
 		}
 		return;
@@ -4795,17 +4842,19 @@ void EditorNode::reload_scene(const String &p_path) {
 		editor_data.apply_changes_in_editors();
 		_set_scene_metadata(p_path);
 	}
-	//remove scene
-	_remove_scene(scene_idx);
-	//reload scene
 
+	//remove scene
+	_remove_scene(scene_idx, false);
+
+	//reload scene
 	load_scene(p_path, true, false, true, true);
+
 	//adjust index so tab is back a the previous position
 	editor_data.move_edited_scene_to_index(scene_idx);
 	get_undo_redo()->clear_history();
+
 	//recover the tab
 	scene_tabs->set_current_tab(current_tab);
-	_scene_tab_changed(current_tab);
 }
 
 int EditorNode::plugin_init_callback_count = 0;
@@ -5701,6 +5750,7 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_submenu_item(TTR("Open Recent"), "RecentScenes", FILE_OPEN_RECENT);
 	p->add_separator();
+	p->add_shortcut(ED_SHORTCUT("editor/quick_open", TTR("Quick Open..."), KEY_MASK_SHIFT + KEY_MASK_ALT + KEY_O), FILE_QUICK_OPEN);
 	p->add_shortcut(ED_SHORTCUT("editor/quick_open_scene", TTR("Quick Open Scene..."), KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_O), FILE_QUICK_OPEN_SCENE);
 	p->add_shortcut(ED_SHORTCUT("editor/quick_open_script", TTR("Quick Open Script..."), KEY_MASK_ALT + KEY_MASK_CMD + KEY_O), FILE_QUICK_OPEN_SCRIPT);
 	p->add_separator();
@@ -5997,7 +6047,6 @@ EditorNode::EditorNode() {
 	node_dock = memnew(NodeDock);
 
 	filesystem_dock = memnew(FileSystemDock(this));
-	filesystem_dock->connect("open", this, "open_request");
 	filesystem_dock->connect("inherit", this, "_inherit_request");
 	filesystem_dock->connect("instance", this, "_instance_request");
 	filesystem_dock->connect("display_mode_changed", this, "_save_docks");
@@ -6242,7 +6291,6 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(TextureEditorPlugin(this)));
 	add_editor_plugin(memnew(AudioStreamEditorPlugin(this)));
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
-	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
 	add_editor_plugin(memnew(SkeletonEditorPlugin(this)));
 	add_editor_plugin(memnew(SkeletonIKEditorPlugin(this)));
 	add_editor_plugin(memnew(PhysicalBonePlugin(this)));
@@ -6403,7 +6451,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT("editor/editor_2d", TTR("Open 2D Editor"), KEY_F1);
 	ED_SHORTCUT("editor/editor_3d", TTR("Open 3D Editor"), KEY_F2);
 	ED_SHORTCUT("editor/editor_script", TTR("Open Script Editor"), KEY_F3); //hack needed for script editor F3 search to work :) Assign like this or don't use F3
-	ED_SHORTCUT("editor/editor_help", TTR("Search Help"), KEY_F4);
+	ED_SHORTCUT("editor/editor_help", TTR("Search Help"), KEY_MASK_SHIFT | KEY_F1);
 #endif
 	ED_SHORTCUT("editor/editor_assetlib", TTR("Open Asset Library"));
 	ED_SHORTCUT("editor/editor_next", TTR("Open the next Editor"));

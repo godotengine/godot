@@ -194,7 +194,7 @@
 			<return type="int" enum="Input.MouseMode">
 			</return>
 			<description>
-				Return the mouse mode. See the constants for more information.
+				Returns the mouse mode. See the constants for more information.
 			</description>
 		</method>
 		<method name="is_action_just_pressed" qualifiers="const">

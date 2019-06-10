@@ -92,7 +92,7 @@ public:
 
 	static bool make_api_assembly(APIAssembly::Type p_api_type);
 
-	static bool build_project_blocking(const String &p_config);
+	static bool build_project_blocking(const String &p_config, const Vector<String> &p_godot_defines);
 
 	static bool editor_build_callback();
 

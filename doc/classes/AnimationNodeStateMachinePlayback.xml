@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeStateMachinePlayback" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
+		Playback control for AnimationNodeStateMachine.
 	</brief_description>
 	<description>
+		Allows control of [AnimationTree] state machines created with [AnimationNodeStateMachine]. Retrieve with [code]$AnimationTree.get("parameters/playback")[/code]. Example:
+		[codeblock]
+		var state_machine = $AnimationTree.get("parameters/playback")
+		state_machine.travel("some_state")
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,6 +17,7 @@
 			<return type="String">
 			</return>
 			<description>
+				Returns the currently playing animation state.
 			</description>
 		</method>
 		<method name="get_travel_path" qualifiers="const">
@@ -23,6 +30,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if an animation is playing.
 			</description>
 		</method>
 		<method name="start">
@@ -31,12 +39,14 @@
 			<argument index="0" name="node" type="String">
 			</argument>
 			<description>
+				Starts playing the given animation.
 			</description>
 		</method>
 		<method name="stop">
 			<return type="void">
 			</return>
 			<description>
+				Stops the currently playing animation.
 			</description>
 		</method>
 		<method name="travel">
@@ -45,7 +55,7 @@
 			<argument index="0" name="to_node" type="String">
 			</argument>
 			<description>
-				Transition from the current state to another one, while visiting all the intermediate ones. This is done via the A* algorithm.
+				Transitions from the current state to another one, following the shortest path.
 			</description>
 		</method>
 	</methods>

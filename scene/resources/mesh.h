@@ -128,6 +128,7 @@ public:
 	virtual Array surface_get_blend_shape_arrays(int p_surface) const = 0;
 	virtual uint32_t surface_get_format(int p_idx) const = 0;
 	virtual PrimitiveType surface_get_primitive_type(int p_idx) const = 0;
+	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material) = 0;
 	virtual Ref<Material> surface_get_material(int p_idx) const = 0;
 	virtual int get_blend_shape_count() const = 0;
 	virtual StringName get_blend_shape_name(int p_index) const = 0;
@@ -215,8 +216,8 @@ public:
 	PrimitiveType surface_get_primitive_type(int p_idx) const;
 	bool surface_is_alpha_sorting_enabled(int p_idx) const;
 
-	void surface_set_material(int p_idx, const Ref<Material> &p_material);
-	Ref<Material> surface_get_material(int p_idx) const;
+	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material);
+	virtual Ref<Material> surface_get_material(int p_idx) const;
 
 	int surface_find_by_name(const String &p_name) const;
 	void surface_set_name(int p_idx, const String &p_name);

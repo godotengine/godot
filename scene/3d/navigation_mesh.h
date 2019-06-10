@@ -57,6 +57,7 @@ class NavigationMesh : public Resource {
 
 protected:
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const;
 
 	void _set_polygons(const Array &p_array);
 	Array _get_polygons() const;
@@ -67,6 +68,13 @@ public:
 		SAMPLE_PARTITION_MONOTONE,
 		SAMPLE_PARTITION_LAYERS,
 		SAMPLE_PARTITION_MAX
+	};
+
+	enum ParsedGeometryType {
+		PARSED_GEOMETRY_MESH_INSTANCES = 0,
+		PARSED_GEOMETRY_STATIC_COLLIDERS,
+		PARSED_GEOMETRY_BOTH,
+		PARSED_GEOMETRY_MAX
 	};
 
 protected:
@@ -85,6 +93,8 @@ protected:
 	float detail_sample_max_error;
 
 	SamplePartitionType partition_type;
+	ParsedGeometryType parsed_geometry_type;
+	uint32_t collision_mask;
 
 	bool filter_low_hanging_obstacles;
 	bool filter_ledge_spans;
@@ -94,6 +104,15 @@ public:
 	// Recast settings
 	void set_sample_partition_type(int p_value);
 	int get_sample_partition_type() const;
+
+	void set_parsed_geometry_type(int p_value);
+	int get_parsed_geometry_type() const;
+
+	void set_collision_mask(uint32_t p_mask);
+	uint32_t get_collision_mask() const;
+
+	void set_collision_mask_bit(int p_bit, bool p_value);
+	bool get_collision_mask_bit(int p_bit) const;
 
 	void set_cell_size(float p_value);
 	float get_cell_size() const;
@@ -174,6 +193,7 @@ class NavigationMeshInstance : public Spatial {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _changed_callback(Object *p_changed, const char *p_prop);
 
 public:
 	void set_enabled(bool p_enabled);
@@ -185,6 +205,7 @@ public:
 	String get_configuration_warning() const;
 
 	NavigationMeshInstance();
+	~NavigationMeshInstance();
 };
 
 #endif // NAVIGATION_MESH_H

@@ -253,6 +253,9 @@
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process. Default value: [code]false[/code].
 		</member>
+		<member name="render_direct_to_screen" type="bool" setter="set_use_render_direct_to_screen" getter="is_using_render_direct_to_screen">
+			If [code]true[/code], renders the Viewport directly to the screen instead of to the root viewport. Only available in GLES2. This is a low-level optimization and should not be used in most cases. If used, reading from the Viewport or from [code]SCREEN_TEXTURE[/code] becomes unavailable. For more information see [method VisualServer.viewport_set_render_direct_to_screen].  Default value: [code]false[/code].
+		</member>
 		<member name="render_target_clear_mode" type="int" setter="set_clear_mode" getter="get_clear_mode" enum="Viewport.ClearMode">
 			The clear mode when viewport used as a render target. Default value: [code]CLEAR_MODE_ALWAYS[/code].
 		</member>

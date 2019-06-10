@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-30 20:04+0000\n"
+"PO-Revision-Date: 2019-04-29 08:48+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.6.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -164,12 +164,18 @@ msgid "Animation Playback Track"
 msgstr "Pista de Reprodução de Animação"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Adicionar Pista"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Duração da Animação (segundos)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Duração da Animação (segundos)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Adicionar Pista"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -288,11 +294,11 @@ msgstr "Remover Pista de Animação"
 
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr "Criar NOVA Pista para %s e inserir Chave?"
+msgstr "Criar NOVA pista para %s e inserir chave?"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr "Criar %d NOVAS Pistas e inserir Chaves?"
+msgstr "Criar %d NOVAS pistas e inserir chaves?"
 
 #: editor/animation_track_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
@@ -373,7 +379,7 @@ msgstr "Caminho da pista é inválido, não se consegue adicionar uma chave."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr "Pista não do tipo Spatial, não se consegue inserir chave"
+msgstr "Pista não do tipo Spatial, impossível inserir chave"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Transform Track Key"
@@ -385,8 +391,7 @@ msgstr "Adicionar Chave da Pista"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr ""
-"Caminho da pista é inválido, não se consegue adicionar uma chave método."
+msgstr "Caminho da pista é inválido, impossível adicionar uma chave método."
 
 #: editor/animation_track_editor.cpp
 msgid "Add Method Track Key"
@@ -427,9 +432,8 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "Agrupar faixas por nó ou exibi-las como lista simples."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "Ajustar"
+msgstr "Ajustar:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -437,7 +441,7 @@ msgstr "Valor passo da Animação."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "Segundos"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
@@ -2846,7 +2850,7 @@ msgstr "Página: "
 
 #: editor/editor_properties_array_dict.cpp
 msgid "New Key:"
-msgstr "Novo Chave:"
+msgstr "Nova Chave:"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "New Value:"
@@ -4804,20 +4808,19 @@ msgstr "Esquema"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
-msgstr ""
+msgstr "Máscara de translação para inserir chaves."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation mask for inserting keys."
-msgstr ""
+msgstr "Máscara de rotação para inserir chaves."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale mask for inserting keys."
-msgstr ""
+msgstr "Máscara de escala para inserir chaves."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Insert keys (based on mask)."
-msgstr "Inserir Chave (Pistas existentes)"
+msgstr "Inserir chaves (baseado na máscara)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -4826,11 +4829,15 @@ msgid ""
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
 msgstr ""
+"Insere chaves automaticamente quando objetos são movidos, rodados ou "
+"redimensionados (baseado na máscara).\n"
+"Chaves apenas são adicionadas a pistas existentes, não sendo criadas novas "
+"pistas.\n"
+"Chaves têm de ser inseridas manualmente na primeira vez."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Insert Key"
-msgstr "Anim Inserir Chave"
+msgstr "Inserir Chave automaticamente"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -5816,9 +5823,8 @@ msgid "Save Theme As..."
 msgstr "Guardar tema como..."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "%s Class Reference"
-msgstr " Referência de classe"
+msgstr "Referência de classe %s"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
@@ -6228,7 +6234,7 @@ msgstr "A rodar %s graus."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Keying is disabled (no key inserted)."
-msgstr "Edição desativada (nenhuma Chave inserida)."
+msgstr "Edição desativada (nenhuma chave inserida)."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Animation Key Inserted."
@@ -6642,24 +6648,20 @@ msgid "Nameless gizmo"
 msgstr "Bugiganga sem Nome"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Mesh2D"
-msgstr "Criar Malha 2D"
+msgstr "Criar Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon2D"
-msgstr "Criar Polygon3D"
+msgstr "Criar Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D"
-msgstr "Criar Polígono de Colisão"
+msgstr "Criar CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D"
-msgstr "Criar Polígono oclusor"
+msgstr "Criar LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6674,43 +6676,36 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Geometria inválida, não substituível por malha."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create polygon."
-msgstr "Geometria inválida, não substituível por malha."
+msgstr "Geometria inválida, impossível criar polígono."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create collision polygon."
-msgstr "Geometria inválida, não substituível por malha."
+msgstr "Geometria inválida, impossível criar polígono de colisão."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create light occluder."
-msgstr "Geometria inválida, não substituível por malha."
+msgstr "Geometria inválida, impossível criar oclusor de luz."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Mesh2D"
-msgstr "Converter para Malha 2D"
+msgstr "Converter para Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Polygon2D"
-msgstr "Mover Polígono"
+msgstr "Converter para Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "Criar Polígono de Colisão"
+msgstr "Criar irmão de CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D Sibling"
-msgstr "Criar Polígono oclusor"
+msgstr "Criar irmão de LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7295,9 +7290,8 @@ msgid "Duplicate Nodes"
 msgstr "Duplicar Nós"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Nodes"
-msgstr "Apagar Nó"
+msgstr "Apagar Nós"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"

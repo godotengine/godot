@@ -81,5 +81,7 @@
 		</constant>
 		<constant name="FUNC_TRUNC" value="33" enum="Function">
 		</constant>
+		<constant name="FUNC_ONEMINUS" value="34" enum="Function">
+		</constant>
 	</constants>
 </class>

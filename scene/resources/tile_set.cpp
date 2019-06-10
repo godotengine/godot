@@ -319,6 +319,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::INT, pre + "autotile/spacing", PROPERTY_HINT_RANGE, "0,256,1", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "autotile/occluder_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "autotile/navpoly_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+			p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "autotile/priority_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "autotile/z_index_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 		}
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "occluder_offset"));
@@ -643,6 +644,36 @@ Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, 
 		}
 
 		return result;
+	}
+}
+
+Vector2 TileSet::atlastile_get_subtile_by_priority(int p_id, const Node *p_tilemap_node, const Vector2 &p_tile_location) {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), Vector2());
+	//First try to forward selection to script
+	if (get_script_instance() != NULL) {
+		if (get_script_instance()->has_method("_forward_atlas_subtile_selection")) {
+			Variant ret = get_script_instance()->call("_forward_atlas_subtile_selection", p_id, p_tilemap_node, p_tile_location);
+			if (ret.get_type() == Variant::VECTOR2) {
+				return ret;
+			}
+		}
+	}
+
+	Vector2 coord = tile_get_region(p_id).size / autotile_get_size(p_id);
+
+	List<Vector2> coords;
+	for (int x = 0; x < coord.x; x++) {
+		for (int y = 0; y < coord.y; y++) {
+			for (int i = 0; i < autotile_get_subtile_priority(p_id, Vector2(x, y)); i++) {
+				coords.push_back(Vector2(x, y));
+			}
+		}
+	}
+	if (coords.size() == 0) {
+		return autotile_get_icon_coordinate(p_id);
+	} else {
+		return coords[Math::random(0, (int)coords.size())];
 	}
 }
 
@@ -1141,6 +1172,7 @@ void TileSet::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_is_tile_bound", PropertyInfo(Variant::INT, "drawn_id"), PropertyInfo(Variant::INT, "neighbor_id")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_forward_subtile_selection", PropertyInfo(Variant::INT, "autotile_id"), PropertyInfo(Variant::INT, "bitmask"), PropertyInfo(Variant::OBJECT, "tilemap", PROPERTY_HINT_NONE, "TileMap"), PropertyInfo(Variant::VECTOR2, "tile_location")));
+	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_forward_atlas_subtile_selection", PropertyInfo(Variant::INT, "atlastile_id"), PropertyInfo(Variant::OBJECT, "tilemap", PROPERTY_HINT_NONE, "TileMap"), PropertyInfo(Variant::VECTOR2, "tile_location")));
 
 	BIND_ENUM_CONSTANT(BITMASK_2X2);
 	BIND_ENUM_CONSTANT(BITMASK_3X3_MINIMAL);

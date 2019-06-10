@@ -68,14 +68,14 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return [code]true[/code] if the node path is absolute (not relative).
+				Returns [code]true[/code] if the node path is absolute (not relative).
 			</description>
 		</method>
 		<method name="is_empty">
 			<return type="bool">
 			</return>
 			<description>
-				Return [code]true[/code] if the node path is empty.
+				Returns [code]true[/code] if the node path is empty.
 			</description>
 		</method>
 	</methods>

@@ -76,7 +76,7 @@ public:
 
 	virtual Error set_cwd(const String &p_cwd);
 
-	virtual String get_name();
+	virtual String get_name() const;
 
 	virtual Date get_date(bool utc) const;
 	virtual Time get_time(bool utc) const;

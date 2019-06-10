@@ -97,6 +97,8 @@
 			</argument>
 			<argument index="3" name="output" type="Array" default="[  ]">
 			</argument>
+			<argument index="4" name="read_stderr" type="bool" default="false">
+			</argument>
 			<description>
 				Execute the file at the given path with the arguments passed as an array of strings. Platform path resolution will take place. The resolved file must exist and be executable.
 				The arguments are used in the given order and separated by a space, so [code]OS.execute('ping', ['-w', '3', 'godotengine.org'], false)[/code] will resolve to [code]ping -w 3 godotengine.org[/code] in the system's shell.
@@ -219,14 +221,16 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns IME selection range.
+				Returns IME cursor position (currently edited portion of the string) relative to the characters in the composition string.
+				[code]NOTIFICATION_OS_IME_UPDATE[/code] is sent to the application to notify it of changes to the IME cursor position.
 			</description>
 		</method>
 		<method name="get_ime_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Returns IME intermediate text.
+				Returns IME intermediate composition string.
+				[code]NOTIFICATION_OS_IME_UPDATE[/code] is sent to the application to notify it of changes to the IME composition string.
 			</description>
 		</method>
 		<method name="get_latin_keyboard_variant" qualifiers="const">
@@ -697,7 +701,8 @@
 			<argument index="0" name="icon" type="Image">
 			</argument>
 			<description>
-				Sets the game's icon.
+				Sets the game's icon using an [Image] resource.
+				The same image is used for window caption, taskbar/dock and window selection dialog. Image is scaled as needed.
 			</description>
 		</method>
 		<method name="set_ime_active">
@@ -707,6 +712,9 @@
 			</argument>
 			<description>
 				Sets whether IME input mode should be enabled.
+				If active IME handles key events before the application and creates an composition string and suggestion list.
+				Application can retrieve the composition status by using [method get_ime_selection] and [method get_ime_text] functions.
+				Completed composition string is committed when input is finished.
 			</description>
 		</method>
 		<method name="set_ime_position">
@@ -716,6 +724,17 @@
 			</argument>
 			<description>
 				Sets position of IME suggestion list popup (in window coordinates).
+			</description>
+		</method>
+		<method name="set_native_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="filename" type="String">
+			</argument>
+			<description>
+				Sets the game's icon using a multi-size platform-specific icon file ([code]*.ico[/code] on Windows and [code]*.icns[/code] on macOS).
+				Appropriate size sub-icons are used for window caption, taskbar/dock and window selection dialog.
+				Note: This method is only implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="set_thread_name">

@@ -101,8 +101,9 @@ class VisualShaderEditor : public VBoxContainer {
 		int mode;
 		int return_type;
 		int func;
+		float value;
 
-		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_sub_category = String(), const String &p_type = String(), const String &p_description = String(), int p_sub_func = -1, int p_return_type = -1, int p_mode = -1, int p_func = -1) {
+		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_sub_category = String(), const String &p_type = String(), const String &p_description = String(), int p_sub_func = -1, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1) {
 			name = p_name;
 			type = p_type;
 			category = p_category;
@@ -112,9 +113,10 @@ class VisualShaderEditor : public VBoxContainer {
 			return_type = p_return_type;
 			mode = p_mode;
 			func = p_func;
+			value = p_value;
 		}
 
-		AddOption(const String &p_name, const String &p_category, const String &p_sub_category, const String &p_type, const String &p_description, const String &p_sub_func, int p_return_type = -1, int p_mode = -1, int p_func = -1) {
+		AddOption(const String &p_name, const String &p_category, const String &p_sub_category, const String &p_type, const String &p_description, const String &p_sub_func, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1) {
 			name = p_name;
 			type = p_type;
 			category = p_category;
@@ -124,10 +126,12 @@ class VisualShaderEditor : public VBoxContainer {
 			return_type = p_return_type;
 			mode = p_mode;
 			func = p_func;
+			value = p_value;
 		}
 	};
 
 	Vector<AddOption> add_options;
+	List<String> keyword_list;
 
 	void _draw_color_over_button(Object *obj, Color p_color);
 
@@ -160,13 +164,31 @@ class VisualShaderEditor : public VBoxContainer {
 	void _line_edit_changed(const String &p_text, Object *line_edit, int p_node_id);
 	void _line_edit_focus_out(Object *line_edit, int p_node_id);
 
+	void _port_name_focus_out(Object *line_edit, int p_node_id, int p_port_id, bool p_output);
+
 	void _duplicate_nodes();
 
 	Vector<Ref<VisualShaderNodePlugin> > plugins;
 
 	void _mode_selected(int p_id);
+	void _rebuild();
 
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
+
+	void _add_input_port(int p_node, int p_port, int p_type, const String &p_name);
+	void _remove_input_port(int p_node, int p_port);
+	void _change_input_port_type(int p_type, int p_node, int p_port);
+	void _change_input_port_name(const String &p_text, Object *line_edit, int p_node, int p_port);
+
+	void _add_output_port(int p_node, int p_port, int p_type, const String &p_name);
+	void _remove_output_port(int p_node, int p_port);
+	void _change_output_port_type(int p_type, int p_node, int p_port);
+	void _change_output_port_name(const String &p_text, Object *line_edit, int p_node, int p_port);
+
+	void _expression_focus_out(Object *text_edit, int p_node);
+
+	void _set_node_size(int p_type, int p_node, const Size2 &p_size);
+	void _node_resized(const Vector2 &p_new_size, int p_type, int p_node);
 
 	void _preview_select_port(int p_node, int p_port);
 	void _graph_gui_input(const Ref<InputEvent> p_event);

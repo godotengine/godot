@@ -293,6 +293,7 @@ public:
 
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);
+	void track_move_to(int p_track, int p_to_index);
 	void track_swap(int p_track, int p_with_track);
 
 	void track_set_imported(int p_track, bool p_imported);
@@ -304,6 +305,7 @@ public:
 	void track_insert_key(int p_track, float p_time, const Variant &p_key, float p_transition = 1);
 	void track_set_key_transition(int p_track, int p_key_idx, float p_transition);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
+	void track_set_key_time(int p_track, int p_key_idx, float p_time);
 	int track_find_key(int p_track, float p_time, bool p_exact = false) const;
 	void track_remove_key(int p_track, int p_idx);
 	void track_remove_key_at_position(int p_track, float p_pos);

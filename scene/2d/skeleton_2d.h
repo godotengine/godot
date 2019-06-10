@@ -39,6 +39,9 @@ class Bone2D : public Node2D {
 	GDCLASS(Bone2D, Node2D)
 
 	friend class Skeleton2D;
+#ifdef TOOLS_ENABLED
+	friend class AnimatedValuesBackup;
+#endif
 
 	Bone2D *parent_bone;
 	Skeleton2D *skeleton;
@@ -71,6 +74,9 @@ class Skeleton2D : public Node2D {
 	GDCLASS(Skeleton2D, Node2D);
 
 	friend class Bone2D;
+#ifdef TOOLS_ENABLED
+	friend class AnimatedValuesBackup;
+#endif
 
 	struct Bone {
 		bool operator<(const Bone &p_bone) const {

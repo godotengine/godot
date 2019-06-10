@@ -705,7 +705,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					}
 				}
 			} else if (mouse_mode != MOUSE_MODE_CAPTURED) {
-				// for reasons unknown to mankind, wheel comes in screen cordinates
+				// for reasons unknown to mankind, wheel comes in screen coordinates
 				POINT coords;
 				coords.x = mb->get_position().x;
 				coords.y = mb->get_position().y;
@@ -2119,7 +2119,7 @@ void OS_Windows::request_attention() {
 	FlashWindowEx(&info);
 }
 
-String OS_Windows::get_name() {
+String OS_Windows::get_name() const {
 
 	return "Windows";
 }
@@ -2475,7 +2475,13 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 		for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
 
-			argss += String(" \"") + E->get() + "\"";
+			argss += " \"" + E->get() + "\"";
+		}
+
+		argss += "\"";
+
+		if (read_stderr) {
+			argss += " 2>&1"; // Read stderr too
 		}
 
 		FILE *f = _wpopen(argss.c_str(), L"r");
@@ -2575,6 +2581,117 @@ String OS_Windows::get_executable_path() const {
 	GetModuleFileNameW(NULL, bufname, 4096);
 	String s = bufname;
 	return s;
+}
+
+void OS_Windows::set_native_icon(const String &p_filename) {
+
+	FileAccess *f = FileAccess::open(p_filename, FileAccess::READ);
+	ERR_FAIL_COND(!f);
+
+	ICONDIR *icon_dir = (ICONDIR *)memalloc(sizeof(ICONDIR));
+	int pos = 0;
+
+	icon_dir->idReserved = f->get_32();
+	pos += sizeof(WORD);
+	f->seek(pos);
+
+	icon_dir->idType = f->get_32();
+	pos += sizeof(WORD);
+	f->seek(pos);
+
+	if (icon_dir->idType != 1) {
+		ERR_EXPLAIN("Invalid icon file format!");
+		ERR_FAIL();
+	}
+
+	icon_dir->idCount = f->get_32();
+	pos += sizeof(WORD);
+	f->seek(pos);
+
+	icon_dir = (ICONDIR *)memrealloc(icon_dir, 3 * sizeof(WORD) + icon_dir->idCount * sizeof(ICONDIRENTRY));
+	f->get_buffer((uint8_t *)&icon_dir->idEntries[0], icon_dir->idCount * sizeof(ICONDIRENTRY));
+
+	int small_icon_index = -1; // Select 16x16 with largest color count
+	int small_icon_cc = 0;
+	int big_icon_index = -1; // Select largest
+	int big_icon_width = 16;
+	int big_icon_cc = 0;
+
+	for (int i = 0; i < icon_dir->idCount; i++) {
+		int colors = (icon_dir->idEntries[i].bColorCount == 0) ? 32768 : icon_dir->idEntries[i].bColorCount;
+		int width = (icon_dir->idEntries[i].bWidth == 0) ? 256 : icon_dir->idEntries[i].bWidth;
+		if (width == 16) {
+			if (colors >= small_icon_cc) {
+				small_icon_index = i;
+				small_icon_cc = colors;
+			}
+		}
+		if (width >= big_icon_width) {
+			if (colors >= big_icon_cc) {
+				big_icon_index = i;
+				big_icon_width = width;
+				big_icon_cc = colors;
+			}
+		}
+	}
+
+	if (big_icon_index == -1) {
+		ERR_EXPLAIN("No valid icons found!");
+		ERR_FAIL();
+	}
+
+	if (small_icon_index == -1) {
+		WARN_PRINTS("No small icon found, reusing " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon!");
+		small_icon_index = big_icon_index;
+		small_icon_cc = big_icon_cc;
+	}
+
+	// Read the big icon
+	DWORD bytecount_big = icon_dir->idEntries[big_icon_index].dwBytesInRes;
+	Vector<uint8_t> data_big;
+	data_big.resize(bytecount_big);
+	pos = icon_dir->idEntries[big_icon_index].dwImageOffset;
+	f->seek(pos);
+	f->get_buffer((uint8_t *)&data_big.write[0], bytecount_big);
+	HICON icon_big = CreateIconFromResource((PBYTE)&data_big.write[0], bytecount_big, TRUE, 0x00030000);
+	if (!icon_big) {
+		ERR_EXPLAIN("Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()));
+		ERR_FAIL();
+	}
+
+	// Read the small icon
+	DWORD bytecount_small = icon_dir->idEntries[small_icon_index].dwBytesInRes;
+	Vector<uint8_t> data_small;
+	data_small.resize(bytecount_small);
+	pos = icon_dir->idEntries[small_icon_index].dwImageOffset;
+	f->seek(pos);
+	f->get_buffer((uint8_t *)&data_small.write[0], bytecount_small);
+	HICON icon_small = CreateIconFromResource((PBYTE)&data_small.write[0], bytecount_small, TRUE, 0x00030000);
+	if (!icon_small) {
+		ERR_EXPLAIN("Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()));
+		ERR_FAIL();
+	}
+
+	// Online tradition says to be sure last error is cleared and set the small icon first
+	int err = 0;
+	SetLastError(err);
+
+	SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
+	err = GetLastError();
+	if (err) {
+		ERR_EXPLAIN("Error setting ICON_SMALL: " + format_error_message(err));
+		ERR_FAIL();
+	}
+
+	SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+	err = GetLastError();
+	if (err) {
+		ERR_EXPLAIN("Error setting ICON_BIG: " + format_error_message(err));
+		ERR_FAIL();
+	}
+
+	memdelete(f);
+	memdelete(icon_dir);
 }
 
 void OS_Windows::set_icon(const Ref<Image> &p_icon) {

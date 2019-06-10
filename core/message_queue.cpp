@@ -302,10 +302,6 @@ void MessageQueue::flush() {
 
 					_call_function(target, message->target, args, message->args, message->type & FLAG_SHOW_ERROR);
 
-					for (int i = 0; i < message->args; i++) {
-						args[i].~Variant();
-					}
-
 				} break;
 				case TYPE_NOTIFICATION: {
 
@@ -319,8 +315,14 @@ void MessageQueue::flush() {
 					// messages don't expect a return value
 					target->set(message->target, *arg);
 
-					arg->~Variant();
 				} break;
+			}
+		}
+
+		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
+			Variant *args = (Variant *)(message + 1);
+			for (int i = 0; i < message->args; i++) {
+				args[i].~Variant();
 			}
 		}
 

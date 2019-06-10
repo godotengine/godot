@@ -149,7 +149,7 @@ opts.Add(BoolVariable('builtin_libwebsockets', "Use the built-in libwebsockets l
 opts.Add(BoolVariable('builtin_mbedtls', "Use the built-in mbedTLS library", True))
 opts.Add(BoolVariable('builtin_miniupnpc', "Use the built-in miniupnpc library", True))
 opts.Add(BoolVariable('builtin_opus', "Use the built-in Opus library", True))
-opts.Add(BoolVariable('builtin_pcre2', "Use the built-in PCRE2 library)", True))
+opts.Add(BoolVariable('builtin_pcre2', "Use the built-in PCRE2 library", True))
 opts.Add(BoolVariable('builtin_recast', "Use the built-in Recast library", True))
 opts.Add(BoolVariable('builtin_squish', "Use the built-in squish library", True))
 opts.Add(BoolVariable('builtin_xatlas', "Use the built-in xatlas library", True))
@@ -226,6 +226,23 @@ if env_base['platform'] != "":
 elif env_base['p'] != "":
     selected_platform = env_base['p']
     env_base["platform"] = selected_platform
+else:
+    # Missing `platform` argument, try to detect platform automatically
+    if sys.platform.startswith('linux'):
+        selected_platform = 'x11'
+    elif sys.platform == 'darwin':
+        selected_platform = 'osx'
+    elif sys.platform == 'win32':
+        selected_platform = 'windows'
+    else:
+        print("Could not detect platform automatically. Supported platforms:")
+        for x in platform_list:
+            print("\t" + x)
+        print("\nPlease run SCons again and select a valid platform: platform=<string>")
+
+    if selected_platform != "":
+        print("Automatically detected platform: " + selected_platform)
+        env_base["platform"] = selected_platform
 
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform
@@ -492,13 +509,13 @@ if selected_platform in platform_list:
             if (conf.CheckCHeader(header[0])):
                 env.AppendUnique(CPPDEFINES=[header[1]])
 
-else:
+elif selected_platform != "":
 
-    print("No valid target platform selected.")
+    print("Invalid target platform: " + selected_platform)
     print("The following platforms were detected:")
     for x in platform_list:
         print("\t" + x)
-    print("\nPlease run SCons again with the argument: platform=<string>")
+    print("\nPlease run SCons again and select a valid platform: platform=<string>")
 
 # The following only makes sense when the env is defined, and assumes it is
 if 'env' in locals():
@@ -562,7 +579,7 @@ if 'env' in locals():
             # (filename, size, weight).
             current_time = time.time()
             file_stat = [(x[0], x[1][0], (current_time - x[1][1])) for x in file_stat]
-            # Sort by the most resently accessed files (most sensible to keep) first
+            # Sort by the most recently accessed files (most sensible to keep) first
             file_stat.sort(key=lambda x: x[2])
             # Search for the first entry where the storage limit is
             # reached

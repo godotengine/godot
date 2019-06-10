@@ -5,12 +5,13 @@
 # Abhas Kumar Sinha <abhaskumarsinha@gmail.com>, 2017.
 # Suryansh5545 <suryanshpathak5545@gmail.com>, 2018.
 # Vikram1323 <vikram1323@gmail.com>, 2018.
+# vkubre <v@kubre.in>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:40+0100\n"
-"Last-Translator: Vikram1323 <vikram1323@gmail.com>\n"
+"PO-Revision-Date: 2019-05-04 13:48+0000\n"
+"Last-Translator: vkubre <v@kubre.in>\n"
 "Language-Team: Hindi <https://hosted.weblate.org/projects/godot-engine/godot/"
 "hi/>\n"
 "Language: hi\n"
@@ -18,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -70,7 +71,7 @@ msgstr "संतुलित"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr ""
+msgstr "प्रतिमा"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -87,7 +88,7 @@ msgstr "चयनित फ़ाइलें हटाएं?"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr ""
+msgstr "बेज़ियर पॉइंट तैयार करे"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
@@ -161,12 +162,18 @@ msgstr "एनिमेशन प्लेबैक ट्रैक"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "ट्रैक जोड़ें"
+msgid "Animation length (frames)"
+msgstr "ऐनिमेशन लंबाई समय (सेकंड्स)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "ऐनिमेशन लंबाई समय (सेकंड्स)"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "ट्रैक जोड़ें"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

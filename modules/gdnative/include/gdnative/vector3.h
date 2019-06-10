@@ -90,6 +90,8 @@ godot_vector3 GDAPI godot_vector3_linear_interpolate(const godot_vector3 *p_self
 
 godot_vector3 GDAPI godot_vector3_cubic_interpolate(const godot_vector3 *p_self, const godot_vector3 *p_b, const godot_vector3 *p_pre_a, const godot_vector3 *p_post_b, const godot_real p_t);
 
+godot_vector3 GDAPI godot_vector3_move_toward(const godot_vector3 *p_self, const godot_vector3 *p_to, const godot_real p_delta);
+
 godot_real GDAPI godot_vector3_dot(const godot_vector3 *p_self, const godot_vector3 *p_b);
 
 godot_vector3 GDAPI godot_vector3_cross(const godot_vector3 *p_self, const godot_vector3 *p_b);

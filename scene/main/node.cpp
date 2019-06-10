@@ -949,6 +949,7 @@ void Node::set_name(const String &p_name) {
 	if (is_inside_tree()) {
 
 		emit_signal("renamed");
+		get_tree()->node_renamed(this);
 		get_tree()->tree_changed();
 	}
 }
@@ -2076,7 +2077,9 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		}
 	}
 
-	node->set_name(get_name());
+	if (get_name() != String()) {
+		node->set_name(get_name());
+	}
 
 #ifdef TOOLS_ENABLED
 	if ((p_flags & DUPLICATE_FROM_EDITOR) && r_duplimap)

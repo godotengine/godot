@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-04-19 16:33+0000\n"
+"PO-Revision-Date: 2019-05-16 18:49+0000\n"
 "Last-Translator: Wataru Onuki <watonu@magadou.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -35,7 +35,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -171,12 +171,18 @@ msgid "Animation Playback Track"
 msgstr "アニメーション再生トラック"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "トラックを追加"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "アニメーションの長さ (秒)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "アニメーションの長さ (秒)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "トラックを追加"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -1395,33 +1401,31 @@ msgid "Packing"
 msgstr "パックする"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
 "対象プラットフォームではGLES2のために'ETC'テクスチャ圧縮が必要です。プロジェ"
-"クト設定より有効にしてください。"
+"クト設定より 'Import Etc' をオンにしてください。"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
-"対象プラットフォームではGLES2のために'ETC'テクスチャ圧縮が必要です。プロジェ"
-"クト設定より有効にしてください。"
+"対象プラットフォームではGLES3のために'ETC2'テクスチャ圧縮が必要です。プロジェ"
+"クト設定より 'Import Etc 2' をオンにしてください。"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"対象プラットフォームではGLES2のために'ETC'テクスチャ圧縮が必要です。プロジェ"
-"クト設定より有効にしてください。"
+"対象プラットフォームではGLES2へフォールバックするために'ETC'テクスチャ圧縮が"
+"必要です。プロジェクト設定より 'Import Etc' をオンにするか、'Fallback To "
+"Gles 2' をオフにしてください。"
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp

@@ -4,12 +4,12 @@
 		Base class for all non built-in types.
 	</brief_description>
 	<description>
-		Base class for all non built-in types. Everything which is not a built-in type starts the inheritance chain from this class.
-		Objects can be constructed from scripting languages, using [code]Object.new()[/code] in GDScript, [code]new Object[/code] in C#, or the "Construct Object" node in VisualScript.
-		Objects do not manage memory, if inheriting from one the object will most likely have to be deleted manually (call the [method free] function from the script or delete from C++).
-		Some derivatives add memory management, such as [Reference] (which keeps a reference count and deletes itself automatically when no longer referenced) and [Node], which deletes the children tree when deleted.
+		Every class which is not a built-in type inherits from this class.
+		You can construct Objects from scripting languages, using [code]Object.new()[/code] in GDScript, [code]new Object[/code] in C#, or the "Construct Object" node in VisualScript.
+		Objects do not manage memory. If a class inherits from Object, you will have to delete instances of it manually. To do so, call the [method free] method from your script or delete the instance from C++.
+		Some classes that extend Object add memory management. This is the case of [Reference], which counts references and deletes itself automatically when no longer referenced. [Node], another fundamental type, deletes all its children when freed from memory.
 		Objects export properties, which are mainly useful for storage and editing, but not really so much in programming. Properties are exported in [method _get_property_list] and handled in [method _get] and [method _set]. However, scripting languages and C++ have simpler means to export them.
-		Objects also receive notifications ([method _notification]). Notifications are a simple way to notify the object about simple events, so they can all be handled together.
+		Objects also receive notifications. Notifications are a simple way to notify the object about simple events, so they can all be handled together. See [method _notification].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -55,6 +55,14 @@
 			</argument>
 			<description>
 				Sets a property. Returns [code]true[/code] if the [code]property[/code] exists.
+			</description>
+		</method>
+		<method name="_to_string" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<description>
+				Returns a [String] representing the object. Default is [code]"[ClassName:RID]"[/code].
+				Override this method to customize the [String] representation of the object when it's being converted to a string, for example: [code]print(obj)[/code].
 			</description>
 		</method>
 		<method name="add_user_signal">
@@ -118,7 +126,9 @@
 			<argument index="4" name="flags" type="int" default="0">
 			</argument>
 			<description>
-				Connects a [code]signal[/code] to a [code]method[/code] on a [code]target[/code] object. Pass optional [code]binds[/code] to the call. Use [code]flags[/code] to set deferred or one shot connections. See [code]CONNECT_*[/code] constants. A [code]signal[/code] can only be connected once to a [code]method[/code]. It will throw an error if already connected. To avoid this, first use [method is_connected] to check for existing connections.
+				Connects a [code]signal[/code] to a [code]method[/code] on a [code]target[/code] object. Pass optional [code]binds[/code] to the call. Use [code]flags[/code] to set deferred or one shot connections. See [code]CONNECT_*[/code] constants.
+				A [code]signal[/code] can only be connected once to a [code]method[/code]. It will throw an error if already connected. To avoid this, first, use [method is_connected] to check for existing connections.
+				If the [code]target[/code] is destroyed in the game's lifecycle, the connection will be lost.
 			</description>
 		</method>
 		<method name="disconnect">
@@ -132,6 +142,7 @@
 			</argument>
 			<description>
 				Disconnects a [code]signal[/code] from a [code]method[/code] on the given [code]target[/code].
+				If you try to disconnect a connection that does not exist, the method will throw an error. Use [method is_connected] to ensure that the connection exists.
 			</description>
 		</method>
 		<method name="emit_signal" qualifiers="vararg">
@@ -402,6 +413,14 @@
 			</argument>
 			<description>
 				Set a script into the object, scripts extend the object functionality.
+			</description>
+		</method>
+		<method name="to_string">
+			<return type="String">
+			</return>
+			<description>
+				Returns a [String] representing the object. Default is [code]"[ClassName:RID]"[/code].
+				Override the method [method _to_string] to customize the [String] representation.
 			</description>
 		</method>
 		<method name="tr" qualifiers="const">

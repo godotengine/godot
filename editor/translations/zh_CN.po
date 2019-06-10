@@ -44,12 +44,14 @@
 # simano clio <sim2cle@gmail.com>, 2019.
 # ByonkoGalilei <byonko@qq.com>, 2019.
 # qjyqjyqjyqjy <qjyqjyqjyqjy@sina.com.cn>, 2019.
+# liushuyu011 <liushuyu011@gmail.com>, 2019.
+# DS <dseqrasd@126.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-04-23 15:48+0000\n"
-"Last-Translator: qjyqjyqjyqjy <qjyqjyqjyqjy@sina.com.cn>\n"
+"PO-Revision-Date: 2019-05-16 18:48+0000\n"
+"Last-Translator: DS <dseqrasd@126.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -193,12 +195,18 @@ msgid "Animation Playback Track"
 msgstr "动画回放轨道"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "添加轨道"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "动画时长（秒）"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "动画时长（秒）"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "添加轨道"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -450,9 +458,8 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "按节点分组或将它们显示为普通列表。"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "吸附"
+msgstr "吸附："
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -7953,7 +7960,7 @@ msgstr "编辑器需要重启以让修改生效"
 
 #: editor/project_settings_editor.cpp
 msgid "Input Map"
-msgstr "事件表"
+msgstr "键位映射"
 
 #: editor/project_settings_editor.cpp
 msgid "Action:"

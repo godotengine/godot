@@ -4388,7 +4388,7 @@ private:
 class Solver
 {
 public:
-	// Solve the symmetric system: At·A·x = At·b
+	// Solve the symmetric system: AtÂ·AÂ·x = AtÂ·b
 	static bool LeastSquaresSolver(const sparse::Matrix &A, const FullVector &b, FullVector &x, float epsilon = 1e-5f)
 	{
 		xaDebugAssert(A.width() == x.dimension());
@@ -4477,22 +4477,22 @@ private:
 	* Gradient method.
 	*
 	* Solving sparse linear systems:
-	* (1)		A·x = b
+	* (1)		AÂ·x = b
 	*
 	* The conjugate gradient algorithm solves (1) only in the case that A is
 	* symmetric and positive definite. It is based on the idea of minimizing the
 	* function
 	*
-	* (2)		f(x) = 1/2·x·A·x - b·x
+	* (2)		f(x) = 1/2Â·xÂ·AÂ·x - bÂ·x
 	*
 	* This function is minimized when its gradient
 	*
-	* (3)		df = A·x - b
+	* (3)		df = AÂ·x - b
 	*
 	* is zero, which is equivalent to (1). The minimization is carried out by
 	* generating a succession of search directions p.k and improved minimizers x.k.
-	* At each stage a quantity alfa.k is found that minimizes f(x.k + alfa.k·p.k),
-	* and x.k+1 is set equal to the new point x.k + alfa.k·p.k. The p.k and x.k are
+	* At each stage a quantity alfa.k is found that minimizes f(x.k + alfa.kÂ·p.k),
+	* and x.k+1 is set equal to the new point x.k + alfa.kÂ·p.k. The p.k and x.k are
 	* built up in such a way that x.k+1 is also the minimizer of f over the whole
 	* vector space of directions already taken, {p.1, p.2, . . . , p.k}. After N
 	* iterations you arrive at the minimizer over the entire vector space, i.e., the
@@ -4520,7 +4520,7 @@ private:
 		float delta_new;
 		float alpha;
 		float beta;
-		// r = b - A·x;
+		// r = b - AÂ·x;
 		sparse::copy(b, r);
 		sparse::sgemv(-1, A, x, 1, r);
 		// p = r;
@@ -4529,24 +4529,24 @@ private:
 		delta_0 = delta_new;
 		while (i < i_max && delta_new > epsilon * epsilon * delta_0) {
 			i++;
-			// q = A·p
+			// q = AÂ·p
 			mult(A, p, q);
-			// alpha = delta_new / p·q
+			// alpha = delta_new / pÂ·q
 			alpha = delta_new / sparse::dot( p, q );
-			// x = alfa·p + x
+			// x = alfaÂ·p + x
 			sparse::saxpy(alpha, p, x);
 			if ((i & 31) == 0) { // recompute r after 32 steps
-				// r = b - A·x
+				// r = b - AÂ·x
 				sparse::copy(b, r);
 				sparse::sgemv(-1, A, x, 1, r);
 			} else {
-				// r = r - alpha·q
+				// r = r - alphaÂ·q
 				sparse::saxpy(-alpha, q, r);
 			}
 			delta_old = delta_new;
 			delta_new = sparse::dot( r, r );
 			beta = delta_new / delta_old;
-			// p = beta·p + r
+			// p = betaÂ·p + r
 			sparse::scal(beta, p);
 			sparse::saxpy(1, r, p);
 		}
@@ -4572,35 +4572,35 @@ private:
 		float delta_new;
 		float alpha;
 		float beta;
-		// r = b - A·x
+		// r = b - AÂ·x
 		sparse::copy(b, r);
 		sparse::sgemv(-1, A, x, 1, r);
-		// p = M^-1 · r
+		// p = M^-1 Â· r
 		preconditioner.apply(r, p);
 		delta_new = sparse::dot(r, p);
 		delta_0 = delta_new;
 		while (i < i_max && delta_new > epsilon * epsilon * delta_0) {
 			i++;
-			// q = A·p
+			// q = AÂ·p
 			mult(A, p, q);
-			// alpha = delta_new / p·q
+			// alpha = delta_new / pÂ·q
 			alpha = delta_new / sparse::dot(p, q);
-			// x = alfa·p + x
+			// x = alfaÂ·p + x
 			sparse::saxpy(alpha, p, x);
 			if ((i & 31) == 0) { // recompute r after 32 steps
-				// r = b - A·x
+				// r = b - AÂ·x
 				sparse::copy(b, r);
 				sparse::sgemv(-1, A, x, 1, r);
 			} else {
-				// r = r - alfa·q
+				// r = r - alfaÂ·q
 				sparse::saxpy(-alpha, q, r);
 			}
-			// s = M^-1 · r
+			// s = M^-1 Â· r
 			preconditioner.apply(r, s);
 			delta_old = delta_new;
 			delta_new = sparse::dot( r, s );
 			beta = delta_new / delta_old;
-			// p = s + beta·p
+			// p = s + betaÂ·p
 			sparse::scal(beta, p);
 			sparse::saxpy(1, s, p);
 		}

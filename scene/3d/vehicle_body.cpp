@@ -270,6 +270,8 @@ void VehicleWheel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_skidinfo"), &VehicleWheel::get_skidinfo);
 
+	ClassDB::bind_method(D_METHOD("get_rpm"), &VehicleWheel::get_rpm);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_traction"), "set_use_as_traction", "is_used_as_traction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_steering"), "set_use_as_steering", "is_used_as_steering");
 	ADD_GROUP("Wheel", "wheel_");
@@ -309,6 +311,11 @@ bool VehicleWheel::is_used_as_steering() const {
 float VehicleWheel::get_skidinfo() const {
 
 	return m_skidInfo;
+}
+
+float VehicleWheel::get_rpm() const {
+
+	return m_rpm;
 }
 
 VehicleWheel::VehicleWheel() {
@@ -865,11 +872,10 @@ void VehicleBody::_direct_state_changed(Object *p_state) {
 			real_t proj2 = fwd.dot(vel);
 
 			wheel.m_deltaRotation = (proj2 * step) / (wheel.m_wheelRadius);
-			wheel.m_rotation += wheel.m_deltaRotation;
-
-		} else {
-			wheel.m_rotation += wheel.m_deltaRotation;
 		}
+
+		wheel.m_rotation += wheel.m_deltaRotation;
+		wheel.m_rpm = ((wheel.m_deltaRotation / step) * 60) / Math_TAU;
 
 		wheel.m_deltaRotation *= real_t(0.99); //damping of rotation when not in contact
 	}

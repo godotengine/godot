@@ -35,7 +35,7 @@
 
 namespace GDMonoMarshal {
 
-Variant::Type managed_to_variant_type(const ManagedType &p_type, ExportInfo *r_export_info) {
+Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 	switch (p_type.type_encoding) {
 		case MONO_TYPE_BOOLEAN:
 			return Variant::BOOL;
@@ -157,8 +157,20 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, ExportInfo *r_e
 				return Variant::ARRAY;
 			}
 
+			// The order in which we check the following interfaces is very important (dictionaries and generics first)
+
+			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type_class->get_mono_type());
+
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype)) {
+				return Variant::DICTIONARY;
+			}
+
 			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
 				return Variant::DICTIONARY;
+			}
+
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype)) {
+				return Variant::ARRAY;
 			}
 
 			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
@@ -169,59 +181,25 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, ExportInfo *r_e
 		case MONO_TYPE_GENERICINST: {
 			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, p_type.type_class->get_mono_type());
 
-			MonoException *exc = NULL;
-			GDMonoUtils::TypeIsGenericDictionary type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericDictionary);
-			MonoBoolean is_dict = invoke_method_thunk(type_is_dict, reftype, &exc);
-			UNLIKELY_UNHANDLED_EXCEPTION(exc);
-
-			if (is_dict) {
-				if (r_export_info) {
-					MonoReflectionType *key_reftype;
-					MonoReflectionType *value_reftype;
-
-					exc = NULL;
-					invoke_method_thunk(CACHED_METHOD_THUNK(MarshalUtils, DictionaryGetKeyValueTypes),
-							reftype, &key_reftype, &value_reftype, &exc);
-					UNLIKELY_UNHANDLED_EXCEPTION(exc);
-
-					ManagedType key_type = ManagedType::from_reftype(key_reftype);
-					ManagedType value_type = ManagedType::from_reftype(value_reftype);
-
-					r_export_info->dictionary.key_type = managed_to_variant_type(key_type);
-					r_export_info->dictionary.key_native_name = NATIVE_GDMONOCLASS_NAME(key_type.type_class);
-					r_export_info->dictionary.value_type = managed_to_variant_type(value_type);
-					r_export_info->dictionary.value_native_name = NATIVE_GDMONOCLASS_NAME(value_type.type_class);
-				}
-
+			if (GDMonoUtils::Marshal::type_is_generic_dictionary(reftype)) {
 				return Variant::DICTIONARY;
 			}
 
-			exc = NULL;
-			GDMonoUtils::TypeIsGenericArray type_is_array = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericArray);
-			MonoBoolean is_array = invoke_method_thunk(type_is_array, reftype, &exc);
-			UNLIKELY_UNHANDLED_EXCEPTION(exc);
-
-			if (is_array) {
-				if (r_export_info) {
-					MonoReflectionType *elem_reftype;
-
-					exc = NULL;
-					invoke_method_thunk(CACHED_METHOD_THUNK(MarshalUtils, ArrayGetElementType),
-							reftype, &elem_reftype, &exc);
-					UNLIKELY_UNHANDLED_EXCEPTION(exc);
-
-					ManagedType elem_type = ManagedType::from_reftype(elem_reftype);
-
-					r_export_info->array.element_type = managed_to_variant_type(elem_type);
-					r_export_info->array.element_native_name = NATIVE_GDMONOCLASS_NAME(elem_type.type_class);
-				}
-
+			if (GDMonoUtils::Marshal::type_is_generic_array(reftype)) {
 				return Variant::ARRAY;
 			}
+
+			// The order in which we check the following interfaces is very important (dictionaries and generics first)
+
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype))
+				return Variant::DICTIONARY;
 
 			if (p_type.type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
 				return Variant::DICTIONARY;
 			}
+
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype))
+				return Variant::ARRAY;
 
 			if (p_type.type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
 				return Variant::ARRAY;
@@ -234,6 +212,63 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, ExportInfo *r_e
 
 	// Unknown
 	return Variant::NIL;
+}
+
+bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_elem_type) {
+	switch (p_array_type.type_encoding) {
+		case MONO_TYPE_GENERICINST: {
+			MonoReflectionType *array_reftype = mono_type_get_object(SCRIPTS_DOMAIN, p_array_type.type_class->get_mono_type());
+
+			if (GDMonoUtils::Marshal::type_is_generic_array(array_reftype)) {
+				MonoReflectionType *elem_reftype;
+
+				GDMonoUtils::Marshal::array_get_element_type(array_reftype, &elem_reftype);
+
+				r_elem_type = ManagedType::from_reftype(elem_reftype);
+				return true;
+			}
+
+			MonoReflectionType *elem_reftype;
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(array_reftype, &elem_reftype)) {
+				r_elem_type = ManagedType::from_reftype(elem_reftype);
+				return true;
+			}
+		} break;
+		default: {
+		} break;
+	}
+
+	return false;
+}
+
+bool try_get_dictionary_key_value_types(const ManagedType &p_dictionary_type, ManagedType &r_key_type, ManagedType &r_value_type) {
+	switch (p_dictionary_type.type_encoding) {
+		case MONO_TYPE_GENERICINST: {
+			MonoReflectionType *dict_reftype = mono_type_get_object(SCRIPTS_DOMAIN, p_dictionary_type.type_class->get_mono_type());
+
+			if (GDMonoUtils::Marshal::type_is_generic_dictionary(dict_reftype)) {
+				MonoReflectionType *key_reftype;
+				MonoReflectionType *value_reftype;
+
+				GDMonoUtils::Marshal::dictionary_get_key_value_types(dict_reftype, &key_reftype, &value_reftype);
+
+				r_key_type = ManagedType::from_reftype(key_reftype);
+				r_value_type = ManagedType::from_reftype(value_reftype);
+				return true;
+			}
+
+			MonoReflectionType *key_reftype, *value_reftype;
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(dict_reftype, &key_reftype, &value_reftype)) {
+				r_key_type = ManagedType::from_reftype(key_reftype);
+				r_value_type = ManagedType::from_reftype(value_reftype);
+				return true;
+			}
+		} break;
+		default: {
+		} break;
+	}
+
+	return false;
 }
 
 String mono_to_utf8_string(MonoString *p_mono_string) {
@@ -502,8 +537,24 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 				return GDMonoUtils::create_managed_from(p_var->operator Array(), CACHED_CLASS(Array));
 			}
 
+			// The order in which we check the following interfaces is very important (dictionaries and generics first)
+
+			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type_class->get_mono_type());
+
+			MonoReflectionType *key_reftype, *value_reftype;
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype, &key_reftype, &value_reftype)) {
+				return GDMonoUtils::create_managed_from(p_var->operator Dictionary(),
+						GDMonoUtils::Marshal::make_generic_dictionary_type(key_reftype, value_reftype));
+			}
+
 			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
 				return GDMonoUtils::create_managed_from(p_var->operator Dictionary(), CACHED_CLASS(Dictionary));
+			}
+
+			MonoReflectionType *elem_reftype;
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype, &elem_reftype)) {
+				return GDMonoUtils::create_managed_from(p_var->operator Array(),
+						GDMonoUtils::Marshal::make_generic_array_type(elem_reftype));
 			}
 
 			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
@@ -603,26 +654,30 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			case MONO_TYPE_GENERICINST: {
 				MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, p_type.type_class->get_mono_type());
 
-				MonoException *exc = NULL;
-				GDMonoUtils::TypeIsGenericDictionary type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericDictionary);
-				MonoBoolean is_dict = invoke_method_thunk(type_is_dict, reftype, &exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
-
-				if (is_dict) {
+				if (GDMonoUtils::Marshal::type_is_generic_dictionary(reftype)) {
 					return GDMonoUtils::create_managed_from(p_var->operator Dictionary(), p_type.type_class);
 				}
 
-				exc = NULL;
-				GDMonoUtils::TypeIsGenericArray type_is_array = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericArray);
-				MonoBoolean is_array = invoke_method_thunk(type_is_array, reftype, &exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
-
-				if (is_array) {
+				if (GDMonoUtils::Marshal::type_is_generic_array(reftype)) {
 					return GDMonoUtils::create_managed_from(p_var->operator Array(), p_type.type_class);
+				}
+
+				// The order in which we check the following interfaces is very important (dictionaries and generics first)
+
+				MonoReflectionType *key_reftype, *value_reftype;
+				if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype, &key_reftype, &value_reftype)) {
+					return GDMonoUtils::create_managed_from(p_var->operator Dictionary(),
+							GDMonoUtils::Marshal::make_generic_dictionary_type(key_reftype, value_reftype));
 				}
 
 				if (p_type.type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
 					return GDMonoUtils::create_managed_from(p_var->operator Dictionary(), CACHED_CLASS(Dictionary));
+				}
+
+				MonoReflectionType *elem_reftype;
+				if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype, &elem_reftype)) {
+					return GDMonoUtils::create_managed_from(p_var->operator Array(),
+							GDMonoUtils::Marshal::make_generic_array_type(elem_reftype));
 				}
 
 				if (p_type.type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
@@ -787,66 +842,60 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 				return ptr ? Variant(*ptr) : Variant();
 			}
 
+			// The order in which we check the following interfaces is very important (dictionaries and generics first)
+
+			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type_class->get_mono_type());
+
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype)) {
+				return GDMonoUtils::Marshal::generic_idictionary_to_dictionary(p_obj);
+			}
+
 			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
-				Dictionary dict;
-				MonoException *exc = NULL;
-				invoke_method_thunk(CACHED_METHOD_THUNK(MarshalUtils, IDictionaryToDictionary), p_obj, &dict, &exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
-				return dict;
+				return GDMonoUtils::Marshal::idictionary_to_dictionary(p_obj);
+			}
+
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype)) {
+				return GDMonoUtils::Marshal::enumerable_to_array(p_obj);
 			}
 
 			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
-				Array array;
-				MonoException *exc = NULL;
-				invoke_method_thunk(CACHED_METHOD_THUNK(MarshalUtils, EnumerableToArray), p_obj, &array, &exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
-				return array;
+				return GDMonoUtils::Marshal::enumerable_to_array(p_obj);
 			}
 		} break;
 
 		case MONO_TYPE_GENERICINST: {
 			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type.type_class->get_mono_type());
 
-			MonoException *exc = NULL;
-
-			GDMonoUtils::TypeIsGenericDictionary type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericDictionary);
-			MonoBoolean is_dict = invoke_method_thunk(type_is_dict, reftype, &exc);
-			UNLIKELY_UNHANDLED_EXCEPTION(exc);
-
-			if (is_dict) {
-				exc = NULL;
+			if (GDMonoUtils::Marshal::type_is_generic_dictionary(reftype)) {
+				MonoException *exc = NULL;
 				MonoObject *ret = type.type_class->get_method("GetPtr")->invoke(p_obj, &exc);
 				UNLIKELY_UNHANDLED_EXCEPTION(exc);
 				return *unbox<Dictionary *>(ret);
 			}
 
-			exc = NULL;
-
-			GDMonoUtils::TypeIsGenericArray type_is_array = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericArray);
-			MonoBoolean is_array = invoke_method_thunk(type_is_array, reftype, &exc);
-			UNLIKELY_UNHANDLED_EXCEPTION(exc);
-
-			if (is_array) {
-				exc = NULL;
+			if (GDMonoUtils::Marshal::type_is_generic_array(reftype)) {
+				MonoException *exc = NULL;
 				MonoObject *ret = type.type_class->get_method("GetPtr")->invoke(p_obj, &exc);
 				UNLIKELY_UNHANDLED_EXCEPTION(exc);
 				return *unbox<Array *>(ret);
 			}
 
+			// The order in which we check the following interfaces is very important (dictionaries and generics first)
+
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype)) {
+				return GDMonoUtils::Marshal::generic_idictionary_to_dictionary(p_obj);
+			}
+
 			if (type.type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
-				Dictionary dict;
-				exc = NULL;
-				invoke_method_thunk(CACHED_METHOD_THUNK(MarshalUtils, IDictionaryToDictionary), p_obj, &dict, &exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
-				return dict;
+				return GDMonoUtils::Marshal::idictionary_to_dictionary(p_obj);
+			}
+
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype)) {
+				return GDMonoUtils::Marshal::enumerable_to_array(p_obj);
 			}
 
 			if (type.type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
-				Array array;
-				exc = NULL;
-				invoke_method_thunk(CACHED_METHOD_THUNK(MarshalUtils, EnumerableToArray), p_obj, &array, &exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
-				return array;
+				return GDMonoUtils::Marshal::enumerable_to_array(p_obj);
 			}
 		} break;
 	}
@@ -970,7 +1019,7 @@ MonoArray *PoolStringArray_to_mono_array(const PoolStringArray &p_array) {
 
 	for (int i = 0; i < p_array.size(); i++) {
 		MonoString *boxed = mono_string_from_godot(r[i]);
-		mono_array_set(ret, MonoString *, i, boxed);
+		mono_array_setref(ret, i, boxed);
 	}
 
 	return ret;
@@ -1075,4 +1124,5 @@ PoolVector3Array mono_array_to_PoolVector3Array(MonoArray *p_array) {
 
 	return ret;
 }
+
 } // namespace GDMonoMarshal

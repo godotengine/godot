@@ -58,12 +58,13 @@
 # Hans M. Boron <hansmateusboron@gmail.com>, 2019.
 # Gustavo Bolanho <jdmapas@gmail.com>, 2019.
 # Nilton Bendini Junior <almascelulas@bol.com.br>, 2019.
+# Ivo Nascimento <iannsp@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-04-19 16:33+0000\n"
-"Last-Translator: Nilton Bendini Junior <almascelulas@bol.com.br>\n"
+"PO-Revision-Date: 2019-04-29 08:48+0000\n"
+"Last-Translator: Ivo Nascimento <iannsp@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -71,7 +72,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.6.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -207,12 +208,18 @@ msgid "Animation Playback Track"
 msgstr "Faixa de Reprodução de Animação"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Adicionar Trilha"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Duração da Animação (em segundos)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Duração da Animação (em segundos)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Adicionar Trilha"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -478,7 +485,7 @@ msgstr "Valor do passo de animação."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "Segundos"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"

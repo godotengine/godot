@@ -64,6 +64,7 @@ public:
 private:
 	bool force_change;
 	bool current;
+	Viewport *viewport;
 
 	Projection mode;
 
@@ -143,7 +144,7 @@ public:
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const;
 	bool is_position_behind(const Vector3 &p_pos) const;
-	virtual Vector3 project_position(const Point2 &p_point) const;
+	virtual Vector3 project_position(const Point2 &p_point, float p_z_depth = 0) const;
 
 	Vector<Vector3> get_near_plane_points() const;
 

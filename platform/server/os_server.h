@@ -93,7 +93,7 @@ protected:
 	virtual void set_main_loop(MainLoop *p_main_loop);
 
 public:
-	virtual String get_name();
+	virtual String get_name() const;
 
 	virtual void set_mouse_show(bool p_show);
 	virtual void set_mouse_grab(bool p_grab);

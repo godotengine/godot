@@ -32,8 +32,7 @@
 
 #include "core/engine.h"
 
-
-void AudioStreamPlayer::_mix_to_bus(const AudioFrame *p_frames,int p_amount) {
+void AudioStreamPlayer::_mix_to_bus(const AudioFrame *p_frames, int p_amount) {
 
 	int bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
 
@@ -66,9 +65,7 @@ void AudioStreamPlayer::_mix_to_bus(const AudioFrame *p_frames,int p_amount) {
 	}
 }
 
-
 void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
-
 
 	//get data
 	AudioFrame *buffer = mix_buffer.ptrw();
@@ -94,15 +91,14 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 	//set volume for next mix
 	mix_volume_db = target_volume;
 
-	_mix_to_bus(buffer,buffer_size);
-
+	_mix_to_bus(buffer, buffer_size);
 }
 
 void AudioStreamPlayer::_mix_audio() {
 
 	if (use_fadeout) {
-		_mix_to_bus(fadeout_buffer.ptr(),fadeout_buffer.size());
-		use_fadeout=false;
+		_mix_to_bus(fadeout_buffer.ptr(), fadeout_buffer.size());
+		use_fadeout = false;
 	}
 
 	if (!stream_playback.is_valid() || !active ||
@@ -121,7 +117,7 @@ void AudioStreamPlayer::_mix_audio() {
 	if (setstop) {
 		_mix_internal(true);
 		stream_playback->stop();
-		setstop=false;
+		setstop = false;
 	}
 
 	if (setseek >= 0.0 && !stop_has_priority) {
@@ -154,7 +150,7 @@ void AudioStreamPlayer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
 
 		if (!active || (setseek < 0 && !stream_playback->is_playing())) {
-			active = false;			
+			active = false;
 			set_process_internal(false);
 			emit_signal("finished");
 		}
@@ -200,7 +196,7 @@ void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
 			vol += vol_inc;
 		}
 
-		use_fadeout=true;
+		use_fadeout = true;
 	}
 
 	mix_buffer.resize(AudioServer::get_singleton()->thread_get_mix_buffer_size());
@@ -252,7 +248,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	if (stream_playback.is_valid()) {
 		//mix_volume_db = volume_db; do not reset volume ramp here, can cause clicks
 		setseek = p_from_pos;
-		stop_has_priority=false;
+		stop_has_priority = false;
 		active = true;
 		set_process_internal(true);
 	}
@@ -268,8 +264,8 @@ void AudioStreamPlayer::seek(float p_seconds) {
 void AudioStreamPlayer::stop() {
 
 	if (stream_playback.is_valid() && active) {
-		setstop=true;
-		stop_has_priority=true;
+		setstop = true;
+		stop_has_priority = true;
 	}
 }
 
@@ -357,7 +353,7 @@ void AudioStreamPlayer::_validate_property(PropertyInfo &property) const {
 	if (property.name == "bus") {
 
 		String options;
-		for (int i = 0; i <AudioServer::get_singleton()->get_bus_count(); i++) {
+		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 			if (i > 0)
 				options += ",";
 			String name = AudioServer::get_singleton()->get_bus_name(i);
@@ -442,8 +438,8 @@ AudioStreamPlayer::AudioStreamPlayer() {
 	stream_paused_fade = false;
 	mix_target = MIX_TARGET_STEREO;
 	fadeout_buffer.resize(512);
-	setstop=false;
-	use_fadeout=false;
+	setstop = false;
+	use_fadeout = false;
 
 	AudioServer::get_singleton()->connect("bus_layout_changed", this, "_bus_layout_changed");
 }

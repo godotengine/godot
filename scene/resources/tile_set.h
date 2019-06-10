@@ -195,6 +195,7 @@ public:
 	uint32_t autotile_get_bitmask(int p_id, Vector2 p_coord);
 	const Map<Vector2, uint32_t> &autotile_get_bitmask_map(int p_id);
 	Vector2 autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, const Node *p_tilemap_node = NULL, const Vector2 &p_tile_location = Vector2());
+	Vector2 atlastile_get_subtile_by_priority(int p_id, const Node *p_tilemap_node = NULL, const Vector2 &p_tile_location = Vector2());
 
 	void tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> tile_get_shape(int p_id, int p_shape_id) const;

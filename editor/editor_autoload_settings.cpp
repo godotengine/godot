@@ -73,7 +73,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 
 	if (ClassDB::class_exists(p_name)) {
 		if (r_error)
-			*r_error = TTR("Invalid name. Must not collide with an existing engine class name.");
+			*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing engine class name.");
 
 		return false;
 	}
@@ -81,7 +81,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 		if (Variant::get_type_name(Variant::Type(i)) == p_name) {
 			if (r_error)
-				*r_error = TTR("Invalid name. Must not collide with an existing buit-in type name.");
+				*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing buit-in type name.");
 
 			return false;
 		}
@@ -90,9 +90,22 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
 		if (GlobalConstants::get_global_constant_name(i) == p_name) {
 			if (r_error)
-				*r_error = TTR("Invalid name. Must not collide with an existing global constant name.");
+				*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing global constant name.");
 
 			return false;
+		}
+	}
+
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		List<String> keywords;
+		ScriptServer::get_language(i)->get_reserved_words(&keywords);
+		for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
+			if (E->get() == p_name) {
+				if (r_error)
+					*r_error = TTR("Invalid name.") + "\n" + TTR("Keyword cannot be used as an autoload name.");
+
+				return false;
+			}
 		}
 	}
 
@@ -101,9 +114,9 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 
 void EditorAutoloadSettings::_autoload_add() {
 
-	autoload_add(autoload_add_name->get_text(), autoload_add_path->get_line_edit()->get_text());
+	if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_line_edit()->get_text()))
+		autoload_add_path->get_line_edit()->set_text("");
 
-	autoload_add_path->get_line_edit()->set_text("");
 	autoload_add_name->set_text("");
 }
 
@@ -294,6 +307,7 @@ void EditorAutoloadSettings::_autoload_open(const String &fpath) {
 	}
 	ProjectSettingsEditor::get_singleton()->hide();
 }
+
 void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
 
 	autoload_add_name->set_text(p_path.get_file().get_basename());
@@ -626,25 +640,25 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	undo_redo->commit_action();
 }
 
-void EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_path) {
+bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_path) {
 
 	String name = p_name;
 
 	String error;
 	if (!_autoload_name_is_valid(name, &error)) {
 		EditorNode::get_singleton()->show_warning(error);
-		return;
+		return false;
 	}
 
 	String path = p_path;
 	if (!FileAccess::exists(path)) {
 		EditorNode::get_singleton()->show_warning(TTR("Invalid path.") + "\n" + TTR("File does not exist."));
-		return;
+		return false;
 	}
 
 	if (!path.begins_with("res://")) {
 		EditorNode::get_singleton()->show_warning(TTR("Invalid path.") + "\n" + TTR("Not in resource path."));
-		return;
+		return false;
 	}
 
 	name = "autoload/" + name;
@@ -668,6 +682,8 @@ void EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 	undo_redo->add_undo_method(this, "emit_signal", autoload_changed);
 
 	undo_redo->commit_action();
+
+	return true;
 }
 
 void EditorAutoloadSettings::autoload_remove(const String &p_name) {
@@ -701,9 +717,10 @@ void EditorAutoloadSettings::_bind_methods() {
 	ClassDB::bind_method("_autoload_selected", &EditorAutoloadSettings::_autoload_selected);
 	ClassDB::bind_method("_autoload_edited", &EditorAutoloadSettings::_autoload_edited);
 	ClassDB::bind_method("_autoload_button_pressed", &EditorAutoloadSettings::_autoload_button_pressed);
-	ClassDB::bind_method("_autoload_file_callback", &EditorAutoloadSettings::_autoload_file_callback);
 	ClassDB::bind_method("_autoload_activated", &EditorAutoloadSettings::_autoload_activated);
+	ClassDB::bind_method("_autoload_text_entered", &EditorAutoloadSettings::_autoload_text_entered);
 	ClassDB::bind_method("_autoload_open", &EditorAutoloadSettings::_autoload_open);
+	ClassDB::bind_method("_autoload_file_callback", &EditorAutoloadSettings::_autoload_file_callback);
 
 	ClassDB::bind_method("get_drag_data_fw", &EditorAutoloadSettings::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw", &EditorAutoloadSettings::can_drop_data_fw);
@@ -802,6 +819,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	autoload_add_name = memnew(LineEdit);
 	autoload_add_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	autoload_add_name->connect("text_entered", this, "_autoload_text_entered");
 	hbc->add_child(autoload_add_name);
 
 	Button *add_autoload = memnew(Button);

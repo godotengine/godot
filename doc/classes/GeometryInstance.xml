@@ -9,6 +9,15 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="set_custom_aabb">
+			<return type="void">
+			</return>
+			<argument index="0" name="aabb" type="AABB">
+			</argument>
+			<description>
+				Overrides the bounding box of this node with a custom one. To remove it, set an AABB with all fields set to zero.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="cast_shadow" type="int" setter="set_cast_shadows_setting" getter="get_cast_shadows_setting" enum="GeometryInstance.ShadowCastingSetting">

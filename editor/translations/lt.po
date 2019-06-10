@@ -158,12 +158,18 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "Animacija: Pridėti Takelį"
+msgid "Animation length (frames)"
+msgstr "Animacija"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
-msgstr ""
+#, fuzzy
+msgid "Animation length (seconds)"
+msgstr "Animacijos Nodas"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Animacija: Pridėti Takelį"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy

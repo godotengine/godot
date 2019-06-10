@@ -92,7 +92,7 @@ void EditorFolding::load_resource_folding(RES p_resource, const String &p_path) 
 	_set_unfolds(p_resource.ptr(), unfolds);
 }
 
-void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p_folds, Array &resource_folds, Array& nodes_folded,Set<RES> &resources) {
+void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p_folds, Array &resource_folds, Array &nodes_folded, Set<RES> &resources) {
 	if (p_root != p_node) {
 		if (!p_node->get_owner()) {
 			return; //not owned, bye
@@ -130,7 +130,7 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_fill_folds(p_root, p_node->get_child(i), p_folds, resource_folds, nodes_folded,resources);
+		_fill_folds(p_root, p_node->get_child(i), p_folds, resource_folds, nodes_folded, resources);
 	}
 }
 void EditorFolding::save_scene_folding(const Node *p_scene, const String &p_path) {
@@ -205,7 +205,7 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 		_set_unfolds(res.ptr(), unfolds2);
 	}
 
-	for(int i=0;i<nodes_folded.size();i++) {
+	for (int i = 0; i < nodes_folded.size(); i++) {
 		NodePath fold_path = nodes_folded[i];
 		if (p_scene->has_node(fold_path)) {
 			Node *node = p_scene->get_node(fold_path);

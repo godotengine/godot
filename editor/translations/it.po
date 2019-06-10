@@ -37,8 +37,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-04-14 13:04+0000\n"
-"Last-Translator: Marco Galli <mrcgll98@gmail.com>\n"
+"PO-Revision-Date: 2019-05-16 18:49+0000\n"
+"Last-Translator: MassiminoilTrace <omino.gis@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -46,7 +46,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -185,12 +185,18 @@ msgid "Animation Playback Track"
 msgstr "Traccia di riproduzione animazione"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Aggiungi Traccia"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Durata Animazione (in secondi)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Durata Animazione (in secondi)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Aggiungi Traccia"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -1823,7 +1829,7 @@ msgstr "Salva risorsa come..."
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
-msgstr "Impossibile aprire il file per la scrittura:"
+msgstr "Impossibile aprire il file in scrittura:"
 
 #: editor/editor_node.cpp
 msgid "Requested file format unknown:"
@@ -2033,11 +2039,11 @@ msgstr "Apri scena rapidamente..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script..."
-msgstr "Apri Script Rapido..."
+msgstr "Apri script rapidamente..."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
-msgstr "Salva e Chiudi"
+msgstr "Salva e chiudi"
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
@@ -2053,7 +2059,7 @@ msgstr "È necessario un nodo radice per salvare la scena."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
-msgstr "Salva Scena Come..."
+msgstr "Salva scena con nome..."
 
 #: editor/editor_node.cpp
 msgid "No"
@@ -2061,7 +2067,7 @@ msgstr "No"
 
 #: editor/editor_node.cpp
 msgid "Yes"
-msgstr "Si"
+msgstr "Sì"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
@@ -2089,7 +2095,7 @@ msgstr "Questa operazione non può essere eseguita senza un nodo selezionato."
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
-msgstr "Scena corrente non salvata. Aprire comunque?"
+msgstr "Scena attuale non salvata. Aprirla comunque?"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -2105,7 +2111,7 @@ msgstr "Questa azione non può essere annullata. Ripristinare comunque?"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
-msgstr "Esegui Scena Rapido..."
+msgstr "Esegui scena rapidamente..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
@@ -2121,7 +2127,7 @@ msgstr "Aprire Gestione Progetti?"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
-msgstr "Salva e Esci"
+msgstr "Salva ed esci"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
@@ -2130,19 +2136,20 @@ msgstr "Salvare le modifiche alle scene seguenti prima di uscire?"
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
 msgstr ""
-"Salvare le modifiche alle scene seguenti prima di aprire il Manager Progetti?"
+"Salvare le modifiche alle scene seguenti prima di aprire la Gestione "
+"progetti?"
 
 #: editor/editor_node.cpp
 msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
 msgstr ""
-"Questa opzione é deprecata. Situazioni dove un refresh é obbligatorio sono "
-"ora considerate come bug. Si prega di effettuare un report."
+"Questa opzione è deprecata. Situazioni dove un refresh è obbligatorio sono "
+"ora considerate come bug. Si prega di segnalarlo."
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
-msgstr "Scegli una Scena Principale"
+msgstr "Scegli una Scena principale"
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
@@ -2186,9 +2193,9 @@ msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
-"La scena '%s' é stata automaticamente importata, pertanto non puo essere "
+"La scena '%s' è stata automaticamente importata, pertanto non può essere "
 "modificata.\n"
-"Per effettuare cambiamenti, puo essere creata una nuova scena ereditata."
+"Per modificarla, puoi essere creata una nuova scena ereditata."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2205,7 +2212,7 @@ msgstr "La scena '%s' ha rotto le dipendenze:"
 
 #: editor/editor_node.cpp
 msgid "Clear Recent Scenes"
-msgstr "Rimuovi Scene Recenti"
+msgstr "Rimuovi scene recenti"
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
@@ -2223,7 +2230,7 @@ msgstr "Default"
 #: editor/editor_node.cpp editor/editor_properties.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
 msgid "Show in FileSystem"
-msgstr "Mostra nel FileSystem"
+msgstr "Mostra nel filesystem"
 
 #: editor/editor_node.cpp
 msgid "Play This Scene"
@@ -2255,11 +2262,11 @@ msgstr "Posizione dock"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
-msgstr "Modalità Senza Distrazioni"
+msgstr "Modalità senza distrazioni"
 
 #: editor/editor_node.cpp
 msgid "Toggle distraction-free mode."
-msgstr "Abilita modalità senza distrazioni."
+msgstr "Commuta modalità senza distrazioni."
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
@@ -2283,7 +2290,7 @@ msgstr "Scheda precedente"
 
 #: editor/editor_node.cpp
 msgid "Filter Files..."
-msgstr "Filtra Files..."
+msgstr "Filtra file..."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -2295,31 +2302,31 @@ msgstr "Nuova scena"
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene..."
-msgstr "Nuova Scena Ereditata..."
+msgstr "Nuova scena ereditata..."
 
 #: editor/editor_node.cpp
 msgid "Open Scene..."
-msgstr "Apri Scena..."
+msgstr "Apri scena..."
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
-msgstr "Salva Scena"
+msgstr "Salva scena"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
-msgstr "Salva tutte le Scene"
+msgstr "Salva tutte le scene"
 
 #: editor/editor_node.cpp
 msgid "Close Scene"
-msgstr "Chiudi Scena"
+msgstr "Chiudi scena"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
-msgstr "Apri Recente"
+msgstr "Apri recente"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
-msgstr "Converti In..."
+msgstr "Converti in..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
@@ -2337,11 +2344,11 @@ msgstr "Annulla"
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
-msgstr "Redo"
+msgstr "Rifai"
 
 #: editor/editor_node.cpp
 msgid "Revert Scene"
-msgstr "Ripristina Scena"
+msgstr "Ripristina scena"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -2353,7 +2360,7 @@ msgstr "Progetto"
 
 #: editor/editor_node.cpp
 msgid "Project Settings"
-msgstr "Impostazioni Progetto"
+msgstr "Impostazioni progetto"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export"
@@ -2369,7 +2376,7 @@ msgstr "Apri la cartella del progetto"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr "Esci alla Lista Progetti"
+msgstr "Esci e torna alla lista progetti"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/project_export.cpp
@@ -2378,7 +2385,7 @@ msgstr "Debug"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
-msgstr "Distribuzione con il Debug Remoto"
+msgstr "Distribuzione con Debug remoto"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2409,14 +2416,14 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
-msgstr "Forme di Collisione Visibili"
+msgstr "Forme di collisione visibili"
 
 #: editor/editor_node.cpp
 msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
 msgstr ""
-"Le forme di collisione e i nodi di raycast (per il 2D e 3D) Saranno visibili "
+"Le forme di collisione e i nodi di raycast (per il 2D e 3D) saranno visibili "
 "nel gioco in esecuzione se l'opzione è attiva."
 
 #: editor/editor_node.cpp
@@ -2433,7 +2440,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Sync Scene Changes"
-msgstr "Sincronizza Cambiamenti Scena"
+msgstr "Sincronizza cambiamenti scena"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2444,12 +2451,12 @@ msgid ""
 msgstr ""
 "Quando questa opzione è attiva, qualsiasi cambiamento fatto alla scena "
 "nell'editor sarà replicato nel gioco in esecuzione.\n"
-"Quando usata remotamente su un dispositivo, essa è più efficiente con il "
+"Quando usata in remoto su un dispositivo, sarà più efficiente con un "
 "filesystem in rete."
 
 #: editor/editor_node.cpp
 msgid "Sync Script Changes"
-msgstr "Sincronizza Cambiamenti Script"
+msgstr "Sincronizza cambiamenti script"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2460,7 +2467,7 @@ msgid ""
 msgstr ""
 "Quando questa opzione è attiva, qualsiasi script salvato verrà ricaricato "
 "nel gioco in esecuzione.\n"
-"Quando usata remotamente su un dispositivo, essa è più efficiente con il "
+"Quando usata in remoto su un dispositivo, sarà più efficiente con un "
 "filesystem in rete."
 
 #: editor/editor_node.cpp
@@ -2469,31 +2476,31 @@ msgstr "Editor"
 
 #: editor/editor_node.cpp editor/settings_config_dialog.cpp
 msgid "Editor Settings"
-msgstr "Impostazioni Editor"
+msgstr "Impostazioni editor"
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
-msgstr "Layout dell'Editor"
+msgstr "Layout dell'editor"
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
-msgstr "Abilita/Disabilita Fullscreen"
+msgstr "Abilita/Disabilita modalità a schermo intero"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
-msgstr "Apri Cartella Dati/Impostazioni Editor"
+msgstr "Apri cartella dati/impostazioni editor"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr "Apri la Cartella Dati dell'Editor"
+msgstr "Apri la cartella dati dell'editor"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Settings Folder"
-msgstr "Apri Cartella Impostazioni Editor"
+msgstr "Apri cartella impostazioni editor"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
-msgstr "Gestisci Template d'Esportazione"
+msgstr "Gestisci template d'esportazione"
 
 #: editor/editor_node.cpp
 msgid "Help"
@@ -2509,15 +2516,15 @@ msgstr "Cerca"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
-msgstr "Documentazione Online"
+msgstr "Documentazione online"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr "Domande e Risposte"
+msgstr "Domande e risposte"
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
-msgstr "Tracciatore Segnalazioni"
+msgstr "Tracciatore segnalazioni"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -2533,7 +2540,7 @@ msgstr "Esegui il progetto."
 
 #: editor/editor_node.cpp
 msgid "Play"
-msgstr "Play"
+msgstr "Esegui"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene"
@@ -2549,7 +2556,7 @@ msgstr "Ferma la scena."
 
 #: editor/editor_node.cpp editor/editor_profiler.cpp
 msgid "Stop"
-msgstr "Stop"
+msgstr "Ferma"
 
 #: editor/editor_node.cpp
 msgid "Play the edited scene."
@@ -2557,7 +2564,7 @@ msgstr "Esegui la scena in modifica."
 
 #: editor/editor_node.cpp
 msgid "Play Scene"
-msgstr "Esegui Scena"
+msgstr "Esegui scena"
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
@@ -2565,7 +2572,7 @@ msgstr "Esegui scena personalizzata"
 
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
-msgstr "Esegui Scena Personalizzata"
+msgstr "Esegui scena personalizzata"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
@@ -2574,23 +2581,23 @@ msgstr "Il cambiamento dei driver video necessita il riavvio dell'editor."
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
 msgid "Save & Restart"
-msgstr "Salva e Riavvia"
+msgstr "Salva e riavvia"
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window redraws."
-msgstr "Gira quando l'editor viene ridisegnato."
+msgstr "Gira quando la finestra dell'editor viene ridisegnata."
 
 #: editor/editor_node.cpp
 msgid "Update Always"
-msgstr "Aggiorna Sempre"
+msgstr "Aggiorna sempre"
 
 #: editor/editor_node.cpp
 msgid "Update Changes"
-msgstr "Aggiorna Cambiamenti"
+msgstr "Aggiorna cambiamenti"
 
 #: editor/editor_node.cpp
 msgid "Disable Update Spinner"
-msgstr "Disabilita lo Spinner di Update"
+msgstr "Disabilita l'icona girevole di aggiornamento"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_manager.cpp
@@ -2599,11 +2606,11 @@ msgstr "Importa"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
-msgstr "FileSystem"
+msgstr "Filesystem"
 
 #: editor/editor_node.cpp
 msgid "Inspector"
-msgstr "Inspector"
+msgstr "Ispettore"
 
 #: editor/editor_node.cpp
 msgid "Node"
@@ -2611,7 +2618,7 @@ msgstr "Nodo"
 
 #: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
-msgstr "Espandi Pannello Inferiore"
+msgstr "Espandi pannello inferiore"
 
 #: editor/editor_node.cpp scene/resources/visual_shader.cpp
 msgid "Output"
@@ -2623,19 +2630,19 @@ msgstr "Non salvare"
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr "Importa templates Da File ZIP"
+msgstr "Importa template da un file ZIP"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
-msgstr "Esporta Progetto"
+msgstr "Esporta progetto"
 
 #: editor/editor_node.cpp
 msgid "Export Library"
-msgstr "Esporta Libreria"
+msgstr "Esporta libreria"
 
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
-msgstr "Unisci Con Esistente"
+msgstr "Unisci con esistente"
 
 #: editor/editor_node.cpp
 msgid "Password:"
@@ -2643,15 +2650,15 @@ msgstr "Password:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
-msgstr "Apri e Esegui uno Script"
+msgstr "Apri ed esegui uno script"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
-msgstr "Nuova Ereditata"
+msgstr "Nuova ereditata"
 
 #: editor/editor_node.cpp
 msgid "Load Errors"
-msgstr "Carica Errori"
+msgstr "Carica errori"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Select"
@@ -2659,7 +2666,7 @@ msgstr "Seleziona"
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
-msgstr "Apri Editor 2D"
+msgstr "Apri editor 2D"
 
 #: editor/editor_node.cpp
 msgid "Open 3D Editor"

@@ -3,11 +3,12 @@
 # Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 # Unlimited Creativity <marinosah1@gmail.com>, 2019.
+# Patik <patrikfs5@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2019-01-06 15:06+0000\n"
-"Last-Translator: Unlimited Creativity <marinosah1@gmail.com>\n"
+"PO-Revision-Date: 2019-05-20 11:49+0000\n"
+"Last-Translator: Patik <patrikfs5@gmail.com>\n"
 "Language-Team: Croatian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hr/>\n"
 "Language: hr\n"
@@ -15,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -26,35 +27,35 @@ msgstr "Neispravni argument za convert(), upotrijebi konstantu TYPE_*"
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "Nedovoljno byte-ova za dekodiranje byte-ova, ili neispravni format."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "Neispravni ulaz %i (nije proslijeđen) u izrazu"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
+msgstr "'self' nije moguće koristiti jer je instanca null (ništa)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr ""
+msgstr "Nevažeći operatori za operator %s, %s i %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr ""
+msgstr "Nevažeći indeks za tip %s baznog tipa %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "Nevažeči imenovani indeks '%s' za bazni tip %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr ""
+msgstr "Nevažeći argumenti za konstrukciju '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "Pri pozivu '%s':"
 
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -63,7 +64,7 @@ msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Balansiran"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
@@ -71,23 +72,23 @@ msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr ""
+msgstr "Unesite ključ ovdje"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr ""
+msgstr "Duplikati Odabranih Ključeva"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr ""
+msgstr "Brisati odabrani ključ/odabrane ključeve"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr ""
+msgstr "Dodaj Bezier Točku"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr ""
+msgstr "Pomakni Bezier Točke"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -151,45 +152,51 @@ msgid "Animation Playback Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr ""
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Trajanje animacije (u sekundama)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
-msgstr ""
+#, fuzzy
+msgid "Animation length (seconds)"
+msgstr "Trajanje animacije (u sekundama)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Dodati stazu"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr ""
+msgstr "Ponavljanje Animacije"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr ""
+msgstr "Funkcije:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr ""
+msgstr "Audio Klipovi:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr ""
+msgstr "Animacijski Klipovi:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
-msgstr ""
+msgstr "Promijeni Put Staze"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr ""
+msgstr "Upali/ugasi ovu stazu."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "Način ažuriranja (kako se ovo svojstvo postavlja)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
-msgstr ""
+msgstr "Način Interpolacije"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
@@ -197,27 +204,27 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
-msgstr ""
+msgstr "Ukloni ovu stazu."
 
 #: editor/animation_track_editor.cpp
 msgid "Time (s): "
-msgstr ""
+msgstr "Vrijeme/vremena: "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr ""
+msgstr "Upali/Ugasi Stazu"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
-msgstr ""
+msgstr "Kontinuirano"
 
 #: editor/animation_track_editor.cpp
 msgid "Discrete"
-msgstr ""
+msgstr "Diskretno"
 
 #: editor/animation_track_editor.cpp
 msgid "Trigger"
-msgstr ""
+msgstr "Okidač"
 
 #: editor/animation_track_editor.cpp
 msgid "Capture"
@@ -225,16 +232,16 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "Najbliži"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
 msgid "Linear"
-msgstr ""
+msgstr "Linearno"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "Kubno"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
@@ -247,39 +254,39 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr ""
+msgstr "Umetni Ključ"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
-msgstr ""
+msgstr "Duplicirani ključ(evi)"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
-msgstr ""
+msgstr "Obriši ključ(eve)"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
-msgstr ""
+msgstr "Promijeni Način Ažuriranja Animacije"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Interpolation Mode"
-msgstr ""
+msgstr "Promijeni Način Interpolacije Animacije"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
-msgstr ""
+msgstr "Promijeni Način Ponavljanja Animacije"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
-msgstr ""
+msgstr "Ukloni Stazu Animacije"
 
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr ""
+msgstr "Stvori NOVU stazu za %s i umetni ključ?"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr ""
+msgstr "Napravi %d NOVIH staza i umetni ključeve?"
 
 #: editor/animation_track_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
@@ -288,7 +295,7 @@ msgstr ""
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/script_create_dialog.cpp
 msgid "Create"
-msgstr ""
+msgstr "Stvori"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert"
@@ -296,27 +303,27 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr ""
+msgstr "Animator ne može animirati sebe, samo druge animatore."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
-msgstr ""
+msgstr "Anim Stvori & Umetni"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr ""
+msgstr "Anim Umetni Stazu & Ključ"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Key"
-msgstr ""
+msgstr "Anim Umetni Ključ"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Step"
-msgstr ""
+msgstr "Promijeni Korak Animacije"
 
 #: editor/animation_track_editor.cpp
 msgid "Rearrange Tracks"
-msgstr ""
+msgstr "Preuredi Staze"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
@@ -336,23 +343,23 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
-msgstr ""
+msgstr "Animator ne može animirati sebe, samo druge objekte."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "Nije moguće dodati novu stazu bez korijena"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
-msgstr ""
+msgstr "Dodaj Bezier Stazu"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "Nevažeći put staze, ne mogu dodati ključ."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "Staza nije tipa Prostorna, ne mogu umetnuti ključ"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Transform Track Key"
@@ -360,19 +367,19 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track Key"
-msgstr ""
+msgstr "Dodaj Ključ Staze"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr ""
+msgstr "Nevažeći put staze, ne mogu dodati ključ metode."
 
 #: editor/animation_track_editor.cpp
 msgid "Add Method Track Key"
-msgstr ""
+msgstr "Dodaj Ključ Metode Staze"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
-msgstr ""
+msgstr "Metoda nije nađena u objektu: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -380,28 +387,29 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
-msgstr ""
+msgstr "Međuspremnik je prazan"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
-msgstr ""
+msgstr "Zalijepi Staze"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
-msgstr ""
+msgstr "Anim Skaliraj Ključeve"
 
 #: editor/animation_track_editor.cpp
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
+"Ova opcija ne radi za editiranje Beziera, zato što je samo jedna staza."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "Pokaži samo staze čvorova označenih u stablu."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
-msgstr ""
+msgstr "Grupiraj staze po čvoru ili ih prikaži kao običnu listu."
 
 #: editor/animation_track_editor.cpp
 msgid "Snap:"

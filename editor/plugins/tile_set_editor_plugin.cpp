@@ -372,6 +372,15 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tool_editmode[EDITMODE_COLLISION]->set_pressed(true);
 	edit_mode = EDITMODE_COLLISION;
 
+	tool_editmode[EDITMODE_REGION]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_region", TTR("Region Mode"), KEY_1));
+	tool_editmode[EDITMODE_COLLISION]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_collision", TTR("Collision Mode"), KEY_2));
+	tool_editmode[EDITMODE_OCCLUSION]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_occlusion", TTR("Occlusion Mode"), KEY_3));
+	tool_editmode[EDITMODE_NAVIGATION]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_navigation", TTR("Navigation Mode"), KEY_4));
+	tool_editmode[EDITMODE_BITMASK]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_bitmask", TTR("Bitmask Mode"), KEY_5));
+	tool_editmode[EDITMODE_PRIORITY]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_priority", TTR("Priority Mode"), KEY_6));
+	tool_editmode[EDITMODE_ICON]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_icon", TTR("Icon Mode"), KEY_7));
+	tool_editmode[EDITMODE_Z_INDEX]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_z_index", TTR("Z Index Mode"), KEY_8));
+
 	main_vb->add_child(tool_hb);
 	separator_editmode = memnew(HSeparator);
 	main_vb->add_child(separator_editmode);
@@ -1654,7 +1663,7 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 				edited_collision_shape = _convex;
 				_set_edited_shape_points(_get_collision_shape_points(concave));
 			} else {
-				// Shoudn't haphen
+				// Shouldn't happen
 			}
 			for (int i = 0; i < sd.size(); i++) {
 				if (sd[i].get("shape") == previous_shape) {
@@ -1892,7 +1901,7 @@ void TileSetEditor::_update_toggle_shape_button() {
 		tools[SHAPE_TOGGLE_TYPE]->set_icon(get_icon("ConcavePolygonShape2D", "EditorIcons"));
 		tools[SHAPE_TOGGLE_TYPE]->set_text("Make Concave");
 	} else {
-		// Shoudn't happen
+		// Shouldn't happen
 		separator_shape_toggle->hide();
 		tools[SHAPE_TOGGLE_TYPE]->hide();
 	}
@@ -3095,7 +3104,6 @@ void TileSetEditor::update_workspace_tile_mode() {
 			_select_edited_shape_coord();
 
 		tool_editmode[EDITMODE_BITMASK]->hide();
-		tool_editmode[EDITMODE_PRIORITY]->hide();
 	}
 	_on_edit_mode_changed(edit_mode);
 }

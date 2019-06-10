@@ -139,7 +139,7 @@ public:
 
 	virtual Size2 get_window_size() const;
 
-	virtual String get_name();
+	virtual String get_name() const;
 	virtual MainLoop *get_main_loop() const;
 
 	virtual bool can_draw() const;

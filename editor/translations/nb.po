@@ -13,11 +13,12 @@
 # passeride <lukas@passeride.com>, 2017.
 # Byzantin <kasper-hoel@hotmail.com>, 2018.
 # Hans-Marius Øverås <hansmariusoveras@gmail.com>, 2019.
+# Revolution <revosw@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-04-23 15:48+0000\n"
+"PO-Revision-Date: 2019-05-04 13:48+0000\n"
 "Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
@@ -143,7 +144,7 @@ msgstr "Endre Animasjonsnavn:"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "Endre Animasjonssløyfe"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -177,13 +178,18 @@ msgstr "Stopp avspilling av animasjon. (S)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "Anim Legg til Spor"
+msgid "Animation length (frames)"
+msgstr "Animasjon lengde (i sekunder)."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "Animasjon lengde (i sekunder)."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Anim Legg til Spor"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -239,7 +245,7 @@ msgstr "X-Fade Tid (s):"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr ""
+msgstr "Veksl Aktivering Av Spor"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -273,11 +279,11 @@ msgstr "Kubisk"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr ""
+msgstr "Klem Sløyfeinterp"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr ""
+msgstr "Pakk Inn Sløyfeinterp"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -351,14 +357,12 @@ msgid "Anim Insert Key"
 msgstr "Anim Sett Inn Nøkkel"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Step"
-msgstr "Endre Animasjonsnavn:"
+msgstr "Endre Animasjonstrinn"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rearrange Tracks"
-msgstr "Omorganiser Autoloads"
+msgstr "Omorganiser Spor"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -378,7 +382,6 @@ msgstr ""
 "-AudioStreamPlayer3D"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Animasjonsspor kan kun peke på AnimationPlayer-noder."
 
@@ -418,9 +421,8 @@ msgid "Add Track Key"
 msgstr "Anim Legg til Spor"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Track path is invalid, so can't add a method key."
-msgstr "Sporsti er ugyldig, så kan ikke legge til metodenøkkel."
+msgstr "Sporsti er ugyldig, så kan ikke legge til en metodenøkkel."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -477,11 +479,11 @@ msgstr "Animasjonstre er gyldig."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "Sekunder"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
-msgstr ""
+msgstr "FPS"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -612,11 +614,11 @@ msgstr "Lydklipp:"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr ""
+msgstr "Endre Forskyvning Av Lydklippets Start"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
-msgstr ""
+msgstr "Endre Forskyvning Av Lydklippets Slutt"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -688,7 +690,7 @@ msgstr "Advarsler"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers."
-msgstr ""
+msgstr "Linje- og kolonnenummer."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -1445,12 +1447,16 @@ msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
+"Målplatform krever 'ETC' teksturkomprimering for GLES2. Aktiver 'Importer "
+"Etc' i Prosjektinnstillinger."
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
+"Målplatform krever 'ETC' teksturkomprimering for GLES3. Aktiver 'Importer "
+"Etc 2' i Prosjektinnstillinger."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -1459,6 +1465,10 @@ msgid ""
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
+"Målplatform krever 'ETC' teksturkomprimering for drivertilbakefallet til "
+"GLES2.\n"
+"Aktiver 'Importer Etc' i Prosjektinnstillinger, eller deaktiver "
+"'Drivertilbakefall Aktivert'."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1857,7 +1867,7 @@ msgstr "Eksport av prosjektet mislyktes med feilkode %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
-msgstr ""
+msgstr "Importerte ressurser kan ikke lagres."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
@@ -1873,6 +1883,8 @@ msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
 msgstr ""
+"Denne ressursen kan ikke lagres fordi den hører ikke til den redigerte "
+"scenen. Gjør den unik først."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
@@ -2102,7 +2114,7 @@ msgstr "Kunne ikke laste ressurs."
 
 #: editor/editor_node.cpp
 msgid "A root node is required to save the scene."
-msgstr ""
+msgstr "En rotnode kreves for å lagre scenen."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -2544,7 +2556,7 @@ msgstr "Redigeringsverktøy-instillinger"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr ""
+msgstr "Åpne Redigererdatamappen"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2958,12 +2970,12 @@ msgstr "Nytt navn:"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Add Key/Value Pair"
-msgstr ""
+msgstr "Legg Til Nøkkel/Verdi Par"
 
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Item"
-msgstr ""
+msgstr "Fjern Gjenstand"
 
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
@@ -3400,7 +3412,7 @@ msgstr "En fil eller mappe med dette navnet eksisterer allerede."
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
-msgstr ""
+msgstr "Overskriv"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
@@ -3557,7 +3569,7 @@ msgstr "Importerer Scene..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
-msgstr ""
+msgstr "Genererer Lyskart"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating for Mesh: "
@@ -3611,16 +3623,19 @@ msgstr "Reimporter"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "Lagre scener, om-importer og start om"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
-msgstr ""
+msgstr "Å endre typen av en importert fil krever omstart av redigereren"
 
 #: editor/import_dock.cpp
+#, fuzzy
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"ADVARSEL: ___ eksister som bruker denne ressursen, det kan hende de ikke "
+"laster inn riktig."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -3733,7 +3748,7 @@ msgstr "Plugins"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Subfolder:"
-msgstr ""
+msgstr "Undermappe:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Language:"
@@ -3834,7 +3849,7 @@ msgstr "Endre Blend-Tid"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "This type of node can't be used. Only root nodes are allowed."
-msgstr ""
+msgstr "Denne typen node kan ikke bli brukt. Kun rotnoder er tillatt."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3855,7 +3870,7 @@ msgstr "Fjern Stipunkt"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Move BlendSpace1D Node Point"
-msgstr ""
+msgstr "Flytt BlendSpace1D Nodepunkt"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3874,7 +3889,7 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
-msgstr ""
+msgstr "Velg og flytt punkt, lag punkt med høyre museklikk."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp

@@ -190,7 +190,7 @@ bool OS_Server::can_draw() const {
 	return false; //can never draw
 };
 
-String OS_Server::get_name() {
+String OS_Server::get_name() const {
 
 	return "Server";
 }

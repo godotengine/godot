@@ -3510,10 +3510,14 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	camera->make_current();
 	surface->set_focus_mode(FOCUS_ALL);
 
+	VBoxContainer *vbox = memnew(VBoxContainer);
+	surface->add_child(vbox);
+	vbox->set_position(Point2(10, 10) * EDSCALE);
+
 	view_menu = memnew(MenuButton);
 	view_menu->set_flat(false);
-	surface->add_child(view_menu);
-	view_menu->set_position(Point2(10, 10) * EDSCALE);
+	vbox->add_child(view_menu);
+	view_menu->set_h_size_flags(0);
 
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/top_view"), VIEW_TOP);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/bottom_view"), VIEW_BOTTOM);
@@ -3566,9 +3570,9 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	ED_SHORTCUT("spatial_editor/freelook_speed_modifier", TTR("Freelook Speed Modifier"), KEY_SHIFT);
 
 	preview_camera = memnew(CheckBox);
-	preview_camera->set_position(Point2(10, 38) * EDSCALE); // Below the 'view_menu' MenuButton.
 	preview_camera->set_text(TTR("Preview"));
-	surface->add_child(preview_camera);
+	vbox->add_child(preview_camera);
+	preview_camera->set_h_size_flags(0);
 	preview_camera->hide();
 	preview_camera->connect("toggled", this, "_toggle_camera_preview");
 	previewing = NULL;
@@ -5605,7 +5609,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	ED_SHORTCUT("spatial_editor/front_view", TTR("Front View"), KEY_KP_1);
 	ED_SHORTCUT("spatial_editor/left_view", TTR("Left View"), KEY_MASK_ALT + KEY_KP_3);
 	ED_SHORTCUT("spatial_editor/right_view", TTR("Right View"), KEY_KP_3);
-	ED_SHORTCUT("spatial_editor/switch_perspective_orthogonal", TTR("Switch Perspective/Orthogonal view"), KEY_KP_5);
+	ED_SHORTCUT("spatial_editor/switch_perspective_orthogonal", TTR("Switch Perspective/Orthogonal View"), KEY_KP_5);
 	ED_SHORTCUT("spatial_editor/insert_anim_key", TTR("Insert Animation Key"), KEY_K);
 	ED_SHORTCUT("spatial_editor/focus_origin", TTR("Focus Origin"), KEY_O);
 	ED_SHORTCUT("spatial_editor/focus_selection", TTR("Focus Selection"), KEY_F);
@@ -5626,7 +5630,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	hbc_menu->add_child(transform_menu);
 
 	p = transform_menu->get_popup();
-	p->add_shortcut(ED_SHORTCUT("spatial_editor/snap_to_floor", TTR("Snap object to floor"), KEY_PAGEDOWN), MENU_SNAP_TO_FLOOR);
+	p->add_shortcut(ED_SHORTCUT("spatial_editor/snap_to_floor", TTR("Snap Object to Floor"), KEY_PAGEDOWN), MENU_SNAP_TO_FLOOR);
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTR("Configure Snap...")), MENU_TRANSFORM_CONFIGURE_SNAP);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/transform_dialog", TTR("Transform Dialog...")), MENU_TRANSFORM_DIALOG);

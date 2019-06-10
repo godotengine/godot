@@ -1024,7 +1024,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 					} else {
 
 						ResourceSaver::save(ext_name, mat, ResourceSaver::FLAG_CHANGE_PATH);
-						p_materials[mat] = ResourceLoader::load(ext_name);
+						p_materials[mat] = ResourceLoader::load(ext_name, "", true); // disable loading from the cache.
 					}
 				}
 
@@ -1070,13 +1070,13 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 									String ext_name = p_base_path.plus_file(_make_extname(mat->get_name()) + ".material");
 									;
-									if (FileAccess::exists(ext_name)) {
+									if (p_keep_materials && FileAccess::exists(ext_name)) {
 										//if exists, use it
 										p_materials[mat] = ResourceLoader::load(ext_name);
 									} else {
 
 										ResourceSaver::save(ext_name, mat, ResourceSaver::FLAG_CHANGE_PATH);
-										p_materials[mat] = ResourceLoader::load(ext_name);
+										p_materials[mat] = ResourceLoader::load(ext_name, "", true); // disable loading from the cache.
 									}
 								}
 
@@ -1291,6 +1291,13 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	}
 
 	String root_type = p_options["nodes/root_type"];
+	root_type = root_type.split(" ")[0]; // full root_type is "ClassName (filename.gd)" for a script global class.
+
+	Ref<Script> root_script = NULL;
+	if (ScriptServer::is_global_class(root_type)) {
+		root_script = ResourceLoader::load(ScriptServer::get_global_class_path(root_type));
+		root_type = ScriptServer::get_global_class_base(root_type);
+	}
 
 	if (root_type != "Spatial") {
 		Node *base_node = Object::cast_to<Node>(ClassDB::instance(root_type));
@@ -1301,6 +1308,10 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 			memdelete(scene);
 			scene = base_node;
 		}
+	}
+
+	if (root_script.is_valid()) {
+		scene->set_script(Variant(root_script));
 	}
 
 	if (Object::cast_to<Spatial>(scene)) {

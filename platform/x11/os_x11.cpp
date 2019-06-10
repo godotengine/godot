@@ -534,22 +534,26 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	{
-		Pixmap cursormask;
-		XGCValues xgc;
-		GC gc;
-		XColor col;
-		Cursor cursor;
+		// Creating an empty/transparent cursor
 
-		cursormask = XCreatePixmap(x11_display, RootWindow(x11_display, DefaultScreen(x11_display)), 1, 1, 1);
+		// Create 1x1 bitmap
+		Pixmap cursormask = XCreatePixmap(x11_display,
+				RootWindow(x11_display, DefaultScreen(x11_display)), 1, 1, 1);
+
+		// Fill with zero
+		XGCValues xgc;
 		xgc.function = GXclear;
-		gc = XCreateGC(x11_display, cursormask, GCFunction, &xgc);
+		GC gc = XCreateGC(x11_display, cursormask, GCFunction, &xgc);
 		XFillRectangle(x11_display, cursormask, gc, 0, 0, 1, 1);
-		col.pixel = 0;
-		col.red = 0;
-		col.flags = 4;
-		cursor = XCreatePixmapCursor(x11_display,
-				cursormask, cursormask,
+
+		// Color value doesn't matter. Mask zero means no foreground or background will be drawn
+		XColor col = {};
+
+		Cursor cursor = XCreatePixmapCursor(x11_display,
+				cursormask, // source (using cursor mask as placeholder, since it'll all be ignored)
+				cursormask, // mask
 				&col, &col, 0, 0);
+
 		XFreePixmap(x11_display, cursormask);
 		XFreeGC(x11_display, gc);
 
@@ -2374,7 +2378,7 @@ void OS_X11::process_xevents() {
 
 					Vector<String> files = String((char *)p.data).split("\n", false);
 					for (int i = 0; i < files.size(); i++) {
-						files.write[i] = files[i].replace("file://", "").http_unescape().strip_escapes();
+						files.write[i] = files[i].replace("file://", "").http_unescape().strip_edges();
 					}
 					main_loop->drop_files(files);
 
@@ -2592,7 +2596,7 @@ String OS_X11::get_clipboard() const {
 	return ret;
 }
 
-String OS_X11::get_name() {
+String OS_X11::get_name() const {
 
 	return "X11";
 }

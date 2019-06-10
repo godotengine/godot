@@ -795,6 +795,47 @@ const char *OS_JavaScript::get_audio_driver_name(int p_driver) const {
 	return "JavaScript";
 }
 
+// Clipboard
+extern "C" EMSCRIPTEN_KEEPALIVE void update_clipboard(const char *p_text) {
+	// Only call set_clipboard from OS (sets local clipboard)
+	OS::get_singleton()->OS::set_clipboard(p_text);
+}
+
+void OS_JavaScript::set_clipboard(const String &p_text) {
+	OS::set_clipboard(p_text);
+	/* clang-format off */
+	int err = EM_ASM_INT({
+		var text = UTF8ToString($0);
+		if (!navigator.clipboard || !navigator.clipboard.writeText)
+			return 1;
+		navigator.clipboard.writeText(text).catch(e => {
+			// Setting OS clipboard is only possible from an input callback.
+			console.error("Setting OS clipboard is only possible from an input callback for the HTML5 plafrom. Exception:", e);
+		});
+		return 0;
+	}, p_text.utf8().get_data());
+	/* clang-format on */
+	ERR_EXPLAIN("Clipboard API is not supported.");
+	ERR_FAIL_COND(err);
+}
+
+String OS_JavaScript::get_clipboard() const {
+	/* clang-format off */
+	EM_ASM({
+		try {
+			navigator.clipboard.readText().then(function (result) {
+				ccall('update_clipboard', 'void', ['string'], [result]);
+			}).catch(function (e) {
+				// Fail graciously.
+			});
+		} catch (e) {
+			// Fail graciously.
+		}
+	});
+	/* clang-format on */
+	return this->OS::get_clipboard();
+}
+
 // Lifecycle
 int OS_JavaScript::get_current_video_driver() const {
 	return video_driver_index;
@@ -939,6 +980,11 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 		(['mouseover', 'mouseleave', 'focus', 'blur']).forEach(function(event, index) {
 			Module.canvas.addEventListener(event, send_notification.bind(null, notifications[index]));
 		});
+		// Clipboard
+		const update_clipboard = cwrap('update_clipboard', null, ['string']);
+		window.addEventListener('paste', function(evt) {
+			update_clipboard(evt.clipboardData.getData('text'));
+		}, true);
 	},
 		MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
 		MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
@@ -1159,7 +1205,7 @@ Error OS_JavaScript::shell_open(String p_uri) {
 	return OK;
 }
 
-String OS_JavaScript::get_name() {
+String OS_JavaScript::get_name() const {
 
 	return "HTML5";
 }

@@ -49,7 +49,7 @@ Node *SceneTreeEditor::get_scene_node() {
 void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
 
 	if (connect_to_script_mode) {
-		return; //dont do anything in this mode
+		return; //don't do anything in this mode
 	}
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!item);
@@ -379,6 +379,12 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	}
 
 	if (!keep) {
+		if (editor_selection) {
+			Node *n = get_node(item->get_metadata(0));
+			if (n) {
+				editor_selection->remove_node(n);
+			}
+		}
 		memdelete(item);
 		return false;
 	} else {
@@ -471,6 +477,17 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 		emit_signal("node_selected");
 	}
 }
+
+void SceneTreeEditor::_node_renamed(Node *p_node) {
+
+	emit_signal("node_renamed");
+
+	if (!tree_dirty) {
+		MessageQueue::get_singleton()->push_call(this, "_update_tree");
+		tree_dirty = true;
+	}
+}
+
 void SceneTreeEditor::_update_tree() {
 
 	if (!is_inside_tree()) {
@@ -594,6 +611,7 @@ void SceneTreeEditor::_notification(int p_what) {
 
 			get_tree()->connect("tree_changed", this, "_tree_changed");
 			get_tree()->connect("node_removed", this, "_node_removed");
+			get_tree()->connect("node_renamed", this, "_node_renamed");
 			get_tree()->connect("node_configuration_warning_changed", this, "_warning_changed");
 
 			tree->connect("item_collapsed", this, "_cell_collapsed");
@@ -604,6 +622,7 @@ void SceneTreeEditor::_notification(int p_what) {
 
 			get_tree()->disconnect("tree_changed", this, "_tree_changed");
 			get_tree()->disconnect("node_removed", this, "_node_removed");
+			get_tree()->disconnect("node_renamed", this, "_node_renamed");
 			tree->disconnect("item_collapsed", this, "_cell_collapsed");
 			get_tree()->disconnect("node_configuration_warning_changed", this, "_warning_changed");
 		} break;
@@ -685,12 +704,6 @@ void SceneTreeEditor::_rename_node(ObjectID p_node, const String &p_name) {
 	n->set_name(p_name);
 	item->set_metadata(0, n->get_path());
 	item->set_text(0, p_name);
-	emit_signal("node_renamed");
-
-	if (!tree_dirty) {
-		MessageQueue::get_singleton()->push_call(this, "_update_tree");
-		tree_dirty = true;
-	}
 }
 
 void SceneTreeEditor::_renamed() {
@@ -1025,6 +1038,7 @@ void SceneTreeEditor::_bind_methods() {
 	ClassDB::bind_method("_tree_changed", &SceneTreeEditor::_tree_changed);
 	ClassDB::bind_method("_update_tree", &SceneTreeEditor::_update_tree);
 	ClassDB::bind_method("_node_removed", &SceneTreeEditor::_node_removed);
+	ClassDB::bind_method("_node_renamed", &SceneTreeEditor::_node_renamed);
 	ClassDB::bind_method("_selected_changed", &SceneTreeEditor::_selected_changed);
 	ClassDB::bind_method("_deselect_items", &SceneTreeEditor::_deselect_items);
 	ClassDB::bind_method("_renamed", &SceneTreeEditor::_renamed);

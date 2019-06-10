@@ -58,6 +58,7 @@ public:
 
 		int viewport_to_screen;
 		Rect2 viewport_to_screen_rect;
+		bool viewport_render_direct_to_screen;
 
 		bool hide_scenario;
 		bool hide_canvas;
@@ -158,6 +159,7 @@ public:
 	void viewport_set_size(RID p_viewport, int p_width, int p_height);
 
 	void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), int p_screen = 0);
+	void viewport_set_render_direct_to_screen(RID p_viewport, bool p_enable);
 	void viewport_detach(RID p_viewport);
 
 	void viewport_set_active(RID p_viewport, bool p_active);

@@ -75,11 +75,19 @@ String ProjectSettings::localize_path(const String &p_path) const {
 
 		memdelete(dir);
 
-		if (!cwd.begins_with(resource_path)) {
+		// Ensure that we end with a '/'.
+		// This is important to ensure that we do not wrongly localize the resource path
+		// in an absolute path that just happens to contain this string but points to a
+		// different folder (e.g. "/my/project" as resource_path would be contained in
+		// "/my/project_data", even though the latter is not part of res://.
+		// `plus_file("")` is an easy way to ensure we have a trailing '/'.
+		const String res_path = resource_path.plus_file("");
+
+		if (!cwd.begins_with(res_path)) {
 			return p_path;
 		};
 
-		return cwd.replace_first(resource_path, "res:/");
+		return cwd.replace_first(res_path, "res://");
 	} else {
 
 		memdelete(dir);
@@ -1006,6 +1014,15 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/config/project_settings_override", "");
 	GLOBAL_DEF("audio/default_bus_layout", "res://default_bus_layout.tres");
 	custom_prop_info["audio/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
+
+	PoolStringArray extensions = PoolStringArray();
+	extensions.push_back("gd");
+	if (Engine::get_singleton()->has_singleton("GodotSharp"))
+		extensions.push_back("cs");
+	extensions.push_back("shader");
+
+	GLOBAL_DEF("editor/search_in_file_extensions", extensions);
+	custom_prop_info["editor/search_in_file_extensions"] = PropertyInfo(Variant::POOL_STRING_ARRAY, "editor/search_in_file_extensions");
 
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);

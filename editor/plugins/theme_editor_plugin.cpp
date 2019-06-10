@@ -631,12 +631,14 @@ ThemeEditor::ThemeEditor() {
 
 	scroll = memnew(ScrollContainer);
 	add_child(scroll);
+	scroll->set_theme(Theme::get_default());
 	scroll->set_enable_v_scroll(true);
 	scroll->set_enable_h_scroll(false);
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	main_container = memnew(MarginContainer);
 	scroll->add_child(main_container);
+	main_container->set_theme(Theme::get_default());
 	main_container->set_clip_contents(true);
 	main_container->set_custom_minimum_size(Size2(700, 0) * EDSCALE);
 	main_container->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -646,11 +648,9 @@ ThemeEditor::ThemeEditor() {
 
 	Panel *panel = memnew(Panel);
 	main_container->add_child(panel);
-	panel->set_theme(Theme::get_default());
 
 	MarginContainer *mc = memnew(MarginContainer);
 	main_container->add_child(mc);
-	mc->set_theme(Theme::get_default());
 	mc->add_constant_override("margin_right", 4 * EDSCALE);
 	mc->add_constant_override("margin_top", 4 * EDSCALE);
 	mc->add_constant_override("margin_left", 4 * EDSCALE);
@@ -683,7 +683,6 @@ ThemeEditor::ThemeEditor() {
 	CheckButton *cb = memnew(CheckButton);
 	cb->set_text("CheckButton");
 	first_vb->add_child(cb);
-	cb = memnew(CheckButton);
 	CheckBox *cbx = memnew(CheckBox);
 	cbx->set_text("CheckBox");
 	first_vb->add_child(cbx);
@@ -880,11 +879,9 @@ ThemeEditor::ThemeEditor() {
 void ThemeEditorPlugin::edit(Object *p_node) {
 
 	if (Object::cast_to<Theme>(p_node)) {
-		theme_editor->show();
 		theme_editor->edit(Object::cast_to<Theme>(p_node));
 	} else {
 		theme_editor->edit(Ref<Theme>());
-		theme_editor->hide();
 	}
 }
 
@@ -899,11 +896,11 @@ void ThemeEditorPlugin::make_visible(bool p_visible) {
 		theme_editor->set_process(true);
 		button->show();
 		editor->make_bottom_panel_item_visible(theme_editor);
-
 	} else {
 		theme_editor->set_process(false);
 		if (theme_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
+
 		button->hide();
 	}
 }

@@ -39,11 +39,12 @@
 # Martin <martinreininger@gmx.net>, 2019.
 # Andreas During <anduring@web.de>, 2019.
 # Arthur S. Muszynski <artism90@gmail.com>, 2019.
+# Andreas Binczyk <andreas.binczyk@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-30 20:04+0000\n"
+"PO-Revision-Date: 2019-04-29 08:48+0000\n"
 "Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -52,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.6.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -190,12 +191,18 @@ msgid "Animation Playback Track"
 msgstr "Animationsspielerspur"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Spur hinzufügen"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Animationsdauer (in Sekunden)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Animationsdauer (in Sekunden)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Spur hinzufügen"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -452,9 +459,8 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "Spuren nach Node gruppieren oder nacheinander anzeigen."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "Einrasten"
+msgstr "Einrasten:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -462,7 +468,7 @@ msgstr "Animationsschrittwert."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "Sekunden"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
@@ -3962,7 +3968,7 @@ msgstr "Animation umbenennen"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
-msgstr "Überblende nächste Bearbeitung"
+msgstr "Überblende nächste Änderung"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Blend Time"
@@ -4856,20 +4862,19 @@ msgstr "Layout"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
-msgstr ""
+msgstr "Verschiebungsmaske für Schlüsselbildeingabe."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation mask for inserting keys."
-msgstr ""
+msgstr "Rotationsmaske für Schlüsselbildeingabe."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale mask for inserting keys."
-msgstr ""
+msgstr "Skalierungsmaske für Schlüsselbildeingabe."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Insert keys (based on mask)."
-msgstr "Schlüsselbilder einfügen (Einfg)"
+msgstr "Schlüsselbilder einfügen (basierend auf Maske)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -4878,11 +4883,15 @@ msgid ""
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
 msgstr ""
+"Füge automatisiert Schlüsselbilder ein wenn Objekte verschoben, rotiert oder "
+"skaliert werden (basierend auf Maske).\n"
+"Schlüsselbilder werden nur in existierende Spuren eingefügt, es werden keine "
+"neuen Spuren angelegt.\n"
+"Das erste mal müssen Schlüsselbilder manuell eingefügt werden."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Insert Key"
-msgstr "Schlüsselbild einfügen"
+msgstr "Schlüsselbild automatisch einfügen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -5874,9 +5883,8 @@ msgid "Save Theme As..."
 msgstr "Motiv speichern als..."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "%s Class Reference"
-msgstr " Klassenreferenz"
+msgstr "%s Klassenreferenz"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
@@ -6703,24 +6711,20 @@ msgid "Nameless gizmo"
 msgstr "Namenloser Anfasser"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Mesh2D"
-msgstr "2D-Mesh erzeugen"
+msgstr "Mesh2D erzeugen"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon2D"
-msgstr "Polygon3D erstellen"
+msgstr "Polygon2D erzeugen"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D"
-msgstr "Kollisionspolygon erzeugen"
+msgstr "CollisionPolygon2D erzeugen"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D"
-msgstr "Occluder-Polygon erzeugen"
+msgstr "LightOccluder2D erzeugen"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6737,43 +6741,36 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Ungültige Geometrie, Mesh kann nicht ersetzt werden."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create polygon."
-msgstr "Ungültige Geometrie, Mesh kann nicht ersetzt werden."
+msgstr "Ungültige Geometrie, Polygon kann nicht erzeugt werden."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create collision polygon."
-msgstr "Ungültige Geometrie, Mesh kann nicht ersetzt werden."
+msgstr "Ungültige Geometrie, Kollisionspolygon kann nicht erzeugt werden."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create light occluder."
-msgstr "Ungültige Geometrie, Mesh kann nicht ersetzt werden."
+msgstr "Ungültige Geometrie, Light-Occluder kann nicht erzeugt werden."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Mesh2D"
-msgstr "Zu 2D-Mesh umwandeln"
+msgstr "Zu Mesh2D umwandeln"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Polygon2D"
-msgstr "Polygon verschieben"
+msgstr "Zu Polygon2D umwandeln"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "Kollisionspolygon erzeugen"
+msgstr "CollisionPolygon2D-Nachbarn erzeugen"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D Sibling"
-msgstr "Occluder-Polygon erzeugen"
+msgstr "LightOccluder2D erzeugen"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7361,9 +7358,8 @@ msgid "Duplicate Nodes"
 msgstr "Nodes duplizieren"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Nodes"
-msgstr "Node löschen"
+msgstr "Nodes löschen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"

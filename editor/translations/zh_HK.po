@@ -163,13 +163,18 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "新增動畫軌跡"
+msgid "Animation length (frames)"
+msgstr "時長（秒）。"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "時長（秒）。"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "新增動畫軌跡"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy

@@ -2082,6 +2082,9 @@ CSGBrush *CSGPolygon::_build_brush() {
 				for (int i = 0; i <= splits; i++) {
 
 					float ofs = i * path_interval;
+					if (ofs > bl) {
+						ofs = bl;
+					}
 					if (i == splits && path_joined) {
 						ofs = 0.0;
 					}

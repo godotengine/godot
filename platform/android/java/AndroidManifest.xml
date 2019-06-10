@@ -22,7 +22,7 @@
 <!--Anything in this line after the icon will be erased when doing custom build. If you want to add tags manually, do before it.-->
     <application android:label="@string/godot_project_name_string" android:allowBackup="false" tools:ignore="GoogleAppIndexingWarning" android:icon="@drawable/icon">
 
-<!--The following values are replaced when Godot exports, modifying them here has no effect. Do theses changes in the-->
+<!--The following values are replaced when Godot exports, modifying them here has no effect. Do these changes in the-->
 <!--export preset. Adding new ones is fine.-->
 
         <activity android:name="org.godotengine.godot.Godot"

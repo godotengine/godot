@@ -24,12 +24,13 @@
 # Mohammad Fares <mhdchehade@gmail.com>, 2018.
 # NewFriskFan26 <newfriskfan26@gmail.com>, 2019.
 # spiderx0x <legendofdarks@gmail.com>, 2019.
+# Ibraheem Tawfik <tawfikibraheem@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-04-17 10:02+0000\n"
-"Last-Translator: Omar Aglan <omar.aglan91@yahoo.com>\n"
+"PO-Revision-Date: 2019-04-29 08:48+0000\n"
+"Last-Translator: Ibraheem Tawfik <tawfikibraheem@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -38,7 +39,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.6.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -174,12 +175,18 @@ msgid "Animation Playback Track"
 msgstr "شريط ضبط الحركة"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "إضافة مسار"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "مدة الحركة (بالثواني)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "مدة الحركة (بالثواني)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "إضافة مسار"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -358,8 +365,9 @@ msgstr ""
 "-الصوت الجاري للأعب ثلاثي الأبعاد"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr ""
+msgstr "مسارات الحركة يمكنها فقط أن تشير إلى عقدة مشغّل الحركة AnimationPlayer"
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
@@ -442,11 +450,11 @@ msgstr "قيمة خطوة الحركة."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "ثواني"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
-msgstr ""
+msgstr "إطار خلال ثانية"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -1417,7 +1425,7 @@ msgstr "ملف النموذج غير موجود:"
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr ""
+msgstr "قالب الإصدار المخصص ليس موجود"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -1531,14 +1539,13 @@ msgid "Move Favorite Down"
 msgstr "حرك المُفضلة للأسفل"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Previous Folder"
-msgstr "التبويب السابق"
+msgstr "المجلد السابق"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
 msgid "Next Folder"
-msgstr "أنشئ مجلد"
+msgstr "المجلد اللاحق"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
@@ -1610,7 +1617,7 @@ msgstr "خصائص"
 
 #: editor/editor_help.cpp
 msgid "Properties:"
-msgstr ""
+msgstr "خصائص:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -1624,7 +1631,7 @@ msgstr "قائمة الطرق"
 #: editor/editor_help.cpp
 #, fuzzy
 msgid "Theme Properties"
-msgstr "خصائص"
+msgstr "خصائص النمط"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -1656,14 +1663,12 @@ msgid "Constants:"
 msgstr "الثوابت:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Class Description"
-msgstr "الوصف"
+msgstr "وصف الصف"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Class Description:"
-msgstr "الوصف:"
+msgstr "وصف الصف:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials:"
@@ -1721,34 +1726,28 @@ msgid "Search Help"
 msgstr "إبحث في المساعدة"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Display All"
-msgstr "إستبدال الكل"
+msgstr "إظهار الكل"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Classes Only"
-msgstr "الفئات"
+msgstr "الصفوف فقط"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Methods Only"
-msgstr "قائمة الطرق"
+msgstr "الطرق فقط"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Signals Only"
-msgstr "إشارات"
+msgstr "إشارات فقط"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Constants Only"
-msgstr "الثوابت"
+msgstr "ثوابت فقط"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Properties Only"
-msgstr "خصائص"
+msgstr "خصائص فقط"
 
 #: editor/editor_help_search.cpp
 #, fuzzy
@@ -1756,9 +1755,8 @@ msgid "Theme Properties Only"
 msgstr "خصائص"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Member Type"
-msgstr "الأعضاء"
+msgstr "نوع العضو"
 
 #: editor/editor_help_search.cpp
 #, fuzzy
@@ -1767,11 +1765,11 @@ msgstr "صنف:"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
-msgstr ""
+msgstr "خصيصة:"
 
 #: editor/editor_inspector.cpp
 msgid "Set"
-msgstr ""
+msgstr "مجموعة"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
@@ -1806,7 +1804,7 @@ msgstr ""
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
-msgstr ""
+msgstr "حسنا"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"

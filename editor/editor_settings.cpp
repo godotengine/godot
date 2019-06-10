@@ -268,6 +268,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		String host_lang = OS::get_singleton()->get_locale();
 		host_lang = TranslationServer::standardize_locale(host_lang);
 
+		// Some locales are not properly supported currently in Godot due to lack of font shaping
+		// (e.g. Arabic or Hindi), so even though we have work in progress translations for them,
+		// we skip them as they don't render properly. (GH-28577)
+		const Vector<String> locales_to_skip = String("ar,bn,fa,he,hi,ml,si,ta,te,ur").split(",");
+
 		String best;
 
 		EditorTranslationList *etl = _editor_translations;
@@ -275,6 +280,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		while (etl->data) {
 
 			const String &locale = etl->lang;
+
+			// Skip locales which we can't render properly (see above comment).
+			// Test against language code without regional variants (e.g. ur_PK).
+			String lang_code = locale.get_slice("_", 0);
+			if (locales_to_skip.find(lang_code) != -1) {
+				etl++;
+				continue;
+			}
+
 			lang_hint += ",";
 			lang_hint += locale;
 
@@ -304,7 +318,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/display_scale", 0);
 	hints["interface/editor/display_scale"] = PropertyInfo(Variant::INT, "interface/editor/display_scale", PROPERTY_HINT_ENUM, "Auto,75%,100%,125%,150%,175%,200%,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/custom_display_scale", 1.0f);
-	hints["interface/editor/custom_display_scale"] = PropertyInfo(Variant::REAL, "interface/editor/custom_display_scale", PROPERTY_HINT_RANGE, "0.75,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	hints["interface/editor/custom_display_scale"] = PropertyInfo(Variant::REAL, "interface/editor/custom_display_scale", PROPERTY_HINT_RANGE, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/main_font_size", 14);
 	hints["interface/editor/main_font_size"] = PropertyInfo(Variant::INT, "interface/editor/main_font_size", PROPERTY_HINT_RANGE, "10,40,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/code_font_size", 14);
@@ -326,6 +340,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/editor/dim_amount"] = PropertyInfo(Variant::REAL, "interface/editor/dim_amount", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/dim_transition_time", 0.08f);
 	hints["interface/editor/dim_transition_time"] = PropertyInfo(Variant::REAL, "interface/editor/dim_transition_time", PROPERTY_HINT_RANGE, "0,1,0.001", PROPERTY_USAGE_DEFAULT);
+	_initial_set("interface/editor/low_processor_mode_sleep_usec", 6900); // ~144 FPS
+	hints["interface/editor/low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT);
+	_initial_set("interface/editor/unfocused_low_processor_mode_sleep_usec", 50000); // 20 FPS
+	hints["interface/editor/unfocused_low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/unfocused_low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/separate_distraction_mode", false);
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression
 	_initial_set("interface/editor/quit_confirmation", true);
@@ -425,10 +443,12 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/indent/auto_indent", true);
 	_initial_set("text_editor/indent/convert_indent_on_save", false);
 	_initial_set("text_editor/indent/draw_tabs", true);
+	_initial_set("text_editor/indent/draw_spaces", false);
 
 	// Line numbers
 	_initial_set("text_editor/line_numbers/show_line_numbers", true);
 	_initial_set("text_editor/line_numbers/line_numbers_zero_padded", false);
+	_initial_set("text_editor/line_numbers/show_bookmark_gutter", true);
 	_initial_set("text_editor/line_numbers/show_breakpoint_gutter", true);
 	_initial_set("text_editor/line_numbers/show_info_gutter", true);
 	_initial_set("text_editor/line_numbers/code_folding", true);
@@ -471,6 +491,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Help
 	_initial_set("text_editor/help/show_help_index", true);
+	_initial_set("text_editor/help_source_font_size", 14);
+	hints["text_editor/help/help_source_font_size"] = PropertyInfo(Variant::REAL, "text_editor/help/help_source_font_size", PROPERTY_HINT_RANGE, "10, 50, 1");
 
 	/* Editors */
 
@@ -545,7 +567,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/bone_ik_color", Color(0.9, 0.9, 0.45, 0.9));
 	_initial_set("editors/2d/bone_outline_color", Color(0.35, 0.35, 0.35));
 	_initial_set("editors/2d/bone_outline_size", 2);
-	_initial_set("editors/2d/keep_margins_when_changing_anchors", false);
 	_initial_set("editors/2d/viewport_border_color", Color(0.4, 0.4, 1.0, 0.4));
 	_initial_set("editors/2d/warped_mouse_panning", true);
 	_initial_set("editors/2d/simple_spacebar_panning", false);
@@ -647,11 +668,12 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/function_color", Color::html("66a2ce"));
 	_initial_set("text_editor/highlighting/member_variable_color", Color::html("e64e59"));
 	_initial_set("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
+	_initial_set("text_editor/highlighting/bookmark_color", Color(0.08, 0.49, 0.98));
 	_initial_set("text_editor/highlighting/breakpoint_color", Color(0.8, 0.8, 0.4, 0.2));
 	_initial_set("text_editor/highlighting/executing_line_color", Color(0.2, 0.8, 0.2, 0.4));
 	_initial_set("text_editor/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8));
 	_initial_set("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
-	_initial_set("text_editor/highlighting/search_result_border_color", Color(0.1, 0.45, 0.1, 1));
+	_initial_set("text_editor/highlighting/search_result_border_color", Color(0.41, 0.61, 0.91, 0.38));
 }
 
 bool EditorSettings::_save_text_editor_theme(String p_file) {

@@ -21,6 +21,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_export_end" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="_export_file" qualifiers="virtual">
 			<return type="void">
 			</return>

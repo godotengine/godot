@@ -560,6 +560,7 @@ void EditorData::move_edited_scene_index(int p_idx, int p_to_idx) {
 	ERR_FAIL_INDEX(p_to_idx, edited_scene.size());
 	SWAP(edited_scene.write[p_idx], edited_scene.write[p_to_idx]);
 }
+
 void EditorData::remove_scene(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
 	if (edited_scene[p_idx].root) {
