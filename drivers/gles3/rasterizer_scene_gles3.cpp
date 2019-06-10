@@ -351,7 +351,7 @@ bool RasterizerSceneGLES3::shadow_atlas_update_light(RID p_atlas, RID p_light_in
 			if (sh->owner.is_valid()) {
 				//is taken, but is invalid, erasing it
 				shadow_atlas->shadow_owners.erase(sh->owner);
-				LightInstance *sli = light_instance_owner.get(sh->owner);
+				LightInstance *sli = light_instance_owner.getornull(sh->owner);
 				sli->shadow_atlases.erase(p_atlas);
 			}
 
@@ -391,7 +391,7 @@ bool RasterizerSceneGLES3::shadow_atlas_update_light(RID p_atlas, RID p_light_in
 		if (sh->owner.is_valid()) {
 			//is taken, but is invalid, erasing it
 			shadow_atlas->shadow_owners.erase(sh->owner);
-			LightInstance *sli = light_instance_owner.get(sh->owner);
+			LightInstance *sli = light_instance_owner.getornull(sh->owner);
 			sli->shadow_atlases.erase(p_atlas);
 		}
 
@@ -1170,7 +1170,7 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 		GLenum target = GL_TEXTURE_2D;
 		GLuint tex = 0;
 
-		RasterizerStorageGLES3::Texture *t = storage->texture_owner.getptr(textures[i]);
+		RasterizerStorageGLES3::Texture *t = storage->texture_owner.getornull(textures[i]);
 
 		if (t) {
 
@@ -1606,7 +1606,7 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 				if (c.texture.is_valid() && storage->texture_owner.owns(c.texture)) {
 
-					RasterizerStorageGLES3::Texture *t = storage->texture_owner.get(c.texture);
+					RasterizerStorageGLES3::Texture *t = storage->texture_owner.getornull(c.texture);
 
 					if (t->redraw_if_visible) {
 						VisualServerRaster::redraw_request();
@@ -1884,7 +1884,7 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 		const RID *reflections = e->instance->reflection_probe_instances.ptr();
 
 		for (int i = 0; i < rc; i++) {
-			ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getptr(reflections[i]);
+			ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(reflections[i]);
 			if (rpi->last_pass != render_pass) //not visible
 				continue;
 
@@ -1903,7 +1903,7 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 	if (gi_probe_count) {
 		const RID *ridp = e->instance->gi_probe_instances.ptr();
 
-		GIProbeInstance *gipi = gi_probe_instance_owner.getptr(ridp[0]);
+		GIProbeInstance *gipi = gi_probe_instance_owner.getornull(ridp[0]);
 
 		float bias_scale = e->instance->baked_light ? 1 : 0;
 		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 9);
@@ -1917,7 +1917,7 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_CELL_SIZE1, gipi->cell_size_cache);
 		if (gi_probe_count > 1) {
 
-			GIProbeInstance *gipi2 = gi_probe_instance_owner.getptr(ridp[1]);
+			GIProbeInstance *gipi2 = gi_probe_instance_owner.getornull(ridp[1]);
 
 			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 10);
 			glBindTexture(GL_TEXTURE_3D, gipi2->tex_cache);
@@ -2286,7 +2286,7 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 	}
 
 	if (!m) {
-		m = storage->material_owner.getptr(default_material);
+		m = storage->material_owner.getornull(default_material);
 	}
 
 	ERR_FAIL_COND(!m);
@@ -2337,11 +2337,11 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 		if (!p_material->shader->spatial.uses_alpha_scissor && !p_material->shader->spatial.writes_modelview_or_projection && !p_material->shader->spatial.uses_vertex && !p_material->shader->spatial.uses_discard && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
 			//shader does not use discard and does not write a vertex position, use generic material
 			if (p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_DOUBLE_SIDED) {
-				p_material = storage->material_owner.getptr(!p_shadow_pass && p_material->shader->spatial.uses_world_coordinates ? default_worldcoord_material_twosided : default_material_twosided);
+				p_material = storage->material_owner.getornull(!p_shadow_pass && p_material->shader->spatial.uses_world_coordinates ? default_worldcoord_material_twosided : default_material_twosided);
 				no_cull = true;
 				mirror = false;
 			} else {
-				p_material = storage->material_owner.getptr(!p_shadow_pass && p_material->shader->spatial.uses_world_coordinates ? default_worldcoord_material : default_material);
+				p_material = storage->material_owner.getornull(!p_shadow_pass && p_material->shader->spatial.uses_world_coordinates ? default_worldcoord_material : default_material);
 			}
 		}
 
@@ -2792,7 +2792,7 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 
 		ERR_BREAK(i >= render_list.max_lights);
 
-		LightInstance *li = light_instance_owner.getptr(p_light_cull_result[i]);
+		LightInstance *li = light_instance_owner.getornull(p_light_cull_result[i]);
 
 		LightDataUBO ubo_data; //used for filling
 
@@ -3142,7 +3142,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 
 			case VS::INSTANCE_MESH: {
 
-				RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.getptr(inst->base);
+				RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.getornull(inst->base);
 				ERR_CONTINUE(!mesh);
 
 				int ssize = mesh->surfaces.size();
@@ -3159,13 +3159,13 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 			} break;
 			case VS::INSTANCE_MULTIMESH: {
 
-				RasterizerStorageGLES3::MultiMesh *multi_mesh = storage->multimesh_owner.getptr(inst->base);
+				RasterizerStorageGLES3::MultiMesh *multi_mesh = storage->multimesh_owner.getornull(inst->base);
 				ERR_CONTINUE(!multi_mesh);
 
 				if (multi_mesh->size == 0 || multi_mesh->visible_instances == 0)
 					continue;
 
-				RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.getptr(multi_mesh->mesh);
+				RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.getornull(multi_mesh->mesh);
 				if (!mesh)
 					continue; //mesh not assigned
 
@@ -3180,7 +3180,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 			} break;
 			case VS::INSTANCE_IMMEDIATE: {
 
-				RasterizerStorageGLES3::Immediate *immediate = storage->immediate_owner.getptr(inst->base);
+				RasterizerStorageGLES3::Immediate *immediate = storage->immediate_owner.getornull(inst->base);
 				ERR_CONTINUE(!immediate);
 
 				_add_geometry(immediate, inst, NULL, -1, p_depth_pass, p_shadow_pass);
@@ -3188,7 +3188,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 			} break;
 			case VS::INSTANCE_PARTICLES: {
 
-				RasterizerStorageGLES3::Particles *particles = storage->particles_owner.getptr(inst->base);
+				RasterizerStorageGLES3::Particles *particles = storage->particles_owner.getornull(inst->base);
 				ERR_CONTINUE(!particles);
 
 				for (int j = 0; j < particles->draw_passes.size(); j++) {
@@ -3196,7 +3196,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 					RID pmesh = particles->draw_passes[j];
 					if (!pmesh.is_valid())
 						continue;
-					RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.get(pmesh);
+					RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.getornull(pmesh);
 					if (!mesh)
 						continue; //mesh not assigned
 
@@ -4155,7 +4155,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 		ERR_BREAK(i >= render_list.max_lights);
 
-		LightInstance *li = light_instance_owner.getptr(p_light_cull_result[i]);
+		LightInstance *li = light_instance_owner.getornull(p_light_cull_result[i]);
 		if (li->light_ptr->param[VS::LIGHT_PARAM_CONTACT_SHADOW_SIZE] > CMP_EPSILON) {
 			state.used_contact_shadows = true;
 		}
@@ -4229,7 +4229,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 	if (probe) {
 
-		ReflectionAtlas *ref_atlas = reflection_atlas_owner.getptr(probe->atlas);
+		ReflectionAtlas *ref_atlas = reflection_atlas_owner.getornull(probe->atlas);
 		ERR_FAIL_COND(!ref_atlas);
 
 		int target_size = ref_atlas->size / ref_atlas->subdiv;
@@ -4914,11 +4914,11 @@ bool RasterizerSceneGLES3::free(RID p_rid) {
 
 	if (light_instance_owner.owns(p_rid)) {
 
-		LightInstance *light_instance = light_instance_owner.getptr(p_rid);
+		LightInstance *light_instance = light_instance_owner.getornull(p_rid);
 
 		//remove from shadow atlases..
 		for (Set<RID>::Element *E = light_instance->shadow_atlases.front(); E; E = E->next()) {
-			ShadowAtlas *shadow_atlas = shadow_atlas_owner.get(E->get());
+			ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(E->get());
 			ERR_CONTINUE(!shadow_atlas->shadow_owners.has(p_rid));
 			uint32_t key = shadow_atlas->shadow_owners[p_rid];
 			uint32_t q = (key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;
@@ -4933,19 +4933,19 @@ bool RasterizerSceneGLES3::free(RID p_rid) {
 
 	} else if (shadow_atlas_owner.owns(p_rid)) {
 
-		ShadowAtlas *shadow_atlas = shadow_atlas_owner.get(p_rid);
+		ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_rid);
 		shadow_atlas_set_size(p_rid, 0);
 		shadow_atlas_owner.free(p_rid);
 		memdelete(shadow_atlas);
 	} else if (reflection_atlas_owner.owns(p_rid)) {
 
-		ReflectionAtlas *reflection_atlas = reflection_atlas_owner.get(p_rid);
+		ReflectionAtlas *reflection_atlas = reflection_atlas_owner.getornull(p_rid);
 		reflection_atlas_set_size(p_rid, 0);
 		reflection_atlas_owner.free(p_rid);
 		memdelete(reflection_atlas);
 	} else if (reflection_probe_instance_owner.owns(p_rid)) {
 
-		ReflectionProbeInstance *reflection_instance = reflection_probe_instance_owner.get(p_rid);
+		ReflectionProbeInstance *reflection_instance = reflection_probe_instance_owner.getornull(p_rid);
 
 		reflection_probe_release_atlas_index(p_rid);
 		reflection_probe_instance_owner.free(p_rid);
@@ -4953,14 +4953,14 @@ bool RasterizerSceneGLES3::free(RID p_rid) {
 
 	} else if (environment_owner.owns(p_rid)) {
 
-		Environment *environment = environment_owner.get(p_rid);
+		Environment *environment = environment_owner.getornull(p_rid);
 
 		environment_owner.free(p_rid);
 		memdelete(environment);
 
 	} else if (gi_probe_instance_owner.owns(p_rid)) {
 
-		GIProbeInstance *gi_probe_instance = gi_probe_instance_owner.get(p_rid);
+		GIProbeInstance *gi_probe_instance = gi_probe_instance_owner.getornull(p_rid);
 
 		gi_probe_instance_owner.free(p_rid);
 		memdelete(gi_probe_instance);
@@ -5320,25 +5320,25 @@ void RasterizerSceneGLES3::iteration() {
 }
 
 void RasterizerSceneGLES3::finalize() {
+
+	storage->free(default_material);
+	storage->free(default_material_twosided);
+	storage->free(default_shader);
+	storage->free(default_shader_twosided);
+
+	storage->free(default_worldcoord_material);
+	storage->free(default_worldcoord_material_twosided);
+	storage->free(default_worldcoord_shader);
+	storage->free(default_worldcoord_shader_twosided);
+
+	storage->free(default_overdraw_material);
+	storage->free(default_overdraw_shader);
 }
 
 RasterizerSceneGLES3::RasterizerSceneGLES3() {
 }
 
 RasterizerSceneGLES3::~RasterizerSceneGLES3() {
-
-	memdelete(default_material.get_data());
-	memdelete(default_material_twosided.get_data());
-	memdelete(default_shader.get_data());
-	memdelete(default_shader_twosided.get_data());
-
-	memdelete(default_worldcoord_material.get_data());
-	memdelete(default_worldcoord_material_twosided.get_data());
-	memdelete(default_worldcoord_shader.get_data());
-	memdelete(default_worldcoord_shader_twosided.get_data());
-
-	memdelete(default_overdraw_material.get_data());
-	memdelete(default_overdraw_shader.get_data());
 
 	memfree(state.spot_array_tmp);
 	memfree(state.omni_array_tmp);

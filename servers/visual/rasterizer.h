@@ -82,7 +82,7 @@ public:
 	virtual VS::EnvironmentBG environment_get_background(RID p_env) = 0;
 	virtual int environment_get_canvas_max_layer(RID p_env) = 0;
 
-	struct InstanceBase : RID_Data {
+	struct InstanceBase {
 
 		VS::InstanceType base_type;
 		RID base;
@@ -608,7 +608,7 @@ public:
 		CANVAS_RECT_CLIP_UV = 32
 	};
 
-	struct Light : public RID_Data {
+	struct Light {
 
 		bool enabled;
 		Color color;
@@ -678,7 +678,7 @@ public:
 	virtual void light_internal_update(RID p_rid, Light *p_light) = 0;
 	virtual void light_internal_free(RID p_rid) = 0;
 
-	struct Item : public RID_Data {
+	struct Item {
 
 		struct Command {
 
@@ -1065,7 +1065,7 @@ public:
 	virtual void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) = 0;
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) = 0;
 
-	struct LightOccluderInstance : public RID_Data {
+	struct LightOccluderInstance {
 
 		bool enabled;
 		RID canvas;

@@ -31,6 +31,7 @@
 #ifndef PHYSICS_2D_SERVER_SW
 #define PHYSICS_2D_SERVER_SW
 
+#include "core/rid_owner.h"
 #include "joints_2d_sw.h"
 #include "servers/physics_2d_server.h"
 #include "shape_2d_sw.h"
@@ -61,11 +62,11 @@ class Physics2DServerSW : public Physics2DServer {
 
 	Physics2DDirectBodyStateSW *direct_state;
 
-	mutable RID_Owner<Shape2DSW> shape_owner;
-	mutable RID_Owner<Space2DSW> space_owner;
-	mutable RID_Owner<Area2DSW> area_owner;
-	mutable RID_Owner<Body2DSW> body_owner;
-	mutable RID_Owner<Joint2DSW> joint_owner;
+	mutable RID_PtrOwner<Shape2DSW> shape_owner;
+	mutable RID_PtrOwner<Space2DSW> space_owner;
+	mutable RID_PtrOwner<Area2DSW> area_owner;
+	mutable RID_PtrOwner<Body2DSW> body_owner;
+	mutable RID_PtrOwner<Joint2DSW> joint_owner;
 
 	static Physics2DServerSW *singletonsw;
 
