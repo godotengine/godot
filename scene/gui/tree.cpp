@@ -3721,6 +3721,10 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 
 			const TreeItem::Cell &c = it->cells[col];
 			int col_width = get_column_width(col);
+
+			for (int i = 0; i < col; i++)
+				pos.x -= get_column_width(i);
+
 			for (int j = c.buttons.size() - 1; j >= 0; j--) {
 				Ref<Texture> b = c.buttons[j].texture;
 				Size2 size = b->get_size() + cache.button_pressed->get_minimum_size();
