@@ -169,13 +169,18 @@ msgstr "หยุดการเล่นแอนิเมชัน (S)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "เพิ่มแทร็กแอนิเมชัน"
+msgid "Animation length (frames)"
+msgstr "ความยาวแอนิเมชัน (วินาที)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "ความยาวแอนิเมชัน (วินาที)"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "เพิ่มแทร็กแอนิเมชัน"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy

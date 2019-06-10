@@ -2041,7 +2041,7 @@ void VisualScriptEditor::set_edit_state(const Variant &p_state) {
 
 	Dictionary d = p_state;
 	if (d.has("function")) {
-		edited_func = p_state;
+		edited_func = d["function"];
 		selected = edited_func;
 	}
 
@@ -2218,7 +2218,7 @@ Control *VisualScriptEditor::get_edit_menu() {
 
 void VisualScriptEditor::_change_base_type() {
 
-	select_base_type->popup_create(true);
+	select_base_type->popup_create(true, true);
 }
 
 void VisualScriptEditor::clear_edit_menu() {
@@ -2726,93 +2726,98 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		Ref<VisualScriptFunctionCall> vsfc = vsn;
 		vsfc->set_function(p_text);
 
-		VisualScriptNode::TypeGuess tg = _guess_output_type(port_action_node, port_action_output, vn);
-		if (tg.type == Variant::OBJECT) {
-			vsfc->set_call_mode(VisualScriptFunctionCall::CALL_MODE_INSTANCE);
-			vsfc->set_base_type(String(""));
-			if (tg.gdclass != StringName()) {
-				vsfc->set_base_type(tg.gdclass);
+		if (p_connecting) {
+			VisualScriptNode::TypeGuess tg = _guess_output_type(port_action_node, port_action_output, vn);
 
-			} else if (script->get_node(edited_func, port_action_node).is_valid()) {
-				PropertyHint hint = script->get_node(edited_func, port_action_node)->get_output_value_port_info(port_action_output).hint;
-				String base_type = script->get_node(edited_func, port_action_node)->get_output_value_port_info(port_action_output).hint_string;
+			if (tg.type == Variant::OBJECT) {
+				vsfc->set_call_mode(VisualScriptFunctionCall::CALL_MODE_INSTANCE);
+				vsfc->set_base_type(String(""));
+				if (tg.gdclass != StringName()) {
+					vsfc->set_base_type(tg.gdclass);
 
-				if (base_type != String() && hint == PROPERTY_HINT_TYPE_STRING) {
-					vsfc->set_base_type(base_type);
+				} else if (script->get_node(edited_func, port_action_node).is_valid()) {
+					PropertyHint hint = script->get_node(edited_func, port_action_node)->get_output_value_port_info(port_action_output).hint;
+					String base_type = script->get_node(edited_func, port_action_node)->get_output_value_port_info(port_action_output).hint_string;
+
+					if (base_type != String() && hint == PROPERTY_HINT_TYPE_STRING) {
+						vsfc->set_base_type(base_type);
+					}
+					if (p_text == "call" || p_text == "call_deferred") {
+						vsfc->set_function(String(""));
+					}
 				}
-				if (p_text == "call" || p_text == "call_deferred") {
-					vsfc->set_function(String(""));
+				if (tg.script.is_valid()) {
+					vsfc->set_base_script(tg.script->get_path());
 				}
+			} else if (tg.type == Variant::NIL) {
+				vsfc->set_call_mode(VisualScriptFunctionCall::CALL_MODE_INSTANCE);
+				vsfc->set_base_type(String(""));
+			} else {
+				vsfc->set_call_mode(VisualScriptFunctionCall::CALL_MODE_BASIC_TYPE);
+				vsfc->set_basic_type(tg.type);
 			}
-			if (tg.script.is_valid()) {
-				vsfc->set_base_script(tg.script->get_path());
-			}
-		} else if (tg.type == Variant::NIL) {
-			vsfc->set_call_mode(VisualScriptFunctionCall::CALL_MODE_INSTANCE);
-			vsfc->set_base_type(String(""));
-		} else {
-			vsfc->set_call_mode(VisualScriptFunctionCall::CALL_MODE_BASIC_TYPE);
-			vsfc->set_basic_type(tg.type);
 		}
 	}
 
-	if (Object::cast_to<VisualScriptPropertySet>(vsn.ptr())) {
+	// if connecting from another node the call mode shouldn't be self
+	if (p_connecting) {
+		if (Object::cast_to<VisualScriptPropertySet>(vsn.ptr())) {
+			Ref<VisualScriptPropertySet> vsp = vsn;
 
-		Ref<VisualScriptPropertySet> vsp = vsn;
+			VisualScriptNode::TypeGuess tg = _guess_output_type(port_action_node, port_action_output, vn);
+			if (tg.type == Variant::OBJECT) {
+				vsp->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
+				vsp->set_base_type(String(""));
+				if (tg.gdclass != StringName()) {
+					vsp->set_base_type(tg.gdclass);
 
-		VisualScriptNode::TypeGuess tg = _guess_output_type(port_action_node, port_action_output, vn);
-		if (tg.type == Variant::OBJECT) {
-			vsp->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
-			vsp->set_base_type(String(""));
-			if (tg.gdclass != StringName()) {
-				vsp->set_base_type(tg.gdclass);
+				} else if (script->get_node(edited_func, port_action_node).is_valid()) {
+					PropertyHint hint = script->get_node(edited_func, port_action_node)->get_output_value_port_info(port_action_output).hint;
+					String base_type = script->get_node(edited_func, port_action_node)->get_output_value_port_info(port_action_output).hint_string;
 
-			} else if (script->get_node(edited_func, port_action_node).is_valid()) {
-				PropertyHint hint = script->get_node(edited_func, port_action_node)->get_output_value_port_info(port_action_output).hint;
-				String base_type = script->get_node(edited_func, port_action_node)->get_output_value_port_info(port_action_output).hint_string;
-
-				if (base_type != String() && hint == PROPERTY_HINT_TYPE_STRING) {
-					vsp->set_base_type(base_type);
+					if (base_type != String() && hint == PROPERTY_HINT_TYPE_STRING) {
+						vsp->set_base_type(base_type);
+					}
 				}
+				if (tg.script.is_valid()) {
+					vsp->set_base_script(tg.script->get_path());
+				}
+			} else if (tg.type == Variant::NIL) {
+				vsp->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
+				vsp->set_base_type(String(""));
+			} else {
+				vsp->set_call_mode(VisualScriptPropertySet::CALL_MODE_BASIC_TYPE);
+				vsp->set_basic_type(tg.type);
 			}
-			if (tg.script.is_valid()) {
-				vsp->set_base_script(tg.script->get_path());
-			}
-		} else if (tg.type == Variant::NIL) {
-			vsp->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
-			vsp->set_base_type(String(""));
-		} else {
-			vsp->set_call_mode(VisualScriptPropertySet::CALL_MODE_BASIC_TYPE);
-			vsp->set_basic_type(tg.type);
 		}
-	}
 
-	if (Object::cast_to<VisualScriptPropertyGet>(vsn.ptr())) {
-		Ref<VisualScriptPropertyGet> vsp = vsn;
+		if (Object::cast_to<VisualScriptPropertyGet>(vsn.ptr())) {
+			Ref<VisualScriptPropertyGet> vsp = vsn;
 
-		VisualScriptNode::TypeGuess tg = _guess_output_type(port_action_node, port_action_output, vn);
-		if (tg.type == Variant::OBJECT) {
-			vsp->set_call_mode(VisualScriptPropertyGet::CALL_MODE_INSTANCE);
-			vsp->set_base_type(String(""));
-			if (tg.gdclass != StringName()) {
-				vsp->set_base_type(tg.gdclass);
+			VisualScriptNode::TypeGuess tg = _guess_output_type(port_action_node, port_action_output, vn);
+			if (tg.type == Variant::OBJECT) {
+				vsp->set_call_mode(VisualScriptPropertyGet::CALL_MODE_INSTANCE);
+				vsp->set_base_type(String(""));
+				if (tg.gdclass != StringName()) {
+					vsp->set_base_type(tg.gdclass);
 
-			} else if (script->get_node(edited_func, port_action_node).is_valid()) {
-				PropertyHint hint = script->get_node(edited_func, port_action_node)->get_output_value_port_info(port_action_output).hint;
-				String base_type = script->get_node(edited_func, port_action_node)->get_output_value_port_info(port_action_output).hint_string;
-				if (base_type != String() && hint == PROPERTY_HINT_TYPE_STRING) {
-					vsp->set_base_type(base_type);
+				} else if (script->get_node(edited_func, port_action_node).is_valid()) {
+					PropertyHint hint = script->get_node(edited_func, port_action_node)->get_output_value_port_info(port_action_output).hint;
+					String base_type = script->get_node(edited_func, port_action_node)->get_output_value_port_info(port_action_output).hint_string;
+					if (base_type != String() && hint == PROPERTY_HINT_TYPE_STRING) {
+						vsp->set_base_type(base_type);
+					}
 				}
+				if (tg.script.is_valid()) {
+					vsp->set_base_script(tg.script->get_path());
+				}
+			} else if (tg.type == Variant::NIL) {
+				vsp->set_call_mode(VisualScriptPropertyGet::CALL_MODE_INSTANCE);
+				vsp->set_base_type(String(""));
+			} else {
+				vsp->set_call_mode(VisualScriptPropertyGet::CALL_MODE_BASIC_TYPE);
+				vsp->set_basic_type(tg.type);
 			}
-			if (tg.script.is_valid()) {
-				vsp->set_base_script(tg.script->get_path());
-			}
-		} else if (tg.type == Variant::NIL) {
-			vsp->set_call_mode(VisualScriptPropertyGet::CALL_MODE_INSTANCE);
-			vsp->set_base_type(String(""));
-		} else {
-			vsp->set_call_mode(VisualScriptPropertyGet::CALL_MODE_BASIC_TYPE);
-			vsp->set_basic_type(tg.type);
 		}
 	}
 	Ref<VisualScriptNode> vnode_old = script->get_node(edited_func, port_action_node);
@@ -3614,7 +3619,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_signal_dialog = memnew(AcceptDialog);
 	edit_signal_dialog->get_ok()->set_text(TTR("Close"));
 	add_child(edit_signal_dialog);
-	edit_signal_dialog->set_title(TTR("Edit Signal Arguments:"));
 
 	signal_editor = memnew(VisualScriptEditorSignalEdit);
 	edit_signal_edit = memnew(EditorInspector);
@@ -3625,7 +3629,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_variable_dialog = memnew(AcceptDialog);
 	edit_variable_dialog->get_ok()->set_text(TTR("Close"));
 	add_child(edit_variable_dialog);
-	edit_variable_dialog->set_title(TTR("Edit Variable:"));
 
 	variable_editor = memnew(VisualScriptEditorVariableEdit);
 	edit_variable_edit = memnew(EditorInspector);
@@ -3636,7 +3639,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	select_base_type = memnew(CreateDialog);
 	select_base_type->set_base_type("Object"); //anything goes
 	select_base_type->connect("create", this, "_change_base_type_callback");
-	select_base_type->get_ok()->set_text(TTR("Change"));
 	add_child(select_base_type);
 
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();

@@ -518,7 +518,7 @@ void GDAPI godot_variant_evaluate(godot_variant_operator p_op, const godot_varia
 	const Variant *a = (const Variant *)p_a;
 	const Variant *b = (const Variant *)p_b;
 	Variant *ret = (Variant *)r_ret;
-	Variant::evaluate(op, a, b, *ret, *r_valid);
+	Variant::evaluate(op, *a, *b, *ret, *r_valid);
 }
 
 #ifdef __cplusplus

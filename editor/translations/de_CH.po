@@ -162,11 +162,17 @@ msgid "Animation Playback Track"
 msgstr "Stoppe Animations-Wiedergabe. (S)"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr ""
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Animations-Node"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
+msgstr "Animations-Node"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp

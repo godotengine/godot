@@ -110,7 +110,7 @@
 			Always use [code]TRANSFER_MODE_ORDERED[/code] in place of [code]TRANSFER_MODE_UNRELIABLE[/code]. This is the only way to use ordering with the RPC system.
 		</member>
 		<member name="channel_count" type="int" setter="set_channel_count" getter="get_channel_count">
-			The number of channels to be used by ENet. Default: [code]3[/code]. Channels are used to separate different kinds of data. In realiable or ordered mode, for example, the packet delivery order is ensured on a per channel basis.
+			The number of channels to be used by ENet. Default: [code]3[/code]. Channels are used to separate different kinds of data. In reliable or ordered mode, for example, the packet delivery order is ensured on a per channel basis.
 		</member>
 		<member name="compression_mode" type="int" setter="set_compression_mode" getter="get_compression_mode" enum="NetworkedMultiplayerENet.CompressionMode">
 			The compression method used for network packets. Default is no compression. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all.

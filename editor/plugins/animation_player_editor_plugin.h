@@ -97,11 +97,10 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Button *play_from;
 	Button *play_bw;
 	Button *play_bw_from;
-
-	//Button *pause;
 	Button *autoplay;
 
 	MenuButton *tool_anim;
+	ToolButton *onion_toggle;
 	MenuButton *onion_skinning;
 	ToolButton *pin;
 	SpinBox *frame;
@@ -228,7 +227,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(Ref<InputEvent> p_event);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 

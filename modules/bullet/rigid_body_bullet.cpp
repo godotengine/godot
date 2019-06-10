@@ -741,22 +741,20 @@ void RigidBodyBullet::set_continuous_collision_detection(bool p_enable) {
 	if (p_enable) {
 		// This threshold enable CCD if the object moves more than
 		// 1 meter in one simulation frame
-		btBody->setCcdMotionThreshold(0.1);
+		btBody->setCcdMotionThreshold(1e-7);
 
 		/// Calculate using the rule writte below the CCD swept sphere radius
 		///     CCD works on an embedded sphere of radius, make sure this radius
 		///     is embedded inside the convex objects, preferably smaller:
 		///     for an object of dimensions 1 meter, try 0.2
-		btScalar radius;
+		btScalar radius(1.0);
 		if (btBody->getCollisionShape()) {
 			btVector3 center;
 			btBody->getCollisionShape()->getBoundingSphere(center, radius);
-		} else {
-			radius = 0;
 		}
 		btBody->setCcdSweptSphereRadius(radius * 0.2);
 	} else {
-		btBody->setCcdMotionThreshold(0.);
+		btBody->setCcdMotionThreshold(10000.0);
 		btBody->setCcdSweptSphereRadius(0.);
 	}
 }
@@ -834,7 +832,7 @@ void RigidBodyBullet::reload_shapes() {
 	btBody->updateInertiaTensor();
 
 	reload_kinematic_shapes();
-
+	set_continuous_collision_detection(btBody->getCcdMotionThreshold() < 9998.0);
 	reload_body();
 }
 

@@ -475,6 +475,7 @@ class InputEventAction : public InputEvent {
 
 	StringName action;
 	bool pressed;
+	float strength;
 
 protected:
 	static void _bind_methods();
@@ -485,6 +486,9 @@ public:
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const;
+
+	void set_strength(float p_strength);
+	float get_strength() const;
 
 	virtual bool is_action(const StringName &p_action) const;
 

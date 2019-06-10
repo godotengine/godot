@@ -273,7 +273,7 @@ public:
 	virtual String get_environment(const String &p_var) const = 0;
 	virtual bool set_environment(const String &p_var, const String &p_value) const = 0;
 
-	virtual String get_name() = 0;
+	virtual String get_name() const = 0;
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
 	virtual String get_model_name() const;
 
@@ -451,6 +451,7 @@ public:
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
 
+	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
 
 	virtual int get_exit_code() const;

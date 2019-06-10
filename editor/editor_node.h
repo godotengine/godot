@@ -146,6 +146,7 @@ private:
 		FILE_SAVE_OPTIMIZED,
 		FILE_OPEN_RECENT,
 		FILE_OPEN_OLD_SCENE,
+		FILE_QUICK_OPEN,
 		FILE_QUICK_OPEN_SCENE,
 		FILE_QUICK_OPEN_SCRIPT,
 		FILE_OPEN_PREV,
@@ -524,8 +525,8 @@ private:
 	static void _editor_file_dialog_unregister(EditorFileDialog *p_dialog);
 
 	void _cleanup_scene();
-	void _remove_edited_scene();
-	void _remove_scene(int index);
+	void _remove_edited_scene(bool p_change_tab = true);
+	void _remove_scene(int index, bool p_change_tab = true);
 	bool _find_and_save_resource(RES p_res, Map<RES, bool> &processed, int32_t flags);
 	bool _find_and_save_edited_subresources(Object *obj, Map<RES, bool> &processed, int32_t flags);
 	void _save_edited_subresources(Node *scene, Map<RES, bool> &processed, int32_t flags);
@@ -642,6 +643,12 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+protected:
+	friend class FileSystemDock;
+
+	int get_current_tab();
+	void set_current_tab(int p_tab);
 
 public:
 	bool call_build();
@@ -814,6 +821,7 @@ public:
 	void remove_tool_menu_item(const String &p_name);
 
 	void save_all_scenes();
+	void save_scene_list(Vector<String> p_scene_filenames);
 	void restart_editor();
 
 	void dim_editor(bool p_dimming);
@@ -835,6 +843,8 @@ public:
 
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
 	static void add_build_callback(EditorBuildCallback p_callback);
+
+	bool ensure_main_scene(bool p_from_native);
 };
 
 struct EditorProgress {

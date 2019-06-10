@@ -36,14 +36,14 @@
 			<return type="Label">
 			</return>
 			<description>
-				Return the label used for built-in text.
+				Returns the label used for built-in text.
 			</description>
 		</method>
 		<method name="get_ok">
 			<return type="Button">
 			</return>
 			<description>
-				Return the OK Button.
+				Returns the OK Button.
 			</description>
 		</method>
 		<method name="register_text_enter">

@@ -13,7 +13,7 @@
 			<return type="PopupMenu">
 			</return>
 			<description>
-				Return the [PopupMenu] contained in this button.
+				Returns the [PopupMenu] contained in this button.
 			</description>
 		</method>
 		<method name="set_disable_shortcuts">

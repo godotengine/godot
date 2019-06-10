@@ -95,7 +95,7 @@ private:
 	MethodNotifyCallback method_callback;
 	PropertyNotifyCallback property_callback;
 
-	int commiting;
+	int committing;
 
 protected:
 	static void _bind_methods();
@@ -110,7 +110,7 @@ public:
 	void add_do_reference(Object *p_object);
 	void add_undo_reference(Object *p_object);
 
-	bool is_commiting_action() const;
+	bool is_committing_action() const;
 	void commit_action();
 
 	bool redo();

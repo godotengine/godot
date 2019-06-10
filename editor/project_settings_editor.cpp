@@ -793,15 +793,9 @@ void ProjectSettingsEditor::popup_project_settings() {
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else {
-
-		Size2 popup_size = Size2(900, 700) * editor_get_scale();
-		Size2 window_size = get_viewport_rect().size;
-
-		popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
-		popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
-
-		popup_centered(popup_size);
+		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
 	}
+
 	globals_editor->update_category_list();
 	_update_translations();
 	autoload_settings->update_autoload();

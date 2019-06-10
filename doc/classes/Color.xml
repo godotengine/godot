@@ -566,6 +566,8 @@
 		</constant>
 		<constant name="tomato" value="Color( 1, 0.39, 0.28, 1 )">
 		</constant>
+		<constant name="transparent" value="Color( 1, 1, 1, 0 )">
+		</constant>
 		<constant name="turquoise" value="Color( 0.25, 0.88, 0.82, 1 )">
 		</constant>
 		<constant name="violet" value="Color( 0.93, 0.51, 0.93, 1 )">

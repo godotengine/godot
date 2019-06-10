@@ -198,13 +198,14 @@ public:
 		int directional_light_count;
 		int reflection_probe_count;
 
-		bool cull_front;
-		bool cull_disabled;
 		bool used_sss;
 		bool using_contact_shadows;
 
 		VS::ViewportDebugDraw debug_draw;
 		*/
+
+		bool cull_front;
+		bool cull_disabled;
 
 		bool used_screen_texture;
 		bool shadow_is_dual_parabolloid;
@@ -503,8 +504,7 @@ public:
 		enum {
 			MAX_LIGHTS = 255,
 			MAX_REFLECTION_PROBES = 255,
-			DEFAULT_MAX_ELEMENTS = 65536,
-			SORT_KEY_PRIORITY_SHIFT = 56
+			DEFAULT_MAX_ELEMENTS = 65536
 		};
 
 		int max_elements;
@@ -518,6 +518,7 @@ public:
 
 			bool use_accum; //is this an add pass for multipass
 			bool *use_accum_ptr;
+			bool front_facing;
 
 			union {
 				//TODO: should be endian swapped on big endian
@@ -603,12 +604,10 @@ public:
 		struct SortByReverseDepthAndPriority {
 
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
-				uint32_t layer_A = uint32_t(A->sort_key >> SORT_KEY_PRIORITY_SHIFT);
-				uint32_t layer_B = uint32_t(B->sort_key >> SORT_KEY_PRIORITY_SHIFT);
-				if (layer_A == layer_B) {
+				if (A->priority == B->priority) {
 					return A->instance->depth > B->instance->depth;
 				} else {
-					return layer_A < layer_B;
+					return A->priority < B->priority;
 				}
 			}
 		};
@@ -687,7 +686,8 @@ public:
 
 	void _draw_sky(RasterizerStorageGLES2::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy, const Basis &p_sky_orientation);
 
-	_FORCE_INLINE_ bool _setup_material(RasterizerStorageGLES2::Material *p_material, bool p_reverse_cull, bool p_alpha_pass, Size2i p_skeleton_tex_size = Size2i(0, 0));
+	_FORCE_INLINE_ void _set_cull(bool p_front, bool p_disabled, bool p_reverse_cull);
+	_FORCE_INLINE_ bool _setup_material(RasterizerStorageGLES2::Material *p_material, bool p_alpha_pass, Size2i p_skeleton_tex_size = Size2i(0, 0));
 	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *p_element, RasterizerStorageGLES2::Skeleton *p_skeleton);
 	_FORCE_INLINE_ void _setup_light_type(LightInstance *p_light, ShadowAtlas *shadow_atlas);
 	_FORCE_INLINE_ void _setup_light(LightInstance *p_light, ShadowAtlas *shadow_atlas, const Transform &p_view_transform);

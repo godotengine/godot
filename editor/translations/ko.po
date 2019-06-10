@@ -17,8 +17,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-04-05 13:04+0000\n"
-"Last-Translator: moolow <copyhyeon@gmail.com>\n"
+"PO-Revision-Date: 2019-05-10 08:15+0000\n"
+"Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -163,12 +163,18 @@ msgid "Animation Playback Track"
 msgstr "애니메이션 재생 트랙"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "트랙 추가"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "애니메이션 길이 시간 (초)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "애니메이션 길이 시간 (초)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "트랙 추가"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -250,11 +256,11 @@ msgstr "입방형"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr "클램프 루프 인터프리터"
+msgstr "루프 보간 고정"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr "랩 루프 인터프리터"
+msgstr "루프 보간 감추기"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -422,9 +428,8 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "노드 별로 그룹을 트랙 하거나 일반 목록으로 표시합니다."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "스냅"
+msgstr "스냅:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -432,7 +437,7 @@ msgstr "애니메이션 단계 값."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "초"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
@@ -4773,20 +4778,19 @@ msgstr "레이아웃"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
-msgstr ""
+msgstr "키를 삽입하기 위한 전환 마스크."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation mask for inserting keys."
-msgstr ""
+msgstr "키를 삽입하기 위한 회전 마스크."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale mask for inserting keys."
-msgstr ""
+msgstr "키를 삽입하기 위한 규모 마스크."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Insert keys (based on mask)."
-msgstr "키 삽입 (Ins 키)"
+msgstr "키 삽입 (마스크 기준)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -4795,11 +4799,13 @@ msgid ""
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
 msgstr ""
+"물체가 전환될 때 자동으로 키를 삽입합니다, 회전 또는 규모 (마스크 기준).\n"
+"키는 기존 트랙에만 추가되며, 새 트랙이 만들어지지 않습니다.\n"
+"처음에 키는 수동으로 삽입하여야 합니다."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Insert Key"
-msgstr "애니메이션 키 삽입"
+msgstr "자동 키 삽입"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -5785,9 +5791,8 @@ msgid "Save Theme As..."
 msgstr "테마 다른 이름으로 저장..."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "%s Class Reference"
-msgstr " 클래스 레퍼런스"
+msgstr "%s 클래스 참조"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
@@ -6420,7 +6425,7 @@ msgstr "크기 조절 모드 (R)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
-msgstr "로컬 좌표"
+msgstr "지역 좌표"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Space Mode (%s)"
@@ -6612,24 +6617,20 @@ msgid "Nameless gizmo"
 msgstr "이름없는 오브젝트의 중심점"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Mesh2D"
-msgstr "2D 메시 만들기"
+msgstr "Mesh2D 만들기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon2D"
-msgstr "폴리곤3D 만들기"
+msgstr "Polygon2D 만들기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D"
-msgstr "내비게이션 충돌 폴리곤 만들기"
+msgstr "CollisionPolygon2D 만들기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D"
-msgstr "Occluder 폴리곤 만들기"
+msgstr "LightOccluder2D 만들기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6641,46 +6642,39 @@ msgstr "스프라이트가 애니메이션 프레임을 사용해서 메시로 �
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't replace by mesh."
-msgstr "유효하지 않은 형상, 메시로 대체할 수 없습니다."
+msgstr "잘못된 형태, 메시로 대체할 수 없습니다."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create polygon."
-msgstr "유효하지 않은 형상, 메시로 대체할 수 없습니다."
+msgstr "잘못된 형태, 폴리곤을 만들 수 없습니다."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create collision polygon."
-msgstr "유효하지 않은 형상, 메시로 대체할 수 없습니다."
+msgstr "잘못된 형태, 충돌 폴리곤을 만들 수 없습니다."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create light occluder."
-msgstr "유효하지 않은 형상, 메시로 대체할 수 없습니다."
+msgstr "잘못된 형태, 조명 어클루더를 만들 수 없습니다."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr "스프라이트"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Mesh2D"
-msgstr "2D 메시로 전환"
+msgstr "Mesh2D로 전환"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Polygon2D"
-msgstr "폴리곤 이동"
+msgstr "Polygon2D로 전환"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "내비게이션 충돌 폴리곤 만들기"
+msgstr "CollisionPolygon2D 노드 만들기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D Sibling"
-msgstr "Occluder 폴리곤 만들기"
+msgstr "LightOccluder2D 노드 만들기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7266,7 +7260,6 @@ msgid "Duplicate Nodes"
 msgstr "노드 복제"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Nodes"
 msgstr "노드 삭제"
 
@@ -8974,7 +8967,7 @@ msgstr "라이브러리들: "
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
-msgstr "GD네이티브"
+msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"

@@ -185,6 +185,17 @@
 				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
+		<method name="move_toward">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="to" type="Vector2">
+			</argument>
+			<argument index="1" name="delta" type="float">
+			</argument>
+			<description>
+				Moves the vector toward [code]to[/code] by the fixed [code]delta[/code] amount.
+			</description>
+		</method>
 		<method name="normalized">
 			<return type="Vector2">
 			</return>

@@ -2374,7 +2374,7 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 		has_alpha = false;
 	}
 
-	RenderList::Element *e = has_alpha ? render_list.add_alpha_element() : render_list.add_element();
+	RenderList::Element *e = (has_alpha || p_material->shader->spatial.no_depth_test) ? render_list.add_alpha_element() : render_list.add_element();
 
 	if (!e)
 		return;

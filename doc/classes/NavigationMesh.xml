@@ -29,6 +29,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_collision_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_polygon">
 			<return type="PoolIntArray">
 			</return>
@@ -46,6 +54,16 @@
 		<method name="get_vertices" qualifiers="const">
 			<return type="PoolVector3Array">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_collision_mask_bit">
+			<return type="void">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -85,6 +103,10 @@
 		</member>
 		<member name="filter/low_hanging_obstacles" type="bool" setter="set_filter_low_hanging_obstacles" getter="get_filter_low_hanging_obstacles">
 		</member>
+		<member name="geometry/collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
+		</member>
+		<member name="geometry/parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type">
+		</member>
 		<member name="polygon/verts_per_poly" type="float" setter="set_verts_per_poly" getter="get_verts_per_poly">
 		</member>
 		<member name="region/merge_size" type="float" setter="set_region_merge_size" getter="get_region_merge_size">
@@ -100,6 +122,12 @@
 		<constant name="SAMPLE_PARTITION_MONOTONE" value="1">
 		</constant>
 		<constant name="SAMPLE_PARTITION_LAYERS" value="2">
+		</constant>
+		<constant name="PARSED_GEOMETRY_MESH_INSTANCES" value="0">
+		</constant>
+		<constant name="PARSED_GEOMETRY_STATIC_COLLIDERS" value="1">
+		</constant>
+		<constant name="PARSED_GEOMETRY_BOTH" value="2">
 		</constant>
 	</constants>
 </class>

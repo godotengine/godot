@@ -39,7 +39,7 @@ class EditorTexturePreviewPlugin : public EditorResourcePreviewGenerator {
 	GDCLASS(EditorTexturePreviewPlugin, EditorResourcePreviewGenerator)
 public:
 	virtual bool handles(const String &p_type) const;
-	virtual bool should_generate_small_preview() const;
+	virtual bool generate_small_preview_automatically() const;
 	virtual Ref<Texture> generate(const RES &p_from, const Size2 p_size) const;
 
 	EditorTexturePreviewPlugin();
@@ -49,7 +49,7 @@ class EditorImagePreviewPlugin : public EditorResourcePreviewGenerator {
 	GDCLASS(EditorImagePreviewPlugin, EditorResourcePreviewGenerator)
 public:
 	virtual bool handles(const String &p_type) const;
-	virtual bool should_generate_small_preview() const;
+	virtual bool generate_small_preview_automatically() const;
 	virtual Ref<Texture> generate(const RES &p_from, const Size2 p_size) const;
 
 	EditorImagePreviewPlugin();
@@ -59,7 +59,7 @@ class EditorBitmapPreviewPlugin : public EditorResourcePreviewGenerator {
 	GDCLASS(EditorBitmapPreviewPlugin, EditorResourcePreviewGenerator)
 public:
 	virtual bool handles(const String &p_type) const;
-	virtual bool should_generate_small_preview() const;
+	virtual bool generate_small_preview_automatically() const;
 	virtual Ref<Texture> generate(const RES &p_from, const Size2 p_size) const;
 
 	EditorBitmapPreviewPlugin();
@@ -98,7 +98,7 @@ protected:
 
 public:
 	virtual bool handles(const String &p_type) const;
-	virtual bool should_generate_small_preview() const;
+	virtual bool generate_small_preview_automatically() const;
 	virtual Ref<Texture> generate(const RES &p_from, const Size2 p_size) const;
 
 	EditorMaterialPreviewPlugin();

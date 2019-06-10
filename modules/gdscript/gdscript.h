@@ -251,6 +251,7 @@ public:
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 
 	virtual void notification(int p_notification);
+	String to_string(bool *r_valid);
 
 	virtual Ref<Script> get_script() const;
 
@@ -457,9 +458,9 @@ public:
 	virtual bool can_inherit_from_file() { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const;
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
-	virtual Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint);
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint);
 #ifdef TOOLS_ENABLED
-	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_base_path, Object *p_owner, LookupResult &r_result);
+	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result);
 #endif
 	virtual String _get_indentation() const;
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;

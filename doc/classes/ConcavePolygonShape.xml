@@ -13,7 +13,7 @@
 			<return type="PoolVector3Array">
 			</return>
 			<description>
-				Return the faces (an array of triangles).
+				Returns the faces (an array of triangles).
 			</description>
 		</method>
 		<method name="set_faces">

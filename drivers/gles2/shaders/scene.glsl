@@ -1151,7 +1151,8 @@ void light_compute(
 		float clearcoat_gloss,
 		float anisotropy,
 		inout vec3 diffuse_light,
-		inout vec3 specular_light) {
+		inout vec3 specular_light,
+		inout float alpha) {
 
 //this makes lights behave closer to linear, but then addition of lights looks bad
 //better left disabled
@@ -1306,10 +1307,10 @@ LIGHT_SHADER_CODE
 		// shlick+ggx as default
 
 #if defined(LIGHT_USE_ANISOTROPY)
-		float alpha = roughness * roughness;
+		float alpha_ggx = roughness * roughness;
 		float aspect = sqrt(1.0 - anisotropy * 0.9);
-		float ax = alpha / aspect;
-		float ay = alpha * aspect;
+		float ax = alpha_ggx / aspect;
+		float ay = alpha_ggx * aspect;
 		float XdotH = dot(T, H);
 		float YdotH = dot(B, H);
 		float D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH, cNdotH);
@@ -1317,10 +1318,10 @@ LIGHT_SHADER_CODE
 		float G = V_GGX_anisotropic(ax, ay, dot(T, V), dot(T, L), dot(B, V), dot(B, L), cNdotV, cNdotL);
 
 #else
-		float alpha = roughness * roughness;
-		float D = D_GGX(cNdotH, alpha);
-		//float G = G_GGX_2cos(cNdotL, alpha) * G_GGX_2cos(cNdotV, alpha);
-		float G = V_GGX(cNdotL, cNdotV, alpha);
+		float alpha_ggx = roughness * roughness;
+		float D = D_GGX(cNdotH, alpha_ggx);
+		//float G = G_GGX_2cos(cNdotL, alpha_ggx) * G_GGX_2cos(cNdotV, alpha_ggx);
+		float G = V_GGX(cNdotL, cNdotV, alpha_ggx);
 #endif
 		// F
 		vec3 f0 = F0(metallic, specular, diffuse_color);
@@ -1349,6 +1350,10 @@ LIGHT_SHADER_CODE
 		specular_light += clearcoat_specular_brdf_NL * light_color * specular_blob_intensity * attenuation;
 #endif
 	}
+
+#ifdef USE_SHADOW_TO_OPACITY
+	alpha = min(alpha, clamp(1.0 - length(attenuation), 0.0, 1.0));
+#endif
 
 #endif //defined(USE_LIGHT_SHADER_CODE)
 }
@@ -1535,17 +1540,21 @@ FRAGMENT_SHADER_CODE
 
 	vec3 eye_position = view;
 
+#if !defined(USE_SHADOW_TO_OPACITY)
+
 #if defined(ALPHA_SCISSOR_USED)
 	if (alpha < alpha_scissor) {
 		discard;
 	}
-#endif
+#endif // ALPHA_SCISSOR_USED
 
 #ifdef USE_DEPTH_PREPASS
 	if (alpha < 0.99) {
 		discard;
 	}
-#endif
+#endif // USE_DEPTH_PREPASS
+
+#endif // !USE_SHADOW_TO_OPACITY
 
 #ifdef BASE_PASS
 	//none
@@ -2061,12 +2070,31 @@ FRAGMENT_SHADER_CODE
 			clearcoat_gloss,
 			anisotropy,
 			diffuse_light,
-			specular_light);
+			specular_light,
+			alpha);
 
 #endif //vertex lighting
 
 #endif //USE_LIGHTING
 	//compute and merge
+
+#ifdef USE_SHADOW_TO_OPACITY
+
+	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
+
+#if defined(ALPHA_SCISSOR_USED)
+	if (alpha < alpha_scissor) {
+		discard;
+	}
+#endif // ALPHA_SCISSOR_USED
+
+#ifdef USE_DEPTH_PREPASS
+	if (alpha < 0.99) {
+		discard;
+	}
+#endif // USE_DEPTH_PREPASS
+
+#endif // !USE_SHADOW_TO_OPACITY
 
 #ifndef RENDER_DEPTH
 
@@ -2104,8 +2132,6 @@ FRAGMENT_SHADER_CODE
 	gl_FragColor.rgb += emission;
 #endif
 	// gl_FragColor = vec4(normal, 1.0);
-
-#endif //unshaded
 
 //apply fog
 #if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
@@ -2160,6 +2186,8 @@ FRAGMENT_SHADER_CODE
 #endif //use vertex lit
 
 #endif // defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
+
+#endif //unshaded
 
 #else // not RENDER_DEPTH
 //depth render

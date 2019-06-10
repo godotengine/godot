@@ -495,7 +495,7 @@ String OSIPhone::get_user_data_dir() const {
 	return data_dir;
 };
 
-String OSIPhone::get_name() {
+String OSIPhone::get_name() const {
 
 	return "iOS";
 };

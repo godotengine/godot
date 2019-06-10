@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-30 20:04+0000\n"
+"PO-Revision-Date: 2019-04-29 08:48+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.6.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -163,12 +163,18 @@ msgid "Animation Playback Track"
 msgstr "Доріжка відтворення анімації"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Додати доріжку"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Тривалість анімації (у секундах)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Тривалість анімації (у секундах)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Додати доріжку"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -425,9 +431,8 @@ msgstr ""
 "Групувати доріжки за вузлами або показувати їх у форматі простого списку."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "Прилипання"
+msgstr "Прилипання:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -435,7 +440,7 @@ msgstr "Значення кроку анімації."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "Секунди"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
@@ -4811,20 +4816,19 @@ msgstr "Макет"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
-msgstr ""
+msgstr "Маска перенесення для вставляння ключових кадрів."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation mask for inserting keys."
-msgstr ""
+msgstr "Маска обертання для вставляння ключових кадрів."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale mask for inserting keys."
-msgstr ""
+msgstr "Маска масштабування для вставляння ключових кадрів."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Insert keys (based on mask)."
-msgstr "Вставити ключ (існуючі доріжки)"
+msgstr "Вставити ключові кадри (на основі маски)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -4833,11 +4837,15 @@ msgid ""
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
 msgstr ""
+"Автоматично вставляти ключові кадри при перенесенні, обертанні або "
+"масштабуванні об'єктів (на основі маски).\n"
+"Ключові кадри додаватимуться лише до наявних доріжок, нові доріжки не "
+"створюватимуться.\n"
+"Спершу ключові кадри слід додати вручну."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Insert Key"
-msgstr "Вставити ключ анімації"
+msgstr "Автовставлення ключового кадру"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -5826,9 +5834,8 @@ msgid "Save Theme As..."
 msgstr "Зберегти тему як..."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "%s Class Reference"
-msgstr " Посилання на клас"
+msgstr "Довідник з класу %s"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
@@ -6653,24 +6660,20 @@ msgid "Nameless gizmo"
 msgstr "Штука без назви"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Mesh2D"
-msgstr "Створити плоску сітку"
+msgstr "Створити Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon2D"
-msgstr "Створити Polygon3D"
+msgstr "Створити Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D"
-msgstr "Створити полігон зіткнення"
+msgstr "Створити CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D"
-msgstr "Створено затінювальний полігон"
+msgstr "Створити LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6687,43 +6690,36 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Некоректна геометрія, неможливо замінити сіткою."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create polygon."
-msgstr "Некоректна геометрія, неможливо замінити сіткою."
+msgstr "Некоректна геометрія, неможливо створити багатокутник."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create collision polygon."
-msgstr "Некоректна геометрія, неможливо замінити сіткою."
+msgstr "Некоректна геометрія, неможливо створити багатокутник зіткнення."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create light occluder."
-msgstr "Некоректна геометрія, неможливо замінити сіткою."
+msgstr "Некоректна геометрія, неможливо створити перешкоду світла."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr "Спрайт"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Mesh2D"
-msgstr "Перетворити на плоску сітку"
+msgstr "Перетворити на Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Polygon2D"
-msgstr "Перемістити полігон"
+msgstr "Перетворити на Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "Створити полігон зіткнення"
+msgstr "Створити близнюк CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D Sibling"
-msgstr "Створено затінювальний полігон"
+msgstr "Створити близнюка LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7312,9 +7308,8 @@ msgid "Duplicate Nodes"
 msgstr "Дублювати вузли"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Nodes"
-msgstr "Вилучити вузол"
+msgstr "Вилучити вузли"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"

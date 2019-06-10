@@ -8,12 +8,13 @@
 # Simon Šander <simon.sand3r@gmail.com>, 2017.
 # Yahara Octanis <yaharao55@gmail.com>, 2018.
 # Tine Jozelj <tine@tjo.space>, 2018.
+# Andrej Poženel <andrej.pozenel@outlook.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:43+0100\n"
-"Last-Translator: Tine Jozelj <tine@tjo.space>\n"
+"PO-Revision-Date: 2019-05-16 18:49+0000\n"
+"Last-Translator: Andrej Poženel <andrej.pozenel@outlook.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sl/>\n"
 "Language: sl\n"
@@ -22,26 +23,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Neveljavena vrsta argumenta za convert(), uporabite TYPE_* konstanto."
+msgstr "Neveljavna vrsta argumenta za convert(), uporabite TYPE_* konstanto."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Ni dovolj pomnilnika za dekodiranje bajtov, ali neveljaven format."
+msgstr ""
+"Ni dovolj pomnilnika za dekodiranje bajtov, ali pa je neveljaven format."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "Napačen vnos %i(ni podan) v izrazu"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self nemore biti uporabljen, ker instanca ni null (ni podano)"
+msgstr "self ne more biti uporabljen, ker instanca ni null (ni podano)"
 
 #: core/math/expression.cpp
 #, fuzzy
@@ -166,13 +168,18 @@ msgstr "Ustavi predvajanje animacije. (S)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "Animacija Dodaj sled"
+msgid "Animation length (frames)"
+msgstr "Dolžina animacije (v sekundah)."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Animation Length Time (seconds)"
+msgid "Animation length (seconds)"
 msgstr "Dolžina animacije (v sekundah)."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Animacija Dodaj sled"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy

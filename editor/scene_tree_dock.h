@@ -172,7 +172,8 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _delete_confirm();
 
-	void _toggle_editable_children();
+	void _toggle_editable_children_from_selection();
+	void _toggle_editable_children(Node *p_node);
 
 	void _node_prerenamed(Node *p_node, const String &p_new_name);
 
@@ -243,7 +244,7 @@ public:
 	void show_tab_buttons();
 	void hide_tab_buttons();
 
-	void replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true);
+	void replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true, bool p_remove_old = true);
 
 	void open_script_dialog(Node *p_for_node);
 

@@ -50,6 +50,8 @@ void MeshInstance2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_normal_map", "normal_map"), &MeshInstance2D::set_normal_map);
 	ClassDB::bind_method(D_METHOD("get_normal_map"), &MeshInstance2D::get_normal_map);
 
+	ADD_SIGNAL(MethodInfo("texture_changed"));
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");

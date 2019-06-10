@@ -725,7 +725,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 				int ds = efsd->get_file_deps(i).size();
 				ti->set_text(1, itos(ds));
 				if (ds) {
-					ti->add_button(1, get_icon("GuiVisibilityVisible", "EditorIcons"));
+					ti->add_button(1, get_icon("GuiVisibilityVisible", "EditorIcons"), -1, false, TTR("Show Dependencies"));
 				}
 				ti->set_metadata(0, path);
 				has_children = true;

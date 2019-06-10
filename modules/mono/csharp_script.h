@@ -127,7 +127,8 @@ class CSharpScript : public Script {
 
 	bool _update_exports();
 #ifdef TOOLS_ENABLED
-	bool _get_member_export(GDMonoClass *p_class, IMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported);
+	bool _get_member_export(IMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported);
+	static int _try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string);
 #endif
 
 	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);
@@ -260,6 +261,8 @@ public:
 	virtual void notification(int p_notification);
 	void _call_notification(int p_notification);
 
+	virtual String to_string(bool *r_valid);
+
 	virtual Ref<Script> get_script() const;
 
 	virtual ScriptLanguage *get_language();
@@ -377,7 +380,6 @@ public:
 	virtual bool supports_builtin_mode() const;
 	/* TODO? */ virtual int find_function(const String &p_function, const String &p_code) const { return -1; }
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
-	/* TODO? */ Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, String &r_call_hint) { return ERR_UNAVAILABLE; }
 	virtual String _get_indentation() const;
 	/* TODO? */ virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const {}
 	/* TODO */ virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) {}

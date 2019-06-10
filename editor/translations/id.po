@@ -170,12 +170,18 @@ msgid "Animation Playback Track"
 msgstr "Track Pemutar Animasi"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Tambah Track"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Panjang Animasi (detik)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Panjang Animasi (detik)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Tambah Track"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"

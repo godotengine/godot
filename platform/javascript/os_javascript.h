@@ -133,6 +133,9 @@ public:
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
+	virtual void set_clipboard(const String &p_text);
+	virtual String get_clipboard() const;
+
 	virtual MainLoop *get_main_loop() const;
 	void run_async();
 	bool main_loop_iterate();
@@ -146,7 +149,7 @@ public:
 	virtual void set_icon(const Ref<Image> &p_icon);
 	String get_executable_path() const;
 	virtual Error shell_open(String p_uri);
-	virtual String get_name();
+	virtual String get_name() const;
 	virtual bool can_draw() const;
 
 	virtual String get_resource_dir() const;

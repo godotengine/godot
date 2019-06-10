@@ -43,12 +43,16 @@
 # Арсений Солодков <arsen332211@gmail.com>, 2019.
 # Nikita <yakrobat@protonmail.com>, 2019.
 # LAT_Rio <AlSenya@yandex.ru>, 2019.
+# devnp <dev.necropan@gmail.com>, 2019.
+# Виктор <victor8632@bk.ru>, 2019.
+# Mickety <xyngraph@gmail.com>, 2019.
+# Breadp4ck <iii103@mail.ru>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-04-14 13:04+0000\n"
-"Last-Translator: LAT_Rio <AlSenya@yandex.ru>\n"
+"PO-Revision-Date: 2019-05-08 11:48+0000\n"
+"Last-Translator: Breadp4ck <iii103@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -57,7 +61,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -194,12 +198,18 @@ msgid "Animation Playback Track"
 msgstr "Трек Воспроизведения Анимации"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Добавить новый Трек"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Продолжительность анимации (в секундах)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Продолжительность анимации (в секундах)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Добавить новый Трек"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -464,7 +474,7 @@ msgstr "Значение шага анимации."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "Секунды"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
@@ -3673,9 +3683,8 @@ msgstr "Загрузка..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Move Node Point"
-msgstr "Передвинуть Точку"
+msgstr "Передвинуть узел"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Change BlendSpace1D Limits"
@@ -4830,34 +4839,43 @@ msgid "Layout"
 msgstr "Макет"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Translation mask for inserting keys."
-msgstr ""
+msgstr "Маска перемещения для добавляемых ключей."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Rotation mask for inserting keys."
-msgstr ""
+msgstr "Маска поворота для добавляемых ключей."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Scale mask for inserting keys."
-msgstr ""
+msgstr "Маска масштаба для добавляемых ключей."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
 msgid "Insert keys (based on mask)."
-msgstr "Вставить ключи (Ins)"
+msgstr "Вставить ключи (в зависимости от маски)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Auto insert keys when objects are translated, rotated on scaled (based on "
 "mask).\n"
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
 msgstr ""
+"Автоматически вставлять ключи когда объекты перемещены, повёрнуты или их "
+"размер изменён (зависит от маски).\n"
+"Ключи добавляются только в существующие дорожки, новые дорожки не будут "
+"созданы.\n"
+"Первые ключи должны быть добавлены вручную."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
 msgid "Auto Insert Key"
-msgstr "Вставить ключ"
+msgstr "Автоматически вставлять ключ"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -5846,7 +5864,7 @@ msgstr "Сохранить тему как..."
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
 msgid "%s Class Reference"
-msgstr " Ссылка на Класс"
+msgstr "%s Справка по классу"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
@@ -6671,9 +6689,8 @@ msgid "Post"
 msgstr "После"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Nameless gizmo"
-msgstr "Безымянный гизмо"
+msgstr "Безымянная штуковина"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -6709,14 +6726,13 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Некорректная геометрия, не может быть заменена сеткой."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create polygon."
-msgstr "Некорректная геометрия, не может быть заменена сеткой."
+msgstr "Некорректная геометрия, нельзя создать полигональную сетку."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create collision polygon."
-msgstr "Некорректная геометрия, не может быть заменена сеткой."
+msgstr ""
+"Некорректная геометрия, нельзя создать полигональную сетку столкновений."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -6733,9 +6749,8 @@ msgid "Convert to Mesh2D"
 msgstr "Преобразовать в 2D Mesh"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Polygon2D"
-msgstr "Передвинуть полигон"
+msgstr "Преобразовать в Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7331,9 +7346,8 @@ msgid "Duplicate Nodes"
 msgstr "Дублировать узлы"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Nodes"
-msgstr "Удалить узел"
+msgstr "Удалить узлы"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -8885,7 +8899,7 @@ msgstr "Видео память"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
-msgstr "Путь ресурса"
+msgstr "Путь к ресурсу"
 
 #: editor/script_editor_debugger.cpp
 msgid "Type"
@@ -9525,9 +9539,8 @@ msgid "Change Input Value"
 msgstr "Изменить входное значение"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Resize Comment"
-msgstr "Изменить размер CanvasItem"
+msgstr "Изменить размер комментария"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
@@ -10341,9 +10354,8 @@ msgid "Please Confirm..."
 msgstr "Подтверждение..."
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder."
-msgstr "Перейти к родительской папке"
+msgstr "Перейти к родительской папке."
 
 #: scene/gui/popup.cpp
 msgid ""

@@ -322,13 +322,13 @@ void EditorAudioBus::_volume_changed(float p_normalized) {
 
 float EditorAudioBus::_normalized_volume_to_scaled_db(float normalized) {
 	/* There are three different formulas for the conversion from normalized
-     * values to relative decibal values.
-     * One formula is an exponential graph which intends to counteract
-     * the logorithmic nature of human hearing. This is an approximation
-     * of the behaviour of a 'logarithmic potentiometer' found on most
-     * musical instruments and also emulated in popular software.
-     * The other two equations are hand-tuned linear tapers that intend to
-     * try to ease the exponential equation in areas where it makes sense.*/
+	 * values to relative decibal values.
+	 * One formula is an exponential graph which intends to counteract
+	 * the logorithmic nature of human hearing. This is an approximation
+	 * of the behaviour of a 'logarithmic potentiometer' found on most
+	 * musical instruments and also emulated in popular software.
+	 * The other two equations are hand-tuned linear tapers that intend to
+	 * try to ease the exponential equation in areas where it makes sense.*/
 
 	if (normalized > 0.6f) {
 		return 22.22f * normalized - 16.2f;
@@ -341,16 +341,16 @@ float EditorAudioBus::_normalized_volume_to_scaled_db(float normalized) {
 
 float EditorAudioBus::_scaled_db_to_normalized_volume(float db) {
 	/* Inversion of equations found in _normalized_volume_to_scaled_db.
-     * IMPORTANT: If one function changes, the other much change to reflect it. */
+	 * IMPORTANT: If one function changes, the other much change to reflect it. */
 	if (db > -2.88) {
 		return (db + 16.2f) / 22.22f;
 	} else if (db < -38.602f) {
 		return (db + 80.00f) / 830.72f;
 	} else {
 		if (db < 0.0) {
-			/* To acommodate for NaN on negative numbers for root, we will mirror the
-             * results of the postive db range in order to get the desired numerical
-             * value on the negative side. */
+			/* To accommodate for NaN on negative numbers for root, we will mirror the
+			 * results of the positive db range in order to get the desired numerical
+			 * value on the negative side. */
 			float positive_x = Math::pow(Math::abs(db) / 45.0f, 1.0f / 3.0f) + 1.0f;
 			Vector2 translation = Vector2(1.0f, 0.0f) - Vector2(positive_x, Math::abs(db));
 			Vector2 reflected_position = Vector2(1.0, 0.0f) + translation;

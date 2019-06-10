@@ -59,6 +59,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	_get_clipboard = p_env->GetMethodID(cls, "getClipboard", "()Ljava/lang/String;");
 	_set_clipboard = p_env->GetMethodID(cls, "setClipboard", "(Ljava/lang/String;)V");
 	_request_permission = p_env->GetMethodID(cls, "requestPermission", "(Ljava/lang/String;)Z");
+	_init_input_devices = p_env->GetMethodID(cls, "initInputDevices", "()V");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -181,5 +182,12 @@ bool GodotJavaWrapper::request_permission(const String &p_name) {
 		return env->CallBooleanMethod(godot_instance, _request_permission, jStrName);
 	} else {
 		return false;
+	}
+}
+
+void GodotJavaWrapper::init_input_devices() {
+	if (_init_input_devices) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		env->CallVoidMethod(godot_instance, _init_input_devices);
 	}
 }

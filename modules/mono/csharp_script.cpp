@@ -1855,6 +1855,34 @@ void CSharpInstance::_call_notification(int p_notification) {
 	}
 }
 
+String CSharpInstance::to_string(bool *r_valid) {
+	MonoObject *mono_object = get_mono_object();
+
+	if (mono_object == NULL) {
+		if (r_valid)
+			*r_valid = false;
+		return String();
+	}
+
+	MonoException *exc = NULL;
+	MonoString *result = GDMonoUtils::object_to_string(mono_object, &exc);
+
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
+		if (r_valid)
+			*r_valid = false;
+		return String();
+	}
+
+	if (result == NULL) {
+		if (r_valid)
+			*r_valid = false;
+		return String();
+	}
+
+	return GDMonoMarshal::mono_string_to_godot(result);
+}
+
 Ref<Script> CSharpInstance::get_script() const {
 
 	return script;
@@ -2020,7 +2048,7 @@ bool CSharpScript::_update_exports() {
 			for (int i = fields.size() - 1; i >= 0; i--) {
 				GDMonoField *field = fields[i];
 
-				if (_get_member_export(top, field, prop_info, exported)) {
+				if (_get_member_export(field, prop_info, exported)) {
 					StringName name = field->get_name();
 
 					if (exported) {
@@ -2041,7 +2069,7 @@ bool CSharpScript::_update_exports() {
 			for (int i = properties.size() - 1; i >= 0; i--) {
 				GDMonoProperty *property = properties[i];
 
-				if (_get_member_export(top, property, prop_info, exported)) {
+				if (_get_member_export(property, prop_info, exported)) {
 					StringName name = property->get_name();
 
 					if (exported) {
@@ -2168,17 +2196,19 @@ bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Ve
  * Returns false if there was an error, otherwise true.
  * If there was an error, r_prop_info and r_exported are not assigned any value.
  */
-bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported) {
+bool CSharpScript::_get_member_export(IMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported) {
 
-	StringName name = p_member->get_name();
+	// Goddammit, C++. All I wanted was some nested functions.
+#define MEMBER_FULL_QUALIFIED_NAME(m_member) \
+	(m_member->get_enclosing_class()->get_full_name() + "." + (String)m_member->get_name())
 
 	if (p_member->is_static()) {
 		if (p_member->has_attribute(CACHED_CLASS(ExportAttribute)))
-			ERR_PRINTS("Cannot export member because it is static: " + p_class->get_full_name() + "." + name.operator String());
+			ERR_PRINTS("Cannot export member because it is static: " + MEMBER_FULL_QUALIFIED_NAME(p_member));
 		return false;
 	}
 
-	if (member_info.has(name))
+	if (member_info.has(p_member->get_name()))
 		return false;
 
 	ManagedType type;
@@ -2191,19 +2221,22 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_
 		CRASH_NOW();
 	}
 
-	GDMonoMarshal::ExportInfo export_info;
-	Variant::Type variant_type = GDMonoMarshal::managed_to_variant_type(type, &export_info);
+	Variant::Type variant_type = GDMonoMarshal::managed_to_variant_type(type);
 
 	if (!p_member->has_attribute(CACHED_CLASS(ExportAttribute))) {
-		r_prop_info = PropertyInfo(variant_type, name.operator String(), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SCRIPT_VARIABLE);
+		r_prop_info = PropertyInfo(variant_type, (String)p_member->get_name(), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SCRIPT_VARIABLE);
 		r_exported = false;
 		return true;
 	}
 
 	if (p_member->get_member_type() == IMonoClassMember::MEMBER_TYPE_PROPERTY) {
 		GDMonoProperty *property = static_cast<GDMonoProperty *>(p_member);
-		if (!property->has_getter() || !property->has_setter()) {
-			ERR_PRINTS("Cannot export property because it does not provide a getter or a setter: " + p_class->get_full_name() + "." + name.operator String());
+		if (!property->has_getter()) {
+			ERR_PRINTS("Read-only property cannot be exported: " + MEMBER_FULL_QUALIFIED_NAME(p_member));
+			return false;
+		}
+		if (!property->has_setter()) {
+			ERR_PRINTS("Set-only property (without getter) cannot be exported: " + MEMBER_FULL_QUALIFIED_NAME(p_member));
 			return false;
 		}
 	}
@@ -2214,16 +2247,38 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_
 	String hint_string;
 
 	if (variant_type == Variant::NIL) {
-		ERR_PRINTS("Unknown type of exported member: " + p_class->get_full_name() + "." + name.operator String());
+		ERR_PRINTS("Unknown exported member type: " + MEMBER_FULL_QUALIFIED_NAME(p_member));
 		return false;
-	} else if (variant_type == Variant::INT && type.type_encoding == MONO_TYPE_VALUETYPE && mono_class_is_enum(type.type_class->get_mono_ptr())) {
-		// TODO: Move to ExportInfo?
-		variant_type = Variant::INT;
-		hint = PROPERTY_HINT_ENUM;
+	}
 
-		Vector<MonoClassField *> fields = type.type_class->get_enum_fields();
+	int hint_res = _try_get_member_export_hint(p_member, type, variant_type, /* allow_generics: */ true, hint, hint_string);
 
-		MonoType *enum_basetype = mono_class_enum_basetype(type.type_class->get_mono_ptr());
+	if (hint_res == -1) {
+		ERR_EXPLAIN("Error while trying to determine information about the exported member: " + MEMBER_FULL_QUALIFIED_NAME(p_member));
+		ERR_FAIL_V(false);
+	}
+
+	if (hint_res == 0) {
+		hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
+		hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
+	}
+
+	r_prop_info = PropertyInfo(variant_type, (String)p_member->get_name(), hint, hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE);
+	r_exported = true;
+
+	return true;
+
+#undef MEMBER_FULL_QUALIFIED_NAME
+}
+
+int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string) {
+
+	if (p_variant_type == Variant::INT && p_type.type_encoding == MONO_TYPE_VALUETYPE && mono_class_is_enum(p_type.type_class->get_mono_ptr())) {
+		r_hint = PROPERTY_HINT_ENUM;
+
+		Vector<MonoClassField *> fields = p_type.type_class->get_enum_fields();
+
+		MonoType *enum_basetype = mono_class_enum_basetype(p_type.type_class->get_mono_ptr());
 
 		String name_only_hint_string;
 
@@ -2236,12 +2291,12 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_
 			MonoClassField *field = fields[i];
 
 			if (i > 0) {
-				hint_string += ",";
+				r_hint_string += ",";
 				name_only_hint_string += ",";
 			}
 
 			String enum_field_name = mono_field_get_name(field);
-			hint_string += enum_field_name;
+			r_hint_string += enum_field_name;
 			name_only_hint_string += enum_field_name;
 
 			// TODO:
@@ -2251,54 +2306,73 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_
 			MonoObject *val_obj = mono_field_get_value_object(mono_domain_get(), field, NULL);
 
 			if (val_obj == NULL) {
-				ERR_PRINTS("Failed to get '" + enum_field_name + "' constant enum value of exported member: " +
-						   p_class->get_full_name() + "." + name.operator String());
-				return false;
+				ERR_EXPLAIN("Failed to get '" + enum_field_name + "' constant enum value");
+				ERR_FAIL_V(-1);
 			}
 
 			bool r_error;
 			uint64_t val = GDMonoUtils::unbox_enum_value(val_obj, enum_basetype, r_error);
 			if (r_error) {
-				ERR_PRINTS("Failed to unbox '" + enum_field_name + "' constant enum value of exported member: " +
-						   p_class->get_full_name() + "." + name.operator String());
-				return false;
+				ERR_EXPLAIN("Failed to unbox '" + enum_field_name + "' constant enum value");
+				ERR_FAIL_V(-1);
 			}
 
 			if (val != (unsigned int)i) {
 				uses_default_values = false;
 			}
 
-			hint_string += ":";
-			hint_string += String::num_uint64(val);
+			r_hint_string += ":";
+			r_hint_string += String::num_uint64(val);
 		}
 
 		if (uses_default_values) {
 			// If we use the format NAME:VAL, that's what the editor displays.
 			// That's annoying if the user is not using custom values for the enum constants.
 			// This may not be needed in the future if the editor is changed to not display values.
-			hint_string = name_only_hint_string;
+			r_hint_string = name_only_hint_string;
 		}
-	} else if (variant_type == Variant::OBJECT && CACHED_CLASS(GodotReference)->is_assignable_from(type.type_class)) {
-		GDMonoClass *field_native_class = GDMonoUtils::get_class_native_base(type.type_class);
+	} else if (p_variant_type == Variant::OBJECT && CACHED_CLASS(GodotResource)->is_assignable_from(p_type.type_class)) {
+		GDMonoClass *field_native_class = GDMonoUtils::get_class_native_base(p_type.type_class);
 		CRASH_COND(field_native_class == NULL);
 
-		hint = PROPERTY_HINT_RESOURCE_TYPE;
-		hint_string = NATIVE_GDMONOCLASS_NAME(field_native_class);
-	} else if (variant_type == Variant::ARRAY && export_info.array.element_type != Variant::NIL) {
-		String elem_type_str = itos(export_info.array.element_type);
-		hint = PROPERTY_HINT_TYPE_STRING;
-		hint_string = elem_type_str + "/" + elem_type_str + ":" + export_info.array.element_native_name;
-	} else if (variant_type == Variant::DICTIONARY && export_info.dictionary.key_type != Variant::NIL && export_info.dictionary.value_type != Variant::NIL) {
-		// TODO: There is no hint for this yet
+		r_hint = PROPERTY_HINT_RESOURCE_TYPE;
+		r_hint_string = NATIVE_GDMONOCLASS_NAME(field_native_class);
+	} else if (p_allow_generics && p_variant_type == Variant::ARRAY) {
+		// Nested arrays are not supported in the inspector
+
+		ManagedType elem_type;
+
+		if (!GDMonoMarshal::try_get_array_element_type(p_type, elem_type))
+			return 0;
+
+		Variant::Type elem_variant_type = GDMonoMarshal::managed_to_variant_type(elem_type);
+
+		PropertyHint elem_hint = PROPERTY_HINT_NONE;
+		String elem_hint_string;
+
+		if (elem_variant_type == Variant::NIL) {
+			ERR_EXPLAIN("Unknown array element type");
+			ERR_FAIL_V(-1);
+		}
+
+		int hint_res = _try_get_member_export_hint(p_member, elem_type, elem_variant_type, /* allow_generics: */ false, elem_hint, elem_hint_string);
+
+		if (hint_res == -1) {
+			ERR_EXPLAIN("Error while trying to determine information about the array element type");
+			ERR_FAIL_V(-1);
+		}
+
+		// Format: type/hint:hint_string
+		r_hint_string = itos(elem_variant_type) + "/" + itos(elem_hint) + ":" + elem_hint_string;
+		r_hint = PROPERTY_HINT_TYPE_STRING;
+
+	} else if (p_allow_generics && p_variant_type == Variant::DICTIONARY) {
+		// TODO: Dictionaries are not supported in the inspector
 	} else {
-		hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
-		hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
+		return 0;
 	}
 
-	r_prop_info = PropertyInfo(variant_type, name.operator String(), hint, hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE);
-	r_exported = true;
-
-	return true;
+	return 1;
 }
 #endif
 

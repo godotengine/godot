@@ -310,8 +310,8 @@ void EditorSceneImporterAssimp::_generate_bone_groups(ImportState &state, const 
 			const aiBone *bone = mesh->mBones[j];
 			String name = _assimp_get_string(bone->mName);
 			ownership[name] = owned_by;
-			//store the actuall full path for the bone transform
-			//when skeleton finds it's place in the tree, it will be restored
+			//store the actual full path for the bone transform
+			//when skeleton finds its place in the tree, it will be restored
 			bind_xforms[name] = mesh_offset * _assimp_matrix_transform(bone->mOffsetMatrix);
 		}
 	}
@@ -855,9 +855,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 				Ref<Texture> texture = _load_texture(state, path);
 
 				if (texture != NULL) {
-					if (map_mode != NULL) {
-						_set_texture_mapping_mode(map_mode, texture);
-					}
+					_set_texture_mapping_mode(map_mode, texture);
 					mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
 					mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, texture);
 				}
@@ -1460,7 +1458,7 @@ void EditorSceneImporterAssimp::_generate_node(ImportState &state, const aiNode 
 				int mesh_index = p_assimp_node->mMeshes[i];
 				surface_indices.push_back(mesh_index);
 
-				//take the chane and attempt to find the skeleton from the bones
+				//take the chance and attempt to find the skeleton from the bones
 				if (!skeleton) {
 					aiMesh *ai_mesh = state.assimp_scene->mMeshes[p_assimp_node->mMeshes[i]];
 					for (uint32_t j = 0; j < ai_mesh->mNumBones; j++) {
@@ -1598,7 +1596,7 @@ void EditorSceneImporterAssimp::_generate_node(ImportState &state, const aiNode 
 
 		skeleton->localize_rests();
 		node_name = "Skeleton"; //don't use the bone root name
-		node_transform = Transform(); //dont transform
+		node_transform = Transform(); //don't transform
 
 		new_node = skeleton;
 	} else {

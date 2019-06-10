@@ -566,7 +566,7 @@ Error ExportTemplateManager::install_android_template() {
 		f->close();
 	}
 	{
-		//add version, to ensure building wont work if template and Godot version are mismatch
+		//add version, to ensure building won't work if template and Godot version don't match
 		FileAccessRef f = FileAccess::open("res://android/.build_version", FileAccess::WRITE);
 		ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
 		f->store_line(VERSION_FULL_CONFIG);
@@ -636,7 +636,7 @@ Error ExportTemplateManager::install_android_template() {
 				FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
 #endif
 			} else {
-				ERR_PRINTS("Cant uncompress file: " + to_write);
+				ERR_PRINTS("Can't uncompress file: " + to_write);
 			}
 		}
 

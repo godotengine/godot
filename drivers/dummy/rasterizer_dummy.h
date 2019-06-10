@@ -692,6 +692,7 @@ public:
 	/* RENDER TARGET */
 
 	RID render_target_create() { return RID(); }
+	void render_target_set_position(RID p_render_target, int p_x, int p_y) {}
 	void render_target_set_size(RID p_render_target, int p_width, int p_height) {}
 	RID render_target_get_texture(RID p_render_target) const { return RID(); }
 	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {}

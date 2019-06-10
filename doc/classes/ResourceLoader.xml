@@ -33,7 +33,7 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Return the list of recognized extensions for a resource type.
+				Returns the list of recognized extensions for a resource type.
 			</description>
 		</method>
 		<method name="has">

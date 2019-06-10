@@ -106,9 +106,15 @@ void Camera::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_WORLD: {
 
-			bool first_camera = get_viewport()->_camera_add(this);
-			if (!get_tree()->is_node_being_edited(this) && (current || first_camera))
-				make_current();
+			// Needs to track the Viewport  because it's needed on NOTIFICATION_EXIT_WORLD
+			// and Spatial will handle it first, including clearing its reference to the Viewport,
+			// therefore making it impossible to subclasses to access it
+			viewport = get_viewport();
+			ERR_FAIL_COND(!viewport);
+
+			bool first_camera = viewport->_camera_add(this);
+			if (current || first_camera)
+				viewport->_camera_set(this);
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -130,17 +136,20 @@ void Camera::_notification(int p_what) {
 				}
 			}
 
-			get_viewport()->_camera_remove(this);
+			if (viewport) {
+				viewport->_camera_remove(this);
+				viewport = NULL;
+			}
 
 		} break;
 		case NOTIFICATION_BECAME_CURRENT: {
-			if (get_world().is_valid()) {
-				get_world()->_register_camera(this);
+			if (viewport) {
+				viewport->find_world()->_register_camera(this);
 			}
 		} break;
 		case NOTIFICATION_LOST_CURRENT: {
-			if (get_world().is_valid()) {
-				get_world()->_remove_camera(this);
+			if (viewport) {
+				viewport->find_world()->_remove_camera(this);
 			}
 		} break;
 	}
@@ -255,8 +264,6 @@ bool Camera::is_current() const {
 		return get_viewport()->get_camera() == this;
 	} else
 		return current;
-
-	return false;
 }
 
 bool Camera::_can_gizmo_scale() const {
@@ -391,11 +398,15 @@ Point2 Camera::unproject_position(const Vector3 &p_pos) const {
 	return res;
 }
 
-Vector3 Camera::project_position(const Point2 &p_point) const {
+Vector3 Camera::project_position(const Point2 &p_point, float p_z_depth) const {
 
 	if (!is_inside_tree()) {
 		ERR_EXPLAIN("Camera is not inside scene.");
 		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
+	}
+
+	if (p_z_depth == 0) {
+		return get_global_transform().origin;
 	}
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
@@ -415,7 +426,7 @@ Vector3 Camera::project_position(const Point2 &p_point) const {
 	point.y = (1.0 - (p_point.y / viewport_size.y)) * 2.0 - 1.0;
 	point *= vp_size;
 
-	Vector3 p(point.x, point.y, -near);
+	Vector3 p(point.x, point.y, -p_z_depth);
 
 	return get_camera_transform().xform(p);
 }
@@ -490,7 +501,7 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("project_ray_origin", "screen_point"), &Camera::project_ray_origin);
 	ClassDB::bind_method(D_METHOD("unproject_position", "world_point"), &Camera::unproject_position);
 	ClassDB::bind_method(D_METHOD("is_position_behind", "world_point"), &Camera::is_position_behind);
-	ClassDB::bind_method(D_METHOD("project_position", "screen_point"), &Camera::project_position);
+	ClassDB::bind_method(D_METHOD("project_position", "screen_point", "z_depth"), &Camera::project_position, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("set_perspective", "fov", "z_near", "z_far"), &Camera::set_perspective);
 	ClassDB::bind_method(D_METHOD("set_orthogonal", "size", "z_near", "z_far"), &Camera::set_orthogonal);
 	ClassDB::bind_method(D_METHOD("set_frustum", "size", "offset", "z_near", "z_far"), &Camera::set_frustum);
@@ -524,6 +535,7 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Camera::set_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &Camera::get_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_frustum"), &Camera::get_frustum);
+	ClassDB::bind_method(D_METHOD("get_camera_rid"), &Camera::get_camera);
 
 	ClassDB::bind_method(D_METHOD("set_cull_mask_bit", "layer", "enable"), &Camera::set_cull_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_cull_mask_bit", "layer"), &Camera::get_cull_mask_bit);
@@ -689,6 +701,7 @@ Camera::Camera() {
 	near = 0;
 	far = 0;
 	current = false;
+	viewport = NULL;
 	force_change = false;
 	mode = PROJECTION_PERSPECTIVE;
 	set_perspective(70.0, 0.05, 100.0);

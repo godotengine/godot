@@ -177,7 +177,7 @@ String Container::get_configuration_warning() const {
 		if (warning != String()) {
 			warning += "\n";
 		}
-		warning += TTR("Container by itself serves no purpose unless a script configures it's children placement behavior.\nIf you dont't intend to add a script, then please use a plain 'Control' node instead.");
+		warning += TTR("Container by itself serves no purpose unless a script configures it's children placement behavior.\nIf you don't intend to add a script, then please use a plain 'Control' node instead.");
 	}
 	return warning;
 }

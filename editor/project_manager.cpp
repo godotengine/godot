@@ -1627,40 +1627,28 @@ void ProjectManager::_show_project(const String &p_path) {
 	OS::get_singleton()->shell_open(String("file://") + p_path);
 }
 
-void ProjectManager::_scan_dir(DirAccess *da, float pos, float total, List<String> *r_projects) {
-
-	List<String> subdirs;
+void ProjectManager::_scan_dir(const String &path, List<String> *r_projects) {
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	da->change_dir(path);
 	da->list_dir_begin();
 	String n = da->get_next();
 	while (n != String()) {
 		if (da->current_is_dir() && !n.begins_with(".")) {
-			subdirs.push_front(n);
+			_scan_dir(da->get_current_dir().plus_file(n), r_projects);
 		} else if (n == "project.godot") {
 			r_projects->push_back(da->get_current_dir());
 		}
 		n = da->get_next();
 	}
 	da->list_dir_end();
-	int m = 0;
-	for (List<String>::Element *E = subdirs.front(); E; E = E->next()) {
-
-		da->change_dir(E->get());
-
-		float slice = total / subdirs.size();
-		_scan_dir(da, pos + slice * m, slice, r_projects);
-		da->change_dir("..");
-		m++;
-	}
+	memdelete(da);
 }
 
 void ProjectManager::_scan_begin(const String &p_base) {
 
 	print_line("Scanning projects at: " + p_base);
 	List<String> projects;
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	da->change_dir(p_base);
-	_scan_dir(da, 0, 1, &projects);
-	memdelete(da);
+	_scan_dir(p_base, &projects);
 	print_line("Found " + itos(projects.size()) + " projects.");
 
 	for (List<String>::Element *E = projects.front(); E; E = E->next()) {
@@ -1983,7 +1971,7 @@ ProjectManager::ProjectManager() {
 	l = memnew(Label);
 	String hash = String(VERSION_HASH);
 	if (hash.length() != 0)
-		hash = "." + hash.left(7);
+		hash = "." + hash.left(9);
 	l->set_text("v" VERSION_FULL_BUILD "" + hash);
 	l->set_align(Label::ALIGN_CENTER);
 	top_hb->add_child(l);
@@ -2166,6 +2154,19 @@ ProjectManager::ProjectManager() {
 	Button *cancel = memnew(Button);
 	cancel->set_text(TTR("Exit"));
 	cancel->set_custom_minimum_size(Size2(100, 1) * EDSCALE);
+
+#ifndef OSX_ENABLED
+	// Pressing Command + Q quits the Project Manager
+	// This is handled by the platform implementation on macOS,
+	// so only define the shortcut on other platforms
+	InputEventKey *quit_key = memnew(InputEventKey);
+	quit_key->set_command(true);
+	quit_key->set_scancode(KEY_Q);
+	ShortCut *quit_shortcut = memnew(ShortCut);
+	quit_shortcut->set_shortcut(quit_key);
+	cancel->set_shortcut(quit_shortcut);
+#endif
+
 	cc->add_child(cancel);
 	cancel->connect("pressed", this, "_exit_dialog");
 	vb->add_child(cc);

@@ -327,7 +327,14 @@ void SpriteEditor::_convert_to_mesh_2d_node() {
 
 	MeshInstance2D *mesh_instance = memnew(MeshInstance2D);
 	mesh_instance->set_mesh(mesh);
-	EditorNode::get_singleton()->get_scene_tree_dock()->replace_node(node, mesh_instance);
+
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Convert to Mesh2D"));
+	ur->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", node, mesh_instance, true, false);
+	ur->add_do_reference(mesh_instance);
+	ur->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", mesh_instance, node, false, false);
+	ur->add_undo_reference(node);
+	ur->commit_action();
 }
 
 void SpriteEditor::_convert_to_polygon_2d_node() {
@@ -379,7 +386,13 @@ void SpriteEditor::_convert_to_polygon_2d_node() {
 	polygon_2d_instance->set_polygon(polygon);
 	polygon_2d_instance->set_polygons(polys);
 
-	EditorNode::get_singleton()->get_scene_tree_dock()->replace_node(node, polygon_2d_instance);
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Convert to Polygon2D"));
+	ur->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", node, polygon_2d_instance, true, false);
+	ur->add_do_reference(polygon_2d_instance);
+	ur->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", polygon_2d_instance, node, false, false);
+	ur->add_undo_reference(node);
+	ur->commit_action();
 }
 
 void SpriteEditor::_create_collision_polygon_2d_node() {
@@ -396,7 +409,12 @@ void SpriteEditor::_create_collision_polygon_2d_node() {
 		CollisionPolygon2D *collision_polygon_2d_instance = memnew(CollisionPolygon2D);
 		collision_polygon_2d_instance->set_polygon(outline);
 
-		_add_as_sibling_or_child(node, collision_polygon_2d_instance);
+		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+		ur->create_action(TTR("Create CollisionPolygon2D Sibling"));
+		ur->add_do_method(this, "_add_as_sibling_or_child", node, collision_polygon_2d_instance);
+		ur->add_do_reference(collision_polygon_2d_instance);
+		ur->add_undo_method(node != this->get_tree()->get_edited_scene_root() ? node->get_parent() : this->get_tree()->get_edited_scene_root(), "remove_child", collision_polygon_2d_instance);
+		ur->commit_action();
 	}
 }
 
@@ -425,15 +443,20 @@ void SpriteEditor::_create_light_occluder_2d_node() {
 		LightOccluder2D *light_occluder_2d_instance = memnew(LightOccluder2D);
 		light_occluder_2d_instance->set_occluder_polygon(polygon);
 
-		_add_as_sibling_or_child(node, light_occluder_2d_instance);
+		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+		ur->create_action(TTR("Create LightOccluder2D Sibling"));
+		ur->add_do_method(this, "_add_as_sibling_or_child", node, light_occluder_2d_instance);
+		ur->add_do_reference(light_occluder_2d_instance);
+		ur->add_undo_method(node != this->get_tree()->get_edited_scene_root() ? node->get_parent() : this->get_tree()->get_edited_scene_root(), "remove_child", light_occluder_2d_instance);
+		ur->commit_action();
 	}
 }
 
-void SpriteEditor::_add_as_sibling_or_child(Node2D *p_own_node, Node2D *p_new_node) {
+void SpriteEditor::_add_as_sibling_or_child(Node *p_own_node, Node *p_new_node) {
 	// Can't make sibling if own node is scene root
 	if (p_own_node != this->get_tree()->get_edited_scene_root()) {
 		p_own_node->get_parent()->add_child(p_new_node, true);
-		p_new_node->set_transform(p_own_node->get_transform());
+		Object::cast_to<Node2D>(p_new_node)->set_transform(Object::cast_to<Node2D>(p_own_node)->get_transform());
 	} else {
 		p_own_node->add_child(p_new_node, true);
 	}
@@ -534,6 +557,7 @@ void SpriteEditor::_bind_methods() {
 	ClassDB::bind_method("_debug_uv_draw", &SpriteEditor::_debug_uv_draw);
 	ClassDB::bind_method("_update_mesh_data", &SpriteEditor::_update_mesh_data);
 	ClassDB::bind_method("_create_node", &SpriteEditor::_create_node);
+	ClassDB::bind_method("_add_as_sibling_or_child", &SpriteEditor::_add_as_sibling_or_child);
 }
 
 SpriteEditor::SpriteEditor() {

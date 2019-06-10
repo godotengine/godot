@@ -237,7 +237,7 @@ class EditorFileSystem : public Node {
 
 	static Error _resource_import(const String &p_path);
 
-	bool using_fat_32; //workaround for projects in FAT32 filesystem (pendrives, most of the time)
+	bool using_fat32_or_exfat; // Workaround for projects in FAT32 or exFAT filesystem (pendrives, most of the time)
 
 	void _find_group_files(EditorFileSystemDirectory *efd, Map<String, Vector<String> > &group_files, Set<String> &groups_to_reimport);
 

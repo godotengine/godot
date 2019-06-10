@@ -69,7 +69,7 @@ void OS_Haiku::run() {
 	main_loop->finish();
 }
 
-String OS_Haiku::get_name() {
+String OS_Haiku::get_name() const {
 	return "Haiku";
 }
 

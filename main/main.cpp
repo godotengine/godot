@@ -161,7 +161,7 @@ static String unescape_cmdline(const String &p_str) {
 static String get_full_version_string() {
 	String hash = String(VERSION_HASH);
 	if (hash.length() != 0)
-		hash = "." + hash.left(7);
+		hash = "." + hash.left(9);
 	return String(VERSION_FULL_BUILD) + hash;
 }
 
@@ -204,7 +204,8 @@ void finalize_physics() {
 
 void Main::print_help(const char *p_binary) {
 
-	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - https://godotengine.org");
+	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+	OS::get_singleton()->print("Free and open source software under the terms of the MIT license.\n");
 	OS::get_singleton()->print("(c) 2007-2019 Juan Linietsky, Ariel Manzur.\n");
 	OS::get_singleton()->print("(c) 2014-2019 Godot Engine contributors.\n");
 	OS::get_singleton()->print("\n");
@@ -247,6 +248,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print(").\n");
 	OS::get_singleton()->print("\n");
 
+#ifndef SERVER_ENABLED
 	OS::get_singleton()->print("Display options:\n");
 	OS::get_singleton()->print("  -f, --fullscreen                 Request fullscreen mode.\n");
 	OS::get_singleton()->print("  -m, --maximized                  Request a maximized window.\n");
@@ -257,14 +259,15 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --low-dpi                        Force low-DPI mode (macOS and Windows only).\n");
 	OS::get_singleton()->print("  --no-window                      Disable window creation (Windows only). Useful together with --script.\n");
 	OS::get_singleton()->print("\n");
+#endif
 
 	OS::get_singleton()->print("Debug options:\n");
 	OS::get_singleton()->print("  -d, --debug                      Debug (local stdout debugger).\n");
 	OS::get_singleton()->print("  -b, --breakpoints                Breakpoint list as source::line comma-separated pairs, no spaces (use %%20 instead).\n");
 	OS::get_singleton()->print("  --profiling                      Enable profiling in the script debugger.\n");
 	OS::get_singleton()->print("  --remote-debug <address>         Remote debug (<host/IP>:<port> address).\n");
-#ifdef DEBUG_ENABLED
-	OS::get_singleton()->print("  --debug-collisions               Show collisions shapes when running the scene.\n");
+#if defined(DEBUG_ENABLED) && !defined(SERVER_ENABLED)
+	OS::get_singleton()->print("  --debug-collisions               Show collision shapes when running the scene.\n");
 	OS::get_singleton()->print("  --debug-navigation               Show navigation polygons when running the scene.\n");
 #endif
 	OS::get_singleton()->print("  --frame-delay <ms>               Simulate high CPU load (delay each frame by <ms> milliseconds).\n");
@@ -372,7 +375,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	while (I) {
 
-		I->get() = unescape_cmdline(I->get().strip_escapes());
+		I->get() = unescape_cmdline(I->get().strip_edges());
 		I = I->next();
 	}
 
@@ -429,6 +432,49 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			print_line(get_full_version_string());
 			goto error;
 
+		} else if (I->get() == "-v" || I->get() == "--verbose") { // verbose output
+
+			OS::get_singleton()->_verbose_stdout = true;
+		} else if (I->get() == "--quiet") { // quieter output
+
+			quiet_stdout = true;
+
+		} else if (I->get() == "--audio-driver") { // audio driver
+
+			if (I->next()) {
+
+				audio_driver = I->next()->get();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing audio driver argument, aborting.\n");
+				goto error;
+			}
+
+		} else if (I->get() == "--video-driver") { // force video driver
+
+			if (I->next()) {
+
+				video_driver = I->next()->get();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing video driver argument, aborting.\n");
+				goto error;
+			}
+#ifndef SERVER_ENABLED
+		} else if (I->get() == "-f" || I->get() == "--fullscreen") { // force fullscreen
+
+			init_fullscreen = true;
+		} else if (I->get() == "-m" || I->get() == "--maximized") { // force maximized window
+
+			init_maximized = true;
+			video_mode.maximized = true;
+
+		} else if (I->get() == "-w" || I->get() == "--windowed") { // force windowed window
+
+			init_windowed = true;
+		} else if (I->get() == "-t" || I->get() == "--always-on-top") { // force always-on-top window
+
+			init_always_on_top = true;
 		} else if (I->get() == "--resolution") { // force resolution
 
 			if (I->next()) {
@@ -459,6 +505,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing resolution argument, aborting.\n");
 				goto error;
 			}
+
 		} else if (I->get() == "--position") { // set window position
 
 			if (I->next()) {
@@ -483,29 +530,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 
-		} else if (I->get() == "-m" || I->get() == "--maximized") { // force maximized window
+		} else if (I->get() == "--low-dpi") { // force low DPI (macOS only)
 
-			init_maximized = true;
-			video_mode.maximized = true;
-		} else if (I->get() == "-w" || I->get() == "--windowed") { // force windowed window
+			force_lowdpi = true;
+		} else if (I->get() == "--no-window") { // disable window creation (Windows only)
 
-			init_windowed = true;
-		} else if (I->get() == "-t" || I->get() == "--always-on-top") { // force always-on-top window
-
-			init_always_on_top = true;
+			OS::get_singleton()->set_no_window_mode(true);
+#endif
 		} else if (I->get() == "--profiling") { // enable profiling
 
 			use_debug_profiler = true;
-		} else if (I->get() == "--video-driver") { // force video driver
 
-			if (I->next()) {
-
-				video_driver = I->next()->get();
-				N = I->next()->next();
-			} else {
-				OS::get_singleton()->print("Missing video driver argument, aborting.\n");
-				goto error;
-			}
 		} else if (I->get() == "-l" || I->get() == "--language") { // language
 
 			if (I->next()) {
@@ -516,9 +551,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing language argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--low-dpi") { // force low DPI (macOS only)
 
-			force_lowdpi = true;
 		} else if (I->get() == "--remote-fs") { // remote filesystem
 
 			if (I->next()) {
@@ -555,22 +588,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing render thread mode argument, aborting.\n");
 				goto error;
 			}
-
-		} else if (I->get() == "--audio-driver") { // audio driver
-
-			if (I->next()) {
-
-				audio_driver = I->next()->get();
-				N = I->next()->next();
-			} else {
-				OS::get_singleton()->print("Missing audio driver argument, aborting.\n");
-				goto error;
-			}
-
-		} else if (I->get() == "-f" || I->get() == "--fullscreen") { // force fullscreen
-
-			//video_mode.fullscreen=false;
-			init_fullscreen = true;
 #ifdef TOOLS_ENABLED
 		} else if (I->get() == "-e" || I->get() == "--editor") { // starts editor
 
@@ -583,14 +600,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			auto_build_solutions = true;
 			editor = true;
 #endif
-		} else if (I->get() == "--no-window") { // disable window creation, Windows only
-
-			OS::get_singleton()->set_no_window_mode(true);
-		} else if (I->get() == "--quiet") { // quieter output
-
-			quiet_stdout = true;
-		} else if (I->get() == "-v" || I->get() == "--verbose") { // verbose output
-			OS::get_singleton()->_verbose_stdout = true;
 		} else if (I->get() == "--path") { // set path of project to start or edit
 
 			if (I->next()) {
@@ -674,7 +683,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		} else if (I->get() == "-d" || I->get() == "--debug") {
 			debug_mode = "local";
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && !defined(SERVER_ENABLED)
 		} else if (I->get() == "--debug-collisions") {
 			debug_collisions = true;
 		} else if (I->get() == "--debug-navigation") {
@@ -1027,7 +1036,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	OS::get_singleton()->set_low_processor_usage_mode(GLOBAL_DEF("application/run/low_processor_mode", false));
-	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(GLOBAL_DEF("application/run/low_processor_mode_sleep_usec", 8000));
+	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(GLOBAL_DEF("application/run/low_processor_mode_sleep_usec", 6900)); // Roughly 144 FPS
 	ProjectSettings::get_singleton()->set_custom_property_info("application/run/low_processor_mode_sleep_usec", PropertyInfo(Variant::INT, "application/run/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "0,33200,1,or_greater")); // No negative numbers
 
 	Engine::get_singleton()->set_frame_delay(frame_delay);
@@ -1082,6 +1091,9 @@ error:
 }
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
+
+	// Print engine name and version
+	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 
 	if (p_main_tid_override) {
 		Thread::_main_thread_id = p_main_tid_override;
@@ -1188,6 +1200,12 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	GLOBAL_DEF("application/config/icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon", PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp"));
+
+	GLOBAL_DEF("application/config/macos_native_icon", String());
+	ProjectSettings::get_singleton()->set_custom_property_info("application/config/macos_native_icon", PropertyInfo(Variant::STRING, "application/config/macos_native_icon", PROPERTY_HINT_FILE, "*.icns"));
+
+	GLOBAL_DEF("application/config/windows_native_icon", String());
+	ProjectSettings::get_singleton()->set_custom_property_info("application/config/windows_native_icon", PropertyInfo(Variant::STRING, "application/config/windows_native_icon", PROPERTY_HINT_FILE, "*.ico"));
 
 	InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
 	if (id) {
@@ -1739,8 +1757,24 @@ bool Main::start() {
 				ERR_FAIL_COND_V(!scene, false)
 				sml->add_current_scene(scene);
 
+#ifdef OSX_ENABLED
+				String mac_iconpath = GLOBAL_DEF("application/config/macos_native_icon", "Variant()");
+				if (mac_iconpath != "") {
+					OS::get_singleton()->set_native_icon(mac_iconpath);
+					hasicon = true;
+				}
+#endif
+
+#ifdef WINDOWS_ENABLED
+				String win_iconpath = GLOBAL_DEF("application/config/windows_native_icon", "Variant()");
+				if (win_iconpath != "") {
+					OS::get_singleton()->set_native_icon(win_iconpath);
+					hasicon = true;
+				}
+#endif
+
 				String iconpath = GLOBAL_DEF("application/config/icon", "Variant()");
-				if (iconpath != "") {
+				if ((iconpath != "") && (!hasicon)) {
 					Ref<Image> icon;
 					icon.instance();
 					if (ImageLoader::load_image(iconpath, icon) == OK) {
@@ -1949,7 +1983,7 @@ bool Main::iteration() {
 		return exit;
 
 	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !OS::get_singleton()->can_draw())
-		OS::get_singleton()->delay_usec(OS::get_singleton()->get_low_processor_usage_mode_sleep_usec()); //apply some delay to force idle time (results in about 60 FPS max)
+		OS::get_singleton()->delay_usec(OS::get_singleton()->get_low_processor_usage_mode_sleep_usec()); //apply some delay to force idle time
 	else {
 		uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 		if (frame_delay)

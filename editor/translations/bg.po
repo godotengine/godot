@@ -165,12 +165,18 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Add Track"
-msgstr "Добавяне на нови пътечки."
+msgid "Animation length (frames)"
+msgstr "Ново Име на Анимация:"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
-msgstr ""
+#, fuzzy
+msgid "Animation length (seconds)"
+msgstr "Промени Името на Анимацията:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Добавяне на нови пътечки."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy

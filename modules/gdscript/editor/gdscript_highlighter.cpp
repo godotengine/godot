@@ -56,6 +56,10 @@ static bool _is_hex_symbol(CharType c) {
 	return ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
 }
 
+static bool _is_bin_symbol(CharType c) {
+	return (c == '0' || c == '1');
+}
+
 Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) {
 	Map<int, TextEdit::HighlighterInfo> color_map;
 
@@ -76,6 +80,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 	bool in_member_variable = false;
 	bool in_node_path = false;
 	bool is_hex_notation = false;
+	bool is_bin_notation = false;
 	bool expect_type = false;
 	Color keyword_color;
 	Color color;
@@ -118,14 +123,26 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 			is_hex_notation = false;
 		}
 
+		// disallow anything not a 0 or 1
+		if (is_bin_notation && (_is_bin_symbol(str[j]))) {
+			is_number = true;
+		} else if (is_bin_notation) {
+			is_bin_notation = false;
+			is_number = false;
+		} else {
+			is_bin_notation = false;
+		}
+
 		// check for dot or underscore or 'x' for hex notation in floating point number or 'e' for scientific notation
-		if ((str[j] == '.' || str[j] == 'x' || str[j] == '_' || str[j] == 'e') && !in_word && prev_is_number && !is_number) {
+		if ((str[j] == '.' || str[j] == 'x' || str[j] == 'b' || str[j] == '_' || str[j] == 'e') && !in_word && prev_is_number && !is_number) {
 			is_number = true;
 			is_symbol = false;
 			is_char = false;
 
 			if (str[j] == 'x' && str[j - 1] == '0') {
 				is_hex_notation = true;
+			} else if (str[j] == 'b' && str[j - 1] == '0') {
+				is_bin_notation = true;
 			}
 		}
 
@@ -330,7 +347,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 	return color_map;
 }
 
-String GDScriptSyntaxHighlighter::get_name() {
+String GDScriptSyntaxHighlighter::get_name() const {
 	return "GDScript";
 }
 

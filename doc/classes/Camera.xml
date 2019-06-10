@@ -18,6 +18,13 @@
 				If this is the current Camera, remove it from being current. If [code]enable_next[/code] is [code]true[/code], request to make the next Camera current, if any.
 			</description>
 		</method>
+		<method name="get_camera_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+				Returns the camera's RID from the [VisualServer].
+			</description>
+		</method>
 		<method name="get_camera_transform" qualifiers="const">
 			<return type="Transform">
 			</return>
@@ -69,8 +76,10 @@
 			</return>
 			<argument index="0" name="screen_point" type="Vector2">
 			</argument>
+			<argument index="1" name="z_depth" type="float" default="0">
+			</argument>
 			<description>
-				Returns the 3D point in worldspace that maps to the given 2D coordinate in the [Viewport] rectangle.
+				Returns the 3D point in worldspace that maps to the given 2D coordinate in the [Viewport] rectangle on a plane that is the given distance into the scene away from the camera.
 			</description>
 		</method>
 		<method name="project_ray_normal" qualifiers="const">

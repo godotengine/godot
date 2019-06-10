@@ -15,13 +15,14 @@
 			<return type="AABB">
 			</return>
 			<description>
+				Returns the bounding box that contains all the particles that are active in the current frame.
 			</description>
 		</method>
 		<method name="restart">
 			<return type="void">
 			</return>
 			<description>
-				Restarts the particle emmission, clearing existing particles.
+				Restarts the particle emission, clearing existing particles.
 			</description>
 		</method>
 	</methods>

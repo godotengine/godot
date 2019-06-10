@@ -1294,8 +1294,8 @@ void Environment::_bind_methods() {
 Environment::Environment() :
 		bg_mode(BG_CLEAR_COLOR),
 		tone_mapper(TONE_MAPPER_LINEAR),
-		ssao_blur(SSAO_BLUR_DISABLED),
-		ssao_quality(SSAO_QUALITY_LOW),
+		ssao_blur(SSAO_BLUR_3x3),
+		ssao_quality(SSAO_QUALITY_MEDIUM),
 		glow_blend_mode(GLOW_BLEND_MODE_ADDITIVE),
 		dof_blur_far_quality(DOF_BLUR_QUALITY_LOW),
 		dof_blur_near_quality(DOF_BLUR_QUALITY_LOW) {
@@ -1346,7 +1346,7 @@ Environment::Environment() :
 	ssao_ao_channel_affect = 0.0;
 	ssao_blur = SSAO_BLUR_3x3;
 	set_ssao_edge_sharpness(4);
-	set_ssao_quality(SSAO_QUALITY_LOW);
+	set_ssao_quality(SSAO_QUALITY_MEDIUM);
 
 	glow_enabled = false;
 	glow_levels = (1 << 2) | (1 << 4);

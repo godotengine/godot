@@ -225,6 +225,7 @@ class GridMapEditor : public VBoxContainer {
 	void _set_selection(bool p_active, const Vector3 p_begin = Vector3(), const Vector3 p_end = Vector3());
 
 	void _floor_changed(float p_value);
+	void _floor_mouse_exited();
 
 	void _delete_selection();
 	void _fill_selection();

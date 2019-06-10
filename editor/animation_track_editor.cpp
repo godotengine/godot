@@ -63,8 +63,6 @@ public:
 		ClassDB::bind_method("_dont_undo_redo", &AnimationTrackKeyEdit::_dont_undo_redo);
 	}
 
-	//PopupDialog *ke_dialog;
-
 	void _fix_node_path(Variant &value) {
 
 		NodePath np = value;
@@ -1215,7 +1213,8 @@ void AnimationTrackEdit::_notification(int p_what) {
 		if (has_focus()) {
 			Color accent = get_color("accent_color", "Editor");
 			accent.a *= 0.7;
-			draw_rect(Rect2(Point2(), get_size()), accent, false);
+			// Offside so the horizontal sides aren't cutoff.
+			draw_rect(Rect2(Point2(1, 0), get_size() - Size2(1, 0)), accent, false);
 		}
 
 		Ref<Font> font = get_font("font", "Label");
@@ -2187,6 +2186,9 @@ Variant AnimationTrackEdit::get_drag_data(const Point2 &p_point) {
 
 	Dictionary drag_data;
 	drag_data["type"] = "animation_track";
+	String base_path = animation->track_get_path(track);
+	base_path = base_path.get_slice(":", 0); // Remove sub-path.
+	drag_data["group"] = base_path;
 	drag_data["index"] = track;
 
 	ToolButton *tb = memnew(ToolButton);
@@ -2207,8 +2209,18 @@ bool AnimationTrackEdit::can_drop_data(const Point2 &p_point, const Variant &p_d
 	}
 
 	String type = d["type"];
-	if (type != "animation_track")
+	if (type != "animation_track") {
 		return false;
+	}
+
+	// Don't allow moving tracks outside their groups.
+	if (get_editor()->is_grouping_tracks()) {
+		String base_path = animation->track_get_path(track);
+		base_path = base_path.get_slice(":", 0); // Remove sub-path.
+		if (d["group"] != base_path) {
+			return false;
+		}
+	}
 
 	if (p_point.y < get_size().height / 2) {
 		dropping_at = -1;
@@ -2229,8 +2241,18 @@ void AnimationTrackEdit::drop_data(const Point2 &p_point, const Variant &p_data)
 	}
 
 	String type = d["type"];
-	if (type != "animation_track")
+	if (type != "animation_track") {
 		return;
+	}
+
+	// Don't allow moving tracks outside their groups.
+	if (get_editor()->is_grouping_tracks()) {
+		String base_path = animation->track_get_path(track);
+		base_path = base_path.get_slice(":", 0); // Remove sub-path.
+		if (d["group"] != base_path) {
+			return;
+		}
+	}
 
 	int from_track = d["index"];
 
@@ -2683,6 +2705,13 @@ void AnimationTrackEditor::_track_remove_request(int p_track) {
 
 		undo_redo->commit_action();
 	}
+}
+
+void AnimationTrackEditor::_track_grab_focus(int p_track) {
+
+	// Don't steal focus if not working with the track editor.
+	if (Object::cast_to<AnimationTrackEdit>(get_focus_owner()))
+		track_edits[p_track]->grab_focus();
 }
 
 void AnimationTrackEditor::set_anim_pos(float p_pos) {
@@ -3449,14 +3478,14 @@ void AnimationTrackEditor::_update_tracks() {
 
 		if (use_grouping) {
 			String base_path = animation->track_get_path(i);
-			base_path = base_path.get_slice(":", 0); // remove subpath
+			base_path = base_path.get_slice(":", 0); // Remove sub-path.
 
 			if (!group_sort.has(base_path)) {
 				AnimationTrackEditGroup *g = memnew(AnimationTrackEditGroup);
 				Ref<Texture> icon = get_icon("Node", "EditorIcons");
 				String name = base_path;
 				String tooltip;
-				if (root) {
+				if (root && root->has_node(base_path)) {
 					Node *n = root->get_node(base_path);
 					if (n) {
 						if (has_icon(n->get_class(), "EditorIcons")) {
@@ -3520,7 +3549,7 @@ void AnimationTrackEditor::_update_tracks() {
 void AnimationTrackEditor::_animation_changed() {
 
 	if (animation_changing_awaiting_update) {
-		return; //all will be updated, dont bother with anything
+		return; //all will be updated, don't bother with anything
 	}
 
 	if (key_edit && key_edit->setting) {
@@ -3604,6 +3633,9 @@ void AnimationTrackEditor::_animation_update() {
 	bezier_edit->update();
 
 	_update_step_spinbox();
+	emit_signal("animation_step_changed", animation->get_step());
+	emit_signal("animation_len_changed", animation->get_length());
+	EditorNode::get_singleton()->get_inspector()->refresh();
 
 	animation_changing_awaiting_update = false;
 }
@@ -3665,17 +3697,18 @@ void AnimationTrackEditor::_update_length(double p_new_len) {
 }
 
 void AnimationTrackEditor::_dropped_track(int p_from_track, int p_to_track) {
-	if (p_to_track >= track_edits.size()) {
-		p_to_track = track_edits.size() - 1;
-	}
-
-	if (p_from_track == p_to_track)
+	if (p_from_track == p_to_track || p_from_track == p_to_track - 1) {
 		return;
+	}
 
 	_clear_selection();
 	undo_redo->create_action(TTR("Rearrange Tracks"));
-	undo_redo->add_do_method(animation.ptr(), "track_swap", p_from_track, p_to_track);
-	undo_redo->add_undo_method(animation.ptr(), "track_swap", p_to_track, p_from_track);
+	undo_redo->add_do_method(animation.ptr(), "track_move_to", p_from_track, p_to_track);
+	// Take into account that the position of the tracks that come after the one removed will change.
+	int to_track_real = p_to_track > p_from_track ? p_to_track - 1 : p_to_track;
+	undo_redo->add_undo_method(animation.ptr(), "track_move_to", to_track_real, p_to_track > p_from_track ? p_from_track : p_from_track + 1);
+	undo_redo->add_do_method(this, "_track_grab_focus", to_track_real);
+	undo_redo->add_undo_method(this, "_track_grab_focus", p_from_track);
 	undo_redo->commit_action();
 }
 
@@ -4877,8 +4910,18 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 }
 
 void AnimationTrackEditor::_view_group_toggle() {
+
 	_update_tracks();
 	view_group->set_icon(get_icon(view_group->is_pressed() ? "AnimationTrackList" : "AnimationTrackGroup", "EditorIcons"));
+}
+
+bool AnimationTrackEditor::is_grouping_tracks() {
+
+	if (!view_group) {
+		return false;
+	}
+
+	return !view_group->is_pressed();
 }
 
 void AnimationTrackEditor::_selection_changed() {
@@ -4927,6 +4970,7 @@ void AnimationTrackEditor::_bind_methods() {
 	ClassDB::bind_method("_animation_update", &AnimationTrackEditor::_animation_update);
 	ClassDB::bind_method("_timeline_changed", &AnimationTrackEditor::_timeline_changed);
 	ClassDB::bind_method("_track_remove_request", &AnimationTrackEditor::_track_remove_request);
+	ClassDB::bind_method("_track_grab_focus", &AnimationTrackEditor::_track_grab_focus);
 	ClassDB::bind_method("_name_limit_changed", &AnimationTrackEditor::_name_limit_changed);
 	ClassDB::bind_method("_update_scroll", &AnimationTrackEditor::_update_scroll);
 	ClassDB::bind_method("_update_tracks", &AnimationTrackEditor::_update_tracks);
@@ -5027,7 +5071,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	scroll->set_enable_v_scroll(true);
 	track_vbox->add_constant_override("separation", 0);
 
-	//timeline_vbox->add_child(memnew(HSeparator));
 	HBoxContainer *bottom_hb = memnew(HBoxContainer);
 	add_child(bottom_hb);
 

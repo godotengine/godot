@@ -58,6 +58,25 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
+typedef struct {
+	BYTE bWidth; // Width, in pixels, of the image
+	BYTE bHeight; // Height, in pixels, of the image
+	BYTE bColorCount; // Number of colors in image (0 if >=8bpp)
+	BYTE bReserved; // Reserved ( must be 0)
+	WORD wPlanes; // Color Planes
+	WORD wBitCount; // Bits per pixel
+	DWORD dwBytesInRes; // How many bytes in this resource?
+	DWORD dwImageOffset; // Where in the file is this image?
+} ICONDIRENTRY, *LPICONDIRENTRY;
+
+typedef struct {
+	WORD idReserved; // Reserved (must be 0)
+	WORD idType; // Resource Type (1 for icons)
+	WORD idCount; // How many images?
+	ICONDIRENTRY idEntries[1]; // An entry for each image (idCount of 'em)
+} ICONDIR, *LPICONDIR;
+
 class JoypadWindows;
 class OS_Windows : public OS {
 
@@ -246,7 +265,7 @@ public:
 
 	virtual MainLoop *get_main_loop() const;
 
-	virtual String get_name();
+	virtual String get_name() const;
 
 	virtual Date get_date(bool utc) const;
 	virtual Time get_time(bool utc) const;
@@ -276,6 +295,8 @@ public:
 	CursorShape get_cursor_shape() const;
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 	void GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, OUT HBITMAP &hAndMaskBitmap, OUT HBITMAP &hXorMaskBitmap);
+
+	void set_native_icon(const String &p_filename);
 	void set_icon(const Ref<Image> &p_icon);
 
 	virtual String get_executable_path() const;

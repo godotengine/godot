@@ -262,7 +262,7 @@ void ScriptEditorDebugger::_scene_tree_folded(Object *obj) {
 		return;
 
 	ObjectID id = item->get_metadata(0);
-	if (item->is_collapsed()) {
+	if (unfold_cache.has(id)) {
 		unfold_cache.erase(id);
 	} else {
 		unfold_cache.insert(id);
@@ -299,6 +299,7 @@ void ScriptEditorDebugger::_scene_tree_rmb_selected(const Vector2 &p_position) {
 
 	item_menu->clear();
 	item_menu->add_icon_item(get_icon("CreateNewSceneFrom", "EditorIcons"), TTR("Save Branch as Scene"), ITEM_MENU_SAVE_REMOTE_NODE);
+	item_menu->add_icon_item(get_icon("CopyNodePath", "EditorIcons"), TTR("Copy Node Path"), ITEM_MENU_COPY_NODE_PATH);
 	item_menu->set_global_position(get_global_mouse_position());
 	item_menu->popup();
 }
@@ -396,6 +397,7 @@ Size2 ScriptEditorDebugger::get_minimum_size() const {
 	ms.y = MAX(ms.y, 250 * EDSCALE);
 	return ms;
 }
+
 void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_data) {
 
 	if (p_msg == "debug_enter") {
@@ -1023,7 +1025,9 @@ void ScriptEditorDebugger::_performance_draw() {
 		int pi = which[i];
 		Color c = get_color("accent_color", "Editor");
 		float h = (float)which[i] / (float)(perf_items.size());
-		c.set_hsv(Math::fmod(h + 0.4, 0.9), c.get_s() * 0.9, c.get_v() * 1.4);
+		// Use a darker color on light backgrounds for better visibility
+		float value_multiplier = EditorSettings::get_singleton()->is_dark_theme() ? 1.4 : 0.55;
+		c.set_hsv(Math::fmod(h + 0.4, 0.9), c.get_s() * 0.9, c.get_v() * value_multiplier);
 
 		c.a = 0.6;
 		perf_draw->draw_string(graph_font, r.position + Point2(0, graph_font->get_ascent()), perf_items[pi]->get_text(0), c, r.size.x);
@@ -1043,9 +1047,8 @@ void ScriptEditorDebugger::_performance_draw() {
 			float h2 = E->get()[pi] / m;
 			h2 = (1.0 - h2) * r.size.y;
 
-			c.a = 0.7;
 			if (E != perf_history.front())
-				perf_draw->draw_line(r.position + Point2(from, h2), r.position + Point2(from + spacing, prev), c, 2.0);
+				perf_draw->draw_line(r.position + Point2(from, h2), r.position + Point2(from + spacing, prev), c, Math::round(EDSCALE), true);
 			prev = h2;
 			E = E->next();
 			from -= spacing;
@@ -1929,6 +1932,24 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			}
 
 			file_dialog->popup_centered_ratio();
+		} break;
+		case ITEM_MENU_COPY_NODE_PATH: {
+
+			TreeItem *ti = inspect_scene_tree->get_selected();
+			String text = ti->get_text(0);
+
+			if (ti->get_parent() == NULL) {
+				text = ".";
+			} else if (ti->get_parent()->get_parent() == NULL) {
+				text = ".";
+			} else {
+				while (ti->get_parent()->get_parent() != inspect_scene_tree->get_root()) {
+					ti = ti->get_parent();
+					text = ti->get_text(0) + "/" + text;
+				}
+			}
+
+			OS::get_singleton()->set_clipboard(text);
 		} break;
 	}
 }

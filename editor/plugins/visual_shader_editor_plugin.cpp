@@ -31,6 +31,7 @@
 #include "visual_shader_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "core/math/math_defs.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
@@ -68,6 +69,7 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 			}
 		}
 		visual_shader = Ref<VisualShader>(p_visual_shader);
+		visual_shader->set_graph_offset(graph->get_scroll_ofs() / EDSCALE);
 	} else {
 		visual_shader.unref();
 	}
@@ -358,7 +360,9 @@ void VisualShaderEditor::_update_graph() {
 	for (int i = 0; i < graph->get_child_count(); i++) {
 
 		if (Object::cast_to<GraphNode>(graph->get_child(i))) {
-			memdelete(graph->get_child(i));
+			Node *node = graph->get_child(i);
+			graph->remove_child(node);
+			memdelete(node);
 			i--;
 		}
 	}
@@ -377,12 +381,32 @@ void VisualShaderEditor::_update_graph() {
 
 	Vector<int> nodes = visual_shader->get_node_list(type);
 
+	Control *offset;
+
 	for (int n_i = 0; n_i < nodes.size(); n_i++) {
 
 		Vector2 position = visual_shader->get_node_position(type, nodes[n_i]);
 		Ref<VisualShaderNode> vsnode = visual_shader->get_node(type, nodes[n_i]);
 
+		Ref<VisualShaderNodeGroupBase> group_node = Object::cast_to<VisualShaderNodeGroupBase>(vsnode.ptr());
+		bool is_group = !group_node.is_null();
+		Size2 size = Size2(0, 0);
+
+		Ref<VisualShaderNodeExpression> expression_node = Object::cast_to<VisualShaderNodeExpression>(group_node.ptr());
+		bool is_expression = !expression_node.is_null();
+		String expression = "";
+
 		GraphNode *node = memnew(GraphNode);
+
+		if (is_group) {
+			size = group_node->get_size();
+
+			node->set_resizable(true);
+			node->connect("resize_request", this, "_node_resized", varray((int)type, nodes[n_i]));
+		}
+		if (is_expression) {
+			expression = expression_node->get_expression();
+		}
 
 		/*if (!vsnode->is_connected("changed", this, "_node_changed")) {
 			vsnode->connect("changed", this, "_node_changed", varray(vsnode->get_instance_id()), CONNECT_DEFERRED);
@@ -402,6 +426,10 @@ void VisualShaderEditor::_update_graph() {
 
 		Control *custom_editor = NULL;
 		int port_offset = 0;
+
+		if (is_group) {
+			port_offset++;
+		}
 
 		Ref<VisualShaderNodeUniform> uniform = vsnode;
 		if (uniform.is_valid()) {
@@ -436,6 +464,24 @@ void VisualShaderEditor::_update_graph() {
 			port_offset++;
 			node->add_child(custom_editor);
 			custom_editor = NULL;
+		}
+
+		if (is_group) {
+			HBoxContainer *hb2 = memnew(HBoxContainer);
+
+			Button *add_input_btn = memnew(Button);
+			add_input_btn->set_text(TTR("Add input +"));
+			add_input_btn->connect("pressed", this, "_add_input_port", varray(nodes[n_i], group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "input" + itos(group_node->get_free_input_port_id())), CONNECT_DEFERRED);
+			hb2->add_child(add_input_btn);
+
+			hb2->add_spacer();
+
+			Button *add_output_btn = memnew(Button);
+			add_output_btn->set_text(TTR("Add output +"));
+			add_output_btn->connect("pressed", this, "_add_output_port", varray(nodes[n_i], group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "output" + itos(group_node->get_free_output_port_id())), CONNECT_DEFERRED);
+			hb2->add_child(add_output_btn);
+
+			node->add_child(hb2);
 		}
 
 		for (int i = 0; i < MAX(vsnode->get_input_port_count(), vsnode->get_output_port_count()); i++) {
@@ -507,21 +553,75 @@ void VisualShaderEditor::_update_graph() {
 
 				if (valid_left) {
 
-					Label *label = memnew(Label);
-					label->set_text(name_left);
-					label->add_style_override("normal", label_style); //more compact
-					hb->add_child(label);
+					if (is_group) {
+
+						OptionButton *type_box = memnew(OptionButton);
+						hb->add_child(type_box);
+						type_box->add_item(TTR("Scalar"));
+						type_box->add_item(TTR("Vector"));
+						type_box->add_item(TTR("Boolean"));
+						type_box->add_item(TTR("Transform"));
+						type_box->select(group_node->get_input_port_type(i));
+						type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+						type_box->connect("item_selected", this, "_change_input_port_type", varray(nodes[n_i], i), CONNECT_DEFERRED);
+
+						LineEdit *name_box = memnew(LineEdit);
+						hb->add_child(name_box);
+						name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
+						name_box->set_text(name_left);
+						name_box->set_expand_to_text_length(true);
+						name_box->connect("text_entered", this, "_change_input_port_name", varray(name_box, nodes[n_i], i));
+						name_box->connect("focus_exited", this, "_port_name_focus_out", varray(name_box, nodes[n_i], i, false));
+
+						if (is_group) {
+							Button *remove_btn = memnew(Button);
+							remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Remove", "EditorIcons"));
+							remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
+							remove_btn->connect("pressed", this, "_remove_input_port", varray(nodes[n_i], i), CONNECT_DEFERRED);
+							hb->add_child(remove_btn);
+						}
+					} else {
+
+						Label *label = memnew(Label);
+						label->set_text(name_left);
+						label->add_style_override("normal", label_style); //more compact
+						hb->add_child(label);
+					}
 				}
 
 				hb->add_spacer();
 
 				if (valid_right) {
+					if (is_group) {
+						Button *remove_btn = memnew(Button);
+						remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Remove", "EditorIcons"));
+						remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
+						remove_btn->connect("pressed", this, "_remove_output_port", varray(nodes[n_i], i), CONNECT_DEFERRED);
+						hb->add_child(remove_btn);
 
-					Label *label = memnew(Label);
-					label->set_text(name_right);
-					label->set_align(Label::ALIGN_RIGHT);
-					label->add_style_override("normal", label_style); //more compact
-					hb->add_child(label);
+						LineEdit *name_box = memnew(LineEdit);
+						hb->add_child(name_box);
+						name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
+						name_box->set_text(name_right);
+						name_box->set_expand_to_text_length(true);
+						name_box->connect("text_entered", this, "_change_output_port_name", varray(name_box, nodes[n_i], i));
+						name_box->connect("focus_exited", this, "_port_name_focus_out", varray(name_box, nodes[n_i], i, true));
+
+						OptionButton *type_box = memnew(OptionButton);
+						hb->add_child(type_box);
+						type_box->add_item(TTR("Scalar"));
+						type_box->add_item(TTR("Vector"));
+						type_box->add_item(TTR("Boolean"));
+						type_box->add_item(TTR("Transform"));
+						type_box->select(group_node->get_output_port_type(i));
+						type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+						type_box->connect("item_selected", this, "_change_output_port_type", varray(nodes[n_i], i), CONNECT_DEFERRED);
+					} else {
+						Label *label = memnew(Label);
+						label->set_text(name_right);
+						label->add_style_override("normal", label_style); //more compact
+						hb->add_child(label);
+					}
 				}
 			}
 
@@ -540,17 +640,32 @@ void VisualShaderEditor::_update_graph() {
 				hb->add_child(preview);
 			}
 
+			if (is_group) {
+				offset = memnew(Control);
+				offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
+				node->add_child(offset);
+				port_offset++;
+			}
+
 			node->add_child(hb);
 
 			node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], valid_right, port_right, type_color[port_right]);
 		}
 
 		if (vsnode->get_output_port_for_preview() >= 0 && vsnode->get_output_port_type(vsnode->get_output_port_for_preview()) != VisualShaderNode::PORT_TYPE_TRANSFORM) {
+			offset = memnew(Control);
+			offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
+			node->add_child(offset);
+
 			VisualShaderNodePortPreview *port_preview = memnew(VisualShaderNodePortPreview);
 			port_preview->setup(visual_shader, type, nodes[n_i], vsnode->get_output_port_for_preview());
 			port_preview->set_h_size_flags(SIZE_SHRINK_CENTER);
 			node->add_child(port_preview);
 		}
+
+		offset = memnew(Control);
+		offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
+		node->add_child(offset);
 
 		String error = vsnode->get_warning(visual_shader->get_mode(), type);
 		if (error != String()) {
@@ -560,9 +675,42 @@ void VisualShaderEditor::_update_graph() {
 			node->add_child(error_label);
 		}
 
+		if (is_expression) {
+
+			TextEdit *expression_box = memnew(TextEdit);
+			expression_node->set_control(expression_box, 0);
+			node->add_child(expression_box);
+
+			Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
+			Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+			Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
+			Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
+
+			expression_box->set_syntax_coloring(true);
+
+			for (List<String>::Element *E = keyword_list.front(); E; E = E->next()) {
+
+				expression_box->add_keyword_color(E->get(), keyword_color);
+			}
+
+			expression_box->add_font_override("font", get_font("expression", "EditorFonts"));
+			expression_box->add_color_override("font_color", text_color);
+			expression_box->add_color_override("symbol_color", symbol_color);
+			expression_box->add_color_region("/*", "*/", comment_color, false);
+			expression_box->add_color_region("//", "", comment_color, false);
+
+			expression_box->set_text(expression);
+			expression_box->set_context_menu_enabled(false);
+			expression_box->set_show_line_numbers(true);
+
+			expression_box->connect("focus_exited", this, "_expression_focus_out", varray(expression_box, nodes[n_i]));
+		}
+
 		if (!uniform.is_valid()) {
 			graph->add_child(node);
 			_update_created_node(node);
+			if (is_group)
+				call_deferred("_set_node_size", (int)type, nodes[n_i], size);
 		}
 	}
 
@@ -575,6 +723,285 @@ void VisualShaderEditor::_update_graph() {
 
 		graph->connect_node(itos(from), from_idx, itos(to), to_idx);
 	}
+}
+
+void VisualShaderEditor::_add_input_port(int p_node, int p_port, int p_port_type, const String &p_name) {
+
+	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+	Ref<VisualShaderNodeExpression> node = visual_shader->get_node(type, p_node);
+	if (node.is_null()) {
+		return;
+	}
+
+	undo_redo->create_action(TTR("Add input port"));
+	undo_redo->add_do_method(node.ptr(), "add_input_port", p_port, p_port_type, p_name);
+	undo_redo->add_undo_method(node.ptr(), "remove_input_port", p_port);
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->add_do_method(this, "_rebuild");
+	undo_redo->add_undo_method(this, "_rebuild");
+	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_add_output_port(int p_node, int p_port, int p_port_type, const String &p_name) {
+
+	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node);
+	if (node.is_null()) {
+		return;
+	}
+
+	undo_redo->create_action(TTR("Add output port"));
+	undo_redo->add_do_method(node.ptr(), "add_output_port", p_port, p_port_type, p_name);
+	undo_redo->add_undo_method(node.ptr(), "remove_output_port", p_port);
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->add_do_method(this, "_rebuild");
+	undo_redo->add_undo_method(this, "_rebuild");
+	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_change_input_port_type(int p_type, int p_node, int p_port) {
+
+	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node);
+	if (node.is_null()) {
+		return;
+	}
+
+	undo_redo->create_action(TTR("Change input port type"));
+	undo_redo->add_do_method(node.ptr(), "set_input_port_type", p_port, p_type);
+	undo_redo->add_undo_method(node.ptr(), "set_input_port_type", p_port, node->get_input_port_type(p_port));
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->add_do_method(this, "_rebuild");
+	undo_redo->add_undo_method(this, "_rebuild");
+	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_change_output_port_type(int p_type, int p_node, int p_port) {
+
+	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node);
+	if (node.is_null()) {
+		return;
+	}
+
+	undo_redo->create_action(TTR("Change output port type"));
+	undo_redo->add_do_method(node.ptr(), "set_output_port_type", p_port, p_type);
+	undo_redo->add_undo_method(node.ptr(), "set_output_port_type", p_port, node->get_output_port_type(p_port));
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->add_do_method(this, "_rebuild");
+	undo_redo->add_undo_method(this, "_rebuild");
+	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_change_input_port_name(const String &p_text, Object *line_edit, int p_node_id, int p_port_id) {
+
+	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+
+	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node_id);
+	ERR_FAIL_COND(!node.is_valid());
+
+	undo_redo->create_action(TTR("Change input port name"));
+	undo_redo->add_do_method(node.ptr(), "set_input_port_name", p_port_id, p_text);
+	undo_redo->add_undo_method(node.ptr(), "set_input_port_name", p_port_id, node->get_input_port_name(p_port_id));
+	undo_redo->add_do_method(this, "_rebuild");
+	undo_redo->add_undo_method(this, "_rebuild");
+	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_change_output_port_name(const String &p_text, Object *line_edit, int p_node_id, int p_port_id) {
+
+	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+
+	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node_id);
+	ERR_FAIL_COND(!node.is_valid());
+
+	undo_redo->create_action(TTR("Change output port name"));
+	undo_redo->add_do_method(node.ptr(), "set_output_port_name", p_port_id, p_text);
+	undo_redo->add_undo_method(node.ptr(), "set_output_port_name", p_port_id, node->get_output_port_name(p_port_id));
+	undo_redo->add_do_method(this, "_rebuild");
+	undo_redo->add_undo_method(this, "_rebuild");
+	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_remove_input_port(int p_node, int p_port) {
+
+	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node);
+	if (node.is_null()) {
+		return;
+	}
+
+	undo_redo->create_action(TTR("Remove input port"));
+
+	List<VisualShader::Connection> conns;
+	visual_shader->get_node_connections(type, &conns);
+	for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
+
+		int from_node = E->get().from_node;
+		int from_port = E->get().from_port;
+		int to_node = E->get().to_node;
+		int to_port = E->get().to_port;
+
+		if (to_node == p_node) {
+			if (to_port == p_port) {
+				undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_port, to_node, to_port);
+				undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes_forced", type, from_node, from_port, to_node, to_port);
+			} else if (to_port > p_port) {
+				undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_port, to_node, to_port);
+				undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes_forced", type, from_node, from_port, to_node, to_port);
+
+				undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes_forced", type, from_node, from_port, to_node, to_port - 1);
+				undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_port, to_node, to_port - 1);
+			}
+		}
+	}
+
+	undo_redo->add_do_method(node.ptr(), "remove_input_port", p_port);
+	undo_redo->add_undo_method(node.ptr(), "add_input_port", p_port, (int)node->get_input_port_type(p_port), node->get_input_port_name(p_port));
+
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+
+	undo_redo->add_do_method(this, "_rebuild");
+	undo_redo->add_undo_method(this, "_rebuild");
+
+	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_remove_output_port(int p_node, int p_port) {
+
+	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node);
+	if (node.is_null()) {
+		return;
+	}
+
+	undo_redo->create_action(TTR("Remove output port"));
+
+	List<VisualShader::Connection> conns;
+	visual_shader->get_node_connections(type, &conns);
+	for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
+
+		int from_node = E->get().from_node;
+		int from_port = E->get().from_port;
+		int to_node = E->get().to_node;
+		int to_port = E->get().to_port;
+
+		if (from_node == p_node) {
+			if (from_port == p_port) {
+				undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_port, to_node, to_port);
+				undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes_forced", type, from_node, from_port, to_node, to_port);
+			} else if (from_port > p_port) {
+				undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_port, to_node, to_port);
+				undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes_forced", type, from_node, from_port, to_node, to_port);
+
+				undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes_forced", type, from_node, from_port - 1, to_node, to_port);
+				undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_port - 1, to_node, to_port);
+			}
+		}
+	}
+
+	undo_redo->add_do_method(node.ptr(), "remove_output_port", p_port);
+	undo_redo->add_undo_method(node.ptr(), "add_output_port", p_port, (int)node->get_output_port_type(p_port), node->get_output_port_name(p_port));
+
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+
+	undo_redo->add_do_method(this, "_rebuild");
+	undo_redo->add_undo_method(this, "_rebuild");
+
+	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_expression_focus_out(Object *text_edit, int p_node) {
+
+	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+	Ref<VisualShaderNodeExpression> node = visual_shader->get_node(type, p_node);
+	if (node.is_null()) {
+		return;
+	}
+
+	TextEdit *expression_box = Object::cast_to<TextEdit>(text_edit);
+
+	if (node->get_expression() == expression_box->get_text())
+		return;
+
+	undo_redo->create_action(TTR("Set expression"));
+	undo_redo->add_do_method(node.ptr(), "set_expression", expression_box->get_text());
+	undo_redo->add_undo_method(node.ptr(), "set_expression", node->get_expression());
+	undo_redo->add_do_method(this, "_rebuild");
+	undo_redo->add_undo_method(this, "_rebuild");
+	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_rebuild() {
+	EditorNode::get_singleton()->get_log()->clear();
+	visual_shader->rebuild();
+}
+
+void VisualShaderEditor::_set_node_size(int p_type, int p_node, const Vector2 &p_size) {
+
+	VisualShader::Type type = VisualShader::Type(p_type);
+	Ref<VisualShaderNode> node = visual_shader->get_node(type, p_node);
+	if (node.is_null()) {
+		return;
+	}
+
+	Ref<VisualShaderNodeGroupBase> group_node = Object::cast_to<VisualShaderNodeGroupBase>(node.ptr());
+
+	if (group_node.is_null()) {
+		return;
+	}
+
+	Vector2 size = p_size;
+
+	group_node->set_size(size);
+
+	GraphNode *gn = NULL;
+	if (edit_type->get_selected() == p_type) { // check - otherwise the error will be emitted
+		Node *node2 = graph->get_node(itos(p_node));
+		gn = Object::cast_to<GraphNode>(node2);
+		if (!gn)
+			return;
+
+		gn->set_custom_minimum_size(size);
+		gn->set_size(Size2(1, 1));
+	}
+
+	Ref<VisualShaderNodeExpression> expression_node = Object::cast_to<VisualShaderNodeExpression>(node.ptr());
+	if (!expression_node.is_null()) {
+		Control *text_box = expression_node->get_control(0);
+		Size2 box_size = size;
+		if (gn != NULL) {
+			if (box_size.x < 150 * EDSCALE || box_size.y < 0) {
+				box_size.x = gn->get_size().x;
+			}
+		}
+		box_size.x -= text_box->get_margin(MARGIN_LEFT);
+		box_size.x -= 28 * EDSCALE;
+		box_size.y -= text_box->get_margin(MARGIN_TOP);
+		box_size.y -= 28 * EDSCALE;
+		text_box->set_custom_minimum_size(Size2(box_size.x, box_size.y));
+		text_box->set_size(Size2(1, 1));
+	}
+}
+
+void VisualShaderEditor::_node_resized(const Vector2 &p_new_size, int p_type, int p_node) {
+
+	VisualShader::Type type = VisualShader::Type(p_type);
+	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node);
+	if (node.is_null()) {
+		return;
+	}
+
+	undo_redo->create_action(TTR("Resize VisualShader node"), UndoRedo::MERGE_ENDS);
+	undo_redo->add_do_method(this, "_set_node_size", p_type, p_node, p_new_size / EDSCALE);
+	undo_redo->add_undo_method(this, "_set_node_size", p_type, p_node, node->get_size());
+	undo_redo->commit_action();
 }
 
 void VisualShaderEditor::_preview_select_port(int p_node, int p_port) {
@@ -623,6 +1050,52 @@ void VisualShaderEditor::_line_edit_focus_out(Object *line_edit, int p_node_id) 
 	_line_edit_changed(text, line_edit, p_node_id);
 }
 
+void VisualShaderEditor::_port_name_focus_out(Object *line_edit, int p_node_id, int p_port_id, bool p_output) {
+
+	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+
+	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node_id);
+	ERR_FAIL_COND(!node.is_valid());
+
+	String text = Object::cast_to<LineEdit>(line_edit)->get_text();
+
+	if (!p_output) {
+		if (node->get_input_port_name(p_port_id) == text)
+			return;
+	} else {
+		if (node->get_output_port_name(p_port_id) == text)
+			return;
+	}
+
+	List<String> input_names;
+	List<String> output_names;
+
+	for (int i = 0; i < node->get_input_port_count(); i++) {
+		if (!p_output && i == p_port_id) continue;
+		input_names.push_back(node->get_input_port_name(i));
+	}
+	for (int i = 0; i < node->get_output_port_count(); i++) {
+		if (p_output && i == p_port_id) continue;
+		output_names.push_back(node->get_output_port_name(i));
+	}
+
+	String validated_name = visual_shader->validate_port_name(text, input_names, output_names);
+	if (validated_name == "") {
+		if (!p_output) {
+			Object::cast_to<LineEdit>(line_edit)->set_text(node->get_input_port_name(p_port_id));
+		} else {
+			Object::cast_to<LineEdit>(line_edit)->set_text(node->get_output_port_name(p_port_id));
+		}
+		return;
+	}
+
+	if (!p_output) {
+		_change_input_port_name(validated_name, line_edit, p_node_id, p_port_id);
+	} else {
+		_change_output_port_name(validated_name, line_edit, p_node_id, p_port_id);
+	}
+}
+
 void VisualShaderEditor::_port_edited() {
 
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
@@ -666,6 +1139,13 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 	if (add_options[p_idx].type != String()) {
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instance(add_options[p_idx].type));
 		ERR_FAIL_COND(!vsn);
+
+		VisualShaderNodeScalarConstant *constant = Object::cast_to<VisualShaderNodeScalarConstant>(vsn);
+
+		if (constant) {
+			if ((int)add_options[p_idx].value != -1)
+				constant->set_constant(add_options[p_idx].value);
+		}
 
 		if (p_op_idx != -1) {
 
@@ -757,6 +1237,12 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 	undo_redo->create_action(TTR("Add Node to Visual Shader"));
 	undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, vsnode, position, id_to_use);
 	undo_redo->add_undo_method(visual_shader.ptr(), "remove_node", type, id_to_use);
+
+	VisualShaderNodeExpression *expr = Object::cast_to<VisualShaderNodeExpression>(vsnode.ptr());
+	if (expr) {
+		undo_redo->add_do_method(expr, "set_size", Size2(250 * EDSCALE, 150 * EDSCALE));
+	}
+
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
@@ -831,10 +1317,25 @@ void VisualShaderEditor::_connection_to_empty(const String &p_from, int p_from_s
 void VisualShaderEditor::_delete_request(int which) {
 
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+	Ref<VisualShaderNode> node = Ref<VisualShaderNode>(visual_shader->get_node(type, which));
 
 	undo_redo->create_action(TTR("Delete Node"));
 	undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, which);
-	undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, visual_shader->get_node(type, which), visual_shader->get_node_position(type, which), which);
+	undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, node, visual_shader->get_node_position(type, which), which);
+
+	// restore size, inputs and outputs if node is group
+	VisualShaderNodeGroupBase *group = Object::cast_to<VisualShaderNodeGroupBase>(node.ptr());
+	if (group) {
+		undo_redo->add_undo_method(group, "set_size", group->get_size());
+		undo_redo->add_undo_method(group, "set_inputs", group->get_inputs());
+		undo_redo->add_undo_method(group, "set_outputs", group->get_outputs());
+	}
+
+	// restore expression text if node is expression
+	VisualShaderNodeExpression *expression = Object::cast_to<VisualShaderNodeExpression>(node.ptr());
+	if (expression) {
+		undo_redo->add_undo_method(expression, "set_expression", expression->get_expression());
+	}
 
 	List<VisualShader::Connection> conns;
 	visual_shader->get_node_connections(type, &conns);
@@ -1022,6 +1523,19 @@ void VisualShaderEditor::_duplicate_nodes() {
 		undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, dupli, visual_shader->get_node_position(type, E->get()) + Vector2(10, 10) * EDSCALE, id_from);
 		undo_redo->add_undo_method(visual_shader.ptr(), "remove_node", type, id_from);
 
+		// duplicate size, inputs and outputs if node is group
+		Ref<VisualShaderNodeGroupBase> group = Object::cast_to<VisualShaderNodeGroupBase>(node.ptr());
+		if (!group.is_null()) {
+			undo_redo->add_do_method(dupli.ptr(), "set_size", group->get_size());
+			undo_redo->add_do_method(dupli.ptr(), "set_inputs", group->get_inputs());
+			undo_redo->add_do_method(dupli.ptr(), "set_outputs", group->get_outputs());
+		}
+		// duplicate expression text if node is expression
+		Ref<VisualShaderNodeExpression> expression = Object::cast_to<VisualShaderNodeExpression>(node.ptr());
+		if (!expression.is_null()) {
+			undo_redo->add_do_method(dupli.ptr(), "set_expression", expression->get_expression());
+		}
+
 		id_from++;
 	}
 
@@ -1030,7 +1544,7 @@ void VisualShaderEditor::_duplicate_nodes() {
 
 	for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
 		if (connection_remap.has(E->get().from_node) && connection_remap.has(E->get().to_node)) {
-			undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, connection_remap[E->get().from_node], E->get().from_port, connection_remap[E->get().to_node], E->get().to_port);
+			undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes_forced", type, connection_remap[E->get().from_node], E->get().from_port, connection_remap[E->get().to_node], E->get().to_port);
 		}
 	}
 
@@ -1073,8 +1587,25 @@ void VisualShaderEditor::_on_nodes_delete() {
 	undo_redo->create_action(TTR("Delete Nodes"));
 
 	for (List<int>::Element *F = to_erase.front(); F; F = F->next()) {
+
+		Ref<VisualShaderNode> node = visual_shader->get_node(type, F->get());
+
 		undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, F->get());
-		undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, visual_shader->get_node(type, F->get()), visual_shader->get_node_position(type, F->get()), F->get());
+		undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, node, visual_shader->get_node_position(type, F->get()), F->get());
+
+		// restore size, inputs and outputs if node is group
+		VisualShaderNodeGroupBase *group = Object::cast_to<VisualShaderNodeGroupBase>(node.ptr());
+		if (group) {
+			undo_redo->add_undo_method(group, "set_size", group->get_size());
+			undo_redo->add_undo_method(group, "set_inputs", group->get_inputs());
+			undo_redo->add_undo_method(group, "set_outputs", group->get_outputs());
+		}
+
+		// restore expression text if node is expression
+		VisualShaderNodeExpression *expression = Object::cast_to<VisualShaderNodeExpression>(node.ptr());
+		if (expression) {
+			undo_redo->add_undo_method(expression, "set_expression", expression->get_expression());
+		}
 	}
 
 	List<VisualShader::Connection> conns;
@@ -1267,8 +1798,10 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 }
 
 void VisualShaderEditor::_bind_methods() {
+	ClassDB::bind_method("_rebuild", &VisualShaderEditor::_rebuild);
 	ClassDB::bind_method("_update_graph", &VisualShaderEditor::_update_graph);
 	ClassDB::bind_method("_update_options_menu", &VisualShaderEditor::_update_options_menu);
+	ClassDB::bind_method("_expression_focus_out", &VisualShaderEditor::_expression_focus_out);
 	ClassDB::bind_method("_add_node", &VisualShaderEditor::_add_node);
 	ClassDB::bind_method("_node_dragged", &VisualShaderEditor::_node_dragged);
 	ClassDB::bind_method("_connection_request", &VisualShaderEditor::_connection_request);
@@ -1283,11 +1816,22 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_connection_to_empty", &VisualShaderEditor::_connection_to_empty);
 	ClassDB::bind_method("_line_edit_focus_out", &VisualShaderEditor::_line_edit_focus_out);
 	ClassDB::bind_method("_line_edit_changed", &VisualShaderEditor::_line_edit_changed);
+	ClassDB::bind_method("_port_name_focus_out", &VisualShaderEditor::_port_name_focus_out);
 	ClassDB::bind_method("_duplicate_nodes", &VisualShaderEditor::_duplicate_nodes);
 	ClassDB::bind_method("_mode_selected", &VisualShaderEditor::_mode_selected);
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
 	ClassDB::bind_method("_preview_select_port", &VisualShaderEditor::_preview_select_port);
 	ClassDB::bind_method("_graph_gui_input", &VisualShaderEditor::_graph_gui_input);
+	ClassDB::bind_method("_add_input_port", &VisualShaderEditor::_add_input_port);
+	ClassDB::bind_method("_change_input_port_type", &VisualShaderEditor::_change_input_port_type);
+	ClassDB::bind_method("_change_input_port_name", &VisualShaderEditor::_change_input_port_name);
+	ClassDB::bind_method("_remove_input_port", &VisualShaderEditor::_remove_input_port);
+	ClassDB::bind_method("_add_output_port", &VisualShaderEditor::_add_output_port);
+	ClassDB::bind_method("_change_output_port_type", &VisualShaderEditor::_change_output_port_type);
+	ClassDB::bind_method("_change_output_port_name", &VisualShaderEditor::_change_output_port_name);
+	ClassDB::bind_method("_remove_output_port", &VisualShaderEditor::_remove_output_port);
+	ClassDB::bind_method("_node_resized", &VisualShaderEditor::_node_resized);
+	ClassDB::bind_method("_set_node_size", &VisualShaderEditor::_set_node_size);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &VisualShaderEditor::can_drop_data_fw);
@@ -1311,6 +1855,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	updating = false;
 	saved_node_pos_dirty = false;
 	saved_node_pos = Point2(0, 0);
+	ShaderLanguage::get_keyword_list(&keyword_list);
 
 	graph = memnew(GraphEdit);
 	add_child(graph);
@@ -1451,6 +1996,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("ColorUniform", "Color", "Variables", "VisualShaderNodeColorUniform", TTR("Color uniform."), -1, VisualShaderNode::PORT_TYPE_COLOR));
 
 	// BOOLEAN
+
 	add_options.push_back(AddOption("If", "Conditional", "Functions", "VisualShaderNodeIf", TTR("Returns an associated vector if the provided scalars are equal, greater or less."), -1, VisualShaderNode::PORT_TYPE_VECTOR));
 	add_options.push_back(AddOption("Switch", "Conditional", "Functions", "VisualShaderNodeSwitch", TTR("Returns an associated vector if the provided boolean value is true or false."), -1, VisualShaderNode::PORT_TYPE_VECTOR));
 	add_options.push_back(AddOption("BooleanConstant", "Conditional", "Variables", "VisualShaderNodeBooleanConstant", TTR("Boolean constant."), -1, VisualShaderNode::PORT_TYPE_BOOLEAN));
@@ -1564,6 +2110,19 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("ScalarFunc", "Scalar", "Common", "VisualShaderNodeScalarFunc", TTR("Scalar function."), -1, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("ScalarOp", "Scalar", "Common", "VisualShaderNodeScalarOp", TTR("Scalar operator."), -1, VisualShaderNode::PORT_TYPE_SCALAR));
 
+	//CONSTANTS
+
+	add_options.push_back(AddOption("E", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("E constant (2.718282). Represents the base of the natural logarithm."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_E));
+	add_options.push_back(AddOption("Epsilon", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Epsilon constant (0.00001). Smallest possible scalar number."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, CMP_EPSILON));
+	add_options.push_back(AddOption("Phi", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Phi constant (1.618034). Golden ratio."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, 1.618034f));
+	add_options.push_back(AddOption("Pi/4", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Pi/4 constant (0.785398) or 45 degrees."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_PI / 4));
+	add_options.push_back(AddOption("Pi/2", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Pi/2 constant (1.570796) or 90 degrees."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_PI / 2));
+	add_options.push_back(AddOption("Pi", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Pi constant (3.141593) or 180 degrees."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_PI));
+	add_options.push_back(AddOption("Tau", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Tau constant (6.283185) or 360 degrees."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_TAU));
+	add_options.push_back(AddOption("Sqrt2", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Sqrt2 constant (1.414214). Square root of 2."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_SQRT2));
+
+	// FUNCTIONS
+
 	add_options.push_back(AddOption("Abs", "Scalar", "Functions", "VisualShaderNodeScalarFunc", TTR("Returns the absolute value of the parameter."), VisualShaderNodeScalarFunc::FUNC_ABS, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("ACos", "Scalar", "Functions", "VisualShaderNodeScalarFunc", TTR("Returns the arc-cosine of the parameter."), VisualShaderNodeScalarFunc::FUNC_ACOS, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("ACosH", "Scalar", "Functions", "VisualShaderNodeScalarFunc", TTR("(GLES3 only) Returns the inverse hyperbolic cosine of the parameter."), VisualShaderNodeScalarFunc::FUNC_ACOSH, VisualShaderNode::PORT_TYPE_SCALAR));
@@ -1588,6 +2147,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Min", "Scalar", "Functions", "VisualShaderNodeScalarOp", TTR("Returns the lesser of two values."), VisualShaderNodeScalarOp::OP_MIN, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("Mix", "Scalar", "Functions", "VisualShaderNodeScalarInterp", TTR("Linear interpolation between two scalars."), -1, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("Negate", "Scalar", "Functions", "VisualShaderNodeScalarFunc", TTR("Returns the opposite value of the parameter."), VisualShaderNodeScalarFunc::FUNC_NEGATE, VisualShaderNode::PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption("OneMinus", "Scalar", "Functions", "VisualShaderNodeScalarFunc", TTR("1.0 - scalar"), VisualShaderNodeScalarFunc::FUNC_ONEMINUS, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("Pow", "Scalar", "Functions", "VisualShaderNodeScalarOp", TTR("Returns the value of the first parameter raised to the power of the second."), VisualShaderNodeScalarOp::OP_POW, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("Radians", "Scalar", "Functions", "VisualShaderNodeScalarFunc", TTR("Converts a quantity in degrees to radians."), VisualShaderNodeScalarFunc::FUNC_RADIANS, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("Reciprocal", "Scalar", "Functions", "VisualShaderNodeScalarFunc", TTR("1.0 / scalar"), VisualShaderNodeScalarFunc::FUNC_RECIPROCAL, VisualShaderNode::PORT_TYPE_SCALAR));
@@ -1677,6 +2237,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Mix", "Vector", "Functions", "VisualShaderNodeVectorInterp", TTR("Linear interpolation between two vectors."), -1, VisualShaderNode::PORT_TYPE_VECTOR));
 	add_options.push_back(AddOption("Negate", "Vector", "Functions", "VisualShaderNodeVectorFunc", TTR("Returns the opposite value of the parameter."), VisualShaderNodeVectorFunc::FUNC_NEGATE, VisualShaderNode::PORT_TYPE_VECTOR));
 	add_options.push_back(AddOption("Normalize", "Vector", "Functions", "VisualShaderNodeVectorFunc", TTR("Calculates the normalize product of vector."), VisualShaderNodeVectorFunc::FUNC_NORMALIZE, VisualShaderNode::PORT_TYPE_VECTOR));
+	add_options.push_back(AddOption("OneMinus", "Vector", "Functions", "VisualShaderNodeVectorFunc", TTR("1.0 - vector"), VisualShaderNodeVectorFunc::FUNC_ONEMINUS, VisualShaderNode::PORT_TYPE_VECTOR));
 	add_options.push_back(AddOption("Pow", "Vector", "Functions", "VisualShaderNodeVectorOp", TTR("Returns the value of the first parameter raised to the power of the second."), VisualShaderNodeVectorOp::OP_POW, VisualShaderNode::PORT_TYPE_VECTOR));
 	add_options.push_back(AddOption("Radians", "Vector", "Functions", "VisualShaderNodeVectorFunc", TTR("Converts a quantity in degrees to radians."), VisualShaderNodeVectorFunc::FUNC_RADIANS, VisualShaderNode::PORT_TYPE_VECTOR));
 	add_options.push_back(AddOption("Reciprocal", "Vector", "Functions", "VisualShaderNodeVectorFunc", TTR("1.0 / vector"), VisualShaderNodeVectorFunc::FUNC_RECIPROCAL, VisualShaderNode::PORT_TYPE_VECTOR));
@@ -1707,6 +2268,9 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("VectorUniform", "Vector", "Variables", "VisualShaderNodeVec3Uniform", TTR("Vector uniform."), -1, VisualShaderNode::PORT_TYPE_VECTOR));
 
 	// SPECIAL
+
+	add_options.push_back(AddOption("Expression", "Special", "", "VisualShaderNodeExpression", TTR("Custom Godot Shader Language expression, with custom amount of input and output ports. This is a direct injection of code into the vertex/fragment/light function, do not use it to write the function declarations inside.")));
+	add_options.push_back(AddOption("Fresnel", "Special", "", "VisualShaderNodeFresnel", TTR("Returns falloff based on the dot product of surface normal and view direction of camera (pass associated inputs to it)."), -1, VisualShaderNode::PORT_TYPE_SCALAR));
 
 	add_options.push_back(AddOption("ScalarDerivativeFunc", "Special", "Common", "VisualShaderNodeScalarDerivativeFunc", TTR("(GLES3 only) (Fragment/Light mode only) Scalar derivative function."), -1, VisualShaderNode::PORT_TYPE_SCALAR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT));
 	add_options.push_back(AddOption("VectorDerivativeFunc", "Special", "Common", "VisualShaderNodeVectorDerivativeFunc", TTR("(GLES3 only) (Fragment/Light mode only) Vector derivative function."), -1, VisualShaderNode::PORT_TYPE_VECTOR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT));

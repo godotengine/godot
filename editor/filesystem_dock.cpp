@@ -90,7 +90,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			String file_type = p_dir->get_file_type(i);
 
 			if (_is_file_type_disabled_by_feature_profile(file_type)) {
-				//if type is disabled, file wont be displayed.
+				//if type is disabled, file won't be displayed.
 				continue;
 			}
 			String file_name = p_dir->get_file(i);
@@ -451,9 +451,11 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 		} else if (dirAccess->dir_exists(p_path)) {
 			path = target_path + "/";
 		} else {
+			memdelete(dirAccess);
 			ERR_EXPLAIN(vformat(TTR("Cannot navigate to '%s' as it has not been found in the file system!"), p_path));
 			ERR_FAIL();
 		}
+		memdelete(dirAccess);
 	}
 
 	_set_current_path_text(path);
@@ -756,7 +758,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		Ref<Texture> type_icon;
 		Ref<Texture> big_icon;
 
-		String tooltip = fname;
+		String tooltip = fpath;
 
 		// Select the icons
 		if (!finfo->import_broken) {
@@ -1201,6 +1203,21 @@ void FileSystemDock::_update_favorites_list_after_move(const Map<String, String>
 	EditorSettings::get_singleton()->set_favorites(new_favorites);
 }
 
+void FileSystemDock::_save_scenes_after_move(const Map<String, String> &p_renames) const {
+	Vector<String> remaps;
+	_find_remaps(EditorFileSystem::get_singleton()->get_filesystem(), p_renames, remaps);
+	Vector<String> new_filenames;
+
+	for (int i = 0; i < remaps.size(); ++i) {
+		String file = p_renames.has(remaps[i]) ? p_renames[remaps[i]] : remaps[i];
+		if (ResourceLoader::get_resource_type(file) == "PackedScene") {
+			new_filenames.push_back(file);
+		}
+	}
+
+	editor->save_scene_list(new_filenames);
+}
+
 void FileSystemDock::_make_dir_confirm() {
 	String dir_name = make_dir_dialog_text->get_text().strip_edges();
 
@@ -1279,14 +1296,21 @@ void FileSystemDock::_rename_operation_confirm() {
 	Map<String, String> file_renames;
 	Map<String, String> folder_renames;
 	_try_move_item(to_rename, new_path, file_renames, folder_renames);
+
+	int current_tab = editor->get_current_tab();
+
 	_update_dependencies_after_move(file_renames);
 	_update_resource_paths_after_move(file_renames);
 	_update_project_settings_after_move(file_renames);
 	_update_favorites_list_after_move(file_renames, folder_renames);
 
-	//Rescan everything
+	editor->set_current_tab(current_tab);
+
 	print_verbose("FileSystem: calling rescan.");
 	_rescan();
+
+	print_verbose("FileSystem: saving moved scenes.");
+	_save_scenes_after_move(file_renames);
 }
 
 void FileSystemDock::_duplicate_operation_confirm() {
@@ -1382,13 +1406,20 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool overw
 	}
 
 	if (is_moved) {
+		int current_tab = editor->get_current_tab();
+
 		_update_dependencies_after_move(file_renames);
 		_update_resource_paths_after_move(file_renames);
 		_update_project_settings_after_move(file_renames);
 		_update_favorites_list_after_move(file_renames, folder_renames);
 
+		editor->set_current_tab(current_tab);
+
 		print_verbose("FileSystem: calling rescan.");
 		_rescan();
+
+		print_verbose("FileSystem: saving moved scenes.");
+		_save_scenes_after_move(file_renames);
 	}
 }
 
@@ -2160,6 +2191,18 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
 	}
 }
 
+void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
+	// Right click is pressed in the empty space of the tree
+	path = "res://";
+	tree_popup->clear();
+	tree_popup->set_size(Size2(1, 1));
+	tree_popup->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
+	tree_popup->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
+	tree_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
+	tree_popup->set_position(tree->get_global_position() + p_pos);
+	tree_popup->popup();
+}
+
 void FileSystemDock::_tree_empty_selected() {
 	tree->deselect_all();
 }
@@ -2353,6 +2396,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_file_list_rmb_option", "option"), &FileSystemDock::_file_list_rmb_option);
 	ClassDB::bind_method(D_METHOD("_file_list_rmb_select"), &FileSystemDock::_file_list_rmb_select);
 	ClassDB::bind_method(D_METHOD("_file_list_rmb_pressed"), &FileSystemDock::_file_list_rmb_pressed);
+	ClassDB::bind_method(D_METHOD("_tree_rmb_empty"), &FileSystemDock::_tree_rmb_empty);
 
 	ClassDB::bind_method(D_METHOD("_file_deleted"), &FileSystemDock::_file_deleted);
 	ClassDB::bind_method(D_METHOD("_folder_deleted"), &FileSystemDock::_folder_deleted);
@@ -2485,6 +2529,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->connect("item_activated", this, "_tree_activate_file");
 	tree->connect("multi_selected", this, "_tree_multi_selected");
 	tree->connect("item_rmb_selected", this, "_tree_rmb_select");
+	tree->connect("empty_rmb", this, "_tree_rmb_empty");
 	tree->connect("nothing_selected", this, "_tree_empty_selected");
 	tree->connect("gui_input", this, "_tree_gui_input");
 

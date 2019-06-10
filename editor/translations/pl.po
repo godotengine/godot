@@ -33,11 +33,12 @@
 # Robert <vizz0@onet.pl>, 2019.
 # Michał Topa <moonchasered@gmail.com>, 2019.
 # Przemysław Pierzga <przemyslawpierzga@gmail.com>, 2019.
+# Artur Maciąg <arturmaciag@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-04-25 11:54+0000\n"
+"PO-Revision-Date: 2019-05-08 11:48+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -185,12 +186,18 @@ msgid "Animation Playback Track"
 msgstr "Ścieżka animacji"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Dodaj ścieżkę"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Długość animacji (sekundy)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Długość animacji (sekundy)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Dodaj ścieżkę"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -445,9 +452,8 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "Grupuj ścieżki po węzłach lub wyświetl je jako prostą listę."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "Przyciągaj"
+msgstr "Przyciąganie:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -455,7 +461,7 @@ msgstr "Wartość kroku animacji."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "sekund"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
@@ -2218,7 +2224,7 @@ msgstr "Zamknij kartę"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
-msgstr "Przełącz Zakładkę Sceny"
+msgstr "Przełącz zakładkę sceny"
 
 #: editor/editor_node.cpp
 msgid "%d more files or folders"
@@ -4822,20 +4828,19 @@ msgstr "Układ"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
-msgstr ""
+msgstr "Maska przesunięcia dla wstawiania kluczy."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation mask for inserting keys."
-msgstr ""
+msgstr "Maska obrotu dla wstawiania kluczy."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale mask for inserting keys."
-msgstr ""
+msgstr "Maska skali dla wstawiania kluczy."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Insert keys (based on mask)."
-msgstr "Wstaw klucz (istniejące ścieżki)"
+msgstr "Wstaw klucze (w oparciu o maskę)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -4844,11 +4849,15 @@ msgid ""
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
 msgstr ""
+"Automatycznie wstaw klucze, kiedy obiekt jest przesuwany, obracany lub "
+"skalowany (w oparciu o maskę).\n"
+"Klucze są dodawane tylko do istniejących ścieżek, żadne nowe ścieżki nie "
+"zostaną utworzone.\n"
+"Za pierwszym razem klucze muszą być umieszczone ręcznie."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Insert Key"
-msgstr "Wstaw klatkę kluczową"
+msgstr "Automatycznie wstaw klucz"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -5834,9 +5843,8 @@ msgid "Save Theme As..."
 msgstr "Zapisz motyw jako..."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "%s Class Reference"
-msgstr " - referencja klasy"
+msgstr "Referencja klasy %s"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
@@ -6660,24 +6668,20 @@ msgid "Nameless gizmo"
 msgstr "Uchwyt bez nazwy"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Mesh2D"
-msgstr "Utwórz siatkę 2D"
+msgstr "Utwórz węzeł Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon2D"
-msgstr "Utwórz Wielokąt3D"
+msgstr "Utwórz węzeł Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D"
-msgstr "Utwórz wielokąt kolizji"
+msgstr "Utwórz węzeł CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D"
-msgstr "Stwórz Occluder Polygon"
+msgstr "Utwórz węzeł LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6693,43 +6697,36 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Nieprawidłowa geometria, nie można zastąpić przez siatkę."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create polygon."
-msgstr "Nieprawidłowa geometria, nie można zastąpić przez siatkę."
+msgstr "Nieprawidłowa geometria, nie można utworzyć wielokąta."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create collision polygon."
-msgstr "Nieprawidłowa geometria, nie można zastąpić przez siatkę."
+msgstr "Nieprawidłowa geometria, nie można utworzyć wielokąta kolizji."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create light occluder."
-msgstr "Nieprawidłowa geometria, nie można zastąpić przez siatkę."
+msgstr "Nieprawidłowa geometria, nie można utworzyć przesłaniacza światła."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Mesh2D"
-msgstr "Konwertuj do siatki 2D"
+msgstr "Zamień na Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Polygon2D"
-msgstr "Przesuń Wielokąt"
+msgstr "Zamień na Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "Utwórz wielokąt kolizji"
+msgstr "Utwórz równorzędny węzeł CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D Sibling"
-msgstr "Stwórz Occluder Polygon"
+msgstr "Utwórz równorzędny węzeł LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7314,9 +7311,8 @@ msgid "Duplicate Nodes"
 msgstr "Duplikuj węzły"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Nodes"
-msgstr "Usuń węzeł"
+msgstr "Usuń węzły"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
