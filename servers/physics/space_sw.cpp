@@ -176,7 +176,7 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID &p_shape, const Transfo
 	if (p_result_max <= 0)
 		return 0;
 
-	ShapeSW *shape = static_cast<PhysicsServerSW *>(PhysicsServer::get_singleton())->shape_owner.get(p_shape);
+	ShapeSW *shape = static_cast<PhysicsServerSW *>(PhysicsServer::get_singleton())->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	AABB aabb = p_xform.xform(shape->get_aabb());
@@ -224,7 +224,7 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID &p_shape, const Transfo
 
 bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, real_t p_margin, real_t &p_closest_safe, real_t &p_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, ShapeRestInfo *r_info) {
 
-	ShapeSW *shape = static_cast<PhysicsServerSW *>(PhysicsServer::get_singleton())->shape_owner.get(p_shape);
+	ShapeSW *shape = static_cast<PhysicsServerSW *>(PhysicsServer::get_singleton())->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
 	AABB aabb = p_xform.xform(shape->get_aabb());
@@ -333,7 +333,7 @@ bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform &p_sh
 	if (p_result_max <= 0)
 		return 0;
 
-	ShapeSW *shape = static_cast<PhysicsServerSW *>(PhysicsServer::get_singleton())->shape_owner.get(p_shape);
+	ShapeSW *shape = static_cast<PhysicsServerSW *>(PhysicsServer::get_singleton())->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	AABB aabb = p_shape_xform.xform(shape->get_aabb());
@@ -405,7 +405,7 @@ static void _rest_cbk_result(const Vector3 &p_point_A, const Vector3 &p_point_B,
 }
 bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
-	ShapeSW *shape = static_cast<PhysicsServerSW *>(PhysicsServer::get_singleton())->shape_owner.get(p_shape);
+	ShapeSW *shape = static_cast<PhysicsServerSW *>(PhysicsServer::get_singleton())->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	AABB aabb = p_shape_xform.xform(shape->get_aabb());

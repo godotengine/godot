@@ -90,7 +90,7 @@ public:
 		}
 	};
 
-	struct LightOccluderPolygon : RID_Data {
+	struct LightOccluderPolygon  {
 
 		bool active;
 		Rect2 aabb;
@@ -104,9 +104,9 @@ public:
 		}
 	};
 
-	RID_Owner<LightOccluderPolygon> canvas_light_occluder_polygon_owner;
+	RID_PtrOwner<LightOccluderPolygon> canvas_light_occluder_polygon_owner;
 
-	RID_Owner<RasterizerCanvas::LightOccluderInstance> canvas_light_occluder_owner;
+	RID_PtrOwner<RasterizerCanvas::LightOccluderInstance> canvas_light_occluder_owner;
 
 	struct Canvas : public VisualServerViewport::CanvasBase {
 
@@ -150,9 +150,9 @@ public:
 		}
 	};
 
-	mutable RID_Owner<Canvas> canvas_owner;
-	RID_Owner<Item> canvas_item_owner;
-	RID_Owner<RasterizerCanvas::Light> canvas_light_owner;
+	mutable RID_PtrOwner<Canvas> canvas_owner;
+	RID_PtrOwner<Item> canvas_item_owner;
+	RID_PtrOwner<RasterizerCanvas::Light> canvas_light_owner;
 
 	bool disable_scale;
 

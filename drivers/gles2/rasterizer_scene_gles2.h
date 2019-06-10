@@ -223,7 +223,7 @@ public:
 
 	uint64_t shadow_atlas_realloc_tolerance_msec;
 
-	struct ShadowAtlas : public RID_Data {
+	struct ShadowAtlas  {
 		enum {
 			QUADRANT_SHIFT = 27,
 			SHADOW_INDEX_MASK = (1 << QUADRANT_SHIFT) - 1,
@@ -271,7 +271,7 @@ public:
 
 	Vector<ShadowCubeMap> shadow_cubemaps;
 
-	RID_Owner<ShadowAtlas> shadow_atlas_owner;
+	RID_PtrOwner<ShadowAtlas> shadow_atlas_owner;
 
 	RID shadow_atlas_create();
 	void shadow_atlas_set_size(RID p_atlas, int p_size);
@@ -302,7 +302,7 @@ public:
 
 	/* REFLECTION PROBE INSTANCE */
 
-	struct ReflectionProbeInstance : public RID_Data {
+	struct ReflectionProbeInstance  {
 
 		RasterizerStorageGLES2::ReflectionProbe *probe_ptr;
 		RID probe;
@@ -328,7 +328,7 @@ public:
 		Transform transform;
 	};
 
-	mutable RID_Owner<ReflectionProbeInstance> reflection_probe_instance_owner;
+	mutable RID_PtrOwner<ReflectionProbeInstance> reflection_probe_instance_owner;
 
 	ReflectionProbeInstance **reflection_probe_instances;
 	int reflection_probe_count;
@@ -343,7 +343,7 @@ public:
 
 	/* ENVIRONMENT API */
 
-	struct Environment : public RID_Data {
+	struct Environment  {
 		VS::EnvironmentBG bg_mode;
 
 		RID sky;
@@ -404,7 +404,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<Environment> environment_owner;
+	mutable RID_PtrOwner<Environment> environment_owner;
 
 	virtual RID environment_create();
 
@@ -441,7 +441,7 @@ public:
 
 	/* LIGHT INSTANCE */
 
-	struct LightInstance : public RID_Data {
+	struct LightInstance  {
 
 		struct ShadowTransform {
 			CameraMatrix camera;
@@ -475,7 +475,7 @@ public:
 		Set<RID> shadow_atlases; // atlases where this light is registered
 	};
 
-	mutable RID_Owner<LightInstance> light_instance_owner;
+	mutable RID_PtrOwner<LightInstance> light_instance_owner;
 
 	virtual RID light_instance_create(RID p_light);
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform);

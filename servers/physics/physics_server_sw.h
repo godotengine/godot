@@ -31,6 +31,7 @@
 #ifndef PHYSICS_SERVER_SW
 #define PHYSICS_SERVER_SW
 
+#include "core/rid_owner.h"
 #include "joints_sw.h"
 #include "servers/physics_server.h"
 #include "shape_sw.h"
@@ -58,11 +59,11 @@ class PhysicsServerSW : public PhysicsServer {
 
 	PhysicsDirectBodyStateSW *direct_state;
 
-	mutable RID_Owner<ShapeSW> shape_owner;
-	mutable RID_Owner<SpaceSW> space_owner;
-	mutable RID_Owner<AreaSW> area_owner;
-	mutable RID_Owner<BodySW> body_owner;
-	mutable RID_Owner<JointSW> joint_owner;
+	mutable RID_PtrOwner<ShapeSW> shape_owner;
+	mutable RID_PtrOwner<SpaceSW> space_owner;
+	mutable RID_PtrOwner<AreaSW> area_owner;
+	mutable RID_PtrOwner<BodySW> body_owner;
+	mutable RID_PtrOwner<JointSW> joint_owner;
 
 	//void _clear_query(QuerySW *p_query);
 	friend class CollisionObjectSW;
