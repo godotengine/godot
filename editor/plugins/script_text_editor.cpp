@@ -867,6 +867,12 @@ void ScriptTextEditor::_update_connected_methods() {
 				continue;
 			}
 
+			// As deleted nodes are still accessible via the undo/redo system, check if they're still on the tree.
+			Node *source = Object::cast_to<Node>(connection.source);
+			if (source && !source->is_inside_tree()) {
+				continue;
+			}
+
 			int line = script->get_language()->find_function(connection.method, text_edit->get_text());
 			if (line < 0) {
 				missing_connections.push_back(connection);
