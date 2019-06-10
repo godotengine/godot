@@ -66,6 +66,7 @@ public:
 		return _id != p_rid._id;
 	}
 	_FORCE_INLINE_ bool is_valid() const { return _id != 0; }
+	_FORCE_INLINE_ bool is_null() const { return _id == 0; }
 
 	_FORCE_INLINE_ uint64_t get_id() const { return _id; }
 
