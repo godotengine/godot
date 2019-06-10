@@ -2,6 +2,9 @@
 #include "core/math/math_funcs.h"
 #include "core/print_string.h"
 
+// initially when i first started making the class i tried to compile it without any of the logic and it crashed when selected in godot as a stream for AudioStreamPlayer
+// i thought the issue was because the mix logic was missing at the time but that still persists
+
 AudioStreamPlaylist::AudioStreamPlaylist() {
 	bpm = 120;
 	stream_count = 1;
@@ -10,7 +13,7 @@ AudioStreamPlaylist::AudioStreamPlaylist() {
 	beat_size = (60 / bpm) * sample_rate;
 }
 
-Ref<AudioStreamPlayback> AudioStreamPlaylist::instance_playback() {
+Ref<AudioStreamPlayback> AudioStreamPlaylist::instance_playback() { //i think this is correct
 	Ref<AudioStreamPlaybackPlaylist> playback_playlist;
 	playback_playlist.instance();
 	playback_playlist->instance = Ref<AudioStreamPlaylist>(this);
@@ -68,9 +71,6 @@ int AudioStreamPlaylist::get_bpm() {
 	return bpm;
 }
 
-void AudioStreamPlaylist::set_order(OrderMode p_order) {
-	p_order = order_mode;
-}
 
 void AudioStreamPlaylist::_validate_property(PropertyInfo &property) const {
 	String prop = property.name;
@@ -100,7 +100,7 @@ void AudioStreamPlaylist::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stream_count", PROPERTY_HINT_RANGE, "1," + itos(MAX_STREAMS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_stream_count", "get_stream_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bpm", PROPERTY_HINT_RANGE, "0,400"), "set_bpm", "get_bpm");
 
-	for (int i = 0; i < MAX_STREAMS; i++) {
+	for (int i = 0; i < MAX_STREAMS; i++) { 
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "stream_" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_list_stream", "get_list_stream", i);
 		ADD_PROPERTYI(PropertyInfo(Variant::INT, "stream_" + itos(i) + "/beat_amount", PROPERTY_HINT_RANGE, "0,120", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_stream_beats", "get_stream_beats", i);
 	}
@@ -112,10 +112,15 @@ void AudioStreamPlaylist::_bind_methods() {
 //////////////////////
 //////////////////////
 
-AudioStreamPlaybackPlaylist::AudioStreamPlaybackPlaylist() {
+AudioStreamPlaybackPlaylist::AudioStreamPlaybackPlaylist() :
+		active(false) {
 	buffer_size = 256;
-	active = false;
-	
+	current = 0;
+	fading = false;
+	fading_time = 0; //tried to use this as float and set a default value for fading time but that didn't help either
+	fading_samples_total = fading_time * instance->sample_rate; //crash log says the crash happens on this line 
+	beat_amount_remaining = instance->audio_streams[current].beat_count * instance->beat_size;
+	playback[current] = instance->audio_streams[current].stream->instance_playback(); // could it be worth assigning all the playbacks to the streams with a for loop here?
 }
 
 AudioStreamPlaybackPlaylist::~AudioStreamPlaybackPlaylist() {
@@ -130,15 +135,10 @@ void AudioStreamPlaybackPlaylist::stop() {
 	instance->reset();
 }
 
-void AudioStreamPlaybackPlaylist::start(float p_from_pos) {
+void AudioStreamPlaybackPlaylist::start(float p_from_pos) { //should the variables that are set in the constructor go here instead?
 	seek(p_from_pos);
 	active = true;
-	current = 0;
-	fading = false;
-	fading_time = instance->beat_size / 128; 
-	fading_samples_total = fading_time * instance->sample_rate;
-	beat_amount_remaining = instance->audio_streams[current].beat_count * instance->beat_size;
-	playback[current] = instance->audio_streams[current].stream->instance_playback();
+	
 	playback[current]->start();
 }
 
@@ -168,7 +168,7 @@ void AudioStreamPlaybackPlaylist::clear_buffer(int samples) {
 void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	int dst_offset = 0;
 	int fading_samples = 0;
-	playback[current] = instance->audio_streams[current].stream->instance_playback();
+	playback[current] = instance->audio_streams[current].stream->instance_playback();//assigning the current playback to the current stream, i think this is wrong though
 	while (p_frames > 0) {
 
 		if (beat_amount_remaining == 0) {

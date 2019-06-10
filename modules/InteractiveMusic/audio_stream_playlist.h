@@ -12,15 +12,9 @@ private:
 	int sample_rate;
 	bool stereo;
 	int stream_count;
-	
 	int bpm;
 	double beat_size;
 	double time;
-	
-	enum OrderMode {
-		Sequence,
-		Shuffle
-	};
 
 	enum {
 		MAX_STREAMS = 64
@@ -35,8 +29,6 @@ private:
 
 	Streams audio_streams[MAX_STREAMS];
 
-	OrderMode order_mode;
-
 public:
 	void reset();
 	void set_position(uint64_t pos);
@@ -49,10 +41,7 @@ public:
 	int get_stream_count();
 	void set_list_stream(int stream_number, Ref<AudioStream> p_stream);
 	Ref<AudioStream> get_list_stream(int stream_number);
-	void set_order(OrderMode p_order);
-	OrderMode get_order(){
-		return order_mode;
-	};
+	
 	
 	virtual Ref<AudioStreamPlayback> instance_playback();
 	virtual String get_stream_name() const;
