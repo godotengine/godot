@@ -116,7 +116,7 @@ private:
 		const Particle *particles;
 
 		bool operator()(int p_a, int p_b) const {
-			return particles[p_a].time < particles[p_b].time;
+			return particles[p_a].time > particles[p_b].time;
 		}
 	};
 
