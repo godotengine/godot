@@ -515,10 +515,16 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			constant->datatype = _type_from_variant(constant->value);
 
 			expr = constant;
-		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_YIELD) {
+		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_YIELD ||
+				   tokenizer->get_token() == GDScriptTokenizer::TK_PR_YIELD_AWAIT) {
+
+			const bool yield_await = tokenizer->get_token() == GDScriptTokenizer::TK_PR_YIELD_AWAIT;
 
 			if (!current_function) {
-				_set_error("yield() can only be used inside function blocks.");
+				if (yield_await)
+					_set_error("yield_await can only be used inside function blocks.");
+				else
+					_set_error("yield() can only be used inside function blocks.");
 				return NULL;
 			}
 
@@ -526,7 +532,10 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			tokenizer->advance();
 			if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
-				_set_error("Expected '(' after 'yield'");
+				if (yield_await)
+					_set_error("Expected '(' after 'yield_await'");
+				else
+					_set_error("Expected '(' after 'yield'");
 				return NULL;
 			}
 
@@ -540,8 +549,16 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			}
 
 			if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
-				expr = yield;
-				tokenizer->advance();
+				//if the parenthesis closes here we have yield()
+				//unless the token was yield_await in which case it's an error
+				if (yield_await) {
+					_set_error("Expected first argument of 'yield_await'");
+					return NULL;
+				} else {
+					//yield()
+					expr = yield;
+					tokenizer->advance();
+				}
 			} else {
 
 				parenthesis++;
@@ -552,13 +569,23 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				yield->arguments.push_back(object);
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
 					//If the parenthesis closes here the expression is yield(value)
-					parenthesis--;
-					expr = yield;
-					tokenizer->advance();
+					//unless the token was yield_await in which case it's an error
+					if (yield_await) {
+						_set_error("Expected ',' after first argument of 'yield_await'");
+						return NULL;
+					} else {
+						//yield(value)
+						parenthesis--;
+						expr = yield;
+						tokenizer->advance();
+					}
 				} else {
 
 					if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
-						_set_error("Expected ',' after first argument of 'yield'");
+						if (yield_await)
+							_set_error("Expected ',' after first argument of 'yield_await'");
+						else
+							_set_error("Expected ',' after first argument of 'yield'");
 						return NULL;
 					}
 
@@ -584,7 +611,10 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					yield->arguments.push_back(signal);
 
 					if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
-						_set_error("Expected ')' after second argument of 'yield'");
+						if (yield_await)
+							_set_error("Expected ')' after second argument of 'yield_await'");
+						else
+							_set_error("Expected ')' after second argument of 'yield'");
 						return NULL;
 					}
 
@@ -6149,11 +6179,11 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 						DataType signal_type = _reduce_node_type(op->arguments[1]);
 						// TODO: Check if signal exists when it's a constant
 						if (base_type.has_type && base_type.kind == DataType::BUILTIN && base_type.builtin_type != Variant::NIL && base_type.builtin_type != Variant::OBJECT) {
-							_set_error("First argument of 'yield()' must be an object.", op->line);
+							_set_error("First argument of 'yield[_await]()' must be an object.", op->line);
 							return DataType();
 						}
 						if (signal_type.has_type && (signal_type.kind != DataType::BUILTIN || signal_type.builtin_type != Variant::STRING)) {
-							_set_error("Second argument of 'yield()' must be a string.", op->line);
+							_set_error("Second argument of 'yield[_await]()' must be a string.", op->line);
 							return DataType();
 						}
 					}
