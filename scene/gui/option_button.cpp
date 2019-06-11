@@ -58,7 +58,7 @@ void OptionButton::_notification(int p_what) {
 				return;
 
 			RID ci = get_canvas_item();
-			Ref<Texture> arrow = Control::get_icon("arrow");
+			Ref<Texture2D> arrow = Control::get_icon("arrow");
 			Color clr = Color(1, 1, 1);
 			if (get_constant("modulate_arrow")) {
 				switch (get_draw_mode()) {
@@ -114,7 +114,7 @@ void OptionButton::pressed() {
 	popup->popup();
 }
 
-void OptionButton::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id) {
+void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id) {
 
 	popup->add_icon_radio_check_item(p_icon, p_label, p_id);
 	if (popup->get_item_count() == 1)
@@ -134,7 +134,7 @@ void OptionButton::set_item_text(int p_idx, const String &p_text) {
 	if (current == p_idx)
 		set_text(p_text);
 }
-void OptionButton::set_item_icon(int p_idx, const Ref<Texture> &p_icon) {
+void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 
 	popup->set_item_icon(p_idx, p_icon);
 
@@ -161,7 +161,7 @@ String OptionButton::get_item_text(int p_idx) const {
 	return popup->get_item_text(p_idx);
 }
 
-Ref<Texture> OptionButton::get_item_icon(int p_idx) const {
+Ref<Texture2D> OptionButton::get_item_icon(int p_idx) const {
 
 	return popup->get_item_icon(p_idx);
 }
@@ -289,7 +289,7 @@ void OptionButton::_set_items(const Array &p_items) {
 	for (int i = 0; i < p_items.size(); i += 5) {
 
 		String text = p_items[i + 0];
-		Ref<Texture> icon = p_items[i + 1];
+		Ref<Texture2D> icon = p_items[i + 1];
 		bool disabled = p_items[i + 2];
 		int id = p_items[i + 3];
 		Variant meta = p_items[i + 4];

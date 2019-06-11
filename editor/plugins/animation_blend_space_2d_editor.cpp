@@ -410,8 +410,8 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 	Color linecolor_soft = linecolor;
 	linecolor_soft.a *= 0.5;
 	Ref<Font> font = get_font("font", "Label");
-	Ref<Texture> icon = get_icon("KeyValue", "EditorIcons");
-	Ref<Texture> icon_selected = get_icon("KeySelected", "EditorIcons");
+	Ref<Texture2D> icon = get_icon("KeyValue", "EditorIcons");
+	Ref<Texture2D> icon_selected = get_icon("KeySelected", "EditorIcons");
 
 	Size2 s = blend_space_draw->get_size();
 

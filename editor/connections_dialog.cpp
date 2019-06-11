@@ -903,7 +903,7 @@ void ConnectionsDock::update_tree() {
 	while (base) {
 
 		List<MethodInfo> node_signals2;
-		Ref<Texture> icon;
+		Ref<Texture2D> icon;
 		String name;
 
 		if (!did_script) {

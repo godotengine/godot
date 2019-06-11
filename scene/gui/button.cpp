@@ -40,7 +40,7 @@ Size2 Button::get_minimum_size() const {
 		minsize.width = 0;
 
 	if (!expand_icon) {
-		Ref<Texture> _icon;
+		Ref<Texture2D> _icon;
 		if (icon.is_null() && has_icon("icon"))
 			_icon = Control::get_icon("icon");
 		else
@@ -150,7 +150,7 @@ void Button::_notification(int p_what) {
 			}
 
 			Ref<Font> font = get_font("font");
-			Ref<Texture> _icon;
+			Ref<Texture2D> _icon;
 			if (icon.is_null() && has_icon("icon"))
 				_icon = Control::get_icon("icon");
 			else
@@ -249,7 +249,7 @@ String Button::get_text() const {
 	return text;
 }
 
-void Button::set_icon(const Ref<Texture> &p_icon) {
+void Button::set_icon(const Ref<Texture2D> &p_icon) {
 
 	if (icon == p_icon)
 		return;
@@ -259,7 +259,7 @@ void Button::set_icon(const Ref<Texture> &p_icon) {
 	minimum_size_changed();
 }
 
-Ref<Texture> Button::get_icon() const {
+Ref<Texture2D> Button::get_icon() const {
 
 	return icon;
 }
@@ -331,7 +331,7 @@ void Button::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALIGN_RIGHT);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_button_icon", "get_button_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_button_icon", "get_button_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_align", "get_text_align");

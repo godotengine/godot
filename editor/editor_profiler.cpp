@@ -353,10 +353,10 @@ void EditorProfiler::_update_plot() {
 		if (graph_texture.is_null()) {
 			graph_texture.instance();
 		}
-		graph_texture->create(img->get_width(), img->get_height(), img->get_format(), Texture::FLAG_VIDEO_SURFACE);
+		graph_texture->create_from_image(img);
 	}
 
-	graph_texture->set_data(img);
+	graph_texture->update(img, true);
 
 	graph->set_texture(graph_texture);
 	graph->update();

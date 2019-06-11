@@ -1442,11 +1442,11 @@ void AnimationTimelineEdit::_anim_loop_pressed() {
 
 int AnimationTimelineEdit::get_buttons_width() const {
 
-	Ref<Texture> interp_mode = get_icon("TrackContinuous", "EditorIcons");
-	Ref<Texture> interp_type = get_icon("InterpRaw", "EditorIcons");
-	Ref<Texture> loop_type = get_icon("InterpWrapClamp", "EditorIcons");
-	Ref<Texture> remove_icon = get_icon("Remove", "EditorIcons");
-	Ref<Texture> down_icon = get_icon("select_arrow", "Tree");
+	Ref<Texture2D> interp_mode = get_icon("TrackContinuous", "EditorIcons");
+	Ref<Texture2D> interp_type = get_icon("InterpRaw", "EditorIcons");
+	Ref<Texture2D> loop_type = get_icon("InterpWrapClamp", "EditorIcons");
+	Ref<Texture2D> remove_icon = get_icon("Remove", "EditorIcons");
+	Ref<Texture2D> down_icon = get_icon("select_arrow", "Tree");
 
 	int total_w = interp_mode->get_width() + interp_type->get_width() + loop_type->get_width() + remove_icon->get_width();
 	total_w += (down_icon->get_width() + 4 * EDSCALE) * 4;
@@ -1456,7 +1456,7 @@ int AnimationTimelineEdit::get_buttons_width() const {
 
 int AnimationTimelineEdit::get_name_limit() const {
 
-	Ref<Texture> hsize_icon = get_icon("Hsize", "EditorIcons");
+	Ref<Texture2D> hsize_icon = get_icon("Hsize", "EditorIcons");
 
 	int limit = MAX(name_limit, add_track->get_minimum_size().width + hsize_icon->get_width());
 
@@ -1504,7 +1504,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		if (l <= 0)
 			l = 0.001; //avoid crashor
 
-		Ref<Texture> hsize_icon = get_icon("Hsize", "EditorIcons");
+		Ref<Texture2D> hsize_icon = get_icon("Hsize", "EditorIcons");
 		hsize_rect = Rect2(get_name_limit() - hsize_icon->get_width() - 2 * EDSCALE, (get_size().height - hsize_icon->get_height()) / 2, hsize_icon->get_width(), hsize_icon->get_height());
 		draw_texture(hsize_icon, hsize_rect.position);
 
@@ -1934,7 +1934,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 		Ref<Font> font = get_font("font", "Label");
 		Color color = get_color("font_color", "Label");
-		Ref<Texture> type_icons[6] = {
+		Ref<Texture2D> type_icons[6] = {
 			get_icon("KeyValue", "EditorIcons"),
 			get_icon("KeyXform", "EditorIcons"),
 			get_icon("KeyCall", "EditorIcons"),
@@ -1950,7 +1950,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 		{
 
-			Ref<Texture> check = animation->track_is_enabled(track) ? get_icon("checked", "CheckBox") : get_icon("unchecked", "CheckBox");
+			Ref<Texture2D> check = animation->track_is_enabled(track) ? get_icon("checked", "CheckBox") : get_icon("unchecked", "CheckBox");
 
 			int ofs = in_group ? check->get_width() : 0; //not the best reference for margin but..
 
@@ -1958,7 +1958,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			draw_texture(check, check_rect.position);
 			ofs += check->get_width() + hsep;
 
-			Ref<Texture> type_icon = type_icons[animation->track_get_type(track)];
+			Ref<Texture2D> type_icon = type_icons[animation->track_get_type(track)];
 			draw_texture(type_icon, Point2(ofs, int(get_size().height - type_icon->get_height()) / 2));
 			ofs += type_icon->get_width() + hsep;
 
@@ -1987,7 +1987,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				}
 				text_color.a *= 0.7;
 			} else if (node) {
-				Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
+				Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
 
 				draw_texture(icon, Point2(ofs, int(get_size().height - icon->get_height()) / 2));
 				icon_cache = icon;
@@ -2049,17 +2049,17 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 		{
 
-			Ref<Texture> wrap_icon[2] = {
+			Ref<Texture2D> wrap_icon[2] = {
 				get_icon("InterpWrapClamp", "EditorIcons"),
 				get_icon("InterpWrapLoop", "EditorIcons"),
 			};
 
-			Ref<Texture> interp_icon[3] = {
+			Ref<Texture2D> interp_icon[3] = {
 				get_icon("InterpRaw", "EditorIcons"),
 				get_icon("InterpLinear", "EditorIcons"),
 				get_icon("InterpCubic", "EditorIcons")
 			};
-			Ref<Texture> cont_icon[4] = {
+			Ref<Texture2D> cont_icon[4] = {
 				get_icon("TrackContinuous", "EditorIcons"),
 				get_icon("TrackDiscrete", "EditorIcons"),
 				get_icon("TrackTrigger", "EditorIcons"),
@@ -2068,7 +2068,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 			int ofs = get_size().width - timeline->get_buttons_width();
 
-			Ref<Texture> down_icon = get_icon("select_arrow", "Tree");
+			Ref<Texture2D> down_icon = get_icon("select_arrow", "Tree");
 
 			draw_line(Point2(ofs, 0), Point2(ofs, get_size().height), linecolor, Math::round(EDSCALE));
 
@@ -2084,7 +2084,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 					update_mode = Animation::UPDATE_CONTINUOUS;
 				}
 
-				Ref<Texture> update_icon = cont_icon[update_mode];
+				Ref<Texture2D> update_icon = cont_icon[update_mode];
 
 				update_mode_rect.position.x = ofs;
 				update_mode_rect.position.y = int(get_size().height - update_icon->get_height()) / 2;
@@ -2105,7 +2105,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 					update_mode_rect.size.x += down_icon->get_width();
 					bezier_edit_rect = Rect2();
 				} else if (animation->track_get_type(track) == Animation::TYPE_BEZIER) {
-					Ref<Texture> bezier_icon = get_icon("EditBezier", "EditorIcons");
+					Ref<Texture2D> bezier_icon = get_icon("EditBezier", "EditorIcons");
 					update_mode_rect.size.x += down_icon->get_width();
 					bezier_edit_rect.position = update_mode_rect.position + (update_mode_rect.size - bezier_icon->get_size()) / 2;
 					bezier_edit_rect.size = bezier_icon->get_size();
@@ -2126,7 +2126,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 				Animation::InterpolationType interp_mode = animation->track_get_interpolation_type(track);
 
-				Ref<Texture> icon = interp_icon[interp_mode];
+				Ref<Texture2D> icon = interp_icon[interp_mode];
 
 				interp_mode_rect.position.x = ofs;
 				interp_mode_rect.position.y = int(get_size().height - icon->get_height()) / 2;
@@ -2159,7 +2159,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 				bool loop_wrap = animation->track_get_interpolation_loop_wrap(track);
 
-				Ref<Texture> icon = wrap_icon[loop_wrap ? 1 : 0];
+				Ref<Texture2D> icon = wrap_icon[loop_wrap ? 1 : 0];
 
 				loop_mode_rect.position.x = ofs;
 				loop_mode_rect.position.y = int(get_size().height - icon->get_height()) / 2;
@@ -2190,7 +2190,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			{
 				//erase
 
-				Ref<Texture> icon = get_icon("Remove", "EditorIcons");
+				Ref<Texture2D> icon = get_icon("Remove", "EditorIcons");
 
 				remove_rect.position.x = ofs + ((get_size().width - ofs) - icon->get_width()) / 2;
 				remove_rect.position.y = int(get_size().height - icon->get_height()) / 2;
@@ -2271,7 +2271,7 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 	if (p_x < p_clip_left || p_x > p_clip_right)
 		return;
 
-	Ref<Texture> icon_to_draw = p_selected ? selected_icon : type_icon;
+	Ref<Texture2D> icon_to_draw = p_selected ? selected_icon : type_icon;
 
 	// Override type icon for invalid value keys, unless selected.
 	if (!p_selected && animation->track_get_type(track) == Animation::TYPE_VALUE) {
@@ -2335,12 +2335,12 @@ void AnimationTrackEdit::draw_bg(int p_clip_left, int p_clip_right) {
 void AnimationTrackEdit::draw_fg(int p_clip_left, int p_clip_right) {
 }
 
-void AnimationTrackEdit::draw_texture_clipped(const Ref<Texture> &p_texture, const Vector2 &p_pos) {
+void AnimationTrackEdit::draw_texture_clipped(const Ref<Texture2D> &p_texture, const Vector2 &p_pos) {
 
 	draw_texture_region_clipped(p_texture, Rect2(p_pos, p_texture->get_size()), Rect2(Point2(), p_texture->get_size()));
 }
 
-void AnimationTrackEdit::draw_texture_region_clipped(const Ref<Texture> &p_texture, const Rect2 &p_rect, const Rect2 &p_region) {
+void AnimationTrackEdit::draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region) {
 
 	int clip_left = timeline->get_name_limit();
 	int clip_right = get_size().width - timeline->get_buttons_width();
@@ -2391,7 +2391,7 @@ void AnimationTrackEdit::set_animation_and_track(const Ref<Animation> &p_animati
 	track = p_track;
 	update();
 
-	Ref<Texture> type_icons[6] = {
+	Ref<Texture2D> type_icons[6] = {
 		get_icon("KeyValue", "EditorIcons"),
 		get_icon("KeyXform", "EditorIcons"),
 		get_icon("KeyCall", "EditorIcons"),
@@ -2413,7 +2413,7 @@ NodePath AnimationTrackEdit::get_path() const {
 
 Size2 AnimationTrackEdit::get_minimum_size() const {
 
-	Ref<Texture> texture = get_icon("Object", "EditorIcons");
+	Ref<Texture2D> texture = get_icon("Object", "EditorIcons");
 	Ref<Font> font = get_font("font", "Label");
 	int separation = get_constant("vseparation", "ItemList");
 
@@ -3199,7 +3199,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 	}
 }
 
-void AnimationTrackEditGroup::set_type_and_name(const Ref<Texture> &p_type, const String &p_name, const NodePath &p_node) {
+void AnimationTrackEditGroup::set_type_and_name(const Ref<Texture2D> &p_type, const String &p_name, const NodePath &p_node) {
 	icon = p_type;
 	node_name = p_name;
 	node = p_node;
@@ -4214,7 +4214,7 @@ void AnimationTrackEditor::_update_tracks() {
 
 			if (!group_sort.has(base_path)) {
 				AnimationTrackEditGroup *g = memnew(AnimationTrackEditGroup);
-				Ref<Texture> icon = get_icon("Node", "EditorIcons");
+				Ref<Texture2D> icon = get_icon("Node", "EditorIcons");
 				String name = base_path;
 				String tooltip;
 				if (root && root->has_node(base_path)) {
@@ -5273,7 +5273,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				}
 
 				String text;
-				Ref<Texture> icon = get_icon("Node", "EditorIcons");
+				Ref<Texture2D> icon = get_icon("Node", "EditorIcons");
 				if (node) {
 					if (has_icon(node->get_class(), "EditorIcons")) {
 						icon = get_icon(node->get_class(), "EditorIcons");

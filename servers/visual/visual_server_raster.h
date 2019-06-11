@@ -32,7 +32,7 @@
 #define VISUAL_SERVER_RASTER_H
 
 #include "core/math/octree.h"
-#include "servers/visual/rasterizer.h"
+#include "servers/visual/rasterizer/rasterizer.h"
 #include "servers/visual_server.h"
 #include "visual_server_canvas.h"
 #include "visual_server_globals.h"
@@ -142,32 +142,41 @@ public:
 
 	/* TEXTURE API */
 
-	BIND0R(RID, texture_create)
-	BIND7(texture_allocate, RID, int, int, int, Image::Format, TextureType, uint32_t)
-	BIND3(texture_set_data, RID, const Ref<Image> &, int)
-	BIND10(texture_set_data_partial, RID, const Ref<Image> &, int, int, int, int, int, int, int, int)
-	BIND2RC(Ref<Image>, texture_get_data, RID, int)
-	BIND2(texture_set_flags, RID, uint32_t)
-	BIND1RC(uint32_t, texture_get_flags, RID)
-	BIND1RC(Image::Format, texture_get_format, RID)
-	BIND1RC(TextureType, texture_get_type, RID)
-	BIND1RC(uint32_t, texture_get_texid, RID)
-	BIND1RC(uint32_t, texture_get_width, RID)
-	BIND1RC(uint32_t, texture_get_height, RID)
-	BIND1RC(uint32_t, texture_get_depth, RID)
-	BIND4(texture_set_size_override, RID, int, int, int)
+	//these go pass-through, as they can be called from any thread
+	BIND1R(RID, texture_2d_create, const Ref<Image> &)
+	BIND2R(RID, texture_2d_layered_create, const Vector<Ref<Image> > &, TextureLayeredType)
+	BIND1R(RID, texture_3d_create, const Vector<Ref<Image> > &)
+
+	//goes pass-through
+	BIND3(texture_2d_update_immediate, RID, const Ref<Image> &, int)
+	//these go through command queue if they are in another thread
+	BIND3(texture_2d_update, RID, const Ref<Image> &, int)
+	BIND4(texture_3d_update, RID, const Ref<Image> &, int, int)
+
+	//these also go pass-through
+	BIND0R(RID, texture_2d_placeholder_create)
+	BIND0R(RID, texture_2d_layered_placeholder_create)
+	BIND0R(RID, texture_3d_placeholder_create)
+
+	BIND1RC(Ref<Image>, texture_2d_get, RID)
+	BIND2RC(Ref<Image>, texture_2d_layer_get, RID, int)
+	BIND3RC(Ref<Image>, texture_3d_slice_get, RID, int, int)
+
+	BIND2(texture_replace, RID, RID)
+
+	BIND3(texture_set_size_override, RID, int, int)
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	BIND2(texture_bind, RID, uint32_t)
+#endif
 
 	BIND3(texture_set_detect_3d_callback, RID, TextureDetectCallback, void *)
-	BIND3(texture_set_detect_srgb_callback, RID, TextureDetectCallback, void *)
 	BIND3(texture_set_detect_normal_callback, RID, TextureDetectCallback, void *)
+	BIND3(texture_set_detect_roughness_callback, RID, TextureDetectRoughnessCallback, void *)
 
 	BIND2(texture_set_path, RID, const String &)
 	BIND1RC(String, texture_get_path, RID)
-	BIND1(texture_set_shrink_all_x2_on_set_data, bool)
 	BIND1(texture_debug_usage, List<TextureInfo> *)
-
-	BIND1(textures_keep_original, bool)
 
 	BIND2(texture_set_proxy, RID, RID)
 
@@ -502,7 +511,10 @@ public:
 	BIND2(environment_set_bg_energy, RID, float)
 	BIND2(environment_set_canvas_max_layer, RID, int)
 	BIND4(environment_set_ambient_light, RID, const Color &, float, float)
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	BIND2(environment_set_camera_feed_id, RID, int)
+#endif
 	BIND7(environment_set_ssr, RID, bool, int, float, float, float, bool)
 	BIND13(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
 

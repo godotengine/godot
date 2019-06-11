@@ -50,7 +50,7 @@ void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, co
 	price->set_text(p_cost);
 }
 
-void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Texture> &p_image) {
+void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Texture2D> &p_image) {
 
 	ERR_FAIL_COND(p_type != EditorAssetLibrary::IMAGE_QUEUE_ICON);
 	ERR_FAIL_COND(p_index != 0);
@@ -145,7 +145,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 
 //////////////////////////////////////////////////////////////////////////////
 
-void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const Ref<Texture> &p_image) {
+void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const Ref<Texture2D> &p_image) {
 
 	switch (p_type) {
 
@@ -393,7 +393,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 	set_process(false);
 }
 
-void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asset_id, const Ref<Texture> &p_preview, const String &p_download_url, const String &p_sha256_hash) {
+void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asset_id, const Ref<Texture2D> &p_preview, const String &p_download_url, const String &p_sha256_hash) {
 
 	title->set_text(p_title);
 	icon->set_texture(p_preview);

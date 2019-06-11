@@ -77,33 +77,41 @@ public:
 #define server_name visual_server
 #include "servers/server_wrap_mt_common.h"
 
-	/* EVENT QUEUING */
-	FUNCRID(texture)
-	FUNC7(texture_allocate, RID, int, int, int, Image::Format, TextureType, uint32_t)
-	FUNC3(texture_set_data, RID, const Ref<Image> &, int)
-	FUNC10(texture_set_data_partial, RID, const Ref<Image> &, int, int, int, int, int, int, int, int)
-	FUNC2RC(Ref<Image>, texture_get_data, RID, int)
-	FUNC2(texture_set_flags, RID, uint32_t)
-	FUNC1RC(uint32_t, texture_get_flags, RID)
-	FUNC1RC(Image::Format, texture_get_format, RID)
-	FUNC1RC(TextureType, texture_get_type, RID)
-	FUNC1RC(uint32_t, texture_get_texid, RID)
-	FUNC1RC(uint32_t, texture_get_width, RID)
-	FUNC1RC(uint32_t, texture_get_height, RID)
-	FUNC1RC(uint32_t, texture_get_depth, RID)
-	FUNC4(texture_set_size_override, RID, int, int, int)
+	//these go pass-through, as they can be called from any thread
+	virtual RID texture_2d_create(const Ref<Image> &p_image) { return visual_server->texture_2d_create(p_image); }
+	virtual RID texture_2d_layered_create(const Vector<Ref<Image> > &p_layers, TextureLayeredType p_layered_type) { return visual_server->texture_2d_layered_create(p_layers, p_layered_type); }
+	virtual RID texture_3d_create(const Vector<Ref<Image> > &p_slices) { return visual_server->texture_3d_create(p_slices); }
+
+	//goes pass-through
+	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) { visual_server->texture_2d_update_immediate(p_texture, p_image, p_layer); }
+	//these go through command queue if they are in another thread
+	FUNC3(texture_2d_update, RID, const Ref<Image> &, int)
+	FUNC4(texture_3d_update, RID, const Ref<Image> &, int, int)
+
+	//these also go pass-through
+	virtual RID texture_2d_placeholder_create() { return visual_server->texture_2d_placeholder_create(); }
+	virtual RID texture_2d_layered_placeholder_create() { return visual_server->texture_2d_layered_placeholder_create(); }
+	virtual RID texture_3d_placeholder_create() { return visual_server->texture_3d_placeholder_create(); }
+
+	FUNC1RC(Ref<Image>, texture_2d_get, RID)
+	FUNC2RC(Ref<Image>, texture_2d_layer_get, RID, int)
+	FUNC3RC(Ref<Image>, texture_3d_slice_get, RID, int, int)
+
+	FUNC2(texture_replace, RID, RID)
+
+	FUNC3(texture_set_size_override, RID, int, int)
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	FUNC2(texture_bind, RID, uint32_t)
+#endif
 
 	FUNC3(texture_set_detect_3d_callback, RID, TextureDetectCallback, void *)
-	FUNC3(texture_set_detect_srgb_callback, RID, TextureDetectCallback, void *)
 	FUNC3(texture_set_detect_normal_callback, RID, TextureDetectCallback, void *)
+	FUNC3(texture_set_detect_roughness_callback, RID, TextureDetectRoughnessCallback, void *)
 
 	FUNC2(texture_set_path, RID, const String &)
 	FUNC1RC(String, texture_get_path, RID)
-	FUNC1(texture_set_shrink_all_x2_on_set_data, bool)
 	FUNC1S(texture_debug_usage, List<TextureInfo> *)
-
-	FUNC1(textures_keep_original, bool)
 
 	FUNC2(texture_set_proxy, RID, RID)
 
@@ -429,7 +437,10 @@ public:
 	FUNC2(environment_set_bg_energy, RID, float)
 	FUNC2(environment_set_canvas_max_layer, RID, int)
 	FUNC4(environment_set_ambient_light, RID, const Color &, float, float)
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	FUNC2(environment_set_camera_feed_id, RID, int)
+#endif
 	FUNC7(environment_set_ssr, RID, bool, int, float, float, float, bool)
 	FUNC13(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
 

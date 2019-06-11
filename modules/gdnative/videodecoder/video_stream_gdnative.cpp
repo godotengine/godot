@@ -132,7 +132,11 @@ bool VideoStreamPlaybackGDNative::open_file(const String &p_file) {
 		pcm_write_idx = -1;
 		samples_decoded = 0;
 
-		texture->create((int)texture_size.width, (int)texture_size.height, Image::FORMAT_RGBA8, Texture::FLAG_FILTER | Texture::FLAG_VIDEO_SURFACE);
+		Ref<Image> img;
+		img.instance();
+		img->create((int)texture_size.width, false, (int)texture_size.height, Image::FORMAT_RGBA8);
+
+		texture->create_from_image(img);
 	}
 
 	return file_opened;
@@ -192,7 +196,7 @@ void VideoStreamPlaybackGDNative::update_texture() {
 
 	Ref<Image> img = memnew(Image(texture_size.width, texture_size.height, 0, Image::FORMAT_RGBA8, *pba));
 
-	texture->set_data(img);
+	texture->update(img, true);
 }
 
 // ctor and dtor
@@ -283,7 +287,7 @@ void VideoStreamPlaybackGDNative::set_paused(bool p_paused) {
 	paused = p_paused;
 }
 
-Ref<Texture> VideoStreamPlaybackGDNative::get_texture() const {
+Ref<Texture2D> VideoStreamPlaybackGDNative::get_texture() const {
 	return texture;
 }
 

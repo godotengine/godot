@@ -32,7 +32,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
-void ItemList::add_item(const String &p_item, const Ref<Texture> &p_texture, bool p_selectable) {
+void ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bool p_selectable) {
 
 	Item item;
 	item.icon = p_texture;
@@ -51,7 +51,7 @@ void ItemList::add_item(const String &p_item, const Ref<Texture> &p_texture, boo
 	shape_changed = true;
 }
 
-void ItemList::add_icon_item(const Ref<Texture> &p_item, bool p_selectable) {
+void ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
 
 	Item item;
 	item.icon = p_item;
@@ -110,7 +110,7 @@ String ItemList::get_item_tooltip(int p_idx) const {
 	return items[p_idx].tooltip;
 }
 
-void ItemList::set_item_icon(int p_idx, const Ref<Texture> &p_icon) {
+void ItemList::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
@@ -119,9 +119,9 @@ void ItemList::set_item_icon(int p_idx, const Ref<Texture> &p_icon) {
 	shape_changed = true;
 }
 
-Ref<Texture> ItemList::get_item_icon(int p_idx) const {
+Ref<Texture2D> ItemList::get_item_icon(int p_idx) const {
 
-	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture>());
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture2D>());
 
 	return items[p_idx].icon;
 }
@@ -201,7 +201,7 @@ Color ItemList::get_item_custom_fg_color(int p_idx) const {
 	return items[p_idx].custom_fg;
 }
 
-void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture> &p_tag_icon) {
+void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
@@ -209,9 +209,9 @@ void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture> &p_tag_icon) {
 	update();
 	shape_changed = true;
 }
-Ref<Texture> ItemList::get_item_tag_icon(int p_idx) const {
+Ref<Texture2D> ItemList::get_item_tag_icon(int p_idx) const {
 
-	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture>());
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture2D>());
 
 	return items[p_idx].tag_icon;
 }
@@ -1398,7 +1398,7 @@ void ItemList::_set_items(const Array &p_items) {
 	for (int i = 0; i < p_items.size(); i += 3) {
 
 		String text = p_items[i + 0];
-		Ref<Texture> icon = p_items[i + 1];
+		Ref<Texture2D> icon = p_items[i + 1];
 		bool disabled = p_items[i + 2];
 
 		int idx = get_item_count();

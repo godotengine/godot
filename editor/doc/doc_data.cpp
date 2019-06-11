@@ -483,7 +483,7 @@ void DocData::generate(bool p_basic_types) {
 
 				PropertyDoc pd;
 				pd.name = E->get();
-				pd.type = "Texture";
+				pd.type = "Texture2D";
 				c.theme_properties.push_back(pd);
 			}
 			l.clear();

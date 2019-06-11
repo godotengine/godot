@@ -144,8 +144,8 @@ void EditorAudioBus::_notification(int p_what) {
 
 				if (activity_found != channel[i].prev_active) {
 					if (activity_found) {
-						channel[i].vu_l->set_over_texture(Ref<Texture>());
-						channel[i].vu_r->set_over_texture(Ref<Texture>());
+						channel[i].vu_l->set_over_texture(Ref<Texture2D>());
+						channel[i].vu_r->set_over_texture(Ref<Texture2D>());
 					} else {
 						channel[i].vu_l->set_over_texture(disabled_vu);
 						channel[i].vu_r->set_over_texture(disabled_vu);
@@ -944,7 +944,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		if (!ClassDB::can_instance(E->get()))
 			continue;
 
-		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(E->get());
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(E->get());
 		String name = E->get().operator String().replace("AudioEffect", "");
 		effect_options->add_item(name);
 		effect_options->set_item_metadata(effect_options->get_item_count() - 1, E->get());

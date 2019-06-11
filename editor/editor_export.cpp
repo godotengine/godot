@@ -1477,7 +1477,7 @@ String EditorExportPlatformPC::get_os_name() const {
 
 	return os_name;
 }
-Ref<Texture> EditorExportPlatformPC::get_logo() const {
+Ref<Texture2D> EditorExportPlatformPC::get_logo() const {
 
 	return logo;
 }
@@ -1629,7 +1629,7 @@ void EditorExportPlatformPC::set_os_name(const String &p_name) {
 	os_name = p_name;
 }
 
-void EditorExportPlatformPC::set_logo(const Ref<Texture> &p_logo) {
+void EditorExportPlatformPC::set_logo(const Ref<Texture2D> &p_logo) {
 	logo = p_logo;
 }
 

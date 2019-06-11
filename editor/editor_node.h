@@ -522,13 +522,13 @@ private:
 	Set<FileDialog *> file_dialogs;
 	Set<EditorFileDialog *> editor_file_dialogs;
 
-	Map<String, Ref<Texture> > icon_type_cache;
+	Map<String, Ref<Texture2D> > icon_type_cache;
 	void _build_icon_type_cache();
 
 	bool _initializing_addons;
 	Map<String, EditorPlugin *> plugin_addons;
 
-	static Ref<Texture> _file_dialog_get_icon(const String &p_path);
+	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
 	static void _file_dialog_register(FileDialog *p_dialog);
 	static void _file_dialog_unregister(FileDialog *p_dialog);
 	static void _editor_file_dialog_register(EditorFileDialog *p_dialog);
@@ -582,7 +582,7 @@ private:
 	void _scene_tab_exit();
 	void _scene_tab_input(const Ref<InputEvent> &p_input);
 	void _reposition_active_tab(int idx_to);
-	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata);
+	void _thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 	void _scene_tab_script_edited(int p_tab);
 
 	Dictionary _get_main_scene_state();
@@ -772,8 +772,8 @@ public:
 	Ref<Theme> get_editor_theme() const { return theme; }
 	Ref<Script> get_object_custom_type_base(const Object *p_object) const;
 	StringName get_object_custom_type_name(const Object *p_object) const;
-	Ref<Texture> get_object_icon(const Object *p_object, const String &p_fallback = "Object") const;
-	Ref<Texture> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
+	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "Object") const;
+	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
 
 	void show_accept(const String &p_text, const String &p_title);
 	void show_warning(const String &p_text, const String &p_title = TTR("Warning!"));

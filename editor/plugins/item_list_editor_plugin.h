@@ -66,8 +66,8 @@ public:
 	virtual void set_item_text(int p_idx, const String &p_text) {}
 	virtual String get_item_text(int p_idx) const { return ""; };
 
-	virtual void set_item_icon(int p_idx, const Ref<Texture> &p_tex) {}
-	virtual Ref<Texture> get_item_icon(int p_idx) const { return Ref<Texture>(); };
+	virtual void set_item_icon(int p_idx, const Ref<Texture2D> &p_tex) {}
+	virtual Ref<Texture2D> get_item_icon(int p_idx) const { return Ref<Texture2D>(); };
 
 	virtual void set_item_checkable(int p_idx, bool p_check) {}
 	virtual void set_item_radio_checkable(int p_idx, bool p_check) {}
@@ -109,8 +109,8 @@ public:
 	virtual void set_item_text(int p_idx, const String &p_text) { ob->set_item_text(p_idx, p_text); }
 	virtual String get_item_text(int p_idx) const { return ob->get_item_text(p_idx); }
 
-	virtual void set_item_icon(int p_idx, const Ref<Texture> &p_tex) { ob->set_item_icon(p_idx, p_tex); }
-	virtual Ref<Texture> get_item_icon(int p_idx) const { return ob->get_item_icon(p_idx); }
+	virtual void set_item_icon(int p_idx, const Ref<Texture2D> &p_tex) { ob->set_item_icon(p_idx, p_tex); }
+	virtual Ref<Texture2D> get_item_icon(int p_idx) const { return ob->get_item_icon(p_idx); }
 
 	virtual void set_item_enabled(int p_idx, int p_enabled) { ob->set_item_disabled(p_idx, !p_enabled); }
 	virtual bool is_item_enabled(int p_idx) const { return !ob->is_item_disabled(p_idx); }
@@ -139,8 +139,8 @@ public:
 	virtual void set_item_text(int p_idx, const String &p_text) { pp->set_item_text(p_idx, p_text); }
 	virtual String get_item_text(int p_idx) const { return pp->get_item_text(p_idx); }
 
-	virtual void set_item_icon(int p_idx, const Ref<Texture> &p_tex) { pp->set_item_icon(p_idx, p_tex); }
-	virtual Ref<Texture> get_item_icon(int p_idx) const { return pp->get_item_icon(p_idx); }
+	virtual void set_item_icon(int p_idx, const Ref<Texture2D> &p_tex) { pp->set_item_icon(p_idx, p_tex); }
+	virtual Ref<Texture2D> get_item_icon(int p_idx) const { return pp->get_item_icon(p_idx); }
 
 	virtual void set_item_checkable(int p_idx, bool p_check) { pp->set_item_as_checkable(p_idx, p_check); }
 	virtual void set_item_radio_checkable(int p_idx, bool p_check) { pp->set_item_as_radio_checkable(p_idx, p_check); }
@@ -182,8 +182,8 @@ public:
 	virtual void set_item_text(int p_idx, const String &p_text) { pp->set_item_text(p_idx, p_text); }
 	virtual String get_item_text(int p_idx) const { return pp->get_item_text(p_idx); }
 
-	virtual void set_item_icon(int p_idx, const Ref<Texture> &p_tex) { pp->set_item_icon(p_idx, p_tex); }
-	virtual Ref<Texture> get_item_icon(int p_idx) const { return pp->get_item_icon(p_idx); }
+	virtual void set_item_icon(int p_idx, const Ref<Texture2D> &p_tex) { pp->set_item_icon(p_idx, p_tex); }
+	virtual Ref<Texture2D> get_item_icon(int p_idx) const { return pp->get_item_icon(p_idx); }
 
 	virtual void set_item_enabled(int p_idx, int p_enabled) { pp->set_item_disabled(p_idx, !p_enabled); }
 	virtual bool is_item_enabled(int p_idx) const { return !pp->is_item_disabled(p_idx); }

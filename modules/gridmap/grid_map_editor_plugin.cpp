@@ -925,7 +925,7 @@ void GridMapEditor::update_palette() {
 	for (List<_CGMEItemSort>::Element *E = il.front(); E; E = E->next()) {
 		int id = E->get().id;
 		String name = mesh_library->get_item_name(id);
-		Ref<Texture> preview = mesh_library->get_item_preview(id);
+		Ref<Texture2D> preview = mesh_library->get_item_preview(id);
 
 		if (name == "") {
 			name = "#" + itos(id);

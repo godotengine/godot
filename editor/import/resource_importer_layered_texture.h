@@ -38,8 +38,19 @@ class StreamTexture;
 
 class ResourceImporterLayeredTexture : public ResourceImporter {
 	GDCLASS(ResourceImporterLayeredTexture, ResourceImporter);
+public:
+	enum Mode {
+		MODE_CUBEMAP,
+		MODE_2D_ARRAY,
+		MODE_CUBEMAP_ARRAY
+	};
 
-	bool is_3d;
+	enum TextureFlags {
+		TEXTURE_FLAGS_MIPMAPS = 1
+	};
+
+private:
+	Mode mode;
 	static const char *compression_formats[];
 
 protected:
@@ -57,12 +68,6 @@ public:
 	virtual String get_save_extension() const;
 	virtual String get_resource_type() const;
 
-	enum Preset {
-		PRESET_3D,
-		PRESET_2D,
-		PRESET_COLOR_CORRECT,
-	};
-
 	enum CompressMode {
 		COMPRESS_LOSSLESS,
 		COMPRESS_VIDEO_RAM,
@@ -75,7 +80,7 @@ public:
 	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const;
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
 
-	void _save_tex(const Vector<Ref<Image> > &p_images, const String &p_to_path, int p_compress_mode, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags);
+	void _save_tex(const Vector<Ref<Image> > &p_images, const String &p_to_path, int p_compress_mode, Image::CompressMode p_vram_compression, bool p_mipmaps);
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata = NULL);
 
@@ -84,7 +89,8 @@ public:
 	virtual bool are_import_settings_valid(const String &p_path) const;
 	virtual String get_import_settings_string() const;
 
-	void set_3d(bool p_3d) { is_3d = p_3d; }
+	void set_mode(Mode p_mode) { mode = p_mode; }
+
 	ResourceImporterLayeredTexture();
 	~ResourceImporterLayeredTexture();
 };

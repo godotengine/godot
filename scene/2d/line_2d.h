@@ -89,8 +89,8 @@ public:
 	void set_gradient(const Ref<Gradient> &gradient);
 	Ref<Gradient> get_gradient() const;
 
-	void set_texture(const Ref<Texture> &texture);
-	Ref<Texture> get_texture() const;
+	void set_texture(const Ref<Texture2D> &texture);
+	Ref<Texture2D> get_texture() const;
 
 	void set_texture_mode(const LineTextureMode mode);
 	LineTextureMode get_texture_mode() const;
@@ -132,7 +132,7 @@ private:
 	Ref<Curve> _curve;
 	Color _default_color;
 	Ref<Gradient> _gradient;
-	Ref<Texture> _texture;
+	Ref<Texture2D> _texture;
 	LineTextureMode _texture_mode;
 	float _sharp_limit;
 	int _round_precision;

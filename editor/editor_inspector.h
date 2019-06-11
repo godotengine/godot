@@ -198,7 +198,7 @@ class EditorInspectorCategory : public Control {
 	GDCLASS(EditorInspectorCategory, Control);
 
 	friend class EditorInspector;
-	Ref<Texture> icon;
+	Ref<Texture2D> icon;
 	String label;
 	Color bg_color;
 	mutable String tooltip_text;

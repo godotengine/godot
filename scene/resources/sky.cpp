@@ -77,7 +77,7 @@ void PanoramaSky::_radiance_changed() {
 	}
 }
 
-void PanoramaSky::set_panorama(const Ref<Texture> &p_panorama) {
+void PanoramaSky::set_panorama(const Ref<Texture2D> &p_panorama) {
 
 	panorama = p_panorama;
 
@@ -90,7 +90,7 @@ void PanoramaSky::set_panorama(const Ref<Texture> &p_panorama) {
 	}
 }
 
-Ref<Texture> PanoramaSky::get_panorama() const {
+Ref<Texture2D> PanoramaSky::get_panorama() const {
 
 	return panorama;
 }
@@ -105,7 +105,7 @@ void PanoramaSky::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_panorama", "texture"), &PanoramaSky::set_panorama);
 	ClassDB::bind_method(D_METHOD("get_panorama"), &PanoramaSky::get_panorama);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "panorama", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_panorama", "get_panorama");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "panorama", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_panorama", "get_panorama");
 }
 
 PanoramaSky::PanoramaSky() {
@@ -415,8 +415,12 @@ void ProceduralSky::_update_sky() {
 
 	} else {
 		Ref<Image> image = _generate_sky();
-		VS::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), 0, Image::FORMAT_RGBE9995, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
-		VS::get_singleton()->texture_set_data(texture, image);
+		if (texture.is_valid()) {
+			RID new_texture = VS::get_singleton()->texture_2d_create(image);
+			VS::get_singleton()->texture_replace(texture, new_texture);
+		} else {
+			texture = VS::get_singleton()->texture_2d_create(image);
+		}
 		_radiance_changed();
 	}
 }
@@ -432,8 +436,13 @@ void ProceduralSky::_queue_update() {
 
 void ProceduralSky::_thread_done(const Ref<Image> &p_image) {
 
-	VS::get_singleton()->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, Image::FORMAT_RGBE9995, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
-	VS::get_singleton()->texture_set_data(texture, p_image);
+	if (texture.is_valid()) {
+		RID new_texture = VS::get_singleton()->texture_2d_create(p_image);
+		VS::get_singleton()->texture_replace(texture, new_texture);
+	} else {
+		texture = VS::get_singleton()->texture_2d_create(p_image);
+	}
+
 	_radiance_changed();
 	Thread::wait_to_finish(sky_thread);
 	memdelete(sky_thread);
@@ -525,7 +534,7 @@ void ProceduralSky::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sun_curve", PROPERTY_HINT_EXP_EASING), "set_sun_curve", "get_sun_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sun_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_sun_energy", "get_sun_energy");
 
-	ADD_GROUP("Texture", "texture_");
+	ADD_GROUP("Texture2D", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_size", PROPERTY_HINT_ENUM, "256,512,1024,2048,4096"), "set_texture_size", "get_texture_size");
 
 	BIND_ENUM_CONSTANT(TEXTURE_SIZE_256);
@@ -539,7 +548,6 @@ void ProceduralSky::_bind_methods() {
 ProceduralSky::ProceduralSky(bool p_desaturate) {
 
 	sky = VS::get_singleton()->sky_create();
-	texture = VS::get_singleton()->texture_create();
 
 	update_queued = false;
 	sky_top_color = Color::hex(0xa5d6f1ff);
@@ -582,5 +590,7 @@ ProceduralSky::~ProceduralSky() {
 		sky_thread = NULL;
 	}
 	VS::get_singleton()->free(sky);
-	VS::get_singleton()->free(texture);
+	if (texture.is_valid()) {
+		VS::get_singleton()->free(texture);
+	}
 }
