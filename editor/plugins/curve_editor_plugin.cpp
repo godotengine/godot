@@ -776,10 +776,10 @@ bool CurvePreviewGenerator::handles(const String &p_type) const {
 	return p_type == "Curve";
 }
 
-Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
+Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 
 	Ref<Curve> curve_ref = p_from;
-	ERR_FAIL_COND_V(curve_ref.is_null(), Ref<Texture>());
+	ERR_FAIL_COND_V(curve_ref.is_null(), Ref<Texture2D>());
 	Curve &curve = **curve_ref;
 
 	// FIXME: Should be ported to use p_size as done in b2633a97
@@ -837,6 +837,6 @@ Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const 
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 
-	ptex->create_from_image(img_ref, 0);
+	ptex->create_from_image(img_ref);
 	return ptex;
 }

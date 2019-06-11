@@ -80,7 +80,7 @@ public:
 			bool safe : 1;
 			int wrap_amount_cache : 24;
 			Map<int, ColorRegionInfo> region_info;
-			Ref<Texture> info_icon;
+			Ref<Texture2D> info_icon;
 			String info;
 			String data;
 		};
@@ -114,12 +114,12 @@ public:
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
 		void set_safe(int p_line, bool p_safe) { text.write[p_line].safe = p_safe; }
 		bool is_safe(int p_line) const { return text[p_line].safe; }
-		void set_info_icon(int p_line, Ref<Texture> p_icon, String p_info) {
+		void set_info_icon(int p_line, Ref<Texture2D> p_icon, String p_info) {
 			text.write[p_line].info_icon = p_icon;
 			text.write[p_line].info = p_info;
 		}
 		bool has_info_icon(int p_line) const { return text[p_line].info_icon.is_valid(); }
-		const Ref<Texture> &get_info_icon(int p_line) const { return text[p_line].info_icon; }
+		const Ref<Texture2D> &get_info_icon(int p_line) const { return text[p_line].info_icon; }
 		const String &get_info(int p_line) const { return text[p_line].info; }
 		void insert(int p_at, const String &p_text);
 		void remove(int p_at);
@@ -165,12 +165,12 @@ private:
 
 	struct Cache {
 
-		Ref<Texture> tab_icon;
-		Ref<Texture> space_icon;
-		Ref<Texture> can_fold_icon;
-		Ref<Texture> folded_icon;
-		Ref<Texture> folded_eol_icon;
-		Ref<Texture> executing_icon;
+		Ref<Texture2D> tab_icon;
+		Ref<Texture2D> space_icon;
+		Ref<Texture2D> can_fold_icon;
+		Ref<Texture2D> folded_icon;
+		Ref<Texture2D> folded_eol_icon;
+		Ref<Texture2D> executing_icon;
 		Ref<StyleBox> style_normal;
 		Ref<StyleBox> style_focus;
 		Ref<StyleBox> style_readonly;
@@ -535,7 +535,7 @@ public:
 	Array get_breakpoints_array() const;
 	void remove_breakpoints();
 
-	void set_line_info_icon(int p_line, Ref<Texture> p_icon, String p_info = "");
+	void set_line_info_icon(int p_line, Ref<Texture2D> p_icon, String p_info = "");
 	void clear_info_icons();
 
 	void set_line_as_hidden(int p_line, bool p_hidden);

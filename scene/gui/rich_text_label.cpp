@@ -1599,7 +1599,7 @@ void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_sub
 	}
 }
 
-void RichTextLabel::add_image(const Ref<Texture> &p_image) {
+void RichTextLabel::add_image(const Ref<Texture2D> &p_image) {
 
 	if (current->type == ITEM_TABLE)
 		return;
@@ -2092,7 +2092,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 				end = p_bbcode.length();
 			String image = p_bbcode.substr(brk_end + 1, end - brk_end - 1);
 
-			Ref<Texture> texture = ResourceLoader::load(image, "Texture");
+			Ref<Texture2D> texture = ResourceLoader::load(image, "Texture2D");
 			if (texture.is_valid())
 				add_image(texture);
 

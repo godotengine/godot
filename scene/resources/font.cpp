@@ -182,7 +182,7 @@ void BitmapFont::_set_textures(const Vector<Variant> &p_textures) {
 
 	textures.clear();
 	for (int i = 0; i < p_textures.size(); i++) {
-		Ref<Texture> tex = p_textures[i];
+		Ref<Texture2D> tex = p_textures[i];
 		ERR_CONTINUE(!tex.is_valid());
 		add_texture(tex);
 	}
@@ -270,7 +270,7 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 
 				String base_dir = p_file.get_base_dir();
 				String file = base_dir.plus_file(keys["file"]);
-				Ref<Texture> tex = ResourceLoader::load(file);
+				Ref<Texture2D> tex = ResourceLoader::load(file);
 				if (tex.is_null()) {
 					ERR_PRINT("Can't load font texture!");
 				} else {
@@ -356,7 +356,7 @@ float BitmapFont::get_descent() const {
 	return height - ascent;
 }
 
-void BitmapFont::add_texture(const Ref<Texture> &p_texture) {
+void BitmapFont::add_texture(const Ref<Texture2D> &p_texture) {
 
 	ERR_FAIL_COND(p_texture.is_null());
 	textures.push_back(p_texture);
@@ -367,9 +367,9 @@ int BitmapFont::get_texture_count() const {
 	return textures.size();
 };
 
-Ref<Texture> BitmapFont::get_texture(int p_idx) const {
+Ref<Texture2D> BitmapFont::get_texture(int p_idx) const {
 
-	ERR_FAIL_INDEX_V(p_idx, textures.size(), Ref<Texture>());
+	ERR_FAIL_INDEX_V(p_idx, textures.size(), Ref<Texture2D>());
 	return textures[p_idx];
 };
 

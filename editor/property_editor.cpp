@@ -927,7 +927,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 						const String &t = j->get();
 
 						bool is_custom_resource = false;
-						Ref<Texture> icon;
+						Ref<Texture2D> icon;
 						if (!custom_resources.empty()) {
 							for (int k = 0; k < custom_resources.size(); k++) {
 								if (custom_resources[k].name == t) {
@@ -1015,7 +1015,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				}
 				for (int i = 0; i < conversions.size(); i++) {
 					String what = conversions[i]->converts_to();
-					Ref<Texture> icon;
+					Ref<Texture2D> icon;
 					if (has_icon(what, "EditorIcons")) {
 
 						icon = get_icon(what, "EditorIcons");

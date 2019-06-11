@@ -63,9 +63,9 @@ class AnimationBezierTrackEdit : public Control {
 
 	Vector<Rect2> view_rects;
 
-	Ref<Texture> bezier_icon;
-	Ref<Texture> bezier_handle_icon;
-	Ref<Texture> selected_icon;
+	Ref<Texture2D> bezier_icon;
+	Ref<Texture2D> bezier_handle_icon;
+	Ref<Texture2D> selected_icon;
 
 	Rect2 close_icon_rect;
 

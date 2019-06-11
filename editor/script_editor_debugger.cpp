@@ -428,7 +428,7 @@ int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &node
 	TreeItem *item = inspect_scene_tree->create_item(parent);
 	item->set_text(0, item_text);
 	ObjectID id = ObjectID(nodes[current_index + 3]);
-	Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(nodes[current_index + 2], "");
+	Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(nodes[current_index + 2], "");
 	if (icon.is_valid()) {
 		item->set_icon(0, icon);
 	}
@@ -1171,8 +1171,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				if (error_count == 0 && warning_count == 0) {
 					errors_tab->set_name(TTR("Errors"));
 					debugger_button->set_text(TTR("Debugger"));
-					debugger_button->set_icon(Ref<Texture>());
-					tabs->set_tab_icon(errors_tab->get_index(), Ref<Texture>());
+					debugger_button->set_icon(Ref<Texture2D>());
+					tabs->set_tab_icon(errors_tab->get_index(), Ref<Texture2D>());
 				} else {
 					errors_tab->set_name(TTR("Errors") + " (" + itos(error_count + warning_count) + ")");
 					debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");

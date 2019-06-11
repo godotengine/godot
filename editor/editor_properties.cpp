@@ -133,7 +133,7 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			Ref<Texture> df = get_icon("DistractionFree", "EditorIcons");
+			Ref<Texture2D> df = get_icon("DistractionFree", "EditorIcons");
 			open_big_text->set_icon(df);
 			Ref<Font> font = get_font("font", "Label");
 			text->set_custom_minimum_size(Vector2(0, font->get_height() * 6));
@@ -858,7 +858,7 @@ void EditorPropertyObjectID::update_property() {
 	} else {
 		edit->set_text(TTR("[Empty]"));
 		edit->set_disabled(true);
-		edit->set_icon(Ref<Texture>());
+		edit->set_icon(Ref<Texture2D>());
 	}
 }
 
@@ -1961,7 +1961,7 @@ void EditorPropertyNodePath::update_property() {
 
 	assign->set_tooltip(p);
 	if (p == NodePath()) {
-		assign->set_icon(Ref<Texture>());
+		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(TTR("Assign..."));
 		assign->set_flat(false);
 		return;
@@ -1978,7 +1978,7 @@ void EditorPropertyNodePath::update_property() {
 	}
 
 	if (!base_node || !base_node->has_node(p)) {
-		assign->set_icon(Ref<Texture>());
+		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(p);
 		return;
 	}
@@ -1987,7 +1987,7 @@ void EditorPropertyNodePath::update_property() {
 	ERR_FAIL_COND(!target_node);
 
 	if (String(target_node->get_name()).find("@") != -1) {
-		assign->set_icon(Ref<Texture>());
+		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(p);
 		return;
 	}
@@ -2006,7 +2006,7 @@ void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringNam
 void EditorPropertyNodePath::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Ref<Texture> t = get_icon("Clear", "EditorIcons");
+		Ref<Texture2D> t = get_icon("Clear", "EditorIcons");
 		clear->set_icon(t);
 	}
 }
@@ -2302,7 +2302,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 	}
 }
 
-void EditorPropertyResource::_resource_preview(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, ObjectID p_obj) {
+void EditorPropertyResource::_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj) {
 
 	RES p = get_edited_object()->get(get_edited_property());
 	if (p.is_valid() && p->get_instance_id() == p_obj) {
@@ -2382,7 +2382,7 @@ void EditorPropertyResource::_update_menu_items() {
 				const String &t = F->get();
 
 				bool is_custom_resource = false;
-				Ref<Texture> icon;
+				Ref<Texture2D> icon;
 				if (!custom_resources.empty()) {
 					for (int j = 0; j < custom_resources.size(); j++) {
 						if (custom_resources[j].name == t) {
@@ -2471,7 +2471,7 @@ void EditorPropertyResource::_update_menu_items() {
 		}
 		for (int i = 0; i < conversions.size(); i++) {
 			String what = conversions[i]->converts_to();
-			Ref<Texture> icon;
+			Ref<Texture2D> icon;
 			if (has_icon(what, "EditorIcons")) {
 
 				icon = get_icon(what, "EditorIcons");
@@ -2645,9 +2645,9 @@ void EditorPropertyResource::update_property() {
 		}
 	}
 
-	preview->set_texture(Ref<Texture>());
+	preview->set_texture(Ref<Texture2D>());
 	if (res == RES()) {
-		assign->set_icon(Ref<Texture>());
+		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(TTR("[empty]"));
 	} else {
 
@@ -2698,7 +2698,7 @@ void EditorPropertyResource::setup(const String &p_base_type) {
 void EditorPropertyResource::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Ref<Texture> t = get_icon("select_arrow", "Tree");
+		Ref<Texture2D> t = get_icon("select_arrow", "Tree");
 		edit->set_icon(t);
 	}
 
