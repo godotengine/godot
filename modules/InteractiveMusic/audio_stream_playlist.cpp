@@ -2,8 +2,6 @@
 #include "core/math/math_funcs.h"
 #include "core/print_string.h"
 
-// initially when i first started making the class i tried to compile it without any of the logic and it crashed when selected in godot as a stream for AudioStreamPlayer
-// i thought the issue was because the mix logic was missing at the time but that still persists
 
 AudioStreamPlaylist::AudioStreamPlaylist() {
 	bpm = 120;
@@ -11,12 +9,15 @@ AudioStreamPlaylist::AudioStreamPlaylist() {
 	sample_rate = 44100;
 	stereo = true;
 	beat_size = (60 / bpm) * sample_rate;
+	beat_count = 20;
 }
 
 Ref<AudioStreamPlayback> AudioStreamPlaylist::instance_playback() { //i think this is correct
 	Ref<AudioStreamPlaybackPlaylist> playback_playlist;
 	playback_playlist.instance();
-	playback_playlist->instance = Ref<AudioStreamPlaylist>(this);
+	playback_playlist->playlist = Ref<AudioStreamPlaylist>(this);
+	playback_playlist->_update_playback_instances();
+	playbacks.insert(playback_playlist.operator->());
 	return playback_playlist;
 }
 
@@ -32,27 +33,31 @@ void AudioStreamPlaylist::set_position(uint64_t p) {
 	pos = p;
 }
 
-void AudioStreamPlaylist::set_stream_beats(int p_stream, int beats) {
-	audio_streams[p_stream].beat_count = beats;
+void AudioStreamPlaylist::set_stream_beats(int beats) {
+	beat_count = beats;
 }
 
-int AudioStreamPlaylist::get_stream_beats(int p_stream) {
-	return audio_streams[p_stream].beat_count;
+int AudioStreamPlaylist::get_stream_beats() {
+	return beat_count;
 }
 
 void AudioStreamPlaylist::set_list_stream(int stream_number, Ref<AudioStream> p_stream) {
 	ERR_FAIL_COND(p_stream == this);
 	ERR_FAIL_INDEX(stream_number, MAX_STREAMS);
 
+	AudioServer::get_singleton()->lock();
+	audio_streams[stream_number] = p_stream;
+	for (Set<AudioStreamPlaybackPlaylist *>::Element *E = playbacks.front(); E; E = E->next()) {
 
-	audio_streams[stream_number].stream = p_stream;
+		E->get()->_update_playback_instances();
+	}
 	
 }
 
 Ref<AudioStream> AudioStreamPlaylist::get_list_stream(int stream_number) {
 	ERR_FAIL_INDEX_V(stream_number, MAX_STREAMS, Ref<AudioStream>());
 
-	return audio_streams[stream_number].stream;
+	return audio_streams[stream_number];
 }
 
 void AudioStreamPlaylist::set_stream_count(int count) {
@@ -92,17 +97,18 @@ void AudioStreamPlaylist::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_list_stream", "stream_number", "audio_stream"), &AudioStreamPlaylist::set_list_stream);
 	ClassDB::bind_method(D_METHOD("get_list_stream", "stream_number"), &AudioStreamPlaylist::get_list_stream);
 
-	ClassDB::bind_method(D_METHOD("set_stream_beats", "stream_number", "beat_count"), &AudioStreamPlaylist::set_stream_beats);
-	ClassDB::bind_method(D_METHOD("get_stream_beats", "stream_number"), &AudioStreamPlaylist::get_stream_beats);
+	ClassDB::bind_method(D_METHOD("set_stream_beats", "beat_count"), &AudioStreamPlaylist::set_stream_beats);
+	ClassDB::bind_method(D_METHOD("get_stream_beats"), &AudioStreamPlaylist::get_stream_beats);
 
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stream_count", PROPERTY_HINT_RANGE, "1," + itos(MAX_STREAMS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_stream_count", "get_stream_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bpm", PROPERTY_HINT_RANGE, "0,400"), "set_bpm", "get_bpm");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,400"), "set_stream_beats", "get_stream_beats");
 
 	for (int i = 0; i < MAX_STREAMS; i++) { 
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "stream_" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_list_stream", "get_list_stream", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::INT, "stream_" + itos(i) + "/beat_amount", PROPERTY_HINT_RANGE, "0,120", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_stream_beats", "get_stream_beats", i);
+		//ADD_PROPERTYI(PropertyInfo(Variant::INT, "stream_" + itos(i) + "/beat_amount", PROPERTY_HINT_RANGE, "0,120", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_stream_beats", "get_stream_beats", i);
 	}
 	
 
@@ -114,31 +120,27 @@ void AudioStreamPlaylist::_bind_methods() {
 
 AudioStreamPlaybackPlaylist::AudioStreamPlaybackPlaylist() :
 		active(false) {
-	buffer_size = 256;
-	current = 0;
-	fading = false;
-	fading_time = 0; //tried to use this as float and set a default value for fading time but that didn't help either
-	fading_samples_total = fading_time * instance->sample_rate; //crash log says the crash happens on this line 
-	beat_amount_remaining = instance->audio_streams[current].beat_count * instance->beat_size;
-	playback[current] = instance->audio_streams[current].stream->instance_playback(); // could it be worth assigning all the playbacks to the streams with a for loop here?
+	//buffer_size = 256;
 }
 
 AudioStreamPlaybackPlaylist::~AudioStreamPlaybackPlaylist() {
-	if (pcm_buffer) {
-		AudioServer::get_singleton()->audio_data_free(pcm_buffer);
-		pcm_buffer = NULL;
-	}
+	playlist->playbacks.erase(this);
 }
 
 void AudioStreamPlaybackPlaylist::stop() {
 	active = false;
-	instance->reset();
+	playlist->reset();
 }
 
-void AudioStreamPlaybackPlaylist::start(float p_from_pos) { //should the variables that are set in the constructor go here instead?
+void AudioStreamPlaybackPlaylist::start(float p_from_pos) {
 	seek(p_from_pos);
-	active = true;
 	
+	current = 0;
+	fading = false;
+	fading_time = 1; 
+	fading_samples_total = fading_time * playlist->sample_rate;
+	beat_amount_remaining = playlist->beat_count * playlist->beat_size;
+	active = true;
 	playback[current]->start();
 }
 
@@ -147,7 +149,7 @@ void AudioStreamPlaybackPlaylist::seek(float p_time) {
 	if (p_time < 0) {
 		p_time = 0;
 	}
-	instance->set_position(uint64_t(p_time * instance->sample_rate) << MIX_FRAC_BITS);
+	playlist->set_position(uint64_t(p_time * playlist->sample_rate) << MIX_FRAC_BITS);
 }
 
 void AudioStreamPlaybackPlaylist::add_stream_to_buffer(Ref<AudioStreamPlayback> playback, int samples, float p_rate_scale, float initial_volume, float final_volume) {
@@ -168,16 +170,15 @@ void AudioStreamPlaybackPlaylist::clear_buffer(int samples) {
 void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	int dst_offset = 0;
 	int fading_samples = 0;
-	playback[current] = instance->audio_streams[current].stream->instance_playback();//assigning the current playback to the current stream, i think this is wrong though
 	while (p_frames > 0) {
 
 		if (beat_amount_remaining == 0) {
 			fading = true;
-			current = (current + 1) % instance->stream_count;
+			current = (current + 1) % playlist->stream_count;
 			
 			playback[current]->start();
 			fading_samples = fading_samples_total;
-			beat_amount_remaining = instance->audio_streams[current].beat_count * instance->beat_size;
+			beat_amount_remaining = playlist->beat_count * playlist->beat_size;
 		}
 
 		int to_mix = MIN(buffer_size, MIN(p_frames, beat_amount_remaining));
@@ -221,4 +222,17 @@ float AudioStreamPlaybackPlaylist::get_length() const {
 
 bool AudioStreamPlaybackPlaylist::is_playing() const {
 	return active;
+}
+
+void AudioStreamPlaybackPlaylist::_update_playback_instances() {
+	stop();
+
+	for (int i = 0; i < AudioStreamPlaylist::MAX_STREAMS; i++) {
+
+		if (playlist->audio_streams[i].is_valid()) {
+			playback[i] = playlist->audio_streams[i]->instance_playback();
+		} else {
+			playback[i].unref();
+		}
+	}
 }
