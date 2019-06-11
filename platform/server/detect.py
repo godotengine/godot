@@ -145,12 +145,12 @@ def configure(env):
         env.ParseConfig('pkg-config libpng --cflags --libs')
 
     if not env['builtin_bullet']:
-        # We need at least version 2.88
+        # We need at least version 2.89
         import subprocess
         bullet_version = subprocess.check_output(['pkg-config', 'bullet', '--modversion']).strip()
-        if str(bullet_version) < "2.88":
+        if str(bullet_version) < "2.89":
             # Abort as system bullet was requested but too old
-            print("Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(bullet_version, "2.88"))
+            print("Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(bullet_version, "2.89"))
             sys.exit(255)
         env.ParseConfig('pkg-config bullet --cflags --libs')
 

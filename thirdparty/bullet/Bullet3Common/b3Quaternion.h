@@ -92,8 +92,11 @@ public:
 	/**@brief Set the rotation using axis angle notation 
    * @param axis The axis around which to rotate
    * @param angle The magnitude of the rotation in Radians */
-	void setRotation(const b3Vector3& axis, const b3Scalar& _angle)
+	void setRotation(const b3Vector3& axis1, const b3Scalar& _angle)
 	{
+		b3Vector3 axis = axis1;
+		axis.safeNormalize();
+		
 		b3Scalar d = axis.length();
 		b3Assert(d != b3Scalar(0.0));
 		if (d < B3_EPSILON)

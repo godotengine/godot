@@ -64,6 +64,7 @@ struct btContactSolverInfoData
 	btScalar m_restitutionVelocityThreshold;
 	bool m_jointFeedbackInWorldSpace;
 	bool m_jointFeedbackInJointFrame;
+	int m_reportSolverAnalytics;
 };
 
 struct btContactSolverInfo : public btContactSolverInfoData
@@ -98,6 +99,7 @@ struct btContactSolverInfo : public btContactSolverInfoData
 		m_restitutionVelocityThreshold = 0.2f;  //if the relative velocity is below this threshold, there is zero restitution
 		m_jointFeedbackInWorldSpace = false;
 		m_jointFeedbackInJointFrame = false;
+		m_reportSolverAnalytics = 0;
 	}
 };
 

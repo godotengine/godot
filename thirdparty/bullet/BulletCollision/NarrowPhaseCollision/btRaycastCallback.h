@@ -37,6 +37,7 @@ public:
 													 ///SubSimplexConvexCastRaytest is the default, even if kF_None is set.
 		kF_UseSubSimplexConvexCastRaytest = 1 << 2,  // Uses an approximate but faster ray versus convex intersection algorithm
 		kF_UseGjkConvexCastRaytest = 1 << 3,
+		kF_DisableHeightfieldAccelerator  = 1 << 4, //don't use the heightfield raycast accelerator. See https://github.com/bulletphysics/bullet3/pull/2062
 		kF_Terminator = 0xFFFFFFFF
 	};
 	unsigned int m_flags;
