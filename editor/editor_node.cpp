@@ -140,11 +140,11 @@ void EditorNode::_update_scene_tabs() {
 	OS::get_singleton()->global_menu_clear("_dock");
 
 	scene_tabs->clear_tabs();
-	Ref<Texture> script_icon = gui_base->get_icon("Script", "EditorIcons");
+	Ref<Texture2D> script_icon = gui_base->get_icon("Script", "EditorIcons");
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 
 		Node *type_node = editor_data.get_edited_scene_root(i);
-		Ref<Texture> icon;
+		Ref<Texture2D> icon;
 		if (type_node) {
 			icon = EditorNode::get_singleton()->get_object_icon(type_node, "Node");
 		}
@@ -405,7 +405,7 @@ void EditorNode::_notification(int p_what) {
 
 				ToolButton *tb = singleton->main_editor_buttons[i];
 				EditorPlugin *p_editor = singleton->editor_table[i];
-				Ref<Texture> icon = p_editor->get_icon();
+				Ref<Texture2D> icon = p_editor->get_icon();
 
 				if (icon.is_valid()) {
 					tb->set_icon(icon);
@@ -2827,7 +2827,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		tb->set_toggle_mode(true);
 		tb->connect("pressed", singleton, "_editor_select", varray(singleton->main_editor_buttons.size()));
 		tb->set_text(p_editor->get_name());
-		Ref<Texture> icon = p_editor->get_icon();
+		Ref<Texture2D> icon = p_editor->get_icon();
 
 		if (icon.is_valid()) {
 			tb->set_icon(icon);
@@ -3637,7 +3637,7 @@ StringName EditorNode::get_object_custom_type_name(const Object *p_object) const
 	return StringName();
 }
 
-Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
+Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
 	ERR_FAIL_COND_V(!p_object || !gui_base, NULL);
 
 	Ref<Script> script = p_object->get_script();
@@ -3680,7 +3680,7 @@ Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p
 	return NULL;
 }
 
-Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) const {
+Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) const {
 	ERR_FAIL_COND_V_MSG(p_class.empty(), NULL, "Class name cannot be empty.");
 
 	if (gui_base->has_icon(p_class, "EditorIcons")) {
@@ -3779,7 +3779,7 @@ void EditorNode::progress_end_task_bg(const String &p_task) {
 	singleton->progress_hb->end_task(p_task);
 }
 
-Ref<Texture> EditorNode::_file_dialog_get_icon(const String &p_path) {
+Ref<Texture2D> EditorNode::_file_dialog_get_icon(const String &p_path) {
 
 	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->get_filesystem_path(p_path.get_base_dir());
 	if (efsd) {
@@ -4604,7 +4604,7 @@ void EditorNode::_reposition_active_tab(int idx_to) {
 	_update_scene_tabs();
 }
 
-void EditorNode::_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata) {
+void EditorNode::_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
 	int p_tab = p_udata.operator signed int();
 	if (p_preview.is_valid()) {
 		Rect2 rect = scene_tabs->get_tab_rect(p_tab);
@@ -4844,7 +4844,7 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 	TextureRect *drag_preview = memnew(TextureRect);
 	Label *label = memnew(Label);
 
-	Ref<Texture> preview;
+	Ref<Texture2D> preview;
 
 	{
 		//todo make proper previews
@@ -5447,7 +5447,6 @@ EditorNode::EditorNode() {
 	Input::get_singleton()->set_use_accumulated_input(true);
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 
-	VisualServer::get_singleton()->textures_keep_original(true);
 	VisualServer::get_singleton()->set_debug_generate_wireframes(true);
 
 	PhysicsServer::get_singleton()->set_active(false); // no physics by default if editor
@@ -5544,15 +5543,20 @@ EditorNode::EditorNode() {
 		import_texture.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_texture);
 
-		Ref<ResourceImporterLayeredTexture> import_3d;
-		import_3d.instance();
-		import_3d->set_3d(true);
-		ResourceFormatImporter::get_singleton()->add_importer(import_3d);
+		Ref<ResourceImporterLayeredTexture> import_cubemap;
+		import_cubemap.instance();
+		import_cubemap->set_mode(ResourceImporterLayeredTexture::MODE_CUBEMAP);
+		ResourceFormatImporter::get_singleton()->add_importer(import_cubemap);
 
 		Ref<ResourceImporterLayeredTexture> import_array;
 		import_array.instance();
-		import_array->set_3d(false);
+		import_array->set_mode(ResourceImporterLayeredTexture::MODE_2D_ARRAY);
 		ResourceFormatImporter::get_singleton()->add_importer(import_array);
+
+		Ref<ResourceImporterLayeredTexture> import_cubemap_array;
+		import_cubemap_array.instance();
+		import_cubemap_array->set_mode(ResourceImporterLayeredTexture::MODE_CUBEMAP_ARRAY);
+		ResourceFormatImporter::get_singleton()->add_importer(import_cubemap_array);
 
 		Ref<ResourceImporterImage> import_image;
 		import_image.instance();

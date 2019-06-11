@@ -49,15 +49,14 @@ class Timer;
 class Viewport;
 class CollisionObject;
 
-class ViewportTexture : public Texture {
+class ViewportTexture : public Texture2D {
 
-	GDCLASS(ViewportTexture, Texture);
+	GDCLASS(ViewportTexture, Texture2D);
 
 	NodePath path;
 
 	friend class Viewport;
 	Viewport *vp;
-	uint32_t flags;
 
 	RID proxy;
 
@@ -76,9 +75,6 @@ public:
 	virtual RID get_rid() const;
 
 	virtual bool has_alpha() const;
-
-	virtual void set_flags(uint32_t p_flags);
-	virtual uint32_t get_flags() const;
 
 	virtual Ref<Image> get_data() const;
 
@@ -249,7 +245,6 @@ private:
 	bool keep_3d_linear;
 	UpdateMode update_mode;
 	RID texture_rid;
-	uint32_t texture_flags;
 
 	DebugDraw debug_draw;
 

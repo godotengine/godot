@@ -1874,7 +1874,7 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 			cursors_cache.erase(p_shape);
 		}
 
-		Ref<Texture> texture = p_cursor;
+		Ref<Texture2D> texture = p_cursor;
 		Ref<AtlasTexture> atlas_texture = p_cursor;
 		Ref<Image> image;
 		Size2 texture_size;

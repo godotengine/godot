@@ -33,10 +33,10 @@
 #include "servers/visual_server.h"
 
 Size2 CheckBox::get_icon_size() const {
-	Ref<Texture> checked = Control::get_icon("checked");
-	Ref<Texture> unchecked = Control::get_icon("unchecked");
-	Ref<Texture> radio_checked = Control::get_icon("radio_checked");
-	Ref<Texture> radio_unchecked = Control::get_icon("radio_unchecked");
+	Ref<Texture2D> checked = Control::get_icon("checked");
+	Ref<Texture2D> unchecked = Control::get_icon("unchecked");
+	Ref<Texture2D> radio_checked = Control::get_icon("radio_checked");
+	Ref<Texture2D> radio_unchecked = Control::get_icon("radio_unchecked");
 
 	Size2 tex_size = Size2(0, 0);
 	if (!checked.is_null())
@@ -73,8 +73,8 @@ void CheckBox::_notification(int p_what) {
 
 		RID ci = get_canvas_item();
 
-		Ref<Texture> on = Control::get_icon(is_radio() ? "radio_checked" : "checked");
-		Ref<Texture> off = Control::get_icon(is_radio() ? "radio_unchecked" : "unchecked");
+		Ref<Texture2D> on = Control::get_icon(is_radio() ? "radio_checked" : "checked");
+		Ref<Texture2D> off = Control::get_icon(is_radio() ? "radio_unchecked" : "unchecked");
 		Ref<StyleBox> sb = get_stylebox("normal");
 
 		Vector2 ofs;

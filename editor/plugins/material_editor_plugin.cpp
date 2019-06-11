@@ -57,7 +57,7 @@ void MaterialEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		Ref<Texture> checkerboard = get_icon("Checkerboard", "EditorIcons");
+		Ref<Texture2D> checkerboard = get_icon("Checkerboard", "EditorIcons");
 		Size2 size = get_size();
 
 		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
@@ -266,7 +266,7 @@ Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_re
 
 		// Texture parameter has to be treated specially since SpatialMaterial saved it
 		// as RID but ShaderMaterial needs Texture itself
-		Ref<Texture> texture = mat->get_texture_by_name(E->get().name);
+		Ref<Texture2D> texture = mat->get_texture_by_name(E->get().name);
 		if (texture.is_valid()) {
 			smat->set_shader_param(E->get().name, texture);
 		} else {

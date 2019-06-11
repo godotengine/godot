@@ -357,7 +357,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 			if (data.icon_override.has(E->get()))
 				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_icons/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "Texture", hint));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_icons/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", hint));
 		}
 	}
 	{
@@ -817,11 +817,11 @@ Size2 Control::get_minimum_size() const {
 	return Size2();
 }
 
-Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_type) const {
+Ref<Texture2D> Control::get_icon(const StringName &p_name, const StringName &p_type) const {
 
 	if (p_type == StringName() || p_type == get_class_name()) {
 
-		const Ref<Texture> *tex = data.icon_override.getptr(p_name);
+		const Ref<Texture2D> *tex = data.icon_override.getptr(p_name);
 		if (tex)
 			return *tex;
 	}
@@ -1067,7 +1067,7 @@ int Control::get_constant(const StringName &p_name, const StringName &p_type) co
 
 bool Control::has_icon_override(const StringName &p_name) const {
 
-	const Ref<Texture> *tex = data.icon_override.getptr(p_name);
+	const Ref<Texture2D> *tex = data.icon_override.getptr(p_name);
 	return tex != NULL;
 }
 
@@ -1884,7 +1884,7 @@ Rect2 Control::get_anchorable_rect() const {
 	return Rect2(Point2(), get_size());
 }
 
-void Control::add_icon_override(const StringName &p_name, const Ref<Texture> &p_icon) {
+void Control::add_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
 
 	if (data.icon_override.has(p_name)) {
 		data.icon_override[p_name]->disconnect("changed", this, "_override_changed");

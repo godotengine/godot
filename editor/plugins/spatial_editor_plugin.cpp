@@ -859,7 +859,7 @@ void SpatialEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 
 			Spatial *spat = selection_results[i].item;
 
-			Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(spat, "Node");
+			Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(spat, "Node");
 
 			String node_path = "/" + root_name + "/" + root_path.rel_path_to(spat->get_path());
 
@@ -2326,7 +2326,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 	}
 }
 
-static void draw_indicator_bar(Control &surface, real_t fill, Ref<Texture> icon) {
+static void draw_indicator_bar(Control &surface, real_t fill, Ref<Texture2D> icon) {
 
 	// Adjust bar size from control height
 	Vector2 surface_size = surface.get_size();
@@ -3766,12 +3766,12 @@ void SpatialEditorViewportContainer::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW && mouseover) {
 
-		Ref<Texture> h_grabber = get_icon("grabber", "HSplitContainer");
-		Ref<Texture> v_grabber = get_icon("grabber", "VSplitContainer");
+		Ref<Texture2D> h_grabber = get_icon("grabber", "HSplitContainer");
+		Ref<Texture2D> v_grabber = get_icon("grabber", "VSplitContainer");
 
-		Ref<Texture> hdiag_grabber = get_icon("GuiViewportHdiagsplitter", "EditorIcons");
-		Ref<Texture> vdiag_grabber = get_icon("GuiViewportVdiagsplitter", "EditorIcons");
-		Ref<Texture> vh_grabber = get_icon("GuiViewportVhsplitter", "EditorIcons");
+		Ref<Texture2D> hdiag_grabber = get_icon("GuiViewportHdiagsplitter", "EditorIcons");
+		Ref<Texture2D> vdiag_grabber = get_icon("GuiViewportVdiagsplitter", "EditorIcons");
+		Ref<Texture2D> vh_grabber = get_icon("GuiViewportVhsplitter", "EditorIcons");
 
 		Vector2 size = get_size();
 
@@ -6037,7 +6037,7 @@ void EditorSpatialGizmoPlugin::create_material(const String &p_name, const Color
 	materials[p_name] = mats;
 }
 
-void EditorSpatialGizmoPlugin::create_icon_material(const String &p_name, const Ref<Texture> &p_texture, bool p_on_top, const Color &p_albedo) {
+void EditorSpatialGizmoPlugin::create_icon_material(const String &p_name, const Ref<Texture2D> &p_texture, bool p_on_top, const Color &p_albedo) {
 
 	Color instanced_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instanced", Color(0.7, 0.7, 0.7, 0.6));
 
@@ -6081,7 +6081,7 @@ void EditorSpatialGizmoPlugin::create_handle_material(const String &p_name, bool
 
 	handle_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 	handle_material->set_flag(SpatialMaterial::FLAG_USE_POINT_SIZE, true);
-	Ref<Texture> handle_t = SpatialEditor::get_singleton()->get_icon("Editor3DHandle", "EditorIcons");
+	Ref<Texture2D> handle_t = SpatialEditor::get_singleton()->get_icon("Editor3DHandle", "EditorIcons");
 	handle_material->set_point_size(handle_t->get_width());
 	handle_material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, handle_t);
 	handle_material->set_albedo(Color(1, 1, 1));

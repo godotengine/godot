@@ -525,7 +525,7 @@ void Sprite3D::_draw() {
 	VS::get_singleton()->immediate_end(immediate);
 }
 
-void Sprite3D::set_texture(const Ref<Texture> &p_texture) {
+void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
 
 	if (p_texture == texture)
 		return;
@@ -534,13 +534,12 @@ void Sprite3D::set_texture(const Ref<Texture> &p_texture) {
 	}
 	texture = p_texture;
 	if (texture.is_valid()) {
-		texture->set_flags(texture->get_flags()); //remove repeat from texture, it looks bad in sprites
 		texture->connect(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_queue_update);
 	}
 	_queue_update();
 }
 
-Ref<Texture> Sprite3D::get_texture() const {
+Ref<Texture2D> Sprite3D::get_texture() const {
 
 	return texture;
 }
@@ -688,7 +687,7 @@ void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hframes", "hframes"), &Sprite3D::set_hframes);
 	ClassDB::bind_method(D_METHOD("get_hframes"), &Sprite3D::get_hframes);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_GROUP("Animation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
@@ -728,7 +727,7 @@ void AnimatedSprite3D::_draw() {
 		return;
 	}
 
-	Ref<Texture> texture = frames->get_frame(animation, frame);
+	Ref<Texture2D> texture = frames->get_frame(animation, frame);
 	if (!texture.is_valid())
 		return; //no texuture no life
 	Vector2 tsize = texture->get_size();
@@ -1000,7 +999,7 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 		return Rect2(0, 0, 1, 1);
 	}
 
-	Ref<Texture> t;
+	Ref<Texture2D> t;
 	if (animation)
 		t = frames->get_frame(animation, frame);
 	if (t.is_null())
