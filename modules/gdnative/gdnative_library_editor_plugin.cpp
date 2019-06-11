@@ -322,6 +322,15 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 		platform_android.library_extension = "*.so";
 		platforms["Android"] = platform_android;
 
+		NativePlatformConfig platform_sailfish;
+		platform_sailfish.name = "SailfishOS";
+		platform_sailfish.entries.push_back("armeabi-v7a");
+		platform_sailfish.entries.push_back("arm64-v8a");
+		platform_sailfish.entries.push_back("x86");
+		//platform_sailfish.entries.push_back("x86_64");
+		platform_sailfish.library_extension = "*.so";
+		platforms[platform_sailfish.name] = platform_sailfish;
+
 		//		TODO: Javascript platform is not supported yet
 		//		NativePlatformConfig platform_html5;
 		//		platform_html5.name = "HTML5";
