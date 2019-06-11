@@ -59,7 +59,7 @@
 			<argument index="2" name="optimize" type="bool" default="true">
 			</argument>
 			<description>
-				Returns the path between two given points. Points are in local coordinate space. If [code]optimize[/code] is [code]true[/code] (the default), the agent properties associated with each [NavigationMesh] (raidus, height, etc.) are considered in the path calculation, otherwise they are ignored.
+				Returns the path between two given points. Points are in local coordinate space. If [code]optimize[/code] is [code]true[/code] (the default), the agent properties associated with each [NavigationMesh] (radius, height, etc.) are considered in the path calculation, otherwise they are ignored.
 			</description>
 		</method>
 		<method name="navmesh_add">
