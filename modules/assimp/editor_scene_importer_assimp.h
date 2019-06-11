@@ -182,11 +182,11 @@ private:
 	Transform _get_global_assimp_node_transform(const aiNode *p_current_node);
 
 	void _calc_tangent_from_mesh(const aiMesh *ai_mesh, int i, int tri_index, int index, PoolColorArray::Write &w);
-	void _set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<Texture> texture);
+	void _set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<Texture2D> texture);
 	void _find_texture_path(const String &p_path, String &path, bool &r_found);
 	void _find_texture_path(const String &p_path, _Directory &dir, String &path, bool &found, String extension);
 
-	Ref<Texture> _load_texture(ImportState &state, String p_path);
+	Ref<Texture2D> _load_texture(ImportState &state, String p_path);
 	Ref<Material> _generate_material_from_index(ImportState &state, int p_index, bool p_double_sided);
 	Ref<Mesh> _generate_mesh_from_surface_indices(ImportState &state, const Vector<int> &p_surface_indices, Skeleton *p_skeleton = NULL, bool p_double_sided_material = false);
 	void _generate_node(ImportState &state, const aiNode *p_assimp_node, Node *p_parent);

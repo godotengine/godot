@@ -410,7 +410,6 @@ void ParticlesEditor::_generate_emission_points() {
 
 	Ref<ImageTexture> tex;
 	tex.instance();
-	tex->create_from_image(image, Texture::FLAG_FILTER);
 
 	Ref<ParticlesMaterial> material = node->get_process_material();
 	ERR_FAIL_COND(material.is_null());
@@ -440,7 +439,6 @@ void ParticlesEditor::_generate_emission_points() {
 
 		Ref<ImageTexture> tex2;
 		tex2.instance();
-		tex2->create_from_image(image2, Texture::FLAG_FILTER);
 
 		material->set_emission_normal_texture(tex2);
 	} else {

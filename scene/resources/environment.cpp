@@ -113,7 +113,10 @@ void Environment::set_ambient_light_sky_contribution(float p_energy) {
 
 void Environment::set_camera_feed_id(int p_camera_feed_id) {
 	camera_feed_id = p_camera_feed_id;
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	VS::get_singleton()->environment_set_camera_feed_id(environment, camera_feed_id);
+#endif
 };
 
 Environment::BGMode Environment::get_background() const {
@@ -300,12 +303,12 @@ float Environment::get_adjustment_saturation() const {
 	return adjustment_saturation;
 }
 
-void Environment::set_adjustment_color_correction(const Ref<Texture> &p_ramp) {
+void Environment::set_adjustment_color_correction(const Ref<Texture2D> &p_ramp) {
 
 	adjustment_color_correction = p_ramp;
 	VS::get_singleton()->environment_set_adjustment(environment, adjustment_enabled, adjustment_brightness, adjustment_contrast, adjustment_saturation, adjustment_color_correction.is_valid() ? adjustment_color_correction->get_rid() : RID());
 }
-Ref<Texture> Environment::get_adjustment_color_correction() const {
+Ref<Texture2D> Environment::get_adjustment_color_correction() const {
 
 	return adjustment_color_correction;
 }
@@ -1275,7 +1278,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "adjustment_brightness", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_brightness", "get_adjustment_brightness");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "adjustment_contrast", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_contrast", "get_adjustment_contrast");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "adjustment_saturation", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_saturation", "get_adjustment_saturation");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "adjustment_color_correction", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_adjustment_color_correction", "get_adjustment_color_correction");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "adjustment_color_correction", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_adjustment_color_correction", "get_adjustment_color_correction");
 
 	BIND_ENUM_CONSTANT(BG_KEEP);
 	BIND_ENUM_CONSTANT(BG_CLEAR_COLOR);

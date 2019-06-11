@@ -69,15 +69,15 @@ class PanoramaSky : public Sky {
 
 private:
 	RID sky;
-	Ref<Texture> panorama;
+	Ref<Texture2D> panorama;
 
 protected:
 	static void _bind_methods();
 	virtual void _radiance_changed();
 
 public:
-	void set_panorama(const Ref<Texture> &p_panorama);
-	Ref<Texture> get_panorama() const;
+	void set_panorama(const Ref<Texture2D> &p_panorama);
+	Ref<Texture2D> get_panorama() const;
 
 	virtual RID get_rid() const;
 

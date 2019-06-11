@@ -60,7 +60,10 @@ public:
 	virtual void environment_set_bg_energy(RID p_env, float p_energy) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0) = 0;
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) = 0;
+#endif
 
 	virtual void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) = 0;
 	virtual void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) = 0;
@@ -176,55 +179,43 @@ class RasterizerStorage {
 public:
 	/* TEXTURE API */
 
-	virtual RID texture_create() = 0;
-	virtual void texture_allocate(RID p_texture,
-			int p_width,
-			int p_height,
-			int p_depth_3d,
-			Image::Format p_format,
-			VS::TextureType p_type,
-			uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT) = 0;
+	virtual RID texture_2d_create(const Ref<Image> &p_image) = 0;
+	virtual RID texture_2d_layered_create(const Vector<Ref<Image> > &p_layers, VS::TextureLayeredType p_layered_type) = 0;
+	virtual RID texture_3d_create(const Vector<Ref<Image> > &p_slices) = 0; //all slices, then all the mipmaps, must be coherent
 
-	virtual void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_level = 0) = 0;
+	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0; //mostly used for video and streaming
+	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
+	virtual void texture_3d_update(RID p_texture, const Ref<Image> &p_image, int p_depth, int p_mipmap) = 0;
 
-	virtual void texture_set_data_partial(RID p_texture,
-			const Ref<Image> &p_image,
-			int src_x, int src_y,
-			int src_w, int src_h,
-			int dst_x, int dst_y,
-			int p_dst_mip,
-			int p_level = 0) = 0;
+	//these two APIs can be used together or in combination with the others.
+	virtual RID texture_2d_placeholder_create() = 0;
+	virtual RID texture_2d_layered_placeholder_create() = 0;
+	virtual RID texture_3d_placeholder_create() = 0;
 
-	virtual Ref<Image> texture_get_data(RID p_texture, int p_level = 0) const = 0;
-	virtual void texture_set_flags(RID p_texture, uint32_t p_flags) = 0;
-	virtual uint32_t texture_get_flags(RID p_texture) const = 0;
-	virtual Image::Format texture_get_format(RID p_texture) const = 0;
-	virtual VS::TextureType texture_get_type(RID p_texture) const = 0;
-	virtual uint32_t texture_get_texid(RID p_texture) const = 0;
-	virtual uint32_t texture_get_width(RID p_texture) const = 0;
-	virtual uint32_t texture_get_height(RID p_texture) const = 0;
-	virtual uint32_t texture_get_depth(RID p_texture) const = 0;
-	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height, int p_depth_3d) = 0;
+	virtual Ref<Image> texture_2d_get(RID p_texture) const = 0;
+	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const = 0;
+	virtual Ref<Image> texture_3d_slice_get(RID p_texture, int p_depth, int p_mipmap) const = 0;
+
+	virtual void texture_replace(RID p_texture, RID p_by_texture) = 0;
+	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) = 0;
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	virtual void texture_bind(RID p_texture, uint32_t p_texture_no) = 0;
+#endif
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
 	virtual String texture_get_path(RID p_texture) const = 0;
 
-	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable) = 0;
+	virtual void texture_set_detect_3d_callback(RID p_texture, VS::TextureDetectCallback p_callback, void *p_userdata) = 0;
+	virtual void texture_set_detect_normal_callback(RID p_texture, VS::TextureDetectCallback p_callback, void *p_userdata) = 0;
+	virtual void texture_set_detect_roughness_callback(RID p_texture, VS::TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
 
 	virtual void texture_debug_usage(List<VS::TextureInfo> *r_info) = 0;
 
-	virtual RID texture_create_radiance_cubemap(RID p_source, int p_resolution = -1) const = 0;
-
-	virtual void texture_set_detect_3d_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata) = 0;
-	virtual void texture_set_detect_srgb_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata) = 0;
-	virtual void texture_set_detect_normal_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata) = 0;
-
-	virtual void textures_keep_original(bool p_enable) = 0;
-
 	virtual void texture_set_proxy(RID p_proxy, RID p_base) = 0;
-	virtual Size2 texture_size_with_proxy(RID p_texture) const = 0;
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
+
+	virtual Size2 texture_size_with_proxy(RID p_proxy) const = 0;
 
 	/* SKY API */
 

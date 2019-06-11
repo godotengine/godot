@@ -98,7 +98,7 @@ void VisualScriptPropertySelector::_update_search() {
 		List<MethodInfo> methods;
 		List<PropertyInfo> props;
 		TreeItem *category = NULL;
-		Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
+		Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
 			Control::get_icon("Variant", "EditorIcons"),
 			Control::get_icon("bool", "EditorIcons"),
 			Control::get_icon("int", "EditorIcons"),
@@ -133,7 +133,7 @@ void VisualScriptPropertySelector::_update_search() {
 			if (category) {
 				category->set_text(0, b.replace_first("*", ""));
 				category->set_selectable(0, false);
-				Ref<Texture> icon;
+				Ref<Texture2D> icon;
 				String rep = b.replace("*", "");
 				icon = EditorNode::get_singleton()->get_class_icon(rep);
 				category->set_icon(0, icon);

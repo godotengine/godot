@@ -74,7 +74,7 @@ protected:
 public:
 	virtual String get_name() const { return "Mac OSX"; }
 	virtual String get_os_name() const { return "OSX"; }
-	virtual Ref<Texture> get_logo() const { return logo; }
+	virtual Ref<Texture2D> get_logo() const { return logo; }
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 		List<String> list;

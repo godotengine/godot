@@ -976,7 +976,7 @@ void Polygon2DEditor::_uv_draw() {
 	if (!uv_edit->is_visible() || !_get_node())
 		return;
 
-	Ref<Texture> base_tex = node->get_texture();
+	Ref<Texture2D> base_tex = node->get_texture();
 	if (base_tex.is_null())
 		return;
 
@@ -1046,7 +1046,7 @@ void Polygon2DEditor::_uv_draw() {
 	}
 
 	// All UV points are sharp, so use the sharp handle icon
-	Ref<Texture> handle = get_icon("EditorPathSharpHandle", "EditorIcons");
+	Ref<Texture2D> handle = get_icon("EditorPathSharpHandle", "EditorIcons");
 
 	Color poly_line_color = Color(0.9, 0.5, 0.5);
 	if (polygons.size() || polygon_create.size()) {

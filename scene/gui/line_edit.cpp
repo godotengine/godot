@@ -622,7 +622,7 @@ bool LineEdit::_is_over_clear_button(const Point2 &p_pos) const {
 	if (!clear_button_enabled || !has_point(p_pos)) {
 		return false;
 	}
-	Ref<Texture> icon = Control::get_icon("clear");
+	Ref<Texture2D> icon = Control::get_icon("clear");
 	int x_ofs = get_stylebox("normal")->get_offset().x;
 	return p_pos.x > get_size().width - icon->get_width() - x_ofs;
 }
@@ -736,7 +736,7 @@ void LineEdit::_notification(int p_what) {
 
 			bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 			if (right_icon.is_valid() || display_clear_icon) {
-				Ref<Texture> r_icon = display_clear_icon ? Control::get_icon("clear") : right_icon;
+				Ref<Texture2D> r_icon = display_clear_icon ? Control::get_icon("clear") : right_icon;
 				Color color_icon(1, 1, 1, !is_editable() ? .5 * .9 : .9);
 				if (display_clear_icon) {
 					if (clear_button_status.press_attempt && clear_button_status.pressing_inside) {
@@ -1205,7 +1205,7 @@ void LineEdit::set_cursor_position(int p_pos) {
 		int window_width = get_size().width - style->get_minimum_size().width;
 		bool display_clear_icon = !text.empty() && is_editable() && clear_button_enabled;
 		if (right_icon.is_valid() || display_clear_icon) {
-			Ref<Texture> r_icon = display_clear_icon ? Control::get_icon("clear") : right_icon;
+			Ref<Texture2D> r_icon = display_clear_icon ? Control::get_icon("clear") : right_icon;
 			window_width -= r_icon->get_width();
 		}
 
@@ -1533,7 +1533,7 @@ bool LineEdit::is_clear_button_enabled() const {
 	return clear_button_enabled;
 }
 
-void LineEdit::set_right_icon(const Ref<Texture> &p_icon) {
+void LineEdit::set_right_icon(const Ref<Texture2D> &p_icon) {
 	if (right_icon == p_icon) {
 		return;
 	}

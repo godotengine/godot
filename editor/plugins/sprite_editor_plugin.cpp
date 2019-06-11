@@ -166,7 +166,7 @@ void SpriteEditor::_menu_option(int p_option) {
 
 void SpriteEditor::_update_mesh_data() {
 
-	Ref<Texture> texture = node->get_texture();
+	Ref<Texture2D> texture = node->get_texture();
 	if (texture.is_null()) {
 		err_dialog->set_text(TTR("Sprite is empty!"));
 		err_dialog->popup_centered_minsize();
@@ -529,7 +529,7 @@ void SpriteEditor::_create_uv_lines() {
 #endif
 void SpriteEditor::_debug_uv_draw() {
 
-	Ref<Texture> tex = node->get_texture();
+	Ref<Texture2D> tex = node->get_texture();
 	ERR_FAIL_COND(!tex.is_valid());
 	debug_uv->set_clip_contents(true);
 	debug_uv->draw_texture(tex, Point2());

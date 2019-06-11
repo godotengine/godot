@@ -30,7 +30,7 @@
 
 #include "immediate_geometry.h"
 
-void ImmediateGeometry::begin(Mesh::PrimitiveType p_primitive, const Ref<Texture> &p_texture) {
+void ImmediateGeometry::begin(Mesh::PrimitiveType p_primitive, const Ref<Texture2D> &p_texture) {
 
 	VS::get_singleton()->immediate_begin(im, (VS::PrimitiveType)p_primitive, p_texture.is_valid() ? p_texture->get_rid() : RID());
 	if (p_texture.is_valid())
@@ -144,7 +144,7 @@ void ImmediateGeometry::add_sphere(int p_lats, int p_lons, float p_radius, bool 
 
 void ImmediateGeometry::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("begin", "primitive", "texture"), &ImmediateGeometry::begin, DEFVAL(Ref<Texture>()));
+	ClassDB::bind_method(D_METHOD("begin", "primitive", "texture"), &ImmediateGeometry::begin, DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("set_normal", "normal"), &ImmediateGeometry::set_normal);
 	ClassDB::bind_method(D_METHOD("set_tangent", "tangent"), &ImmediateGeometry::set_tangent);
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &ImmediateGeometry::set_color);

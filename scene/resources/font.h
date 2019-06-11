@@ -108,7 +108,7 @@ class BitmapFont : public Font {
 	GDCLASS(BitmapFont, Font);
 	RES_BASE_EXTENSION("font");
 
-	Vector<Ref<Texture> > textures;
+	Vector<Ref<Texture2D> > textures;
 
 public:
 	struct Character {
@@ -168,7 +168,7 @@ public:
 	float get_ascent() const;
 	float get_descent() const;
 
-	void add_texture(const Ref<Texture> &p_texture);
+	void add_texture(const Ref<Texture2D> &p_texture);
 	void add_char(CharType p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance = -1);
 
 	int get_character_count() const;
@@ -176,7 +176,7 @@ public:
 	Character get_character(CharType p_char) const;
 
 	int get_texture_count() const;
-	Ref<Texture> get_texture(int p_idx) const;
+	Ref<Texture2D> get_texture(int p_idx) const;
 
 	void add_kerning_pair(CharType p_A, CharType p_B, int p_kerning);
 	int get_kerning_pair(CharType p_A, CharType p_B) const;

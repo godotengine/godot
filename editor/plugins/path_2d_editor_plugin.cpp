@@ -372,12 +372,12 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-	const Ref<Texture> path_sharp_handle = get_icon("EditorPathSharpHandle", "EditorIcons");
-	const Ref<Texture> path_smooth_handle = get_icon("EditorPathSmoothHandle", "EditorIcons");
+	const Ref<Texture2D> path_sharp_handle = get_icon("EditorPathSharpHandle", "EditorIcons");
+	const Ref<Texture2D> path_smooth_handle = get_icon("EditorPathSmoothHandle", "EditorIcons");
 	// Both handle icons must be of the same size
 	const Size2 handle_size = path_sharp_handle->get_size();
 
-	const Ref<Texture> curve_handle = get_icon("EditorCurveHandle", "EditorIcons");
+	const Ref<Texture2D> curve_handle = get_icon("EditorCurveHandle", "EditorIcons");
 	const Size2 curve_handle_size = curve_handle->get_size();
 
 	Ref<Curve2D> curve = node->get_curve();
@@ -419,7 +419,7 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	}
 
 	if (on_edge) {
-		Ref<Texture> add_handle = get_icon("EditorHandleAdd", "EditorIcons");
+		Ref<Texture2D> add_handle = get_icon("EditorHandleAdd", "EditorIcons");
 		p_overlay->draw_texture(add_handle, edge_point - add_handle->get_size() * 0.5);
 	}
 }
