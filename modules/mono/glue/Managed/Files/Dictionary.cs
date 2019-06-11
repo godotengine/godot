@@ -288,6 +288,37 @@ namespace Godot.Collections
             }
         }
 
+        public Dictionary(Dictionary<TKey, TValue> dictionary)
+        {
+            objectDict = new Dictionary();
+
+            if (dictionary == null)
+                throw new NullReferenceException($"Parameter '{nameof(dictionary)} cannot be null.'");
+
+            IntPtr godotDictionaryPtr = GetPtr();
+
+            foreach (KeyValuePair<TKey, TValue> entry in dictionary)
+            {
+                Dictionary.godot_icall_Dictionary_Add(godotDictionaryPtr, entry.Key, entry.Value);
+            }
+        }
+
+        // This can likely be removed if Godot requires Mono 6, which doesn't seem to have the bug that this constructor fixes.
+        public Dictionary(System.Collections.Generic.Dictionary<TKey, TValue> dictionary)
+        {
+            objectDict = new Dictionary();
+
+            if (dictionary == null)
+                throw new NullReferenceException($"Parameter '{nameof(dictionary)} cannot be null.'");
+
+            IntPtr godotDictionaryPtr = GetPtr();
+
+            foreach (KeyValuePair<TKey, TValue> entry in dictionary)
+            {
+                Dictionary.godot_icall_Dictionary_Add(godotDictionaryPtr, entry.Key, entry.Value);
+            }
+        }
+
         public Dictionary(Dictionary dictionary)
         {
             objectDict = dictionary;
