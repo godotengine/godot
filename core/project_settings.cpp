@@ -489,7 +489,7 @@ Error ProjectSettings::_load_settings_binary(const String p_path) {
 
 		memdelete(f);
 		ERR_EXPLAIN("Corrupted header in binary project.binary (not ECFG)");
-		ERR_FAIL_V(ERR_FILE_CORRUPT;)
+		ERR_FAIL_V(ERR_FILE_CORRUPT);
 	}
 
 	uint32_t count = f->get_32();
@@ -640,7 +640,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 	if (err != OK) {
 
 		ERR_EXPLAIN("Couldn't save project.binary at " + p_file);
-		ERR_FAIL_COND_V(err, err)
+		ERR_FAIL_COND_V(err, err);
 	}
 
 	uint8_t hdr[4] = { 'E', 'C', 'F', 'G' };
@@ -732,7 +732,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 
 	if (err) {
 		ERR_EXPLAIN("Couldn't save project.godot - " + p_file);
-		ERR_FAIL_COND_V(err, err)
+		ERR_FAIL_COND_V(err, err);
 	}
 
 	file->store_line("; Engine configuration file.");

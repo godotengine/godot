@@ -914,7 +914,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	};
 
 	DirAccess *tmp_app_path = DirAccess::create_for_path(dest_dir);
-	ERR_FAIL_COND_V(!tmp_app_path, ERR_CANT_CREATE)
+	ERR_FAIL_COND_V(!tmp_app_path, ERR_CANT_CREATE);
 
 	print_line("Unzipping...");
 	FileAccess *src_f = NULL;

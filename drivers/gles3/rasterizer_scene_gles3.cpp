@@ -3304,7 +3304,7 @@ void RasterizerSceneGLES3::_prepare_depth_texture() {
 
 void RasterizerSceneGLES3::_bind_depth_texture() {
 	if (!state.bound_depth_texture) {
-		ERR_FAIL_COND(!state.prepared_depth_texture)
+		ERR_FAIL_COND(!state.prepared_depth_texture);
 		//bind depth for read
 		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 8);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->depth);

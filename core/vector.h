@@ -150,7 +150,7 @@ template <class T>
 bool Vector<T>::push_back(const T &p_elem) {
 
 	Error err = resize(size() + 1);
-	ERR_FAIL_COND_V(err, true)
+	ERR_FAIL_COND_V(err, true);
 	set(size() - 1, p_elem);
 
 	return false;

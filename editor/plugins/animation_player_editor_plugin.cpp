@@ -769,7 +769,7 @@ void AnimationPlayerEditor::_dialog_action(String p_file) {
 			if (current != "") {
 				Ref<Animation> anim = player->get_animation(current);
 
-				ERR_FAIL_COND(!Object::cast_to<Resource>(*anim))
+				ERR_FAIL_COND(!Object::cast_to<Resource>(*anim));
 
 				RES current_res = RES(Object::cast_to<Resource>(*anim));
 

@@ -342,7 +342,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_NUM(0);
 			r_ret = Math::step_decimals((double)*p_args[0]);
 			ERR_EXPLAIN("GDScript method 'decimals' is deprecated and has been renamed to 'step_decimals', please update your code accordingly.");
-			WARN_DEPRECATED
+			WARN_DEPRECATED;
 		} break;
 		case MATH_STEP_DECIMALS: {
 			VALIDATE_ARG_COUNT(1);

@@ -1754,7 +1754,7 @@ bool Main::start() {
 					scene = scenedata->instance();
 
 				ERR_EXPLAIN("Failed loading scene: " + local_game_path);
-				ERR_FAIL_COND_V(!scene, false)
+				ERR_FAIL_COND_V(!scene, false);
 				sml->add_current_scene(scene);
 
 #ifdef OSX_ENABLED

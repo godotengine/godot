@@ -118,7 +118,7 @@ void HingeJointBullet::set_param(PhysicsServer::HingeJointParam p_param, real_t 
 			break;
 		default:
 			ERR_EXPLAIN("The HingeJoint parameter " + itos(p_param) + " is deprecated.");
-			WARN_DEPRECATED
+			WARN_DEPRECATED;
 			break;
 	}
 }
