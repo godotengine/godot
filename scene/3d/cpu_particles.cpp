@@ -754,8 +754,9 @@ void CPUParticles::_particles_process(float p_delta) {
 			//apply tangential acceleration;
 			if (flags[FLAG_DISABLE_Z]) {
 
-				Vector3 yx = Vector3(diff.y, 0, diff.x);
-				force += yx.length() > 0.0 ? (yx * Vector3(-1.0, 0, 1.0)) * ((parameters[PARAM_TANGENTIAL_ACCEL] + tex_tangential_accel) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_TANGENTIAL_ACCEL])) : Vector3();
+				Vector2 yx = Vector2(diff.y, diff.x);
+				Vector2 yx2 = (yx * Vector2(-1.0, 1.0)).normalized();
+				force += yx.length() > 0.0 ? Vector3(yx2.x, yx2.y, 0.0) * ((parameters[PARAM_TANGENTIAL_ACCEL] + tex_tangential_accel) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_TANGENTIAL_ACCEL])) : Vector3();
 
 			} else {
 				Vector3 crossDiff = diff.normalized().cross(gravity.normalized());
