@@ -976,7 +976,7 @@ void Polygon2DEditor::_uv_draw() {
 	if (!uv_edit->is_visible() || !_get_node())
 		return;
 
-	Ref<Texture> base_tex = node->get_texture();
+	Ref<Texture2D> base_tex = node->get_texture();
 	if (base_tex.is_null())
 		return;
 
@@ -1045,8 +1045,8 @@ void Polygon2DEditor::_uv_draw() {
 		}
 	}
 
-	Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
-	Ref<Texture> internal_handle = get_icon("EditorInternalHandle", "EditorIcons");
+	Ref<Texture2D> handle = get_icon("EditorHandle", "EditorIcons");
+	Ref<Texture2D> internal_handle = get_icon("EditorInternalHandle", "EditorIcons");
 
 	Color poly_line_color = Color(0.9, 0.5, 0.5);
 	if (polygons.size() || polygon_create.size()) {

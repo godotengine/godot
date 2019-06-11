@@ -37,9 +37,9 @@ class TextureProgress : public Range {
 
 	GDCLASS(TextureProgress, Range);
 
-	Ref<Texture> under;
-	Ref<Texture> progress;
-	Ref<Texture> over;
+	Ref<Texture2D> under;
+	Ref<Texture2D> progress;
+	Ref<Texture2D> over;
 
 protected:
 	static void _bind_methods();
@@ -70,14 +70,14 @@ public:
 	void set_radial_center_offset(const Point2 &p_off);
 	Point2 get_radial_center_offset();
 
-	void set_under_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_under_texture() const;
+	void set_under_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_under_texture() const;
 
-	void set_progress_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_progress_texture() const;
+	void set_progress_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_progress_texture() const;
 
-	void set_over_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_over_texture() const;
+	void set_over_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_over_texture() const;
 
 	void set_stretch_margin(Margin p_margin, int p_size);
 	int get_stretch_margin(Margin p_margin) const;
@@ -109,7 +109,7 @@ private:
 
 	Point2 unit_val_to_uv(float val);
 	Point2 get_relative_center();
-	void draw_nine_patch_stretched(const Ref<Texture> &p_texture, FillMode p_mode, double p_ratio, const Color &p_modulate);
+	void draw_nine_patch_stretched(const Ref<Texture2D> &p_texture, FillMode p_mode, double p_ratio, const Color &p_modulate);
 };
 
 VARIANT_ENUM_CAST(TextureProgress::FillMode);

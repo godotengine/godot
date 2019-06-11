@@ -1214,7 +1214,7 @@ public:
 		return "Android";
 	}
 
-	virtual Ref<Texture> get_logo() const {
+	virtual Ref<Texture2D> get_logo() const {
 		return logo;
 	}
 
@@ -1407,7 +1407,7 @@ public:
 		return OK;
 	}
 
-	virtual Ref<Texture> get_run_icon() const {
+	virtual Ref<Texture2D> get_run_icon() const {
 		return run_icon;
 	}
 

@@ -51,7 +51,7 @@ class Polygon2D : public Node2D {
 	Vector<Bone> bone_weights;
 
 	Color color;
-	Ref<Texture> texture;
+	Ref<Texture2D> texture;
 	Size2 tex_scale;
 	Vector2 tex_ofs;
 	bool tex_tile;
@@ -106,8 +106,8 @@ public:
 	void set_vertex_colors(const PoolVector<Color> &p_colors);
 	PoolVector<Color> get_vertex_colors() const;
 
-	void set_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_texture() const;
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
 
 	void set_texture_offset(const Vector2 &p_offset);
 	Vector2 get_texture_offset() const;

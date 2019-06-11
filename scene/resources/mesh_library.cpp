@@ -103,7 +103,7 @@ void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::ARRAY, name + "shapes"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, name + "navmesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM, name + "navmesh_transform"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, name + "preview", PROPERTY_HINT_RESOURCE_TYPE, "Texture", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_HELPER));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, name + "preview", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_HELPER));
 	}
 }
 
@@ -161,7 +161,7 @@ void MeshLibrary::set_item_navmesh_transform(int p_item, const Transform &p_tran
 	_change_notify();
 }
 
-void MeshLibrary::set_item_preview(int p_item, const Ref<Texture> &p_preview) {
+void MeshLibrary::set_item_preview(int p_item, const Ref<Texture2D> &p_preview) {
 
 	ERR_FAIL_COND(!item_map.has(p_item));
 	item_map[p_item].preview = p_preview;
@@ -199,9 +199,9 @@ Transform MeshLibrary::get_item_navmesh_transform(int p_item) const {
 	return item_map[p_item].navmesh_transform;
 }
 
-Ref<Texture> MeshLibrary::get_item_preview(int p_item) const {
+Ref<Texture2D> MeshLibrary::get_item_preview(int p_item) const {
 
-	ERR_FAIL_COND_V(!item_map.has(p_item), Ref<Texture>());
+	ERR_FAIL_COND_V(!item_map.has(p_item), Ref<Texture2D>());
 	return item_map[p_item].preview;
 }
 

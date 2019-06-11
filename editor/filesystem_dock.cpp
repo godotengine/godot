@@ -40,8 +40,8 @@
 #include "editor_settings.h"
 #include "scene/main/viewport.h"
 
-Ref<Texture> FileSystemDock::_get_tree_item_icon(EditorFileSystemDirectory *p_dir, int p_idx) {
-	Ref<Texture> file_icon;
+Ref<Texture2D> FileSystemDock::_get_tree_item_icon(EditorFileSystemDirectory *p_dir, int p_idx) {
+	Ref<Texture2D> file_icon;
 	if (!p_dir->get_file_import_is_valid(p_idx)) {
 		file_icon = get_icon("ImportFail", "EditorIcons");
 	} else {
@@ -184,10 +184,10 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		if (!fave.begins_with("res://"))
 			continue;
 
-		Ref<Texture> folder_icon = get_icon("Folder", "EditorIcons");
+		Ref<Texture2D> folder_icon = get_icon("Folder", "EditorIcons");
 
 		String text;
-		Ref<Texture> icon;
+		Ref<Texture2D> icon;
 		if (fave == "res://") {
 			text = "/";
 			icon = folder_icon;
@@ -483,7 +483,7 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 	_navigate_to_path(p_path);
 }
 
-void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata) {
+void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
 
 	if ((file_list_vb->is_visible_in_tree() || path == p_path.get_base_dir()) && p_preview.is_valid()) {
 		Array uarr = p_udata;
@@ -500,7 +500,7 @@ void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<T
 	}
 }
 
-void FileSystemDock::_tree_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata) {
+void FileSystemDock::_tree_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
 	if (p_small_preview.is_valid()) {
 		Array uarr = p_udata;
 		if (tree_update_id == (int)uarr[0]) {
@@ -605,9 +605,9 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	String ei = "EditorIcons";
 	int thumbnail_size = EditorSettings::get_singleton()->get("docks/filesystem/thumbnail_size");
 	thumbnail_size *= EDSCALE;
-	Ref<Texture> folder_thumbnail;
-	Ref<Texture> file_thumbnail;
-	Ref<Texture> file_thumbnail_broken;
+	Ref<Texture2D> folder_thumbnail;
+	Ref<Texture2D> file_thumbnail;
+	Ref<Texture2D> file_thumbnail_broken;
 
 	bool use_thumbnails = (file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS);
 
@@ -638,7 +638,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		files->set_fixed_icon_size(Size2());
 	}
 
-	Ref<Texture> folder_icon = (use_thumbnails) ? folder_thumbnail : get_icon("folder", "FileDialog");
+	Ref<Texture2D> folder_icon = (use_thumbnails) ? folder_thumbnail : get_icon("folder", "FileDialog");
 
 	// Build the FileInfo list
 	List<FileInfo> filelist;
@@ -648,7 +648,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		for (int i = 0; i < favorites.size(); i++) {
 			String favorite = favorites[i];
 			String text;
-			Ref<Texture> icon;
+			Ref<Texture2D> icon;
 			if (favorite == "res://") {
 				text = "/";
 				icon = folder_icon;
@@ -755,8 +755,8 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		String fpath = finfo->path;
 		String ftype = finfo->type;
 
-		Ref<Texture> type_icon;
-		Ref<Texture> big_icon;
+		Ref<Texture2D> type_icon;
+		Ref<Texture2D> big_icon;
 
 		String tooltip = fpath;
 

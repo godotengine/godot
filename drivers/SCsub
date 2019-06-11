@@ -24,8 +24,8 @@ SConscript('winmidi/SCsub')
 
 # Graphics drivers
 if (env["platform"] != "server"):
-    SConscript('gles3/SCsub')
-    SConscript('gles2/SCsub')
+#    SConscript('gles3/SCsub')
+#    SConscript('gles2/SCsub')
     SConscript('vulkan/SCsub')
     SConscript('gl_context/SCsub')
 else:

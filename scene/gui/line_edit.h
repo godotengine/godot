@@ -90,7 +90,7 @@ private:
 
 	bool clear_button_enabled;
 
-	Ref<Texture> right_icon;
+	Ref<Texture2D> right_icon;
 
 	struct Selection {
 
@@ -219,7 +219,7 @@ public:
 	void set_clear_button_enabled(bool p_enabled);
 	bool is_clear_button_enabled() const;
 
-	void set_right_icon(const Ref<Texture> &p_icon);
+	void set_right_icon(const Ref<Texture2D> &p_icon);
 
 	virtual bool is_text_field() const;
 	LineEdit();

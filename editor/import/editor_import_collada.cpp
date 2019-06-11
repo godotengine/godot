@@ -381,7 +381,7 @@ Error ColladaImport::_create_material(const String &p_target) {
 			if (texfile.begins_with("/")) {
 				texfile = texfile.replace_first("/", "res://");
 			}
-			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
+			Ref<Texture2D> texture = ResourceLoader::load(texfile, "Texture2D");
 			if (texture.is_valid()) {
 
 				material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, texture);
@@ -406,7 +406,7 @@ Error ColladaImport::_create_material(const String &p_target) {
 				texfile = texfile.replace_first("/", "res://");
 			}
 
-			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
+			Ref<Texture2D> texture = ResourceLoader::load(texfile, "Texture2D");
 			if (texture.is_valid()) {
 				material->set_texture(SpatialMaterial::TEXTURE_METALLIC, texture);
 				material->set_specular(1.0);
@@ -433,7 +433,7 @@ Error ColladaImport::_create_material(const String &p_target) {
 				texfile = texfile.replace_first("/", "res://");
 			}
 
-			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
+			Ref<Texture2D> texture = ResourceLoader::load(texfile, "Texture2D");
 			if (texture.is_valid()) {
 
 				material->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
@@ -463,7 +463,7 @@ Error ColladaImport::_create_material(const String &p_target) {
 				texfile = texfile.replace_first("/", "res://");
 			}
 
-			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
+			Ref<Texture2D> texture = ResourceLoader::load(texfile, "Texture2D");
 			if (texture.is_valid()) {
 				material->set_feature(SpatialMaterial::FEATURE_NORMAL_MAPPING, true);
 				material->set_texture(SpatialMaterial::TEXTURE_NORMAL, texture);

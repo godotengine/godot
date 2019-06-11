@@ -751,11 +751,11 @@ Transform EditorSceneImporterAssimp::_get_global_assimp_node_transform(const aiN
 	return xform;
 }
 
-Ref<Texture> EditorSceneImporterAssimp::_load_texture(ImportState &state, String p_path) {
+Ref<Texture2D> EditorSceneImporterAssimp::_load_texture(ImportState &state, String p_path) {
 	Vector<String> split_path = p_path.get_basename().split("*");
 	if (split_path.size() == 2) {
 		size_t texture_idx = split_path[1].to_int();
-		ERR_FAIL_COND_V(texture_idx >= state.assimp_scene->mNumTextures, Ref<Texture>());
+		ERR_FAIL_COND_V(texture_idx >= state.assimp_scene->mNumTextures, Ref<Texture2D>());
 		aiTexture *tex = state.assimp_scene->mTextures[texture_idx];
 		String filename = _assimp_raw_string_to_string(tex->mFilename);
 		filename = filename.get_file();
@@ -763,26 +763,26 @@ Ref<Texture> EditorSceneImporterAssimp::_load_texture(ImportState &state, String
 		if (tex->mHeight == 0) {
 			if (tex->CheckFormat("png")) {
 				Ref<Image> img = Image::_png_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
-				ERR_FAIL_COND_V(img.is_null(), Ref<Texture>());
+				ERR_FAIL_COND_V(img.is_null(), Ref<Texture2D>());
 
 				Ref<ImageTexture> t;
 				t.instance();
 				t->create_from_image(img);
-				t->set_storage(ImageTexture::STORAGE_COMPRESS_LOSSY);
+
 				return t;
 			} else if (tex->CheckFormat("jpg")) {
 				Ref<Image> img = Image::_jpg_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
-				ERR_FAIL_COND_V(img.is_null(), Ref<Texture>());
+				ERR_FAIL_COND_V(img.is_null(), Ref<Texture2D>());
 				Ref<ImageTexture> t;
 				t.instance();
 				t->create_from_image(img);
-				t->set_storage(ImageTexture::STORAGE_COMPRESS_LOSSY);
+
 				return t;
 			} else if (tex->CheckFormat("dds")) {
 				ERR_EXPLAIN("Open Asset Import: Embedded dds not implemented");
-				ERR_FAIL_COND_V(true, Ref<Texture>());
+				ERR_FAIL_COND_V(true, Ref<Texture2D>());
 				//Ref<Image> img = Image::_dds_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
-				//ERR_FAIL_COND_V(img.is_null(), Ref<Texture>());
+				//ERR_FAIL_COND_V(img.is_null(), Ref<Texture2D>());
 				//Ref<ImageTexture> t;
 				//t.instance();
 				//t->create_from_image(img);
@@ -796,7 +796,7 @@ Ref<Texture> EditorSceneImporterAssimp::_load_texture(ImportState &state, String
 			uint32_t size = tex->mWidth * tex->mHeight;
 			arr.resize(size);
 			memcpy(arr.write().ptr(), tex->pcData, size);
-			ERR_FAIL_COND_V(arr.size() % 4 != 0, Ref<Texture>());
+			ERR_FAIL_COND_V(arr.size() % 4 != 0, Ref<Texture2D>());
 			//ARGB8888 to RGBA8888
 			for (int32_t i = 0; i < arr.size() / 4; i++) {
 				arr.write().ptr()[(4 * i) + 3] = arr[(4 * i) + 0];
@@ -805,17 +805,16 @@ Ref<Texture> EditorSceneImporterAssimp::_load_texture(ImportState &state, String
 				arr.write().ptr()[(4 * i) + 2] = arr[(4 * i) + 3];
 			}
 			img->create(tex->mWidth, tex->mHeight, true, Image::FORMAT_RGBA8, arr);
-			ERR_FAIL_COND_V(img.is_null(), Ref<Texture>());
+			ERR_FAIL_COND_V(img.is_null(), Ref<Texture2D>());
 
 			Ref<ImageTexture> t;
 			t.instance();
 			t->create_from_image(img);
-			t->set_storage(ImageTexture::STORAGE_COMPRESS_LOSSY);
 			return t;
 		}
-		return Ref<Texture>();
+		return Ref<Texture2D>();
 	}
-	Ref<Texture> p_texture = ResourceLoader::load(p_path, "Texture");
+	Ref<Texture2D> p_texture = ResourceLoader::load(p_path, "Texture2D");
 	return p_texture;
 }
 
@@ -852,7 +851,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			bool found = false;
 			_find_texture_path(state.path, path, found);
 			if (found) {
-				Ref<Texture> texture = _load_texture(state, path);
+				Ref<Texture2D> texture = _load_texture(state, path);
 
 				if (texture.is_valid()) {
 					_set_texture_mapping_mode(map_mode, texture);
@@ -873,7 +872,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			bool found = false;
 			_find_texture_path(state.path, path, found);
 			if (found) {
-				Ref<Texture> texture = _load_texture(state, path);
+				Ref<Texture2D> texture = _load_texture(state, path);
 				if (texture != NULL) {
 					mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
 					mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, texture);
@@ -896,7 +895,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			bool found = false;
 			_find_texture_path(state.path, path, found);
 			if (found) {
-				Ref<Texture> texture = _load_texture(state, path);
+				Ref<Texture2D> texture = _load_texture(state, path);
 				if (texture != NULL) {
 					_set_texture_mapping_mode(map_mode, texture);
 					mat->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
@@ -918,7 +917,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			bool found = false;
 			_find_texture_path(state.path, path, found);
 			if (found) {
-				Ref<Texture> texture = _load_texture(state, path);
+				Ref<Texture2D> texture = _load_texture(state, path);
 				if (texture != NULL) {
 					if (texture->get_data()->detect_alpha() != Image::ALPHA_NONE) {
 						_set_texture_mapping_mode(map_mode, texture);
@@ -948,7 +947,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 		bool found = false;
 		_find_texture_path(state.path, path, found);
 		if (found) {
-			Ref<Texture> texture = _load_texture(state, path);
+			Ref<Texture2D> texture = _load_texture(state, path);
 			_find_texture_path(state.path, path, found);
 			if (texture != NULL) {
 				if (texture->get_data()->detect_alpha() == Image::ALPHA_BLEND) {
@@ -977,7 +976,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			bool found = false;
 			_find_texture_path(state.path, path, found);
 			if (found) {
-				Ref<Texture> texture = _load_texture(state, path);
+				Ref<Texture2D> texture = _load_texture(state, path);
 				_find_texture_path(state.path, path, found);
 				if (texture != NULL) {
 					if (texture->get_data()->detect_alpha() == Image::ALPHA_BLEND) {
@@ -1009,7 +1008,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			bool found = false;
 			_find_texture_path(state.path, path, found);
 			if (found) {
-				Ref<Texture> texture = _load_texture(state, path);
+				Ref<Texture2D> texture = _load_texture(state, path);
 				_find_texture_path(state.path, path, found);
 				if (texture != NULL) {
 					mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
@@ -1031,7 +1030,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			bool found = false;
 			_find_texture_path(state.path, path, found);
 			if (found) {
-				Ref<Texture> texture = _load_texture(state, path);
+				Ref<Texture2D> texture = _load_texture(state, path);
 				_find_texture_path(state.path, path, found);
 				if (texture != NULL) {
 					mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
@@ -1049,7 +1048,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			bool found = false;
 			_find_texture_path(state.path, path, found);
 			if (found) {
-				Ref<Texture> texture = _load_texture(state, path);
+				Ref<Texture2D> texture = _load_texture(state, path);
 				_find_texture_path(state.path, path, found);
 				if (texture != NULL) {
 					if (texture->get_data()->detect_alpha() == Image::ALPHA_BLEND) {
@@ -1081,7 +1080,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			bool found = false;
 			_find_texture_path(state.path, path, found);
 			if (found) {
-				Ref<Texture> texture = _load_texture(state, path);
+				Ref<Texture2D> texture = _load_texture(state, path);
 				_find_texture_path(state.path, path, found);
 				if (texture != NULL) {
 					if (texture->get_data()->detect_alpha() == Image::ALPHA_BLEND) {
@@ -1111,7 +1110,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 		bool found = false;
 		_find_texture_path(state.path, path, found);
 		if (found) {
-			Ref<Texture> texture = _load_texture(state, path);
+			Ref<Texture2D> texture = _load_texture(state, path);
 			if (texture != NULL) {
 				mat->set_texture(SpatialMaterial::TEXTURE_METALLIC, texture);
 				mat->set_metallic_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_BLUE);
@@ -1138,7 +1137,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			bool found = false;
 			_find_texture_path(state.path, path, found);
 			if (found) {
-				Ref<Texture> texture = _load_texture(state, path);
+				Ref<Texture2D> texture = _load_texture(state, path);
 				if (texture != NULL) {
 					mat->set_texture(SpatialMaterial::TEXTURE_METALLIC, texture);
 					mat->set_metallic_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GRAYSCALE);
@@ -1158,7 +1157,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			bool found = false;
 			_find_texture_path(state.path, path, found);
 			if (found) {
-				Ref<Texture> texture = _load_texture(state, path);
+				Ref<Texture2D> texture = _load_texture(state, path);
 				if (texture != NULL) {
 					mat->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, texture);
 					mat->set_roughness_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GRAYSCALE);
@@ -1181,7 +1180,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			bool found = false;
 			_find_texture_path(state.path, path, found);
 			if (found) {
-				Ref<Texture> texture = _load_texture(state, path);
+				Ref<Texture2D> texture = _load_texture(state, path);
 				if (texture != NULL) {
 					mat->set_texture(SpatialMaterial::TEXTURE_METALLIC, texture);
 					mat->set_metallic_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GRAYSCALE);
@@ -1201,7 +1200,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			bool found = false;
 			_find_texture_path(state.path, path, found);
 			if (found) {
-				Ref<Texture> texture = _load_texture(state, path);
+				Ref<Texture2D> texture = _load_texture(state, path);
 				if (texture != NULL) {
 					mat->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, texture);
 					mat->set_roughness_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GRAYSCALE);
@@ -1631,7 +1630,8 @@ void EditorSceneImporterAssimp::_calc_tangent_from_mesh(const aiMesh *ai_mesh, i
 	w[index] = plane_tangent;
 }
 
-void EditorSceneImporterAssimp::_set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<Texture> texture) {
+void EditorSceneImporterAssimp::_set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<Texture2D> texture) {
+#if 0
 	ERR_FAIL_COND(map_mode == NULL);
 	aiTextureMapMode tex_mode = aiTextureMapMode::aiTextureMapMode_Wrap;
 	//for (size_t i = 0; i < 3; i++) {
@@ -1646,6 +1646,8 @@ void EditorSceneImporterAssimp::_set_texture_mapping_mode(aiTextureMapMode *map_
 		flags = flags | Texture::FLAG_MIRRORED_REPEAT;
 	}
 	texture->set_flags(flags);
+	//no longer supported
+#endif
 }
 
 void EditorSceneImporterAssimp::_find_texture_path(const String &r_p_path, String &r_path, bool &r_found) {

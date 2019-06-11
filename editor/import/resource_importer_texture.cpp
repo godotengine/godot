@@ -36,16 +36,18 @@
 #include "editor/editor_node.h"
 #include "scene/resources/texture.h"
 
-void ResourceImporterTexture::_texture_reimport_srgb(const Ref<StreamTexture> &p_tex) {
+void ResourceImporterTexture::_texture_reimport_roughness(const Ref<StreamTexture> &p_tex, const String &p_normal_path, VS::TextureDetectRoughnessChannel p_channel) {
 
 	singleton->mutex->lock();
 	StringName path = p_tex->get_path();
 
 	if (!singleton->make_flags.has(path)) {
-		singleton->make_flags[path] = 0;
+		singleton->make_flags[path] = MakeInfo();
 	}
 
-	singleton->make_flags[path] |= MAKE_SRGB_FLAG;
+	singleton->make_flags[path].flags |= MAKE_ROUGHNESS_FLAG;
+	singleton->make_flags[path].channel_for_roughness = p_channel;
+	singleton->make_flags[path].normal_path_for_roughness = p_normal_path;
 
 	singleton->mutex->unlock();
 }
@@ -56,10 +58,10 @@ void ResourceImporterTexture::_texture_reimport_3d(const Ref<StreamTexture> &p_t
 	StringName path = p_tex->get_path();
 
 	if (!singleton->make_flags.has(path)) {
-		singleton->make_flags[path] = 0;
+		singleton->make_flags[path] = MakeInfo();
 	}
 
-	singleton->make_flags[path] |= MAKE_3D_FLAG;
+	singleton->make_flags[path].flags |= MAKE_3D_FLAG;
 
 	singleton->mutex->unlock();
 }
@@ -70,10 +72,10 @@ void ResourceImporterTexture::_texture_reimport_normal(const Ref<StreamTexture> 
 	StringName path = p_tex->get_path();
 
 	if (!singleton->make_flags.has(path)) {
-		singleton->make_flags[path] = 0;
+		singleton->make_flags[path] = MakeInfo();
 	}
 
-	singleton->make_flags[path] |= MAKE_NORMAL_FLAG;
+	singleton->make_flags[path].flags |= MAKE_NORMAL_FLAG;
 
 	singleton->mutex->unlock();
 }
@@ -91,7 +93,7 @@ void ResourceImporterTexture::update_imports() {
 	}
 
 	Vector<String> to_reimport;
-	for (Map<StringName, int>::Element *E = make_flags.front(); E; E = E->next()) {
+	for (Map<StringName, MakeInfo>::Element *E = make_flags.front(); E; E = E->next()) {
 
 		Ref<ConfigFile> cf;
 		cf.instance();
@@ -101,22 +103,22 @@ void ResourceImporterTexture::update_imports() {
 		ERR_CONTINUE(err != OK);
 
 		bool changed = false;
-		if (E->get() & MAKE_SRGB_FLAG && int(cf->get_value("params", "flags/srgb")) == 2) {
-			cf->set_value("params", "flags/srgb", 1);
-			changed = true;
-		}
 
-		if (E->get() & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
+		if (E->get().flags & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
 			cf->set_value("params", "compress/normal_map", 1);
 			changed = true;
 		}
 
-		if (E->get() & MAKE_3D_FLAG && bool(cf->get_value("params", "detect_3d"))) {
+		if (E->get().flags & MAKE_ROUGHNESS_FLAG && int(cf->get_value("params", "roughness/mode")) == 0) {
+			cf->set_value("params", "roughness/mode", E->get().channel_for_roughness + 2);
+			cf->set_value("params", "roughness/src_normal", E->get().normal_path_for_roughness);
+			changed = true;
+		}
+
+		if (E->get().flags & MAKE_3D_FLAG && bool(cf->get_value("params", "detect_3d"))) {
 			cf->set_value("params", "detect_3d", false);
 			cf->set_value("params", "compress/mode", 2);
-			cf->set_value("params", "flags/repeat", true);
-			cf->set_value("params", "flags/filter", true);
-			cf->set_value("params", "flags/mipmaps", true);
+			cf->set_value("params", "format/mipmaps", true);
 			changed = true;
 		}
 
@@ -142,7 +144,7 @@ String ResourceImporterTexture::get_importer_name() const {
 
 String ResourceImporterTexture::get_visible_name() const {
 
-	return "Texture";
+	return "Texture2D";
 }
 void ResourceImporterTexture::get_recognized_extensions(List<String> *p_extensions) const {
 
@@ -204,14 +206,12 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_mode", PROPERTY_HINT_ENUM, "Enabled,Force RGBE"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/bptc_ldr", PROPERTY_HINT_ENUM, "Enabled,RGBA Only"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/normal_map", PROPERTY_HINT_ENUM, "Detect,Enable,Disabled"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "flags/repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirrored"), p_preset == PRESET_3D ? 1 : 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "flags/filter"), p_preset != PRESET_2D_PIXEL));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "flags/mipmaps"), p_preset == PRESET_3D));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "flags/anisotropic"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "flags/srgb", PROPERTY_HINT_ENUM, "Disable,Enable,Detect"), 2));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "format/mipmaps", PROPERTY_HINT_ENUM, "Detect,Disabled,Enabled"), p_preset == PRESET_DETECT ? 0 : (p_preset == PRESET_3D ? 2 : 1)));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "roughness/mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Red,Green,Blue,Alpha,Gray"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "roughness/src_normal", PROPERTY_HINT_FILE, "*.png,*.jpg"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/fix_alpha_border"), p_preset != PRESET_3D));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/premult_alpha"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/HDR_as_SRGB"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/invert_color"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "stream"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
@@ -219,7 +219,7 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "svg/scale", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 1.0));
 }
 
-void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags, bool p_streamable, bool p_detect_3d, bool p_detect_srgb, bool p_force_rgbe, bool p_detect_normal, bool p_force_normal, bool p_force_po2_for_compressed) {
+void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_force_rgbe, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed) {
 
 	FileAccess *f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	f->store_8('G');
@@ -229,7 +229,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 	bool resize_to_po2 = false;
 
-	if (p_compress_mode == COMPRESS_VIDEO_RAM && p_force_po2_for_compressed && (p_mipmaps || p_texture_flags & Texture::FLAG_REPEAT)) {
+	if (p_compress_mode == COMPRESS_VIDEO_RAM && p_force_po2_for_compressed && p_mipmaps) {
 		resize_to_po2 = true;
 		f->store_16(next_power_of_2(p_image->get_width()));
 		f->store_16(p_image->get_width());
@@ -241,7 +241,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 		f->store_16(p_image->get_height());
 		f->store_16(0);
 	}
-	f->store_32(p_texture_flags);
+	f->store_32(0); //texture flags deprecated
 
 	uint32_t format = 0;
 
@@ -251,8 +251,8 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 		format |= StreamTexture::FORMAT_BIT_HAS_MIPMAPS; //mipmaps bit
 	if (p_detect_3d)
 		format |= StreamTexture::FORMAT_BIT_DETECT_3D;
-	if (p_detect_srgb)
-		format |= StreamTexture::FORMAT_BIT_DETECT_SRGB;
+	if (p_detect_roughness)
+		format |= StreamTexture::FORMAT_BIT_DETECT_ROUGNESS;
 	if (p_detect_normal)
 		format |= StreamTexture::FORMAT_BIT_DETECT_NORMAL;
 
@@ -335,7 +335,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 				Image::CompressSource csource = Image::COMPRESS_SOURCE_GENERIC;
 				if (p_force_normal) {
 					csource = Image::COMPRESS_SOURCE_NORMAL;
-				} else if (p_texture_flags & VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+				} else if (p_srgb_friendly) {
 					csource = Image::COMPRESS_SOURCE_SRGB;
 				}
 
@@ -379,11 +379,8 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 
 	int compress_mode = p_options["compress/mode"];
 	float lossy = p_options["compress/lossy_quality"];
-	int repeat = p_options["flags/repeat"];
-	bool filter = p_options["flags/filter"];
-	bool mipmaps = p_options["flags/mipmaps"];
-	bool anisotropic = p_options["flags/anisotropic"];
-	int srgb = p_options["flags/srgb"];
+	int pack_channels = p_options["compress/channel_pack"];
+	bool mipmaps = p_options["format/mipmaps"];
 	bool fix_alpha_border = p_options["process/fix_alpha_border"];
 	bool premult_alpha = p_options["process/premult_alpha"];
 	bool invert_color = p_options["process/invert_color"];
@@ -394,6 +391,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	float scale = p_options["svg/scale"];
 	bool force_rgbe = p_options["compress/hdr_mode"];
 	int bptc_ldr = p_options["compress/bptc_ldr"];
+	int roughness = p_options["roughness/mode"];
 
 	Ref<Image> image;
 	image.instance();
@@ -402,20 +400,6 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		return err;
 
 	Array formats_imported;
-
-	int tex_flags = 0;
-	if (repeat > 0)
-		tex_flags |= Texture::FLAG_REPEAT;
-	if (repeat == 2)
-		tex_flags |= Texture::FLAG_MIRRORED_REPEAT;
-	if (filter)
-		tex_flags |= Texture::FLAG_FILTER;
-	if (mipmaps || compress_mode == COMPRESS_VIDEO_RAM)
-		tex_flags |= Texture::FLAG_MIPMAPS;
-	if (anisotropic)
-		tex_flags |= Texture::FLAG_ANISOTROPIC_FILTER;
-	if (srgb == 1)
-		tex_flags |= Texture::FLAG_CONVERT_TO_LINEAR;
 
 	if (size_limit > 0 && (image->get_width() > size_limit || image->get_height() > size_limit)) {
 		//limit size
@@ -459,9 +443,10 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	}
 
 	bool detect_3d = p_options["detect_3d"];
-	bool detect_srgb = srgb == 2;
+	bool detect_roughness = roughness == 0;
 	bool detect_normal = normal == 0;
 	bool force_normal = normal == 1;
+	bool srgb_friendly_pack = pack_channels == 0;
 
 	if (compress_mode == COMPRESS_VIDEO_RAM) {
 		//must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
@@ -497,7 +482,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		}
 
 		if (can_bptc || can_s3tc) {
-			_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, can_bptc ? Image::COMPRESS_BPTC : Image::COMPRESS_S3TC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal, false);
+			_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, can_bptc ? Image::COMPRESS_BPTC : Image::COMPRESS_S3TC, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, false);
 			r_platform_variants->push_back("s3tc");
 			formats_imported.push_back("s3tc");
 			ok_on_pc = true;
@@ -505,20 +490,20 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2")) {
 
-			_save_stex(image, p_save_path + ".etc2.stex", compress_mode, lossy, Image::COMPRESS_ETC2, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal, true);
+			_save_stex(image, p_save_path + ".etc2.stex", compress_mode, lossy, Image::COMPRESS_ETC2, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, true);
 			r_platform_variants->push_back("etc2");
 			formats_imported.push_back("etc2");
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc")) {
-			_save_stex(image, p_save_path + ".etc.stex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal, true);
+			_save_stex(image, p_save_path + ".etc.stex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, true);
 			r_platform_variants->push_back("etc");
 			formats_imported.push_back("etc");
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc")) {
 
-			_save_stex(image, p_save_path + ".pvrtc.stex", compress_mode, lossy, Image::COMPRESS_PVRTC4, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal, true);
+			_save_stex(image, p_save_path + ".pvrtc.stex", compress_mode, lossy, Image::COMPRESS_PVRTC4, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, true);
 			r_platform_variants->push_back("pvrtc");
 			formats_imported.push_back("pvrtc");
 		}
@@ -528,7 +513,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		}
 	} else {
 		//import normally
-		_save_stex(image, p_save_path + ".stex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal, false);
+		_save_stex(image, p_save_path + ".stex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, false);
 	}
 
 	if (r_metadata) {
@@ -609,7 +594,7 @@ ResourceImporterTexture::ResourceImporterTexture() {
 
 	singleton = this;
 	StreamTexture::request_3d_callback = _texture_reimport_3d;
-	StreamTexture::request_srgb_callback = _texture_reimport_srgb;
+	StreamTexture::request_roughness_callback = _texture_reimport_roughness;
 	StreamTexture::request_normal_callback = _texture_reimport_normal;
 	mutex = Mutex::create();
 }

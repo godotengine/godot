@@ -114,8 +114,8 @@ private:
 	struct TileData {
 
 		String name;
-		Ref<Texture> texture;
-		Ref<Texture> normal_map;
+		Ref<Texture2D> texture;
+		Ref<Texture2D> normal_map;
 		Vector2 offset;
 		Rect2i region;
 		Vector<ShapeData> shapes_data;
@@ -158,11 +158,11 @@ public:
 	void tile_set_name(int p_id, const String &p_name);
 	String tile_get_name(int p_id) const;
 
-	void tile_set_texture(int p_id, const Ref<Texture> &p_texture);
-	Ref<Texture> tile_get_texture(int p_id) const;
+	void tile_set_texture(int p_id, const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> tile_get_texture(int p_id) const;
 
-	void tile_set_normal_map(int p_id, const Ref<Texture> &p_normal_map);
-	Ref<Texture> tile_get_normal_map(int p_id) const;
+	void tile_set_normal_map(int p_id, const Ref<Texture2D> &p_normal_map);
+	Ref<Texture2D> tile_get_normal_map(int p_id) const;
 
 	void tile_set_texture_offset(int p_id, const Vector2 &p_offset);
 	Vector2 tile_get_texture_offset(int p_id) const;

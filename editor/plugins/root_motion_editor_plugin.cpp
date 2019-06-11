@@ -205,7 +205,7 @@ void EditorPropertyRootMotion::update_property() {
 
 	assign->set_tooltip(p);
 	if (p == NodePath()) {
-		assign->set_icon(Ref<Texture>());
+		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(TTR("Assign..."));
 		assign->set_flat(false);
 		return;
@@ -222,7 +222,7 @@ void EditorPropertyRootMotion::update_property() {
 	}
 
 	if (!base_node || !base_node->has_node(p)) {
-		assign->set_icon(Ref<Texture>());
+		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(p);
 		return;
 	}
@@ -242,7 +242,7 @@ void EditorPropertyRootMotion::setup(const NodePath &p_base_hint) {
 void EditorPropertyRootMotion::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Ref<Texture> t = get_icon("Clear", "EditorIcons");
+		Ref<Texture2D> t = get_icon("Clear", "EditorIcons");
 		clear->set_icon(t);
 	}
 }

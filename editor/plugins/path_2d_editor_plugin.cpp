@@ -377,7 +377,7 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		return;
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
-	Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
+	Ref<Texture2D> handle = get_icon("EditorHandle", "EditorIcons");
 	Size2 handle_size = handle->get_size();
 
 	Ref<Curve2D> curve = node->get_curve();
@@ -403,7 +403,7 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	}
 
 	if (on_edge) {
-		Ref<Texture> add_handle = get_icon("EditorHandleAdd", "EditorIcons");
+		Ref<Texture2D> add_handle = get_icon("EditorHandleAdd", "EditorIcons");
 		p_overlay->draw_texture(add_handle, edge_point - add_handle->get_size() * 0.5);
 	}
 }

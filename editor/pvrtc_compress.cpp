@@ -90,14 +90,14 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 		args.push_back("-m");
 
 	Ref<ImageTexture> t = memnew(ImageTexture);
-	t->create_from_image(Ref<Image>(p_image), 0);
+	t->create_from_image(Ref<Image>(p_image));
 	ResourceSaver::save(src_img, t);
 
 	Error err = OS::get_singleton()->execute(ttpath, args, true);
 	ERR_EXPLAIN(TTR("Could not execute PVRTC tool:") + " " + ttpath);
 	ERR_FAIL_COND(err != OK);
 
-	t = ResourceLoader::load(dst_img, "Texture");
+	t = ResourceLoader::load(dst_img, "Texture2D");
 
 	ERR_EXPLAIN(TTR("Can't load back converted image using PVRTC tool:") + " " + dst_img);
 	ERR_FAIL_COND(t.is_null());

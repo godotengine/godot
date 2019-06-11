@@ -39,8 +39,8 @@
 #include "editor/editor_plugin.h"
 #include "editor/property_editor.h"
 
-class NoiseTexture : public Texture {
-	GDCLASS(NoiseTexture, Texture);
+class NoiseTexture : public Texture2D {
+	GDCLASS(NoiseTexture, Texture2D);
 
 private:
 	Ref<Image> data;
@@ -51,7 +51,7 @@ private:
 	bool update_queued;
 	bool regen_queued;
 
-	RID texture;
+	mutable RID texture;
 	uint32_t flags;
 
 	Ref<OpenSimplexNoise> noise;
@@ -91,10 +91,7 @@ public:
 	int get_width() const;
 	int get_height() const;
 
-	virtual void set_flags(uint32_t p_flags);
-	virtual uint32_t get_flags() const;
-
-	virtual RID get_rid() const { return texture; }
+	virtual RID get_rid() const;
 	virtual bool has_alpha() const { return false; }
 
 	virtual Ref<Image> get_data() const;

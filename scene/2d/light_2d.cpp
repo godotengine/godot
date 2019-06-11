@@ -123,7 +123,7 @@ bool Light2D::is_editor_only() const {
 	return editor_only;
 }
 
-void Light2D::set_texture(const Ref<Texture> &p_texture) {
+void Light2D::set_texture(const Ref<Texture2D> &p_texture) {
 
 	texture = p_texture;
 	if (texture.is_valid())
@@ -134,7 +134,7 @@ void Light2D::set_texture(const Ref<Texture> &p_texture) {
 	update_configuration_warning();
 }
 
-Ref<Texture> Light2D::get_texture() const {
+Ref<Texture2D> Light2D::get_texture() const {
 
 	return texture;
 }
@@ -431,7 +431,7 @@ void Light2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_only"), "set_editor_only", "is_editor_only");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "texture_scale", PROPERTY_HINT_RANGE, "0.01,50,0.01"), "set_texture_scale", "get_texture_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");

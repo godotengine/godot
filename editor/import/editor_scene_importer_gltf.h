@@ -265,7 +265,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<int> root_nodes;
 
 		Vector<GLTFTexture> textures;
-		Vector<Ref<Texture> > images;
+		Vector<Ref<Texture2D> > images;
 
 		Vector<GLTFSkin> skins;
 		Vector<GLTFCamera> cameras;
@@ -287,7 +287,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	String _gen_unique_name(GLTFState &state, const String &p_name);
 
-	Ref<Texture> _get_texture(GLTFState &state, int p_texture);
+	Ref<Texture2D> _get_texture(GLTFState &state, int p_texture);
 
 	Error _parse_json(const String &p_path, GLTFState &state);
 	Error _parse_glb(const String &p_path, GLTFState &state);

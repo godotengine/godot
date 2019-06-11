@@ -47,7 +47,7 @@ class BakedLightmapData : public Resource {
 	struct User {
 
 		NodePath path;
-		Ref<Texture> lightmap;
+		Ref<Texture2D> lightmap;
 		int instance_index;
 	};
 
@@ -75,10 +75,10 @@ public:
 	void set_energy(float p_energy);
 	float get_energy() const;
 
-	void add_user(const NodePath &p_path, const Ref<Texture> &p_lightmap, int p_instance = -1);
+	void add_user(const NodePath &p_path, const Ref<Texture2D> &p_lightmap, int p_instance = -1);
 	int get_user_count() const;
 	NodePath get_user_path(int p_user) const;
-	Ref<Texture> get_user_lightmap(int p_user) const;
+	Ref<Texture2D> get_user_lightmap(int p_user) const;
 	int get_user_instance(int p_user) const;
 	void clear_users();
 

@@ -77,8 +77,8 @@ void OutputStrings::_notification(int p_what) {
 			Ref<StyleBox> tree_st = get_stylebox("bg", "Tree");
 			tree_st->draw(ci, Rect2(Point2(), size));
 			Color color = get_color("font_color", "Tree");
-			Ref<Texture> icon_error = get_icon("Error", "EditorIcons");
-			Ref<Texture> icon_warning = get_icon("Warning", "EditorIcons");
+			Ref<Texture2D> icon_error = get_icon("Error", "EditorIcons");
+			Ref<Texture2D> icon_warning = get_icon("Warning", "EditorIcons");
 
 			//int lines = (size_height-(int)margin.y) / font_height;
 			Point2 ofs = tree_st->get_offset();

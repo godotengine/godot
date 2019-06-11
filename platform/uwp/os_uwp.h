@@ -42,7 +42,7 @@
 #include "power_uwp.h"
 #include "servers/audio_server.h"
 #include "servers/camera_server.h"
-#include "servers/visual/rasterizer.h"
+#include "servers/visual/rasterizer/rasterizer.h"
 #include "servers/visual_server.h"
 
 #include <fcntl.h>
