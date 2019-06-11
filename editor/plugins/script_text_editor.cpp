@@ -547,7 +547,6 @@ void ScriptTextEditor::_validate_script() {
 			script->set_source_code(text);
 			script->update_exports();
 			_update_member_keywords();
-			//script->reload(); //will update all the variables in property editors
 		}
 
 		functions.clear();
@@ -558,30 +557,36 @@ void ScriptTextEditor::_validate_script() {
 	}
 	_update_connected_methods();
 
-	code_editor->set_warning_nb(missing_connections.size() + warnings.size());
+	int warning_nb = warnings.size();
 	warnings_panel->clear();
 
-	// add missing connections
-	Node *base = get_tree()->get_edited_scene_root();
-	if (base && missing_connections.size() > 0) {
-		warnings_panel->push_table(1);
-		for (List<Connection>::Element *E = missing_connections.front(); E; E = E->next()) {
-			Connection connection = E->get();
+	// Add missing connections.
+	if (GLOBAL_GET("debug/gdscript/warnings/enable").booleanize()) {
+		Node *base = get_tree()->get_edited_scene_root();
+		if (base && missing_connections.size() > 0) {
+			warnings_panel->push_table(1);
+			for (List<Connection>::Element *E = missing_connections.front(); E; E = E->next()) {
+				Connection connection = E->get();
 
-			String base_path = base->get_name();
-			String source_path = base == connection.source ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.source)));
-			String target_path = base == connection.target ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.target)));
+				String base_path = base->get_name();
+				String source_path = base == connection.source ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.source)));
+				String target_path = base == connection.target ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.target)));
 
-			warnings_panel->push_cell();
-			warnings_panel->push_color(warnings_panel->get_color("warning_color", "Editor"));
-			warnings_panel->add_text(vformat(TTR("Missing connected method '%s' for signal '%s' from node '%s' to node '%s'"), connection.method, connection.signal, source_path, target_path));
-			warnings_panel->pop(); // Color
-			warnings_panel->pop(); // Cell
+				warnings_panel->push_cell();
+				warnings_panel->push_color(warnings_panel->get_color("warning_color", "Editor"));
+				warnings_panel->add_text(vformat(TTR("Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."), connection.method, connection.signal, source_path, target_path));
+				warnings_panel->pop(); // Color.
+				warnings_panel->pop(); // Cell.
+			}
+			warnings_panel->pop(); // Table.
+
+			warning_nb += missing_connections.size();
 		}
-		warnings_panel->pop(); // Table
 	}
 
-	// add script warnings
+	code_editor->set_warning_nb(warning_nb);
+
+	// Add script warnings.
 	warnings_panel->push_table(3);
 	for (List<ScriptLanguage::Warning>::Element *E = warnings.front(); E; E = E->next()) {
 		ScriptLanguage::Warning w = E->get();
@@ -591,13 +596,13 @@ void ScriptTextEditor::_validate_script() {
 		warnings_panel->push_color(warnings_panel->get_color("warning_color", "Editor"));
 		warnings_panel->add_text(TTR("Line") + " " + itos(w.line));
 		warnings_panel->add_text(" (" + w.string_code + "):");
-		warnings_panel->pop(); // Color
-		warnings_panel->pop(); // Meta goto
-		warnings_panel->pop(); // Cell
+		warnings_panel->pop(); // Color.
+		warnings_panel->pop(); // Meta goto.
+		warnings_panel->pop(); // Cell.
 
 		warnings_panel->push_cell();
 		warnings_panel->add_text(w.message);
-		warnings_panel->pop(); // Cell
+		warnings_panel->pop(); // Cell.
 
 		Dictionary ignore_meta;
 		ignore_meta["line"] = w.line;
@@ -605,11 +610,10 @@ void ScriptTextEditor::_validate_script() {
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(ignore_meta);
 		warnings_panel->add_text(TTR("(ignore)"));
-		warnings_panel->pop(); // Meta ignore
-		warnings_panel->pop(); // Cell
-		//warnings_panel->add_newline();
+		warnings_panel->pop(); // Meta ignore.
+		warnings_panel->pop(); // Cell.
 	}
-	warnings_panel->pop(); // Table
+	warnings_panel->pop(); // Table.
 
 	line--;
 	bool highlight_safe = EDITOR_DEF("text_editor/highlighting/highlight_type_safe_lines", true);
@@ -880,10 +884,25 @@ void ScriptTextEditor::_update_connected_methods() {
 
 			int line = script->get_language()->find_function(connection.method, text_edit->get_text());
 			if (line < 0) {
-				missing_connections.push_back(connection);
-				continue;
+				// There is a chance that the method is inherited from another script.
+				bool found_inherited_function = false;
+				Ref<Script> inherited_script = script->get_base_script();
+				while (!inherited_script.is_null()) {
+					line = inherited_script->get_language()->find_function(connection.method, inherited_script->get_source_code());
+					if (line != -1) {
+						found_inherited_function = true;
+						break;
+					}
+
+					inherited_script = inherited_script->get_base_script();
+				}
+
+				if (!found_inherited_function) {
+					missing_connections.push_back(connection);
+				}
+			} else {
+				text_edit->set_line_info_icon(line - 1, get_parent_control()->get_icon("Slot", "EditorIcons"), connection.method);
 			}
-			text_edit->set_line_info_icon(line - 1, get_parent_control()->get_icon("Slot", "EditorIcons"), connection.method);
 		}
 	}
 }
