@@ -68,6 +68,8 @@ public:
 
 	enum Flags {
 		FLAG_ALIGN_Y_TO_VELOCITY,
+		FLAG_ROTATE_Y, // Unused, but exposed for consistency with 3D.
+		FLAG_DISABLE_Z, // Unused, but exposed for consistency with 3D.
 		FLAG_MAX
 	};
 
