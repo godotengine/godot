@@ -31,6 +31,7 @@
 #include "gdscript_compiler.h"
 
 #include "gdscript.h"
+#include <stdexcept>
 
 bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringName &p_name) {
 
@@ -665,7 +666,22 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				} break;
 				case GDScriptParser::OperatorNode::OP_YIELD: {
 
-					ERR_FAIL_COND_V(on->arguments.size() && on->arguments.size() != 2, -1);
+					//Accept yield(), yield(value), or yield(object, signal) [0, 1, or 2 arguments]
+					ERR_FAIL_COND_V(on->arguments.size() < 0 || on->arguments.size() > 2, -1);
+
+					GDScriptFunction::Opcode opcode;
+					switch (on->arguments.size()) {
+						case 1:
+							opcode = GDScriptFunction::OPCODE_YIELD_VALUE;
+							break;
+
+						case 2:
+							opcode = GDScriptFunction::OPCODE_YIELD_SIGNAL;
+							break;
+
+						default: //i.e case 0:
+							opcode = GDScriptFunction::OPCODE_YIELD;
+					}
 
 					Vector<int> arguments;
 					int slevel = p_stack_level;
@@ -681,12 +697,13 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						arguments.push_back(ret);
 					}
 
-					//push call bytecode
-					codegen.opcodes.push_back(arguments.size() == 0 ? GDScriptFunction::OPCODE_YIELD : GDScriptFunction::OPCODE_YIELD_SIGNAL); // basic type constructor
-					for (int i = 0; i < arguments.size(); i++)
+					//push yield bytecode
+					codegen.opcodes.push_back(opcode);
+					const int nargs = arguments.size();
+					for (int i = 0; i < nargs; i++)
 						codegen.opcodes.push_back(arguments[i]); //arguments
 					codegen.opcodes.push_back(GDScriptFunction::OPCODE_YIELD_RESUME);
-					//next will be where to place the result :)
+					//destination address written at end of switch statement
 
 				} break;
 

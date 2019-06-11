@@ -550,43 +550,50 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				if (!object)
 					return NULL;
 				yield->arguments.push_back(object);
-
-				if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
-					_set_error("Expected ',' after first argument of 'yield'");
-					return NULL;
-				}
-
-				tokenizer->advance();
-
-				if (tokenizer->get_token() == GDScriptTokenizer::TK_CURSOR) {
-
-					completion_cursor = StringName();
-					completion_node = object;
-					completion_type = COMPLETION_YIELD;
-					completion_class = current_class;
-					completion_function = current_function;
-					completion_line = tokenizer->get_token_line();
-					completion_argument = 0;
-					completion_block = current_block;
-					completion_found = true;
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+					//If the parenthesis closes here the expression is yield(value)
+					parenthesis--;
+					expr = yield;
 					tokenizer->advance();
+				} else {
+
+					if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+						_set_error("Expected ',' after first argument of 'yield'");
+						return NULL;
+					}
+
+					tokenizer->advance();
+
+					if (tokenizer->get_token() == GDScriptTokenizer::TK_CURSOR) {
+
+						completion_cursor = StringName();
+						completion_node = object;
+						completion_type = COMPLETION_YIELD;
+						completion_class = current_class;
+						completion_function = current_function;
+						completion_line = tokenizer->get_token_line();
+						completion_argument = 0;
+						completion_block = current_block;
+						completion_found = true;
+						tokenizer->advance();
+					}
+
+					Node *signal = _parse_and_reduce_expression(p_parent, p_static);
+					if (!signal)
+						return NULL;
+					yield->arguments.push_back(signal);
+
+					if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+						_set_error("Expected ')' after second argument of 'yield'");
+						return NULL;
+					}
+
+					parenthesis--;
+
+					tokenizer->advance();
+
+					expr = yield;
 				}
-
-				Node *signal = _parse_and_reduce_expression(p_parent, p_static);
-				if (!signal)
-					return NULL;
-				yield->arguments.push_back(signal);
-
-				if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
-					_set_error("Expected ')' after second argument of 'yield'");
-					return NULL;
-				}
-
-				parenthesis--;
-
-				tokenizer->advance();
-
-				expr = yield;
 			}
 
 		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_SELF) {
@@ -6129,6 +6136,14 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 					node_type = _reduce_function_call_type(op);
 				} break;
 				case OperatorNode::OP_YIELD: {
+#ifdef DEBUG_ENABLED
+					if (op->arguments.size() == 1) {
+						//There's really nothing to check here
+						//But this is following the pattern of reducing subexpressions
+						//in the DEBUG_ENABLED context as is done for Array etc.
+						_reduce_node_type(op->arguments[0]);
+					}
+#endif
 					if (op->arguments.size() == 2) {
 						DataType base_type = _reduce_node_type(op->arguments[0]);
 						DataType signal_type = _reduce_node_type(op->arguments[1]);

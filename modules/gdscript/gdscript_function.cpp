@@ -213,6 +213,7 @@ static String _get_var_type(const Variant *p_type) {
 		&&OPCODE_CALL_SELF,                   \
 		&&OPCODE_CALL_SELF_BASE,              \
 		&&OPCODE_YIELD,                       \
+		&&OPCODE_YIELD_VALUE,                 \
 		&&OPCODE_YIELD_SIGNAL,                \
 		&&OPCODE_YIELD_RESUME,                \
 		&&OPCODE_JUMP,                        \
@@ -254,21 +255,24 @@ static String _get_var_type(const Variant *p_type) {
 Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state) {
 
 	OPCODES_TABLE;
-	
+
 	//Will be set to true if this invocation yields
 	bool yielded = false;
-	
+
 	//Follow the protocol demanded by resume() any way the function exits
 	//If p_state is not nullptr (indicating that the function was resumed)
 	//we must ensure that p_state->result is set appropriately on exit
-	class CallStateScopeGuard{
+	class CallStateScopeGuard {
 	private:
-		CallState* _state;
-		const bool& _yielded;
+		CallState *_state;
+		const bool &_yielded;
+
 	public:
-		CallStateScopeGuard(CallState* s, const bool& y) : _state(s), _yielded(y){}
-		~CallStateScopeGuard(){
-			if(_state && !_yielded){
+		CallStateScopeGuard(CallState *s, const bool &y) :
+				_state(s),
+				_yielded(y) {}
+		~CallStateScopeGuard() {
+			if (_state && !_yielded) {
 				//If function hasn't yielded it's returning normally
 				//therefore it is finished and cannot be resumed again
 				//(Yield opcode handles setting p_state->result when function yields)
@@ -276,7 +280,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 		}
 	} set_state_result_completed(p_state, yielded);
-	
+
 	if (!_code_ptr) {
 
 		return Variant();
@@ -455,7 +459,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #else
 	OPCODE_WHILE(true) {
 #endif
-
 		OPCODE_SWITCH(_code_ptr[ip]) {
 
 			OPCODE(OPCODE_OPERATOR) {
@@ -1259,36 +1262,68 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_YIELD)
+			OPCODE(OPCODE_YIELD_VALUE)
 			OPCODE(OPCODE_YIELD_SIGNAL) {
+				//Set the appropriate offset to the next instruction
+				//and the next phase of the GDSCriptFunctionState
+				//depending on which of the yield variants we have
 
-				int ipofs = 1;
-				if (_code_ptr[ip] == OPCODE_YIELD_SIGNAL) {
-					CHECK_SPACE(4);
-					ipofs += 2;
-				} else {
-					CHECK_SPACE(2);
+				//Yielding without a value will put function in the READY phase
+				//Yielding with a value transitions to READY or VALUE_PENDING phase
+				//Yielding to a signal will put function in the BLOCKED phase
+				int ipofs = 0;
+				GDScriptFunctionState::Phase new_phase = GDScriptFunctionState::Phase::UNINITIALIZED;
+				switch (_code_ptr[ip]) {
+					case OPCODE_YIELD:
+						ipofs = 1;
+						CHECK_SPACE(2);
+						new_phase = GDScriptFunctionState::Phase::READY;
+						break;
+
+					case OPCODE_YIELD_VALUE:
+						ipofs = 2;
+						CHECK_SPACE(3);
+						//We have to return the GDScriptFunctionState if this is the first yield
+						//(in which case p_state == nullptr) so have to transition to
+						//VALUE_PENDING in order to yield the value next time the function resume()s
+						//If p_state != nullptr, we can return the value now and transition to READY
+						new_phase = p_state ? GDScriptFunctionState::Phase::READY :
+											  GDScriptFunctionState::Phase::VALUE_PENDING;
+						break;
+
+					case OPCODE_YIELD_SIGNAL:
+						ipofs = 3;
+						CHECK_SPACE(4);
+						new_phase = GDScriptFunctionState::Phase::BLOCKED;
+						break;
 				}
 
+#ifdef DEBUG_ENABLED
+				if (ipofs == 0) {
+					err_text = "Internal error: invalid GDScript opcode";
+					OPCODE_BREAK;
+				}
+#endif
 				//The function is going to yield
 				yielded = true;
-				
+
 				//The new phase depends on the kind of yield being done
 				//Yielding normally will put function in the READY phase
 				//Yielding to a signal will put function in the BLOCKED phase
-				const GDScriptFunctionState::Phase new_phase = 
+				/*const GDScriptFunctionState::Phase new_phase = 
 					_code_ptr[ip] == OPCODE_YIELD_SIGNAL ? 
 							GDScriptFunctionState::Phase::BLOCKED : 
-							GDScriptFunctionState::Phase::READY;
-				
+							GDScriptFunctionState::Phase::READY;*/
+
 				Ref<GDScriptFunctionState> gdfs;
-				if(!p_state){
+				if (!p_state) {
 					//create a new GDSCriptFunctionState if we didn't get a CallState
 					gdfs = Ref<GDScriptFunctionState>(memnew(GDScriptFunctionState));
-					
-					//These members depend on stable properties of *this function 
+
+					//These members depend on stable properties of *this function
 					//or are initialized from p_state when it is provided as a parameter
 					//and, furthermore, are not changed during execution of call()
-					//Therefore we set them only on creation of the GDScriptFunctionState	
+					//Therefore we set them only on creation of the GDScriptFunctionState
 					gdfs->state.owner = gdfs.ptr();
 					gdfs->state.stack_size = _stack_size;
 					gdfs->state.self = self;
@@ -1299,22 +1334,22 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					gdfs->state.instance_id = (p_instance && p_instance->get_owner()) ? p_instance->get_owner()->get_instance_id() : 0;
 					gdfs->state.instance = p_instance;
 					gdfs->function = this;
-					
+
 					//copy variant stack
 					//When p_state is provided stack is initialized to point to p_state->stack
 					//Therefore we only have to copy it when we first create the GDScriptFunctionState
 					for (int i = 0; i < _stack_size; i++) {
 						memnew_placement(&gdfs->state.stack.write[sizeof(Variant) * i], Variant(stack[i]));
 					}
-					
-					//set phase directly since GDScriptFunction::call() 
-					//hasn't been called from resume() [p_state == nullptr]
-					gdfs->set_phase(new_phase); 
 
+					//set phase directly since GDScriptFunction::call()
+					//hasn't been called from resume() [p_state == nullptr]
+					gdfs->set_phase(new_phase);
+
+					//set retvalue to return the new function state
 					retvalue = gdfs;
-				}
-				else{
-					//Was resumed
+				} else {
+					//p_state != nullptr, function was resumed
 #ifdef DEBUG_ENABLED
 					if (!p_state->owner) {
 						err_text = "Internal error: GDScriptFunctionState is null.";
@@ -1322,23 +1357,34 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 #endif
 					gdfs = Ref<GDScriptFunctionState>(p_state->owner);
-					
+
 					//Since p_state != nullptr, call() was invoked from GDScriptFunctionState::resume()
 					//The phase is not set directly in this case but in p_state->result
-					//GDScriptFunctionState::resume() will examine p_state->result and set the 
+					//GDScriptFunctionState::resume() will examine p_state->result and set the
 					//GDScriptFunctionState's phase appropriately after call() returns
 					p_state->result = new_phase;
 
-					//Note that retvalue is not set to gdfs in this 'else' branch since the gdfs 
-					//is not automatically returned when *this function yields after resuming
+					//Note that retvalue is not set to gdfs in this 'else' branch since the gdfs
+					//is not returned when *this function yields after resuming previously
 				}
 
-				//These properties potentially change on resumption so they are set
+				//These properties usually change on resumption so they are set
 				//unconditionally whether function is resuming or running initially
 				gdfs->state.ip = ip + ipofs;
 				gdfs->state.line = line;
-				
-				if (_code_ptr[ip] == OPCODE_YIELD_SIGNAL) {
+
+				if (_code_ptr[ip] == OPCODE_YIELD_VALUE) {
+					//get yielded value
+					GET_VARIANT_PTR(yielded_value, 1);
+
+					if (new_phase == GDScriptFunctionState::Phase::VALUE_PENDING) {
+						//We have to stash the value for the next resume()
+						gdfs->pending_value = *yielded_value;
+					} else {
+						//return it
+						retvalue = *yielded_value;
+					}
+				} else if (_code_ptr[ip] == OPCODE_YIELD_SIGNAL) {
 					//do the oneshot connect
 					GET_VARIANT_PTR(argobj, 1);
 					GET_VARIANT_PTR(argname, 2);
@@ -1374,29 +1420,39 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 
-					if(!obj->is_connected(signal, gdfs.ptr(), "_signal_callback")){
+					if (static_cast<Object *>(gdfs.ptr()) == obj) {
+						err_text = "A coroutine cannot yield while waiting on a signal from itself.";
+						OPCODE_BREAK;
+					}
+
+					//Actually do the connection
+					if (!obj->is_connected(signal, gdfs.ptr(), "_signal_callback")) {
 						Error err = obj->connect(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
 						if (err != OK) {
 							err_text = "Error connecting to signal: " + signal + " during yield().";
 							OPCODE_BREAK;
 						}
-					}
-					else{
-						obj->call_deferred("connect", signal, gdfs.ptr(), "_signal_callback", 
-							varray(gdfs), Object::CONNECT_ONESHOT);
+					} else {
+						obj->call_deferred("connect", signal, gdfs.ptr(), "_signal_callback",
+								varray(gdfs), Object::CONNECT_ONESHOT);
 					}
 #else
+					//Do this check even outside DEBUG context
+					if (static_cast<Object *>(gdfs.ptr()) == obj) {
+						err_text = "A coroutine cannot yield while waiting on a signal from itself.";
+						OPCODE_BREAK;
+					}
+
 					//Even though the connections are ONESHOT, the coroutine function is resumed synchronously within
 					//the signal handler and disconnection of ONESHOTs only occurs after the signal is handled.
 					//Therefore situations can arise wherein we attempt to reconnect to the same object and signal: an error.
 					//If the connection already exists we'll defer adding the new connection to allow time for
 					//the disconnection of the existing signal to occur.
-					if(!obj->is_connected(signal, gdfs.ptr(), "_signal_callback")){
+					if (!obj->is_connected(signal, gdfs.ptr(), "_signal_callback")) {
 						obj->connect(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
-					}
-					else{
-						obj->call_deferred("connect", signal, gdfs.ptr(), "_signal_callback", 
-							varray(gdfs), Object::CONNECT_ONESHOT);
+					} else {
+						obj->call_deferred("connect", signal, gdfs.ptr(), "_signal_callback",
+								varray(gdfs), Object::CONNECT_ONESHOT);
 					}
 #endif
 				}
@@ -1416,9 +1472,33 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 #endif
-				GET_VARIANT_PTR(result, 1);
-				*result = p_state->result;
-				ip += 2;
+				GDScriptFunctionState *gdfs = p_state->owner;
+#ifdef DEBUG_ENABLED
+				if (!p_state->owner) {
+					err_text = "Internal error: GDScriptFunctionState is null.";
+					OPCODE_BREAK;
+				}
+#endif
+				if (gdfs->is_value_pending()) {
+					//If there is a pending value we have to dynamically yield it here
+					//Any arguments passed to resume will be ignored.
+					//ip will not be updated so that the next resume() returns here
+					yielded = true;
+					retvalue = gdfs->pending_value;
+					gdfs->pending_value = Variant();
+					//Phase must not be set directly in gdfs when call() is called from resume()
+					//Instead, set the state member's 'result' to the new phase
+					gdfs->state.result = GDScriptFunctionState::Phase::READY;
+#ifdef DEBUG_ENABLED
+					exit_ok = true;
+#endif
+					OPCODE_BREAK;
+				} else {
+					//No pending value so put resume()'s argument in the right place and continue
+					GET_VARIANT_PTR(result, 1);
+					*result = p_state->result;
+					ip += 2;
+				}
 			}
 			DISPATCH_OPCODE;
 
@@ -1895,29 +1975,38 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 		return Variant();
 	}
 
-	//set phase and call resume()
+	//This is a pedantic assertion, but it should always be true
+#ifdef DEBUG_ENABLED
+	if (!is_blocked()) {
+		ERR_EXPLAIN("Assertion faied: coroutine should be in a blocked state now");
+		ERR_FAIL_V(Variant());
+	}
+#endif
+
+	//set phase to a resumable phase and call resume()
+	//TRYING_UNBLOCK tells resume() that the function phase was BLOCKED
 	set_phase(Phase::TRYING_UNBLOCK);
 	return resume(arg);
 }
 
 Variant GDScriptFunctionState::resume(const Variant &p_arg) {
-	
+
 	//Prevent resumption in phases where it isn't possible
-	if(!is_resumable()){
+	if (!is_resumable()) {
 #ifdef DEBUG_ENABLED
-		if(is_uninitialized()){
+		if (is_uninitialized()) {
 			ERR_EXPLAIN("Attempt to resume() uninitialized coroutine failed");
 			ERR_FAIL_V(Variant());
 		}
-		if(is_completed()){
+		if (is_completed()) {
 			ERR_EXPLAIN("Attempt to resume() completed coroutine failed");
 			ERR_FAIL_V(Variant());
 		}
-		if(is_blocked()){
+		if (is_blocked()) {
 			ERR_EXPLAIN("Attempt to resume() blocked coroutine failed");
 			ERR_FAIL_V(Variant());
 		}
-		if(is_running()){
+		if (is_running()) {
 			ERR_EXPLAIN("Attempt to resume() the currently running coroutine failed");
 			ERR_FAIL_V(Variant());
 		}
@@ -1925,7 +2014,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 		return Variant();
 #endif
 	}
-	
+
 	ERR_FAIL_COND_V(!function, Variant());
 	if (state.instance_id && !ObjectDB::get_instance(state.instance_id)) {
 #ifdef DEBUG_ENABLED
@@ -1935,46 +2024,48 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 		return Variant();
 #endif
 	}
-	
-	//We won't call the function if it is undead
-	//Just emit the "completed" signal and return any stashed value
-	//if(is_undead()){
-		//emit("completed", deffered)
-		//return defferred
-	//}
-	
+
 	//Prevents some lifetime issues that can result if
 	//function->call() clears the only reference to a function state
-	class StatePinner{
+	class StatePinner {
 		Ref<GDScriptFunctionState> me;
+
 	public:
-		StatePinner(GDScriptFunctionState* m) : me(m){}
+		StatePinner(GDScriptFunctionState *m) :
+				me(m) {}
 	} pin(this);
 
-	//If READY, transition to the RUNNING phase before doing the call()
-	//This is so that function->call() cannot reenter resume() 
-	//for the same GDScriptFunctionState instance that is now resuming
-	phase = (phase == Phase::READY ? Phase::RUNNING : phase);
-	
+	const int was_blocked = is_trying_unblock();
+
+	//At this point the function is known to be in a resumable phase
+	//(one of READY, TRYING_UNBLOCK, or VALUE_PENDING)
+	//We'll set phase to RUNNING when current phase isn't VALUE_PENDING
+	//Rationale: after resumption, arbritrary code is executed which could
+	//try to recursively reenter resume() for the same GDScriptFunctionState
+	//Setting to RUNNING (not resumable) will cause that attempt to fail
+	//VALUE_PENDING is tested for by the YIELD_RESUME opcode so we can't change it
+	//Furthermore it'll return immediately with a value so reentrancy isn't possible
+	if (!is_value_pending()) set_phase(Phase::RUNNING);
+
 	//Before call(), state is the means by which  any argument to
 	//resume() is passed to become the result of the yield expression
 	state.result = p_arg;
 	Variant::CallError err;
 	Variant ret = function->call(NULL, NULL, 0, err, &state);
-	
+
 	//Now state.result is equal to the integer value of a Phase enumeration
-	//The call() will only transition the phase to READY, BLOCKED, or COMPLETED
-	const Phase previous_phase = set_phase(state.result);
-	
+	//The call() will only transition to READY, BLOCKED, COMPLETED, or VALUE_PENDING
+	set_phase(state.result);
+
 #ifdef DEBUG_ENABLED
-	if(phase != Phase::BLOCKED && phase != Phase::COMPLETED && phase != Phase::READY){
-		ERR_EXPLAIN("Internal error: coroutine transitioned to invalid state");
+	if (phase != Phase::BLOCKED && phase != Phase::COMPLETED && phase != Phase::READY && phase != Phase::VALUE_PENDING) {
+		ERR_EXPLAIN("Internal error: coroutine transitioned to unexpected phase");
 		ERR_FAIL_V(Variant());
 	}
 #endif
 
-	if(has_just_unblocked(previous_phase)){
-		//TODO: emit 'unblocked' signal
+	if (was_blocked && (is_resumable() || is_completed())) {
+		emit_signal("unblocked", ret);
 	}
 	if (is_completed()) {
 		emit_signal("completed", ret);
@@ -1986,19 +2077,23 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 void GDScriptFunctionState::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("resume", "arg"), &GDScriptFunctionState::resume, DEFVAL(Variant()));
+
+	//Not all phase querying functions are exported since some phases are implementation details
 	ClassDB::bind_method(D_METHOD("is_resumable"), &GDScriptFunctionState::is_resumable);
 	ClassDB::bind_method(D_METHOD("is_running"), &GDScriptFunctionState::is_running);
 	ClassDB::bind_method(D_METHOD("is_blocked"), &GDScriptFunctionState::is_blocked);
 	ClassDB::bind_method(D_METHOD("is_completed"), &GDScriptFunctionState::is_completed);
-	ClassDB::bind_method(D_METHOD("is_static"), &GDScriptFunctionState::is_static);
-	ClassDB::bind_method(D_METHOD("has_valid_self"), &GDScriptFunctionState::has_valid_self);
+
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &GDScriptFunctionState::_signal_callback, MethodInfo("_signal_callback"));
 
 	ADD_SIGNAL(MethodInfo("completed", PropertyInfo(Variant::NIL, "result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
+	ADD_SIGNAL(MethodInfo("unblocked", PropertyInfo(Variant::NIL, "result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 }
 
 GDScriptFunctionState::GDScriptFunctionState() {
 
+	//Objects of this class are constructed by and properly intitialized
+	//by GDScriptFunction::call() whenever a function yields for the first time
 	function = NULL;
 	phase = Phase::UNINITIALIZED;
 	state.owner = nullptr;
@@ -2006,11 +2101,9 @@ GDScriptFunctionState::GDScriptFunctionState() {
 
 GDScriptFunctionState::~GDScriptFunctionState() {
 
-	if (function != NULL) {
-		//never called, deinitialize stack
-		for (int i = 0; i < state.stack_size; i++) {
-			Variant *v = (Variant *)&state.stack[sizeof(Variant) * i];
-			v->~Variant();
-		}
+	//deinitialize stack
+	for (int i = 0; i < state.stack_size; i++) {
+		Variant *v = (Variant *)&state.stack[sizeof(Variant) * i];
+		v->~Variant();
 	}
 }

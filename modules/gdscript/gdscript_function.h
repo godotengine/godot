@@ -177,6 +177,7 @@ public:
 		OPCODE_CALL_SELF,
 		OPCODE_CALL_SELF_BASE,
 		OPCODE_YIELD,
+		OPCODE_YIELD_VALUE,
 		OPCODE_YIELD_SIGNAL,
 		OPCODE_YIELD_RESUME,
 		OPCODE_JUMP,
@@ -287,8 +288,8 @@ private:
 
 public:
 	struct CallState {
-		
-		GDScriptFunctionState* owner;  
+
+		GDScriptFunctionState *owner;
 		ObjectID instance_id;
 		GDScriptInstance *instance;
 		Vector<uint8_t> stack;
@@ -300,7 +301,6 @@ public:
 		int line;
 		int defarg;
 		Variant result;
-
 	};
 
 	_FORCE_INLINE_ bool is_static() const { return _static; }
@@ -349,37 +349,29 @@ class GDScriptFunctionState : public Reference {
 	friend class GDScriptFunction;
 	typedef unsigned char PhaseUnderlyingType;
 	enum Phase : PhaseUnderlyingType {
-		UNINITIALIZED = 0, 	//Just default constructed and unusable
-		READY, 				//Primary resumable state
-		RUNNING, 			//Is the current coroutine/resumed function	
-		BLOCKED, 			//Is awaiting a signal
-		TRYING_UNBLOCK,		//Transient resumable state set by _signal_handler	
-		COMPLETED,			//Will never become resumable again
-		UNDEAD				//Basically COMPLETED but allowed one more resume()
+		UNINITIALIZED = 0, //Just default constructed and unusable
+		READY, //Primary resumable state
+		RUNNING, //Is the current coroutine/resumed function
+		BLOCKED, //Is awaiting a signal
+		TRYING_UNBLOCK, //Transient resumable state set by _signal_handler
+		COMPLETED, //Will never become resumable again
+		VALUE_PENDING //Resumable state; a deferred yielded value is held
 	};
 	Phase phase;
 	GDScriptFunction *function;
 	GDScriptFunction::CallState state;
+	Variant pending_value;
 	Variant _signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	
-	//returns previous phase
-	Phase set_phase(Phase new_phase){
-		const Phase previous_phase = phase;
+
+	void set_phase(Phase new_phase) {
 		phase = new_phase;
-		return previous_phase;
 	}
-	
-	Phase set_phase(Variant phase_variant){
-		ERR_FAIL_COND_V(phase_variant.get_type() != Variant::Type::INT, 
-			Phase::UNINITIALIZED);
-		const Phase new_phase = 
-			static_cast<Phase>(static_cast<PhaseUnderlyingType>(phase_variant));
-		return set_phase(new_phase);
-	}
-	
-	bool has_just_unblocked(Phase previous_phase) const{
-		return (previous_phase == Phase::TRYING_UNBLOCK) &&
-			(is_ready() || is_completed());
+
+	void set_phase(Variant phase_variant) {
+		ERR_FAIL_COND(phase_variant.get_type() != Variant::Type::INT);
+		const Phase new_phase =
+				static_cast<Phase>(static_cast<PhaseUnderlyingType>(phase_variant));
+		set_phase(new_phase);
 	}
 
 protected:
@@ -387,29 +379,16 @@ protected:
 
 public:
 	//Functions for querying phase
-	bool is_uninitialized() const {return phase == Phase::UNINITIALIZED;} 
-	bool is_ready() const {return phase == Phase::READY;}
-	bool is_running() const {return phase == Phase::RUNNING;}
-	bool is_blocked() const {return phase == Phase::BLOCKED;}
-	bool is_trying_unblock() const {return phase == Phase::TRYING_UNBLOCK;}
-	bool is_completed() const{return phase == Phase::COMPLETED;}
-	bool is_undead() const {return phase == Phase::UNDEAD;}
-	bool is_resumable() const {return is_ready() || is_undead() || is_trying_unblock();}
-	
-	//Returns true if *this was created from a static function and has no 'self'
-	//Precondition: phase != Phase::UNINITIALIZED;
-	//(If the object is default constructed and has not yet  been initialized by
-	//GDScriptFunction::call()'s YIELD op then the return value is meaningless)
-	bool is_static() const{
-		return !state.instance_id;
-	}
-	
-	//Returns true if *this is static or its associated object (self) is valid
-	//Precondition: phase != Phase::UNINITIALIZED;
-	bool has_valid_self() const{
-		return is_static() || ObjectDB::get_instance(state.instance_id);
-	}
-	
+	bool is_uninitialized() const { return phase == Phase::UNINITIALIZED; }
+	bool is_ready() const { return phase == Phase::READY; }
+	bool is_running() const { return phase == Phase::RUNNING; }
+	bool is_blocked() const { return phase == Phase::BLOCKED; }
+	bool is_trying_unblock() const { return phase == Phase::TRYING_UNBLOCK; }
+	bool is_completed() const { return phase == Phase::COMPLETED; }
+	bool is_value_pending() const { return phase == Phase::VALUE_PENDING; }
+	bool is_resumable() const { return is_ready() ||
+									   is_value_pending() || is_trying_unblock(); }
+
 	Variant resume(const Variant &p_arg = Variant());
 	GDScriptFunctionState();
 	~GDScriptFunctionState();
