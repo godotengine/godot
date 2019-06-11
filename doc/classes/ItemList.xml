@@ -46,7 +46,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Ensure selection is visible, adjusting the scroll position as necessary.
+				Ensure current selection is visible, adjusting the scroll position as necessary.
 			</description>
 		</method>
 		<method name="get_item_at_position" qualifiers="const">
@@ -64,7 +64,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns count of items currently in the item list.
+				Returns the number of items currently in the list.
 			</description>
 		</method>
 		<method name="get_item_custom_bg_color" qualifiers="const">
@@ -73,6 +73,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the [Color] set by [member set_custom_bg_color]. Default value is [code]Color(0, 0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_item_custom_fg_color" qualifiers="const">
@@ -81,6 +82,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the [Color] set by [member set_custom_fg_color]. Default value is [code]Color(0, 0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
@@ -89,6 +91,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the icon associated with the specified index. Default value is [code]null[/code]
 			</description>
 		</method>
 		<method name="get_item_icon_modulate" qualifiers="const">
@@ -114,6 +117,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the metadata value of the specified index set by [member set_item_metadata].
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
@@ -122,7 +126,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the text for specified item index.
+				Returns the text associated with the specified index.
 			</description>
 		</method>
 		<method name="get_item_tooltip" qualifiers="const">
@@ -131,21 +135,21 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns tooltip hint for specified item index.
+				Returns the tooltip hint associated with the specified index.
 			</description>
 		</method>
 		<method name="get_selected_items">
 			<return type="PoolIntArray">
 			</return>
 			<description>
-				Returns the list of selected indexes.
+				Returns an array with the indexes of the selected items.
 			</description>
 		</method>
 		<method name="get_v_scroll">
 			<return type="VScrollBar">
 			</return>
 			<description>
-				Returns the current vertical scroll bar for the List.
+				Returns the [Object] ID associated with the list.
 			</description>
 		</method>
 		<method name="is_anything_selected">
@@ -161,7 +165,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns whether or not the item at the specified index is disabled
+				Returns whether or not the item at the specified index is disabled.
 			</description>
 		</method>
 		<method name="is_item_icon_transposed" qualifiers="const">
@@ -207,7 +211,7 @@
 			<argument index="1" name="to_idx" type="int">
 			</argument>
 			<description>
-				Moves item at index [code]from_idx[/code] to [code]to_idx[/code].
+				Moves item from index [code]from_idx[/code] to [code]to_idx[/code].
 			</description>
 		</method>
 		<method name="remove_item">
@@ -216,7 +220,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Remove item at specified index from the list.
+				Removes the item specified by [code]idx[/code] index from the list.
 			</description>
 		</method>
 		<method name="select">
@@ -239,6 +243,11 @@
 			<argument index="1" name="custom_bg_color" type="Color">
 			</argument>
 			<description>
+				Sets the background color of the item specified by [code]idx[/code] index to the specified [Color].
+				[codeblock]
+				var some_string = "Some text"
+				some_string.set_item_custom_bg_color(0,Color(1, 0, 0, 1) # This will set the background color of the first item of the control to red.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_item_custom_fg_color">
@@ -249,6 +258,11 @@
 			<argument index="1" name="custom_fg_color" type="Color">
 			</argument>
 			<description>
+				Sets the foreground color of the item specified by [code]idx[/code] index to the specified [Color].
+				[codeblock]
+				var some_string = "Some text"
+				some_string.set_item_custom_fg_color(0,Color(1, 0, 0, 1) # This will set the foreground color of the first item of the control to red.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_item_disabled">
@@ -259,8 +273,8 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				Disable (or enable) item at specified index.
-				Disabled items are not be selectable and do not fire activation (Enter or double-click) signals.
+				Disable (or enable) item at the specified index.
+				Disabled items are not be selectable and do not trigger activation (Enter or double-click) signals.
 			</description>
 		</method>
 		<method name="set_item_icon">
@@ -271,7 +285,7 @@
 			<argument index="1" name="icon" type="Texture">
 			</argument>
 			<description>
-				Set (or replace) icon of the item at the specified index.
+				Set (or replace) the icon's [Texture] associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_icon_modulate">
@@ -282,7 +296,7 @@
 			<argument index="1" name="modulate" type="Color">
 			</argument>
 			<description>
-				Sets a modulating [Color] for item's icon at the specified index.
+				Sets a modulating [Color] of the item associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_icon_region">
@@ -313,7 +327,7 @@
 			<argument index="1" name="metadata" type="Variant">
 			</argument>
 			<description>
-				Sets a value (of any type) to be stored with the item at the specified index.
+				Sets a value (of any type) to be stored with the item associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_selectable">
@@ -324,7 +338,7 @@
 			<argument index="1" name="selectable" type="bool">
 			</argument>
 			<description>
-				Allow or disallow selection of the item at the specified index.
+				Allow or disallow selection of the item associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_text">
@@ -335,7 +349,7 @@
 			<argument index="1" name="text" type="String">
 			</argument>
 			<description>
-				Sets text of item at specified index.
+				Sets text of the item associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_tooltip">
@@ -346,7 +360,7 @@
 			<argument index="1" name="tooltip" type="String">
 			</argument>
 			<description>
-				Sets tooltip hint for item at specified index.
+				Sets tooltip hint for the item associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_tooltip_enabled">
@@ -357,7 +371,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				Sets whether the tooltip is enabled for specified item index.
+				Sets whether the tooltip hint is enabled for specified item index.
 			</description>
 		</method>
 		<method name="sort_items_by_text">
@@ -373,7 +387,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Ensure item at specified index is not selected.
+				Ensure the item associated with the specified index is not selected.
 			</description>
 		</method>
 		<method name="unselect_all">
@@ -386,29 +400,38 @@
 	</methods>
 	<members>
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect">
-			If [code]true[/code], the currently selected item may be selected again.
+			If [code]true[/code], the currently selected item can be selected again.
 		</member>
 		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select">
-			If [code]true[/code], a right mouse button click can select items.
+			If [code]true[/code], right mouse button click can select items.
 		</member>
 		<member name="auto_height" type="bool" setter="set_auto_height" getter="has_auto_height">
+			If [code]true[/code], the control will automatically resize the height to fit its content.
 		</member>
 		<member name="fixed_column_width" type="int" setter="set_fixed_column_width" getter="get_fixed_column_width">
+			Sets the default column width in pixels.
+			If left to default value, each item will have a width equal to the width of its content and the columns will have an uneven width.
 		</member>
 		<member name="fixed_icon_size" type="Vector2" setter="set_fixed_icon_size" getter="get_fixed_icon_size">
+			Sets the default icon size in pixels.
 		</member>
 		<member name="icon_mode" type="int" setter="set_icon_mode" getter="get_icon_mode" enum="ItemList.IconMode">
+			Sets the default position of the icon to either [const ICON_MODE_LEFT] or [const ICON_MODE_TOP].
 		</member>
 		<member name="icon_scale" type="float" setter="set_icon_scale" getter="get_icon_scale">
+			Sets the icon size to its initial size multiplied by the specified scale. Default value is 1.0.
 		</member>
 		<member name="max_columns" type="int" setter="set_max_columns" getter="get_max_columns">
+			Sets the maximum columns the list will have.
+			If set to anything other than the default, the content will be split among the specified columns.
 		</member>
 		<member name="max_text_lines" type="int" setter="set_max_text_lines" getter="get_max_text_lines">
 		</member>
 		<member name="same_column_width" type="bool" setter="set_same_column_width" getter="is_same_column_width">
+			If set to [code]true[/code], all columns will have the same width specified by [member fixed_column_width].
 		</member>
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="ItemList.SelectMode">
-			Allow single or multiple selection. See the [code]SELECT_*[/code] constants.
+			Allow single or multiple item selection. See the [code]SELECT_*[/code] constants.
 		</member>
 	</members>
 	<signals>
@@ -416,7 +439,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Fired when specified list item is activated via double click or Enter.
+				Triggered when specified list item is activated via double click or Enter.
 			</description>
 		</signal>
 		<signal name="item_rmb_selected">
@@ -425,7 +448,7 @@
 			<argument index="1" name="at_position" type="Vector2">
 			</argument>
 			<description>
-				Fired when specified list item has been selected via right mouse clicking.
+				Triggered when specified list item has been selected via right mouse clicking.
 				The click position is also provided to allow appropriate popup of context menus
 				at the correct location.
 				[member allow_rmb_select] must be enabled.
@@ -435,7 +458,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Fired when specified item has been selected.
+				Triggered when specified item has been selected.
 				[member allow_reselect] must be enabled to reselect an item.
 			</description>
 		</signal>
@@ -445,17 +468,20 @@
 			<argument index="1" name="selected" type="bool">
 			</argument>
 			<description>
-				Fired when a multiple selection is altered on a list allowing multiple selection.
+				Triggered when a multiple selection is altered on a list allowing multiple selection.
 			</description>
 		</signal>
 		<signal name="nothing_selected">
 			<description>
+				Triggered when a left mouse click is issued within the rect of the list but on empty space.
 			</description>
 		</signal>
 		<signal name="rmb_clicked">
 			<argument index="0" name="at_position" type="Vector2">
 			</argument>
 			<description>
+				Triggered when a right mouse click is issued within the rect of the list but on empty space.
+				[member allow_rmb_select] must be enabled.
 			</description>
 		</signal>
 	</signals>
