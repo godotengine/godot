@@ -522,7 +522,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeVectorDecompose>();
 	ClassDB::register_class<VisualShaderNodeTransformDecompose>();
 	ClassDB::register_class<VisualShaderNodeTexture>();
-	ClassDB::register_class<VisualShaderNodeCubeMap>();
+	ClassDB::register_class<VisualShaderNodeCubemap>();
 	ClassDB::register_virtual_class<VisualShaderNodeUniform>();
 	ClassDB::register_class<VisualShaderNodeScalarUniform>();
 	ClassDB::register_class<VisualShaderNodeBooleanUniform>();
@@ -531,7 +531,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeTransformUniform>();
 	ClassDB::register_class<VisualShaderNodeTextureUniform>();
 	ClassDB::register_class<VisualShaderNodeTextureUniformTriplanar>();
-	ClassDB::register_class<VisualShaderNodeCubeMapUniform>();
+	ClassDB::register_class<VisualShaderNodeCubemapUniform>();
 	ClassDB::register_class<VisualShaderNodeIf>();
 	ClassDB::register_class<VisualShaderNodeSwitch>();
 	ClassDB::register_class<VisualShaderNodeScalarSwitch>();
@@ -647,7 +647,7 @@ void register_scene_types() {
 	ClassDB::register_class<World>();
 	ClassDB::register_class<Environment>();
 	ClassDB::register_class<World2D>();
-	ClassDB::register_virtual_class<Texture>();
+	ClassDB::register_virtual_class<Texture2D>();
 	ClassDB::register_virtual_class<Sky>();
 	ClassDB::register_class<PanoramaSky>();
 	ClassDB::register_class<ProceduralSky>();
@@ -661,10 +661,10 @@ void register_scene_types() {
 	ClassDB::register_class<ProxyTexture>();
 	ClassDB::register_class<AnimatedTexture>();
 	ClassDB::register_class<CameraTexture>();
-	ClassDB::register_class<CubeMap>();
 	ClassDB::register_virtual_class<TextureLayered>();
-	ClassDB::register_class<Texture3D>();
-	ClassDB::register_class<TextureArray>();
+	ClassDB::register_class<Cubemap>();
+	ClassDB::register_class<CubemapArray>();
+	ClassDB::register_class<Texture2DArray>();
 	ClassDB::register_class<Animation>();
 	ClassDB::register_virtual_class<Font>();
 	ClassDB::register_class<BitmapFont>();

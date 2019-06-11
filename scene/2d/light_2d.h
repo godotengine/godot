@@ -74,7 +74,7 @@ private:
 	float shadow_smooth;
 	float shadow_gradient_length;
 	Mode mode;
-	Ref<Texture> texture;
+	Ref<Texture2D> texture;
 	Vector2 texture_offset;
 	ShadowFilter shadow_filter;
 
@@ -102,8 +102,8 @@ public:
 	void set_editor_only(bool p_editor_only);
 	bool is_editor_only() const;
 
-	void set_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_texture() const;
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
 
 	void set_texture_offset(const Vector2 &p_offset);
 	Vector2 get_texture_offset() const;

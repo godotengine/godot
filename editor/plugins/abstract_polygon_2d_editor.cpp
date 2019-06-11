@@ -572,7 +572,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
 	// All polygon points are sharp, so use the sharp handle icon
-	const Ref<Texture> handle = get_icon("EditorPathSharpHandle", "EditorIcons");
+	const Ref<Texture2D> handle = get_icon("EditorPathSharpHandle", "EditorIcons");
 
 	const Vertex active_point = get_active_point();
 	const int n_polygons = _get_polygon_count();
@@ -660,7 +660,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 
 	if (edge_point.valid()) {
 
-		Ref<Texture> add_handle = get_icon("EditorHandleAdd", "EditorIcons");
+		Ref<Texture2D> add_handle = get_icon("EditorHandleAdd", "EditorIcons");
 		p_overlay->draw_texture(add_handle, edge_point.pos - add_handle->get_size() * 0.5);
 	}
 }

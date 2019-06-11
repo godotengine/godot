@@ -433,7 +433,7 @@ private:
 
 	bool features[FEATURE_MAX];
 
-	Ref<Texture> textures[TEXTURE_MAX];
+	Ref<Texture2D> textures[TEXTURE_MAX];
 
 	_FORCE_INLINE_ void _validate_feature(const String &text, Feature feature, PropertyInfo &property) const;
 
@@ -545,10 +545,10 @@ public:
 	void set_flag(Flags p_flag, bool p_enabled);
 	bool get_flag(Flags p_flag) const;
 
-	void set_texture(TextureParam p_param, const Ref<Texture> &p_texture);
-	Ref<Texture> get_texture(TextureParam p_param) const;
+	void set_texture(TextureParam p_param, const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture(TextureParam p_param) const;
 	// Used only for shader material conversion
-	Ref<Texture> get_texture_by_name(StringName p_name) const;
+	Ref<Texture2D> get_texture_by_name(StringName p_name) const;
 
 	void set_feature(Feature p_feature, bool p_enabled);
 	bool get_feature(Feature p_feature) const;

@@ -66,7 +66,7 @@ private:
 
 		TreeCellMode mode;
 
-		Ref<Texture> icon;
+		Ref<Texture2D> icon;
 		Rect2i icon_region;
 		String text;
 		String suffix;
@@ -97,7 +97,7 @@ private:
 		struct Button {
 			int id;
 			bool disabled;
-			Ref<Texture> texture;
+			Ref<Texture2D> texture;
 			Color color;
 			String tooltip;
 			Button() {
@@ -187,8 +187,8 @@ public:
 	void set_suffix(int p_column, String p_suffix);
 	String get_suffix(int p_column) const;
 
-	void set_icon(int p_column, const Ref<Texture> &p_icon);
-	Ref<Texture> get_icon(int p_column) const;
+	void set_icon(int p_column, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_icon(int p_column) const;
 
 	void set_icon_region(int p_column, const Rect2 &p_icon_region);
 	Rect2 get_icon_region(int p_column) const;
@@ -199,14 +199,14 @@ public:
 	void set_icon_max_width(int p_column, int p_max);
 	int get_icon_max_width(int p_column) const;
 
-	void add_button(int p_column, const Ref<Texture> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "");
+	void add_button(int p_column, const Ref<Texture2D> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "");
 	int get_button_count(int p_column) const;
 	String get_button_tooltip(int p_column, int p_idx) const;
-	Ref<Texture> get_button(int p_column, int p_idx) const;
+	Ref<Texture2D> get_button(int p_column, int p_idx) const;
 	int get_button_id(int p_column, int p_idx) const;
 	void erase_button(int p_column, int p_idx);
 	int get_button_by_id(int p_column, int p_id) const;
-	void set_button(int p_column, int p_idx, const Ref<Texture> &p_button);
+	void set_button(int p_column, int p_idx, const Ref<Texture2D> &p_button);
 	void set_button_color(int p_column, int p_idx, const Color &p_color);
 	void set_button_disabled(int p_column, int p_idx, bool p_disabled);
 	bool is_button_disabled(int p_column, int p_idx) const;
@@ -370,7 +370,7 @@ private:
 
 	int compute_item_height(TreeItem *p_item) const;
 	int get_item_height(TreeItem *p_item) const;
-	//void draw_item_text(String p_text,const Ref<Texture>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
+	//void draw_item_text(String p_text,const Ref<Texture2D>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
 	void draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color);
 	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = NULL, bool *r_in_range = NULL, bool p_force_deselect = false);
@@ -412,12 +412,12 @@ private:
 
 		Color title_button_color;
 
-		Ref<Texture> checked;
-		Ref<Texture> unchecked;
-		Ref<Texture> arrow_collapsed;
-		Ref<Texture> arrow;
-		Ref<Texture> select_arrow;
-		Ref<Texture> updown;
+		Ref<Texture2D> checked;
+		Ref<Texture2D> unchecked;
+		Ref<Texture2D> arrow_collapsed;
+		Ref<Texture2D> arrow;
+		Ref<Texture2D> select_arrow;
+		Ref<Texture2D> updown;
 
 		Color font_color;
 		Color font_color_selected;
