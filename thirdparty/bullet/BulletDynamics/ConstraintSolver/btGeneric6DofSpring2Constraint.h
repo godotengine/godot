@@ -294,7 +294,7 @@ protected:
 	bool m_hasStaticBody;
 	int m_flags;
 
-	btGeneric6DofSpring2Constraint& operator=(btGeneric6DofSpring2Constraint&)
+	btGeneric6DofSpring2Constraint& operator=(const btGeneric6DofSpring2Constraint&)
 	{
 		btAssert(0);
 		return *this;

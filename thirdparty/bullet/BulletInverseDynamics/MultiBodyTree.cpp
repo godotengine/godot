@@ -349,7 +349,7 @@ int MultiBodyTree::finalize()
 	const int &num_bodies = m_init_cache->numBodies();
 	const int &num_dofs = m_init_cache->numDoFs();
 
-	if (num_dofs <= 0)
+	if (num_dofs < 0)
 	{
 		bt_id_error_message("Need num_dofs>=1, but num_dofs= %d\n", num_dofs);
 		//return -1;
