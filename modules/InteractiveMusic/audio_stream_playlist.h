@@ -20,28 +20,24 @@ private:
 		MAX_STREAMS = 64
 	};
 
-	struct Streams {
-		Ref<AudioStream> stream;
-		
+	int beat_count;
+	
 
-		int beat_count;
-	};
-
-	Streams audio_streams[MAX_STREAMS];
+	Ref<AudioStream> audio_streams[MAX_STREAMS];
+	Set<AudioStreamPlaybackPlaylist *> playbacks;
 
 public:
 	void reset();
 	void set_position(uint64_t pos);
-	void set_stereo();
-	void set_stream_beats(int p_stream,int beats);
-	int get_stream_beats(int p_stream);
+	
+	void set_stream_beats(int beats);
+	int get_stream_beats();
 	void set_bpm(int beats_per_minute);
 	int get_bpm();
 	void set_stream_count(int count);
 	int get_stream_count();
 	void set_list_stream(int stream_number, Ref<AudioStream> p_stream);
 	Ref<AudioStream> get_list_stream(int stream_number);
-	
 	
 	virtual Ref<AudioStreamPlayback> instance_playback();
 	virtual String get_stream_name() const;
@@ -60,7 +56,7 @@ class AudioStreamPlaybackPlaylist : public AudioStreamPlayback {
 	friend class AudioStreamPlaylist;
 
 private:
-	int buffer_size;
+	int buffer_size=256;
 	enum {
 		MIX_FRAC_BITS = 13,
 		MIX_FRAC_LEN = (1 << MIX_FRAC_BITS),
@@ -69,8 +65,9 @@ private:
 	AudioFrame *pcm_buffer;
 	AudioFrame *aux_buffer;
 	
-	Ref<AudioStreamPlaylist> instance;
-	List<Ref<AudioStreamPlayback>> playback;
+	Ref<AudioStreamPlaylist> playlist;
+	Ref<AudioStreamPlayback> playback[AudioStreamPlaylist::MAX_STREAMS];
+	
 
 	int current;
 	bool fading;
@@ -93,4 +90,7 @@ public:
 	virtual float get_length() const;
 	AudioStreamPlaybackPlaylist();
 	~AudioStreamPlaybackPlaylist();
+
+private:
+	virtual void _update_playback_instances();
 };
