@@ -526,7 +526,7 @@ VoxelLightBaker::MaterialCache VoxelLightBaker::_get_material_cache(Ref<Material
 
 	if (mat.is_valid()) {
 
-		Ref<Texture> albedo_tex = mat->get_texture(SpatialMaterial::TEXTURE_ALBEDO);
+		Ref<Texture2D> albedo_tex = mat->get_texture(SpatialMaterial::TEXTURE_ALBEDO);
 
 		Ref<Image> img_albedo;
 		if (albedo_tex.is_valid()) {
@@ -537,7 +537,7 @@ VoxelLightBaker::MaterialCache VoxelLightBaker::_get_material_cache(Ref<Material
 			mc.albedo = _get_bake_texture(img_albedo, Color(1, 1, 1), mat->get_albedo()); // no albedo texture, color is additive
 		}
 
-		Ref<Texture> emission_tex = mat->get_texture(SpatialMaterial::TEXTURE_EMISSION);
+		Ref<Texture2D> emission_tex = mat->get_texture(SpatialMaterial::TEXTURE_EMISSION);
 
 		Color emission_col = mat->get_emission();
 		float emission_energy = mat->get_emission_energy();

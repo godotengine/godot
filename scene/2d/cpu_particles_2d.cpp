@@ -197,25 +197,25 @@ void CPUParticles2D::_update_mesh_texture() {
 	VS::get_singleton()->mesh_add_surface_from_arrays(mesh, VS::PRIMITIVE_TRIANGLES, arr);
 }
 
-void CPUParticles2D::set_texture(const Ref<Texture> &p_texture) {
+void CPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
 
 	texture = p_texture;
 	update();
 	_update_mesh_texture();
 }
 
-Ref<Texture> CPUParticles2D::get_texture() const {
+Ref<Texture2D> CPUParticles2D::get_texture() const {
 
 	return texture;
 }
 
-void CPUParticles2D::set_normalmap(const Ref<Texture> &p_normalmap) {
+void CPUParticles2D::set_normalmap(const Ref<Texture2D> &p_normalmap) {
 
 	normalmap = p_normalmap;
 	update();
 }
 
-Ref<Texture> CPUParticles2D::get_normalmap() const {
+Ref<Texture2D> CPUParticles2D::get_normalmap() const {
 
 	return normalmap;
 }
@@ -1263,8 +1263,8 @@ void CPUParticles2D::_bind_methods() {
 	// No visibility_rect property contrarily to Particles2D, it's updated automatically.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime"), "set_draw_order", "get_draw_order");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normalmap", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normalmap", "get_normalmap");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normalmap", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normalmap", "get_normalmap");
 
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);

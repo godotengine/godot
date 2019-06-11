@@ -1110,7 +1110,7 @@ void EditorSceneImporterAssimp::generate_mesh_phase_from_skeletal_mesh(ImportSta
 	}
 }
 
-/** 
+/**
  * attach_new_node
  * configures node, assigns parent node
 **/
@@ -1229,7 +1229,7 @@ void EditorSceneImporterAssimp::create_camera(ImportState &state, RecursiveState
 }
 
 /**
- * Create Bone 
+ * Create Bone
  * Create a bone in the scene
  */
 void EditorSceneImporterAssimp::create_bone(ImportState &state, RecursiveState &recursive_state) {

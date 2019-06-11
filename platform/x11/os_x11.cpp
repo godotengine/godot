@@ -35,9 +35,9 @@
 #include "core/print_string.h"
 //#include "drivers/gles2/rasterizer_gles2.h"
 //#include "drivers/gles3/rasterizer_gles3.h"
-#include "drivers/dummy/rasterizer_dummy.h"
 #include "errno.h"
 #include "key_mapping_x11.h"
+#include "servers/visual/rasterizer/rasterizer_rd.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
@@ -400,7 +400,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	//temporary
 	rendering_device = memnew(RenderingDeviceVulkan);
 	rendering_device->initialize(context_vulkan);
-	RasterizerDummy::make_current();
+	RasterizerRD::make_current();
 
 	// test shader
 
@@ -3195,7 +3195,7 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 			cursors_cache.erase(p_shape);
 		}
 
-		Ref<Texture> texture = p_cursor;
+		Ref<Texture2D> texture = p_cursor;
 		Ref<AtlasTexture> atlas_texture = p_cursor;
 		Ref<Image> image;
 		Size2 texture_size;

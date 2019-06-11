@@ -258,7 +258,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 		draw_line(Point2(right_limit, 0), Point2(right_limit, get_size().height), linecolor);
 
-		Ref<Texture> close_icon = get_icon("Close", "EditorIcons");
+		Ref<Texture2D> close_icon = get_icon("Close", "EditorIcons");
 
 		close_icon_rect.position = Vector2(get_size().width - close_icon->get_width() - hsep, hsep);
 		close_icon_rect.size = close_icon->get_size();
@@ -290,7 +290,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			if (node) {
 				int ofs = 0;
 
-				Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
+				Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
 
 				h = MAX(h, icon->get_height());
 
@@ -391,7 +391,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		{ //draw OTHER curves
 
 			float scale = timeline->get_zoom_scale();
-			Ref<Texture> point = get_icon("KeyValue", "EditorIcons");
+			Ref<Texture2D> point = get_icon("KeyValue", "EditorIcons");
 			for (Map<int, Color>::Element *E = subtrack_colors.front(); E; E = E->next()) {
 
 				_draw_track(E->key(), E->get());

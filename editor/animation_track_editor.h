@@ -158,8 +158,8 @@ class AnimationTrackEdit : public Control {
 	Rect2 remove_rect;
 	Rect2 bezier_edit_rect;
 
-	Ref<Texture> type_icon;
-	Ref<Texture> selected_icon;
+	Ref<Texture2D> type_icon;
+	Ref<Texture2D> selected_icon;
 
 	PopupMenu *menu;
 
@@ -167,7 +167,7 @@ class AnimationTrackEdit : public Control {
 
 	void _zoom_changed();
 
-	Ref<Texture> icon_cache;
+	Ref<Texture2D> icon_cache;
 	String path_cache;
 
 	void _menu_selected(int p_index);
@@ -208,8 +208,8 @@ public:
 	virtual void draw_fg(int p_clip_left, int p_clip_right);
 
 	//helper
-	void draw_texture_clipped(const Ref<Texture> &p_texture, const Vector2 &p_pos);
-	void draw_texture_region_clipped(const Ref<Texture> &p_texture, const Rect2 &p_rect, const Rect2 &p_region);
+	void draw_texture_clipped(const Ref<Texture2D> &p_texture, const Vector2 &p_pos);
+	void draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region);
 	void draw_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled = true);
 
 	int get_track() const;
@@ -251,7 +251,7 @@ class AnimationBezierTrackEdit;
 
 class AnimationTrackEditGroup : public Control {
 	GDCLASS(AnimationTrackEditGroup, Control);
-	Ref<Texture> icon;
+	Ref<Texture2D> icon;
 	String node_name;
 	NodePath node;
 	Node *root;
@@ -264,7 +264,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void set_type_and_name(const Ref<Texture> &p_type, const String &p_name, const NodePath &p_node);
+	void set_type_and_name(const Ref<Texture2D> &p_type, const String &p_name, const NodePath &p_node);
 	virtual Size2 get_minimum_size() const;
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_root(Node *p_root);
