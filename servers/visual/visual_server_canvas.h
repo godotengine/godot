@@ -31,7 +31,7 @@
 #ifndef VISUALSERVERCANVAS_H
 #define VISUALSERVERCANVAS_H
 
-#include "rasterizer.h"
+#include "rasterizer/rasterizer.h"
 #include "visual_server_viewport.h"
 
 class VisualServerCanvas {
@@ -90,7 +90,7 @@ public:
 		}
 	};
 
-	struct LightOccluderPolygon  {
+	struct LightOccluderPolygon {
 
 		bool active;
 		Rect2 aabb;

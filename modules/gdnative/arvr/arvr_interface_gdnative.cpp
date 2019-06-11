@@ -297,7 +297,8 @@ godot_int GDAPI godot_arvr_get_texid(godot_rid *p_render_target) {
 	RID *render_target = (RID *)p_render_target;
 
 	RID eye_texture = VSG::storage->render_target_get_texture(*render_target);
-	uint32_t texid = VS::get_singleton()->texture_get_texid(eye_texture);
+#warning need to obtain this ID again
+	uint32_t texid = 0; //VS::get_singleton()->texture_get_texid(eye_texture);
 
 	return texid;
 }

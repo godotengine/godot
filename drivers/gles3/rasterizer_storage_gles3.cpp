@@ -2432,7 +2432,7 @@ void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyIn
 
 				pi.type = Variant::OBJECT;
 				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-				pi.hint_string = "Texture";
+				pi.hint_string = "Texture2D";
 			} break;
 			case ShaderLanguage::TYPE_SAMPLER2DARRAY:
 			case ShaderLanguage::TYPE_ISAMPLER2DARRAY:

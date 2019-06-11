@@ -196,7 +196,7 @@ bool Theme::_get(const StringName &p_name, Variant &r_ret) const {
 		if (type == "icons") {
 
 			if (!has_icon(name, node_type))
-				r_ret = Ref<Texture>();
+				r_ret = Ref<Texture2D>();
 			else
 				r_ret = get_icon(name, node_type);
 		} else if (type == "styles") {
@@ -238,7 +238,7 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		while ((key2 = icon_map[*key].next(key2))) {
 
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + *key + "/icons/" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "Texture", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			list.push_back(PropertyInfo(Variant::OBJECT, String() + *key + "/icons/" + *key2, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
@@ -322,7 +322,7 @@ Ref<Font> Theme::get_default_theme_font() const {
 
 Ref<Theme> Theme::project_default_theme;
 Ref<Theme> Theme::default_theme;
-Ref<Texture> Theme::default_icon;
+Ref<Texture2D> Theme::default_icon;
 Ref<StyleBox> Theme::default_style;
 Ref<Font> Theme::default_font;
 
@@ -346,7 +346,7 @@ void Theme::set_project_default(const Ref<Theme> &p_project_default) {
 	project_default_theme = p_project_default;
 }
 
-void Theme::set_default_icon(const Ref<Texture> &p_icon) {
+void Theme::set_default_icon(const Ref<Texture2D> &p_icon) {
 
 	default_icon = p_icon;
 }
@@ -359,7 +359,7 @@ void Theme::set_default_font(const Ref<Font> &p_font) {
 	default_font = p_font;
 }
 
-void Theme::set_icon(const StringName &p_name, const StringName &p_type, const Ref<Texture> &p_icon) {
+void Theme::set_icon(const StringName &p_name, const StringName &p_type, const Ref<Texture2D> &p_icon) {
 
 	//ERR_FAIL_COND(p_icon.is_null());
 
@@ -380,7 +380,7 @@ void Theme::set_icon(const StringName &p_name, const StringName &p_type, const R
 		emit_changed();
 	}
 }
-Ref<Texture> Theme::get_icon(const StringName &p_name, const StringName &p_type) const {
+Ref<Texture2D> Theme::get_icon(const StringName &p_name, const StringName &p_type) const {
 
 	if (icon_map.has(p_type) && icon_map[p_type].has(p_name) && icon_map[p_type][p_name].is_valid()) {
 
@@ -720,7 +720,7 @@ void Theme::clear() {
 		while ((K = icon_map.next(K))) {
 			const StringName *L = NULL;
 			while ((L = icon_map[*K].next(L))) {
-				Ref<Texture> icon = icon_map[*K][*L];
+				Ref<Texture2D> icon = icon_map[*K][*L];
 				if (icon.is_valid()) {
 					icon->disconnect("changed", this, "_emit_theme_changed");
 				}

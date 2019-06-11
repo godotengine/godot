@@ -601,7 +601,7 @@ PoolVector<Color> Polygon2D::get_vertex_colors() const {
 	return vertex_colors;
 }
 
-void Polygon2D::set_texture(const Ref<Texture> &p_texture) {
+void Polygon2D::set_texture(const Ref<Texture2D> &p_texture) {
 
 	texture = p_texture;
 
@@ -615,7 +615,7 @@ void Polygon2D::set_texture(const Ref<Texture> &p_texture) {
 	}*/
 	update();
 }
-Ref<Texture> Polygon2D::get_texture() const {
+Ref<Texture2D> Polygon2D::get_texture() const {
 
 	return texture;
 }
@@ -837,9 +837,9 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased"), "set_antialiased", "get_antialiased");
-	ADD_GROUP("Texture", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_GROUP("Texture", "texture_");
+	ADD_GROUP("Texture2D", "");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_GROUP("Texture2D", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_offset"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_scale"), "set_texture_scale", "get_texture_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "texture_rotation_degrees", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater"), "set_texture_rotation_degrees", "get_texture_rotation_degrees");

@@ -43,7 +43,7 @@
 #include "ios.h"
 #include "main/input_default.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
+#include "servers/visual/rasterizer/rasterizer.h"
 #include "servers/visual_server.h"
 
 class OSIPhone : public OS_Unix {

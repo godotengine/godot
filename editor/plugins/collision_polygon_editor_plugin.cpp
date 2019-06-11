@@ -384,7 +384,7 @@ void Polygon3DEditor::_polygon_draw() {
 
 	imgeom->clear();
 	imgeom->set_material_override(line_material);
-	imgeom->begin(Mesh::PRIMITIVE_LINES, Ref<Texture>());
+	imgeom->begin(Mesh::PRIMITIVE_LINES, Ref<Texture2D>());
 
 	Rect2 rect;
 
@@ -561,7 +561,7 @@ Polygon3DEditor::Polygon3DEditor(EditorNode *p_editor) {
 	handle_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 	handle_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-	Ref<Texture> handle = editor->get_gui_base()->get_icon("Editor3DHandle", "EditorIcons");
+	Ref<Texture2D> handle = editor->get_gui_base()->get_icon("Editor3DHandle", "EditorIcons");
 	handle_material->set_point_size(handle->get_width());
 	handle_material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, handle);
 
