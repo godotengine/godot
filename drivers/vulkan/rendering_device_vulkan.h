@@ -44,7 +44,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	static void get_compressed_image_format_block_dimensions(DataFormat p_format, uint32_t &r_w, uint32_t &r_h);
 	uint32_t get_compressed_image_format_block_byte_size(DataFormat p_format);
 	static uint32_t get_compressed_image_format_pixel_rshift(DataFormat p_format);
-	static uint32_t get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmap, uint32_t *r_blockw = NULL, uint32_t *r_blockh = NULL);
+	static uint32_t get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw = NULL, uint32_t *r_blockh = NULL);
 	static uint32_t get_image_required_mipmaps(uint32_t p_width, uint32_t p_height, uint32_t p_depth);
 
 	/***************************/
@@ -678,7 +678,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<PoolVector<uint8_t> > &p_data = Vector<PoolVector<uint8_t> >());
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
-	virtual Error texture_update(RID p_texture, uint32_t p_mipmap, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw = false);
+	virtual Error texture_update(RID p_texture, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw = false);
 
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, TextureUsageBits p_usage) const;
 
