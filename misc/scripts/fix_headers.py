@@ -33,7 +33,7 @@ header = """\
 /*************************************************************************/
 """
 
-files = open("files", "rb")
+files = open("files", "r")
 
 fname = files.readline()
 
@@ -67,7 +67,7 @@ while (fname != ""):
     # In a second pass, we skip all consecutive comment lines starting with "/*",
     # then we can append the rest (step 2).
 
-    fileread = open(fname.strip(), "rb")
+    fileread = open(fname.strip(), "r")
     line = fileread.readline()
     header_done = False
 
@@ -92,7 +92,7 @@ while (fname != ""):
     fileread.close()
 
     # Write
-    filewrite = open(fname.strip(), "wb")
+    filewrite = open(fname.strip(), "w")
     filewrite.write(text)
     filewrite.close()
 
