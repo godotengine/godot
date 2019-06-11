@@ -22,6 +22,8 @@ subject to the following restrictions:
 
 #include <string.h>  //for memset
 
+#include <cmath>
+
 const int kNoMerge = -1;
 
 bool btBatchedConstraints::s_debugDrawBatches = false;
@@ -520,7 +522,7 @@ static void writeGrainSizes(btBatchedConstraints* bc)
 	{
 		const Range& phase = bc->m_phases[iPhase];
 		int numBatches = phase.end - phase.begin;
-		float grainSize = floor((0.25f * numBatches / float(numThreads)) + 0.0f);
+		float grainSize = std::floor((0.25f * numBatches / float(numThreads)) + 0.0f);
 		bc->m_phaseGrainSize[iPhase] = btMax(1, int(grainSize));
 	}
 }

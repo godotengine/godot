@@ -109,5 +109,7 @@ public:
 	virtual void serialize(btSerializer* serializer);
 	virtual void setMultiBodyConstraintSolver(btMultiBodyConstraintSolver* solver);
 	virtual void setConstraintSolver(btConstraintSolver* solver);
+	virtual void getAnalyticsData(btAlignedObjectArray<struct btSolverAnalyticsData>& m_islandAnalyticsData) const;
+
 };
 #endif  //BT_MULTIBODY_DYNAMICS_WORLD_H

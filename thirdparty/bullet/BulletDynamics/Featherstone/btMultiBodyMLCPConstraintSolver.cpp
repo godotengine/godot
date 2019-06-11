@@ -22,9 +22,9 @@ subject to the following restrictions:
 
 #define DIRECTLY_UPDATE_VELOCITY_DURING_SOLVER_ITERATIONS
 
-static bool interleaveContactAndFriction = false;
+static bool interleaveContactAndFriction1 = false;
 
-struct btJointNode
+struct btJointNode1
 {
 	int jointIndex;          // pointer to enclosing dxJoint object
 	int otherBodyIndex;      // *other* body this joint is connected to
@@ -241,7 +241,7 @@ void btMultiBodyMLCPConstraintSolver::createMLCPFast(const btContactSolverInfo& 
 
 void btMultiBodyMLCPConstraintSolver::createMLCPFastRigidBody(const btContactSolverInfo& infoGlobal)
 {
-	int numContactRows = interleaveContactAndFriction ? 3 : 1;
+	int numContactRows = interleaveContactAndFriction1 ? 3 : 1;
 
 	int numConstraintRows = m_allConstraintPtrArray.size();
 
@@ -301,7 +301,7 @@ void btMultiBodyMLCPConstraintSolver::createMLCPFastRigidBody(const btContactSol
 		BT_PROFILE("bodyJointNodeArray.resize");
 		bodyJointNodeArray.resize(numBodies, -1);
 	}
-	btAlignedObjectArray<btJointNode> jointNodeArray;
+	btAlignedObjectArray<btJointNode1> jointNodeArray;
 	{
 		BT_PROFILE("jointNodeArray.reserve");
 		jointNodeArray.reserve(2 * m_allConstraintPtrArray.size());
@@ -729,7 +729,7 @@ btScalar btMultiBodyMLCPConstraintSolver::solveGroupCacheFriendlySetup(
 		int firstContactConstraintOffset = dindex;
 
 		// The btSequentialImpulseConstraintSolver moves all friction constraints at the very end, we can also interleave them instead
-		if (interleaveContactAndFriction)
+		if (interleaveContactAndFriction1)
 		{
 			for (int i = 0; i < m_tmpSolverContactConstraintPool.size(); i++)
 			{
@@ -785,7 +785,7 @@ btScalar btMultiBodyMLCPConstraintSolver::solveGroupCacheFriendlySetup(
 		firstContactConstraintOffset = dindex;
 
 		// The btSequentialImpulseConstraintSolver moves all friction constraints at the very end, we can also interleave them instead
-		if (interleaveContactAndFriction)
+		if (interleaveContactAndFriction1)
 		{
 			for (int i = 0; i < m_multiBodyNormalContactConstraints.size(); ++i)
 			{

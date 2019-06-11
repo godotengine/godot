@@ -124,7 +124,7 @@ inline int btGetVersion()
 	#ifdef BT_DEBUG
 		#ifdef _MSC_VER
 			#include <stdio.h>
-			#define btAssert(x) { if(!(x)){printf("Assert "__FILE__ ":%u (%s)\n", __LINE__, #x);__debugbreak();	}}
+			#define btAssert(x) { if(!(x)){printf("Assert " __FILE__ ":%u (%s)\n", __LINE__, #x);__debugbreak();	}}
 		#else//_MSC_VER
 			#include <assert.h>
 			#define btAssert assert
@@ -152,7 +152,7 @@ inline int btGetVersion()
 			#ifdef __SPU__
 				#include <spu_printf.h>
 				#define printf spu_printf
-				#define btAssert(x) {if(!(x)){printf("Assert "__FILE__ ":%u ("#x")\n", __LINE__);spu_hcmpeq(0,0);}}
+				#define btAssert(x) {if(!(x)){printf("Assert " __FILE__ ":%u ("#x")\n", __LINE__);spu_hcmpeq(0,0);}}
 			#else
 				#define btAssert assert
 			#endif
