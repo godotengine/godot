@@ -122,7 +122,7 @@ struct _TECategory {
 
 	Set<RefItem<StyleBox> > stylebox_items;
 	Set<RefItem<Font> > font_items;
-	Set<RefItem<Texture> > icon_items;
+	Set<RefItem<Texture2D> > icon_items;
 
 	Set<Item<Color> > color_items;
 	Set<Item<int> > constant_items;
@@ -167,7 +167,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 		List<StringName> icon_list;
 		Theme::get_default()->get_icon_list(E->key(), &icon_list);
 		for (List<StringName>::Element *F = icon_list.front(); F; F = F->next()) {
-			_TECategory::RefItem<Texture> it;
+			_TECategory::RefItem<Texture2D> it;
 			it.name = F->get();
 			it.item = Theme::get_default()->get_icon(F->get(), E->key());
 			tc.icon_items.insert(it);
@@ -291,7 +291,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 		if (tc.icon_items.size())
 			file->store_line("\n; Icon Items:\n");
 
-		for (Set<_TECategory::RefItem<Texture> >::Element *F = tc.icon_items.front(); F; F = F->next()) {
+		for (Set<_TECategory::RefItem<Texture2D> >::Element *F = tc.icon_items.front(); F; F = F->next()) {
 
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
@@ -324,7 +324,7 @@ void ThemeEditor::_dialog_cbk() {
 
 			switch (type_select->get_selected()) {
 
-				case 0: theme->set_icon(name_edit->get_text(), type_edit->get_text(), Ref<Texture>()); break;
+				case 0: theme->set_icon(name_edit->get_text(), type_edit->get_text(), Ref<Texture2D>()); break;
 				case 1: theme->set_stylebox(name_edit->get_text(), type_edit->get_text(), Ref<StyleBox>()); break;
 				case 2: theme->set_font(name_edit->get_text(), type_edit->get_text(), Ref<Font>()); break;
 				case 3: theme->set_color(name_edit->get_text(), type_edit->get_text(), Color()); break;
@@ -341,7 +341,7 @@ void ThemeEditor::_dialog_cbk() {
 				names.clear();
 				Theme::get_default()->get_icon_list(fromtype, &names);
 				for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-					theme->set_icon(E->get(), fromtype, Ref<Texture>());
+					theme->set_icon(E->get(), fromtype, Ref<Texture2D>());
 				}
 			}
 			{
@@ -454,7 +454,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 				base_theme->get_icon_list(type, &icons);
 
 				for (List<StringName>::Element *E = icons.front(); E; E = E->next()) {
-					theme->set_icon(E->get(), type, import ? base_theme->get_icon(E->get(), type) : Ref<Texture>());
+					theme->set_icon(E->get(), type, import ? base_theme->get_icon(E->get(), type) : Ref<Texture2D>());
 				}
 
 				List<StringName> shaders;

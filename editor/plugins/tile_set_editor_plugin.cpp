@@ -62,8 +62,8 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 		}
 
 		Sprite *mi = Object::cast_to<Sprite>(child);
-		Ref<Texture> texture = mi->get_texture();
-		Ref<Texture> normal_map = mi->get_normal_map();
+		Ref<Texture2D> texture = mi->get_texture();
+		Ref<Texture2D> normal_map = mi->get_normal_map();
 		Ref<ShaderMaterial> material = mi->get_material();
 
 		if (texture.is_null())
@@ -195,7 +195,7 @@ bool TileSetEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_dat
 	if (String(d["type"]) == "resource" && d.has("resource")) {
 		RES r = d["resource"];
 
-		Ref<Texture> texture = r;
+		Ref<Texture2D> texture = r;
 
 		if (texture.is_valid()) {
 
@@ -237,7 +237,7 @@ void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 	if (String(d["type"]) == "resource" && d.has("resource")) {
 		RES r = d["resource"];
 
-		Ref<Texture> texture = r;
+		Ref<Texture2D> texture = r;
 
 		if (texture.is_valid())
 			add_texture(texture);
@@ -639,7 +639,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	texture_dialog->clear_filters();
 	List<String> extensions;
 
-	ResourceLoader::get_recognized_extensions_for_type("Texture", &extensions);
+	ResourceLoader::get_recognized_extensions_for_type("Texture2D", &extensions);
 	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
 
 		texture_dialog->add_filter("*." + E->get() + " ; " + E->get().to_upper());
@@ -753,7 +753,7 @@ void TileSetEditor::_on_texture_list_selected(int p_index) {
 void TileSetEditor::_on_textures_added(const PoolStringArray &p_paths) {
 	int invalid_count = 0;
 	for (int i = 0; i < p_paths.size(); i++) {
-		Ref<Texture> t = Ref<Texture>(ResourceLoader::load(p_paths[i]));
+		Ref<Texture2D> t = Ref<Texture2D>(ResourceLoader::load(p_paths[i]));
 
 		ERR_CONTINUE_MSG(!t.is_valid(), "'" + p_paths[i] + "' is not a valid texture.");
 
@@ -1183,7 +1183,7 @@ void TileSetEditor::_on_workspace_overlay_draw() {
 	if (t_id < 0)
 		return;
 
-	Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
+	Ref<Texture2D> handle = get_icon("EditorHandle", "EditorIcons");
 	if (draw_handles) {
 		for (int i = 0; i < current_shape.size(); i++) {
 			workspace_overlay->draw_texture(handle, current_shape[i] * workspace->get_scale().x - handle->get_size() * 0.5);
@@ -3098,13 +3098,13 @@ Vector2 TileSetEditor::snap_point(const Vector2 &point) {
 	return p;
 }
 
-void TileSetEditor::add_texture(Ref<Texture> p_texture) {
+void TileSetEditor::add_texture(Ref<Texture2D> p_texture) {
 	texture_list->add_item(p_texture->get_path().get_file());
 	texture_map.insert(p_texture->get_rid(), p_texture);
 	texture_list->set_item_metadata(texture_list->get_item_count() - 1, p_texture->get_rid());
 }
 
-void TileSetEditor::remove_texture(Ref<Texture> p_texture) {
+void TileSetEditor::remove_texture(Ref<Texture2D> p_texture) {
 	texture_list->remove_item(texture_list->find_metadata(p_texture->get_rid()));
 	texture_map.erase(p_texture->get_rid());
 
@@ -3117,7 +3117,7 @@ void TileSetEditor::remove_texture(Ref<Texture> p_texture) {
 }
 
 void TileSetEditor::update_texture_list() {
-	Ref<Texture> selected_texture = get_current_texture();
+	Ref<Texture2D> selected_texture = get_current_texture();
 
 	helper->set_tileset(tileset);
 
@@ -3326,9 +3326,9 @@ void TileSetEditor::set_current_tile(int p_id) {
 	}
 }
 
-Ref<Texture> TileSetEditor::get_current_texture() {
+Ref<Texture2D> TileSetEditor::get_current_texture() {
 	if (texture_list->get_selected_items().size() == 0)
-		return Ref<Texture>();
+		return Ref<Texture2D>();
 	else
 		return texture_map[texture_list->get_item_metadata(texture_list->get_selected_items()[0])];
 }
@@ -3487,7 +3487,7 @@ void TilesetEditorContext::_get_property_list(List<PropertyInfo> *p_list) const 
 		int id = tileset_editor->get_current_tile();
 		p_list->push_back(PropertyInfo(Variant::NIL, "Selected Tile", PROPERTY_HINT_NONE, "tile_", PROPERTY_USAGE_GROUP));
 		p_list->push_back(PropertyInfo(Variant::STRING, "tile_name"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "tile_normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "tile_normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, "tile_tex_offset"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "tile_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial"));
 		p_list->push_back(PropertyInfo(Variant::COLOR, "tile_modulate"));

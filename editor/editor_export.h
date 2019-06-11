@@ -236,7 +236,7 @@ public:
 
 	virtual String get_os_name() const = 0;
 	virtual String get_name() const = 0;
-	virtual Ref<Texture> get_logo() const = 0;
+	virtual Ref<Texture2D> get_logo() const = 0;
 
 	Error export_project_files(const Ref<EditorExportPreset> &p_preset, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func = NULL);
 
@@ -259,7 +259,7 @@ public:
 	};
 
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) { return OK; }
-	virtual Ref<Texture> get_run_icon() const { return get_logo(); }
+	virtual Ref<Texture2D> get_run_icon() const { return get_logo(); }
 
 	String test_etc2() const; //generic test for etc2 since most platforms use it
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const = 0;
@@ -420,7 +420,7 @@ public:
 
 	virtual String get_name() const;
 	virtual String get_os_name() const;
-	virtual Ref<Texture> get_logo() const;
+	virtual Ref<Texture2D> get_logo() const;
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const;
@@ -431,7 +431,7 @@ public:
 	void set_name(const String &p_name);
 	void set_os_name(const String &p_name);
 
-	void set_logo(const Ref<Texture> &p_logo);
+	void set_logo(const Ref<Texture2D> &p_logo);
 
 	void set_release_64(const String &p_file);
 	void set_release_32(const String &p_file);

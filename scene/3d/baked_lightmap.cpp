@@ -86,7 +86,7 @@ float BakedLightmapData::get_energy() const {
 	return energy;
 }
 
-void BakedLightmapData::add_user(const NodePath &p_path, const Ref<Texture> &p_lightmap, int p_instance) {
+void BakedLightmapData::add_user(const NodePath &p_path, const Ref<Texture2D> &p_lightmap, int p_instance) {
 
 	ERR_FAIL_COND_MSG(p_lightmap.is_null(), "It's not a reference to a valid Texture object.");
 	User user;
@@ -105,9 +105,9 @@ NodePath BakedLightmapData::get_user_path(int p_user) const {
 	ERR_FAIL_INDEX_V(p_user, users.size(), NodePath());
 	return users[p_user].path;
 }
-Ref<Texture> BakedLightmapData::get_user_lightmap(int p_user) const {
+Ref<Texture2D> BakedLightmapData::get_user_lightmap(int p_user) const {
 
-	ERR_FAIL_INDEX_V(p_user, users.size(), Ref<Texture>());
+	ERR_FAIL_INDEX_V(p_user, users.size(), Ref<Texture2D>());
 	return users[p_user].lightmap;
 }
 
@@ -491,7 +491,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 			Ref<Image> image;
 			image.instance();
 
-			uint32_t tex_flags = Texture::FLAGS_DEFAULT;
 			if (hdr) {
 
 				//just save a regular image
@@ -534,11 +533,10 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 				//This texture is saved to SRGB for two reasons:
 				// 1) first is so it looks better when doing the LINEAR->SRGB conversion (more accurate)
 				// 2) So it can be used in the GLES2 backend, which does not support linkear workflow
-				tex_flags |= Texture::FLAG_CONVERT_TO_LINEAR;
 			}
 
 			String image_path = save_path.plus_file(mesh_name);
-			Ref<Texture> texture;
+			Ref<Texture2D> texture;
 
 			if (ResourceLoader::import) {
 
@@ -583,7 +581,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 					tex.instance();
 				}
 
-				tex->create_from_image(image, tex_flags);
+				tex->create_from_image(image);
 
 				err = ResourceSaver::save(image_path, tex, ResourceSaver::FLAG_CHANGE_PATH);
 				if (set_path) {
@@ -668,7 +666,7 @@ void BakedLightmap::_assign_lightmaps() {
 	ERR_FAIL_COND(!light_data.is_valid());
 
 	for (int i = 0; i < light_data->get_user_count(); i++) {
-		Ref<Texture> lightmap = light_data->get_user_lightmap(i);
+		Ref<Texture2D> lightmap = light_data->get_user_lightmap(i);
 		ERR_CONTINUE(!lightmap.is_valid());
 
 		Node *node = get_node(light_data->get_user_path(i));

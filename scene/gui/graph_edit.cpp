@@ -357,7 +357,7 @@ void GraphEdit::_notification(int p_what) {
 
 bool GraphEdit::_filter_input(const Point2 &p_point) {
 
-	Ref<Texture> port = get_icon("port", "GraphNode");
+	Ref<Texture2D> port = get_icon("port", "GraphNode");
 
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -389,7 +389,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
 
-		Ref<Texture> port = get_icon("port", "GraphNode");
+		Ref<Texture2D> port = get_icon("port", "GraphNode");
 		Vector2 mpos(mb->get_position().x, mb->get_position().y);
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -501,7 +501,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		connecting_target = false;
 		top_layer->update();
 
-		Ref<Texture> port = get_icon("port", "GraphNode");
+		Ref<Texture2D> port = get_icon("port", "GraphNode");
 		Vector2 mpos = mm->get_position();
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 

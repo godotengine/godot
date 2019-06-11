@@ -71,8 +71,8 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 		if (b->is_pressed()) {
 
 			double ofs = orientation == VERTICAL ? b->get_position().y : b->get_position().x;
-			Ref<Texture> decr = get_icon("decrement");
-			Ref<Texture> incr = get_icon("increment");
+			Ref<Texture2D> decr = get_icon("decrement");
+			Ref<Texture2D> incr = get_icon("increment");
 
 			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
 			double incr_size = orientation == VERTICAL ? incr->get_height() : incr->get_width();
@@ -148,7 +148,7 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 		if (drag.active) {
 
 			double ofs = orientation == VERTICAL ? m->get_position().y : m->get_position().x;
-			Ref<Texture> decr = get_icon("decrement");
+			Ref<Texture2D> decr = get_icon("decrement");
 
 			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
 			ofs -= decr_size;
@@ -159,8 +159,8 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 		} else {
 
 			double ofs = orientation == VERTICAL ? m->get_position().y : m->get_position().x;
-			Ref<Texture> decr = get_icon("decrement");
-			Ref<Texture> incr = get_icon("increment");
+			Ref<Texture2D> decr = get_icon("decrement");
+			Ref<Texture2D> incr = get_icon("increment");
 
 			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
 			double incr_size = orientation == VERTICAL ? incr->get_height() : incr->get_width();
@@ -233,8 +233,8 @@ void ScrollBar::_notification(int p_what) {
 
 		RID ci = get_canvas_item();
 
-		Ref<Texture> decr = highlight == HIGHLIGHT_DECR ? get_icon("decrement_highlight") : get_icon("decrement");
-		Ref<Texture> incr = highlight == HIGHLIGHT_INCR ? get_icon("increment_highlight") : get_icon("increment");
+		Ref<Texture2D> decr = highlight == HIGHLIGHT_DECR ? get_icon("decrement_highlight") : get_icon("decrement");
+		Ref<Texture2D> incr = highlight == HIGHLIGHT_INCR ? get_icon("increment_highlight") : get_icon("increment");
 		Ref<StyleBox> bg = has_focus() ? get_stylebox("scroll_focus") : get_stylebox("scroll");
 
 		Ref<StyleBox> grabber;
@@ -500,8 +500,8 @@ double ScrollBar::get_grabber_offset() const {
 
 Size2 ScrollBar::get_minimum_size() const {
 
-	Ref<Texture> incr = get_icon("increment");
-	Ref<Texture> decr = get_icon("decrement");
+	Ref<Texture2D> incr = get_icon("increment");
+	Ref<Texture2D> decr = get_icon("decrement");
 	Ref<StyleBox> bg = get_stylebox("scroll");
 	Size2 minsize;
 

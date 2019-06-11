@@ -30,33 +30,33 @@
 
 #include "path_texture.h"
 
-void PathTexture::set_begin_texture(const Ref<Texture> &p_texture) {
+void PathTexture::set_begin_texture(const Ref<Texture2D> &p_texture) {
 
 	begin = p_texture;
 	update();
 }
 
-Ref<Texture> PathTexture::get_begin_texture() const {
+Ref<Texture2D> PathTexture::get_begin_texture() const {
 
 	return begin;
 }
 
-void PathTexture::set_repeat_texture(const Ref<Texture> &p_texture) {
+void PathTexture::set_repeat_texture(const Ref<Texture2D> &p_texture) {
 
 	repeat = p_texture;
 	update();
 }
-Ref<Texture> PathTexture::get_repeat_texture() const {
+Ref<Texture2D> PathTexture::get_repeat_texture() const {
 
 	return repeat;
 }
 
-void PathTexture::set_end_texture(const Ref<Texture> &p_texture) {
+void PathTexture::set_end_texture(const Ref<Texture2D> &p_texture) {
 
 	end = p_texture;
 	update();
 }
-Ref<Texture> PathTexture::get_end_texture() const {
+Ref<Texture2D> PathTexture::get_end_texture() const {
 
 	return end;
 }

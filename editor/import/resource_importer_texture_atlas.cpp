@@ -58,7 +58,7 @@ String ResourceImporterTextureAtlas::get_save_extension() const {
 
 String ResourceImporterTextureAtlas::get_resource_type() const {
 
-	return "Texture";
+	return "Texture2D";
 }
 
 bool ResourceImporterTextureAtlas::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
@@ -313,7 +313,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 	new_atlas->save_png(p_group_file);
 
 	//update cache if existing, else create
-	Ref<Texture> cache;
+	Ref<Texture2D> cache;
 	if (ResourceCache::has(p_group_file)) {
 		Resource *resptr = ResourceCache::get(p_group_file);
 		cache.reference_ptr(resptr);
@@ -331,7 +331,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 		PackData &pack_data = pack_data_files.write[idx];
 
-		Ref<Texture> texture;
+		Ref<Texture2D> texture;
 
 		if (!pack_data.is_mesh) {
 			Vector2 offset = charts[pack_data.chart_pieces[0]].vertices[0] + charts[pack_data.chart_pieces[0]].final_offset;

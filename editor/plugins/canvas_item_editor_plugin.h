@@ -306,7 +306,7 @@ private:
 	struct _HoverResult {
 
 		Point2 position;
-		Ref<Texture> icon;
+		Ref<Texture2D> icon;
 		String name;
 	};
 	Vector<_HoverResult> hovering_results;
@@ -406,8 +406,8 @@ private:
 	Point2 box_selecting_to;
 
 	Ref<StyleBoxTexture> select_sb;
-	Ref<Texture> select_handle;
-	Ref<Texture> anchor_handle;
+	Ref<Texture2D> select_handle;
+	Ref<Texture2D> anchor_handle;
 
 	Ref<ShortCut> drag_pivot_shortcut;
 	Ref<ShortCut> set_pivot_shortcut;

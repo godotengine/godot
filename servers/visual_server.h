@@ -80,75 +80,64 @@ public:
 
 	/* TEXTURE API */
 
-	enum TextureFlags {
-		TEXTURE_FLAG_MIPMAPS = 1, /// Enable automatic mipmap generation - when available
-		TEXTURE_FLAG_REPEAT = 2, /// Repeat texture (Tiling), otherwise Clamping
-		TEXTURE_FLAG_FILTER = 4, /// Create texture with linear (or available) filter
-		TEXTURE_FLAG_ANISOTROPIC_FILTER = 8,
-		TEXTURE_FLAG_CONVERT_TO_LINEAR = 16,
-		TEXTURE_FLAG_MIRRORED_REPEAT = 32, /// Repeat texture, with alternate sections mirrored
-		TEXTURE_FLAG_USED_FOR_STREAMING = 2048,
-		TEXTURE_FLAGS_DEFAULT = TEXTURE_FLAG_REPEAT | TEXTURE_FLAG_MIPMAPS | TEXTURE_FLAG_FILTER
+	enum TextureLayeredType {
+		TEXTURE_LAYERED_2D_ARRAY,
+		TEXTURE_LAYERED_CUBEMAP,
+		TEXTURE_LAYERED_CUBEMAP_ARRAY,
 	};
 
-	enum TextureType {
-		TEXTURE_TYPE_2D,
-		TEXTURE_TYPE_CUBEMAP,
-		TEXTURE_TYPE_2D_ARRAY,
-		TEXTURE_TYPE_3D,
+	enum CubeMapLayer {
+
+		CUBEMAP_LAYER_LEFT,
+		CUBEMAP_LAYER_RIGHT,
+		CUBEMAP_LAYER_BOTTOM,
+		CUBEMAP_LAYER_TOP,
+		CUBEMAP_LAYER_FRONT,
+		CUBEMAP_LAYER_BACK
 	};
 
-	enum CubeMapSide {
+	virtual RID texture_2d_create(const Ref<Image> &p_image) = 0;
+	virtual RID texture_2d_layered_create(const Vector<Ref<Image> > &p_layers, TextureLayeredType p_layered_type) = 0;
+	virtual RID texture_3d_create(const Vector<Ref<Image> > &p_slices) = 0; //all slices, then all the mipmaps, must be coherent
 
-		CUBEMAP_LEFT,
-		CUBEMAP_RIGHT,
-		CUBEMAP_BOTTOM,
-		CUBEMAP_TOP,
-		CUBEMAP_FRONT,
-		CUBEMAP_BACK
-	};
+	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0; //mostly used for video and streaming
+	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
+	virtual void texture_3d_update(RID p_texture, const Ref<Image> &p_image, int p_depth, int p_mipmap) = 0;
 
-	virtual RID texture_create() = 0;
-	RID texture_create_from_image(const Ref<Image> &p_image, uint32_t p_flags = TEXTURE_FLAGS_DEFAULT); // helper
-	virtual void texture_allocate(RID p_texture,
-			int p_width,
-			int p_height,
-			int p_depth_3d,
-			Image::Format p_format,
-			TextureType p_type,
-			uint32_t p_flags = TEXTURE_FLAGS_DEFAULT) = 0;
+	//these two APIs can be used together or in combination with the others.
+	virtual RID texture_2d_placeholder_create() = 0;
+	virtual RID texture_2d_layered_placeholder_create() = 0;
+	virtual RID texture_3d_placeholder_create() = 0;
 
-	virtual void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
-	virtual void texture_set_data_partial(RID p_texture,
-			const Ref<Image> &p_image,
-			int src_x, int src_y,
-			int src_w, int src_h,
-			int dst_x, int dst_y,
-			int p_dst_mip,
-			int p_layer = 0) = 0;
+	virtual Ref<Image> texture_2d_get(RID p_texture) const = 0;
+	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const = 0;
+	virtual Ref<Image> texture_3d_slice_get(RID p_texture, int p_depth, int p_mipmap) const = 0;
 
-	virtual Ref<Image> texture_get_data(RID p_texture, int p_layer = 0) const = 0;
-	virtual void texture_set_flags(RID p_texture, uint32_t p_flags) = 0;
-	virtual uint32_t texture_get_flags(RID p_texture) const = 0;
-	virtual Image::Format texture_get_format(RID p_texture) const = 0;
-	virtual TextureType texture_get_type(RID p_texture) const = 0;
-	virtual uint32_t texture_get_texid(RID p_texture) const = 0;
-	virtual uint32_t texture_get_width(RID p_texture) const = 0;
-	virtual uint32_t texture_get_height(RID p_texture) const = 0;
-	virtual uint32_t texture_get_depth(RID p_texture) const = 0;
-	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height, int p_depth_3d) = 0;
+	virtual void texture_replace(RID p_texture, RID p_by_texture) = 0;
+	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) = 0;
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	virtual void texture_bind(RID p_texture, uint32_t p_texture_no) = 0;
+#endif
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
 	virtual String texture_get_path(RID p_texture) const = 0;
 
-	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable) = 0;
-
 	typedef void (*TextureDetectCallback)(void *);
 
 	virtual void texture_set_detect_3d_callback(RID p_texture, TextureDetectCallback p_callback, void *p_userdata) = 0;
-	virtual void texture_set_detect_srgb_callback(RID p_texture, TextureDetectCallback p_callback, void *p_userdata) = 0;
 	virtual void texture_set_detect_normal_callback(RID p_texture, TextureDetectCallback p_callback, void *p_userdata) = 0;
+
+	enum TextureDetectRoughnessChannel {
+		TEXTURE_DETECT_ROUGNHESS_R,
+		TEXTURE_DETECT_ROUGNHESS_G,
+		TEXTURE_DETECT_ROUGNHESS_B,
+		TEXTURE_DETECT_ROUGNHESS_A,
+		TEXTURE_DETECT_ROUGNHESS_GRAY,
+	};
+
+	typedef void (*TextureDetectRoughnessCallback)(void *, const String &, TextureDetectRoughnessChannel);
+	virtual void texture_set_detect_roughness_callback(RID p_texture, TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
 
 	struct TextureInfo {
 		RID texture;
@@ -162,8 +151,6 @@ public:
 
 	virtual void texture_debug_usage(List<TextureInfo> *r_info) = 0;
 	Array _texture_debug_usage_bind();
-
-	virtual void textures_keep_original(bool p_enable) = 0;
 
 	virtual void texture_set_proxy(RID p_proxy, RID p_base) = 0;
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
@@ -722,7 +709,10 @@ public:
 	virtual void environment_set_bg_energy(RID p_env, float p_energy) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0) = 0;
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) = 0;
+#endif
 
 	//set default SSAO options
 	//set default SSR options
@@ -1058,8 +1048,8 @@ public:
 };
 
 // make variant understand the enums
-VARIANT_ENUM_CAST(VisualServer::CubeMapSide);
-VARIANT_ENUM_CAST(VisualServer::TextureFlags);
+VARIANT_ENUM_CAST(VisualServer::TextureLayeredType);
+VARIANT_ENUM_CAST(VisualServer::CubeMapLayer);
 VARIANT_ENUM_CAST(VisualServer::ShaderMode);
 VARIANT_ENUM_CAST(VisualServer::ArrayType);
 VARIANT_ENUM_CAST(VisualServer::ArrayFormat);
@@ -1098,7 +1088,6 @@ VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOQuality);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOBlur);
 VARIANT_ENUM_CAST(VisualServer::InstanceFlags);
 VARIANT_ENUM_CAST(VisualServer::ShadowCastingSetting);
-VARIANT_ENUM_CAST(VisualServer::TextureType);
 
 //typedef VisualServer VS; // makes it easier to use
 #define VS VisualServer

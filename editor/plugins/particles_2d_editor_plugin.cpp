@@ -292,7 +292,7 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 
 	Ref<ImageTexture> imgt;
 	imgt.instance();
-	imgt->create_from_image(img, 0);
+	imgt->create_from_image(img);
 
 	pm->set_emission_point_texture(imgt);
 	pm->set_emission_point_count(vpc);
@@ -314,7 +314,7 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 		img->create(w, h, false, Image::FORMAT_RGBA8, colordata);
 
 		imgt.instance();
-		imgt->create_from_image(img, 0);
+		imgt->create_from_image(img);
 		pm->set_emission_color_texture(imgt);
 	}
 
@@ -337,7 +337,7 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 		img->create(w, h, false, Image::FORMAT_RGF, normdata);
 
 		imgt.instance();
-		imgt->create_from_image(img, 0);
+		imgt->create_from_image(img);
 		pm->set_emission_normal_texture(imgt);
 
 	} else {

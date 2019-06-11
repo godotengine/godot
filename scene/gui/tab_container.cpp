@@ -58,7 +58,7 @@ int TabContainer::_get_top_margin() const {
 		if (!c->has_meta("_tab_icon"))
 			continue;
 
-		Ref<Texture> tex = c->get_meta("_tab_icon");
+		Ref<Texture2D> tex = c->get_meta("_tab_icon");
 		if (!tex.is_valid())
 			continue;
 		content_height = MAX(content_height, tex->get_size().height);
@@ -81,7 +81,7 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 
 		// Handle menu button.
-		Ref<Texture> menu = get_icon("menu");
+		Ref<Texture2D> menu = get_icon("menu");
 		if (popup && pos.x > size.width - menu->get_width()) {
 			emit_signal("pre_popup_pressed");
 
@@ -107,8 +107,8 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 				popup_ofs = menu->get_width();
 			}
 
-			Ref<Texture> increment = get_icon("increment");
-			Ref<Texture> decrement = get_icon("decrement");
+			Ref<Texture2D> increment = get_icon("increment");
+			Ref<Texture2D> decrement = get_icon("decrement");
 			if (pos.x > size.width - increment->get_width() - popup_ofs) {
 				if (last_tab_cache < tabs.size() - 1) {
 					first_tab_cache += 1;
@@ -159,7 +159,7 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		Ref<Texture> menu = get_icon("menu");
+		Ref<Texture2D> menu = get_icon("menu");
 		if (popup) {
 
 			if (pos.x >= size.width - menu->get_width()) {
@@ -191,8 +191,8 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 			popup_ofs = menu->get_width();
 		}
 
-		Ref<Texture> increment = get_icon("increment");
-		Ref<Texture> decrement = get_icon("decrement");
+		Ref<Texture2D> increment = get_icon("increment");
+		Ref<Texture2D> decrement = get_icon("decrement");
 		if (pos.x >= size.width - increment->get_width() - popup_ofs) {
 
 			if (highlight_arrow != 1) {
@@ -225,9 +225,9 @@ void TabContainer::_notification(int p_what) {
 
 			Vector<Control *> tabs = _get_tabs();
 			int side_margin = get_constant("side_margin");
-			Ref<Texture> menu = get_icon("menu");
-			Ref<Texture> increment = get_icon("increment");
-			Ref<Texture> decrement = get_icon("decrement");
+			Ref<Texture2D> menu = get_icon("menu");
+			Ref<Texture2D> increment = get_icon("increment");
+			Ref<Texture2D> decrement = get_icon("decrement");
 			int header_width = get_size().width - side_margin * 2;
 
 			// Find the width of the header area.
@@ -272,12 +272,12 @@ void TabContainer::_notification(int p_what) {
 			Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
 			Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
 			Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
-			Ref<Texture> increment = get_icon("increment");
-			Ref<Texture> increment_hl = get_icon("increment_highlight");
-			Ref<Texture> decrement = get_icon("decrement");
-			Ref<Texture> decrement_hl = get_icon("decrement_highlight");
-			Ref<Texture> menu = get_icon("menu");
-			Ref<Texture> menu_hl = get_icon("menu_highlight");
+			Ref<Texture2D> increment = get_icon("increment");
+			Ref<Texture2D> increment_hl = get_icon("increment_highlight");
+			Ref<Texture2D> decrement = get_icon("decrement");
+			Ref<Texture2D> decrement_hl = get_icon("decrement_highlight");
+			Ref<Texture2D> menu = get_icon("menu");
+			Ref<Texture2D> menu_hl = get_icon("menu_highlight");
 			Ref<Font> font = get_font("font");
 			Color font_color_fg = get_color("font_color_fg");
 			Color font_color_bg = get_color("font_color_bg");
@@ -383,7 +383,7 @@ void TabContainer::_notification(int p_what) {
 
 				// Draw the tab icon.
 				if (control->has_meta("_tab_icon")) {
-					Ref<Texture> icon = control->get_meta("_tab_icon");
+					Ref<Texture2D> icon = control->get_meta("_tab_icon");
 					if (icon.is_valid()) {
 						int y = y_center - (icon->get_height() / 2);
 						icon->draw(canvas, Point2i(x_content, y));
@@ -464,7 +464,7 @@ int TabContainer::_get_tab_width(int p_index) const {
 
 	// Add space for a tab icon.
 	if (control->has_meta("_tab_icon")) {
-		Ref<Texture> icon = control->get_meta("_tab_icon");
+		Ref<Texture2D> icon = control->get_meta("_tab_icon");
 		if (icon.is_valid()) {
 			width += icon->get_width();
 			if (text != "")
@@ -648,7 +648,7 @@ Variant TabContainer::get_drag_data(const Point2 &p_point) {
 
 	HBoxContainer *drag_preview = memnew(HBoxContainer);
 
-	Ref<Texture> icon = get_tab_icon(tab_over);
+	Ref<Texture2D> icon = get_tab_icon(tab_over);
 	if (!icon.is_null()) {
 		TextureRect *tf = memnew(TextureRect);
 		tf->set_texture(icon);
@@ -745,12 +745,12 @@ int TabContainer::get_tab_idx_at_point(const Point2 &p_point) const {
 	int right_ofs = 0;
 
 	if (popup) {
-		Ref<Texture> menu = get_icon("menu");
+		Ref<Texture2D> menu = get_icon("menu");
 		right_ofs += menu->get_width();
 	}
 	if (buttons_visible_cache) {
-		Ref<Texture> increment = get_icon("increment");
-		Ref<Texture> decrement = get_icon("decrement");
+		Ref<Texture2D> increment = get_icon("increment");
+		Ref<Texture2D> decrement = get_icon("decrement");
 		right_ofs += increment->get_width() + decrement->get_width();
 	}
 	if (p_point.x > size.width - right_ofs) {
@@ -834,21 +834,21 @@ String TabContainer::get_tab_title(int p_tab) const {
 		return child->get_name();
 }
 
-void TabContainer::set_tab_icon(int p_tab, const Ref<Texture> &p_icon) {
+void TabContainer::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_icon", p_icon);
 	update();
 }
-Ref<Texture> TabContainer::get_tab_icon(int p_tab) const {
+Ref<Texture2D> TabContainer::get_tab_icon(int p_tab) const {
 
 	Control *child = _get_tab(p_tab);
-	ERR_FAIL_COND_V(!child, Ref<Texture>());
+	ERR_FAIL_COND_V(!child, Ref<Texture2D>());
 	if (child->has_meta("_tab_icon"))
 		return child->get_meta("_tab_icon");
 	else
-		return Ref<Texture>();
+		return Ref<Texture2D>();
 }
 
 void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {

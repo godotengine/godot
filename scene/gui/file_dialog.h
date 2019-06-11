@@ -58,7 +58,7 @@ public:
 		MODE_SAVE_FILE
 	};
 
-	typedef Ref<Texture> (*GetIconFunc)(const String &);
+	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
 	typedef void (*RegisterFunc)(FileDialog *);
 
 	static GetIconFunc get_icon_func;

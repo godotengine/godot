@@ -191,7 +191,7 @@ public:
 
 class VisualShaderNodeTexture : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeTexture, VisualShaderNode);
-	Ref<Texture> texture;
+	Ref<Texture2D> texture;
 
 public:
 	enum Source {
@@ -236,8 +236,8 @@ public:
 	void set_source(Source p_source);
 	Source get_source() const;
 
-	void set_texture(Ref<Texture> p_value);
-	Ref<Texture> get_texture() const;
+	void set_texture(Ref<Texture2D> p_value);
+	Ref<Texture2D> get_texture() const;
 
 	void set_texture_type(TextureType p_type);
 	TextureType get_texture_type() const;
@@ -254,9 +254,9 @@ VARIANT_ENUM_CAST(VisualShaderNodeTexture::Source)
 
 ///////////////////////////////////////
 
-class VisualShaderNodeCubeMap : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeCubeMap, VisualShaderNode);
-	Ref<CubeMap> cube_map;
+class VisualShaderNodeCubemap : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeCubemap, VisualShaderNode);
+	Ref<Cubemap> cube_map;
 
 public:
 	enum Source {
@@ -296,19 +296,19 @@ public:
 	void set_source(Source p_source);
 	Source get_source() const;
 
-	void set_cube_map(Ref<CubeMap> p_value);
-	Ref<CubeMap> get_cube_map() const;
+	void set_cube_map(Ref<Cubemap> p_value);
+	Ref<Cubemap> get_cube_map() const;
 
 	void set_texture_type(TextureType p_type);
 	TextureType get_texture_type() const;
 
 	virtual Vector<StringName> get_editable_properties() const;
 
-	VisualShaderNodeCubeMap();
+	VisualShaderNodeCubemap();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeCubeMap::TextureType)
-VARIANT_ENUM_CAST(VisualShaderNodeCubeMap::Source)
+VARIANT_ENUM_CAST(VisualShaderNodeCubemap::TextureType)
+VARIANT_ENUM_CAST(VisualShaderNodeCubemap::Source)
 
 ///////////////////////////////////////
 /// OPS
@@ -1514,8 +1514,8 @@ public:
 
 ///////////////////////////////////////
 
-class VisualShaderNodeCubeMapUniform : public VisualShaderNodeTextureUniform {
-	GDCLASS(VisualShaderNodeCubeMapUniform, VisualShaderNodeTextureUniform);
+class VisualShaderNodeCubemapUniform : public VisualShaderNodeTextureUniform {
+	GDCLASS(VisualShaderNodeCubemapUniform, VisualShaderNodeTextureUniform);
 
 public:
 	virtual String get_caption() const;
@@ -1532,7 +1532,7 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
-	VisualShaderNodeCubeMapUniform();
+	VisualShaderNodeCubemapUniform();
 };
 
 ///////////////////////////////////////

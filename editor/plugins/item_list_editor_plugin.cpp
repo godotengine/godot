@@ -105,7 +105,7 @@ void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 		String base = itos(i) + "/";
 
 		p_list->push_back(PropertyInfo(Variant::STRING, base + "text"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
 
 		int flags = get_flags();
 

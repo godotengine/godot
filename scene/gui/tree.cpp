@@ -129,7 +129,7 @@ void TreeItem::set_cell_mode(int p_column, TreeCellMode p_mode) {
 	c.step = 1;
 	c.val = 0;
 	c.checked = false;
-	c.icon = Ref<Texture>();
+	c.icon = Ref<Texture2D>();
 	c.text = "";
 	c.icon_max_w = 0;
 	_changed_notify(p_column);
@@ -198,16 +198,16 @@ String TreeItem::get_suffix(int p_column) const {
 	return cells[p_column].suffix;
 }
 
-void TreeItem::set_icon(int p_column, const Ref<Texture> &p_icon) {
+void TreeItem::set_icon(int p_column, const Ref<Texture2D> &p_icon) {
 
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].icon = p_icon;
 	_changed_notify(p_column);
 }
 
-Ref<Texture> TreeItem::get_icon(int p_column) const {
+Ref<Texture2D> TreeItem::get_icon(int p_column) const {
 
-	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<Texture>());
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<Texture2D>());
 	return cells[p_column].icon;
 }
 
@@ -522,7 +522,7 @@ void TreeItem::deselect(int p_column) {
 	_cell_deselected(p_column);
 }
 
-void TreeItem::add_button(int p_column, const Ref<Texture> &p_button, int p_id, bool p_disabled, const String &p_tooltip) {
+void TreeItem::add_button(int p_column, const Ref<Texture2D> &p_button, int p_id, bool p_disabled, const String &p_tooltip) {
 
 	ERR_FAIL_INDEX(p_column, cells.size());
 	ERR_FAIL_COND(!p_button.is_valid());
@@ -542,9 +542,9 @@ int TreeItem::get_button_count(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
 	return cells[p_column].buttons.size();
 }
-Ref<Texture> TreeItem::get_button(int p_column, int p_idx) const {
-	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<Texture>());
-	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), Ref<Texture>());
+Ref<Texture2D> TreeItem::get_button(int p_column, int p_idx) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<Texture2D>());
+	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), Ref<Texture2D>());
 	return cells[p_column].buttons[p_idx].texture;
 }
 String TreeItem::get_button_tooltip(int p_column, int p_idx) const {
@@ -577,7 +577,7 @@ int TreeItem::get_button_by_id(int p_column, int p_id) const {
 	return -1;
 }
 
-void TreeItem::set_button(int p_column, int p_idx, const Ref<Texture> &p_button) {
+void TreeItem::set_button(int p_column, int p_idx, const Ref<Texture2D> &p_button) {
 
 	ERR_FAIL_COND(p_button.is_null());
 	ERR_FAIL_INDEX(p_column, cells.size());
@@ -1026,7 +1026,7 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 			case TreeItem::CELL_MODE_CUSTOM:
 			case TreeItem::CELL_MODE_ICON: {
 
-				Ref<Texture> icon = p_item->cells[i].icon;
+				Ref<Texture2D> icon = p_item->cells[i].icon;
 				if (!icon.is_null()) {
 
 					Size2i s = p_item->cells[i].get_icon_size();
@@ -1190,7 +1190,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			int bw = 0;
 			for (int j = p_item->cells[i].buttons.size() - 1; j >= 0; j--) {
-				Ref<Texture> b = p_item->cells[i].buttons[j].texture;
+				Ref<Texture2D> b = p_item->cells[i].buttons[j].texture;
 				Size2 s = b->get_size() + cache.button_pressed->get_minimum_size();
 				if (s.height < label_h)
 					s.height = label_h;
@@ -1305,8 +1305,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				} break;
 				case TreeItem::CELL_MODE_CHECK: {
 
-					Ref<Texture> checked = cache.checked;
-					Ref<Texture> unchecked = cache.unchecked;
+					Ref<Texture2D> checked = cache.checked;
+					Ref<Texture2D> unchecked = cache.unchecked;
 					Point2i check_ofs = item_rect.position;
 					check_ofs.y += Math::floor((real_t)(item_rect.size.y - checked->get_height()) / 2);
 
@@ -1350,7 +1350,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						if (p_item->cells[i].suffix != String())
 							s += " " + p_item->cells[i].suffix;
 
-						Ref<Texture> downarrow = cache.select_arrow;
+						Ref<Texture2D> downarrow = cache.select_arrow;
 
 						font->draw(ci, text_pos, s, col, item_rect.size.x - downarrow->get_width());
 
@@ -1361,7 +1361,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						downarrow->draw(ci, arrow_pos);
 					} else {
 
-						Ref<Texture> updown = cache.updown;
+						Ref<Texture2D> updown = cache.updown;
 
 						String valtext = String::num(p_item->cells[i].val, Math::range_step_decimals(p_item->cells[i].step));
 
@@ -1412,7 +1412,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						break;
 					}
 
-					Ref<Texture> downarrow = cache.select_arrow;
+					Ref<Texture2D> downarrow = cache.select_arrow;
 
 					Rect2i ir = item_rect;
 
@@ -1462,7 +1462,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 		if (!p_item->disable_folding && !hide_folding && p_item->children) { //has children, draw the guide box
 
-			Ref<Texture> arrow;
+			Ref<Texture2D> arrow;
 
 			if (p_item->collapsed) {
 
@@ -1775,7 +1775,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 		bool already_cursor = (p_item == selected_item) && col == selected_col;
 
 		for (int j = c.buttons.size() - 1; j >= 0; j--) {
-			Ref<Texture> b = c.buttons[j].texture;
+			Ref<Texture2D> b = c.buttons[j].texture;
 			int w = b->get_size().width + cache.button_pressed->get_minimum_size().width;
 
 			if (x > col_width - w) {
@@ -3825,7 +3825,7 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 				pos.x -= get_column_width(i);
 
 			for (int j = c.buttons.size() - 1; j >= 0; j--) {
-				Ref<Texture> b = c.buttons[j].texture;
+				Ref<Texture2D> b = c.buttons[j].texture;
 				Size2 size = b->get_size() + cache.button_pressed->get_minimum_size();
 				if (pos.x > col_width - size.width) {
 					String tooltip = c.buttons[j].tooltip;

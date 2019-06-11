@@ -68,7 +68,7 @@ bool AnimatedSprite::_edit_use_rect() const {
 	if (!frames.is_valid() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
 		return false;
 	}
-	Ref<Texture> t;
+	Ref<Texture2D> t;
 	if (animation)
 		t = frames->get_frame(animation, frame);
 	return t.is_valid();
@@ -84,7 +84,7 @@ Rect2 AnimatedSprite::_get_rect() const {
 		return Rect2();
 	}
 
-	Ref<Texture> t;
+	Ref<Texture2D> t;
 	if (animation)
 		t = frames->get_frame(animation, frame);
 	if (t.is_null())
@@ -101,7 +101,7 @@ Rect2 AnimatedSprite::_get_rect() const {
 	return Rect2(ofs, s);
 }
 
-void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture> &p_frame, int p_at_pos) {
+void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture2D> &p_frame, int p_at_pos) {
 
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
@@ -438,11 +438,11 @@ void AnimatedSprite::_notification(int p_what) {
 			if (!frames->has_animation(animation))
 				return;
 
-			Ref<Texture> texture = frames->get_frame(animation, frame);
+			Ref<Texture2D> texture = frames->get_frame(animation, frame);
 			if (texture.is_null())
 				return;
 
-			Ref<Texture> normal = frames->get_normal_frame(animation, frame);
+			Ref<Texture2D> normal = frames->get_normal_frame(animation, frame);
 
 			RID ci = get_canvas_item();
 

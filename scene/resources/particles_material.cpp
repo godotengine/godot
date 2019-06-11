@@ -790,7 +790,7 @@ float ParticlesMaterial::get_param_randomness(Parameter p_param) const {
 	return randomness[p_param];
 }
 
-static void _adjust_curve_range(const Ref<Texture> &p_texture, float p_min, float p_max) {
+static void _adjust_curve_range(const Ref<Texture2D> &p_texture, float p_min, float p_max) {
 
 	Ref<CurveTexture> curve_tex = p_texture;
 	if (!curve_tex.is_valid())
@@ -799,7 +799,7 @@ static void _adjust_curve_range(const Ref<Texture> &p_texture, float p_min, floa
 	curve_tex->ensure_default_setup(p_min, p_max);
 }
 
-void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture> &p_texture) {
+void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture2D> &p_texture) {
 
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 
@@ -857,9 +857,9 @@ void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture> 
 
 	_queue_shader_change();
 }
-Ref<Texture> ParticlesMaterial::get_param_texture(Parameter p_param) const {
+Ref<Texture2D> ParticlesMaterial::get_param_texture(Parameter p_param) const {
 
-	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, Ref<Texture>());
+	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, Ref<Texture2D>());
 
 	return tex_parameters[p_param];
 }
@@ -875,7 +875,7 @@ Color ParticlesMaterial::get_color() const {
 	return color;
 }
 
-void ParticlesMaterial::set_color_ramp(const Ref<Texture> &p_texture) {
+void ParticlesMaterial::set_color_ramp(const Ref<Texture2D> &p_texture) {
 
 	color_ramp = p_texture;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->color_ramp, p_texture);
@@ -883,7 +883,7 @@ void ParticlesMaterial::set_color_ramp(const Ref<Texture> &p_texture) {
 	_change_notify();
 }
 
-Ref<Texture> ParticlesMaterial::get_color_ramp() const {
+Ref<Texture2D> ParticlesMaterial::get_color_ramp() const {
 
 	return color_ramp;
 }
@@ -921,19 +921,19 @@ void ParticlesMaterial::set_emission_box_extents(Vector3 p_extents) {
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_box_extents, p_extents);
 }
 
-void ParticlesMaterial::set_emission_point_texture(const Ref<Texture> &p_points) {
+void ParticlesMaterial::set_emission_point_texture(const Ref<Texture2D> &p_points) {
 
 	emission_point_texture = p_points;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_points, p_points);
 }
 
-void ParticlesMaterial::set_emission_normal_texture(const Ref<Texture> &p_normals) {
+void ParticlesMaterial::set_emission_normal_texture(const Ref<Texture2D> &p_normals) {
 
 	emission_normal_texture = p_normals;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_normal, p_normals);
 }
 
-void ParticlesMaterial::set_emission_color_texture(const Ref<Texture> &p_colors) {
+void ParticlesMaterial::set_emission_color_texture(const Ref<Texture2D> &p_colors) {
 
 	emission_color_texture = p_colors;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_color, p_colors);
@@ -959,16 +959,16 @@ Vector3 ParticlesMaterial::get_emission_box_extents() const {
 
 	return emission_box_extents;
 }
-Ref<Texture> ParticlesMaterial::get_emission_point_texture() const {
+Ref<Texture2D> ParticlesMaterial::get_emission_point_texture() const {
 
 	return emission_point_texture;
 }
-Ref<Texture> ParticlesMaterial::get_emission_normal_texture() const {
+Ref<Texture2D> ParticlesMaterial::get_emission_normal_texture() const {
 
 	return emission_normal_texture;
 }
 
-Ref<Texture> ParticlesMaterial::get_emission_color_texture() const {
+Ref<Texture2D> ParticlesMaterial::get_emission_color_texture() const {
 
 	return emission_color_texture;
 }
@@ -1162,9 +1162,9 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points"), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01,or_greater"), "set_emission_sphere_radius", "get_emission_sphere_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_extents"), "set_emission_box_extents", "get_emission_box_extents");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_point_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_emission_point_texture", "get_emission_point_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_normal_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_emission_normal_texture", "get_emission_normal_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_color_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_emission_color_texture", "get_emission_color_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_point_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_emission_point_texture", "get_emission_point_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_normal_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_emission_normal_texture", "get_emission_normal_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_color_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_emission_color_texture", "get_emission_color_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_point_count", PROPERTY_HINT_RANGE, "0,1000000,1"), "set_emission_point_count", "get_emission_point_count");
 	ADD_GROUP("Flags", "flag_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_align_y"), "set_flag", "get_flag", FLAG_ALIGN_Y_TO_VELOCITY);

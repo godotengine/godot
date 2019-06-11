@@ -198,7 +198,7 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
-		HashMap<StringName, Ref<Texture> > icon_override;
+		HashMap<StringName, Ref<Texture2D> > icon_override;
 		HashMap<StringName, Ref<Shader> > shader_override;
 		HashMap<StringName, Ref<StyleBox> > style_override;
 		HashMap<StringName, Ref<Font> > font_override;
@@ -420,14 +420,14 @@ public:
 
 	/* SKINNING */
 
-	void add_icon_override(const StringName &p_name, const Ref<Texture> &p_icon);
+	void add_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon);
 	void add_shader_override(const StringName &p_name, const Ref<Shader> &p_shader);
 	void add_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
 	void add_font_override(const StringName &p_name, const Ref<Font> &p_font);
 	void add_color_override(const StringName &p_name, const Color &p_color);
 	void add_constant_override(const StringName &p_name, int p_constant);
 
-	Ref<Texture> get_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Ref<Texture2D> get_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
 	Ref<Shader> get_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
 	Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
 	Ref<Font> get_font(const StringName &p_name, const StringName &p_type = StringName()) const;

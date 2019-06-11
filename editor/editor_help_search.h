@@ -116,7 +116,7 @@ class EditorHelpSearch::Runner : public Reference {
 	String term;
 	int search_flags;
 
-	Ref<Texture> empty_icon;
+	Ref<Texture2D> empty_icon;
 	Color disabled_color;
 
 	Map<String, DocData::ClassDoc>::Element *iterator_doc;

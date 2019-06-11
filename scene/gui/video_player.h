@@ -86,7 +86,7 @@ public:
 	void set_expand(bool p_expand);
 	bool has_expand() const;
 
-	Ref<Texture> get_video_texture() const;
+	Ref<Texture2D> get_video_texture() const;
 
 	void set_stream(const Ref<VideoStream> &p_stream);
 	Ref<VideoStream> get_stream() const;

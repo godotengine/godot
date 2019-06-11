@@ -29,9 +29,12 @@
 /*************************************************************************/
 
 #include "camera_feed.h"
+
 #include "servers/visual_server.h"
 
 void CameraFeed::_bind_methods() {
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	// The setters prefixed with _ are only exposed so we can have feeds through GDNative!
 	// They should not be called by the end user.
 
@@ -51,7 +54,6 @@ void CameraFeed::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_RGB_img", "rgb_img"), &CameraFeed::set_RGB_img);
 	ClassDB::bind_method(D_METHOD("_set_YCbCr_img", "ycbcr_img"), &CameraFeed::set_YCbCr_img);
-	ClassDB::bind_method(D_METHOD("_set_YCbCr_imgs", "y_img", "cbcr_img"), &CameraFeed::set_YCbCr_imgs);
 	ClassDB::bind_method(D_METHOD("_allocate_texture", "width", "height", "format", "texture_type", "data_type"), &CameraFeed::allocate_texture);
 
 	ADD_GROUP("Feed", "feed_");
@@ -66,6 +68,7 @@ void CameraFeed::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEED_UNSPECIFIED);
 	BIND_ENUM_CONSTANT(FEED_FRONT);
 	BIND_ENUM_CONSTANT(FEED_BACK);
+#endif
 }
 
 int CameraFeed::get_id() const {
@@ -142,10 +145,13 @@ CameraFeed::CameraFeed() {
 	position = CameraFeed::FEED_UNSPECIFIED;
 	transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
 
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	// create a texture object
 	VisualServer *vs = VisualServer::get_singleton();
 	texture[CameraServer::FEED_Y_IMAGE] = vs->texture_create(); // also used for RGBA
 	texture[CameraServer::FEED_CBCR_IMAGE] = vs->texture_create();
+#endif
 }
 
 CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
@@ -159,20 +165,28 @@ CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
 	position = p_position;
 	transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
 
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	// create a texture object
 	VisualServer *vs = VisualServer::get_singleton();
 	texture[CameraServer::FEED_Y_IMAGE] = vs->texture_create(); // also used for RGBA
 	texture[CameraServer::FEED_CBCR_IMAGE] = vs->texture_create();
+#endif
 }
 
 CameraFeed::~CameraFeed() {
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	// Free our textures
 	VisualServer *vs = VisualServer::get_singleton();
 	vs->free(texture[CameraServer::FEED_Y_IMAGE]);
 	vs->free(texture[CameraServer::FEED_CBCR_IMAGE]);
+#endif
 }
 
 void CameraFeed::set_RGB_img(Ref<Image> p_rgb_img) {
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	if (active) {
 		VisualServer *vs = VisualServer::get_singleton();
 
@@ -190,9 +204,12 @@ void CameraFeed::set_RGB_img(Ref<Image> p_rgb_img) {
 		vs->texture_set_data(texture[CameraServer::FEED_RGBA_IMAGE], p_rgb_img);
 		datatype = CameraFeed::FEED_RGB;
 	}
+#endif
 }
 
 void CameraFeed::set_YCbCr_img(Ref<Image> p_ycbcr_img) {
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	if (active) {
 		VisualServer *vs = VisualServer::get_singleton();
 
@@ -210,9 +227,12 @@ void CameraFeed::set_YCbCr_img(Ref<Image> p_ycbcr_img) {
 		vs->texture_set_data(texture[CameraServer::FEED_RGBA_IMAGE], p_ycbcr_img);
 		datatype = CameraFeed::FEED_YCBCR;
 	}
+#endif
 }
 
 void CameraFeed::set_YCbCr_imgs(Ref<Image> p_y_img, Ref<Image> p_cbcr_img) {
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	if (active) {
 		VisualServer *vs = VisualServer::get_singleton();
 
@@ -240,8 +260,11 @@ void CameraFeed::set_YCbCr_imgs(Ref<Image> p_y_img, Ref<Image> p_cbcr_img) {
 		vs->texture_set_data(texture[CameraServer::FEED_CBCR_IMAGE], p_cbcr_img);
 		datatype = CameraFeed::FEED_YCBCR_SEP;
 	}
+#endif
 }
 
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 void CameraFeed::allocate_texture(int p_width, int p_height, Image::Format p_format, VisualServer::TextureType p_texture_type, FeedDataType p_data_type) {
 	VisualServer *vs = VisualServer::get_singleton();
 
@@ -255,6 +278,7 @@ void CameraFeed::allocate_texture(int p_width, int p_height, Image::Format p_for
 
 	datatype = p_data_type;
 }
+#endif
 
 bool CameraFeed::activate_feed() {
 	// nothing to do here

@@ -98,7 +98,7 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 
 	// Save source PNG.
 	Ref<ImageTexture> t = memnew(ImageTexture);
-	t->create_from_image(Ref<Image>(p_image), 0);
+	t->create_from_image(Ref<Image>(p_image));
 	ResourceSaver::save(src_img, t);
 
 	Error err = OS::get_singleton()->execute(ttpath, args, true);
@@ -109,7 +109,7 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 		ERR_FAIL_MSG("Could not execute PVRTC tool: " + ttpath);
 	}
 
-	t = ResourceLoader::load(dst_img, "Texture");
+	t = ResourceLoader::load(dst_img, "Texture2D");
 	if (t.is_null()) {
 		// Clean up generated files.
 		DirAccess::remove_file_or_error(src_img);

@@ -147,7 +147,7 @@ public:
 class Sprite3D : public SpriteBase3D {
 
 	GDCLASS(Sprite3D, SpriteBase3D);
-	Ref<Texture> texture;
+	Ref<Texture2D> texture;
 
 	bool region;
 	Rect2 region_rect;
@@ -164,8 +164,8 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
-	void set_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_texture() const;
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
 
 	void set_region(bool p_region);
 	bool is_region() const;

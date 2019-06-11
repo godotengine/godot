@@ -54,7 +54,7 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 		if (!obj)
 			continue;
 
-		Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(obj);
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj);
 
 		int index = get_popup()->get_item_count();
 		get_popup()->add_icon_item(icon, E->get().name.capitalize(), objects.size());
@@ -90,7 +90,7 @@ void EditorPath::update_path() {
 		if (!obj)
 			continue;
 
-		Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(obj);
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj);
 		if (icon.is_valid())
 			set_icon(icon);
 

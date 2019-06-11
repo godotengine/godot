@@ -44,7 +44,7 @@ void SpriteFramesEditor::_open_sprite_sheet() {
 
 	file_split_sheet->clear_filters();
 	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("Texture", &extensions);
+	ResourceLoader::get_recognized_extensions_for_type("Texture2D", &extensions);
 	for (int i = 0; i < extensions.size(); i++) {
 		file_split_sheet->add_filter("*." + extensions[i]);
 	}
@@ -249,11 +249,11 @@ void SpriteFramesEditor::_file_load_request(const PoolVector<String> &p_path, in
 
 	ERR_FAIL_COND(!frames->has_animation(edited_anim));
 
-	List<Ref<Texture> > resources;
+	List<Ref<Texture2D> > resources;
 
 	for (int i = 0; i < p_path.size(); i++) {
 
-		Ref<Texture> resource;
+		Ref<Texture2D> resource;
 		resource = ResourceLoader::load(p_path[i]);
 
 		if (resource.is_null()) {
@@ -278,7 +278,7 @@ void SpriteFramesEditor::_file_load_request(const PoolVector<String> &p_path, in
 
 	int count = 0;
 
-	for (List<Ref<Texture> >::Element *E = resources.front(); E; E = E->next()) {
+	for (List<Ref<Texture2D> >::Element *E = resources.front(); E; E = E->next()) {
 
 		undo_redo->add_do_method(frames, "add_frame", edited_anim, E->get(), p_at_pos == -1 ? -1 : p_at_pos + count);
 		undo_redo->add_undo_method(frames, "remove_frame", edited_anim, p_at_pos == -1 ? fc : p_at_pos);
@@ -297,7 +297,7 @@ void SpriteFramesEditor::_load_pressed() {
 
 	file->clear_filters();
 	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("Texture", &extensions);
+	ResourceLoader::get_recognized_extensions_for_type("Texture2D", &extensions);
 	for (int i = 0; i < extensions.size(); i++)
 		file->add_filter("*." + extensions[i]);
 
@@ -310,7 +310,7 @@ void SpriteFramesEditor::_paste_pressed() {
 
 	ERR_FAIL_COND(!frames->has_animation(edited_anim));
 
-	Ref<Texture> r = EditorSettings::get_singleton()->get_resource_clipboard();
+	Ref<Texture2D> r = EditorSettings::get_singleton()->get_resource_clipboard();
 	if (!r.is_valid()) {
 		dialog->set_text(TTR("Resource clipboard is empty or not a texture!"));
 		dialog->set_title(TTR("Error!"));
@@ -333,7 +333,7 @@ void SpriteFramesEditor::_copy_pressed() {
 
 	if (tree->get_current() < 0)
 		return;
-	Ref<Texture> r = frames->get_frame(edited_anim, tree->get_current());
+	Ref<Texture2D> r = frames->get_frame(edited_anim, tree->get_current());
 	if (!r.is_valid()) {
 		return;
 	}
@@ -356,7 +356,7 @@ void SpriteFramesEditor::_empty_pressed() {
 		from = frames->get_frame_count(edited_anim);
 	}
 
-	Ref<Texture> r;
+	Ref<Texture2D> r;
 
 	undo_redo->create_action(TTR("Add Empty"));
 	undo_redo->add_do_method(frames, "add_frame", edited_anim, r, from);
@@ -381,7 +381,7 @@ void SpriteFramesEditor::_empty2_pressed() {
 		from = frames->get_frame_count(edited_anim);
 	}
 
-	Ref<Texture> r;
+	Ref<Texture2D> r;
 
 	undo_redo->create_action(TTR("Add Empty"));
 	undo_redo->add_do_method(frames, "add_frame", edited_anim, r, from + 1);
@@ -603,7 +603,7 @@ void SpriteFramesEditor::_animation_remove_confirmed() {
 	undo_redo->add_undo_method(frames, "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
 	int fc = frames->get_frame_count(edited_anim);
 	for (int i = 0; i < fc; i++) {
-		Ref<Texture> frame = frames->get_frame(edited_anim, i);
+		Ref<Texture2D> frame = frames->get_frame(edited_anim, i);
 		undo_redo->add_undo_method(frames, "add_frame", edited_anim, frame);
 	}
 	undo_redo->add_do_method(this, "_update_library");
@@ -688,7 +688,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 	for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
 
 		String name;
-		Ref<Texture> icon;
+		Ref<Texture2D> icon;
 
 		if (frames->get_frame(edited_anim, i).is_null()) {
 
@@ -775,7 +775,7 @@ bool SpriteFramesEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 	if (String(d["type"]) == "resource" && d.has("resource")) {
 		RES r = d["resource"];
 
-		Ref<Texture> texture = r;
+		Ref<Texture2D> texture = r;
 
 		if (texture.is_valid()) {
 
@@ -794,7 +794,7 @@ bool SpriteFramesEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 			String file = files[i];
 			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
 
-			if (!ClassDB::is_parent_class(ftype, "Texture")) {
+			if (!ClassDB::is_parent_class(ftype, "Texture2D")) {
 				return false;
 			}
 		}
@@ -819,7 +819,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (String(d["type"]) == "resource" && d.has("resource")) {
 		RES r = d["resource"];
 
-		Ref<Texture> texture = r;
+		Ref<Texture2D> texture = r;
 
 		if (texture.is_valid()) {
 			bool reorder = false;

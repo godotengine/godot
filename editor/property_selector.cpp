@@ -120,7 +120,7 @@ void PropertySelector::_update_search() {
 
 		bool found = false;
 
-		Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
+		Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
 			Control::get_icon("Variant", "EditorIcons"),
 			Control::get_icon("bool", "EditorIcons"),
 			Control::get_icon("int", "EditorIcons"),
@@ -159,7 +159,7 @@ void PropertySelector::_update_search() {
 				category->set_text(0, E->get().name);
 				category->set_selectable(0, false);
 
-				Ref<Texture> icon;
+				Ref<Texture2D> icon;
 				if (E->get().name == "Script Variables") {
 					icon = get_icon("Script", "EditorIcons");
 				} else {
@@ -234,7 +234,7 @@ void PropertySelector::_update_search() {
 				category->set_text(0, E->get().name.replace_first("*", ""));
 				category->set_selectable(0, false);
 
-				Ref<Texture> icon;
+				Ref<Texture2D> icon;
 				script_methods = false;
 				String rep = E->get().name.replace("*", "");
 				if (E->get().name == "*Script Methods") {

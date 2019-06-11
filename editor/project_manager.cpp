@@ -107,9 +107,9 @@ private:
 	void set_message(const String &p_msg, MessageType p_type = MESSAGE_SUCCESS, InputType input_type = PROJECT_PATH) {
 
 		msg->set_text(p_msg);
-		Ref<Texture> current_path_icon = status_rect->get_texture();
-		Ref<Texture> current_install_icon = install_status_rect->get_texture();
-		Ref<Texture> new_icon;
+		Ref<Texture2D> current_path_icon = status_rect->get_texture();
+		Ref<Texture2D> current_install_icon = install_status_rect->get_texture();
+		Ref<Texture2D> new_icon;
 
 		switch (p_type) {
 
@@ -1141,8 +1141,8 @@ void ProjectList::_notification(int p_what) {
 void ProjectList::load_project_icon(int p_index) {
 	Item &item = _projects.write[p_index];
 
-	Ref<Texture> default_icon = get_icon("DefaultProjectIcon", "EditorIcons");
-	Ref<Texture> icon;
+	Ref<Texture2D> default_icon = get_icon("DefaultProjectIcon", "EditorIcons");
+	Ref<Texture2D> icon;
 	if (item.icon != "") {
 		Ref<Image> img;
 		img.instance();
@@ -1304,7 +1304,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	Item &item = _projects.write[p_index];
 	ERR_FAIL_COND(item.control != NULL); // Already created
 
-	Ref<Texture> favorite_icon = get_icon("Favorites", "EditorIcons");
+	Ref<Texture2D> favorite_icon = get_icon("Favorites", "EditorIcons");
 	Color font_color = get_color("font_color", "Tree");
 
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);

@@ -199,7 +199,7 @@ public:
 	virtual Vector<String> get_functions();
 	virtual void reload_text();
 	virtual String get_name();
-	virtual Ref<Texture> get_icon();
+	virtual Ref<Texture2D> get_icon();
 	virtual bool is_unsaved();
 	virtual Variant get_edit_state();
 	virtual void set_edit_state(const Variant &p_state);

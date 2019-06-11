@@ -32,7 +32,7 @@
 #define RASTERIZERSTORAGEGLES3_H
 
 #include "core/self_list.h"
-#include "servers/visual/rasterizer.h"
+#include "servers/visual/rasterizer/rasterizer.h"
 #include "servers/visual/shader_language.h"
 #include "shader_compiler_gles3.h"
 #include "shader_gles3.h"
@@ -344,7 +344,7 @@ public:
 		}
 	};
 
-	mutable RID_PtrOwner<Texture> texture_owner;
+	mutable RID_PtrOwner<Texture2D> texture_owner;
 
 	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool &r_srgb, bool p_force_decompress) const;
 

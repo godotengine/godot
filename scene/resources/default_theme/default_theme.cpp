@@ -69,7 +69,7 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, fl
 			img->resize(orig_size.x * scale, orig_size.y * scale);
 		}
 
-		texture->create_from_image(img, ImageTexture::FLAG_FILTER);
+		texture->create_from_image(img);
 		(*tex_cache)[p_src] = texture;
 	}
 
@@ -98,7 +98,7 @@ static Ref<StyleBoxTexture> sb_expand(Ref<StyleBoxTexture> p_sbox, float p_left,
 }
 
 template <class T>
-static Ref<Texture> make_icon(T p_src) {
+static Ref<Texture2D> make_icon(T p_src) {
 
 	Ref<ImageTexture> texture(memnew(ImageTexture));
 	Ref<Image> img = memnew(Image(p_src));
@@ -115,7 +115,7 @@ static Ref<Texture> make_icon(T p_src) {
 		img->convert(Image::FORMAT_RGBA8);
 		img->resize(orig_size.x * scale, orig_size.y * scale);
 	}
-	texture->create_from_image(img, ImageTexture::FLAG_FILTER);
+	texture->create_from_image(img);
 
 	return texture;
 }
@@ -169,7 +169,7 @@ static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margi
 	return style;
 }
 
-void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const Ref<Font> &large_font, Ref<Texture> &default_icon, Ref<StyleBox> &default_style, float p_scale) {
+void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const Ref<Font> &large_font, Ref<Texture2D> &default_icon, Ref<StyleBox> &default_style, float p_scale) {
 
 	scale = p_scale;
 
@@ -464,7 +464,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("completion_scroll_width", "TextEdit", 3);
 	theme->set_constant("line_spacing", "TextEdit", 4 * scale);
 
-	Ref<Texture> empty_icon = memnew(ImageTexture);
+	Ref<Texture2D> empty_icon = memnew(ImageTexture);
 
 	// HScrollBar
 
@@ -873,7 +873,7 @@ void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 	t.instance();
 
 	Ref<StyleBox> default_style;
-	Ref<Texture> default_icon;
+	Ref<Texture2D> default_icon;
 	Ref<Font> default_font;
 	if (p_font.is_valid()) {
 		default_font = p_font;

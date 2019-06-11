@@ -200,7 +200,7 @@ void EditorSpinSlider::_notification(int p_what) {
 		int string_width = font->get_string_size(label).width;
 		int number_width = get_size().width - sb->get_minimum_size().width - string_width - sep;
 
-		Ref<Texture> updown = get_icon("updown", "SpinBox");
+		Ref<Texture2D> updown = get_icon("updown", "SpinBox");
 
 		if (get_step() == 1) {
 			number_width -= updown->get_width();
@@ -233,7 +233,7 @@ void EditorSpinSlider::_notification(int p_what) {
 		draw_string(font, Vector2(Math::round(sb->get_offset().x + string_width + sep), vofs), numstr, fc, number_width);
 
 		if (get_step() == 1) {
-			Ref<Texture> updown2 = get_icon("updown", "SpinBox");
+			Ref<Texture2D> updown2 = get_icon("updown", "SpinBox");
 			int updown_vofs = (get_size().height - updown2->get_height()) / 2;
 			updown_offset = get_size().width - sb->get_margin(MARGIN_RIGHT) - updown2->get_width();
 			Color c(1, 1, 1);
@@ -268,7 +268,7 @@ void EditorSpinSlider::_notification(int p_what) {
 			}
 
 			if (display_grabber) {
-				Ref<Texture> grabber_tex;
+				Ref<Texture2D> grabber_tex;
 				if (mouse_over_grabber) {
 					grabber_tex = get_icon("grabber_highlight", "HSlider");
 				} else {

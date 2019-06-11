@@ -78,7 +78,7 @@ void EditorFileDialog::_notification(int p_what) {
 				preview_wheel_index++;
 				if (preview_wheel_index >= 8)
 					preview_wheel_index = 0;
-				Ref<Texture> frame = get_icon("Progress" + itos(preview_wheel_index + 1), "EditorIcons");
+				Ref<Texture2D> frame = get_icon("Progress" + itos(preview_wheel_index + 1), "EditorIcons");
 				preview->set_texture(frame);
 				preview_wheel_timeout = 0.1;
 			}
@@ -263,7 +263,7 @@ void EditorFileDialog::_post_popup() {
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 
 	if (is_visible_in_tree()) {
-		Ref<Texture> folder = get_icon("folder", "FileDialog");
+		Ref<Texture2D> folder = get_icon("folder", "FileDialog");
 		const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 		recent->clear();
 
@@ -295,7 +295,7 @@ void EditorFileDialog::_post_popup() {
 	set_process_unhandled_input(true);
 }
 
-void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata) {
+void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
 
 	if (display_mode == DISPLAY_LIST || p_preview.is_null())
 		return;
@@ -305,12 +305,12 @@ void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture
 		String pname = d["path"];
 		if (pname == p_path) {
 			item_list->set_item_icon(i, p_preview);
-			item_list->set_item_tag_icon(i, Ref<Texture>());
+			item_list->set_item_tag_icon(i, Ref<Texture2D>());
 		}
 	}
 }
 
-void EditorFileDialog::_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata) {
+void EditorFileDialog::_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
 
 	set_process(false);
 	preview_waiting = false;
@@ -326,7 +326,7 @@ void EditorFileDialog::_thumbnail_done(const String &p_path, const Ref<Texture> 
 
 	} else {
 		preview_vb->hide();
-		preview->set_texture(Ref<Texture>());
+		preview->set_texture(Ref<Texture2D>());
 	}
 }
 
@@ -704,8 +704,8 @@ void EditorFileDialog::update_file_list() {
 
 	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size *= EDSCALE;
-	Ref<Texture> folder_thumbnail;
-	Ref<Texture> file_thumbnail;
+	Ref<Texture2D> folder_thumbnail;
+	Ref<Texture2D> file_thumbnail;
 
 	item_list->clear();
 
@@ -745,7 +745,7 @@ void EditorFileDialog::update_file_list() {
 
 	dir_access->list_dir_begin();
 
-	Ref<Texture> folder = get_icon("folder", "FileDialog");
+	Ref<Texture2D> folder = get_icon("folder", "FileDialog");
 	const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 	List<String> files;
 	List<String> dirs;
@@ -841,7 +841,7 @@ void EditorFileDialog::update_file_list() {
 
 			if (get_icon_func) {
 
-				Ref<Texture> icon = get_icon_func(cdir.plus_file(files.front()->get()));
+				Ref<Texture2D> icon = get_icon_func(cdir.plus_file(files.front()->get()));
 				if (display_mode == DISPLAY_THUMBNAILS) {
 
 					item_list->set_item_icon(item_list->get_item_count() - 1, file_thumbnail);
@@ -1215,7 +1215,7 @@ void EditorFileDialog::_update_favorites() {
 	bool res = access == ACCESS_RESOURCES;
 
 	String current = get_current_dir();
-	Ref<Texture> folder_icon = get_icon("Folder", "EditorIcons");
+	Ref<Texture2D> folder_icon = get_icon("Folder", "EditorIcons");
 	const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 	favorites->clear();
 

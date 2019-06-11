@@ -399,7 +399,7 @@ void TileMap::update_dirty_quadrants() {
 			//moment of truth
 			if (!tile_set->has_tile(c.id))
 				continue;
-			Ref<Texture> tex = tile_set->tile_get_texture(c.id);
+			Ref<Texture2D> tex = tile_set->tile_get_texture(c.id);
 			Vector2 tile_ofs = tile_set->tile_get_texture_offset(c.id);
 
 			Vector2 wofs = _map_to_world(E->key().x, E->key().y);
@@ -542,7 +542,7 @@ void TileMap::update_dirty_quadrants() {
 				rect.position += tile_ofs;
 			}
 
-			Ref<Texture> normal_map = tile_set->tile_get_normal_map(c.id);
+			Ref<Texture2D> normal_map = tile_set->tile_get_normal_map(c.id);
 			Color modulate = tile_set->tile_get_modulate(c.id);
 			Color self_modulate = get_self_modulate();
 			modulate = Color(modulate.r * self_modulate.r, modulate.g * self_modulate.g,

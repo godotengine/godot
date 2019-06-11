@@ -36,21 +36,21 @@
 class PathTexture : public Node2D {
 	GDCLASS(PathTexture, Node2D);
 
-	Ref<Texture> begin;
-	Ref<Texture> repeat;
-	Ref<Texture> end;
+	Ref<Texture2D> begin;
+	Ref<Texture2D> repeat;
+	Ref<Texture2D> end;
 	int subdivs;
 	bool overlap;
 
 public:
-	void set_begin_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_begin_texture() const;
+	void set_begin_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_begin_texture() const;
 
-	void set_repeat_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_repeat_texture() const;
+	void set_repeat_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_repeat_texture() const;
 
-	void set_end_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_end_texture() const;
+	void set_end_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_end_texture() const;
 
 	void set_subdivisions(int p_amount);
 	int get_subdivisions() const;

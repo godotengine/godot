@@ -548,13 +548,13 @@ String ScriptTextEditor::get_name() {
 	return name;
 }
 
-Ref<Texture> ScriptTextEditor::get_icon() {
+Ref<Texture2D> ScriptTextEditor::get_icon() {
 
 	if (get_parent_control() && get_parent_control()->has_icon(script->get_class(), "EditorIcons")) {
 		return get_parent_control()->get_icon(script->get_class(), "EditorIcons");
 	}
 
-	return Ref<Texture>();
+	return Ref<Texture2D>();
 }
 
 void ScriptTextEditor::_validate_script() {

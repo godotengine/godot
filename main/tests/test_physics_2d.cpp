@@ -85,7 +85,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			Ref<Image> image = memnew(Image(32, 2, 0, Image::FORMAT_LA8, pixels));
 
-			body_shape_data[Physics2DServer::SHAPE_SEGMENT].image = vs->texture_create_from_image(image);
+			body_shape_data[Physics2DServer::SHAPE_SEGMENT].image = vs->texture_2d_create(image);
 
 			RID segment_shape = ps->segment_shape_create();
 			Rect2 sg(Point2(-16, 0), Point2(16, 0));
@@ -112,7 +112,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			Ref<Image> image = memnew(Image(32, 32, 0, Image::FORMAT_LA8, pixels));
 
-			body_shape_data[Physics2DServer::SHAPE_CIRCLE].image = vs->texture_create_from_image(image);
+			body_shape_data[Physics2DServer::SHAPE_CIRCLE].image = vs->texture_2d_create(image);
 
 			RID circle_shape = ps->circle_shape_create();
 			ps->shape_set_data(circle_shape, 16);
@@ -139,7 +139,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			Ref<Image> image = memnew(Image(32, 32, 0, Image::FORMAT_LA8, pixels));
 
-			body_shape_data[Physics2DServer::SHAPE_RECTANGLE].image = vs->texture_create_from_image(image);
+			body_shape_data[Physics2DServer::SHAPE_RECTANGLE].image = vs->texture_2d_create(image);
 
 			RID rectangle_shape = ps->rectangle_shape_create();
 			ps->shape_set_data(rectangle_shape, Vector2(16, 16));
@@ -167,7 +167,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			Ref<Image> image = memnew(Image(32, 64, 0, Image::FORMAT_LA8, pixels));
 
-			body_shape_data[Physics2DServer::SHAPE_CAPSULE].image = vs->texture_create_from_image(image);
+			body_shape_data[Physics2DServer::SHAPE_CAPSULE].image = vs->texture_2d_create(image);
 
 			RID capsule_shape = ps->capsule_shape_create();
 			ps->shape_set_data(capsule_shape, Vector2(16, 32));
@@ -181,7 +181,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			Ref<Image> image = memnew(Image(convex_png));
 
-			body_shape_data[Physics2DServer::SHAPE_CONVEX_POLYGON].image = vs->texture_create_from_image(image);
+			body_shape_data[Physics2DServer::SHAPE_CONVEX_POLYGON].image = vs->texture_2d_create(image);
 
 			RID convex_polygon_shape = ps->convex_polygon_shape_create();
 
@@ -260,7 +260,7 @@ protected:
 		RID sprite = vs->canvas_item_create();
 		vs->canvas_item_set_parent(sprite, canvas);
 		vs->canvas_item_set_transform(sprite, p_xform);
-		Size2 imgsize(vs->texture_get_width(body_shape_data[p_shape].image), vs->texture_get_height(body_shape_data[p_shape].image));
+		Size2 imgsize(5, 5); //vs->texture_get_width(body_shape_data[p_shape].image), vs->texture_get_height(body_shape_data[p_shape].image));
 		vs->canvas_item_add_texture_rect(sprite, Rect2(-imgsize / 2.0, imgsize), body_shape_data[p_shape].image);
 
 		ps->body_set_force_integration_callback(body, this, "_body_moved", sprite);

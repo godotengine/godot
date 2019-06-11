@@ -154,16 +154,11 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 
 	w.release();
 
-	int tex_flags = Texture::FLAG_FILTER | Texture::FLAG_REPEAT;
-
-	if (mipmaps)
-		tex_flags |= Texture::FLAG_MIPMAPS;
-
 	Ref<Image> image = memnew(Image(width, height, mipmaps, format, data));
 	ERR_FAIL_COND_V(image->empty(), RES());
 
 	Ref<ImageTexture> texture = memnew(ImageTexture);
-	texture->create_from_image(image, tex_flags);
+	texture->create_from_image(image);
 
 	if (r_error)
 		*r_error = OK;
@@ -177,12 +172,12 @@ void ResourceFormatPVR::get_recognized_extensions(List<String> *p_extensions) co
 }
 bool ResourceFormatPVR::handles_type(const String &p_type) const {
 
-	return ClassDB::is_parent_class(p_type, "Texture");
+	return ClassDB::is_parent_class(p_type, "Texture2D");
 }
 String ResourceFormatPVR::get_resource_type(const String &p_path) const {
 
 	if (p_path.get_extension().to_lower() == "pvr")
-		return "Texture";
+		return "Texture2D";
 	return "";
 }
 

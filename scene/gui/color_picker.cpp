@@ -445,7 +445,7 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 		c->draw_line(Point2(0, y), Point2(c->get_size().x, y), col.inverted());
 		c->draw_line(Point2(x, y), Point2(x, y), Color(1, 1, 1), 2);
 	} else if (p_which == 1) {
-		Ref<Texture> hue = get_icon("color_hue", "ColorPicker");
+		Ref<Texture2D> hue = get_icon("color_hue", "ColorPicker");
 		c->draw_texture_rect(hue, Rect2(Point2(), c->get_size()));
 		int y = c->get_size().y - c->get_size().y * (1.0 - h);
 		Color col = Color();

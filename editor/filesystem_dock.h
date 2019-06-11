@@ -176,7 +176,7 @@ private:
 	ItemList *files;
 	bool import_dock_needs_update;
 
-	Ref<Texture> _get_tree_item_icon(EditorFileSystemDirectory *p_dir, int p_idx);
+	Ref<Texture2D> _get_tree_item_icon(EditorFileSystemDirectory *p_dir, int p_idx);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
 	Vector<String> _compute_uncollapsed_paths();
 	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false, bool p_unfold_path = false);
@@ -269,8 +269,8 @@ private:
 	void _get_drag_target_folder(String &target, bool &target_favorites, const Point2 &p_point, Control *p_from) const;
 
 	void _preview_invalidated(const String &p_path);
-	void _file_list_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata);
-	void _tree_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata);
+	void _file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
+	void _tree_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 
 	void _update_display_mode(bool p_force = false);
 

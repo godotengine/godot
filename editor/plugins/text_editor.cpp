@@ -163,7 +163,7 @@ String TextEditor::get_name() {
 	return name;
 }
 
-Ref<Texture> TextEditor::get_icon() {
+Ref<Texture2D> TextEditor::get_icon() {
 
 	return EditorNode::get_singleton()->get_object_icon(text_file.operator->(), "");
 }

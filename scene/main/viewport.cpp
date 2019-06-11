@@ -75,9 +75,6 @@ void ViewportTexture::setup_local_to_scene() {
 	vp->viewport_textures.insert(this);
 
 	VS::get_singleton()->texture_set_proxy(proxy, vp->texture_rid);
-
-	vp->texture_flags = flags;
-	VS::get_singleton()->texture_set_flags(vp->texture_rid, flags);
 }
 
 void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
@@ -125,21 +122,7 @@ bool ViewportTexture::has_alpha() const {
 Ref<Image> ViewportTexture::get_data() const {
 
 	ERR_FAIL_COND_V_MSG(!vp, Ref<Image>(), "Viewport Texture must be set to use it.");
-	return VS::get_singleton()->texture_get_data(vp->texture_rid);
-}
-void ViewportTexture::set_flags(uint32_t p_flags) {
-	flags = p_flags;
-
-	if (!vp)
-		return;
-
-	vp->texture_flags = flags;
-	VS::get_singleton()->texture_set_flags(vp->texture_rid, flags);
-}
-
-uint32_t ViewportTexture::get_flags() const {
-
-	return flags;
+	return VS::get_singleton()->texture_2d_get(vp->texture_rid);
 }
 
 void ViewportTexture::_bind_methods() {
@@ -153,9 +136,8 @@ void ViewportTexture::_bind_methods() {
 ViewportTexture::ViewportTexture() {
 
 	vp = NULL;
-	flags = 0;
 	set_local_to_scene(true);
-	proxy = VS::get_singleton()->texture_create();
+	proxy = VS::get_singleton()->texture_2d_placeholder_create();
 }
 
 ViewportTexture::~ViewportTexture() {
@@ -3321,7 +3303,6 @@ Viewport::Viewport() {
 
 	viewport = VisualServer::get_singleton()->viewport_create();
 	texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport);
-	texture_flags = 0;
 
 	render_direct_to_screen = false;
 

@@ -68,7 +68,7 @@ class EditorAssetLibraryItem : public PanelContainer {
 	void _category_clicked();
 	void _author_clicked();
 
-	void set_image(int p_type, int p_index, const Ref<Texture> &p_image);
+	void set_image(int p_type, int p_index, const Ref<Texture2D> &p_image);
 
 protected:
 	void _notification(int p_what);
@@ -95,19 +95,19 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 		bool is_video;
 		String video_link;
 		Button *button;
-		Ref<Texture> image;
+		Ref<Texture2D> image;
 	};
 
 	Vector<Preview> preview_images;
 	TextureRect *preview;
 
-	void set_image(int p_type, int p_index, const Ref<Texture> &p_image);
+	void set_image(int p_type, int p_index, const Ref<Texture2D> &p_image);
 
 	int asset_id;
 	String download_url;
 	String title;
 	String sha256;
-	Ref<Texture> icon;
+	Ref<Texture2D> icon;
 
 	void _link_click(const String &p_url);
 	void _preview_click(int p_id);
@@ -121,7 +121,7 @@ public:
 	void add_preview(int p_id, bool p_video, const String &p_url);
 
 	String get_title() { return title; }
-	Ref<Texture> get_preview_icon() { return icon; }
+	Ref<Texture2D> get_preview_icon() { return icon; }
 	String get_download_url() { return download_url; }
 	int get_asset_id() { return asset_id; }
 	String get_sha256() { return sha256; }
@@ -165,7 +165,7 @@ protected:
 public:
 	void set_external_install(bool p_enable) { external_install = p_enable; }
 	int get_asset_id() { return asset_id; }
-	void configure(const String &p_title, int p_asset_id, const Ref<Texture> &p_preview, const String &p_download_url, const String &p_sha256_hash);
+	void configure(const String &p_title, int p_asset_id, const Ref<Texture2D> &p_preview, const String &p_download_url, const String &p_sha256_hash);
 	EditorAssetLibraryItemDownload();
 };
 

@@ -499,7 +499,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 	graph->show();
 	select_func_text->hide();
 
-	Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
+	Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
 		Control::get_icon("Variant", "EditorIcons"),
 		Control::get_icon("bool", "EditorIcons"),
 		Control::get_icon("int", "EditorIcons"),
@@ -529,7 +529,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		Control::get_icon("PoolColorArray", "EditorIcons")
 	};
 
-	Ref<Texture> seq_port = Control::get_icon("VisualShaderPort", "EditorIcons");
+	Ref<Texture2D> seq_port = Control::get_icon("VisualShaderPort", "EditorIcons");
 
 	for (List<StringName>::Element *F = funcs.front(); F; F = F->next()) { // loop through all the functions
 
@@ -702,7 +702,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				vbc->add_child(hbc2);
 				if (left_ok) {
 
-					Ref<Texture> t;
+					Ref<Texture2D> t;
 					if (left_type >= 0 && left_type < Variant::VARIANT_MAX) {
 						t = type_icons[left_type];
 					}
@@ -830,7 +830,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 						hbc->add_child(memnew(Label(right_name)));
 					}
 
-					Ref<Texture> t;
+					Ref<Texture2D> t;
 					if (right_type >= 0 && right_type < Variant::VARIANT_MAX) {
 						t = type_icons[right_type];
 					}
@@ -846,7 +846,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 				bool dark_theme = get_constant("dark_theme", "Editor");
 				if (i < mixed_seq_ports) {
-					gnode->set_slot(slot_idx, left_ok, left_type, _color_from_type(left_type, dark_theme), true, TYPE_SEQUENCE, mono_color, Ref<Texture>(), seq_port);
+					gnode->set_slot(slot_idx, left_ok, left_type, _color_from_type(left_type, dark_theme), true, TYPE_SEQUENCE, mono_color, Ref<Texture2D>(), seq_port);
 				} else {
 					gnode->set_slot(slot_idx, left_ok, left_type, _color_from_type(left_type, dark_theme), right_ok, right_type, _color_from_type(right_type, dark_theme));
 				}
@@ -955,7 +955,7 @@ void VisualScriptEditor::_update_members() {
 	variables->add_button(0, Control::get_icon("Add", "EditorIcons"), -1, false, TTR("Create a new variable."));
 	variables->set_custom_color(0, Control::get_color("mono_color", "Editor"));
 
-	Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
+	Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
 		Control::get_icon("Variant", "EditorIcons"),
 		Control::get_icon("bool", "EditorIcons"),
 		Control::get_icon("int", "EditorIcons"),
@@ -2369,7 +2369,7 @@ void VisualScriptEditor::_draw_color_over_button(Object *obj, Color p_color) {
 	button->draw_rect(Rect2(normal->get_offset(), button->get_size() - normal->get_minimum_size()), p_color);
 }
 
-void VisualScriptEditor::_button_resource_previewed(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, Variant p_ud) {
+void VisualScriptEditor::_button_resource_previewed(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, Variant p_ud) {
 
 	Array ud = p_ud;
 	ERR_FAIL_COND(ud.size() != 2);
@@ -2447,7 +2447,7 @@ String VisualScriptEditor::get_name() {
 	return name;
 }
 
-Ref<Texture> VisualScriptEditor::get_icon() {
+Ref<Texture2D> VisualScriptEditor::get_icon() {
 
 	return Control::get_icon("VisualScript", "EditorIcons");
 }
@@ -4467,9 +4467,9 @@ void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
 
 	TreeItem *root = members->get_root();
 
-	Ref<Texture> del_icon = Control::get_icon("Remove", "EditorIcons");
+	Ref<Texture2D> del_icon = Control::get_icon("Remove", "EditorIcons");
 
-	Ref<Texture> edit_icon = Control::get_icon("Edit", "EditorIcons");
+	Ref<Texture2D> edit_icon = Control::get_icon("Edit", "EditorIcons");
 
 	if (ti->get_parent() == root->get_children()) {
 

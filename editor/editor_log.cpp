@@ -76,7 +76,7 @@ void EditorLog::_notification(int p_what) {
 void EditorLog::_clear_request() {
 
 	log->clear();
-	tool_button->set_icon(Ref<Texture>());
+	tool_button->set_icon(Ref<Texture2D>());
 }
 
 void EditorLog::_copy_request() {
@@ -102,14 +102,14 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 		} break;
 		case MSG_TYPE_ERROR: {
 			log->push_color(get_color("error_color", "Editor"));
-			Ref<Texture> icon = get_icon("Error", "EditorIcons");
+			Ref<Texture2D> icon = get_icon("Error", "EditorIcons");
 			log->add_image(icon);
 			log->add_text(" ");
 			tool_button->set_icon(icon);
 		} break;
 		case MSG_TYPE_WARNING: {
 			log->push_color(get_color("warning_color", "Editor"));
-			Ref<Texture> icon = get_icon("Warning", "EditorIcons");
+			Ref<Texture2D> icon = get_icon("Warning", "EditorIcons");
 			log->add_image(icon);
 			log->add_text(" ");
 			tool_button->set_icon(icon);

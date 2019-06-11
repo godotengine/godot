@@ -39,7 +39,7 @@
 #include "main/input_default.h"
 //#include "power_android.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
+#include "servers/visual/rasterizer/rasterizer.h"
 
 class GodotJavaWrapper;
 class GodotIOJavaWrapper;

@@ -212,7 +212,7 @@ public:
 
 	virtual String get_name() const;
 	virtual String get_os_name() const;
-	virtual Ref<Texture> get_logo() const;
+	virtual Ref<Texture2D> get_logo() const;
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const;
@@ -224,7 +224,7 @@ public:
 	virtual String get_option_tooltip(int p_index) const { return p_index ? TTR("Stop HTTP Server") : TTR("Run exported HTML in the system's default browser."); }
 	virtual Ref<ImageTexture> get_option_icon(int p_index) const;
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags);
-	virtual Ref<Texture> get_run_icon() const;
+	virtual Ref<Texture2D> get_run_icon() const;
 
 	virtual void get_platform_features(List<String> *r_features) {
 
@@ -300,7 +300,7 @@ String EditorExportPlatformJavaScript::get_os_name() const {
 	return "HTML5";
 }
 
-Ref<Texture> EditorExportPlatformJavaScript::get_logo() const {
+Ref<Texture2D> EditorExportPlatformJavaScript::get_logo() const {
 
 	return logo;
 }
@@ -598,7 +598,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 	return OK;
 }
 
-Ref<Texture> EditorExportPlatformJavaScript::get_run_icon() const {
+Ref<Texture2D> EditorExportPlatformJavaScript::get_run_icon() const {
 
 	return run_icon;
 }

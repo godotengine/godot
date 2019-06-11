@@ -574,7 +574,7 @@ class EditorPropertyResource : public EditorProperty {
 
 	void _file_selected(const String &p_path);
 	void _menu_option(int p_which);
-	void _resource_preview(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, ObjectID p_obj);
+	void _resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj);
 	void _resource_selected();
 	void _viewport_selected(const NodePath &p_path);
 

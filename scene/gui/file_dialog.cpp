@@ -424,7 +424,7 @@ void FileDialog::update_file_list() {
 	dir_access->list_dir_begin();
 
 	TreeItem *root = tree->create_item();
-	Ref<Texture> folder = get_icon("folder");
+	Ref<Texture2D> folder = get_icon("folder");
 	const Color folder_color = get_color("folder_icon_modulate");
 	List<String> files;
 	List<String> dirs;
@@ -518,7 +518,7 @@ void FileDialog::update_file_list() {
 
 			if (get_icon_func) {
 
-				Ref<Texture> icon = get_icon_func(base_dir.plus_file(files.front()->get()));
+				Ref<Texture2D> icon = get_icon_func(base_dir.plus_file(files.front()->get()));
 				ti->set_icon(0, icon);
 			}
 

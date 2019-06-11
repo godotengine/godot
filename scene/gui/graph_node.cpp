@@ -170,7 +170,7 @@ bool GraphNode::has_point(const Point2 &p_point) const {
 
 	if (comment) {
 		Ref<StyleBox> comment = get_stylebox("comment");
-		Ref<Texture> resizer = get_icon("resizer");
+		Ref<Texture2D> resizer = get_icon("resizer");
 
 		if (Rect2(get_size() - resizer->get_size(), resizer->get_size()).has_point(p_point)) {
 			return true;
@@ -204,9 +204,9 @@ void GraphNode::_notification(int p_what) {
 
 			//sb=sb->duplicate();
 			//sb->call("set_modulate",modulate);
-			Ref<Texture> port = get_icon("port");
-			Ref<Texture> close = get_icon("close");
-			Ref<Texture> resizer = get_icon("resizer");
+			Ref<Texture2D> port = get_icon("port");
+			Ref<Texture2D> close = get_icon("close");
+			Ref<Texture2D> resizer = get_icon("resizer");
 			int close_offset = get_constant("close_offset");
 			int close_h_offset = get_constant("close_h_offset");
 			Color close_color = get_color("close_color");
@@ -259,14 +259,14 @@ void GraphNode::_notification(int p_what) {
 				const Slot &s = slot_info[E->key()];
 				//left
 				if (s.enable_left) {
-					Ref<Texture> p = port;
+					Ref<Texture2D> p = port;
 					if (s.custom_slot_left.is_valid()) {
 						p = s.custom_slot_left;
 					}
 					p->draw(get_canvas_item(), icofs + Point2(edgeofs, cache_y[E->key()]), s.color_left);
 				}
 				if (s.enable_right) {
-					Ref<Texture> p = port;
+					Ref<Texture2D> p = port;
 					if (s.custom_slot_right.is_valid()) {
 						p = s.custom_slot_right;
 					}
@@ -291,7 +291,7 @@ void GraphNode::_notification(int p_what) {
 	}
 }
 
-void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture> &p_custom_left, const Ref<Texture> &p_custom_right) {
+void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left, const Ref<Texture2D> &p_custom_right) {
 
 	ERR_FAIL_COND(p_idx < 0);
 
@@ -379,7 +379,7 @@ Size2 GraphNode::get_minimum_size() const {
 	Size2 minsize;
 	minsize.x = title_font->get_string_size(title).x;
 	if (show_close) {
-		Ref<Texture> close = get_icon("close");
+		Ref<Texture2D> close = get_icon("close");
 		minsize.x += sep + close->get_width();
 	}
 
@@ -606,7 +606,7 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 				return;
 			}
 
-			Ref<Texture> resizer = get_icon("resizer");
+			Ref<Texture2D> resizer = get_icon("resizer");
 
 			if (resizable && mpos.x > get_size().x - resizer->get_width() && mpos.y > get_size().y - resizer->get_height()) {
 
@@ -674,7 +674,7 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_title"), &GraphNode::get_title);
 	ClassDB::bind_method(D_METHOD("_gui_input"), &GraphNode::_gui_input);
 
-	ClassDB::bind_method(D_METHOD("set_slot", "idx", "enable_left", "type_left", "color_left", "enable_right", "type_right", "color_right", "custom_left", "custom_right"), &GraphNode::set_slot, DEFVAL(Ref<Texture>()), DEFVAL(Ref<Texture>()));
+	ClassDB::bind_method(D_METHOD("set_slot", "idx", "enable_left", "type_left", "color_left", "enable_right", "type_right", "color_right", "custom_left", "custom_right"), &GraphNode::set_slot, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("clear_slot", "idx"), &GraphNode::clear_slot);
 	ClassDB::bind_method(D_METHOD("clear_all_slots"), &GraphNode::clear_all_slots);
 	ClassDB::bind_method(D_METHOD("is_slot_enabled_left", "idx"), &GraphNode::is_slot_enabled_left);

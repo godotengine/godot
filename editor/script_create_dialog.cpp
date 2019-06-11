@@ -47,13 +47,13 @@ void ScriptCreateDialog::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 				String lang = ScriptServer::get_language(i)->get_type();
-				Ref<Texture> lang_icon = get_icon(lang, "EditorIcons");
+				Ref<Texture2D> lang_icon = get_icon(lang, "EditorIcons");
 				if (lang_icon.is_valid()) {
 					language_menu->set_item_icon(i, lang_icon);
 				}
 			}
 			String last_lang = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
-			Ref<Texture> last_lang_icon;
+			Ref<Texture2D> last_lang_icon;
 			if (!last_lang.empty()) {
 
 				for (int i = 0; i < language_menu->get_item_count(); i++) {

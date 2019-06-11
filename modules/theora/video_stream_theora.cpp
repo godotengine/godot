@@ -110,7 +110,7 @@ void VideoStreamPlaybackTheora::video_write(void) {
 
 	Ref<Image> img = memnew(Image(size.x, size.y, 0, Image::FORMAT_RGBA8, frame_data)); //zero copy image creation
 
-	texture->set_data(img); //zero copy send to visual server
+	texture->update(img, true); //zero copy send to visual server
 
 	frames_pending = 1;
 }
@@ -336,7 +336,9 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		size.x = w;
 		size.y = h;
 
-		texture->create(w, h, Image::FORMAT_RGBA8, Texture::FLAG_FILTER | Texture::FLAG_VIDEO_SURFACE);
+		Ref<Image> img;
+		img.instance();
+		img->create(w, h, false, Image::FORMAT_RGBA8);
 
 	} else {
 		/* tear down the partial theora setup */
@@ -369,7 +371,7 @@ float VideoStreamPlaybackTheora::get_time() const {
 	return time - /* AudioServer::get_singleton()->get_output_latency() - */ delay_compensation;
 };
 
-Ref<Texture> VideoStreamPlaybackTheora::get_texture() const {
+Ref<Texture2D> VideoStreamPlaybackTheora::get_texture() const {
 
 	return texture;
 }

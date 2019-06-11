@@ -182,7 +182,7 @@ void SpinBox::_line_edit_focus_exit() {
 	_text_entered(line_edit->get_text());
 }
 
-inline void SpinBox::_adjust_width_for_icon(const Ref<Texture> &icon) {
+inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 
 	int w = icon->get_width();
 	if (w != last_w) {
@@ -195,7 +195,7 @@ void SpinBox::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		Ref<Texture> updown = get_icon("updown");
+		Ref<Texture2D> updown = get_icon("updown");
 
 		_adjust_width_for_icon(updown);
 
