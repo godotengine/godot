@@ -1144,7 +1144,7 @@ void OS_JavaScript::set_icon(const Ref<Image> &p_icon) {
 	Ref<Image> icon = p_icon;
 	if (icon->is_compressed()) {
 		icon = icon->duplicate();
-		ERR_FAIL_COND(icon->decompress() != OK)
+		ERR_FAIL_COND(icon->decompress() != OK);
 	}
 	if (icon->get_format() != Image::FORMAT_RGBA8) {
 		if (icon == p_icon)

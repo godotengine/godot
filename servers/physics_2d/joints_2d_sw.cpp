@@ -92,7 +92,7 @@ normal_relative_velocity(Body2DSW *a, Body2DSW *b, Vector2 rA, Vector2 rB, Vecto
 bool PinJoint2DSW::setup(real_t p_step) {
 
 	Space2DSW *space = A->get_space();
-	ERR_FAIL_COND_V(!space, false;)
+	ERR_FAIL_COND_V(!space, false);
 	rA = A->get_transform().basis_xform(anchor_A);
 	rB = B ? B->get_transform().basis_xform(anchor_B) : anchor_B;
 

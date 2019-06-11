@@ -404,7 +404,7 @@ void AnimationTreePlayer::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 			ERR_EXPLAIN("AnimationTreePlayer has been deprecated. Use AnimationTree instead.");
-			WARN_DEPRECATED
+			WARN_DEPRECATED;
 
 			if (!processing) {
 				//make sure that a previous process state was not saved

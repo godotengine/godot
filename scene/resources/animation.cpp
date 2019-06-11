@@ -93,7 +93,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				TransformTrack *tt = static_cast<TransformTrack *>(tracks[track]);
 				PoolVector<float> values = p_value;
 				int vcount = values.size();
-				ERR_FAIL_COND_V(vcount % 12, false); // shuld be multiple of 11
+				ERR_FAIL_COND_V(vcount % 12, false); // should be multiple of 11
 
 				PoolVector<float>::Read r = values.read();
 

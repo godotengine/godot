@@ -297,7 +297,7 @@ Error VisualShader::connect_nodes(Type p_type, int p_from_node, int p_from_port,
 
 	if (MAX(0, from_port_type - 2) != (MAX(0, to_port_type - 2))) {
 		ERR_EXPLAIN("Incompatible port types (scalar/vec/bool with transform");
-		ERR_FAIL_V(ERR_INVALID_PARAMETER)
+		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 		return ERR_INVALID_PARAMETER;
 	}
 

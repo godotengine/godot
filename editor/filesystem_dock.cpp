@@ -2069,7 +2069,7 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 
 void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options) {
 	// Add options for files and folders
-	ERR_FAIL_COND(p_paths.empty())
+	ERR_FAIL_COND(p_paths.empty());
 
 	Vector<String> filenames;
 	Vector<String> foldernames;

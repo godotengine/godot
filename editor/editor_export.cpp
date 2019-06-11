@@ -907,7 +907,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	String tmppath = EditorSettings::get_singleton()->get_cache_dir().plus_file("packtmp");
 	FileAccess *ftmp = FileAccess::open(tmppath, FileAccess::WRITE);
-	ERR_FAIL_COND_V(!ftmp, ERR_CANT_CREATE)
+	ERR_FAIL_COND_V(!ftmp, ERR_CANT_CREATE);
 
 	PackData pd;
 	pd.ep = &ep;
@@ -924,7 +924,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	pd.file_ofs.sort(); //do sort, so we can do binary search later
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V(!f, ERR_CANT_CREATE)
+	ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
 	f->store_32(0x43504447); //GDPK
 	f->store_32(1); //pack version
 	f->store_32(VERSION_MAJOR);
@@ -977,7 +977,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	ftmp = FileAccess::open(tmppath, FileAccess::READ);
 	if (!ftmp) {
 		memdelete(f);
-		ERR_FAIL_COND_V(!ftmp, ERR_CANT_CREATE)
+		ERR_FAIL_COND_V(!ftmp, ERR_CANT_CREATE);
 	}
 
 	const int bufsize = 16384;

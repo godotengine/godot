@@ -471,7 +471,7 @@ void AnimationNodeBlendTreeEditor::_node_selected(Object *p_node) {
 void AnimationNodeBlendTreeEditor::_open_in_editor(const String &p_which) {
 
 	Ref<AnimationNode> an = blend_tree->get_node(p_which);
-	ERR_FAIL_COND(!an.is_valid())
+	ERR_FAIL_COND(!an.is_valid());
 	AnimationTreeEditor::get_singleton()->enter_editor(p_which);
 }
 
@@ -798,7 +798,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 
 	String new_name = p_text;
 
-	ERR_FAIL_COND(new_name == "" || new_name.find(".") != -1 || new_name.find("/") != -1)
+	ERR_FAIL_COND(new_name == "" || new_name.find(".") != -1 || new_name.find("/") != -1);
 
 	if (new_name == prev_name) {
 		return; //nothing to do

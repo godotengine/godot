@@ -4683,7 +4683,7 @@ bool TextEdit::has_keyword_color(String p_keyword) const {
 
 Color TextEdit::get_keyword_color(String p_keyword) const {
 
-	ERR_FAIL_COND_V(!keywords.has(p_keyword), Color())
+	ERR_FAIL_COND_V(!keywords.has(p_keyword), Color());
 	return keywords[p_keyword];
 }
 

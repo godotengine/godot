@@ -1244,7 +1244,7 @@ void SceneTree::_update_root_rect() {
 			root->update_canvas_items(); //force them to update just in case
 
 			if (use_font_oversampling) {
-				WARN_PRINT("Font oversampling does not work in 'Viewport' stretch mode, only '2D'.")
+				WARN_PRINT("Font oversampling does not work in 'Viewport' stretch mode, only '2D'.");
 			}
 
 		} break;

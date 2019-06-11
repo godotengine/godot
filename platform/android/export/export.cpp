@@ -790,7 +790,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 						if (tname == "manifest" && attrname == "versionName") {
 							if (attr_value == 0xFFFFFFFF) {
-								WARN_PRINT("Version name in a resource, should be plaintext")
+								WARN_PRINT("Version name in a resource, should be plain text");
 							} else
 								string_table.write[attr_value] = version_name;
 						}

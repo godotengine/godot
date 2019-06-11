@@ -45,7 +45,7 @@ void CSGBrush::build_from_faces(const PoolVector<Vector3> &p_vertices, const Poo
 
 	int vc = p_vertices.size();
 
-	ERR_FAIL_COND((vc % 3) != 0)
+	ERR_FAIL_COND((vc % 3) != 0);
 
 	PoolVector<Vector3>::Read rv = p_vertices.read();
 	int uvc = p_uvs.size();

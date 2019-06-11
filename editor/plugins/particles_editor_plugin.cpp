@@ -67,7 +67,7 @@ bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vect
 			float areapos = Math::random(0.0f, area_accum);
 
 			Map<float, int>::Element *E = triangle_area_map.find_closest(areapos);
-			ERR_FAIL_COND_V(!E, false)
+			ERR_FAIL_COND_V(!E, false);
 			int index = E->get();
 			ERR_FAIL_INDEX_V(index, geometry.size(), false);
 
