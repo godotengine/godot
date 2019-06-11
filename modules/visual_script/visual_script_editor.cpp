@@ -2111,6 +2111,9 @@ void VisualScriptEditor::clear_executing_line() {
 void VisualScriptEditor::trim_trailing_whitespace() {
 }
 
+void VisualScriptEditor::insert_final_newline() {
+}
+
 void VisualScriptEditor::convert_indent_to_spaces() {
 }
 
