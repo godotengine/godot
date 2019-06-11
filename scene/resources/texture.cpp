@@ -232,7 +232,7 @@ Image::Format ImageTexture::get_format() const {
 #ifndef DISABLE_DEPRECATED
 Error ImageTexture::load(const String &p_path) {
 
-	WARN_DEPRECATED
+	WARN_DEPRECATED;
 	Ref<Image> img;
 	img.instance();
 	Error err = img->load(p_path);

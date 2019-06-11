@@ -203,8 +203,8 @@ void StaticBody2D::set_friction(real_t p_friction) {
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
 
@@ -217,8 +217,8 @@ void StaticBody2D::set_friction(real_t p_friction) {
 
 real_t StaticBody2D::get_friction() const {
 
-	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	if (physics_material_override.is_null()) {
 		return 1;
@@ -233,8 +233,8 @@ void StaticBody2D::set_bounce(real_t p_bounce) {
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
 
@@ -247,8 +247,8 @@ void StaticBody2D::set_bounce(real_t p_bounce) {
 
 real_t StaticBody2D::get_bounce() const {
 
-	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	if (physics_material_override.is_null()) {
 		return 0;
@@ -630,8 +630,8 @@ void RigidBody2D::set_friction(real_t p_friction) {
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
 
@@ -643,8 +643,8 @@ void RigidBody2D::set_friction(real_t p_friction) {
 }
 real_t RigidBody2D::get_friction() const {
 
-	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	if (physics_material_override.is_null()) {
 		return 1;
@@ -659,8 +659,8 @@ void RigidBody2D::set_bounce(real_t p_bounce) {
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
 
@@ -672,8 +672,8 @@ void RigidBody2D::set_bounce(real_t p_bounce) {
 }
 real_t RigidBody2D::get_bounce() const {
 
-	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	if (physics_material_override.is_null()) {
 		return 0;

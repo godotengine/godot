@@ -84,7 +84,7 @@ void ConeTwistJointBullet::set_param(PhysicsServer::ConeTwistJointParam p_param,
 			break;
 		default:
 			ERR_EXPLAIN("This parameter " + itos(p_param) + " is deprecated");
-			WARN_DEPRECATED
+			WARN_DEPRECATED;
 			break;
 	}
 }

@@ -119,7 +119,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 		file->close();
 		memdelete(file);
-		ERR_EXPLAIN("Not a WAV file (no WAVE RIFF Header)")
+		ERR_EXPLAIN("Not a WAV file (no WAVE RIFF Header)");
 		ERR_FAIL_V(ERR_FILE_UNRECOGNIZED);
 	}
 
