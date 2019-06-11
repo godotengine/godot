@@ -111,6 +111,12 @@
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot">
 		</member>
+		<member name="orbit_velocity" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="orbit_velocity_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+		</member>
+		<member name="orbit_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+		</member>
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time">
 		</member>
 		<member name="radial_accel" type="float" setter="set_param" getter="get_param">
@@ -173,7 +179,11 @@
 		</constant>
 		<constant name="FLAG_ALIGN_Y_TO_VELOCITY" value="0" enum="Flags">
 		</constant>
-		<constant name="FLAG_MAX" value="1" enum="Flags">
+		<constant name="FLAG_ROTATE_Y" value="1" enum="Flags">
+		</constant>
+		<constant name="FLAG_DISABLE_Z" value="2" enum="Flags">
+		</constant>
+		<constant name="FLAG_MAX" value="3" enum="Flags">
 		</constant>
 		<constant name="EMISSION_SHAPE_POINT" value="0" enum="EmissionShape">
 		</constant>
