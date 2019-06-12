@@ -246,13 +246,14 @@ bool CreateDialog::_is_class_disabled_by_feature_profile(const StringName &p_cla
 		if (profile->is_class_disabled(class_name)) {
 			return true;
 		}
-		class_name = ClassDB::get_parent_class(class_name);
+		class_name = ClassDB::get_parent_class_nocheck(class_name);
 	}
 
 	return false;
 }
 
 void CreateDialog::select_type(const String &p_type) {
+
 	TreeItem *to_select;
 	if (search_options_types.has(p_type)) {
 		to_select = search_options_types[p_type];
@@ -279,10 +280,6 @@ void CreateDialog::_update_search() {
 	favorite->set_disabled(true);
 
 	help_bit->set_text("");
-	/*
-	TreeItem *root = search_options->create_item();
-	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
-*/
 
 	search_options_types.clear();
 
