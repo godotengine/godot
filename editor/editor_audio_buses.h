@@ -72,7 +72,6 @@ class EditorAudioBus : public PanelContainer {
 		TextureProgress *vu_r;
 	} channel[CHANNELS_MAX];
 
-	class EditorAudioMeterNotches *scale;
 	OptionButton *send;
 
 	PopupMenu *effect_options;
@@ -90,8 +89,8 @@ class EditorAudioBus : public PanelContainer {
 	Tree *effects;
 
 	bool updating_bus;
-
 	bool is_master;
+	mutable bool hovering_drop;
 
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _bus_popup_pressed(int p_option);
@@ -137,15 +136,18 @@ public:
 	EditorAudioBus(EditorAudioBuses *p_buses = NULL, bool p_is_master = false);
 };
 
-class EditorAudioBusDrop : public Panel {
+class EditorAudioBusDrop : public Control {
 
-	GDCLASS(EditorAudioBusDrop, Panel);
+	GDCLASS(EditorAudioBusDrop, Control);
 
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
 
+	mutable bool hovering_drop;
+
 protected:
 	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
 	EditorAudioBusDrop();
@@ -157,13 +159,14 @@ class EditorAudioBuses : public VBoxContainer {
 
 	HBoxContainer *top_hb;
 
-	Button *add;
 	ScrollContainer *bus_scroll;
 	HBoxContainer *bus_hb;
 
 	EditorAudioBusDrop *drop_end;
 
-	Button *file;
+	Label *file;
+
+	Button *add;
 	Button *load;
 	Button *save_as;
 	Button *_default;
@@ -242,7 +245,8 @@ public:
 	float top_padding;
 	Color notch_color;
 
-	void add_notch(float normalized_offset, float db_value, bool render_value = false);
+	void add_notch(float p_normalized_offset, float p_db_value, bool p_render_value = false);
+	Size2 get_minimum_size() const;
 
 private:
 	static void _bind_methods();
