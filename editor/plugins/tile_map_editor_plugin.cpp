@@ -572,23 +572,25 @@ void TileMapEditor::_pick_tile(const Point2 &p_pos) {
 	if (id == TileMap::INVALID_CELL)
 		return;
 
-	if (search_box->get_text().strip_edges() != "") {
-
+	if (search_box->get_text() != "") {
 		search_box->set_text("");
 		_update_palette();
 	}
-
-	Vector<int> selected;
-
-	selected.push_back(id);
-	set_selected_tiles(selected);
 
 	flip_h = node->is_cell_x_flipped(p_pos.x, p_pos.y);
 	flip_v = node->is_cell_y_flipped(p_pos.x, p_pos.y);
 	transpose = node->is_cell_transposed(p_pos.x, p_pos.y);
 	autotile_coord = node->get_cell_autotile_coord(p_pos.x, p_pos.y);
 
+	Vector<int> selected;
+	selected.push_back(id);
+	set_selected_tiles(selected);
 	_update_palette();
+
+	if ((manual_autotile && node->get_tileset()->tile_get_tile_mode(id) == TileSet::AUTO_TILE) || (!priority_atlastile && node->get_tileset()->tile_get_tile_mode(id) == TileSet::ATLAS_TILE)) {
+		manual_palette->select(manual_palette->find_metadata((Point2)autotile_coord));
+	}
+
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
@@ -982,7 +984,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				return true;
 
 			} else {
-				// Mousebutton was released
+				// Mousebutton was released.
 				if (tool != TOOL_NONE) {
 
 					if (tool == TOOL_PAINTING) {
@@ -1046,7 +1048,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 						CanvasItemEditor::get_singleton()->update_viewport();
 
-						return true; // We want to keep the Pasting tool
+						return true; // We want to keep the Pasting tool.
 					} else if (tool == TOOL_SELECTING) {
 
 						CanvasItemEditor::get_singleton()->update_viewport();
@@ -1070,7 +1072,10 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 						_finish_undo();
 
-						// We want to keep the bucket-tool active
+						// So the fill preview is cleared right after the click.
+						CanvasItemEditor::get_singleton()->update_viewport();
+
+						// We want to keep the bucket-tool active.
 						return true;
 					}
 
@@ -1197,7 +1202,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (tool == TOOL_PAINTING) {
 
-			// Paint using bresenham line to prevent holes in painting if the user moves fast
+			// Paint using bresenham line to prevent holes in painting if the user moves fast.
 
 			Vector<Point2i> points = line(old_over_tile.x, over_tile.x, old_over_tile.y, over_tile.y);
 			Vector<int> ids = get_selected_tiles();
@@ -1218,7 +1223,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (tool == TOOL_ERASING) {
 
-			// erase using bresenham line to prevent holes in painting if the user moves fast
+			// Erase using bresenham line to prevent holes in painting if the user moves fast.
 
 			Vector<Point2i> points = line(old_over_tile.x, over_tile.x, old_over_tile.y, over_tile.y);
 
@@ -1343,13 +1348,13 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (!mouse_over) {
-			// Editor shortcuts should not fire if mouse not in viewport
+			// Editor shortcuts should not fire if mouse not in viewport.
 			return false;
 		}
 
 		if (ED_IS_SHORTCUT("tile_map_editor/paint_tile", p_event)) {
 			// NOTE: We do not set tool = TOOL_PAINTING as this begins painting
-			// immediately without pressing the left mouse button first
+			// immediately without pressing the left mouse button first.
 			tool = TOOL_NONE;
 			CanvasItemEditor::get_singleton()->update_viewport();
 
@@ -1431,7 +1436,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			CanvasItemEditor::get_singleton()->update_viewport();
 			return true;
 		}
-	} else if (k.is_valid()) { // release event
+	} else if (k.is_valid()) { // Release event.
 
 		if (tool == TOOL_NONE) {
 
@@ -1447,7 +1452,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 #else
 			if (k->get_scancode() == KEY_CONTROL) {
 #endif
-				// go back to that last tool if KEY_CONTROL was released
+				// Go back to that last tool if KEY_CONTROL was released.
 				tool = last_tool;
 
 				CanvasItemEditor::get_singleton()->update_viewport();
