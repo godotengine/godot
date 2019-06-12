@@ -930,7 +930,7 @@ void CodeTextEditor::convert_case(CaseStyle p_case) {
 	for (int i = begin; i <= end; i++) {
 		int len = text_editor->get_line(i).length();
 		if (i == end)
-			len -= len - end_col;
+			len = end_col;
 		if (i == begin)
 			len -= begin_col;
 		String new_line = text_editor->get_line(i).substr(i == begin ? begin_col : 0, len);

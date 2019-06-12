@@ -5044,7 +5044,7 @@ void EditorNode::_feature_profile_changed() {
 		main_editor_buttons[EDITOR_3D]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
 		main_editor_buttons[EDITOR_SCRIPT]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
 		main_editor_buttons[EDITOR_ASSETLIB]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB));
-		if (profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D) || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB) || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB)) {
+		if (profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D) || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT) || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB)) {
 			_editor_select(EDITOR_2D);
 		}
 	} else {

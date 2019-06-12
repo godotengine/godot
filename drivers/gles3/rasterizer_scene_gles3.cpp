@@ -4552,8 +4552,8 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	}
 
 	_post_process(env, p_cam_projection);
-
-	if (false && shadow_atlas) {
+	// Needed only for debugging
+	/*	if (shadow_atlas && storage->frame.current_rt) {
 
 		//_copy_texture_to_front_buffer(shadow_atlas->depth);
 		storage->canvas->canvas_begin();
@@ -4563,7 +4563,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		storage->canvas->draw_generic_textured_rect(Rect2(0, 0, storage->frame.current_rt->width / 2, storage->frame.current_rt->height / 2), Rect2(0, 0, 1, 1));
 	}
 
-	if (false && storage->frame.current_rt) {
+	if (storage->frame.current_rt) {
 
 		//_copy_texture_to_front_buffer(shadow_atlas->depth);
 		storage->canvas->canvas_begin();
@@ -4573,7 +4573,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		storage->canvas->draw_generic_textured_rect(Rect2(0, 0, storage->frame.current_rt->width / 16, storage->frame.current_rt->height / 16), Rect2(0, 0, 1, 1));
 	}
 
-	if (false && reflection_atlas && storage->frame.current_rt) {
+	if (reflection_atlas && storage->frame.current_rt) {
 
 		//_copy_texture_to_front_buffer(shadow_atlas->depth);
 		storage->canvas->canvas_begin();
@@ -4582,7 +4582,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		storage->canvas->draw_generic_textured_rect(Rect2(0, 0, storage->frame.current_rt->width / 2, storage->frame.current_rt->height / 2), Rect2(0, 0, 1, 1));
 	}
 
-	if (false && directional_shadow.fbo) {
+	if (directional_shadow.fbo) {
 
 		//_copy_texture_to_front_buffer(shadow_atlas->depth);
 		storage->canvas->canvas_begin();
@@ -4592,7 +4592,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		storage->canvas->draw_generic_textured_rect(Rect2(0, 0, storage->frame.current_rt->width / 2, storage->frame.current_rt->height / 2), Rect2(0, 0, 1, 1));
 	}
 
-	if (false && env_radiance_tex) {
+	if ( env_radiance_tex) {
 
 		//_copy_texture_to_front_buffer(shadow_atlas->depth);
 		storage->canvas->canvas_begin();
@@ -4603,8 +4603,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		storage->canvas->draw_generic_textured_rect(Rect2(0, 0, storage->frame.current_rt->width / 2, storage->frame.current_rt->height / 2), Rect2(0, 0, 1, 1));
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	}
-
+	}*/
 	//disable all stuff
 }
 

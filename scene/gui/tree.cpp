@@ -318,7 +318,7 @@ void TreeItem::set_custom_draw(int p_column, Object *p_object, const StringName 
 
 void TreeItem::set_collapsed(bool p_collapsed) {
 
-	if (collapsed == p_collapsed)
+	if (collapsed == p_collapsed || !tree)
 		return;
 	collapsed = p_collapsed;
 	TreeItem *ci = tree->selected_item;
@@ -344,8 +344,7 @@ void TreeItem::set_collapsed(bool p_collapsed) {
 	}
 
 	_changed_notify();
-	if (tree)
-		tree->emit_signal("item_collapsed", this);
+	tree->emit_signal("item_collapsed", this);
 }
 
 bool TreeItem::is_collapsed() {
