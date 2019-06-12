@@ -3232,7 +3232,7 @@ String String::humanize_size(size_t p_size) {
 	int digits = prefix_idx > 0 ? _humanize_digits(p_size / _div) : 0;
 	double divisor = prefix_idx > 0 ? _div : 1;
 
-	return String::num(p_size / divisor, digits) + prefix[prefix_idx];
+	return String::num(p_size / divisor).pad_decimals(digits) + prefix[prefix_idx];
 }
 bool String::is_abs_path() const {
 
