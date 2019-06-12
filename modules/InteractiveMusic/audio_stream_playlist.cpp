@@ -9,7 +9,8 @@ AudioStreamPlaylist::AudioStreamPlaylist() {
 	stream_count = 1;
 	sample_rate = 44100;
 	stereo = true;
-	beat_size = (60 / bpm) * sample_rate;
+	
+	
 	beat_count = 20;
 }
 
@@ -52,6 +53,7 @@ void AudioStreamPlaylist::set_list_stream(int stream_number, Ref<AudioStream> p_
 
 		E->get()->_update_playback_instances();
 	}
+	AudioServer::get_singleton()->unlock();
 	
 }
 
@@ -117,7 +119,6 @@ void AudioStreamPlaylist::_bind_methods() {
 
 AudioStreamPlaybackPlaylist::AudioStreamPlaybackPlaylist() :
 		active(false) {
-	buffer_size = 256;
 	current = 0;
 	fading = false;
 	fading_time = 1;
@@ -135,10 +136,16 @@ void AudioStreamPlaybackPlaylist::stop() {
 void AudioStreamPlaybackPlaylist::start(float p_from_pos) {
 	
 	fading_samples_total = fading_time * playlist->sample_rate;
-	beat_amount_remaining = playlist->beat_count * playlist->beat_size;
-	seek(p_from_pos);
-	active = true;
-	playback[current]->start();
+	beat_size = playlist->sample_rate*60/playlist->bpm;
+	beat_amount_remaining = playlist->beat_count * beat_size;
+	if (playlist->audio_streams[current].is_valid()) {
+		seek(p_from_pos);
+		active = true;
+		playback[current]->start();
+	} else {
+		active= false;
+	}
+
 }
 
 void AudioStreamPlaybackPlaylist::seek(float p_time) {
@@ -175,10 +182,10 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 			
 			playback[current]->start();
 			fading_samples = fading_samples_total;
-			beat_amount_remaining = playlist->beat_count * playlist->beat_size;
+			beat_amount_remaining = playlist->beat_count * beat_size;
 		}
 
-		int to_mix = MIN(buffer_size, MIN(p_frames, beat_amount_remaining));
+		int to_mix = MIN(MIX_BUFFER_SIZE, MIN(p_frames, beat_amount_remaining));
 
 		clear_buffer(to_mix);
 
