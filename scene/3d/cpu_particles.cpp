@@ -515,6 +515,8 @@ void CPUParticles::_particles_process(float p_delta) {
 		velocity_xform = emission_xform.basis;
 	}
 
+	float system_phase = time / lifetime;
+
 	for (int i = 0; i < pcount; i++) {
 
 		Particle &p = parray[i];
@@ -522,21 +524,26 @@ void CPUParticles::_particles_process(float p_delta) {
 		if (!emitting && !p.active)
 			continue;
 
-		float restart_time = (float(i) / float(pcount)) * lifetime;
 		float local_delta = p_delta;
+
+		// The phase is a ratio between 0 (birth) and 1 (end of life) for each particle.
+		// While we use time in tests later on, for randomness we use the phase as done in the
+		// original shader code, and we later multiply by lifetime to get the time.
+		float restart_phase = float(i) / float(pcount);
 
 		if (randomness_ratio > 0.0) {
 			uint32_t seed = cycle;
-			if (restart_time >= time) {
+			if (restart_phase >= system_phase) {
 				seed -= uint32_t(1);
 			}
 			seed *= uint32_t(pcount);
 			seed += uint32_t(i);
 			float random = float(idhash(seed) % uint32_t(65536)) / 65536.0;
-			restart_time += randomness_ratio * random * 1.0 / float(pcount);
+			restart_phase += randomness_ratio * random * 1.0 / float(pcount);
 		}
 
-		restart_time *= (1.0 - explosiveness_ratio);
+		restart_phase *= (1.0 - explosiveness_ratio);
+		float restart_time = restart_phase * lifetime;
 		bool restart = false;
 
 		if (time > prev_time) {
