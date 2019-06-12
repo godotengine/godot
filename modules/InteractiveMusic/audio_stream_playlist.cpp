@@ -3,6 +3,7 @@
 #include "core/print_string.h"
 
 
+
 AudioStreamPlaylist::AudioStreamPlaylist() {
 	bpm = 120;
 	stream_count = 1;
@@ -12,7 +13,7 @@ AudioStreamPlaylist::AudioStreamPlaylist() {
 	beat_count = 20;
 }
 
-Ref<AudioStreamPlayback> AudioStreamPlaylist::instance_playback() { //i think this is correct
+Ref<AudioStreamPlayback> AudioStreamPlaylist::instance_playback() { 
 	Ref<AudioStreamPlaybackPlaylist> playback_playlist;
 	playback_playlist.instance();
 	playback_playlist->playlist = Ref<AudioStreamPlaylist>(this);
@@ -100,17 +101,13 @@ void AudioStreamPlaylist::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream_beats", "beat_count"), &AudioStreamPlaylist::set_stream_beats);
 	ClassDB::bind_method(D_METHOD("get_stream_beats"), &AudioStreamPlaylist::get_stream_beats);
 
-
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stream_count", PROPERTY_HINT_RANGE, "1," + itos(MAX_STREAMS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_stream_count", "get_stream_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bpm", PROPERTY_HINT_RANGE, "0,400"), "set_bpm", "get_bpm");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,400"), "set_stream_beats", "get_stream_beats");
 
 	for (int i = 0; i < MAX_STREAMS; i++) { 
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "stream_" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_list_stream", "get_list_stream", i);
-		//ADD_PROPERTYI(PropertyInfo(Variant::INT, "stream_" + itos(i) + "/beat_amount", PROPERTY_HINT_RANGE, "0,120", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_stream_beats", "get_stream_beats", i);
 	}
-	
 
 	BIND_CONSTANT(MAX_STREAMS);
 }
@@ -120,7 +117,10 @@ void AudioStreamPlaylist::_bind_methods() {
 
 AudioStreamPlaybackPlaylist::AudioStreamPlaybackPlaylist() :
 		active(false) {
-	//buffer_size = 256;
+	buffer_size = 256;
+	current = 0;
+	fading = false;
+	fading_time = 1;
 }
 
 AudioStreamPlaybackPlaylist::~AudioStreamPlaybackPlaylist() {
@@ -133,13 +133,10 @@ void AudioStreamPlaybackPlaylist::stop() {
 }
 
 void AudioStreamPlaybackPlaylist::start(float p_from_pos) {
-	seek(p_from_pos);
 	
-	current = 0;
-	fading = false;
-	fading_time = 1; 
 	fading_samples_total = fading_time * playlist->sample_rate;
 	beat_amount_remaining = playlist->beat_count * playlist->beat_size;
+	seek(p_from_pos);
 	active = true;
 	playback[current]->start();
 }
