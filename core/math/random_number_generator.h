@@ -59,7 +59,10 @@ public:
 
 	_FORCE_INLINE_ int randi_range(int from, int to) {
 		unsigned int ret = randbase.rand();
-		return ret % (to - from + 1) + from;
+		if (to < from)
+			return ret % (from - to + 1) + to;
+		else
+			return ret % (to - from + 1) + from;
 	}
 
 	RandomNumberGenerator();
