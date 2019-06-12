@@ -1976,10 +1976,11 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 		String flags = EditorSettings::get_singleton()->get("text_editor/external/exec_flags");
 
 		List<String> args;
+		bool has_file_flag = false;
+		String script_path = ProjectSettings::get_singleton()->globalize_path(p_resource->get_path());
 
 		if (flags.size()) {
 			String project_path = ProjectSettings::get_singleton()->get_resource_path();
-			String script_path = ProjectSettings::get_singleton()->globalize_path(p_resource->get_path());
 
 			flags = flags.replacen("{line}", itos(p_line > 0 ? p_line : 0));
 			flags = flags.replacen("{col}", itos(p_col));
@@ -2001,6 +2002,9 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 				} else if (flags[i] == '\0' || (!inside_quotes && flags[i] == ' ')) {
 
 					String arg = flags.substr(from, num_chars);
+					if (arg.find("{file}") != -1) {
+						has_file_flag = true;
+					}
 
 					// do path replacement here, else there will be issues with spaces and quotes
 					arg = arg.replacen("{project}", project_path);
@@ -2013,6 +2017,11 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 					num_chars++;
 				}
 			}
+		}
+
+		// Default to passing script path if no {file} flag is specified.
+		if (!has_file_flag) {
+			args.push_back(script_path);
 		}
 
 		Error err = OS::get_singleton()->execute(path, args, false);
@@ -3437,7 +3446,8 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/open_scripts/list_script_names_as", PROPERTY_HINT_ENUM, "Name,Parent Directory And Name,Full Path"));
 	EDITOR_DEF("text_editor/open_scripts/list_script_names_as", 0);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "text_editor/external/exec_path", PROPERTY_HINT_GLOBAL_FILE));
-	EDITOR_DEF("text_editor/external/exec_flags", "");
+	EDITOR_DEF("text_editor/external/exec_flags", "{file}");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "text_editor/external/exec_flags", PROPERTY_HINT_PLACEHOLDER_TEXT, "Call flags with placeholders: {project}, {file}, {col}, {line}."));
 
 	ED_SHORTCUT("script_editor/open_recent", TTR("Open Recent"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_T);
 	ED_SHORTCUT("script_editor/clear_recent", TTR("Clear Recent Files"));
