@@ -39,7 +39,7 @@
 #include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #endif
 
 #include <limits.h>
