@@ -69,6 +69,7 @@ class ConnectDialog : public ConfirmationDialog {
 	OptionButton *type_list;
 	CheckBox *deferred;
 	CheckBox *oneshot;
+	CheckBox *create_missing;
 	CheckButton *advanced;
 
 	Label *error_label;
@@ -95,6 +96,7 @@ public:
 
 	bool get_deferred() const;
 	bool get_oneshot() const;
+	bool get_create_missing() const;
 	bool is_editing() const;
 
 	void init(Connection c, bool bEdit = false);

@@ -265,6 +265,11 @@ bool ConnectDialog::get_oneshot() const {
 	return oneshot->is_pressed();
 }
 
+bool ConnectDialog::get_create_missing() const {
+
+	return create_missing->is_pressed();
+}
+
 /*
 Returns true if ConnectDialog is being used to edit an existing connection.
 */
@@ -413,8 +418,19 @@ ConnectDialog::ConnectDialog() {
 
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
 
+	HBoxContainer *lbcb_hb = memnew(HBoxContainer);
+	Label *mtd_name = memnew(Label(TTR("Method to Use:")));
+	mtd_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	lbcb_hb->add_child(mtd_name);
+	create_missing = memnew(CheckBox);
+	create_missing->set_text(TTR("Create If Missing"));
+	create_missing->set_pressed(true);
+	create_missing->set_tooltip(TTR("Creates the method if not currently present in the script."));
+	lbcb_hb->add_child(create_missing);
+	vbc_left->add_child(lbcb_hb);
+
 	HBoxContainer *dstm_hb = memnew(HBoxContainer);
-	vbc_left->add_margin_child("Method to Create:", dstm_hb);
+	vbc_left->add_child(dstm_hb);
 
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -424,11 +440,6 @@ ConnectDialog::ConnectDialog() {
 	dstm_hb->add_child(advanced);
 	advanced->set_text(TTR("Advanced"));
 	advanced->connect("pressed", this, "_advanced_pressed");
-
-	// Add spacing so the tree and inspector are the same size.
-	Control *spacing = memnew(Control);
-	spacing->set_custom_minimum_size(Size2(0, 4) * EDSCALE);
-	vbc_right->add_child(spacing);
 
 	deferred = memnew(CheckBox);
 	deferred->set_h_size_flags(0);
@@ -441,6 +452,11 @@ ConnectDialog::ConnectDialog() {
 	oneshot->set_text(TTR("Oneshot"));
 	oneshot->set_tooltip(TTR("Disconnects the signal after its first emission."));
 	vbc_right->add_child(oneshot);
+
+	// Add spacing so the tree and inspector are the same size.
+	Control *spacing = memnew(Control);
+	spacing->set_custom_minimum_size(Size2(0, 6) * EDSCALE);
+	vbc_right->add_child(spacing);
 
 	set_as_toplevel(true);
 
@@ -490,11 +506,11 @@ void ConnectionsDock::_make_or_edit_connection() {
 	bool oshot = connect_dialog->get_oneshot();
 	cToMake.flags = CONNECT_PERSIST | (defer ? CONNECT_DEFERRED : 0) | (oshot ? CONNECT_ONESHOT : 0);
 
-	//conditions to add function, must have a script and must have a method
-	bool add_script_function = !target->get_script().is_null() && !ClassDB::has_method(target->get_class(), cToMake.method);
+	// Conditions to add function: must have a script, must have a method, and the option for doing so must be selected.
+	bool add_script_function = connect_dialog->get_create_missing() && !target->get_script().is_null() && !ClassDB::has_method(target->get_class(), cToMake.method);
 	PoolStringArray script_function_args;
 	if (add_script_function) {
-		// pick up args here before "it" is deleted by update_tree
+		// Pick up args here before "it" is deleted by update_tree.
 		script_function_args = it->get_metadata(0).operator Dictionary()["args"];
 		for (int i = 0; i < cToMake.binds.size(); i++) {
 			script_function_args.append("extra_arg_" + itos(i));
@@ -508,8 +524,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 		_connect(cToMake);
 	}
 
-	// IMPORTANT NOTE: _disconnect and _connect cause an update_tree,
-	// which will delete the object "it" is pointing to
+	// IMPORTANT NOTE: _disconnect and _connect cause an update_tree, which will delete the object "it" is pointing to.
 	it = NULL;
 
 	if (add_script_function) {
@@ -679,7 +694,7 @@ void ConnectionsDock::_open_connection_dialog(Connection cToEdit) {
 
 	if (src && dst) {
 		connect_dialog->set_title(TTR("Edit Connection:") + cToEdit.signal);
-		connect_dialog->popup_centered_ratio();
+		connect_dialog->popup_centered();
 		connect_dialog->init(cToEdit, true);
 	}
 }
