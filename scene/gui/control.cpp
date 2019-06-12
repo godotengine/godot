@@ -29,23 +29,23 @@
 /*************************************************************************/
 
 #include "control.h"
-#include "core/project_settings.h"
-#include "scene/main/canvas_layer.h"
-#include "scene/main/viewport.h"
-#include "servers/visual_server.h"
 
 #include "core/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
+#include "core/project_settings.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
+#include "scene/main/canvas_layer.h"
+#include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
+#include "servers/visual_server.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #endif
-#include <stdio.h>
 
 Dictionary Control::_edit_get_state() const {
 
