@@ -35,7 +35,7 @@
 #include "editor_node.h"
 #include "editor_settings.h"
 
-void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, int p_rating, const String &p_cost) {
+void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {
 
 	title->set_text(p_title);
 	asset_id = p_asset_id;
@@ -44,13 +44,6 @@ void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, co
 	author->set_text(p_author);
 	author_id = p_author_id;
 	price->set_text(p_cost);
-
-	for (int i = 0; i < 5; i++) {
-		if (i < p_rating)
-			stars[i]->set_texture(get_icon("Favorites", "EditorIcons"));
-		else
-			stars[i]->set_texture(get_icon("NonFavorite", "EditorIcons"));
-	}
 }
 
 void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Texture> &p_image) {
@@ -68,6 +61,7 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 		icon->set_normal_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
 		category->add_color_override("font_color", Color(0.5, 0.5, 0.5));
 		author->add_color_override("font_color", Color(0.5, 0.5, 0.5));
+		price->add_color_override("font_color", Color(0.5, 0.5, 0.5));
 	}
 }
 
@@ -141,13 +135,6 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	author->connect("pressed", this, "_author_clicked");
 	vb->add_child(author);
 
-	HBoxContainer *rating_hb = memnew(HBoxContainer);
-	vb->add_child(rating_hb);
-
-	for (int i = 0; i < 5; i++) {
-		stars[i] = memnew(TextureRect);
-		rating_hb->add_child(stars[i]);
-	}
 	price = memnew(Label);
 	price->set_text(TTR("Free"));
 	vb->add_child(price);
@@ -248,13 +235,13 @@ void EditorAssetLibraryItemDescription::_preview_click(int p_id) {
 	}
 }
 
-void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, int p_rating, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_sha256_hash) {
+void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_sha256_hash) {
 
 	asset_id = p_asset_id;
 	title = p_title;
 	download_url = p_download_url;
 	sha256 = p_sha256_hash;
-	item->configure(p_title, p_asset_id, p_category, p_category_id, p_author, p_author_id, p_rating, p_cost);
+	item->configure(p_title, p_asset_id, p_category, p_category_id, p_author, p_author_id, p_cost);
 	description->clear();
 	description->add_text(TTR("Version:") + " " + p_version_string + "\n");
 	description->add_text(TTR("Contents:") + " ");
@@ -666,7 +653,6 @@ void EditorAssetLibrary::_install_asset() {
 }
 
 const char *EditorAssetLibrary::sort_key[SORT_MAX] = {
-	"rating",
 	"downloads",
 	"name",
 	"cost",
@@ -674,10 +660,9 @@ const char *EditorAssetLibrary::sort_key[SORT_MAX] = {
 };
 
 const char *EditorAssetLibrary::sort_text[SORT_MAX] = {
-	"Rating",
 	"Downloads",
 	"Name",
-	"Cost",
+	"License", // "cost" stores the SPDX license name in the Godot Asset Library
 	"Updated"
 };
 
@@ -1212,12 +1197,11 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				ERR_CONTINUE(!r.has("author_id"));
 				ERR_CONTINUE(!r.has("category_id"));
 				ERR_FAIL_COND(!category_map.has(r["category_id"]));
-				ERR_CONTINUE(!r.has("rating"));
 				ERR_CONTINUE(!r.has("cost"));
 
 				EditorAssetLibraryItem *item = memnew(EditorAssetLibraryItem);
 				asset_items->add_child(item);
-				item->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["rating"], r["cost"]);
+				item->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"]);
 				item->connect("asset_selected", this, "_select_asset");
 				item->connect("author_selected", this, "_select_author");
 				item->connect("category_selected", this, "_select_category");
@@ -1238,7 +1222,6 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			ERR_FAIL_COND(!r.has("version_string"));
 			ERR_FAIL_COND(!r.has("category_id"));
 			ERR_FAIL_COND(!category_map.has(r["category_id"]));
-			ERR_FAIL_COND(!r.has("rating"));
 			ERR_FAIL_COND(!r.has("cost"));
 			ERR_FAIL_COND(!r.has("description"));
 			ERR_FAIL_COND(!r.has("download_url"));
@@ -1254,7 +1237,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			description->popup_centered_minsize();
 			description->connect("confirmed", this, "_install_asset");
 
-			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["rating"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
+			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
 			/*item->connect("asset_selected",this,"_select_asset");
 			item->connect("author_selected",this,"_select_author");
 			item->connect("category_selected",this,"_category_selected");*/
