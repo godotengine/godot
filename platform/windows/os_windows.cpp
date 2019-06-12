@@ -1381,7 +1381,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		SetFocus(hWnd); // Sets Keyboard Focus To
 	}
 
-	if (p_desired.layered_splash) {
+	if (p_desired.layered) {
 		set_window_per_pixel_transparency_enabled(true);
 	}
 
