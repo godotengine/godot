@@ -56,7 +56,7 @@ class AudioStreamPlaybackPlaylist : public AudioStreamPlayback {
 	friend class AudioStreamPlaylist;
 
 private:
-	int buffer_size=256;
+	int buffer_size;
 	enum {
 		MIX_FRAC_BITS = 13,
 		MIX_FRAC_LEN = (1 << MIX_FRAC_BITS),
@@ -68,7 +68,6 @@ private:
 	Ref<AudioStreamPlaylist> playlist;
 	Ref<AudioStreamPlayback> playback[AudioStreamPlaylist::MAX_STREAMS];
 	
-
 	int current;
 	bool fading;
 	int fading_samples_total;
@@ -76,6 +75,8 @@ private:
 	int beat_amount_remaining;
 
 	bool active;
+
+	virtual void _update_playback_instances();
 
 public:
 	virtual void start(float p_from_pos = 0.0);
@@ -90,7 +91,4 @@ public:
 	virtual float get_length() const;
 	AudioStreamPlaybackPlaylist();
 	~AudioStreamPlaybackPlaylist();
-
-private:
-	virtual void _update_playback_instances();
 };
