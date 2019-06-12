@@ -216,9 +216,7 @@ void BaseButton::set_pressed(bool p_pressed) {
 	if (p_pressed) {
 		_unpress_group();
 	}
-	if (toggle_mode) {
-		_toggled(status.pressed);
-	}
+	_toggled(status.pressed);
 
 	update();
 }
@@ -337,9 +335,6 @@ bool BaseButton::is_keep_pressed_outside() const {
 
 void BaseButton::set_shortcut(const Ref<ShortCut> &p_shortcut) {
 
-	if (shortcut.is_null() == p_shortcut.is_null())
-		return;
-
 	shortcut = p_shortcut;
 	set_process_unhandled_input(shortcut.is_valid());
 }
@@ -356,11 +351,10 @@ void BaseButton::_unhandled_input(Ref<InputEvent> p_event) {
 			return; //ignore because of modal window
 
 		if (is_toggle_mode()) {
-			set_pressed(!is_pressed());
-			emit_signal("toggled", is_pressed());
+			set_pressed(!is_pressed()); // Also calls _toggled() internally.
 		}
 
-		emit_signal("pressed");
+		_pressed();
 	}
 }
 
