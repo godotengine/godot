@@ -291,8 +291,8 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			p_node->connect("script_changed", this, "_node_script_changed", varray(p_node));
 
 		if (!p_node->get_script().is_null()) {
-
-			item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT, false, TTR("Open Script"));
+			Ref<Script> script = p_node->get_script();
+			item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT, false, TTR("Open Script:") + " " + script->get_path());
 		}
 
 		if (p_node->is_class("CanvasItem")) {
