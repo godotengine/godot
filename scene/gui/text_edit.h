@@ -697,8 +697,8 @@ public:
 	void set_info_gutter_width(int p_gutter_width);
 	int get_info_gutter_width() const;
 
-	void set_hiding_enabled(int p_enabled);
-	int is_hiding_enabled() const;
+	void set_hiding_enabled(bool p_enabled);
+	bool is_hiding_enabled() const;
 
 	void set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata);
 
