@@ -100,17 +100,19 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 
 	Ref<StyleBoxEmpty> border;
 	border.instance();
-	border->set_default_margin(MARGIN_LEFT, 5);
-	border->set_default_margin(MARGIN_RIGHT, 5);
-	border->set_default_margin(MARGIN_BOTTOM, 5);
-	border->set_default_margin(MARGIN_TOP, 5);
+	border->set_default_margin(MARGIN_LEFT, 5 * EDSCALE);
+	border->set_default_margin(MARGIN_RIGHT, 5 * EDSCALE);
+	border->set_default_margin(MARGIN_BOTTOM, 5 * EDSCALE);
+	border->set_default_margin(MARGIN_TOP, 5 * EDSCALE);
 	add_style_override("panel", border);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
+	// Add some spacing to visually separate the icon from the asset details
+	hb->add_constant_override("separation", 15 * EDSCALE);
 	add_child(hb);
 
 	icon = memnew(TextureButton);
-	icon->set_custom_minimum_size(Size2(64, 64));
+	icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
 	icon->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	icon->connect("pressed", this, "_asset_clicked");
 
@@ -150,7 +152,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	price->set_text(TTR("Free"));
 	vb->add_child(price);
 
-	set_custom_minimum_size(Size2(250, 100));
+	set_custom_minimum_size(Size2(250, 100) * EDSCALE);
 	set_h_size_flags(SIZE_EXPAND_FILL);
 
 	set_mouse_filter(MOUSE_FILTER_PASS);
@@ -194,7 +196,6 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 					break;
 				}
 			}
-			//item->call("set_image",p_type,p_index,p_image);
 		} break;
 		case EditorAssetLibrary::IMAGE_QUEUE_SCREENSHOT: {
 
@@ -207,7 +208,6 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 					break;
 				}
 			}
-			//item->call("set_image",p_type,p_index,p_image);
 		} break;
 	}
 }
@@ -554,7 +554,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	hb2->add_child(retry);
 	hb2->add_child(install);
-	set_custom_minimum_size(Size2(310, 0));
+	set_custom_minimum_size(Size2(310, 0) * EDSCALE);
 
 	download = memnew(HTTPRequest);
 	add_child(download);
@@ -988,7 +988,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		to = p_page_count;
 
 	hbc->add_spacer();
-	hbc->add_constant_override("separation", 5);
+	hbc->add_constant_override("separation", 5 * EDSCALE);
 
 	Button *first = memnew(Button);
 	first->set_text(TTR("First"));
@@ -1194,8 +1194,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			asset_items = memnew(GridContainer);
 			asset_items->set_columns(2);
-			asset_items->add_constant_override("hseparation", 10);
-			asset_items->add_constant_override("vseparation", 10);
+			asset_items->add_constant_override("hseparation", 10 * EDSCALE);
+			asset_items->add_constant_override("vseparation", 10 * EDSCALE);
 
 			library_vb->add_child(asset_items);
 
@@ -1361,7 +1361,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	HBoxContainer *search_hb = memnew(HBoxContainer);
 
 	library_main->add_child(search_hb);
-	library_main->add_constant_override("separation", 10);
+	library_main->add_constant_override("separation", 10 * EDSCALE);
 
 	search_hb->add_child(memnew(Label(TTR("Search:") + " ")));
 	filter = memnew(LineEdit);
@@ -1463,10 +1463,10 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	Ref<StyleBoxEmpty> border2;
 	border2.instance();
-	border2->set_default_margin(MARGIN_LEFT, 15);
-	border2->set_default_margin(MARGIN_RIGHT, 35);
-	border2->set_default_margin(MARGIN_BOTTOM, 15);
-	border2->set_default_margin(MARGIN_TOP, 15);
+	border2->set_default_margin(MARGIN_LEFT, 15 * EDSCALE);
+	border2->set_default_margin(MARGIN_RIGHT, 35 * EDSCALE);
+	border2->set_default_margin(MARGIN_BOTTOM, 15 * EDSCALE);
+	border2->set_default_margin(MARGIN_TOP, 15 * EDSCALE);
 
 	PanelContainer *library_vb_border = memnew(PanelContainer);
 	library_scroll->add_child(library_vb_border);
@@ -1478,15 +1478,14 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	library_vb_border->add_child(library_vb);
-	//margin_panel->set_stop_mouse(false);
 
 	asset_top_page = memnew(HBoxContainer);
 	library_vb->add_child(asset_top_page);
 
 	asset_items = memnew(GridContainer);
 	asset_items->set_columns(2);
-	asset_items->add_constant_override("hseparation", 10);
-	asset_items->add_constant_override("vseparation", 10);
+	asset_items->add_constant_override("hseparation", 10 * EDSCALE);
+	asset_items->add_constant_override("vseparation", 10 * EDSCALE);
 
 	library_vb->add_child(asset_items);
 
@@ -1500,7 +1499,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	last_queue_id = 0;
 
-	library_vb->add_constant_override("separation", 20);
+	library_vb->add_constant_override("separation", 20 * EDSCALE);
 
 	load_status = memnew(ProgressBar);
 	load_status->set_min(0);
