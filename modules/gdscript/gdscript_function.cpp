@@ -1307,14 +1307,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				//The function is going to yield
 				yielded = true;
 
-				//The new phase depends on the kind of yield being done
-				//Yielding normally will put function in the READY phase
-				//Yielding to a signal will put function in the BLOCKED phase
-				/*const GDScriptFunctionState::Phase new_phase = 
-					_code_ptr[ip] == OPCODE_YIELD_SIGNAL ? 
-							GDScriptFunctionState::Phase::BLOCKED : 
-							GDScriptFunctionState::Phase::READY;*/
-
 				Ref<GDScriptFunctionState> gdfs;
 				if (!p_state) {
 					//create a new GDSCriptFunctionState if we didn't get a CallState
@@ -2035,7 +2027,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 				me(m) {}
 	} pin(this);
 
-	const int was_blocked = is_trying_unblock();
+	const bool was_blocked = is_trying_unblock();
 
 	//At this point the function is known to be in a resumable phase
 	//(one of READY, TRYING_UNBLOCK, or VALUE_PENDING)
