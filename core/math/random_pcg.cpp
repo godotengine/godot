@@ -43,13 +43,9 @@ void RandomPCG::randomize() {
 }
 
 double RandomPCG::random(double p_from, double p_to) {
-	unsigned int r = rand();
-	double ret = (double)r / (double)RANDOM_MAX;
-	return (ret) * (p_to - p_from) + p_from;
+	return randd() * (p_to - p_from) + p_from;
 }
 
 float RandomPCG::random(float p_from, float p_to) {
-	unsigned int r = rand();
-	float ret = (float)r / (float)RANDOM_MAX;
-	return (ret) * (p_to - p_from) + p_from;
+	return randf() * (p_to - p_from) + p_from;
 }
