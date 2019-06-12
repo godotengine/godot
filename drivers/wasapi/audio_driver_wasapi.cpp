@@ -243,6 +243,7 @@ Error AudioDriverWASAPI::init() {
 	Error err = init_device();
 	if (err != OK) {
 		ERR_PRINT("WASAPI: init_device error");
+		ERR_FAIL_V(err);
 	}
 
 	active = false;
