@@ -13,7 +13,7 @@ private:
 	bool stereo;
 	int stream_count;
 	int bpm;
-	double beat_size;
+	
 	double time;
 
 	enum {
@@ -56,14 +56,16 @@ class AudioStreamPlaybackPlaylist : public AudioStreamPlayback {
 	friend class AudioStreamPlaylist;
 
 private:
-	int buffer_size;
+	enum {
+		MIX_BUFFER_SIZE = 128
+	};
 	enum {
 		MIX_FRAC_BITS = 13,
 		MIX_FRAC_LEN = (1 << MIX_FRAC_BITS),
 		MIX_FRAC_MASK = MIX_FRAC_LEN - 1,
 	};
-	AudioFrame *pcm_buffer;
-	AudioFrame *aux_buffer;
+	AudioFrame pcm_buffer[MIX_BUFFER_SIZE];
+	AudioFrame aux_buffer[MIX_BUFFER_SIZE];
 	
 	Ref<AudioStreamPlaylist> playlist;
 	Ref<AudioStreamPlayback> playback[AudioStreamPlaylist::MAX_STREAMS];
@@ -72,6 +74,7 @@ private:
 	bool fading;
 	int fading_samples_total;
 	int fading_time;
+	float beat_size;
 	int beat_amount_remaining;
 
 	bool active;
