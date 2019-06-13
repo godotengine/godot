@@ -38,6 +38,7 @@
 
 void Engine::set_iterations_per_second(int p_ips) {
 
+	ERR_FAIL_COND(p_ips <= 0);
 	ips = p_ips;
 }
 int Engine::get_iterations_per_second() const {
