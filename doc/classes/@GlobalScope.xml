@@ -1003,6 +1003,27 @@
 		<constant name="JOY_DS_Y" value="2" enum="JoystickList">
 			DualShock controller Y button
 		</constant>
+		<constant name="JOY_VR_GRIP" value="2" enum="JoystickList">
+			Grip (side) buttons on a VR controller
+		</constant>
+		<constant name="JOY_VR_PAD" value="14" enum="JoystickList">
+			Push down on the touchpad or main joystick on a VR controller
+		</constant>
+		<constant name="JOY_VR_TRIGGER" value="15" enum="JoystickList">
+			Trigger on a VR controller
+		</constant>
+		<constant name="JOY_OCULUS_AX" value="7" enum="JoystickList">
+			A button on the right Oculus Touch controller, X button on the left controller (also when used in OpenVR)	
+		</constant>
+		<constant name="JOY_OCULUS_BY" value="1" enum="JoystickList">
+			B button on the right Oculus Touch controller, Y button on the left controller (also when used in OpenVR)
+		</constant>
+		<constant name="JOY_OCULUS_MENU" value="3" enum="JoystickList">
+			Menu button on either Oculus Touch controller.
+		</constant>
+		<constant name="JOY_OPENVR_MENU" value="1" enum="JoystickList">
+			Menu button in OpenVR (Except when Oculus Touch controllers are used)
+		</constant>
 		<constant name="JOY_SELECT" value="10" enum="JoystickList">
 			Joypad Button Select
 		</constant>
@@ -1084,6 +1105,18 @@
 		</constant>
 		<constant name="JOY_ANALOG_R2" value="7" enum="JoystickList">
 			Joypad Right Analog Trigger
+		</constant>
+		<constant name="JOY_VR_ANALOG_TRIGGER" value="2" enum="JoystickList">
+			VR Controller Analog Trigger
+		</constant>
+		<constant name="JOY_VR_ANALOG_GRIP" value="4" enum="JoystickList">
+			VR Controller Analog Grip (side buttons)
+		</constant>
+		<constant name="JOY_OPENVR_TOUCHPADX" value="0" enum="JoystickList">
+			OpenVR touchpad X axis (Joystick axis on Oculus Touch and Windows MR controllers)
+		</constant>
+		<constant name="JOY_OPENVR_TOUCHPADY" value="1" enum="JoystickList">
+			OpenVR touchpad Y axis (Joystick axis on Oculus Touch and Windows MR controllers)
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MidiMessageList">
 		</constant>
