@@ -1137,7 +1137,7 @@ Vector<Vector<Point2> > Geometry::_polypaths_do_operation(PolyBooleanOperation p
 	return polypaths;
 }
 
-Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type, real_t p_miter_limit, real_t p_arc_tolerance) {
 
 	using namespace ClipperLib;
 
@@ -1158,7 +1158,7 @@ Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polyp
 		case END_SQUARE: et = etOpenSquare; break;
 		case END_ROUND: et = etOpenRound; break;
 	}
-	ClipperOffset co(2.0, 0.25 * SCALE_FACTOR); // Defaults from ClipperOffset.
+	ClipperOffset co(p_miter_limit, p_arc_tolerance * SCALE_FACTOR);
 	Path path;
 
 	// Need to scale points (Clipper's requirement for robust computation).

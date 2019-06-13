@@ -295,9 +295,15 @@
 			</argument>
 			<argument index="2" name="join_type" type="int" enum="Geometry.PolyJoinType" default="0">
 			</argument>
+			<argument index="3" name="miter_limit" type="float" default="2.0">
+			</argument>
+			<argument index="4" name="arc_tolerance" type="float" default="0.25">
+			</argument>
 			<description>
 				Inflates or deflates [code]polygon[/code] by [code]delta[/code] units (pixels). If [code]delta[/code] is positive, makes the polygon grow outward. If [code]delta[/code] is negative, shrinks the polygon inward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. Returns an empty array if [code]delta[/code] is negative and the absolute value of it approximately exceeds the minimum bounding rectangle dimensions of the polygon.
 				Each polygon's vertices will be rounded as determined by [code]join_type[/code], see [enum PolyJoinType].
+				[code]miter_limit[/code] sets the maximum distance in multiples of [code]delta[/code] that vertices can be offset from their original positions before squaring is applied. The default value is 2.0 (twice delta) which is the smallest value that's allowed to avoid generating unacceptably long 'spikes' at very acute angles.
+				[code]arc_tolerance[/code] sets the maximum distance the flattened path will deviate from the mathematical representation of an arc. Smaller values will increase smoothness at a cost of performance. Only relevant when [code]join_type[/code] is set to [code]JOIN_ROUND[/code].
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
@@ -312,10 +318,13 @@
 			</argument>
 			<argument index="3" name="end_type" type="int" enum="Geometry.PolyEndType" default="3">
 			</argument>
+			<argument index="4" name="miter_limit" type="float" default="2.0">
+			</argument>
 			<description>
 				Inflates or deflates [code]polyline[/code] by [code]delta[/code] units (pixels), producing polygons. If [code]delta[/code] is positive, makes the polyline grow outward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. If [code]delta[/code] is negative, returns an empty array.
 				Each polygon's vertices will be rounded as determined by [code]join_type[/code], see [enum PolyJoinType].
 				Each polygon's endpoints will be rounded as determined by [code]end_type[/code], see [enum PolyEndType].
+				[code]miter_limit[/code] sets the maximum distance in multiples of [code]delta[/code] that vertices can be offset from their original positions before squaring is applied. The default value is 2.0 (twice delta) which is the smallest value that's allowed to avoid generating unacceptably long 'spikes' at very acute angles.
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
