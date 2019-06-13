@@ -308,12 +308,28 @@ void _OS::set_window_position(const Point2 &p_position) {
 	OS::get_singleton()->set_window_position(p_position);
 }
 
+Size2 _OS::get_max_window_size() const {
+	return OS::get_singleton()->get_max_window_size();
+}
+
+Size2 _OS::get_min_window_size() const {
+	return OS::get_singleton()->get_min_window_size();
+}
+
 Size2 _OS::get_window_size() const {
 	return OS::get_singleton()->get_window_size();
 }
 
 Size2 _OS::get_real_window_size() const {
 	return OS::get_singleton()->get_real_window_size();
+}
+
+void _OS::set_max_window_size(const Size2 &p_size) {
+	OS::get_singleton()->set_max_window_size(p_size);
+}
+
+void _OS::set_min_window_size(const Size2 &p_size) {
+	OS::get_singleton()->set_min_window_size(p_size);
 }
 
 void _OS::set_window_size(const Size2 &p_size) {
@@ -1139,6 +1155,10 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_window_position"), &_OS::get_window_position);
 	ClassDB::bind_method(D_METHOD("set_window_position", "position"), &_OS::set_window_position);
 	ClassDB::bind_method(D_METHOD("get_window_size"), &_OS::get_window_size);
+	ClassDB::bind_method(D_METHOD("get_max_window_size"), &_OS::get_max_window_size);
+	ClassDB::bind_method(D_METHOD("get_min_window_size"), &_OS::get_min_window_size);
+	ClassDB::bind_method(D_METHOD("set_max_window_size", "size"), &_OS::set_max_window_size);
+	ClassDB::bind_method(D_METHOD("set_min_window_size", "size"), &_OS::set_min_window_size);
 	ClassDB::bind_method(D_METHOD("set_window_size", "size"), &_OS::set_window_size);
 	ClassDB::bind_method(D_METHOD("get_window_safe_area"), &_OS::get_window_safe_area);
 	ClassDB::bind_method(D_METHOD("set_window_fullscreen", "enabled"), &_OS::set_window_fullscreen);
@@ -1284,6 +1304,8 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vsync_enabled"), "set_use_vsync", "is_vsync_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_screen_on"), "set_keep_screen_on", "is_keep_screen_on");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "min_window_size"), "set_min_window_size", "get_min_window_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "max_window_size"), "set_max_window_size", "get_max_window_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait,Reverse Landscape,Reverse Portrait,Sensor Landscape,Sensor Portrait,Sensor"), "set_screen_orientation", "get_screen_orientation");
 	ADD_GROUP("Window", "window_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_borderless"), "set_borderless_window", "get_borderless_window");
