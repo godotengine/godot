@@ -104,7 +104,7 @@ public:
 	~ConnectDialog();
 };
 
-//========================================
+//////////////////////////////////////////
 
 class ConnectionsDock : public VBoxContainer {
 
