@@ -45,6 +45,10 @@
 #include "scene/resources/shape.h"
 #include "scene/resources/sphere_shape.h"
 
+#ifdef MODULE_CSG_ENABLED
+#include "modules/csg/csg_shape.h"
+#endif
+
 EditorNavigationMeshGenerator *EditorNavigationMeshGenerator::singleton = NULL;
 
 void EditorNavigationMeshGenerator::_add_vertex(const Vector3 &p_vec3, Vector<float> &p_verticies) {
@@ -133,6 +137,20 @@ void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_tran
 			_add_mesh(mesh, p_accumulated_transform * mesh_instance->get_transform(), p_verticies, p_indices);
 		}
 	}
+
+#ifdef MODULE_CSG_ENABLED
+	if (Object::cast_to<CSGShape>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
+
+		CSGShape *csg_shape = Object::cast_to<CSGShape>(p_node);
+		Array meshes = csg_shape->get_meshes();
+		if (!meshes.empty()) {
+			Ref<Mesh> mesh = meshes[1];
+			if (mesh.is_valid()) {
+				_add_mesh(mesh, p_accumulated_transform * csg_shape->get_transform(), p_verticies, p_indices);
+			}
+		}
+	}
+#endif
 
 	if (Object::cast_to<StaticBody>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_MESH_INSTANCES) {
 		StaticBody *static_body = Object::cast_to<StaticBody>(p_node);
