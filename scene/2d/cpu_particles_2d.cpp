@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "cpu_particles_2d.h"
-#include "particles_2d.h"
+
 #include "scene/2d/canvas_item.h"
+#include "scene/2d/particles_2d.h"
 #include "scene/resources/particles_material.h"
 #include "servers/visual_server.h"
 
@@ -324,9 +325,9 @@ void CPUParticles2D::set_param_curve(Parameter p_param, const Ref<Curve> &p_curv
 		case PARAM_ANGULAR_VELOCITY: {
 			_adjust_curve_range(p_curve, -360, 360);
 		} break;
-		/*case PARAM_ORBIT_VELOCITY: {
+		case PARAM_ORBIT_VELOCITY: {
 			_adjust_curve_range(p_curve, -500, 500);
-		} break;*/
+		} break;
 		case PARAM_LINEAR_ACCEL: {
 			_adjust_curve_range(p_curve, -200, 200);
 		} break;
@@ -489,12 +490,6 @@ void CPUParticles2D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "emission_colors" && emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
 		property.usage = 0;
 	}
-
-	/*
-	if (property.name.begins_with("orbit_") && !flags[FLAG_DISABLE_Z]) {
-		property.usage = 0;
-	}
-	*/
 }
 
 static uint32_t idhash(uint32_t x) {
@@ -695,16 +690,12 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			if (curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
 				tex_linear_velocity = curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY]->interpolate(p.custom[1]);
 			}
-			/*
+
 			float tex_orbit_velocity = 0.0;
-
-			if (flags[FLAG_DISABLE_Z]) {
-
-				if (curve_parameters[PARAM_INITIAL_ORBIT_VELOCITY].is_valid()) {
-					tex_orbit_velocity = curve_parameters[PARAM_INITIAL_ORBIT_VELOCITY]->interpolate(p.custom[1]);
-				}
+			if (curve_parameters[PARAM_ORBIT_VELOCITY].is_valid()) {
+				tex_orbit_velocity = curve_parameters[PARAM_ORBIT_VELOCITY]->interpolate(p.custom[1]);
 			}
-*/
+
 			float tex_angular_velocity = 0.0;
 			if (curve_parameters[PARAM_ANGULAR_VELOCITY].is_valid()) {
 				tex_angular_velocity = curve_parameters[PARAM_ANGULAR_VELOCITY]->interpolate(p.custom[1]);
@@ -759,18 +750,15 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			//apply attractor forces
 			p.velocity += force * local_delta;
 			//orbit velocity
-#if 0
-			if (flags[FLAG_DISABLE_Z]) {
-
-				float orbit_amount = (orbit_velocity + tex_orbit_velocity) * mix(1.0, rand_from_seed(alt_seed), orbit_velocity_random);
-				if (orbit_amount != 0.0) {
-					float ang = orbit_amount * DELTA * pi * 2.0;
-					mat2 rot = mat2(vec2(cos(ang), -sin(ang)), vec2(sin(ang), cos(ang)));
-					TRANSFORM[3].xy -= diff.xy;
-					TRANSFORM[3].xy += rot * diff.xy;
-				}
+			float orbit_amount = (parameters[PARAM_ORBIT_VELOCITY] + tex_orbit_velocity) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_ORBIT_VELOCITY]);
+			if (orbit_amount != 0.0) {
+				float ang = orbit_amount * local_delta * Math_PI * 2.0;
+				// Not sure why the ParticlesMaterial code uses a clockwise rotation matrix,
+				// but we use -ang here to reproduce its behavior.
+				Transform2D rot = Transform2D(-ang, Vector2());
+				p.transform[2] -= diff;
+				p.transform[2] += rot.basis_xform(diff);
 			}
-#endif
 			if (curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
 				p.velocity = p.velocity.normalized() * tex_linear_velocity;
 			}
@@ -1271,12 +1259,10 @@ void CPUParticles2D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_velocity", PROPERTY_HINT_RANGE, "-720,720,0.01,or_lesser,or_greater"), "set_param", "get_param", PARAM_ANGULAR_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_velocity_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_ANGULAR_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "angular_velocity_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_ANGULAR_VELOCITY);
-	/*
 	ADD_GROUP("Orbit Velocity", "orbit_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "orbit_velocity", PROPERTY_HINT_RANGE, "-1000,1000,0.01,or_lesser,or_greater"), "set_param", "get_param", PARAM_ORBIT_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "orbit_velocity_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_ORBIT_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "orbit_velocity_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_ORBIT_VELOCITY);
-*/
 	ADD_GROUP("Linear Accel", "linear_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "linear_accel", PROPERTY_HINT_RANGE, "-100,100,0.01,or_lesser,or_greater"), "set_param", "get_param", PARAM_LINEAR_ACCEL);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "linear_accel_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_LINEAR_ACCEL);
@@ -1332,6 +1318,8 @@ void CPUParticles2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(FLAG_ALIGN_Y_TO_VELOCITY);
+	BIND_ENUM_CONSTANT(FLAG_ROTATE_Y); // Unused, but exposed for consistency with 3D.
+	BIND_ENUM_CONSTANT(FLAG_DISABLE_Z); // Unused, but exposed for consistency with 3D.
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINT);
@@ -1370,7 +1358,7 @@ CPUParticles2D::CPUParticles2D() {
 	set_spread(45);
 	set_flatness(0);
 	set_param(PARAM_INITIAL_LINEAR_VELOCITY, 1);
-	//set_param(PARAM_ORBIT_VELOCITY, 0);
+	set_param(PARAM_ORBIT_VELOCITY, 0);
 	set_param(PARAM_LINEAR_ACCEL, 0);
 	set_param(PARAM_ANGULAR_VELOCITY, 0);
 	set_param(PARAM_RADIAL_ACCEL, 0);
