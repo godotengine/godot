@@ -363,7 +363,7 @@ ConnectDialog::ConnectDialog() {
 	tree->connect("node_selected", this, "_tree_node_selected");
 	tree->set_connect_to_script_mode(true);
 
-	Node *mc = vbc_left->add_margin_child(TTR("Connect To Script:"), tree, true);
+	Node *mc = vbc_left->add_margin_child(TTR("Connect to Script:"), tree, true);
 	connect_to_label = Object::cast_to<Label>(vbc_left->get_child(mc->get_index() - 1));
 
 	error_label = memnew(Label);
@@ -413,7 +413,7 @@ ConnectDialog::ConnectDialog() {
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
 
 	HBoxContainer *dstm_hb = memnew(HBoxContainer);
-	vbc_left->add_margin_child("Method to Create:", dstm_hb);
+	vbc_left->add_margin_child("Receiver Method:", dstm_hb);
 
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -489,8 +489,26 @@ void ConnectionsDock::_make_or_edit_connection() {
 	bool oshot = connect_dialog->get_oneshot();
 	cToMake.flags = CONNECT_PERSIST | (defer ? CONNECT_DEFERRED : 0) | (oshot ? CONNECT_ONESHOT : 0);
 
-	// Conditions to add function, must have a script and must have a method.
-	bool add_script_function = !target->get_script().is_null() && !ClassDB::has_method(target->get_class(), cToMake.method);
+	// Conditions to add function: must have a script and must not have the method already
+	// (in the class, the script itself, or inherited).
+	bool add_script_function = false;
+	Ref<Script> script = target->get_script();
+	if (!target->get_script().is_null() && !ClassDB::has_method(target->get_class(), cToMake.method)) {
+		// There is a chance that the method is inherited from another script.
+		bool found_inherited_function = false;
+		Ref<Script> inherited_script = script->get_base_script();
+		while (!inherited_script.is_null()) {
+			int line = inherited_script->get_language()->find_function(cToMake.method, inherited_script->get_source_code());
+			if (line != -1) {
+				found_inherited_function = true;
+				break;
+			}
+
+			inherited_script = inherited_script->get_base_script();
+		}
+
+		add_script_function = !found_inherited_function;
+	}
 	PoolStringArray script_function_args;
 	if (add_script_function) {
 		// Pick up args here before "it" is deleted by update_tree.
@@ -507,8 +525,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 		_connect(cToMake);
 	}
 
-	// IMPORTANT NOTE: _disconnect and _connect cause an update_tree,
-	// which will delete the object "it" is pointing to.
+	// IMPORTANT NOTE: _disconnect and _connect cause an update_tree, which will delete the object "it" is pointing to.
 	it = NULL;
 
 	if (add_script_function) {
@@ -677,7 +694,7 @@ void ConnectionsDock::_open_connection_dialog(Connection cToEdit) {
 
 	if (src && dst) {
 		connect_dialog->set_title(TTR("Edit Connection:") + cToEdit.signal);
-		connect_dialog->popup_centered_ratio();
+		connect_dialog->popup_centered();
 		connect_dialog->init(cToEdit, true);
 	}
 }

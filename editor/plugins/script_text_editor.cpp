@@ -882,26 +882,29 @@ void ScriptTextEditor::_update_connected_methods() {
 				continue;
 			}
 
-			int line = script->get_language()->find_function(connection.method, text_edit->get_text());
-			if (line < 0) {
-				// There is a chance that the method is inherited from another script.
-				bool found_inherited_function = false;
-				Ref<Script> inherited_script = script->get_base_script();
-				while (!inherited_script.is_null()) {
-					line = inherited_script->get_language()->find_function(connection.method, inherited_script->get_source_code());
-					if (line != -1) {
-						found_inherited_function = true;
-						break;
+			if (!ClassDB::has_method(script->get_instance_base_type(), connection.method)) {
+
+				int line = script->get_language()->find_function(connection.method, text_edit->get_text());
+				if (line < 0) {
+					// There is a chance that the method is inherited from another script.
+					bool found_inherited_function = false;
+					Ref<Script> inherited_script = script->get_base_script();
+					while (!inherited_script.is_null()) {
+						line = inherited_script->get_language()->find_function(connection.method, inherited_script->get_source_code());
+						if (line != -1) {
+							found_inherited_function = true;
+							break;
+						}
+
+						inherited_script = inherited_script->get_base_script();
 					}
 
-					inherited_script = inherited_script->get_base_script();
+					if (!found_inherited_function) {
+						missing_connections.push_back(connection);
+					}
+				} else {
+					text_edit->set_line_info_icon(line - 1, get_parent_control()->get_icon("Slot", "EditorIcons"), connection.method);
 				}
-
-				if (!found_inherited_function) {
-					missing_connections.push_back(connection);
-				}
-			} else {
-				text_edit->set_line_info_icon(line - 1, get_parent_control()->get_icon("Slot", "EditorIcons"), connection.method);
 			}
 		}
 	}
