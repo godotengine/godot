@@ -130,6 +130,7 @@ void Popup::popup_centered_clamped(const Size2 &p_size, float p_fallback_ratio) 
 void Popup::popup_centered_minsize(const Size2 &p_minsize) {
 
 	set_custom_minimum_size(p_minsize);
+	set_size(p_minsize);
 	_fix_size();
 	popup_centered();
 }
