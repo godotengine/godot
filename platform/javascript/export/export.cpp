@@ -315,24 +315,29 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		memdelete(f);
 	}
 
-	Ref<Image> splash;
-	String splash_path = GLOBAL_GET("application/boot_splash/image");
-	splash_path = splash_path.strip_edges();
-	if (!splash_path.empty()) {
-		splash.instance();
-		Error err = splash->load(splash_path);
-		if (err) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not read boot splash image file:") + "\n" + splash_path + "\n" + TTR("Using default boot splash image."));
-			splash.unref();
+	bool use_splash = GLOBAL_GET("application/boot_splash/use_image");
+
+	if (use_splash) {
+
+		Ref<Image> splash;
+		String splash_path = GLOBAL_GET("application/boot_splash/image");
+		splash_path = splash_path.strip_edges();
+		if (!splash_path.empty()) {
+			splash.instance();
+			Error err = splash->load(splash_path);
+			if (err) {
+				EditorNode::get_singleton()->show_warning(TTR("Could not read boot splash image file:") + "\n" + splash_path + "\n" + TTR("Using default boot splash image."));
+				splash.unref();
+			}
 		}
-	}
-	if (splash.is_null()) {
-		splash = Ref<Image>(memnew(Image(boot_splash_png)));
-	}
-	String png_path = p_path.get_base_dir().plus_file(p_path.get_file().get_basename() + ".png");
-	if (splash->save_png(png_path) != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + png_path);
-		return ERR_FILE_CANT_WRITE;
+		if (splash.is_null()) {
+			splash = Ref<Image>(memnew(Image(boot_splash_png)));
+		}
+		String png_path = p_path.get_base_dir().plus_file(p_path.get_file().get_basename() + ".png");
+		if (splash->save_png(png_path) != OK) {
+			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + png_path);
+			return ERR_FILE_CANT_WRITE;
+		}
 	}
 	return OK;
 }

@@ -167,6 +167,9 @@
 		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="">
 			Background color for the boot splash.
 		</member>
+		<member name="application/boot_splash/use_image" type="bool" setter="" getter="">
+			If [code]false[/code], startup screen will display plain color from [member application/boot_splash/image]. Useful for custom splash screens.
+		</member>
 		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="">
 			If [code]true[/code], scale the boot splash image to the full window length when engine starts. If [code]false[/code], the engine will leave it at the default pixel size.
 		</member>

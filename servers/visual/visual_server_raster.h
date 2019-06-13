@@ -685,6 +685,7 @@ public:
 
 	/* TESTING */
 
+	virtual void set_boot_color(const Color &p_color);
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale);
 	virtual void set_default_clear_color(const Color &p_color);
 

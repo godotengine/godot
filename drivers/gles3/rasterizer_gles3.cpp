@@ -273,6 +273,27 @@ void RasterizerGLES3::clear_render_target(const Color &p_color) {
 	storage->frame.clear_request_color = p_color;
 }
 
+void RasterizerGLES3::set_boot_color(const Color &p_color) {
+
+	begin_frame(0.0);
+
+	int window_w = OS::get_singleton()->get_video_mode(0).width;
+	int window_h = OS::get_singleton()->get_video_mode(0).height;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+	glViewport(0, 0, window_w, window_h);
+	glDisable(GL_BLEND);
+	glDepthMask(GL_FALSE);
+	if (OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+	} else {
+		glClearColor(p_color.r, p_color.g, p_color.b, 1.0);
+	}
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	end_frame(true);
+}
+
 void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) {
 
 	if (p_image.is_null() || p_image->empty())

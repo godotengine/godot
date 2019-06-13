@@ -1152,6 +1152,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	if (show_logo) { //boot logo!
 		String boot_logo_path = GLOBAL_DEF("application/boot_splash/image", String());
+		bool use_boot_logo = GLOBAL_DEF("application/boot_splash/use_image", true);
 		bool boot_logo_scale = GLOBAL_DEF("application/boot_splash/fullsize", true);
 		ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/image", PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"));
 
@@ -1159,7 +1160,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 		boot_logo_path = boot_logo_path.strip_edges();
 
-		if (boot_logo_path != String()) {
+		if (use_boot_logo && boot_logo_path != String()) {
 			boot_logo.instance();
 			Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
 			if (load_err)
@@ -1167,9 +1168,13 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		}
 
 		Color boot_bg_color = GLOBAL_DEF("application/boot_splash/bg_color", boot_splash_bg_color);
-		if (boot_logo.is_valid()) {
+		if (boot_logo.is_valid() || !use_boot_logo) {
 			OS::get_singleton()->_msec_splash = OS::get_singleton()->get_ticks_msec();
-			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale);
+			if (use_boot_logo) {
+				VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale);
+			} else {
+				VisualServer::get_singleton()->set_boot_color(boot_bg_color);
+			}
 
 		} else {
 #ifndef NO_DEFAULT_BOOT_LOGO

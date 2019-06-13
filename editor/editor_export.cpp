@@ -873,11 +873,12 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	// Store icon and splash images directly, they need to bypass the import system and be loaded as images
 	String icon = ProjectSettings::get_singleton()->get("application/config/icon");
 	String splash = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+	bool use_splash = ProjectSettings::get_singleton()->get("application/boot_splash/use_image");
 	if (icon != String() && FileAccess::exists(icon)) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(icon);
 		p_func(p_udata, icon, array, idx, total);
 	}
-	if (splash != String() && FileAccess::exists(splash) && icon != splash) {
+	if (use_splash && splash != String() && FileAccess::exists(splash) && icon != splash) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(splash);
 		p_func(p_udata, splash, array, idx, total);
 	}

@@ -602,6 +602,7 @@ public:
 		return visual_server->get_render_info(p_info);
 	}
 
+	FUNC1(set_boot_color, const Color &)
 	FUNC3(set_boot_image, const Ref<Image> &, const Color &, bool)
 	FUNC1(set_default_clear_color, const Color &)
 
