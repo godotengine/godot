@@ -63,6 +63,7 @@ void EditorFileDialog::_notification(int p_what) {
 		dir_up->set_icon(get_icon("ArrowUp", "EditorIcons"));
 		refresh->set_icon(get_icon("Reload", "EditorIcons"));
 		favorite->set_icon(get_icon("Favorites", "EditorIcons"));
+		show_hidden->set_icon(get_icon("GuiVisibilityVisible", "EditorIcons"));
 
 		fav_up->set_icon(get_icon("MoveUp", "EditorIcons"));
 		fav_down->set_icon(get_icon("MoveDown", "EditorIcons"));
@@ -86,9 +87,9 @@ void EditorFileDialog::_notification(int p_what) {
 
 	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
-		bool show_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
-		if (show_hidden_files != show_hidden)
-			set_show_hidden_files(show_hidden);
+		bool is_showing_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
+		if (show_hidden_files != is_showing_hidden)
+			set_show_hidden_files(is_showing_hidden);
 		set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
 
 		// update icons
@@ -717,20 +718,19 @@ void EditorFileDialog::update_file_list() {
 	List<String> files;
 	List<String> dirs;
 
-	bool isdir;
-	bool ishidden;
-	bool show_hidden = show_hidden_files;
+	bool is_dir;
+	bool is_hidden;
 	String item;
 
-	while ((item = dir_access->get_next(&isdir)) != "") {
+	while ((item = dir_access->get_next(&is_dir)) != "") {
 
 		if (item == "." || item == "..")
 			continue;
 
-		ishidden = dir_access->current_is_hidden();
+		is_hidden = dir_access->current_is_hidden();
 
-		if (show_hidden || !ishidden) {
-			if (!isdir)
+		if (show_hidden_files || !is_hidden) {
+			if (!is_dir)
 				files.push_back(item);
 			else
 				dirs.push_back(item);
@@ -1411,6 +1411,7 @@ void EditorFileDialog::_bind_methods() {
 
 void EditorFileDialog::set_show_hidden_files(bool p_show) {
 	show_hidden_files = p_show;
+	show_hidden->set_pressed(p_show);
 	invalidate();
 }
 
@@ -1521,10 +1522,17 @@ EditorFileDialog::EditorFileDialog() {
 	favorite->connect("pressed", this, "_favorite_pressed");
 	pathhb->add_child(favorite);
 
-	Ref<ButtonGroup> view_mode_group;
-	view_mode_group.instance();
+	show_hidden = memnew(ToolButton);
+	show_hidden->set_toggle_mode(true);
+	show_hidden->set_pressed(is_showing_hidden_files());
+	show_hidden->set_tooltip(TTR("Toggle visibility of hidden files."));
+	show_hidden->connect("toggled", this, "set_show_hidden_files");
+	pathhb->add_child(show_hidden);
 
 	pathhb->add_child(memnew(VSeparator));
+
+	Ref<ButtonGroup> view_mode_group;
+	view_mode_group.instance();
 
 	mode_thumbnails = memnew(ToolButton);
 	mode_thumbnails->connect("pressed", this, "set_display_mode", varray(DISPLAY_THUMBNAILS));
