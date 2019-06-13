@@ -355,7 +355,23 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 			return 0; // Return To The Message Loop
 		}
-
+		case WM_GETMINMAXINFO: {
+			if (video_mode.resizable && !video_mode.fullscreen) {
+				Size2 decor = get_real_window_size() - get_window_size(); // Size of window decorations
+				MINMAXINFO *min_max_info = (MINMAXINFO *)lParam;
+				if (min_size != Size2()) {
+					min_max_info->ptMinTrackSize.x = min_size.x + decor.x;
+					min_max_info->ptMinTrackSize.y = min_size.y + decor.y;
+				}
+				if (max_size != Size2()) {
+					min_max_info->ptMaxTrackSize.x = max_size.x + decor.x;
+					min_max_info->ptMaxTrackSize.y = max_size.y + decor.y;
+				}
+				return 0;
+			} else {
+				break;
+			}
+		}
 		case WM_PAINT:
 
 			Main::force_redraw();
@@ -1771,6 +1787,7 @@ void OS_Windows::set_window_position(const Point2 &p_position) {
 	last_pos = p_position;
 	update_real_mouse_position();
 }
+
 Size2 OS_Windows::get_window_size() const {
 
 	if (minimized) {
@@ -1783,6 +1800,33 @@ Size2 OS_Windows::get_window_size() const {
 	}
 	return Size2();
 }
+
+Size2 OS_Windows::get_max_window_size() const {
+	return max_size;
+}
+
+Size2 OS_Windows::get_min_window_size() const {
+	return min_size;
+}
+
+void OS_Windows::set_min_window_size(const Size2 p_size) {
+
+	if ((p_size != Size2()) && (max_size != Size2()) && ((p_size.x > max_size.x) || (p_size.y > max_size.y))) {
+		WARN_PRINT("Minimum window size can't be larger than maximum window size!");
+		return;
+	}
+	min_size = p_size;
+}
+
+void OS_Windows::set_max_window_size(const Size2 p_size) {
+
+	if ((p_size != Size2()) && ((p_size.x < min_size.x) || (p_size.y < min_size.y))) {
+		WARN_PRINT("Maximum window size can't be smaller than minimum window size!");
+		return;
+	}
+	max_size = p_size;
+}
+
 Size2 OS_Windows::get_real_window_size() const {
 
 	RECT r;
@@ -1791,6 +1835,7 @@ Size2 OS_Windows::get_real_window_size() const {
 	}
 	return Size2();
 }
+
 void OS_Windows::set_window_size(const Size2 p_size) {
 
 	int w = p_size.width;

@@ -205,8 +205,12 @@ public:
 	virtual int get_screen_dpi(int p_screen = -1) const { return 72; }
 	virtual Point2 get_window_position() const { return Vector2(); }
 	virtual void set_window_position(const Point2 &p_position) {}
+	virtual Size2 get_max_window_size() const { return Size2(); };
+	virtual Size2 get_min_window_size() const { return Size2(); };
 	virtual Size2 get_window_size() const = 0;
 	virtual Size2 get_real_window_size() const { return get_window_size(); }
+	virtual void set_min_window_size(const Size2 p_size) {}
+	virtual void set_max_window_size(const Size2 p_size) {}
 	virtual void set_window_size(const Size2 p_size) {}
 	virtual void set_window_fullscreen(bool p_enabled) {}
 	virtual bool is_window_fullscreen() const { return true; }
