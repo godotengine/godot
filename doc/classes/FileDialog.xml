@@ -138,5 +138,7 @@
 		</theme_item>
 		<theme_item name="reload" type="Texture">
 		</theme_item>
+		<theme_item name="toggle_hidden" type="Texture">
+		</theme_item>
 	</theme_items>
 </class>

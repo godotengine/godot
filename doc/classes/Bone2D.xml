@@ -4,7 +4,7 @@
 		Joint used with [Skeleton2D] to control and animate other nodes.
 	</brief_description>
 	<description>
-		Use a hierarchy of [code]Bone2D[/code] bound to a [Skeleton2D] to control, and animate other [class Node2D] nodes.
+		Use a hierarchy of [code]Bone2D[/code] bound to a [Skeleton2D] to control, and animate other [Node2D] nodes.
 		You can use [code]Bone2D[/code] and [code]Skeleton2D[/code] nodes to animate 2D meshes created with the Polygon 2D UV editor.
 		Each bone has a [member rest] transform that you can reset to with [method apply_rest]. These rest poses are relative to the bone's parent.
 		If in the editor, you can set the rest pose of an entire skeleton using a menu option, from the code, you need to iterate over the bones to set their individual rest poses.
@@ -39,7 +39,7 @@
 			Length of the bone's representation drawn in the editor's viewport in pixels.
 		</member>
 		<member name="rest" type="Transform2D" setter="set_rest" getter="get_rest">
-			Rest transform of the bone. You can reset the node's transforms to this value using [member apply_rest].
+			Rest transform of the bone. You can reset the node's transforms to this value using [method apply_rest].
 		</member>
 	</members>
 	<constants>

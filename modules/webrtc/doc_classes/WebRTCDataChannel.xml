@@ -33,7 +33,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the maxPacketLifeTime value assigned to this channel during creation.
+				Returns the [code]maxPacketLifeTime[/code] value assigned to this channel during creation.
 				Will be [code]65535[/code] if not specified.
 			</description>
 		</method>
@@ -41,7 +41,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the maxRetransmits value assigned to this channel during creation.
+				Returns the [code]maxRetransmits[/code] value assigned to this channel during creation.
 				Will be [code]65535[/code] if not specified.
 			</description>
 		</method>
@@ -49,7 +49,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns the sub-proctocol assigned to this channel during creation. An empty string if not specified.
+				Returns the sub-protocol assigned to this channel during creation. An empty string if not specified.
 			</description>
 		</method>
 		<method name="get_ready_state" qualifiers="const">
@@ -84,7 +84,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the last received packet was transfered as text. See [property write_mode].
+				Returns [code]true[/code] if the last received packet was transferred as text. See [member write_mode].
 			</description>
 		</method>
 	</methods>
@@ -95,10 +95,10 @@
 	</members>
 	<constants>
 		<constant name="WRITE_MODE_TEXT" value="0" enum="WriteMode">
-			Tells the channel to send data over this channel as text. An external peer (non-godot) would receive this as a string.
+			Tells the channel to send data over this channel as text. An external peer (non-Godot) would receive this as a string.
 		</constant>
 		<constant name="WRITE_MODE_BINARY" value="1" enum="WriteMode">
-			Tells the channel to send data over this channel as binary. An external peer (non-godot) would receive this as arraybuffer or blob.
+			Tells the channel to send data over this channel as binary. An external peer (non-Godot) would receive this as array buffer or blob.
 		</constant>
 		<constant name="STATE_CONNECTING" value="0" enum="ChannelState">
 			The channel was created, but it's still trying to connect.

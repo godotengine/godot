@@ -5,12 +5,10 @@
 	</brief_description>
 	<description>
 		A WebRTC connection between the local computer and a remote peer. Provides an interface to connect, maintain and monitor the connection.
-
-		Setting up a WebRTC connection between two peers from now on) may not seem a trival task, but it can be broken down into 3 main steps:
+		Setting up a WebRTC connection between two peers from now on) may not seem a trivial task, but it can be broken down into 3 main steps:
 		- The peer that wants to initiate the connection ([code]A[/code] from now on) creates an offer and send it to the other peer ([code]B[/code] from now on).
 		- [code]B[/code] receives the offer, generate and answer, and sends it to [code]B[/code]).
-		- [code]A[/code] and [code]B[/code] then generates and exchange ICE candiates with each other.
-
+		- [code]A[/code] and [code]B[/code] then generates and exchange ICE candidates with each other.
 		After these steps, the connection should become connected. Keep on reading or look into the tutorial for more information.
 	</description>
 	<tutorials>
@@ -49,7 +47,7 @@
 				Returns a new [WebRTCDataChannel] (or [code]null[/code] on failure) with given [code]label[/code] and optionally configured via the [code]options[/code] dictionary. This method can only be called when the connection is in state [constant STATE_NEW].
 				There are two ways to create a working data channel: either call [method create_data_channel] on only one of the peer and listen to [signal data_channel_received] on the other, or call [method create_data_channel] on both peers, with the same values, and the [code]negotiated[/code] option set to [code]true[/code].
 				Valid [code]options[/code] are:
-				[code]
+				[codeblock]
 				{
 				    "negotiated": true, # When set to true (default off), means the channel is negotiated out of band. "id" must be set too. data_channel_received will not be called.
 				    "id": 1, # When "negotiated" is true this value must also be set to the same value on both peer.
@@ -61,7 +59,7 @@
 
 				    "protocol": "my-custom-protocol", # A custom sub-protocol string for this channel.
 				}
-				[/code]
+				[/codeblock]
 				NOTE: You must keep a reference to channels created this way, or it will be closed.
 			</description>
 		</method>
@@ -90,7 +88,7 @@
 			<description>
 				Re-initialize this peer connection, closing any previously active connection, and going back to state [constant STATE_NEW]. A dictionary of [code]options[/code] can be passed to configure the peer connection.
 				Valid [code]options[/code] are:
-				[code]
+				[codeblock]
 				{
 				    "iceServers": [
 				        {
@@ -103,14 +101,14 @@
 				        }
 				    ]
 				}
-				[/code]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="poll">
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Call this method frequently (e.g. in [method Node._process] or [method Node._fixed_process]) to properly receive signals.
+				Call this method frequently (e.g. in [method Node._process] or [method Node._physics_process]) to properly receive signals.
 			</description>
 		</method>
 		<method name="set_local_description">

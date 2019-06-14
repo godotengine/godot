@@ -22,6 +22,12 @@
 			The [Texture] that will be used if using the default [CanvasItemMaterial]. Can be accessed as [code]TEXTURE[/code] in CanvasItem shader.
 		</member>
 	</members>
+	<signals>
+		<signal name="texture_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>
