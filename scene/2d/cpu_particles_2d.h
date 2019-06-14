@@ -144,6 +144,8 @@ private:
 	int fixed_fps;
 	bool fractional_delta;
 
+	Transform2D inv_emission_transform;
+
 	DrawOrder draw_order;
 
 	Ref<Texture> texture;
