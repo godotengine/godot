@@ -40,7 +40,7 @@
 			How rapidly particles in an emission cycle are emitted. If greater than [code]0[/code], there will be a gap in emissions before the next cycle begins. Default value: [code]0[/code].
 		</member>
 		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps">
-			The particle system's frame rate is fixed to a value. For instance, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the particle system itself.
+			The particle system's frame rate is fixed to a value. For instance, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the simulation of the particle system itself.
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta">
 			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect. Default value: [code]true[/code]
@@ -52,7 +52,7 @@
 			If [code]true[/code], particles use the parent node's coordinate space. If [code]false[/code], they use global coordinates. Default value: [code]true[/code].
 		</member>
 		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
-			Normal map to be used for the [code]texture[/code] property.
+			Normal map to be used for the [member texture] property.
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot">
 			If [code]true[/code], only one emission cycle occurs. If set [code]true[/code] during a cycle, emission will stop at the cycle's end. Default value: [code]false[/code].

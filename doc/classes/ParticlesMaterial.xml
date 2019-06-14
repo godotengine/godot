@@ -100,7 +100,7 @@
 			Amount of [member spread] in Y/Z plane. A value of [code]1[/code] restricts particles to X/Z plane. Default [code]0[/code].
 		</member>
 		<member name="gravity" type="Vector3" setter="set_gravity" getter="get_gravity">
-			Gravity applied to every particle. Default value: [code](0, 98, 0)[/code].
+			Gravity applied to every particle. Default value: [code](0, -9.8, 0)[/code].
 		</member>
 		<member name="hue_variation" type="float" setter="set_param" getter="get_param">
 			Initial hue variation applied to each particle.
@@ -112,13 +112,13 @@
 			Hue variation randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="initial_velocity" type="float" setter="set_param" getter="get_param">
-			Initial velocity magnitude for each particle. Direction comes from [member spread].
+			Initial velocity magnitude for each particle. Direction comes from [member spread] and the node's orientation.
 		</member>
 		<member name="initial_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 			Initial velocity randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="linear_accel" type="float" setter="set_param" getter="get_param">
-			Linear acceleration applied to each particle. Acceleration increases velocity magnitude each frame without affecting direction.
+			Linear acceleration applied to each particle in the direction of motion.
 		</member>
 		<member name="linear_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 			Each particle's linear acceleration will vary along this [CurveTexture].
@@ -184,7 +184,7 @@
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set angular velocity properties.
 		</constant>
 		<constant name="PARAM_ORBIT_VELOCITY" value="2" enum="Parameter">
-			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set orbital_velocity properties.
+			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set orbital velocity properties.
 		</constant>
 		<constant name="PARAM_LINEAR_ACCEL" value="3" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set linear acceleration properties.
@@ -205,7 +205,7 @@
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set scale properties.
 		</constant>
 		<constant name="PARAM_HUE_VARIATION" value="9" enum="Parameter">
-			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set hue_variation properties.
+			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set hue variation properties.
 		</constant>
 		<constant name="PARAM_ANIM_SPEED" value="10" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set animation speed properties.
