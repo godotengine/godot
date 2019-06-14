@@ -116,7 +116,7 @@ private:
 		const Particle *particles;
 
 		bool operator()(int p_a, int p_b) const {
-			return particles[p_a].time < particles[p_b].time;
+			return particles[p_a].time > particles[p_b].time;
 		}
 	};
 
@@ -141,6 +141,8 @@ private:
 	bool local_coords;
 	int fixed_fps;
 	bool fractional_delta;
+
+	Transform inv_emission_transform;
 
 	volatile bool can_update;
 
