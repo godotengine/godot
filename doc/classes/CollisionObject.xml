@@ -26,6 +26,14 @@
 				Accepts unhandled [InputEvent]s. [code]click_position[/code] is the clicked location in world space and [code]click_normal[/code] is the normal vector extending from the clicked surface of the [Shape] at [code]shape_idx[/code]. Connect to the [code]input_event[/code] signal to easily pick up these events.
 			</description>
 		</method>
+		<method name="add_collision_exception_with">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="Node">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="create_shape_owner">
 			<return type="int">
 			</return>
@@ -33,6 +41,28 @@
 			</argument>
 			<description>
 				Creates a new shape owner for the given object. Returns [code]owner_id[/code] of the new owner for future reference.
+			</description>
+		</method>
+		<method name="get_collision_exceptions">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_layer_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
@@ -58,6 +88,14 @@
 				If [code]true[/code], the shape owner and its shapes are disabled.
 			</description>
 		</method>
+		<method name="remove_collision_exception_with">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="Node">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="remove_shape_owner">
 			<return type="void">
 			</return>
@@ -65,6 +103,26 @@
 			</argument>
 			<description>
 				Removes the given shape owner.
+			</description>
+		</method>
+		<method name="set_collision_layer_bit">
+			<return type="void">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_collision_mask_bit">
+			<return type="void">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="shape_find_owner" qualifiers="const">
@@ -180,6 +238,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+		</member>
 		<member name="input_capture_on_drag" type="bool" setter="set_capture_input_on_drag" getter="get_capture_input_on_drag" default="false">
 			If [code]true[/code], the [CollisionObject] will continue to receive input events as the mouse is dragged across its shapes.
 		</member>

@@ -49,8 +49,23 @@ void register_bullet_types() {
 	PhysicsServerManager::register_server("Bullet", &_createBulletPhysicsCallback);
 	PhysicsServerManager::set_default_server("Bullet", 1);
 
-	GLOBAL_DEF("physics/3d/active_soft_world", true);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/active_soft_world", PropertyInfo(Variant::BOOL, "physics/3d/active_soft_world"));
+	GLOBAL_DEF("physics/3d/world_type", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info(
+			"physics/3d/world_type",
+			PropertyInfo(
+					Variant::INT,
+					"physics/3d/world_type",
+					PROPERTY_HINT_ENUM,
+					"Plain,Soft,Multi body"));
+
+	GLOBAL_DEF("physics/3d/multibody_constraint_solver", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info(
+			"physics/3d/multibody_constraint_solver",
+			PropertyInfo(
+					Variant::INT,
+					"physics/3d/multibody_constraint_solver",
+					PROPERTY_HINT_ENUM,
+					"Default constraint,Projected Gauss Seidel,Dantzig,Lemke"));
 #endif
 }
 

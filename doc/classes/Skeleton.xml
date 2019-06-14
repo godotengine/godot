@@ -157,20 +157,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="physical_bones_start_simulation">
-			<return type="void">
-			</return>
-			<argument index="0" name="bones" type="Array" default="[  ]">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="physical_bones_stop_simulation">
-			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="set_bone_custom_pose">
 			<return type="void">
 			</return>
@@ -266,7 +252,11 @@
 		</method>
 	</methods>
 	<members>
+		<member name="active_physics" type="bool" setter="set_active_physics" getter="get_active_physics" default="false">
+		</member>
 		<member name="bones_in_world_transform" type="bool" setter="set_use_bones_in_world_transform" getter="is_using_bones_in_world_transform" default="false">
+		</member>
+		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
 		</member>
 	</members>
 	<constants>

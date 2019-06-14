@@ -527,6 +527,89 @@ void PhysicsServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("body_get_direct_state", "body"), &PhysicsServer::body_get_direct_state);
 
+	/* ARMATURE API */
+
+	BIND_ENUM_CONSTANT(ARMATURE_PARAM_MASS);
+	BIND_ENUM_CONSTANT(ARMATURE_PARAM_MAX);
+
+	ClassDB::bind_method(D_METHOD("armature_create"), &PhysicsServer::armature_create);
+	ClassDB::bind_method(D_METHOD("armature_set_bone_count", "armature", "count"), &PhysicsServer::armature_set_bone_count);
+	ClassDB::bind_method(D_METHOD("armature_get_bone_count", "armature"), &PhysicsServer::armature_get_bone_count);
+	ClassDB::bind_method(D_METHOD("armature_set_force_integration_callback", "body", "receiver", "method", "udata"), &PhysicsServer::armature_set_force_integration_callback, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("armature_set_space", "body", "space"), &PhysicsServer::armature_set_space);
+	ClassDB::bind_method(D_METHOD("armature_get_space", "body"), &PhysicsServer::armature_get_space);
+	ClassDB::bind_method(D_METHOD("armature_set_active", "body", "active"), &PhysicsServer::armature_set_active);
+	ClassDB::bind_method(D_METHOD("armature_set_param", "body", "param", "value"), &PhysicsServer::armature_set_param);
+	ClassDB::bind_method(D_METHOD("armature_get_param", "body", "param"), &PhysicsServer::armature_get_param);
+
+	/* BONE API */
+
+	ClassDB::bind_method(D_METHOD("bone_create"), &PhysicsServer::bone_create);
+	ClassDB::bind_method(D_METHOD("bone_set_force_integration_callback", "body", "receiver", "method", "udata"), &PhysicsServer::bone_set_force_integration_callback, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("bone_set_armature", "body", "armature"), &PhysicsServer::bone_set_armature);
+	ClassDB::bind_method(D_METHOD("bone_get_armature", "body"), &PhysicsServer::bone_get_armature);
+	ClassDB::bind_method(D_METHOD("bone_set_max_contacts_reported", "body", "amount"), &PhysicsServer::bone_set_max_contacts_reported);
+	ClassDB::bind_method(D_METHOD("bone_get_max_contacts_reported", "body"), &PhysicsServer::body_get_max_contacts_reported);
+	ClassDB::bind_method(D_METHOD("bone_set_id", "body", "id"), &PhysicsServer::bone_set_id);
+	ClassDB::bind_method(D_METHOD("bone_get_id", "body"), &PhysicsServer::bone_get_id);
+	ClassDB::bind_method(D_METHOD("bone_set_parent_id", "body", "id"), &PhysicsServer::bone_set_parent_id);
+	ClassDB::bind_method(D_METHOD("bone_get_parent_id", "body"), &PhysicsServer::bone_get_parent_id);
+	ClassDB::bind_method(D_METHOD("bone_set_transform", "body", "transform"), &PhysicsServer::bone_set_transform);
+	ClassDB::bind_method(D_METHOD("bone_get_transform", "body"), &PhysicsServer::bone_get_transform);
+	ClassDB::bind_method(D_METHOD("bone_set_joint_transform", "body", "transform"), &PhysicsServer::bone_set_joint_transform);
+	ClassDB::bind_method(D_METHOD("bone_get_joint_transform", "body"), &PhysicsServer::bone_get_joint_transform);
+	ClassDB::bind_method(D_METHOD("bone_add_shape", "body", "shape", "transform", "disabled"), &PhysicsServer::bone_add_shape, DEFVAL(Transform()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("bone_set_shape", "body", "shape_idx", "shape"), &PhysicsServer::bone_set_shape);
+	ClassDB::bind_method(D_METHOD("bone_set_shape_transform", "body", "shape_idx", "transform"), &PhysicsServer::bone_set_shape_transform);
+	ClassDB::bind_method(D_METHOD("bone_get_shape_count", "body"), &PhysicsServer::bone_get_shape_count);
+	ClassDB::bind_method(D_METHOD("bone_get_shape", "body", "shape_idx"), &PhysicsServer::bone_get_shape);
+	ClassDB::bind_method(D_METHOD("bone_get_shape_transform", "body", "shape_idx"), &PhysicsServer::bone_get_shape_transform);
+	ClassDB::bind_method(D_METHOD("bone_remove_shape", "body", "shape_idx"), &PhysicsServer::bone_remove_shape);
+	ClassDB::bind_method(D_METHOD("bone_clear_shapes", "body"), &PhysicsServer::bone_clear_shapes);
+	ClassDB::bind_method(D_METHOD("bone_set_shape_disabled", "body", "shape_idx", "disabled"), &PhysicsServer::bone_set_shape_disabled);
+	ClassDB::bind_method(D_METHOD("bone_attach_object_instance_id", "body", "id"), &PhysicsServer::bone_attach_object_instance_id);
+	ClassDB::bind_method(D_METHOD("bone_get_object_instance_id", "body"), &PhysicsServer::bone_get_object_instance_id);
+	ClassDB::bind_method(D_METHOD("bone_set_disable_parent_collision", "body", "disable"), &PhysicsServer::bone_set_disable_parent_collision);
+	ClassDB::bind_method(D_METHOD("bone_get_disable_parent_collision", "body"), &PhysicsServer::bone_get_disable_parent_collision);
+	ClassDB::bind_method(D_METHOD("bone_set_joint_limit_active", "body", "active"), &PhysicsServer::bone_set_joint_limit_active);
+	ClassDB::bind_method(D_METHOD("bone_set_joint_lower_limit", "body", "lower_limits"), &PhysicsServer::bone_set_joint_lower_limit);
+	ClassDB::bind_method(D_METHOD("bone_set_joint_upper_limit", "body", "upper_limits"), &PhysicsServer::bone_set_joint_upper_limit);
+	ClassDB::bind_method(D_METHOD("bone_set_collision_layer", "body", "layer"), &PhysicsServer::bone_set_collision_layer);
+	ClassDB::bind_method(D_METHOD("bone_get_collision_layer", "body"), &PhysicsServer::bone_get_collision_layer);
+	ClassDB::bind_method(D_METHOD("bone_set_collision_mask", "body", "mask"), &PhysicsServer::bone_set_collision_mask);
+	ClassDB::bind_method(D_METHOD("bone_get_collision_mask", "body"), &PhysicsServer::bone_get_collision_mask);
+	ClassDB::bind_method(D_METHOD("bone_set_link_mass", "body", "value"), &PhysicsServer::bone_set_link_mass);
+	ClassDB::bind_method(D_METHOD("bone_get_link_mass", "body"), &PhysicsServer::bone_get_link_mass);
+	ClassDB::bind_method(D_METHOD("bone_set_param", "body", "param", "value"), &PhysicsServer::bone_set_param);
+	ClassDB::bind_method(D_METHOD("bone_get_param", "body", "param"), &PhysicsServer::bone_get_param);
+	ClassDB::bind_method(D_METHOD("bone_joint_fixed_setup", "body"), &PhysicsServer::bone_joint_fixed_setup);
+	ClassDB::bind_method(D_METHOD("bone_joint_slider_setup", "body"), &PhysicsServer::bone_joint_slider_setup);
+	ClassDB::bind_method(D_METHOD("bone_joint_hinge_setup", "body"), &PhysicsServer::bone_joint_hinge_setup);
+	ClassDB::bind_method(D_METHOD("bone_joint_spherical_setup", "body"), &PhysicsServer::bone_joint_spherical_setup);
+	ClassDB::bind_method(D_METHOD("bone_joint_planar_setup", "body"), &PhysicsServer::bone_joint_planar_setup);
+	ClassDB::bind_method(D_METHOD("bone_set_motor_enabled", "body", "v"), &PhysicsServer::bone_set_motor_enabled);
+	ClassDB::bind_method(D_METHOD("bone_get_motor_enabled", "body"), &PhysicsServer::bone_get_motor_enabled);
+	ClassDB::bind_method(D_METHOD("bone_set_velocity_target", "body", "v"), &PhysicsServer::bone_set_velocity_target);
+	ClassDB::bind_method(D_METHOD("bone_get_velocity_target", "body"), &PhysicsServer::bone_get_velocity_target);
+	ClassDB::bind_method(D_METHOD("bone_set_position_target", "body", "v"), &PhysicsServer::bone_set_position_target);
+	ClassDB::bind_method(D_METHOD("bone_get_position_target", "body"), &PhysicsServer::bone_get_position_target);
+	ClassDB::bind_method(D_METHOD("bone_set_rotation_target", "body", "v"), &PhysicsServer::bone_set_rotation_target);
+	ClassDB::bind_method(D_METHOD("bone_get_rotation_target", "body"), &PhysicsServer::bone_get_rotation_target);
+	ClassDB::bind_method(D_METHOD("bone_set_max_motor_impulse", "body", "v"), &PhysicsServer::bone_set_max_motor_impulse);
+	ClassDB::bind_method(D_METHOD("bone_get_max_motor_impulse", "body"), &PhysicsServer::bone_get_max_motor_impulse);
+	ClassDB::bind_method(D_METHOD("bone_set_error_reduction_parameter", "body", "v"), &PhysicsServer::bone_set_error_reduction_parameter);
+	ClassDB::bind_method(D_METHOD("bone_get_error_reduction_parameter", "body"), &PhysicsServer::bone_get_error_reduction_parameter);
+	ClassDB::bind_method(D_METHOD("bone_set_spring_constant", "body", "v"), &PhysicsServer::bone_set_spring_constant);
+	ClassDB::bind_method(D_METHOD("bone_get_spring_constant", "body"), &PhysicsServer::bone_get_spring_constant);
+	ClassDB::bind_method(D_METHOD("bone_set_damping_constant", "body", "v"), &PhysicsServer::bone_set_damping_constant);
+	ClassDB::bind_method(D_METHOD("bone_get_damping_constant", "body"), &PhysicsServer::bone_get_damping_constant);
+	ClassDB::bind_method(D_METHOD("bone_set_maximum_error", "body", "v"), &PhysicsServer::bone_set_maximum_error);
+	ClassDB::bind_method(D_METHOD("bone_get_maximum_error", "body"), &PhysicsServer::bone_get_maximum_error);
+	ClassDB::bind_method(D_METHOD("bone_add_collision_exception", "body", "body_b"), &PhysicsServer::bone_add_collision_exception);
+	ClassDB::bind_method(D_METHOD("bone_remove_collision_exception", "body", "body_b"), &PhysicsServer::bone_remove_collision_exception);
+	ClassDB::bind_method(D_METHOD("bone_joint_get_force", "body"), &PhysicsServer::bone_joint_get_force);
+	ClassDB::bind_method(D_METHOD("bone_joint_get_torque", "body"), &PhysicsServer::bone_joint_get_torque);
+
 	/* JOINT API */
 
 	BIND_ENUM_CONSTANT(JOINT_PIN);

@@ -37,8 +37,6 @@
 #include "shape_bullet.h"
 #include "space_bullet.h"
 
-#include <btBulletCollisionCommon.h>
-
 /**
 	@author AndreaCatania
 */
@@ -227,7 +225,13 @@ void CollisionObjectBullet::notify_transform_changed() {
 
 RigidCollisionObjectBullet::RigidCollisionObjectBullet(Type p_type) :
 		CollisionObjectBullet(p_type),
-		mainShape(NULL) {
+		mainShape(NULL),
+		maxCollisionsDetection(0),
+		collisionsCount(0),
+		prev_collision_count(0) {
+
+	prev_collision_traces = &collision_traces_1;
+	curr_collision_traces = &collision_traces_2;
 }
 
 RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
@@ -392,6 +396,50 @@ void RigidCollisionObjectBullet::reload_shapes() {
 void RigidCollisionObjectBullet::body_scale_changed() {
 	CollisionObjectBullet::body_scale_changed();
 	reload_shapes();
+}
+
+void RigidCollisionObjectBullet::on_collision_checker_start() {
+
+	prev_collision_count = collisionsCount;
+	collisionsCount = 0;
+
+	// Swap array
+	Vector<RigidCollisionObjectBullet *> *s = prev_collision_traces;
+	prev_collision_traces = curr_collision_traces;
+	curr_collision_traces = s;
+}
+
+void RigidCollisionObjectBullet::on_collision_checker_end() {
+	isTransformChanged = false; // Override for different behaviour
+}
+
+bool RigidCollisionObjectBullet::add_collision_object(RigidCollisionObjectBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index) {
+
+	if (collisionsCount >= maxCollisionsDetection) {
+		return false;
+	}
+
+	CollisionData &cd = collisions.write[collisionsCount];
+	cd.hitLocalLocation = p_hitLocalLocation;
+	cd.otherObject = p_otherObject;
+	cd.hitWorldLocation = p_hitWorldLocation;
+	cd.hitNormal = p_hitNormal;
+	cd.appliedImpulse = p_appliedImpulse;
+	cd.other_object_shape = p_other_shape_index;
+	cd.local_shape = p_local_shape_index;
+
+	curr_collision_traces->write[collisionsCount] = p_otherObject;
+
+	++collisionsCount;
+	return true;
+}
+
+bool RigidCollisionObjectBullet::was_colliding(RigidCollisionObjectBullet *p_other_object) {
+	for (int i = prev_collision_count - 1; 0 <= i; --i) {
+		if ((*prev_collision_traces)[i] == p_other_object)
+			return true;
+	}
+	return false;
 }
 
 void RigidCollisionObjectBullet::internal_shape_destroy(int p_index, bool p_permanentlyFromThisBody) {

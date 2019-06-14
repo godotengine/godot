@@ -37,7 +37,6 @@
 #include "space_bullet.h"
 
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
-#include <btBulletCollisionCommon.h>
 
 /**
 	@author AndreaCatania
@@ -103,7 +102,23 @@ void AreaBullet::dispatch_callbacks() {
 
 void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer::AreaBodyStatus p_status) {
 
-	InOutEventCallback &event = eventsCallbacks[static_cast<int>(p_otherObject->getType())];
+	int event_type;
+	switch (p_otherObject->getType()) {
+		case TYPE_AREA:
+			event_type = 0;
+			break;
+		case TYPE_RIGID_BODY:
+		case TYPE_BONE_BODY:
+			event_type = 1;
+			break;
+		case TYPE_SOFT_BODY:
+		case TYPE_KINEMATIC_GHOST_BODY:
+		default:
+			ERR_EXPLAIN("Event not supported")
+			ERR_FAIL()
+	}
+
+	InOutEventCallback &event = eventsCallbacks[event_type];
 	Object *areaGodoObject = ObjectDB::get_instance(event.event_callback_id);
 
 	if (!areaGodoObject) {
@@ -274,7 +289,24 @@ Variant AreaBullet::get_param(PhysicsServer::AreaParameter p_param) const {
 }
 
 void AreaBullet::set_event_callback(Type p_callbackObjectType, ObjectID p_id, const StringName &p_method) {
-	InOutEventCallback &ev = eventsCallbacks[static_cast<int>(p_callbackObjectType)];
+
+	int event_type;
+	switch (p_callbackObjectType) {
+		case TYPE_AREA:
+			event_type = 0;
+			break;
+		case TYPE_RIGID_BODY:
+		case TYPE_BONE_BODY:
+			event_type = 1;
+			break;
+		case TYPE_SOFT_BODY:
+		case TYPE_KINEMATIC_GHOST_BODY:
+		default:
+			ERR_EXPLAIN("Event not supported")
+			ERR_FAIL()
+	}
+
+	InOutEventCallback &ev = eventsCallbacks[event_type];
 	ev.event_callback_id = p_id;
 	ev.event_callback_method = p_method;
 
@@ -287,7 +319,24 @@ void AreaBullet::set_event_callback(Type p_callbackObjectType, ObjectID p_id, co
 }
 
 bool AreaBullet::has_event_callback(Type p_callbackObjectType) {
-	return eventsCallbacks[static_cast<int>(p_callbackObjectType)].event_callback_id;
+
+	int event_type;
+	switch (p_callbackObjectType) {
+		case TYPE_AREA:
+			event_type = 0;
+			break;
+		case TYPE_RIGID_BODY:
+		case TYPE_BONE_BODY:
+			event_type = 1;
+			break;
+		case TYPE_SOFT_BODY:
+		case TYPE_KINEMATIC_GHOST_BODY:
+		default:
+			ERR_EXPLAIN("Event not supported")
+			ERR_FAIL_V(false)
+	}
+
+	return eventsCallbacks[event_type].event_callback_id;
 }
 
 void AreaBullet::on_enter_area(AreaBullet *p_area) {

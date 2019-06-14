@@ -97,6 +97,12 @@ class Skeleton : public Spatial {
 	bool process_order_dirty;
 
 	RID skeleton;
+	RID physics_rid;
+
+	bool skip_physics_tree_rebuild;
+
+	bool active_physics;
+	real_t mass;
 
 	void _make_dirty();
 	bool dirty;
@@ -132,6 +138,9 @@ public:
 	};
 
 	RID get_skeleton() const;
+	RID get_physics_rid() const;
+
+	bool get_skip_physics_tree_rebuild() const;
 
 	// skeleton creation api
 	void add_bone(const String &p_name);
@@ -184,8 +193,17 @@ public:
 	bool is_using_bones_in_world_transform() const;
 
 #ifndef _3D_DISABLED
-	// Physical bone API
 
+	void set_active_physics(bool p_simulate_physics);
+	bool get_active_physics() const;
+
+	void set_mass(real_t p_mass);
+	real_t get_mass();
+
+	void physical_bones_add_collision_exception(RID p_exception);
+	void physical_bones_remove_collision_exception(RID p_exception);
+
+	// Physical bone APIs
 	void bind_physical_bone_to_bone(int p_bone, PhysicalBone *p_physical_bone);
 	void unbind_physical_bone_from_bone(int p_bone);
 
@@ -195,13 +213,17 @@ public:
 private:
 	/// This is a slow API os it's cached
 	PhysicalBone *_get_physical_bone_parent(int p_bone);
-	void _rebuild_physical_bones_cache();
 
-public:
-	void physical_bones_stop_simulation();
-	void physical_bones_start_simulation_on(const Array &p_bones);
-	void physical_bones_add_collision_exception(RID p_exception);
-	void physical_bones_remove_collision_exception(RID p_exception);
+	/// This API rebuild the physical tree.
+	/// This mean that takes all the physical bones assigned and
+	/// initialize the structure, the bones and their joint.
+	/// Every time the structure of the armature change this function
+	/// must be called.
+	/// In case you need to skip this is possible to set skip_physics_tree_rebuild = true
+	void _rebuild_physical_tree();
+
+	void update_physics_activation();
+
 #endif // _3D_DISABLED
 
 public:

@@ -31,8 +31,11 @@
 #ifndef JOINT_BULLET_H
 #define JOINT_BULLET_H
 
-#include "constraint_bullet.h"
+#include "bullet_utilities.h"
+#include "rid_bullet.h"
 #include "servers/physics_server.h"
+#include <BulletDynamics/ConstraintSolver/btTypedConstraint.h>
+#include <BulletDynamics/Featherstone/btMultiBodyConstraint.h>
 
 /**
 	@author AndreaCatania
@@ -40,13 +43,46 @@
 
 class RigidBodyBullet;
 class btTypedConstraint;
+class RigidBodyBullet;
+class SpaceBullet;
+class BoneBullet;
 
-class JointBullet : public ConstraintBullet {
+class JointBullet : public RIDBullet {
+
+protected:
+	SpaceBullet *space;
+	BoneBullet *body_a;
+	BoneBullet *body_b;
+	btTypedConstraint *constraint;
+	btMultiBodyConstraint *multibody_constraint;
+	bool disabled_collisions_between_bodies;
 
 public:
 	JointBullet();
 	virtual ~JointBullet();
 
+	BoneBullet *get_body_a() const {
+		return body_a;
+	}
+
+	BoneBullet *get_body_b() const {
+		return body_b;
+	}
+
+	virtual void reload_internal() {}
 	virtual PhysicsServer::JointType get_type() const = 0;
+
+	virtual void setup(btTypedConstraint *p_constraint);
+	virtual void setup(btMultiBodyConstraint *p_constraint, BoneBullet *p_body_a, BoneBullet *p_body_b);
+	virtual void set_space(SpaceBullet *p_space);
+
+	void disable_collisions_between_bodies(const bool p_disabled);
+	_FORCE_INLINE_ bool is_disabled_collisions_between_bodies() const { return disabled_collisions_between_bodies; }
+
+	_FORCE_INLINE_ bool is_multi_joint() { return constraint == NULL; }
+	_FORCE_INLINE_ btTypedConstraint *get_bt_constraint() { return constraint; }
+	_FORCE_INLINE_ btMultiBodyConstraint *get_bt_mb_constraint() { return multibody_constraint; }
+
+	virtual void clear_internal_joint();
 };
 #endif

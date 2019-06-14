@@ -38,7 +38,15 @@ class CollisionObject : public Spatial {
 
 	GDCLASS(CollisionObject, Spatial);
 
-	bool area;
+public:
+	enum CollisionObjectType {
+		COLLISION_OBJECT_TYPE_AREA,
+		COLLISION_OBJECT_TYPE_BODY,
+		COLLISION_OBJECT_TYPE_BONE,
+	};
+
+private:
+	CollisionObjectType type;
 
 	RID rid;
 
@@ -64,13 +72,19 @@ class CollisionObject : public Spatial {
 
 	Map<uint32_t, ShapeData> shapes;
 
+	uint32_t collision_layer;
+	uint32_t collision_mask;
+
+	void _set_layers(uint32_t p_mask);
+	uint32_t _get_layers() const;
+
 	bool capture_input_on_drag;
 	bool ray_pickable;
 
 	void _update_pickable();
 
 protected:
-	CollisionObject(RID p_rid, bool p_area);
+	CollisionObject(RID p_rid, CollisionObjectType p_type);
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -101,6 +115,22 @@ public:
 	void shape_owner_clear_shapes(uint32_t p_owner);
 
 	uint32_t shape_find_owner(int p_shape_index) const;
+
+	void set_collision_layer(uint32_t p_layer);
+	uint32_t get_collision_layer() const;
+
+	void set_collision_mask(uint32_t p_mask);
+	uint32_t get_collision_mask() const;
+
+	void set_collision_layer_bit(int p_bit, bool p_value);
+	bool get_collision_layer_bit(int p_bit) const;
+
+	void set_collision_mask_bit(int p_bit, bool p_value);
+	bool get_collision_mask_bit(int p_bit) const;
+
+	Array get_collision_exceptions();
+	void add_collision_exception_with(Node *p_node); // Must be collision object
+	void remove_collision_exception_with(Node *p_node);
 
 	void set_ray_pickable(bool p_ray_pickable);
 	bool is_ray_pickable() const;

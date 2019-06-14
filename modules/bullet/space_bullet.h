@@ -50,6 +50,7 @@
 class AreaBullet;
 class btBroadphaseInterface;
 class btCollisionDispatcher;
+class btMLCPSolverInterface;
 class btConstraintSolver;
 class btDefaultCollisionConfiguration;
 class btDynamicsWorld;
@@ -58,10 +59,12 @@ class btEmptyShape;
 class btGhostPairCallback;
 class btSoftRigidDynamicsWorld;
 struct btSoftBodyWorldInfo;
-class ConstraintBullet;
+class JointBullet;
 class CollisionObjectBullet;
 class RigidBodyBullet;
 class SpaceBullet;
+class ArmatureBullet;
+class BoneBullet;
 class SoftBodyBullet;
 class btGjkEpaPenetrationDepthSolver;
 
@@ -92,9 +95,12 @@ class SpaceBullet : public RIDBullet {
 	friend void onBulletTickCallback(btDynamicsWorld *world, btScalar timeStep);
 	friend class BulletPhysicsDirectSpaceState;
 
+	int world_type;
+
 	btBroadphaseInterface *broadphase;
 	btDefaultCollisionConfiguration *collisionConfiguration;
 	btCollisionDispatcher *dispatcher;
+	btMLCPSolverInterface *mlcp_solver_interfance;
 	btConstraintSolver *solver;
 	btDiscreteDynamicsWorld *dynamicsWorld;
 	btSoftBodyWorldInfo *soft_body_world_info;
@@ -125,7 +131,8 @@ public:
 	_FORCE_INLINE_ btBroadphaseInterface *get_broadphase() { return broadphase; }
 	_FORCE_INLINE_ btCollisionDispatcher *get_dispatcher() { return dispatcher; }
 	_FORCE_INLINE_ btSoftBodyWorldInfo *get_soft_body_world_info() { return soft_body_world_info; }
-	_FORCE_INLINE_ bool is_using_soft_world() { return soft_body_world_info; }
+	_FORCE_INLINE_ bool is_using_soft_world() { return world_type == 1; }
+	_FORCE_INLINE_ bool is_using_multibody_world() { return world_type == 2; }
 
 	/// Used to set some parameters to Bullet world
 	/// @param p_param:
@@ -149,12 +156,26 @@ public:
 	void remove_rigid_body(RigidBodyBullet *p_body);
 	void reload_collision_filters(RigidBodyBullet *p_body);
 
+	void add_armature(ArmatureBullet *p_body);
+	void remove_armature(ArmatureBullet *p_body);
+	void reload_collision_filters(ArmatureBullet *p_body);
+
+	void add_bone(BoneBullet *p_body);
+	void remove_bone(BoneBullet *p_body);
+	void reload_collision_filters(BoneBullet *p_body);
+
+	void add_bone_joint_limit(BoneBullet *p_body);
+	void remove_bone_joint_limit(BoneBullet *p_body);
+
+	void add_bone_joint_motor(BoneBullet *p_body);
+	void remove_bone_joint_motor(BoneBullet *p_body);
+
 	void add_soft_body(SoftBodyBullet *p_body);
 	void remove_soft_body(SoftBodyBullet *p_body);
 	void reload_collision_filters(SoftBodyBullet *p_body);
 
-	void add_constraint(ConstraintBullet *p_constraint, bool disableCollisionsBetweenLinkedBodies = false);
-	void remove_constraint(ConstraintBullet *p_constraint);
+	void add_constraint(JointBullet *p_constraint, bool disableCollisionsBetweenLinkedBodies = false);
+	void remove_constraint(JointBullet *p_constraint);
 
 	int get_num_collision_objects() const;
 	void remove_all_collision_objects();
@@ -181,7 +202,16 @@ public:
 	int test_ray_separation(RigidBodyBullet *p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer::SeparationResult *r_results, int p_result_max, float p_margin);
 
 private:
-	void create_empty_world(bool p_create_soft_world);
+	/**
+	 * @brief create_empty_world
+	 * @param p_world_type 0 plain, 1 Soft, 2 Multi body
+	 * @param p_multibody_constraint_solver_type
+	 *		0 btMultiBodyConstraintSolver
+	 *		1 btSolveProjectedGaussSeidel
+	 *		2 btDantzigSolver
+	 *		D btLemkeSolver
+	 */
+	void create_empty_world(int p_world_type, int p_multibody_constraint_solver_type);
 	void destroy_world();
 	void check_ghost_overlaps();
 	void check_body_collision();

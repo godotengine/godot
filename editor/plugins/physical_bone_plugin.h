@@ -33,8 +33,10 @@
 
 #include "editor/editor_node.h"
 
-class PhysicalBoneEditor : public Object {
-	GDCLASS(PhysicalBoneEditor, Object);
+class PhysicalBoneEditor : public Control {
+	GDCLASS(PhysicalBoneEditor, Control);
+
+	friend class PhysicalBonePlugin;
 
 	EditorNode *editor;
 	HBoxContainer *spatial_editor_hb;
@@ -50,7 +52,7 @@ private:
 	void _set_move_joint();
 
 public:
-	PhysicalBoneEditor(EditorNode *p_editor);
+	PhysicalBoneEditor();
 	~PhysicalBoneEditor();
 
 	void set_selected(PhysicalBone *p_pb);
@@ -64,7 +66,7 @@ class PhysicalBonePlugin : public EditorPlugin {
 
 	EditorNode *editor;
 	PhysicalBone *selected;
-	PhysicalBoneEditor physical_bone_editor;
+	PhysicalBoneEditor *physical_bone_editor;
 
 public:
 	virtual String get_name() const { return "PhysicalBone"; }

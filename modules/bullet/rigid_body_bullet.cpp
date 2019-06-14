@@ -40,7 +40,6 @@
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/CollisionShapes/btConvexPointCloudShape.h>
 #include <BulletDynamics/Dynamics/btRigidBody.h>
-#include <btBulletCollisionCommon.h>
 
 #include <assert.h>
 
@@ -188,8 +187,12 @@ Vector3 BulletPhysicsDirectBodyState::get_contact_collider_velocity_at_position(
 	btVector3 hitLocation;
 	G_TO_B(colDat.hitLocalLocation, hitLocation);
 
+	btCollisionObject *co = colDat.otherObject->get_bt_collision_object();
+	btRigidBody *rb = btRigidBody::upcast(co);
+
 	Vector3 velocityAtPoint;
-	B_TO_G(colDat.otherObject->get_bt_rigid_body()->getVelocityInLocalPoint(hitLocation), velocityAtPoint);
+	if (rb)
+		B_TO_G(rb->getVelocityInLocalPoint(hitLocation), velocityAtPoint);
 
 	return velocityAtPoint;
 }
@@ -266,9 +269,6 @@ RigidBodyBullet::RigidBodyBullet() :
 		can_sleep(true),
 		omit_forces_integration(false),
 		can_integrate_forces(false),
-		maxCollisionsDetection(0),
-		collisionsCount(0),
-		prev_collision_count(0),
 		maxAreasWhereIam(10),
 		areaWhereIamCount(0),
 		countGravityPointSpaces(0),
@@ -294,9 +294,6 @@ RigidBodyBullet::RigidBodyBullet() :
 		areasWhereIam.write[i] = NULL;
 	}
 	btBody->setSleepingThresholds(0.2, 0.2);
-
-	prev_collision_traces = &collision_traces_1;
-	curr_collision_traces = &collision_traces_2;
 }
 
 RigidBodyBullet::~RigidBodyBullet() {
@@ -413,49 +410,9 @@ void RigidBodyBullet::on_collision_filters_change() {
 	}
 }
 
-void RigidBodyBullet::on_collision_checker_start() {
-
-	prev_collision_count = collisionsCount;
-	collisionsCount = 0;
-
-	// Swap array
-	Vector<RigidBodyBullet *> *s = prev_collision_traces;
-	prev_collision_traces = curr_collision_traces;
-	curr_collision_traces = s;
-}
-
 void RigidBodyBullet::on_collision_checker_end() {
 	// Always true if active and not a static or kinematic body
 	isTransformChanged = btBody->isActive() && !btBody->isStaticOrKinematicObject();
-}
-
-bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index) {
-
-	if (collisionsCount >= maxCollisionsDetection) {
-		return false;
-	}
-
-	CollisionData &cd = collisions.write[collisionsCount];
-	cd.hitLocalLocation = p_hitLocalLocation;
-	cd.otherObject = p_otherObject;
-	cd.hitWorldLocation = p_hitWorldLocation;
-	cd.hitNormal = p_hitNormal;
-	cd.appliedImpulse = p_appliedImpulse;
-	cd.other_object_shape = p_other_shape_index;
-	cd.local_shape = p_local_shape_index;
-
-	curr_collision_traces->write[collisionsCount] = p_otherObject;
-
-	++collisionsCount;
-	return true;
-}
-
-bool RigidBodyBullet::was_colliding(RigidBodyBullet *p_other_object) {
-	for (int i = prev_collision_count - 1; 0 <= i; --i) {
-		if ((*prev_collision_traces)[i] == p_other_object)
-			return true;
-	}
-	return false;
 }
 
 void RigidBodyBullet::assert_no_constraints() {

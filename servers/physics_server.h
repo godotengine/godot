@@ -517,6 +517,127 @@ public:
 
 	virtual int body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001) = 0;
 
+	/* ARMATURE */
+
+	virtual RID armature_create() = 0;
+
+	virtual void armature_set_bone_count(RID p_armature, int p_count) = 0;
+	virtual int armature_get_bone_count(RID p_armature) const = 0;
+
+	virtual void armature_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata = Variant()) = 0;
+
+	virtual void armature_set_space(RID p_body, RID p_space) = 0;
+	virtual RID armature_get_space(RID p_body) const = 0;
+
+	virtual void armature_set_active(RID p_body, bool p_active) = 0;
+
+	enum ArmatureParameter {
+		ARMATURE_PARAM_MASS,
+		ARMATURE_PARAM_MAX,
+	};
+
+	virtual void armature_set_param(RID p_body, ArmatureParameter p_param, float p_value) = 0;
+	virtual float armature_get_param(RID p_body, ArmatureParameter p_param) const = 0;
+
+	/* BONE */
+
+	virtual RID bone_create() = 0;
+
+	virtual void bone_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata = Variant()) = 0;
+
+	virtual void bone_set_armature(RID p_body, RID p_armature) = 0;
+	virtual RID bone_get_armature(RID p_body) const = 0;
+
+	virtual void bone_set_max_contacts_reported(RID p_body, int p_contacts) = 0;
+	virtual int bone_get_max_contacts_reported(RID p_body) const = 0;
+
+	virtual void bone_set_id(RID p_body, int p_id) = 0;
+	virtual int bone_get_id(RID p_body) const = 0;
+
+	virtual void bone_set_parent_id(RID p_body, int p_id) = 0;
+	virtual int bone_get_parent_id(RID p_body) const = 0;
+
+	virtual void bone_set_transform(RID p_body, const Transform &p_transform) = 0;
+	virtual Transform bone_get_transform(RID p_body) = 0;
+
+	virtual void bone_set_joint_transform(RID p_body, const Transform &p_transform) = 0;
+	virtual Transform bone_get_joint_transform(RID p_body) = 0;
+
+	virtual void bone_add_shape(RID p_body, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false) = 0;
+	virtual void bone_set_shape(RID p_body, int p_shape_idx, RID p_shape) = 0;
+	virtual void bone_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform) = 0;
+
+	virtual int bone_get_shape_count(RID p_body) const = 0;
+	virtual RID bone_get_shape(RID p_body, int p_shape_idx) const = 0;
+	virtual Transform bone_get_shape_transform(RID p_body, int p_shape_idx) const = 0;
+
+	virtual void bone_remove_shape(RID p_body, int p_shape_idx) = 0;
+	virtual void bone_clear_shapes(RID p_body) = 0;
+
+	virtual void bone_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) = 0;
+
+	virtual void bone_attach_object_instance_id(RID p_body, uint32_t p_id) = 0;
+	virtual uint32_t bone_get_object_instance_id(RID p_body) const = 0;
+
+	virtual void bone_set_disable_parent_collision(RID p_body, bool p_disable) = 0;
+	virtual bool bone_get_disable_parent_collision(RID p_body) const = 0;
+
+	virtual void bone_set_joint_limit_active(RID p_body, bool p_active) = 0;
+	virtual void bone_set_joint_lower_limit(RID p_body, real_t p_lower_limits) = 0;
+	virtual void bone_set_joint_upper_limit(RID p_body, real_t p_upper_limits) = 0;
+
+	virtual void bone_set_collision_layer(RID p_body, uint32_t p_layer) = 0;
+	virtual uint32_t bone_get_collision_layer(RID p_body) const = 0;
+
+	virtual void bone_set_collision_mask(RID p_body, uint32_t p_mask) = 0;
+	virtual uint32_t bone_get_collision_mask(RID p_body) const = 0;
+
+	virtual void bone_set_link_mass(RID p_body, float p_value) = 0;
+	virtual float bone_get_link_mass(RID p_body) const = 0;
+
+	virtual void bone_set_param(RID p_body, BodyParameter p_param, float p_value) = 0;
+	virtual float bone_get_param(RID p_body, BodyParameter p_param) const = 0;
+
+	virtual void bone_joint_fixed_setup(RID p_body) = 0;
+	virtual void bone_joint_slider_setup(RID p_body) = 0;
+	virtual void bone_joint_hinge_setup(RID p_body) = 0;
+	virtual void bone_joint_spherical_setup(RID p_body) = 0;
+	virtual void bone_joint_planar_setup(RID p_body) = 0;
+
+	virtual void bone_set_motor_enabled(RID p_body, bool p_v) = 0;
+	virtual bool bone_get_motor_enabled(RID p_body) const = 0;
+
+	virtual void bone_set_velocity_target(RID p_body, const Vector3 &p_v) = 0;
+	virtual Vector3 bone_get_velocity_target(RID p_body) const = 0;
+
+	virtual void bone_set_position_target(RID p_body, real_t p_v) = 0;
+	virtual real_t bone_get_position_target(RID p_body) const = 0;
+
+	virtual void bone_set_rotation_target(RID p_body, const Basis &p_v) = 0;
+	virtual Basis bone_get_rotation_target(RID p_body) const = 0;
+
+	virtual void bone_set_max_motor_impulse(RID p_body, real_t p_v) = 0;
+	virtual real_t bone_get_max_motor_impulse(RID p_body) const = 0;
+
+	virtual void bone_set_error_reduction_parameter(RID p_body, real_t p_v) = 0;
+	virtual real_t bone_get_error_reduction_parameter(RID p_body) const = 0;
+
+	virtual void bone_set_spring_constant(RID p_body, real_t p_v) = 0;
+	virtual real_t bone_get_spring_constant(RID p_body) const = 0;
+
+	virtual void bone_set_damping_constant(RID p_body, real_t p_v) = 0;
+	virtual real_t bone_get_damping_constant(RID p_body) const = 0;
+
+	virtual void bone_set_maximum_error(RID p_body, real_t p_v) = 0;
+	virtual real_t bone_get_maximum_error(RID p_body) const = 0;
+
+	virtual void bone_add_collision_exception(RID p_body, RID p_body_b) = 0;
+	virtual void bone_remove_collision_exception(RID p_body, RID p_body_b) = 0;
+	virtual void bone_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) = 0;
+
+	virtual Vector3 bone_joint_get_force(RID p_body) = 0;
+	virtual Vector3 bone_joint_get_torque(RID p_body) = 0;
+
 	/* SOFT BODY */
 
 	virtual RID soft_body_create(bool p_init_sleeping = false) = 0;
@@ -830,6 +951,7 @@ VARIANT_ENUM_CAST(PhysicsServer::BodyMode);
 VARIANT_ENUM_CAST(PhysicsServer::BodyParameter);
 VARIANT_ENUM_CAST(PhysicsServer::BodyState);
 VARIANT_ENUM_CAST(PhysicsServer::BodyAxis);
+VARIANT_ENUM_CAST(PhysicsServer::ArmatureParameter);
 VARIANT_ENUM_CAST(PhysicsServer::PinJointParam);
 VARIANT_ENUM_CAST(PhysicsServer::JointType);
 VARIANT_ENUM_CAST(PhysicsServer::HingeJointParam);

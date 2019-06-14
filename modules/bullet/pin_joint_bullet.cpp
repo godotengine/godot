@@ -30,14 +30,82 @@
 
 #include "pin_joint_bullet.h"
 
+#include "armature_bullet.h"
 #include "bullet_types_converter.h"
 #include "rigid_body_bullet.h"
 
 #include <BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h>
+#include <BulletDynamics/Featherstone/btMultiBodyPoint2Point.h>
 
 /**
 	@author AndreaCatania
 */
+
+class GodotMultiBodyPoint2Point : public btMultiBodyPoint2Point {
+
+public:
+	GodotMultiBodyPoint2Point(
+			btMultiBody *body,
+			int link,
+			btRigidBody *bodyB,
+			const btVector3 &pivotInA,
+			const btVector3 &pivotInB) :
+
+			btMultiBodyPoint2Point(
+					body,
+					link,
+					bodyB,
+					pivotInA,
+					pivotInB) {}
+
+	void set_linkA(int p_link_id) {
+		m_linkA = p_link_id;
+	}
+
+	btRigidBody *get_rigidBodyA() {
+		return m_rigidBodyA;
+	}
+
+	btRigidBody *get_rigidBodyB() {
+		return m_rigidBodyB;
+	}
+
+	void set_pivotInA(btVector3 &p_pivot) {
+		m_pivotInA = p_pivot;
+	}
+
+	btVector3 &get_pivotInA() {
+		return m_pivotInA;
+	}
+
+	btVector3 &get_pivotInB() {
+		return m_pivotInB;
+	}
+};
+
+PinJointBullet::PinJointBullet(BoneBullet *p_body_a, const Vector3 &p_pos_a, RigidBodyBullet *p_body_b, const Vector3 &p_pos_b) :
+		JointBullet() {
+
+	ERR_FAIL_COND(!p_body_a);
+	ERR_FAIL_COND(!p_body_b);
+
+	btVector3 btPivotA;
+	btVector3 btPivotB;
+	G_TO_B(p_pos_a * p_body_a->get_body_scale(), btPivotA);
+	G_TO_B(p_pos_b * p_body_b->get_body_scale(), btPivotB);
+	mb_p2pConstraint = bulletnew(GodotMultiBodyPoint2Point(
+			p_body_a->get_armature()->get_bt_body(),
+			p_body_a->get_link_id(),
+			p_body_b->get_bt_rigid_body(),
+			btPivotA,
+			btPivotB));
+
+	p2pConstraint = NULL;
+	setup(
+			mb_p2pConstraint,
+			p_body_a,
+			NULL);
+}
 
 PinJointBullet::PinJointBullet(RigidBodyBullet *p_body_a, const Vector3 &p_pos_a, RigidBodyBullet *p_body_b, const Vector3 &p_pos_b) :
 		JointBullet() {
@@ -47,7 +115,8 @@ PinJointBullet::PinJointBullet(RigidBodyBullet *p_body_a, const Vector3 &p_pos_a
 		btVector3 btPivotB;
 		G_TO_B(p_pos_a * p_body_a->get_body_scale(), btPivotA);
 		G_TO_B(p_pos_b * p_body_b->get_body_scale(), btPivotB);
-		p2pConstraint = bulletnew(btPoint2PointConstraint(*p_body_a->get_bt_rigid_body(),
+		p2pConstraint = bulletnew(btPoint2PointConstraint(
+				*p_body_a->get_bt_rigid_body(),
 				*p_body_b->get_bt_rigid_body(),
 				btPivotA,
 				btPivotB));
@@ -57,62 +126,113 @@ PinJointBullet::PinJointBullet(RigidBodyBullet *p_body_a, const Vector3 &p_pos_a
 		p2pConstraint = bulletnew(btPoint2PointConstraint(*p_body_a->get_bt_rigid_body(), btPivotA));
 	}
 
+	mb_p2pConstraint = NULL;
 	setup(p2pConstraint);
 }
 
 PinJointBullet::~PinJointBullet() {}
 
-void PinJointBullet::set_param(PhysicsServer::PinJointParam p_param, real_t p_value) {
-	switch (p_param) {
-		case PhysicsServer::PIN_JOINT_BIAS:
-			p2pConstraint->m_setting.m_tau = p_value;
-			break;
-		case PhysicsServer::PIN_JOINT_DAMPING:
-			p2pConstraint->m_setting.m_damping = p_value;
-			break;
-		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
-			p2pConstraint->m_setting.m_impulseClamp = p_value;
-			break;
+void PinJointBullet::reload_internal() {
+	if (mb_p2pConstraint) {
+		mb_p2pConstraint->set_linkA(body_a->get_link_id());
 	}
 }
 
+void PinJointBullet::set_param(PhysicsServer::PinJointParam p_param, real_t p_value) {
+	if (p2pConstraint)
+		switch (p_param) {
+			case PhysicsServer::PIN_JOINT_BIAS:
+				p2pConstraint->m_setting.m_tau = p_value;
+				break;
+			case PhysicsServer::PIN_JOINT_DAMPING:
+				p2pConstraint->m_setting.m_damping = p_value;
+				break;
+			case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
+				p2pConstraint->m_setting.m_impulseClamp = p_value;
+				break;
+		}
+
+	if (mb_p2pConstraint)
+		switch (p_param) {
+			case PhysicsServer::PIN_JOINT_BIAS:
+				break;
+			case PhysicsServer::PIN_JOINT_DAMPING:
+				break;
+			case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
+				break;
+		}
+}
+
 real_t PinJointBullet::get_param(PhysicsServer::PinJointParam p_param) const {
-	switch (p_param) {
-		case PhysicsServer::PIN_JOINT_BIAS:
-			return p2pConstraint->m_setting.m_tau;
-		case PhysicsServer::PIN_JOINT_DAMPING:
-			return p2pConstraint->m_setting.m_damping;
-		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
-			return p2pConstraint->m_setting.m_impulseClamp;
-		default:
-			ERR_EXPLAIN("This parameter " + itos(p_param) + " is deprecated");
-			WARN_DEPRECATED;
-			return 0;
-	}
+
+	if (p2pConstraint)
+		switch (p_param) {
+			case PhysicsServer::PIN_JOINT_BIAS:
+				return p2pConstraint->m_setting.m_tau;
+			case PhysicsServer::PIN_JOINT_DAMPING:
+				return p2pConstraint->m_setting.m_damping;
+			case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
+				return p2pConstraint->m_setting.m_impulseClamp;
+			default:
+				ERR_EXPLAIN("This parameter " + itos(p_param) + " is deprecated");
+				WARN_DEPRECATED
+				return 0;
+		}
+
+	if (mb_p2pConstraint)
+		return 0;
+
+	return 0;
 }
 
 void PinJointBullet::setPivotInA(const Vector3 &p_pos) {
 	btVector3 btVec;
 	G_TO_B(p_pos, btVec);
-	p2pConstraint->setPivotA(btVec);
+
+	if (p2pConstraint)
+		p2pConstraint->setPivotA(btVec);
+	else
+		mb_p2pConstraint->set_pivotInA(btVec);
 }
 
 void PinJointBullet::setPivotInB(const Vector3 &p_pos) {
 	btVector3 btVec;
 	G_TO_B(p_pos, btVec);
-	p2pConstraint->setPivotB(btVec);
+
+	if (p2pConstraint)
+		p2pConstraint->setPivotB(btVec);
+	else
+		mb_p2pConstraint->setPivotInB(btVec);
 }
 
 Vector3 PinJointBullet::getPivotInA() {
-	btVector3 vec = p2pConstraint->getPivotInA();
+	btVector3 vec;
+
+	if (p2pConstraint)
+		vec = p2pConstraint->getPivotInA();
+	else
+		vec = mb_p2pConstraint->get_pivotInA();
+
 	Vector3 gVec;
 	B_TO_G(vec, gVec);
 	return gVec;
 }
 
 Vector3 PinJointBullet::getPivotInB() {
-	btVector3 vec = p2pConstraint->getPivotInB();
+	btVector3 vec;
+
+	if (p2pConstraint)
+		vec = p2pConstraint->getPivotInB();
+	else
+		vec = mb_p2pConstraint->getPivotInB();
+
 	Vector3 gVec;
 	B_TO_G(vec, gVec);
 	return gVec;
+}
+
+void PinJointBullet::clear_internal_joint() {
+	JointBullet::clear_internal_joint();
+	p2pConstraint = NULL;
+	mb_p2pConstraint = NULL;
 }

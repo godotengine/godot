@@ -77,11 +77,19 @@ public:
 
 	static BulletPhysicsDirectBodyState *get_singleton(RigidBodyBullet *p_body) {
 		singleton->body = p_body;
+		singleton->bone = NULL;
+		return singleton;
+	}
+
+	static BulletPhysicsDirectBodyState *get_singleton(BoneBullet *p_body) {
+		singleton->body = NULL;
+		singleton->bone = p_body;
 		return singleton;
 	}
 
 public:
 	RigidBodyBullet *body;
+	BoneBullet *bone;
 	real_t deltaTime;
 
 private:
@@ -144,16 +152,6 @@ public:
 class RigidBodyBullet : public RigidCollisionObjectBullet {
 
 public:
-	struct CollisionData {
-		RigidBodyBullet *otherObject;
-		int other_object_shape;
-		int local_shape;
-		Vector3 hitLocalLocation;
-		Vector3 hitWorldLocation;
-		Vector3 hitNormal;
-		float appliedImpulse;
-	};
-
 	struct ForceIntegrationCallback {
 		ObjectID id;
 		StringName method;
@@ -204,17 +202,6 @@ private:
 	bool omit_forces_integration;
 	bool can_integrate_forces;
 
-	Vector<CollisionData> collisions;
-	Vector<RigidBodyBullet *> collision_traces_1;
-	Vector<RigidBodyBullet *> collision_traces_2;
-	Vector<RigidBodyBullet *> *prev_collision_traces;
-	Vector<RigidBodyBullet *> *curr_collision_traces;
-
-	// these parameters are used to avoid vector resize
-	int maxCollisionsDetection;
-	int collisionsCount;
-	int prev_collision_count;
-
 	Vector<AreaBullet *> areasWhereIam;
 	// these parameters are used to avoid vector resize
 	int maxAreasWhereIam;
@@ -246,29 +233,7 @@ public:
 	void scratch_space_override_modificator();
 
 	virtual void on_collision_filters_change();
-	virtual void on_collision_checker_start();
 	virtual void on_collision_checker_end();
-
-	void set_max_collisions_detection(int p_maxCollisionsDetection) {
-
-		ERR_FAIL_COND(0 > p_maxCollisionsDetection);
-
-		maxCollisionsDetection = p_maxCollisionsDetection;
-
-		collisions.resize(p_maxCollisionsDetection);
-		collision_traces_1.resize(p_maxCollisionsDetection);
-		collision_traces_2.resize(p_maxCollisionsDetection);
-
-		collisionsCount = 0;
-		prev_collision_count = MIN(prev_collision_count, p_maxCollisionsDetection);
-	}
-	int get_max_collisions_detection() {
-		return maxCollisionsDetection;
-	}
-
-	bool can_add_collision() { return collisionsCount < maxCollisionsDetection; }
-	bool add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index);
-	bool was_colliding(RigidBodyBullet *p_other_object);
 
 	void assert_no_constraints();
 

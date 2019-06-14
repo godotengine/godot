@@ -1833,37 +1833,10 @@ void PhysicalBoneSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	Vector<Vector3> points;
 
 	switch (physical_bone->get_joint_type()) {
-		case PhysicalBone::JOINT_TYPE_PIN: {
+		case PhysicalBone::JOINT_TYPE_FIXED: {
 
 			JointSpatialGizmoPlugin::CreatePinJointGizmo(physical_bone->get_joint_offset(), points);
-		} break;
-		case PhysicalBone::JOINT_TYPE_CONE: {
 
-			const PhysicalBone::ConeJointData *cjd(static_cast<const PhysicalBone::ConeJointData *>(physical_bone->get_joint_data()));
-			JointSpatialGizmoPlugin::CreateConeTwistJointGizmo(
-					physical_bone->get_joint_offset(),
-					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
-					pb->get_global_transform(),
-					pbp->get_global_transform(),
-					cjd->swing_span,
-					cjd->twist_span,
-					&points,
-					&points);
-		} break;
-		case PhysicalBone::JOINT_TYPE_HINGE: {
-
-			const PhysicalBone::HingeJointData *hjd(static_cast<const PhysicalBone::HingeJointData *>(physical_bone->get_joint_data()));
-			JointSpatialGizmoPlugin::CreateHingeJointGizmo(
-					physical_bone->get_joint_offset(),
-					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
-					pb->get_global_transform(),
-					pbp->get_global_transform(),
-					hjd->angular_limit_lower,
-					hjd->angular_limit_upper,
-					hjd->angular_limit_enabled,
-					points,
-					&points,
-					&points);
 		} break;
 		case PhysicalBone::JOINT_TYPE_SLIDER: {
 
@@ -1873,49 +1846,74 @@ void PhysicalBoneSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
 					pb->get_global_transform(),
 					pbp->get_global_transform(),
-					sjd->angular_limit_lower,
-					sjd->angular_limit_upper,
-					sjd->linear_limit_lower,
-					sjd->linear_limit_upper,
+					0,
+					0,
+					sjd->limit_active ? sjd->upper_limit * -1 : -1000,
+					sjd->limit_active ? sjd->lower_limit * -1 : 1000,
 					points,
 					&points,
 					&points);
+
 		} break;
-		case PhysicalBone::JOINT_TYPE_6DOF: {
+		case PhysicalBone::JOINT_TYPE_HINGE: {
 
-			const PhysicalBone::SixDOFJointData *sdofjd(static_cast<const PhysicalBone::SixDOFJointData *>(physical_bone->get_joint_data()));
-			JointSpatialGizmoPlugin::CreateGeneric6DOFJointGizmo(
+			const PhysicalBone::HingeJointData *hjd(static_cast<const PhysicalBone::HingeJointData *>(physical_bone->get_joint_data()));
+			JointSpatialGizmoPlugin::CreateHingeJointGizmo(
 					physical_bone->get_joint_offset(),
-
 					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
 					pb->get_global_transform(),
 					pbp->get_global_transform(),
-
-					sdofjd->axis_data[0].angular_limit_lower,
-					sdofjd->axis_data[0].angular_limit_upper,
-					sdofjd->axis_data[0].linear_limit_lower,
-					sdofjd->axis_data[0].linear_limit_upper,
-					sdofjd->axis_data[0].angular_limit_enabled,
-					sdofjd->axis_data[0].linear_limit_enabled,
-
-					sdofjd->axis_data[1].angular_limit_lower,
-					sdofjd->axis_data[1].angular_limit_upper,
-					sdofjd->axis_data[1].linear_limit_lower,
-					sdofjd->axis_data[1].linear_limit_upper,
-					sdofjd->axis_data[1].angular_limit_enabled,
-					sdofjd->axis_data[1].linear_limit_enabled,
-
-					sdofjd->axis_data[2].angular_limit_lower,
-					sdofjd->axis_data[2].angular_limit_upper,
-					sdofjd->axis_data[2].linear_limit_lower,
-					sdofjd->axis_data[2].linear_limit_upper,
-					sdofjd->axis_data[2].angular_limit_enabled,
-					sdofjd->axis_data[2].linear_limit_enabled,
-
+					Math::deg2rad(hjd->lower_limit),
+					Math::deg2rad(hjd->upper_limit),
+					hjd->limit_active,
 					points,
 					&points,
 					&points);
+
 		} break;
+		case PhysicalBone::JOINT_TYPE_SPHERICAL: {
+
+			const real_t radius(0.25);
+			JointGizmosDrawer::draw_circle(
+					Vector3::AXIS_X,
+					radius,
+					physical_bone->get_joint_offset(),
+					Basis(),
+					0,
+					-1,
+					points);
+
+			JointGizmosDrawer::draw_circle(
+					Vector3::AXIS_Y,
+					radius,
+					physical_bone->get_joint_offset(),
+					Basis(),
+					0,
+					-1,
+					points);
+
+			JointGizmosDrawer::draw_circle(
+					Vector3::AXIS_Z,
+					radius,
+					physical_bone->get_joint_offset(),
+					Basis(),
+					0,
+					-1,
+					points);
+
+		} break;
+
+		case PhysicalBone::JOINT_TYPE_PLANAR: {
+
+			// Draw a plane
+			real_t plane_size(0.25);
+			JointGizmosDrawer::draw_plane(
+					physical_bone->get_joint_offset(),
+					Basis(),
+					plane_size,
+					points);
+		} break;
+		case PhysicalBone::JOINT_TYPE_NONE:
 		default:
 			return;
 	}
@@ -4111,6 +4109,24 @@ void JointGizmosDrawer::draw_cone(const Transform &p_offset, const Basis &p_base
 		r_points.push_back(p_offset.translated(p_base.xform(Vector3(c, a.x, a.y))).origin);
 		r_points.push_back(p_offset.translated(p_base.xform(Vector3(cn, b.x, b.y))).origin);
 	}
+}
+
+void JointGizmosDrawer::draw_plane(const Transform &p_offset, const Basis &p_base, real_t p_plane_size, Vector<Vector3> &r_points) {
+
+	r_points.push_back(p_offset.translated(p_base.xform(Vector3(-1, 0, -1) * p_plane_size)).origin);
+	r_points.push_back(p_offset.translated(p_base.xform(Vector3(1, 0, -1) * p_plane_size)).origin);
+
+	r_points.push_back(p_offset.translated(p_base.xform(Vector3(1, 0, -1) * p_plane_size)).origin);
+	r_points.push_back(p_offset.translated(p_base.xform(Vector3(1, 0, 1) * p_plane_size)).origin);
+
+	r_points.push_back(p_offset.translated(p_base.xform(Vector3(1, 0, 1) * p_plane_size)).origin);
+	r_points.push_back(p_offset.translated(p_base.xform(Vector3(-1, 0, 1) * p_plane_size)).origin);
+
+	r_points.push_back(p_offset.translated(p_base.xform(Vector3(-1, 0, 1) * p_plane_size)).origin);
+	r_points.push_back(p_offset.translated(p_base.xform(Vector3(-1, 0, -1) * p_plane_size)).origin);
+
+	r_points.push_back(p_offset.translated(p_base.xform(Vector3(0, 0, 0) * p_plane_size)).origin);
+	r_points.push_back(p_offset.translated(p_base.xform(Vector3(0, 1, 0) * p_plane_size)).origin);
 }
 
 ////

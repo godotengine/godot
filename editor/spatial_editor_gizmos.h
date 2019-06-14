@@ -385,6 +385,7 @@ public:
 	// Draw circle around p_axis
 	static void draw_circle(Vector3::Axis p_axis, real_t p_radius, const Transform &p_offset, const Basis &p_base, real_t p_limit_lower, real_t p_limit_upper, Vector<Vector3> &r_points, bool p_inverse = false);
 	static void draw_cone(const Transform &p_offset, const Basis &p_base, real_t p_swing, real_t p_twist, Vector<Vector3> &r_points);
+	static void draw_plane(const Transform &p_offset, const Basis &p_base, real_t p_plane_size, Vector<Vector3> &r_points);
 };
 
 class JointSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {

@@ -30,6 +30,8 @@
 
 #include "joint_bullet.h"
 
+#include "armature_bullet.h"
+#include "collision_object_bullet.h"
 #include "space_bullet.h"
 
 /**
@@ -37,6 +39,68 @@
 */
 
 JointBullet::JointBullet() :
-		ConstraintBullet() {}
+		space(NULL),
+		body_a(NULL),
+		body_b(NULL),
+		constraint(NULL),
+		multibody_constraint(NULL),
+		disabled_collisions_between_bodies(true) {}
 
-JointBullet::~JointBullet() {}
+JointBullet::~JointBullet() {
+	clear_internal_joint();
+}
+
+void JointBullet::setup(btTypedConstraint *p_constraint) {
+	ERR_FAIL_COND(constraint != NULL);
+	ERR_FAIL_COND(multibody_constraint != NULL);
+	constraint = p_constraint;
+	constraint->setUserConstraintPtr(this);
+}
+
+void JointBullet::setup(btMultiBodyConstraint *p_constraint, BoneBullet *p_body_a, BoneBullet *p_body_b) {
+	ERR_FAIL_COND(constraint != NULL);
+	ERR_FAIL_COND(multibody_constraint != NULL);
+	multibody_constraint = p_constraint;
+
+	body_a = p_body_a;
+	body_b = p_body_b;
+
+	body_a->get_armature()->register_ext_joint(this);
+
+	if (body_b)
+		body_b->get_armature()->register_ext_joint(this);
+}
+
+void JointBullet::set_space(SpaceBullet *p_space) {
+	space = p_space;
+}
+
+void JointBullet::disable_collisions_between_bodies(const bool p_disabled) {
+	disabled_collisions_between_bodies = p_disabled;
+
+	if (space) {
+		space->remove_constraint(this);
+		space->add_constraint(this, disabled_collisions_between_bodies);
+	}
+}
+
+void JointBullet::clear_internal_joint() {
+	if (space)
+		space->remove_constraint(this);
+
+	bulletdelete(constraint);
+	constraint = NULL;
+	bulletdelete(multibody_constraint);
+	multibody_constraint = NULL;
+
+	if (body_a)
+		if (body_a->get_armature())
+			body_a->get_armature()->erase_ext_joint(this);
+
+	if (body_b)
+		if (body_b->get_armature())
+			body_b->get_armature()->erase_ext_joint(this);
+
+	body_a = NULL;
+	body_b = NULL;
+}

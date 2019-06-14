@@ -38,14 +38,18 @@
 */
 
 class RigidBodyBullet;
+class BoneBullet;
 
 class PinJointBullet : public JointBullet {
 	class btPoint2PointConstraint *p2pConstraint;
+	class GodotMultiBodyPoint2Point *mb_p2pConstraint;
 
 public:
 	PinJointBullet(RigidBodyBullet *p_body_a, const Vector3 &p_pos_a, RigidBodyBullet *p_body_b, const Vector3 &p_pos_b);
+	PinJointBullet(BoneBullet *p_body_a, const Vector3 &p_pos_a, RigidBodyBullet *p_body_b, const Vector3 &p_pos_b);
 	~PinJointBullet();
 
+	virtual void reload_internal();
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_PIN; }
 
 	void set_param(PhysicsServer::PinJointParam p_param, real_t p_value);
@@ -56,5 +60,7 @@ public:
 
 	Vector3 getPivotInA();
 	Vector3 getPivotInB();
+
+	virtual void clear_internal_joint();
 };
 #endif

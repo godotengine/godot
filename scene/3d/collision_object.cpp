@@ -39,27 +39,36 @@ void CollisionObject::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_WORLD: {
 
-			if (area)
-				PhysicsServer::get_singleton()->area_set_transform(rid, get_global_transform());
-			else
-				PhysicsServer::get_singleton()->body_set_state(rid, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
-
 			RID space = get_world()->get_space();
-			if (area) {
-				PhysicsServer::get_singleton()->area_set_space(rid, space);
-			} else
-				PhysicsServer::get_singleton()->body_set_space(rid, space);
+			switch (type) {
+				case COLLISION_OBJECT_TYPE_AREA:
+					PhysicsServer::get_singleton()->area_set_transform(rid, get_global_transform());
+					PhysicsServer::get_singleton()->area_set_space(rid, space);
+					break;
+				case COLLISION_OBJECT_TYPE_BODY:
+					PhysicsServer::get_singleton()->body_set_state(rid, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
+					PhysicsServer::get_singleton()->body_set_space(rid, space);
+					break;
+				case COLLISION_OBJECT_TYPE_BONE:
+					PhysicsServer::get_singleton()->bone_set_transform(rid, get_global_transform());
+					break;
+			}
 
 			_update_pickable();
-			//get space
 		} break;
-
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			if (area)
-				PhysicsServer::get_singleton()->area_set_transform(rid, get_global_transform());
-			else
-				PhysicsServer::get_singleton()->body_set_state(rid, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
+			switch (type) {
+				case COLLISION_OBJECT_TYPE_AREA:
+					PhysicsServer::get_singleton()->area_set_transform(rid, get_global_transform());
+					break;
+				case COLLISION_OBJECT_TYPE_BODY:
+					PhysicsServer::get_singleton()->body_set_state(rid, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
+					break;
+				case COLLISION_OBJECT_TYPE_BONE:
+					PhysicsServer::get_singleton()->bone_set_transform(rid, get_global_transform());
+					break;
+			}
 
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -69,10 +78,17 @@ void CollisionObject::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 
-			if (area) {
-				PhysicsServer::get_singleton()->area_set_space(rid, RID());
-			} else
-				PhysicsServer::get_singleton()->body_set_space(rid, RID());
+			switch (type) {
+				case COLLISION_OBJECT_TYPE_AREA:
+					PhysicsServer::get_singleton()->area_set_space(rid, RID());
+					break;
+				case COLLISION_OBJECT_TYPE_BODY:
+					PhysicsServer::get_singleton()->body_set_space(rid, RID());
+					break;
+				case COLLISION_OBJECT_TYPE_BONE:
+
+					break;
+			}
 
 		} break;
 	}
@@ -106,10 +122,18 @@ void CollisionObject::_update_pickable() {
 	if (!is_inside_tree())
 		return;
 	bool pickable = ray_pickable && is_inside_tree() && is_visible_in_tree();
-	if (area)
-		PhysicsServer::get_singleton()->area_set_ray_pickable(rid, pickable);
-	else
-		PhysicsServer::get_singleton()->body_set_ray_pickable(rid, pickable);
+
+	switch (type) {
+		case COLLISION_OBJECT_TYPE_AREA:
+			PhysicsServer::get_singleton()->area_set_ray_pickable(rid, pickable);
+			break;
+		case COLLISION_OBJECT_TYPE_BODY:
+			PhysicsServer::get_singleton()->body_set_ray_pickable(rid, pickable);
+			break;
+		case COLLISION_OBJECT_TYPE_BONE:
+
+			break;
+	}
 }
 
 void CollisionObject::set_ray_pickable(bool p_ray_pickable) {
@@ -146,6 +170,21 @@ void CollisionObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_owner_clear_shapes", "owner_id"), &CollisionObject::shape_owner_clear_shapes);
 	ClassDB::bind_method(D_METHOD("shape_find_owner", "shape_index"), &CollisionObject::shape_find_owner);
 
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &CollisionObject::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"), &CollisionObject::get_collision_layer);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &CollisionObject::set_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"), &CollisionObject::get_collision_mask);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &CollisionObject::set_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &CollisionObject::get_collision_mask_bit);
+
+	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &CollisionObject::set_collision_layer_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &CollisionObject::get_collision_layer_bit);
+
+	ClassDB::bind_method(D_METHOD("_set_layers", "mask"), &CollisionObject::_set_layers);
+	ClassDB::bind_method(D_METHOD("_get_layers"), &CollisionObject::_get_layers);
+
 	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_position"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
 
 	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_position"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
@@ -154,6 +193,10 @@ void CollisionObject::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_ray_pickable"), "set_ray_pickable", "is_ray_pickable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_capture_on_drag"), "set_capture_input_on_drag", "get_capture_input_on_drag");
+
+	ADD_GROUP("Collision", "collision_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 }
 
 uint32_t CollisionObject::create_shape_owner(Object *p_owner) {
@@ -188,12 +231,23 @@ void CollisionObject::shape_owner_set_disabled(uint32_t p_owner, bool p_disabled
 
 	ShapeData &sd = shapes[p_owner];
 	sd.disabled = p_disabled;
-	for (int i = 0; i < sd.shapes.size(); i++) {
-		if (area) {
-			PhysicsServer::get_singleton()->area_set_shape_disabled(rid, sd.shapes[i].index, p_disabled);
-		} else {
-			PhysicsServer::get_singleton()->body_set_shape_disabled(rid, sd.shapes[i].index, p_disabled);
-		}
+
+	switch (type) {
+		case COLLISION_OBJECT_TYPE_AREA:
+			for (int i = 0; i < sd.shapes.size(); i++) {
+				PhysicsServer::get_singleton()->area_set_shape_disabled(rid, sd.shapes[i].index, p_disabled);
+			}
+			break;
+		case COLLISION_OBJECT_TYPE_BODY:
+			for (int i = 0; i < sd.shapes.size(); i++) {
+				PhysicsServer::get_singleton()->body_set_shape_disabled(rid, sd.shapes[i].index, p_disabled);
+			}
+			break;
+		case COLLISION_OBJECT_TYPE_BONE:
+			for (int i = 0; i < sd.shapes.size(); i++) {
+				PhysicsServer::get_singleton()->bone_set_shape_disabled(rid, sd.shapes[i].index, p_disabled);
+			}
+			break;
 	}
 }
 
@@ -227,12 +281,23 @@ void CollisionObject::shape_owner_set_transform(uint32_t p_owner, const Transfor
 
 	ShapeData &sd = shapes[p_owner];
 	sd.xform = p_transform;
-	for (int i = 0; i < sd.shapes.size(); i++) {
-		if (area) {
-			PhysicsServer::get_singleton()->area_set_shape_transform(rid, sd.shapes[i].index, p_transform);
-		} else {
-			PhysicsServer::get_singleton()->body_set_shape_transform(rid, sd.shapes[i].index, p_transform);
-		}
+
+	switch (type) {
+		case COLLISION_OBJECT_TYPE_AREA:
+			for (int i = 0; i < sd.shapes.size(); i++) {
+				PhysicsServer::get_singleton()->area_set_shape_transform(rid, sd.shapes[i].index, p_transform);
+			}
+			break;
+		case COLLISION_OBJECT_TYPE_BODY:
+			for (int i = 0; i < sd.shapes.size(); i++) {
+				PhysicsServer::get_singleton()->body_set_shape_transform(rid, sd.shapes[i].index, p_transform);
+			}
+			break;
+		case COLLISION_OBJECT_TYPE_BONE:
+			for (int i = 0; i < sd.shapes.size(); i++) {
+				PhysicsServer::get_singleton()->bone_set_shape_transform(rid, sd.shapes[i].index, p_transform);
+			}
+			break;
 	}
 }
 Transform CollisionObject::shape_owner_get_transform(uint32_t p_owner) const {
@@ -258,11 +323,19 @@ void CollisionObject::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape> &
 	ShapeData::ShapeBase s;
 	s.index = total_subshapes;
 	s.shape = p_shape;
-	if (area) {
-		PhysicsServer::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
-	} else {
-		PhysicsServer::get_singleton()->body_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
+
+	switch (type) {
+		case COLLISION_OBJECT_TYPE_AREA:
+			PhysicsServer::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
+			break;
+		case COLLISION_OBJECT_TYPE_BODY:
+			PhysicsServer::get_singleton()->body_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
+			break;
+		case COLLISION_OBJECT_TYPE_BONE:
+			PhysicsServer::get_singleton()->bone_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
+			break;
 	}
+
 	sd.shapes.push_back(s);
 
 	total_subshapes++;
@@ -294,10 +367,16 @@ void CollisionObject::shape_owner_remove_shape(uint32_t p_owner, int p_shape) {
 	ERR_FAIL_INDEX(p_shape, shapes[p_owner].shapes.size());
 
 	int index_to_remove = shapes[p_owner].shapes[p_shape].index;
-	if (area) {
-		PhysicsServer::get_singleton()->area_remove_shape(rid, index_to_remove);
-	} else {
-		PhysicsServer::get_singleton()->body_remove_shape(rid, index_to_remove);
+	switch (type) {
+		case COLLISION_OBJECT_TYPE_AREA:
+			PhysicsServer::get_singleton()->area_remove_shape(rid, index_to_remove);
+			break;
+		case COLLISION_OBJECT_TYPE_BODY:
+			PhysicsServer::get_singleton()->body_remove_shape(rid, index_to_remove);
+			break;
+		case COLLISION_OBJECT_TYPE_BONE:
+			PhysicsServer::get_singleton()->bone_remove_shape(rid, index_to_remove);
+			break;
 	}
 
 	shapes[p_owner].shapes.remove(p_shape);
@@ -338,19 +417,177 @@ uint32_t CollisionObject::shape_find_owner(int p_shape_index) const {
 	return 0;
 }
 
-CollisionObject::CollisionObject(RID p_rid, bool p_area) {
+void CollisionObject::set_collision_layer(uint32_t p_layer) {
+
+	collision_layer = p_layer;
+	switch (type) {
+		case COLLISION_OBJECT_TYPE_AREA:
+			PhysicsServer::get_singleton()->area_set_collision_layer(get_rid(), collision_layer);
+			break;
+		case COLLISION_OBJECT_TYPE_BODY:
+			PhysicsServer::get_singleton()->body_set_collision_layer(get_rid(), collision_layer);
+			break;
+		case COLLISION_OBJECT_TYPE_BONE:
+			PhysicsServer::get_singleton()->bone_set_collision_layer(get_rid(), collision_layer);
+			break;
+	}
+}
+
+uint32_t CollisionObject::get_collision_layer() const {
+
+	return collision_layer;
+}
+
+void CollisionObject::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask = p_mask;
+	switch (type) {
+		case COLLISION_OBJECT_TYPE_AREA:
+			PhysicsServer::get_singleton()->area_set_collision_mask(get_rid(), collision_mask);
+			break;
+		case COLLISION_OBJECT_TYPE_BODY:
+			PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(), collision_mask);
+			break;
+		case COLLISION_OBJECT_TYPE_BONE:
+			PhysicsServer::get_singleton()->bone_set_collision_mask(get_rid(), collision_mask);
+			break;
+	}
+}
+
+uint32_t CollisionObject::get_collision_mask() const {
+
+	return collision_mask;
+}
+
+void CollisionObject::set_collision_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_mask();
+	if (p_value)
+		mask |= 1 << p_bit;
+	else
+		mask &= ~(1 << p_bit);
+	set_collision_mask(mask);
+}
+
+bool CollisionObject::get_collision_mask_bit(int p_bit) const {
+
+	return get_collision_mask() & (1 << p_bit);
+}
+
+void CollisionObject::set_collision_layer_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_layer();
+	if (p_value)
+		mask |= 1 << p_bit;
+	else
+		mask &= ~(1 << p_bit);
+	set_collision_layer(mask);
+}
+
+bool CollisionObject::get_collision_layer_bit(int p_bit) const {
+
+	return get_collision_layer() & (1 << p_bit);
+}
+
+Array CollisionObject::get_collision_exceptions() {
+	List<RID> exceptions;
+
+	switch (type) {
+		case COLLISION_OBJECT_TYPE_AREA:
+			break;
+		case COLLISION_OBJECT_TYPE_BODY:
+			PhysicsServer::get_singleton()->body_get_collision_exceptions(get_rid(), &exceptions);
+			break;
+		case COLLISION_OBJECT_TYPE_BONE:
+			PhysicsServer::get_singleton()->bone_get_collision_exceptions(get_rid(), &exceptions);
+			break;
+	}
+
+	Array ret;
+	for (List<RID>::Element *E = exceptions.front(); E; E = E->next()) {
+		RID body = E->get();
+		ObjectID instance_id = PhysicsServer::get_singleton()->body_get_object_instance_id(body);
+		Object *obj = ObjectDB::get_instance(instance_id);
+		CollisionObject *physics_body = Object::cast_to<CollisionObject>(obj);
+		ret.append(physics_body);
+	}
+	return ret;
+}
+
+void CollisionObject::add_collision_exception_with(Node *p_node) {
+
+	ERR_FAIL_NULL(p_node);
+	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
+	if (!collision_object) {
+		ERR_EXPLAIN("Collision exception only works between two CollisionObject");
+	}
+	ERR_FAIL_COND(!collision_object);
+
+	switch (type) {
+		case COLLISION_OBJECT_TYPE_AREA:
+			break;
+		case COLLISION_OBJECT_TYPE_BODY:
+			PhysicsServer::get_singleton()->body_add_collision_exception(get_rid(), collision_object->get_rid());
+			break;
+		case COLLISION_OBJECT_TYPE_BONE:
+			PhysicsServer::get_singleton()->bone_add_collision_exception(get_rid(), collision_object->get_rid());
+			break;
+	}
+}
+
+void CollisionObject::remove_collision_exception_with(Node *p_node) {
+
+	ERR_FAIL_NULL(p_node);
+	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
+	if (!collision_object) {
+		ERR_EXPLAIN("Collision exception only works between two CollisionObject");
+	}
+	ERR_FAIL_COND(!collision_object);
+
+	switch (type) {
+		case COLLISION_OBJECT_TYPE_AREA:
+			break;
+		case COLLISION_OBJECT_TYPE_BODY:
+			PhysicsServer::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
+			break;
+		case COLLISION_OBJECT_TYPE_BONE:
+			PhysicsServer::get_singleton()->bone_remove_collision_exception(get_rid(), collision_object->get_rid());
+			break;
+	}
+}
+
+void CollisionObject::_set_layers(uint32_t p_mask) {
+	set_collision_layer(p_mask);
+	set_collision_mask(p_mask);
+}
+
+uint32_t CollisionObject::_get_layers() const {
+
+	return get_collision_layer();
+}
+
+CollisionObject::CollisionObject(RID p_rid, CollisionObjectType p_type) {
 
 	rid = p_rid;
-	area = p_area;
+	type = p_type;
 	capture_input_on_drag = false;
 	ray_pickable = true;
 	set_notify_transform(true);
 	total_subshapes = 0;
 
-	if (p_area) {
-		PhysicsServer::get_singleton()->area_attach_object_instance_id(rid, get_instance_id());
-	} else {
-		PhysicsServer::get_singleton()->body_attach_object_instance_id(rid, get_instance_id());
+	collision_layer = 1;
+	collision_mask = 1;
+
+	switch (p_type) {
+		case COLLISION_OBJECT_TYPE_AREA:
+			PhysicsServer::get_singleton()->area_attach_object_instance_id(rid, get_instance_id());
+			break;
+		case COLLISION_OBJECT_TYPE_BODY:
+			PhysicsServer::get_singleton()->body_attach_object_instance_id(rid, get_instance_id());
+			break;
+		case COLLISION_OBJECT_TYPE_BONE:
+			PhysicsServer::get_singleton()->bone_attach_object_instance_id(rid, get_instance_id());
+			break;
 	}
 	//set_transform_notify(true);
 }

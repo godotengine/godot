@@ -40,7 +40,6 @@
 #include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
 #include <BulletCollision/CollisionShapes/btConvexPointCloudShape.h>
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
-#include <btBulletCollisionCommon.h>
 
 /**
 	@author AndreaCatania

@@ -64,6 +64,7 @@ public:
 	enum Type {
 		TYPE_AREA = 0,
 		TYPE_RIGID_BODY,
+		TYPE_BONE_BODY,
 		TYPE_SOFT_BODY,
 		TYPE_KINEMATIC_GHOST_BODY
 	};
@@ -213,9 +214,31 @@ public:
 };
 
 class RigidCollisionObjectBullet : public CollisionObjectBullet, public ShapeOwnerBullet {
+public:
+	struct CollisionData {
+		RigidCollisionObjectBullet *otherObject;
+		int other_object_shape;
+		int local_shape;
+		Vector3 hitLocalLocation;
+		Vector3 hitWorldLocation;
+		Vector3 hitNormal;
+		float appliedImpulse;
+	};
+
 protected:
 	btCollisionShape *mainShape;
 	Vector<ShapeWrapper> shapes;
+
+	Vector<CollisionData> collisions;
+	Vector<RigidCollisionObjectBullet *> collision_traces_1;
+	Vector<RigidCollisionObjectBullet *> collision_traces_2;
+	Vector<RigidCollisionObjectBullet *> *prev_collision_traces;
+	Vector<RigidCollisionObjectBullet *> *curr_collision_traces;
+
+	// these parameters are used to avoid vector resize
+	int maxCollisionsDetection;
+	int collisionsCount;
+	int prev_collision_count;
 
 public:
 	RigidCollisionObjectBullet(Type p_type);
@@ -251,6 +274,31 @@ public:
 
 	virtual void main_shape_changed() = 0;
 	virtual void body_scale_changed();
+
+	void set_max_collisions_detection(int p_maxCollisionsDetection) {
+
+		ERR_FAIL_COND(0 > p_maxCollisionsDetection);
+
+		maxCollisionsDetection = p_maxCollisionsDetection;
+
+		collisions.resize(p_maxCollisionsDetection);
+		collision_traces_1.resize(p_maxCollisionsDetection);
+		collision_traces_2.resize(p_maxCollisionsDetection);
+
+		collisionsCount = 0;
+		prev_collision_count = MIN(prev_collision_count, p_maxCollisionsDetection);
+	}
+
+	int get_max_collisions_detection() {
+		return maxCollisionsDetection;
+	}
+
+	virtual void on_collision_checker_start();
+	virtual void on_collision_checker_end();
+
+	bool can_add_collision() { return collisionsCount < maxCollisionsDetection; }
+	bool add_collision_object(RigidCollisionObjectBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index);
+	bool was_colliding(RigidCollisionObjectBullet *p_other_object);
 
 private:
 	void internal_shape_destroy(int p_index, bool p_permanentlyFromThisBody = false);

@@ -33,7 +33,6 @@
 #include "bullet_physics_server.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
-#include "constraint_bullet.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
 #include "godot_collision_configuration.h"
@@ -47,6 +46,13 @@
 #include <BulletCollision/NarrowPhaseCollision/btGjkEpaPenetrationDepthSolver.h>
 #include <BulletCollision/NarrowPhaseCollision/btGjkPairDetector.h>
 #include <BulletCollision/NarrowPhaseCollision/btPointCollector.h>
+#include <BulletDynamics/Featherstone/btMultiBodyConstraint.h>
+#include <BulletDynamics/Featherstone/btMultiBodyDynamicsWorld.h>
+#include <BulletDynamics/Featherstone/btMultiBodyLinkCollider.h>
+#include <BulletDynamics/Featherstone/btMultiBodyMLCPConstraintSolver.h>
+#include <BulletDynamics/MLCPSolvers/btDantzigSolver.h>
+#include <BulletDynamics/MLCPSolvers/btLemkeSolver.h>
+#include <BulletDynamics/MLCPSolvers/btSolveProjectedGaussSeidel.h>
 #include <BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h>
 #include <BulletSoftBody/btSoftRigidDynamicsWorld.h>
 #include <btBulletDynamicsCommon.h>
@@ -331,9 +337,11 @@ Vector3 BulletPhysicsDirectSpaceState::get_closest_point_to_object_volume(RID p_
 }
 
 SpaceBullet::SpaceBullet() :
+		world_type(-1),
 		broadphase(NULL),
 		collisionConfiguration(NULL),
 		dispatcher(NULL),
+		mlcp_solver_interfance(NULL),
 		solver(NULL),
 		dynamicsWorld(NULL),
 		soft_body_world_info(NULL),
@@ -344,7 +352,9 @@ SpaceBullet::SpaceBullet() :
 		contactDebugCount(0),
 		delta_time(0.) {
 
-	create_empty_world(GLOBAL_DEF("physics/3d/active_soft_world", true));
+	create_empty_world(
+			GLOBAL_DEF("physics/3d/world_type", 1),
+			GLOBAL_DEF("physics/3d/multibody_constraint_solver", 0));
 	direct_access = memnew(BulletPhysicsDirectSpaceState(this));
 }
 
@@ -469,7 +479,7 @@ void SpaceBullet::add_rigid_body(RigidBodyBullet *p_body) {
 		dynamicsWorld->addCollisionObject(p_body->get_bt_rigid_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
 	} else {
 		dynamicsWorld->addRigidBody(p_body->get_bt_rigid_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
-		p_body->scratch_space_override_modificator();
+		p_body->reload_space_override_modificator(); // Update gravity here to use rigid body custom gravity
 	}
 }
 
@@ -485,6 +495,109 @@ void SpaceBullet::reload_collision_filters(RigidBodyBullet *p_body) {
 	// This is necessary to change collision filter
 	remove_rigid_body(p_body);
 	add_rigid_body(p_body);
+}
+
+void SpaceBullet::add_armature(ArmatureBullet *p_body) {
+	if (is_using_multibody_world()) {
+
+		static_cast<btMultiBodyDynamicsWorld *>(dynamicsWorld)->addMultiBody(p_body->get_bt_body(),
+				// Not used
+				0, 0);
+	} else {
+
+		ERR_PRINT("This multi body can't be added to non multi body world");
+	}
+}
+
+void SpaceBullet::remove_armature(ArmatureBullet *p_body) {
+	if (is_using_multibody_world()) {
+
+		static_cast<btMultiBodyDynamicsWorld *>(dynamicsWorld)->removeMultiBody(p_body->get_bt_body());
+	} else {
+
+		ERR_PRINT("This multi body can't be removed from non multi body world");
+	}
+}
+
+void SpaceBullet::reload_collision_filters(ArmatureBullet *p_body) {
+	remove_armature(p_body);
+	add_armature(p_body);
+}
+
+void SpaceBullet::add_bone(BoneBullet *p_body) {
+	if (is_using_multibody_world()) {
+
+		if (p_body->get_armature()->is_active()) {
+			dynamicsWorld->addCollisionObject(
+					p_body->get_bt_body(),
+					p_body->get_collision_layer(),
+					p_body->get_collision_mask());
+		} else {
+			dynamicsWorld->addCollisionObject(
+					p_body->get_bt_body(),
+					0,
+					0);
+		}
+
+	} else {
+
+		ERR_PRINT("This multi body can't be added to non multi body world");
+	}
+}
+
+void SpaceBullet::remove_bone(BoneBullet *p_body) {
+	if (is_using_multibody_world()) {
+
+		dynamicsWorld->removeCollisionObject(p_body->get_bt_body());
+	} else {
+
+		ERR_PRINT("This multi body can't be removed from non multi body world");
+	}
+}
+
+void SpaceBullet::reload_collision_filters(BoneBullet *p_body) {
+	remove_bone(p_body);
+	add_bone(p_body);
+}
+
+void SpaceBullet::add_bone_joint_limit(BoneBullet *p_body) {
+	if (is_using_multibody_world()) {
+
+		static_cast<btMultiBodyDynamicsWorld *>(dynamicsWorld)->addMultiBodyConstraint(p_body->get_bt_joint_limiter());
+	} else {
+
+		ERR_PRINT("This joint limiter can't be added to non multi body world");
+	}
+}
+
+void SpaceBullet::remove_bone_joint_limit(BoneBullet *p_body) {
+	if (is_using_multibody_world()) {
+
+		static_cast<btMultiBodyDynamicsWorld *>(dynamicsWorld)->removeMultiBodyConstraint(p_body->get_bt_joint_limiter());
+	} else {
+
+		ERR_PRINT("This joint limiter can't be removed from non multi body world");
+	}
+}
+
+void SpaceBullet::add_bone_joint_motor(BoneBullet *p_body) {
+	if (is_using_multibody_world()) {
+
+		static_cast<btMultiBodyDynamicsWorld *>(dynamicsWorld)->addMultiBodyConstraint(p_body->get_bt_joint_motor());
+	} else {
+
+		ERR_PRINT("This joint limiter can't be added to non multi body world");
+	}
+}
+
+void SpaceBullet::remove_bone_joint_motor(BoneBullet *p_body) {
+	if (is_using_multibody_world()) {
+
+		static_cast<btMultiBodyDynamicsWorld *>(dynamicsWorld)->removeMultiBodyConstraint(p_body->get_bt_joint_motor());
+	} else {
+
+		ERR_PRINT("This joint limiter can't be removed from non multi body world");
+	}
 }
 
 void SpaceBullet::add_soft_body(SoftBodyBullet *p_body) {
@@ -513,13 +626,43 @@ void SpaceBullet::reload_collision_filters(SoftBodyBullet *p_body) {
 	add_soft_body(p_body);
 }
 
-void SpaceBullet::add_constraint(ConstraintBullet *p_constraint, bool disableCollisionsBetweenLinkedBodies) {
-	p_constraint->set_space(this);
-	dynamicsWorld->addConstraint(p_constraint->get_bt_constraint(), disableCollisionsBetweenLinkedBodies);
+void SpaceBullet::add_constraint(JointBullet *p_constraint, bool disableCollisionsBetweenLinkedBodies) {
+
+	if (p_constraint->is_multi_joint()) {
+
+		if (is_using_multibody_world()) {
+
+			static_cast<btMultiBodyDynamicsWorld *>(dynamicsWorld)->addMultiBodyConstraint(p_constraint->get_bt_mb_constraint());
+
+		} else {
+
+			ERR_PRINT("This constraint can't be added from non multi body world");
+		}
+	} else {
+
+		dynamicsWorld->addConstraint(
+				p_constraint->get_bt_constraint(),
+				disableCollisionsBetweenLinkedBodies);
+	}
 }
 
-void SpaceBullet::remove_constraint(ConstraintBullet *p_constraint) {
-	dynamicsWorld->removeConstraint(p_constraint->get_bt_constraint());
+void SpaceBullet::remove_constraint(JointBullet *p_constraint) {
+
+	if (p_constraint->is_multi_joint()) {
+
+		if (is_using_multibody_world()) {
+
+			static_cast<btMultiBodyDynamicsWorld *>(dynamicsWorld)->removeMultiBodyConstraint(p_constraint->get_bt_mb_constraint());
+
+		} else {
+
+			ERR_PRINT("This constraint can't be removed from non multi body world");
+		}
+
+	} else {
+
+		dynamicsWorld->removeConstraint(p_constraint->get_bt_constraint());
+	}
 }
 
 int SpaceBullet::get_num_collision_objects() const {
@@ -570,33 +713,81 @@ btScalar calculateGodotCombinedFriction(const btCollisionObject *body0, const bt
 	return ABS(MIN(body0->getFriction(), body1->getFriction()));
 }
 
-void SpaceBullet::create_empty_world(bool p_create_soft_world) {
+void SpaceBullet::create_empty_world(
+		int p_world_type,
+		int p_multibody_constraint_solver_type) {
+
+	world_type = p_world_type;
 
 	gjk_epa_pen_solver = bulletnew(btGjkEpaPenetrationDepthSolver);
 	gjk_simplex_solver = bulletnew(btVoronoiSimplexSolver);
 
 	void *world_mem;
-	if (p_create_soft_world) {
-		world_mem = malloc(sizeof(btSoftRigidDynamicsWorld));
-	} else {
-		world_mem = malloc(sizeof(btDiscreteDynamicsWorld));
-	}
+	if (p_world_type == 0) {
 
-	if (p_create_soft_world) {
-		collisionConfiguration = bulletnew(GodotSoftCollisionConfiguration(static_cast<btDiscreteDynamicsWorld *>(world_mem)));
-	} else {
+		world_mem = malloc(sizeof(btDiscreteDynamicsWorld));
 		collisionConfiguration = bulletnew(GodotCollisionConfiguration(static_cast<btDiscreteDynamicsWorld *>(world_mem)));
+		solver = bulletnew(btSequentialImpulseConstraintSolver);
+
+	} else if (p_world_type == 1) {
+
+		world_mem = malloc(sizeof(btSoftRigidDynamicsWorld));
+		collisionConfiguration = bulletnew(GodotSoftCollisionConfiguration(static_cast<btDiscreteDynamicsWorld *>(world_mem)));
+		solver = bulletnew(btSequentialImpulseConstraintSolver);
+
+	} else if (p_world_type == 2) {
+
+		world_mem = malloc(sizeof(btMultiBodyDynamicsWorld));
+		collisionConfiguration = bulletnew(GodotCollisionConfiguration(static_cast<btDiscreteDynamicsWorld *>(world_mem)));
+		solver = bulletnew(btMultiBodyConstraintSolver);
+
+		switch (p_multibody_constraint_solver_type) {
+			case 0:
+				solver = new btMultiBodyConstraintSolver;
+				break;
+			case 1:
+				mlcp_solver_interfance = new btSolveProjectedGaussSeidel();
+				solver = new btMultiBodyMLCPConstraintSolver(mlcp_solver_interfance);
+				break;
+			case 2:
+				mlcp_solver_interfance = new btDantzigSolver();
+				solver = new btMultiBodyMLCPConstraintSolver(mlcp_solver_interfance);
+				break;
+			default:
+				mlcp_solver_interfance = new btLemkeSolver();
+				solver = new btMultiBodyMLCPConstraintSolver(mlcp_solver_interfance);
+				break;
+		}
+
+	} else {
+		CRASH_NOW();
 	}
 
 	dispatcher = bulletnew(GodotCollisionDispatcher(collisionConfiguration));
 	broadphase = bulletnew(btDbvtBroadphase);
-	solver = bulletnew(btSequentialImpulseConstraintSolver);
 
-	if (p_create_soft_world) {
+	if (p_world_type == 0) {
+
+		dynamicsWorld = new (world_mem) btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
+		dynamicsWorld->getSolverInfo().m_globalCfm = btScalar(1e-6);
+
+	} else if (p_world_type == 1) {
+
 		dynamicsWorld = new (world_mem) btSoftRigidDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
 		soft_body_world_info = bulletnew(btSoftBodyWorldInfo);
+		dynamicsWorld->getSolverInfo().m_globalCfm = btScalar(1e-6);
+
+	} else if (p_world_type == 2) {
+
+		dynamicsWorld = new (world_mem) btMultiBodyDynamicsWorld(
+				dispatcher,
+				broadphase,
+				static_cast<btMultiBodyConstraintSolver *>(solver),
+				collisionConfiguration);
+		dynamicsWorld->getSolverInfo().m_globalCfm = btScalar(1e-3);
+
 	} else {
-		dynamicsWorld = new (world_mem) btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
+		CRASH_NOW();
 	}
 
 	ghostPairCallback = bulletnew(btGhostPairCallback);
@@ -637,6 +828,7 @@ void SpaceBullet::destroy_world() {
 	dynamicsWorld = NULL;
 
 	bulletdelete(solver);
+	bulletdelete(mlcp_solver_interfance);
 	bulletdelete(broadphase);
 	bulletdelete(dispatcher);
 	bulletdelete(collisionConfiguration);
@@ -693,7 +885,7 @@ void SpaceBullet::check_ghost_overlaps() {
 			if (overlapped_bt_co->getUserIndex() == CollisionObjectBullet::TYPE_AREA) {
 				if (!static_cast<AreaBullet *>(overlapped_bt_co->getUserPointer())->is_monitorable())
 					continue;
-			} else if (overlapped_bt_co->getUserIndex() != CollisionObjectBullet::TYPE_RIGID_BODY)
+			} else if (overlapped_bt_co->getUserIndex() != CollisionObjectBullet::TYPE_RIGID_BODY && overlapped_bt_co->getUserIndex() != CollisionObjectBullet::TYPE_BONE_BODY)
 				continue;
 
 			// For each area shape
@@ -800,56 +992,60 @@ void SpaceBullet::check_body_collision() {
 
 		// I know this static cast is a bit risky. But I'm checking its type just after it.
 		// This allow me to avoid a lot of other cast and checks
-		RigidBodyBullet *bodyA = static_cast<RigidBodyBullet *>(contactManifold->getBody0()->getUserPointer());
-		RigidBodyBullet *bodyB = static_cast<RigidBodyBullet *>(contactManifold->getBody1()->getUserPointer());
+		RigidCollisionObjectBullet *bodyA = static_cast<RigidCollisionObjectBullet *>(contactManifold->getBody0()->getUserPointer());
+		RigidCollisionObjectBullet *bodyB = static_cast<RigidCollisionObjectBullet *>(contactManifold->getBody1()->getUserPointer());
 
-		if (CollisionObjectBullet::TYPE_RIGID_BODY == bodyA->getType() && CollisionObjectBullet::TYPE_RIGID_BODY == bodyB->getType()) {
-			if (!bodyA->can_add_collision() && !bodyB->can_add_collision()) {
-				continue;
-			}
+		if (CollisionObjectBullet::TYPE_RIGID_BODY != bodyA->getType() && CollisionObjectBullet::TYPE_BONE_BODY != bodyA->getType()) {
+			continue;
+		}
+		if (CollisionObjectBullet::TYPE_RIGID_BODY != bodyB->getType() && CollisionObjectBullet::TYPE_BONE_BODY != bodyB->getType()) {
+			continue;
+		}
+		if (!bodyA->can_add_collision() && !bodyB->can_add_collision()) {
+			continue;
+		}
 
-			const int numContacts = contactManifold->getNumContacts();
+		const int numContacts = contactManifold->getNumContacts();
 
-			/// Since I don't need report all contacts for these objects,
-			/// So report only the first
+		/// Since I don't need report all contacts for these objects,
+		/// So report only the first
 #define REPORT_ALL_CONTACTS 0
 #if REPORT_ALL_CONTACTS
-			for (int j = 0; j < numContacts; j++) {
-				btManifoldPoint &pt = contactManifold->getContactPoint(j);
+		for (int j = 0; j < numContacts; j++) {
+			btManifoldPoint &pt = contactManifold->getContactPoint(j);
 #else
-			if (numContacts) {
-				btManifoldPoint &pt = contactManifold->getContactPoint(0);
+		if (numContacts) {
+			btManifoldPoint &pt = contactManifold->getContactPoint(0);
 #endif
-				if (
-						pt.getDistance() <= 0.0 ||
-						bodyA->was_colliding(bodyB) ||
-						bodyB->was_colliding(bodyA)) {
+			if (
+					pt.getDistance() <= 0.0 ||
+					bodyA->was_colliding(bodyB) ||
+					bodyB->was_colliding(bodyA)) {
 
-					Vector3 collisionWorldPosition;
-					Vector3 collisionLocalPosition;
-					Vector3 normalOnB;
-					float appliedImpulse = pt.m_appliedImpulse;
-					B_TO_G(pt.m_normalWorldOnB, normalOnB);
+				Vector3 collisionWorldPosition;
+				Vector3 collisionLocalPosition;
+				Vector3 normalOnB;
+				float appliedImpulse = pt.m_appliedImpulse;
+				B_TO_G(pt.m_normalWorldOnB, normalOnB);
 
-					if (bodyA->can_add_collision()) {
-						B_TO_G(pt.getPositionWorldOnB(), collisionWorldPosition);
-						/// pt.m_localPointB Doesn't report the exact point in local space
-						B_TO_G(pt.getPositionWorldOnB() - contactManifold->getBody1()->getWorldTransform().getOrigin(), collisionLocalPosition);
-						bodyA->add_collision_object(bodyB, collisionWorldPosition, collisionLocalPosition, normalOnB, appliedImpulse, pt.m_index1, pt.m_index0);
-					}
-					if (bodyB->can_add_collision()) {
-						B_TO_G(pt.getPositionWorldOnA(), collisionWorldPosition);
-						/// pt.m_localPointA Doesn't report the exact point in local space
-						B_TO_G(pt.getPositionWorldOnA() - contactManifold->getBody0()->getWorldTransform().getOrigin(), collisionLocalPosition);
-						bodyB->add_collision_object(bodyA, collisionWorldPosition, collisionLocalPosition, normalOnB * -1, appliedImpulse * -1, pt.m_index0, pt.m_index1);
-					}
+				if (bodyA->can_add_collision()) {
+					B_TO_G(pt.getPositionWorldOnB(), collisionWorldPosition);
+					/// pt.m_localPointB Doesn't report the exact point in local space
+					B_TO_G(pt.getPositionWorldOnB() - contactManifold->getBody1()->getWorldTransform().getOrigin(), collisionLocalPosition);
+					bodyA->add_collision_object(bodyB, collisionWorldPosition, collisionLocalPosition, normalOnB, appliedImpulse, pt.m_index1, pt.m_index0);
+				}
+				if (bodyB->can_add_collision()) {
+					B_TO_G(pt.getPositionWorldOnA(), collisionWorldPosition);
+					/// pt.m_localPointA Doesn't report the exact point in local space
+					B_TO_G(pt.getPositionWorldOnA() - contactManifold->getBody0()->getWorldTransform().getOrigin(), collisionLocalPosition);
+					bodyB->add_collision_object(bodyA, collisionWorldPosition, collisionLocalPosition, normalOnB * -1, appliedImpulse * -1, pt.m_index0, pt.m_index1);
+				}
 
 #ifdef DEBUG_ENABLED
-					if (is_debugging_contacts()) {
-						add_debug_contact(collisionWorldPosition);
-					}
-#endif
+				if (is_debugging_contacts()) {
+					add_debug_contact(collisionWorldPosition);
 				}
+#endif
 			}
 		}
 	}
@@ -858,8 +1054,7 @@ void SpaceBullet::check_body_collision() {
 void SpaceBullet::update_gravity() {
 	btVector3 btGravity;
 	G_TO_B(gravityDirection * gravityMagnitude, btGravity);
-	//dynamicsWorld->setGravity(btGravity);
-	dynamicsWorld->setGravity(btVector3(0, 0, 0));
+	dynamicsWorld->setGravity(btGravity);
 	if (soft_body_world_info) {
 		soft_body_world_info->m_gravity = btGravity;
 	}

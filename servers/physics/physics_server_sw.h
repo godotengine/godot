@@ -242,6 +242,122 @@ public:
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState *body_get_direct_state(RID p_body);
 
+	/* ARMATURE */
+
+	virtual RID armature_create() { return RID(); }
+
+	virtual void armature_set_bone_count(RID p_armature, int p_count) {}
+	virtual int armature_get_bone_count(RID p_armature) const { return 0; }
+
+	virtual void armature_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata = Variant()) {}
+
+	virtual void armature_set_space(RID p_body, RID p_space) {}
+	virtual RID armature_get_space(RID p_body) const { return RID(); }
+
+	virtual void armature_set_active(RID p_body, bool p_active) {}
+
+	virtual void armature_set_param(RID p_body, ArmatureParameter p_param, float p_value) {}
+	virtual float armature_get_param(RID p_body, ArmatureParameter p_param) const { return 0; }
+
+	/* BONE */
+
+	virtual RID bone_create() { return RID(); }
+
+	virtual void bone_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata = Variant()) {}
+
+	virtual void bone_set_armature(RID p_body, RID p_armature) {}
+	virtual RID bone_get_armature(RID p_body) const { return RID(); }
+
+	virtual void bone_set_max_contacts_reported(RID p_body, int p_contacts) {}
+	virtual int bone_get_max_contacts_reported(RID p_body) const { return 0; }
+
+	virtual void bone_set_id(RID p_body, int p_link_id) {}
+	virtual int bone_get_id(RID p_body) const { return 0; }
+
+	virtual void bone_set_parent_id(RID p_body, int p_id) {}
+	virtual int bone_get_parent_id(RID p_body) const { return 0; }
+
+	virtual void bone_set_transform(RID p_body, const Transform &p_transform) {}
+	virtual Transform bone_get_transform(RID p_body) { return Transform(); }
+
+	virtual void bone_set_joint_transform(RID p_body, const Transform &p_transform) {}
+	virtual Transform bone_get_joint_transform(RID p_body) { return Transform(); }
+
+	virtual void bone_add_shape(RID p_body, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false) {}
+	virtual void bone_set_shape(RID p_body, int p_shape_idx, RID p_shape) {}
+	virtual void bone_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform) {}
+
+	virtual int bone_get_shape_count(RID p_body) const { return 0; }
+	virtual RID bone_get_shape(RID p_body, int p_shape_idx) const { return RID(); }
+	virtual Transform bone_get_shape_transform(RID p_body, int p_shape_idx) const { return Transform(); }
+
+	virtual void bone_remove_shape(RID p_body, int p_shape_idx) {}
+	virtual void bone_clear_shapes(RID p_body) {}
+
+	virtual void bone_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {}
+
+	virtual void bone_attach_object_instance_id(RID p_body, uint32_t p_ID) {}
+	virtual uint32_t bone_get_object_instance_id(RID p_body) const { return 0; }
+
+	virtual void bone_set_disable_parent_collision(RID p_body, bool p_disable) {}
+	virtual bool bone_get_disable_parent_collision(RID p_body) const { return true; }
+
+	virtual void bone_set_joint_limit_active(RID p_body, bool p_active) {}
+	virtual void bone_set_joint_lower_limit(RID p_body, real_t p_lower_limits) {}
+	virtual void bone_set_joint_upper_limit(RID p_body, real_t p_upper_limits) {}
+
+	virtual void bone_set_collision_layer(RID p_body, uint32_t p_layer) {}
+	virtual uint32_t bone_get_collision_layer(RID p_body) const { return 0; }
+
+	virtual void bone_set_collision_mask(RID p_body, uint32_t p_mask) {}
+	virtual uint32_t bone_get_collision_mask(RID p_body) const { return 0; }
+
+	virtual void bone_set_link_mass(RID p_body, float p_value) {}
+	virtual float bone_get_link_mass(RID p_body) const { return 0; }
+
+	virtual void bone_set_param(RID p_body, BodyParameter p_param, float p_value) {}
+	virtual float bone_get_param(RID p_body, BodyParameter p_param) const { return 0; }
+
+	virtual void bone_joint_fixed_setup(RID p_body) {}
+	virtual void bone_joint_slider_setup(RID p_body) {}
+	virtual void bone_joint_hinge_setup(RID p_body) {}
+	virtual void bone_joint_spherical_setup(RID p_body) {}
+	virtual void bone_joint_planar_setup(RID p_body) {}
+
+	virtual void bone_set_motor_enabled(RID p_body, bool p_v) {}
+	virtual bool bone_get_motor_enabled(RID p_body) const { return false; }
+
+	virtual void bone_set_velocity_target(RID p_body, const Vector3 &p_v) {}
+	virtual Vector3 bone_get_velocity_target(RID p_body) const { return Vector3(); }
+
+	virtual void bone_set_position_target(RID p_body, real_t p_v) {}
+	virtual real_t bone_get_position_target(RID p_body) const { return 0; }
+
+	virtual void bone_set_rotation_target(RID p_body, const Basis &p_v) {}
+	virtual Basis bone_get_rotation_target(RID p_body) const { return Basis(); }
+
+	virtual void bone_set_max_motor_impulse(RID p_body, real_t p_v) {}
+	virtual real_t bone_get_max_motor_impulse(RID p_body) const { return 0; }
+
+	virtual void bone_set_error_reduction_parameter(RID p_body, real_t p_v) {}
+	virtual real_t bone_get_error_reduction_parameter(RID p_body) const { return 0; }
+
+	virtual void bone_set_spring_constant(RID p_body, real_t p_v) {}
+	virtual real_t bone_get_spring_constant(RID p_body) const { return 0; }
+
+	virtual void bone_set_damping_constant(RID p_body, real_t p_v) {}
+	virtual real_t bone_get_damping_constant(RID p_body) const { return 0; }
+
+	virtual void bone_set_maximum_error(RID p_body, real_t p_v) {}
+	virtual real_t bone_get_maximum_error(RID p_body) const { return 0; }
+
+	virtual void bone_add_collision_exception(RID p_body, RID p_body_b) {}
+	virtual void bone_remove_collision_exception(RID p_body, RID p_body_b) {}
+	virtual void bone_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) {}
+
+	virtual Vector3 bone_joint_get_force(RID p_body) { return Vector3(); }
+	virtual Vector3 bone_joint_get_torque(RID p_body) { return Vector3(); }
+
 	/* SOFT BODY */
 
 	virtual RID soft_body_create(bool p_init_sleeping = false) { return RID(); }

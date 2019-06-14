@@ -306,6 +306,94 @@
 				Sets the transform matrix for an area.
 			</description>
 		</method>
+		<method name="armature_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="armature_get_bone_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="armature" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="armature_get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.ArmatureParameter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="armature_get_space" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="armature_set_active">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="active" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="armature_set_bone_count">
+			<return type="void">
+			</return>
+			<argument index="0" name="armature" type="RID">
+			</argument>
+			<argument index="1" name="count" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="armature_set_force_integration_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="receiver" type="Object">
+			</argument>
+			<argument index="2" name="method" type="String">
+			</argument>
+			<argument index="3" name="udata" type="Variant" default="null">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="armature_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.ArmatureParameter">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="armature_set_space">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="space" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="body_add_central_force">
 			<return type="void">
 			</return>
@@ -815,6 +903,610 @@
 				Sets a body state (see BODY_STATE* constants).
 			</description>
 		</method>
+		<method name="bone_add_collision_exception">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="body_b" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_add_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape" type="RID">
+			</argument>
+			<argument index="2" name="transform" type="Transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			</argument>
+			<argument index="3" name="disabled" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_attach_object_instance_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_clear_shapes">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_armature" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_collision_layer" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_collision_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_damping_constant" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_disable_parent_collision" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_error_reduction_parameter" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_joint_transform">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_link_mass" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_max_contacts_reported" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_max_motor_impulse" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_maximum_error" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_motor_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_object_instance_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.BodyParameter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_parent_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_position_target" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_rotation_target" qualifiers="const">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_shape" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_shape_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_shape_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_spring_constant" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_transform">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_get_velocity_target" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_joint_fixed_setup">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_joint_get_force">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_joint_get_torque">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_joint_hinge_setup">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_joint_planar_setup">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_joint_slider_setup">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_joint_spherical_setup">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_remove_collision_exception">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="body_b" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_remove_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_armature">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="armature" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_collision_layer">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="layer" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_collision_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_damping_constant">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="v" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_disable_parent_collision">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="disable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_error_reduction_parameter">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="v" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_force_integration_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="receiver" type="Object">
+			</argument>
+			<argument index="2" name="method" type="String">
+			</argument>
+			<argument index="3" name="udata" type="Variant" default="null">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_joint_limit_active">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="active" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_joint_lower_limit">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="lower_limits" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_joint_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_joint_upper_limit">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="upper_limits" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_link_mass">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_max_contacts_reported">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="amount" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_max_motor_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="v" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_maximum_error">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="v" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_motor_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="v" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.BodyParameter">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_parent_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_position_target">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="v" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_rotation_target">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="v" type="Basis">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="shape" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_shape_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="disabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_shape_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_spring_constant">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="v" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bone_set_velocity_target">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="v" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="cone_twist_joint_get_param" qualifiers="const">
 			<return type="float">
 			</return>
@@ -1262,6 +1954,10 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="ARMATURE_PARAM_MASS" value="0" enum="ArmatureParameter">
+		</constant>
+		<constant name="ARMATURE_PARAM_MAX" value="1" enum="ArmatureParameter">
+		</constant>
 		<constant name="JOINT_PIN" value="0" enum="JointType">
 			The [Joint] is a [PinJoint].
 		</constant>

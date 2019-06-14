@@ -70,7 +70,8 @@
 		return RID();                                                                             \
 	}
 
-#define AddJointToSpace(body, joint) \
+#define AddJointToSpace(body, joint)     \
+	joint->set_space(body->get_space()); \
 	body->get_space()->add_constraint(joint, joint->is_disabled_collisions_between_bodies());
 // <--------------- Joint creation asserts
 
@@ -780,7 +781,7 @@ void BulletPhysicsServer::body_add_collision_exception(RID p_body, RID p_body_b)
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	RigidBodyBullet *other_body = rigid_body_owner.get(p_body_b);
+	CollisionObjectBullet *other_body = get_collisin_object(p_body_b);
 	ERR_FAIL_COND(!other_body);
 
 	body->add_collision_exception(other_body);
@@ -790,7 +791,7 @@ void BulletPhysicsServer::body_remove_collision_exception(RID p_body, RID p_body
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	RigidBodyBullet *other_body = rigid_body_owner.get(p_body_b);
+	CollisionObjectBullet *other_body = get_collisin_object(p_body_b);
 	ERR_FAIL_COND(!other_body);
 
 	body->remove_collision_exception(other_body);
@@ -879,6 +880,572 @@ int BulletPhysicsServer::body_test_ray_separation(RID p_body, const Transform &p
 	ERR_FAIL_COND_V(!body->get_space(), 0);
 
 	return body->get_space()->test_ray_separation(body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
+}
+
+RID BulletPhysicsServer::armature_create() {
+	ArmatureBullet *body = bulletnew(ArmatureBullet);
+	CreateThenReturnRID(armature_owner, body);
+}
+
+void BulletPhysicsServer::armature_set_bone_count(RID p_armature, int p_count) {
+	ArmatureBullet *body = armature_owner.get(p_armature);
+	ERR_FAIL_COND(!body);
+
+	body->set_bone_count(p_count);
+}
+
+int BulletPhysicsServer::armature_get_bone_count(RID p_armature) const {
+	ArmatureBullet *body = armature_owner.get(p_armature);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_bone_count();
+}
+
+void BulletPhysicsServer::armature_set_force_integration_callback(
+		RID p_body,
+		Object *p_receiver,
+		const StringName &p_method,
+		const Variant &p_udata) {
+
+	ArmatureBullet *body = armature_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_force_integration_callback(
+			p_receiver ? p_receiver->get_instance_id() : ObjectID(0),
+			p_method,
+			p_udata);
+}
+
+void BulletPhysicsServer::armature_set_space(RID p_body, RID p_space) {
+	ArmatureBullet *body = armature_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	SpaceBullet *space = NULL;
+
+	if (p_space.is_valid()) {
+		space = space_owner.get(p_space);
+		ERR_FAIL_COND(!space);
+	}
+
+	body->set_space(space);
+}
+
+RID BulletPhysicsServer::armature_get_space(RID p_body) const {
+	ArmatureBullet *body = armature_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, RID());
+
+	SpaceBullet *space = body->get_space();
+	if (!space)
+		return RID();
+
+	return space->get_self();
+}
+
+void BulletPhysicsServer::armature_set_active(RID p_body, bool p_active) {
+	ArmatureBullet *body = armature_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_active(p_active);
+}
+
+void BulletPhysicsServer::armature_set_param(RID p_body, ArmatureParameter p_param, float p_value) {
+	ArmatureBullet *body = armature_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_param(p_param, p_value);
+}
+
+float BulletPhysicsServer::armature_get_param(RID p_body, ArmatureParameter p_param) const {
+	ArmatureBullet *body = armature_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_param(p_param);
+}
+
+RID BulletPhysicsServer::bone_create() {
+	BoneBullet *body = bulletnew(BoneBullet);
+	body->set_collision_layer(1);
+	body->set_collision_mask(1);
+	CreateThenReturnRID(bone_owner, body);
+}
+
+void BulletPhysicsServer::bone_set_force_integration_callback(
+		RID p_body,
+		Object *p_receiver,
+		const StringName &p_method,
+		const Variant &p_udata) {
+
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_force_integration_callback(
+			p_receiver ? p_receiver->get_instance_id() : ObjectID(0),
+			p_method,
+			p_udata);
+}
+
+void BulletPhysicsServer::bone_set_armature(RID p_body, RID p_armature) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	ArmatureBullet *parent = NULL;
+
+	if (p_armature.is_valid()) {
+		parent = armature_owner.get(p_armature);
+		ERR_FAIL_COND(!parent);
+	}
+
+	body->set_armature(parent);
+}
+
+RID BulletPhysicsServer::bone_get_armature(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, RID());
+
+	ArmatureBullet *armature = body->get_armature();
+	if (!armature)
+		return RID();
+	return armature->get_self();
+}
+
+void BulletPhysicsServer::bone_set_max_contacts_reported(RID p_body, int p_contacts) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_max_collisions_detection(p_contacts);
+}
+
+int BulletPhysicsServer::bone_get_max_contacts_reported(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_max_collisions_detection();
+}
+
+void BulletPhysicsServer::bone_set_id(RID p_body, int p_link_id) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_bone_id(p_link_id);
+}
+
+int BulletPhysicsServer::bone_get_id(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, -1);
+
+	return body->get_bone_id();
+}
+
+void BulletPhysicsServer::bone_set_parent_id(RID p_body, int p_id) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_parent_bone_id(p_id);
+}
+
+int BulletPhysicsServer::bone_get_parent_id(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, -1);
+
+	return body->get_parent_bone_id();
+}
+
+void BulletPhysicsServer::bone_set_transform(RID p_body, const Transform &p_transform) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_transform(p_transform);
+}
+
+Transform BulletPhysicsServer::bone_get_transform(RID p_body) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, Transform());
+
+	return body->get_transform();
+}
+
+void BulletPhysicsServer::bone_set_joint_transform(RID p_body, const Transform &p_transform) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_joint_offset(p_transform);
+}
+
+Transform BulletPhysicsServer::bone_get_joint_transform(RID p_body) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, Transform());
+
+	return body->get_joint_offset();
+}
+
+void BulletPhysicsServer::bone_add_shape(RID p_body, RID p_shape, const Transform &p_transform, bool p_disabled) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	ShapeBullet *shape = shape_owner.get(p_shape);
+	ERR_FAIL_COND(!shape);
+
+	body->add_shape(shape, p_transform, p_disabled);
+}
+
+void BulletPhysicsServer::bone_set_shape(RID p_body, int p_shape_idx, RID p_shape) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	ShapeBullet *shape = shape_owner.get(p_shape);
+	ERR_FAIL_COND(!shape);
+
+	body->set_shape(p_shape_idx, shape);
+}
+
+void BulletPhysicsServer::bone_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_shape_transform(p_shape_idx, p_transform);
+}
+
+int BulletPhysicsServer::bone_get_shape_count(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+	return body->get_shape_count();
+}
+
+RID BulletPhysicsServer::bone_get_shape(RID p_body, int p_shape_idx) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, RID());
+
+	ShapeBullet *shape = body->get_shape(p_shape_idx);
+	ERR_FAIL_COND_V(!shape, RID());
+
+	return shape->get_self();
+}
+
+Transform BulletPhysicsServer::bone_get_shape_transform(RID p_body, int p_shape_idx) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, Transform());
+	return body->get_shape_transform(p_shape_idx);
+}
+
+void BulletPhysicsServer::bone_remove_shape(RID p_body, int p_shape_idx) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->remove_shape_full(p_shape_idx);
+}
+
+void BulletPhysicsServer::bone_clear_shapes(RID p_body) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->remove_all_shapes();
+}
+
+void BulletPhysicsServer::bone_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_shape_disabled(p_shape_idx, p_disabled);
+}
+
+void BulletPhysicsServer::bone_attach_object_instance_id(RID p_body, uint32_t p_ID) {
+	CollisionObjectBullet *body = get_collisin_object(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_instance_id(p_ID);
+}
+
+uint32_t BulletPhysicsServer::bone_get_object_instance_id(RID p_body) const {
+	CollisionObjectBullet *body = get_collisin_object(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_instance_id();
+}
+
+void BulletPhysicsServer::bone_set_disable_parent_collision(RID p_body, bool p_disable) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_disable_parent_collision(p_disable);
+}
+
+bool BulletPhysicsServer::bone_get_disable_parent_collision(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, false);
+
+	return body->get_disable_parent_collision();
+}
+
+void BulletPhysicsServer::bone_set_joint_limit_active(RID p_body, bool p_active) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_limit_active(p_active);
+}
+
+void BulletPhysicsServer::bone_set_joint_lower_limit(RID p_body, real_t p_lower_limits) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_lower_limit(p_lower_limits);
+}
+
+void BulletPhysicsServer::bone_set_joint_upper_limit(RID p_body, real_t p_upper_limits) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_upper_limit(p_upper_limits);
+}
+
+void BulletPhysicsServer::bone_set_collision_layer(RID p_body, uint32_t p_layer) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_collision_layer(p_layer);
+}
+
+uint32_t BulletPhysicsServer::bone_get_collision_layer(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_collision_layer();
+}
+
+void BulletPhysicsServer::bone_set_collision_mask(RID p_body, uint32_t p_mask) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_collision_mask(p_mask);
+}
+
+uint32_t BulletPhysicsServer::bone_get_collision_mask(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_collision_mask();
+}
+
+void BulletPhysicsServer::bone_set_link_mass(RID p_body, float p_value) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_link_mass(p_value);
+}
+
+float BulletPhysicsServer::bone_get_link_mass(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_link_mass();
+}
+
+void BulletPhysicsServer::bone_set_param(RID p_body, BodyParameter p_param, float p_value) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_param(p_param, p_value);
+}
+
+float BulletPhysicsServer::bone_get_param(RID p_body, BodyParameter p_param) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_param(p_param);
+}
+
+void BulletPhysicsServer::bone_joint_fixed_setup(RID p_body) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->setup_joint_fixed();
+}
+
+void BulletPhysicsServer::bone_joint_slider_setup(RID p_body) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->setup_joint_prismatic();
+}
+
+void BulletPhysicsServer::bone_joint_hinge_setup(RID p_body) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->setup_joint_revolute();
+}
+
+void BulletPhysicsServer::bone_joint_spherical_setup(RID p_body) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->setup_joint_spherical();
+}
+
+void BulletPhysicsServer::bone_joint_planar_setup(RID p_body) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->setup_joint_planar();
+}
+
+void BulletPhysicsServer::bone_set_motor_enabled(RID p_body, bool p_v) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_motor_enabled(p_v);
+}
+bool BulletPhysicsServer::bone_get_motor_enabled(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, false);
+
+	return body->get_motor_enabled();
+}
+
+void BulletPhysicsServer::bone_set_velocity_target(RID p_body, const Vector3 &p_v) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_velocity_target(p_v);
+}
+Vector3 BulletPhysicsServer::bone_get_velocity_target(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, Vector3());
+
+	return body->get_velocity_target();
+}
+
+void BulletPhysicsServer::bone_set_position_target(RID p_body, real_t p_v) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_position_target(p_v);
+}
+real_t BulletPhysicsServer::bone_get_position_target(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_position_target();
+}
+
+void BulletPhysicsServer::bone_set_rotation_target(RID p_body, const Basis &p_v) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_rotation_target(p_v);
+}
+Basis BulletPhysicsServer::bone_get_rotation_target(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, Basis());
+
+	return body->get_rotation_target();
+}
+
+void BulletPhysicsServer::bone_set_max_motor_impulse(RID p_body, real_t p_v) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_max_motor_impulse(p_v);
+}
+real_t BulletPhysicsServer::bone_get_max_motor_impulse(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_max_motor_impulse();
+}
+
+void BulletPhysicsServer::bone_set_error_reduction_parameter(RID p_body, real_t p_v) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_error_reduction_parameter(p_v);
+}
+real_t BulletPhysicsServer::bone_get_error_reduction_parameter(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_error_reduction_parameter();
+}
+
+void BulletPhysicsServer::bone_set_spring_constant(RID p_body, real_t p_v) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_spring_constant(p_v);
+}
+real_t BulletPhysicsServer::bone_get_spring_constant(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_spring_constant();
+}
+
+void BulletPhysicsServer::bone_set_damping_constant(RID p_body, real_t p_v) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_damping_constant(p_v);
+}
+real_t BulletPhysicsServer::bone_get_damping_constant(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_damping_constant();
+}
+
+void BulletPhysicsServer::bone_set_maximum_error(RID p_body, real_t p_v) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_maximum_error(p_v);
+}
+real_t BulletPhysicsServer::bone_get_maximum_error(RID p_body) const {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_maximum_error();
+}
+
+void BulletPhysicsServer::bone_add_collision_exception(RID p_body, RID p_body_b) {
+
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	CollisionObjectBullet *other_body = get_collisin_object(p_body_b);
+	ERR_FAIL_COND(!other_body);
+
+	body->add_collision_exception(other_body);
+}
+
+void BulletPhysicsServer::bone_remove_collision_exception(RID p_body, RID p_body_b) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	CollisionObjectBullet *other_body = get_collisin_object(p_body_b);
+	ERR_FAIL_COND(!other_body);
+
+	body->remove_collision_exception(other_body);
+}
+
+void BulletPhysicsServer::bone_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	for (int i = 0; i < body->get_exceptions().size(); i++) {
+		p_exceptions->push_back(body->get_exceptions()[i]);
+	}
+}
+
+Vector3 BulletPhysicsServer::bone_joint_get_force(RID p_body) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, Vector3());
+
+	return body->get_joint_force();
+}
+
+Vector3 BulletPhysicsServer::bone_joint_get_torque(RID p_body) {
+	BoneBullet *body = bone_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, Vector3());
+
+	return body->get_joint_torque();
 }
 
 RID BulletPhysicsServer::soft_body_create(bool p_init_sleeping) {
@@ -1209,22 +1776,40 @@ bool BulletPhysicsServer::joint_is_disabled_collisions_between_bodies(RID p_join
 }
 
 RID BulletPhysicsServer::joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) {
-	RigidBodyBullet *body_A = rigid_body_owner.get(p_body_A);
-	ERR_FAIL_COND_V(!body_A, RID());
+	JointBullet *joint(NULL);
 
-	JointAssertSpace(body_A, "A", RID());
+	RigidBodyBullet *body_B = rigid_body_owner.get(p_body_B);
 
-	RigidBodyBullet *body_B = NULL;
-	if (p_body_B.is_valid()) {
-		body_B = rigid_body_owner.get(p_body_B);
+	if (rigid_body_owner.owns(p_body_A)) {
+
+		RigidBodyBullet *body_A = rigid_body_owner.get(p_body_A);
+		JointAssertSpace(body_A, "A", RID());
+
+		if (p_body_B.is_valid()) {
+
+			ERR_FAIL_COND_V(!body_B, RID());
+			JointAssertSpace(body_B, "B", RID());
+			ERR_FAIL_COND_V(body_A == body_B, RID());
+			JointAssertSameSpace(body_A, body_B, RID());
+		}
+
+		joint = bulletnew(PinJointBullet(body_A, p_local_A, body_B, p_local_B));
+		AddJointToSpace(body_A, joint);
+
+	} else {
+
+		ERR_FAIL_COND_V(!body_B, RID());
 		JointAssertSpace(body_B, "B", RID());
-		JointAssertSameSpace(body_A, body_B, RID());
+
+		BoneBullet *bone_body_A = bone_owner.get(p_body_A);
+		ERR_FAIL_COND_V(!bone_body_A, RID());
+		JointAssertSpace(bone_body_A, "A", RID());
+
+		JointAssertSameSpace(bone_body_A, body_B, RID());
+
+		joint = bulletnew(PinJointBullet(bone_body_A, p_local_A, body_B, p_local_B));
+		AddJointToSpace(bone_body_A, joint);
 	}
-
-	ERR_FAIL_COND_V(body_A == body_B, RID());
-
-	JointBullet *joint = bulletnew(PinJointBullet(body_A, p_local_A, body_B, p_local_B));
-	AddJointToSpace(body_A, joint);
 
 	CreateThenReturnRID(joint_owner, joint);
 }
@@ -1510,6 +2095,24 @@ void BulletPhysicsServer::free(RID p_rid) {
 		rigid_body_owner.free(p_rid);
 		bulletdelete(body);
 
+	} else if (armature_owner.owns(p_rid)) {
+
+		ArmatureBullet *body = armature_owner.get(p_rid);
+
+		body->set_space(NULL);
+
+		armature_owner.free(p_rid);
+		bulletdelete(body);
+
+	} else if (bone_owner.owns(p_rid)) {
+
+		BoneBullet *body = bone_owner.get(p_rid);
+
+		body->set_armature(NULL);
+
+		bone_owner.free(p_rid);
+		bulletdelete(body);
+
 	} else if (soft_body_owner.owns(p_rid)) {
 
 		SoftBodyBullet *body = soft_body_owner.get(p_rid);
@@ -1533,7 +2136,6 @@ void BulletPhysicsServer::free(RID p_rid) {
 	} else if (joint_owner.owns(p_rid)) {
 
 		JointBullet *joint = joint_owner.get(p_rid);
-		joint->destroy_internal_constraint();
 		joint_owner.free(p_rid);
 		bulletdelete(joint);
 
@@ -1555,6 +2157,7 @@ void BulletPhysicsServer::free(RID p_rid) {
 
 void BulletPhysicsServer::init() {
 	BulletPhysicsDirectBodyState::initSingleton();
+	BoneBulletPhysicsDirectBodyState::initSingleton();
 }
 
 void BulletPhysicsServer::step(float p_deltaTime) {
@@ -1562,6 +2165,7 @@ void BulletPhysicsServer::step(float p_deltaTime) {
 		return;
 
 	BulletPhysicsDirectBodyState::singleton_setDeltaTime(p_deltaTime);
+	BoneBulletPhysicsDirectBodyState::singleton_setDeltaTime(p_deltaTime);
 
 	for (int i = 0; i < active_spaces_count; ++i) {
 
@@ -1577,6 +2181,7 @@ void BulletPhysicsServer::flush_queries() {
 
 void BulletPhysicsServer::finish() {
 	BulletPhysicsDirectBodyState::destroySingleton();
+	BoneBulletPhysicsDirectBodyState::destroySingleton();
 }
 
 int BulletPhysicsServer::get_process_info(ProcessInfo p_info) {
@@ -1586,6 +2191,9 @@ int BulletPhysicsServer::get_process_info(ProcessInfo p_info) {
 CollisionObjectBullet *BulletPhysicsServer::get_collisin_object(RID p_object) const {
 	if (rigid_body_owner.owns(p_object)) {
 		return rigid_body_owner.getornull(p_object);
+	}
+	if (bone_owner.owns(p_object)) {
+		return bone_owner.getornull(p_object);
 	}
 	if (area_owner.owns(p_object)) {
 		return area_owner.getornull(p_object);
@@ -1599,6 +2207,9 @@ CollisionObjectBullet *BulletPhysicsServer::get_collisin_object(RID p_object) co
 RigidCollisionObjectBullet *BulletPhysicsServer::get_rigid_collisin_object(RID p_object) const {
 	if (rigid_body_owner.owns(p_object)) {
 		return rigid_body_owner.getornull(p_object);
+	}
+	if (bone_owner.owns(p_object)) {
+		return bone_owner.getornull(p_object);
 	}
 	if (area_owner.owns(p_object)) {
 		return area_owner.getornull(p_object);

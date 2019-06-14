@@ -93,7 +93,7 @@ void SkeletonEditor::create_physical_skeleton() {
 				/// Create joint between parent of parent
 				if (-1 != parent_parent) {
 
-					bones_infos[parent].physical_bone->set_joint_type(PhysicalBone::JOINT_TYPE_PIN);
+					bones_infos[parent].physical_bone->set_joint_type(PhysicalBone::JOINT_TYPE_FIXED);
 				}
 			}
 		}

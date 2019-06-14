@@ -32,6 +32,7 @@
 
 #include "core/message_queue.h"
 
+#include "core/engine.h"
 #include "core/project_settings.h"
 #include "scene/3d/physics_body.h"
 #include "scene/resources/surface_tool.h"
@@ -200,13 +201,32 @@ void Skeleton::_notification(int p_what) {
 
 			VS::get_singleton()->skeleton_set_world_transform(skeleton, use_bones_in_world_transform, get_global_transform());
 
+			if (Engine::get_singleton()->is_editor_hint()) {
+
+				add_change_receptor(this);
+			}
+
+			PhysicsServer::get_singleton()->armature_set_space(physics_rid, get_world()->get_space());
+
+			skip_physics_tree_rebuild = true;
+
+		} break;
+		case NOTIFICATION_READY: {
+#ifndef _3D_DISABLED
+			skip_physics_tree_rebuild = false;
+			_rebuild_physical_tree();
+			update_physics_activation();
+#endif
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
+
+			PhysicsServer::get_singleton()->armature_set_space(physics_rid, RID());
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
 			VS::get_singleton()->skeleton_set_world_transform(skeleton, use_bones_in_world_transform, get_global_transform());
+
 		} break;
 		case NOTIFICATION_UPDATE_SKELETON: {
 
@@ -346,6 +366,15 @@ Transform Skeleton::get_bone_global_pose(int p_bone) const {
 RID Skeleton::get_skeleton() const {
 
 	return skeleton;
+}
+
+RID Skeleton::get_physics_rid() const {
+
+	return physics_rid;
+}
+
+bool Skeleton::get_skip_physics_tree_rebuild() const {
+	return skip_physics_tree_rebuild;
 }
 
 // skeleton creation api
@@ -598,20 +627,79 @@ void Skeleton::localize_rests() {
 
 #ifndef _3D_DISABLED
 
+void Skeleton::set_active_physics(bool p_simulate_physics) {
+	active_physics = p_simulate_physics;
+
+	if (skip_physics_tree_rebuild)
+		return;
+
+	update_physics_activation();
+}
+
+bool Skeleton::get_active_physics() const {
+	return active_physics;
+}
+
+void Skeleton::set_mass(real_t p_mass) {
+	mass = p_mass;
+	PhysicsServer::get_singleton()->armature_set_param(
+			physics_rid,
+			PhysicsServer::ARMATURE_PARAM_MASS,
+			mass);
+}
+
+real_t Skeleton::get_mass() {
+	return mass;
+}
+
+void _physical_bones_add_remove_collision_exception(bool p_add, Node *p_node, RID p_exception) {
+
+	for (int i = p_node->get_child_count() - 1; 0 <= i; --i) {
+		_physical_bones_add_remove_collision_exception(p_add, p_node->get_child(i), p_exception);
+	}
+
+	CollisionObject *co = Object::cast_to<CollisionObject>(p_node);
+	if (co) {
+		if (p_add) {
+			PhysicsServer::get_singleton()->bone_add_collision_exception(co->get_rid(), p_exception);
+		} else {
+			PhysicsServer::get_singleton()->bone_remove_collision_exception(co->get_rid(), p_exception);
+		}
+	}
+}
+
+void Skeleton::physical_bones_add_collision_exception(RID p_exception) {
+	_physical_bones_add_remove_collision_exception(true, this, p_exception);
+}
+
+void Skeleton::physical_bones_remove_collision_exception(RID p_exception) {
+	_physical_bones_add_remove_collision_exception(false, this, p_exception);
+}
+
 void Skeleton::bind_physical_bone_to_bone(int p_bone, PhysicalBone *p_physical_bone) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
-	ERR_FAIL_COND(bones[p_bone].physical_bone);
-	ERR_FAIL_COND(!p_physical_bone);
+	ERR_FAIL_COND(bones[p_bone].physical_bone != NULL);
+	ERR_FAIL_COND(p_physical_bone == NULL);
+
 	bones.write[p_bone].physical_bone = p_physical_bone;
 
-	_rebuild_physical_bones_cache();
+	PhysicsServer::get_singleton()->bone_set_armature(
+			p_physical_bone->get_rid(),
+			get_physics_rid());
+
+	_rebuild_physical_tree();
 }
 
 void Skeleton::unbind_physical_bone_from_bone(int p_bone) {
-	ERR_FAIL_INDEX(p_bone, bones.size());
-	bones.write[p_bone].physical_bone = NULL;
 
-	_rebuild_physical_bones_cache();
+	ERR_FAIL_INDEX(p_bone, bones.size());
+
+	PhysicsServer::get_singleton()->bone_set_armature(
+			bones[p_bone].physical_bone->get_rid(),
+			RID());
+
+	bones.write[p_bone].physical_bone = NULL;
+	_rebuild_physical_tree();
 }
 
 PhysicalBone *Skeleton::get_physical_bone(int p_bone) {
@@ -635,6 +723,7 @@ PhysicalBone *Skeleton::_get_physical_bone_parent(int p_bone) {
 
 	const int parent_bone = bones[p_bone].parent;
 	if (0 > parent_bone) {
+		// This happen for the root bone
 		return NULL;
 	}
 
@@ -646,103 +735,74 @@ PhysicalBone *Skeleton::_get_physical_bone_parent(int p_bone) {
 	}
 }
 
-void Skeleton::_rebuild_physical_bones_cache() {
-	const int b_size = bones.size();
-	for (int i = 0; i < b_size; ++i) {
-		PhysicalBone *parent_pb = _get_physical_bone_parent(i);
-		if (parent_pb != bones[i].physical_bone) {
+void Skeleton::_rebuild_physical_tree() {
+
+	if (skip_physics_tree_rebuild)
+		return;
+
+	const int bone_count = bones.size();
+
+	// Count all physical bones, and reset its parent
+	int physical_bone_count(0);
+	for (int i = 0; i < bone_count; ++i) {
+		if (bones[i].physical_bone) {
+			++physical_bone_count;
+			bones.write[i].cache_parent_physical_bone = NULL;
+		}
+	}
+
+	// Set physical bones id
+	int physical_bone_id(0);
+	for (int i = 0; i < bone_count; ++i) {
+
+		if (bones[i].physical_bone) {
+
+			bones[i].physical_bone->physical_bone_id = physical_bone_id;
+			bones[i].physical_bone->reset_to_rest_position();
+			physical_bone_id++;
+		}
+	}
+
+	PhysicsServer::get_singleton()->armature_set_bone_count(
+			physics_rid,
+			physical_bone_count);
+
+	for (int i = 0; i < bone_count; ++i) {
+
+		if (bones[i].physical_bone) {
+
+			PhysicalBone *parent_pb = _get_physical_bone_parent(i);
 			bones.write[i].cache_parent_physical_bone = parent_pb;
-			if (bones[i].physical_bone)
-				bones[i].physical_bone->_on_bone_parent_changed();
+
+			if (parent_pb)
+				bones[i].physical_bone->parent_physical_bone_id =
+						parent_pb->physical_bone_id;
+			else
+				bones[i].physical_bone->parent_physical_bone_id = -1;
+
+			bones[i].physical_bone->_setup_physical_bone();
+		}
+	}
+
+	for (int i = 0; i < bone_count; ++i) {
+		if (bones[i].physical_bone) {
+			bones[i].physical_bone->_reload_joint();
 		}
 	}
 }
 
-void _pb_stop_simulation(Node *p_node) {
+void Skeleton::update_physics_activation() {
 
-	for (int i = p_node->get_child_count() - 1; 0 <= i; --i) {
-		_pb_stop_simulation(p_node->get_child(i));
+	PhysicsServer::get_singleton()->armature_set_active(physics_rid, active_physics);
+
+	for (int i = 0; i < get_child_count(); ++i) {
+
+		PhysicalBone *pb = Object::cast_to<PhysicalBone>(get_child(i));
+		if (!pb)
+			continue;
+
+		pb->reset_physics_simulation_state();
 	}
-
-	PhysicalBone *pb = Object::cast_to<PhysicalBone>(p_node);
-	if (pb) {
-		pb->set_simulate_physics(false);
-		pb->set_static_body(false);
-	}
-}
-
-void Skeleton::physical_bones_stop_simulation() {
-	_pb_stop_simulation(this);
-}
-
-void _pb_start_simulation(const Skeleton *p_skeleton, Node *p_node, const Vector<int> &p_sim_bones) {
-
-	for (int i = p_node->get_child_count() - 1; 0 <= i; --i) {
-		_pb_start_simulation(p_skeleton, p_node->get_child(i), p_sim_bones);
-	}
-
-	PhysicalBone *pb = Object::cast_to<PhysicalBone>(p_node);
-	if (pb) {
-		bool sim = false;
-		for (int i = p_sim_bones.size() - 1; 0 <= i; --i) {
-			if (p_sim_bones[i] == pb->get_bone_id() || p_skeleton->is_bone_parent_of(pb->get_bone_id(), p_sim_bones[i])) {
-				sim = true;
-				break;
-			}
-		}
-
-		pb->set_simulate_physics(true);
-		if (sim) {
-			pb->set_static_body(false);
-		} else {
-			pb->set_static_body(true);
-		}
-	}
-}
-
-void Skeleton::physical_bones_start_simulation_on(const Array &p_bones) {
-
-	Vector<int> sim_bones;
-	if (p_bones.size() <= 0) {
-		sim_bones.push_back(0); // if no bones is specified, activate ragdoll on full body
-	} else {
-		sim_bones.resize(p_bones.size());
-		int c = 0;
-		for (int i = sim_bones.size() - 1; 0 <= i; --i) {
-			if (Variant::STRING == p_bones.get(i).get_type()) {
-				int bone_id = find_bone(p_bones.get(i));
-				if (bone_id != -1)
-					sim_bones.write[c++] = bone_id;
-			}
-		}
-		sim_bones.resize(c);
-	}
-
-	_pb_start_simulation(this, this, sim_bones);
-}
-
-void _physical_bones_add_remove_collision_exception(bool p_add, Node *p_node, RID p_exception) {
-
-	for (int i = p_node->get_child_count() - 1; 0 <= i; --i) {
-		_physical_bones_add_remove_collision_exception(p_add, p_node->get_child(i), p_exception);
-	}
-
-	CollisionObject *co = Object::cast_to<CollisionObject>(p_node);
-	if (co) {
-		if (p_add) {
-			PhysicsServer::get_singleton()->body_add_collision_exception(co->get_rid(), p_exception);
-		} else {
-			PhysicsServer::get_singleton()->body_remove_collision_exception(co->get_rid(), p_exception);
-		}
-	}
-}
-
-void Skeleton::physical_bones_add_collision_exception(RID p_exception) {
-	_physical_bones_add_remove_collision_exception(true, this, p_exception);
-}
-
-void Skeleton::physical_bones_remove_collision_exception(RID p_exception) {
-	_physical_bones_add_remove_collision_exception(false, this, p_exception);
 }
 
 #endif // _3D_DISABLED
@@ -798,16 +858,23 @@ void Skeleton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_bones_in_world_transform", "enable"), &Skeleton::set_use_bones_in_world_transform);
 	ClassDB::bind_method(D_METHOD("is_using_bones_in_world_transform"), &Skeleton::is_using_bones_in_world_transform);
 
+	ClassDB::bind_method(D_METHOD("set_bone_ignore_animation", "bone", "ignore"), &Skeleton::set_bone_ignore_animation);
+
 #ifndef _3D_DISABLED
 
-	ClassDB::bind_method(D_METHOD("physical_bones_stop_simulation"), &Skeleton::physical_bones_stop_simulation);
-	ClassDB::bind_method(D_METHOD("physical_bones_start_simulation", "bones"), &Skeleton::physical_bones_start_simulation_on, DEFVAL(Array()));
+	ClassDB::bind_method(D_METHOD("set_active_physics", "active"), &Skeleton::set_active_physics);
+	ClassDB::bind_method(D_METHOD("get_active_physics"), &Skeleton::get_active_physics);
+
+	ClassDB::bind_method(D_METHOD("set_mass", "mass"), &Skeleton::set_mass);
+	ClassDB::bind_method(D_METHOD("get_mass"), &Skeleton::get_mass);
+
 	ClassDB::bind_method(D_METHOD("physical_bones_add_collision_exception", "exception"), &Skeleton::physical_bones_add_collision_exception);
 	ClassDB::bind_method(D_METHOD("physical_bones_remove_collision_exception", "exception"), &Skeleton::physical_bones_remove_collision_exception);
 
-#endif // _3D_DISABLED
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active_physics"), "set_active_physics", "get_active_physics");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "mass"), "set_mass", "get_mass");
 
-	ClassDB::bind_method(D_METHOD("set_bone_ignore_animation", "bone", "ignore"), &Skeleton::set_bone_ignore_animation);
+#endif // _3D_DISABLED
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bones_in_world_transform"), "set_use_bones_in_world_transform", "is_using_bones_in_world_transform");
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
@@ -821,8 +888,15 @@ Skeleton::Skeleton() {
 	skeleton = VisualServer::get_singleton()->skeleton_create();
 	set_notify_transform(true);
 	use_bones_in_world_transform = false;
+
+	physics_rid = PhysicsServer::get_singleton()->armature_create();
+	active_physics = false;
+	mass = 1.f;
+
+	skip_physics_tree_rebuild = false;
 }
 
 Skeleton::~Skeleton() {
 	VisualServer::get_singleton()->free(skeleton);
+	PhysicsServer::get_singleton()->free(physics_rid);
 }
