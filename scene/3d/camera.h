@@ -234,6 +234,8 @@ public:
 	void remove_exception(const Object *p_object);
 	void clear_exceptions();
 
+	float get_clip_offset() const;
+
 	ClippedCamera();
 	~ClippedCamera();
 };
