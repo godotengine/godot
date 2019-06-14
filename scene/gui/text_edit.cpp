@@ -4078,7 +4078,7 @@ void TextEdit::cursor_set_line(int p_row, bool p_adjust_viewport, bool p_can_be_
 	cursor.line = p_row;
 
 	int n_col = get_char_pos_for_line(cursor.last_fit_x, p_row, p_wrap_index);
-	if (is_wrap_enabled() && p_wrap_index < times_line_wraps(p_row)) {
+	if (n_col != 0 && is_wrap_enabled() && p_wrap_index < times_line_wraps(p_row)) {
 		Vector<String> rows = get_wrap_rows_text(p_row);
 		int row_end_col = 0;
 		for (int i = 0; i < p_wrap_index + 1; i++) {
