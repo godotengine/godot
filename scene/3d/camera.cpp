@@ -869,6 +869,11 @@ void ClippedCamera::clear_exceptions() {
 	exclude.clear();
 }
 
+float ClippedCamera::get_clip_offset() const {
+
+	return clip_offset;
+}
+
 void ClippedCamera::set_clip_to_areas(bool p_clip) {
 
 	clip_to_areas = p_clip;
@@ -911,6 +916,8 @@ void ClippedCamera::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_clip_to_areas", "enable"), &ClippedCamera::set_clip_to_areas);
 	ClassDB::bind_method(D_METHOD("is_clip_to_areas_enabled"), &ClippedCamera::is_clip_to_areas_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_clip_offset"), &ClippedCamera::get_clip_offset);
 
 	ClassDB::bind_method(D_METHOD("set_clip_to_bodies", "enable"), &ClippedCamera::set_clip_to_bodies);
 	ClassDB::bind_method(D_METHOD("is_clip_to_bodies_enabled"), &ClippedCamera::is_clip_to_bodies_enabled);
