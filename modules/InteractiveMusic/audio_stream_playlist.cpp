@@ -172,6 +172,7 @@ void AudioStreamPlaybackPlaylist::clear_buffer(int samples) {
 }
 
 void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+if(active ==true)	{
 	int dst_offset = 0;
 	int fading_samples = 0;
 	while (p_frames > 0) {
@@ -200,8 +201,10 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 				playback[current-1]->stop();
 			}
 		}
-
+		
+		
 		add_stream_to_buffer(playback[current], to_mix, p_rate_scale, 1.0, 1.0);
+		
 
 		for (int i = 0; i < to_mix; i++) {
 			p_buffer[i + dst_offset] = pcm_buffer[i];
@@ -210,6 +213,12 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 		p_frames -= to_mix;
 		beat_amount_remaining -= to_mix;
 	}
+} else {
+	for (int i = 0; i < p_frames; i++) {
+		p_buffer[i] = AudioFrame(0.0, 0.0);
+	}
+	return;
+}
 }
 
 int AudioStreamPlaybackPlaylist::get_loop_count() const {
