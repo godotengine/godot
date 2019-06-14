@@ -294,13 +294,13 @@ private:
 		String sp = _test_path();
 		if (sp != "") {
 
-			// set the project name to the select folder name
-			if (project_name->get_text() == "") {
+			// If the project name is empty or default, infer the project name from the selected folder name
+			if (project_name->get_text() == "" || project_name->get_text() == TTR("New Game Project")) {
 				sp = sp.replace("\\", "/");
 				int lidx = sp.find_last("/");
 
 				if (lidx != -1) {
-					sp = sp.substr(lidx + 1, sp.length());
+					sp = sp.substr(lidx + 1, sp.length()).capitalize();
 				}
 				if (sp == "" && mode == MODE_IMPORT)
 					sp = TTR("Imported Project");
