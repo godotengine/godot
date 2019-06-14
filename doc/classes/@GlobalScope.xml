@@ -1013,7 +1013,7 @@
 			Trigger on a VR controller
 		</constant>
 		<constant name="JOY_OCULUS_AX" value="7" enum="JoystickList">
-			A button on the right Oculus Touch controller, X button on the left controller (also when used in OpenVR)	
+			A button on the right Oculus Touch controller, X button on the left controller (also when used in OpenVR)
 		</constant>
 		<constant name="JOY_OCULUS_BY" value="1" enum="JoystickList">
 			B button on the right Oculus Touch controller, Y button on the left controller (also when used in OpenVR)
