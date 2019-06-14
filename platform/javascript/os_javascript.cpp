@@ -70,6 +70,20 @@ static bool is_canvas_focused() {
 	/* clang-format on */
 }
 
+static Point2 correct_canvas_position(int x, int y) {
+	int canvas_width;
+	int canvas_height;
+	emscripten_get_canvas_element_size(NULL, &canvas_width, &canvas_height);
+
+	double element_width;
+	double element_height;
+	emscripten_get_element_css_size(NULL, &element_width, &element_height);
+
+	x = (int)(canvas_width / element_width * x);
+	y = (int)(canvas_height / element_height * y);
+	return Point2(x, y);
+}
+
 static bool cursor_inside_canvas = true;
 
 EM_BOOL OS_JavaScript::fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data) {
@@ -285,7 +299,7 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
 	ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_MOUSEDOWN);
-	ev->set_position(Point2(p_event->canvasX, p_event->canvasY));
+	ev->set_position(correct_canvas_position(p_event->canvasX, p_event->canvasY));
 	ev->set_global_position(ev->get_position());
 	dom2godot_mod(p_event, ev);
 	switch (p_event->button) {
@@ -349,7 +363,7 @@ EM_BOOL OS_JavaScript::mousemove_callback(int p_event_type, const EmscriptenMous
 	OS_JavaScript *os = get_singleton();
 
 	int input_mask = os->input->get_mouse_button_mask();
-	Point2 pos = Point2(p_event->canvasX, p_event->canvasY);
+	Point2 pos = correct_canvas_position(p_event->canvasX, p_event->canvasY);
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behaviour.
 	if (!cursor_inside_canvas && !input_mask)
@@ -666,7 +680,7 @@ EM_BOOL OS_JavaScript::touch_press_callback(int p_event_type, const EmscriptenTo
 		if (!touch.isChanged)
 			continue;
 		ev->set_index(touch.identifier);
-		ev->set_position(Point2(touch.canvasX, touch.canvasY));
+		ev->set_position(correct_canvas_position(touch.canvasX, touch.canvasY));
 		os->touches[i] = ev->get_position();
 		ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_TOUCHSTART);
 
@@ -691,7 +705,7 @@ EM_BOOL OS_JavaScript::touchmove_callback(int p_event_type, const EmscriptenTouc
 		if (!touch.isChanged)
 			continue;
 		ev->set_index(touch.identifier);
-		ev->set_position(Point2(touch.canvasX, touch.canvasY));
+		ev->set_position(correct_canvas_position(touch.canvasX, touch.canvasY));
 		Point2 &prev = os->touches[i];
 		ev->set_relative(ev->get_position() - prev);
 		prev = ev->get_position();
