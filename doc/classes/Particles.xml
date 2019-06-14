@@ -55,8 +55,10 @@
 			Time ratio between each emission. If [code]0[/code] particles are emitted continuously. If [code]1[/code] all particles are emitted simultaneously. Default value: [code]0[/code].
 		</member>
 		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps">
+			The particle system's frame rate is fixed to a value. For instance, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the simulation of the particle system itself.
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta">
+			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect. Default value: [code]true[/code].
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime">
 			Amount of time each particle will exist. Default value: [code]1[/code].
