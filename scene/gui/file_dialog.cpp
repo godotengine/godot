@@ -48,8 +48,9 @@ void FileDialog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		refresh->set_icon(get_icon("reload"));
 		dir_up->set_icon(get_icon("parent_folder"));
+		refresh->set_icon(get_icon("reload"));
+		show_hidden->set_icon(get_icon("toggle_hidden"));
 	}
 
 	if (p_what == NOTIFICATION_POPUP_HIDE) {
@@ -393,20 +394,19 @@ void FileDialog::update_file_list() {
 	List<String> files;
 	List<String> dirs;
 
-	bool isdir;
-	bool ishidden;
-	bool show_hidden = show_hidden_files;
+	bool is_dir;
+	bool is_hidden;
 	String item;
 
-	while ((item = dir_access->get_next(&isdir)) != "") {
+	while ((item = dir_access->get_next(&is_dir)) != "") {
 
 		if (item == "." || item == "..")
 			continue;
 
-		ishidden = dir_access->current_is_hidden();
+		is_hidden = dir_access->current_is_hidden();
 
-		if (show_hidden || !ishidden) {
-			if (!isdir)
+		if (show_hidden_files || !is_hidden) {
+			if (!is_dir)
 				files.push_back(item);
 			else
 				dirs.push_back(item);
@@ -872,6 +872,13 @@ FileDialog::FileDialog() {
 	refresh->set_tooltip(RTR("Refresh"));
 	refresh->connect("pressed", this, "_update_file_list");
 	hbc->add_child(refresh);
+
+	show_hidden = memnew(ToolButton);
+	show_hidden->set_toggle_mode(true);
+	show_hidden->set_pressed(is_showing_hidden_files());
+	show_hidden->set_tooltip(RTR("Toggle Hidden Files"));
+	show_hidden->connect("toggled", this, "set_show_hidden_files");
+	hbc->add_child(show_hidden);
 
 	drives = memnew(OptionButton);
 	hbc->add_child(drives);

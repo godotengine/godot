@@ -541,8 +541,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// File Dialog
 
-	theme->set_icon("reload", "FileDialog", make_icon(icon_reload_png));
 	theme->set_icon("parent_folder", "FileDialog", make_icon(icon_parent_folder_png));
+	theme->set_icon("reload", "FileDialog", make_icon(icon_reload_png));
+	theme->set_icon("toggle_hidden", "FileDialog", make_icon(icon_visibility_png));
 
 	// Popup
 
