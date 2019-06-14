@@ -197,6 +197,17 @@ void LWSServer::disconnect_peer(int p_peer_id, int p_code, String p_reason) {
 	get_peer(p_peer_id)->close(p_code, p_reason);
 }
 
+Error LWSServer::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) {
+	ERR_EXPLAIN("Buffers sizes can only be set before listening or connecting");
+	ERR_FAIL_COND_V(context != NULL, FAILED);
+
+	_in_buf_size = nearest_shift(p_in_buffer - 1) + 10;
+	_in_pkt_size = nearest_shift(p_in_packets - 1);
+	_out_buf_size = nearest_shift(p_out_buffer - 1) + 10;
+	_out_pkt_size = nearest_shift(p_out_packets - 1);
+	return OK;
+}
+
 LWSServer::LWSServer() {
 	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSS_IN_BUF) - 1) + 10;
 	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSS_IN_PKT) - 1);

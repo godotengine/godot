@@ -79,6 +79,10 @@ int EMWSServer::get_max_packet_size() const {
 	return 0;
 }
 
+Error EMWSServer::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) {
+	return OK;
+}
+
 EMWSServer::EMWSServer() {
 }
 

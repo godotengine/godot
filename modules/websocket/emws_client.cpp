@@ -205,6 +205,12 @@ int EMWSClient::get_max_packet_size() const {
 	return (1 << _in_buf_size) - PROTO_SIZE;
 }
 
+Error EMWSClient::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) {
+	_in_buf_size = nearest_shift(p_in_buffer - 1) + 10;
+	_in_pkt_size = nearest_shift(p_in_packets - 1);
+	return OK;
+}
+
 EMWSClient::EMWSClient() {
 	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSC_IN_BUF) - 1) + 10;
 	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_IN_PKT) - 1);
