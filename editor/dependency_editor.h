@@ -63,7 +63,6 @@ class DependencyEditor : public AcceptDialog {
 
 protected:
 	static void _bind_methods();
-	void _notification(int p_what);
 
 public:
 	void edit(const String &p_path);
