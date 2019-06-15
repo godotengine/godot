@@ -2087,22 +2087,23 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 				animation->add_track(Animation::TYPE_VALUE);
 				animation->track_set_path(track_idx, node_path);
 
-				if (track.weight_tracks[i].interpolation <= GLTFAnimation::INTERP_STEP) {
-					animation->track_set_interpolation_type(track_idx, track.weight_tracks[i].interpolation == GLTFAnimation::INTERP_STEP ? Animation::INTERPOLATION_NEAREST : Animation::INTERPOLATION_NEAREST);
+				// Only LINEAR and STEP (NEAREST) can be supported out of the box by Godot's Animation,
+				// the other modes have to be baked.
+				GLTFAnimation::Interpolation gltf_interp = track.weight_tracks[i].interpolation;
+				if (gltf_interp == GLTFAnimation::INTERP_LINEAR || gltf_interp == GLTFAnimation::INTERP_STEP) {
+					animation->track_set_interpolation_type(track_idx, gltf_interp == GLTFAnimation::INTERP_STEP ? Animation::INTERPOLATION_NEAREST : Animation::INTERPOLATION_LINEAR);
 					for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
 						float t = track.weight_tracks[i].times[j];
 						float w = track.weight_tracks[i].values[j];
 						animation->track_insert_key(track_idx, t, w);
 					}
 				} else {
-					//must bake, apologies.
+					// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
 					float increment = 1.0 / float(bake_fps);
 					float time = 0.0;
-
 					bool last = false;
 					while (true) {
-
-						_interpolate_track<float>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, track.weight_tracks[i].interpolation);
+						_interpolate_track<float>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, gltf_interp);
 						if (last) {
 							break;
 						}
