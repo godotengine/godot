@@ -4688,6 +4688,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 	/* BACK FBO */
 	/* For MSAA */
 
+#ifndef JAVASCRIPT_ENABLED
 	if (rt->msaa != VS::VIEWPORT_MSAA_DISABLED && config.multisample_supported) {
 
 		rt->multisample_active = true;
@@ -4743,7 +4744,9 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-	} else {
+	} else
+#endif
+	{
 		rt->multisample_active = false;
 	}
 
