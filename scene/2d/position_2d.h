@@ -37,8 +37,6 @@ class Position2D : public Node2D {
 
 	GDCLASS(Position2D, Node2D)
 
-	const float DEFAULT_GIZMO_EXTENTS = 10.0;
-
 	void _draw_cross();
 
 protected:

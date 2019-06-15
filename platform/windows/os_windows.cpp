@@ -94,6 +94,7 @@ static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPR
 	return TRUE;
 }
 
+#ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
 
 	LPWSTR messageBuffer = NULL;
@@ -106,6 +107,7 @@ static String format_error_message(DWORD id) {
 
 	return msg;
 }
+#endif // DEBUG_ENABLED
 
 extern HINSTANCE godot_hinstance;
 
@@ -555,6 +557,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 			}
+			FALLTHROUGH;
 		case WM_MBUTTONDOWN:
 		case WM_MBUTTONUP:
 		case WM_RBUTTONDOWN:
@@ -583,7 +586,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				case WM_MBUTTONDOWN: {
 					mb->set_pressed(true);
 					mb->set_button_index(3);
-
 				} break;
 				case WM_MBUTTONUP: {
 					mb->set_pressed(false);
@@ -598,19 +600,16 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					mb->set_button_index(2);
 				} break;
 				case WM_LBUTTONDBLCLK: {
-
 					mb->set_pressed(true);
 					mb->set_button_index(1);
 					mb->set_doubleclick(true);
 				} break;
 				case WM_RBUTTONDBLCLK: {
-
 					mb->set_pressed(true);
 					mb->set_button_index(2);
 					mb->set_doubleclick(true);
 				} break;
 				case WM_MBUTTONDBLCLK: {
-
 					mb->set_pressed(true);
 					mb->set_button_index(3);
 					mb->set_doubleclick(true);
@@ -1816,11 +1815,11 @@ void OS_Windows::set_window_size(const Size2 p_size) {
 
 	// Don't let the mouse leave the window when resizing to a smaller resolution
 	if (mouse_mode == MOUSE_MODE_CONFINED) {
-		RECT rect;
-		GetClientRect(hWnd, &rect);
-		ClientToScreen(hWnd, (POINT *)&rect.left);
-		ClientToScreen(hWnd, (POINT *)&rect.right);
-		ClipCursor(&rect);
+		RECT crect;
+		GetClientRect(hWnd, &crect);
+		ClientToScreen(hWnd, (POINT *)&crect.left);
+		ClientToScreen(hWnd, (POINT *)&crect.right);
+		ClipCursor(&crect);
 	}
 }
 void OS_Windows::set_window_fullscreen(bool p_enabled) {
@@ -2193,6 +2192,8 @@ uint64_t OS_Windows::get_unix_time() const {
 	FILETIME fep;
 	SystemTimeToFileTime(&ep, &fep);
 
+	// FIXME: dereferencing type-punned pointer will break strict-aliasing rules (GCC warning)
+	// https://docs.microsoft.com/en-us/windows/desktop/api/minwinbase/ns-minwinbase-filetime#remarks
 	return (*(uint64_t *)&ft - *(uint64_t *)&fep) / 10000000;
 };
 
@@ -2378,7 +2379,7 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		}
 
 		// Finally, create the icon
-		ICONINFO iconinfo = { 0 };
+		ICONINFO iconinfo;
 		iconinfo.fIcon = FALSE;
 		iconinfo.xHotspot = p_hotspot.x;
 		iconinfo.yHotspot = p_hotspot.y;
@@ -2531,9 +2532,9 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 	if (p_blocking) {
 
-		DWORD ret = WaitForSingleObject(pi.pi.hProcess, INFINITE);
+		DWORD ret2 = WaitForSingleObject(pi.pi.hProcess, INFINITE);
 		if (r_exitcode)
-			*r_exitcode = ret;
+			*r_exitcode = ret2;
 
 		CloseHandle(pi.pi.hProcess);
 		CloseHandle(pi.pi.hThread);
