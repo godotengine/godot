@@ -80,6 +80,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	ERR_FAIL_COND_V(p_out_bandwidth < 0, ERR_INVALID_PARAMETER);
 
 	ENetAddress address;
+	memset(&address, 0, sizeof(address));
 
 #ifdef GODOT_ENET
 	if (bind_ip.is_wildcard()) {
