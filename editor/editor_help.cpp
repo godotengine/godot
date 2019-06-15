@@ -325,6 +325,7 @@ void EditorHelp::_update_doc() {
 	DocData::ClassDoc cd = doc->class_list[edited_class]; //make a copy, so we can sort without worrying
 
 	Ref<Font> doc_font = get_font("doc", "EditorFonts");
+	Ref<Font> doc_bold_font = get_font("doc_bold", "EditorFonts");
 	Ref<Font> doc_title_font = get_font("doc_title", "EditorFonts");
 	Ref<Font> doc_code_font = get_font("doc_source", "EditorFonts");
 	String link_color_text = title_color.to_html(false);
@@ -1132,6 +1133,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 	String base_path;
 
 	Ref<Font> doc_font = p_rt->get_font("doc", "EditorFonts");
+	Ref<Font> doc_bold_font = p_rt->get_font("doc_bold", "EditorFonts");
 	Ref<Font> doc_code_font = p_rt->get_font("doc_source", "EditorFonts");
 	Color font_color_hl = p_rt->get_color("headline_color", "EditorHelp");
 	Color link_color = p_rt->get_color("accent_color", "Editor").linear_interpolate(font_color_hl, 0.8);
@@ -1219,7 +1221,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 		} else if (tag == "b") {
 
 			//use bold font
-			p_rt->push_font(doc_code_font);
+			p_rt->push_font(doc_bold_font);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "i") {
@@ -1237,13 +1239,13 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			tag_stack.push_front(tag);
 		} else if (tag == "center") {
 
-			//use monospace font
+			//align to center
 			p_rt->push_align(RichTextLabel::ALIGN_CENTER);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "br") {
 
-			//use monospace font
+			//force a line break
 			p_rt->add_newline();
 			pos = brk_end + 1;
 		} else if (tag == "u") {
@@ -1254,14 +1256,13 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			tag_stack.push_front(tag);
 		} else if (tag == "s") {
 
-			//use strikethrough (not supported underline instead)
-			p_rt->push_underline();
+			//use strikethrough
+			p_rt->push_strikethrough();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 
 		} else if (tag == "url") {
 
-			//use strikethrough (not supported underline instead)
 			int end = bbcode.find("[", brk_end);
 			if (end == -1)
 				end = bbcode.length();
@@ -1278,7 +1279,6 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			tag_stack.push_front("url");
 		} else if (tag == "img") {
 
-			//use strikethrough (not supported underline instead)
 			int end = bbcode.find("[", brk_end);
 			if (end == -1)
 				end = bbcode.length();
