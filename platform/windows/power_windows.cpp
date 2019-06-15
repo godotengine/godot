@@ -89,7 +89,7 @@ bool PowerWindows::GetPowerInfo_Windows() {
 		if (pct != 255) { /* 255 == unknown */
 			percent_left = (pct > 100) ? 100 : pct; /* clamp between 0%, 100% */
 		}
-		if (secs != 0xFFFFFFFF) { /* ((DWORD)-1) == unknown */
+		if (secs != (int)0xFFFFFFFF) { /* ((DWORD)-1) == unknown */
 			nsecs_left = secs;
 		}
 	}

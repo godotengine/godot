@@ -45,7 +45,7 @@ void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_er
 	int len = vsnprintf(buf, BUFFER_SIZE, p_format, p_list);
 	if (len <= 0)
 		return;
-	if (len >= BUFFER_SIZE)
+	if ((unsigned int)len >= BUFFER_SIZE)
 		len = BUFFER_SIZE; // Output is too big, will be truncated
 	buf[len] = 0;
 

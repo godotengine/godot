@@ -306,7 +306,7 @@ Error NetSocketPosix::bind(IP_Address p_addr, uint16_t p_port) {
 	sockaddr_storage addr;
 	size_t addr_size = _set_addr_storage(&addr, p_addr, p_port, _ip_type);
 
-	if (::bind(_sock, (struct sockaddr *)&addr, addr_size) == SOCK_EMPTY) {
+	if (::bind(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
 		close();
 		ERR_FAIL_V(ERR_UNAVAILABLE);
 	}
@@ -317,7 +317,7 @@ Error NetSocketPosix::bind(IP_Address p_addr, uint16_t p_port) {
 Error NetSocketPosix::listen(int p_max_pending) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 
-	if (::listen(_sock, p_max_pending) == SOCK_EMPTY) {
+	if (::listen(_sock, p_max_pending) != 0) {
 
 		close();
 		ERR_FAIL_V(FAILED);
@@ -334,7 +334,7 @@ Error NetSocketPosix::connect_to_host(IP_Address p_host, uint16_t p_port) {
 	struct sockaddr_storage addr;
 	size_t addr_size = _set_addr_storage(&addr, p_host, p_port, _ip_type);
 
-	if (::connect(_sock, (struct sockaddr *)&addr, addr_size) == SOCK_EMPTY) {
+	if (::connect(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
 
 		NetError err = _get_socket_error();
 
