@@ -1851,7 +1851,7 @@ msgstr "Ошибка при сохранении."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Can't open '%s'. The file could have been moved or deleted."
-msgstr "Не возможно открыть '%s'. Возможно файл перемещен или удален."
+msgstr "Не удалось открыть '%s'. Файл мог быть перемещён или удалён."
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
