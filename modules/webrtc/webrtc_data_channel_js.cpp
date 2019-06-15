@@ -68,7 +68,7 @@ void WebRTCDataChannelJS::_on_error() {
 }
 
 void WebRTCDataChannelJS::_on_message(uint8_t *p_data, uint32_t p_size, bool p_is_string) {
-	if (in_buffer.space_left() < p_size + 5) {
+	if (in_buffer.space_left() < (int)(p_size + 5)) {
 		ERR_EXPLAIN("Buffer full! Dropping data");
 		ERR_FAIL();
 	}

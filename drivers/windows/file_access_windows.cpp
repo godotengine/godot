@@ -93,7 +93,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 	// a file using the wrong case (which *works* on Windows, but won't on other
 	// platforms).
 	if (p_mode_flags == READ) {
-		WIN32_FIND_DATAW d = { 0 };
+		WIN32_FIND_DATAW d;
 		HANDLE f = FindFirstFileW(path.c_str(), &d);
 		if (f) {
 			String fname = d.cFileName;
@@ -302,7 +302,7 @@ void FileAccessWindows::store_buffer(const uint8_t *p_src, int p_length) {
 		}
 		prev_op = WRITE;
 	}
-	ERR_FAIL_COND(fwrite(p_src, 1, p_length, f) != p_length);
+	ERR_FAIL_COND(fwrite(p_src, 1, p_length, f) != (size_t)p_length);
 }
 
 bool FileAccessWindows::file_exists(const String &p_name) {

@@ -33,6 +33,8 @@
 #include "core/engine.h"
 #include "scene/resources/texture.h"
 
+const float DEFAULT_GIZMO_EXTENTS = 10.0;
+
 void Position2D::_draw_cross() {
 
 	float extents = get_gizmo_extents();
