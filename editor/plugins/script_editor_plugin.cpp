@@ -2056,6 +2056,8 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 					se->goto_line(p_line - 1);
 				}
 			}
+			_update_script_names();
+			script_list->ensure_current_is_visible();
 			return true;
 		}
 	}
