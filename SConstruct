@@ -125,7 +125,7 @@ opts.Add(BoolVariable('verbose', "Enable verbose output for the compilation", Fa
 opts.Add(BoolVariable('progress', "Show a progress indicator during compilation", True))
 opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during compilation", 'all', ('extra', 'all', 'moderate', 'no')))
 opts.Add(BoolVariable('werror', "Treat compiler warnings as errors. Depends on the level of warnings set with 'warnings'", False))
-opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
+opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=extra werror=yes", False))
 opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
 opts.Add(BoolVariable('vsproj', "Generate a Visual Studio solution", False))
 opts.Add(EnumVariable('macports_clang', "Build using Clang from MacPorts", 'no', ('no', '5.0', 'devel')))
@@ -254,8 +254,9 @@ if selected_platform in platform_list:
         env = env_base.Clone()
 
     if env['dev']:
-        env["warnings"] = "all"
         env['verbose'] = True
+        env['warnings'] = "extra"
+        env['werror'] = True
 
     if env['vsproj']:
         env.vs_incs = []
@@ -337,7 +338,6 @@ if selected_platform in platform_list:
 
         if (env["warnings"] == 'extra'):
             # FIXME: enable -Wclobbered once #26351 is fixed
-            # FIXME: enable -Wduplicated-branches once #27594 is merged
             # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
             # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
             env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter']
@@ -345,7 +345,8 @@ if selected_platform in platform_list:
             env.Append(CXXFLAGS=['-Wctor-dtor-privacy', '-Wnon-virtual-dtor'])
             if methods.using_gcc(env):
                 env.Append(CCFLAGS=['-Wno-clobbered', '-Walloc-zero',
-                    '-Wduplicated-cond', '-Wstringop-overflow=4', '-Wlogical-op'])
+                    '-Wduplicated-branches', '-Wduplicated-cond',
+                    '-Wstringop-overflow=4', '-Wlogical-op'])
                 env.Append(CXXFLAGS=['-Wnoexcept', '-Wplacement-new=1'])
                 version = methods.get_compiler_version(env)
                 if version != None and version[0] >= '9':
