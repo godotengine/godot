@@ -2536,13 +2536,8 @@ void BindingsGenerator::_default_argument_from_variant(const Variant &p_val, Arg
 
 	switch (p_val.get_type()) {
 		case Variant::NIL:
-			if (ClassDB::class_exists(r_iarg.type.cname)) {
-				// Object type
-				r_iarg.default_argument = "null";
-			} else {
-				// Variant
-				r_iarg.default_argument = "null";
-			}
+			// Either Object type or Variant
+			r_iarg.default_argument = "null";
 			break;
 		// Atomic types
 		case Variant::BOOL:
