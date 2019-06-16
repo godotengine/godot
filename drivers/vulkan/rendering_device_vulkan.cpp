@@ -1023,7 +1023,7 @@ uint32_t RenderingDeviceVulkan::get_image_format_required_size(DataFormat p_form
 	uint32_t blockw, blockh;
 	get_compressed_image_format_block_dimensions(p_format, blockw, blockh);
 
-	for (uint32_t i = 0; i <= p_mipmaps; i++) {
+	for (uint32_t i = 0; i < p_mipmaps; i++) {
 		uint32_t bw = w % blockw != 0 ? w + (blockw - w % blockw) : w;
 		uint32_t bh = h % blockh != 0 ? h + (blockh - h % blockh) : h;
 
@@ -2049,7 +2049,7 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 	return OK;
 }
 
-bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_format, TextureUsageBits p_usage) const {
+bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const {
 	ERR_FAIL_INDEX_V(p_format, DATA_FORMAT_MAX, false);
 
 	_THREAD_SAFE_METHOD_
@@ -2745,6 +2745,10 @@ static const char *shader_stage_names[RenderingDevice::SHADER_STAGE_MAX] = {
 	"Compute"
 };
 
+static const char *shader_uniform_names[RenderingDevice::UNIFORM_TYPE_MAX] = {
+	"Sampler", "CombinedSampler", "Texture", "Image", "TextureBuffer", "SamplerTextureBuffer", "ImageBuffer", "UniformBuffer", "StorageBuffer", "InputAttachment"
+};
+
 static VkShaderStageFlagBits shader_stage_masks[RenderingDevice::SHADER_STAGE_MAX] = {
 	VK_SHADER_STAGE_VERTEX_BIT,
 	VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -2758,26 +2762,24 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 	VkDescriptorSetLayoutBinding layout_binding;
 	Shader::UniformInfo info;
 
-	print_line("*** Stage " + itos(p_stage) + " uniform: " + reflection.name.c_str());
-
 	switch (reflection.getType()->getBasicType()) {
 		case glslang::EbtSampler: {
 
-			print_line("DEBUG: IsSampler");
+			//print_line("DEBUG: IsSampler");
 			if (reflection.getType()->getSampler().dim == glslang::EsdBuffer) {
 				//texture buffers
 				if (reflection.getType()->getSampler().isCombined()) {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
 					info.type = UNIFORM_TYPE_SAMPLER_WITH_TEXTURE_BUFFER;
-					print_line("DEBUG: texel combined");
+					//print_line("DEBUG: SAMPLER: texel combined");
 				} else if (reflection.getType()->getSampler().isTexture()) {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
 					info.type = UNIFORM_TYPE_TEXTURE_BUFFER;
-					print_line("DEBUG: texel alone");
+					//print_line("DEBUG: SAMPLER: texel alone");
 				} else if (reflection.getType()->getSampler().isImage()) {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
 					info.type = UNIFORM_TYPE_IMAGE_BUFFER;
-					print_line("DEBUG: texel buffer");
+					//print_line("DEBUG: SAMPLER: texel buffer");
 				} else {
 					if (r_error) {
 						*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' is of unsupported buffer type.";
@@ -2787,21 +2789,21 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 			} else if (reflection.getType()->getSampler().isCombined()) {
 				layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 				info.type = UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-				print_line("DEBUG: combined");
+				//print_line("DEBUG: SAMPLER: combined");
 			} else if (reflection.getType()->getSampler().isPureSampler()) {
 				layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
 				info.type = UNIFORM_TYPE_SAMPLER;
-				print_line("DEBUG: sampler");
+				//print_line("DEBUG: SAMPLER: sampler");
 			} else if (reflection.getType()->getSampler().isTexture()) {
 				layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 				info.type = UNIFORM_TYPE_TEXTURE;
-				print_line("DEBUG: image");
+				//print_line("DEBUG: SAMPLER: image");
 			} else if (reflection.getType()->getSampler().isImage()) {
 				layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 				info.type = UNIFORM_TYPE_IMAGE;
-				print_line("DEBUG: storage image");
+				//print_line("DEBUG: SAMPLER: storage image");
 			} else {
-				print_line("DEBUG: sampler unknown");
+				//print_line("DEBUG: sampler unknown");
 				if (r_error) {
 					*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' is of unsupported sampler type.";
 				}
@@ -2810,7 +2812,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 
 			if (reflection.getType()->isArray()) {
 				layout_binding.descriptorCount = reflection.getType()->getArraySizes()->getCumulativeSize();
-				print_line("DEBUG: array of size: " + itos(layout_binding.descriptorCount));
+				//print_line("DEBUG: array of size: " + itos(layout_binding.descriptorCount));
 			} else {
 				layout_binding.descriptorCount = 1;
 			}
@@ -2823,7 +2825,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 
 		} break;*/
 		case glslang::EbtBlock: {
-			print_line("DEBUG: Block");
+			//print_line("DEBUG: Block");
 			if (reflection.getType()->getQualifier().storage == glslang::EvqUniform) {
 				if (reflection.getType()->getQualifier().layoutPushConstant) {
 					uint32_t len = reflection.size;
@@ -2835,13 +2837,13 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 					push_constant.push_constants_vk_stage |= shader_stage_masks[p_stage];
 					return true;
 				}
-				print_line("DEBUG: Uniform buffer");
+				//print_line("DEBUG: Uniform buffer");
 				layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				info.type = UNIFORM_TYPE_UNIFORM_BUFFER;
 			} else if (reflection.getType()->getQualifier().storage == glslang::EvqBuffer) {
 				layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 				info.type = UNIFORM_TYPE_STORAGE_BUFFER;
-				print_line("DEBUG: Storage buffer");
+				//print_line("DEBUG: Storage buffer");
 			} else {
 				if (r_error) {
 					*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' is of unsupported block type: (" + itos(reflection.getType()->getQualifier().storage) + ").";
@@ -2851,7 +2853,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 
 			if (reflection.getType()->isArray()) {
 				layout_binding.descriptorCount = reflection.getType()->getArraySizes()->getCumulativeSize();
-				print_line("DEBUG: array of size: " + itos(layout_binding.descriptorCount));
+				//print_line("DEBUG: array of size: " + itos(layout_binding.descriptorCount));
 			} else {
 				layout_binding.descriptorCount = 1;
 			}
@@ -2935,14 +2937,16 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 		bindings.resize(set + 1);
 		uniform_infos.resize(set + 1);
 	}
-
+#if 1
+	print_line("stage: " + String(shader_stage_names[p_stage]) + " set: " + itos(set) + " binding: " + itos(info.binding) + " type:" + shader_uniform_names[info.type] + " length: " + itos(info.length));
+#endif
 	bindings.write[set].push_back(layout_binding);
 	uniform_infos.write[set].push_back(info);
 
 	return true;
 }
 
-RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSource> &p_stages, String *r_error, bool p_allow_cache) {
+RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSource> &p_stages, String *r_error, ShaderStage *r_error_stage, bool p_allow_cache) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -3007,6 +3011,10 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 				(*r_error) += shader.getInfoDebugLog();
 			}
 
+			if (r_error_stage) {
+				*r_error_stage = p_stages[i].shader_stage;
+			}
+
 			return RID();
 		}
 		//set back..
@@ -3021,6 +3029,10 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 				(*r_error) += "\n";
 				(*r_error) += shader.getInfoDebugLog();
 			}
+			if (r_error_stage) {
+				*r_error_stage = p_stages[i].shader_stage;
+			}
+
 			return RID();
 		}
 
@@ -3035,13 +3047,17 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 				(*r_error) += "\n";
 				(*r_error) += program.getInfoDebugLog();
 			}
+			if (r_error_stage) {
+				*r_error_stage = p_stages[i].shader_stage;
+			}
+
 			return RID();
 		}
 
 		//obtain bindings for descriptor layout
 		program.mapIO();
 		program.buildReflection();
-		program.dumpReflection();
+		//program.dumpReflection();
 
 		for (int j = 0; j < program.getNumUniformVariables(); j++) {
 			if (!_uniform_add_binding(bindings, uniform_info, program.getUniform(j), p_stages[i].shader_stage, push_constant, r_error)) {
@@ -3102,6 +3118,8 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 	shader.fragment_outputs = fragment_outputs;
 	shader.push_constant = push_constant;
 
+	String error_text;
+
 	bool success = true;
 	for (int i = 0; i < p_stages.size(); i++) {
 		VkShaderModuleCreateInfo shader_module_create_info;
@@ -3115,7 +3133,8 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 		VkResult res = vkCreateShaderModule(device, &shader_module_create_info, NULL, &module);
 		if (res) {
 			success = false;
-			ERR_PRINTS("Error creating shader module for stage: " + String(shader_stage_names[p_stages[i].shader_stage]));
+			error_text = "Error creating shader module for stage: " + String(shader_stage_names[p_stages[i].shader_stage]);
+			;
 			break;
 		}
 
@@ -3155,7 +3174,7 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 			VkDescriptorSetLayout layout;
 			VkResult res = vkCreateDescriptorSetLayout(device, &layout_create_info, NULL, &layout);
 			if (res) {
-				ERR_PRINTS("Error creating descriptor set layout for set " + itos(i));
+				error_text = "Error creating descriptor set layout for set " + itos(i);
 				success = false;
 				break;
 			}
@@ -3212,7 +3231,7 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 		VkResult err = vkCreatePipelineLayout(device, &pipeline_layout_create_info, NULL, &shader.pipeline_layout);
 
 		if (err) {
-			ERR_PRINTS("Error creating pipeline layout.");
+			error_text = "Error creating pipeline layout.";
 			success = false;
 		}
 	}
@@ -3227,10 +3246,23 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 			vkDestroyDescriptorSetLayout(device, shader.sets[i].descriptor_set_layout, NULL);
 		}
 
+		if (r_error) {
+			*r_error = error_text;
+		}
+		if (r_error_stage) {
+			*r_error_stage = SHADER_STAGE_MAX;
+		}
+
 		return RID();
 	}
 
 	return shader_owner.make_rid(shader);
+}
+
+Vector<int> RenderingDeviceVulkan::shader_get_vertex_input_locations_used(RID p_shader) {
+	const Shader *shader = shader_owner.getornull(p_shader);
+	ERR_FAIL_COND_V(!shader, Vector<int>());
+	return shader->vertex_input_locations;
 }
 
 /******************/
@@ -3789,6 +3821,10 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 	return id;
 }
 
+bool RenderingDeviceVulkan::uniform_set_is_valid(RID p_uniform_set) {
+	return uniform_set_owner.owns(p_uniform_set);
+}
+
 Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, void *p_data, bool p_sync_with_draw) {
 	_THREAD_SAFE_METHOD_
 
@@ -4113,6 +4149,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 
 	graphics_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	graphics_pipeline_create_info.pNext = NULL;
+	graphics_pipeline_create_info.flags = 0;
 
 	graphics_pipeline_create_info.stageCount = shader->pipeline_stages.size();
 	graphics_pipeline_create_info.pStages = shader->pipeline_stages.ptr();

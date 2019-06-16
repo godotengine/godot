@@ -249,14 +249,10 @@ public:
 	};
 
 	enum PrimitiveType {
-		PRIMITIVE_POINTS = 0,
-		PRIMITIVE_LINES = 1,
-		PRIMITIVE_LINE_STRIP = 2,
-		PRIMITIVE_LINE_LOOP = 3,
-		PRIMITIVE_TRIANGLES = 4,
-		PRIMITIVE_TRIANGLE_STRIP = 5,
-		PRIMITIVE_TRIANGLE_FAN = 6,
-		PRIMITIVE_MAX = 7,
+		PRIMITIVE_POINTS,
+		PRIMITIVE_LINES,
+		PRIMITIVE_TRIANGLES,
+		PRIMITIVE_MAX,
 	};
 
 	virtual RID mesh_create() = 0;
@@ -883,20 +879,41 @@ public:
 		NINE_PATCH_TILE_FIT,
 	};
 
+	enum CanvasItemTextureFilter {
+		CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, //uses canvas item setting for draw command, uses global setting for canvas item
+		CANVAS_ITEM_TEXTURE_FILTER_NEAREST,
+		CANVAS_ITEM_TEXTURE_FILTER_LINEAR,
+		CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS,
+		CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS,
+		CANVAS_ITEM_TEXTURE_FILTER_MAX
+	};
+
+	enum CanvasItemTextureRepeat {
+		CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, //uses canvas item setting for draw command, uses global setting for canvas item
+		CANVAS_ITEM_TEXTURE_REPEAT_DISABLED,
+		CANVAS_ITEM_TEXTURE_REPEAT_ENABLED,
+		CANVAS_ITEM_TEXTURE_REPEAT_MIRROR,
+		CANVAS_ITEM_TEXTURE_REPEAT_MAX,
+	};
+
+	//takes effect only for new draw commands
+	virtual void canvas_item_set_default_texture_filter(RID p_item, CanvasItemTextureFilter p_filter) = 0;
+	virtual void canvas_item_set_default_texture_repeat(RID p_item, CanvasItemTextureRepeat p_repeat) = 0;
+
 	virtual void canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width = 1.0, bool p_antialiased = false) = 0;
 	virtual void canvas_item_add_polyline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0, bool p_antialiased = false) = 0;
 	virtual void canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0, bool p_antialiased = false) = 0;
 	virtual void canvas_item_add_rect(RID p_item, const Rect2 &p_rect, const Color &p_color) = 0;
 	virtual void canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color) = 0;
-	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, RID p_normal_map = RID()) = 0;
-	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, RID p_normal_map = RID(), bool p_clip_uv = false) = 0;
-	virtual void canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, NinePatchAxisMode p_x_axis_mode = NINE_PATCH_STRETCH, NinePatchAxisMode p_y_axis_mode = NINE_PATCH_STRETCH, bool p_draw_center = true, const Color &p_modulate = Color(1, 1, 1), RID p_normal_map = RID()) = 0;
-	virtual void canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, float p_width = 1.0, RID p_normal_map = RID()) = 0;
-	virtual void canvas_item_add_polygon(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), RID p_texture = RID(), RID p_normal_map = RID(), bool p_antialiased = false) = 0;
-	virtual void canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>(), RID p_texture = RID(), int p_count = -1, RID p_normal_map = RID(), bool p_antialiased = false) = 0;
-	virtual void canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform = Transform2D(), const Color &p_modulate = Color(1, 1, 1), RID p_texture = RID(), RID p_normal_map = RID()) = 0;
-	virtual void canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture = RID(), RID p_normal_map = RID()) = 0;
-	virtual void canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture, RID p_normal_map) = 0;
+	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), CanvasItemTextureFilter p_texture_filter = CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, CanvasItemTextureRepeat = CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) = 0;
+	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), bool p_clip_uv = false, CanvasItemTextureFilter p_texture_filter = CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, CanvasItemTextureRepeat = CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) = 0;
+	virtual void canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, NinePatchAxisMode p_x_axis_mode = NINE_PATCH_STRETCH, NinePatchAxisMode p_y_axis_mode = NINE_PATCH_STRETCH, bool p_draw_center = true, const Color &p_modulate = Color(1, 1, 1), RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), CanvasItemTextureFilter p_texture_filter = CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, CanvasItemTextureRepeat = CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) = 0;
+	virtual void canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, float p_width = 1.0, RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), CanvasItemTextureFilter p_texture_filter = CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, CanvasItemTextureRepeat = CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) = 0;
+	virtual void canvas_item_add_polygon(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), RID p_texture = RID(), RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), bool p_antialiased = false, CanvasItemTextureFilter p_texture_filter = CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, CanvasItemTextureRepeat = CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) = 0;
+	virtual void canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>(), RID p_texture = RID(), int p_count = -1, RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), bool p_antialiased = false, CanvasItemTextureFilter p_texture_filter = CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, CanvasItemTextureRepeat = CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) = 0;
+	virtual void canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform = Transform2D(), const Color &p_modulate = Color(1, 1, 1), RID p_texture = RID(), RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), CanvasItemTextureFilter p_texture_filter = CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, CanvasItemTextureRepeat = CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) = 0;
+	virtual void canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture = RID(), RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), CanvasItemTextureFilter p_texture_filter = CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, CanvasItemTextureRepeat = CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) = 0;
+	virtual void canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture, RID p_normal_map, RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), CanvasItemTextureFilter p_texture_filter = CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, CanvasItemTextureRepeat = CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) = 0;
 	virtual void canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform) = 0;
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore) = 0;
 	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) = 0;
@@ -1085,6 +1102,8 @@ VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOQuality);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOBlur);
 VARIANT_ENUM_CAST(VisualServer::InstanceFlags);
 VARIANT_ENUM_CAST(VisualServer::ShadowCastingSetting);
+VARIANT_ENUM_CAST(VisualServer::CanvasItemTextureFilter);
+VARIANT_ENUM_CAST(VisualServer::CanvasItemTextureRepeat);
 
 //typedef VisualServer VS; // makes it easier to use
 #define VS VisualServer
