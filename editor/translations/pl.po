@@ -38,7 +38,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-05-08 11:48+0000\n"
+"PO-Revision-Date: 2019-06-16 19:42+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -186,12 +186,10 @@ msgid "Animation Playback Track"
 msgstr "Ścieżka animacji"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Długość animacji (sekundy)"
+msgstr "Długość animacji (klatki)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
 msgstr "Długość animacji (sekundy)"
 
@@ -6588,7 +6586,7 @@ msgstr "4 widoki"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
-msgstr "Uchwyty"
+msgstr "Ikony węzłów"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Origin"
@@ -10296,10 +10294,11 @@ msgid "Add current color as a preset."
 msgstr "Dodaj bieżący kolor do zapisanych."
 
 #: scene/gui/container.cpp
+#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 "Kontener sam w sobie nie spełnia żadnego celu, chyba że jakiś skrypt "

@@ -34,12 +34,13 @@
 # edouardgr <edouard.gruyters@gmail.com>, 2019.
 # Jimmy De  Smet <J773@telenet.be>, 2019.
 # Bastiaan van der Plaat <bastiaan.v.d.plaat@gmail.com>, 2019.
+# Hector Peeters <hector.peeters@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-05-19 07:48+0000\n"
-"Last-Translator: Alex H. <sandertjeh13@hotmail.com>\n"
+"PO-Revision-Date: 2019-06-16 19:42+0000\n"
+"Last-Translator: Hector Peeters <hector.peeters@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -184,9 +185,8 @@ msgid "Animation Playback Track"
 msgstr "Animatie Terugspelen Track"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Animatielengte (in seconden)"
+msgstr "Animatielengte (in frames)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -587,9 +587,8 @@ msgid "Copy"
 msgstr "Kopiëren"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Add Audio Track Clip"
-msgstr "Voeg audiospoorclip toe"
+msgstr "Voeg audiospoor clip toe"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
@@ -1417,6 +1416,8 @@ msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
+"Doel platform heeft 'ETC' afbeelding compressie nodig voor GLES2. Activeer "
+"'Importeer ETC' in de project instellingen."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -1435,16 +1436,14 @@ msgstr ""
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
-msgstr "Custom debug pakket niet gevonden."
+msgstr "Aangepast debug pakket niet gevonden."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom release template not found."
-msgstr "Custom release pakket niet gevonden."
+msgstr "Aangepast release pakket niet gevonden."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -1568,9 +1567,8 @@ msgid "Go to parent folder"
 msgstr "Ga naar bovenliggende folder"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "(Un)favorite current folder."
-msgstr "Map kon niet gemaakt worden."
+msgstr "(On)favoriet huidige map."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -10584,7 +10582,7 @@ msgstr "Huidige kleur als een preset toevoegen"
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 

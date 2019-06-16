@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-04-29 08:48+0000\n"
+"PO-Revision-Date: 2019-06-16 19:42+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.6.1\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -164,12 +164,10 @@ msgid "Animation Playback Track"
 msgstr "Pista de Reprodução de Animação"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Duração da Animação (segundos)"
+msgstr "Duração da Animação (frames)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
 msgstr "Duração da Animação (segundos)"
 
@@ -10281,10 +10279,11 @@ msgid "Add current color as a preset."
 msgstr "Adicionar cor atual como predefinição."
 
 #: scene/gui/container.cpp
+#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 "Por si só um Contentor não tem utilidade, a não ser que um script configure "

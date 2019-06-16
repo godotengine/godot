@@ -25,12 +25,14 @@
 # NewFriskFan26 <newfriskfan26@gmail.com>, 2019.
 # spiderx0x <legendofdarks@gmail.com>, 2019.
 # Ibraheem Tawfik <tawfikibraheem@gmail.com>, 2019.
+# DiscoverSquishy <noaimi@discoversquishy.me>, 2019.
+# ButterflyOfFire <ButterflyOfFire@protonmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-04-29 08:48+0000\n"
-"Last-Translator: Ibraheem Tawfik <tawfikibraheem@gmail.com>\n"
+"PO-Revision-Date: 2019-06-16 19:42+0000\n"
+"Last-Translator: ButterflyOfFire <ButterflyOfFire@protonmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -39,7 +41,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 3.6.1\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -175,14 +177,12 @@ msgid "Animation Playback Track"
 msgstr "شريط ضبط الحركة"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "مدة الحركة (بالثواني)"
+msgstr "مدة الحركة (frames)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
-msgstr "مدة الحركة (بالثواني)"
+msgstr "مدة الحركة (seconds)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
@@ -190,20 +190,20 @@ msgstr "إضافة مسار"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr "تكرار الحركة"
+msgstr "تكرار الرسوم المتحركة"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr "دوال:"
+msgstr "الإعدادات:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr "مقاطع الصوت:"
+msgstr "مقاطع صوتية:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr "مقاطع الحركة:"
+msgstr "مقاطع الرسوم المتحركة:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
@@ -1425,7 +1425,7 @@ msgstr "ملف النموذج غير موجود:"
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr "قالب الإصدار المخصص ليس موجود"
+msgstr "قالب الإصدار المخصص ليس موجود."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -10320,7 +10320,7 @@ msgstr "أضف اللون الحالي كإعداد مسبق"
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 

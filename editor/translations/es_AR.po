@@ -16,8 +16,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-05-16 18:49+0000\n"
-"Last-Translator: roger <616steam@gmail.com>\n"
+"PO-Revision-Date: 2019-05-28 10:40+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -162,14 +162,12 @@ msgid "Animation Playback Track"
 msgstr "Pista de Reproducción de Animación"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Tiempo de Duración de la Animación (segundos)"
+msgstr "Duración de la animación (frames)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
-msgstr "Tiempo de Duración de la Animación (segundos)"
+msgstr "Duración de la animación (segundos)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
@@ -4494,7 +4492,7 @@ msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
 "Light' flag is on."
 msgstr ""
-"No hay meshes para hacer bake. Asegurate que contienen un canal UV2 y que el "
+"No hay meshes para hacer bake. Asegúrate que contienen un canal UV2 y que el "
 "flag 'Bake Light' esta activado."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -4505,7 +4503,7 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
-msgstr "Hacer Bake de Lightmaps"
+msgstr "Bake Lightmaps"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
@@ -4835,9 +4833,8 @@ msgid "Rotation mask for inserting keys."
 msgstr "Máscara de rotación para insertar claves."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale mask for inserting keys."
-msgstr "Máscara de rotación para insertar claves."
+msgstr "Máscara de escala para insertar claves."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert keys (based on mask)."
@@ -5056,7 +5053,7 @@ msgstr "Mantené Shift para editar tangentes individualmente"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
-msgstr "Hacer Bake de GI Probe"
+msgstr "Bake GI Probe"
 
 #: editor/plugins/gradient_editor_plugin.cpp
 msgid "Gradient Edited"
@@ -5080,7 +5077,7 @@ msgstr "Crear Polígono Oclusor"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
-msgstr "El Mesh está vacío!"
+msgstr "¡El Mesh está vacío!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5108,11 +5105,11 @@ msgstr "Crear Mesh de Navegación"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Contained Mesh is not of type ArrayMesh."
-msgstr "La Mesh contenida no es del tipo ArrayMesh."
+msgstr "El Mesh contenedor no es del tipo ArrayMesh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr "Fallo el UV Unwrap, la mesh podria no ser manifold?"
+msgstr "Fallo el UV Unwrap ¿el mesh podría no ser manifold?"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "No mesh to debug."
@@ -5125,15 +5122,15 @@ msgstr "El modelo no tiene UV en esta capa"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
-msgstr "A MeshInstance le falta un Mesh!"
+msgstr "¡MeshInstance le falta un Mesh!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
-msgstr "El mesh no tiene una superficie de donde crear contornos(outlines)!"
+msgstr "¡El mesh no tiene una superficie de donde crear contornos!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr "El tipo de la malla primitiva no es PRIMITIVE_TRIANGLES!"
+msgstr "¡El tipo primitivo de mesh no es PRIMITIVE_TRIANGLES!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5211,7 +5208,7 @@ msgstr "Acutalizar desde Escena"
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
 msgstr ""
-"No se especificó mesh de origen (y no hay MultiMesh seteado en el nodo)."
+"No se especificó mesh de origen (y no hay MultiMesh establecido en el nodo)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and MultiMesh contains no Mesh)."
@@ -5227,7 +5224,7 @@ msgstr "Mesh de origen inválido (no es un MeshInstance)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (contains no Mesh resource)."
-msgstr "Mesh de origen inválido (no contiene ningun recurso Mesh)."
+msgstr "Mesh de origen inválido (no contiene ningún recurso Mesh)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No surface source specified."
@@ -5291,7 +5288,7 @@ msgstr "Eje-Z"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh Up Axis:"
-msgstr "Eje Arriba del Mesh:"
+msgstr "Eje Superior del Mesh:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Rotation:"
@@ -9273,7 +9270,7 @@ msgstr "Fin del stack trace de excepción interna"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
-msgstr "Hacer Bake de NavMesh"
+msgstr "Bake NavMesh"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -9317,11 +9314,11 @@ msgstr "Creando polymesh..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
-msgstr "Convirtiendo a mesh de navegación nativa..."
+msgstr "Convirtiendo a mesh de navegación nativo..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
-msgstr "Setup de Generador de Meshes de Navegación:"
+msgstr "Configuración del Generador de Meshes de Navegación:"
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
@@ -10326,10 +10323,11 @@ msgid "Add current color as a preset."
 msgstr "Agregar color actual como preset."
 
 #: scene/gui/container.cpp
+#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 "El contenedor en sí mismo no sirve ningún propósito a menos que un script "

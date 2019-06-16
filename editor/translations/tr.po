@@ -26,11 +26,12 @@
 # Furkan Türkal <furkan.turkal@hotmail.com>, 2019.
 # Aiden Demir <dnm00110011@hotmail.com>, 2019.
 # Anton Semchenko <semchenkoanton@protonmail.com>, 2019.
+# Enes Can Yerlikaya <enescanyerlikaya@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-05-10 08:19+0000\n"
+"PO-Revision-Date: 2019-06-16 19:41+0000\n"
 "Last-Translator: Anton Semchenko <semchenkoanton@protonmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
@@ -178,14 +179,12 @@ msgid "Animation Playback Track"
 msgstr "Animasyon Oynatıcı İzi"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Animasyon Uzunluğu (saniye)"
+msgstr "Animasyon uzunluğu (kare)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
-msgstr "Animasyon Uzunluğu (saniye)"
+msgstr "Animasyon uzunluğu (kare)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
@@ -354,7 +353,7 @@ msgstr "İzleri Yeniden Sırala"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr ""
+msgstr "Dönüşüm izleri sadece uzaysal köklü düğümlere uygulanabilir."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -1417,6 +1416,10 @@ msgid ""
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
+"Hedef platform, sürücünün GLES2'ye düşmesi için 'ETC' doku sıkıştırmasına "
+"ihtiyaç duyuyor.\n"
+"Proje Ayarlarında 'Import Etc' seçeneğini etkinleştirin veya 'Driver "
+"Fallback Enabled' seçeneğini devre dışı bırakın."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1443,7 +1446,6 @@ msgid "File Exists, Overwrite?"
 msgstr "Dosya var. Üzerine Yazılsın mı?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select This Folder"
 msgstr "Bu Klasörü Seç"
 
@@ -1452,9 +1454,8 @@ msgid "Copy Path"
 msgstr "Dosya Yolunu Tıpkıla"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open in File Manager"
-msgstr "Dosya Yöneticisinde Göster"
+msgstr "Dosya Yöneticisinde Aç"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 #: editor/project_manager.cpp
@@ -2560,9 +2561,8 @@ msgid "Save & Restart"
 msgstr "Kaydet ve Baştan Başlat"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Spins when the editor window redraws."
-msgstr "Düzenleyici penceresi yeniden boyandığında döndürülür!"
+msgstr "Düzenleyici penceresi yeniden boyandığında döner."
 
 #: editor/editor_node.cpp
 msgid "Update Always"
@@ -2760,18 +2760,16 @@ msgid "Layer"
 msgstr "Katman"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Bit %d, value %d"
-msgstr "Bit %d,  val %d."
+msgstr "Bit %d,  değer %d"
 
 #: editor/editor_properties.cpp
 msgid "[Empty]"
 msgstr "[Boş]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-#, fuzzy
 msgid "Assign..."
-msgstr "Ata"
+msgstr "Ata..."
 
 #: editor/editor_properties.cpp
 #, fuzzy
@@ -2847,32 +2845,28 @@ msgstr "Şuna Dönüştür %s"
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Open Editor"
-msgstr "Düzenleyicide Aç"
+msgstr "Düzenleyiciyi Aç"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
 msgstr "Seçili düğüm bir Viewport değil!"
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "Size: "
-msgstr "Odacık Boyutu:"
+msgstr "Boyut: "
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Page: "
 msgstr "Sayfa: "
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "New Key:"
-msgstr "Yeni ad:"
+msgstr "Yeni Anahtar:"
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "New Value:"
-msgstr "Yeni ad:"
+msgstr "Yeni Değer:"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Add Key/Value Pair"
@@ -2969,9 +2963,8 @@ msgid "Can't open export templates zip."
 msgstr "Dışa aktarım kalıplarının zipi açılamadı."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Invalid version.txt format inside templates: %s."
-msgstr "Şablonların içinde geçersiz version.txt formatı."
+msgstr "Şablonların içinde geçersiz version.txt formatı: %s."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
@@ -3118,9 +3111,8 @@ msgid "Download Templates"
 msgstr "Şablonları İndir"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-msgstr "Listeden ayna seç: "
+msgstr "Listeden ayna seç: (Shift+Tıkla: Tarayıcıda Aç)"
 
 #: editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
@@ -3129,9 +3121,8 @@ msgstr ""
 "kaydedilmiyor!"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Favorites"
-msgstr "Beğeniler:"
+msgstr "Favoriler"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot navigate to '%s' as it has not been found in the file system!"
@@ -3204,14 +3195,12 @@ msgid "Instance"
 msgstr "Örnek"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Add to favorites"
-msgstr "Beğeniler:"
+msgstr "Favorilere ekle"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Remove from favorites"
-msgstr "Öbekten Kaldır"
+msgstr "Favorilerden kaldır"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
@@ -3234,24 +3223,20 @@ msgid "Move To..."
 msgstr "Şuraya Taşı..."
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "New Script..."
-msgstr "Yeni Betik"
+msgstr "Yeni Betik..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "New Resource..."
-msgstr "Kaynağı Farklı Kaydet..."
+msgstr "Yeni Kaynak..."
 
 #: editor/filesystem_dock.cpp editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Expand All"
-msgstr "Hepsini genişlet"
+msgstr "Hepsini Genişlet"
 
 #: editor/filesystem_dock.cpp editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Collapse All"
-msgstr "Hepsini daralt"
+msgstr "Hepsini Daralt"
 
 #: editor/filesystem_dock.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -3273,14 +3258,12 @@ msgid "Re-Scan Filesystem"
 msgstr "Dosya Düzenini Yeniden Tara"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Toggle split mode"
-msgstr "Aç / Kapat Biçimi"
+msgstr "Bölme modunu Aç / Kapat"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Search files"
-msgstr "Sınıfları Ara"
+msgstr "Dosyaları ara"
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -3295,37 +3278,32 @@ msgid "Move"
 msgstr "Taşı"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "There is already file or folder with the same name in this location."
-msgstr "Yolda bu isimde bir klasör zaten var."
+msgstr "Bu konumda zaten aynı ada sahip bir dosya veya klasör var."
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
-msgstr ""
+msgstr "Üzerine Yaz"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
 msgstr "Betik Oluştur"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Find in Files"
-msgstr "Döşentiyi Bul"
+msgstr "Dosyalarda bul"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Find:"
-msgstr "Bul"
+msgstr "Bul:"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Folder:"
-msgstr "Satırı Katla"
+msgstr "Dosya:"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Filters:"
-msgstr "Süzgeçler"
+msgstr "Süzgeçler:"
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -3341,19 +3319,16 @@ msgid "Cancel"
 msgstr "Vazgeç"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Find: "
-msgstr "Bul"
+msgstr "Bul: "
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Replace: "
-msgstr "Değiştir"
+msgstr "Değiştir: "
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Replace all (no undo)"
-msgstr "Tümünü Değiştir"
+msgstr "Tümünü Değiştir (geri alma yok)"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -3513,10 +3488,11 @@ msgstr ""
 "gerektiriyor."
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
-msgstr "UYARI: Bu kaynağı kullanan varlıklar mevcut, doğru yüklenemeyebililer."
+msgstr ""
+"UYARI: Bu kaynağı kullanan varlıklar mevcut, düzgün yüklenmeyi "
+"durdurabilirler."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -3801,9 +3777,8 @@ msgid "Remove BlendSpace2D Triangle"
 msgstr "BlendSpace2D Üçgenini Kaldır"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr "BlendSpace2D, bir AnimationTree düğümüne ait değil."
+msgstr "BlendSpace2D bir AnimationTree düğümüne ait değil."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #, fuzzy
@@ -3811,9 +3786,8 @@ msgid "No triangles exist, so no blending can take place."
 msgstr "Herhangi bir üçgen bulunmuyor, harmanlama işlemi yapılamaz."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Toggle Auto Triangles"
-msgstr "KendindenYüklenme Bütünsellerini Aç / Kapat"
+msgstr "Otomatik Üçgenleri Aç / Kapat"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -10485,7 +10459,7 @@ msgstr "Şuanki rengi bir önayar olarak kaydet"
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 

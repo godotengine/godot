@@ -6,12 +6,13 @@
 # MineGame 159 <minegame459@gmail.com>, 2018.
 # Zuzana Palenikova <sousana.is@gmail.com>, 2019.
 # MineGame159 <petulko08@gmail.com>, 2019.
+# Michal <alladinsiffon@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-12 15:26+0000\n"
-"Last-Translator: MineGame159 <petulko08@gmail.com>\n"
+"PO-Revision-Date: 2019-06-16 19:42+0000\n"
+"Last-Translator: Michal <alladinsiffon@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sk/>\n"
 "Language: sk\n"
@@ -19,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 3.5.1\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2433,7 +2434,7 @@ msgstr "Komunita"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr ""
+msgstr "O nás"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -7969,7 +7970,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr ""
+msgstr "Hlavné"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."
@@ -10120,7 +10121,7 @@ msgstr ""
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 

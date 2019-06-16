@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-05-10 08:15+0000\n"
+"PO-Revision-Date: 2019-06-16 19:42+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -163,14 +163,12 @@ msgid "Animation Playback Track"
 msgstr "애니메이션 재생 트랙"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "애니메이션 길이 시간 (초)"
+msgstr "애니메이션 길이 (프레임)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
-msgstr "애니메이션 길이 시간 (초)"
+msgstr "애니메이션 길이 (초)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
@@ -10213,10 +10211,11 @@ msgid "Add current color as a preset."
 msgstr "현재 색상을 프리셋으로 추가합니다."
 
 #: scene/gui/container.cpp
+#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 "컨테이너 자체는 자식 배치 행동을 구성하지 않는 한 용도가 없습니다.\n"

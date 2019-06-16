@@ -10,12 +10,13 @@
 # sayyed hamed nasib <cghamed752@chmail.ir>, 2017.
 # Behrooz Kashani <bkashani@gmail.com>, 2018.
 # Mahdi <sadisticwarlock@gmail.com>, 2018.
+# hpn33 <hamed.hpn332@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:35+0100\n"
-"Last-Translator: Mahdi <sadisticwarlock@gmail.com>\n"
+"PO-Revision-Date: 2019-06-16 19:42+0000\n"
+"Last-Translator: hpn33 <hamed.hpn332@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -23,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -46,7 +47,7 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
+msgstr "نمی توان از self استفاده کرد چون instance = null هست (تایید نشده)"
 
 #: core/math/expression.cpp
 #, fuzzy
@@ -74,15 +75,15 @@ msgstr ""
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "ازاد کردن"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "متعادل شده"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr ""
+msgstr "بازتاب"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -1018,14 +1019,12 @@ msgid "Authors"
 msgstr "مؤلفان"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Platinum Sponsors"
-msgstr "اسپانسر‌های درجه ۱"
+msgstr "اسپانسر‌های پلاتینیوم (درجه ۱)"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Gold Sponsors"
-msgstr "اسپانسر‌های درجه ۲"
+msgstr "اسپانسر‌های طلایی (درجه ۲)"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1095,11 +1094,11 @@ msgstr ""
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Install"
-msgstr ""
+msgstr "نصب کردن"
 
 #: editor/editor_asset_installer.cpp
 msgid "Package Installer"
-msgstr ""
+msgstr "نصب کننده پکیج ها"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -10397,7 +10396,7 @@ msgstr ""
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 
