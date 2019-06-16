@@ -33,17 +33,16 @@
 
 #include "core/io/image_loader.h"
 
-#include <png.h>
-
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class ImageLoaderPNG : public ImageFormatLoader {
-
-	static void _read_png_data(png_structp png_ptr, png_bytep data, png_size_t p_length);
+private:
+	static PoolVector<uint8_t> lossless_pack_png(const Ref<Image> &p_image);
+	static Ref<Image> lossless_unpack_png(const PoolVector<uint8_t> &p_data);
+	static Ref<Image> load_mem_png(const uint8_t *p_png, int p_size);
 
 public:
-	static Error _load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_image);
 	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	ImageLoaderPNG();

@@ -8,7 +8,7 @@ env:
   global:
     - SCONS_CACHE=$HOME/.scons_cache
     - SCONS_CACHE_LIMIT=1024
-    - OPTIONS="debug_symbols=no verbose=yes progress=no"
+    - OPTIONS="debug_symbols=no verbose=yes progress=no builtin_libpng=yes"
     - secure: "uch9QszCgsl1qVbuzY41P7S2hWL2IiNFV4SbAYRCdi0oJ9MIu+pVyrQdpf3+jG4rH6j4Rffl+sN17Zz4dIDDioFL1JwqyCqyCyswR8uACC0Rr8gr4Mi3+HIRbv+2s2P4cIQq41JM8FJe84k9jLEMGCGh69w+ibCWoWs74CokYVA="
 
 cache:
@@ -39,7 +39,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - &gcc8_deps [gcc-8, g++-8]
-            - &linux_deps [libasound2-dev, libfreetype6-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
+            - &linux_deps [libasound2-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
             - &linux_mono_deps [mono-devel, msbuild, nuget]
 
         coverity_scan:
