@@ -6385,7 +6385,7 @@ EditorNode::EditorNode() {
 	execute_outputs = memnew(RichTextLabel);
 	execute_output_dialog = memnew(AcceptDialog);
 	execute_output_dialog->add_child(execute_outputs);
-	execute_output_dialog->set_title(TTR(""));
+	execute_output_dialog->set_title("");
 	gui_base->add_child(execute_output_dialog);
 
 	EditorFileSystem::get_singleton()->connect("sources_changed", this, "_sources_changed");
