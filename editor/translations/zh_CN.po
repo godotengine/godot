@@ -10,7 +10,7 @@
 # ageazrael <ageazrael@gmail.com>, 2016.
 # Bruce Guo <guoboism@hotmail.com>, 2016.
 # dragonandy <dragonandy@foxmail.com>, 2017-2018.
-# Geequlim <geequlim@gmail.com>, 2016-2018.
+# Geequlim <geequlim@gmail.com>, 2016-2018, 2019.
 # jie Shi <meishijiemeimeimei@gmail.com>, 2018.
 # Jingtian Pan <panjingtian@126.com>, 2018.
 # lalalaring <783482203@qq.com>, 2017, 2018.
@@ -50,8 +50,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-05-16 18:48+0000\n"
-"Last-Translator: DS <dseqrasd@126.com>\n"
+"PO-Revision-Date: 2019-06-16 19:42+0000\n"
+"Last-Translator: yzt <834950797@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -195,12 +195,10 @@ msgid "Animation Playback Track"
 msgstr "动画回放轨道"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "动画时长（秒）"
+msgstr "动画时长（帧）"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
 msgstr "动画时长（秒）"
 
@@ -467,7 +465,7 @@ msgstr "动画步进值。"
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "秒"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
@@ -2141,8 +2139,8 @@ msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
-"自动导入的场景'％s'无法修改。\n"
-"如要更改，请创建一个新的备份场景。"
+"场景 '%s' 已自动导入, 因此无法修改。\n"
+"若要对其进行更改, 可以创建新的继承场景。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2247,7 +2245,7 @@ msgstr "新建场景"
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene..."
-msgstr "从现有场景中创建..."
+msgstr "新建继承的场景…"
 
 #: editor/editor_node.cpp
 msgid "Open Scene..."
@@ -3395,7 +3393,7 @@ msgstr "保存中..."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
-msgstr "将默认设置为 '%s'"
+msgstr "设置为 '%s' 的默认值"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
@@ -4741,21 +4739,22 @@ msgid "Layout"
 msgstr "布局"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Translation mask for inserting keys."
-msgstr ""
+msgstr "用于插入键的转换掩码。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Rotation mask for inserting keys."
-msgstr ""
+msgstr "用于插入键的旋转掩码。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale mask for inserting keys."
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Insert keys (based on mask)."
-msgstr "插入关键帧（ 创建轨道）"
+msgstr "插入帧（基于遮罩）。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -4766,9 +4765,8 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Insert Key"
-msgstr "插入关键帧"
+msgstr "自动插入关键帧"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -5748,9 +5746,8 @@ msgid "Save Theme As..."
 msgstr "主题另存为..."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "%s Class Reference"
-msgstr " 类引用"
+msgstr "%s 类引用"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
@@ -6574,24 +6571,20 @@ msgid "Nameless gizmo"
 msgstr "未命名的Gizmo"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Mesh2D"
 msgstr "创建 2D 网格"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon2D"
-msgstr "创建3D多边形"
+msgstr "创建2D多边形"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D"
-msgstr "创建碰撞多边形"
+msgstr "创建2D碰撞多边形"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D"
-msgstr "添加遮光多边形"
+msgstr "添加2D遮光多边形"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6606,43 +6599,36 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "无效的几何体，无法使用网格替换。"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create polygon."
-msgstr "无效的几何体，无法使用网格替换。"
+msgstr "无效的几何体，无法创建多边形。"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create collision polygon."
-msgstr "无效的几何体，无法使用网格替换。"
+msgstr "无效的几何体，无法创建多边形碰撞体。"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create light occluder."
-msgstr "无效的几何体，无法使用网格替换。"
+msgstr "无效的几何体，无法创建遮光体。"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr "Sprite 精灵"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Mesh2D"
 msgstr "转换为 2D 网格"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Polygon2D"
-msgstr "移动多边形"
+msgstr "转换为多边形"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "创建碰撞多边形"
+msgstr "创建2D碰撞多边形成员"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D Sibling"
-msgstr "添加遮光多边形"
+msgstr "创建2D遮光多边形成员"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7227,7 +7213,6 @@ msgid "Duplicate Nodes"
 msgstr "复制节点"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Nodes"
 msgstr "删除节点"
 
@@ -9243,7 +9228,7 @@ msgstr "更改参数名称"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Set Variable Default Value"
-msgstr "修改默认值"
+msgstr "设置变量默认值"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Set Variable Type"
@@ -10109,10 +10094,11 @@ msgid "Add current color as a preset."
 msgstr "将当前颜色添加为预设。"
 
 #: scene/gui/container.cpp
+#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 "除非在脚本内配置其子项的放置行为，否则容器本身没有用处。\n"

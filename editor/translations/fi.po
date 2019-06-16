@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-05-04 13:48+0000\n"
+"PO-Revision-Date: 2019-05-30 03:41+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -159,12 +159,10 @@ msgid "Animation Playback Track"
 msgstr "Animaatiotoistoraita"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Animaation pituus (sekunteina)"
+msgstr "Animaation pituus (kuvaruutuina)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
 msgstr "Animaation pituus (sekunteina)"
 
@@ -10265,10 +10263,11 @@ msgid "Add current color as a preset."
 msgstr "Lisää nykyinen väri esiasetukseksi."
 
 #: scene/gui/container.cpp
+#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 "Säilöllä ei ole itsessään mitään merkitystä ellei jokin skripti säädä sen "
