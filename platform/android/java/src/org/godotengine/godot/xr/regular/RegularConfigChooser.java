@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  PancakeConfigChooser.java                                            */
+/*  RegularConfigChooser.java                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot.xr.pancake;
+package org.godotengine.godot.xr.regular;
 
 import android.opengl.GLSurfaceView;
 import javax.microedition.khronos.egl.EGL10;
@@ -39,9 +39,9 @@ import org.godotengine.godot.utils.GLUtils;
 /**
  * Used to select the egl config for pancake games.
  */
-public class PancakeConfigChooser implements GLSurfaceView.EGLConfigChooser {
+public class RegularConfigChooser implements GLSurfaceView.EGLConfigChooser {
 
-	private static final String TAG = PancakeConfigChooser.class.getSimpleName();
+	private static final String TAG = RegularConfigChooser.class.getSimpleName();
 
 	private int[] mValue = new int[1];
 
@@ -69,7 +69,7 @@ public class PancakeConfigChooser implements GLSurfaceView.EGLConfigChooser {
 		EGL10.EGL_NONE
 	};
 
-	public PancakeConfigChooser(int r, int g, int b, int a, int depth, int stencil) {
+	public RegularConfigChooser(int r, int g, int b, int a, int depth, int stencil) {
 		mRedSize = r;
 		mGreenSize = g;
 		mBlueSize = b;
