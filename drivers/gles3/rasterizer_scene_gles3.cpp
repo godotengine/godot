@@ -34,6 +34,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "rasterizer_canvas_gles3.h"
+#include "servers/camera/camera_feed.h"
 #include "servers/visual/visual_server_raster.h"
 
 #ifndef GLES_OVER_GL
@@ -829,6 +830,12 @@ void RasterizerSceneGLES3::environment_set_ambient_light(RID p_env, const Color 
 	env->ambient_color = p_color;
 	env->ambient_energy = p_energy;
 	env->ambient_sky_contribution = p_sky_contribution;
+}
+void RasterizerSceneGLES3::environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) {
+	Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->camera_feed_id = p_camera_feed_id;
 }
 
 void RasterizerSceneGLES3::environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality) {
@@ -4342,6 +4349,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	Color clear_color(0, 0, 0, 0);
 
 	RasterizerStorageGLES3::Sky *sky = NULL;
+	Ref<CameraFeed> feed;
 	GLuint env_radiance_tex = 0;
 
 	if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
@@ -4376,6 +4384,9 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		clear_color = env->bg_color.to_linear();
 		storage->frame.clear_request = false;
 
+	} else if (env->bg_mode == VS::ENV_BG_CAMERA_FEED) {
+		feed = CameraServer::get_singleton()->get_feed_by_id(env->camera_feed_id);
+		storage->frame.clear_request = false;
 	} else {
 		storage->frame.clear_request = false;
 	}
@@ -4425,6 +4436,63 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 				glDepthMask(GL_TRUE);
 				glEnable(GL_DEPTH_TEST);
 				glEnable(GL_CULL_FACE);
+				break;
+			case VS::ENV_BG_CAMERA_FEED:
+				if (feed.is_valid() && (feed->get_base_width() > 0) && (feed->get_base_height() > 0)) {
+					// copy our camera feed to our background
+
+					glDisable(GL_BLEND);
+					glDepthMask(GL_FALSE);
+					glDisable(GL_DEPTH_TEST);
+					glDisable(GL_CULL_FACE);
+
+					storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_DISPLAY_TRANSFORM, true);
+					storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, true);
+					storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, true);
+
+					if (feed->get_datatype() == CameraFeed::FEED_RGB) {
+						RID camera_RGBA = feed->get_texture(CameraServer::FEED_RGBA_IMAGE);
+
+						VS::get_singleton()->texture_bind(camera_RGBA, 0);
+					} else if (feed->get_datatype() == CameraFeed::FEED_YCbCr) {
+						RID camera_YCbCr = feed->get_texture(CameraServer::FEED_YCbCr_IMAGE);
+
+						VS::get_singleton()->texture_bind(camera_YCbCr, 0);
+
+						storage->shaders.copy.set_conditional(CopyShaderGLES3::YCBCR_TO_SRGB, true);
+
+					} else if (feed->get_datatype() == CameraFeed::FEED_YCbCr_Sep) {
+						RID camera_Y = feed->get_texture(CameraServer::FEED_Y_IMAGE);
+						RID camera_CbCr = feed->get_texture(CameraServer::FEED_CbCr_IMAGE);
+
+						VS::get_singleton()->texture_bind(camera_Y, 0);
+						VS::get_singleton()->texture_bind(camera_CbCr, 1);
+
+						storage->shaders.copy.set_conditional(CopyShaderGLES3::SEP_CBCR_TEXTURE, true);
+						storage->shaders.copy.set_conditional(CopyShaderGLES3::YCBCR_TO_SRGB, true);
+					};
+
+					storage->shaders.copy.bind();
+					storage->shaders.copy.set_uniform(CopyShaderGLES3::DISPLAY_TRANSFORM, feed->get_transform());
+
+					_copy_screen(true, true);
+
+					//turn off everything used
+					storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_DISPLAY_TRANSFORM, false);
+					storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, false);
+					storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, false);
+					storage->shaders.copy.set_conditional(CopyShaderGLES3::SEP_CBCR_TEXTURE, false);
+					storage->shaders.copy.set_conditional(CopyShaderGLES3::YCBCR_TO_SRGB, false);
+
+					//restore
+					glEnable(GL_BLEND);
+					glDepthMask(GL_TRUE);
+					glEnable(GL_DEPTH_TEST);
+					glEnable(GL_CULL_FACE);
+				} else {
+					// don't have a feed, just show greenscreen :)
+					clear_color = Color(0.0, 1.0, 0.0, 1.0);
+				}
 				break;
 			default: {
 			}

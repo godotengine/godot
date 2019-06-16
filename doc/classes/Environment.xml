@@ -57,6 +57,9 @@
 		<member name="auto_exposure_speed" type="float" setter="set_tonemap_auto_exposure_speed" getter="get_tonemap_auto_exposure_speed">
 			Speed of the auto exposure effect. Affects the time needed for the camera to perform auto exposure.
 		</member>
+		<member name="background_camera_feed_id" type="int" setter="set_camera_feed_id" getter="get_camera_feed_id">
+			The id of the camera feed to show in the background.
+		</member>
 		<member name="background_canvas_max_layer" type="int" setter="set_canvas_max_layer" getter="get_canvas_max_layer">
 			Maximum layer id (if using Layer background mode).
 		</member>
@@ -266,7 +269,10 @@
 		<constant name="BG_CANVAS" value="4" enum="BGMode">
 			Display a [CanvasLayer] in the background.
 		</constant>
-		<constant name="BG_MAX" value="6" enum="BGMode">
+		<constant name="BG_CAMERA_FEED" value="6" enum="BGMode">
+			Display a camera feed in the background.
+		</constant>
+		<constant name="BG_MAX" value="7" enum="BGMode">
 			Helper constant keeping track of the enum's size, has no direct usage in API calls.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="GlowBlendMode">

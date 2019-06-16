@@ -646,6 +646,7 @@ void register_scene_types() {
 	ClassDB::register_class<GradientTexture>();
 	ClassDB::register_class<ProxyTexture>();
 	ClassDB::register_class<AnimatedTexture>();
+	ClassDB::register_class<CameraTexture>();
 	ClassDB::register_class<CubeMap>();
 	ClassDB::register_virtual_class<TextureLayered>();
 	ClassDB::register_class<Texture3D>();

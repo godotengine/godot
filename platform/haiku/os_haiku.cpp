@@ -133,6 +133,8 @@ Error OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	window->Show();
 	visual_server->init();
 
+	camera_server = memnew(CameraServer);
+
 	AudioDriverManager::initialize(p_audio_driver);
 
 	return OK;
@@ -147,6 +149,8 @@ void OS_Haiku::finalize() {
 
 	visual_server->finish();
 	memdelete(visual_server);
+
+	memdelete(camera_server);
 
 	memdelete(input);
 

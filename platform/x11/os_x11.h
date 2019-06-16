@@ -42,6 +42,7 @@
 #include "main/input_default.h"
 #include "power_x11.h"
 #include "servers/audio_server.h"
+#include "servers/camera_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 //#include "servers/visual/visual_server_wrap_mt.h"
@@ -145,6 +146,8 @@ class OS_X11 : public OS_Unix {
 	unsigned int get_mouse_button_state(unsigned int p_x11_button, int p_x11_type);
 	void get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 	void flush_mouse_motion();
+
+	CameraServer *camera_server;
 
 	MouseMode mouse_mode;
 	Point2i center;

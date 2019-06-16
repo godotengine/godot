@@ -18,6 +18,9 @@
 		<member name="AudioServer" type="AudioServer" setter="" getter="">
 			[AudioServer] singleton
 		</member>
+		<member name="CameraServer" type="CameraServer" setter="" getter="">
+			[CameraServer] singleton
+		</member>
 		<member name="ClassDB" type="ClassDB" setter="" getter="">
 			[ClassDB] singleton
 		</member>

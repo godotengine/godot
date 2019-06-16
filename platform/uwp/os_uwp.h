@@ -41,6 +41,7 @@
 #include "main/input_default.h"
 #include "power_uwp.h"
 #include "servers/audio_server.h"
+#include "servers/camera_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
@@ -94,6 +95,8 @@ private:
 	Point2i center;
 	VisualServer *visual_server;
 	int pressrc;
+
+	CameraServer *camera_server;
 
 	ContextEGL_UWP *gl_context;
 	Windows::UI::Core::CoreWindow ^ window;

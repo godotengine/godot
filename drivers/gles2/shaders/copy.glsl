@@ -28,8 +28,15 @@ varying vec2 uv_interp;
 #endif
 varying vec2 uv2_interp;
 
+// These definitions are here because the shader-wrapper builder does
+// not understand `#elif defined()`
+#ifdef USE_DISPLAY_TRANSFORM
+#endif
+
 #ifdef USE_COPY_SECTION
 uniform highp vec4 copy_section;
+#elif defined(USE_DISPLAY_TRANSFORM)
+uniform highp mat4 display_transform;
 #endif
 
 void main() {
@@ -48,6 +55,8 @@ void main() {
 #ifdef USE_COPY_SECTION
 	uv_interp = copy_section.xy + uv_interp * copy_section.zw;
 	gl_Position.xy = (copy_section.xy + (gl_Position.xy * 0.5 + 0.5) * copy_section.zw) * 2.0 - 1.0;
+#elif defined(USE_DISPLAY_TRANSFORM)
+	uv_interp = (display_transform * vec4(uv_in, 1.0, 1.0)).xy;
 #endif
 }
 
@@ -86,6 +95,10 @@ uniform highp vec4 asym_proj;
 uniform samplerCube source_cube; // texunit:0
 #else
 uniform sampler2D source; // texunit:0
+#endif
+
+#ifdef SEP_CBCR_TEXTURE
+uniform sampler2D CbCr; //texunit:1
 #endif
 
 varying vec2 uv2_interp;
@@ -145,8 +158,24 @@ void main() {
 
 #elif defined(USE_CUBEMAP)
 	vec4 color = textureCube(source_cube, normalize(cube_interp));
+#elif defined(SEP_CBCR_TEXTURE)
+	vec4 color;
+	color.r = texture2D(source, uv_interp).r;
+	color.gb = texture2D(CbCr, uv_interp).rg - vec2(0.5, 0.5);
+	color.a = 1.0;
 #else
 	vec4 color = texture2D(source, uv_interp);
+#endif
+
+#ifdef YCBCR_TO_RGB
+	// YCbCr -> RGB conversion
+
+	// Using BT.601, which is the standard for SDTV is provided as a reference
+	color.rgb = mat3(
+						vec3(1.00000, 1.00000, 1.00000),
+						vec3(0.00000, -0.34413, 1.77200),
+						vec3(1.40200, -0.71414, 0.00000)) *
+				color.rgb;
 #endif
 
 #ifdef USE_NO_ALPHA
