@@ -3157,8 +3157,10 @@
 			</argument>
 			<argument index="2" name="scale" type="bool">
 			</argument>
+			<argument index="3" name="use_filter" type="bool" default="true">
+			</argument>
 			<description>
-				Sets a boot image. The color defines the background color and if scale is [code]true[/code] the image will be scaled to fit the screen size.
+				Sets a boot image. The color defines the background color. If [code]scale[/code] is [code]true[/code], the image will be scaled to fit the screen size. If [code]use_filter[/code] is [code]true[/code], the image will be scaled with linear interpolation. If [code]use_filter[/code] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
 			</description>
 		</method>
 		<method name="set_debug_generate_wireframes">
