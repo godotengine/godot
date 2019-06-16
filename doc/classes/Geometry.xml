@@ -62,24 +62,26 @@
 		<method name="clip_polygons_2d">
 			<return type="Array">
 			</return>
-			<argument index="0" name="polygon_a" type="PoolVector2Array">
+			<argument index="0" name="polygons_a" type="Variant">
 			</argument>
-			<argument index="1" name="polygon_b" type="PoolVector2Array">
+			<argument index="1" name="polygons_b" type="Variant">
 			</argument>
 			<description>
-				Clips [code]polygon_a[/code] against [code]polygon_b[/code] and returns an array of clipped polygons. This performs [constant OPERATION_DIFFERENCE] between polygons. Returns an empty array if [code]polygon_b[/code] completely overlaps [code]polygon_a[/code].
-				If [code]polygon_b[/code] is enclosed by [code]polygon_a[/code], returns an outer polygon (boundary) and inner polygon (hole) which could be distiguished by calling [method is_polygon_clockwise].
+				Clips [code]polygons_a[/code] against [code]polygons_b[/code] and returns an array of clipped polygons. This performs [constant OPERATION_DIFFERENCE] between polygons. Returns an empty array if [code]polygons_b[/code] completely overlap [code]polygons_a[/code].
+				If [code]polygons_b[/code] are enclosed by [code]polygons_a[/code], returns outer polygons (boundary) and inner polygons (hole) which could be distinguished by calling [method is_polygon_clockwise].
+				Both [code]polygons_a[/code] and [code]polygons_b[/code] parameters can either accept [PoolVector2Array] to be interpreted as a single polygon or [Array] of [PoolVector2Array]'s to accept a list of polygons.
 			</description>
 		</method>
-		<method name="clip_polyline_with_polygon_2d">
+		<method name="clip_polylines_with_polygons_2d">
 			<return type="Array">
 			</return>
-			<argument index="0" name="polyline" type="PoolVector2Array">
+			<argument index="0" name="polylines" type="Variant">
 			</argument>
-			<argument index="1" name="polygon" type="PoolVector2Array">
+			<argument index="1" name="polygons" type="Variant">
 			</argument>
 			<description>
-				Clips [code]polyline[/code] against [code]polygon[/code] and returns an array of clipped polylines. This performs [constant OPERATION_DIFFERENCE] between the polyline and the polygon. This operation can be thought of as cutting a line with a closed shape.
+				Clips [code]polylines[/code] against [code]polygons[/code] and returns an array of clipped polylines. This performs [constant OPERATION_DIFFERENCE between polylines and polygons. This operation can be thought of as cutting a line in two with a closed shape.
+				Both [code]polylines[/code] and [code]polygons[/code] parameters can either accept [PoolVector2Array] to be interpreted as a single polypath or [Array] of [PoolVector2Array]'s to accept a list of polypaths.
 			</description>
 		</method>
 		<method name="convex_hull_2d">
@@ -94,13 +96,14 @@
 		<method name="exclude_polygons_2d">
 			<return type="Array">
 			</return>
-			<argument index="0" name="polygon_a" type="PoolVector2Array">
+			<argument index="0" name="polygons_a" type="Variant">
 			</argument>
-			<argument index="1" name="polygon_b" type="PoolVector2Array">
+			<argument index="1" name="polygons_b" type="Variant">
 			</argument>
 			<description>
-				Mutually excludes common area defined by intersection of [code]polygon_a[/code] and [code]polygon_b[/code] (see [method intersect_polygons_2d]) and returns an array of excluded polygons. This performs [constant OPERATION_XOR] between polygons. In other words, returns all but common area between polygons.
-				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distiguished by calling [method is_polygon_clockwise].
+				Mutually excludes common area defined by intersection of [code]polygons_a[/code] and [code]polygons_b[/code] (see [method intersect_polygons_2d]) and returns an array of excluded polygons. This performs [constant OPERATION_XOR] between polygons. In other words, returns all but common area defined by polygons.
+				The operation may result in outer polygons (boundary) and inner polygons (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
+				Both [code]polygons_a[/code] and [code]polygons_b[/code] parameters can either accept [PoolVector2Array] to be interpreted as a single polygon or [Array] of [PoolVector2Array]'s to accept a list of polygons.
 			</description>
 		</method>
 		<method name="get_closest_point_to_segment">
@@ -196,24 +199,26 @@
 		<method name="intersect_polygons_2d">
 			<return type="Array">
 			</return>
-			<argument index="0" name="polygon_a" type="PoolVector2Array">
+			<argument index="0" name="polygons_a" type="Variant">
 			</argument>
-			<argument index="1" name="polygon_b" type="PoolVector2Array">
+			<argument index="1" name="polygons_b" type="Variant">
 			</argument>
 			<description>
-				Intersects [code]polygon_a[/code] with [code]polygon_b[/code] and returns an array of intersected polygons. This performs [constant OPERATION_INTERSECTION] between polygons. In other words, returns common area shared by polygons. Returns an empty array if no intersection occurs.
-				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
+				Intersects [code]polygons_a[/code] with [code]polygons_b[/code] and returns an array of intersected polygons. This performs [constant OPERATION_INTERSECTION] between polygons. In other words, returns common area shared by polygons. Returns an empty array if no intersection occurs.
+				The operation may result in outer polygons (boundary) and inner polygons (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
+				Both [code]polygons_a[/code] and [code]polygons_b[/code] parameters can either accept [PoolVector2Array] to be interpreted as a single polygon or [Array] of [PoolVector2Array]'s to accept a list of polygons.
 			</description>
 		</method>
-		<method name="intersect_polyline_with_polygon_2d">
+		<method name="intersect_polylines_with_polygons_2d">
 			<return type="Array">
 			</return>
-			<argument index="0" name="polyline" type="PoolVector2Array">
+			<argument index="0" name="polylines" type="Variant">
 			</argument>
-			<argument index="1" name="polygon" type="PoolVector2Array">
+			<argument index="1" name="polygons" type="Variant">
 			</argument>
 			<description>
-				Intersects [code]polyline[/code] with [code]polygon[/code] and returns an array of intersected polylines. This performs [constant OPERATION_INTERSECTION] between the polyline and the polygon. This operation can be thought of as chopping a line with a closed shape.
+				Intersects [code]polylines[/code] with [code]polygons[/code] and returns an array of intersected polylines. This performs [constant OPERATION_INTERSECTION] between the polyline and the polygon. This operation can be thought of as chopping a line with a closed shape.
+				Both [code]polylines[/code] and [code]polygons[/code] parameters can either accept [PoolVector2Array] to be interpreted as a single polypath or [Array] of [PoolVector2Array]'s to accept a list of polypaths.
 			</description>
 		</method>
 		<method name="is_point_in_circle">
@@ -277,34 +282,35 @@
 		<method name="merge_polygons_2d">
 			<return type="Array">
 			</return>
-			<argument index="0" name="polygon_a" type="PoolVector2Array">
-			</argument>
-			<argument index="1" name="polygon_b" type="PoolVector2Array">
+			<argument index="0" name="polygons" type="Variant">
 			</argument>
 			<description>
-				Merges (combines) [code]polygon_a[/code] and [code]polygon_b[/code] and returns an array of merged polygons. This performs [constant OPERATION_UNION] between polygons.
-				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
+				Merges (combines) all [code]polygons[/code] and returns an array of merged polygons. This performs [constant OPERATION_UNION] between polygons.
+				Not all polygons may be merged but only those which overlap geometrically. If not, consider using [method offset_polygons_2d] with positive delta before merging, also see [method convex_hull_2d], [method triangulate_delaunay_2d]. Returns original polygons if neither polygon overlap. The method may also attempt to turn self-intersecting polygons into strictly simple even if no merging occurs.
+				The operation may result in outer polygons (boundary) and inner polygons (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
+				[code]polygons[/code] parameter accepts [Array] of [PoolVector2Array]'s to represent a list of polygons. Passing a single [PoolVector2Array] polygon is possible and can be used to eliminate self-intersections.
 			</description>
 		</method>
-		<method name="offset_polygon_2d">
+		<method name="offset_polygons_2d">
 			<return type="Array">
 			</return>
-			<argument index="0" name="polygon" type="PoolVector2Array">
+			<argument index="0" name="polygons" type="Variant">
 			</argument>
 			<argument index="1" name="delta" type="float">
 			</argument>
 			<argument index="2" name="join_type" type="int" enum="Geometry.PolyJoinType" default="0">
 			</argument>
 			<description>
-				Inflates or deflates [code]polygon[/code] by [code]delta[/code] units (pixels). If [code]delta[/code] is positive, makes the polygon grow outward. If [code]delta[/code] is negative, shrinks the polygon inward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. Returns an empty array if [code]delta[/code] is negative and the absolute value of it approximately exceeds the minimum bounding rectangle dimensions of the polygon.
+				Inflates or deflates [code]polygons[/code] by [code]delta[/code] units (pixels). If [code]delta[/code] is positive, makes the polygons grow outward. If [code]delta[/code] is negative, shrinks the polygons inward. Returns an array of polygons as inflating/deflating may result in multiple discrete polygons. Returns an empty array if [code]delta[/code] is negative and the absolute value of it approximately exceeds the minimum bounding rectangle dimensions of each polygon.
 				Each polygon's vertices will be rounded as determined by [code]join_type[/code], see [enum PolyJoinType].
-				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
+				The operation may result in outer polygons (boundary) and inner polygons (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
+				[code]polygons[/code] parameter can either accept [PoolVector2Array] to be interpreted as a single polygon or [Array] of [PoolVector2Array]'s to accept a list of polygons.
 			</description>
 		</method>
-		<method name="offset_polyline_2d">
+		<method name="offset_polylines_2d">
 			<return type="Array">
 			</return>
-			<argument index="0" name="polyline" type="PoolVector2Array">
+			<argument index="0" name="polylines" type="Variant">
 			</argument>
 			<argument index="1" name="delta" type="float">
 			</argument>
@@ -313,10 +319,11 @@
 			<argument index="3" name="end_type" type="int" enum="Geometry.PolyEndType" default="3">
 			</argument>
 			<description>
-				Inflates or deflates [code]polyline[/code] by [code]delta[/code] units (pixels), producing polygons. If [code]delta[/code] is positive, makes the polyline grow outward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. If [code]delta[/code] is negative, returns an empty array.
+				Inflates or deflates [code]polylines[/code] by [code]delta[/code] units (pixels), producing polygons. If [code]delta[/code] is positive, makes the polylines grow outward. Returns an array of polygons as inflating/deflating may result in multiple discrete polygons. If [code]delta[/code] is negative, returns an empty array.
 				Each polygon's vertices will be rounded as determined by [code]join_type[/code], see [enum PolyJoinType].
 				Each polygon's endpoints will be rounded as determined by [code]end_type[/code], see [enum PolyEndType].
-				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
+				The operation may result in outer polygons (boundary) and inner polygons (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
+				[code]polylines[/code] parameter can either accept [PoolVector2Array] to be interpreted as a single polyline or [Array] of [PoolVector2Array]'s to accept a list of polylines.
 			</description>
 		</method>
 		<method name="point_is_inside_triangle" qualifiers="const">
@@ -486,7 +493,7 @@
 			Create regions where either subject or clip polygons are filled but not where both are filled.
 		</constant>
 		<constant name="JOIN_SQUARE" value="0" enum="PolyJoinType">
-			Squaring is applied uniformally at all convex edge joins at [code]1 * delta[/code].
+			Squaring is applied uniformly at all convex edge joins at [code]1 * delta[/code].
 		</constant>
 		<constant name="JOIN_ROUND" value="1" enum="PolyJoinType">
 			While flattened paths can never perfectly trace an arc, they are approximated by a series of arc chords.

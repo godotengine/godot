@@ -1593,100 +1593,137 @@ Vector<Vector3> _Geometry::clip_polygon(const Vector<Vector3> &p_points, const P
 	return Geometry::clip_polygon(p_points, p_plane);
 }
 
-Array _Geometry::merge_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+Array _Geometry::merge_polygons_2d(const Variant &p_subject) {
 
-	Vector<Vector<Point2> > polys = Geometry::merge_polygons_2d(p_polygon_a, p_polygon_b);
+	return _polypaths_do_operation(OPERATION_UNION, p_subject);
+}
+
+Array _Geometry::clip_polygons_2d(const Variant &p_subject, const Variant &p_clip) {
+
+	return _polypaths_do_operation(OPERATION_DIFFERENCE, p_subject, p_clip);
+}
+
+Array _Geometry::intersect_polygons_2d(const Variant &p_subject, const Variant &p_clip) {
+
+	return _polypaths_do_operation(OPERATION_INTERSECTION, p_subject, p_clip);
+}
+
+Array _Geometry::exclude_polygons_2d(const Variant &p_subject, const Variant &p_clip) {
+
+	return _polypaths_do_operation(OPERATION_XOR, p_subject, p_clip);
+}
+
+Array _Geometry::clip_polylines_with_polygons_2d(const Variant &p_polylines, const Variant &p_polygons) {
+
+	return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polylines, p_polygons, true);
+}
+
+Array _Geometry::intersect_polylines_with_polygons_2d(const Variant &p_polylines, const Variant &p_polygons) {
+
+	return _polypaths_do_operation(OPERATION_INTERSECTION, p_polylines, p_polygons, true);
+}
+
+Array _Geometry::offset_polygons_2d(const Variant &p_polygons, real_t p_delta, PolyJoinType p_join_type) {
+
+	Vector<Vector<Point2> > polygons;
+	_convert_polypaths(p_polygons, polygons);
+
+	Vector<Vector<Point2> > solution;
+	solution = Geometry::offset_polygons_2d(polygons, p_delta, Geometry::PolyJoinType(p_join_type));
 
 	Array ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
+	for (int i = 0; i < solution.size(); ++i) {
+		ret.push_back(solution[i]);
 	}
 	return ret;
 }
 
-Array _Geometry::clip_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+Array _Geometry::offset_polylines_2d(const Variant &p_polylines, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
 
-	Vector<Vector<Point2> > polys = Geometry::clip_polygons_2d(p_polygon_a, p_polygon_b);
+	Vector<Vector<Point2> > polylines;
+	_convert_polypaths(p_polylines, polylines);
+
+	Vector<Vector<Point2> > solution;
+	solution = Geometry::offset_polylines_2d(polylines, p_delta, Geometry::PolyJoinType(p_join_type), Geometry::PolyEndType(p_end_type));
 
 	Array ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
+	for (int i = 0; i < solution.size(); ++i) {
+		ret.push_back(solution[i]);
 	}
 	return ret;
 }
 
-Array _Geometry::intersect_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+Array _Geometry::_polypaths_do_operation(PolyBooleanOperation p_op, const Variant &p_subject, const Variant &p_clip, bool is_subject_open) {
 
-	Vector<Vector<Point2> > polys = Geometry::intersect_polygons_2d(p_polygon_a, p_polygon_b);
+	Vector<Vector<Point2> > solution;
 
+	Vector<Vector<Point2> > subject;
+	_convert_polypaths(p_subject, subject);
+
+	if (p_clip.get_type() == Variant::NIL) {
+		// Assume we operate in OPERATION_UNION mode as it's
+		// the only operation accepting subject polygons only
+		ERR_FAIL_COND_V(p_op != OPERATION_UNION, Array());
+
+		solution = Geometry::merge_polygons_2d(subject);
+	} else {
+
+		Vector<Vector<Point2> > clip;
+		_convert_polypaths(p_clip, clip);
+
+		switch (p_op) {
+			case OPERATION_UNION: {
+				ERR_FAIL_V(Array()); // merge operation should be handled above
+			} break;
+
+			case OPERATION_DIFFERENCE: {
+				if (is_subject_open) {
+					solution = Geometry::clip_polylines_with_polygons_2d(subject, clip);
+				} else {
+					solution = Geometry::clip_polygons_2d(subject, clip);
+				}
+			} break;
+
+			case OPERATION_INTERSECTION: {
+				if (is_subject_open) {
+					solution = Geometry::intersect_polylines_with_polygons_2d(subject, clip);
+				} else {
+					solution = Geometry::intersect_polygons_2d(subject, clip);
+				}
+			} break;
+
+			case OPERATION_XOR: {
+				solution = Geometry::exclude_polygons_2d(subject, clip);
+			} break;
+		}
+	}
 	Array ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
+	for (int i = 0; i < solution.size(); ++i) {
+		ret.push_back(solution[i]);
 	}
 	return ret;
 }
 
-Array _Geometry::exclude_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+void _Geometry::_convert_polypaths(const Variant &p_input, Vector<Vector<Point2> > &r_output) {
 
-	Vector<Vector<Point2> > polys = Geometry::exclude_polygons_2d(p_polygon_a, p_polygon_b);
+	if (p_input.get_type() == Variant::ARRAY) {
+		Array input = p_input;
 
-	Array ret;
+		for (int i = 0; i < input.size(); ++i) {
+#if DEBUG_ENABLED
+			ERR_EXPLAIN("Expected an Array of PoolVector2Array's as polygons.")
+			ERR_FAIL_COND(input[i].get_type() != Variant::POOL_VECTOR2_ARRAY);
+#endif
+			r_output.push_back(input[i]);
+		}
+	} else if (p_input.get_type() == Variant::POOL_VECTOR2_ARRAY) {
 
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
+		r_output.push_back(p_input);
+
+	} else {
+		ERR_EXPLAIN("Expected a polygon or an array of polygons as input.")
+		ERR_FAIL();
 	}
-	return ret;
-}
-
-Array _Geometry::clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-
-	Vector<Vector<Point2> > polys = Geometry::clip_polyline_with_polygon_2d(p_polyline, p_polygon);
-
-	Array ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
-	}
-	return ret;
-}
-
-Array _Geometry::intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-
-	Vector<Vector<Point2> > polys = Geometry::intersect_polyline_with_polygon_2d(p_polyline, p_polygon);
-
-	Array ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
-	}
-	return ret;
-}
-
-Array _Geometry::offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
-
-	Vector<Vector<Point2> > polys = Geometry::offset_polygon_2d(p_polygon, p_delta, Geometry::PolyJoinType(p_join_type));
-
-	Array ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
-	}
-	return ret;
-}
-
-Array _Geometry::offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
-
-	Vector<Vector<Point2> > polys = Geometry::offset_polyline_2d(p_polygon, p_delta, Geometry::PolyJoinType(p_join_type), Geometry::PolyEndType(p_end_type));
-
-	Array ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
-	}
-	return ret;
 }
 
 Vector<Point2> _Geometry::transform_points_2d(const Vector<Point2> &p_points, const Transform2D &p_mat) {
@@ -1762,16 +1799,16 @@ void _Geometry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("convex_hull_2d", "points"), &_Geometry::convex_hull_2d);
 	ClassDB::bind_method(D_METHOD("clip_polygon", "points", "plane"), &_Geometry::clip_polygon);
 
-	ClassDB::bind_method(D_METHOD("merge_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::merge_polygons_2d);
-	ClassDB::bind_method(D_METHOD("clip_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::clip_polygons_2d);
-	ClassDB::bind_method(D_METHOD("intersect_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::intersect_polygons_2d);
-	ClassDB::bind_method(D_METHOD("exclude_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::exclude_polygons_2d);
+	ClassDB::bind_method(D_METHOD("merge_polygons_2d", "polygons"), &_Geometry::merge_polygons_2d);
+	ClassDB::bind_method(D_METHOD("clip_polygons_2d", "polygons_a", "polygons_b"), &_Geometry::clip_polygons_2d);
+	ClassDB::bind_method(D_METHOD("intersect_polygons_2d", "polygons_a", "polygons_b"), &_Geometry::intersect_polygons_2d);
+	ClassDB::bind_method(D_METHOD("exclude_polygons_2d", "polygons_a", "polygons_b"), &_Geometry::exclude_polygons_2d);
 
-	ClassDB::bind_method(D_METHOD("clip_polyline_with_polygon_2d", "polyline", "polygon"), &_Geometry::clip_polyline_with_polygon_2d);
-	ClassDB::bind_method(D_METHOD("intersect_polyline_with_polygon_2d", "polyline", "polygon"), &_Geometry::intersect_polyline_with_polygon_2d);
+	ClassDB::bind_method(D_METHOD("clip_polylines_with_polygons_2d", "polylines", "polygons"), &_Geometry::clip_polylines_with_polygons_2d);
+	ClassDB::bind_method(D_METHOD("intersect_polylines_with_polygons_2d", "polylines", "polygons"), &_Geometry::intersect_polylines_with_polygons_2d);
 
-	ClassDB::bind_method(D_METHOD("offset_polygon_2d", "polygon", "delta", "join_type"), &_Geometry::offset_polygon_2d, DEFVAL(JOIN_SQUARE));
-	ClassDB::bind_method(D_METHOD("offset_polyline_2d", "polyline", "delta", "join_type", "end_type"), &_Geometry::offset_polyline_2d, DEFVAL(JOIN_SQUARE), DEFVAL(END_SQUARE));
+	ClassDB::bind_method(D_METHOD("offset_polygons_2d", "polygons", "delta", "join_type"), &_Geometry::offset_polygons_2d, DEFVAL(JOIN_SQUARE));
+	ClassDB::bind_method(D_METHOD("offset_polylines_2d", "polylines", "delta", "join_type", "end_type"), &_Geometry::offset_polylines_2d, DEFVAL(JOIN_SQUARE), DEFVAL(END_SQUARE));
 
 	ClassDB::bind_method(D_METHOD("transform_points_2d", "points", "transform"), &_Geometry::transform_points_2d);
 

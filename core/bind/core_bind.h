@@ -409,14 +409,14 @@ public:
 		OPERATION_XOR
 	};
 	// 2D polygon boolean operations.
-	Array merge_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Union (add).
-	Array clip_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Difference (subtract).
-	Array intersect_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Common area (multiply).
-	Array exclude_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // All but common area (xor).
+	Array merge_polygons_2d(const Variant &p_polygons); // Union (add).
+	Array clip_polygons_2d(const Variant &p_polygons_a, const Variant &p_polygons_b); // Difference (subtract).
+	Array intersect_polygons_2d(const Variant &p_polygons_a, const Variant &p_polygons_b); // Common area (multiply).
+	Array exclude_polygons_2d(const Variant &p_polygons_a, const Variant &p_polygons_b); // All but common area (xor).
 
 	// 2D polyline vs polygon operations.
-	Array clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Cut.
-	Array intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Chop.
+	Array clip_polylines_with_polygons_2d(const Variant &p_polylines, const Variant &p_polygons); // Cut.
+	Array intersect_polylines_with_polygons_2d(const Variant &p_polylines, const Variant &p_polygons); // Chop.
 
 	// 2D offset polygons/polylines.
 	enum PolyJoinType {
@@ -431,14 +431,18 @@ public:
 		END_SQUARE,
 		END_ROUND
 	};
-	Array offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE);
-	Array offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE, PolyEndType p_end_type = END_SQUARE);
+	Array offset_polygons_2d(const Variant &p_polygons, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE);
+	Array offset_polylines_2d(const Variant &p_polylines, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE, PolyEndType p_end_type = END_SQUARE);
 
 	Vector<Point2> transform_points_2d(const Vector<Point2> &p_points, const Transform2D &p_mat);
 
 	Dictionary make_atlas(const Vector<Size2> &p_rects);
 
 	_Geometry();
+
+private:
+	Array _polypaths_do_operation(PolyBooleanOperation p_op, const Variant &p_polypaths_subject, const Variant &p_polypaths_clip = Variant(), bool is_subject_open = false);
+	void _convert_polypaths(const Variant &p_input, Vector<Vector<Point2> > &r_output);
 };
 
 VARIANT_ENUM_CAST(_Geometry::PolyBooleanOperation);

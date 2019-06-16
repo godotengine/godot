@@ -1088,7 +1088,49 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 	r_size = Size2(results[best].max_w, results[best].max_h);
 }
 
-Vector<Vector<Point2> > Geometry::_polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open) {
+// Polygon and polyline boolean operations
+
+namespace GodotClipperUtils {
+
+static void scale_up_polypaths(const Vector<Vector<Point2> > &p_polypaths_in, ClipperLib::Paths &p_polypaths_out) {
+
+	p_polypaths_out.clear();
+	p_polypaths_out.resize(p_polypaths_in.size());
+
+	for (int i = 0; i < p_polypaths_in.size(); ++i) {
+
+		const Vector<Point2> &polypath_in = p_polypaths_in[i];
+		ClipperLib::Path &polypath_out = p_polypaths_out[i];
+
+		for (int j = 0; j < polypath_in.size(); ++j) {
+			polypath_out << ClipperLib::IntPoint(
+					polypath_in[j].x * SCALE_FACTOR,
+					polypath_in[j].y * SCALE_FACTOR);
+		}
+	}
+}
+
+static void scale_down_polypaths(const ClipperLib::Paths &p_polypaths_in, Vector<Vector<Point2> > &p_polypaths_out) {
+
+	p_polypaths_out.clear();
+
+	for (ClipperLib::Paths::size_type i = 0; i < p_polypaths_in.size(); ++i) {
+
+		const ClipperLib::Path &polypath_in = p_polypaths_in[i];
+		Vector<Vector2> polypath_out;
+
+		for (ClipperLib::Paths::size_type j = 0; j < polypath_in.size(); ++j) {
+			polypath_out.push_back(Point2(
+					static_cast<real_t>(polypath_in[j].X) / SCALE_FACTOR,
+					static_cast<real_t>(polypath_in[j].Y) / SCALE_FACTOR));
+		}
+		p_polypaths_out.push_back(polypath_out);
+	}
+}
+
+} // namespace GodotClipperUtils
+
+Vector<Vector<Point2> > Geometry::_polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Vector<Point2> > &p_polypaths_subject, const Vector<Vector<Point2> > &p_polypaths_clip, bool is_a_open) {
 
 	using namespace ClipperLib;
 
@@ -1100,47 +1142,33 @@ Vector<Vector<Point2> > Geometry::_polypaths_do_operation(PolyBooleanOperation p
 		case OPERATION_INTERSECTION: op = ctIntersection; break;
 		case OPERATION_XOR: op = ctXor; break;
 	}
-	Path path_a, path_b;
+	Paths paths_subject, paths_clip;
 
 	// Need to scale points (Clipper's requirement for robust computation).
-	for (int i = 0; i != p_polypath_a.size(); ++i) {
-		path_a << IntPoint(p_polypath_a[i].x * SCALE_FACTOR, p_polypath_a[i].y * SCALE_FACTOR);
-	}
-	for (int i = 0; i != p_polypath_b.size(); ++i) {
-		path_b << IntPoint(p_polypath_b[i].x * SCALE_FACTOR, p_polypath_b[i].y * SCALE_FACTOR);
-	}
-	Clipper clp;
-	clp.AddPath(path_a, ptSubject, !is_a_open); // Forward compatible with Clipper 10.0.0.
-	clp.AddPath(path_b, ptClip, true); // Polylines cannot be set as clip.
+	GodotClipperUtils::scale_up_polypaths(p_polypaths_subject, paths_subject);
+	GodotClipperUtils::scale_up_polypaths(p_polypaths_clip, paths_clip);
 
-	Paths paths;
+	Clipper clp;
+	clp.AddPaths(paths_subject, ptSubject, !is_a_open); // Forward compatible with Clipper 10.0.0.
+	clp.AddPaths(paths_clip, ptClip, true); // Polylines cannot be set as clip.
+
+	Paths solution;
 
 	if (is_a_open) {
 		PolyTree tree; // Needed to populate polylines.
 		clp.Execute(op, tree);
-		OpenPathsFromPolyTree(tree, paths);
+		OpenPathsFromPolyTree(tree, solution);
 	} else {
-		clp.Execute(op, paths); // Works on closed polygons only.
+		clp.Execute(op, solution, pftNonZero); // Works on closed polygons only.
 	}
 	// Have to scale points down now.
 	Vector<Vector<Point2> > polypaths;
+	GodotClipperUtils::scale_down_polypaths(solution, polypaths);
 
-	for (Paths::size_type i = 0; i < paths.size(); ++i) {
-		Vector<Vector2> polypath;
-
-		const Path &scaled_path = paths[i];
-
-		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
-			polypath.push_back(Point2(
-					static_cast<real_t>(scaled_path[j].X) / SCALE_FACTOR,
-					static_cast<real_t>(scaled_path[j].Y) / SCALE_FACTOR));
-		}
-		polypaths.push_back(polypath);
-	}
 	return polypaths;
 }
 
-Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+Vector<Vector<Point2> > Geometry::_polypaths_offset(const Vector<Vector<Point2> > &p_polypaths, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
 
 	using namespace ClipperLib;
 
@@ -1162,31 +1190,19 @@ Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polyp
 		case END_ROUND: et = etOpenRound; break;
 	}
 	ClipperOffset co;
-	Path path;
+	Paths paths;
 
 	// Need to scale points (Clipper's requirement for robust computation).
-	for (int i = 0; i != p_polypath.size(); ++i) {
-		path << IntPoint(p_polypath[i].x * SCALE_FACTOR, p_polypath[i].y * SCALE_FACTOR);
-	}
-	co.AddPath(path, jt, et);
+	GodotClipperUtils::scale_up_polypaths(p_polypaths, paths);
 
-	Paths paths;
-	co.Execute(paths, p_delta * SCALE_FACTOR); // Inflate/deflate.
+	co.AddPaths(paths, jt, et);
+
+	Paths solution;
+	co.Execute(solution, p_delta * SCALE_FACTOR); // Inflate/deflate.
 
 	// Have to scale points down now.
 	Vector<Vector<Point2> > polypaths;
+	GodotClipperUtils::scale_down_polypaths(solution, polypaths);
 
-	for (Paths::size_type i = 0; i < paths.size(); ++i) {
-		Vector<Vector2> polypath;
-
-		const Path &scaled_path = paths[i];
-
-		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
-			polypath.push_back(Point2(
-					static_cast<real_t>(scaled_path[j].X) / SCALE_FACTOR,
-					static_cast<real_t>(scaled_path[j].Y) / SCALE_FACTOR));
-		}
-		polypaths.push_back(polypath);
-	}
 	return polypaths;
 }
