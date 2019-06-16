@@ -646,6 +646,17 @@ String String::camelcase_to_underscore(bool lowercase) const {
 	return lowercase ? new_string.to_lower() : new_string;
 }
 
+String String::get_with_code_lines() const {
+	Vector<String> lines = split("\n");
+	String ret;
+	for (int i = 0; i < lines.size(); i++) {
+		if (i > 0) {
+			ret += "\n";
+		}
+		ret += itos(i + 1) + " " + lines[i];
+	}
+	return ret;
+}
 int String::get_slice_count(String p_splitter) const {
 
 	if (empty())

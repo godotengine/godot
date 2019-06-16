@@ -286,9 +286,10 @@ void GDAPI godot_arvr_blit(godot_int p_eye, godot_rid *p_render_target, godot_re
 		screen_rect.size.x /= 2.0;
 		screen_rect.position.x += screen_rect.size.x;
 	}
-
-	VSG::rasterizer->set_current_render_target(RID());
+#warning this needs to be redone
+#if 0
 	VSG::rasterizer->blit_render_target_to_screen(*render_target, screen_rect, 0);
+#endif
 }
 
 godot_int GDAPI godot_arvr_get_texid(godot_rid *p_render_target) {
