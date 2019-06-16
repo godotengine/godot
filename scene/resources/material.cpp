@@ -2094,7 +2094,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_billboard_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particle Billboard"), "set_billboard_mode", "get_billboard_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "params_billboard_keep_scale"), "set_flag", "get_flag", FLAG_BILLBOARD_KEEP_SCALE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "params_grow"), "set_grow_enabled", "is_grow_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_grow_amount", PROPERTY_HINT_RANGE, "-16,10,0.01"), "set_grow", "get_grow");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_grow_amount", PROPERTY_HINT_RANGE, "-16,16,0.001"), "set_grow", "get_grow");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "params_use_alpha_scissor"), "set_flag", "get_flag", FLAG_USE_ALPHA_SCISSOR);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_alpha_scissor_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_scissor_threshold", "get_alpha_scissor_threshold");
 	ADD_GROUP("Particles Anim", "particles_anim_");
@@ -2120,7 +2120,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_GROUP("Emission", "emission_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_enabled"), "set_feature", "get_feature", FEATURE_EMISSION);
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "emission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_emission", "get_emission");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_emission_energy", "get_emission_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_emission_energy", "get_emission_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_operator", PROPERTY_HINT_ENUM, "Add,Multiply"), "set_emission_operator", "get_emission_operator");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_on_uv2"), "set_flag", "get_flag", FLAG_EMISSION_ON_UV2);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "emission_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_EMISSION);
@@ -2202,11 +2202,11 @@ void SpatialMaterial::_bind_methods() {
 
 	ADD_GROUP("Proximity Fade", "proximity_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enable"), "set_proximity_fade", "is_proximity_fade_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.1"), "set_proximity_fade_distance", "get_proximity_fade_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_proximity_fade_distance", "get_proximity_fade_distance");
 	ADD_GROUP("Distance Fade", "distance_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "distance_fade_mode", PROPERTY_HINT_ENUM, "Disabled,PixelAlpha,PixelDither,ObjectDither"), "set_distance_fade", "get_distance_fade");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.1"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.1"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
 
 	BIND_ENUM_CONSTANT(TEXTURE_ALBEDO);
 	BIND_ENUM_CONSTANT(TEXTURE_METALLIC);
