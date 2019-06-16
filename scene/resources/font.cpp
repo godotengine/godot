@@ -482,19 +482,26 @@ void BitmapFont::clear() {
 
 Size2 Font::get_string_size(const String &p_string) const {
 
-	float w = 0;
+	Size2 size(0, get_height());
 
-	int l = p_string.length();
-	if (l == 0)
-		return Size2(0, get_height());
+	float w = 0;
+	int ln = p_string.length();
 	const CharType *sptr = &p_string[0];
 
-	for (int i = 0; i < l; i++) {
-
-		w += get_char_size(sptr[i], sptr[i + 1]).width;
+	for (int i = 0; i < ln; i++)
+	{
+		if (sptr[i] == '\n')
+		{
+			size.y += get_height();
+			size.x = MAX(size.x, w);
+			w = 0;
+		} else {
+			w += get_char_size(sptr[i], sptr[i + 1]).width;
+		};
 	}
+	size.x = MAX(size.x, w);
 
-	return Size2(w, get_height());
+	return size;
 }
 
 Size2 Font::get_wordwrap_string_size(const String &p_string, float p_width) const {
