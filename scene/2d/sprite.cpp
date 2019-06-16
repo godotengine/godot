@@ -123,7 +123,7 @@ void Sprite::_notification(int p_what) {
 			Rect2 src_rect, dst_rect;
 			bool filter_clip;
 			_get_rects(src_rect, dst_rect, filter_clip);
-			texture->draw_rect_region(ci, dst_rect, src_rect, Color(1, 1, 1), false, normal_map, filter_clip);
+			texture->draw_rect_region(ci, dst_rect, src_rect, Color(1, 1, 1), false, normal_map, Ref<Texture2D>(), Color(1, 1, 1, 1), filter_clip);
 
 		} break;
 	}

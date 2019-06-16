@@ -7403,7 +7403,7 @@ bool RasterizerStorageGLES3::render_target_was_used(RID p_render_target) {
 	return rt->used_in_frame;
 }
 
-void RasterizerStorageGLES3::render_target_clear_used(RID p_render_target) {
+void RasterizerStorageGLES3::render_target_clear_used_flag(RID p_render_target) {
 
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);

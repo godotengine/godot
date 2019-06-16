@@ -46,20 +46,23 @@ Size2 Texture2D::get_size() const {
 bool Texture2D::is_pixel_opaque(int p_x, int p_y) const {
 	return true;
 }
-void Texture2D::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map) const {
+void Texture2D::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess) const {
 
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, get_size()), get_rid(), false, p_modulate, p_transpose, normal_rid);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, get_size()), get_rid(), false, p_modulate, p_transpose, normal_rid, specular_rid, p_specular_color_shininess);
 }
-void Texture2D::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map) const {
+void Texture2D::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess) const {
 
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, get_rid(), p_tile, p_modulate, p_transpose, normal_rid);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, get_rid(), p_tile, p_modulate, p_transpose, normal_rid, specular_rid, p_specular_color_shininess);
 }
-void Texture2D::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, bool p_clip_uv) const {
+void Texture2D::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, bool p_clip_uv) const {
 
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, get_rid(), p_src_rect, p_modulate, p_transpose, normal_rid, p_clip_uv);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, get_rid(), p_src_rect, p_modulate, p_transpose, normal_rid, specular_rid, p_specular_color_shininess, p_clip_uv);
 }
 
 bool Texture2D::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
@@ -76,9 +79,9 @@ void Texture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &Texture2D::get_height);
 	ClassDB::bind_method(D_METHOD("get_size"), &Texture2D::get_size);
 	ClassDB::bind_method(D_METHOD("has_alpha"), &Texture2D::has_alpha);
-	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "modulate", "transpose", "normal_map"), &Texture2D::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("draw_rect", "canvas_item", "rect", "tile", "modulate", "transpose", "normal_map"), &Texture2D::draw_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "normal_map", "clip_uv"), &Texture2D::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "modulate", "transpose", "normal_map", "specular_map", "specular_color_shininess"), &Texture2D::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Color(1, 1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_rect", "canvas_item", "rect", "tile", "modulate", "transpose", "normal_map", "specular_map", "specular_color_shininess"), &Texture2D::draw_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Color(1, 1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "normal_map", "clip_uv", "specular_map", "specular_color_shininess"), &Texture2D::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_data"), &Texture2D::get_data);
 
 	ADD_GROUP("", "");
@@ -243,26 +246,29 @@ bool ImageTexture::has_alpha() const {
 	return (format == Image::FORMAT_LA8 || format == Image::FORMAT_RGBA8);
 }
 
-void ImageTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map) const {
+void ImageTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess) const {
 
 	if ((w | h) == 0)
 		return;
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, Size2(w, h)), texture, false, p_modulate, p_transpose, normal_rid);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, Size2(w, h)), texture, false, p_modulate, p_transpose, normal_rid, specular_rid, p_specular_color_shininess);
 }
-void ImageTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map) const {
+void ImageTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess) const {
 
 	if ((w | h) == 0)
 		return;
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, texture, p_tile, p_modulate, p_transpose, normal_rid);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, texture, p_tile, p_modulate, p_transpose, normal_rid, specular_rid, p_specular_color_shininess);
 }
-void ImageTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, bool p_clip_uv) const {
+void ImageTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, bool p_clip_uv) const {
 
 	if ((w | h) == 0)
 		return;
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, normal_rid, p_clip_uv);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, normal_rid, specular_rid, p_specular_color_shininess, p_clip_uv);
 }
 
 bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
@@ -657,26 +663,29 @@ RID StreamTexture::get_rid() const {
 	return texture;
 }
 
-void StreamTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map) const {
+void StreamTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess) const {
 
 	if ((w | h) == 0)
 		return;
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, Size2(w, h)), texture, false, p_modulate, p_transpose, normal_rid);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, Size2(w, h)), texture, false, p_modulate, p_transpose, normal_rid, specular_rid, p_specular_color_shininess);
 }
-void StreamTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map) const {
+void StreamTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess) const {
 
 	if ((w | h) == 0)
 		return;
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, texture, p_tile, p_modulate, p_transpose, normal_rid);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, texture, p_tile, p_modulate, p_transpose, normal_rid, specular_rid, p_specular_color_shininess);
 }
-void StreamTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, bool p_clip_uv) const {
+void StreamTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, bool p_clip_uv) const {
 
 	if ((w | h) == 0)
 		return;
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, normal_rid, p_clip_uv);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, normal_rid, specular_rid, p_specular_color_shininess, p_clip_uv);
 }
 
 bool StreamTexture::has_alpha() const {
@@ -907,7 +916,7 @@ void AtlasTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_clip"), "set_filter_clip", "has_filter_clip");
 }
 
-void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map) const {
+void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess) const {
 
 	if (!atlas.is_valid())
 		return;
@@ -923,10 +932,11 @@ void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_m
 	}
 
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(p_pos + margin.position, rc.size), atlas->get_rid(), rc, p_modulate, p_transpose, normal_rid, filter_clip);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(p_pos + margin.position, rc.size), atlas->get_rid(), rc, p_modulate, p_transpose, normal_rid, specular_rid, p_specular_color_shininess, filter_clip);
 }
 
-void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map) const {
+void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess) const {
 
 	if (!atlas.is_valid())
 		return;
@@ -945,9 +955,10 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 	Rect2 dr(p_rect.position + margin.position * scale, rc.size * scale);
 
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dr, atlas->get_rid(), rc, p_modulate, p_transpose, normal_rid, filter_clip);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dr, atlas->get_rid(), rc, p_modulate, p_transpose, normal_rid, specular_rid, p_specular_color_shininess, filter_clip);
 }
-void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, bool p_clip_uv) const {
+void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, bool p_clip_uv) const {
 
 	//this might not necessarily work well if using a rect, needs to be fixed properly
 	if (!atlas.is_valid())
@@ -958,7 +969,8 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 	get_rect_region(p_rect, p_src_rect, dr, src_c);
 
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dr, atlas->get_rid(), src_c, p_modulate, p_transpose, normal_rid, filter_clip);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dr, atlas->get_rid(), src_c, p_modulate, p_transpose, normal_rid, specular_rid, p_specular_color_shininess, filter_clip);
 }
 
 bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
@@ -1056,7 +1068,7 @@ Ref<Texture2D> MeshTexture::get_base_texture() const {
 	return base_texture;
 }
 
-void MeshTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map) const {
+void MeshTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess) const {
 
 	if (mesh.is_null() || base_texture.is_null()) {
 		return;
@@ -1068,9 +1080,10 @@ void MeshTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_mo
 		SWAP(xform.elements[0][0], xform.elements[1][1]);
 	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VisualServer::get_singleton()->canvas_item_add_mesh(p_canvas_item, mesh->get_rid(), xform, p_modulate, base_texture->get_rid(), normal_rid);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_mesh(p_canvas_item, mesh->get_rid(), xform, p_modulate, base_texture->get_rid(), normal_rid, specular_rid, p_specular_color_shininess);
 }
-void MeshTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map) const {
+void MeshTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess) const {
 	if (mesh.is_null() || base_texture.is_null()) {
 		return;
 	}
@@ -1090,9 +1103,10 @@ void MeshTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile,
 		SWAP(xform.elements[0][0], xform.elements[1][1]);
 	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VisualServer::get_singleton()->canvas_item_add_mesh(p_canvas_item, mesh->get_rid(), xform, p_modulate, base_texture->get_rid(), normal_rid);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_mesh(p_canvas_item, mesh->get_rid(), xform, p_modulate, base_texture->get_rid(), normal_rid, specular_rid, p_specular_color_shininess);
 }
-void MeshTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, bool p_clip_uv) const {
+void MeshTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, bool p_clip_uv) const {
 
 	if (mesh.is_null() || base_texture.is_null()) {
 		return;
@@ -1113,7 +1127,8 @@ void MeshTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const
 		SWAP(xform.elements[0][0], xform.elements[1][1]);
 	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
-	VisualServer::get_singleton()->canvas_item_add_mesh(p_canvas_item, mesh->get_rid(), xform, p_modulate, base_texture->get_rid(), normal_rid);
+	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_mesh(p_canvas_item, mesh->get_rid(), xform, p_modulate, base_texture->get_rid(), normal_rid, specular_rid, p_specular_color_shininess);
 }
 bool MeshTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
 	r_rect = p_rect;
@@ -1265,16 +1280,16 @@ void LargeTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
 
-void LargeTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map) const {
+void LargeTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess) const {
 
 	for (int i = 0; i < pieces.size(); i++) {
 
 		// TODO
-		pieces[i].texture->draw(p_canvas_item, pieces[i].offset + p_pos, p_modulate, p_transpose, p_normal_map);
+		pieces[i].texture->draw(p_canvas_item, pieces[i].offset + p_pos, p_modulate, p_transpose, p_normal_map, p_specular_map, p_specular_color_shininess);
 	}
 }
 
-void LargeTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map) const {
+void LargeTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess) const {
 
 	//tiling not supported for this
 	if (size.x == 0 || size.y == 0)
@@ -1285,10 +1300,10 @@ void LargeTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 	for (int i = 0; i < pieces.size(); i++) {
 
 		// TODO
-		pieces[i].texture->draw_rect(p_canvas_item, Rect2(pieces[i].offset * scale + p_rect.position, pieces[i].texture->get_size() * scale), false, p_modulate, p_transpose, p_normal_map);
+		pieces[i].texture->draw_rect(p_canvas_item, Rect2(pieces[i].offset * scale + p_rect.position, pieces[i].texture->get_size() * scale), false, p_modulate, p_transpose, p_normal_map, p_specular_map, p_specular_color_shininess);
 	}
 }
-void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, bool p_clip_uv) const {
+void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, bool p_clip_uv) const {
 
 	//tiling not supported for this
 	if (p_src_rect.size.x == 0 || p_src_rect.size.y == 0)
@@ -1307,7 +1322,7 @@ void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 		target.size *= scale;
 		target.position = p_rect.position + (p_src_rect.position + rect.position) * scale;
 		local.position -= rect.position;
-		pieces[i].texture->draw_rect_region(p_canvas_item, target, local, p_modulate, p_transpose, p_normal_map, false);
+		pieces[i].texture->draw_rect_region(p_canvas_item, target, local, p_modulate, p_transpose, p_normal_map, p_specular_map, p_specular_color_shininess, false);
 	}
 }
 
