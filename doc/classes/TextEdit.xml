@@ -21,7 +21,7 @@
 			<argument index="3" name="line_only" type="bool" default="false">
 			</argument>
 			<description>
-				Add color region (given the delimiters) and its colors.
+				Adds a color region (given the delimiters) and its colors.
 			</description>
 		</method>
 		<method name="add_keyword_color">
@@ -35,6 +35,24 @@
 				Add a [code]keyword[/code] and its [Color].
 			</description>
 		</method>
+		<method name="add_member_keyword">
+			<return type="void">
+			</return>
+			<argument index="0" name="member" type="String">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+				Adds a member keyword and its color.
+			</description>
+		</method>
+		<method name="backspace_at_cursor">
+			<return type="void">
+			</return>
+			<description>
+				Acts as if backspace was pressed.
+			</description>
+		</method>
 		<method name="can_fold" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -44,11 +62,46 @@
 				Returns if the given line is foldable, that is, it has indented lines right below it.
 			</description>
 		</method>
+		<method name="center_viewport_to_cursor">
+			<return type="void">
+			</return>
+			<description>
+				Centers the viewport to the cursor.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+				Clears this [TextEdit] content.
+			</description>
+		</method>
 		<method name="clear_colors">
 			<return type="void">
 			</return>
 			<description>
 				Clears all the syntax coloring information.
+			</description>
+		</method>
+		<method name="clear_executing_line">
+			<return type="void">
+			</return>
+			<description>
+				Clears the executing line set with.
+			</description>
+		</method>
+		<method name="clear_info_icons">
+			<return type="void">
+			</return>
+			<description>
+				Clears all the info icons added with [method add_info_icons].
+			</description>
+		</method>
+		<method name="clear_member_keywords">
+			<return type="void">
+			</return>
+			<description>
+				Clears all the member keywords added with [method add_member_keyword].
 			</description>
 		</method>
 		<method name="clear_undo_history">
@@ -58,11 +111,22 @@
 				Clears the undo history.
 			</description>
 		</method>
+		<method name="code_complete">
+			<return type="void">
+			</return>
+			<argument index="0" name="strings" type="PoolStringArray">
+			</argument>
+			<argument index="1" name="forced" type="bool" default="false">
+			</argument>
+			<description>
+				Shows the code completion popup with the list of [code]strings[/code] if the list contains part of the word being completed or it's preceded by any of the completion prefixes set with [method set_completion]. If [code]forced[/code] is true, the code completion popup will show always.
+			</description>
+		</method>
 		<method name="copy">
 			<return type="void">
 			</return>
 			<description>
-				Copy's the current text selection.
+				Copies the current text selection.
 			</description>
 		</method>
 		<method name="cursor_get_column" qualifiers="const">
@@ -112,7 +176,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Cut's the current selection.
+				Cuts the current selection.
 			</description>
 		</method>
 		<method name="deselect">
@@ -138,11 +202,71 @@
 				Folds the given line, if possible (see [method can_fold]).
 			</description>
 		</method>
+		<method name="get_bookmark_gutter_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Gets the bookmark's gutter width.
+			</description>
+		</method>
+		<method name="get_bookmarks" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array containing the line number of each bookmark.
+			</description>
+		</method>
+		<method name="get_breakpoint_gutter_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Gets the breakpoint's gutter width.
+			</description>
+		</method>
 		<method name="get_breakpoints" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
 				Returns an array containing the line number of each breakpoint.
+			</description>
+		</method>
+		<method name="get_cursor_shape_at_position" qualifiers="const">
+			<return type="int" enum="Control.CursorShape">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<description>
+				Returns the [code]CursorShape[/code] at the selected [code]position[/code].
+			</description>
+		</method>
+		<method name="get_fold_gutter_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Gets the fold's gutter width.
+			</description>
+		</method>
+		<method name="get_folded_lines" qualifiers="const">
+			<return type="PoolIntArray">
+			</return>
+			<description>
+				Returns an array containing the line number of each folded line.
+			</description>
+		</method>
+		<method name="get_indent_level" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+				Returns the indent level at [code]line[/code].
+			</description>
+		</method>
+		<method name="get_info_gutter_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Gets the info's gutter width.
 			</description>
 		</method>
 		<method name="get_keyword_color" qualifiers="const">
@@ -168,6 +292,15 @@
 			</return>
 			<description>
 				Returns the amount of total lines in the text.
+			</description>
+		</method>
+		<method name="get_member_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="member" type="String">
+			</argument>
+			<description>
+				Returns the [Color] of the [code]member[/code].
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
@@ -212,6 +345,29 @@
 				Returns the selection end line.
 			</description>
 		</method>
+		<method name="get_text_for_completion">
+			<return type="String">
+			</return>
+			<description>
+				Returns the text that is being used for completion.
+			</description>
+		</method>
+		<method name="get_text_for_lookup_completion">
+			<return type="String">
+			</return>
+			<description>
+				Returns the text that is being used for looking up completion.
+			</description>
+		</method>
+		<method name="get_word_at_position" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<description>
+				Returns the word at the selected [code]position[/code].
+			</description>
+		</method>
 		<method name="get_word_under_cursor" qualifiers="const">
 			<return type="String">
 			</return>
@@ -228,13 +384,47 @@
 				Returns whether the specified [code]keyword[/code] has a color set to it or not.
 			</description>
 		</method>
+		<method name="has_member_color" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="member" type="String">
+			</argument>
+			<description>
+				Returns true if the [code]member[/code] exists.
+			</description>
+		</method>
+		<method name="indent_left">
+			<return type="void">
+			</return>
+			<description>
+				Indents left.
+			</description>
+		</method>
+		<method name="indent_right">
+			<return type="void">
+			</return>
+			<description>
+				Indents right.
+			</description>
+		</method>
 		<method name="insert_text_at_cursor">
 			<return type="void">
 			</return>
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				Insert the specified text at the cursor position.
+				Inserts the specified text at the cursor position.
+			</description>
+		</method>
+		<method name="insert_text_at_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<argument index="1" name="line" type="int">
+			</argument>
+			<description>
+				Inserts the given text at the given line. It doesn't overwrite the line. Use [method set_line] if you want to overwrite the current line's text.
 			</description>
 		</method>
 		<method name="is_folded" qualifiers="const">
@@ -246,6 +436,22 @@
 				Returns whether the line at the specified index is folded or not.
 			</description>
 		</method>
+		<method name="is_insert_mode" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns if insert mode is enabled.
+			</description>
+		</method>
+		<method name="is_line_comment" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+				Returns if the given line is a comment. Line comments start with [code]#[/code] or [code]//[/code]
+			</description>
+		</method>
 		<method name="is_line_hidden" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -253,6 +459,42 @@
 			</argument>
 			<description>
 				Returns whether the line at the specified index is hidden or not.
+			</description>
+		</method>
+		<method name="is_line_set_as_bookmark" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+				Returns if the given line is set as a bookmark.
+			</description>
+		</method>
+		<method name="is_line_set_as_breakpoint" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+				Returns if the given line is set as a breakpoint.
+			</description>
+		</method>
+		<method name="is_line_set_as_marked" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+				Returns if the given line is set as marked.
+			</description>
+		</method>
+		<method name="is_line_set_as_safe" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+				Returns if the given line is set as safe.
 			</description>
 		</method>
 		<method name="is_selection_active" qualifiers="const">
@@ -278,11 +520,18 @@
 				Paste the current selection.
 			</description>
 		</method>
+		<method name="query_code_completion">
+			<return type="void">
+			</return>
+			<description>
+				Checks if code completion is possible and queries it by emitting the signal [signal completion_requested].
+			</description>
+		</method>
 		<method name="redo">
 			<return type="void">
 			</return>
 			<description>
-				Perform redo operation.
+				Performs a redo operation.
 			</description>
 		</method>
 		<method name="remove_breakpoints">
@@ -304,7 +553,7 @@
 			<argument index="3" name="from_column" type="int">
 			</argument>
 			<description>
-				Perform a search inside the text. Search flags can be specified in the SEARCH_* enum.
+				Performs a search inside the text. Search flags can be specified with the SEARCH_* enum.
 			</description>
 		</method>
 		<method name="select">
@@ -319,14 +568,96 @@
 			<argument index="3" name="to_column" type="int">
 			</argument>
 			<description>
-				Perform selection, from line/column to line/column.
+				Performs a selection, from line/column to line/column.
 			</description>
 		</method>
 		<method name="select_all">
 			<return type="void">
 			</return>
 			<description>
-				Select all the text.
+				Selects all the text.
+			</description>
+		</method>
+		<method name="set_callhints_settings">
+			<return type="void">
+			</return>
+			<argument index="0" name="below" type="bool">
+			</argument>
+			<argument index="1" name="offset" type="Vector2">
+			</argument>
+			<description>
+				Sets the callhints settings.
+			</description>
+		</method>
+		<method name="set_code_hint">
+			<return type="void">
+			</return>
+			<argument index="0" name="hint" type="String">
+			</argument>
+			<description>
+				Sets the code hint text that will be shown.
+			</description>
+		</method>
+		<method name="set_completion">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<argument index="1" name="prefixes" type="PoolStringArray">
+			</argument>
+			<description>
+				Toggles code completion. The list of prefixes will be used to know when code completion is possible.
+			</description>
+		</method>
+		<method name="set_executing_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+				Sets the given line as the executing line.
+			</description>
+		</method>
+		<method name="set_insert_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Toggles insert mode.
+			</description>
+		</method>
+		<method name="set_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
+				Sets the given text as the given line. It overwrites the content of the given line. Use [method insert_text_at_line] if you want to insert the text without overwriting it.
+			</description>
+		</method>
+		<method name="set_line_as_bookmark">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+				Toogles the given line as a bookmark.
+			</description>
+		</method>
+		<method name="set_line_as_breakpoint">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+				Toogles the given line as a breakpoint.
 			</description>
 		</method>
 		<method name="set_line_as_hidden">
@@ -340,20 +671,78 @@
 				If [code]true[/code], hides the line of the specified index.
 			</description>
 		</method>
+		<method name="set_line_as_marked">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+				Toogles the given line as marked.
+			</description>
+		</method>
+		<method name="set_line_as_safe">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+				Toogles the given line as safe.
+			</description>
+		</method>
+		<method name="set_line_info_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="icon" type="Texture">
+			</argument>
+			<argument index="2" name="info" type="String">
+			</argument>
+			<description>
+				Sets the info texture and text to the given line.
+			</description>
+		</method>
+		<method name="set_tooltip_request_func">
+			<return type="void">
+			</return>
+			<argument index="0" name="target" type="Object">
+			</argument>
+			<argument index="1" name="method" type="String">
+			</argument>
+			<argument index="2" name="extra_data" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="swap_lines">
+			<return type="void">
+			</return>
+			<argument index="0" name="line_a" type="int">
+			</argument>
+			<argument index="1" name="line_b" type="int">
+			</argument>
+			<description>
+				Swaps both lines.
+			</description>
+		</method>
 		<method name="toggle_fold_line">
 			<return type="void">
 			</return>
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
-				Toggle the folding of the code block at the given line.
+				Toggles the folding of the code block at the given line.
 			</description>
 		</method>
 		<method name="undo">
 			<return type="void">
 			</return>
 			<description>
-				Perform undo operation.
+				Performs an undo operation.
 			</description>
 		</method>
 		<method name="unfold_line">
@@ -374,8 +763,20 @@
 		</method>
 	</methods>
 	<members>
+		<member name="auto_brace_completion" type="bool" setter="set_auto_brace_completion" getter="is_auto_brace_completion_enabled">
+			If [code]true[/code], auto brace completion will be enabled.
+		</member>
+		<member name="auto_indent" type="bool" setter="set_auto_indent" getter="is_auto_indent_enabled">
+			If [code]true[/code], auto indent will be enabled.
+		</member>
+		<member name="bookmark_gutter" type="bool" setter="set_bookmark_gutter_enabled" getter="is_bookmark_gutter_enabled">
+			If [code]true[/code], the bookmark gutter will be visible.
+		</member>
+		<member name="brace_matching" type="bool" setter="set_brace_matching" getter="is_brace_matching_enabled">
+			If [code]true[/code], matching braces will be highlighted.
+		</member>
 		<member name="breakpoint_gutter" type="bool" setter="set_breakpoint_gutter_enabled" getter="is_breakpoint_gutter_enabled">
-			If [code]true[/code], the breakpoint gutter is visible.
+			If [code]true[/code], the breakpoint gutter will be visible.
 		</member>
 		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
 			If [code]true[/code], the caret (visual cursor) blinks.
@@ -403,6 +804,12 @@
 		<member name="fold_gutter" type="bool" setter="set_draw_fold_gutter" getter="is_drawing_fold_gutter">
 			If [code]true[/code], the fold gutter is visible. This enables folding groups of indented lines.
 		</member>
+		<member name="guideline_column" type="int" setter="set_line_length_guideline_column" getter="get_line_length_guideline_column">
+			Sets the guideline column.
+		</member>
+		<member name="h_scroll" type="int" setter="set_h_scroll" getter="get_h_scroll">
+			Sets the horizontal scroll.
+		</member>
 		<member name="hiding_enabled" type="bool" setter="set_hiding_enabled" getter="is_hiding_enabled">
 			If [code]true[/code], all lines that have been set to hidden by [member set_line_as_hidden], will not be visible.
 		</member>
@@ -412,10 +819,32 @@
 		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled">
 			If [code]true[/code], the line containing the cursor is highlighted.
 		</member>
+		<member name="indent_size" type="int" setter="set_indent_size" getter="get_indent_size">
+			Sets the indent size.
+		</member>
+		<member name="indent_using_spaces" type="bool" setter="set_indent_using_spaces" getter="is_indent_using_spaces">
+			If [code]true[/code], indenting will use spaces.
+			If [code]false[/code], indenting will use tabs.
+		</member>
+		<member name="info_gutter" type="bool" setter="set_draw_info_gutter" getter="is_drawing_info_gutter">
+			If [code]true[/code], the info gutter will be visible.
+		</member>
+		<member name="line_numbers_zero_padded" type="bool" setter="set_line_numbers_zero_padded" getter="is_line_numbers_zero_padded">
+			If [code]true[/code], line numbers will be zero padded.
+		</member>
 		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
+			Overrides the selected font color with the color set in [code]custom_colors/selection_color[/code].
 		</member>
 		<member name="readonly" type="bool" setter="set_readonly" getter="is_readonly">
 			If [code]true[/code], read-only mode is enabled. Existing text cannot be modified and new text cannot be added.
+		</member>
+		<member name="scroll_pass_end_of_file" type="bool" setter="set_scroll_pass_end_of_file" getter="is_scroll_pass_end_of_file_enabled">
+			If [code]true[/code], scrolling pass the end of the file will be possible.
+		</member>
+		<member name="select_identifiers_on_hover" type="bool" setter="set_select_identifiers_on_hover" getter="is_selecting_identifiers_on_hover_enabled">
+		</member>
+		<member name="show_guideline" type="bool" setter="set_show_line_length_guideline" getter="is_showing_line_length_guideline">
+			If [code]true[/code], the guideline will be shown.
 		</member>
 		<member name="show_line_numbers" type="bool" setter="set_show_line_numbers" getter="is_show_line_numbers_enabled">
 			If [code]true[/code], line numbers are displayed to the left of the text.
@@ -428,6 +857,9 @@
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text">
 			String value of the [TextEdit].
+		</member>
+		<member name="v_scroll" type="float" setter="set_v_scroll" getter="get_v_scroll">
+			Sets the vertical scroll.
 		</member>
 		<member name="v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed">
 			Vertical scroll sensitivity.
@@ -444,6 +876,11 @@
 				Emitted when a breakpoint is placed via the breakpoint gutter.
 			</description>
 		</signal>
+		<signal name="completion_requested">
+			<description>
+				Emitted when code completion has been requested.
+			</description>
+		</signal>
 		<signal name="cursor_changed">
 			<description>
 				Emitted when the cursor changes.
@@ -456,10 +893,6 @@
 			</argument>
 			<description>
 				Emitted when the info icon is clicked.
-			</description>
-		</signal>
-		<signal name="request_completion">
-			<description>
 			</description>
 		</signal>
 		<signal name="symbol_lookup">
@@ -504,7 +937,7 @@
 			Selects the whole [TextEdit] text.
 		</constant>
 		<constant name="MENU_UNDO" value="5" enum="MenuItems">
-			Undoes the previous action.
+			Undoes the current action.
 		</constant>
 		<constant name="MENU_REDO" value="6" enum="MenuItems">
 			Redoes the previous action.

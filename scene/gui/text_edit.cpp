@@ -3270,7 +3270,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (completion_enabled && k->get_command()) {
 #endif
 
-					query_code_comple();
+					query_code_completion();
 					scancode_handled = true;
 				} else {
 					scancode_handled = false;
@@ -4726,6 +4726,10 @@ bool TextEdit::is_syntax_coloring_enabled() const {
 void TextEdit::set_auto_indent(bool p_auto_indent) {
 	auto_indent = p_auto_indent;
 }
+bool TextEdit::is_auto_indent_enabled() const {
+
+	return auto_indent;
+}
 
 void TextEdit::cut() {
 
@@ -5141,6 +5145,11 @@ void TextEdit::set_line_as_marked(int p_line, bool p_marked) {
 	update();
 }
 
+bool TextEdit::is_line_set_as_marked(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), false);
+	return text.is_marked(p_line);
+}
+
 void TextEdit::set_line_as_safe(int p_line, bool p_safe) {
 	ERR_FAIL_INDEX(p_line, text.size());
 	text.set_safe(p_line, p_safe);
@@ -5416,6 +5425,34 @@ bool TextEdit::is_line_comment(int p_line) const {
 		}
 	}
 	return false;
+}
+
+void TextEdit::set_scroll_pass_end_of_file(bool p_enabled) {
+	scroll_past_end_of_file_enabled = p_enabled;
+	update();
+}
+bool TextEdit::is_scroll_pass_end_of_file_enabled() const {
+	return scroll_past_end_of_file_enabled;
+}
+
+void TextEdit::set_auto_brace_completion(bool p_enabled) {
+	auto_brace_completion_enabled = p_enabled;
+}
+bool TextEdit::is_auto_brace_completion_enabled() const {
+	return auto_brace_completion_enabled;
+}
+
+void TextEdit::set_brace_matching(bool p_enabled) {
+	brace_matching_enabled = p_enabled;
+	update();
+}
+bool TextEdit::is_brace_matching_enabled() const {
+	return brace_matching_enabled;
+}
+
+void TextEdit::set_callhint_settings(bool below, Vector2 offset) {
+	callhint_below = below;
+	callhint_offset = offset;
 }
 
 bool TextEdit::can_fold(int p_line) const {
@@ -5969,7 +6006,7 @@ void TextEdit::_confirm_completion() {
 	_cancel_completion();
 
 	if (last_completion_char == '(') {
-		query_code_comple();
+		query_code_completion();
 	}
 }
 
@@ -6132,7 +6169,7 @@ void TextEdit::_update_completion_candidates() {
 	completion_enabled = true;
 }
 
-void TextEdit::query_code_comple() {
+void TextEdit::query_code_completion() {
 
 	String l = text[cursor.line];
 	int ofs = CLAMP(cursor.column, 0, l.length());
@@ -6147,9 +6184,9 @@ void TextEdit::query_code_comple() {
 	}
 
 	if (ofs > 0 && (inquote || _is_completable(l[ofs - 1]) || completion_prefixes.has(String::chr(l[ofs - 1]))))
-		emit_signal("request_completion");
+		emit_signal("completion_requested");
 	else if (ofs > 1 && l[ofs - 1] == ' ' && completion_prefixes.has(String::chr(l[ofs - 2]))) //make it work with a space too, it's good enough
-		emit_signal("request_completion");
+		emit_signal("completion_requested");
 }
 
 void TextEdit::set_code_hint(const String &p_hint) {
@@ -6249,7 +6286,7 @@ void TextEdit::set_line(int line, String new_text) {
 	}
 }
 
-void TextEdit::insert_at(const String &p_text, int at) {
+void TextEdit::insert_text_at_line(const String &p_text, int at) {
 	cursor_set_column(0);
 	cursor_set_line(at, false, true);
 	_insert_text(at, 0, p_text + "\n");
@@ -6260,25 +6297,33 @@ void TextEdit::set_show_line_numbers(bool p_show) {
 	line_numbers = p_show;
 	update();
 }
+bool TextEdit::is_show_line_numbers_enabled() const {
+	return line_numbers;
+}
 
 void TextEdit::set_line_numbers_zero_padded(bool p_zero_padded) {
 
 	line_numbers_zero_padded = p_zero_padded;
 	update();
 }
-
-bool TextEdit::is_show_line_numbers_enabled() const {
-	return line_numbers;
+bool TextEdit::is_line_numbers_zero_padded() const {
+	return line_numbers_zero_padded;
 }
 
 void TextEdit::set_show_line_length_guideline(bool p_show) {
 	line_length_guideline = p_show;
 	update();
 }
+bool TextEdit::is_showing_line_length_guideline() const {
+	return line_length_guideline;
+}
 
 void TextEdit::set_line_length_guideline_column(int p_column) {
 	line_length_guideline_col = p_column;
 	update();
+}
+int TextEdit::get_line_length_guideline_column() const {
+	return line_length_guideline_col;
 }
 
 void TextEdit::set_bookmark_gutter_enabled(bool p_draw) {
@@ -6440,17 +6485,15 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(SEARCH_WHOLE_WORDS);
 	BIND_ENUM_CONSTANT(SEARCH_BACKWARDS);
 
-	/*
-	ClassDB::bind_method(D_METHOD("delete_char"),&TextEdit::delete_char);
-	ClassDB::bind_method(D_METHOD("delete_line"),&TextEdit::delete_line);
-*/
-
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &TextEdit::set_text);
 	ClassDB::bind_method(D_METHOD("insert_text_at_cursor", "text"), &TextEdit::insert_text_at_cursor);
+	ClassDB::bind_method(D_METHOD("insert_text_at_line", "text", "line"), &TextEdit::insert_text_at_line);
 
 	ClassDB::bind_method(D_METHOD("get_line_count"), &TextEdit::get_line_count);
 	ClassDB::bind_method(D_METHOD("get_text"), &TextEdit::get_text);
 	ClassDB::bind_method(D_METHOD("get_line", "line"), &TextEdit::get_line);
+	ClassDB::bind_method(D_METHOD("set_line", "line", "text"), &TextEdit::set_line);
+	ClassDB::bind_method(D_METHOD("swap_lines", "line_a", "line_b"), &TextEdit::swap_lines);
 
 	ClassDB::bind_method(D_METHOD("cursor_set_column", "column", "adjust_viewport"), &TextEdit::cursor_set_column, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("cursor_set_line", "line", "adjust_viewport", "can_be_hidden", "wrap_index"), &TextEdit::cursor_set_line, DEFVAL(true), DEFVAL(true), DEFVAL(0));
@@ -6472,8 +6515,6 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_wrap_enabled", "enable"), &TextEdit::set_wrap_enabled);
 	ClassDB::bind_method(D_METHOD("is_wrap_enabled"), &TextEdit::is_wrap_enabled);
-	// ClassDB::bind_method(D_METHOD("set_max_chars", "amount"), &TextEdit::set_max_chars);
-	// ClassDB::bind_method(D_METHOD("get_max_char"), &TextEdit::get_max_chars);
 	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &TextEdit::set_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &TextEdit::is_context_menu_enabled);
 
@@ -6492,6 +6533,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selection_to_column"), &TextEdit::get_selection_to_column);
 	ClassDB::bind_method(D_METHOD("get_selection_text"), &TextEdit::get_selection_text);
 	ClassDB::bind_method(D_METHOD("get_word_under_cursor"), &TextEdit::get_word_under_cursor);
+	ClassDB::bind_method(D_METHOD("get_word_at_position", "position"), &TextEdit::get_word_at_pos);
 	ClassDB::bind_method(D_METHOD("search", "key", "flags", "from_line", "from_column"), &TextEdit::_search_bind);
 
 	ClassDB::bind_method(D_METHOD("undo"), &TextEdit::undo);
@@ -6541,23 +6583,126 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_keyword_color", "keyword", "color"), &TextEdit::add_keyword_color);
 	ClassDB::bind_method(D_METHOD("has_keyword_color", "keyword"), &TextEdit::has_keyword_color);
 	ClassDB::bind_method(D_METHOD("get_keyword_color", "keyword"), &TextEdit::get_keyword_color);
+	ClassDB::bind_method(D_METHOD("add_member_keyword", "member", "color"), &TextEdit::add_member_keyword);
+	ClassDB::bind_method(D_METHOD("has_member_color", "member"), &TextEdit::has_member_color);
+	ClassDB::bind_method(D_METHOD("get_member_color", "member"), &TextEdit::get_member_color);
+	ClassDB::bind_method(D_METHOD("clear_member_keywords"), &TextEdit::clear_member_keywords);
 	ClassDB::bind_method(D_METHOD("add_color_region", "begin_key", "end_key", "color", "line_only"), &TextEdit::add_color_region, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_colors"), &TextEdit::clear_colors);
+
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &TextEdit::menu_option);
 	ClassDB::bind_method(D_METHOD("get_menu"), &TextEdit::get_menu);
 
 	ClassDB::bind_method(D_METHOD("get_breakpoints"), &TextEdit::get_breakpoints_array);
+	ClassDB::bind_method(D_METHOD("set_line_as_breakpoint", "line", "enabled"), &TextEdit::set_line_as_breakpoint);
+	ClassDB::bind_method(D_METHOD("is_line_set_as_breakpoint", "line"), &TextEdit::is_line_set_as_breakpoint);
 	ClassDB::bind_method(D_METHOD("remove_breakpoints"), &TextEdit::remove_breakpoints);
+
+	ClassDB::bind_method(D_METHOD("set_insert_mode", "enabled"), &TextEdit::set_insert_mode);
+	ClassDB::bind_method(D_METHOD("is_insert_mode"), &TextEdit::is_insert_mode);
+
+	ClassDB::bind_method(D_METHOD("set_completion", "enabled", "prefixes"), &TextEdit::set_completion);
+	ClassDB::bind_method(D_METHOD("query_code_completion"), &TextEdit::query_code_completion);
+	ClassDB::bind_method(D_METHOD("get_text_for_completion"), &TextEdit::get_text_for_completion);
+	ClassDB::bind_method(D_METHOD("get_text_for_lookup_completion"), &TextEdit::get_text_for_lookup_completion);
+	ClassDB::bind_method(D_METHOD("code_complete", "strings", "forced"), &TextEdit::code_complete, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_code_hint", "hint"), &TextEdit::set_code_hint);
+
+	ClassDB::bind_method(D_METHOD("backspace_at_cursor"), &TextEdit::backspace_at_cursor);
+	ClassDB::bind_method(D_METHOD("center_viewport_to_cursor"), &TextEdit::center_viewport_to_cursor);
+
+	ClassDB::bind_method(D_METHOD("clear"), &TextEdit::clear);
+
+	ClassDB::bind_method(D_METHOD("set_executing_line", "line"), &TextEdit::set_executing_line);
+	ClassDB::bind_method(D_METHOD("clear_executing_line"), &TextEdit::clear_executing_line);
+
+	ClassDB::bind_method(D_METHOD("set_line_info_icon", "line", "icon", "info"), &TextEdit::set_line_info_icon);
+	ClassDB::bind_method(D_METHOD("clear_info_icons"), &TextEdit::clear_info_icons);
+
+	ClassDB::bind_method(D_METHOD("is_line_comment", "line"), &TextEdit::is_line_comment);
+
+	ClassDB::bind_method(D_METHOD("get_indent_level", "line"), &TextEdit::get_indent_level);
+	ClassDB::bind_method(D_METHOD("indent_left"), &TextEdit::indent_left);
+	ClassDB::bind_method(D_METHOD("indent_right"), &TextEdit::indent_right);
+
+	ClassDB::bind_method(D_METHOD("set_tooltip_request_func", "target", "method", "extra_data"), &TextEdit::set_tooltip_request_func);
+
+	ClassDB::bind_method(D_METHOD("set_callhints_settings", "below", "offset"), &TextEdit::set_callhint_settings);
+
+	ClassDB::bind_method(D_METHOD("get_bookmarks"), &TextEdit::get_bookmarks_array);
+	ClassDB::bind_method(D_METHOD("set_line_as_bookmark", "line", "enabled"), &TextEdit::set_line_as_bookmark);
+	ClassDB::bind_method(D_METHOD("is_line_set_as_bookmark", "line"), &TextEdit::is_line_set_as_bookmark);
+
+	ClassDB::bind_method(D_METHOD("set_line_as_safe", "line", "enabled"), &TextEdit::set_line_as_safe);
+	ClassDB::bind_method(D_METHOD("is_line_set_as_safe", "line"), &TextEdit::is_line_set_as_safe);
+
+	ClassDB::bind_method(D_METHOD("set_line_as_marked", "line", "enabled"), &TextEdit::set_line_as_marked);
+	ClassDB::bind_method(D_METHOD("is_line_set_as_marked", "line"), &TextEdit::is_line_set_as_marked);
+
+	ClassDB::bind_method(D_METHOD("get_cursor_shape_at_position", "position"), &TextEdit::get_cursor_shape);
+
+	ClassDB::bind_method(D_METHOD("get_folded_lines"), &TextEdit::get_folded_lines);
+
+	ClassDB::bind_method(D_METHOD("set_auto_brace_completion", "enabled"), &TextEdit::set_auto_brace_completion);
+	ClassDB::bind_method(D_METHOD("is_auto_brace_completion_enabled"), &TextEdit::is_auto_brace_completion_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_brace_matching", "enabled"), &TextEdit::set_brace_matching);
+	ClassDB::bind_method(D_METHOD("is_brace_matching_enabled"), &TextEdit::is_brace_matching_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_bookmark_gutter_enabled", "enabled"), &TextEdit::set_bookmark_gutter_enabled);
+	ClassDB::bind_method(D_METHOD("is_bookmark_gutter_enabled"), &TextEdit::is_bookmark_gutter_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_draw_info_gutter", "enabled"), &TextEdit::set_draw_info_gutter);
+	ClassDB::bind_method(D_METHOD("is_drawing_info_gutter"), &TextEdit::is_drawing_info_gutter);
+
+	ClassDB::bind_method(D_METHOD("set_indent_using_spaces", "enabled"), &TextEdit::set_indent_using_spaces);
+	ClassDB::bind_method(D_METHOD("is_indent_using_spaces"), &TextEdit::is_indent_using_spaces);
+
+	ClassDB::bind_method(D_METHOD("set_select_identifiers_on_hover", "enabled"), &TextEdit::set_select_identifiers_on_hover);
+	ClassDB::bind_method(D_METHOD("is_selecting_identifiers_on_hover_enabled"), &TextEdit::is_selecting_identifiers_on_hover_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_breakpoint_gutter_width"), &TextEdit::get_breakpoint_gutter_width);
+	ClassDB::bind_method(D_METHOD("get_bookmark_gutter_width"), &TextEdit::get_breakpoint_gutter_width); // Both breakpoint and bookmark share the same gutter width
+	ClassDB::bind_method(D_METHOD("get_fold_gutter_width"), &TextEdit::get_fold_gutter_width);
+	ClassDB::bind_method(D_METHOD("get_info_gutter_width"), &TextEdit::get_info_gutter_width);
+
+	ClassDB::bind_method(D_METHOD("set_h_scroll", "scroll"), &TextEdit::set_h_scroll);
+	ClassDB::bind_method(D_METHOD("get_h_scroll"), &TextEdit::get_h_scroll);
+
+	ClassDB::bind_method(D_METHOD("set_v_scroll", "scroll"), &TextEdit::set_v_scroll);
+	ClassDB::bind_method(D_METHOD("get_v_scroll"), &TextEdit::get_v_scroll);
+
+	ClassDB::bind_method(D_METHOD("set_indent_size", "size"), &TextEdit::set_indent_size);
+	ClassDB::bind_method(D_METHOD("get_indent_size"), &TextEdit::get_indent_size);
+
+	ClassDB::bind_method(D_METHOD("set_auto_indent", "enabled"), &TextEdit::set_auto_indent);
+	ClassDB::bind_method(D_METHOD("is_auto_indent_enabled"), &TextEdit::is_auto_indent_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_line_length_guideline_column", "column"), &TextEdit::set_line_length_guideline_column);
+	ClassDB::bind_method(D_METHOD("get_line_length_guideline_column"), &TextEdit::get_line_length_guideline_column);
+
+	ClassDB::bind_method(D_METHOD("set_show_line_length_guideline", "enabled"), &TextEdit::set_show_line_length_guideline);
+	ClassDB::bind_method(D_METHOD("is_showing_line_length_guideline"), &TextEdit::is_showing_line_length_guideline);
+
+	ClassDB::bind_method(D_METHOD("set_line_numbers_zero_padded", "enabled"), &TextEdit::set_line_numbers_zero_padded);
+	ClassDB::bind_method(D_METHOD("is_line_numbers_zero_padded"), &TextEdit::is_line_numbers_zero_padded);
+
+	ClassDB::bind_method(D_METHOD("set_scroll_pass_end_of_file", "enabled"), &TextEdit::set_scroll_pass_end_of_file);
+	ClassDB::bind_method(D_METHOD("is_scroll_pass_end_of_file_enabled"), &TextEdit::is_scroll_pass_end_of_file_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "readonly"), "set_readonly", "is_readonly");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_current_line"), "set_highlight_current_line", "is_highlight_current_line_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "syntax_highlighting"), "set_syntax_coloring", "is_syntax_coloring_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_line_numbers"), "set_show_line_numbers", "is_show_line_numbers_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "line_numbers_zero_padded"), "set_line_numbers_zero_padded", "is_line_numbers_zero_padded");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_tabs"), "set_draw_tabs", "is_drawing_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_spaces"), "set_draw_spaces", "is_drawing_spaces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "breakpoint_gutter"), "set_breakpoint_gutter_enabled", "is_breakpoint_gutter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fold_gutter"), "set_draw_fold_gutter", "is_drawing_fold_gutter");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bookmark_gutter"), "set_bookmark_gutter_enabled", "is_bookmark_gutter_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "info_gutter"), "set_draw_info_gutter", "is_drawing_info_gutter");
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), "set_highlight_all_occurrences", "is_highlight_all_occurrences_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_selected_font_color"), "set_override_selected_font_color", "is_overriding_selected_font_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
@@ -6565,7 +6710,22 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hiding_enabled"), "set_hiding_enabled", "is_hiding_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_enabled"), "set_wrap_enabled", "is_wrap_enabled");
-	// ADD_PROPERTY(PropertyInfo(Variant::BOOL, "max_chars"), "set_max_chars", "get_max_chars");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_pass_end_of_file"), "set_scroll_pass_end_of_file", "is_scroll_pass_end_of_file_enabled");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_guideline"), "set_show_line_length_guideline", "is_showing_line_length_guideline");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "guideline_column", PROPERTY_HINT_RANGE, "0,120,1,or_greater"), "set_line_length_guideline_column", "get_line_length_guideline_column");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion"), "set_auto_brace_completion", "is_auto_brace_completion_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "brace_matching"), "set_brace_matching", "is_brace_matching_enabled");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_indent"), "set_auto_indent", "is_auto_indent_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_using_spaces"), "set_indent_using_spaces", "is_indent_using_spaces");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "indent_size", PROPERTY_HINT_RANGE, "0,8,1,or_greater"), "set_indent_size", "get_indent_size");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_identifiers_on_hover"), "set_select_identifiers_on_hover", "is_selecting_identifiers_on_hover_enabled");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "h_scroll", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_h_scroll", "get_h_scroll");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "v_scroll", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_v_scroll", "get_v_scroll");
 
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_block_mode"), "cursor_set_block_mode", "cursor_is_block_mode");
@@ -6575,7 +6735,7 @@ void TextEdit::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("cursor_changed"));
 	ADD_SIGNAL(MethodInfo("text_changed"));
-	ADD_SIGNAL(MethodInfo("request_completion"));
+	ADD_SIGNAL(MethodInfo("completion_requested"));
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "row")));
 	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::INT, "column")));
 	ADD_SIGNAL(MethodInfo("info_clicked", PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::STRING, "info")));

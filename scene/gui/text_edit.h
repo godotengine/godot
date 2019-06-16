@@ -495,9 +495,10 @@ public:
 
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String &p_text);
-	void insert_at(const String &p_text, int at);
+	void insert_text_at_line(const String &p_text, int at);
 	int get_line_count() const;
 	void set_line_as_marked(int p_line, bool p_marked);
+	bool is_line_set_as_marked(int p_line) const;
 	void set_line_as_bookmark(int p_line, bool p_bookmark);
 	bool is_line_set_as_bookmark(int p_line) const;
 	void get_bookmarks(List<int> *p_bookmarks) const;
@@ -540,22 +541,17 @@ public:
 	int get_indent_level(int p_line) const;
 	bool is_line_comment(int p_line) const;
 
-	inline void set_scroll_pass_end_of_file(bool p_enabled) {
-		scroll_past_end_of_file_enabled = p_enabled;
-		update();
-	}
-	inline void set_auto_brace_completion(bool p_enabled) {
-		auto_brace_completion_enabled = p_enabled;
-	}
-	inline void set_brace_matching(bool p_enabled) {
-		brace_matching_enabled = p_enabled;
-		update();
-	}
-	inline void set_callhint_settings(bool below, Vector2 offset) {
-		callhint_below = below;
-		callhint_offset = offset;
-	}
+	void set_scroll_pass_end_of_file(bool p_enabled);
+	bool is_scroll_pass_end_of_file_enabled() const;
+	void set_auto_brace_completion(bool p_enabled);
+	bool is_auto_brace_completion_enabled() const;
+	void set_brace_matching(bool p_enabled);
+	bool is_brace_matching_enabled() const;
+
+	void set_callhint_settings(bool below, Vector2 offset);
+
 	void set_auto_indent(bool p_auto_indent);
+	bool is_auto_indent_enabled() const;
 
 	void center_viewport_to_cursor();
 
@@ -672,9 +668,13 @@ public:
 	bool is_highlight_current_line_enabled() const;
 
 	void set_line_numbers_zero_padded(bool p_zero_padded);
+	bool is_line_numbers_zero_padded() const;
 
 	void set_show_line_length_guideline(bool p_show);
+	bool is_showing_line_length_guideline() const;
+
 	void set_line_length_guideline_column(int p_column);
+	int get_line_length_guideline_column() const;
 
 	void set_bookmark_gutter_enabled(bool p_draw);
 	bool is_bookmark_gutter_enabled() const;
@@ -705,7 +705,7 @@ public:
 	void set_completion(bool p_enabled, const Vector<String> &p_prefixes);
 	void code_complete(const Vector<String> &p_strings, bool p_forced = false);
 	void set_code_hint(const String &p_hint);
-	void query_code_comple();
+	void query_code_completion();
 
 	void set_select_identifiers_on_hover(bool p_enable);
 	bool is_selecting_identifiers_on_hover_enabled() const;

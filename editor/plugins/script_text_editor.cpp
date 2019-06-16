@@ -362,7 +362,7 @@ void ScriptTextEditor::_warning_clicked(Variant p_line) {
 		code_editor->get_text_edit()->cursor_set_line(p_line.operator int64_t());
 	} else if (p_line.get_type() == Variant::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
-		code_editor->get_text_edit()->insert_at("# warning-ignore:" + meta["code"].operator String(), meta["line"].operator int64_t() - 1);
+		code_editor->get_text_edit()->insert_text_at_line("# warning-ignore:" + meta["code"].operator String(), meta["line"].operator int64_t() - 1);
 		_validate_script();
 	}
 }
@@ -1008,7 +1008,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_COMPLETE: {
 
-			tx->query_code_comple();
+			tx->query_code_completion();
 		} break;
 		case EDIT_AUTO_INDENT: {
 

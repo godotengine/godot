@@ -304,7 +304,7 @@ void ShaderEditor::_menu_option(int p_option) {
 		} break;
 		case EDIT_COMPLETE: {
 
-			shader_editor->get_text_edit()->query_code_comple();
+			shader_editor->get_text_edit()->query_code_completion();
 		} break;
 		case SEARCH_FIND: {
 

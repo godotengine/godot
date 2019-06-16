@@ -697,7 +697,7 @@ void CodeTextEditor::_text_changed() {
 void CodeTextEditor::_code_complete_timer_timeout() {
 	if (!is_visible_in_tree())
 		return;
-	text_editor->query_code_comple();
+	text_editor->query_code_completion();
 }
 
 void CodeTextEditor::_complete_request() {
@@ -1564,7 +1564,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->connect("gui_input", this, "_text_editor_gui_input");
 	text_editor->connect("cursor_changed", this, "_line_col_changed");
 	text_editor->connect("text_changed", this, "_text_changed");
-	text_editor->connect("request_completion", this, "_complete_request");
+	text_editor->connect("completion_requested", this, "_complete_request");
 	Vector<String> cs;
 	cs.push_back(".");
 	cs.push_back(",");
