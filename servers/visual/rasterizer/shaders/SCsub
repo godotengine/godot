@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+Import('env')
+
+if 'RD_GLSL' in env['BUILDERS']:
+    env.RD_GLSL('canvas.glsl');
