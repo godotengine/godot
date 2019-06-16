@@ -426,11 +426,13 @@ void MobileVRInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_t
 	eye_center.y = 0.0;
 
 	// unset our render target so we are outputting to our main screen by making RasterizerStorageGLES3::system_fbo our current FBO
+#if 0
 	VSG::rasterizer->set_current_render_target(RID());
 
 	// and output
 	VSG::rasterizer->output_lens_distorted_to_screen(p_render_target, dest, k1, k2, eye_center, oversample);
-};
+#endif
+}
 
 void MobileVRInterface::process() {
 	_THREAD_SAFE_METHOD_

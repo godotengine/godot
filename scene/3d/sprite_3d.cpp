@@ -483,7 +483,7 @@ void Sprite3D::_draw() {
 	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 
-	VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_TRIANGLE_FAN, texture->get_rid());
+	VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_TRIANGLES, texture->get_rid());
 
 	int x_axis = ((axis + 1) % 3);
 	int y_axis = ((axis + 2) % 3);
@@ -504,15 +504,18 @@ void Sprite3D::_draw() {
 
 	AABB aabb;
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 6; i++) {
+
+		static const int index[6] = { 0, 1, 2, 0, 2, 3 };
+
 		VS::get_singleton()->immediate_normal(immediate, normal);
 		VS::get_singleton()->immediate_tangent(immediate, tangent);
 		VS::get_singleton()->immediate_color(immediate, color);
 		VS::get_singleton()->immediate_uv(immediate, uvs[i]);
 
 		Vector3 vtx;
-		vtx[x_axis] = vertices[i][0];
-		vtx[y_axis] = vertices[i][1];
+		vtx[x_axis] = vertices[index[i]][0];
+		vtx[y_axis] = vertices[index[i]][1];
 		VS::get_singleton()->immediate_vertex(immediate, vtx);
 		if (i == 0) {
 			aabb.position = vtx;
@@ -811,7 +814,7 @@ void AnimatedSprite3D::_draw() {
 
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 
-	VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_TRIANGLE_FAN, texture->get_rid());
+	VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_TRIANGLES, texture->get_rid());
 
 	int x_axis = ((axis + 1) % 3);
 	int y_axis = ((axis + 2) % 3);
@@ -832,15 +835,21 @@ void AnimatedSprite3D::_draw() {
 
 	AABB aabb;
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 6; i++) {
+
+		static const int indices[6] = {
+			0, 1, 2,
+			0, 2, 3
+		};
+
 		VS::get_singleton()->immediate_normal(immediate, normal);
 		VS::get_singleton()->immediate_tangent(immediate, tangent);
 		VS::get_singleton()->immediate_color(immediate, color);
 		VS::get_singleton()->immediate_uv(immediate, uvs[i]);
 
 		Vector3 vtx;
-		vtx[x_axis] = vertices[i][0];
-		vtx[y_axis] = vertices[i][1];
+		vtx[x_axis] = vertices[indices[i]][0];
+		vtx[y_axis] = vertices[indices[i]][1];
 		VS::get_singleton()->immediate_vertex(immediate, vtx);
 		if (i == 0) {
 			aabb.position = vtx;

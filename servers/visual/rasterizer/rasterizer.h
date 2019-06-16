@@ -549,12 +549,11 @@ public:
 	virtual RID render_target_create() = 0;
 	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) = 0;
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height) = 0;
-	virtual RID render_target_get_texture(RID p_render_target) const = 0;
+	virtual RID render_target_get_texture(RID p_render_target) = 0;
 	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) = 0;
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) = 0;
 	virtual bool render_target_was_used(RID p_render_target) = 0;
-	virtual void render_target_clear_used(RID p_render_target) = 0;
-	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa) = 0;
+	virtual void render_target_clear_used_flag(RID p_render_target) = 0;
 
 	/* CANVAS SHADOW */
 
@@ -589,6 +588,8 @@ public:
 
 class RasterizerCanvas {
 public:
+	static RasterizerCanvas *singleton;
+
 	enum CanvasRectFlags {
 
 		CANVAS_RECT_REGION = 1,
@@ -669,6 +670,38 @@ public:
 	virtual void light_internal_update(RID p_rid, Light *p_light) = 0;
 	virtual void light_internal_free(RID p_rid) = 0;
 
+	typedef uint64_t TextureBindingID;
+
+	virtual TextureBindingID request_texture_binding(RID p_texture, RID p_normalmap, RID p_specular, VS::CanvasItemTextureFilter p_filter, VS::CanvasItemTextureRepeat p_repeat, RID p_multimesh) = 0;
+	virtual void free_texture_binding(TextureBindingID p_binding) = 0;
+
+	//easier wrap to avoid mistakes
+
+	struct Item;
+
+	struct TextureBinding {
+
+		TextureBindingID binding_id;
+
+		_FORCE_INLINE_ void create(VS::CanvasItemTextureFilter p_item_filter, VS::CanvasItemTextureRepeat p_item_repeat, RID p_texture, RID p_normalmap, RID p_specular, VS::CanvasItemTextureFilter p_filter, VS::CanvasItemTextureRepeat p_repeat, RID p_multimesh) {
+			if (p_filter == VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT) {
+				p_filter = p_item_filter;
+			}
+			if (p_repeat == VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) {
+				p_repeat = p_item_repeat;
+			}
+			if (p_texture != RID() || p_normalmap != RID() || p_specular != RID() || p_filter != VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT || p_repeat != VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT || p_multimesh.is_valid()) {
+				ERR_FAIL_COND(binding_id != 0);
+				binding_id = singleton->request_texture_binding(p_texture, p_normalmap, p_specular, p_filter, p_repeat, p_multimesh);
+			}
+		}
+
+		_FORCE_INLINE_ TextureBinding() { binding_id = 0; }
+		_FORCE_INLINE_ ~TextureBinding() {
+			if (binding_id) singleton->free_texture_binding(binding_id);
+		}
+	};
+
 	struct Item {
 
 		struct Command {
@@ -719,11 +752,12 @@ public:
 		struct CommandRect : public Command {
 
 			Rect2 rect;
-			RID texture;
-			RID normal_map;
 			Color modulate;
 			Rect2 source;
 			uint8_t flags;
+			Color specular_shininess;
+
+			TextureBinding texture_binding;
 
 			CommandRect() {
 				flags = 0;
@@ -735,13 +769,13 @@ public:
 
 			Rect2 rect;
 			Rect2 source;
-			RID texture;
-			RID normal_map;
 			float margin[4];
 			bool draw_center;
 			Color color;
 			VS::NinePatchAxisMode axis_x;
 			VS::NinePatchAxisMode axis_y;
+			Color specular_shininess;
+			TextureBinding texture_binding;
 			CommandNinePatch() {
 				draw_center = true;
 				type = TYPE_NINEPATCH;
@@ -753,10 +787,9 @@ public:
 			Vector<Point2> points;
 			Vector<Point2> uvs;
 			Vector<Color> colors;
-			RID texture;
-			RID normal_map;
 			float width;
-
+			Color specular_shininess;
+			TextureBinding texture_binding;
 			CommandPrimitive() {
 				type = TYPE_PRIMITIVE;
 				width = 1;
@@ -771,11 +804,11 @@ public:
 			Vector<Color> colors;
 			Vector<int> bones;
 			Vector<float> weights;
-			RID texture;
-			RID normal_map;
 			int count;
 			bool antialiased;
-			bool antialiasing_use_indices;
+
+			Color specular_shininess;
+			TextureBinding texture_binding;
 
 			CommandPolygon() {
 				type = TYPE_POLYGON;
@@ -786,26 +819,26 @@ public:
 		struct CommandMesh : public Command {
 
 			RID mesh;
-			RID texture;
-			RID normal_map;
 			Transform2D transform;
 			Color modulate;
+			Color specular_shininess;
+			TextureBinding texture_binding;
 			CommandMesh() { type = TYPE_MESH; }
 		};
 
 		struct CommandMultiMesh : public Command {
 
 			RID multimesh;
-			RID texture;
-			RID normal_map;
+			Color specular_shininess;
+			TextureBinding texture_binding;
 			CommandMultiMesh() { type = TYPE_MULTIMESH; }
 		};
 
 		struct CommandParticles : public Command {
 
 			RID particles;
-			RID texture;
-			RID normal_map;
+			Color specular_shininess;
+			TextureBinding texture_binding;
 			CommandParticles() { type = TYPE_PARTICLES; }
 		};
 
@@ -1050,10 +1083,7 @@ public:
 		}
 	};
 
-	virtual void canvas_begin() = 0;
-	virtual void canvas_end() = 0;
-
-	virtual void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) = 0;
+	virtual void canvas_render_items(RID p_to_render_target, bool p_clear, const Color &p_clear_color, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform) = 0;
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) = 0;
 
 	struct LightOccluderInstance {
@@ -1084,6 +1114,9 @@ public:
 
 	virtual void draw_window_margins(int *p_margins, RID *p_margin_textures) = 0;
 
+	virtual void update() = 0;
+
+	RasterizerCanvas() { singleton = this; }
 	virtual ~RasterizerCanvas() {}
 };
 
@@ -1102,11 +1135,15 @@ public:
 
 	virtual void initialize() = 0;
 	virtual void begin_frame(double frame_step) = 0;
-	virtual void set_current_render_target(RID p_render_target) = 0;
-	virtual void restore_render_target(bool p_3d) = 0;
-	virtual void clear_render_target(const Color &p_color) = 0;
-	virtual void blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen = 0) = 0;
-	virtual void output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) = 0;
+
+	struct BlitToScreen {
+		RID render_target;
+		Rect2i rect;
+		//lens distorted parameters for VR should go here
+	};
+
+	virtual void blit_render_targets_to_screen(int p_screen, const BlitToScreen *p_render_targets, int p_amount) = 0;
+
 	virtual void end_frame(bool p_swap_buffers) = 0;
 	virtual void finalize() = 0;
 
