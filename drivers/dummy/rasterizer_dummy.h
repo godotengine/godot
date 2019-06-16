@@ -701,7 +701,7 @@ public:
 	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {}
 	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {}
 	bool render_target_was_used(RID p_render_target) { return false; }
-	void render_target_clear_used(RID p_render_target) {}
+	void render_target_clear_used_flag(RID p_render_target) {}
 	void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa) {}
 
 	/* CANVAS SHADOW */

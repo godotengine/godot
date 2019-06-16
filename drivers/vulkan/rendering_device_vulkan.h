@@ -680,7 +680,7 @@ public:
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw = false);
 
-	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, TextureUsageBits p_usage) const;
+	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const;
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
@@ -716,7 +716,8 @@ public:
 	/**** SHADER ****/
 	/****************/
 
-	virtual RID shader_create_from_source(const Vector<ShaderStageSource> &p_stages, String *r_error = NULL, bool p_allow_cache = true);
+	virtual RID shader_create_from_source(const Vector<ShaderStageSource> &p_stages, String *r_error = NULL, ShaderStage *r_error_stage = NULL, bool p_allow_cache = true);
+	virtual Vector<int> shader_get_vertex_input_locations_used(RID p_shader);
 
 	/*****************/
 	/**** UNIFORM ****/
@@ -727,6 +728,7 @@ public:
 	virtual RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const PoolVector<uint8_t> &p_data = PoolVector<uint8_t>());
 
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
+	virtual bool uniform_set_is_valid(RID p_uniform_set);
 
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, void *p_data, bool p_sync_with_draw = false); //works for any buffer
 
@@ -765,17 +767,17 @@ public:
 
 	virtual void draw_list_end();
 
-	virtual void free(RID p_id);
-
 	/**************/
 	/**** FREE ****/
 	/**************/
 
+	virtual void free(RID p_id);
+
 	void initialize(VulkanContext *p_context);
 	void finalize();
 
-	void finalize_frame();
-	void advance_frame();
+	virtual void finalize_frame();
+	virtual void advance_frame();
 
 	RenderingDeviceVulkan();
 };
