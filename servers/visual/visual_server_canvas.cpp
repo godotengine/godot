@@ -35,18 +35,34 @@
 
 static const int z_range = VS::CANVAS_ITEM_Z_MAX - VS::CANVAS_ITEM_Z_MIN + 1;
 
-void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights) {
+void VisualServerCanvas::_render_canvas_item_tree(RID p_to_render_target, bool p_clear, const Color &p_clear_color, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights) {
 
 	memset(z_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 	memset(z_last_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 
-	_render_canvas_item(p_canvas_item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, NULL, NULL);
+	for (int i = 0; i < p_child_item_count; i++) {
+		_cull_canvas_item(p_child_items[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, NULL, NULL);
+	}
+	if (p_canvas_item) {
+		_cull_canvas_item(p_canvas_item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, NULL, NULL);
+	}
+
+	RasterizerCanvas::Item *list = NULL;
+	RasterizerCanvas::Item *list_end = NULL;
 
 	for (int i = 0; i < z_range; i++) {
 		if (!z_list[i])
 			continue;
-		VSG::canvas_render->canvas_render_items(z_list[i], VS::CANVAS_ITEM_Z_MIN + i, p_modulate, p_lights, p_transform);
+		if (!list) {
+			list = z_list[i];
+			list_end = z_last_list[i];
+		} else {
+			list_end->next = z_list[i];
+			list_end = z_last_list[i];
+		}
 	}
+
+	VSG::canvas_render->canvas_render_items(p_to_render_target, p_clear, p_clear_color, list, p_modulate, p_lights, p_transform);
 }
 
 void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2D p_transform, VisualServerCanvas::Item *p_material_owner, const Color p_modulate, VisualServerCanvas::Item **r_items, int &r_index) {
@@ -81,7 +97,7 @@ void _mark_ysort_dirty(VisualServerCanvas::Item *ysort_owner, RID_PtrOwner<Visua
 	}
 }
 
-void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner) {
+void VisualServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner) {
 
 	Item *ci = p_canvas_item;
 
@@ -153,9 +169,9 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 		if (!child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y))
 			continue;
 		if (ci->sort_y) {
-			_render_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
+			_cull_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
 		} else {
-			_render_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner);
+			_cull_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner);
 		}
 	}
 
@@ -187,6 +203,8 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 			z_last_list[zidx] = ci;
 		}
 
+		ci->z_final = p_z;
+
 		ci->next = NULL;
 	}
 
@@ -195,9 +213,9 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 		if (child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y))
 			continue;
 		if (ci->sort_y) {
-			_render_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
+			_cull_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
 		} else {
-			_render_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner);
+			_cull_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner);
 		}
 	}
 }
@@ -225,9 +243,7 @@ void VisualServerCanvas::_light_mask_canvas_items(int p_z, RasterizerCanvas::Ite
 	}
 }
 
-void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect) {
-
-	VSG::canvas_render->canvas_begin();
+void VisualServerCanvas::render_canvas(RID p_render_target, bool p_clear, const Color &p_clear_color, Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect) {
 
 	if (p_canvas->children_order_dirty) {
 
@@ -248,54 +264,33 @@ void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_tr
 
 	if (!has_mirror) {
 
-		static const int z_range = VS::CANVAS_ITEM_Z_MAX - VS::CANVAS_ITEM_Z_MIN + 1;
-		RasterizerCanvas::Item *z_list[z_range];
-		RasterizerCanvas::Item *z_last_list[z_range];
+		_render_canvas_item_tree(p_render_target, p_clear, p_clear_color, ci, l, NULL, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
 
-		memset(z_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
-		memset(z_last_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
-
-		for (int i = 0; i < l; i++) {
-			_render_canvas_item(ci[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, NULL, NULL);
-		}
-
-		for (int i = 0; i < z_range; i++) {
-			if (!z_list[i])
-				continue;
-
-			if (p_masked_lights) {
-				_light_mask_canvas_items(VS::CANVAS_ITEM_Z_MIN + i, z_list[i], p_masked_lights);
-			}
-
-			VSG::canvas_render->canvas_render_items(z_list[i], VS::CANVAS_ITEM_Z_MIN + i, p_canvas->modulate, p_lights, p_transform);
-		}
 	} else {
-
+		//used for parallaxlayer mirroring
 		for (int i = 0; i < l; i++) {
 
 			const Canvas::ChildItem &ci2 = p_canvas->child_items[i];
-			_render_canvas_item_tree(ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
+			_render_canvas_item_tree(p_render_target, p_clear, p_clear_color, NULL, 0, ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
 
 			//mirroring (useful for scrolling backgrounds)
 			if (ci2.mirror.x != 0) {
 
 				Transform2D xform2 = p_transform * Transform2D(0, Vector2(ci2.mirror.x, 0));
-				_render_canvas_item_tree(ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				_render_canvas_item_tree(p_render_target, false, Color(), NULL, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
 			if (ci2.mirror.y != 0) {
 
 				Transform2D xform2 = p_transform * Transform2D(0, Vector2(0, ci2.mirror.y));
-				_render_canvas_item_tree(ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				_render_canvas_item_tree(p_render_target, false, Color(), NULL, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
 			if (ci2.mirror.y != 0 && ci2.mirror.x != 0) {
 
 				Transform2D xform2 = p_transform * Transform2D(0, ci2.mirror);
-				_render_canvas_item_tree(ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				_render_canvas_item_tree(p_render_target, false, Color(), NULL, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
 		}
 	}
-
-	VSG::canvas_render->canvas_end();
 }
 
 RID VisualServerCanvas::canvas_create() {
@@ -471,6 +466,20 @@ void VisualServerCanvas::canvas_item_set_update_when_visible(RID p_item, bool p_
 	canvas_item->update_when_visible = p_update;
 }
 
+void VisualServerCanvas::canvas_item_set_default_texture_filter(RID p_item, VS::CanvasItemTextureFilter p_filter) {
+
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+	canvas_item->texture_filter = p_filter;
+}
+
+void VisualServerCanvas::canvas_item_set_default_texture_repeat(RID p_item, VS::CanvasItemTextureRepeat p_repeat) {
+
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+	canvas_item->texture_repeat = p_repeat;
+}
+
 void VisualServerCanvas::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, bool p_antialiased) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
@@ -625,7 +634,7 @@ void VisualServerCanvas::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 	canvas_item->commands.push_back(circle);
 }
 
-void VisualServerCanvas::canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile, const Color &p_modulate, bool p_transpose, RID p_normal_map) {
+void VisualServerCanvas::canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile, const Color &p_modulate, bool p_transpose, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -655,13 +664,13 @@ void VisualServerCanvas::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_TRANSPOSE;
 		SWAP(rect->rect.size.x, rect->rect.size.y);
 	}
-	rect->texture = p_texture;
-	rect->normal_map = p_normal_map;
+	rect->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
+	rect->specular_shininess = p_specular_color_shininess;
 	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(rect);
 }
 
-void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, RID p_normal_map, bool p_clip_uv) {
+void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, bool p_clip_uv, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -670,8 +679,8 @@ void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const R
 	ERR_FAIL_COND(!rect);
 	rect->modulate = p_modulate;
 	rect->rect = p_rect;
-	rect->texture = p_texture;
-	rect->normal_map = p_normal_map;
+	rect->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
+	rect->specular_shininess = p_specular_color_shininess;
 	rect->source = p_src_rect;
 	rect->flags = RasterizerCanvas::CANVAS_RECT_REGION;
 
@@ -710,15 +719,15 @@ void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const R
 	canvas_item->commands.push_back(rect);
 }
 
-void VisualServerCanvas::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, VS::NinePatchAxisMode p_x_axis_mode, VS::NinePatchAxisMode p_y_axis_mode, bool p_draw_center, const Color &p_modulate, RID p_normal_map) {
+void VisualServerCanvas::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, VS::NinePatchAxisMode p_x_axis_mode, VS::NinePatchAxisMode p_y_axis_mode, bool p_draw_center, const Color &p_modulate, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
 	Item::CommandNinePatch *style = memnew(Item::CommandNinePatch);
 	ERR_FAIL_COND(!style);
-	style->texture = p_texture;
-	style->normal_map = p_normal_map;
+	style->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
+	style->specular_shininess = p_specular_color_shininess;
 	style->rect = p_rect;
 	style->source = p_source;
 	style->draw_center = p_draw_center;
@@ -733,15 +742,15 @@ void VisualServerCanvas::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_r
 
 	canvas_item->commands.push_back(style);
 }
-void VisualServerCanvas::canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, float p_width, RID p_normal_map) {
+void VisualServerCanvas::canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, float p_width, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
 	Item::CommandPrimitive *prim = memnew(Item::CommandPrimitive);
 	ERR_FAIL_COND(!prim);
-	prim->texture = p_texture;
-	prim->normal_map = p_normal_map;
+	prim->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
+	prim->specular_shininess = p_specular_color_shininess;
 	prim->points = p_points;
 	prim->uvs = p_uvs;
 	prim->colors = p_colors;
@@ -751,7 +760,7 @@ void VisualServerCanvas::canvas_item_add_primitive(RID p_item, const Vector<Poin
 	canvas_item->commands.push_back(prim);
 }
 
-void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, RID p_normal_map, bool p_antialiased) {
+void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, bool p_antialiased, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -768,8 +777,8 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 
 	Item::CommandPolygon *polygon = memnew(Item::CommandPolygon);
 	ERR_FAIL_COND(!polygon);
-	polygon->texture = p_texture;
-	polygon->normal_map = p_normal_map;
+	polygon->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
+	polygon->specular_shininess = p_specular_color_shininess;
 	polygon->points = p_points;
 	polygon->uvs = p_uvs;
 	polygon->colors = p_colors;
@@ -781,7 +790,7 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	canvas_item->commands.push_back(polygon);
 }
 
-void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights, RID p_texture, int p_count, RID p_normal_map) {
+void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights, RID p_texture, int p_count, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -811,8 +820,8 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 
 	Item::CommandPolygon *polygon = memnew(Item::CommandPolygon);
 	ERR_FAIL_COND(!polygon);
-	polygon->texture = p_texture;
-	polygon->normal_map = p_normal_map;
+	polygon->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
+	polygon->specular_shininess = p_specular_color_shininess;
 	polygon->points = p_points;
 	polygon->uvs = p_uvs;
 	polygon->colors = p_colors;
@@ -838,7 +847,7 @@ void VisualServerCanvas::canvas_item_add_set_transform(RID p_item, const Transfo
 	canvas_item->commands.push_back(tr);
 }
 
-void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform, const Color &p_modulate, RID p_texture, RID p_normal_map) {
+void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform, const Color &p_modulate, RID p_texture, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -846,14 +855,14 @@ void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, con
 	Item::CommandMesh *m = memnew(Item::CommandMesh);
 	ERR_FAIL_COND(!m);
 	m->mesh = p_mesh;
-	m->texture = p_texture;
-	m->normal_map = p_normal_map;
+	m->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
+	m->specular_shininess = p_specular_color_shininess;
 	m->transform = p_transform;
 	m->modulate = p_modulate;
 
 	canvas_item->commands.push_back(m);
 }
-void VisualServerCanvas::canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture, RID p_normal) {
+void VisualServerCanvas::canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -861,8 +870,8 @@ void VisualServerCanvas::canvas_item_add_particles(RID p_item, RID p_particles, 
 	Item::CommandParticles *part = memnew(Item::CommandParticles);
 	ERR_FAIL_COND(!part);
 	part->particles = p_particles;
-	part->texture = p_texture;
-	part->normal_map = p_normal;
+	part->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
+	part->specular_shininess = p_specular_color_shininess;
 
 	//take the chance and request processing for them, at least once until they become visible again
 	VSG::storage->particles_request_process(p_particles);
@@ -871,7 +880,7 @@ void VisualServerCanvas::canvas_item_add_particles(RID p_item, RID p_particles, 
 	canvas_item->commands.push_back(part);
 }
 
-void VisualServerCanvas::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture, RID p_normal_map) {
+void VisualServerCanvas::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -879,8 +888,8 @@ void VisualServerCanvas::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p
 	Item::CommandMultiMesh *mm = memnew(Item::CommandMultiMesh);
 	ERR_FAIL_COND(!mm);
 	mm->multimesh = p_mesh;
-	mm->texture = p_texture;
-	mm->normal_map = p_normal_map;
+	mm->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, mm->multimesh);
+	mm->specular_shininess = p_specular_color_shininess;
 
 	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(mm);

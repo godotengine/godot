@@ -976,11 +976,12 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				static const Mesh::PrimitiveType primitives2[7] = {
 					Mesh::PRIMITIVE_POINTS,
 					Mesh::PRIMITIVE_LINES,
-					Mesh::PRIMITIVE_LINE_LOOP,
-					Mesh::PRIMITIVE_LINE_STRIP,
+					Mesh::PRIMITIVE_LINES,
+					Mesh::PRIMITIVE_LINES,
 					Mesh::PRIMITIVE_TRIANGLES,
-					Mesh::PRIMITIVE_TRIANGLE_STRIP,
-					Mesh::PRIMITIVE_TRIANGLE_FAN,
+					Mesh::PRIMITIVE_TRIANGLES,
+					Mesh::PRIMITIVE_TRIANGLES,
+#warning these will have to be decomposed into proper primitive now that lineloop/strip,etc no longer supported
 				};
 
 				primitive = primitives2[mode];

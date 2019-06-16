@@ -5,6 +5,8 @@
 
 class RenderingDevice : public Object {
 	GDCLASS(RenderingDevice, Object)
+
+	static RenderingDevice *singleton;
 public:
 	//base numeric ID for all types
 	enum {
@@ -352,7 +354,7 @@ public:
 	virtual RID texture_create_shared(const TextureView& p_view, RID p_with_texture) = 0;
 	virtual Error texture_update(RID p_texture,uint32_t p_layer,const PoolVector<uint8_t>&p_data, bool p_sync_with_draw = false) =0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
 
-	virtual bool texture_is_format_supported_for_usage(DataFormat p_format,TextureUsageBits p_usage) const = 0;
+	virtual bool texture_is_format_supported_for_usage(DataFormat p_format,uint32_t p_usage) const = 0;
 
 
 	/*********************/
@@ -505,7 +507,8 @@ public:
 		}
 	};
 
-	virtual RID shader_create_from_source(const Vector<ShaderStageSource> &p_stages,String *r_error=NULL,bool p_allow_cache=true) = 0;
+	virtual RID shader_create_from_source(const Vector<ShaderStageSource> &p_stages,String *r_error=NULL,ShaderStage *r_error_stage=NULL,bool p_allow_cache=true) = 0;
+	virtual Vector<int> shader_get_vertex_input_locations_used(RID p_shader) = 0;
 
 
 	/******************/
@@ -514,7 +517,7 @@ public:
 
 	enum UniformType {
 		UNIFORM_TYPE_SAMPLER, //for sampling only (sampler GLSL type)
-		UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, // for sampling only, but includes a texture, (samplerXX GLSL type)
+		UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, // for sampling only, but includes a texture, (samplerXX GLSL type), first a sampler then a texture
 		UNIFORM_TYPE_TEXTURE, //only texture, (textureXX GLSL type)
 		UNIFORM_TYPE_IMAGE, // storage image (imageXX GLSL type), for compute mostly
 		UNIFORM_TYPE_TEXTURE_BUFFER, // buffer texture (or TBO, textureBuffer type)
@@ -548,6 +551,8 @@ public:
 	};
 
 	virtual RID uniform_set_create(const Vector<Uniform>& p_uniforms,RID p_shader,uint32_t p_shader_set) = 0;
+	virtual bool uniform_set_is_valid(RID p_uniform_set) =0;
+
 
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, void *p_data,bool p_sync_with_draw=false) =0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
 
@@ -774,6 +779,22 @@ public:
 			return bs;
 		}
 
+		static PipelineColorBlendState create_blend(int p_attachments=1) {
+			PipelineColorBlendState bs;
+			for(int i=0;i<p_attachments;i++) {
+
+				Attachment ba;
+				ba.enable_blend=true;
+				ba.src_color_blend_factor = BLEND_FACTOR_SRC_ALPHA;
+				ba.dst_color_blend_factor = BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+				ba.src_alpha_blend_factor = BLEND_FACTOR_SRC_ALPHA;
+				ba.dst_alpha_blend_factor = BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+				bs.attachments.push_back(ba);
+			}
+			return bs;
+		}
+
 		Vector<Attachment> attachments; //one per render target texture
 		Color blend_constant;
 
@@ -849,7 +870,17 @@ public:
 	/***************/
 
 	virtual void free(RID p_id) =0;
+
+	//methods below not exposed, used by RenderingDeviceRD
+	virtual void finalize_frame() =0;
+	virtual void advance_frame() =0;
+
+	static RenderingDevice *get_singleton();
+
 	RenderingDevice();
 };
+
+
+typedef RenderingDevice RD;
 
 #endif // RENDERING_DEVICE_H

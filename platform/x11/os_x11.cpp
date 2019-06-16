@@ -97,7 +97,7 @@ void OS_X11::initialize_core() {
 int OS_X11::get_current_video_driver() const {
 	return video_driver_index;
 }
-
+#if 0
 static RID test_index_array;
 static RID test_vertex_array;
 static RID test_uniform_set;
@@ -105,7 +105,7 @@ static RID test_pipeline;
 static RID test_framebuffer_pipeline;
 static RID test_framebuffer_uniform_set;
 static RID test_framebuffer;
-
+#endif
 Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	long im_event_mask = 0;
@@ -403,7 +403,8 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	RasterizerRD::make_current();
 
 	// test shader
-
+#if 0
+	//test code, remains for reference, ask before removing
 	RID shader;
 	{
 		RenderingDevice::ShaderStageSource vert;
@@ -595,7 +596,9 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		test_framebuffer_pipeline = rendering_device->render_pipeline_create(shader, rendering_device->screen_get_framebuffer_format(), vertex_desc, RenderingDevice::RENDER_PRIMITIVE_TRIANGLES, RenderingDevice::PipelineRasterizationState(), RenderingDevice::PipelineMultisampleState(), RenderingDevice::PipelineDepthStencilState(), RenderingDevice::PipelineColorBlendState::create_disabled());
 	}
 
+#endif
 #if 0
+	//test code, remains for reference, ask before removing
 	Vector<RenderingDevice::ShaderStageSource> source;
 	RenderingDevice::ShaderStageSource frag;
 	frag.shader_stage = RenderingDevice::SHADER_STAGE_FRAGMENT;
@@ -3309,8 +3312,8 @@ void OS_X11::swap_buffers() {
 #if defined(OPENGL_ENABLED)
 	context_gl->swap_buffers();
 #endif
-
-	Vector<Color> clear;
+#if 0
+	Vector <Color> clear;
 	float color[4] = { 1, 0, 1, 1 };
 	clear.push_back(Color(0.5, 0.8, 0.2));
 	RenderingDevice::DrawListID cmd_list = rendering_device->draw_list_begin(test_framebuffer, RenderingDevice::INITIAL_ACTION_CLEAR, RenderingDevice::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, clear);
@@ -3330,9 +3333,9 @@ void OS_X11::swap_buffers() {
 	rendering_device->draw_list_set_push_constant(cmd_list, color, 4 * 4);
 	rendering_device->draw_list_draw(cmd_list, true);
 	rendering_device->draw_list_end();
-	rendering_device->finalize_frame();
+#endif
+
 	context_vulkan->swap_buffers();
-	rendering_device->advance_frame();
 }
 
 void OS_X11::alert(const String &p_alert, const String &p_title) {

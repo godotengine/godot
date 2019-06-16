@@ -12,6 +12,14 @@ protected:
 	RasterizerStorageRD *storage;
 	RasterizerSceneForwardRD *scene;
 
+	RID copy_viewports_rd_shader;
+	RID copy_viewports_rd_pipeline;
+	RID copy_viewports_rd_index_buffer;
+	RID copy_viewports_rd_array;
+	RID copy_viewports_sampler;
+
+	Map<RID, RID> render_target_descriptors;
+
 public:
 	RasterizerStorage *get_storage() { return storage; }
 	RasterizerCanvas *get_canvas() { return canvas; }
@@ -19,15 +27,12 @@ public:
 
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {}
 
-	void initialize() {}
-	void begin_frame(double frame_step) {}
-	void set_current_render_target(RID p_render_target) {}
-	void restore_render_target(bool p_3d_was_drawn) {}
-	void clear_render_target(const Color &p_color) {}
-	void blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen = 0) {}
-	void output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {}
-	void end_frame(bool p_swap_buffers) { OS::get_singleton()->swap_buffers(); }
-	void finalize() {}
+	void initialize();
+	void begin_frame(double frame_step);
+	void blit_render_targets_to_screen(int p_screen, const BlitToScreen *p_render_targets, int p_amount);
+
+	void end_frame(bool p_swap_buffers);
+	void finalize();
 
 	static Error is_viable() {
 		return OK;
