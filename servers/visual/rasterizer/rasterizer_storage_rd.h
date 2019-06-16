@@ -3,43 +3,99 @@
 
 #include "core/rid_owner.h"
 #include "servers/visual/rasterizer/rasterizer.h"
-
+#include "servers/visual/rendering_device.h"
 class RasterizerStorageRD : public RasterizerStorage {
 public:
 	/* TEXTURE API */
-	struct RDTexture {
+	struct Texture {
+
+		enum Type {
+			TYPE_2D,
+			TYPE_LAYERED,
+			TYPE_3D
+		};
+
+		Type type;
+
+		RenderingDevice::TextureType rd_type;
+		RID rd_texture;
+		RID rd_texture_srgb;
+		RenderingDevice::DataFormat rd_format;
+		RenderingDevice::DataFormat rd_format_srgb;
+
+		Image::Format format;
 		int width;
 		int height;
-		uint32_t flags;
-		Image::Format format;
-		Ref<Image> image;
+		int depth;
+		int layers;
+		int mipmaps;
+
+		int height_2d;
+		int width_2d;
+
+		bool is_render_target;
+
+		Ref<Image> image_cache_2d;
 		String path;
 	};
 
-	struct RDSurface {
-		uint32_t format;
-		VS::PrimitiveType primitive;
-		PoolVector<uint8_t> array;
-		int vertex_count;
-		PoolVector<uint8_t> index_array;
-		int index_count;
-		AABB aabb;
-		Vector<PoolVector<uint8_t> > blend_shapes;
-		Vector<AABB> bone_aabbs;
+	struct TextureToRDFormat {
+		RD::DataFormat format;
+		RD::DataFormat format_srgb;
+		RD::TextureSwizzle swizzle_r;
+		RD::TextureSwizzle swizzle_g;
+		RD::TextureSwizzle swizzle_b;
+		RD::TextureSwizzle swizzle_a;
+		TextureToRDFormat() {
+			format = RD::DATA_FORMAT_MAX;
+			format_srgb = RD::DATA_FORMAT_MAX;
+			swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		}
 	};
 
-	struct RDMesh {
-		Vector<RDSurface> surfaces;
-		int blend_shape_count;
-		VS::BlendShapeMode blend_shape_mode;
+	mutable RID_Owner<Texture> texture_owner;
+
+	Ref<Image> _validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format);
+
+	/* RENDER TARGET */
+
+	struct RenderTarget {
+
+		Size2i size;
+		RID framebuffer;
+		RID color;
+		RID color_srgb;
+
+		//used for retrieving from CPU
+		RD::DataFormat color_format;
+		RD::DataFormat color_format_srgb;
+		Image::Format image_format;
+
+		bool flags[RENDER_TARGET_FLAG_MAX];
+
+		//texture generated for this owner (nor RD).
+		RID texture;
+		bool dirty;
+		bool texture_dirty;
+		bool was_used;
 	};
 
-	mutable RID_PtrOwner<RDTexture> texture_owner;
-	mutable RID_PtrOwner<RDMesh> mesh_owner;
+	RID_Owner<RenderTarget> render_target_owner;
+
+	void _clear_render_target(RenderTarget *rt);
+	void _update_render_target(RenderTarget *rt);
+
+public:
+	/* TEXTURE API */
 
 	virtual RID texture_2d_create(const Ref<Image> &p_image);
 	virtual RID texture_2d_layered_create(const Vector<Ref<Image> > &p_layers, VS::TextureLayeredType p_layered_type);
 	virtual RID texture_3d_create(const Vector<Ref<Image> > &p_slices); //all slices, then all the mipmaps, must be coherent
+
+	virtual void _texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_immediate);
 
 	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0); //mostly used for video and streaming
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0);
@@ -71,10 +127,54 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) const;
 
+	//internal usage
+
+	_FORCE_INLINE_ RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) {
+		if (p_texture.is_null()) {
+			return RID();
+		}
+		Texture *tex = texture_owner.getornull(p_texture);
+
+		if (!tex) {
+			return RID();
+		}
+		return (p_srgb && tex->rd_texture_srgb.is_valid()) ? tex->rd_texture_srgb : tex->rd_texture;
+	}
+
+	_FORCE_INLINE_ Size2i texture_2d_get_size(RID p_texture) {
+		if (p_texture.is_null()) {
+			return Size2i();
+		}
+		Texture *tex = texture_owner.getornull(p_texture);
+
+		if (!tex) {
+			return Size2i();
+		}
+		return Size2i(tex->width_2d, tex->height_2d);
+	}
+
 	/* SKY API */
 
+	struct RDSurface {
+		uint32_t format;
+		VS::PrimitiveType primitive;
+		PoolVector<uint8_t> array;
+		int vertex_count;
+		PoolVector<uint8_t> index_array;
+		int index_count;
+		AABB aabb;
+		Vector<PoolVector<uint8_t> > blend_shapes;
+		Vector<AABB> bone_aabbs;
+	};
+
+	struct RDMesh {
+		Vector<RDSurface> surfaces;
+		int blend_shape_count;
+		VS::BlendShapeMode blend_shape_mode;
+	};
 	RID sky_create() { return RID(); }
 	void sky_set_texture(RID p_sky, RID p_cube_map, int p_radiance_size) {}
+	mutable RID_PtrOwner<RDMesh> mesh_owner;
 
 	/* SHADER API */
 
@@ -516,17 +616,19 @@ public:
 
 	virtual bool particles_is_inactive(RID p_particles) const { return false; }
 
-	/* RENDER TARGET */
+	/* RENDER TARGET API */
 
-	RID render_target_create() { return RID(); }
-	void render_target_set_position(RID p_render_target, int p_x, int p_y) {}
-	void render_target_set_size(RID p_render_target, int p_width, int p_height) {}
-	RID render_target_get_texture(RID p_render_target) const { return RID(); }
-	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {}
-	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {}
-	bool render_target_was_used(RID p_render_target) { return false; }
-	void render_target_clear_used(RID p_render_target) {}
-	void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa) {}
+	RID render_target_create();
+	void render_target_set_position(RID p_render_target, int p_x, int p_y);
+	void render_target_set_size(RID p_render_target, int p_width, int p_height);
+	RID render_target_get_texture(RID p_render_target);
+	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id);
+	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
+	bool render_target_was_used(RID p_render_target);
+	void render_target_clear_used_flag(RID p_render_target);
+
+	Size2 render_target_get_size(RID p_render_target);
+	RID render_target_get_rd_framebuffer(RID p_render_target);
 
 	/* CANVAS SHADOW */
 
@@ -545,16 +647,7 @@ public:
 		return VS::INSTANCE_NONE;
 	}
 
-	bool free(RID p_rid) {
-
-		if (texture_owner.owns(p_rid)) {
-			// delete the texture
-			RDTexture *texture = texture_owner.getornull(p_rid);
-			texture_owner.free(p_rid);
-			memdelete(texture);
-		}
-		return true;
-	}
+	bool free(RID p_rid);
 
 	bool has_os_feature(const String &p_feature) const { return false; }
 
