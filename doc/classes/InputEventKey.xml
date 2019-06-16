@@ -29,7 +29,7 @@
 			Key scancode, one of the [enum KeyList] constants.
 		</member>
 		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode">
-			Key unicode identifier when relevant.
+			Key unicode identifier when relevant. Unicode identifiers for the composite characters and complex scripts may not be available unless IME input mode is active. See [method OS.set_ime_active] for more information.
 		</member>
 	</members>
 	<constants>

@@ -200,7 +200,7 @@ namespace Godot
 
         public bool Equals(Plane other)
         {
-            return _normal == other._normal && D == other.D;
+            return _normal == other._normal && Mathf.IsEqualApprox(D, other.D);
         }
 
         public override int GetHashCode()

@@ -126,6 +126,7 @@ private:
 	StringName tree_changed_name;
 	StringName node_added_name;
 	StringName node_removed_name;
+	StringName node_renamed_name;
 
 	bool use_font_oversampling;
 	int64_t current_frame;
@@ -201,6 +202,7 @@ private:
 	void tree_changed();
 	void node_added(Node *p_node);
 	void node_removed(Node *p_node);
+	void node_renamed(Node *p_node);
 
 	Group *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);

@@ -7,8 +7,8 @@
 		Server that manages all translations. Translations can be set to it and removed from it.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/stable/tutorials/i18n/internationalizing_games.html</link>
-		<link>https://docs.godotengine.org/en/stable/tutorials/i18n/locales.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/i18n/internationalizing_games.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_translation">
@@ -25,6 +25,12 @@
 			</return>
 			<description>
 				Clears the server from all translations.
+			</description>
+		</method>
+		<method name="get_loaded_locales" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_locale" qualifiers="const">

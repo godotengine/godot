@@ -197,7 +197,7 @@ void MultiMeshEditor::_populate() {
 		float areapos = Math::random(0.0f, area_accum);
 
 		Map<float, int>::Element *E = triangle_area_map.find_closest(areapos);
-		ERR_FAIL_COND(!E)
+		ERR_FAIL_COND(!E);
 		int index = E->get();
 		ERR_FAIL_INDEX(index, facecount);
 
@@ -293,6 +293,7 @@ void MultiMeshEditor::_bind_methods() {
 MultiMeshEditor::MultiMeshEditor() {
 
 	options = memnew(MenuButton);
+	options->set_switch_on_hover(true);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text("MultiMesh");

@@ -81,7 +81,7 @@ void ResourceImporterTexture::_texture_reimport_normal(const Ref<StreamTexture> 
 void ResourceImporterTexture::update_imports() {
 
 	if (EditorFileSystem::get_singleton()->is_scanning() || EditorFileSystem::get_singleton()->is_importing()) {
-		return; // do nothing for noe
+		return; // do nothing for now
 	}
 	mutex->lock();
 

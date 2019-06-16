@@ -330,7 +330,7 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 
 	if (err == OK && p_chmod_flags != -1) {
 		fdst->close();
-		err = fdst->_chmod(p_to, p_chmod_flags);
+		err = FileAccess::set_unix_permissions(p_to, p_chmod_flags);
 		// If running on a platform with no chmod support (i.e., Windows), don't fail
 		if (err == ERR_UNAVAILABLE)
 			err = OK;

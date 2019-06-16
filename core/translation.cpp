@@ -179,6 +179,7 @@ static const char *locale_list[] = {
 	"ff_SN", //  Fulah (Senegal)
 	"fi", //  Finnish
 	"fi_FI", //  Finnish (Finland)
+	"fil", //  Filipino
 	"fil_PH", //  Filipino (Philippines)
 	"fo_FO", //  Faroese (Faroe Islands)
 	"fr", //  French
@@ -227,6 +228,7 @@ static const char *locale_list[] = {
 	"ja", //  Japanese
 	"ja_JP", //  Japanese (Japan)
 	"kab_DZ", //  Kabyle (Algeria)
+	"ka", //  Georgian
 	"ka_GE", //  Georgian (Georgia)
 	"kk_KZ", //  Kazakh (Kazakhstan)
 	"kl_GL", //  Kalaallisut (Greenland)
@@ -257,10 +259,12 @@ static const char *locale_list[] = {
 	"mg_MG", //  Malagasy (Madagascar)
 	"mh_MH", //  Marshallese (Marshall Islands)
 	"mhr_RU", //  Eastern Mari (Russia)
-	"mi_NZ", //  Maori (New Zealand)
+	"mi", //  Māori
+	"mi_NZ", //  Māori (New Zealand)
 	"miq_NI", //  Mískito (Nicaragua)
 	"mk", //  Macedonian
 	"mk_MK", //  Macedonian (Macedonia)
+	"ml", //  Malayalam
 	"ml_IN", //  Malayalam (India)
 	"mni_IN", //  Manipuri (India)
 	"mn_MN", //  Mongolian (Mongolia)
@@ -326,6 +330,7 @@ static const char *locale_list[] = {
 	"sgs_LT", //  Samogitian (Lithuania)
 	"shs_CA", //  Shuswap (Canada)
 	"sid_ET", //  Sidamo (Ethiopia)
+	"si", //  Sinhala
 	"si_LK", //  Sinhala (Sri Lanka)
 	"sk", //  Slovak
 	"sk_SK", //  Slovak (Slovakia)
@@ -343,6 +348,7 @@ static const char *locale_list[] = {
 	"sq_MK", //  Albanian (Macedonia)
 	"sr", //  Serbian
 	"sr_Cyrl", //  Serbian (Cyrillic)
+	"sr_Latn", //  Serbian (Latin)
 	"sr_ME", //  Serbian (Montenegro)
 	"sr_RS", //  Serbian (Serbia)
 	"ss_ZA", //  Swati (South Africa)
@@ -357,6 +363,7 @@ static const char *locale_list[] = {
 	"ta_IN", //  Tamil (India)
 	"ta_LK", //  Tamil (Sri Lanka)
 	"tcy_IN", //  Tulu (India)
+	"te", //  Telugu
 	"te_IN", //  Telugu (India)
 	"tg_TJ", //  Tajik (Tajikistan)
 	"the_NP", //  Chitwania Tharu (Nepal)
@@ -540,6 +547,7 @@ static const char *locale_names[] = {
 	"Fulah (Senegal)",
 	"Finnish",
 	"Finnish (Finland)",
+	"Filipino",
 	"Filipino (Philippines)",
 	"Faroese (Faroe Islands)",
 	"French",
@@ -588,6 +596,7 @@ static const char *locale_names[] = {
 	"Japanese",
 	"Japanese (Japan)",
 	"Kabyle (Algeria)",
+	"Georgian",
 	"Georgian (Georgia)",
 	"Kazakh (Kazakhstan)",
 	"Kalaallisut (Greenland)",
@@ -618,10 +627,12 @@ static const char *locale_names[] = {
 	"Malagasy (Madagascar)",
 	"Marshallese (Marshall Islands)",
 	"Eastern Mari (Russia)",
-	"Maori (New Zealand)",
+	"Māori",
+	"Māori (New Zealand)",
 	"Mískito (Nicaragua)",
 	"Macedonian",
 	"Macedonian (Macedonia)",
+	"Malayalam",
 	"Malayalam (India)",
 	"Manipuri (India)",
 	"Mongolian (Mongolia)",
@@ -687,6 +698,7 @@ static const char *locale_names[] = {
 	"Samogitian (Lithuania)",
 	"Shuswap (Canada)",
 	"Sidamo (Ethiopia)",
+	"Sinhala",
 	"Sinhala (Sri Lanka)",
 	"Slovak",
 	"Slovak (Slovakia)",
@@ -704,6 +716,7 @@ static const char *locale_names[] = {
 	"Albanian (Macedonia)",
 	"Serbian",
 	"Serbian (Cyrillic)",
+	"Serbian (Latin)",
 	"Serbian (Montenegro)",
 	"Serbian (Serbia)",
 	"Swati (South Africa)",
@@ -718,6 +731,7 @@ static const char *locale_names[] = {
 	"Tamil (India)",
 	"Tamil (Sri Lanka)",
 	"Tulu (India)",
+	"Telugu",
 	"Telugu (India)",
 	"Tajik (Tajikistan)",
 	"Chitwania Tharu (Nepal)",
@@ -968,6 +982,19 @@ String TranslationServer::get_locale_name(const String &p_locale) const {
 	return locale_name_map[p_locale];
 }
 
+Array TranslationServer::get_loaded_locales() const {
+	Array locales;
+	for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
+
+		const Ref<Translation> &t = E->get();
+		String l = t->get_locale();
+
+		locales.push_back(l);
+	}
+
+	return locales;
+}
+
 Vector<String> TranslationServer::get_all_locales() {
 
 	Vector<String> locales;
@@ -1168,6 +1195,8 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationServer::remove_translation);
 
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationServer::clear);
+
+	ClassDB::bind_method(D_METHOD("get_loaded_locales"), &TranslationServer::get_loaded_locales);
 }
 
 void TranslationServer::load_translations() {

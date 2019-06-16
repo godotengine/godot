@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import platform
-
 Import('env')
 Import('env_modules')
 
@@ -15,28 +13,11 @@ if env['builtin_xatlas']:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_xatlas_unwrap.Append(CPPPATH=[thirdparty_dir])
+    env_xatlas_unwrap.Prepend(CPPPATH=[thirdparty_dir])
 
     # upstream uses c++11
     if (not env.msvc):
         env_xatlas_unwrap.Append(CXXFLAGS="-std=c++11")
-
-    if env["platform"] == 'x11':
-        # if not specifically one of the *BSD, then use LINUX as default
-        if platform.system() == "FreeBSD":
-            env_xatlas_unwrap.Append(CCFLAGS=["-DNV_OS_FREEBSD", "-DPOSH_COMPILER_GCC"])
-        elif platform.system() == "OpenBSD":
-            env_xatlas_unwrap.Append(CCFLAGS=["-DNV_OS_OPENBSD", "-DPOSH_COMPILER_GCC"])
-        else:
-            env_xatlas_unwrap.Append(CCFLAGS=["-DNV_OS_LINUX", "-DPOSH_COMPILER_GCC"])
-    elif env["platform"] == 'osx':
-        env_xatlas_unwrap.Append(CCFLAGS=["-DNV_OS_DARWIN", "-DPOSH_COMPILER_GCC"])
-    elif env["platform"] == 'windows':
-        if env.msvc:
-            env_xatlas_unwrap.Append(CCFLAGS=["-DNV_OS_WIN32", "-DNV_CC_MSVC", "-DPOSH_COMPILER_MSVC" ])
-        else:
-            env_xatlas_unwrap.Append(CCFLAGS=["-DNV_OS_MINGW", "-DNV_CC_GNUC", "-DPOSH_COMPILER_GCC", "-U__STRICT_ANSI__"])
-            env.Append(LIBS=["dbghelp"])
 
     env_thirdparty = env_xatlas_unwrap.Clone()
     env_thirdparty.disable_warnings()

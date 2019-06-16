@@ -144,7 +144,7 @@
 			<return type="Color">
 			</return>
 			<description>
-				Returns the inverted color [code](1 - r, 1 - g, 1 - b, 1 - a)[/code].
+				Returns the inverted color [code](1 - r, 1 - g, 1 - b, a)[/code].
 				[codeblock]
 				var c = Color(0.3, 0.4, 0.9)
 				var inverted_color = c.inverted() # a color of an RGBA(178, 153, 26, 255)
@@ -565,6 +565,8 @@
 		<constant name="thistle" value="Color( 0.85, 0.75, 0.85, 1 )">
 		</constant>
 		<constant name="tomato" value="Color( 1, 0.39, 0.28, 1 )">
+		</constant>
+		<constant name="transparent" value="Color( 1, 1, 1, 0 )">
 		</constant>
 		<constant name="turquoise" value="Color( 0.25, 0.88, 0.82, 1 )">
 		</constant>

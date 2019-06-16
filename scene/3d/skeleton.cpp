@@ -162,7 +162,7 @@ void Skeleton::_update_process_order() {
 	//now check process order
 	int pass_count = 0;
 	while (pass_count < len * len) {
-		//using bubblesort because of simplicity, it wont run every frame though.
+		//using bubblesort because of simplicity, it won't run every frame though.
 		//bublesort worst case is O(n^2), and this may be an infinite loop if cyclic
 		bool swapped = false;
 		for (int i = 0; i < len; i++) {

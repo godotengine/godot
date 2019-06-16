@@ -58,6 +58,7 @@
 #include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/cylinder_shape.h"
+#include "scene/resources/height_map_shape.h"
 #include "scene/resources/plane_shape.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/ray_shape.h"
@@ -571,9 +572,11 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 
 		Transform orig_camera_transform = p_camera->get_camera_transform();
 
-		if (orig_camera_transform.origin.distance_squared_to(t.origin) > 0.01) {
+		if (orig_camera_transform.origin.distance_squared_to(t.origin) > 0.01 &&
+				ABS(orig_camera_transform.basis.get_axis(Vector3::AXIS_Z).dot(Vector3(0, 1, 0))) < 0.99) {
 			p_camera->look_at(t.origin, Vector3(0, 1, 0));
 		}
+
 		Vector3 c0 = t.xform(Vector3(selectable_icon_size, selectable_icon_size, 0) * scale);
 		Vector3 c1 = t.xform(Vector3(-selectable_icon_size, -selectable_icon_size, 0) * scale);
 
@@ -582,7 +585,7 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 
 		p_camera->set_global_transform(orig_camera_transform);
 
-		Rect2 rect(p0, p1 - p0);
+		Rect2 rect(p0, (p1 - p0).abs());
 
 		rect.set_position(center - rect.get_size() / 2.0);
 
@@ -1309,6 +1312,28 @@ void CameraSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	Ref<Material> material = get_material("camera_material", p_gizmo);
 	Ref<Material> icon = get_material("camera_icon", p_gizmo);
 
+#define ADD_TRIANGLE(m_a, m_b, m_c) \
+	{                               \
+		lines.push_back(m_a);       \
+		lines.push_back(m_b);       \
+		lines.push_back(m_b);       \
+		lines.push_back(m_c);       \
+		lines.push_back(m_c);       \
+		lines.push_back(m_a);       \
+	}
+
+#define ADD_QUAD(m_a, m_b, m_c, m_d) \
+	{                                \
+		lines.push_back(m_a);        \
+		lines.push_back(m_b);        \
+		lines.push_back(m_b);        \
+		lines.push_back(m_c);        \
+		lines.push_back(m_c);        \
+		lines.push_back(m_d);        \
+		lines.push_back(m_d);        \
+		lines.push_back(m_a);        \
+	}
+
 	switch (camera->get_projection()) {
 
 		case Camera::PROJECTION_PERSPECTIVE: {
@@ -1320,16 +1345,6 @@ void CameraSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 			Vector3 nside = side;
 			nside.x = -nside.x;
 			Vector3 up = Vector3(0, side.x, 0);
-
-#define ADD_TRIANGLE(m_a, m_b, m_c) \
-	{                               \
-		lines.push_back(m_a);       \
-		lines.push_back(m_b);       \
-		lines.push_back(m_b);       \
-		lines.push_back(m_c);       \
-		lines.push_back(m_c);       \
-		lines.push_back(m_a);       \
-	}
 
 			ADD_TRIANGLE(Vector3(), side + up, side - up);
 			ADD_TRIANGLE(Vector3(), nside + up, nside - up);
@@ -1345,17 +1360,6 @@ void CameraSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		} break;
 		case Camera::PROJECTION_ORTHOGONAL: {
 
-#define ADD_QUAD(m_a, m_b, m_c, m_d) \
-	{                                \
-		lines.push_back(m_a);        \
-		lines.push_back(m_b);        \
-		lines.push_back(m_b);        \
-		lines.push_back(m_c);        \
-		lines.push_back(m_c);        \
-		lines.push_back(m_d);        \
-		lines.push_back(m_d);        \
-		lines.push_back(m_a);        \
-	}
 			float size = camera->get_size();
 
 			float hsize = size * 0.5;
@@ -1368,6 +1372,7 @@ void CameraSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 			ADD_QUAD(-up - right + back, -up + right + back, up + right + back, up - right + back);
 			ADD_QUAD(up + right, up + right + back, up - right + back, up - right);
 			ADD_QUAD(-up + right, -up + right + back, -up - right + back, -up - right);
+
 			handles.push_back(right + back);
 
 			right.x *= 0.25;
@@ -1375,7 +1380,29 @@ void CameraSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 			ADD_TRIANGLE(tup, right + up + back, -right + up + back);
 
 		} break;
+		case Camera::PROJECTION_FRUSTUM: {
+			float hsize = camera->get_size() / 2.0;
+
+			Vector3 side = Vector3(hsize, 0, -camera->get_znear()).normalized();
+			Vector3 nside = side;
+			nside.x = -nside.x;
+			Vector3 up = Vector3(0, side.x, 0);
+			Vector3 offset = Vector3(camera->get_frustum_offset().x, camera->get_frustum_offset().y, 0.0);
+
+			ADD_TRIANGLE(Vector3(), side + up + offset, side - up + offset);
+			ADD_TRIANGLE(Vector3(), nside + up + offset, nside - up + offset);
+			ADD_TRIANGLE(Vector3(), side + up + offset, nside + up + offset);
+			ADD_TRIANGLE(Vector3(), side - up + offset, nside - up + offset);
+
+			side.x *= 0.25;
+			nside.x *= 0.25;
+			Vector3 tup(0, up.y * 3 / 2, side.z);
+			ADD_TRIANGLE(tup + offset, side + up + offset, nside + up + offset);
+		}
 	}
+
+#undef ADD_TRIANGLE
+#undef ADD_QUAD
 
 	p_gizmo->add_lines(lines, material);
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
@@ -3610,6 +3637,14 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(0, 0, rs->get_length()));
 		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	if (Object::cast_to<HeightMapShape>(*s)) {
+
+		Ref<HeightMapShape> hms = s;
+
+		Ref<ArrayMesh> mesh = hms->get_debug_mesh();
+		p_gizmo->add_mesh(mesh, false, RID(), material);
 	}
 }
 

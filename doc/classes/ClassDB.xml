@@ -121,7 +121,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
-				Return whether 'class' or its ancestry has an integer constant called 'name' or not.
+				Returns whether 'class' or its ancestry has an integer constant called 'name' or not.
 			</description>
 		</method>
 		<method name="class_has_method" qualifiers="const">
@@ -134,7 +134,7 @@
 			<argument index="2" name="no_inheritance" type="bool" default="false">
 			</argument>
 			<description>
-				Return whether 'class' (or its ancestry if 'no_inheritance' is false) has a method called 'method' or not.
+				Returns whether 'class' (or its ancestry if 'no_inheritance' is false) has a method called 'method' or not.
 			</description>
 		</method>
 		<method name="class_has_signal" qualifiers="const">
@@ -145,7 +145,7 @@
 			<argument index="1" name="signal" type="String">
 			</argument>
 			<description>
-				Return whether 'class' or its ancestry has a signal called 'signal' or not.
+				Returns whether 'class' or its ancestry has a signal called 'signal' or not.
 			</description>
 		</method>
 		<method name="class_set_property" qualifiers="const">

@@ -47,9 +47,11 @@ class GDMonoProperty : public IMonoClassMember {
 	MonoCustomAttrInfo *attributes;
 
 public:
-	virtual MemberType get_member_type() GD_FINAL { return MEMBER_TYPE_PROPERTY; }
+	virtual GDMonoClass *get_enclosing_class() const GD_FINAL { return owner; }
 
-	virtual StringName get_name() GD_FINAL { return name; }
+	virtual MemberType get_member_type() const GD_FINAL { return MEMBER_TYPE_PROPERTY; }
+
+	virtual StringName get_name() const GD_FINAL { return name; }
 
 	virtual bool is_static() GD_FINAL;
 	virtual Visibility get_visibility() GD_FINAL;

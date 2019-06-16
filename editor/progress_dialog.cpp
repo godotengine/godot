@@ -161,6 +161,7 @@ void ProgressDialog::_popup() {
 	main->set_margin(MARGIN_TOP, style->get_margin(MARGIN_TOP));
 	main->set_margin(MARGIN_BOTTOM, -style->get_margin(MARGIN_BOTTOM));
 
+	raise();
 	popup_centered(ms);
 }
 
@@ -220,6 +221,7 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 	if (cancel_hb->is_visible()) {
 		OS::get_singleton()->force_process_input();
 	}
+
 	Main::iteration(); // this will not work on a lot of platforms, so it's only meant for the editor
 	return cancelled;
 }

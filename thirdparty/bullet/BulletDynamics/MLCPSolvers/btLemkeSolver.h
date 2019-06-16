@@ -20,7 +20,7 @@ subject to the following restrictions:
 #include "btMLCPSolverInterface.h"
 #include "btLemkeAlgorithm.h"
 
-///The btLemkeSolver is based on "Fast Implementation of Lemke’s Algorithm for Rigid Body Contact Simulation (John E. Lloyd) "
+///The btLemkeSolver is based on "Fast Implementation of Lemke's Algorithm for Rigid Body Contact Simulation (John E. Lloyd) "
 ///It is a slower but more accurate solver. Increase the m_maxLoops for better convergence, at the cost of more CPU time.
 ///The original implementation of the btLemkeAlgorithm was done by Kilian Grundl from the MBSim team
 class btLemkeSolver : public btMLCPSolverInterface
@@ -67,7 +67,7 @@ public:
 			btMatrixXu A1;
 			btMatrixXu B(n, n);
 			{
-				BT_PROFILE("inverse(slow)");
+				//BT_PROFILE("inverse(slow)");
 				A1.resize(A.rows(), A.cols());
 				for (int row = 0; row < A.rows(); row++)
 				{
@@ -174,7 +174,7 @@ public:
 			y1.resize(n, 1);
 			btLemkeAlgorithm lemke(M, qq, m_debugLevel);
 			{
-				BT_PROFILE("lemke.solve");
+				//BT_PROFILE("lemke.solve");
 				lemke.setSystem(M, qq);
 				z1 = lemke.solve(m_maxLoops);
 			}

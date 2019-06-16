@@ -34,35 +34,43 @@
 Vector<Vector3> HeightMapShape::_gen_debug_mesh_lines() {
 	Vector<Vector3> points;
 
-	// This will be slow for large maps...
-	// also we'll have to figure out how well bullet centers this shape...
+	if ((map_width != 0) && (map_depth != 0)) {
 
-	Vector2 size(map_width - 1, map_depth - 1);
-	Vector2 start = size * -0.5;
-	int offset = 0;
+		// This will be slow for large maps...
+		// also we'll have to figure out how well bullet centers this shape...
 
-	PoolRealArray::Read r = map_data.read();
+		Vector2 size(map_width - 1, map_depth - 1);
+		Vector2 start = size * -0.5;
 
-	for (int d = 0; d < map_depth; d++) {
-		Vector3 height(start.x, 0.0, start.y);
+		PoolRealArray::Read r = map_data.read();
 
-		for (int w = 0; w < map_width; w++) {
-			height.y = r[offset++];
+		// reserve some memory for our points..
+		points.resize(((map_width - 1) * map_depth * 2) + (map_width * (map_depth - 1) * 2));
 
-			if (w != map_width - 1) {
-				points.push_back(height);
-				points.push_back(Vector3(height.x + 1.0, r[offset], height.z));
+		// now set our points
+		int r_offset = 0;
+		int w_offset = 0;
+		for (int d = 0; d < map_depth; d++) {
+			Vector3 height(start.x, 0.0, start.y);
+
+			for (int w = 0; w < map_width; w++) {
+				height.y = r[r_offset++];
+
+				if (w != map_width - 1) {
+					points.write[w_offset++] = height;
+					points.write[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z);
+				}
+
+				if (d != map_depth - 1) {
+					points.write[w_offset++] = height;
+					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
+				}
+
+				height.x += 1.0;
 			}
 
-			if (d != map_depth - 1) {
-				points.push_back(height);
-				points.push_back(Vector3(height.x, r[offset + map_width - 1], height.z + 1.0));
-			}
-
-			height.x += 1.0;
+			start.y += 1.0;
 		}
-
-		start.y += 1.0;
 	}
 
 	return points;
@@ -77,6 +85,7 @@ void HeightMapShape::_update_shape() {
 	d["min_height"] = min_height;
 	d["max_height"] = max_height;
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), d);
+	Shape::_update_shape();
 }
 
 void HeightMapShape::set_map_width(int p_new) {

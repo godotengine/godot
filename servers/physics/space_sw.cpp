@@ -630,7 +630,7 @@ int SpaceSW::test_body_ray_separation(BodySW *p_body, const Transform &p_transfo
 
 						int ray_index = -1; //reuse shape
 						for (int k = 0; k < rays_found; k++) {
-							if (r_results[ray_index].collision_local_shape == j) {
+							if (r_results[k].collision_local_shape == j) {
 								ray_index = k;
 							}
 						}

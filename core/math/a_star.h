@@ -48,25 +48,34 @@ class AStar : public Reference {
 
 	struct Point {
 
-		SelfList<Point> list;
-
 		int id;
 		Vector3 pos;
 		real_t weight_scale;
-		uint64_t last_pass;
 		bool enabled;
 
 		Set<Point *> neighbours;
+		Set<Point *> unlinked_neighbours;
 
 		// Used for pathfinding
 		Point *prev_point;
-		real_t distance;
-
-		Point() :
-				list(this) {}
+		real_t g_score;
+		real_t f_score;
+		uint64_t open_pass;
+		uint64_t closed_pass;
 	};
 
 	Map<int, Point *> points;
+
+	struct SortPoints {
+		_FORCE_INLINE_ bool operator()(const Point *A, const Point *B) const { // Returns true when the Point A is worse than Point B
+			if (A->f_score > B->f_score)
+				return true;
+			else if (A->f_score < B->f_score)
+				return false;
+			else
+				return A->g_score < B->g_score; // If the f_costs are the same then prioritize the points that are further away from the start
+		}
+	};
 
 	struct Segment {
 		union {

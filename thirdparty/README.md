@@ -26,7 +26,7 @@ comments.
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: 2.88
+- Version: git (5ec8339, 2019)
 - License: zlib
 
 Files extracted from upstream source:
@@ -170,7 +170,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.35
+- Version: 1.6.37
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -185,17 +185,20 @@ Files extracted from upstream source:
 ## libsimplewebm
 
 - Upstream: https://github.com/zaps166/libsimplewebm
-- Version: git (05cfdc2, 2016)
-- License: MIT, BSD-3-Clause
+- Version: git (fe57fd3, 2019)
+- License: MIT (main), BSD-3-Clause (libwebm)
+
+This contains libwebm, but the version in use is updated from the one used by libsimplewebm,
+and may have *unmarked* alterations from that.
 
 Files extracted from upstream source:
 
-TODO.
+- all the .cpp, .hpp files in the main folder except `example.cpp`
+- LICENSE
 
 Important: Some files have Godot-made changes.
 They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 comments.
-
 
 ## libtheora
 
@@ -262,17 +265,17 @@ changes are marked with `// -- GODOT --` comments.
 ## libwebsockets
 
 - Upstream: https://github.com/warmcat/libwebsockets
-- Version: 3.1.0
+- Version: 3.0.1
 - License: LGPLv2.1 + static linking exception
 
 File extracted from upstream source:
-- From `lib/` into `thirdparty/libwebsockets/lib`:
+- From `lib/` into `thirdparty/libwebsockets`:
   - Everything from `core`
-  - From `event-libs` only the `poll` subfolder and the `private.h` header
-  - From `misc` only `base64-decode.c`, `getifaddrs.c`, `getifaddrs.h`, `lejp.c`, and `sha-1.c` (and the `private.h` header)
-  - From `plat` everything from `unix` and `windows` (and the `private.h` header)
+  - From `event-libs` only the `poll` subfolder
+  - From `misc` only `base64-decode.c`, `getifaddrs.c`, `getifaddrs.h`, `lejp.c`, and `sha-1.c`
+  - From `plat` only `lws-plat-unix.c` and `lws-plat-win.c`
   - From `roles` only `private.h`, `h1`, `http`, `listen`, `pipe`, `raw`, `ws`
-    - From `roles/http` exclude `minilex.c` and the `compression` subfolder
+    - From `roles/http` exclude `minilex.c`
     - From `roles/http/server` exclude `access-log.c`, `lws-spa.c`, `ranges.c`, and `rewrite.c`
     - From `roles/ws` exclude `ext` folder.
   - From `tls` exclude `openssl` folder.
@@ -343,7 +346,7 @@ Collection of single-file libraries used in Godot components.
   * License: Public Domain
  - `clipper.{cpp,hpp}`
   * Upstream: https://sourceforge.net/projects/polyclipping
-  * Version: 6.4.2
+  * Version: 6.4.2 + Godot changes (added optional exceptions handling)
   * License: BSL-1.0
 - `fastlz.{c,h}`
   * Upstream: https://github.com/ariya/FastLZ

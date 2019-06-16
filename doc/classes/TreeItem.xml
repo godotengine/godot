@@ -163,8 +163,11 @@
 		<method name="get_next_visible">
 			<return type="TreeItem">
 			</return>
+			<argument index="0" name="wrap" type="bool" default="false">
+			</argument>
 			<description>
 				Returns the next visible TreeItem in the tree.
+				If [code]wrap[/code] is enabled, the method will wrap around to the first visible element in the tree when called on the last visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_parent">
@@ -184,8 +187,11 @@
 		<method name="get_prev_visible">
 			<return type="TreeItem">
 			</return>
+			<argument index="0" name="wrap" type="bool" default="false">
+			</argument>
 			<description>
 				Returns the previous visible TreeItem in the tree.
+				If [code]wrap[/code] is enabled, the method will wrap around to the last visible element in the tree when called on the first visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_range" qualifiers="const">

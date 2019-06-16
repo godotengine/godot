@@ -48,7 +48,7 @@ Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_
 		meshes.push_back(p_meshes[i]);
 	}
 
-	Vector<Ref<Texture> > textures = make_mesh_previews(meshes, p_preview_size);
+	Vector<Ref<Texture> > textures = make_mesh_previews(meshes, NULL, p_preview_size);
 	Array ret;
 	for (int i = 0; i < textures.size(); i++) {
 		ret.push_back(textures[i]);
@@ -57,7 +57,7 @@ Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_
 	return ret;
 }
 
-Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, int p_preview_size) {
+Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, Vector<Transform> *p_transforms, int p_preview_size) {
 
 	int size = p_preview_size;
 
@@ -74,24 +74,13 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 
 	RID camera = VS::get_singleton()->camera_create();
 	VS::get_singleton()->viewport_attach_camera(viewport, camera);
-	VS::get_singleton()->camera_set_transform(camera, Transform(Basis(), Vector3(0, 0, 3)));
-	//VS::get_singleton()->camera_set_perspective(camera,45,0.1,10);
-	VS::get_singleton()->camera_set_orthogonal(camera, 1.0, 0.01, 1000.0);
 
 	RID light = VS::get_singleton()->directional_light_create();
 	RID light_instance = VS::get_singleton()->instance_create2(light, scenario);
-	VS::get_singleton()->instance_set_transform(light_instance, Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
 
 	RID light2 = VS::get_singleton()->directional_light_create();
 	VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-	//VS::get_singleton()->light_set_color(light2, VS::LIGHT_COLOR_SPECULAR, Color(0.0, 0.0, 0.0));
 	RID light_instance2 = VS::get_singleton()->instance_create2(light2, scenario);
-
-	VS::get_singleton()->instance_set_transform(light_instance2, Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
-
-	//sphere = VS::get_singleton()->mesh_create();
-	RID mesh_instance = VS::get_singleton()->instance_create();
-	VS::get_singleton()->instance_set_scenario(mesh_instance, scenario);
 
 	EditorProgress ep("mlib", TTR("Creating Mesh Previews"), p_meshes.size());
 
@@ -104,25 +93,38 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 			textures.push_back(Ref<Texture>());
 			continue;
 		}
+
+		Transform mesh_xform;
+		if (p_transforms != NULL) {
+			mesh_xform = (*p_transforms)[i];
+		}
+
+		RID inst = VS::get_singleton()->instance_create2(mesh->get_rid(), scenario);
+		VS::get_singleton()->instance_set_transform(inst, mesh_xform);
+
 		AABB aabb = mesh->get_aabb();
 		Vector3 ofs = aabb.position + aabb.size * 0.5;
 		aabb.position -= ofs;
 		Transform xform;
-		xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI * 0.25);
-		xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI * 0.25) * xform.basis;
+		xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI / 6);
+		xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI / 6) * xform.basis;
 		AABB rot_aabb = xform.xform(aabb);
 		float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
 		if (m == 0) {
 			textures.push_back(Ref<Texture>());
 			continue;
 		}
-		m = 1.0 / m;
-		m *= 0.5;
-		xform.basis.scale(Vector3(m, m, m));
 		xform.origin = -xform.basis.xform(ofs); //-ofs*m;
 		xform.origin.z -= rot_aabb.size.z * 2;
-		RID inst = VS::get_singleton()->instance_create2(mesh->get_rid(), scenario);
-		VS::get_singleton()->instance_set_transform(inst, xform);
+		xform.invert();
+		xform = mesh_xform * xform;
+
+		VS::get_singleton()->camera_set_transform(camera, xform * Transform(Basis(), Vector3(0, 0, 3)));
+		VS::get_singleton()->camera_set_orthogonal(camera, m * 2, 0.01, 1000.0);
+
+		VS::get_singleton()->instance_set_transform(light_instance, xform * Transform().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
+		VS::get_singleton()->instance_set_transform(light_instance2, xform * Transform().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
+
 		ep.step(TTR("Thumbnail..."), i);
 		Main::iteration();
 		Main::iteration();
@@ -136,7 +138,6 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 		textures.push_back(it);
 	}
 
-	VS::get_singleton()->free(mesh_instance);
 	VS::get_singleton()->free(viewport);
 	VS::get_singleton()->free(light);
 	VS::get_singleton()->free(light_instance);
@@ -400,6 +401,18 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 			EditorNode::get_singleton()->get_inspector_dock_addon_area()->add_child(p_control);
 
 		} break;
+		case CONTAINER_PROJECT_SETTING_TAB_LEFT: {
+
+			ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(p_control);
+			ProjectSettingsEditor::get_singleton()->get_tabs()->move_child(p_control, 0);
+
+		} break;
+		case CONTAINER_PROJECT_SETTING_TAB_RIGHT: {
+
+			ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(p_control);
+			ProjectSettingsEditor::get_singleton()->get_tabs()->move_child(p_control, 1);
+
+		} break;
 	}
 }
 
@@ -448,6 +461,12 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 		case CONTAINER_PROPERTY_EDITOR_BOTTOM: {
 
 			EditorNode::get_singleton()->get_inspector_dock_addon_area()->remove_child(p_control);
+
+		} break;
+		case CONTAINER_PROJECT_SETTING_TAB_LEFT:
+		case CONTAINER_PROJECT_SETTING_TAB_RIGHT: {
+
+			ProjectSettingsEditor::get_singleton()->get_tabs()->remove_child(p_control);
 
 		} break;
 	}
@@ -863,6 +882,8 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_SIDE_RIGHT);
 	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_BOTTOM);
 	BIND_ENUM_CONSTANT(CONTAINER_PROPERTY_EDITOR_BOTTOM);
+	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_LEFT);
+	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_RIGHT);
 
 	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UL);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BL);

@@ -29,10 +29,17 @@
 /*************************************************************************/
 
 #include "gradient_edit.h"
-#include "core/os/keyboard.h"
-#include "editor/editor_scale.h"
 
+#include "core/os/keyboard.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_scale.h"
 #define SPACING (3 * EDSCALE)
+#define POINT_WIDTH (8 * EDSCALE)
+#else
+#define SPACING 3
+#define POINT_WIDTH 8
+#endif
 
 GradientEdit::GradientEdit() {
 	grabbed = -1;

@@ -31,7 +31,10 @@
 #include "geometry.h"
 
 #include "core/print_string.h"
+#include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/triangulator.h"
+
+#define SCALE_FACTOR 100000.0 // based on CMP_EPSILON
 
 /* this implementation is very inefficient, commenting unless bugs happen. See the other one.
 bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon) {
@@ -836,7 +839,7 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 					Vector3 rel = edge1_A - edge0_A;
 
 					real_t den = clip.normal.dot(rel);
-					if (Math::abs(den) < CMP_EPSILON)
+					if (Math::is_zero_approx(den))
 						continue; // point too short
 
 					real_t dist = -(clip.normal.dot(edge0_A) - clip.d) / den;
@@ -1133,4 +1136,107 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 	}
 
 	r_size = Size2(results[best].max_w, results[best].max_h);
+}
+
+Vector<Vector<Point2> > Geometry::_polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open) {
+
+	using namespace ClipperLib;
+
+	ClipType op = ctUnion;
+
+	switch (p_op) {
+		case OPERATION_UNION: op = ctUnion; break;
+		case OPERATION_DIFFERENCE: op = ctDifference; break;
+		case OPERATION_INTERSECTION: op = ctIntersection; break;
+		case OPERATION_XOR: op = ctXor; break;
+	}
+	Path path_a, path_b;
+
+	// Need to scale points (Clipper's requirement for robust computation)
+	for (int i = 0; i != p_polypath_a.size(); ++i) {
+		path_a << IntPoint(p_polypath_a[i].x * SCALE_FACTOR, p_polypath_a[i].y * SCALE_FACTOR);
+	}
+	for (int i = 0; i != p_polypath_b.size(); ++i) {
+		path_b << IntPoint(p_polypath_b[i].x * SCALE_FACTOR, p_polypath_b[i].y * SCALE_FACTOR);
+	}
+	Clipper clp;
+	clp.AddPath(path_a, ptSubject, !is_a_open); // forward compatible with Clipper 10.0.0
+	clp.AddPath(path_b, ptClip, true); // polylines cannot be set as clip
+
+	Paths paths;
+
+	if (is_a_open) {
+		PolyTree tree; // needed to populate polylines
+		clp.Execute(op, tree);
+		OpenPathsFromPolyTree(tree, paths);
+	} else {
+		clp.Execute(op, paths); // works on closed polygons only
+	}
+	// Have to scale points down now
+	Vector<Vector<Point2> > polypaths;
+
+	for (Paths::size_type i = 0; i < paths.size(); ++i) {
+		Vector<Vector2> polypath;
+
+		const Path &scaled_path = paths[i];
+
+		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
+			polypath.push_back(Point2(
+					static_cast<real_t>(scaled_path[j].X) / SCALE_FACTOR,
+					static_cast<real_t>(scaled_path[j].Y) / SCALE_FACTOR));
+		}
+		polypaths.push_back(polypath);
+	}
+	return polypaths;
+}
+
+Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+
+	using namespace ClipperLib;
+
+	JoinType jt = jtSquare;
+
+	switch (p_join_type) {
+		case JOIN_SQUARE: jt = jtSquare; break;
+		case JOIN_ROUND: jt = jtRound; break;
+		case JOIN_MITER: jt = jtMiter; break;
+	}
+
+	EndType et = etClosedPolygon;
+
+	switch (p_end_type) {
+		case END_POLYGON: et = etClosedPolygon; break;
+		case END_JOINED: et = etClosedLine; break;
+		case END_BUTT: et = etOpenButt; break;
+		case END_SQUARE: et = etOpenSquare; break;
+		case END_ROUND: et = etOpenRound; break;
+	}
+	ClipperOffset co;
+	Path path;
+
+	// Need to scale points (Clipper's requirement for robust computation)
+	for (int i = 0; i != p_polypath.size(); ++i) {
+		path << IntPoint(p_polypath[i].x * SCALE_FACTOR, p_polypath[i].y * SCALE_FACTOR);
+	}
+	co.AddPath(path, jt, et);
+
+	Paths paths;
+	co.Execute(paths, p_delta * SCALE_FACTOR); // inflate/deflate
+
+	// Have to scale points down now
+	Vector<Vector<Point2> > polypaths;
+
+	for (Paths::size_type i = 0; i < paths.size(); ++i) {
+		Vector<Vector2> polypath;
+
+		const Path &scaled_path = paths[i];
+
+		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
+			polypath.push_back(Point2(
+					static_cast<real_t>(scaled_path[j].X) / SCALE_FACTOR,
+					static_cast<real_t>(scaled_path[j].Y) / SCALE_FACTOR));
+		}
+		polypaths.push_back(polypath);
+	}
+	return polypaths;
 }

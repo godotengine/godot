@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-30 20:04+0000\n"
+"PO-Revision-Date: 2019-04-29 08:48+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.6.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -163,12 +163,18 @@ msgid "Animation Playback Track"
 msgstr "Доріжка відтворення анімації"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "Додати доріжку"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "Тривалість анімації (у секундах)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "Тривалість анімації (у секундах)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "Додати доріжку"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -425,12 +431,20 @@ msgstr ""
 "Групувати доріжки за вузлами або показувати їх у форматі простого списку."
 
 #: editor/animation_track_editor.cpp
-msgid "Snap (s): "
-msgstr "Прилипання (с): "
+msgid "Snap:"
+msgstr "Прилипання:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
 msgstr "Значення кроку анімації."
+
+#: editor/animation_track_editor.cpp
+msgid "Seconds"
+msgstr "Секунди"
+
+#: editor/animation_track_editor.cpp
+msgid "FPS"
+msgstr "Кадри за секунду"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3819,6 +3833,11 @@ msgid "Delete Node"
 msgstr "Вилучити вузол"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
+msgstr "Вилучити вузли"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Toggle Filter On/Off"
 msgstr "Увімкнути або вимкнути фільтр"
 
@@ -4796,8 +4815,37 @@ msgid "Layout"
 msgstr "Макет"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert keys."
-msgstr "Вставити ключі."
+msgid "Translation mask for inserting keys."
+msgstr "Маска перенесення для вставляння ключових кадрів."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Rotation mask for inserting keys."
+msgstr "Маска обертання для вставляння ключових кадрів."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale mask for inserting keys."
+msgstr "Маска масштабування для вставляння ключових кадрів."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Insert keys (based on mask)."
+msgstr "Вставити ключові кадри (на основі маски)."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Auto insert keys when objects are translated, rotated on scaled (based on "
+"mask).\n"
+"Keys are only added to existing tracks, no new tracks will be created.\n"
+"Keys must be inserted manually for the first time."
+msgstr ""
+"Автоматично вставляти ключові кадри при перенесенні, обертанні або "
+"масштабуванні об'єктів (на основі маски).\n"
+"Ключові кадри додаватимуться лише до наявних доріжок, нові доріжки не "
+"створюватимуться.\n"
+"Спершу ключові кадри слід додати вручну."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Auto Insert Key"
+msgstr "Автовставлення ключового кадру"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -4869,6 +4917,52 @@ msgstr "Редагувати полігон (вилучити точку)"
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
 msgstr "Встановити обробник"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Error loading image:"
+msgstr "Помилка завантаження зображення:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "No pixels with transparency > 128 in image..."
+msgstr "В зображенні немає пікселів з прозорістю > 128..."
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Load Emission Mask"
+msgstr "Завантажити маску випромінювання"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr "Очистити маску випромінювання"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Particles"
+msgstr "Частинки"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generated Point Count:"
+msgstr "Кількість генерованих точок:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Mask"
+msgstr "Маска випромінювання"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Capture from Pixel"
+msgstr "Захопити з пікселя"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Colors"
+msgstr "Кольори випромінювання"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
@@ -5221,51 +5315,14 @@ msgstr ""
 "Поставити точку можна тільки в процедурному матеріалі ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr "Помилка завантаження зображення:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr "В зображенні немає пікселів з прозорістю > 128..."
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Load Emission Mask"
-msgstr "Завантажити маску випромінювання"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
-msgstr "Очистити маску випромінювання"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Convert to CPUParticles"
 msgstr "Перетворити на CPUParticles"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Particles"
-msgstr "Частинки"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generated Point Count:"
-msgstr "Кількість генерованих точок:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Час генерації (сек):"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Mask"
-msgstr "Маска випромінювання"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Capture from Pixel"
-msgstr "Захопити з пікселя"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Colors"
-msgstr "Кольори випромінювання"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -5777,8 +5834,8 @@ msgid "Save Theme As..."
 msgstr "Зберегти тему як..."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid " Class Reference"
-msgstr " Посилання на клас"
+msgid "%s Class Reference"
+msgstr "Довідник з класу %s"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
@@ -6603,6 +6660,22 @@ msgid "Nameless gizmo"
 msgstr "Штука без назви"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+msgid "Create Mesh2D"
+msgstr "Створити Mesh2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Create Polygon2D"
+msgstr "Створити Polygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Create CollisionPolygon2D"
+msgstr "Створити CollisionPolygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Create LightOccluder2D"
+msgstr "Створити LightOccluder2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
 msgstr "Спрайт порожній!"
 
@@ -6617,16 +6690,36 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Некоректна геометрія, неможливо замінити сіткою."
 
 #: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create polygon."
+msgstr "Некоректна геометрія, неможливо створити багатокутник."
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create collision polygon."
+msgstr "Некоректна геометрія, неможливо створити багатокутник зіткнення."
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create light occluder."
+msgstr "Некоректна геометрія, неможливо створити перешкоду світла."
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr "Спрайт"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Convert to 2D Mesh"
-msgstr "Перетворити на плоску сітку"
+msgid "Convert to Mesh2D"
+msgstr "Перетворити на Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Create 2D Mesh"
-msgstr "Створити плоску сітку"
+msgid "Convert to Polygon2D"
+msgstr "Перетворити на Polygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Create CollisionPolygon2D Sibling"
+msgstr "Створити близнюк CollisionPolygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Create LightOccluder2D Sibling"
+msgstr "Створити близнюка LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7213,6 +7306,10 @@ msgstr "Додати вузол до візуального шейдера"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "Дублювати вузли"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Delete Nodes"
+msgstr "Вилучити вузли"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -8434,10 +8531,6 @@ msgstr "Усунути успадкування"
 #: editor/scene_tree_dock.cpp
 msgid "Open documentation"
 msgstr "Відкрити документацію"
-
-#: editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
-msgstr "Вилучити вузли"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10326,11 +10419,14 @@ msgstr "Призначення однорідного."
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Змінні величини можна пов'язувати лише із функцією вузлів."
 
+#~ msgid "Snap (s): "
+#~ msgstr "Прилипання (с): "
+
+#~ msgid "Insert keys."
+#~ msgstr "Вставити ключі."
+
 #~ msgid "Instance the selected scene(s) as child of the selected node."
 #~ msgstr "Додати вибрану сцену(и), як нащадка вибраного вузла."
-
-#~ msgid "FPS"
-#~ msgstr "Кадри за секунду"
 
 #~ msgid "Warnings:"
 #~ msgstr "Попередження:"

@@ -1,8 +1,8 @@
-diff --git a/thirdparty/libwebsockets/lib/plat/unix/unix-sockets.c b/thirdparty/libwebsockets/lib/plat/unix/unix-sockets.c
-index 693efd28e..192dddee6 100644
---- a/thirdparty/libwebsockets/lib/plat/unix/unix-sockets.c
-+++ b/thirdparty/libwebsockets/lib/plat/unix/unix-sockets.c
-@@ -73,6 +73,11 @@ lws_plat_set_socket_options(struct lws_vhost *vhost, int fd, int unix_skt)
+diff --git a/thirdparty/libwebsockets/plat/lws-plat-unix.c b/thirdparty/libwebsockets/plat/lws-plat-unix.c
+index 7dba3bd82..d1bca8b5d 100644
+--- a/thirdparty/libwebsockets/plat/lws-plat-unix.c
++++ b/thirdparty/libwebsockets/plat/lws-plat-unix.c
+@@ -328,6 +328,11 @@ lws_plat_set_socket_options(struct lws_vhost *vhost, int fd)
  	int optval = 1;
  	socklen_t optlen = sizeof(optval);
  
@@ -14,11 +14,11 @@ index 693efd28e..192dddee6 100644
  #if defined(__APPLE__) || \
      defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
      defined(__NetBSD__) || \
-diff --git a/thirdparty/libwebsockets/lib/plat/windows/windows-sockets.c b/thirdparty/libwebsockets/lib/plat/windows/windows-sockets.c
-index bf0935057..62a0a4984 100644
---- a/thirdparty/libwebsockets/lib/plat/windows/windows-sockets.c
-+++ b/thirdparty/libwebsockets/lib/plat/windows/windows-sockets.c
-@@ -56,6 +56,11 @@ lws_plat_set_socket_options(struct lws_vhost *vhost, lws_sockfd_type fd,
+diff --git a/thirdparty/libwebsockets/plat/lws-plat-win.c b/thirdparty/libwebsockets/plat/lws-plat-win.c
+index 1850b6425..26caab2cd 100644
+--- a/thirdparty/libwebsockets/plat/lws-plat-win.c
++++ b/thirdparty/libwebsockets/plat/lws-plat-win.c
+@@ -348,6 +348,11 @@ lws_plat_set_socket_options(struct lws_vhost *vhost, lws_sockfd_type fd)
  	struct protoent *tcp_proto;
  #endif
  

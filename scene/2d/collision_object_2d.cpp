@@ -251,9 +251,9 @@ void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2
 	s.index = total_subshapes;
 	s.shape = p_shape;
 	if (area) {
-		Physics2DServer::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform);
+		Physics2DServer::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
 	} else {
-		Physics2DServer::get_singleton()->body_add_shape(rid, p_shape->get_rid(), sd.xform);
+		Physics2DServer::get_singleton()->body_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
 	}
 	sd.shapes.push_back(s);
 

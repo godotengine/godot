@@ -32,6 +32,7 @@
 
 #include "OpusVorbisDecoder.hpp"
 #include "VPXDecoder.hpp"
+#include <vpx/vpx_image.h>
 
 #include "mkvparser/mkvparser.h"
 
@@ -314,19 +315,37 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 						PoolVector<uint8_t>::Write w = frame_data.write();
 						bool converted = false;
 
-						if (image.chromaShiftW == 1 && image.chromaShiftH == 1) {
+						if (image.chromaShiftW == 0 && image.chromaShiftH == 0 && image.cs == VPX_CS_SRGB) {
 
-							yuv420_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
+							uint8_t *wp = w.ptr();
+							unsigned char *rRow = image.planes[2];
+							unsigned char *gRow = image.planes[0];
+							unsigned char *bRow = image.planes[1];
+							for (int i = 0; i < image.h; i++) {
+								for (int j = 0; j < image.w; j++) {
+									*wp++ = rRow[j];
+									*wp++ = gRow[j];
+									*wp++ = bRow[j];
+									*wp++ = 255;
+								}
+								rRow += image.linesize[2];
+								gRow += image.linesize[0];
+								bRow += image.linesize[1];
+							}
+							converted = true;
+						} else if (image.chromaShiftW == 1 && image.chromaShiftH == 1) {
+
+							yuv420_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
 							// 								libyuv::I420ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 1 && image.chromaShiftH == 0) {
 
-							yuv422_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
+							yuv422_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
 							// 								libyuv::I422ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 0 && image.chromaShiftH == 0) {
 
-							yuv444_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
+							yuv444_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
 							// 								libyuv::I444ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 2 && image.chromaShiftH == 0) {
@@ -375,7 +394,7 @@ int VideoStreamPlaybackWebm::get_mix_rate() const {
 inline bool VideoStreamPlaybackWebm::has_enough_video_frames() const {
 	if (video_frames_pos > 0) {
 
-		const double audio_delay = AudioServer::get_singleton()->get_output_delay();
+		const double audio_delay = AudioServer::get_singleton()->get_output_latency();
 		const double video_time = video_frames[video_frames_pos - 1]->time;
 		return video_time >= time + audio_delay + delay_compensation;
 	}
@@ -383,7 +402,7 @@ inline bool VideoStreamPlaybackWebm::has_enough_video_frames() const {
 }
 
 bool VideoStreamPlaybackWebm::should_process(WebMFrame &video_frame) {
-	const double audio_delay = AudioServer::get_singleton()->get_output_delay();
+	const double audio_delay = AudioServer::get_singleton()->get_output_latency();
 	return video_frame.time >= time + audio_delay + delay_compensation;
 }
 
@@ -394,10 +413,11 @@ void VideoStreamPlaybackWebm::delete_pointers() {
 
 	if (audio_frame)
 		memdelete(audio_frame);
-	for (int i = 0; i < video_frames_capacity; ++i)
-		memdelete(video_frames[i]);
-	if (video_frames)
+	if (video_frames) {
+		for (int i = 0; i < video_frames_capacity; ++i)
+			memdelete(video_frames[i]);
 		memfree(video_frames);
+	}
 
 	if (video)
 		memdelete(video);

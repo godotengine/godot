@@ -530,7 +530,7 @@ OS::VideoMode OS_UWP::get_video_mode(int p_screen) const {
 void OS_UWP::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 }
 
-String OS_UWP::get_name() {
+String OS_UWP::get_name() const {
 
 	return "UWP";
 }
@@ -713,7 +713,7 @@ void OS_UWP::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 	// TODO
 }
 
-Error OS_UWP::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
+Error OS_UWP::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 
 	return FAILED;
 };

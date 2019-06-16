@@ -41,7 +41,11 @@
 		</theme_item>
 		<theme_item name="off" type="Texture">
 		</theme_item>
+		<theme_item name="off_disabled" type="Texture">
+		</theme_item>
 		<theme_item name="on" type="Texture">
+		</theme_item>
+		<theme_item name="on_disabled" type="Texture">
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">
 		</theme_item>

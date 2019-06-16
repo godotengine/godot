@@ -53,9 +53,11 @@ public:
 
 	virtual ~IMonoClassMember() {}
 
-	virtual MemberType get_member_type() = 0;
+	virtual GDMonoClass *get_enclosing_class() const = 0;
 
-	virtual StringName get_name() = 0;
+	virtual MemberType get_member_type() const = 0;
+
+	virtual StringName get_name() const = 0;
 
 	virtual bool is_static() = 0;
 

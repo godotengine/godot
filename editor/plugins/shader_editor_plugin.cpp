@@ -60,6 +60,26 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 	_line_col_changed();
 }
 
+void ShaderTextEditor::reload_text() {
+	ERR_FAIL_COND(shader.is_null());
+
+	TextEdit *te = get_text_edit();
+	int column = te->cursor_get_column();
+	int row = te->cursor_get_line();
+	int h = te->get_h_scroll();
+	int v = te->get_v_scroll();
+
+	te->set_text(shader->get_code());
+	te->cursor_set_line(row);
+	te->cursor_set_column(column);
+	te->set_h_scroll(h);
+	te->set_v_scroll(v);
+
+	te->tag_saved_version();
+
+	update_line_and_column();
+}
+
 void ShaderTextEditor::_load_theme_settings() {
 
 	get_text_edit()->clear_colors();
@@ -84,7 +104,9 @@ void ShaderTextEditor::_load_theme_settings() {
 	Color function_color = EDITOR_GET("text_editor/highlighting/function_color");
 	Color member_variable_color = EDITOR_GET("text_editor/highlighting/member_variable_color");
 	Color mark_color = EDITOR_GET("text_editor/highlighting/mark_color");
+	Color bookmark_color = EDITOR_GET("text_editor/highlighting/bookmark_color");
 	Color breakpoint_color = EDITOR_GET("text_editor/highlighting/breakpoint_color");
+	Color executing_line_color = EDITOR_GET("text_editor/highlighting/executing_line_color");
 	Color code_folding_color = EDITOR_GET("text_editor/highlighting/code_folding_color");
 	Color search_result_color = EDITOR_GET("text_editor/highlighting/search_result_color");
 	Color search_result_border_color = EDITOR_GET("text_editor/highlighting/search_result_border_color");
@@ -112,7 +134,9 @@ void ShaderTextEditor::_load_theme_settings() {
 	get_text_edit()->add_color_override("function_color", function_color);
 	get_text_edit()->add_color_override("member_variable_color", member_variable_color);
 	get_text_edit()->add_color_override("mark_color", mark_color);
+	get_text_edit()->add_color_override("bookmark_color", bookmark_color);
 	get_text_edit()->add_color_override("breakpoint_color", breakpoint_color);
+	get_text_edit()->add_color_override("executing_line_color", executing_line_color);
 	get_text_edit()->add_color_override("code_folding_color", code_folding_color);
 	get_text_edit()->add_color_override("search_result_color", search_result_color);
 	get_text_edit()->add_color_override("search_result_border_color", search_result_border_color);
@@ -302,6 +326,22 @@ void ShaderEditor::_menu_option(int p_option) {
 
 			goto_line_dialog->popup_find_line(shader_editor->get_text_edit());
 		} break;
+		case BOOKMARK_TOGGLE: {
+
+			shader_editor->toggle_bookmark();
+		} break;
+		case BOOKMARK_GOTO_NEXT: {
+
+			shader_editor->goto_next_bookmark();
+		} break;
+		case BOOKMARK_GOTO_PREV: {
+
+			shader_editor->goto_prev_bookmark();
+		} break;
+		case BOOKMARK_REMOVE_ALL: {
+
+			shader_editor->remove_all_bookmarks();
+		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
 		shader_editor->get_text_edit()->call_deferred("grab_focus");
@@ -310,9 +350,8 @@ void ShaderEditor::_menu_option(int p_option) {
 
 void ShaderEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		//if (is_visible_in_tree())
-		//	shader_editor->get_text_edit()->grab_focus();
+	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
+		_check_for_external_edit();
 	}
 }
 
@@ -343,12 +382,14 @@ void ShaderEditor::_editor_settings_changed() {
 
 void ShaderEditor::_bind_methods() {
 
+	ClassDB::bind_method("_reload_shader_from_disk", &ShaderEditor::_reload_shader_from_disk);
 	ClassDB::bind_method("_editor_settings_changed", &ShaderEditor::_editor_settings_changed);
 	ClassDB::bind_method("_text_edit_gui_input", &ShaderEditor::_text_edit_gui_input);
 
 	ClassDB::bind_method("_menu_option", &ShaderEditor::_menu_option);
 	ClassDB::bind_method("_params_changed", &ShaderEditor::_params_changed);
 	ClassDB::bind_method("apply_shaders", &ShaderEditor::apply_shaders);
+	ClassDB::bind_method("save_external_data", &ShaderEditor::save_external_data);
 }
 
 void ShaderEditor::ensure_select_current() {
@@ -369,6 +410,37 @@ void ShaderEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	shader_editor->goto_line_selection(p_line, p_begin, p_end);
 }
 
+void ShaderEditor::_check_for_external_edit() {
+
+	if (shader.is_null() || !shader.is_valid()) {
+		return;
+	}
+
+	// internal shader.
+	if (shader->get_path() == "" || shader->get_path().find("local://") != -1 || shader->get_path().find("::") != -1) {
+		return;
+	}
+
+	bool use_autoreload = bool(EDITOR_DEF("text_editor/files/auto_reload_scripts_on_external_change", false));
+	if (shader->get_last_modified_time() != FileAccess::get_modified_time(shader->get_path())) {
+		if (use_autoreload) {
+			_reload_shader_from_disk();
+		} else {
+			disk_changed->call_deferred("popup_centered");
+		}
+	}
+}
+
+void ShaderEditor::_reload_shader_from_disk() {
+
+	Ref<Shader> rel_shader = ResourceLoader::load(shader->get_path(), shader->get_class(), true);
+	ERR_FAIL_COND(!rel_shader.is_valid());
+
+	shader->set_code(rel_shader->get_code());
+	shader->set_last_modified_time(rel_shader->get_last_modified_time());
+	shader_editor->reload_text();
+}
+
 void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 
 	if (p_shader.is_null() || !p_shader->is_text_shader())
@@ -385,16 +457,20 @@ void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 	// see if already has it
 }
 
-void ShaderEditor::save_external_data() {
+void ShaderEditor::save_external_data(const String &p_str) {
 
-	if (shader.is_null())
+	if (shader.is_null()) {
+		disk_changed->hide();
 		return;
-	apply_shaders();
+	}
 
+	apply_shaders();
 	if (shader->get_path() != "" && shader->get_path().find("local://") == -1 && shader->get_path().find("::") == -1) {
 		//external shader, save it
 		ResourceSaver::save(shader->get_path(), shader);
 	}
+
+	disk_changed->hide();
 }
 
 void ShaderEditor::apply_shaders() {
@@ -533,6 +609,16 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
 	search_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
+	PopupMenu *bookmarks = memnew(PopupMenu);
+	bookmarks->set_name("bookmarks");
+	edit_menu->get_popup()->add_child(bookmarks);
+	edit_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "bookmarks");
+	bookmarks->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
+	bookmarks->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_bookmarks"), BOOKMARK_REMOVE_ALL);
+	bookmarks->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
+	bookmarks->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
+	bookmarks->connect("id_pressed", this, "_edit_option");
+
 	add_child(main_container);
 	main_container->add_child(hbc);
 	hbc->add_child(search_menu);
@@ -542,6 +628,23 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);
+
+	disk_changed = memnew(ConfirmationDialog);
+
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	disk_changed->add_child(vbc);
+
+	Label *dl = memnew(Label);
+	dl->set_text(TTR("This shader has been modified on on disk.\nWhat action should be taken?"));
+	vbc->add_child(dl);
+
+	disk_changed->connect("confirmed", this, "_reload_shader_from_disk");
+	disk_changed->get_ok()->set_text(TTR("Reload"));
+
+	disk_changed->add_button(TTR("Resave"), !OS::get_singleton()->get_swap_ok_cancel(), "resave");
+	disk_changed->connect("custom_action", this, "save_external_data");
+
+	add_child(disk_changed);
 
 	_editor_settings_changed();
 }

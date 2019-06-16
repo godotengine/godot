@@ -819,7 +819,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	String dest_dir = p_path.get_base_dir() + "/";
 	String binary_name = p_path.get_file().get_basename();
 
-	EditorProgress ep("export", "Exporting for iOS", 5);
+	EditorProgress ep("export", "Exporting for iOS", 5, true);
 
 	String team_id = p_preset->get("application/app_store_team_id");
 	ERR_EXPLAIN("App Store Team ID not specified - cannot configure the project.");
@@ -868,14 +868,18 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		memdelete(da);
 	}
 
-	ep.step("Making .pck", 0);
+	if (ep.step("Making .pck", 0)) {
+		return ERR_SKIP;
+	}
 	String pack_path = dest_dir + binary_name + ".pck";
 	Vector<SharedObject> libraries;
 	Error err = save_pack(p_preset, pack_path, &libraries);
 	if (err)
 		return err;
 
-	ep.step("Extracting and configuring Xcode project", 1);
+	if (ep.step("Extracting and configuring Xcode project", 1)) {
+		return ERR_SKIP;
+	}
 
 	String library_to_use = "libgodot.iphone." + String(p_debug ? "debug" : "release") + ".fat.a";
 
@@ -910,7 +914,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	};
 
 	DirAccess *tmp_app_path = DirAccess::create_for_path(dest_dir);
-	ERR_FAIL_COND_V(!tmp_app_path, ERR_CANT_CREATE)
+	ERR_FAIL_COND_V(!tmp_app_path, ERR_CANT_CREATE);
 
 	print_line("Unzipping...");
 	FileAccess *src_f = NULL;
@@ -920,7 +924,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		EditorNode::add_io_error("Could not open export template (not a zip file?):\n" + src_pkg_name);
 		return ERR_CANT_OPEN;
 	}
-	ERR_FAIL_COND_V(!src_pkg_zip, ERR_CANT_OPEN);
+
 	int ret = unzGoToFirstFile(src_pkg_zip);
 	Vector<uint8_t> project_file_data;
 	while (ret == UNZ_OK) {
@@ -1053,7 +1057,9 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	memdelete(f);
 
 #ifdef OSX_ENABLED
-	ep.step("Code-signing dylibs", 2);
+	if (ep.step("Code-signing dylibs", 2)) {
+		return ERR_SKIP;
+	}
 	DirAccess *dylibs_dir = DirAccess::open(dest_dir + binary_name + "/dylibs");
 	ERR_FAIL_COND_V(!dylibs_dir, ERR_CANT_OPEN);
 	CodesignData codesign_data(p_preset, p_debug);
@@ -1061,7 +1067,9 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	memdelete(dylibs_dir);
 	ERR_FAIL_COND_V(err, err);
 
-	ep.step("Making .xcarchive", 3);
+	if (ep.step("Making .xcarchive", 3)) {
+		return ERR_SKIP;
+	}
 	String archive_path = p_path.get_basename() + ".xcarchive";
 	List<String> archive_args;
 	archive_args.push_back("-project");
@@ -1080,7 +1088,9 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	err = OS::get_singleton()->execute("xcodebuild", archive_args, true);
 	ERR_FAIL_COND_V(err, err);
 
-	ep.step("Making .ipa", 4);
+	if (ep.step("Making .ipa", 4)) {
+		return ERR_SKIP;
+	}
 	List<String> export_args;
 	export_args.push_back("-exportArchive");
 	export_args.push_back("-archivePath");

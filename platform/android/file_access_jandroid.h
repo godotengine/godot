@@ -74,6 +74,8 @@ public:
 	static void setup(jobject p_io);
 
 	virtual uint64_t _get_modified_time(const String &p_file) { return 0; }
+	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) { return FAILED; }
 
 	FileAccessJAndroid();
 	~FileAccessJAndroid();

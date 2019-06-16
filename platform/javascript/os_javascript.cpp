@@ -70,6 +70,20 @@ static bool is_canvas_focused() {
 	/* clang-format on */
 }
 
+static Point2 correct_canvas_position(int x, int y) {
+	int canvas_width;
+	int canvas_height;
+	emscripten_get_canvas_element_size(NULL, &canvas_width, &canvas_height);
+
+	double element_width;
+	double element_height;
+	emscripten_get_element_css_size(NULL, &element_width, &element_height);
+
+	x = (int)(canvas_width / element_width * x);
+	y = (int)(canvas_height / element_height * y);
+	return Point2(x, y);
+}
+
 static bool cursor_inside_canvas = true;
 
 EM_BOOL OS_JavaScript::fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data) {
@@ -285,7 +299,7 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
 	ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_MOUSEDOWN);
-	ev->set_position(Point2(p_event->canvasX, p_event->canvasY));
+	ev->set_position(correct_canvas_position(p_event->canvasX, p_event->canvasY));
 	ev->set_global_position(ev->get_position());
 	dom2godot_mod(p_event, ev);
 	switch (p_event->button) {
@@ -349,7 +363,7 @@ EM_BOOL OS_JavaScript::mousemove_callback(int p_event_type, const EmscriptenMous
 	OS_JavaScript *os = get_singleton();
 
 	int input_mask = os->input->get_mouse_button_mask();
-	Point2 pos = Point2(p_event->canvasX, p_event->canvasY);
+	Point2 pos = correct_canvas_position(p_event->canvasX, p_event->canvasY);
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behaviour.
 	if (!cursor_inside_canvas && !input_mask)
@@ -666,7 +680,7 @@ EM_BOOL OS_JavaScript::touch_press_callback(int p_event_type, const EmscriptenTo
 		if (!touch.isChanged)
 			continue;
 		ev->set_index(touch.identifier);
-		ev->set_position(Point2(touch.canvasX, touch.canvasY));
+		ev->set_position(correct_canvas_position(touch.canvasX, touch.canvasY));
 		os->touches[i] = ev->get_position();
 		ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_TOUCHSTART);
 
@@ -691,7 +705,7 @@ EM_BOOL OS_JavaScript::touchmove_callback(int p_event_type, const EmscriptenTouc
 		if (!touch.isChanged)
 			continue;
 		ev->set_index(touch.identifier);
-		ev->set_position(Point2(touch.canvasX, touch.canvasY));
+		ev->set_position(correct_canvas_position(touch.canvasX, touch.canvasY));
 		Point2 &prev = os->touches[i];
 		ev->set_relative(ev->get_position() - prev);
 		prev = ev->get_position();
@@ -793,6 +807,47 @@ int OS_JavaScript::get_audio_driver_count() const {
 const char *OS_JavaScript::get_audio_driver_name(int p_driver) const {
 
 	return "JavaScript";
+}
+
+// Clipboard
+extern "C" EMSCRIPTEN_KEEPALIVE void update_clipboard(const char *p_text) {
+	// Only call set_clipboard from OS (sets local clipboard)
+	OS::get_singleton()->OS::set_clipboard(p_text);
+}
+
+void OS_JavaScript::set_clipboard(const String &p_text) {
+	OS::set_clipboard(p_text);
+	/* clang-format off */
+	int err = EM_ASM_INT({
+		var text = UTF8ToString($0);
+		if (!navigator.clipboard || !navigator.clipboard.writeText)
+			return 1;
+		navigator.clipboard.writeText(text).catch(e => {
+			// Setting OS clipboard is only possible from an input callback.
+			console.error("Setting OS clipboard is only possible from an input callback for the HTML5 plafrom. Exception:", e);
+		});
+		return 0;
+	}, p_text.utf8().get_data());
+	/* clang-format on */
+	ERR_EXPLAIN("Clipboard API is not supported.");
+	ERR_FAIL_COND(err);
+}
+
+String OS_JavaScript::get_clipboard() const {
+	/* clang-format off */
+	EM_ASM({
+		try {
+			navigator.clipboard.readText().then(function (result) {
+				ccall('update_clipboard', 'void', ['string'], [result]);
+			}).catch(function (e) {
+				// Fail graciously.
+			});
+		} catch (e) {
+			// Fail graciously.
+		}
+	});
+	/* clang-format on */
+	return this->OS::get_clipboard();
 }
 
 // Lifecycle
@@ -939,6 +994,11 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 		(['mouseover', 'mouseleave', 'focus', 'blur']).forEach(function(event, index) {
 			Module.canvas.addEventListener(event, send_notification.bind(null, notifications[index]));
 		});
+		// Clipboard
+		const update_clipboard = cwrap('update_clipboard', null, ['string']);
+		window.addEventListener('paste', function(evt) {
+			update_clipboard(evt.clipboardData.getData('text'));
+		}, true);
 	},
 		MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
 		MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
@@ -1035,7 +1095,7 @@ void OS_JavaScript::finalize() {
 
 // Miscellaneous
 
-Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
+Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 
 	ERR_EXPLAIN("OS::execute() is not available on the HTML5 platform");
 	ERR_FAIL_V(ERR_UNAVAILABLE);
@@ -1098,7 +1158,7 @@ void OS_JavaScript::set_icon(const Ref<Image> &p_icon) {
 	Ref<Image> icon = p_icon;
 	if (icon->is_compressed()) {
 		icon = icon->duplicate();
-		ERR_FAIL_COND(icon->decompress() != OK)
+		ERR_FAIL_COND(icon->decompress() != OK);
 	}
 	if (icon->get_format() != Image::FORMAT_RGBA8) {
 		if (icon == p_icon)
@@ -1159,7 +1219,7 @@ Error OS_JavaScript::shell_open(String p_uri) {
 	return OK;
 }
 
-String OS_JavaScript::get_name() {
+String OS_JavaScript::get_name() const {
 
 	return "HTML5";
 }

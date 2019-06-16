@@ -312,6 +312,7 @@ public:
 	BIND2(light_set_negative, RID, bool)
 	BIND2(light_set_cull_mask, RID, uint32_t)
 	BIND2(light_set_reverse_cull_face_mode, RID, bool)
+	BIND2(light_set_use_gi, RID, bool)
 
 	BIND2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
 	BIND2(light_omni_set_shadow_detail, RID, LightOmniShadowDetail)
@@ -430,6 +431,7 @@ public:
 	BIND0R(RID, camera_create)
 	BIND4(camera_set_perspective, RID, float, float, float)
 	BIND4(camera_set_orthogonal, RID, float, float, float)
+	BIND5(camera_set_frustum, RID, float, Vector2, float, float)
 	BIND2(camera_set_transform, RID, const Transform &)
 	BIND2(camera_set_cull_mask, RID, uint32_t)
 	BIND2(camera_set_environment, RID, RID)
@@ -452,6 +454,7 @@ public:
 	BIND2(viewport_set_clear_mode, RID, ViewportClearMode)
 
 	BIND3(viewport_attach_to_screen, RID, const Rect2 &, int)
+	BIND2(viewport_set_render_direct_to_screen, RID, bool)
 	BIND1(viewport_detach, RID)
 
 	BIND2(viewport_set_update_mode, RID, ViewportUpdateMode)

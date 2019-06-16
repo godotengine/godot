@@ -61,6 +61,12 @@ public:
 	static _ALWAYS_INLINE_ double sinh(double p_x) { return ::sinh(p_x); }
 	static _ALWAYS_INLINE_ float sinh(float p_x) { return ::sinhf(p_x); }
 
+	static _ALWAYS_INLINE_ float sinc(float p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
+	static _ALWAYS_INLINE_ double sinc(double p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
+
+	static _ALWAYS_INLINE_ float sincn(float p_x) { return sinc(Math_PI * p_x); }
+	static _ALWAYS_INLINE_ double sincn(double p_x) { return sinc(Math_PI * p_x); }
+
 	static _ALWAYS_INLINE_ double cosh(double p_x) { return ::cosh(p_x); }
 	static _ALWAYS_INLINE_ float cosh(float p_x) { return ::coshf(p_x); }
 
@@ -218,6 +224,8 @@ public:
 		float x = CLAMP((p_weight - p_from) / (p_to - p_from), 0.0f, 1.0f);
 		return x * x * (3.0f - 2.0f * x);
 	}
+	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SGN(p_to - p_from) * p_delta; }
+	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SGN(p_to - p_from) * p_delta; }
 
 	static _ALWAYS_INLINE_ double linear2db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
 	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
@@ -272,13 +280,20 @@ public:
 		return diff < epsilon;
 	}
 
-	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b, real_t epsilon = CMP_EPSILON) {
-		// TODO: Comparing floats for approximate-equality is non-trivial.
-		// Using epsilon should cover the typical cases in Godot (where a == b is used to compare two reals), such as matrix and vector comparison operators.
-		// A proper implementation in terms of ULPs should eventually replace the contents of this function.
-		// See https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/ for details.
+	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
+		real_t tolerance = CMP_EPSILON * abs(a);
+		if (tolerance < CMP_EPSILON) {
+			tolerance = CMP_EPSILON;
+		}
+		return abs(a - b) < tolerance;
+	}
 
-		return abs(a - b) < epsilon;
+	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b, real_t tolerance) {
+		return abs(a - b) < tolerance;
+	}
+
+	static _ALWAYS_INLINE_ bool is_zero_approx(real_t s) {
+		return abs(s) < CMP_EPSILON;
 	}
 
 	static _ALWAYS_INLINE_ float absf(float g) {

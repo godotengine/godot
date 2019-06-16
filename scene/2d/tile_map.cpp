@@ -202,47 +202,27 @@ void TileMap::_fix_cell_transform(Transform2D &xform, const Cell &p_cell, const 
 	Size2 s = p_sc;
 	Vector2 offset = p_offset;
 
-	if (tile_origin == TILE_ORIGIN_BOTTOM_LEFT)
-		offset.y += cell_size.y;
-	else if (tile_origin == TILE_ORIGIN_CENTER) {
-		offset += cell_size / 2;
-	}
-
-	if (s.y > s.x) {
-		if ((p_cell.flip_h && (p_cell.flip_v || p_cell.transpose)) || (p_cell.flip_v && !p_cell.transpose))
-			offset.y += s.y - s.x;
-	} else if (s.y < s.x) {
-		if ((p_cell.flip_v && (p_cell.flip_h || p_cell.transpose)) || (p_cell.flip_h && !p_cell.transpose))
-			offset.x += s.x - s.y;
-	}
-
 	if (p_cell.transpose) {
 		SWAP(xform.elements[0].x, xform.elements[0].y);
 		SWAP(xform.elements[1].x, xform.elements[1].y);
 		SWAP(offset.x, offset.y);
 		SWAP(s.x, s.y);
 	}
+
 	if (p_cell.flip_h) {
 		xform.elements[0].x = -xform.elements[0].x;
 		xform.elements[1].x = -xform.elements[1].x;
-		if (tile_origin == TILE_ORIGIN_TOP_LEFT || tile_origin == TILE_ORIGIN_BOTTOM_LEFT)
-			offset.x = s.x - offset.x;
-		else if (tile_origin == TILE_ORIGIN_CENTER)
-			offset.x = s.x - offset.x / 2;
+		offset.x = s.x - offset.x;
 	}
+
 	if (p_cell.flip_v) {
 		xform.elements[0].y = -xform.elements[0].y;
 		xform.elements[1].y = -xform.elements[1].y;
-		if (tile_origin == TILE_ORIGIN_TOP_LEFT)
-			offset.y = s.y - offset.y;
-		else if (tile_origin == TILE_ORIGIN_BOTTOM_LEFT) {
-			offset.y += s.y;
-		} else if (tile_origin == TILE_ORIGIN_CENTER) {
-			offset.y += s.y;
-		}
+		offset.y = s.y - offset.y;
 	}
-	xform.elements[2].x += offset.x;
-	xform.elements[2].y += offset.y;
+	/* For a future CheckBox to Center Texture:
+	offset += cell_size / 2 - s / 2; */
+	xform.elements[2] += offset;
 }
 
 void TileMap::update_dirty_quadrants() {
@@ -390,64 +370,26 @@ void TileMap::update_dirty_quadrants() {
 			rect.size.x += fp_adjust;
 			rect.size.y += fp_adjust;
 
-			if (rect.size.y > rect.size.x) {
-				if ((c.flip_h && (c.flip_v || c.transpose)) || (c.flip_v && !c.transpose))
-					tile_ofs.y += rect.size.y - rect.size.x;
-			} else if (rect.size.y < rect.size.x) {
-				if ((c.flip_v && (c.flip_h || c.transpose)) || (c.flip_h && !c.transpose))
-					tile_ofs.x += rect.size.x - rect.size.y;
-			}
-
-			/*	rect.size.x+=fp_adjust;
-			rect.size.y+=fp_adjust;*/
-
-			if (c.transpose)
+			if (c.transpose) {
 				SWAP(tile_ofs.x, tile_ofs.y);
+				/* For a future CheckBox to Center Texture:
+				rect.position.x += cell_size.x / 2 - rect.size.y / 2;
+				rect.position.y += cell_size.y / 2 - rect.size.x / 2;
+			} else {
+				rect.position += cell_size / 2 - rect.size / 2; */
+			}
 
 			if (c.flip_h) {
 				rect.size.x = -rect.size.x;
 				tile_ofs.x = -tile_ofs.x;
 			}
+
 			if (c.flip_v) {
 				rect.size.y = -rect.size.y;
 				tile_ofs.y = -tile_ofs.y;
 			}
 
-			Vector2 center_ofs;
-
-			if (tile_origin == TILE_ORIGIN_TOP_LEFT) {
-				rect.position += tile_ofs;
-
-			} else if (tile_origin == TILE_ORIGIN_BOTTOM_LEFT) {
-
-				rect.position += tile_ofs;
-
-				if (c.transpose) {
-					if (c.flip_h)
-						rect.position.x -= cell_size.x;
-					else
-						rect.position.x += cell_size.x;
-				} else {
-					if (c.flip_v)
-						rect.position.y -= cell_size.y;
-					else
-						rect.position.y += cell_size.y;
-				}
-
-			} else if (tile_origin == TILE_ORIGIN_CENTER) {
-
-				rect.position += tile_ofs;
-
-				if (c.flip_h)
-					rect.position.x -= cell_size.x / 2;
-				else
-					rect.position.x += cell_size.x / 2;
-
-				if (c.flip_v)
-					rect.position.y -= cell_size.y / 2;
-				else
-					rect.position.y += cell_size.y / 2;
-			}
+			rect.position += tile_ofs;
 
 			Ref<Texture> normal_map = tile_set->tile_get_normal_map(c.id);
 			Color modulate = tile_set->tile_get_modulate(c.id);
@@ -471,7 +413,7 @@ void TileMap::update_dirty_quadrants() {
 
 						Vector2 shape_ofs = shapes[j].shape_transform.get_origin();
 
-						_fix_cell_transform(xform, c, shape_ofs + center_ofs, s);
+						_fix_cell_transform(xform, c, shape_ofs, s);
 
 						xform *= shapes[j].shape_transform.untranslated();
 
@@ -491,7 +433,7 @@ void TileMap::update_dirty_quadrants() {
 									shape_idx++;
 #ifdef DEBUG_ENABLED
 								} else {
-									print_error("The TileSet asigned to the TileMap " + get_name() + " has an invalid convex shape.");
+									print_error("The TileSet assigned to the TileMap " + get_name() + " has an invalid convex shape.");
 #endif
 								}
 							}
@@ -523,7 +465,7 @@ void TileMap::update_dirty_quadrants() {
 				if (navpoly.is_valid()) {
 					Transform2D xform;
 					xform.set_origin(offset.floor() + q.pos);
-					_fix_cell_transform(xform, c, npoly_ofs + center_ofs, s);
+					_fix_cell_transform(xform, c, npoly_ofs, s);
 
 					int pid = navigation->navpoly_add(navpoly, nav_rel * xform);
 
@@ -573,7 +515,7 @@ void TileMap::update_dirty_quadrants() {
 								}
 								Transform2D navxform;
 								navxform.set_origin(offset.floor());
-								_fix_cell_transform(navxform, c, npoly_ofs + center_ofs, s);
+								_fix_cell_transform(navxform, c, npoly_ofs, s);
 
 								vs->canvas_item_set_transform(debug_navigation_item, navxform);
 								vs->canvas_item_add_triangle_array(debug_navigation_item, indices, vertices, colors);
@@ -593,7 +535,7 @@ void TileMap::update_dirty_quadrants() {
 				Vector2 occluder_ofs = tile_set->tile_get_occluder_offset(c.id);
 				Transform2D xform;
 				xform.set_origin(offset.floor() + q.pos);
-				_fix_cell_transform(xform, c, occluder_ofs + center_ofs, s);
+				_fix_cell_transform(xform, c, occluder_ofs, s);
 
 				RID orid = VS::get_singleton()->canvas_light_occluder_create();
 				VS::get_singleton()->canvas_light_occluder_set_transform(orid, get_global_transform() * xform);
@@ -749,7 +691,10 @@ void TileMap::set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x, bool p_
 
 void TileMap::_set_celld(const Vector2 &p_pos, const Dictionary &p_data) {
 
-	set_cell(p_pos.x, p_pos.y, p_data["id"], p_data["flip_h"], p_data["flip_y"], p_data["transpose"], p_data["auto_coord"]);
+	Variant v_pos_x = p_pos.x, v_pos_y = p_pos.y, v_tile = p_data["id"], v_flip_h = p_data["flip_h"], v_flip_v = p_data["flip_y"], v_transpose = p_data["transpose"], v_autotile_coord = p_data["auto_coord"];
+	const Variant *args[7] = { &v_pos_x, &v_pos_y, &v_tile, &v_flip_h, &v_flip_v, &v_transpose, &v_autotile_coord };
+	Variant::CallError ce;
+	call("set_cell", args, 7, ce);
 }
 
 void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose, Vector2 p_autotile_coord) {
@@ -924,8 +869,17 @@ void TileMap::update_cell_bitmask(int p_x, int p_y) {
 			_make_quadrant_dirty(Q);
 
 		} else if (tile_set->tile_get_tile_mode(id) == TileSet::SINGLE_TILE) {
+
 			E->get().autotile_coord_x = 0;
 			E->get().autotile_coord_y = 0;
+		} else if (tile_set->tile_get_tile_mode(id) == TileSet::ATLAS_TILE) {
+
+			if (tile_set->autotile_get_bitmask(id, Vector2(p_x, p_y)) == TileSet::BIND_CENTER) {
+				Vector2 coord = tile_set->atlastile_get_subtile_by_priority(id, this, Vector2(p_x, p_y));
+
+				E->get().autotile_coord_x = (int)coord.x;
+				E->get().autotile_coord_y = (int)coord.y;
+			}
 		}
 	}
 }

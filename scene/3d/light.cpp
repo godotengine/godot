@@ -152,6 +152,7 @@ PoolVector<Face3> Light::get_faces(uint32_t p_usage_flags) const {
 
 void Light::set_bake_mode(BakeMode p_mode) {
 	bake_mode = p_mode;
+	VS::get_singleton()->light_set_use_gi(light, p_mode != BAKE_DISABLED);
 }
 
 Light::BakeMode Light::get_bake_mode() const {

@@ -677,6 +677,19 @@ void InputDefault::set_use_accumulated_input(bool p_enable) {
 	use_accumulated_input = p_enable;
 }
 
+void InputDefault::release_pressed_events() {
+
+	flush_accumulated_events(); // this is needed to release actions strengths
+
+	keys_pressed.clear();
+	joy_buttons_pressed.clear();
+	_joy_axis.clear();
+
+	for (Map<StringName, InputDefault::Action>::Element *E = action_state.front(); E; E = E->next()) {
+		action_release(E->key());
+	}
+}
+
 InputDefault::InputDefault() {
 
 	use_accumulated_input = true;

@@ -29,14 +29,14 @@
 			<return type="int" enum="BaseButton.DrawMode">
 			</return>
 			<description>
-				Return the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding _draw() or connecting to "draw" signal. The visual state of the button is defined by the DRAW_* enum.
+				Returns the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding _draw() or connecting to "draw" signal. The visual state of the button is defined by the DRAW_* enum.
 			</description>
 		</method>
 		<method name="is_hovered" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return [code]true[/code] if the mouse has entered the button and has not left it yet.
+				Returns [code]true[/code] if the mouse has entered the button and has not left it yet.
 			</description>
 		</method>
 	</methods>
@@ -56,6 +56,9 @@
 		</member>
 		<member name="group" type="ButtonGroup" setter="set_button_group" getter="get_button_group">
 			[ButtonGroup] associated to the button.
+		</member>
+		<member name="keep_pressed_outside" type="bool" setter="set_keep_pressed_outside" getter="is_keep_pressed_outside">
+			If [code]true[/code], the button stays pressed when moving the cursor outside the button while pressing it. Default value: [code]false[/code].
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
 			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if toggle_mode is active).

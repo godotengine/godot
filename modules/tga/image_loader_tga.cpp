@@ -148,9 +148,11 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 					uint8_t a = 0xff;
 
 					if (p_header.color_map_depth == 24) {
-						r = (p_palette[(index * 3) + 0]);
+						// Due to low-high byte order, the color table must be
+						// read in the same order as image data (little endian)
+						r = (p_palette[(index * 3) + 2]);
 						g = (p_palette[(index * 3) + 1]);
-						b = (p_palette[(index * 3) + 2]);
+						b = (p_palette[(index * 3) + 0]);
 					} else {
 						return ERR_INVALID_DATA;
 					}

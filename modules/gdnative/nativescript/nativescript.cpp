@@ -32,6 +32,7 @@
 
 #include "gdnative/gdnative.h"
 
+#include "core/core_string_names.h"
 #include "core/global_constants.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/os/file_access.h"
@@ -771,6 +772,27 @@ void NativeScriptInstance::notification(int p_notification) {
 	call_multilevel("_notification", args, 1);
 }
 
+String NativeScriptInstance::to_string(bool *r_valid) {
+	if (has_method(CoreStringNames::get_singleton()->_to_string)) {
+		Variant::CallError ce;
+		Variant ret = call(CoreStringNames::get_singleton()->_to_string, NULL, 0, ce);
+		if (ce.error == Variant::CallError::CALL_OK) {
+			if (ret.get_type() != Variant::STRING) {
+				if (r_valid)
+					*r_valid = false;
+				ERR_EXPLAIN("Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
+				ERR_FAIL_V(String());
+			}
+			if (r_valid)
+				*r_valid = true;
+			return ret.operator String();
+		}
+	}
+	if (r_valid)
+		*r_valid = false;
+	return String();
+}
+
 void NativeScriptInstance::refcount_incremented() {
 	Variant::CallError err;
 	call("_refcount_incremented", NULL, 0, err);
@@ -1309,7 +1331,7 @@ void NativeScriptLanguage::unregister_binding_functions(int p_idx) {
 	for (Set<Vector<void *> *>::Element *E = binding_instances.front(); E; E = E->next()) {
 		Vector<void *> &binding_data = *E->get();
 
-		if (binding_data[p_idx] && binding_functions[p_idx].second.free_instance_binding_data)
+		if (p_idx < binding_data.size() && binding_data[p_idx] && binding_functions[p_idx].second.free_instance_binding_data)
 			binding_functions[p_idx].second.free_instance_binding_data(binding_functions[p_idx].second.data, binding_data[p_idx]);
 	}
 
@@ -1345,7 +1367,7 @@ void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_objec
 
 	if (!(*binding_data)[p_idx]) {
 
-		const void *global_type_tag = global_type_tags[p_idx].get(p_object->get_class_name());
+		const void *global_type_tag = get_global_type_tag(p_idx, p_object->get_class_name());
 
 		// no binding data yet, soooooo alloc new one \o/
 		(*binding_data).write[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, global_type_tag, (godot_object *)p_object);
@@ -1453,6 +1475,9 @@ const void *NativeScriptLanguage::get_global_type_tag(int p_idx, StringName p_cl
 		return NULL;
 
 	const HashMap<StringName, const void *> &tags = global_type_tags[p_idx];
+
+	if (!tags.has(p_class_name))
+		return NULL;
 
 	const void *tag = tags.get(p_class_name);
 

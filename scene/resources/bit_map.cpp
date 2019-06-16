@@ -595,16 +595,16 @@ Array BitMap::_opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) con
 	return result_array;
 }
 
-void BitMap::resize(const Size2& p_new_size) {
+void BitMap::resize(const Size2 &p_new_size) {
 
 	Ref<BitMap> new_bitmap;
 	new_bitmap.instance();
 	new_bitmap->create(p_new_size);
-	int lw = MIN(width,p_new_size.width);
-	int lh = MIN(height,p_new_size.height);
-	for(int x=0;x<lw;x++) {
-		for(int y=0;y<lh;y++) {
-			new_bitmap->set_bit(Vector2(x,y),get_bit(Vector2(x,y)));
+	int lw = MIN(width, p_new_size.width);
+	int lh = MIN(height, p_new_size.height);
+	for (int x = 0; x < lw; x++) {
+		for (int y = 0; y < lh; y++) {
+			new_bitmap->set_bit(Vector2(x, y), get_bit(Vector2(x, y)));
 		}
 	}
 
@@ -617,11 +617,11 @@ Ref<Image> BitMap::convert_to_image() const {
 
 	Ref<Image> image;
 	image.instance();
-	image->create(width,height,false,Image::FORMAT_L8);
+	image->create(width, height, false, Image::FORMAT_L8);
 	image->lock();
-	for(int i=0;i<width;i++) {
-		for(int j=0;j<height;j++) {
-			image->set_pixel( i,j,get_bit(Point2(i,j)) ? Color(1,1,1) : Color(0,0,0));
+	for (int i = 0; i < width; i++) {
+		for (int j = 0; j < height; j++) {
+			image->set_pixel(i, j, get_bit(Point2(i, j)) ? Color(1, 1, 1) : Color(0, 0, 0));
 		}
 	}
 
@@ -629,29 +629,27 @@ Ref<Image> BitMap::convert_to_image() const {
 
 	return image;
 }
-void BitMap::blit(const Vector2& p_pos,const Ref<BitMap>& p_bitmap) {
+void BitMap::blit(const Vector2 &p_pos, const Ref<BitMap> &p_bitmap) {
 
 	int x = p_pos.x;
 	int y = p_pos.y;
 	int w = p_bitmap->get_size().width;
 	int h = p_bitmap->get_size().height;
 
-	for(int i=0;i<w;i++) {
-		for (int j=0;j<h;j++) {
-			int px = x+i;
-			int py = y+j;
-			if (px<0 || px>=width)
+	for (int i = 0; i < w; i++) {
+		for (int j = 0; j < h; j++) {
+			int px = x + i;
+			int py = y + j;
+			if (px < 0 || px >= width)
 				continue;
-			if (py<0 || py>=height)
+			if (py < 0 || py >= height)
 				continue;
-			if (p_bitmap->get_bit(Vector2(i,j))) {
-				set_bit(Vector2(x,y),true);
+			if (p_bitmap->get_bit(Vector2(i, j))) {
+				set_bit(Vector2(x, y), true);
 			}
 		}
 	}
-
 }
-
 
 void BitMap::_bind_methods() {
 

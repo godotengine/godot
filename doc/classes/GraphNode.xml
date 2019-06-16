@@ -31,14 +31,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the color of the input connection 'idx'.
+				Returns the color of the input connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_input_count">
 			<return type="int">
 			</return>
 			<description>
-				Return the number of enabled input slots (connections) to the GraphNode.
+				Returns the number of enabled input slots (connections) to the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_input_position">
@@ -47,7 +47,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the position of the input connection 'idx'.
+				Returns the position of the input connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_input_type">
@@ -56,7 +56,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the type of the input connection 'idx'.
+				Returns the type of the input connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_output_color">
@@ -65,14 +65,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the color of the output connection 'idx'.
+				Returns the color of the output connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_output_count">
 			<return type="int">
 			</return>
 			<description>
-				Return the number of enabled output slots (connections) of the GraphNode.
+				Returns the number of enabled output slots (connections) of the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_output_position">
@@ -81,7 +81,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the position of the output connection 'idx'.
+				Returns the position of the output connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_output_type">
@@ -90,7 +90,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the type of the output connection 'idx'.
+				Returns the type of the output connection 'idx'.
 			</description>
 		</method>
 		<method name="get_slot_color_left" qualifiers="const">
@@ -99,7 +99,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the color set to 'idx' left (input) slot.
+				Returns the color set to 'idx' left (input) slot.
 			</description>
 		</method>
 		<method name="get_slot_color_right" qualifiers="const">
@@ -108,7 +108,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the color set to 'idx' right (output) slot.
+				Returns the color set to 'idx' right (output) slot.
 			</description>
 		</method>
 		<method name="get_slot_type_left" qualifiers="const">
@@ -117,7 +117,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the (integer) type of left (input) 'idx' slot.
+				Returns the (integer) type of left (input) 'idx' slot.
 			</description>
 		</method>
 		<method name="get_slot_type_right" qualifiers="const">
@@ -126,7 +126,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the (integer) type of right (output) 'idx' slot.
+				Returns the (integer) type of right (output) 'idx' slot.
 			</description>
 		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
@@ -135,7 +135,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return [code]true[/code] if left (input) slot 'idx' is enabled, [code]false[/code] otherwise.
+				Returns [code]true[/code] if left (input) slot 'idx' is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="is_slot_enabled_right" qualifiers="const">
@@ -144,7 +144,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return [code]true[/code] if right (output) slot 'idx' is enabled, [code]false[/code] otherwise.
+				Returns [code]true[/code] if right (output) slot 'idx' is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="set_slot">

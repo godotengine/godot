@@ -195,6 +195,7 @@ protected:
 
 public:
 	void trim_trailing_whitespace();
+	void insert_final_newline();
 
 	void convert_indent_to_spaces();
 	void convert_indent_to_tabs();
@@ -217,6 +218,8 @@ public:
 
 	void goto_line(int p_line);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
+	void set_executing_line(int p_line);
+	void clear_executing_line();
 
 	Variant get_edit_state();
 	void set_edit_state(const Variant &p_state);
@@ -231,6 +234,11 @@ public:
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
 	virtual void apply_code() {}
 	void goto_error();
+
+	void toggle_bookmark();
+	void goto_next_bookmark();
+	void goto_prev_bookmark();
+	void remove_all_bookmarks();
 
 	void set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud);
 

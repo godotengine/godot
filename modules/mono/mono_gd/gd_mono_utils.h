@@ -60,10 +60,45 @@ typedef void (*DebugUtils_StackFrameInfo)(MonoObject *, MonoString **, int *, Mo
 
 typedef MonoBoolean (*TypeIsGenericArray)(MonoReflectionType *, MonoException **);
 typedef MonoBoolean (*TypeIsGenericDictionary)(MonoReflectionType *, MonoException **);
-typedef MonoBoolean (*ArrayGetElementType)(MonoReflectionType *, MonoReflectionType **, MonoException **);
-typedef MonoBoolean (*DictionaryGetKeyValueTypes)(MonoReflectionType *, MonoReflectionType **, MonoReflectionType **, MonoException **);
+
+typedef void (*ArrayGetElementType)(MonoReflectionType *, MonoReflectionType **, MonoException **);
+typedef void (*DictionaryGetKeyValueTypes)(MonoReflectionType *, MonoReflectionType **, MonoReflectionType **, MonoException **);
+
+typedef MonoBoolean (*GenericIEnumerableIsAssignableFromType)(MonoReflectionType *, MonoException **);
+typedef MonoBoolean (*GenericIDictionaryIsAssignableFromType)(MonoReflectionType *, MonoException **);
+typedef MonoBoolean (*GenericIEnumerableIsAssignableFromType_with_info)(MonoReflectionType *, MonoReflectionType **, MonoException **);
+typedef MonoBoolean (*GenericIDictionaryIsAssignableFromType_with_info)(MonoReflectionType *, MonoReflectionType **, MonoReflectionType **, MonoException **);
+
+typedef MonoReflectionType *(*MakeGenericArrayType)(MonoReflectionType *, MonoException **);
+typedef MonoReflectionType *(*MakeGenericDictionaryType)(MonoReflectionType *, MonoReflectionType *, MonoException **);
+
 typedef void (*EnumerableToArray)(MonoObject *, Array *, MonoException **);
 typedef void (*IDictionaryToDictionary)(MonoObject *, Dictionary *, MonoException **);
+typedef void (*GenericIDictionaryToDictionary)(MonoObject *, Dictionary *, MonoException **);
+
+namespace Marshal {
+
+MonoBoolean type_is_generic_array(MonoReflectionType *p_reftype);
+MonoBoolean type_is_generic_dictionary(MonoReflectionType *p_reftype);
+
+void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype);
+void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
+
+MonoBoolean generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype);
+MonoBoolean generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype);
+MonoBoolean generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_elem_reftype);
+MonoBoolean generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
+
+GDMonoClass *make_generic_array_type(MonoReflectionType *p_elem_reftype);
+GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
+
+Array enumerable_to_array(MonoObject *p_enumerable);
+Dictionary idictionary_to_dictionary(MonoObject *p_idictionary);
+Dictionary generic_idictionary_to_dictionary(MonoObject *p_generic_idictionary);
+
+} // namespace Marshal
+
+// End of MarshalUtils methods
 
 struct MonoCache {
 
@@ -114,7 +149,7 @@ struct MonoCache {
 	GDMonoClass *class_NodePath;
 	GDMonoClass *class_RID;
 	GDMonoClass *class_GodotObject;
-	GDMonoClass *class_GodotReference;
+	GDMonoClass *class_GodotResource;
 	GDMonoClass *class_Node;
 	GDMonoClass *class_Control;
 	GDMonoClass *class_Spatial;
@@ -156,26 +191,39 @@ struct MonoCache {
 	SignalAwaiter_FailureCallback methodthunk_SignalAwaiter_FailureCallback;
 	GodotTaskScheduler_Activate methodthunk_GodotTaskScheduler_Activate;
 
+	// Start of MarshalUtils methods
+
 	TypeIsGenericArray methodthunk_MarshalUtils_TypeIsGenericArray;
 	TypeIsGenericDictionary methodthunk_MarshalUtils_TypeIsGenericDictionary;
+
 	ArrayGetElementType methodthunk_MarshalUtils_ArrayGetElementType;
 	DictionaryGetKeyValueTypes methodthunk_MarshalUtils_DictionaryGetKeyValueTypes;
+
+	GenericIEnumerableIsAssignableFromType methodthunk_MarshalUtils_GenericIEnumerableIsAssignableFromType;
+	GenericIDictionaryIsAssignableFromType methodthunk_MarshalUtils_GenericIDictionaryIsAssignableFromType;
+	GenericIEnumerableIsAssignableFromType_with_info methodthunk_MarshalUtils_GenericIEnumerableIsAssignableFromType_with_info;
+	GenericIDictionaryIsAssignableFromType_with_info methodthunk_MarshalUtils_GenericIDictionaryIsAssignableFromType_with_info;
+
+	MakeGenericArrayType methodthunk_MarshalUtils_MakeGenericArrayType;
+	MakeGenericDictionaryType methodthunk_MarshalUtils_MakeGenericDictionaryType;
+
 	EnumerableToArray methodthunk_MarshalUtils_EnumerableToArray;
 	IDictionaryToDictionary methodthunk_MarshalUtils_IDictionaryToDictionary;
+	GenericIDictionaryToDictionary methodthunk_MarshalUtils_GenericIDictionaryToDictionary;
+
+	// End of MarshalUtils methods
 
 	Ref<MonoGCHandle> task_scheduler_handle;
 
 	bool corlib_cache_updated;
 	bool godot_api_cache_updated;
 
-	void clear_members();
-	void cleanup();
+	void clear_corlib_cache();
+	void clear_godot_api_cache();
 
 	MonoCache() {
-		corlib_cache_updated = false;
-		godot_api_cache_updated = false;
-
-		clear_members();
+		clear_corlib_cache();
+		clear_godot_api_cache();
 	}
 };
 
@@ -183,7 +231,13 @@ extern MonoCache mono_cache;
 
 void update_corlib_cache();
 void update_godot_api_cache();
-void clear_cache();
+
+inline void clear_corlib_cache() {
+	mono_cache.clear_corlib_cache();
+}
+inline void clear_godot_api_cache() {
+	mono_cache.clear_godot_api_cache();
+}
 
 _FORCE_INLINE_ void hash_combine(uint32_t &p_hash, const uint32_t &p_with_hash) {
 	p_hash ^= p_with_hash + 0x9e3779b9 + (p_hash << 6) + (p_hash >> 2);
@@ -205,7 +259,7 @@ _FORCE_INLINE_ bool is_main_thread() {
 	return mono_domain_get() != NULL && mono_thread_get_main() == mono_thread_current();
 }
 
-void runtime_object_init(MonoObject *p_this_obj);
+void runtime_object_init(MonoObject *p_this_obj, GDMonoClass *p_class, MonoException **r_exc = NULL);
 
 GDMonoClass *get_object_class(MonoObject *p_object);
 GDMonoClass *type_get_proxy_class(const StringName &p_type);

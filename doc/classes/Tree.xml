@@ -271,6 +271,12 @@
 				Emitted when a cell with the [code]CELL_MODE_CUSTOM[/code] is clicked to be edited.
 			</description>
 		</signal>
+		<signal name="empty_rmb">
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="empty_tree_rmb_selected">
 			<argument index="0" name="position" type="Vector2">
 			</argument>

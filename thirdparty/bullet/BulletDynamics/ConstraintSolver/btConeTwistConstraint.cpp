@@ -19,6 +19,7 @@ Written by: Marcus Hennix
 #include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "LinearMath/btTransformUtil.h"
 #include "LinearMath/btMinMax.h"
+#include <cmath>
 #include <new>
 
 //#define CONETWIST_USE_OBSOLETE_SOLVER true
@@ -842,7 +843,7 @@ void btConeTwistConstraint::computeConeLimitInfo(const btQuaternion& qCone,
 			btScalar norm = 1 / (m_swingSpan2 * m_swingSpan2);
 			norm += surfaceSlope2 / (m_swingSpan1 * m_swingSpan1);
 			btScalar swingLimit2 = (1 + surfaceSlope2) / norm;
-			swingLimit = sqrt(swingLimit2);
+			swingLimit = std::sqrt(swingLimit2);
 		}
 
 		// test!
@@ -887,7 +888,7 @@ btVector3 btConeTwistConstraint::GetPointForAngle(btScalar fAngleInRadians, btSc
 		btScalar norm = 1 / (m_swingSpan2 * m_swingSpan2);
 		norm += surfaceSlope2 / (m_swingSpan1 * m_swingSpan1);
 		btScalar swingLimit2 = (1 + surfaceSlope2) / norm;
-		swingLimit = sqrt(swingLimit2);
+		swingLimit = std::sqrt(swingLimit2);
 	}
 
 	// convert into point in constraint space:

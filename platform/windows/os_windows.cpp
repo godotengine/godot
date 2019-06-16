@@ -53,6 +53,7 @@
 
 #include <avrt.h>
 #include <direct.h>
+#include <knownfolders.h>
 #include <process.h>
 #include <regstr.h>
 #include <shlobj.h>
@@ -93,6 +94,7 @@ static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPR
 	return TRUE;
 }
 
+#ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
 
 	LPWSTR messageBuffer = NULL;
@@ -105,6 +107,7 @@ static String format_error_message(DWORD id) {
 
 	return msg;
 }
+#endif // DEBUG_ENABLED
 
 extern HINSTANCE godot_hinstance;
 
@@ -345,6 +348,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				control_mem = false;
 				shift_mem = false;
 			} else { // WM_INACTIVE
+				input->release_pressed_events();
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 				alt_mem = false;
 			};
@@ -553,6 +557,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 			}
+			FALLTHROUGH;
 		case WM_MBUTTONDOWN:
 		case WM_MBUTTONUP:
 		case WM_RBUTTONDOWN:
@@ -581,7 +586,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				case WM_MBUTTONDOWN: {
 					mb->set_pressed(true);
 					mb->set_button_index(3);
-
 				} break;
 				case WM_MBUTTONUP: {
 					mb->set_pressed(false);
@@ -596,19 +600,16 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					mb->set_button_index(2);
 				} break;
 				case WM_LBUTTONDBLCLK: {
-
 					mb->set_pressed(true);
 					mb->set_button_index(1);
 					mb->set_doubleclick(true);
 				} break;
 				case WM_RBUTTONDBLCLK: {
-
 					mb->set_pressed(true);
 					mb->set_button_index(2);
 					mb->set_doubleclick(true);
 				} break;
 				case WM_MBUTTONDBLCLK: {
-
 					mb->set_pressed(true);
 					mb->set_button_index(3);
 					mb->set_doubleclick(true);
@@ -703,7 +704,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					}
 				}
 			} else if (mouse_mode != MOUSE_MODE_CAPTURED) {
-				// for reasons unknown to mankind, wheel comes in screen cordinates
+				// for reasons unknown to mankind, wheel comes in screen coordinates
 				POINT coords;
 				coords.x = mb->get_position().x;
 				coords.y = mb->get_position().y;
@@ -785,6 +786,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		} break;
 
 		case WM_ENTERSIZEMOVE: {
+			input->release_pressed_events();
 			move_timer_id = SetTimer(hWnd, 1, USER_TIMER_MINIMUM, (TIMERPROC)NULL);
 		} break;
 		case WM_EXITSIZEMOVE: {
@@ -1378,7 +1380,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		SetFocus(hWnd); // Sets Keyboard Focus To
 	}
 
-	if (p_desired.layered_splash) {
+	if (p_desired.layered) {
 		set_window_per_pixel_transparency_enabled(true);
 	}
 
@@ -1410,26 +1412,29 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 void OS_Windows::set_clipboard(const String &p_text) {
 
+	// Convert LF line endings to CRLF in clipboard content
+	// Otherwise, line endings won't be visible when pasted in other software
+	String text = p_text.replace("\n", "\r\n");
+
 	if (!OpenClipboard(hWnd)) {
 		ERR_EXPLAIN("Unable to open clipboard.");
 		ERR_FAIL();
 	};
 	EmptyClipboard();
 
-	HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE, (p_text.length() + 1) * sizeof(CharType));
+	HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE, (text.length() + 1) * sizeof(CharType));
 	if (mem == NULL) {
 		ERR_EXPLAIN("Unable to allocate memory for clipboard contents.");
 		ERR_FAIL();
 	};
 	LPWSTR lptstrCopy = (LPWSTR)GlobalLock(mem);
-	memcpy(lptstrCopy, p_text.c_str(), (p_text.length() + 1) * sizeof(CharType));
-	//memset((lptstrCopy + p_text.length()), 0, sizeof(CharType));
+	memcpy(lptstrCopy, text.c_str(), (text.length() + 1) * sizeof(CharType));
 	GlobalUnlock(mem);
 
 	SetClipboardData(CF_UNICODETEXT, mem);
 
 	// set the CF_TEXT version (not needed?)
-	CharString utf8 = p_text.utf8();
+	CharString utf8 = text.utf8();
 	mem = GlobalAlloc(GMEM_MOVEABLE, utf8.length() + 1);
 	if (mem == NULL) {
 		ERR_EXPLAIN("Unable to allocate memory for clipboard contents.");
@@ -1810,11 +1815,11 @@ void OS_Windows::set_window_size(const Size2 p_size) {
 
 	// Don't let the mouse leave the window when resizing to a smaller resolution
 	if (mouse_mode == MOUSE_MODE_CONFINED) {
-		RECT rect;
-		GetClientRect(hWnd, &rect);
-		ClientToScreen(hWnd, (POINT *)&rect.left);
-		ClientToScreen(hWnd, (POINT *)&rect.right);
-		ClipCursor(&rect);
+		RECT crect;
+		GetClientRect(hWnd, &crect);
+		ClientToScreen(hWnd, (POINT *)&crect.left);
+		ClientToScreen(hWnd, (POINT *)&crect.right);
+		ClipCursor(&crect);
 	}
 }
 void OS_Windows::set_window_fullscreen(bool p_enabled) {
@@ -2113,7 +2118,7 @@ void OS_Windows::request_attention() {
 	FlashWindowEx(&info);
 }
 
-String OS_Windows::get_name() {
+String OS_Windows::get_name() const {
 
 	return "Windows";
 }
@@ -2187,6 +2192,8 @@ uint64_t OS_Windows::get_unix_time() const {
 	FILETIME fep;
 	SystemTimeToFileTime(&ep, &fep);
 
+	// FIXME: dereferencing type-punned pointer will break strict-aliasing rules (GCC warning)
+	// https://docs.microsoft.com/en-us/windows/desktop/api/minwinbase/ns-minwinbase-filetime#remarks
 	return (*(uint64_t *)&ft - *(uint64_t *)&fep) / 10000000;
 };
 
@@ -2372,7 +2379,7 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		}
 
 		// Finally, create the icon
-		ICONINFO iconinfo = { 0 };
+		ICONINFO iconinfo;
 		iconinfo.fIcon = FALSE;
 		iconinfo.xHotspot = p_hotspot.x;
 		iconinfo.yHotspot = p_hotspot.y;
@@ -2460,7 +2467,7 @@ void OS_Windows::GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, 
 	DeleteDC(hMainDC);
 }
 
-Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
+Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 
 	if (p_blocking && r_pipe) {
 
@@ -2469,7 +2476,13 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 		for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
 
-			argss += String(" \"") + E->get() + "\"";
+			argss += " \"" + E->get() + "\"";
+		}
+
+		argss += "\"";
+
+		if (read_stderr) {
+			argss += " 2>&1"; // Read stderr too
 		}
 
 		FILE *f = _wpopen(argss.c_str(), L"r");
@@ -2479,7 +2492,13 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		char buf[65535];
 		while (fgets(buf, 65535, f)) {
 
+			if (p_pipe_mutex) {
+				p_pipe_mutex->lock();
+			}
 			(*r_pipe) += buf;
+			if (p_pipe_mutex) {
+				p_pipe_mutex->unlock();
+			}
 		}
 
 		int rv = _pclose(f);
@@ -2513,9 +2532,9 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 	if (p_blocking) {
 
-		DWORD ret = WaitForSingleObject(pi.pi.hProcess, INFINITE);
+		DWORD ret2 = WaitForSingleObject(pi.pi.hProcess, INFINITE);
 		if (r_exitcode)
-			*r_exitcode = ret;
+			*r_exitcode = ret2;
 
 		CloseHandle(pi.pi.hProcess);
 		CloseHandle(pi.pi.hThread);
@@ -2563,6 +2582,117 @@ String OS_Windows::get_executable_path() const {
 	GetModuleFileNameW(NULL, bufname, 4096);
 	String s = bufname;
 	return s;
+}
+
+void OS_Windows::set_native_icon(const String &p_filename) {
+
+	FileAccess *f = FileAccess::open(p_filename, FileAccess::READ);
+	ERR_FAIL_COND(!f);
+
+	ICONDIR *icon_dir = (ICONDIR *)memalloc(sizeof(ICONDIR));
+	int pos = 0;
+
+	icon_dir->idReserved = f->get_32();
+	pos += sizeof(WORD);
+	f->seek(pos);
+
+	icon_dir->idType = f->get_32();
+	pos += sizeof(WORD);
+	f->seek(pos);
+
+	if (icon_dir->idType != 1) {
+		ERR_EXPLAIN("Invalid icon file format!");
+		ERR_FAIL();
+	}
+
+	icon_dir->idCount = f->get_32();
+	pos += sizeof(WORD);
+	f->seek(pos);
+
+	icon_dir = (ICONDIR *)memrealloc(icon_dir, 3 * sizeof(WORD) + icon_dir->idCount * sizeof(ICONDIRENTRY));
+	f->get_buffer((uint8_t *)&icon_dir->idEntries[0], icon_dir->idCount * sizeof(ICONDIRENTRY));
+
+	int small_icon_index = -1; // Select 16x16 with largest color count
+	int small_icon_cc = 0;
+	int big_icon_index = -1; // Select largest
+	int big_icon_width = 16;
+	int big_icon_cc = 0;
+
+	for (int i = 0; i < icon_dir->idCount; i++) {
+		int colors = (icon_dir->idEntries[i].bColorCount == 0) ? 32768 : icon_dir->idEntries[i].bColorCount;
+		int width = (icon_dir->idEntries[i].bWidth == 0) ? 256 : icon_dir->idEntries[i].bWidth;
+		if (width == 16) {
+			if (colors >= small_icon_cc) {
+				small_icon_index = i;
+				small_icon_cc = colors;
+			}
+		}
+		if (width >= big_icon_width) {
+			if (colors >= big_icon_cc) {
+				big_icon_index = i;
+				big_icon_width = width;
+				big_icon_cc = colors;
+			}
+		}
+	}
+
+	if (big_icon_index == -1) {
+		ERR_EXPLAIN("No valid icons found!");
+		ERR_FAIL();
+	}
+
+	if (small_icon_index == -1) {
+		WARN_PRINTS("No small icon found, reusing " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon!");
+		small_icon_index = big_icon_index;
+		small_icon_cc = big_icon_cc;
+	}
+
+	// Read the big icon
+	DWORD bytecount_big = icon_dir->idEntries[big_icon_index].dwBytesInRes;
+	Vector<uint8_t> data_big;
+	data_big.resize(bytecount_big);
+	pos = icon_dir->idEntries[big_icon_index].dwImageOffset;
+	f->seek(pos);
+	f->get_buffer((uint8_t *)&data_big.write[0], bytecount_big);
+	HICON icon_big = CreateIconFromResource((PBYTE)&data_big.write[0], bytecount_big, TRUE, 0x00030000);
+	if (!icon_big) {
+		ERR_EXPLAIN("Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()));
+		ERR_FAIL();
+	}
+
+	// Read the small icon
+	DWORD bytecount_small = icon_dir->idEntries[small_icon_index].dwBytesInRes;
+	Vector<uint8_t> data_small;
+	data_small.resize(bytecount_small);
+	pos = icon_dir->idEntries[small_icon_index].dwImageOffset;
+	f->seek(pos);
+	f->get_buffer((uint8_t *)&data_small.write[0], bytecount_small);
+	HICON icon_small = CreateIconFromResource((PBYTE)&data_small.write[0], bytecount_small, TRUE, 0x00030000);
+	if (!icon_small) {
+		ERR_EXPLAIN("Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()));
+		ERR_FAIL();
+	}
+
+	// Online tradition says to be sure last error is cleared and set the small icon first
+	int err = 0;
+	SetLastError(err);
+
+	SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
+	err = GetLastError();
+	if (err) {
+		ERR_EXPLAIN("Error setting ICON_SMALL: " + format_error_message(err));
+		ERR_FAIL();
+	}
+
+	SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+	err = GetLastError();
+	if (err) {
+		ERR_EXPLAIN("Error setting ICON_BIG: " + format_error_message(err));
+		ERR_FAIL();
+	}
+
+	memdelete(f);
+	memdelete(icon_dir);
 }
 
 void OS_Windows::set_icon(const Ref<Image> &p_icon) {

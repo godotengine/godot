@@ -57,8 +57,7 @@
 		<constant name="OBJECT_NODE_COUNT" value="10" enum="Monitor">
 			Number of nodes currently instanced in the scene tree. This also includes the root node.
 		</constant>
-		<constant name="OBJECT_ORPHANS_NODE_COUNT" value="11" enum="Monitor">
-			Number of instanced nodes that aren't included in the scene tree.
+		<constant name="OBJECT_ORPHAN_NODE_COUNT" value="11" enum="Monitor">
 		</constant>
 		<constant name="RENDER_OBJECTS_IN_FRAME" value="12" enum="Monitor">
 			3D objects drawn per frame.

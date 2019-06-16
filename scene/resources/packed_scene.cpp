@@ -92,8 +92,8 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 
 		if (i > 0) {
 
-			ERR_EXPLAIN(vformat("Invalid scene: node %s does not specify its parent node.", snames[n.name]))
-			ERR_FAIL_COND_V(n.parent == -1, NULL)
+			ERR_EXPLAIN(vformat("Invalid scene: node %s does not specify its parent node.", snames[n.name]));
+			ERR_FAIL_COND_V(n.parent == -1, NULL);
 			NODE_FROM_ID(nparent, n.parent);
 #ifdef DEBUG_ENABLED
 			if (!nparent && (n.parent & FLAG_ID_IS_PATH)) {
@@ -535,7 +535,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 					float a = value;
 					float b = original;
 
-					if (Math::abs(a - b) < CMP_EPSILON)
+					if (Math::is_equal_approx(a, b))
 						continue;
 				} else if (bool(Variant::evaluate(Variant::OP_EQUAL, value, original))) {
 

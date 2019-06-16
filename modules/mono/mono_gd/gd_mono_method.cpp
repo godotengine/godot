@@ -74,6 +74,10 @@ void GDMonoMethod::_update_signature(MonoMethodSignature *p_method_sig) {
 	method_info = MethodInfo();
 }
 
+GDMonoClass *GDMonoMethod::get_enclosing_class() const {
+	return GDMono::get_singleton()->get_class(mono_method_get_class(mono_method));
+}
+
 bool GDMonoMethod::is_static() {
 	return mono_method_get_flags(mono_method, NULL) & MONO_METHOD_ATTR_STATIC;
 }
@@ -105,7 +109,7 @@ MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params,
 
 		for (int i = 0; i < params_count; i++) {
 			MonoObject *boxed_param = GDMonoMarshal::variant_to_mono_object(p_params[i], param_types[i]);
-			mono_array_set(params, MonoObject *, i, boxed_param);
+			mono_array_setref(params, i, boxed_param);
 		}
 
 		MonoException *exc = NULL;

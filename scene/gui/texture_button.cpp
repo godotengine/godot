@@ -64,7 +64,7 @@ bool TextureButton::has_point(const Point2 &p_point) const {
 		Rect2 rect = Rect2();
 		Size2 mask_size = click_mask->get_size();
 
-		if (_position_rect.no_area()) {
+		if (_position_rect.has_no_area()) {
 			rect.size = mask_size;
 		} else if (_tile) {
 			// if the stretch mode is tile we offset the point to keep it inside the mask size

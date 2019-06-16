@@ -48,6 +48,7 @@ class EditorLog : public VBoxContainer {
 	GDCLASS(EditorLog, VBoxContainer);
 
 	Button *clearbutton;
+	Button *copybutton;
 	Label *title;
 	RichTextLabel *log;
 	HBoxContainer *title_hb;
@@ -62,6 +63,7 @@ class EditorLog : public VBoxContainer {
 
 	//void _dragged(const Point2& p_ofs);
 	void _clear_request();
+	void _copy_request();
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
 protected:
@@ -80,6 +82,7 @@ public:
 	void deinit();
 
 	void clear();
+	void copy();
 	EditorLog();
 	~EditorLog();
 };

@@ -118,7 +118,10 @@ void FileAccessNetworkClient::_thread_func() {
 		FileAccessNetwork *fa = NULL;
 
 		if (response != FileAccessNetwork::RESPONSE_DATA) {
-			ERR_FAIL_COND(!accesses.has(id));
+			if (!accesses.has(id)) {
+				unlock_mutex();
+				ERR_FAIL_COND(!accesses.has(id));
+			}
 		}
 
 		if (accesses.has(id))
@@ -495,6 +498,16 @@ uint64_t FileAccessNetwork::_get_modified_time(const String &p_file) {
 	sem->wait();
 
 	return exists_modtime;
+}
+
+uint32_t FileAccessNetwork::_get_unix_permissions(const String &p_file) {
+	ERR_PRINT("Getting UNIX permissions from network drives is not implemented yet");
+	return 0;
+}
+
+Error FileAccessNetwork::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+	ERR_PRINT("Setting UNIX permissions on network drives is not implemented yet");
+	return ERR_UNAVAILABLE;
 }
 
 void FileAccessNetwork::configure() {

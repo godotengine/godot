@@ -62,7 +62,7 @@ void Sky::_bind_methods() {
 }
 
 Sky::Sky() {
-	radiance_size = RADIANCE_SIZE_512;
+	radiance_size = RADIANCE_SIZE_128;
 }
 
 /////////////////////////////////////////

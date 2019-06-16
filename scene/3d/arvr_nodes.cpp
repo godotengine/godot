@@ -127,7 +127,7 @@ Point2 ARVRCamera::unproject_position(const Vector3 &p_pos) const {
 	return res;
 };
 
-Vector3 ARVRCamera::project_position(const Point2 &p_point) const {
+Vector3 ARVRCamera::project_position(const Point2 &p_point, float p_z_depth) const {
 	// get our ARVRServer
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, Vector3());
@@ -135,7 +135,7 @@ Vector3 ARVRCamera::project_position(const Point2 &p_point) const {
 	Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
 	if (arvr_interface.is_null()) {
 		// we might be in the editor or have VR turned off, just call superclass
-		return Camera::project_position(p_point);
+		return Camera::project_position(p_point, p_z_depth);
 	}
 
 	if (!is_inside_tree()) {
@@ -155,7 +155,7 @@ Vector3 ARVRCamera::project_position(const Point2 &p_point) const {
 	point.y = (1.0 - (p_point.y / viewport_size.y)) * 2.0 - 1.0;
 	point *= vp_size;
 
-	Vector3 p(point.x, point.y, -get_znear());
+	Vector3 p(point.x, point.y, -p_z_depth);
 
 	return get_camera_transform().xform(p);
 };
@@ -379,18 +379,18 @@ String ARVRController::get_configuration_warning() const {
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
-		return TTR("ARVRController must have an ARVROrigin node as its parent");
+		return TTR("ARVRController must have an ARVROrigin node as its parent.");
 	};
 
 	if (controller_id == 0) {
-		return TTR("The controller id must not be 0 or this controller will not be bound to an actual controller");
+		return TTR("The controller ID must not be 0 or this controller won't be bound to an actual controller.");
 	};
 
 	return String();
 };
 
 ARVRController::ARVRController() {
-	controller_id = 0;
+	controller_id = 1;
 	is_active = true;
 	button_states = 0;
 };
@@ -506,11 +506,11 @@ String ARVRAnchor::get_configuration_warning() const {
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
-		return TTR("ARVRAnchor must have an ARVROrigin node as its parent");
+		return TTR("ARVRAnchor must have an ARVROrigin node as its parent.");
 	};
 
 	if (anchor_id == 0) {
-		return TTR("The anchor id must not be 0 or this anchor will not be bound to an actual anchor");
+		return TTR("The anchor ID must not be 0 or this anchor won't be bound to an actual anchor.");
 	};
 
 	return String();
@@ -530,7 +530,7 @@ Ref<Mesh> ARVRAnchor::get_mesh() const {
 }
 
 ARVRAnchor::ARVRAnchor() {
-	anchor_id = 0;
+	anchor_id = 1;
 	is_active = true;
 };
 
@@ -545,7 +545,7 @@ String ARVROrigin::get_configuration_warning() const {
 		return String();
 
 	if (tracked_camera == NULL)
-		return TTR("ARVROrigin requires an ARVRCamera child node");
+		return TTR("ARVROrigin requires an ARVRCamera child node.");
 
 	return String();
 };
@@ -583,6 +583,10 @@ void ARVROrigin::set_world_scale(float p_world_scale) {
 };
 
 void ARVROrigin::_notification(int p_what) {
+	// get our ARVRServer
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL(arvr_server);
+
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			set_process_internal(true);
@@ -591,10 +595,6 @@ void ARVROrigin::_notification(int p_what) {
 			set_process_internal(false);
 		}; break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			// get our ARVRServer
-			ARVRServer *arvr_server = ARVRServer::get_singleton();
-			ERR_FAIL_NULL(arvr_server);
-
 			// set our world origin to our node transform
 			arvr_server->set_world_origin(get_global_transform());
 
@@ -611,6 +611,14 @@ void ARVROrigin::_notification(int p_what) {
 		default:
 			break;
 	};
+
+	// send our notification to all active ARVR interfaces, they may need to react to it also
+	for (int i = 0; i < arvr_server->get_interface_count(); i++) {
+		Ref<ARVRInterface> interface = arvr_server->get_interface(i);
+		if (interface.is_valid() && interface->is_initialized()) {
+			interface->notification(p_what);
+		}
+	}
 };
 
 ARVROrigin::ARVROrigin() {

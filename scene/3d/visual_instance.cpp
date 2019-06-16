@@ -123,6 +123,8 @@ void VisualInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_get_visual_instance_rid"), &VisualInstance::_get_visual_instance_rid);
 	ClassDB::bind_method(D_METHOD("set_base", "base"), &VisualInstance::set_base);
+	ClassDB::bind_method(D_METHOD("get_base"), &VisualInstance::get_base);
+	ClassDB::bind_method(D_METHOD("get_instance"), &VisualInstance::get_instance);
 	ClassDB::bind_method(D_METHOD("set_layer_mask", "mask"), &VisualInstance::set_layer_mask);
 	ClassDB::bind_method(D_METHOD("get_layer_mask"), &VisualInstance::get_layer_mask);
 	ClassDB::bind_method(D_METHOD("set_layer_mask_bit", "layer", "enabled"), &VisualInstance::set_layer_mask_bit);
@@ -136,6 +138,12 @@ void VisualInstance::_bind_methods() {
 void VisualInstance::set_base(const RID &p_base) {
 
 	VisualServer::get_singleton()->instance_set_base(instance, p_base);
+	base = p_base;
+}
+
+RID VisualInstance::get_base() const {
+
+	return base;
 }
 
 VisualInstance::VisualInstance() {
@@ -263,6 +271,11 @@ float GeometryInstance::get_extra_cull_margin() const {
 	return extra_cull_margin;
 }
 
+void GeometryInstance::set_custom_aabb(AABB aabb) {
+
+	VS::get_singleton()->instance_set_custom_aabb(get_instance(), aabb);
+}
+
 void GeometryInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_material_override", "material"), &GeometryInstance::set_material_override);
@@ -288,6 +301,8 @@ void GeometryInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_extra_cull_margin", "margin"), &GeometryInstance::set_extra_cull_margin);
 	ClassDB::bind_method(D_METHOD("get_extra_cull_margin"), &GeometryInstance::get_extra_cull_margin);
+
+	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &GeometryInstance::set_custom_aabb);
 
 	ClassDB::bind_method(D_METHOD("get_aabb"), &GeometryInstance::get_aabb);
 

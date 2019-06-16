@@ -204,9 +204,8 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	dfmono->set_antialiased(font_source_antialiased);
 	dfmono->set_hinting(font_source_hinting);
 	dfmono->set_font_ptr(_font_Hack_Regular, _font_Hack_Regular_size);
-	//dfd->set_force_autohinter(true); //just looks better..i think?
 
-	int default_font_size = int(EditorSettings::get_singleton()->get("interface/editor/main_font_size")) * EDSCALE;
+	int default_font_size = int(EDITOR_GET("interface/editor/main_font_size")) * EDSCALE;
 
 	// Default font
 	MAKE_DEFAULT_FONT(df, default_font_size);
@@ -220,15 +219,14 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	MAKE_BOLD_FONT(df_title, default_font_size + 2 * EDSCALE);
 	p_theme->set_font("title", "EditorFonts", df_title);
 
-	// Doc font
-	MAKE_BOLD_FONT(df_doc_title, int(EDITOR_DEF("text_editor/help/help_title_font_size", 23)) * EDSCALE);
-
-	MAKE_DEFAULT_FONT(df_doc, int(EDITOR_DEF("text_editor/help/help_font_size", 15)) * EDSCALE);
-
+	// Documentation fonts
+	MAKE_DEFAULT_FONT(df_doc, int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
+	MAKE_BOLD_FONT(df_doc_bold, int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
+	MAKE_BOLD_FONT(df_doc_title, int(EDITOR_GET("text_editor/help/help_title_font_size")) * EDSCALE);
+	MAKE_SOURCE_FONT(df_doc_code, int(EDITOR_GET("text_editor/help/help_source_font_size")) * EDSCALE);
 	p_theme->set_font("doc", "EditorFonts", df_doc);
+	p_theme->set_font("doc_bold", "EditorFonts", df_doc_bold);
 	p_theme->set_font("doc_title", "EditorFonts", df_doc_title);
-
-	MAKE_SOURCE_FONT(df_doc_code, int(EDITOR_DEF("text_editor/help/help_source_font_size", 14)) * EDSCALE);
 	p_theme->set_font("doc_source", "EditorFonts", df_doc_code);
 
 	// Ruler font
@@ -236,10 +234,13 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_font("rulers", "EditorFonts", df_rulers);
 
 	// Code font
-	MAKE_SOURCE_FONT(df_code, int(EditorSettings::get_singleton()->get("interface/editor/code_font_size")) * EDSCALE);
+	MAKE_SOURCE_FONT(df_code, int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE);
 	p_theme->set_font("source", "EditorFonts", df_code);
 
-	MAKE_SOURCE_FONT(df_output_code, int(EDITOR_DEF("run/output/font_size", 13)) * EDSCALE);
+	MAKE_SOURCE_FONT(df_expression, (int(EDITOR_GET("interface/editor/code_font_size")) - 1) * EDSCALE);
+	p_theme->set_font("expression", "EditorFonts", df_expression);
+
+	MAKE_SOURCE_FONT(df_output_code, int(EDITOR_GET("run/output/font_size")) * EDSCALE);
 	p_theme->set_font("output_source", "EditorFonts", df_output_code);
 
 	MAKE_SOURCE_FONT(df_text_editor_status_code, default_font_size);

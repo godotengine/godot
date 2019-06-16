@@ -119,7 +119,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 		file->close();
 		memdelete(file);
-		ERR_EXPLAIN("Not a WAV file (no WAVE RIFF Header)")
+		ERR_EXPLAIN("Not a WAV file (no WAVE RIFF Header)");
 		ERR_FAIL_V(ERR_FILE_UNRECOGNIZED);
 	}
 
@@ -409,12 +409,12 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			float amp = Math::abs(ampChannelSum / (float)format_channels);
 
 			if (!found && amp > limit) {
-				first = i / format_channels;
+				first = i;
 				found = true;
 			}
 
 			if (found && amp > limit) {
-				last = i / format_channels;
+				last = i;
 			}
 		}
 

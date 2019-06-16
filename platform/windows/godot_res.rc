@@ -21,7 +21,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName",            "Godot Engine"
-            VALUE "FileDescription",        VERSION_NAME " Editor"
+            VALUE "FileDescription",        VERSION_NAME
             VALUE "FileVersion",            VERSION_NUMBER
             VALUE "ProductName",            VERSION_NAME
             VALUE "Licence",                "MIT"

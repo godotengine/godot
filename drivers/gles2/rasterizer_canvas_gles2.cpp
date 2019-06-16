@@ -113,9 +113,22 @@ void RasterizerCanvasGLES2::canvas_begin() {
 
 	state.canvas_shader.bind();
 	state.using_transparent_rt = false;
+	int viewport_x, viewport_y, viewport_width, viewport_height;
+
 	if (storage->frame.current_rt) {
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
 		state.using_transparent_rt = storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
+
+		if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_DIRECT_TO_SCREEN]) {
+			// set Viewport and Scissor when rendering directly to screen
+			viewport_width = storage->frame.current_rt->width;
+			viewport_height = storage->frame.current_rt->height;
+			viewport_x = storage->frame.current_rt->x;
+			viewport_y = OS::get_singleton()->get_window_size().height - viewport_height - storage->frame.current_rt->y;
+			glScissor(viewport_x, viewport_y, viewport_width, viewport_height);
+			glViewport(viewport_x, viewport_y, viewport_width, viewport_height);
+			glEnable(GL_SCISSOR_TEST);
+		}
 	}
 
 	if (storage->frame.clear_request) {
@@ -177,6 +190,14 @@ void RasterizerCanvasGLES2::canvas_end() {
 
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
 		glDisableVertexAttribArray(i);
+	}
+
+	if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_DIRECT_TO_SCREEN]) {
+		//reset viewport to full window size
+		int viewport_width = OS::get_singleton()->get_window_size().width;
+		int viewport_height = OS::get_singleton()->get_window_size().height;
+		glViewport(0, 0, viewport_width, viewport_height);
+		glScissor(0, 0, viewport_width, viewport_height);
 	}
 
 	state.using_texture_rect = false;
@@ -1060,6 +1081,8 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 							} else {
 								glVertexAttrib4fv(INSTANCE_ATTRIB_BASE + 3, buffer + color_ofs);
 							}
+						} else {
+							glVertexAttrib4f(INSTANCE_ATTRIB_BASE + 3, 1.0, 1.0, 1.0, 1.0);
 						}
 
 						if (multi_mesh->custom_data_floats) {
@@ -1191,6 +1214,11 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 }
 
 void RasterizerCanvasGLES2::_copy_screen(const Rect2 &p_rect) {
+
+	if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_DIRECT_TO_SCREEN]) {
+		ERR_PRINT_ONCE("Cannot use screen texture copying in render target set to render direct to screen");
+		return;
+	}
 
 	if (storage->frame.current_rt->copy_screen_effect.color == 0) {
 		ERR_EXPLAIN("Can't use screen texture copying in a render target configured without copy buffers");

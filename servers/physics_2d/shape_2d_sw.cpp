@@ -240,12 +240,7 @@ bool SegmentShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &
 
 real_t SegmentShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 
-	Vector2 s[2] = { a * p_scale, b * p_scale };
-
-	real_t l = s[1].distance_to(s[0]);
-	Vector2 ofs = (s[0] + s[1]) * 0.5;
-
-	return p_mass * (l * l / 12.0 + ofs.length_squared());
+	return p_mass * ((a * p_scale).distance_squared_to(b * p_scale)) / 12;
 }
 
 void SegmentShape2DSW::set_data(const Variant &p_data) {
@@ -318,7 +313,9 @@ bool CircleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p
 
 real_t CircleShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 
-	return (radius * radius) * (p_scale.x * 0.5 + p_scale.y * 0.5);
+	real_t a = radius * p_scale.x;
+	real_t b = radius * p_scale.y;
+	return p_mass * (a * a + b * b) / 4;
 }
 
 void CircleShape2DSW::set_data(const Variant &p_data) {
@@ -637,7 +634,7 @@ real_t ConvexPolygonShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 
 		aabb.expand_to(points[i].pos * p_scale);
 	}
 
-	return p_mass * aabb.size.dot(aabb.size) / 12.0 + p_mass * (aabb.position + aabb.size * 0.5).length_squared();
+	return p_mass * aabb.size.dot(aabb.size) / 12.0;
 }
 
 void ConvexPolygonShape2DSW::set_data(const Variant &p_data) {

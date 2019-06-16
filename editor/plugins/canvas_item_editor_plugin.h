@@ -129,6 +129,7 @@ private:
 		ANCHORS_AND_MARGINS_PRESET_VCENTER_WIDE,
 		ANCHORS_AND_MARGINS_PRESET_HCENTER_WIDE,
 		ANCHORS_AND_MARGINS_PRESET_WIDE,
+		ANCHORS_AND_MARGINS_PRESET_KEEP_RATIO,
 		ANCHORS_PRESET_TOP_LEFT,
 		ANCHORS_PRESET_TOP_RIGHT,
 		ANCHORS_PRESET_BOTTOM_LEFT,
@@ -240,6 +241,8 @@ private:
 	Point2 view_offset;
 	Point2 previous_update_view_offset;
 
+	bool anchors_mode;
+
 	Point2 grid_offset;
 	Point2 grid_step;
 	int grid_step_multiplier;
@@ -262,6 +265,7 @@ private:
 	bool key_rot;
 	bool key_scale;
 	bool panning;
+	bool pan_pressed;
 
 	MenuOption last_option;
 
@@ -347,6 +351,8 @@ private:
 	PopupMenu *anchors_and_margins_popup;
 	PopupMenu *anchors_popup;
 
+	ToolButton *anchor_mode_button;
+
 	Button *key_loc_button;
 	Button *key_rot_button;
 	Button *key_scale_button;
@@ -378,6 +384,7 @@ private:
 	Ref<ShortCut> set_pivot_shortcut;
 	Ref<ShortCut> multiply_grid_step_shortcut;
 	Ref<ShortCut> divide_grid_step_shortcut;
+	Ref<ShortCut> pan_view_shortcut;
 
 	bool _is_node_locked(const Node *p_node);
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
@@ -438,6 +445,7 @@ private:
 	void _draw_guides();
 	void _draw_focus();
 	void _draw_grid();
+	void _draw_control_anchors(Control *control);
 	void _draw_control_helpers(Control *control);
 	void _draw_selection();
 	void _draw_axis();
@@ -462,6 +470,8 @@ private:
 
 	void _gui_input_viewport(const Ref<InputEvent> &p_event);
 
+	void _selection_changed();
+
 	void _focus_selection(int p_op);
 
 	void _solve_IK(Node2D *leaf_node, Point2 target_position);
@@ -473,6 +483,9 @@ private:
 	void _set_anchors_preset(Control::LayoutPreset p_preset);
 	void _set_margins_preset(Control::LayoutPreset p_preset);
 	void _set_anchors_and_margins_preset(Control::LayoutPreset p_preset);
+	void _set_anchors_and_margins_to_keep_ratio();
+
+	void _button_toggle_anchor_mode(bool p_status);
 
 	HBoxContainer *zoom_hb;
 	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
@@ -574,6 +587,8 @@ public:
 	void edit(CanvasItem *p_canvas_item);
 
 	void focus_selection();
+
+	bool is_anchors_mode_enabled() { return anchors_mode; };
 
 	CanvasItemEditor(EditorNode *p_editor);
 };

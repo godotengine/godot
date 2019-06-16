@@ -127,6 +127,13 @@ Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, c
 	return out;
 }
 
+Vector3 Vector3::move_toward(const Vector3 &p_to, const real_t p_delta) const {
+	Vector3 v = *this;
+	Vector3 vd = p_to - v;
+	real_t len = vd.length();
+	return len <= p_delta || len < CMP_EPSILON ? p_to : v + vd / len * p_delta;
+}
+
 Vector3::operator String() const {
 
 	return (rtos(x) + ", " + rtos(y) + ", " + rtos(z));

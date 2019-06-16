@@ -346,6 +346,12 @@ Error HTTPClient::poll() {
 						} else {
 							// We are already handshaking, which means we can use your already active SSL connection
 							ssl = static_cast<Ref<StreamPeerSSL> >(connection);
+							if (ssl.is_null()) {
+								close();
+								status = STATUS_SSL_HANDSHAKE_ERROR;
+								return ERR_CANT_CONNECT;
+							}
+
 							ssl->poll(); // Try to finish the handshake
 						}
 
@@ -429,7 +435,7 @@ Error HTTPClient::poll() {
 					response_num = RESPONSE_OK;
 
 					// Per the HTTP 1.1 spec, keep-alive is the default.
-					// Not following that specification breaks standard implemetations.
+					// Not following that specification breaks standard implementations.
 					// Broken web servers should be fixed.
 					bool keep_alive = true;
 

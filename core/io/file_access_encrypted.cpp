@@ -100,6 +100,7 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 		MD5Update(&md5, (uint8_t *)data.ptr(), data.size());
 		MD5Final(&md5);
 
+		ERR_EXPLAIN("The MD5 sum of the decrypted file does not match the expected value. It could be that the file is corrupt, or that the provided decryption key is invalid.");
 		ERR_FAIL_COND_V(String::md5(md5.digest) != String::md5(md5d), ERR_FILE_CORRUPT);
 
 		file = p_base;
@@ -299,6 +300,16 @@ bool FileAccessEncrypted::file_exists(const String &p_name) {
 uint64_t FileAccessEncrypted::_get_modified_time(const String &p_file) {
 
 	return 0;
+}
+
+uint32_t FileAccessEncrypted::_get_unix_permissions(const String &p_file) {
+
+	return 0;
+}
+
+Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+	ERR_PRINT("Setting UNIX permissions on encrypted files is not implemented yet");
+	return ERR_UNAVAILABLE;
 }
 
 FileAccessEncrypted::FileAccessEncrypted() {

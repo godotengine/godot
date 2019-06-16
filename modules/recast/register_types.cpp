@@ -32,8 +32,23 @@
 
 #include "navigation_mesh_editor_plugin.h"
 
+#ifdef TOOLS_ENABLED
+EditorNavigationMeshGenerator *_nav_mesh_generator = NULL;
+#endif
+
 void register_recast_types() {
+#ifdef TOOLS_ENABLED
 	EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
+	_nav_mesh_generator = memnew(EditorNavigationMeshGenerator);
+	ClassDB::register_class<EditorNavigationMeshGenerator>();
+	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", EditorNavigationMeshGenerator::get_singleton()));
+#endif
 }
 
-void unregister_recast_types() {}
+void unregister_recast_types() {
+#ifdef TOOLS_ENABLED
+	if (_nav_mesh_generator) {
+		memdelete(_nav_mesh_generator);
+	}
+#endif
+}

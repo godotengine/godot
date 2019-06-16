@@ -361,7 +361,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Locks the data for writing access.
+				Locks the data for reading and writing access. Sends an error to the console if the image is not locked when reading or writing a pixel.
 			</description>
 		</method>
 		<method name="normalmap_to_xy">
@@ -602,6 +602,8 @@
 			It's slower than [code]INTERPOLATE_BILINEAR[/code], but produces higher quality results, with much less aliasing artifacts.
 			If the image does not have mipmaps, they will be generated and used internally, but no mipmaps will be generated on the resulting image. (Note that if you intend to scale multiple copies of the original image, it's better to call [code]generate_mipmaps[/code] on it in advance, to avoid wasting processing power in generating them again and again.)
 			On the other hand, if the image already has mipmaps, they will be used, and a new set will be generated for the resulting image.
+		</constant>
+		<constant name="INTERPOLATE_LANCZOS" value="4" enum="Interpolation">
 		</constant>
 		<constant name="ALPHA_NONE" value="0" enum="AlphaMode">
 		</constant>

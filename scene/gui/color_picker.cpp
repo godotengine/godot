@@ -38,8 +38,6 @@
 #include "editor_scale.h"
 #include "editor_settings.h"
 #endif
-
-#include "scene/gui/separator.h"
 #include "scene/main/viewport.h"
 
 void ColorPicker::_notification(int p_what) {
@@ -469,7 +467,7 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 			set_pick_color(presets[index]);
 			_update_color();
 			emit_signal("color_changed", color);
-		} else if (bev->is_pressed() && bev->get_button_index() == BUTTON_RIGHT) {
+		} else if (bev->is_pressed() && bev->get_button_index() == BUTTON_RIGHT && presets_enabled) {
 			int index = bev->get_position().x / (preset->get_size().x / presets.size());
 			Color clicked_preset = presets[index];
 			erase_preset(clicked_preset);
@@ -565,6 +563,31 @@ void ColorPicker::_html_focus_exit() {
 	_focus_exit();
 }
 
+void ColorPicker::set_presets_enabled(bool p_enabled) {
+	presets_enabled = p_enabled;
+	if (!p_enabled) {
+		bt_add_preset->set_disabled(true);
+		bt_add_preset->set_focus_mode(FOCUS_NONE);
+	} else {
+		bt_add_preset->set_disabled(false);
+		bt_add_preset->set_focus_mode(FOCUS_ALL);
+	}
+}
+
+bool ColorPicker::are_presets_enabled() const {
+	return presets_enabled;
+}
+
+void ColorPicker::set_presets_visible(bool p_visible) {
+	presets_visible = p_visible;
+	preset_separator->set_visible(p_visible);
+	preset_container->set_visible(p_visible);
+}
+
+bool ColorPicker::are_presets_visible() const {
+	return presets_visible;
+}
+
 void ColorPicker::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pick_color", "color"), &ColorPicker::set_pick_color);
@@ -575,6 +598,10 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_deferred_mode"), &ColorPicker::is_deferred_mode);
 	ClassDB::bind_method(D_METHOD("set_edit_alpha", "show"), &ColorPicker::set_edit_alpha);
 	ClassDB::bind_method(D_METHOD("is_editing_alpha"), &ColorPicker::is_editing_alpha);
+	ClassDB::bind_method(D_METHOD("set_presets_enabled", "enabled"), &ColorPicker::set_presets_enabled);
+	ClassDB::bind_method(D_METHOD("are_presets_enabled"), &ColorPicker::are_presets_enabled);
+	ClassDB::bind_method(D_METHOD("set_presets_visible", "visible"), &ColorPicker::set_presets_visible);
+	ClassDB::bind_method(D_METHOD("are_presets_visible"), &ColorPicker::are_presets_visible);
 	ClassDB::bind_method(D_METHOD("add_preset", "color"), &ColorPicker::add_preset);
 	ClassDB::bind_method(D_METHOD("erase_preset", "color"), &ColorPicker::erase_preset);
 	ClassDB::bind_method(D_METHOD("get_presets"), &ColorPicker::get_presets);
@@ -598,6 +625,8 @@ void ColorPicker::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "raw_mode"), "set_raw_mode", "is_raw_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deferred_mode"), "set_deferred_mode", "is_deferred_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "presets_enabled"), "set_presets_enabled", "are_presets_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "presets_visible"), "set_presets_visible", "are_presets_visible");
 
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
 	ADD_SIGNAL(MethodInfo("preset_added", PropertyInfo(Variant::COLOR, "color")));
@@ -613,6 +642,8 @@ ColorPicker::ColorPicker() :
 	raw_mode_enabled = false;
 	deferred_mode_enabled = false;
 	changing_color = false;
+	presets_enabled = true;
+	presets_visible = true;
 	screen = NULL;
 
 	HBoxContainer *hb_smpl = memnew(HBoxContainer);
@@ -725,18 +756,19 @@ ColorPicker::ColorPicker() :
 
 	set_pick_color(Color(1, 1, 1));
 
-	add_child(memnew(HSeparator));
+	preset_separator = memnew(HSeparator);
+	add_child(preset_separator);
 
-	HBoxContainer *bbc = memnew(HBoxContainer);
-	add_child(bbc);
+	preset_container = memnew(HBoxContainer);
+	add_child(preset_container);
 
 	preset = memnew(TextureRect);
-	bbc->add_child(preset);
+	preset_container->add_child(preset);
 	preset->connect("gui_input", this, "_preset_input");
 	preset->connect("draw", this, "_update_presets");
 
 	bt_add_preset = memnew(Button);
-	bbc->add_child(bt_add_preset);
+	preset_container->add_child(bt_add_preset);
 	bt_add_preset->set_tooltip(TTR("Add current color as a preset."));
 	bt_add_preset->connect("pressed", this, "_add_preset_pressed");
 }
@@ -758,23 +790,33 @@ void ColorPickerButton::_modal_closed() {
 void ColorPickerButton::pressed() {
 
 	_update_picker();
-	popup->set_position(get_global_position() - picker->get_combined_minimum_size());
+	popup->set_position(get_global_position() - picker->get_combined_minimum_size() * get_global_transform().get_scale());
+	popup->set_scale(get_global_transform().get_scale());
 	popup->popup();
 	picker->set_focus_on_line_edit();
 }
 
 void ColorPickerButton::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_DRAW) {
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
 
-		Ref<StyleBox> normal = get_stylebox("normal");
-		Rect2 r = Rect2(normal->get_offset(), get_size() - normal->get_minimum_size());
-		draw_texture_rect(Control::get_icon("bg", "ColorPickerButton"), r, true);
-		draw_rect(r, color);
+			Ref<StyleBox> normal = get_stylebox("normal");
+			Rect2 r = Rect2(normal->get_offset(), get_size() - normal->get_minimum_size());
+			draw_texture_rect(Control::get_icon("bg", "ColorPickerButton"), r, true);
+			draw_rect(r, color);
+		} break;
+		case MainLoop::NOTIFICATION_WM_QUIT_REQUEST: {
+
+			if (popup)
+				popup->hide();
+		} break;
 	}
 
-	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST && popup) {
-		popup->hide();
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+		if (popup && !is_visible_in_tree()) {
+			popup->hide();
+		}
 	}
 }
 
@@ -825,6 +867,8 @@ void ColorPickerButton::_update_picker() {
 		add_child(popup);
 		picker->connect("color_changed", this, "_color_changed");
 		popup->connect("modal_closed", this, "_modal_closed");
+		popup->connect("about_to_show", this, "set_pressed", varray(true));
+		popup->connect("popup_hide", this, "set_pressed", varray(false));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);
 	}
@@ -855,4 +899,6 @@ ColorPickerButton::ColorPickerButton() {
 	picker = NULL;
 	popup = NULL;
 	edit_alpha = true;
+
+	set_toggle_mode(true);
 }

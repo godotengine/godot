@@ -53,7 +53,12 @@ static void handle_crash(int sig) {
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
 	String _execpath = OS::get_singleton()->get_executable_path();
-	String msg = GLOBAL_GET("debug/settings/crash_handler/message");
+
+	String msg;
+	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
+	if (proj_settings) {
+		msg = proj_settings->get("debug/settings/crash_handler/message");
+	}
 
 	// Dump the backtrace to stderr with a message to the user
 	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);
@@ -96,12 +101,10 @@ static void handle_crash(int sig) {
 			String output = "";
 
 			// Try to get the file/line number using addr2line
-			if (OS::get_singleton()) {
-				int ret;
-				Error err = OS::get_singleton()->execute(String("addr2line"), args, true, NULL, &output, &ret);
-				if (err == OK) {
-					output.erase(output.length() - 1, 1);
-				}
+			int ret;
+			Error err = OS::get_singleton()->execute(String("addr2line"), args, true, NULL, &output, &ret);
+			if (err == OK) {
+				output.erase(output.length() - 1, 1);
 			}
 
 			fprintf(stderr, "[%ld] %s (%ls)\n", i, fname, output.c_str());

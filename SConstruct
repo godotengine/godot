@@ -66,20 +66,6 @@ if 'TERM' in os.environ:
     env_base['ENV']['TERM'] = os.environ['TERM']
 env_base.AppendENVPath('PATH', os.getenv('PATH'))
 env_base.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
-env_base.android_maven_repos = []
-env_base.android_flat_dirs = []
-env_base.android_dependencies = []
-env_base.android_gradle_plugins = []
-env_base.android_gradle_classpath = []
-env_base.android_java_dirs = []
-env_base.android_res_dirs = []
-env_base.android_asset_dirs = []
-env_base.android_aidl_dirs = []
-env_base.android_jni_dirs = []
-env_base.android_default_config = []
-env_base.android_manifest_chunk = ""
-env_base.android_permission_chunk = ""
-env_base.android_appattributes_chunk = ""
 env_base.disabled_modules = []
 env_base.use_ptrcall = False
 env_base.split_drivers = False
@@ -87,20 +73,6 @@ env_base.split_modules = False
 env_base.module_version_string = ""
 env_base.msvc = False
 
-env_base.__class__.android_add_maven_repository = methods.android_add_maven_repository
-env_base.__class__.android_add_flat_dir = methods.android_add_flat_dir
-env_base.__class__.android_add_dependency = methods.android_add_dependency
-env_base.__class__.android_add_java_dir = methods.android_add_java_dir
-env_base.__class__.android_add_res_dir = methods.android_add_res_dir
-env_base.__class__.android_add_asset_dir = methods.android_add_asset_dir
-env_base.__class__.android_add_aidl_dir = methods.android_add_aidl_dir
-env_base.__class__.android_add_jni_dir = methods.android_add_jni_dir
-env_base.__class__.android_add_default_config = methods.android_add_default_config
-env_base.__class__.android_add_to_manifest = methods.android_add_to_manifest
-env_base.__class__.android_add_to_permissions = methods.android_add_to_permissions
-env_base.__class__.android_add_to_attributes = methods.android_add_to_attributes
-env_base.__class__.android_add_gradle_plugin = methods.android_add_gradle_plugin
-env_base.__class__.android_add_gradle_classpath = methods.android_add_gradle_classpath
 env_base.__class__.disable_module = methods.disable_module
 
 env_base.__class__.add_module_version_string = methods.add_module_version_string
@@ -153,7 +125,7 @@ opts.Add(BoolVariable('verbose', "Enable verbose output for the compilation", Fa
 opts.Add(BoolVariable('progress', "Show a progress indicator during compilation", True))
 opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during compilation", 'all', ('extra', 'all', 'moderate', 'no')))
 opts.Add(BoolVariable('werror', "Treat compiler warnings as errors. Depends on the level of warnings set with 'warnings'", False))
-opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
+opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=extra werror=yes", False))
 opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
 opts.Add(BoolVariable('vsproj', "Generate a Visual Studio solution", False))
 opts.Add(EnumVariable('macports_clang', "Build using Clang from MacPorts", 'no', ('no', '5.0', 'devel')))
@@ -177,7 +149,7 @@ opts.Add(BoolVariable('builtin_libwebsockets', "Use the built-in libwebsockets l
 opts.Add(BoolVariable('builtin_mbedtls', "Use the built-in mbedTLS library", True))
 opts.Add(BoolVariable('builtin_miniupnpc', "Use the built-in miniupnpc library", True))
 opts.Add(BoolVariable('builtin_opus', "Use the built-in Opus library", True))
-opts.Add(BoolVariable('builtin_pcre2', "Use the built-in PCRE2 library)", True))
+opts.Add(BoolVariable('builtin_pcre2', "Use the built-in PCRE2 library", True))
 opts.Add(BoolVariable('builtin_recast', "Use the built-in Recast library", True))
 opts.Add(BoolVariable('builtin_squish', "Use the built-in squish library", True))
 opts.Add(BoolVariable('builtin_xatlas', "Use the built-in xatlas library", True))
@@ -189,8 +161,8 @@ opts.Add("CXX", "C++ compiler")
 opts.Add("CC", "C compiler")
 opts.Add("LINK", "Linker")
 opts.Add("CCFLAGS", "Custom flags for both the C and C++ compilers")
-opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
 opts.Add("CFLAGS", "Custom flags for the C compiler")
+opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
 opts.Add("LINKFLAGS", "Custom flags for the linker")
 
 # add platform specific options
@@ -217,7 +189,7 @@ Help(opts.GenerateHelpText(env_base))  # generate help
 
 # add default include paths
 
-env_base.Append(CPPPATH=['#editor', '#'])
+env_base.Prepend(CPPPATH=['#', '#editor'])
 
 # configure ENV for platform
 env_base.platform_exporters = platform_exporters
@@ -254,6 +226,23 @@ if env_base['platform'] != "":
 elif env_base['p'] != "":
     selected_platform = env_base['p']
     env_base["platform"] = selected_platform
+else:
+    # Missing `platform` argument, try to detect platform automatically
+    if sys.platform.startswith('linux'):
+        selected_platform = 'x11'
+    elif sys.platform == 'darwin':
+        selected_platform = 'osx'
+    elif sys.platform == 'win32':
+        selected_platform = 'windows'
+    else:
+        print("Could not detect platform automatically. Supported platforms:")
+        for x in platform_list:
+            print("\t" + x)
+        print("\nPlease run SCons again and select a valid platform: platform=<string>")
+
+    if selected_platform != "":
+        print("Automatically detected platform: " + selected_platform)
+        env_base["platform"] = selected_platform
 
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform
@@ -265,8 +254,9 @@ if selected_platform in platform_list:
         env = env_base.Clone()
 
     if env['dev']:
-        env["warnings"] = "all"
         env['verbose'] = True
+        env['warnings'] = "extra"
+        env['werror'] = True
 
     if env['vsproj']:
         env.vs_incs = []
@@ -299,17 +289,18 @@ if selected_platform in platform_list:
 
     CCFLAGS = env.get('CCFLAGS', '')
     env['CCFLAGS'] = ''
-
     env.Append(CCFLAGS=str(CCFLAGS).split())
 
     CFLAGS = env.get('CFLAGS', '')
     env['CFLAGS'] = ''
-
     env.Append(CFLAGS=str(CFLAGS).split())
+
+    CXXFLAGS = env.get('CXXFLAGS', '')
+    env['CXXFLAGS'] = ''
+    env.Append(CXXFLAGS=str(CXXFLAGS).split())
 
     LINKFLAGS = env.get('LINKFLAGS', '')
     env['LINKFLAGS'] = ''
-
     env.Append(LINKFLAGS=str(LINKFLAGS).split())
 
     flag_list = platform_flags[selected_platform]
@@ -349,9 +340,17 @@ if selected_platform in platform_list:
             # FIXME: enable -Wclobbered once #26351 is fixed
             # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
             # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
-            env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter'] + all_plus_warnings + shadow_local_warning)
+            env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter']
+                + all_plus_warnings + shadow_local_warning)
+            env.Append(CXXFLAGS=['-Wctor-dtor-privacy', '-Wnon-virtual-dtor'])
             if methods.using_gcc(env):
-                env['CCFLAGS'] += ['-Wno-clobbered']
+                env.Append(CCFLAGS=['-Wno-clobbered', '-Walloc-zero',
+                    '-Wduplicated-branches', '-Wduplicated-cond',
+                    '-Wstringop-overflow=4', '-Wlogical-op'])
+                env.Append(CXXFLAGS=['-Wnoexcept', '-Wplacement-new=1'])
+                version = methods.get_compiler_version(env)
+                if version != None and version[0] >= '9':
+                    env.Append(CCFLAGS=['-Wattribute-alias=2'])
         elif (env["warnings"] == 'all'):
             env.Append(CCFLAGS=['-Wall'] + shadow_local_warning)
         elif (env["warnings"] == 'moderate'):
@@ -511,13 +510,13 @@ if selected_platform in platform_list:
             if (conf.CheckCHeader(header[0])):
                 env.AppendUnique(CPPDEFINES=[header[1]])
 
-else:
+elif selected_platform != "":
 
-    print("No valid target platform selected.")
+    print("Invalid target platform: " + selected_platform)
     print("The following platforms were detected:")
     for x in platform_list:
         print("\t" + x)
-    print("\nPlease run SCons again with the argument: platform=<string>")
+    print("\nPlease run SCons again and select a valid platform: platform=<string>")
 
 # The following only makes sense when the env is defined, and assumes it is
 if 'env' in locals():
@@ -581,7 +580,7 @@ if 'env' in locals():
             # (filename, size, weight).
             current_time = time.time()
             file_stat = [(x[0], x[1][0], (current_time - x[1][1])) for x in file_stat]
-            # Sort by the most resently accessed files (most sensible to keep) first
+            # Sort by the most recently accessed files (most sensible to keep) first
             file_stat.sort(key=lambda x: x[2])
             # Search for the first entry where the storage limit is
             # reached

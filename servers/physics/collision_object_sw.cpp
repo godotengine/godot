@@ -32,13 +32,14 @@
 #include "servers/physics/physics_server_sw.h"
 #include "space_sw.h"
 
-void CollisionObjectSW::add_shape(ShapeSW *p_shape, const Transform &p_transform) {
+void CollisionObjectSW::add_shape(ShapeSW *p_shape, const Transform &p_transform, bool p_disabled) {
 
 	Shape s;
 	s.shape = p_shape;
 	s.xform = p_transform;
 	s.xform_inv = s.xform.affine_inverse();
 	s.bpid = 0; //needs update
+	s.disabled = p_disabled;
 	shapes.push_back(s);
 	p_shape->add_owner(this);
 

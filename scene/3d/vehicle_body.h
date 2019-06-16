@@ -68,6 +68,7 @@ class VehicleWheel : public Spatial {
 	real_t m_steering;
 	real_t m_rotation;
 	real_t m_deltaRotation;
+	real_t m_rpm;
 	real_t m_rollInfluence;
 	//real_t	m_engineForce;
 	real_t m_brake;
@@ -133,6 +134,8 @@ public:
 	float get_roll_influence() const;
 
 	float get_skidinfo() const;
+
+	float get_rpm() const;
 
 	String get_configuration_warning() const;
 

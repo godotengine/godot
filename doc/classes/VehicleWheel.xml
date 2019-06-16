@@ -9,11 +9,17 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_rpm" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_skidinfo" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Returns a value between 0.0 and 1.0 that indicates whether this wheel is skidding. 0.0 is not skidding, 1.0 means the wheel has lost grip.
+				Returns a value between 0.0 and 1.0 that indicates whether this wheel is skidding. 0.0 is skidding (the wheel has lost grip, e.g. icy terrain), 1.0 means not skidding (the wheel has full grip, e.g. dry asphalt road).
 			</description>
 		</method>
 		<method name="is_in_contact" qualifiers="const">

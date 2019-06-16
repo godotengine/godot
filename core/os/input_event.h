@@ -117,6 +117,16 @@ enum JoystickList {
 	JOY_WII_MINUS = JOY_BUTTON_10,
 	JOY_WII_PLUS = JOY_BUTTON_11,
 
+	JOY_VR_GRIP = JOY_BUTTON_2,
+	JOY_VR_PAD = JOY_BUTTON_14,
+	JOY_VR_TRIGGER = JOY_BUTTON_15,
+
+	JOY_OCULUS_AX = JOY_BUTTON_7,
+	JOY_OCULUS_BY = JOY_BUTTON_1,
+	JOY_OCULUS_MENU = JOY_BUTTON_3,
+
+	JOY_OPENVR_MENU = JOY_BUTTON_1,
+
 	// end of history
 
 	JOY_AXIS_0 = 0,
@@ -139,6 +149,12 @@ enum JoystickList {
 
 	JOY_ANALOG_L2 = JOY_AXIS_6,
 	JOY_ANALOG_R2 = JOY_AXIS_7,
+
+	JOY_VR_ANALOG_TRIGGER = JOY_AXIS_2,
+	JOY_VR_ANALOG_GRIP = JOY_AXIS_4,
+
+	JOY_OPENVR_TOUCHPADX = JOY_AXIS_0,
+	JOY_OPENVR_TOUCHPADY = JOY_AXIS_1,
 };
 
 enum MidiMessageList {
@@ -475,6 +491,7 @@ class InputEventAction : public InputEvent {
 
 	StringName action;
 	bool pressed;
+	float strength;
 
 protected:
 	static void _bind_methods();
@@ -485,6 +502,9 @@ public:
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const;
+
+	void set_strength(float p_strength);
+	float get_strength() const;
 
 	virtual bool is_action(const StringName &p_action) const;
 

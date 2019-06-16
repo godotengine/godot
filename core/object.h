@@ -465,7 +465,7 @@ private:
 	bool _block_signals;
 	int _predelete_ok;
 	Set<Object *> change_receptors;
-	ObjectID _instance_ID;
+	ObjectID _instance_id;
 	bool _predelete();
 	void _postinitialize();
 	bool _can_translate;
@@ -577,7 +577,7 @@ public:
 
 	bool _is_gpl_reversed() const { return false; }
 
-	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_ID; }
+	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_id; }
 	// this is used for editors
 
 	void add_change_receptor(Object *p_receptor);
@@ -659,6 +659,7 @@ public:
 	void call_multilevel(const StringName &p_name, VARIANT_ARG_LIST); // C++ helper
 
 	void notification(int p_notification, bool p_reversed = false);
+	String to_string();
 
 	//used mainly by script, get and set all INCLUDING string
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = NULL) const;
@@ -673,6 +674,7 @@ public:
 
 	bool has_meta(const String &p_name) const;
 	void set_meta(const String &p_name, const Variant &p_value);
+	void remove_meta(const String &p_name);
 	Variant get_meta(const String &p_name) const;
 	void get_meta_list(List<String> *p_list) const;
 
@@ -775,7 +777,7 @@ class ObjectDB {
 public:
 	typedef void (*DebugFunc)(Object *p_obj);
 
-	static Object *get_instance(ObjectID p_instance_ID);
+	static Object *get_instance(ObjectID p_instance_id);
 	static void debug_objects(DebugFunc p_func);
 	static int get_object_count();
 

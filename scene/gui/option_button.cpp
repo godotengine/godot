@@ -72,6 +72,11 @@ void OptionButton::_notification(int p_what) {
 
 		Point2 ofs(size.width - arrow->get_width() - get_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
 		arrow->draw(ci, ofs, clr);
+	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+
+		if (!is_visible_in_tree()) {
+			popup->hide();
+		}
 	}
 }
 
@@ -104,21 +109,21 @@ void OptionButton::_selected(int p_which) {
 void OptionButton::pressed() {
 
 	Size2 size = get_size();
-	popup->set_global_position(get_global_position() + Size2(0, size.height));
+	popup->set_global_position(get_global_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));
-
+	popup->set_scale(get_global_transform().get_scale());
 	popup->popup();
 }
 
-void OptionButton::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID) {
+void OptionButton::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id) {
 
-	popup->add_icon_radio_check_item(p_icon, p_label, p_ID);
+	popup->add_icon_radio_check_item(p_icon, p_label, p_id);
 	if (popup->get_item_count() == 1)
 		select(0);
 }
-void OptionButton::add_item(const String &p_label, int p_ID) {
+void OptionButton::add_item(const String &p_label, int p_id) {
 
-	popup->add_radio_check_item(p_label, p_ID);
+	popup->add_radio_check_item(p_label, p_id);
 	if (popup->get_item_count() == 1)
 		select(0);
 }
@@ -131,9 +136,9 @@ void OptionButton::set_item_icon(int p_idx, const Ref<Texture> &p_icon) {
 
 	popup->set_item_icon(p_idx, p_icon);
 }
-void OptionButton::set_item_id(int p_idx, int p_ID) {
+void OptionButton::set_item_id(int p_idx, int p_id) {
 
-	popup->set_item_id(p_idx, p_ID);
+	popup->set_item_id(p_idx, p_id);
 }
 
 void OptionButton::set_item_metadata(int p_idx, const Variant &p_metadata) {
@@ -333,23 +338,26 @@ void OptionButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
 	// "selected" property must come after "items", otherwise GH-10213 occurs
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
-	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "ID")));
-	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "ID")));
+	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "id")));
 }
 
 OptionButton::OptionButton() {
 
 	current = -1;
+	set_toggle_mode(true);
 	set_text_align(ALIGN_LEFT);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
 	popup = memnew(PopupMenu);
 	popup->hide();
 	add_child(popup);
-	popup->set_as_toplevel(true);
 	popup->set_pass_on_modal_close_click(false);
+	popup->set_notify_transform(true);
+	popup->set_allow_search(true);
 	popup->connect("id_pressed", this, "_selected");
 	popup->connect("id_focused", this, "_focused");
+	popup->connect("popup_hide", this, "set_pressed", varray(false));
 }
 
 OptionButton::~OptionButton() {

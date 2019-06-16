@@ -58,7 +58,7 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, const V
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 	msg->args = p_argcount;
-	msg->instance_ID = p_id;
+	msg->instance_id = p_id;
 	msg->target = p_method;
 	msg->type = TYPE_CALL;
 	if (p_show_error)
@@ -109,7 +109,7 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Vari
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 	msg->args = 1;
-	msg->instance_ID = p_id;
+	msg->instance_id = p_id;
 	msg->target = p_prop;
 	msg->type = TYPE_SET;
 
@@ -143,7 +143,7 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 
 	msg->type = TYPE_NOTIFICATION;
-	msg->instance_ID = p_id;
+	msg->instance_id = p_id;
 	//msg->target;
 	msg->notification = p_notification;
 
@@ -177,7 +177,7 @@ void MessageQueue::statistics() {
 	while (read_pos < buffer_end) {
 		Message *message = (Message *)&buffer[read_pos];
 
-		Object *target = ObjectDB::get_instance(message->instance_ID);
+		Object *target = ObjectDB::get_instance(message->instance_id);
 
 		if (target != NULL) {
 
@@ -289,7 +289,7 @@ void MessageQueue::flush() {
 
 		_THREAD_SAFE_UNLOCK_
 
-		Object *target = ObjectDB::get_instance(message->instance_ID);
+		Object *target = ObjectDB::get_instance(message->instance_id);
 
 		if (target != NULL) {
 
@@ -301,10 +301,6 @@ void MessageQueue::flush() {
 					// messages don't expect a return value
 
 					_call_function(target, message->target, args, message->args, message->type & FLAG_SHOW_ERROR);
-
-					for (int i = 0; i < message->args; i++) {
-						args[i].~Variant();
-					}
 
 				} break;
 				case TYPE_NOTIFICATION: {
@@ -319,8 +315,14 @@ void MessageQueue::flush() {
 					// messages don't expect a return value
 					target->set(message->target, *arg);
 
-					arg->~Variant();
 				} break;
+			}
+		}
+
+		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
+			Variant *args = (Variant *)(message + 1);
+			for (int i = 0; i < message->args; i++) {
+				args[i].~Variant();
 			}
 		}
 

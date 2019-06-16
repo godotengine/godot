@@ -54,7 +54,8 @@ void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 		pt->pos = p_pos;
 		pt->weight_scale = p_weight_scale;
 		pt->prev_point = NULL;
-		pt->last_pass = 0;
+		pt->open_pass = 0;
+		pt->closed_pass = 0;
 		pt->enabled = true;
 		points[p_id] = pt;
 	} else {
@@ -98,14 +99,22 @@ void AStar::remove_point(int p_id) {
 
 	Point *p = points[p_id];
 
-	Map<int, Point *>::Element *PE = points.front();
-	while (PE) {
-		for (Set<Point *>::Element *E = PE->get()->neighbours.front(); E; E = E->next()) {
-			Segment s(p_id, E->get()->id);
-			segments.erase(s);
-			E->get()->neighbours.erase(p);
-		}
-		PE = PE->next();
+	for (Set<Point *>::Element *E = p->neighbours.front(); E; E = E->next()) {
+
+		Segment s(p_id, E->get()->id);
+		segments.erase(s);
+
+		E->get()->neighbours.erase(p);
+		E->get()->unlinked_neighbours.erase(p);
+	}
+
+	for (Set<Point *>::Element *E = p->unlinked_neighbours.front(); E; E = E->next()) {
+
+		Segment s(p_id, E->get()->id);
+		segments.erase(s);
+
+		E->get()->neighbours.erase(p);
+		E->get()->unlinked_neighbours.erase(p);
 	}
 
 	memdelete(p);
@@ -124,6 +133,8 @@ void AStar::connect_points(int p_id, int p_with_id, bool bidirectional) {
 
 	if (bidirectional)
 		b->neighbours.insert(a);
+	else
+		b->unlinked_neighbours.insert(a);
 
 	Segment s(p_id, p_with_id);
 	if (s.from == p_id) {
@@ -146,7 +157,9 @@ void AStar::disconnect_points(int p_id, int p_with_id) {
 	Point *a = points[p_id];
 	Point *b = points[p_with_id];
 	a->neighbours.erase(b);
+	a->unlinked_neighbours.erase(b);
 	b->neighbours.erase(a);
+	b->unlinked_neighbours.erase(a);
 }
 
 bool AStar::has_point(int p_id) const {
@@ -246,86 +259,62 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 	if (!end_point->enabled)
 		return false;
 
-	SelfList<Point>::List open_list;
-
 	bool found_route = false;
 
-	for (Set<Point *>::Element *E = begin_point->neighbours.front(); E; E = E->next()) {
+	Vector<Point *> open_list;
+	SortArray<Point *, SortPoints> sorter;
 
-		Point *n = E->get();
+	begin_point->g_score = 0;
+	begin_point->f_score = _estimate_cost(begin_point->id, end_point->id);
 
-		if (!n->enabled)
-			continue;
-
-		n->prev_point = begin_point;
-		n->distance = _compute_cost(begin_point->id, n->id) * n->weight_scale;
-		n->last_pass = pass;
-		open_list.add(&n->list);
-	}
+	open_list.push_back(begin_point);
 
 	while (true) {
 
-		if (open_list.first() == NULL) {
-			// No path found
+		if (open_list.size() == 0) // No path found
 			break;
-		}
-		// Check open list
 
-		SelfList<Point> *least_cost_point = open_list.first();
-		real_t least_cost = Math_INF;
+		Point *p = open_list[0]; // The currently processed point
 
-		// TODO: Cache previous results
-		for (SelfList<Point> *E = open_list.first(); E; E = E->next()) {
-
-			Point *p = E->self();
-
-			real_t cost = p->distance;
-			cost += _estimate_cost(p->id, end_point->id);
-
-			if (cost < least_cost) {
-				least_cost_point = E;
-				least_cost = cost;
-			}
-		}
-
-		Point *p = least_cost_point->self();
 		if (p == end_point) {
 			found_route = true;
 			break;
 		}
 
+		sorter.pop_heap(0, open_list.size(), open_list.ptrw()); // Remove the current point from the open list
+		open_list.remove(open_list.size() - 1);
+		p->closed_pass = pass; // Mark the point as closed
+
 		for (Set<Point *>::Element *E = p->neighbours.front(); E; E = E->next()) {
 
-			Point *e = E->get();
+			Point *e = E->get(); // The neighbour point
 
-			if (!e->enabled)
+			if (!e->enabled || e->closed_pass == pass)
 				continue;
 
-			real_t distance = _compute_cost(p->id, e->id) * e->weight_scale + p->distance;
+			real_t tentative_g_score = p->g_score + _compute_cost(p->id, e->id) * e->weight_scale;
 
-			if (e->last_pass == pass) {
-				// Already visited, is this cheaper?
+			bool new_point = false;
 
-				if (e->distance > distance) {
-					e->prev_point = p;
-					e->distance = distance;
-				}
-			} else {
-				// Add to open neighbours
+			if (e->open_pass != pass) { // The point wasn't inside the open list
 
-				e->prev_point = p;
-				e->distance = distance;
-				e->last_pass = pass; // Mark as used
-				open_list.add(&e->list);
+				e->open_pass = pass;
+				open_list.push_back(e);
+				new_point = true;
+			} else if (tentative_g_score >= e->g_score) { // The new path is worse than the previous
+
+				continue;
 			}
+
+			e->prev_point = p;
+			e->g_score = tentative_g_score;
+			e->f_score = e->g_score + _estimate_cost(e->id, end_point->id);
+
+			if (new_point) // The position of the new points is already known
+				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptrw());
+			else
+				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptrw());
 		}
-
-		open_list.remove(least_cost_point);
-	}
-
-	// Clear the openf list
-	while (open_list.first()) {
-		open_list.remove(open_list.first());
 	}
 
 	return found_route;
@@ -351,8 +340,6 @@ PoolVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 
 	ERR_FAIL_COND_V(!points.has(p_from_id), PoolVector<Vector3>());
 	ERR_FAIL_COND_V(!points.has(p_to_id), PoolVector<Vector3>());
-
-	pass++;
 
 	Point *a = points[p_from_id];
 	Point *b = points[p_to_id];
@@ -402,8 +389,6 @@ PoolVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 
 	ERR_FAIL_COND_V(!points.has(p_from_id), PoolVector<int>());
 	ERR_FAIL_COND_V(!points.has(p_to_id), PoolVector<int>());
-
-	pass++;
 
 	Point *a = points[p_from_id];
 	Point *b = points[p_to_id];

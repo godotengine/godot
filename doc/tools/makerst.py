@@ -478,24 +478,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
         f.write(make_heading('Tutorials', '-'))
         for t in class_def.tutorials:
             link = t.strip()
-            match = GODOT_DOCS_PATTERN.search(link)
-            if match:
-                groups = match.groups()
-                if match.lastindex == 2:
-                    # Doc reference with fragment identifier: emit direct link to section with reference to page, for example:
-                    # `#calling-javascript-from-script in Exporting For Web`
-                    f.write("- `" + groups[1] + " <../" + groups[0] + ".html" + groups[1] + ">`_ in :doc:`../" + groups[0] + "`\n\n")
-                    # Commented out alternative: Instead just emit:
-                    # `Subsection in Exporting For Web`
-                    # f.write("- `Subsection <../" + groups[0] + ".html" + groups[1] + ">`_ in :doc:`../" + groups[0] + "`\n\n")
-                elif match.lastindex == 1:
-                    # Doc reference, for example:
-                    # `Math`
-                    f.write("- :doc:`../" + groups[0] + "`\n\n")
-            else:
-                # External link, for example:
-                # `http://enet.bespin.org/usergroup0.html`
-                f.write("- `" + link + " <" + link + ">`_\n\n")
+            f.write("- " + make_url(link) + "\n\n")
 
     # Property descriptions
     if len(class_def.properties) > 0:
@@ -683,10 +666,16 @@ def rstize_text(text, state):  # type: (str, State) -> str
 
     # Handle [tags]
     inside_code = False
+    inside_url = False
+    url_has_name = False
+    url_link = ""
     pos = 0
     tag_depth = 0
+    previous_pos = 0
     while True:
         pos = text.find('[', pos)
+        if inside_url and (pos > previous_pos):
+            url_has_name = True
         if pos == -1:
             break
 
@@ -795,12 +784,17 @@ def rstize_text(text, state):  # type: (str, State) -> str
             elif cmd.find('image=') == 0:
                 tag_text = ""  # '![](' + cmd[6:] + ')'
             elif cmd.find('url=') == 0:
-                tag_text = ':ref:`' + cmd[4:] + '<' + cmd[4:] + ">`"
+                url_link = cmd[4:]
+                tag_text = '`'
                 tag_depth += 1
+                inside_url = True
+                url_has_name = False
             elif cmd == '/url':
-                tag_text = ''
+                tag_text = ('' if url_has_name else url_link) + " <" + url_link + ">`_"
                 tag_depth -= 1
                 escape_post = True
+                inside_url = False
+                url_has_name = False
             elif cmd == 'center':
                 tag_depth += 1
                 tag_text = ''
@@ -871,6 +865,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
 
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
+        previous_pos = pos
 
     if tag_depth > 0:
         print_error("Tag depth mismatch: too many/little open/close tags, file: {}".format(state.current_class), state)
@@ -983,6 +978,27 @@ def make_method_signature(class_def, method_def, make_ref, state):  # type: (Cla
 
 def make_heading(title, underline):  # type: (str, str) -> str
     return title + '\n' + (underline * len(title)) + "\n\n"
+
+
+def make_url(link):  # type: (str) -> str
+    match = GODOT_DOCS_PATTERN.search(link)
+    if match:
+        groups = match.groups()
+        if match.lastindex == 2:
+            # Doc reference with fragment identifier: emit direct link to section with reference to page, for example:
+            # `#calling-javascript-from-script in Exporting For Web`
+            return "`" + groups[1] + " <../" + groups[0] + ".html" + groups[1] + ">`_ in :doc:`../" + groups[0] + "`"
+            # Commented out alternative: Instead just emit:
+            # `Subsection in Exporting For Web`
+            # return "`Subsection <../" + groups[0] + ".html" + groups[1] + ">`__ in :doc:`../" + groups[0] + "`"
+        elif match.lastindex == 1:
+            # Doc reference, for example:
+            # `Math`
+            return ":doc:`../" + groups[0] + "`"
+    else:
+        # External link, for example:
+        # `http://enet.bespin.org/usergroup0.html`
+        return "`" + link + " <" + link + ">`_"
 
 
 if __name__ == '__main__':

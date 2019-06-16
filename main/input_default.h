@@ -272,6 +272,7 @@ public:
 	virtual void flush_accumulated_events();
 	virtual void set_use_accumulated_input(bool p_enable);
 
+	virtual void release_pressed_events();
 	InputDefault();
 };
 

@@ -80,6 +80,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	ERR_FAIL_COND_V(p_out_bandwidth < 0, ERR_INVALID_PARAMETER);
 
 	ENetAddress address;
+	memset(&address, 0, sizeof(address));
 
 #ifdef GODOT_ENET
 	if (bind_ip.is_wildcard()) {
@@ -231,7 +232,7 @@ void NetworkedMultiplayerENet::poll() {
 					break;
 				}
 
-				// A client joined with an invalid ID (neagtive values, 0, and 1 are reserved).
+				// A client joined with an invalid ID (negative values, 0, and 1 are reserved).
 				// Probably trying to exploit us.
 				if (server && ((int)event.data < 2 || peer_map.has((int)event.data))) {
 					enet_peer_reset(event.peer);
@@ -346,11 +347,10 @@ void NetworkedMultiplayerENet::poll() {
 
 					uint32_t *id = (uint32_t *)event.peer->data;
 
-					ERR_CONTINUE(event.packet->dataLength < 12)
+					ERR_CONTINUE(event.packet->dataLength < 8);
 
 					uint32_t source = decode_uint32(&event.packet->data[0]);
 					int target = decode_uint32(&event.packet->data[4]);
-					uint32_t flags = decode_uint32(&event.packet->data[8]);
 
 					packet.from = source;
 					packet.channel = event.channelID;
@@ -371,7 +371,7 @@ void NetworkedMultiplayerENet::poll() {
 								if (uint32_t(E->key()) == source) // Do not resend to self
 									continue;
 
-								ENetPacket *packet2 = enet_packet_create(packet.packet->data, packet.packet->dataLength, flags);
+								ENetPacket *packet2 = enet_packet_create(packet.packet->data, packet.packet->dataLength, packet.packet->flags);
 
 								enet_peer_send(E->get(), event.channelID, packet2);
 							}
@@ -385,7 +385,7 @@ void NetworkedMultiplayerENet::poll() {
 								if (uint32_t(E->key()) == source || E->key() == -target) // Do not resend to self, also do not send to excluded
 									continue;
 
-								ENetPacket *packet2 = enet_packet_create(packet.packet->data, packet.packet->dataLength, flags);
+								ENetPacket *packet2 = enet_packet_create(packet.packet->data, packet.packet->dataLength, packet.packet->flags);
 
 								enet_peer_send(E->get(), event.channelID, packet2);
 							}
@@ -463,7 +463,7 @@ void NetworkedMultiplayerENet::disconnect_peer(int p_peer, bool now) {
 
 	ERR_FAIL_COND(!active);
 	ERR_FAIL_COND(!is_server());
-	ERR_FAIL_COND(!peer_map.has(p_peer))
+	ERR_FAIL_COND(!peer_map.has(p_peer));
 
 	if (now) {
 		enet_peer_disconnect_now(peer_map[p_peer], 0);
@@ -503,8 +503,8 @@ Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buff
 	current_packet = incoming_packets.front()->get();
 	incoming_packets.pop_front();
 
-	*r_buffer = (const uint8_t *)(&current_packet.packet->data[12]);
-	r_buffer_size = current_packet.packet->dataLength - 12;
+	*r_buffer = (const uint8_t *)(&current_packet.packet->data[8]);
+	r_buffer_size = current_packet.packet->dataLength - 8;
 
 	return OK;
 }
@@ -549,11 +549,10 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 		}
 	}
 
-	ENetPacket *packet = enet_packet_create(NULL, p_buffer_size + 12, packet_flags);
+	ENetPacket *packet = enet_packet_create(NULL, p_buffer_size + 8, packet_flags);
 	encode_uint32(unique_id, &packet->data[0]); // Source ID
 	encode_uint32(target_peer, &packet->data[4]); // Dest ID
-	encode_uint32(packet_flags, &packet->data[8]); // Dest ID
-	copymem(&packet->data[12], p_buffer, p_buffer_size);
+	copymem(&packet->data[8], p_buffer, p_buffer_size);
 
 	if (server) {
 

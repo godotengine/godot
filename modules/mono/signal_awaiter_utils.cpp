@@ -95,7 +95,7 @@ Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argc
 
 	for (int i = 0; i < signal_argc; i++) {
 		MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(*p_args[i]);
-		mono_array_set(signal_args, MonoObject *, i, boxed);
+		mono_array_setref(signal_args, i, boxed);
 	}
 
 	MonoException *exc = NULL;

@@ -263,5 +263,18 @@ defined(PNG_READ_BACKGROUND_SUPPORTED)
    png_bytepp row_pointers;        /* the image bits */
 #endif
 
+#ifdef PNG_APNG_SUPPORTED
+   png_uint_32 num_frames; /* including default image */
+   png_uint_32 num_plays;
+   png_uint_32 next_frame_width;
+   png_uint_32 next_frame_height;
+   png_uint_32 next_frame_x_offset;
+   png_uint_32 next_frame_y_offset;
+   png_uint_16 next_frame_delay_num;
+   png_uint_16 next_frame_delay_den;
+   png_byte next_frame_dispose_op;
+   png_byte next_frame_blend_op;
+#endif
+
 };
 #endif /* PNGINFO_H */

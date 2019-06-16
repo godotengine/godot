@@ -143,6 +143,14 @@ public:
 		return f._get_modified_time(p_file);
 	}
 
+	virtual uint32_t _get_unix_permissions(const String &p_file) {
+		return f._get_unix_permissions(p_file);
+	}
+
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+		return f._set_unix_permissions(p_file, p_permissions);
+	}
+
 	FileAccessBufferedFA(){
 
 	};

@@ -87,38 +87,17 @@ void VisualScriptPropertySelector::_update_search() {
 
 	TreeItem *root = search_options->create_item();
 	bool found = false;
+	StringName base = base_type;
+	List<StringName> base_list;
+	while (base) {
+		base_list.push_back(base);
+		base = ClassDB::get_parent_class_nocheck(base);
+	}
 
-	if (properties) {
-
+	for (List<StringName>::Element *E = base_list.front(); E; E = E->next()) {
+		List<MethodInfo> methods;
 		List<PropertyInfo> props;
-
-		if (instance) {
-			instance->get_property_list(&props, true);
-		} else if (type != Variant::NIL) {
-			Variant v;
-			Variant::CallError ce;
-			v = Variant::construct(type, NULL, 0, ce);
-
-			v.get_property_list(&props);
-		} else {
-
-			Object *obj = ObjectDB::get_instance(script);
-			if (Object::cast_to<Script>(obj)) {
-
-				props.push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
-				Object::cast_to<Script>(obj)->get_script_property_list(&props);
-			}
-
-			StringName base = base_type;
-			while (base) {
-				props.push_back(PropertyInfo(Variant::NIL, base, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
-				ClassDB::get_property_list(base, &props, true);
-				base = ClassDB::get_parent_class_nocheck(base);
-			}
-		}
-
 		TreeItem *category = NULL;
-
 		Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
 			Control::get_icon("Variant", "EditorIcons"),
 			Control::get_icon("bool", "EditorIcons"),
@@ -148,7 +127,148 @@ void VisualScriptPropertySelector::_update_search() {
 			Control::get_icon("PoolVector3Array", "EditorIcons"),
 			Control::get_icon("PoolColorArray", "EditorIcons")
 		};
+		{
+			String b = String(E->get());
+			category = search_options->create_item(root);
+			category->set_text(0, b.replace_first("*", ""));
+			category->set_selectable(0, false);
+			Ref<Texture> icon;
+			String rep = b.replace("*", "");
+			icon = EditorNode::get_singleton()->get_class_icon(rep);
+			category->set_icon(0, icon);
+		}
+		if (properties || seq_connect) {
+			if (instance) {
+				instance->get_property_list(&props, true);
+			} else {
+				Object *obj = ObjectDB::get_instance(script);
+				if (Object::cast_to<Script>(obj)) {
+					Object::cast_to<Script>(obj)->get_script_property_list(&props);
+				} else {
+					ClassDB::get_property_list(E->get(), &props, true);
+				}
+			}
+			for (List<PropertyInfo>::Element *F = props.front(); F; F = F->next()) {
+				if (!(F->get().usage & PROPERTY_USAGE_EDITOR) && !(F->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE))
+					continue;
 
+				if (type_filter.size() && type_filter.find(F->get().type) == -1)
+					continue;
+
+				// capitalize() also converts underscore to space, we'll match again both possible styles
+				String get_text_raw = String(vformat(TTR("Get %s"), F->get().name));
+				String get_text = get_text_raw.capitalize();
+				String set_text_raw = String(vformat(TTR("Set %s"), F->get().name));
+				String set_text = set_text_raw.capitalize();
+				String input = search_box->get_text().capitalize();
+
+				if (input == String() || get_text_raw.findn(input) != -1 || get_text.findn(input) != -1) {
+					TreeItem *item = search_options->create_item(category ? category : root);
+					item->set_text(0, get_text);
+					item->set_metadata(0, F->get().name);
+					item->set_icon(0, type_icons[F->get().type]);
+					item->set_metadata(1, "get");
+					item->set_collapsed(1);
+					item->set_selectable(0, true);
+					item->set_selectable(1, false);
+					item->set_selectable(2, false);
+					item->set_metadata(2, connecting);
+				}
+
+				if (input == String() || set_text_raw.findn(input) != -1 || set_text.findn(input) != -1) {
+					TreeItem *item = search_options->create_item(category ? category : root);
+					item->set_text(0, set_text);
+					item->set_metadata(0, F->get().name);
+					item->set_icon(0, type_icons[F->get().type]);
+					item->set_metadata(1, "set");
+					item->set_selectable(0, true);
+					item->set_selectable(1, false);
+					item->set_selectable(2, false);
+					item->set_metadata(2, connecting);
+				}
+			}
+		}
+		bool script_methods = false;
+		{
+			if (type != Variant::NIL) {
+				Variant v;
+				Variant::CallError ce;
+				v = Variant::construct(type, NULL, 0, ce);
+				v.get_method_list(&methods);
+			} else {
+
+				Object *obj = ObjectDB::get_instance(script);
+				if (Object::cast_to<Script>(obj)) {
+					methods.push_back(MethodInfo("*Script Methods"));
+					Object::cast_to<Script>(obj)->get_script_method_list(&methods);
+
+				} else {
+					methods.push_back(MethodInfo("*" + String(E->get())));
+					ClassDB::get_method_list(E->get(), &methods, true, true);
+				}
+			}
+		}
+		for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
+
+			String name = M->get().name.get_slice(":", 0);
+			if (!script_methods && name.begins_with("_") && !(M->get().flags & METHOD_FLAG_VIRTUAL))
+				continue;
+
+			if (virtuals_only && !(M->get().flags & METHOD_FLAG_VIRTUAL))
+				continue;
+
+			if (!virtuals_only && (M->get().flags & METHOD_FLAG_VIRTUAL))
+				continue;
+
+			MethodInfo mi = M->get();
+			String desc_arguments;
+			if (mi.arguments.size() > 0) {
+				desc_arguments = "(";
+				for (int i = 0; i < mi.arguments.size(); i++) {
+
+					if (i > 0) {
+						desc_arguments += ", ";
+					}
+					if (mi.arguments[i].type == Variant::NIL) {
+						desc_arguments += "var";
+					} else if (mi.arguments[i].name.find(":") != -1) {
+						desc_arguments += mi.arguments[i].name.get_slice(":", 1);
+						mi.arguments[i].name = mi.arguments[i].name.get_slice(":", 0);
+					} else {
+						desc_arguments += Variant::get_type_name(mi.arguments[i].type);
+					}
+				}
+				desc_arguments += ")";
+			}
+			String desc_raw = mi.name + desc_arguments;
+			String desc = desc_raw.capitalize().replace("( ", "(");
+
+			if (search_box->get_text() != String() &&
+					name.findn(search_box->get_text()) == -1 &&
+					desc.findn(search_box->get_text()) == -1 &&
+					desc_raw.findn(search_box->get_text()) == -1) {
+				continue;
+			}
+
+			TreeItem *item = search_options->create_item(category ? category : root);
+			item->set_text(0, desc);
+			item->set_icon(0, get_icon("MemberMethod", "EditorIcons"));
+			item->set_metadata(0, name);
+			item->set_selectable(0, true);
+
+			item->set_metadata(1, "method");
+			item->set_collapsed(1);
+			item->set_selectable(1, false);
+
+			item->set_selectable(2, false);
+			item->set_metadata(2, connecting);
+		}
+
+		if (category && category->get_children() == NULL) {
+			memdelete(category); //old category was unused
+		}
+	}
+	if (properties) {
 		if (!seq_connect && !visual_script_generic) {
 			get_visual_node_names("flow_control/type_cast", Set<String>(), found, root, search_box);
 			get_visual_node_names("functions/built_in/print", Set<String>(), found, root, search_box);
@@ -164,68 +284,6 @@ void VisualScriptPropertySelector::_update_search() {
 				get_visual_node_names("operators/math/", Set<String>(), found, root, search_box);
 			}
 		}
-
-		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-			if (E->get().usage == PROPERTY_USAGE_CATEGORY) {
-				if (category && category->get_children() == NULL) {
-					memdelete(category); //old category was unused
-				}
-				category = search_options->create_item(root);
-				category->set_text(0, E->get().name);
-				category->set_selectable(0, false);
-
-				Ref<Texture> icon;
-				if (E->get().name == "Script Variables") {
-					icon = get_icon("Script", "EditorIcons");
-				} else {
-					icon = EditorNode::get_singleton()->get_class_icon(E->get().name);
-				}
-				category->set_icon(0, icon);
-				continue;
-			}
-
-			if (!(E->get().usage & PROPERTY_USAGE_EDITOR) && !(E->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE))
-				continue;
-
-			if (type_filter.size() && type_filter.find(E->get().type) == -1)
-				continue;
-
-			// capitalize() also converts underscore to space, we'll match again both possible styles
-			String get_text_raw = String(vformat(TTR("Get %s"), E->get().name));
-			String get_text = get_text_raw.capitalize();
-			String set_text_raw = String(vformat(TTR("Set %s"), E->get().name));
-			String set_text = set_text_raw.capitalize();
-			String input = search_box->get_text().capitalize();
-
-			if (input == String() || get_text_raw.findn(input) != -1 || get_text.findn(input) != -1) {
-				TreeItem *item = search_options->create_item(category ? category : root);
-				item->set_text(0, get_text);
-				item->set_metadata(0, E->get().name);
-				item->set_icon(0, type_icons[E->get().type]);
-				item->set_metadata(1, "get");
-				item->set_collapsed(1);
-				item->set_selectable(0, true);
-				item->set_selectable(1, false);
-				item->set_selectable(2, false);
-				item->set_metadata(2, connecting);
-			}
-
-			if (input == String() || set_text_raw.findn(input) != -1 || set_text.findn(input) != -1) {
-				TreeItem *item = search_options->create_item(category ? category : root);
-				item->set_text(0, set_text);
-				item->set_metadata(0, E->get().name);
-				item->set_icon(0, type_icons[E->get().type]);
-				item->set_metadata(1, "set");
-				item->set_selectable(0, true);
-				item->set_selectable(1, false);
-				item->set_selectable(2, false);
-				item->set_metadata(2, connecting);
-			}
-		}
-
-		if (category && category->get_children() == NULL) {
-			memdelete(category); //old category was unused
-		}
 	}
 
 	if (seq_connect && !visual_script_generic) {
@@ -240,125 +298,14 @@ void VisualScriptPropertySelector::_update_search() {
 		get_visual_node_names("functions/built_in/print", Set<String>(), found, root, search_box);
 	}
 
-	if (visual_script_generic) {
+	if ((properties || seq_connect) && visual_script_generic) {
 		get_visual_node_names("", Set<String>(), found, root, search_box);
-	}
-
-	List<MethodInfo> methods;
-
-	if (type != Variant::NIL) {
-		Variant v;
-		Variant::CallError ce;
-		v = Variant::construct(type, NULL, 0, ce);
-		v.get_method_list(&methods);
-	} else {
-
-		Object *obj = ObjectDB::get_instance(script);
-		if (Object::cast_to<Script>(obj)) {
-
-			methods.push_back(MethodInfo("*Script Methods"));
-			Object::cast_to<Script>(obj)->get_script_method_list(&methods);
-		}
-
-		StringName base = base_type;
-		while (base) {
-			methods.push_back(MethodInfo("*" + String(base)));
-			ClassDB::get_method_list(base, &methods, true, true);
-			base = ClassDB::get_parent_class_nocheck(base);
-		}
-	}
-	TreeItem *category = NULL;
-	bool script_methods = false;
-
-	for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
-		if (E->get().name.begins_with("*")) {
-			if (category && category->get_children() == NULL) {
-				memdelete(category); //old category was unused
-			}
-			category = search_options->create_item(root);
-			category->set_text(0, E->get().name.replace_first("*", ""));
-			category->set_selectable(0, false);
-
-			Ref<Texture> icon;
-			script_methods = false;
-			String rep = E->get().name.replace("*", "");
-			if (E->get().name == "*Script Methods") {
-				icon = get_icon("Script", "EditorIcons");
-				script_methods = true;
-			} else {
-				icon = EditorNode::get_singleton()->get_class_icon(rep);
-			}
-			category->set_icon(0, icon);
-
-			continue;
-		}
-
-		String name = E->get().name.get_slice(":", 0);
-		if (!script_methods && name.begins_with("_") && !(E->get().flags & METHOD_FLAG_VIRTUAL))
-			continue;
-
-		if (virtuals_only && !(E->get().flags & METHOD_FLAG_VIRTUAL))
-			continue;
-
-		if (!virtuals_only && (E->get().flags & METHOD_FLAG_VIRTUAL))
-			continue;
-
-		MethodInfo mi = E->get();
-		String desc_arguments;
-		if (mi.arguments.size() > 0) {
-			desc_arguments = "(";
-			for (int i = 0; i < mi.arguments.size(); i++) {
-
-				if (i > 0) {
-					desc_arguments += ", ";
-				}
-				if (mi.arguments[i].type == Variant::NIL) {
-					desc_arguments += "var";
-				} else if (mi.arguments[i].name.find(":") != -1) {
-					desc_arguments += mi.arguments[i].name.get_slice(":", 1);
-					mi.arguments[i].name = mi.arguments[i].name.get_slice(":", 0);
-				} else {
-					desc_arguments += Variant::get_type_name(mi.arguments[i].type);
-				}
-			}
-			desc_arguments += ")";
-		}
-		String desc_raw = mi.name + desc_arguments;
-		String desc = desc_raw.capitalize().replace("( ", "(");
-
-		if (search_box->get_text() != String() &&
-				name.findn(search_box->get_text()) == -1 &&
-				desc.findn(search_box->get_text()) == -1 &&
-				desc_raw.findn(search_box->get_text()) == -1) {
-			continue;
-		}
-
-		TreeItem *item = search_options->create_item(category ? category : root);
-		item->set_text(0, desc);
-		item->set_icon(0, get_icon("MemberMethod", "EditorIcons"));
-		item->set_metadata(0, name);
-		item->set_selectable(0, true);
-
-		item->set_metadata(1, "method");
-		item->set_collapsed(1);
-		item->set_selectable(1, false);
-
-		item->set_selectable(2, false);
-		item->set_metadata(2, connecting);
-
-		if (category && category->get_children() == NULL) {
-			memdelete(category); //old category was unused
-		}
 	}
 
 	TreeItem *selected_item = search_options->search_item_text(search_box->get_text());
 	if (!found && selected_item != NULL) {
 		selected_item->select(0);
 		found = true;
-	}
-
-	if (category && category->get_children() == NULL) {
-		memdelete(category); //old category was unused
 	}
 
 	get_ok()->set_disabled(root->get_children() == NULL);
@@ -488,23 +435,23 @@ void VisualScriptPropertySelector::_item_selected() {
 
 	while (at_class != String()) {
 
-		Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(at_class);
-		if (E) {
-			for (int i = 0; i < E->get().methods.size(); i++) {
-				if (E->get().methods[i].name == name) {
-					text = E->get().methods[i].description;
+		Map<String, DocData::ClassDoc>::Element *C = dd->class_list.find(at_class);
+		if (C) {
+			for (int i = 0; i < C->get().methods.size(); i++) {
+				if (C->get().methods[i].name == name) {
+					text = C->get().methods[i].description;
 				}
 			}
 		}
 
 		at_class = ClassDB::get_parent_class_nocheck(at_class);
 	}
-	Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_type);
-	if (E) {
-		for (int i = 0; i < E->get().methods.size(); i++) {
+	Map<String, DocData::ClassDoc>::Element *T = dd->class_list.find(class_type);
+	if (T) {
+		for (int i = 0; i < T->get().methods.size(); i++) {
 			Vector<String> functions = name.rsplit("/", false, 1);
-			if (E->get().methods[i].name == functions[functions.size() - 1]) {
-				text = E->get().methods[i].description;
+			if (T->get().methods[i].name == functions[functions.size() - 1]) {
+				text = T->get().methods[i].description;
 			}
 		}
 	}

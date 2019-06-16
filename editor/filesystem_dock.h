@@ -73,6 +73,7 @@ public:
 private:
 	enum FileMenu {
 		FILE_OPEN,
+		FILE_INHERIT,
 		FILE_INSTANCE,
 		FILE_ADD_FAVORITE,
 		FILE_REMOVE_FAVORITE,
@@ -201,6 +202,7 @@ private:
 	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const;
 	void _update_dependencies_after_move(const Map<String, String> &p_renames) const;
 	void _update_resource_paths_after_move(const Map<String, String> &p_renames) const;
+	void _save_scenes_after_move(const Map<String, String> &p_renames) const;
 	void _update_favorites_list_after_move(const Map<String, String> &p_files_renames, const Map<String, String> &p_folders_renames) const;
 	void _update_project_settings_after_move(const Map<String, String> &p_folders_renames) const;
 
@@ -235,6 +237,7 @@ private:
 
 	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options = true);
 	void _tree_rmb_select(const Vector2 &p_pos);
+	void _tree_rmb_empty(const Vector2 &p_pos);
 	void _file_list_rmb_select(int p_item, const Vector2 &p_pos);
 	void _file_list_rmb_pressed(const Vector2 &p_pos);
 	void _tree_empty_selected();

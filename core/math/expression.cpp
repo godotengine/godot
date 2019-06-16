@@ -64,11 +64,13 @@ const char *Expression::func_name[Expression::FUNC_MAX] = {
 	"is_inf",
 	"ease",
 	"decimals",
+	"step_decimals",
 	"stepify",
 	"lerp",
 	"inverse_lerp",
 	"range_lerp",
 	"smoothstep",
+	"move_toward",
 	"dectime",
 	"randomize",
 	"randi",
@@ -149,6 +151,7 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_ISNAN:
 		case MATH_ISINF:
 		case MATH_DECIMALS:
+		case MATH_STEP_DECIMALS:
 		case MATH_SEED:
 		case MATH_RANDSEED:
 		case MATH_DEG2RAD:
@@ -187,6 +190,7 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_LERP:
 		case MATH_INVERSE_LERP:
 		case MATH_SMOOTHSTEP:
+		case MATH_MOVE_TOWARD:
 		case MATH_DECTIME:
 		case MATH_WRAP:
 		case MATH_WRAPF:
@@ -365,6 +369,11 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::step_decimals((double)*p_inputs[0]);
 		} break;
+		case MATH_STEP_DECIMALS: {
+
+			VALIDATE_ARG_NUM(0);
+			*r_return = Math::step_decimals((double)*p_inputs[0]);
+		} break;
 		case MATH_STEPIFY: {
 
 			VALIDATE_ARG_NUM(0);
@@ -399,6 +408,13 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			*r_return = Math::smoothstep((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
+		} break;
+		case MATH_MOVE_TOWARD: {
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			*r_return = Math::move_toward((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
 		} break;
 		case MATH_DECTIME: {
 

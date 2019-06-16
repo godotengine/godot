@@ -30,6 +30,7 @@
 
 #include "visual_script.h"
 
+#include "core/core_string_names.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "scene/main/node.h"
@@ -45,15 +46,7 @@ bool VisualScriptNode::is_breakpoint() const {
 	return breakpoint;
 }
 
-void VisualScriptNode::_notification(int p_what) {
-
-	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		validate_input_default_values();
-	}
-}
-
 void VisualScriptNode::ports_changed_notify() {
-	validate_input_default_values();
 	emit_signal("ports_changed");
 }
 
@@ -272,11 +265,7 @@ void VisualScript::_node_ports_changed(int p_id) {
 	Function &func = functions[function];
 	Ref<VisualScriptNode> vsn = func.nodes[p_id].node;
 
-	if (OS::get_singleton()->get_main_loop() &&
-			Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop()) &&
-			Engine::get_singleton()->is_editor_hint()) {
-		vsn->validate_input_default_values(); //force validate default values when editing on editor
-	}
+	vsn->validate_input_default_values();
 
 	//must revalidate all the functions
 
@@ -352,6 +341,7 @@ void VisualScript::add_node(const StringName &p_func, int p_id, const Ref<Visual
 	Ref<VisualScriptNode> vsn = p_node;
 	vsn->connect("ports_changed", this, "_node_ports_changed", varray(p_id));
 	vsn->scripts_used.insert(this);
+	vsn->validate_input_default_values(); // Validate when fully loaded
 
 	func.nodes[p_id] = nd;
 }
@@ -1974,6 +1964,27 @@ void VisualScriptInstance::notification(int p_notification) {
 	const Variant *whatp = &what;
 	Variant::CallError ce;
 	call(VisualScriptLanguage::singleton->notification, &whatp, 1, ce); //do as call
+}
+
+String VisualScriptInstance::to_string(bool *r_valid) {
+	if (has_method(CoreStringNames::get_singleton()->_to_string)) {
+		Variant::CallError ce;
+		Variant ret = call(CoreStringNames::get_singleton()->_to_string, NULL, 0, ce);
+		if (ce.error == Variant::CallError::CALL_OK) {
+			if (ret.get_type() != Variant::STRING) {
+				if (r_valid)
+					*r_valid = false;
+				ERR_EXPLAIN("Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
+				ERR_FAIL_V(String());
+			}
+			if (r_valid)
+				*r_valid = true;
+			return ret.operator String();
+		}
+	}
+	if (r_valid)
+		*r_valid = false;
+	return String();
 }
 
 Ref<Script> VisualScriptInstance::get_script() const {

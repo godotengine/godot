@@ -39,6 +39,10 @@
 #include "scene/scene_string_names.h"
 #include "viewport.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
+
 VARIANT_ENUM_CAST(Node::PauseMode);
 
 int Node::orphan_node_count = 0;
@@ -945,6 +949,7 @@ void Node::set_name(const String &p_name) {
 	if (is_inside_tree()) {
 
 		emit_signal("renamed");
+		get_tree()->node_renamed(this);
 		get_tree()->tree_changed();
 	}
 }
@@ -1160,7 +1165,7 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 	ERR_FAIL_NULL(p_child);
 
 	if (p_child == this) {
-		ERR_EXPLAIN("Can't add child '" + p_child->get_name() + "' to itself.")
+		ERR_EXPLAIN("Can't add child '" + p_child->get_name() + "' to itself.");
 		ERR_FAIL_COND(p_child == this); // adding to itself!
 	}
 
@@ -1194,7 +1199,7 @@ void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_uniq
 	if (is_a_parent_of(p_node)) {
 		move_child(p_child, p_node->get_position_in_parent() + 1);
 	} else {
-		WARN_PRINTS("Cannot move under node " + p_node->get_name() + " as " + p_child->get_name() + " does not share a parent.")
+		WARN_PRINTS("Cannot move under node " + p_node->get_name() + " as " + p_child->get_name() + " does not share a parent.");
 	}
 }
 
@@ -2072,7 +2077,9 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		}
 	}
 
-	node->set_name(get_name());
+	if (get_name() != String()) {
+		node->set_name(get_name());
+	}
 
 #ifdef TOOLS_ENABLED
 	if ((p_flags & DUPLICATE_FROM_EDITOR) && r_duplimap)
@@ -2637,10 +2644,16 @@ NodePath Node::get_import_path() const {
 
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 
+#ifdef TOOLS_ENABLED
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+#else
+	const String quote_style = "\"";
+#endif
+
 	if (p_node != p_base && !p_node->get_owner())
 		return;
 	String n = p_base->get_path_to(p_node);
-	r_options->push_back("\"" + n + "\"");
+	r_options->push_back(quote_style + n + quote_style);
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_add_nodes_to_options(p_base, p_node->get_child(i), r_options);
 	}

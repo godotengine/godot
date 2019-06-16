@@ -97,6 +97,8 @@
 			</argument>
 			<argument index="3" name="output" type="Array" default="[  ]">
 			</argument>
+			<argument index="4" name="read_stderr" type="bool" default="false">
+			</argument>
 			<description>
 				Execute the file at the given path with the arguments passed as an array of strings. Platform path resolution will take place. The resolved file must exist and be executable.
 				The arguments are used in the given order and separated by a space, so [code]OS.execute('ping', ['-w', '3', 'godotengine.org'], false)[/code] will resolve to [code]ping -w 3 godotengine.org[/code] in the system's shell.
@@ -219,14 +221,16 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns IME selection range.
+				Returns IME cursor position (currently edited portion of the string) relative to the characters in the composition string.
+				[code]NOTIFICATION_OS_IME_UPDATE[/code] is sent to the application to notify it of changes to the IME cursor position.
 			</description>
 		</method>
 		<method name="get_ime_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Returns IME intermediate text.
+				Returns IME intermediate composition string.
+				[code]NOTIFICATION_OS_IME_UPDATE[/code] is sent to the application to notify it of changes to the IME composition string.
 			</description>
 		</method>
 		<method name="get_latin_keyboard_variant" qualifiers="const">
@@ -504,7 +508,8 @@
 			<argument index="0" name="tag_name" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. See feature tags documentation.
+				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=https://docs.godotengine.org/en/latest/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
+				Note that tag names are case-sensitive.
 			</description>
 		</method>
 		<method name="has_touchscreen_ui_hint" qualifiers="const">
@@ -697,7 +702,8 @@
 			<argument index="0" name="icon" type="Image">
 			</argument>
 			<description>
-				Sets the game's icon.
+				Sets the game's icon using an [Image] resource.
+				The same image is used for window caption, taskbar/dock and window selection dialog. Image is scaled as needed.
 			</description>
 		</method>
 		<method name="set_ime_active">
@@ -707,6 +713,9 @@
 			</argument>
 			<description>
 				Sets whether IME input mode should be enabled.
+				If active IME handles key events before the application and creates an composition string and suggestion list.
+				Application can retrieve the composition status by using [method get_ime_selection] and [method get_ime_text] functions.
+				Completed composition string is committed when input is finished.
 			</description>
 		</method>
 		<method name="set_ime_position">
@@ -716,6 +725,17 @@
 			</argument>
 			<description>
 				Sets position of IME suggestion list popup (in window coordinates).
+			</description>
+		</method>
+		<method name="set_native_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="filename" type="String">
+			</argument>
+			<description>
+				Sets the game's icon using a multi-size platform-specific icon file ([code]*.ico[/code] on Windows and [code]*.icns[/code] on macOS).
+				Appropriate size sub-icons are used for window caption, taskbar/dock and window selection dialog.
+				Note: This method is only implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="set_thread_name">
@@ -799,6 +819,7 @@
 		</member>
 		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window">
 			If [code]true[/code], removes the window frame.
+			Note: Setting [code]window_borderless[/code] to [code]false[/code] disables per-pixel transparency.
 		</member>
 		<member name="window_fullscreen" type="bool" setter="set_window_fullscreen" getter="is_window_fullscreen">
 			If [code]true[/code], the window is fullscreen.
@@ -810,6 +831,9 @@
 			If [code]true[/code], the window is minimized.
 		</member>
 		<member name="window_per_pixel_transparency_enabled" type="bool" setter="set_window_per_pixel_transparency_enabled" getter="get_window_per_pixel_transparency_enabled">
+			If [code]true[/code], the window background is transparent and window frame is removed.
+			Use [code]get_tree().get_root().set_transparent_background(true)[/code] to disable main viewport background rendering.
+			Note: This property has no effect if "Project &gt; Project Settings &gt; Display &gt; Window &gt; Per-pixel transparency &gt; Allowed" setting is disabled.
 		</member>
 		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position">
 			The window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.

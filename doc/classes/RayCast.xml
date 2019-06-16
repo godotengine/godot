@@ -50,7 +50,7 @@
 			<return type="Object">
 			</return>
 			<description>
-				Return the first object that the ray intersects, or [code]null[/code] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
+				Returns the first object that the ray intersects, or [code]null[/code] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">
@@ -87,7 +87,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return whether any object is intersecting with the ray's vector (considering the vector length).
+				Returns whether any object is intersecting with the ray's vector (considering the vector length).
 			</description>
 		</method>
 		<method name="remove_exception">

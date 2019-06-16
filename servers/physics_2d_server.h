@@ -335,7 +335,7 @@ public:
 	virtual void area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode) = 0;
 	virtual AreaSpaceOverrideMode area_get_space_override_mode(RID p_area) const = 0;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D()) = 0;
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) = 0;
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape) = 0;
 	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D &p_transform) = 0;
 
@@ -348,10 +348,10 @@ public:
 
 	virtual void area_set_shape_disabled(RID p_area, int p_shape, bool p_disabled) = 0;
 
-	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_ID) = 0;
+	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_id) = 0;
 	virtual ObjectID area_get_object_instance_id(RID p_area) const = 0;
 
-	virtual void area_attach_canvas_instance_id(RID p_area, ObjectID p_ID) = 0;
+	virtual void area_attach_canvas_instance_id(RID p_area, ObjectID p_id) = 0;
 	virtual ObjectID area_get_canvas_instance_id(RID p_area) const = 0;
 
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value) = 0;
@@ -388,7 +388,7 @@ public:
 	virtual void body_set_mode(RID p_body, BodyMode p_mode) = 0;
 	virtual BodyMode body_get_mode(RID p_body) const = 0;
 
-	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D()) = 0;
+	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) = 0;
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) = 0;
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform2D &p_transform) = 0;
 	virtual void body_set_shape_metadata(RID p_body, int p_shape_idx, const Variant &p_metadata) = 0;
@@ -404,10 +404,10 @@ public:
 	virtual void body_remove_shape(RID p_body, int p_shape_idx) = 0;
 	virtual void body_clear_shapes(RID p_body) = 0;
 
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID) = 0;
+	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id) = 0;
 	virtual uint32_t body_get_object_instance_id(RID p_body) const = 0;
 
-	virtual void body_attach_canvas_instance_id(RID p_body, uint32_t p_ID) = 0;
+	virtual void body_attach_canvas_instance_id(RID p_body, uint32_t p_id) = 0;
 	virtual uint32_t body_get_canvas_instance_id(RID p_body) const = 0;
 
 	enum CCDMode {

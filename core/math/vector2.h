@@ -79,6 +79,7 @@ struct Vector2 {
 	_FORCE_INLINE_ Vector2 linear_interpolate(const Vector2 &p_b, real_t p_t) const;
 	_FORCE_INLINE_ Vector2 slerp(const Vector2 &p_b, real_t p_t) const;
 	Vector2 cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_t) const;
+	Vector2 move_toward(const Vector2 &p_to, const real_t p_delta) const;
 
 	Vector2 slide(const Vector2 &p_normal) const;
 	Vector2 bounce(const Vector2 &p_normal) const;
@@ -106,8 +107,8 @@ struct Vector2 {
 	bool operator==(const Vector2 &p_vec2) const;
 	bool operator!=(const Vector2 &p_vec2) const;
 
-	bool operator<(const Vector2 &p_vec2) const { return (x == p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x); }
-	bool operator<=(const Vector2 &p_vec2) const { return (x == p_vec2.x) ? (y <= p_vec2.y) : (x <= p_vec2.x); }
+	bool operator<(const Vector2 &p_vec2) const { return (Math::is_equal_approx(x, p_vec2.x)) ? (y < p_vec2.y) : (x < p_vec2.x); }
+	bool operator<=(const Vector2 &p_vec2) const { return (Math::is_equal_approx(x, p_vec2.x)) ? (y <= p_vec2.y) : (x < p_vec2.x); }
 
 	real_t angle() const;
 
@@ -213,11 +214,11 @@ _FORCE_INLINE_ Vector2 Vector2::operator-() const {
 
 _FORCE_INLINE_ bool Vector2::operator==(const Vector2 &p_vec2) const {
 
-	return x == p_vec2.x && y == p_vec2.y;
+	return Math::is_equal_approx(x, p_vec2.x) && Math::is_equal_approx(y, p_vec2.y);
 }
 _FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
 
-	return x != p_vec2.x || y != p_vec2.y;
+	return !Math::is_equal_approx(x, p_vec2.x) || !Math::is_equal_approx(y, p_vec2.y);
 }
 
 Vector2 Vector2::linear_interpolate(const Vector2 &p_b, real_t p_t) const {

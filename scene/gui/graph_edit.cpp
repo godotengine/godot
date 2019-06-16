@@ -1053,7 +1053,7 @@ void GraphEdit::set_connection_activity(const StringName &p_from, int p_from_por
 
 		if (E->get().from == p_from && E->get().from_port == p_from_port && E->get().to == p_to && E->get().to_port == p_to_port) {
 
-			if (ABS(E->get().activity - p_activity) < CMP_EPSILON) {
+			if (Math::is_equal_approx(E->get().activity, p_activity)) {
 				//update only if changed
 				top_layer->update();
 				connections_layer->update();

@@ -41,6 +41,7 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Returns if the given line is foldable, that is, it has indented lines right below it.
 			</description>
 		</method>
 		<method name="clear_colors">
@@ -68,14 +69,14 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the column the editing cursor is at.
+				Returns the column the editing cursor is at.
 			</description>
 		</method>
 		<method name="cursor_get_line" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the line the editing cursor is at.
+				Returns the line the editing cursor is at.
 			</description>
 		</method>
 		<method name="cursor_set_column">
@@ -120,6 +121,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Folds all lines that are possible to be folded (see [method can_fold]).
 			</description>
 		</method>
 		<method name="fold_line">
@@ -128,13 +130,14 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Folds the given line, if possible (see [method can_fold]).
 			</description>
 		</method>
 		<method name="get_breakpoints" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Return an array containing the line number of each breakpoint.
+				Returns an array containing the line number of each breakpoint.
 			</description>
 		</method>
 		<method name="get_keyword_color" qualifiers="const">
@@ -151,55 +154,56 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
-				Return the text of a specific line.
+				Returns the text of a specific line.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of total lines in the text.
+				Returns the amount of total lines in the text.
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
 			<return type="PopupMenu">
 			</return>
 			<description>
+				Returns the [PopupMenu] of this [TextEdit]. By default, this menu is displayed when right-clicking on the [TextEdit].
 			</description>
 		</method>
 		<method name="get_selection_from_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the selection begin column.
+				Returns the selection begin column.
 			</description>
 		</method>
 		<method name="get_selection_from_line" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the selection begin line.
+				Returns the selection begin line.
 			</description>
 		</method>
 		<method name="get_selection_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Return the text inside the selection.
+				Returns the text inside the selection.
 			</description>
 		</method>
 		<method name="get_selection_to_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the selection end column.
+				Returns the selection end column.
 			</description>
 		</method>
 		<method name="get_selection_to_line" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the selection end line.
+				Returns the selection end line.
 			</description>
 		</method>
 		<method name="get_word_under_cursor" qualifiers="const">
@@ -231,6 +235,7 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Returns if the given line is folded.
 			</description>
 		</method>
 		<method name="is_line_hidden" qualifiers="const">
@@ -245,7 +250,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return [code]true[/code] if the selection is active.
+				Returns [code]true[/code] if the selection is active.
 			</description>
 		</method>
 		<method name="menu_option">
@@ -346,6 +351,7 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Unfolds the given line, if folded.
 			</description>
 		</method>
 		<method name="unhide_all_lines">
@@ -376,7 +382,16 @@
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
 			If [code]true[/code], a right click displays the context menu.
 		</member>
-		<member name="hiding_enabled" type="int" setter="set_hiding_enabled" getter="is_hiding_enabled">
+		<member name="draw_spaces" type="bool" setter="set_draw_spaces" getter="is_drawing_spaces">
+			If [code]true[/code], the "space" character will have a visible representation.
+		</member>
+		<member name="draw_tabs" type="bool" setter="set_draw_tabs" getter="is_drawing_tabs">
+			If [code]true[/code], the "tab" character will have a visible representation.
+		</member>
+		<member name="fold_gutter" type="bool" setter="set_draw_fold_gutter" getter="is_drawing_fold_gutter">
+			If [code]true[/code], the fold gutter is visible. This enables folding groups of indented lines.
+		</member>
+		<member name="hiding_enabled" type="bool" setter="set_hiding_enabled" getter="is_hiding_enabled">
 		</member>
 		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled">
 		</member>
@@ -416,6 +431,14 @@
 		<signal name="cursor_changed">
 			<description>
 				Emitted when the cursor changes.
+			</description>
+		</signal>
+		<signal name="info_clicked">
+			<argument index="0" name="row" type="int">
+			</argument>
+			<argument index="1" name="info" type="String">
+			</argument>
+			<description>
 			</description>
 		</signal>
 		<signal name="request_completion">
@@ -474,6 +497,8 @@
 	<theme_items>
 		<theme_item name="background_color" type="Color">
 		</theme_item>
+		<theme_item name="bookmark_color" type="Color">
+		</theme_item>
 		<theme_item name="brace_mismatch_color" type="Color">
 		</theme_item>
 		<theme_item name="breakpoint_color" type="Color">
@@ -504,7 +529,13 @@
 		</theme_item>
 		<theme_item name="current_line_color" type="Color">
 		</theme_item>
+		<theme_item name="executing_line_color" type="Color">
+		</theme_item>
 		<theme_item name="focus" type="StyleBox">
+		</theme_item>
+		<theme_item name="fold" type="Texture">
+		</theme_item>
+		<theme_item name="folded" type="Texture">
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
@@ -531,6 +562,8 @@
 		<theme_item name="safe_line_number_color" type="Color">
 		</theme_item>
 		<theme_item name="selection_color" type="Color">
+		</theme_item>
+		<theme_item name="space" type="Texture">
 		</theme_item>
 		<theme_item name="symbol_color" type="Color">
 		</theme_item>

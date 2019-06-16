@@ -94,7 +94,12 @@ void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug
 
 		ERR_FAIL_COND(!_add_file(scripts_metadata_path, scripts_metadata_path));
 
-		ERR_FAIL_COND(!GodotSharpBuilds::build_project_blocking(build_config));
+		// Turn export features into defines
+		Vector<String> godot_defines;
+		for (Set<String>::Element *E = p_features.front(); E; E = E->next()) {
+			godot_defines.push_back(E->get());
+		}
+		ERR_FAIL_COND(!GodotSharpBuilds::build_project_blocking(build_config, godot_defines));
 
 		// Add dependency assemblies
 
@@ -120,11 +125,21 @@ void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug
 			bool load_success = GDMono::get_singleton()->load_assembly_from(project_dll_name,
 					project_dll_src_path, &scripts_assembly, /* refonly: */ true);
 
-			ERR_EXPLAIN("Cannot load refonly assembly: " + project_dll_name);
+			ERR_EXPLAIN("Cannot load assembly (refonly): " + project_dll_name);
 			ERR_FAIL_COND(!load_success);
 
 			Vector<String> search_dirs;
-			GDMonoAssembly::fill_search_dirs(search_dirs, build_config);
+			String templates_dir = EditorSettings::get_singleton()->get_templates_dir().plus_file(VERSION_FULL_CONFIG);
+			String android_bcl_dir = templates_dir.plus_file("android-bcl");
+
+			String custom_lib_dir;
+
+			if (p_features.find("Android") && DirAccess::exists(android_bcl_dir)) {
+				custom_lib_dir = android_bcl_dir;
+			}
+
+			GDMonoAssembly::fill_search_dirs(search_dirs, build_config, custom_lib_dir);
+
 			Error depend_error = _get_assembly_dependencies(scripts_assembly, search_dirs, dependencies);
 			ERR_FAIL_COND(depend_error != OK);
 		}
@@ -147,7 +162,7 @@ void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug
 	int i = 0;
 	for (const Set<String>::Element *E = p_features.front(); E; E = E->next()) {
 		MonoString *boxed = GDMonoMarshal::mono_string_from_godot(E->get());
-		mono_array_set(features, MonoString *, i, boxed);
+		mono_array_setref(features, i, boxed);
 		i++;
 	}
 
@@ -229,8 +244,10 @@ Error GodotSharpExport::_get_assembly_dependencies(GDMonoAssembly *p_assembly, c
 		r_dependencies.insert(ref_name, ref_assembly->get_path());
 
 		Error err = _get_assembly_dependencies(ref_assembly, p_search_dirs, r_dependencies);
-		if (err != OK)
-			return err;
+		if (err != OK) {
+			ERR_EXPLAIN("Cannot load one of the dependencies for the assembly: " + ref_name);
+			ERR_FAIL_V(err);
+		}
 	}
 
 	return OK;

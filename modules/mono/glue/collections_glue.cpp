@@ -162,7 +162,7 @@ MonoObject *godot_icall_Dictionary_GetValue(Dictionary *ptr, MonoObject *key) {
 #ifdef DEBUG_ENABLED
 		CRASH_COND(!exc);
 #endif
-		GDMonoUtils::runtime_object_init(exc);
+		GDMonoUtils::runtime_object_init(exc, CACHED_CLASS(KeyNotFoundException));
 		GDMonoUtils::set_pending_exception((MonoException *)exc);
 		return NULL;
 	}
@@ -176,7 +176,7 @@ MonoObject *godot_icall_Dictionary_GetValue_Generic(Dictionary *ptr, MonoObject 
 #ifdef DEBUG_ENABLED
 		CRASH_COND(!exc);
 #endif
-		GDMonoUtils::runtime_object_init(exc);
+		GDMonoUtils::runtime_object_init(exc, CACHED_CLASS(KeyNotFoundException));
 		GDMonoUtils::set_pending_exception((MonoException *)exc);
 		return NULL;
 	}

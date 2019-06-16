@@ -80,7 +80,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return an Array containing the list of connections. A connection consists in a structure of the form {from_port: 0, from: "GraphNode name 0", to_port: 1, to: "GraphNode name 1" }
+				Returns an Array containing the list of connections. A connection consists in a structure of the form {from_port: 0, from: "GraphNode name 0", to_port: 1, to: "GraphNode name 1" }
 			</description>
 		</method>
 		<method name="get_zoom_hbox">
@@ -101,7 +101,7 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Return [code]true[/code] if the 'from_port' slot of 'from' GraphNode is connected to the 'to_port' slot of 'to' GraphNode.
+				Returns [code]true[/code] if the 'from_port' slot of 'from' GraphNode is connected to the 'to_port' slot of 'to' GraphNode.
 			</description>
 		</method>
 		<method name="is_valid_connection_type" qualifiers="const">

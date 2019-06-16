@@ -142,6 +142,7 @@ public:
 	virtual void commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect);
 
 	virtual void process();
+	virtual void notification(int p_what);
 
 	MobileVRInterface();
 	~MobileVRInterface();

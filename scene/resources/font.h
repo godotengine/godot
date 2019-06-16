@@ -53,6 +53,7 @@ public:
 
 	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const = 0;
 	Size2 get_string_size(const String &p_string) const;
+	Size2 get_wordwrap_string_size(const String &p_string, float p_width) const;
 
 	virtual bool is_distance_field_hint() const = 0;
 

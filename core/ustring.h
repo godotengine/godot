@@ -101,12 +101,17 @@ public:
 		_cowdata._ref(p_str._cowdata);
 		return *this;
 	}
+	_FORCE_INLINE_ CharString(const char *p_cstr) { copy_from(p_cstr); }
 
+	CharString &operator=(const char *p_cstr);
 	bool operator<(const CharString &p_right) const;
 	CharString &operator+=(char p_char);
 	int length() const { return size() ? size() - 1 : 0; }
 	const char *get_data() const;
 	operator const char *() const { return get_data(); };
+
+protected:
+	void copy_from(const char *p_cstr);
 };
 
 typedef wchar_t CharType;
@@ -246,6 +251,7 @@ public:
 	int to_int() const;
 
 	int64_t hex_to_int64(bool p_with_prefix = true) const;
+	int64_t bin_to_int64(bool p_with_prefix = true) const;
 	int64_t to_int64() const;
 	static int to_int(const char *p_str, int p_len = -1);
 	static double to_double(const char *p_str);

@@ -32,11 +32,10 @@
 
 #include "lws_client.h"
 #include "core/io/ip.h"
-#include "core/io/stream_peer_ssl.h"
 #include "core/project_settings.h"
 #if defined(LWS_OPENSSL_SUPPORT)
-// Not openssl, just the mbedtls wrapper
-#include "openssl/ssl.h"
+#include "core/io/stream_peer_ssl.h"
+#include "tls/mbedtls/wrapper/include/openssl/ssl.h"
 #endif
 
 Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {

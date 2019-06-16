@@ -66,6 +66,7 @@ class ScriptEditorDebugger : public Control {
 	enum ItemMenu {
 		ITEM_MENU_COPY_ERROR,
 		ITEM_MENU_SAVE_REMOTE_NODE,
+		ITEM_MENU_COPY_NODE_PATH,
 	};
 
 	AcceptDialog *msgdialog;
@@ -204,6 +205,8 @@ class ScriptEditorDebugger : public Control {
 	void _item_menu_id_pressed(int p_option);
 
 	void _export_csv();
+
+	void _clear_execution();
 
 protected:
 	void _notification(int p_what);

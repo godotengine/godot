@@ -15,9 +15,5 @@
 	<theme_items>
 		<theme_item name="panel" type="StyleBox">
 		</theme_item>
-		<theme_item name="panelf" type="StyleBox">
-		</theme_item>
-		<theme_item name="panelnc" type="StyleBox">
-		</theme_item>
 	</theme_items>
 </class>

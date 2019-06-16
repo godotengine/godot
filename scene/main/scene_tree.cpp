@@ -105,6 +105,11 @@ void SceneTree::node_removed(Node *p_node) {
 		call_skip.insert(p_node);
 }
 
+void SceneTree::node_renamed(Node *p_node) {
+
+	emit_signal(node_renamed_name, p_node);
+}
+
 SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_node) {
 
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
@@ -369,8 +374,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 }
 
 void SceneTree::call_group(const StringName &p_group, const StringName &p_function, VARIANT_ARG_DECLARE) {
-
-	call_group_flags(0, p_group, VARIANT_ARG_PASS);
+	call_group_flags(0, p_group, p_function, VARIANT_ARG_PASS);
 }
 
 void SceneTree::notify_group(const StringName &p_group, int p_notification) {
@@ -1160,7 +1164,7 @@ void SceneTree::_update_root_rect() {
 		WARN_PRINT("Font oversampling only works with the resize modes 'Keep Width', 'Keep Height', and 'Expand'.");
 	}
 
-	if (stretch_aspect == STRETCH_ASPECT_IGNORE || ABS(viewport_aspect - video_mode_aspect) < CMP_EPSILON) {
+	if (stretch_aspect == STRETCH_ASPECT_IGNORE || Math::is_equal_approx(viewport_aspect, video_mode_aspect)) {
 		//same aspect or ignore aspect
 		viewport_size = desired_res;
 		screen_size = video_mode;
@@ -1240,7 +1244,7 @@ void SceneTree::_update_root_rect() {
 			root->update_canvas_items(); //force them to update just in case
 
 			if (use_font_oversampling) {
-				WARN_PRINT("Font oversampling does not work in 'Viewport' stretch mode, only '2D'.")
+				WARN_PRINT("Font oversampling does not work in 'Viewport' stretch mode, only '2D'.");
 			}
 
 		} break;
@@ -1896,6 +1900,7 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_removed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("node_renamed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("screen_resized"));
 	ADD_SIGNAL(MethodInfo("node_configuration_warning_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 
@@ -1984,6 +1989,7 @@ SceneTree::SceneTree() {
 	tree_changed_name = "tree_changed";
 	node_added_name = "node_added";
 	node_removed_name = "node_removed";
+	node_renamed_name = "node_renamed";
 	ugc_locked = false;
 	call_lock = 0;
 	root_lock = 0;

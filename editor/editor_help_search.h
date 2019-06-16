@@ -125,6 +125,8 @@ class EditorHelpSearch::Runner : public Reference {
 	Map<String, TreeItem *> class_items;
 	TreeItem *matched_item;
 
+	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
+
 	bool _slice();
 	bool _phase_match_classes_init();
 	bool _phase_match_classes();

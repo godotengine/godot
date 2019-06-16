@@ -42,6 +42,16 @@
 #define glClearDepth glClearDepthf
 #endif
 
+#ifndef GLES_OVER_GL
+#ifdef IPHONE_ENABLED
+#include <OpenGLES/ES2/glext.h>
+//void *glResolveMultisampleFramebufferAPPLE;
+
+#define GL_READ_FRAMEBUFFER 0x8CA8
+#define GL_DRAW_FRAMEBUFFER 0x8CA9
+#endif
+#endif
+
 static const GLenum _cube_side_enum[6] = {
 
 	GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
@@ -570,7 +580,7 @@ bool RasterizerSceneGLES2::reflection_probe_instance_begin_render(RID p_instance
 
 		//the approach below is fatal for powervr
 
-		// Set the initial (empty) mipmaps, all need to be set for this to work in GLES2, even if later wont be used.
+		// Set the initial (empty) mipmaps, all need to be set for this to work in GLES2, even if they won't be used later.
 		while (size >= 1) {
 
 			for (int i = 0; i < 6; i++) {
@@ -1001,7 +1011,7 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 		has_alpha = false;
 	}
 
-	RenderList::Element *e = has_alpha ? render_list.add_alpha_element() : render_list.add_element();
+	RenderList::Element *e = (has_alpha || p_material->shader->spatial.no_depth_test) ? render_list.add_alpha_element() : render_list.add_element();
 
 	if (!e) {
 		return;
@@ -1017,6 +1027,7 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 	e->light_index = RenderList::MAX_LIGHTS;
 	e->use_accum_ptr = &e->use_accum;
 	e->instancing = (e->instance->base_type == VS::INSTANCE_MULTIMESH) ? 1 : 0;
+	e->front_facing = false;
 
 	if (e->geometry->last_pass != render_pass) {
 		e->geometry->last_pass = render_pass;
@@ -1035,6 +1046,10 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 	}
 
 	e->material_index = e->material->index;
+
+	if (mirror) {
+		e->front_facing = true;
+	}
 
 	e->refprobe_0_index = RenderList::MAX_REFLECTION_PROBES; //refprobe disabled by default
 	e->refprobe_1_index = RenderList::MAX_REFLECTION_PROBES; //refprobe disabled by default
@@ -1148,6 +1163,30 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 	}
 }
 
+void RasterizerSceneGLES2::_copy_texture_to_front_buffer(GLuint p_texture) {
+
+	//copy to front buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
+
+	glDepthMask(GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glDepthFunc(GL_LEQUAL);
+	glColorMask(1, 1, 1, 1);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, p_texture);
+
+	glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
+
+	storage->shaders.copy.bind();
+
+	storage->bind_quad_array();
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void RasterizerSceneGLES2::_fill_render_list(InstanceBase **p_cull_result, int p_cull_count, bool p_depth_pass, bool p_shadow_pass) {
 
 	render_pass++;
@@ -1223,7 +1262,29 @@ static const GLenum gl_primitive[] = {
 	GL_TRIANGLE_FAN
 };
 
-bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_material, bool p_reverse_cull, bool p_alpha_pass, Size2i p_skeleton_tex_size) {
+void RasterizerSceneGLES2::_set_cull(bool p_front, bool p_disabled, bool p_reverse_cull) {
+
+	bool front = p_front;
+	if (p_reverse_cull)
+		front = !front;
+
+	if (p_disabled != state.cull_disabled) {
+		if (p_disabled)
+			glDisable(GL_CULL_FACE);
+		else
+			glEnable(GL_CULL_FACE);
+
+		state.cull_disabled = p_disabled;
+	}
+
+	if (front != state.cull_front) {
+
+		glCullFace(front ? GL_FRONT : GL_BACK);
+		state.cull_front = front;
+	}
+}
+
+bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_material, bool p_alpha_pass, Size2i p_skeleton_tex_size) {
 
 	// material parameters
 
@@ -1258,21 +1319,6 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 		} break;
 		case RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_NEVER: {
 			glDepthMask(GL_FALSE);
-		} break;
-	}
-
-	switch (p_material->shader->spatial.cull_mode) {
-		case RasterizerStorageGLES2::Shader::Spatial::CULL_MODE_DISABLED: {
-			glDisable(GL_CULL_FACE);
-		} break;
-
-		case RasterizerStorageGLES2::Shader::Spatial::CULL_MODE_BACK: {
-			glEnable(GL_CULL_FACE);
-			glCullFace(p_reverse_cull ? GL_FRONT : GL_BACK);
-		} break;
-		case RasterizerStorageGLES2::Shader::Spatial::CULL_MODE_FRONT: {
-			glEnable(GL_CULL_FACE);
-			glCullFace(p_reverse_cull ? GL_BACK : GL_FRONT);
 		} break;
 	}
 
@@ -2168,6 +2214,11 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 	int prev_blend_mode = -2; //will always catch the first go
 
+	state.cull_front = false;
+	state.cull_disabled = false;
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+
 	if (p_alpha_pass) {
 		glEnable(GL_BLEND);
 	} else {
@@ -2210,7 +2261,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		bool rebind_reflection = false;
 		bool rebind_lightmap = false;
 
-		if (!p_shadow) {
+		if (!p_shadow && material->shader) {
 
 			bool unshaded = material->shader->spatial.unshaded;
 
@@ -2230,7 +2281,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 			bool depth_prepass = false;
 
-			if (!p_alpha_pass && material->shader && material->shader->spatial.depth_draw_mode == RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
+			if (!p_alpha_pass && material->shader->spatial.depth_draw_mode == RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
 				depth_prepass = true;
 			}
 
@@ -2407,11 +2458,13 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		if (rebind || material != prev_material) {
 
 			storage->info.render.material_switch_count++;
-			shader_rebind = _setup_material(material, p_reverse_cull, p_alpha_pass, Size2i(skeleton ? skeleton->size * 3 : 0, 0));
+			shader_rebind = _setup_material(material, p_alpha_pass, Size2i(skeleton ? skeleton->size * 3 : 0, 0));
 			if (shader_rebind) {
 				storage->info.render.shader_rebind_count++;
 			}
 		}
+
+		_set_cull(e->front_facing, material->shader->spatial.cull_mode == RasterizerStorageGLES2::Shader::Spatial::CULL_MODE_DISABLED, p_reverse_cull);
 
 		if (i == 0 || shader_rebind) { //first time must rebind
 
@@ -2435,6 +2488,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 				if (p_env) {
 					state.scene_shader.set_uniform(SceneShaderGLES2::BG_ENERGY, p_env->bg_energy);
+					state.scene_shader.set_uniform(SceneShaderGLES2::BG_COLOR, p_env->bg_color);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_SKY_CONTRIBUTION, p_env->ambient_sky_contribution);
 
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_COLOR, p_env->ambient_color);
@@ -2442,6 +2496,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 				} else {
 					state.scene_shader.set_uniform(SceneShaderGLES2::BG_ENERGY, 1.0);
+					state.scene_shader.set_uniform(SceneShaderGLES2::BG_COLOR, state.default_bg);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_SKY_CONTRIBUTION, 1.0);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_COLOR, state.default_ambient);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_ENERGY, 1.0);
@@ -2544,7 +2599,6 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_LIGHTMAP_CAPTURE, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::FOG_DEPTH_ENABLED, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::FOG_HEIGHT_ENABLED, false);
-	state.scene_shader.set_conditional(SceneShaderGLES2::USE_RADIANCE_MAP, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_DEPTH_PREPASS, false);
 }
 
@@ -2660,6 +2714,8 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	Environment *env = NULL;
 
 	int viewport_width, viewport_height;
+	int viewport_x = 0;
+	int viewport_y = 0;
 	bool probe_interior = false;
 	bool reverse_cull = false;
 
@@ -2689,12 +2745,23 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		if (storage->frame.current_rt->external.fbo != 0) {
 			current_fb = storage->frame.current_rt->external.fbo;
 		} else {
-			current_fb = storage->frame.current_rt->fbo;
+			if (storage->frame.current_rt->multisample_active) {
+				current_fb = storage->frame.current_rt->multisample_fbo;
+			} else {
+				current_fb = storage->frame.current_rt->fbo;
+			}
 		}
 		env = environment_owner.getornull(p_environment);
 
 		viewport_width = storage->frame.current_rt->width;
 		viewport_height = storage->frame.current_rt->height;
+		viewport_x = storage->frame.current_rt->x;
+
+		if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_DIRECT_TO_SCREEN]) {
+			viewport_y = OS::get_singleton()->get_window_size().height - viewport_height - storage->frame.current_rt->y;
+		} else {
+			viewport_y = storage->frame.current_rt->y;
+		}
 	}
 
 	state.used_screen_texture = false;
@@ -2760,7 +2827,13 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	// other stuff
 
 	glBindFramebuffer(GL_FRAMEBUFFER, current_fb);
-	glViewport(0, 0, viewport_width, viewport_height);
+	glViewport(viewport_x, viewport_y, viewport_width, viewport_height);
+
+	if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_DIRECT_TO_SCREEN]) {
+
+		glScissor(viewport_x, viewport_y, viewport_width, viewport_height);
+		glEnable(GL_SCISSOR_TEST);
+	}
 
 	glDepthFunc(GL_LEQUAL);
 	glDepthMask(GL_TRUE);
@@ -2791,8 +2864,13 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	}
 
 	state.default_ambient = Color(clear_color.r, clear_color.g, clear_color.b, 1.0);
+	state.default_bg = Color(clear_color.r, clear_color.g, clear_color.b, 1.0);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_DIRECT_TO_SCREEN]) {
+		glDisable(GL_SCISSOR_TEST);
+	}
 
 	glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
 
@@ -2820,6 +2898,17 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		}
 	}
 
+	if (probe_interior) {
+		env_radiance_tex = 0; //do not use radiance texture on interiors
+		state.default_ambient = Color(0, 0, 0, 1); //black as default ambient for interior
+		state.default_bg = Color(0, 0, 0, 1); //black as default background for interior
+	}
+
+	// render opaque things first
+	render_list.sort_by_key(false);
+	_render_render_list(render_list.elements, render_list.element_count, cam_transform, p_cam_projection, p_shadow_atlas, env, env_radiance_tex, 0.0, 0.0, reverse_cull, false, false);
+
+	// then draw the sky after
 	if (env && env->bg_mode == VS::ENV_BG_SKY && (!storage->frame.current_rt || !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT])) {
 
 		if (sky && sky->panorama.is_valid()) {
@@ -2827,29 +2916,78 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		}
 	}
 
-	if (probe_interior) {
-		env_radiance_tex = 0; //do not use radiance texture on interiors
-		state.default_ambient = Color(0, 0, 0, 1); //black as default ambient for interior
-	}
-
-	// render opaque things first
-	render_list.sort_by_key(false);
-	_render_render_list(render_list.elements, render_list.element_count, cam_transform, p_cam_projection, p_shadow_atlas, env, env_radiance_tex, 0.0, 0.0, reverse_cull, false, false);
-
 	if (storage->frame.current_rt && state.used_screen_texture) {
 		//copy screen texture
+
+		if (storage->frame.current_rt->multisample_active) {
+			// Resolve framebuffer to front buffer before copying
+#ifdef GLES_OVER_GL
+
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->multisample_fbo);
+			glReadBuffer(GL_COLOR_ATTACHMENT0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->fbo);
+			glBlitFramebuffer(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, 0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+#elif IPHONE_ENABLED
+
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->multisample_fbo);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->fbo);
+			glResolveMultisampleFramebufferAPPLE();
+
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+#elif ANDROID_ENABLED
+
+			// In GLES2 AndroidBlit is not available, so just copy color texture manually
+			_copy_texture_to_front_buffer(storage->frame.current_rt->multisample_color);
+#endif
+		}
+
 		storage->canvas->_copy_screen(Rect2());
+
+		if (storage->frame.current_rt && storage->frame.current_rt->multisample_active) {
+			// Rebind the current framebuffer
+			glBindFramebuffer(GL_FRAMEBUFFER, current_fb);
+			glViewport(0, 0, viewport_width, viewport_height);
+		}
 	}
 	// alpha pass
 
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-	render_list.sort_by_depth(true);
+	render_list.sort_by_reverse_depth_and_priority(true);
 
 	_render_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, cam_transform, p_cam_projection, p_shadow_atlas, env, env_radiance_tex, 0.0, 0.0, reverse_cull, true, false);
 
 	glDisable(GL_DEPTH_TEST);
+
+	if (storage->frame.current_rt && storage->frame.current_rt->multisample_active) {
+#ifdef GLES_OVER_GL
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->multisample_fbo);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->fbo);
+		glBlitFramebuffer(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, 0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+#elif IPHONE_ENABLED
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->multisample_fbo);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->fbo);
+		glResolveMultisampleFramebufferAPPLE();
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+#elif ANDROID_ENABLED
+
+		// In GLES2 Android Blit is not available, so just copy color texture manually
+		_copy_texture_to_front_buffer(storage->frame.current_rt->multisample_color);
+#endif
+	}
 
 	//#define GLES2_SHADOW_ATLAS_DEBUG_VIEW
 

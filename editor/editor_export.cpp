@@ -335,7 +335,9 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 
 	pd->file_ofs.push_back(sd);
 
-	pd->ep->step(TTR("Storing File:") + " " + p_path, 2 + p_file * 100 / p_total, false);
+	if (pd->ep->step(TTR("Storing File:") + " " + p_path, 2 + p_file * 100 / p_total, false)) {
+		return ERR_SKIP;
+	}
 
 	return OK;
 }
@@ -362,7 +364,9 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_pat
 	zipWriteInFileInZip(zip, p_data.ptr(), p_data.size());
 	zipCloseFileInZip(zip);
 
-	zd->ep->step(TTR("Storing File:") + " " + p_path, 2 + p_file * 100 / p_total, false);
+	if (zd->ep->step(TTR("Storing File:") + " " + p_path, 2 + p_file * 100 / p_total, false)) {
+		return ERR_SKIP;
+	}
 
 	return OK;
 }
@@ -611,6 +615,7 @@ void EditorExportPlugin::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo("_export_file", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "type"), PropertyInfo(Variant::POOL_STRING_ARRAY, "features")));
 	BIND_VMETHOD(MethodInfo("_export_begin", PropertyInfo(Variant::POOL_STRING_ARRAY, "features"), PropertyInfo(Variant::BOOL, "is_debug"), PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "flags")));
+	BIND_VMETHOD(MethodInfo("_export_end"));
 }
 
 EditorExportPlugin::EditorExportPlugin() {
@@ -688,6 +693,10 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 	}
 
+	//add native icons to non-resource include list
+	_edit_filter_list(paths, String("*.icns"), false);
+	_edit_filter_list(paths, String("*.ico"), false);
+
 	_edit_filter_list(paths, p_preset->get_include_filter(), false);
 	_edit_filter_list(paths, p_preset->get_exclude_filter(), true);
 
@@ -749,27 +758,37 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				this->resolve_platform_feature_priorities(p_preset, remap_features);
 			}
 
+			err = OK;
+
 			for (List<String>::Element *F = remaps.front(); F; F = F->next()) {
 
 				String remap = F->get();
 				if (remap == "path") {
 					String remapped_path = config->get_value("remap", remap);
 					Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
-					p_func(p_udata, remapped_path, array, idx, total);
+					err = p_func(p_udata, remapped_path, array, idx, total);
 				} else if (remap.begins_with("path.")) {
 					String feature = remap.get_slice(".", 1);
 
 					if (remap_features.has(feature)) {
 						String remapped_path = config->get_value("remap", remap);
 						Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
-						p_func(p_udata, remapped_path, array, idx, total);
+						err = p_func(p_udata, remapped_path, array, idx, total);
 					}
 				}
 			}
 
+			if (err != OK) {
+				return err;
+			}
+
 			//also save the .import file
 			Vector<uint8_t> array = FileAccess::get_file_as_array(path + ".import");
-			p_func(p_udata, path + ".import", array, idx, total);
+			err = p_func(p_udata, path + ".import", array, idx, total);
+
+			if (err != OK) {
+				return err;
+			}
 
 		} else {
 
@@ -884,11 +903,11 @@ Error EditorExportPlatform::_add_shared_object(void *p_userdata, const SharedObj
 
 Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, Vector<SharedObject> *p_so_files) {
 
-	EditorProgress ep("savepack", TTR("Packing"), 102);
+	EditorProgress ep("savepack", TTR("Packing"), 102, true);
 
 	String tmppath = EditorSettings::get_singleton()->get_cache_dir().plus_file("packtmp");
 	FileAccess *ftmp = FileAccess::open(tmppath, FileAccess::WRITE);
-	ERR_FAIL_COND_V(!ftmp, ERR_CANT_CREATE)
+	ERR_FAIL_COND_V(!ftmp, ERR_CANT_CREATE);
 
 	PackData pd;
 	pd.ep = &ep;
@@ -905,7 +924,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	pd.file_ofs.sort(); //do sort, so we can do binary search later
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V(!f, ERR_CANT_CREATE)
+	ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
 	f->store_32(0x43504447); //GDPK
 	f->store_32(1); //pack version
 	f->store_32(VERSION_MAJOR);
@@ -958,7 +977,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	ftmp = FileAccess::open(tmppath, FileAccess::READ);
 	if (!ftmp) {
 		memdelete(f);
-		ERR_FAIL_COND_V(!ftmp, ERR_CANT_CREATE)
+		ERR_FAIL_COND_V(!ftmp, ERR_CANT_CREATE);
 	}
 
 	const int bufsize = 16384;
@@ -982,7 +1001,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 
-	EditorProgress ep("savezip", TTR("Packing"), 102);
+	EditorProgress ep("savezip", TTR("Packing"), 102, true);
 
 	//FileAccess *tmp = FileAccess::open(tmppath,FileAccess::WRITE);
 
@@ -995,7 +1014,7 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, co
 	zd.zip = zip;
 
 	Error err = export_project_files(p_preset, _save_zip_file, &zd);
-	if (err != OK)
+	if (err != OK && err != ERR_SKIP)
 		ERR_PRINT("Failed to export project files");
 
 	zipClose(zip, NULL);

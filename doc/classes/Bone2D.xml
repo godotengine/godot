@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Bone2D" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
+		Joint used with [Skeleton2D] to control and animate other nodes.
 	</brief_description>
 	<description>
+		Use a hierarchy of [code]Bone2D[/code] bound to a [Skeleton2D] to control, and animate other [Node2D] nodes.
+		You can use [code]Bone2D[/code] and [code]Skeleton2D[/code] nodes to animate 2D meshes created with the Polygon 2D UV editor.
+		Each bone has a [member rest] transform that you can reset to with [method apply_rest]. These rest poses are relative to the bone's parent.
+		If in the editor, you can set the rest pose of an entire skeleton using a menu option, from the code, you need to iterate over the bones to set their individual rest poses.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,25 +16,30 @@
 			<return type="void">
 			</return>
 			<description>
+				Stores the node's current transforms in [member rest].
 			</description>
 		</method>
 		<method name="get_index_in_skeleton" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the node's index as part of the entire skeleton. See [Skeleton2D].
 			</description>
 		</method>
 		<method name="get_skeleton_rest" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
+				Returns the node's [member rest] [code]Transform2D[/code] if it doesn't have a parent, or its rest pose relative to its parent.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="default_length" type="float" setter="set_default_length" getter="get_default_length">
+			Length of the bone's representation drawn in the editor's viewport in pixels.
 		</member>
 		<member name="rest" type="Transform2D" setter="set_rest" getter="get_rest">
+			Rest transform of the bone. You can reset the node's transforms to this value using [method apply_rest].
 		</member>
 	</members>
 	<constants>

@@ -175,7 +175,10 @@ void MonoBottomPanel::_build_project_pressed() {
 		ERR_FAIL_COND(copy_err != OK);
 	}
 
-	bool build_success = GodotSharpBuilds::get_singleton()->build_project_blocking("Tools");
+	Vector<String> godot_defines;
+	godot_defines.push_back(OS::get_singleton()->get_name());
+	godot_defines.push_back((sizeof(void *) == 4 ? "32" : "64"));
+	bool build_success = GodotSharpBuilds::get_singleton()->build_project_blocking("Tools", godot_defines);
 
 	if (build_success) {
 		// Notify running game for hot-reload

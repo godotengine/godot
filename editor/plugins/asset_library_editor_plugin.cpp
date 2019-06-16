@@ -35,7 +35,7 @@
 #include "editor_node.h"
 #include "editor_settings.h"
 
-void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, int p_rating, const String &p_cost) {
+void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {
 
 	title->set_text(p_title);
 	asset_id = p_asset_id;
@@ -44,13 +44,6 @@ void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, co
 	author->set_text(p_author);
 	author_id = p_author_id;
 	price->set_text(p_cost);
-
-	for (int i = 0; i < 5; i++) {
-		if (i < p_rating)
-			stars[i]->set_texture(get_icon("Favorites", "EditorIcons"));
-		else
-			stars[i]->set_texture(get_icon("NonFavorite", "EditorIcons"));
-	}
 }
 
 void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Texture> &p_image) {
@@ -65,9 +58,10 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		icon->set_normal_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
+		icon->set_normal_texture(get_icon("ProjectIconLoading", "EditorIcons"));
 		category->add_color_override("font_color", Color(0.5, 0.5, 0.5));
 		author->add_color_override("font_color", Color(0.5, 0.5, 0.5));
+		price->add_color_override("font_color", Color(0.5, 0.5, 0.5));
 	}
 }
 
@@ -100,17 +94,19 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 
 	Ref<StyleBoxEmpty> border;
 	border.instance();
-	border->set_default_margin(MARGIN_LEFT, 5);
-	border->set_default_margin(MARGIN_RIGHT, 5);
-	border->set_default_margin(MARGIN_BOTTOM, 5);
-	border->set_default_margin(MARGIN_TOP, 5);
+	border->set_default_margin(MARGIN_LEFT, 5 * EDSCALE);
+	border->set_default_margin(MARGIN_RIGHT, 5 * EDSCALE);
+	border->set_default_margin(MARGIN_BOTTOM, 5 * EDSCALE);
+	border->set_default_margin(MARGIN_TOP, 5 * EDSCALE);
 	add_style_override("panel", border);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
+	// Add some spacing to visually separate the icon from the asset details
+	hb->add_constant_override("separation", 15 * EDSCALE);
 	add_child(hb);
 
 	icon = memnew(TextureButton);
-	icon->set_custom_minimum_size(Size2(64, 64));
+	icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
 	icon->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	icon->connect("pressed", this, "_asset_clicked");
 
@@ -139,18 +135,11 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	author->connect("pressed", this, "_author_clicked");
 	vb->add_child(author);
 
-	HBoxContainer *rating_hb = memnew(HBoxContainer);
-	vb->add_child(rating_hb);
-
-	for (int i = 0; i < 5; i++) {
-		stars[i] = memnew(TextureRect);
-		rating_hb->add_child(stars[i]);
-	}
 	price = memnew(Label);
 	price->set_text(TTR("Free"));
 	vb->add_child(price);
 
-	set_custom_minimum_size(Size2(250, 100));
+	set_custom_minimum_size(Size2(250, 100) * EDSCALE);
 	set_h_size_flags(SIZE_EXPAND_FILL);
 
 	set_mouse_filter(MOUSE_FILTER_PASS);
@@ -175,7 +164,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 						Ref<Image> overlay = get_icon("PlayOverlay", "EditorIcons")->get_data();
 						Ref<Image> thumbnail = p_image->get_data();
 						thumbnail = thumbnail->duplicate();
-						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
+						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width() / 2) / 2, (thumbnail->get_height() - overlay->get_height() / 2) / 2);
 
 						// Overlay and thumbnail need the same format for `blend_rect` to work.
 						thumbnail->convert(Image::FORMAT_RGBA8);
@@ -194,7 +183,6 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 					break;
 				}
 			}
-			//item->call("set_image",p_type,p_index,p_image);
 		} break;
 		case EditorAssetLibrary::IMAGE_QUEUE_SCREENSHOT: {
 
@@ -207,7 +195,6 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 					break;
 				}
 			}
-			//item->call("set_image",p_type,p_index,p_image);
 		} break;
 	}
 }
@@ -248,13 +235,13 @@ void EditorAssetLibraryItemDescription::_preview_click(int p_id) {
 	}
 }
 
-void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, int p_rating, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_sha256_hash) {
+void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_sha256_hash) {
 
 	asset_id = p_asset_id;
 	title = p_title;
 	download_url = p_download_url;
 	sha256 = p_sha256_hash;
-	item->configure(p_title, p_asset_id, p_category, p_category_id, p_author, p_author_id, p_rating, p_cost);
+	item->configure(p_title, p_asset_id, p_category, p_category_id, p_author, p_author_id, p_cost);
 	description->clear();
 	description->add_text(TTR("Version:") + " " + p_version_string + "\n");
 	description->add_text(TTR("Contents:") + " ");
@@ -310,15 +297,20 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	description = memnew(RichTextLabel);
 	description->connect("meta_clicked", this, "_link_click");
+	description->set_custom_minimum_size(Size2(440 * EDSCALE, 300 * EDSCALE));
 	desc_bg->add_child(description);
+
+	VBoxContainer *previews_vbox = memnew(VBoxContainer);
+	hbox->add_child(previews_vbox);
+	previews_vbox->add_constant_override("separation", 15 * EDSCALE);
 
 	preview = memnew(TextureRect);
 	preview->set_custom_minimum_size(Size2(640 * EDSCALE, 345 * EDSCALE));
-	hbox->add_child(preview);
+	previews_vbox->add_child(preview);
 
 	previews_bg = memnew(PanelContainer);
-	vbox->add_child(previews_bg);
-	previews_bg->set_custom_minimum_size(Size2(0, 101 * EDSCALE));
+	previews_vbox->add_child(previews_bg);
+	previews_bg->set_custom_minimum_size(Size2(640 * EDSCALE, 101 * EDSCALE));
 
 	previews = memnew(ScrollContainer);
 	previews_bg->add_child(previews);
@@ -549,7 +541,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	hb2->add_child(retry);
 	hb2->add_child(install);
-	set_custom_minimum_size(Size2(310, 0));
+	set_custom_minimum_size(Size2(310, 0) * EDSCALE);
 
 	download = memnew(HTTPRequest);
 	add_child(download);
@@ -661,7 +653,6 @@ void EditorAssetLibrary::_install_asset() {
 }
 
 const char *EditorAssetLibrary::sort_key[SORT_MAX] = {
-	"rating",
 	"downloads",
 	"name",
 	"cost",
@@ -669,10 +660,9 @@ const char *EditorAssetLibrary::sort_key[SORT_MAX] = {
 };
 
 const char *EditorAssetLibrary::sort_text[SORT_MAX] = {
-	"Rating",
 	"Downloads",
 	"Name",
-	"Cost",
+	"License", // "cost" stores the SPDX license name in the Godot Asset Library
 	"Updated"
 };
 
@@ -728,6 +718,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 				image_data = cached_data;
 				file->close();
+				memdelete(file);
 			}
 		}
 
@@ -802,6 +793,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 					if (file) {
 						file->store_line(new_etag);
 						file->close();
+						memdelete(file);
 					}
 
 					int len = p_data.size();
@@ -811,6 +803,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 						file->store_32(len);
 						file->store_buffer(r.ptr(), len);
 						file->close();
+						memdelete(file);
 					}
 
 					break;
@@ -850,6 +843,7 @@ void EditorAssetLibrary::_update_image_queue() {
 				if (file) {
 					headers.push_back("If-None-Match: " + file->get_line());
 					file->close();
+					memdelete(file);
 				}
 			}
 
@@ -979,7 +973,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		to = p_page_count;
 
 	hbc->add_spacer();
-	hbc->add_constant_override("separation", 5);
+	hbc->add_constant_override("separation", 5 * EDSCALE);
 
 	Button *first = memnew(Button);
 	first->set_text(TTR("First"));
@@ -1185,8 +1179,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			asset_items = memnew(GridContainer);
 			asset_items->set_columns(2);
-			asset_items->add_constant_override("hseparation", 10);
-			asset_items->add_constant_override("vseparation", 10);
+			asset_items->add_constant_override("hseparation", 10 * EDSCALE);
+			asset_items->add_constant_override("vseparation", 10 * EDSCALE);
 
 			library_vb->add_child(asset_items);
 
@@ -1203,12 +1197,11 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				ERR_CONTINUE(!r.has("author_id"));
 				ERR_CONTINUE(!r.has("category_id"));
 				ERR_FAIL_COND(!category_map.has(r["category_id"]));
-				ERR_CONTINUE(!r.has("rating"));
 				ERR_CONTINUE(!r.has("cost"));
 
 				EditorAssetLibraryItem *item = memnew(EditorAssetLibraryItem);
 				asset_items->add_child(item);
-				item->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["rating"], r["cost"]);
+				item->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"]);
 				item->connect("asset_selected", this, "_select_asset");
 				item->connect("author_selected", this, "_select_author");
 				item->connect("category_selected", this, "_select_category");
@@ -1229,7 +1222,6 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			ERR_FAIL_COND(!r.has("version_string"));
 			ERR_FAIL_COND(!r.has("category_id"));
 			ERR_FAIL_COND(!category_map.has(r["category_id"]));
-			ERR_FAIL_COND(!r.has("rating"));
 			ERR_FAIL_COND(!r.has("cost"));
 			ERR_FAIL_COND(!r.has("description"));
 			ERR_FAIL_COND(!r.has("download_url"));
@@ -1245,7 +1237,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			description->popup_centered_minsize();
 			description->connect("confirmed", this, "_install_asset");
 
-			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["rating"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
+			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
 			/*item->connect("asset_selected",this,"_select_asset");
 			item->connect("author_selected",this,"_select_author");
 			item->connect("category_selected",this,"_category_selected");*/
@@ -1352,7 +1344,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	HBoxContainer *search_hb = memnew(HBoxContainer);
 
 	library_main->add_child(search_hb);
-	library_main->add_constant_override("separation", 10);
+	library_main->add_constant_override("separation", 10 * EDSCALE);
 
 	search_hb->add_child(memnew(Label(TTR("Search:") + " ")));
 	filter = memnew(LineEdit);
@@ -1454,10 +1446,10 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	Ref<StyleBoxEmpty> border2;
 	border2.instance();
-	border2->set_default_margin(MARGIN_LEFT, 15);
-	border2->set_default_margin(MARGIN_RIGHT, 35);
-	border2->set_default_margin(MARGIN_BOTTOM, 15);
-	border2->set_default_margin(MARGIN_TOP, 15);
+	border2->set_default_margin(MARGIN_LEFT, 15 * EDSCALE);
+	border2->set_default_margin(MARGIN_RIGHT, 35 * EDSCALE);
+	border2->set_default_margin(MARGIN_BOTTOM, 15 * EDSCALE);
+	border2->set_default_margin(MARGIN_TOP, 15 * EDSCALE);
 
 	PanelContainer *library_vb_border = memnew(PanelContainer);
 	library_scroll->add_child(library_vb_border);
@@ -1469,15 +1461,14 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	library_vb_border->add_child(library_vb);
-	//margin_panel->set_stop_mouse(false);
 
 	asset_top_page = memnew(HBoxContainer);
 	library_vb->add_child(asset_top_page);
 
 	asset_items = memnew(GridContainer);
 	asset_items->set_columns(2);
-	asset_items->add_constant_override("hseparation", 10);
-	asset_items->add_constant_override("vseparation", 10);
+	asset_items->add_constant_override("hseparation", 10 * EDSCALE);
+	asset_items->add_constant_override("vseparation", 10 * EDSCALE);
 
 	library_vb->add_child(asset_items);
 
@@ -1491,7 +1482,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	last_queue_id = 0;
 
-	library_vb->add_constant_override("separation", 20);
+	library_vb->add_constant_override("separation", 20 * EDSCALE);
 
 	load_status = memnew(ProgressBar);
 	load_status->set_min(0);

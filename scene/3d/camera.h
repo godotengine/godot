@@ -46,7 +46,8 @@ public:
 	enum Projection {
 
 		PROJECTION_PERSPECTIVE,
-		PROJECTION_ORTHOGONAL
+		PROJECTION_ORTHOGONAL,
+		PROJECTION_FRUSTUM
 	};
 
 	enum KeepAspect {
@@ -63,11 +64,13 @@ public:
 private:
 	bool force_change;
 	bool current;
+	Viewport *viewport;
 
 	Projection mode;
 
 	float fov;
 	float size;
+	Vector2 frustum_offset;
 	float near, far;
 	float v_offset;
 	float h_offset;
@@ -110,6 +113,7 @@ public:
 
 	void set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far);
 	void set_orthogonal(float p_size, float p_z_near, float p_z_far);
+	void set_frustum(float p_size, Vector2 p_offset, float p_near, float p_far);
 	void set_projection(Camera::Projection p_mode);
 
 	void make_current();
@@ -123,12 +127,15 @@ public:
 	float get_size() const;
 	float get_zfar() const;
 	float get_znear() const;
+	Vector2 get_frustum_offset() const;
+
 	Projection get_projection() const;
 
 	void set_fov(float p_fov);
 	void set_size(float p_size);
 	void set_zfar(float p_zfar);
 	void set_znear(float p_znear);
+	void set_frustum_offset(Vector2 p_offset);
 
 	virtual Transform get_camera_transform() const;
 
@@ -137,7 +144,7 @@ public:
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const;
 	bool is_position_behind(const Vector3 &p_pos) const;
-	virtual Vector3 project_position(const Point2 &p_point) const;
+	virtual Vector3 project_position(const Point2 &p_point, float p_z_depth = 0) const;
 
 	Vector<Vector3> get_near_plane_points() const;
 
@@ -226,6 +233,8 @@ public:
 	void remove_exception_rid(const RID &p_rid);
 	void remove_exception(const Object *p_object);
 	void clear_exceptions();
+
+	float get_clip_offset() const;
 
 	ClippedCamera();
 	~ClippedCamera();

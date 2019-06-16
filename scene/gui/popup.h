@@ -64,6 +64,7 @@ public:
 	void popup_centered(const Size2 &p_size = Size2());
 	void popup_centered_minsize(const Size2 &p_minsize = Size2());
 	void set_as_minsize();
+	void popup_centered_clamped(const Size2 &p_size = Size2(), float p_fallback_ratio = 0.75);
 	virtual void popup(const Rect2 &p_bounds = Rect2());
 
 	virtual String get_configuration_warning() const;

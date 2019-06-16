@@ -90,7 +90,7 @@ private:
 	Tree *patches;
 	Button *patch_export;
 	int patch_index;
-	FileDialog *patch_dialog;
+	EditorFileDialog *patch_dialog;
 	ConfirmationDialog *patch_erase;
 
 	Button *export_button;
@@ -139,8 +139,8 @@ private:
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	FileDialog *export_pck_zip;
-	FileDialog *export_project;
+	EditorFileDialog *export_pck_zip;
+	EditorFileDialog *export_project;
 	CheckBox *export_debug;
 	CheckBox *export_pck_zip_debug;
 

@@ -470,6 +470,8 @@ Size2 ItemList::Item::get_icon_size() const {
 
 void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
+	double prev_scroll = scroll_bar->get_value();
+
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (defer_select_single >= 0 && mm.is_valid()) {
 		defer_select_single = -1;
@@ -747,9 +749,21 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					search_string = "";
 				}
 
-				search_string += String::chr(k->get_unicode());
-				for (int i = 0; i < items.size(); i++) {
-					if (items[i].text.begins_with(search_string)) {
+				if (String::chr(k->get_unicode()) != search_string)
+					search_string += String::chr(k->get_unicode());
+
+				for (int i = current + 1; i <= items.size(); i++) {
+					if (i == items.size()) {
+						if (current == 0)
+							break;
+						else
+							i = 0;
+					}
+
+					if (i == current)
+						break;
+
+					if (items[i].text.findn(search_string) == 0) {
 						set_current(i);
 						ensure_current_is_visible();
 						if (select_mode == SELECT_SINGLE) {
@@ -767,6 +781,9 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 		scroll_bar->set_value(scroll_bar->get_value() + scroll_bar->get_page() * pan_gesture->get_delta().y / 8);
 	}
+
+	if (scroll_bar->get_value() != prev_scroll)
+		accept_event(); //accept event if scroll changed
 }
 
 void ItemList::ensure_current_is_visible() {
@@ -1243,7 +1260,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 
 		Rect2 rc = items[i].rect_cache;
 		if (i % current_columns == current_columns - 1) {
-			rc.size.width = get_size().width; //not right but works
+			rc.size.width = get_size().width - rc.position.x; //make sure you can still select the last item when clicking past the column
 		}
 
 		if (rc.has_point(pos)) {

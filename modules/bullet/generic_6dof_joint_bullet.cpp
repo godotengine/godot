@@ -175,7 +175,7 @@ void Generic6DOFJointBullet::set_param(Vector3::Axis p_axis, PhysicsServer::G6DO
 			break;
 		default:
 			ERR_EXPLAIN("This parameter " + itos(p_param) + " is deprecated");
-			WARN_DEPRECATED
+			WARN_DEPRECATED;
 			break;
 	}
 }
@@ -256,7 +256,7 @@ void Generic6DOFJointBullet::set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOF
 			break;
 		default:
 			ERR_EXPLAIN("This flag " + itos(p_flag) + " is deprecated");
-			WARN_DEPRECATED
+			WARN_DEPRECATED;
 			break;
 	}
 }

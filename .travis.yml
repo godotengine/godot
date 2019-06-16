@@ -17,17 +17,19 @@ cache:
 
 matrix:
   include:
-    - env: STATIC_CHECKS=yes
+    - name: Static checks (clang-format)
+      env: STATIC_CHECKS=yes
       os: linux
       compiler: gcc
       addons:
         apt:
           sources:
-            - llvm-toolchain-xenial-6.0
+            - llvm-toolchain-xenial-8
           packages:
-            - clang-format-6.0
+            - clang-format-8
 
-    - env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no warnings=extra werror=yes"
+    - name: Linux editor (debug, GCC 8, with Mono)
+      env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no warnings=extra werror=yes"
       os: linux
       compiler: gcc-8
       addons:
@@ -49,7 +51,8 @@ matrix:
           build_command: "scons p=x11 -j2 $OPTIONS"
           branch_pattern: coverity_scan
 
-    - env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
+    - name: Linux export template (release, Clang)
+      env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: clang
       addons:
@@ -57,19 +60,23 @@ matrix:
           packages:
             - *linux_deps
 
-    - env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
+    - name: Android export template (release_debug, Clang)
+      env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: clang
 
-    - env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang
+    - name: macOS editor (debug, Clang)
+      env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang
       os: osx
       compiler: clang
 
-    - env: PLATFORM=iphone TOOLS=no TARGET=debug CACHE_NAME=${PLATFORM}-clang
+    - name: iOS export template (debug, Clang)
+      env: PLATFORM=iphone TOOLS=no TARGET=debug CACHE_NAME=${PLATFORM}-clang
       os: osx
       compiler: clang
 
-    - env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="warnings=extra werror=yes"
+    - name: Linux headless editor (release_debug, GCC 8)
+      env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: gcc-8
       addons:
@@ -80,7 +87,8 @@ matrix:
             - *gcc8_deps
             - *linux_deps
 
-    - env: PLATFORM=x11 TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-gcc-5
+    - name: Linux export template (release_debug, GCC 5, without 3D support)
+      env: PLATFORM=x11 TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-gcc-5 EXTRA_ARGS="disable_3d=yes"
       os: linux
       compiler: gcc
       addons:

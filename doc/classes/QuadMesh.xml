@@ -4,7 +4,7 @@
 		Class representing a square mesh.
 	</brief_description>
 	<description>
-		Class representing a square mesh with size (2,2,0). Consider using a [PlaneMesh] if you require a differently sized plane.
+		Class representing a square [PrimitiveMesh]. This flat mesh does not have a thickness. By default, this mesh is aligned on the X and Y axes; this default rotation is more suited for use with billboarded materials. Unlike [PlaneMesh], this mesh doesn't provide subdivision options.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,6 +12,7 @@
 	</methods>
 	<members>
 		<member name="size" type="Vector2" setter="set_size" getter="get_size">
+			Size in the X and Y axes. Default is [code]Vector2(1, 1)[/code].
 		</member>
 	</members>
 	<constants>

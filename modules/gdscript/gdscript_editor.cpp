@@ -511,8 +511,10 @@ struct GDScriptCompletionIdentifier {
 
 static void _get_directory_contents(EditorFileSystemDirectory *p_dir, Set<String> &r_list) {
 
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
+
 	for (int i = 0; i < p_dir->get_file_count(); i++) {
-		r_list.insert("\"" + p_dir->get_file_path(i) + "\"");
+		r_list.insert(quote_style + p_dir->get_file_path(i) + quote_style);
 	}
 
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
@@ -1949,7 +1951,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 					} else {
 						base_type.has_type = script->get_instance_base_type() != StringName();
 						base_type.kind = GDScriptParser::DataType::NATIVE;
-						base_type.script_type = script->get_instance_base_type();
+						base_type.native_type = script->get_instance_base_type();
 					}
 				} else {
 					return;
@@ -2052,7 +2054,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 
 				if (!p_only_functions) {
 					List<PropertyInfo> members;
-					tmp.get_property_list(&members);
+					p_base.value.get_property_list(&members);
 
 					for (List<PropertyInfo>::Element *E = members.front(); E; E = E->next()) {
 						if (String(E->get().name).find("/") == -1) {
@@ -2176,7 +2178,8 @@ static void _find_identifiers(const GDScriptCompletionContext &p_context, bool p
 static void _find_call_arguments(const GDScriptCompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_method, int p_argidx, bool p_static, Set<String> &r_result, String &r_arghint) {
 	Variant base = p_base.value;
 	GDScriptParser::DataType base_type = p_base.type;
-	bool _static = false;
+
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 
 	while (base_type.has_type) {
 		switch (base_type.kind) {
@@ -2187,18 +2190,16 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 						return;
 					}
 				}
-				if (!_static) {
-					for (int i = 0; i < base_type.class_type->functions.size(); i++) {
-						if (base_type.class_type->functions[i]->name == p_method) {
-							r_arghint = _make_arguments_hint(base_type.class_type->functions[i], p_argidx);
-							return;
-						}
+				for (int i = 0; i < base_type.class_type->functions.size(); i++) {
+					if (base_type.class_type->functions[i]->name == p_method) {
+						r_arghint = _make_arguments_hint(base_type.class_type->functions[i], p_argidx);
+						return;
 					}
 				}
 
 				if ((p_method == "connect" || p_method == "emit_signal") && p_argidx == 0) {
 					for (int i = 0; i < base_type.class_type->_signals.size(); i++) {
-						r_result.insert("\"" + base_type.class_type->_signals[i].name.operator String() + "\"");
+						r_result.insert(quote_style + base_type.class_type->_signals[i].name.operator String() + quote_style);
 					}
 				}
 
@@ -2211,7 +2212,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 						List<MethodInfo> signals;
 						gds->get_script_signal_list(&signals);
 						for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
-							r_result.insert("\"" + E->get().name + "\"");
+							r_result.insert(quote_style + E->get().name + quote_style);
 						}
 					}
 					Ref<GDScript> base_script = gds->get_base_script();
@@ -2270,7 +2271,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 					List<MethodInfo> signals;
 					ClassDB::get_signal_list(class_name, &signals);
 					for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
-						r_result.insert("\"" + E->get().name + "\"");
+						r_result.insert(quote_style + E->get().name + quote_style);
 					}
 				}
 
@@ -2285,7 +2286,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 							continue;
 						}
 						String name = s.get_slice("/", 1);
-						r_result.insert("\"/root/" + name + "\"");
+						r_result.insert(quote_style + "/root/" + name + quote_style);
 					}
 				}
 
@@ -2299,7 +2300,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 							continue;
 						}
 						String name = s.get_slice("/", 1);
-						r_result.insert("\"" + name + "\"");
+						r_result.insert(quote_style + name + quote_style);
 					}
 				}
 
@@ -2333,6 +2334,8 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 }
 
 static void _find_call_arguments(GDScriptCompletionContext &p_context, const GDScriptParser::Node *p_node, int p_argidx, Set<String> &r_result, bool &r_forced, String &r_arghint) {
+
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 
 	if (!p_node || p_node->type != GDScriptParser::Node::TYPE_OPERATOR) {
 		return;
@@ -2451,18 +2454,20 @@ static void _find_call_arguments(GDScriptCompletionContext &p_context, const GDS
 		Set<String> methods;
 		_find_identifiers_in_base(p_context, connect_base, true, methods);
 		for (Set<String>::Element *E = methods.front(); E; E = E->next()) {
-			r_result.insert("\"" + E->get().replace("(", "").replace(")", "") + "\"");
+			r_result.insert(quote_style + E->get().replace("(", "").replace(")", "") + quote_style);
 		}
 	}
 
 	r_forced = r_result.size() > 0;
 }
 
-Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
+Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
+
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 
 	GDScriptParser parser;
 
-	parser.parse(p_code, p_base_path, false, "", true);
+	parser.parse(p_code, p_path.get_base_dir(), false, p_path, true);
 	r_forced = false;
 	Set<String> options;
 	GDScriptCompletionContext context;
@@ -2473,7 +2478,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 
 	if (!context._class || context._class->owner == NULL) {
 		context.base = p_owner;
-		context.base_path = p_base_path;
+		context.base_path = p_path.get_base_dir();
 	}
 
 	bool is_function = false;
@@ -2526,7 +2531,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 						continue;
 					}
 					String name = s.get_slice("/", 1);
-					options.insert("\"/root/" + name + "\"");
+					options.insert(quote_style + "/root/" + name + quote_style);
 				}
 			}
 		} break;
@@ -2666,7 +2671,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 				switch (base_type.kind) {
 					case GDScriptParser::DataType::CLASS: {
 						for (int i = 0; i < base_type.class_type->_signals.size(); i++) {
-							options.insert("\"" + base_type.class_type->_signals[i].name.operator String() + "\"");
+							options.insert(quote_style + base_type.class_type->_signals[i].name.operator String() + quote_style);
 						}
 						base_type = base_type.class_type->base_type;
 					} break;
@@ -2677,7 +2682,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 							List<MethodInfo> signals;
 							scr->get_script_signal_list(&signals);
 							for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
-								options.insert("\"" + E->get().name + "\"");
+								options.insert(quote_style + E->get().name + quote_style);
 							}
 							Ref<Script> base_script = scr->get_base_script();
 							if (base_script.is_valid()) {
@@ -2704,7 +2709,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 						List<MethodInfo> signals;
 						ClassDB::get_signal_list(class_name, &signals);
 						for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
-							options.insert("\"" + E->get().name + "\"");
+							options.insert(quote_style + E->get().name + quote_style);
 						}
 					} break;
 					default: {
@@ -2879,7 +2884,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 
 #else
 
-Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
+Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
 	return OK;
 }
 
@@ -2890,7 +2895,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 String GDScriptLanguage::_get_indentation() const {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		bool use_space_indentation = EDITOR_DEF("text_editor/indent/type", 0);
+		bool use_space_indentation = EDITOR_DEF("text_editor/indent/type", false);
 
 		if (use_space_indentation) {
 			int indent_size = EDITOR_DEF("text_editor/indent/size", 4);
@@ -3150,7 +3155,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 	return ERR_CANT_RESOLVE;
 }
 
-Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol, const String &p_base_path, Object *p_owner, LookupResult &r_result) {
+Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) {
 
 	//before parsing, try the usual stuff
 	if (ClassDB::class_exists(p_symbol)) {
@@ -3192,7 +3197,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 	}
 
 	GDScriptParser parser;
-	parser.parse(p_code, p_base_path, false, "", true);
+	parser.parse(p_code, p_path.get_base_dir(), false, p_path, true);
 
 	if (parser.get_completion_type() == GDScriptParser::COMPLETION_NONE) {
 		return ERR_CANT_RESOLVE;
@@ -3204,7 +3209,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 	context.block = parser.get_completion_block();
 	context.line = parser.get_completion_line();
 	context.base = p_owner;
-	context.base_path = p_base_path;
+	context.base_path = p_path.get_base_dir();
 
 	if (context._class && context._class->extends_class.size() > 0) {
 		bool success = false;

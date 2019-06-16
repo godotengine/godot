@@ -116,11 +116,13 @@ private:
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
 	DependencyRemoveDialog *remove_dialog;
+
 	ToolButton *mode_thumbnails;
 	ToolButton *mode_list;
 
 	ToolButton *refresh;
 	ToolButton *favorite;
+	ToolButton *show_hidden;
 
 	ToolButton *fav_up;
 	ToolButton *fav_down;
@@ -150,7 +152,7 @@ private:
 	void update_filters();
 
 	void _update_favorites();
-	void _favorite_toggled(bool p_toggle);
+	void _favorite_pressed();
 	void _favorite_selected(int p_idx);
 	void _favorite_move_up();
 	void _favorite_move_down();

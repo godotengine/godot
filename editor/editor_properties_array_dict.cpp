@@ -645,7 +645,7 @@ void EditorPropertyDictionary::update_property() {
 			page->set_h_size_flags(SIZE_EXPAND_FILL);
 			page->connect("value_changed", this, "_page_changed");
 		} else {
-			// Queue childs for deletion, delete immediately might cause errors.
+			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = 1; i < vbox->get_child_count(); i++) {
 				vbox->get_child(i)->queue_delete();
 			}

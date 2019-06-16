@@ -16,15 +16,15 @@ void main() {
 #define TWO_PI 6.283185307179586476925286766559
 
 #ifdef SSAO_QUALITY_HIGH
-#define NUM_SAMPLES (80)
+#define NUM_SAMPLES (16)
 #endif
 
 #ifdef SSAO_QUALITY_LOW
-#define NUM_SAMPLES (15)
+#define NUM_SAMPLES (8)
 #endif
 
 #if !defined(SSAO_QUALITY_LOW) && !defined(SSAO_QUALITY_HIGH)
-#define NUM_SAMPLES (40)
+#define NUM_SAMPLES (12)
 #endif
 
 // If using depth mip levels, the log of the maximum pixel offset before we need to switch to a lower

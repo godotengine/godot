@@ -813,21 +813,28 @@ void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_phi) {
 	ERR_FAIL_COND(!p_axis.is_normalized());
 #endif
 	Vector3 axis_sq(p_axis.x * p_axis.x, p_axis.y * p_axis.y, p_axis.z * p_axis.z);
-
 	real_t cosine = Math::cos(p_phi);
-	real_t sine = Math::sin(p_phi);
-
 	elements[0][0] = axis_sq.x + cosine * (1.0 - axis_sq.x);
-	elements[0][1] = p_axis.x * p_axis.y * (1.0 - cosine) - p_axis.z * sine;
-	elements[0][2] = p_axis.z * p_axis.x * (1.0 - cosine) + p_axis.y * sine;
-
-	elements[1][0] = p_axis.x * p_axis.y * (1.0 - cosine) + p_axis.z * sine;
 	elements[1][1] = axis_sq.y + cosine * (1.0 - axis_sq.y);
-	elements[1][2] = p_axis.y * p_axis.z * (1.0 - cosine) - p_axis.x * sine;
-
-	elements[2][0] = p_axis.z * p_axis.x * (1.0 - cosine) - p_axis.y * sine;
-	elements[2][1] = p_axis.y * p_axis.z * (1.0 - cosine) + p_axis.x * sine;
 	elements[2][2] = axis_sq.z + cosine * (1.0 - axis_sq.z);
+
+	real_t sine = Math::sin(p_phi);
+	real_t t = 1 - cosine;
+
+	real_t xyzt = p_axis.x * p_axis.y * t;
+	real_t zyxs = p_axis.z * sine;
+	elements[0][1] = xyzt - zyxs;
+	elements[1][0] = xyzt + zyxs;
+
+	xyzt = p_axis.x * p_axis.z * t;
+	zyxs = p_axis.y * sine;
+	elements[0][2] = xyzt + zyxs;
+	elements[2][0] = xyzt - zyxs;
+
+	xyzt = p_axis.y * p_axis.z * t;
+	zyxs = p_axis.x * sine;
+	elements[1][2] = xyzt - zyxs;
+	elements[2][1] = xyzt + zyxs;
 }
 
 void Basis::set_axis_angle_scale(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) {

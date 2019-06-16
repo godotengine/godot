@@ -57,7 +57,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Return the determinant of the matrix.
+				Returns the determinant of the matrix.
 			</description>
 		</method>
 		<method name="get_euler">
@@ -91,7 +91,7 @@
 			<return type="Basis">
 			</return>
 			<description>
-				Return the inverse of the matrix.
+				Returns the inverse of the matrix.
 			</description>
 		</method>
 		<method name="is_equal_approx">
@@ -108,7 +108,7 @@
 			<return type="Basis">
 			</return>
 			<description>
-				Return the orthonormalized version of the matrix (useful to call from time to time to avoid rounding error for orthogonal matrices). This performs a Gram-Schmidt orthonormalization on the basis of the matrix.
+				Returns the orthonormalized version of the matrix (useful to call from time to time to avoid rounding error for orthogonal matrices). This performs a Gram-Schmidt orthonormalization on the basis of the matrix.
 			</description>
 		</method>
 		<method name="rotated">
@@ -173,7 +173,7 @@
 			<return type="Basis">
 			</return>
 			<description>
-				Return the transposed version of the matrix.
+				Returns the transposed version of the matrix.
 			</description>
 		</method>
 		<method name="xform">
@@ -182,7 +182,7 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
-				Return a vector transformed (multiplied) by the matrix.
+				Returns a vector transformed (multiplied) by the matrix.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -191,7 +191,7 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
-				Return a vector transformed (multiplied) by the transposed matrix. Note that this results in a multiplication by the inverse of the matrix only if it represents a rotation-reflection.
+				Returns a vector transformed (multiplied) by the transposed matrix. Note that this results in a multiplication by the inverse of the matrix only if it represents a rotation-reflection.
 			</description>
 		</method>
 	</methods>

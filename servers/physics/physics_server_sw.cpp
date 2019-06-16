@@ -283,7 +283,7 @@ PhysicsServer::AreaSpaceOverrideMode PhysicsServerSW::area_get_space_override_mo
 	return area->get_space_override_mode();
 }
 
-void PhysicsServerSW::area_add_shape(RID p_area, RID p_shape, const Transform &p_transform) {
+void PhysicsServerSW::area_add_shape(RID p_area, RID p_shape, const Transform &p_transform, bool p_disabled) {
 
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
@@ -291,7 +291,7 @@ void PhysicsServerSW::area_add_shape(RID p_area, RID p_shape, const Transform &p
 	ShapeSW *shape = shape_owner.get(p_shape);
 	ERR_FAIL_COND(!shape);
 
-	area->add_shape(shape, p_transform);
+	area->add_shape(shape, p_transform, p_disabled);
 }
 
 void PhysicsServerSW::area_set_shape(RID p_area, int p_shape_idx, RID p_shape) {
@@ -365,7 +365,7 @@ void PhysicsServerSW::area_set_shape_disabled(RID p_area, int p_shape_idx, bool 
 	area->set_shape_as_disabled(p_shape_idx, p_disabled);
 }
 
-void PhysicsServerSW::area_attach_object_instance_id(RID p_area, ObjectID p_ID) {
+void PhysicsServerSW::area_attach_object_instance_id(RID p_area, ObjectID p_id) {
 
 	if (space_owner.owns(p_area)) {
 		SpaceSW *space = space_owner.get(p_area);
@@ -373,7 +373,7 @@ void PhysicsServerSW::area_attach_object_instance_id(RID p_area, ObjectID p_ID) 
 	}
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
-	area->set_instance_id(p_ID);
+	area->set_instance_id(p_id);
 }
 ObjectID PhysicsServerSW::area_get_object_instance_id(RID p_area) const {
 
@@ -540,7 +540,7 @@ PhysicsServer::BodyMode PhysicsServerSW::body_get_mode(RID p_body) const {
 	return body->get_mode();
 };
 
-void PhysicsServerSW::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform) {
+void PhysicsServerSW::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform, bool p_disabled) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -548,7 +548,7 @@ void PhysicsServerSW::body_add_shape(RID p_body, RID p_shape, const Transform &p
 	ShapeSW *shape = shape_owner.get(p_shape);
 	ERR_FAIL_COND(!shape);
 
-	body->add_shape(shape, p_transform);
+	body->add_shape(shape, p_transform, p_disabled);
 }
 
 void PhysicsServerSW::body_set_shape(RID p_body, int p_shape_idx, RID p_shape) {
@@ -673,12 +673,12 @@ uint32_t PhysicsServerSW::body_get_collision_mask(RID p_body) const {
 	return body->get_collision_mask();
 }
 
-void PhysicsServerSW::body_attach_object_instance_id(RID p_body, uint32_t p_ID) {
+void PhysicsServerSW::body_attach_object_instance_id(RID p_body, uint32_t p_id) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->set_instance_id(p_ID);
+	body->set_instance_id(p_id);
 };
 
 uint32_t PhysicsServerSW::body_get_object_instance_id(RID p_body) const {

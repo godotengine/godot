@@ -15,7 +15,7 @@
 			<argument index="0" name="base64_str" type="String">
 			</argument>
 			<description>
-				Return [PoolByteArray] of a given base64 encoded String.
+				Returns [PoolByteArray] of a given base64 encoded String.
 			</description>
 		</method>
 		<method name="base64_to_utf8">
@@ -24,7 +24,7 @@
 			<argument index="0" name="base64_str" type="String">
 			</argument>
 			<description>
-				Return utf8 String of a given base64 encoded String.
+				Returns utf8 String of a given base64 encoded String.
 			</description>
 		</method>
 		<method name="base64_to_variant">
@@ -35,7 +35,7 @@
 			<argument index="1" name="allow_objects" type="bool" default="false">
 			</argument>
 			<description>
-				Return [Variant] of a given base64 encoded String. When [code]allow_objects[/code] is [code]true[/code] decoding objects is allowed.
+				Returns [Variant] of a given base64 encoded String. When [code]allow_objects[/code] is [code]true[/code] decoding objects is allowed.
 				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
@@ -45,7 +45,7 @@
 			<argument index="0" name="array" type="PoolByteArray">
 			</argument>
 			<description>
-				Return base64 encoded String of a given [PoolByteArray].
+				Returns base64 encoded String of a given [PoolByteArray].
 			</description>
 		</method>
 		<method name="utf8_to_base64">
@@ -54,7 +54,7 @@
 			<argument index="0" name="utf8_str" type="String">
 			</argument>
 			<description>
-				Return base64 encoded String of a given utf8 String.
+				Returns base64 encoded String of a given utf8 String.
 			</description>
 		</method>
 		<method name="variant_to_base64">
@@ -65,7 +65,7 @@
 			<argument index="1" name="full_objects" type="bool" default="false">
 			</argument>
 			<description>
-				Return base64 encoded String of a given [Variant]. When [code]full_objects[/code] is [code]true[/code] encoding objects is allowed (and can potentially include code).
+				Returns base64 encoded String of a given [Variant]. When [code]full_objects[/code] is [code]true[/code] encoding objects is allowed (and can potentially include code).
 			</description>
 		</method>
 	</methods>

@@ -1060,8 +1060,7 @@ void Polygon2DEditor::_uv_draw() {
 		polygon_fill_color.push_back(pf);
 	}
 	Color prev_color = Color(0.5, 0.5, 0.5);
-	Rect2 rect(Point2(), mtx.basis_xform(base_tex->get_size()));
-	rect.expand_to(mtx.basis_xform(uv_edit_draw->get_size()));
+	Rect2 rect;
 
 	int uv_draw_max = uvs.size();
 
@@ -1204,7 +1203,8 @@ void Polygon2DEditor::_uv_draw() {
 		uv_edit_draw->draw_circle(bone_paint_pos, bone_paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
 	}
 
-	rect = rect.grow(200);
+	rect.position -= uv_edit_draw->get_size();
+	rect.size += uv_edit_draw->get_size() * 2.0;
 	updating_uv_scroll = true;
 	uv_hscroll->set_min(rect.position.x);
 	uv_hscroll->set_max(rect.position.x + rect.size.x);

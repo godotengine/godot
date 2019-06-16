@@ -17,6 +17,7 @@ subject to the following restrictions:
 #define BT_HEIGHTFIELD_TERRAIN_SHAPE_H
 
 #include "btConcaveShape.h"
+#include "LinearMath/btAlignedObjectArray.h"
 
 ///btHeightfieldTerrainShape simulates a 2D heightfield terrain
 /**
@@ -71,6 +72,13 @@ subject to the following restrictions:
 ATTRIBUTE_ALIGNED16(class)
 btHeightfieldTerrainShape : public btConcaveShape
 {
+public:
+	struct Range
+	{
+		btScalar min;
+		btScalar max;
+	};
+
 protected:
 	btVector3 m_localAabbMin;
 	btVector3 m_localAabbMax;
@@ -95,14 +103,19 @@ protected:
 	bool m_flipQuadEdges;
 	bool m_useDiamondSubdivision;
 	bool m_useZigzagSubdivision;
-
+	bool m_flipTriangleWinding;
 	int m_upAxis;
 
 	btVector3 m_localScaling;
 
+	// Accelerator
+	btAlignedObjectArray<Range> m_vboundsGrid;
+	int m_vboundsGridWidth;
+	int m_vboundsGridLength;
+	int m_vboundsChunkSize;
+
 	virtual btScalar getRawHeightFieldValue(int x, int y) const;
 	void quantizeWithClamp(int* out, const btVector3& point, int isMax) const;
-	void getVertex(int x, int y, btVector3& vertex) const;
 
 	/// protected initialization
 	/**
@@ -145,6 +158,10 @@ public:
 	///could help compatibility with Ogre heightfields. See https://code.google.com/p/bullet/issues/detail?id=625
 	void setUseZigzagSubdivision(bool useZigzagSubdivision = true) { m_useZigzagSubdivision = useZigzagSubdivision; }
 
+	void setFlipTriangleWinding(bool flipTriangleWinding)
+	{
+		m_flipTriangleWinding = flipTriangleWinding;
+	}
 	virtual void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const;
 
 	virtual void processAllTriangles(btTriangleCallback * callback, const btVector3& aabbMin, const btVector3& aabbMax) const;
@@ -155,6 +172,17 @@ public:
 
 	virtual const btVector3& getLocalScaling() const;
 
+	void getVertex(int x, int y, btVector3& vertex) const;
+
+	void performRaycast(btTriangleCallback * callback, const btVector3& raySource, const btVector3& rayTarget) const;
+
+	void buildAccelerator(int chunkSize = 16);
+	void clearAccelerator();
+
+	int getUpAxis() const
+	{
+		return m_upAxis;
+	}
 	//debugging
 	virtual const char* getName() const { return "HEIGHTFIELD"; }
 };

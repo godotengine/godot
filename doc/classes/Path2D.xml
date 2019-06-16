@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Can have [PathFollow2D] child-nodes moving along the [Curve2D]. See [PathFollow2D] for more information on this usage.
+		Note that the path is considered as relative to the moved nodes (children of [PathFollow2D]) - usually the curve should start with a zero vector (0, 0).
 	</description>
 	<tutorials>
 	</tutorials>

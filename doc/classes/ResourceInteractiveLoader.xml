@@ -13,21 +13,21 @@
 			<return type="Resource">
 			</return>
 			<description>
-				Return the loaded resource (only if loaded). Otherwise, returns null.
+				Returns the loaded resource (only if loaded). Otherwise, returns null.
 			</description>
 		</method>
 		<method name="get_stage" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the load stage. The total amount of stages can be queried with [method get_stage_count]
+				Returns the load stage. The total amount of stages can be queried with [method get_stage_count]
 			</description>
 		</method>
 		<method name="get_stage_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the total amount of stages (calls to [method poll]) needed to completely load this resource.
+				Returns the total amount of stages (calls to [method poll]) needed to completely load this resource.
 			</description>
 		</method>
 		<method name="poll">

@@ -53,6 +53,22 @@
 			<description>
 			</description>
 		</method>
+		<method name="connect_nodes_forced">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<argument index="1" name="from_node" type="int">
+			</argument>
+			<argument index="2" name="from_port" type="int">
+			</argument>
+			<argument index="3" name="to_node" type="int">
+			</argument>
+			<argument index="4" name="to_port" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="disconnect_nodes">
 			<return type="void">
 			</return>
@@ -126,6 +142,12 @@
 			</argument>
 			<argument index="4" name="to_port" type="int">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="rebuild">
+			<return type="void">
+			</return>
 			<description>
 			</description>
 		</method>

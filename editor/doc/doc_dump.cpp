@@ -111,7 +111,7 @@ void DocDump::dump(const String &p_file) {
 
 		for (List<MethodInfo>::Element *E = method_list.front(); E; E = E->next()) {
 			if (E->get().name == "" || E->get().name[0] == '_')
-				continue; //hiden
+				continue; //hidden
 
 			MethodBind *m = ClassDB::get_method(name, E->get().name);
 

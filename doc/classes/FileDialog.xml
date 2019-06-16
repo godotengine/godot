@@ -43,7 +43,7 @@
 			<return type="VBoxContainer">
 			</return>
 			<description>
-				Return the vertical box container of the dialog, custom controls can be added to it.
+				Returns the vertical box container of the dialog, custom controls can be added to it.
 			</description>
 		</method>
 		<method name="invalidate">
@@ -137,6 +137,8 @@
 		<theme_item name="parent_folder" type="Texture">
 		</theme_item>
 		<theme_item name="reload" type="Texture">
+		</theme_item>
+		<theme_item name="toggle_hidden" type="Texture">
 		</theme_item>
 	</theme_items>
 </class>

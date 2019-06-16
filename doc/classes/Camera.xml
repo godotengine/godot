@@ -18,6 +18,13 @@
 				If this is the current Camera, remove it from being current. If [code]enable_next[/code] is [code]true[/code], request to make the next Camera current, if any.
 			</description>
 		</method>
+		<method name="get_camera_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+				Returns the camera's RID from the [VisualServer].
+			</description>
+		</method>
 		<method name="get_camera_transform" qualifiers="const">
 			<return type="Transform">
 			</return>
@@ -69,8 +76,10 @@
 			</return>
 			<argument index="0" name="screen_point" type="Vector2">
 			</argument>
+			<argument index="1" name="z_depth" type="float" default="0">
+			</argument>
 			<description>
-				Returns the 3D point in worldspace that maps to the given 2D coordinate in the [Viewport] rectangle.
+				Returns the 3D point in worldspace that maps to the given 2D coordinate in the [Viewport] rectangle on a plane that is the given distance into the scene away from the camera.
 			</description>
 		</method>
 		<method name="project_ray_normal" qualifiers="const">
@@ -97,6 +106,20 @@
 			<argument index="0" name="layer" type="int">
 			</argument>
 			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_frustum">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="float">
+			</argument>
+			<argument index="1" name="offset" type="Vector2">
+			</argument>
+			<argument index="2" name="z_near" type="float">
+			</argument>
+			<argument index="3" name="z_far" type="float">
 			</argument>
 			<description>
 			</description>
@@ -156,6 +179,8 @@
 		<member name="fov" type="float" setter="set_fov" getter="get_fov">
 			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [code]fov[/code] sets the other axis' field of view angle.
 		</member>
+		<member name="frustum_offset" type="Vector2" setter="set_frustum_offset" getter="get_frustum_offset">
+		</member>
 		<member name="h_offset" type="float" setter="set_h_offset" getter="get_h_offset">
 			The horizontal (X) offset of the Camera viewport.
 		</member>
@@ -180,7 +205,9 @@
 			Perspective Projection (object's size on the screen becomes smaller when far away).
 		</constant>
 		<constant name="PROJECTION_ORTHOGONAL" value="1" enum="Projection">
-			Orthogonal Projection (objects remain the same size on the screen no matter how far away they are).
+			Orthogonal Projection (objects remain the same size on the screen no matter how far away they are; also known as orthographic projection).
+		</constant>
+		<constant name="PROJECTION_FRUSTUM" value="2" enum="Projection">
 		</constant>
 		<constant name="KEEP_WIDTH" value="0" enum="KeepAspect">
 			Preserves the horizontal aspect ratio.

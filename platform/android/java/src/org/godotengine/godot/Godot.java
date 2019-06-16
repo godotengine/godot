@@ -1059,4 +1059,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		mProgressFraction.setText(Helpers.getDownloadProgressString(progress.mOverallProgress,
 				progress.mOverallTotal));
 	}
+	public void initInputDevices() {
+		mView.initInputDevices();
+	}
 }

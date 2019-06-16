@@ -31,6 +31,7 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
+#include "core/math/delaunay.h"
 #include "core/math/face3.h"
 #include "core/math/rect2.h"
 #include "core/math/triangulate.h"
@@ -181,8 +182,8 @@ public:
 			}
 		}
 		// finally do the division to get sc and tc
-		sc = (Math::abs(sN) < CMP_EPSILON ? 0.0 : sN / sD);
-		tc = (Math::abs(tN) < CMP_EPSILON ? 0.0 : tN / tD);
+		sc = (Math::is_zero_approx(sN) ? 0.0 : sN / sD);
+		tc = (Math::is_zero_approx(tN) ? 0.0 : tN / tD);
 
 		// get the difference of the two closest points
 		Vector3 dP = w + (sc * u) - (tc * v); // = S1(sc) - S2(tc)
@@ -195,7 +196,7 @@ public:
 		Vector3 e2 = p_v2 - p_v0;
 		Vector3 h = p_dir.cross(e2);
 		real_t a = e1.dot(h);
-		if (a > -CMP_EPSILON && a < CMP_EPSILON) // parallel test
+		if (Math::is_zero_approx(a)) // parallel test
 			return false;
 
 		real_t f = 1.0 / a;
@@ -233,7 +234,7 @@ public:
 		Vector3 e2 = p_v2 - p_v0;
 		Vector3 h = rel.cross(e2);
 		real_t a = e1.dot(h);
-		if (a > -CMP_EPSILON && a < CMP_EPSILON) // parallel test
+		if (Math::is_zero_approx(a)) // parallel test
 			return false;
 
 		real_t f = 1.0 / a;
@@ -535,7 +536,7 @@ public:
 		// see http://paulbourke.net/geometry/pointlineplane/
 
 		const real_t denom = p_dir_b.y * p_dir_a.x - p_dir_b.x * p_dir_a.y;
-		if (Math::abs(denom) < CMP_EPSILON) { // parallel?
+		if (Math::is_zero_approx(denom)) { // parallel?
 			return false;
 		}
 
@@ -785,6 +786,91 @@ public:
 		return clipped;
 	}
 
+	enum PolyBooleanOperation {
+		OPERATION_UNION,
+		OPERATION_DIFFERENCE,
+		OPERATION_INTERSECTION,
+		OPERATION_XOR
+	};
+	enum PolyJoinType {
+		JOIN_SQUARE,
+		JOIN_ROUND,
+		JOIN_MITER
+	};
+	enum PolyEndType {
+		END_POLYGON,
+		END_JOINED,
+		END_BUTT,
+		END_SQUARE,
+		END_ROUND
+	};
+
+	static Vector<Vector<Point2> > merge_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
+
+		return _polypaths_do_operation(OPERATION_UNION, p_polygon_a, p_polygon_b);
+	}
+
+	static Vector<Vector<Point2> > clip_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
+
+		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polygon_a, p_polygon_b);
+	}
+
+	static Vector<Vector<Point2> > intersect_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
+
+		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polygon_a, p_polygon_b);
+	}
+
+	static Vector<Vector<Point2> > exclude_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
+
+		return _polypaths_do_operation(OPERATION_XOR, p_polygon_a, p_polygon_b);
+	}
+
+	static Vector<Vector<Point2> > clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+
+		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polyline, p_polygon, true);
+	}
+
+	static Vector<Vector<Point2> > intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+
+		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polyline, p_polygon, true);
+	}
+
+	static Vector<Vector<Point2> > offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
+
+		return _polypath_offset(p_polygon, p_delta, p_join_type, END_POLYGON);
+	}
+
+	static Vector<Vector<Point2> > offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+
+		ERR_EXPLAIN("Attempt to offset a polyline like a polygon (use offset_polygon_2d instead).");
+		ERR_FAIL_COND_V(p_end_type == END_POLYGON, Vector<Vector<Point2> >());
+
+		return _polypath_offset(p_polygon, p_delta, p_join_type, p_end_type);
+	}
+
+	static Vector<Point2> transform_points_2d(const Vector<Point2> &p_points, const Transform2D &p_mat) {
+
+		Vector<Point2> points;
+
+		for (int i = 0; i < p_points.size(); ++i) {
+			points.push_back(p_mat.xform(p_points[i]));
+		}
+		return points;
+	}
+
+	static Vector<int> triangulate_delaunay_2d(const Vector<Vector2> &p_points) {
+
+		Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(p_points);
+		Vector<int> triangles;
+
+		for (int i = 0; i < tr.size(); i++) {
+			triangles.push_back(tr[i].points[0]);
+			triangles.push_back(tr[i].points[1]);
+			triangles.push_back(tr[i].points[2]);
+		}
+		return triangles;
+	}
+
 	static Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon) {
 
 		Vector<int> triangles;
@@ -833,7 +919,7 @@ public:
 			further_away_opposite.y = MIN(p[i].y, further_away_opposite.y);
 		}
 
-		further_away += (further_away - further_away_opposite) * Vector2(1.221313, 1.512312); // make point outside that wont intersect with points in segment from p_point
+		further_away += (further_away - further_away_opposite) * Vector2(1.221313, 1.512312); // make point outside that won't intersect with points in segment from p_point
 
 		int intersections = 0;
 		for (int i = 0; i < c; i++) {
@@ -951,7 +1037,6 @@ public:
 		H.resize(k);
 		return H;
 	}
-
 	static Vector<Vector<Vector2> > decompose_polygon_in_convex(Vector<Point2> polygon);
 
 	static MeshData build_convex_mesh(const PoolVector<Plane> &p_planes);
@@ -961,6 +1046,10 @@ public:
 	static PoolVector<Plane> build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
+
+private:
+	static Vector<Vector<Point2> > _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);
+	static Vector<Vector<Point2> > _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type);
 };
 
 #endif

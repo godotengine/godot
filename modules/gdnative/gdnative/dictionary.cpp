@@ -55,6 +55,15 @@ void GDAPI godot_dictionary_destroy(godot_dictionary *p_self) {
 	self->~Dictionary();
 }
 
+godot_dictionary GDAPI godot_dictionary_duplicate(const godot_dictionary *p_self, const godot_bool p_deep) {
+	const Dictionary *self = (const Dictionary *)p_self;
+	godot_dictionary res;
+	Dictionary *val = (Dictionary *)&res;
+	memnew_placement(val, Dictionary);
+	*val = self->duplicate(p_deep);
+	return res;
+}
+
 godot_int GDAPI godot_dictionary_size(const godot_dictionary *p_self) {
 	const Dictionary *self = (const Dictionary *)p_self;
 	return self->size();

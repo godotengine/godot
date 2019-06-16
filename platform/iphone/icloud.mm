@@ -138,7 +138,7 @@ Variant nsobject_to_variant(NSObject *object) {
 		//this is a type that icloud supports...but how did you submit it in the first place?
 		//I guess this is a type that *might* show up, if you were, say, trying to make your game
 		//compatible with existing cloud data written by another engine's version of your game
-		WARN_PRINT("NSDate unsupported, returning null Variant")
+		WARN_PRINT("NSDate unsupported, returning null Variant");
 		return Variant();
 	} else if ([object isKindOfClass:[NSNull class]] or object == nil) {
 		return Variant();

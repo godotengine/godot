@@ -94,6 +94,7 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_b, real_t p_t) const;
 	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const;
 	Vector3 cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const;
+	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_b) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_b) const;
@@ -223,7 +224,7 @@ Vector3 Vector3::slerp(const Vector3 &p_b, real_t p_t) const {
 #endif
 
 	real_t theta = angle_to(p_b);
-	return rotated(cross(p_b), theta * p_t);
+	return rotated(cross(p_b).normalized(), theta * p_t);
 }
 
 real_t Vector3::distance_to(const Vector3 &p_b) const {
@@ -341,17 +342,17 @@ Vector3 Vector3::operator-() const {
 
 bool Vector3::operator==(const Vector3 &p_v) const {
 
-	return (x == p_v.x && y == p_v.y && z == p_v.z);
+	return (Math::is_equal_approx(x, p_v.x) && Math::is_equal_approx(y, p_v.y) && Math::is_equal_approx(z, p_v.z));
 }
 
 bool Vector3::operator!=(const Vector3 &p_v) const {
-	return (x != p_v.x || y != p_v.y || z != p_v.z);
+	return (!Math::is_equal_approx(x, p_v.x) || !Math::is_equal_approx(y, p_v.y) || !Math::is_equal_approx(z, p_v.z));
 }
 
 bool Vector3::operator<(const Vector3 &p_v) const {
 
-	if (x == p_v.x) {
-		if (y == p_v.y)
+	if (Math::is_equal_approx(x, p_v.x)) {
+		if (Math::is_equal_approx(y, p_v.y))
 			return z < p_v.z;
 		else
 			return y < p_v.y;
@@ -362,8 +363,8 @@ bool Vector3::operator<(const Vector3 &p_v) const {
 
 bool Vector3::operator<=(const Vector3 &p_v) const {
 
-	if (x == p_v.x) {
-		if (y == p_v.y)
+	if (Math::is_equal_approx(x, p_v.x)) {
+		if (Math::is_equal_approx(y, p_v.y))
 			return z <= p_v.z;
 		else
 			return y < p_v.y;
@@ -402,13 +403,14 @@ real_t Vector3::length_squared() const {
 
 void Vector3::normalize() {
 
-	real_t l = length();
-	if (l == 0) {
+	real_t lengthsq = length_squared();
+	if (lengthsq == 0) {
 		x = y = z = 0;
 	} else {
-		x /= l;
-		y /= l;
-		z /= l;
+		real_t length = Math::sqrt(lengthsq);
+		x /= length;
+		y /= length;
+		z /= length;
 	}
 }
 

@@ -316,7 +316,7 @@ String AnimationNode::get_caption() const {
 
 void AnimationNode::add_input(const String &p_name) {
 	//root nodes can't add inputs
-	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != NULL)
+	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != NULL);
 	Input input;
 	ERR_FAIL_COND(p_name.find(".") != -1 || p_name.find("/") != -1);
 	input.name = p_name;
@@ -1580,6 +1580,7 @@ AnimationTree::AnimationTree() {
 	active = false;
 	cache_valid = false;
 	setup_pass = 1;
+	process_pass = 1;
 	started = true;
 	properties_dirty = true;
 	last_animation_player = 0;

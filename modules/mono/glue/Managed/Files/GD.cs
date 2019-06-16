@@ -111,7 +111,7 @@ namespace Godot
             godot_icall_GD_printt(Array.ConvertAll(what, x => x.ToString()));
         }
 
-        public static double Randf()
+        public static float Randf()
         {
             return godot_icall_GD_randf();
         }
@@ -224,13 +224,14 @@ namespace Godot
         internal extern static void godot_icall_GD_printt(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static double godot_icall_GD_randf();
+        internal extern static float godot_icall_GD_randf();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static uint godot_icall_GD_randi();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_GD_randomize();
+
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static double godot_icall_GD_rand_range(double from, double to);

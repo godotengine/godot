@@ -212,7 +212,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _input(const Ref<InputEvent> &p_event);
 
-	void _generic_search();
+	void _generic_search(String p_base_type = "");
 
 	void _members_gui_input(const Ref<InputEvent> &p_event);
 	void _on_nodes_delete();
@@ -263,7 +263,10 @@ public:
 	virtual Variant get_edit_state();
 	virtual void set_edit_state(const Variant &p_state);
 	virtual void goto_line(int p_line, bool p_with_error = false);
+	virtual void set_executing_line(int p_line);
+	virtual void clear_executing_line();
 	virtual void trim_trailing_whitespace();
+	virtual void insert_final_newline();
 	virtual void convert_indent_to_spaces();
 	virtual void convert_indent_to_tabs();
 	virtual void ensure_focus();

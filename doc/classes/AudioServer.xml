@@ -184,11 +184,29 @@
 				Returns the sample rate at the output of the audioserver.
 			</description>
 		</method>
+		<method name="get_output_latency" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_speaker_mode" qualifiers="const">
 			<return type="int" enum="AudioServer.SpeakerMode">
 			</return>
 			<description>
 				Returns the speaker configuration.
+			</description>
+		</method>
+		<method name="get_time_since_last_mix" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_time_to_next_mix" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="is_bus_bypassing_effects" qualifiers="const">

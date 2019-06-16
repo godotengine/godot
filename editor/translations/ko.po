@@ -17,8 +17,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-04-05 13:04+0000\n"
-"Last-Translator: moolow <copyhyeon@gmail.com>\n"
+"PO-Revision-Date: 2019-05-10 08:15+0000\n"
+"Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -163,12 +163,18 @@ msgid "Animation Playback Track"
 msgstr "애니메이션 재생 트랙"
 
 #: editor/animation_track_editor.cpp
-msgid "Add Track"
-msgstr "트랙 추가"
+#, fuzzy
+msgid "Animation length (frames)"
+msgstr "애니메이션 길이 시간 (초)"
 
 #: editor/animation_track_editor.cpp
-msgid "Animation Length Time (seconds)"
+#, fuzzy
+msgid "Animation length (seconds)"
 msgstr "애니메이션 길이 시간 (초)"
+
+#: editor/animation_track_editor.cpp
+msgid "Add Track"
+msgstr "트랙 추가"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -250,11 +256,11 @@ msgstr "입방형"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr "클램프 루프 인터프리터"
+msgstr "루프 보간 고정"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr "랩 루프 인터프리터"
+msgstr "루프 보간 감추기"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -422,12 +428,20 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "노드 별로 그룹을 트랙 하거나 일반 목록으로 표시합니다."
 
 #: editor/animation_track_editor.cpp
-msgid "Snap (s): "
-msgstr "스냅: "
+msgid "Snap:"
+msgstr "스냅:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
 msgstr "애니메이션 단계 값."
+
+#: editor/animation_track_editor.cpp
+msgid "Seconds"
+msgstr "초"
+
+#: editor/animation_track_editor.cpp
+msgid "FPS"
+msgstr "초당 프레임"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3792,6 +3806,11 @@ msgid "Delete Node"
 msgstr "노드 삭제"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
+msgstr "노드 삭제"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Toggle Filter On/Off"
 msgstr "필터 켜기/끄기 토글"
 
@@ -4758,8 +4777,35 @@ msgid "Layout"
 msgstr "레이아웃"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert keys."
-msgstr "키 삽입."
+msgid "Translation mask for inserting keys."
+msgstr "키를 삽입하기 위한 전환 마스크."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Rotation mask for inserting keys."
+msgstr "키를 삽입하기 위한 회전 마스크."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale mask for inserting keys."
+msgstr "키를 삽입하기 위한 규모 마스크."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Insert keys (based on mask)."
+msgstr "키 삽입 (마스크 기준)."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Auto insert keys when objects are translated, rotated on scaled (based on "
+"mask).\n"
+"Keys are only added to existing tracks, no new tracks will be created.\n"
+"Keys must be inserted manually for the first time."
+msgstr ""
+"물체가 전환될 때 자동으로 키를 삽입합니다, 회전 또는 규모 (마스크 기준).\n"
+"키는 기존 트랙에만 추가되며, 새 트랙이 만들어지지 않습니다.\n"
+"처음에 키는 수동으로 삽입하여야 합니다."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Auto Insert Key"
+msgstr "자동 키 삽입"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -4830,6 +4876,52 @@ msgstr "폴리곤 편집 (점 삭제)"
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
 msgstr "핸들 설정"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Error loading image:"
+msgstr "이미지 불러오기 오류:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "No pixels with transparency > 128 in image..."
+msgstr "이미지에 투명도가 128보다 큰 픽셀이 없습니다..."
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Load Emission Mask"
+msgstr "에미션 마스크 불러오기"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr "에미션 마스크 정리"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Particles"
+msgstr "파티클"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generated Point Count:"
+msgstr "생성된 포인트 개수:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Mask"
+msgstr "에미션 마스크(Emission Mask)"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Capture from Pixel"
+msgstr "픽셀로부터 캡쳐"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Colors"
+msgstr "에미션 칼라"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
@@ -5181,51 +5273,14 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "오직 ParticlesMaterial 프로세스 메테리얼 안의 포인트만 설정 가능"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr "이미지 불러오기 오류:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr "이미지에 투명도가 128보다 큰 픽셀이 없습니다..."
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Load Emission Mask"
-msgstr "에미션 마스크 불러오기"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
-msgstr "에미션 마스크 정리"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Convert to CPUParticles"
 msgstr "CPU파티클로 변환"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Particles"
-msgstr "파티클"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generated Point Count:"
-msgstr "생성된 포인트 개수:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "생성 시간 (초):"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Mask"
-msgstr "에미션 마스크(Emission Mask)"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Capture from Pixel"
-msgstr "픽셀로부터 캡쳐"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Colors"
-msgstr "에미션 칼라"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -5736,8 +5791,8 @@ msgid "Save Theme As..."
 msgstr "테마 다른 이름으로 저장..."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid " Class Reference"
-msgstr " 클래스 레퍼런스"
+msgid "%s Class Reference"
+msgstr "%s 클래스 참조"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
@@ -6370,7 +6425,7 @@ msgstr "크기 조절 모드 (R)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
-msgstr "로컬 좌표"
+msgstr "지역 좌표"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Space Mode (%s)"
@@ -6562,6 +6617,22 @@ msgid "Nameless gizmo"
 msgstr "이름없는 오브젝트의 중심점"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+msgid "Create Mesh2D"
+msgstr "Mesh2D 만들기"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Create Polygon2D"
+msgstr "Polygon2D 만들기"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Create CollisionPolygon2D"
+msgstr "CollisionPolygon2D 만들기"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Create LightOccluder2D"
+msgstr "LightOccluder2D 만들기"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
 msgstr "스프라이트가 비었습니다!"
 
@@ -6571,19 +6642,39 @@ msgstr "스프라이트가 애니메이션 프레임을 사용해서 메시로 �
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't replace by mesh."
-msgstr "유효하지 않은 형상, 메시로 대체할 수 없습니다."
+msgstr "잘못된 형태, 메시로 대체할 수 없습니다."
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create polygon."
+msgstr "잘못된 형태, 폴리곤을 만들 수 없습니다."
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create collision polygon."
+msgstr "잘못된 형태, 충돌 폴리곤을 만들 수 없습니다."
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create light occluder."
+msgstr "잘못된 형태, 조명 어클루더를 만들 수 없습니다."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr "스프라이트"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Convert to 2D Mesh"
-msgstr "2D 메시로 전환"
+msgid "Convert to Mesh2D"
+msgstr "Mesh2D로 전환"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Create 2D Mesh"
-msgstr "2D 메시 만들기"
+msgid "Convert to Polygon2D"
+msgstr "Polygon2D로 전환"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Create CollisionPolygon2D Sibling"
+msgstr "CollisionPolygon2D 노드 만들기"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Create LightOccluder2D Sibling"
+msgstr "LightOccluder2D 노드 만들기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7167,6 +7258,10 @@ msgstr "노드를 비주얼 셰이더에 추가"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "노드 복제"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Delete Nodes"
+msgstr "노드 삭제"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -8372,10 +8467,6 @@ msgid "Open documentation"
 msgstr "문서 열기"
 
 #: editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
-msgstr "노드 삭제"
-
-#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "자식 노드 추가"
 
@@ -8876,7 +8967,7 @@ msgstr "라이브러리들: "
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
-msgstr "GD네이티브"
+msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
@@ -10226,11 +10317,14 @@ msgstr "균일하게 배치함."
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다."
 
+#~ msgid "Snap (s): "
+#~ msgstr "스냅: "
+
+#~ msgid "Insert keys."
+#~ msgstr "키 삽입."
+
 #~ msgid "Instance the selected scene(s) as child of the selected node."
 #~ msgstr "선택된 씬을 선택된 노드의 자식으로 인스턴스 합니다."
-
-#~ msgid "FPS"
-#~ msgstr "초당 프레임"
 
 #~ msgid "Warnings:"
 #~ msgstr "경고:"
@@ -11708,9 +11802,6 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "하위 디렉토리로 이동할 수 없습니다:"
-
-#~ msgid "Insert Keys (Ins)"
-#~ msgstr "키 삽입 (Ins 키)"
 
 #~ msgid "Top (Num7)"
 #~ msgstr "윗면 (넘버패드7)"

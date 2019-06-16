@@ -148,7 +148,13 @@ btHeightfieldTerrainShape *ShapeBullet::create_shape_height_field(PoolVector<rea
 	const bool flipQuadEdges = false;
 	const void *heightsPtr = p_heights.read().ptr();
 
-	return bulletnew(btHeightfieldTerrainShape(p_width, p_depth, heightsPtr, ignoredHeightScale, p_min_height, p_max_height, YAxis, PHY_FLOAT, flipQuadEdges));
+	btHeightfieldTerrainShape *heightfield = bulletnew(btHeightfieldTerrainShape(p_width, p_depth, heightsPtr, ignoredHeightScale, p_min_height, p_max_height, YAxis, PHY_FLOAT, flipQuadEdges));
+
+	// The shape can be created without params when you do PhysicsServer.shape_create(PhysicsServer.SHAPE_HEIGHTMAP)
+	if (heightsPtr)
+		heightfield->buildAccelerator(16);
+
+	return heightfield;
 }
 
 btRayShape *ShapeBullet::create_shape_ray(real_t p_length, bool p_slips_on_slope) {

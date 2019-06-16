@@ -123,6 +123,31 @@ const char *CharString::get_data() const {
 		return "";
 }
 
+CharString &CharString::operator=(const char *p_cstr) {
+
+	copy_from(p_cstr);
+	return *this;
+}
+
+void CharString::copy_from(const char *p_cstr) {
+
+	if (!p_cstr) {
+		resize(0);
+		return;
+	}
+
+	size_t len = strlen(p_cstr);
+
+	if (len == 0) {
+		resize(0);
+		return;
+	}
+
+	resize(len + 1); // include terminating null char
+
+	strcpy(ptrw(), p_cstr);
+}
+
 void String::copy_from(const char *p_cstr) {
 
 	if (!p_cstr) {
@@ -1700,6 +1725,45 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 	return hex * sign;
 }
 
+int64_t String::bin_to_int64(bool p_with_prefix) const {
+
+	if (p_with_prefix && length() < 3)
+		return 0;
+
+	const CharType *s = ptr();
+
+	int64_t sign = s[0] == '-' ? -1 : 1;
+
+	if (sign < 0) {
+		s++;
+	}
+
+	if (p_with_prefix) {
+		if (s[0] != '0' || s[1] != 'b')
+			return 0;
+		s += 2;
+	}
+
+	int64_t binary = 0;
+
+	while (*s) {
+
+		CharType c = LOWERCASE(*s);
+		int64_t n;
+		if (c == '0' || c == '1') {
+			n = c - '0';
+		} else {
+			return 0;
+		}
+
+		binary *= 2;
+		binary += n;
+		s++;
+	}
+
+	return binary * sign;
+}
+
 int String::to_int() const {
 
 	if (length() == 0)
@@ -2892,26 +2956,12 @@ String String::replace(const char *p_key, const char *p_with) const {
 
 String String::replace_first(const String &p_key, const String &p_with) const {
 
-	String new_string;
-	int search_from = 0;
-	int result = 0;
-
-	while ((result = find(p_key, search_from)) >= 0) {
-
-		new_string += substr(search_from, result - search_from);
-		new_string += p_with;
-		search_from = result + p_key.length();
-		break;
+	int pos = find(p_key);
+	if (pos >= 0) {
+		return substr(0, pos) + p_with + substr(pos + p_key.length(), length());
 	}
 
-	if (search_from == 0) {
-
-		return *this;
-	}
-
-	new_string += substr(search_from, length() - search_from);
-
-	return new_string;
+	return *this;
 }
 String String::replacen(const String &p_key, const String &p_with) const {
 
@@ -3038,29 +3088,16 @@ String String::strip_edges(bool left, bool right) const {
 
 String String::strip_escapes() const {
 
-	int len = length();
-	int beg = 0, end = len;
-
+	String new_string;
 	for (int i = 0; i < length(); i++) {
 
-		if (operator[](i) <= 31)
-			beg++;
-		else
-			break;
+		// Escape characters on first page of the ASCII table, before 32 (Space).
+		if (operator[](i) < 32)
+			continue;
+		new_string += operator[](i);
 	}
 
-	for (int i = (int)(length() - 1); i >= 0; i--) {
-
-		if (operator[](i) <= 31)
-			end--;
-		else
-			break;
-	}
-
-	if (beg == 0 && end == len)
-		return *this;
-
-	return substr(beg, end - beg);
+	return new_string;
 }
 
 String String::lstrip(const String &p_chars) const {
@@ -3184,7 +3221,7 @@ static int _humanize_digits(int p_num) {
 String String::humanize_size(size_t p_size) {
 
 	uint64_t _div = 1;
-	static const char *prefix[] = { " Bytes", " KB", " MB", " GB", "TB", " PB", "HB", "" };
+	static const char *prefix[] = { " Bytes", " KB", " MB", " GB", " TB", " PB", " EB", "" };
 	int prefix_idx = 0;
 
 	while (p_size > (_div * 1024) && prefix[prefix_idx][0]) {
@@ -3195,7 +3232,7 @@ String String::humanize_size(size_t p_size) {
 	int digits = prefix_idx > 0 ? _humanize_digits(p_size / _div) : 0;
 	double divisor = prefix_idx > 0 ? _div : 1;
 
-	return String::num(p_size / divisor, digits) + prefix[prefix_idx];
+	return String::num(p_size / divisor).pad_decimals(digits) + prefix[prefix_idx];
 }
 bool String::is_abs_path() const {
 

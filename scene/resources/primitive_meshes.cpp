@@ -157,6 +157,12 @@ Mesh::PrimitiveType PrimitiveMesh::surface_get_primitive_type(int p_idx) const {
 	return primitive_type;
 }
 
+void PrimitiveMesh::surface_set_material(int p_idx, const Ref<Material> &p_material) {
+	ERR_FAIL_INDEX(p_idx, 1);
+
+	set_material(p_material);
+}
+
 Ref<Material> PrimitiveMesh::surface_get_material(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, 1, NULL);
 

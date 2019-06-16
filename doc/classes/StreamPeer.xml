@@ -41,7 +41,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of bytes this [StreamPeer] has available.
+				Returns the amount of bytes this [StreamPeer] has available.
 			</description>
 		</method>
 		<method name="get_data">
@@ -50,7 +50,7 @@
 			<argument index="0" name="bytes" type="int">
 			</argument>
 			<description>
-				Return a chunk data with the received bytes. The amount of bytes to be received can be requested in the "bytes" argument. If not enough bytes are available, the function will block until the desired amount is received. This function returns two values, an Error code and a data array.
+				Returns a chunk data with the received bytes. The amount of bytes to be received can be requested in the "bytes" argument. If not enough bytes are available, the function will block until the desired amount is received. This function returns two values, an Error code and a data array.
 			</description>
 		</method>
 		<method name="get_double">
@@ -73,7 +73,7 @@
 			<argument index="0" name="bytes" type="int">
 			</argument>
 			<description>
-				Return a chunk data with the received bytes. The amount of bytes to be received can be requested in the "bytes" argument. If not enough bytes are available, the function will return how many were actually received. This function returns two values, an Error code, and a data array.
+				Returns a chunk data with the received bytes. The amount of bytes to be received can be requested in the "bytes" argument. If not enough bytes are available, the function will return how many were actually received. This function returns two values, an Error code, and a data array.
 			</description>
 		</method>
 		<method name="get_string">

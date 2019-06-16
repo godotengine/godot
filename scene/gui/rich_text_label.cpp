@@ -307,6 +307,13 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 		switch (it->type) {
 
+			case ITEM_ALIGN: {
+
+				ItemAlign *align_it = static_cast<ItemAlign *>(it);
+
+				align = align_it->align;
+
+			} break;
 			case ITEM_TEXT: {
 
 				ItemText *text = static_cast<ItemText *>(it);
@@ -592,7 +599,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					//assign actual widths
 					for (int i = 0; i < table->columns.size(); i++) {
 						table->columns.write[i].width = table->columns[i].min_width;
-						if (table->columns[i].expand)
+						if (table->columns[i].expand && total_ratio > 0)
 							table->columns.write[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
 						table->total_width += table->columns[i].width + hseparation;
 					}
@@ -753,6 +760,8 @@ void RichTextLabel::_scroll_changed(double) {
 	else
 		scroll_following = false;
 
+	scroll_updated = true;
+
 	update();
 }
 
@@ -778,7 +787,6 @@ void RichTextLabel::_update_scroll() {
 		main->first_invalid_line = 0; //invalidate ALL
 		_validate_line_caches(main);
 	}
-	scroll_updated = true;
 }
 
 void RichTextLabel::_notification(int p_what) {
@@ -901,13 +909,21 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 
 Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const {
 
-	if (selection.click)
+	if (!underline_meta || selection.click)
 		return CURSOR_ARROW;
 
 	if (main->first_invalid_line < main->lines.size())
 		return CURSOR_ARROW; //invalid
 
-	return get_default_cursor_shape();
+	int line = 0;
+	Item *item = NULL;
+
+	((RichTextLabel *)(this))->_find_click(main, p_pos, &item, &line);
+
+	if (item && ((RichTextLabel *)(this))->_find_meta(item, NULL))
+		return CURSOR_POINTING_HAND;
+
+	return CURSOR_ARROW;
 }
 
 void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
@@ -1402,9 +1418,13 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 	if (p_enter)
 		current = p_item;
 
-	if (p_ensure_newline && current_frame->lines[current_frame->lines.size() - 1].from) {
-		_invalidate_current_line(current_frame);
-		current_frame->lines.resize(current_frame->lines.size() + 1);
+	if (p_ensure_newline) {
+		Item *from = current_frame->lines[current_frame->lines.size() - 1].from;
+		// only create a new line for Item types that generate content/layout, ignore those that represent formatting/styling
+		if (from && from->type != ITEM_FONT && from->type != ITEM_COLOR && from->type != ITEM_UNDERLINE && from->type != ITEM_STRIKETHROUGH) {
+			_invalidate_current_line(current_frame);
+			current_frame->lines.resize(current_frame->lines.size() + 1);
+		}
 	}
 
 	if (current_frame->lines[current_frame->lines.size() - 1].from == NULL) {
@@ -2327,6 +2347,7 @@ RichTextLabel::RichTextLabel() {
 	tab_size = 4;
 	default_align = ALIGN_LEFT;
 	underline_meta = true;
+	meta_hovering = NULL;
 	override_selected_font_color = false;
 
 	scroll_visible = false;

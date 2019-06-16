@@ -64,12 +64,12 @@ class ConnectDialog : public ConfirmationDialog {
 	VBoxContainer *vbc_right;
 
 	SceneTreeEditor *tree;
-	ConfirmationDialog *error;
+	AcceptDialog *error;
 	EditorInspector *bind_editor;
 	OptionButton *type_list;
-	CheckButton *deferred;
-	CheckButton *oneshot;
-	CheckBox *advanced;
+	CheckBox *deferred;
+	CheckBox *oneshot;
+	CheckButton *advanced;
 
 	Label *error_label;
 
@@ -99,12 +99,12 @@ public:
 
 	void init(Connection c, bool bEdit = false);
 
-	void popup_dialog(const String &p_for_signal, bool p_advanced);
+	void popup_dialog(const String &p_for_signal);
 	ConnectDialog();
 	~ConnectDialog();
 };
 
-//========================================
+//////////////////////////////////////////
 
 class ConnectionsDock : public VBoxContainer {
 

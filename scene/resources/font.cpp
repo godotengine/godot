@@ -96,6 +96,7 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &Font::get_height);
 	ClassDB::bind_method(D_METHOD("is_distance_field_hint"), &Font::is_distance_field_hint);
 	ClassDB::bind_method(D_METHOD("get_string_size", "string"), &Font::get_string_size);
+	ClassDB::bind_method(D_METHOD("get_wordwrap_string_size", "string", "p_width"), &Font::get_wordwrap_string_size);
 	ClassDB::bind_method(D_METHOD("has_outline"), &Font::has_outline);
 	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "position", "char", "next", "modulate", "outline"), &Font::draw_char, DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("update_changes"), &Font::update_changes);
@@ -495,9 +496,47 @@ Size2 Font::get_string_size(const String &p_string) const {
 
 	return Size2(w, get_height());
 }
+
+Size2 Font::get_wordwrap_string_size(const String &p_string, float p_width) const {
+
+	ERR_FAIL_COND_V(p_width <= 0, Vector2(0, get_height()));
+
+	int l = p_string.length();
+	if (l == 0)
+		return Size2(p_width, get_height());
+
+	float line_w = 0;
+	float h = 0;
+	float space_w = get_char_size(' ').width;
+	Vector<String> lines = p_string.split("\n");
+	for (int i = 0; i < lines.size(); i++) {
+		h += get_height();
+		String t = lines[i];
+		line_w = 0;
+		Vector<String> words = t.split(" ");
+		for (int j = 0; j < words.size(); j++) {
+			line_w += get_string_size(words[j]).x;
+			if (line_w > p_width) {
+				h += get_height();
+				line_w = get_string_size(words[j]).x;
+			} else {
+				line_w += space_w;
+			}
+		}
+	}
+
+	return Size2(p_width, h);
+}
+
 void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
 
-	ERR_FAIL_COND(p_fallback == this);
+	for (Ref<BitmapFont> fallback_child = p_fallback; fallback_child != NULL; fallback_child = fallback_child->get_fallback()) {
+		if (fallback_child == this) {
+			ERR_EXPLAIN("Can't set as fallback one of its parents to prevent crashes due to recursive loop.");
+			ERR_FAIL_COND(fallback_child == this);
+		}
+	}
+
 	fallback = p_fallback;
 }
 

@@ -67,7 +67,7 @@ struct Rect2 {
 
 		if (p_point.x < position.x) {
 			real_t d = position.x - p_point.x;
-			dist = inside ? d : MIN(dist, d);
+			dist = d;
 			inside = false;
 		}
 		if (p_point.y < position.y) {
@@ -103,7 +103,7 @@ struct Rect2 {
 			   ((p_rect.position.y + p_rect.size.y) < (position.y + size.y));
 	}
 
-	inline bool has_no_area() const {
+	_FORCE_INLINE_ bool has_no_area() const {
 
 		return (size.x <= 0 || size.y <= 0);
 	}
@@ -154,8 +154,6 @@ struct Rect2 {
 		return true;
 	}
 
-	inline bool no_area() const { return (size.width <= 0 || size.height <= 0); }
-
 	bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
 	bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
@@ -189,7 +187,7 @@ struct Rect2 {
 		return g;
 	}
 
-	inline Rect2 expand(const Vector2 &p_vector) const {
+	_FORCE_INLINE_ Rect2 expand(const Vector2 &p_vector) const {
 
 		Rect2 r = *this;
 		r.expand_to(p_vector);
@@ -215,7 +213,7 @@ struct Rect2 {
 		size = end - begin;
 	}
 
-	inline Rect2 abs() const {
+	_FORCE_INLINE_ Rect2 abs() const {
 
 		return Rect2(Point2(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0)), size.abs());
 	}
@@ -265,7 +263,7 @@ struct Rect2i {
 			   ((p_rect.position.y + p_rect.size.y) < (position.y + size.y));
 	}
 
-	inline bool has_no_area() const {
+	_FORCE_INLINE_ bool has_no_area() const {
 
 		return (size.x <= 0 || size.y <= 0);
 	}
@@ -316,8 +314,6 @@ struct Rect2i {
 		return true;
 	}
 
-	bool no_area() { return (size.width <= 0 || size.height <= 0); }
-
 	bool operator==(const Rect2i &p_rect) const { return position == p_rect.position && size == p_rect.size; }
 	bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
@@ -329,6 +325,33 @@ struct Rect2i {
 		g.size.width += p_by * 2;
 		g.size.height += p_by * 2;
 		return g;
+	}
+
+	inline Rect2i grow_margin(Margin p_margin, int p_amount) const {
+		Rect2i g = *this;
+		g = g.grow_individual((MARGIN_LEFT == p_margin) ? p_amount : 0,
+				(MARGIN_TOP == p_margin) ? p_amount : 0,
+				(MARGIN_RIGHT == p_margin) ? p_amount : 0,
+				(MARGIN_BOTTOM == p_margin) ? p_amount : 0);
+		return g;
+	}
+
+	inline Rect2i grow_individual(int p_left, int p_top, int p_right, int p_bottom) const {
+
+		Rect2i g = *this;
+		g.position.x -= p_left;
+		g.position.y -= p_top;
+		g.size.width += p_left + p_right;
+		g.size.height += p_top + p_bottom;
+
+		return g;
+	}
+
+	_FORCE_INLINE_ Rect2i expand(const Vector2i &p_vector) const {
+
+		Rect2i r = *this;
+		r.expand_to(p_vector);
+		return r;
 	}
 
 	inline void expand_to(const Point2i &p_vector) {

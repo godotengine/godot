@@ -608,18 +608,16 @@ Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) co
 	}
 	bool valid = false;
 
-	Variant current_value = get(p_names[0]);
+	Variant current_value = get(p_names[0], &valid);
 	for (int i = 1; i < p_names.size(); i++) {
 		current_value = current_value.get_named(p_names[i], &valid);
 
-		if (!valid) {
-			if (r_valid)
-				*r_valid = false;
-			return Variant();
-		}
+		if (!valid)
+			break;
 	}
 	if (r_valid)
-		*r_valid = true;
+		*r_valid = valid;
+
 	return current_value;
 }
 
@@ -956,6 +954,16 @@ void Object::notification(int p_notification, bool p_reversed) {
 	}
 }
 
+String Object::to_string() {
+	if (script_instance) {
+		bool valid;
+		String ret = script_instance->to_string(&valid);
+		if (valid)
+			return ret;
+	}
+	return "[" + get_class() + ":" + itos(get_instance_id()) + "]";
+}
+
 void Object::_changed_callback(Object *p_changed, const char *p_prop) {
 }
 
@@ -1057,6 +1065,10 @@ Variant Object::get_meta(const String &p_name) const {
 
 	ERR_FAIL_COND_V(!metadata.has(p_name), Variant());
 	return metadata[p_name];
+}
+
+void Object::remove_meta(const String &p_name) {
+	metadata.erase(p_name);
 }
 
 Array Object::_get_property_list_bind() const {
@@ -1685,12 +1697,14 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_property_list"), &Object::_get_property_list_bind);
 	ClassDB::bind_method(D_METHOD("get_method_list"), &Object::_get_method_list_bind);
 	ClassDB::bind_method(D_METHOD("notification", "what", "reversed"), &Object::notification, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("to_string"), &Object::to_string);
 	ClassDB::bind_method(D_METHOD("get_instance_id"), &Object::get_instance_id);
 
 	ClassDB::bind_method(D_METHOD("set_script", "script"), &Object::set_script);
 	ClassDB::bind_method(D_METHOD("get_script"), &Object::get_script);
 
 	ClassDB::bind_method(D_METHOD("set_meta", "name", "value"), &Object::set_meta);
+	ClassDB::bind_method(D_METHOD("remove_meta", "name"), &Object::remove_meta);
 	ClassDB::bind_method(D_METHOD("get_meta", "name"), &Object::get_meta);
 	ClassDB::bind_method(D_METHOD("has_meta", "name"), &Object::has_meta);
 	ClassDB::bind_method(D_METHOD("get_meta_list"), &Object::_get_meta_list_bind);
@@ -1771,6 +1785,7 @@ void Object::_bind_methods() {
 
 #endif
 	BIND_VMETHOD(MethodInfo("_init"));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_to_string"));
 
 	BIND_CONSTANT(NOTIFICATION_POSTINITIALIZE);
 	BIND_CONSTANT(NOTIFICATION_PREDELETE);
@@ -1942,8 +1957,8 @@ Object::Object() {
 	_class_ptr = NULL;
 	_block_signals = false;
 	_predelete_ok = 0;
-	_instance_ID = 0;
-	_instance_ID = ObjectDB::add_instance(this);
+	_instance_id = 0;
+	_instance_id = ObjectDB::add_instance(this);
 	_can_translate = true;
 	_is_queued_for_deletion = false;
 	instance_binding_count = 0;
@@ -1997,7 +2012,7 @@ Object::~Object() {
 	}
 
 	ObjectDB::remove_instance(this);
-	_instance_ID = 0;
+	_instance_id = 0;
 	_predelete_ok = 2;
 
 	if (!ScriptServer::are_languages_finished()) {
@@ -2045,10 +2060,10 @@ void ObjectDB::remove_instance(Object *p_object) {
 
 	rw_lock->write_unlock();
 }
-Object *ObjectDB::get_instance(ObjectID p_instance_ID) {
+Object *ObjectDB::get_instance(ObjectID p_instance_id) {
 
 	rw_lock->read_lock();
-	Object **obj = instances.getptr(p_instance_ID);
+	Object **obj = instances.getptr(p_instance_id);
 	rw_lock->read_unlock();
 
 	if (!obj)

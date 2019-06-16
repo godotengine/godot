@@ -43,6 +43,7 @@ class VisualInstance : public Spatial {
 	GDCLASS(VisualInstance, Spatial);
 	OBJ_CATEGORY("3D Visual Nodes");
 
+	RID base;
 	RID instance;
 	uint32_t layers;
 
@@ -69,6 +70,7 @@ public:
 	virtual AABB get_transformed_aabb() const; // helper
 
 	void set_base(const RID &p_base);
+	RID get_base() const;
 
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
@@ -87,6 +89,7 @@ class GeometryInstance : public VisualInstance {
 public:
 	enum Flags {
 		FLAG_USE_BAKED_LIGHT = VS::INSTANCE_FLAG_USE_BAKED_LIGHT,
+		FLAG_DRAW_NEXT_FRAME_IF_VISIBLE = VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE,
 		FLAG_MAX = VS::INSTANCE_FLAG_MAX,
 	};
 
@@ -136,6 +139,8 @@ public:
 
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;
+
+	void set_custom_aabb(AABB aabb);
 
 	GeometryInstance();
 };

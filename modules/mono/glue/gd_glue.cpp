@@ -115,7 +115,7 @@ void godot_icall_GD_printt(MonoArray *p_what) {
 	print_line(str);
 }
 
-double godot_icall_GD_randf() {
+float godot_icall_GD_randf() {
 	return Math::randf();
 }
 

@@ -12,7 +12,7 @@ env_gdnative.add_source_files(env.modules_sources, "nativescript/*.cpp")
 env_gdnative.add_source_files(env.modules_sources, "gdnative_library_singleton_editor.cpp")
 env_gdnative.add_source_files(env.modules_sources, "gdnative_library_editor_plugin.cpp")
 
-env_gdnative.Append(CPPPATH=['#modules/gdnative/include/'])
+env_gdnative.Prepend(CPPPATH=['#modules/gdnative/include/'])
 
 Export('env_gdnative')
 
@@ -36,7 +36,7 @@ if ARGUMENTS.get('gdnative_wrapper', False):
     gensource, = env_gdnative.CommandNoCache('gdnative_wrapper_code.gen.cpp', 'gdnative_api.json', run_in_subprocess(gdnative_builders.build_gdnative_wrapper_code))
 
     gd_wrapper_env = env.Clone()
-    gd_wrapper_env.Append(CPPPATH=['#modules/gdnative/include/'])
+    gd_wrapper_env.Prepend(CPPPATH=['#modules/gdnative/include/'])
 
     if gd_wrapper_env['use_lto']:
         if not env.msvc:

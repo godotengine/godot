@@ -717,8 +717,17 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *
 		bool pressed = same_direction ? Math::abs(jm->get_axis_value()) >= p_deadzone : false;
 		if (p_pressed != NULL)
 			*p_pressed = pressed;
-		if (p_strength != NULL)
-			*p_strength = pressed ? CLAMP(Math::inverse_lerp(p_deadzone, 1.0f, Math::abs(jm->get_axis_value())), 0.0f, 1.0f) : 0.0f;
+		if (p_strength != NULL) {
+			if (pressed) {
+				if (p_deadzone == 1.0f) {
+					*p_strength = 1.0f;
+				} else {
+					*p_strength = CLAMP(Math::inverse_lerp(p_deadzone, 1.0f, Math::abs(jm->get_axis_value())), 0.0f, 1.0f);
+				}
+			} else {
+				*p_strength = 0.0f;
+			}
+		}
 	}
 	return match;
 }
@@ -1001,6 +1010,14 @@ bool InputEventAction::is_pressed() const {
 	return pressed;
 }
 
+void InputEventAction::set_strength(float p_strength) {
+	strength = CLAMP(p_strength, 0.0f, 1.0f);
+}
+
+float InputEventAction::get_strength() const {
+	return strength;
+}
+
 bool InputEventAction::shortcut_match(const Ref<InputEvent> &p_event) const {
 	if (p_event.is_null())
 		return false;
@@ -1042,14 +1059,19 @@ void InputEventAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventAction::set_pressed);
 	//ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventAction::is_pressed);
 
+	ClassDB::bind_method(D_METHOD("set_strength", "strength"), &InputEventAction::set_strength);
+	ClassDB::bind_method(D_METHOD("get_strength"), &InputEventAction::get_strength);
+
 	//	ClassDB::bind_method(D_METHOD("is_action", "name"), &InputEventAction::is_action);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action"), "set_action", "get_action");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_strength", "get_strength");
 }
 
 InputEventAction::InputEventAction() {
 	pressed = false;
+	strength = 1.0f;
 }
 /////////////////////////////
 

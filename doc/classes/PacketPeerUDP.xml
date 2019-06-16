@@ -20,21 +20,21 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the IP of the remote peer that sent the last packet(that was received with [method PacketPeer.get_packet] or [method PacketPeer.get_var]).
+				Returns the IP of the remote peer that sent the last packet(that was received with [method PacketPeer.get_packet] or [method PacketPeer.get_var]).
 			</description>
 		</method>
 		<method name="get_packet_port" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the port of the remote peer that sent the last packet(that was received with [method PacketPeer.get_packet] or [method PacketPeer.get_var]).
+				Returns the port of the remote peer that sent the last packet(that was received with [method PacketPeer.get_packet] or [method PacketPeer.get_var]).
 			</description>
 		</method>
 		<method name="is_listening" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return whether this [PacketPeerUDP] is listening.
+				Returns whether this [PacketPeerUDP] is listening.
 			</description>
 		</method>
 		<method name="listen">

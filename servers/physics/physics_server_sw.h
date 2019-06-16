@@ -119,7 +119,7 @@ public:
 	virtual void area_set_space(RID p_area, RID p_space);
 	virtual RID area_get_space(RID p_area) const;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform &p_transform = Transform());
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape);
 	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform &p_transform);
 
@@ -132,7 +132,7 @@ public:
 
 	virtual void area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled);
 
-	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_ID);
+	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_id);
 	virtual ObjectID area_get_object_instance_id(RID p_area) const;
 
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value);
@@ -163,7 +163,7 @@ public:
 	virtual void body_set_mode(RID p_body, BodyMode p_mode);
 	virtual BodyMode body_get_mode(RID p_body) const;
 
-	virtual void body_add_shape(RID p_body, RID p_shape, const Transform &p_transform = Transform());
+	virtual void body_add_shape(RID p_body, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape);
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform);
 
@@ -176,7 +176,7 @@ public:
 	virtual void body_remove_shape(RID p_body, int p_shape_idx);
 	virtual void body_clear_shapes(RID p_body);
 
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID);
+	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id);
 	virtual uint32_t body_get_object_instance_id(RID p_body) const;
 
 	virtual void body_set_enable_continuous_collision_detection(RID p_body, bool p_enable);

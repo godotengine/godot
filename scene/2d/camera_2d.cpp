@@ -29,10 +29,11 @@
 /*************************************************************************/
 
 #include "camera_2d.h"
+
+#include "core/engine.h"
 #include "core/math/math_funcs.h"
 #include "scene/scene_string_names.h"
 #include "servers/visual_server.h"
-#include <editor/editor_node.h>
 
 void Camera2D::_update_scroll() {
 
@@ -44,15 +45,16 @@ void Camera2D::_update_scroll() {
 		return;
 	}
 
+	if (!viewport)
+		return;
+
 	if (current) {
 
 		ERR_FAIL_COND(custom_viewport && !ObjectDB::get_instance(custom_viewport_id));
 
 		Transform2D xform = get_camera_transform();
 
-		if (viewport) {
-			viewport->set_canvas_transform(xform);
-		}
+		viewport->set_canvas_transform(xform);
 
 		Size2 screen_size = viewport->get_visible_rect().size;
 		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5) : Point2());

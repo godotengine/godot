@@ -99,7 +99,7 @@ Error AudioDriverJavaScript::init() {
 		return FAILED;
 	}
 
-	if (!internal_buffer || memarr_len(internal_buffer) != buffer_length * channel_count) {
+	if (!internal_buffer || (int)memarr_len(internal_buffer) != buffer_length * channel_count) {
 		if (internal_buffer)
 			memdelete_arr(internal_buffer);
 		internal_buffer = memnew_arr(float, buffer_length *channel_count);

@@ -202,7 +202,7 @@ namespace Godot
         //public override bool TryDeleteIndex(DeleteIndexBinder binder, object[] indexes);
         //public override bool TryDeleteMember(DeleteMemberBinder binder);
 
-        // Invokation on the object itself, e.g.: obj(param)
+        // Invocation on the object itself, e.g.: obj(param)
         //public override bool TryInvoke(InvokeBinder binder, object[] args, out object result);
 
         // No unnary operations to handle
