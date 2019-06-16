@@ -10420,10 +10420,11 @@ msgid "Add current color as a preset."
 msgstr "Ajouter la couleur courante comme pré-réglage."
 
 #: scene/gui/container.cpp
+#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 "Le conteneur en lui-même ne sert à rien à moins qu'un script ne configure "

@@ -33,12 +33,13 @@
 # MassiminoilTrace <omino.gis@gmail.com>, 2019.
 # MARCO BANFI <mbanfi@gmail.com>, 2019.
 # Marco <rodomar705@gmail.com>, 2019.
+# Davide Giuliano <davidegiuliano00@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-05-16 18:49+0000\n"
-"Last-Translator: MassiminoilTrace <omino.gis@gmail.com>\n"
+"PO-Revision-Date: 2019-06-16 19:42+0000\n"
+"Last-Translator: RHC <rhc.throwaway@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -461,8 +462,9 @@ msgid "Animation step value."
 msgstr "Valore del passo dell'animazione."
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Seconds"
-msgstr ""
+msgstr "Secondi"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
@@ -4852,8 +4854,9 @@ msgid "Layout"
 msgstr "Layout"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Translation mask for inserting keys."
-msgstr ""
+msgstr "Maschera di traduzione per inserimento chiavi"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation mask for inserting keys."
@@ -5612,7 +5615,7 @@ msgstr "Trasforma Poligono"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint Bone Weights"
-msgstr ""
+msgstr "Dipingi peso delle ossa"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Open Polygon 2D UV editor."
@@ -6007,11 +6010,11 @@ msgstr "Apri la documentazione online di Godot"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Request Docs"
-msgstr ""
+msgstr "Documentazione richiesta"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Help improve the Godot documentation by giving feedback"
-msgstr ""
+msgstr "Aiutate a migliorare la documentazione di Godot fornendo feedback"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
@@ -10376,7 +10379,7 @@ msgstr "Aggiungi il colore corrente come preset."
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 "Il Contenitore da solo non serve a nessuno scopo a meno che uno script non "

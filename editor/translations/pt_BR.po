@@ -59,12 +59,15 @@
 # Gustavo Bolanho <jdmapas@gmail.com>, 2019.
 # Nilton Bendini Junior <almascelulas@bol.com.br>, 2019.
 # Ivo Nascimento <iannsp@gmail.com>, 2019.
+# Klaus Dellano <klausdell@hotmail.com>, 2019.
+# Esdras Tarsis <esdrastarsis@gmail.com>, 2019.
+# Douglas Fiedler <dognew@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-04-29 08:48+0000\n"
-"Last-Translator: Ivo Nascimento <iannsp@gmail.com>\n"
+"PO-Revision-Date: 2019-06-16 19:41+0000\n"
+"Last-Translator: Douglas Fiedler <dognew@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -72,7 +75,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.6.1\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -160,7 +163,7 @@ msgstr "Alterar Tempo de Quadro-Chave da Anim"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Alterar Transição da Anim"
+msgstr "Alterar Transição da Animação"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
@@ -208,12 +211,10 @@ msgid "Animation Playback Track"
 msgstr "Faixa de Reprodução de Animação"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Duração da Animação (em segundos)"
+msgstr "Duração da Animação (em frames)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
 msgstr "Duração da Animação (em segundos)"
 
@@ -475,9 +476,8 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "Agrupe as trilhas pelo nó ou exiba-as como lista simples."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "Snap"
+msgstr "Gancho:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -4863,20 +4863,19 @@ msgstr "Layout"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
-msgstr ""
+msgstr "Máscara de Translação para inserir chaves."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation mask for inserting keys."
-msgstr ""
+msgstr "Máscara de Rotação para inserir chaves."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale mask for inserting keys."
-msgstr ""
+msgstr "Máscara de Escala para inserir chaves."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Insert keys (based on mask)."
-msgstr "Inserir Chaves (Ins)"
+msgstr "Inserir Chaves (baseado na máscara)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -4885,11 +4884,15 @@ msgid ""
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
 msgstr ""
+"Inserir chaves automaticamente quando os objetos são transladados, girados "
+"em escala (com base na máscara). \n"
+"As chaves são adicionadas apenas às faixas existentes, nenhuma nova trilha "
+"será criada. \n"
+"As chaves devem ser inseridas manualmente pela primeira vez."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Insert Key"
-msgstr "Inserir Chave na Anim"
+msgstr "Inserir Chave Automaticamente"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -4905,11 +4908,11 @@ msgstr "Limpar Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
-msgstr "Multiplifcar passo da grade por 2"
+msgstr "Multiplicar o passo da grade por 2"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Divide grid step by 2"
-msgstr "Dividir passo da grade por 2"
+msgstr "Dividir o passo da grade por 2"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -5880,9 +5883,8 @@ msgid "Save Theme As..."
 msgstr "Salvar Tema Como..."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "%s Class Reference"
-msgstr " Referência de Classes"
+msgstr "%s Referência de Classes"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
@@ -6706,24 +6708,20 @@ msgid "Nameless gizmo"
 msgstr "Coisa sem nome"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Mesh2D"
-msgstr "Crie uma malha 2D"
+msgstr "Crie uma Malha2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon2D"
 msgstr "Criar Polígono3D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D"
-msgstr "Criar polígono de colisão"
+msgstr "Criar PolígonoDeColisão2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D"
-msgstr "Criar Polígono de Oclusão"
+msgstr "Criar OclusorDeLuz2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6739,43 +6737,36 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Geometria inválida, não é possível substituir por malha."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create polygon."
-msgstr "Geometria inválida, não é possível substituir por malha."
+msgstr "Geometria inválida, não é possível criar o polígono."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create collision polygon."
-msgstr "Geometria inválida, não é possível substituir por malha."
+msgstr "Geometria inválida, não é possível criar o polígono de colisão."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create light occluder."
-msgstr "Geometria inválida, não é possível substituir por malha."
+msgstr "Geometria inválida, não é possível criar oclusor de luz."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Mesh2D"
-msgstr "Converter para malha 2D"
+msgstr "Converter para Malha2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Polygon2D"
-msgstr "Mover Polígono"
+msgstr "Converter para Polígono2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "Criar polígono de colisão"
+msgstr "Criar PolígonoDeColisão2D Irmão"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D Sibling"
-msgstr "Criar Polígono de Oclusão"
+msgstr "Criar PolígonoDeOclusão2D Irmão"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7359,9 +7350,8 @@ msgid "Duplicate Nodes"
 msgstr "Duplicar Nó(s)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Nodes"
-msgstr "Excluir Nó"
+msgstr "Excluir Nós"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -10351,10 +10341,11 @@ msgid "Add current color as a preset."
 msgstr "Adicionar cor atual como uma predefinição."
 
 #: scene/gui/container.cpp
+#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures it's "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
+"If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
 "O contêiner por si só não serve para nada, a menos que um script configure "
