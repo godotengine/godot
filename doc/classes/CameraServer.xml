@@ -74,7 +74,7 @@
 			The YCbCr camera image.
 		</constant>
 		<constant name="FEED_Y_IMAGE" value="0" enum="FeedImage">
-			The Y component camera image. 
+			The Y component camera image.
 		</constant>
 		<constant name="FEED_CbCr_IMAGE" value="1" enum="FeedImage">
 			The CbCr component camera image.

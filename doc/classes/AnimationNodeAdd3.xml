@@ -4,10 +4,10 @@
 		Blends two of three animations additively inside of an [AnimationNodeBlendTree].
 	</brief_description>
 	<description>
-		A resource to add to an [AnimationNodeBlendTree]. Blends two animations together additively out of three based on a value in the [-1.0, 1.0] range.
+		A resource to add to an [AnimationNodeBlendTree]. Blends two animations together additively out of three based on a value in the [code][-1.0, 1.0][/code] range.
 		This node has three inputs:
 		- The base animation to add to
-		- A -add animation to blend with when the blend amount is in the [-1.0, 0.0] range.
+		- A -add animation to blend with when the blend amount is in the [code][-1.0, 0.0][/code] range.
 		- A +add animation to blend with when the blend amount is in the [code][0.0, 1.0][/code] range
 	</description>
 	<tutorials>

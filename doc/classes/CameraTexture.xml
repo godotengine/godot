@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CameraTexture" inherits="Texture" category="Core" version="3.2">
 	<brief_description>
-		This texture gives access to the camera texture provided by a [CameraFeed]. Note that many cameras supply YCbCr images which need to be converted in a shader. 
+		This texture gives access to the camera texture provided by a [CameraFeed]. Note that many cameras supply YCbCr images which need to be converted in a shader.
 	</brief_description>
 	<description>
 	</description>
