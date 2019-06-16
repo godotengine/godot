@@ -378,7 +378,7 @@ Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flag
 					list_dir_end();
 					return ERR_BUG;
 				}
-				Error err = copy(get_current_dir() + "/" + n, p_to + rel_path, p_chmod_flags);
+				Error err = copy(get_current_dir().plus_file(n), p_to + rel_path, p_chmod_flags);
 				if (err) {
 					list_dir_end();
 					return err;

@@ -1329,7 +1329,7 @@ void FileSystemDock::_duplicate_operation_confirm() {
 	if (to_duplicate.is_file) {
 		new_path = base_dir.plus_file(new_name);
 	} else {
-		new_path = base_dir.substr(0, base_dir.find_last("/")) + "/" + new_name;
+		new_path = base_dir.substr(0, base_dir.find_last("/")).plus_file(new_name);
 	}
 
 	//Present a more user friendly warning for name conflict

@@ -463,7 +463,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			}
 
 			if (!path.is_abs_path() && base_path != "")
-				path = base_path + "/" + path;
+				path = base_path.plus_file(path);
 			path = path.replace("///", "//").simplify_path();
 			if (path == self_path) {
 

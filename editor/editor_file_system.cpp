@@ -96,7 +96,7 @@ String EditorFileSystemDirectory::get_path() const {
 	String p;
 	const EditorFileSystemDirectory *d = this;
 	while (d->parent) {
-		p = d->name + "/" + p;
+		p = d->name.plus_file(p);
 		d = d->parent;
 	}
 
@@ -108,7 +108,7 @@ String EditorFileSystemDirectory::get_file_path(int p_idx) const {
 	String file = get_file(p_idx);
 	const EditorFileSystemDirectory *d = this;
 	while (d->parent) {
-		file = d->name + "/" + file;
+		file = d->name.plus_file(file);
 		d = d->parent;
 	}
 

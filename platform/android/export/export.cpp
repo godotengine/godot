@@ -597,7 +597,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			if (abi_index != -1) {
 				exported = true;
 				String abi = abis[abi_index];
-				String dst_path = "lib/" + abi + "/" + p_so.path.get_file();
+				String dst_path = String("lib").plus_file(abi).plus_file(p_so.path.get_file());
 				Vector<uint8_t> array = FileAccess::get_file_as_array(p_so.path);
 				Error store_err = store_in_apk(ed, dst_path, array);
 				ERR_FAIL_COND_V(store_err, store_err);

@@ -569,8 +569,8 @@ void ScriptTextEditor::_validate_script() {
 				Connection connection = E->get();
 
 				String base_path = base->get_name();
-				String source_path = base == connection.source ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.source)));
-				String target_path = base == connection.target ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.target)));
+				String source_path = base == connection.source ? base_path : base_path + "/" + base->get_path_to(Object::cast_to<Node>(connection.source));
+				String target_path = base == connection.target ? base_path : base_path + "/" + base->get_path_to(Object::cast_to<Node>(connection.target));
 
 				warnings_panel->push_cell();
 				warnings_panel->push_color(warnings_panel->get_color("warning_color", "Editor"));

@@ -564,7 +564,7 @@ Error EditorExportPlatformIOS::_walk_dir_recursive(DirAccess *p_da, FileHandler 
 				dirs.push_back(path);
 			}
 		} else {
-			Error err = p_handler(current_dir + "/" + path, p_userdata);
+			Error err = p_handler(current_dir.plus_file(path), p_userdata);
 			if (err) {
 				p_da->list_dir_end();
 				return err;
@@ -763,7 +763,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 				}
 			}
 
-			String destination = destination_dir + "/" + asset.get_file();
+			String destination = destination_dir.plus_file(asset.get_file());
 			Error err = dir_exists ? da->copy_dir(asset, destination) : da->copy(asset, destination);
 			memdelete(da);
 			if (err) {

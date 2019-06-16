@@ -2887,7 +2887,7 @@ void OS_X11::alert(const String &p_alert, const String &p_title) {
 
 	for (int i = 0; i < path_elems.size(); i++) {
 		for (unsigned int k = 0; k < sizeof(message_programs) / sizeof(char *); k++) {
-			String tested_path = path_elems[i] + "/" + message_programs[k];
+			String tested_path = path_elems[i].plus_file(message_programs[k]);
 
 			if (FileAccess::exists(tested_path)) {
 				program = tested_path;

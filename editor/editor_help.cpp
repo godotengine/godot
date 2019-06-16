@@ -1284,7 +1284,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 				end = bbcode.length();
 			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
 
-			Ref<Texture> texture = ResourceLoader::load(base_path + "/" + image, "Texture");
+			Ref<Texture> texture = ResourceLoader::load(base_path.plus_file(image), "Texture");
 			if (texture.is_valid())
 				p_rt->add_image(texture);
 
@@ -1340,7 +1340,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 			String fnt = tag.substr(5, tag.length());
 
-			Ref<Font> font = ResourceLoader::load(base_path + "/" + fnt, "Font");
+			Ref<Font> font = ResourceLoader::load(base_path.plus_file(fnt), "Font");
 			if (font.is_valid())
 				p_rt->push_font(font);
 			else {
