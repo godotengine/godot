@@ -30,8 +30,6 @@
 
 package org.godotengine.godot;
 
-//import android.R;
-
 import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -64,6 +62,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -73,7 +72,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.google.android.vending.expansion.downloader.DownloadProgressInfo;
 import com.google.android.vending.expansion.downloader.DownloaderClientMarshaller;
@@ -94,6 +92,7 @@ import java.util.Locale;
 import javax.microedition.khronos.opengles.GL10;
 import org.godotengine.godot.input.GodotEditText;
 import org.godotengine.godot.payments.PaymentsManager;
+import org.godotengine.godot.xr.XRMode;
 
 public class Godot extends Activity implements SensorEventListener, IDownloaderClient {
 
@@ -120,6 +119,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	private boolean use_immersive = false;
 	private boolean use_debug_opengl = false;
 	private boolean mStatePaused;
+	private boolean activityResumed;
 	private int mState;
 
 	static private Intent mCurrentIntent;
@@ -282,7 +282,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		// ...add to FrameLayout
 		layout.addView(edittext);
 
-		mView = new GodotView(getApplication(), io, use_gl3, use_32_bits, use_debug_opengl, this);
+		mView = new GodotView(this, XRMode.PANCAKE, use_gl3, use_32_bits, use_debug_opengl);
 		layout.addView(mView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		edittext.setView(mView);
 		io.setEdit(edittext);
@@ -400,6 +400,20 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			e.printStackTrace();
 			return new String[0];
 		}
+	}
+
+	/**
+	 * Used by the native code (java_godot_wrapper.h) to check whether the activity is resumed or paused.
+	 */
+	private boolean isActivityResumed() {
+		return activityResumed;
+	}
+
+	/**
+	 * Used by the native code (java_godot_wrapper.h) to access the Android surface.
+	 */
+	private Surface getSurface() {
+		return mView.getHolder().getSurface();
 	}
 
 	String expansion_pack_path;
@@ -612,6 +626,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	@Override
 	protected void onPause() {
 		super.onPause();
+		activityResumed = false;
+
 		if (!godot_initialized) {
 			if (null != mDownloaderClientStub) {
 				mDownloaderClientStub.disconnect(this);
@@ -687,6 +703,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 			singletons[i].onMainResume();
 		}
+
+		activityResumed = true;
 	}
 
 	public void UiChangeListener() {

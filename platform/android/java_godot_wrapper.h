@@ -55,6 +55,8 @@ private:
 	jmethodID _set_clipboard = 0;
 	jmethodID _request_permission = 0;
 	jmethodID _init_input_devices = 0;
+	jmethodID _get_surface = 0;
+	jmethodID _is_activity_resumed = 0;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance);
@@ -78,6 +80,8 @@ public:
 	void set_clipboard(const String &p_text);
 	bool request_permission(const String &p_name);
 	void init_input_devices();
+	jobject get_surface();
+	bool is_activity_resumed();
 };
 
 #endif /* !JAVA_GODOT_WRAPPER_H */

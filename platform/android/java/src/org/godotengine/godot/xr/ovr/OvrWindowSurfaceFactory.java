@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  android_gdn.cpp                                                      */
+/*  OvrWindowSurfaceFactory.java                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,59 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "modules/gdnative/gdnative.h"
+package org.godotengine.godot.xr.ovr;
 
-// Code by Paritosh97 with minor tweaks by Mux213
-// These entry points are only for the android platform and are simple stubs in all others.
+import android.opengl.GLSurfaceView;
+import javax.microedition.khronos.egl.EGL10;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLDisplay;
+import javax.microedition.khronos.egl.EGLSurface;
 
-#ifdef __ANDROID__
-#include "platform/android/java_godot_wrapper.h"
-#include "platform/android/os_android.h"
-#include "platform/android/thread_jandroid.h"
-#else
-#define JNIEnv void
-#define jobject void *
-#endif
+/**
+ * EGL window surface factory for the Oculus mobile VR SDK.
+ */
+public class OvrWindowSurfaceFactory implements GLSurfaceView.EGLWindowSurfaceFactory {
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+	private final static int[] SURFACE_ATTRIBS = {
+		EGL10.EGL_WIDTH, 16,
+		EGL10.EGL_HEIGHT, 16,
+		EGL10.EGL_NONE
+	};
 
-JNIEnv *GDAPI godot_android_get_env() {
-#ifdef __ANDROID__
-	return ThreadAndroid::get_env();
-#else
-	return NULL;
-#endif
+	@Override
+	public EGLSurface createWindowSurface(EGL10 egl, EGLDisplay display, EGLConfig config,
+			Object nativeWindow) {
+		return egl.eglCreatePbufferSurface(display, config, SURFACE_ATTRIBS);
+	}
+
+	@Override
+	public void destroySurface(EGL10 egl, EGLDisplay display, EGLSurface surface) {
+		egl.eglDestroySurface(display, surface);
+	}
 }
-
-jobject GDAPI godot_android_get_activity() {
-#ifdef __ANDROID__
-	OS_Android *os_android = (OS_Android *)OS::get_singleton();
-	return os_android->get_godot_java()->get_activity();
-#else
-	return NULL;
-#endif
-}
-
-jobject GDAPI godot_android_get_surface() {
-#ifdef __ANDROID__
-	OS_Android *os_android = (OS_Android *)OS::get_singleton();
-	return os_android->get_godot_java()->get_surface();
-#else
-	return NULL;
-#endif
-}
-
-bool GDAPI godot_android_is_activity_resumed() {
-#ifdef __ANDROID__
-	OS_Android *os_android = (OS_Android *)OS::get_singleton();
-	return os_android->get_godot_java()->is_activity_resumed();
-#else
-	return false;
-#endif
-}
-
-#ifdef __cplusplus
-}
-#endif
