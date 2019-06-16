@@ -570,7 +570,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 			if (export_format == "dmg") {
 				// write it into our application bundle
-				file = tmp_app_path_name + "/" + file;
+				file = tmp_app_path_name.plus_file(file);
 
 				// write the file, need to add chmod
 				FileAccess *f = FileAccess::open(file, FileAccess::WRITE);

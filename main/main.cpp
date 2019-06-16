@@ -1709,13 +1709,13 @@ bool Main::start() {
 
 						if (sep == -1) {
 							DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-							local_game_path = da->get_current_dir() + "/" + local_game_path;
+							local_game_path = da->get_current_dir().plus_file(local_game_path);
 							memdelete(da);
 						} else {
 
 							DirAccess *da = DirAccess::open(local_game_path.substr(0, sep));
 							if (da) {
-								local_game_path = da->get_current_dir() + "/" + local_game_path.substr(sep + 1, local_game_path.length());
+								local_game_path = da->get_current_dir().plus_file(local_game_path.substr(sep + 1, local_game_path.length()));
 								memdelete(da);
 							}
 						}
