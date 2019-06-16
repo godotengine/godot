@@ -58,7 +58,6 @@ import android.os.Environment;
 import android.os.Messenger;
 import android.provider.Settings.Secure;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -115,6 +114,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	private Button mPauseButton;
 	private Button mWiFiSettingsButton;
 
+	private XRMode xrMode = XRMode.REGULAR;
 	private boolean use_32_bits = false;
 	private boolean use_immersive = false;
 	private boolean use_debug_opengl = false;
@@ -282,7 +282,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		// ...add to FrameLayout
 		layout.addView(edittext);
 
-		mView = new GodotView(this, XRMode.PANCAKE, use_gl3, use_32_bits, use_debug_opengl);
+		mView = new GodotView(this, xrMode, use_gl3, use_32_bits, use_debug_opengl);
 		layout.addView(mView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		edittext.setView(mView);
 		io.setEdit(edittext);
@@ -488,7 +488,11 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			for (int i = 0; i < command_line.length; i++) {
 
 				boolean has_extra = i < command_line.length - 1;
-				if (command_line[i].equals("--use_depth_32")) {
+				if (command_line[i].equals(XRMode.REGULAR.cmdLineArg)) {
+					xrMode = XRMode.REGULAR;
+				} else if (command_line[i].equals(XRMode.OVR.cmdLineArg)) {
+					xrMode = XRMode.OVR;
+				} else if (command_line[i].equals("--use_depth_32")) {
 					use_32_bits = true;
 				} else if (command_line[i].equals("--debug_opengl")) {
 					use_debug_opengl = true;

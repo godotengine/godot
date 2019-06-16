@@ -40,9 +40,9 @@ import org.godotengine.godot.xr.XRMode;
 import org.godotengine.godot.xr.ovr.OvrConfigChooser;
 import org.godotengine.godot.xr.ovr.OvrContextFactory;
 import org.godotengine.godot.xr.ovr.OvrWindowSurfaceFactory;
-import org.godotengine.godot.xr.pancake.PancakeConfigChooser;
-import org.godotengine.godot.xr.pancake.PancakeContextFactory;
-import org.godotengine.godot.xr.pancake.PancakeFallbackConfigChooser;
+import org.godotengine.godot.xr.regular.RegularConfigChooser;
+import org.godotengine.godot.xr.regular.RegularContextFactory;
+import org.godotengine.godot.xr.regular.RegularFallbackConfigChooser;
 
 /**
  * A simple GLSurfaceView sub-class that demonstrate how to perform
@@ -123,7 +123,7 @@ public class GodotView extends GLSurfaceView {
 				setEGLWindowSurfaceFactory(new OvrWindowSurfaceFactory());
 				break;
 
-			case PANCAKE:
+			case REGULAR:
 			default:
 				/* By default, GLSurfaceView() creates a RGB_565 opaque surface.
 				 * If we want a translucent one, we should change the surface's
@@ -137,7 +137,7 @@ public class GodotView extends GLSurfaceView {
 				/* Setup the context factory for 2.0 rendering.
 				 * See ContextFactory class definition below
 				 */
-				setEGLContextFactory(new PancakeContextFactory());
+				setEGLContextFactory(new RegularContextFactory());
 
 				/* We need to choose an EGLConfig that matches the format of
 				 * our surface exactly. This is going to be done in our
@@ -147,15 +147,15 @@ public class GodotView extends GLSurfaceView {
 
 				if (GLUtils.use_32) {
 					setEGLConfigChooser(translucent ?
-												new PancakeFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
-														new PancakeConfigChooser(8, 8, 8, 8, 16, stencil)) :
-												new PancakeFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
-														new PancakeConfigChooser(5, 6, 5, 0, 16, stencil)));
+												new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
+														new RegularConfigChooser(8, 8, 8, 8, 16, stencil)) :
+												new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
+														new RegularConfigChooser(5, 6, 5, 0, 16, stencil)));
 
 				} else {
 					setEGLConfigChooser(translucent ?
-												new PancakeConfigChooser(8, 8, 8, 8, 16, stencil) :
-												new PancakeConfigChooser(5, 6, 5, 0, 16, stencil));
+												new RegularConfigChooser(8, 8, 8, 8, 16, stencil) :
+												new RegularConfigChooser(5, 6, 5, 0, 16, stencil));
 				}
 				break;
 		}

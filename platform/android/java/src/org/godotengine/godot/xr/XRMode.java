@@ -34,6 +34,16 @@ package org.godotengine.godot.xr;
  * Godot available XR modes.
  */
 public enum XRMode {
-	PANCAKE, // Regular/flatscreen
-	OVR, // Oculus mobile VR SDK
+	REGULAR(0, "Regular", "--xr_mode_regular"), // Regular/flatscreen
+	OVR(1, "Oculus Mobile VR", "--xr_mode_ovr");
+
+	final int index;
+	final String label;
+	public final String cmdLineArg;
+
+	XRMode(int index, String label, String cmdLineArg) {
+		this.index = index;
+		this.label = label;
+		this.cmdLineArg = cmdLineArg;
+	}
 }
