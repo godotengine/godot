@@ -919,28 +919,37 @@ public:
 
 struct ProjectItem {
 	String project;
+	String project_name;
 	String path;
 	String conf;
-	int config_version;
+	String icon;
+	String main_scene;
 	uint64_t last_modified;
 	bool favorite;
 	bool grayed;
-	bool ordered_latest_modification;
+	ProjectListFilter::FilterOption filter_order_option;
 	ProjectItem() {}
-	ProjectItem(const String &p_project, const String &p_path, const String &p_conf, int p_config_version, uint64_t p_last_modified, bool p_favorite = false, bool p_grayed = false, const bool p_ordered_latest_modification = true) {
+	ProjectItem(const String &p_project, const String &p_name, const String &p_path, const String &p_conf, const String &p_icon, const String &p_main_scene, uint64_t p_last_modified, bool p_favorite = false, bool p_grayed = false, const ProjectListFilter::FilterOption p_filter_order_option = ProjectListFilter::FILTER_NAME) {
 		project = p_project;
+		project_name = p_name;
 		path = p_path;
 		conf = p_conf;
-		config_version = p_config_version;
+		icon = p_icon;
+		main_scene = p_main_scene;
 		last_modified = p_last_modified;
 		favorite = p_favorite;
 		grayed = p_grayed;
-		ordered_latest_modification = p_ordered_latest_modification;
+		filter_order_option = p_filter_order_option;
 	}
 	_FORCE_INLINE_ bool operator<(const ProjectItem &l) const {
-		if (ordered_latest_modification)
-			return last_modified > l.last_modified;
-		return project < l.project;
+		switch (filter_order_option) {
+			case ProjectListFilter::FILTER_PATH:
+				return project < l.project;
+			case ProjectListFilter::FILTER_MODIFIED:
+				return last_modified > l.last_modified;
+			default:
+				return project_name < l.project_name;
+		}
 	}
 	_FORCE_INLINE_ bool operator==(const ProjectItem &l) const { return project == l.project; }
 };
@@ -1256,13 +1265,7 @@ void ProjectManager::_load_recent_projects() {
 
 	Color font_color = gui_base->get_color("font_color", "Tree");
 
-	bool set_ordered_latest_modification;
 	ProjectListFilter::FilterOption filter_order_option = project_order_filter->get_filter_option();
-	if (filter_order_option == ProjectListFilter::FILTER_NAME) {
-		set_ordered_latest_modification = false;
-	} else {
-		set_ordered_latest_modification = true;
-	}
 	EditorSettings::get_singleton()->set("project_manager/sorting_order", (int)filter_order_option);
 
 	List<ProjectItem> projects;
@@ -1280,9 +1283,29 @@ void ProjectManager::_load_recent_projects() {
 
 		String project = _name.get_slice("/", 1);
 		String conf = path.plus_file("project.godot");
-		int config_version = 0; // Assume 0 until we know better
 		bool favorite = (_name.begins_with("favorite_projects/")) ? true : false;
 		bool grayed = false;
+
+		Ref<ConfigFile> cf = memnew(ConfigFile);
+		Error cf_err = cf->load(conf);
+
+		int config_version = 0;
+		String project_name = TTR("Unnamed Project");
+		if (cf_err == OK) {
+
+			String cf_project_name = static_cast<String>(cf->get_value("application", "config/name", ""));
+			if (cf_project_name != "")
+				project_name = cf_project_name.xml_unescape();
+			config_version = (int)cf->get_value("", "config_version", 0);
+		}
+
+		if (config_version > ProjectSettings::CONFIG_VERSION) {
+			// Comes from an incompatible (more recent) Godot version, grey it out
+			grayed = true;
+		}
+
+		String icon = cf->get_value("application", "config/icon", "");
+		String main_scene = cf->get_value("application", "run/main_scene", "");
 
 		uint64_t last_modified = 0;
 		if (FileAccess::exists(conf)) {
@@ -1298,7 +1321,7 @@ void ProjectManager::_load_recent_projects() {
 			grayed = true;
 		}
 
-		ProjectItem item(project, path, conf, config_version, last_modified, favorite, grayed, set_ordered_latest_modification);
+		ProjectItem item(project, project_name, path, conf, icon, main_scene, last_modified, favorite, grayed, filter_order_option);
 		if (favorite)
 			favorite_projects.push_back(item);
 		else
@@ -1326,43 +1349,23 @@ void ProjectManager::_load_recent_projects() {
 		String path = item.path;
 		String conf = item.conf;
 
-		Ref<ConfigFile> cf = memnew(ConfigFile);
-		Error cf_err = cf->load(conf);
-
-		String project_name = TTR("Unnamed Project");
-		if (cf_err == OK && cf->has_section_key("application", "config/name")) {
-			project_name = static_cast<String>(cf->get_value("application", "config/name")).xml_unescape();
-		}
-
-		if (filter_option == ProjectListFilter::FILTER_NAME && search_term != "" && project_name.findn(search_term) == -1)
+		if (filter_option == ProjectListFilter::FILTER_NAME && search_term != "" && item.project_name.findn(search_term) == -1)
 			continue;
 
 		Ref<Texture> icon;
-		String main_scene;
 
-		if (cf_err == OK) {
-			item.config_version = (int)cf->get_value("", "config_version", 0);
-			if (item.config_version > ProjectSettings::CONFIG_VERSION) {
-				// Comes from an incompatible (more recent) Godot version, grey it out
-				item.grayed = true;
+		if (item.icon != "") {
+			Ref<Image> img;
+			img.instance();
+			Error err = img->load(item.icon.replace_first("res://", path + "/"));
+			if (err == OK) {
+
+				Ref<Texture> default_icon = get_icon("DefaultProjectIcon", "EditorIcons");
+				img->resize(default_icon->get_width(), default_icon->get_height());
+				Ref<ImageTexture> it = memnew(ImageTexture);
+				it->create_from_image(img);
+				icon = it;
 			}
-
-			String appicon = cf->get_value("application", "config/icon", "");
-			if (appicon != "") {
-				Ref<Image> img;
-				img.instance();
-				Error err = img->load(appicon.replace_first("res://", path + "/"));
-				if (err == OK) {
-
-					Ref<Texture> default_icon = get_icon("DefaultProjectIcon", "EditorIcons");
-					img->resize(default_icon->get_width(), default_icon->get_height());
-					Ref<ImageTexture> it = memnew(ImageTexture);
-					it->create_from_image(img);
-					icon = it;
-				}
-			}
-
-			main_scene = cf->get_value("application", "run/main_scene", "");
 		}
 
 		if (icon.is_null()) {
@@ -1376,7 +1379,7 @@ void ProjectManager::_load_recent_projects() {
 
 		HBoxContainer *hb = memnew(HBoxContainer);
 		hb->set_meta("name", project);
-		hb->set_meta("main_scene", main_scene);
+		hb->set_meta("main_scene", item.main_scene);
 		hb->set_meta("favorite", is_favorite);
 		hb->connect("draw", this, "_panel_draw", varray(hb));
 		hb->connect("gui_input", this, "_panel_input", varray(hb));
@@ -1406,7 +1409,7 @@ void ProjectManager::_load_recent_projects() {
 		ec->set_custom_minimum_size(Size2(0, 1));
 		ec->set_mouse_filter(MOUSE_FILTER_PASS);
 		vb->add_child(ec);
-		Label *title = memnew(Label(project_name));
+		Label *title = memnew(Label(item.project_name));
 		title->add_font_override("font", gui_base->get_font("title", "EditorFonts"));
 		title->add_color_override("font_color", font_color);
 		title->set_clip_text(true);
@@ -2020,6 +2023,7 @@ ProjectManager::ProjectManager() {
 	sort_filters->add_child(sort_label);
 	Vector<String> sort_filter_titles;
 	sort_filter_titles.push_back("Name");
+	sort_filter_titles.push_back("Path");
 	sort_filter_titles.push_back("Last Modified");
 	project_order_filter = memnew(ProjectListFilter);
 	project_order_filter->_setup_filters(sort_filter_titles);
