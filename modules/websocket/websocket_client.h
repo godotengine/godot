@@ -67,6 +67,8 @@ public:
 	void _on_disconnect(bool p_was_clean);
 	void _on_error();
 
+	virtual Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) = 0;
+
 	WebSocketClient();
 	~WebSocketClient();
 };

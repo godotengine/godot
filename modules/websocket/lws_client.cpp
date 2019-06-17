@@ -215,6 +215,17 @@ uint16_t LWSClient::get_connected_port() const {
 	return 1025;
 };
 
+Error LWSClient::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) {
+	ERR_EXPLAIN("Buffers sizes can only be set before listening or connecting");
+	ERR_FAIL_COND_V(context != NULL, FAILED);
+
+	_in_buf_size = nearest_shift(p_in_buffer - 1) + 10;
+	_in_pkt_size = nearest_shift(p_in_packets - 1);
+	_out_buf_size = nearest_shift(p_out_buffer - 1) + 10;
+	_out_pkt_size = nearest_shift(p_out_packets - 1);
+	return OK;
+}
+
 LWSClient::LWSClient() {
 	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSC_IN_BUF) - 1) + 10;
 	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_IN_PKT) - 1);

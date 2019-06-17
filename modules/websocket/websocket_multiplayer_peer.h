@@ -97,6 +97,7 @@ public:
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
 
 	/* WebSocketPeer */
+	virtual Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) = 0;
 	virtual Ref<WebSocketPeer> get_peer(int p_peer_id) const = 0;
 
 	void _process_multiplayer(Ref<WebSocketPeer> p_peer, uint32_t p_peer_id);
