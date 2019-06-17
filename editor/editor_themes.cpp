@@ -198,7 +198,8 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	if (!p_only_thumbs)
 		for (int i = 0; i < editor_icons_count; i++) {
 			List<String>::Element *is_exception = exceptions.find(editor_icons_names[i]);
-			if (is_exception) exceptions.erase(is_exception);
+			if (is_exception)
+				exceptions.erase(is_exception);
 			Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception);
 			p_theme->set_icon(editor_icons_names[i], "EditorIcons", icon);
 		}
@@ -210,7 +211,8 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		for (int i = 0; i < editor_bg_thumbs_count; i++) {
 			int index = editor_bg_thumbs_indices[i];
 			List<String>::Element *is_exception = exceptions.find(editor_icons_names[index]);
-			if (is_exception) exceptions.erase(is_exception);
+			if (is_exception)
+				exceptions.erase(is_exception);
 			Ref<ImageTexture> icon = editor_generate_icon(index, !p_dark_theme && !is_exception, scale, force_filter);
 			p_theme->set_icon(editor_icons_names[index], "EditorIcons", icon);
 		}
@@ -219,7 +221,8 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		for (int i = 0; i < editor_md_thumbs_count; i++) {
 			int index = editor_md_thumbs_indices[i];
 			List<String>::Element *is_exception = exceptions.find(editor_icons_names[index]);
-			if (is_exception) exceptions.erase(is_exception);
+			if (is_exception)
+				exceptions.erase(is_exception);
 			Ref<ImageTexture> icon = editor_generate_icon(index, !p_dark_theme && !is_exception, scale, force_filter);
 			p_theme->set_icon(editor_icons_names[index], "EditorIcons", icon);
 		}

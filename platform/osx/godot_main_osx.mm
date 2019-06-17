@@ -49,7 +49,8 @@ int main(int argc, char **argv) {
 		//potentially launched from finder
 		int len = strlen(argv[0]);
 		while (len--) {
-			if (argv[0][len] == '/') break;
+			if (argv[0][len] == '/')
+				break;
 		}
 		if (len >= 0) {
 			char *path = (char *)malloc(len + 1);

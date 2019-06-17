@@ -534,7 +534,8 @@ void SpatialEditorViewport::_select_region() {
 			item = sel;
 		}
 
-		if (selected.find(item) != -1) continue;
+		if (selected.find(item) != -1)
+			continue;
 
 		Ref<EditorSpatialGizmo> seg = sp->get_gizmo();
 
@@ -1170,7 +1171,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					if (cursor.region_select) {
 
-						if (!clicked_wants_append) _clear_selected();
+						if (!clicked_wants_append)
+							_clear_selected();
 
 						_select_region();
 						cursor.region_select = false;
@@ -1870,7 +1872,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 
 		if (k->get_scancode() == KEY_SPACE) {
-			if (!k->is_pressed()) emit_signal("toggle_maximize_view", this);
+			if (!k->is_pressed())
+				emit_signal("toggle_maximize_view", this);
 		}
 	}
 
@@ -4063,7 +4066,8 @@ void _update_all_gizmos(Node *p_node) {
 }
 
 void SpatialEditor::update_all_gizmos(Node *p_node) {
-	if (!p_node) p_node = SceneTree::get_singleton()->get_root();
+	if (!p_node)
+		p_node = SceneTree::get_singleton()->get_root();
 	_update_all_gizmos(p_node);
 }
 
@@ -4162,7 +4166,8 @@ Dictionary SpatialEditor::get_state() const {
 
 	Dictionary gizmos_status;
 	for (int i = 0; i < gizmo_plugins_by_name.size(); i++) {
-		if (!gizmo_plugins_by_name[i]->can_be_hidden()) continue;
+		if (!gizmo_plugins_by_name[i]->can_be_hidden())
+			continue;
 		int state = gizmos_menu->get_item_state(gizmos_menu->get_item_index(i));
 		String name = gizmo_plugins_by_name[i]->get_name();
 		gizmos_status[name] = state;
@@ -4254,7 +4259,8 @@ void SpatialEditor::set_state(const Dictionary &p_state) {
 		gizmos_status.get_key_list(&keys);
 
 		for (int j = 0; j < gizmo_plugins_by_name.size(); ++j) {
-			if (!gizmo_plugins_by_name[j]->can_be_hidden()) continue;
+			if (!gizmo_plugins_by_name[j]->can_be_hidden())
+				continue;
 			int state = EditorSpatialGizmoPlugin::VISIBLE;
 			for (int i = 0; i < keys.size(); i++) {
 				if (gizmo_plugins_by_name.write[j]->get_name() == keys[i]) {
@@ -4937,7 +4943,8 @@ void SpatialEditor::_update_gizmos_menu() {
 	gizmos_menu->clear();
 
 	for (int i = 0; i < gizmo_plugins_by_name.size(); ++i) {
-		if (!gizmo_plugins_by_name[i]->can_be_hidden()) continue;
+		if (!gizmo_plugins_by_name[i]->can_be_hidden())
+			continue;
 		String plugin_name = gizmo_plugins_by_name[i]->get_name();
 		const int plugin_state = gizmo_plugins_by_name[i]->get_state();
 		gizmos_menu->add_multistate_item(TTR(plugin_name), 3, plugin_state, i);
@@ -4958,7 +4965,8 @@ void SpatialEditor::_update_gizmos_menu() {
 
 void SpatialEditor::_update_gizmos_menu_theme() {
 	for (int i = 0; i < gizmo_plugins_by_name.size(); ++i) {
-		if (!gizmo_plugins_by_name[i]->can_be_hidden()) continue;
+		if (!gizmo_plugins_by_name[i]->can_be_hidden())
+			continue;
 		const int plugin_state = gizmo_plugins_by_name[i]->get_state();
 		const int idx = gizmos_menu->get_item_index(i);
 		switch (plugin_state) {
@@ -5365,9 +5373,11 @@ void SpatialEditor::_request_gizmo(Object *p_obj) {
 }
 
 void SpatialEditor::_toggle_maximize_view(Object *p_viewport) {
-	if (!p_viewport) return;
+	if (!p_viewport)
+		return;
 	SpatialEditorViewport *current_viewport = Object::cast_to<SpatialEditorViewport>(p_viewport);
-	if (!current_viewport) return;
+	if (!current_viewport)
+		return;
 
 	int index = -1;
 	bool maximized = false;
@@ -5379,7 +5389,8 @@ void SpatialEditor::_toggle_maximize_view(Object *p_viewport) {
 			break;
 		}
 	}
-	if (index == -1) return;
+	if (index == -1)
+		return;
 
 	if (!maximized) {
 
@@ -6082,7 +6093,8 @@ Ref<SpatialMaterial> EditorSpatialGizmoPlugin::get_material(const String &p_name
 	ERR_FAIL_COND_V(!materials.has(p_name), Ref<SpatialMaterial>());
 	ERR_FAIL_COND_V(materials[p_name].size() == 0, Ref<SpatialMaterial>());
 
-	if (p_gizmo.is_null() || materials[p_name].size() == 1) return materials[p_name][0];
+	if (p_gizmo.is_null() || materials[p_name].size() == 1)
+		return materials[p_name][0];
 
 	int index = (p_gizmo->is_selected() ? 1 : 0) + (p_gizmo->is_editable() ? 2 : 0);
 
@@ -6119,7 +6131,8 @@ Ref<EditorSpatialGizmo> EditorSpatialGizmoPlugin::get_gizmo(Spatial *p_spatial) 
 
 	Ref<EditorSpatialGizmo> ref = create_gizmo(p_spatial);
 
-	if (ref.is_null()) return ref;
+	if (ref.is_null())
+		return ref;
 
 	ref->set_plugin(this);
 	ref->set_spatial_node(p_spatial);
@@ -6178,7 +6191,8 @@ Ref<EditorSpatialGizmo> EditorSpatialGizmoPlugin::create_gizmo(Spatial *p_spatia
 	}
 
 	Ref<EditorSpatialGizmo> ref;
-	if (has_gizmo(p_spatial)) ref.instance();
+	if (has_gizmo(p_spatial))
+		ref.instance();
 	return ref;
 }
 

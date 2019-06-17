@@ -70,25 +70,29 @@ int OpenSimplexNoise::get_seed() {
 }
 
 void OpenSimplexNoise::set_octaves(int p_octaves) {
-	if (p_octaves == octaves) return;
+	if (p_octaves == octaves)
+		return;
 	octaves = CLAMP(p_octaves, 1, 6);
 	emit_changed();
 }
 
 void OpenSimplexNoise::set_period(float p_period) {
-	if (p_period == period) return;
+	if (p_period == period)
+		return;
 	period = p_period;
 	emit_changed();
 }
 
 void OpenSimplexNoise::set_persistence(float p_persistence) {
-	if (p_persistence == persistence) return;
+	if (p_persistence == persistence)
+		return;
 	persistence = p_persistence;
 	emit_changed();
 }
 
 void OpenSimplexNoise::set_lacunarity(float p_lacunarity) {
-	if (p_lacunarity == lacunarity) return;
+	if (p_lacunarity == lacunarity)
+		return;
 	lacunarity = p_lacunarity;
 	emit_changed();
 }

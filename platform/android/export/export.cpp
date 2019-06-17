@@ -344,7 +344,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							}
 
 							d.name = vendor + " " + device;
-							if (device == String()) continue;
+							if (device == String())
+								continue;
 						}
 
 						ndevices.push_back(d);

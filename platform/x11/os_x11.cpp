@@ -927,13 +927,15 @@ Point2 OS_X11::get_mouse_position() const {
 
 bool OS_X11::get_window_per_pixel_transparency_enabled() const {
 
-	if (!is_layered_allowed()) return false;
+	if (!is_layered_allowed())
+		return false;
 	return layered_window;
 }
 
 void OS_X11::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 
-	if (!is_layered_allowed()) return;
+	if (!is_layered_allowed())
+		return;
 	if (layered_window != p_enabled) {
 		if (p_enabled) {
 			set_borderless_window(true);
@@ -1065,7 +1067,8 @@ int OS_X11::get_screen_count() const {
 	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if (!ext_okay) return 0;
+	if (!ext_okay)
+		return 0;
 
 	int count;
 	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
@@ -1090,7 +1093,8 @@ int OS_X11::get_current_screen() const {
 
 void OS_X11::set_current_screen(int p_screen) {
 	int count = get_screen_count();
-	if (p_screen >= count) return;
+	if (p_screen >= count)
+		return;
 
 	if (current_videomode.fullscreen) {
 		Point2i position = get_screen_position(p_screen);
@@ -1138,11 +1142,13 @@ Size2 OS_X11::get_screen_size(int p_screen) const {
 	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if (!ext_okay) return Size2i(0, 0);
+	if (!ext_okay)
+		return Size2i(0, 0);
 
 	int count;
 	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	if (p_screen >= count) return Size2i(0, 0);
+	if (p_screen >= count)
+		return Size2i(0, 0);
 
 	Size2i size = Point2i(xsi[p_screen].width, xsi[p_screen].height);
 	XFree(xsi);

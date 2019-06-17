@@ -1038,9 +1038,12 @@ void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 			int last_clicked_id = -1;
 			for (int i = 0; i < scroll_children->get_child_count(); i++) {
 				HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
-				if (!hb) continue;
-				if (hb->get_meta("name") == clicked) clicked_id = i;
-				if (hb->get_meta("name") == last_clicked) last_clicked_id = i;
+				if (!hb)
+					continue;
+				if (hb->get_meta("name") == clicked)
+					clicked_id = i;
+				if (hb->get_meta("name") == last_clicked)
+					last_clicked_id = i;
 			}
 
 			if (last_clicked_id != -1 && clicked_id != -1) {
@@ -1048,7 +1051,8 @@ void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 				int max = clicked_id > last_clicked_id ? clicked_id : last_clicked_id;
 				for (int i = 0; i < scroll_children->get_child_count(); ++i) {
 					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
-					if (!hb) continue;
+					if (!hb)
+						continue;
 					if (i != clicked_id && (i < min || i > max) && !mb->get_control()) {
 						selected_list.erase(hb->get_meta("name"));
 					} else if (i >= min && i <= max) {
@@ -1145,7 +1149,8 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 					for (int i = scroll_children->get_child_count() - 1; i >= 0; i--) {
 
 						HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
-						if (!hb) continue;
+						if (!hb)
+							continue;
 
 						String current = hb->get_meta("name");
 
@@ -1182,7 +1187,8 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 				for (int i = 0; i < scroll_children->get_child_count(); i++) {
 
 					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
-					if (!hb) continue;
+					if (!hb)
+						continue;
 
 					String current = hb->get_meta("name");
 

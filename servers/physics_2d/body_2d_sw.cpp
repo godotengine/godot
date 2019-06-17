@@ -47,7 +47,8 @@ void Body2DSW::update_inertias() {
 
 		case Physics2DServer::BODY_MODE_RIGID: {
 
-			if (user_inertia) break;
+			if (user_inertia)
+				break;
 
 			//update tensor for allshapes, not the best way but should be somehow OK. (inspired from bullet)
 			real_t total_area = 0;

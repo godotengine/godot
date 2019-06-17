@@ -63,10 +63,12 @@ class MutexLock {
 public:
 	MutexLock(Mutex *p_mutex) {
 		mutex = p_mutex;
-		if (mutex) mutex->lock();
+		if (mutex)
+			mutex->lock();
 	}
 	~MutexLock() {
-		if (mutex) mutex->unlock();
+		if (mutex)
+			mutex->unlock();
 	}
 };
 

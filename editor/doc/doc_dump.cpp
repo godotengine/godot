@@ -219,7 +219,8 @@ void DocDump::dump(const String &p_file) {
 					case PROPERTY_HINT_ENUM:
 						hint = "Values: ";
 						for (int j = 0; j < arginfo.hint_string.get_slice_count(","); j++) {
-							if (j > 0) hint += ", ";
+							if (j > 0)
+								hint += ", ";
 							hint += arginfo.hint_string.get_slice(",", j) + "=" + itos(j);
 						}
 						break;
@@ -229,7 +230,8 @@ void DocDump::dump(const String &p_file) {
 					case PROPERTY_HINT_FLAGS:
 						hint = "Values: ";
 						for (int j = 0; j < arginfo.hint_string.get_slice_count(","); j++) {
-							if (j > 0) hint += ", ";
+							if (j > 0)
+								hint += ", ";
 							hint += arginfo.hint_string.get_slice(",", j) + "=" + itos((uint64_t)1 << j);
 						}
 						break;

@@ -260,7 +260,8 @@ void AudioStreamPlaybackOpus::stop() {
 }
 
 void AudioStreamPlaybackOpus::seek(float p_time) {
-	if (!playing) return;
+	if (!playing)
+		return;
 	ogg_int64_t pcm_offset = (ogg_int64_t)(p_time * osrate);
 	bool ok = op_pcm_seek(opus_file, pcm_offset) == 0;
 	if (!ok) {

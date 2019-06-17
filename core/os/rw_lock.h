@@ -58,10 +58,12 @@ class RWLockRead {
 public:
 	RWLockRead(const RWLock *p_lock) {
 		lock = const_cast<RWLock *>(p_lock);
-		if (lock) lock->read_lock();
+		if (lock)
+			lock->read_lock();
 	}
 	~RWLockRead() {
-		if (lock) lock->read_unlock();
+		if (lock)
+			lock->read_unlock();
 	}
 };
 
@@ -72,10 +74,12 @@ class RWLockWrite {
 public:
 	RWLockWrite(RWLock *p_lock) {
 		lock = p_lock;
-		if (lock) lock->write_lock();
+		if (lock)
+			lock->write_lock();
 	}
 	~RWLockWrite() {
-		if (lock) lock->write_unlock();
+		if (lock)
+			lock->write_unlock();
 	}
 };
 

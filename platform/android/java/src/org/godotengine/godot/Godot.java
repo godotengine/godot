@@ -613,7 +613,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	@Override
 	protected void onDestroy() {
 
-		if (mPaymentsManager != null) mPaymentsManager.destroy();
+		if (mPaymentsManager != null)
+			mPaymentsManager.destroy();
 		for (int i = 0; i < singleton_count; i++) {
 			singletons[i].onMainDestroy();
 		}
@@ -930,7 +931,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		int cnt = 0;
 		for (int i = cc.length; --i >= 0; cnt += cc[i] != 0 ? 1 : 0)
 			;
-		if (cnt == 0) return super.onKeyMultiple(inKeyCode, repeatCount, event);
+		if (cnt == 0)
+			return super.onKeyMultiple(inKeyCode, repeatCount, event);
 		final Activity me = this;
 		queueEvent(new Runnable() {
 			// This method will be called on the rendering thread:

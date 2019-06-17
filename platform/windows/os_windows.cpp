@@ -1770,7 +1770,8 @@ Point2 OS_Windows::get_window_position() const {
 
 void OS_Windows::set_window_position(const Point2 &p_position) {
 
-	if (video_mode.fullscreen) return;
+	if (video_mode.fullscreen)
+		return;
 	RECT r;
 	GetWindowRect(hWnd, &r);
 	MoveWindow(hWnd, p_position.x, p_position.y, r.right - r.left, r.bottom - r.top, TRUE);
@@ -1981,13 +1982,15 @@ bool OS_Windows::is_window_always_on_top() const {
 
 bool OS_Windows::get_window_per_pixel_transparency_enabled() const {
 
-	if (!is_layered_allowed()) return false;
+	if (!is_layered_allowed())
+		return false;
 	return layered_window;
 }
 
 void OS_Windows::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 
-	if (!is_layered_allowed()) return;
+	if (!is_layered_allowed())
+		return;
 	if (layered_window != p_enabled) {
 		if (p_enabled) {
 			set_borderless_window(true);
@@ -2949,19 +2952,22 @@ OS::LatinKeyboardVariant OS_Windows::get_latin_keyboard_variant() const {
 
 	int i = 0;
 	while (azerty[i] != 0) {
-		if (azerty[i] == hex) return LATIN_KEYBOARD_AZERTY;
+		if (azerty[i] == hex)
+			return LATIN_KEYBOARD_AZERTY;
 		i++;
 	}
 
 	i = 0;
 	while (qwertz[i] != 0) {
-		if (qwertz[i] == hex) return LATIN_KEYBOARD_QWERTZ;
+		if (qwertz[i] == hex)
+			return LATIN_KEYBOARD_QWERTZ;
 		i++;
 	}
 
 	i = 0;
 	while (dvorak[i] != 0) {
-		if (dvorak[i] == hex) return LATIN_KEYBOARD_DVORAK;
+		if (dvorak[i] == hex)
+			return LATIN_KEYBOARD_DVORAK;
 		i++;
 	}
 

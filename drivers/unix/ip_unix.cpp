@@ -226,7 +226,8 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 		r_addresses->push_back(ip);
 	}
 
-	if (ifAddrStruct != NULL) freeifaddrs(ifAddrStruct);
+	if (ifAddrStruct != NULL)
+		freeifaddrs(ifAddrStruct);
 }
 #endif
 

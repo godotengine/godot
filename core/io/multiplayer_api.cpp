@@ -133,7 +133,8 @@ void MultiplayerAPI::set_root_node(Node *p_node) {
 
 void MultiplayerAPI::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_peer) {
 
-	if (p_peer == network_peer) return; // Nothing to do
+	if (p_peer == network_peer)
+		return; // Nothing to do
 
 	if (network_peer.is_valid()) {
 		network_peer->disconnect("peer_connected", this, "_add_peer");
@@ -507,8 +508,9 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 
 	int ofs = 0;
 
-#define MAKE_ROOM(m_amount) \
-	if (packet_cache.size() < m_amount) packet_cache.resize(m_amount);
+#define MAKE_ROOM(m_amount)             \
+	if (packet_cache.size() < m_amount) \
+		packet_cache.resize(m_amount);
 
 	// Encode type.
 	MAKE_ROOM(1);

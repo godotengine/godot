@@ -408,7 +408,8 @@ int Tabs::get_tab_count() const {
 
 void Tabs::set_current_tab(int p_current) {
 
-	if (current == p_current) return;
+	if (current == p_current)
+		return;
 	ERR_FAIL_INDEX(p_current, get_tab_count());
 
 	current = p_current;
@@ -864,7 +865,8 @@ void Tabs::ensure_tab_visible(int p_idx) {
 	if (!is_inside_tree())
 		return;
 
-	if (tabs.size() == 0) return;
+	if (tabs.size() == 0)
+		return;
 	ERR_FAIL_INDEX(p_idx, tabs.size());
 
 	if (p_idx == offset) {

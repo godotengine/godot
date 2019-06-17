@@ -407,11 +407,13 @@ void ProjectSettingsEditor::_show_last_added(const Ref<InputEvent> &p_event, con
 			}
 			child = child->get_next();
 		}
-		if (found) break;
+		if (found)
+			break;
 		r = r->get_next();
 	}
 
-	if (found) input_editor->ensure_cursor_is_visible();
+	if (found)
+		input_editor->ensure_cursor_is_visible();
 }
 
 void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {

@@ -352,7 +352,8 @@ public:
 
 		Element *it = front();
 		while (it) {
-			if (it->value == p_val) return it;
+			if (it->value == p_val)
+				return it;
 			it = it->next();
 		};
 

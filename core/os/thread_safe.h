@@ -39,10 +39,12 @@ class ThreadSafe {
 
 public:
 	inline void lock() const {
-		if (mutex) mutex->lock();
+		if (mutex)
+			mutex->lock();
 	}
 	inline void unlock() const {
-		if (mutex) mutex->unlock();
+		if (mutex)
+			mutex->unlock();
 	}
 
 	ThreadSafe();

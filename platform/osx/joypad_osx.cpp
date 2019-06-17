@@ -376,7 +376,8 @@ bool joypad::check_ff_features() {
 	if (ret == FF_OK && (features.supportedEffects & FFCAP_ET_CONSTANTFORCE)) {
 		uint32_t val;
 		ret = FFDeviceGetForceFeedbackProperty(ff_device, FFPROP_FFGAIN, &val, sizeof(val));
-		if (ret != FF_OK) return false;
+		if (ret != FF_OK)
+			return false;
 		int num_axes = features.numFfAxes;
 		ff_axes = (DWORD *)memalloc(sizeof(DWORD) * num_axes);
 		ff_directions = (LONG *)memalloc(sizeof(LONG) * num_axes);
@@ -511,7 +512,8 @@ void JoypadOSX::joypad_vibration_stop(int p_id, uint64_t p_timestamp) {
 
 int JoypadOSX::get_joy_index(int p_id) const {
 	for (int i = 0; i < device_list.size(); i++) {
-		if (device_list[i].id == p_id) return i;
+		if (device_list[i].id == p_id)
+			return i;
 	}
 	return -1;
 }
