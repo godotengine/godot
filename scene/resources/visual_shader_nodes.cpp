@@ -384,9 +384,14 @@ String VisualShaderNodeTexture::generate_global(Shader::Mode p_mode, VisualShade
 
 		String u = "uniform sampler2D " + make_unique_id(p_type, p_id, "tex");
 		switch (texture_type) {
-			case TYPE_DATA: break;
-			case TYPE_COLOR: u += " : hint_albedo"; break;
-			case TYPE_NORMALMAP: u += " : hint_normal"; break;
+			case TYPE_DATA:
+				break;
+			case TYPE_COLOR:
+				u += " : hint_albedo";
+				break;
+			case TYPE_NORMALMAP:
+				u += " : hint_normal";
+				break;
 		}
 		return u + ";";
 	}
@@ -614,9 +619,14 @@ String VisualShaderNodeCubeMap::generate_global(Shader::Mode p_mode, VisualShade
 
 	String u = "uniform sampler2DCube " + make_unique_id(p_type, p_id, "cube");
 	switch (texture_type) {
-		case TYPE_DATA: break;
-		case TYPE_COLOR: u += " : hint_albedo"; break;
-		case TYPE_NORMALMAP: u += " : hint_normal"; break;
+		case TYPE_DATA:
+			break;
+		case TYPE_COLOR:
+			u += " : hint_albedo";
+			break;
+		case TYPE_NORMALMAP:
+			u += " : hint_normal";
+			break;
 	}
 	return u + ";";
 }
@@ -718,16 +728,36 @@ String VisualShaderNodeScalarOp::generate_code(Shader::Mode p_mode, VisualShader
 	String code = "\t" + p_output_vars[0] + " = ";
 	switch (op) {
 
-		case OP_ADD: code += p_input_vars[0] + " + " + p_input_vars[1] + ";\n"; break;
-		case OP_SUB: code += p_input_vars[0] + " - " + p_input_vars[1] + ";\n"; break;
-		case OP_MUL: code += p_input_vars[0] + " * " + p_input_vars[1] + ";\n"; break;
-		case OP_DIV: code += p_input_vars[0] + " / " + p_input_vars[1] + ";\n"; break;
-		case OP_MOD: code += "mod( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n"; break;
-		case OP_POW: code += "pow( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n"; break;
-		case OP_MAX: code += "max( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n"; break;
-		case OP_MIN: code += "min( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n"; break;
-		case OP_ATAN2: code += "atan( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n"; break;
-		case OP_STEP: code += "step( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n"; break;
+		case OP_ADD:
+			code += p_input_vars[0] + " + " + p_input_vars[1] + ";\n";
+			break;
+		case OP_SUB:
+			code += p_input_vars[0] + " - " + p_input_vars[1] + ";\n";
+			break;
+		case OP_MUL:
+			code += p_input_vars[0] + " * " + p_input_vars[1] + ";\n";
+			break;
+		case OP_DIV:
+			code += p_input_vars[0] + " / " + p_input_vars[1] + ";\n";
+			break;
+		case OP_MOD:
+			code += "mod( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+			break;
+		case OP_POW:
+			code += "pow( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+			break;
+		case OP_MAX:
+			code += "max( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+			break;
+		case OP_MIN:
+			code += "min( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+			break;
+		case OP_ATAN2:
+			code += "atan( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+			break;
+		case OP_STEP:
+			code += "step( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+			break;
 	}
 
 	return code;
@@ -806,18 +836,42 @@ String VisualShaderNodeVectorOp::generate_code(Shader::Mode p_mode, VisualShader
 	String code = "\t" + p_output_vars[0] + " = ";
 	switch (op) {
 
-		case OP_ADD: code += p_input_vars[0] + " + " + p_input_vars[1] + ";\n"; break;
-		case OP_SUB: code += p_input_vars[0] + " - " + p_input_vars[1] + ";\n"; break;
-		case OP_MUL: code += p_input_vars[0] + " * " + p_input_vars[1] + ";\n"; break;
-		case OP_DIV: code += p_input_vars[0] + " / " + p_input_vars[1] + ";\n"; break;
-		case OP_MOD: code += "mod( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n"; break;
-		case OP_POW: code += "pow( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n"; break;
-		case OP_MAX: code += "max( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n"; break;
-		case OP_MIN: code += "min( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n"; break;
-		case OP_CROSS: code += "cross( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n"; break;
-		case OP_ATAN2: code += "atan( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n"; break;
-		case OP_REFLECT: code += "reflect( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n"; break;
-		case OP_STEP: code += "step( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n"; break;
+		case OP_ADD:
+			code += p_input_vars[0] + " + " + p_input_vars[1] + ";\n";
+			break;
+		case OP_SUB:
+			code += p_input_vars[0] + " - " + p_input_vars[1] + ";\n";
+			break;
+		case OP_MUL:
+			code += p_input_vars[0] + " * " + p_input_vars[1] + ";\n";
+			break;
+		case OP_DIV:
+			code += p_input_vars[0] + " / " + p_input_vars[1] + ";\n";
+			break;
+		case OP_MOD:
+			code += "mod( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+			break;
+		case OP_POW:
+			code += "pow( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+			break;
+		case OP_MAX:
+			code += "max( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+			break;
+		case OP_MIN:
+			code += "min( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+			break;
+		case OP_CROSS:
+			code += "cross( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+			break;
+		case OP_ATAN2:
+			code += "atan( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+			break;
+		case OP_REFLECT:
+			code += "reflect( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+			break;
+		case OP_STEP:
+			code += "step( " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+			break;
 	}
 
 	return code;
@@ -2844,8 +2898,12 @@ String VisualShaderNodeTextureUniform::generate_global(Shader::Mode p_mode, Visu
 			else
 				code += " : hint_albedo;\n";
 			break;
-		case TYPE_NORMALMAP: code += " : hint_normal;\n"; break;
-		case TYPE_ANISO: code += " : hint_aniso;\n"; break;
+		case TYPE_NORMALMAP:
+			code += " : hint_normal;\n";
+			break;
+		case TYPE_ANISO:
+			code += " : hint_aniso;\n";
+			break;
 	}
 
 	return code;

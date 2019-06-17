@@ -935,10 +935,18 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 
 		outputs[i] = "n_out" + itos(node) + "p" + itos(i);
 		switch (vsnode->get_output_port_type(i)) {
-			case VisualShaderNode::PORT_TYPE_SCALAR: code += String() + "\tfloat " + outputs[i] + ";\n"; break;
-			case VisualShaderNode::PORT_TYPE_VECTOR: code += String() + "\tvec3 " + outputs[i] + ";\n"; break;
-			case VisualShaderNode::PORT_TYPE_BOOLEAN: code += String() + "\tbool " + outputs[i] + ";\n"; break;
-			case VisualShaderNode::PORT_TYPE_TRANSFORM: code += String() + "\tmat4 " + outputs[i] + ";\n"; break;
+			case VisualShaderNode::PORT_TYPE_SCALAR:
+				code += String() + "\tfloat " + outputs[i] + ";\n";
+				break;
+			case VisualShaderNode::PORT_TYPE_VECTOR:
+				code += String() + "\tvec3 " + outputs[i] + ";\n";
+				break;
+			case VisualShaderNode::PORT_TYPE_BOOLEAN:
+				code += String() + "\tbool " + outputs[i] + ";\n";
+				break;
+			case VisualShaderNode::PORT_TYPE_TRANSFORM:
+				code += String() + "\tmat4 " + outputs[i] + ";\n";
+				break;
 			default: {
 			}
 		}

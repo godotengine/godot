@@ -1736,23 +1736,57 @@ void OS_OSX::set_cursor_shape(CursorShape p_shape) {
 		[cursors[p_shape] set];
 	} else {
 		switch (p_shape) {
-			case CURSOR_ARROW: [[NSCursor arrowCursor] set]; break;
-			case CURSOR_IBEAM: [[NSCursor IBeamCursor] set]; break;
-			case CURSOR_POINTING_HAND: [[NSCursor pointingHandCursor] set]; break;
-			case CURSOR_CROSS: [[NSCursor crosshairCursor] set]; break;
-			case CURSOR_WAIT: [[NSCursor arrowCursor] set]; break;
-			case CURSOR_BUSY: [[NSCursor arrowCursor] set]; break;
-			case CURSOR_DRAG: [[NSCursor closedHandCursor] set]; break;
-			case CURSOR_CAN_DROP: [[NSCursor openHandCursor] set]; break;
-			case CURSOR_FORBIDDEN: [[NSCursor arrowCursor] set]; break;
-			case CURSOR_VSIZE: [[NSCursor resizeUpDownCursor] set]; break;
-			case CURSOR_HSIZE: [[NSCursor resizeLeftRightCursor] set]; break;
-			case CURSOR_BDIAGSIZE: [[NSCursor arrowCursor] set]; break;
-			case CURSOR_FDIAGSIZE: [[NSCursor arrowCursor] set]; break;
-			case CURSOR_MOVE: [[NSCursor arrowCursor] set]; break;
-			case CURSOR_VSPLIT: [[NSCursor resizeUpDownCursor] set]; break;
-			case CURSOR_HSPLIT: [[NSCursor resizeLeftRightCursor] set]; break;
-			case CURSOR_HELP: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_ARROW:
+				[[NSCursor arrowCursor] set];
+				break;
+			case CURSOR_IBEAM:
+				[[NSCursor IBeamCursor] set];
+				break;
+			case CURSOR_POINTING_HAND:
+				[[NSCursor pointingHandCursor] set];
+				break;
+			case CURSOR_CROSS:
+				[[NSCursor crosshairCursor] set];
+				break;
+			case CURSOR_WAIT:
+				[[NSCursor arrowCursor] set];
+				break;
+			case CURSOR_BUSY:
+				[[NSCursor arrowCursor] set];
+				break;
+			case CURSOR_DRAG:
+				[[NSCursor closedHandCursor] set];
+				break;
+			case CURSOR_CAN_DROP:
+				[[NSCursor openHandCursor] set];
+				break;
+			case CURSOR_FORBIDDEN:
+				[[NSCursor arrowCursor] set];
+				break;
+			case CURSOR_VSIZE:
+				[[NSCursor resizeUpDownCursor] set];
+				break;
+			case CURSOR_HSIZE:
+				[[NSCursor resizeLeftRightCursor] set];
+				break;
+			case CURSOR_BDIAGSIZE:
+				[[NSCursor arrowCursor] set];
+				break;
+			case CURSOR_FDIAGSIZE:
+				[[NSCursor arrowCursor] set];
+				break;
+			case CURSOR_MOVE:
+				[[NSCursor arrowCursor] set];
+				break;
+			case CURSOR_VSPLIT:
+				[[NSCursor resizeUpDownCursor] set];
+				break;
+			case CURSOR_HSPLIT:
+				[[NSCursor resizeLeftRightCursor] set];
+				break;
+			case CURSOR_HELP:
+				[[NSCursor arrowCursor] set];
+				break;
 			default: {
 			};
 		}

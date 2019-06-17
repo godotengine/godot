@@ -1275,7 +1275,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				}
 			}
 		} break;
-		default: break;
+		default:
+			break;
 	}
 }
 

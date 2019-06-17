@@ -472,7 +472,8 @@ static inline void _mark_outside(uint8_t ***p_cell_status, int x, int y, int z, 
 				next_z--;
 				prev = _CELL_PREV_Z_POS;
 			} break;
-			default: ERR_FAIL();
+			default:
+				ERR_FAIL();
 		}
 
 		//printf("testing if new cell will be ok...!\n");
@@ -1145,10 +1146,18 @@ Vector<Vector<Point2> > Geometry::_polypaths_do_operation(PolyBooleanOperation p
 	ClipType op = ctUnion;
 
 	switch (p_op) {
-		case OPERATION_UNION: op = ctUnion; break;
-		case OPERATION_DIFFERENCE: op = ctDifference; break;
-		case OPERATION_INTERSECTION: op = ctIntersection; break;
-		case OPERATION_XOR: op = ctXor; break;
+		case OPERATION_UNION:
+			op = ctUnion;
+			break;
+		case OPERATION_DIFFERENCE:
+			op = ctDifference;
+			break;
+		case OPERATION_INTERSECTION:
+			op = ctIntersection;
+			break;
+		case OPERATION_XOR:
+			op = ctXor;
+			break;
 	}
 	Path path_a, path_b;
 
@@ -1197,19 +1206,35 @@ Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polyp
 	JoinType jt = jtSquare;
 
 	switch (p_join_type) {
-		case JOIN_SQUARE: jt = jtSquare; break;
-		case JOIN_ROUND: jt = jtRound; break;
-		case JOIN_MITER: jt = jtMiter; break;
+		case JOIN_SQUARE:
+			jt = jtSquare;
+			break;
+		case JOIN_ROUND:
+			jt = jtRound;
+			break;
+		case JOIN_MITER:
+			jt = jtMiter;
+			break;
 	}
 
 	EndType et = etClosedPolygon;
 
 	switch (p_end_type) {
-		case END_POLYGON: et = etClosedPolygon; break;
-		case END_JOINED: et = etClosedLine; break;
-		case END_BUTT: et = etOpenButt; break;
-		case END_SQUARE: et = etOpenSquare; break;
-		case END_ROUND: et = etOpenRound; break;
+		case END_POLYGON:
+			et = etClosedPolygon;
+			break;
+		case END_JOINED:
+			et = etClosedLine;
+			break;
+		case END_BUTT:
+			et = etOpenButt;
+			break;
+		case END_SQUARE:
+			et = etOpenSquare;
+			break;
+		case END_ROUND:
+			et = etOpenRound;
+			break;
 	}
 	ClipperOffset co;
 	Path path;

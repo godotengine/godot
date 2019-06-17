@@ -445,7 +445,8 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				case Variant::POOL_COLOR_ARRAY: {
 					SET_FROM_ARRAY(PoolColorArray);
 				} break;
-				default: break;
+				default:
+					break;
 			}
 		} break;
 

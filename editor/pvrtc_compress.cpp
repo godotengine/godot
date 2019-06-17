@@ -59,7 +59,8 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 					_base_image_compress_pvrtc4_func(p_image);
 
 				break;
-			default: ERR_FAIL();
+			default:
+				ERR_FAIL();
 		}
 		return;
 	}
@@ -77,10 +78,17 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 	args.push_back("-f");
 	switch (p_mode) {
 
-		case Image::COMPRESS_PVRTC2: args.push_back("PVRTC2"); break;
-		case Image::COMPRESS_PVRTC4: args.push_back("PVRTC4"); break;
-		case Image::COMPRESS_ETC: args.push_back("ETC"); break;
-		default: ERR_FAIL();
+		case Image::COMPRESS_PVRTC2:
+			args.push_back("PVRTC2");
+			break;
+		case Image::COMPRESS_PVRTC4:
+			args.push_back("PVRTC4");
+			break;
+		case Image::COMPRESS_ETC:
+			args.push_back("ETC");
+			break;
+		default:
+			ERR_FAIL();
 	}
 
 	if (EditorSettings::get_singleton()->get("filesystem/import/pvrtc_fast_conversion").operator bool()) {

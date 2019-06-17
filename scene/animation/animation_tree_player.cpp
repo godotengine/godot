@@ -57,8 +57,12 @@ void AnimationTreePlayer::_set_process(bool p_process, bool p_force) {
 
 	switch (animation_process_mode) {
 
-		case ANIMATION_PROCESS_PHYSICS: set_physics_process_internal(p_process && active); break;
-		case ANIMATION_PROCESS_IDLE: set_process_internal(p_process && active); break;
+		case ANIMATION_PROCESS_PHYSICS:
+			set_physics_process_internal(p_process && active);
+			break;
+		case ANIMATION_PROCESS_IDLE:
+			set_process_internal(p_process && active);
+			break;
 	}
 
 	processing = p_process;
@@ -250,17 +254,39 @@ bool AnimationTreePlayer::_get(const StringName &p_name, Variant &r_ret) const {
 		node["position"] = n->pos;
 
 		switch (n->type) {
-			case NODE_OUTPUT: node["type"] = "output"; break;
-			case NODE_ANIMATION: node["type"] = "animation"; break;
-			case NODE_ONESHOT: node["type"] = "oneshot"; break;
-			case NODE_MIX: node["type"] = "mix"; break;
-			case NODE_BLEND2: node["type"] = "blend2"; break;
-			case NODE_BLEND3: node["type"] = "blend3"; break;
-			case NODE_BLEND4: node["type"] = "blend4"; break;
-			case NODE_TIMESCALE: node["type"] = "timescale"; break;
-			case NODE_TIMESEEK: node["type"] = "timeseek"; break;
-			case NODE_TRANSITION: node["type"] = "transition"; break;
-			default: node["type"] = ""; break;
+			case NODE_OUTPUT:
+				node["type"] = "output";
+				break;
+			case NODE_ANIMATION:
+				node["type"] = "animation";
+				break;
+			case NODE_ONESHOT:
+				node["type"] = "oneshot";
+				break;
+			case NODE_MIX:
+				node["type"] = "mix";
+				break;
+			case NODE_BLEND2:
+				node["type"] = "blend2";
+				break;
+			case NODE_BLEND3:
+				node["type"] = "blend3";
+				break;
+			case NODE_BLEND4:
+				node["type"] = "blend4";
+				break;
+			case NODE_TIMESCALE:
+				node["type"] = "timescale";
+				break;
+			case NODE_TIMESEEK:
+				node["type"] = "timeseek";
+				break;
+			case NODE_TRANSITION:
+				node["type"] = "transition";
+				break;
+			default:
+				node["type"] = "";
+				break;
 		}
 
 		switch (n->type) {

@@ -210,8 +210,12 @@ void DocDump::dump(const String &p_file) {
 
 				String hint;
 				switch (arginfo.hint) {
-					case PROPERTY_HINT_DIR: hint = "A directory."; break;
-					case PROPERTY_HINT_RANGE: hint = "Range - min: " + arginfo.hint_string.get_slice(",", 0) + " max: " + arginfo.hint_string.get_slice(",", 1) + " step: " + arginfo.hint_string.get_slice(",", 2); break;
+					case PROPERTY_HINT_DIR:
+						hint = "A directory.";
+						break;
+					case PROPERTY_HINT_RANGE:
+						hint = "Range - min: " + arginfo.hint_string.get_slice(",", 0) + " max: " + arginfo.hint_string.get_slice(",", 1) + " step: " + arginfo.hint_string.get_slice(",", 2);
+						break;
 					case PROPERTY_HINT_ENUM:
 						hint = "Values: ";
 						for (int j = 0; j < arginfo.hint_string.get_slice_count(","); j++) {
@@ -219,7 +223,9 @@ void DocDump::dump(const String &p_file) {
 							hint += arginfo.hint_string.get_slice(",", j) + "=" + itos(j);
 						}
 						break;
-					case PROPERTY_HINT_LENGTH: hint = "Length: " + arginfo.hint_string; break;
+					case PROPERTY_HINT_LENGTH:
+						hint = "Length: " + arginfo.hint_string;
+						break;
 					case PROPERTY_HINT_FLAGS:
 						hint = "Values: ";
 						for (int j = 0; j < arginfo.hint_string.get_slice_count(","); j++) {
@@ -227,7 +233,9 @@ void DocDump::dump(const String &p_file) {
 							hint += arginfo.hint_string.get_slice(",", j) + "=" + itos((uint64_t)1 << j);
 						}
 						break;
-					case PROPERTY_HINT_FILE: hint = "A file:"; break;
+					case PROPERTY_HINT_FILE:
+						hint = "A file:";
+						break;
 					default: {
 					}
 						//case PROPERTY_HINT_RESOURCE_TYPE: hint="Type: "+arginfo.hint_string; break;

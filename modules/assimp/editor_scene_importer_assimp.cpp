@@ -719,20 +719,34 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 
 float EditorSceneImporterAssimp::_get_fbx_fps(int32_t time_mode, const aiScene *p_scene) {
 	switch (time_mode) {
-		case AssetImportFbx::TIME_MODE_DEFAULT: return 24; //hack
-		case AssetImportFbx::TIME_MODE_120: return 120;
-		case AssetImportFbx::TIME_MODE_100: return 100;
-		case AssetImportFbx::TIME_MODE_60: return 60;
-		case AssetImportFbx::TIME_MODE_50: return 50;
-		case AssetImportFbx::TIME_MODE_48: return 48;
-		case AssetImportFbx::TIME_MODE_30: return 30;
-		case AssetImportFbx::TIME_MODE_30_DROP: return 30;
-		case AssetImportFbx::TIME_MODE_NTSC_DROP_FRAME: return 29.9700262f;
-		case AssetImportFbx::TIME_MODE_NTSC_FULL_FRAME: return 29.9700262f;
-		case AssetImportFbx::TIME_MODE_PAL: return 25;
-		case AssetImportFbx::TIME_MODE_CINEMA: return 24;
-		case AssetImportFbx::TIME_MODE_1000: return 1000;
-		case AssetImportFbx::TIME_MODE_CINEMA_ND: return 23.976f;
+		case AssetImportFbx::TIME_MODE_DEFAULT:
+			return 24; //hack
+		case AssetImportFbx::TIME_MODE_120:
+			return 120;
+		case AssetImportFbx::TIME_MODE_100:
+			return 100;
+		case AssetImportFbx::TIME_MODE_60:
+			return 60;
+		case AssetImportFbx::TIME_MODE_50:
+			return 50;
+		case AssetImportFbx::TIME_MODE_48:
+			return 48;
+		case AssetImportFbx::TIME_MODE_30:
+			return 30;
+		case AssetImportFbx::TIME_MODE_30_DROP:
+			return 30;
+		case AssetImportFbx::TIME_MODE_NTSC_DROP_FRAME:
+			return 29.9700262f;
+		case AssetImportFbx::TIME_MODE_NTSC_FULL_FRAME:
+			return 29.9700262f;
+		case AssetImportFbx::TIME_MODE_PAL:
+			return 25;
+		case AssetImportFbx::TIME_MODE_CINEMA:
+			return 24;
+		case AssetImportFbx::TIME_MODE_1000:
+			return 1000;
+		case AssetImportFbx::TIME_MODE_CINEMA_ND:
+			return 23.976f;
 		case AssetImportFbx::TIME_MODE_CUSTOM:
 			int32_t frame_rate;
 			p_scene->mMetaData->Get("FrameRate", frame_rate);

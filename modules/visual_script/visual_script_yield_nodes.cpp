@@ -81,10 +81,18 @@ String VisualScriptYield::get_caption() const {
 String VisualScriptYield::get_text() const {
 
 	switch (yield_mode) {
-		case YIELD_RETURN: return ""; break;
-		case YIELD_FRAME: return "Next Frame"; break;
-		case YIELD_PHYSICS_FRAME: return "Next Physics Frame"; break;
-		case YIELD_WAIT: return rtos(wait_time) + " sec(s)"; break;
+		case YIELD_RETURN:
+			return "";
+			break;
+		case YIELD_FRAME:
+			return "Next Frame";
+			break;
+		case YIELD_PHYSICS_FRAME:
+			return "Next Physics Frame";
+			break;
+		case YIELD_WAIT:
+			return rtos(wait_time) + " sec(s)";
+			break;
 	}
 
 	return String();
@@ -122,9 +130,15 @@ public:
 				case VisualScriptYield::YIELD_RETURN:
 					ret = STEP_EXIT_FUNCTION_BIT;
 					break; //return the yield
-				case VisualScriptYield::YIELD_FRAME: state->connect_to_signal(tree, "idle_frame", Array()); break;
-				case VisualScriptYield::YIELD_PHYSICS_FRAME: state->connect_to_signal(tree, "physics_frame", Array()); break;
-				case VisualScriptYield::YIELD_WAIT: state->connect_to_signal(tree->create_timer(wait_time).ptr(), "timeout", Array()); break;
+				case VisualScriptYield::YIELD_FRAME:
+					state->connect_to_signal(tree, "idle_frame", Array());
+					break;
+				case VisualScriptYield::YIELD_PHYSICS_FRAME:
+					state->connect_to_signal(tree, "physics_frame", Array());
+					break;
+				case VisualScriptYield::YIELD_WAIT:
+					state->connect_to_signal(tree->create_timer(wait_time).ptr(), "timeout", Array());
+					break;
 			}
 
 			*p_working_mem = state;
