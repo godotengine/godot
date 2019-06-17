@@ -32,7 +32,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Add a keyword and its color.
+				Add a [code]keyword[/code] and its [Color].
 			</description>
 		</method>
 		<method name="can_fold" qualifiers="const">
@@ -48,21 +48,21 @@
 			<return type="void">
 			</return>
 			<description>
-				Clear all the syntax coloring information.
+				Clears all the syntax coloring information.
 			</description>
 		</method>
 		<method name="clear_undo_history">
 			<return type="void">
 			</return>
 			<description>
-				Clear the undo history.
+				Clears the undo history.
 			</description>
 		</method>
 		<method name="copy">
 			<return type="void">
 			</return>
 			<description>
-				Copy the current selection.
+				Copy's the current text selection.
 			</description>
 		</method>
 		<method name="cursor_get_column" qualifiers="const">
@@ -87,6 +87,8 @@
 			<argument index="1" name="adjust_viewport" type="bool" default="true">
 			</argument>
 			<description>
+				Moves the cursor at the specified [code]column[/code] index.
+				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs. Default value is [code]true[/code].
 			</description>
 		</method>
 		<method name="cursor_set_line">
@@ -101,20 +103,23 @@
 			<argument index="3" name="wrap_index" type="int" default="0">
 			</argument>
 			<description>
+				Moves the cursor at the specified [code]line[/code] index.
+				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs. Default value is [code]true[/code].
+				If [code]can_be_hidden[/code] is set to true, the specified [code]line[/code] can be hidden using [member set_line_as_hidden]. Default value is [code]true[/code].
 			</description>
 		</method>
 		<method name="cut">
 			<return type="void">
 			</return>
 			<description>
-				Cut the current selection.
+				Cut's the current selection.
 			</description>
 		</method>
 		<method name="deselect">
 			<return type="void">
 			</return>
 			<description>
-				Clears the current selection.
+				Deselects the current selection.
 			</description>
 		</method>
 		<method name="fold_all_lines">
@@ -146,6 +151,7 @@
 			<argument index="0" name="keyword" type="String">
 			</argument>
 			<description>
+				Returns the [Color] of the specified [code]keyword[/code].
 			</description>
 		</method>
 		<method name="get_line" qualifiers="const">
@@ -210,6 +216,7 @@
 			<return type="String">
 			</return>
 			<description>
+				Returns a [String] text with the word under the mouse cursor location.
 			</description>
 		</method>
 		<method name="has_keyword_color" qualifiers="const">
@@ -218,6 +225,7 @@
 			<argument index="0" name="keyword" type="String">
 			</argument>
 			<description>
+				Returns whether the specified [code]keyword[/code] has a color set to it or not.
 			</description>
 		</method>
 		<method name="insert_text_at_cursor">
@@ -226,7 +234,7 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				Insert a given text at the cursor position.
+				Insert the specified text at the cursor position.
 			</description>
 		</method>
 		<method name="is_folded" qualifiers="const">
@@ -235,7 +243,7 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
-				Returns if the given line is folded.
+				Returns whether the line at the specified index is folded or not.
 			</description>
 		</method>
 		<method name="is_line_hidden" qualifiers="const">
@@ -244,6 +252,7 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Returns whether the line at the specified index is hidden or not.
 			</description>
 		</method>
 		<method name="is_selection_active" qualifiers="const">
@@ -259,6 +268,7 @@
 			<argument index="0" name="option" type="int">
 			</argument>
 			<description>
+				Triggers a right click menu action by the specified index. See [enum MenuItems] for a list of available indexes.
 			</description>
 		</method>
 		<method name="paste">
@@ -327,6 +337,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code], hides the line of the specified index.
 			</description>
 		</method>
 		<method name="toggle_fold_line">
@@ -358,6 +369,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Unhide all lines that were previously set to hidden by [member set_line_as_hidden].
 			</description>
 		</method>
 	</methods>
@@ -392,8 +404,10 @@
 			If [code]true[/code], the fold gutter is visible. This enables folding groups of indented lines.
 		</member>
 		<member name="hiding_enabled" type="bool" setter="set_hiding_enabled" getter="is_hiding_enabled">
+			If [code]true[/code], all lines that have been set to hidden by [member set_line_as_hidden], will not be visible.
 		</member>
 		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled">
+			If [code]true[/code], all occurrences of the selected text will be highlighted.
 		</member>
 		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled">
 			If [code]true[/code], the line containing the cursor is highlighted.
@@ -407,8 +421,10 @@
 			If [code]true[/code], line numbers are displayed to the left of the text.
 		</member>
 		<member name="smooth_scrolling" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled">
+			If [code]true[/code], sets the [code]step[/code] of the scrollbars to [code]0.25[/code] which results in smoother scrolling.
 		</member>
 		<member name="syntax_highlighting" type="bool" setter="set_syntax_coloring" getter="is_syntax_coloring_enabled">
+			If [code]true[/code], any custom color properties that have been set for this [TextEdit] will be visible.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text">
 			String value of the [TextEdit].
@@ -439,6 +455,7 @@
 			<argument index="1" name="info" type="String">
 			</argument>
 			<description>
+				Emitted when the info icon is clicked.
 			</description>
 		</signal>
 		<signal name="request_completion">
@@ -490,18 +507,23 @@
 			Undoes the previous action.
 		</constant>
 		<constant name="MENU_REDO" value="6" enum="MenuItems">
+			Redoes the previous action.
 		</constant>
 		<constant name="MENU_MAX" value="7" enum="MenuItems">
+			Represents the size of the [enum MenuItems] enum.
 		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="background_color" type="Color">
+			Sets the background [Color] of this [TextEdit]. [member syntax_highlighting] has to be enabled.
 		</theme_item>
 		<theme_item name="bookmark_color" type="Color">
+			Sets the [Color] of the bookmark marker. [member syntax_highlighting] has to be enabled.
 		</theme_item>
 		<theme_item name="brace_mismatch_color" type="Color">
 		</theme_item>
 		<theme_item name="breakpoint_color" type="Color">
+			Sets the [Color] of the breakpoints. [member breakpoint_gutter] has to be enabled.
 		</theme_item>
 		<theme_item name="caret_background_color" type="Color">
 		</theme_item>
@@ -528,6 +550,7 @@
 		<theme_item name="completion_selected_color" type="Color">
 		</theme_item>
 		<theme_item name="current_line_color" type="Color">
+			Sets the current line highlight [Color]. [member highlight_current_line] has to be enabled.
 		</theme_item>
 		<theme_item name="executing_line_color" type="Color">
 		</theme_item>
@@ -538,38 +561,48 @@
 		<theme_item name="folded" type="Texture">
 		</theme_item>
 		<theme_item name="font" type="Font">
+			Sets the default [Font].
 		</theme_item>
 		<theme_item name="font_color" type="Color">
+			Sets the font [Color].
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color">
 		</theme_item>
 		<theme_item name="function_color" type="Color">
 		</theme_item>
 		<theme_item name="line_number_color" type="Color">
+			Sets the [Color] of the line numbers. [member show_line_numbers] has to be enabled.
 		</theme_item>
 		<theme_item name="line_spacing" type="int">
+			Sets the spacing between the lines.
 		</theme_item>
 		<theme_item name="mark_color" type="Color">
+			Sets the [Color] of marked text.
 		</theme_item>
 		<theme_item name="member_variable_color" type="Color">
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
+			Sets the [StyleBox] of this [TextEdit].
 		</theme_item>
 		<theme_item name="number_color" type="Color">
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
+			Sets the [StyleBox] of this [TextEdit] when [member read_only] is enabled.
 		</theme_item>
 		<theme_item name="safe_line_number_color" type="Color">
 		</theme_item>
 		<theme_item name="selection_color" type="Color">
+			Sets the highlight [Color] of text selections.
 		</theme_item>
 		<theme_item name="space" type="Texture">
 		</theme_item>
 		<theme_item name="symbol_color" type="Color">
 		</theme_item>
 		<theme_item name="tab" type="Texture">
+			Sets a custom [Texture] for tab text characters.
 		</theme_item>
 		<theme_item name="word_highlighted_color" type="Color">
+			Sets the highlight [Color] of multiple occurrences. [member highlight_all_occurrences] has to be enabled.
 		</theme_item>
 	</theme_items>
 </class>
