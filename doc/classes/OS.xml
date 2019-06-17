@@ -811,6 +811,12 @@
 		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode">
 			If [code]true[/code], the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
 		</member>
+		<member name="min_window_size" type="Vector2" setter="set_min_window_size" getter="get_min_window_size">
+			The minimum size of the window (without counting window manager decorations). Does not affect fullscreen mode. Set to [code](0, 0)[/code] to reset to the system default value.
+		</member>
+		<member name="max_window_size" type="Vector2" setter="set_max_window_size" getter="get_max_window_size">
+			The maximum size of the window (without counting window manager decorations). Does not affect fullscreen mode. Set to [code](0, 0)[/code] to reset to the system default value.
+		</member>
 		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation">
 			The current screen orientation.
 		</member>
