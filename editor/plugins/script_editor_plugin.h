@@ -117,6 +117,8 @@ public:
 	virtual Control *get_edit_menu() = 0;
 	virtual void clear_edit_menu() = 0;
 
+	virtual void validate() = 0;
+
 	ScriptEditorBase() {}
 };
 
