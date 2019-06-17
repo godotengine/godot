@@ -31,6 +31,7 @@
 			<return type="Array">
 			</return>
 			<description>
+				Returns an Array of all loaded locales of the game.
 			</description>
 		</method>
 		<method name="get_locale" qualifiers="const">
