@@ -270,8 +270,8 @@
 		<constant name="EMISSION_SHAPE_POINT" value="0" enum="EmissionShape">
 			All particles will be emitted from a single point.
 		</constant>
-		<constant name="EMISSION_SHAPE_CIRCLE" value="1" enum="EmissionShape">
-			Particles will be emitted on the perimeter of a circle.
+		<constant name="EMISSION_SHAPE_SPHERE" value="1" enum="EmissionShape">
+			Particles will be emitted on the surface of a sphere flattened to two dimensions. 
 		</constant>
 		<constant name="EMISSION_SHAPE_RECTANGLE" value="2" enum="EmissionShape">
 			Particles will be emitted in the area of a rectangle.
