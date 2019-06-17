@@ -469,7 +469,7 @@ void CPUParticles2D::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
-	if (property.name == "emission_sphere_radius" && emission_shape != EMISSION_SHAPE_CIRCLE) {
+	if (property.name == "emission_sphere_radius" && emission_shape != EMISSION_SHAPE_SPHERE) {
 		property.usage = 0;
 	}
 
@@ -647,8 +647,9 @@ void CPUParticles2D::_particles_process(float p_delta) {
 				case EMISSION_SHAPE_POINT: {
 					//do none
 				} break;
-				case EMISSION_SHAPE_CIRCLE: {
-					p.transform[2] = Vector2(Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0).normalized() * emission_sphere_radius;
+				case EMISSION_SHAPE_SPHERE: {
+					Vector3 sphere_shape = Vector3(Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0).normalized() * emission_sphere_radius;
+					p.transform[2] = Vector2(sphere_shape.x, sphere_shape.y);
 				} break;
 				case EMISSION_SHAPE_RECTANGLE: {
 					p.transform[2] = Vector2(Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0) * emission_rect_extents;
@@ -1356,7 +1357,7 @@ void CPUParticles2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINT);
-	BIND_ENUM_CONSTANT(EMISSION_SHAPE_CIRCLE);
+	BIND_ENUM_CONSTANT(EMISSION_SHAPE_SPHERE);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_RECTANGLE);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);
