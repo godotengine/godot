@@ -63,7 +63,7 @@ void Range::Shared::emit_value_changed() {
 
 void Range::_changed_notify(const char *p_what) {
 
-	emit_signal("changed", shared->val);
+	emit_signal("changed");
 	update();
 	_change_notify(p_what);
 }
@@ -79,6 +79,7 @@ void Range::Shared::emit_changed(const char *p_what) {
 }
 
 void Range::set_value(double p_val) {
+
 	if (shared->step > 0)
 		p_val = Math::round(p_val / shared->step) * shared->step;
 
@@ -303,22 +304,27 @@ bool Range::is_ratio_exp() const {
 }
 
 void Range::set_allow_greater(bool p_allow) {
+
 	shared->allow_greater = p_allow;
 }
 
 bool Range::is_greater_allowed() const {
+
 	return shared->allow_greater;
 }
 
 void Range::set_allow_lesser(bool p_allow) {
+
 	shared->allow_lesser = p_allow;
 }
 
 bool Range::is_lesser_allowed() const {
+
 	return shared->allow_lesser;
 }
 
 Range::Range() {
+
 	shared = memnew(Shared);
 	shared->min = 0;
 	shared->max = 100;
