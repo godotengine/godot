@@ -334,7 +334,7 @@ void JoypadWindows::process_joypads() {
 		if (joy.state.dwPacketNumber != joy.last_packet) {
 
 			int button_mask = XINPUT_GAMEPAD_DPAD_UP;
-			for (int j = 0; j <= 16; i++) {
+			for (int j = 0; j <= 16; j++) {
 
 				input->joy_button(joy.id, j, joy.state.Gamepad.wButtons & button_mask);
 				button_mask = button_mask * 2;
