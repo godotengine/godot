@@ -55,8 +55,11 @@ int main(int argc, char *argv[]) {
 		os.run(); // it is actually the OS that decides how to run
 	Main::cleanup();
 
-	if (ret)
-		chdir(cwd);
+	if (ret) { // Previous getcwd was successful
+		if (chdir(cwd) != 0) {
+			ERR_PRINT("Couldn't return to previous working directory.");
+		}
+	}
 	free(cwd);
 
 	return os.get_exit_code();
