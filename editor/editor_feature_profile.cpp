@@ -721,7 +721,7 @@ void EditorFeatureProfileManager::_import_profiles(const Vector<String> &p_paths
 		String dst_file = EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(basefile);
 
 		if (FileAccess::exists(dst_file)) {
-			EditorNode::get_singleton()->show_warning(vformat(TTR("Profile '%s' already exists. Remote it first before importing, import aborted."), basefile.get_basename()));
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Profile '%s' already exists. Remove it first before importing, import aborted."), basefile.get_basename()));
 			return;
 		}
 	}
