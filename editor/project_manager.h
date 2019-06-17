@@ -131,17 +131,19 @@ class ProjectListFilter : public HBoxContainer {
 
 	GDCLASS(ProjectListFilter, HBoxContainer);
 
+public:
+	enum FilterOption {
+		FILTER_NAME,
+		FILTER_PATH,
+		FILTER_MODIFIED,
+	};
+
 private:
 	friend class ProjectManager;
 
 	OptionButton *filter_option;
 	LineEdit *search_box;
 	bool has_search_box;
-
-	enum FilterOption {
-		FILTER_NAME,
-		FILTER_PATH,
-	};
 	FilterOption _current_filter;
 
 	void _search_text_changed(const String &p_newtext);
