@@ -42,7 +42,7 @@ const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 	TTRC("Scene Tree Editing"),
 	TTRC("Import Dock"),
 	TTRC("Node Dock"),
-	TTRC("Filesystem Dock")
+	TTRC("FileSystem and Import Docks")
 };
 
 const char *EditorFeatureProfile::feature_identifiers[FEATURE_MAX] = {
@@ -378,18 +378,21 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 
 	switch (p_action) {
 		case PROFILE_CLEAR: {
+
 			EditorSettings::get_singleton()->set("_default_feature_profile", "");
 			EditorSettings::get_singleton()->save();
 			current_profile = "";
 			current.unref();
+
 			_update_profile_list();
+			_emit_current_profile_changed();
 		} break;
 		case PROFILE_SET: {
 
 			String selected = _get_selected_profile();
 			ERR_FAIL_COND(selected == String());
 			if (selected == current_profile) {
-				return; //nothing to do here
+				return; // Nothing to do here.
 			}
 			EditorSettings::get_singleton()->set("_default_feature_profile", selected);
 			EditorSettings::get_singleton()->save();
@@ -397,7 +400,7 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 			current = edited;
 
 			_update_profile_list();
-
+			_emit_current_profile_changed();
 		} break;
 		case PROFILE_IMPORT: {
 
@@ -415,6 +418,7 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 			new_profile_name->grab_focus();
 		} break;
 		case PROFILE_ERASE: {
+
 			String selected = _get_selected_profile();
 			ERR_FAIL_COND(selected == String());
 
@@ -809,7 +813,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	profile_actions[PROFILE_CLEAR]->set_disabled(true);
 	profile_actions[PROFILE_CLEAR]->connect("pressed", this, "_profile_action", varray(PROFILE_CLEAR));
 
-	main_vbc->add_margin_child(TTR("Current Profile"), name_hbc);
+	main_vbc->add_margin_child(TTR("Current Profile:"), name_hbc);
 
 	HBoxContainer *profiles_hbc = memnew(HBoxContainer);
 	profile_list = memnew(OptionButton);
@@ -844,7 +848,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	profile_actions[PROFILE_EXPORT]->set_disabled(true);
 	profile_actions[PROFILE_EXPORT]->connect("pressed", this, "_profile_action", varray(PROFILE_EXPORT));
 
-	main_vbc->add_margin_child(TTR("Available Profiles"), profiles_hbc);
+	main_vbc->add_margin_child(TTR("Available Profiles:"), profiles_hbc);
 
 	h_split = memnew(HSplitContainer);
 	h_split->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -855,9 +859,8 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	class_list_vbc->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	class_list = memnew(Tree);
-	class_list_vbc->add_margin_child(TTR("Enabled Classes"), class_list, true);
+	class_list_vbc->add_margin_child(TTR("Enabled Classes:"), class_list, true);
 	class_list->set_hide_root(true);
-	class_list->set_hide_folding(true);
 	class_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	class_list->connect("cell_selected", this, "_class_list_item_selected");
 	class_list->connect("item_edited", this, "_class_list_item_edited", varray(), CONNECT_DEFERRED);
