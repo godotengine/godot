@@ -435,10 +435,16 @@ PoolVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 }
 
 void AStar::set_point_disabled(int p_id, bool p_disabled) {
+
+	ERR_FAIL_COND(!points.has(p_id));
+
 	points[p_id]->enabled = !p_disabled;
 }
 
 bool AStar::is_point_disabled(int p_id) const {
+
+	ERR_FAIL_COND_V(!points.has(p_id), false);
+
 	return !points[p_id]->enabled;
 }
 
