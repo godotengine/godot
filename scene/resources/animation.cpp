@@ -1425,7 +1425,9 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, tt->transforms.size());
+
 			Dictionary d = p_value;
+
 			if (d.has("location"))
 				tt->transforms.write[p_key_idx].value.loc = d["location"];
 			if (d.has("rotation"))
@@ -1438,6 +1440,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 
 			ValueTrack *vt = static_cast<ValueTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, vt->values.size());
+
 			vt->values.write[p_key_idx].value = p_value;
 
 		} break;
@@ -1445,11 +1448,14 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, mt->methods.size());
+
 			Dictionary d = p_value;
+
 			if (d.has("method"))
 				mt->methods.write[p_key_idx].method = d["method"];
 			if (d.has("args"))
 				mt->methods.write[p_key_idx].params = d["args"];
+
 		} break;
 		case TYPE_BEZIER: {
 
@@ -1469,6 +1475,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 		case TYPE_AUDIO: {
 
 			AudioTrack *at = static_cast<AudioTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, at->values.size());
 
 			Dictionary k = p_value;
 			ERR_FAIL_COND(!k.has("start_offset"));
@@ -1483,6 +1490,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 		case TYPE_ANIMATION: {
 
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, at->values.size());
 
 			at->values.write[p_key_idx].value = p_value;
 
