@@ -36,7 +36,6 @@
 #include "core/translation.h"
 
 class TranslationLoaderPO : public ResourceFormatLoader {
-	GDCLASS(TranslationLoaderPO, ResourceFormatLoader)
 public:
 	static RES load_translation(FileAccess *f, Error *r_error, const String &p_path = String());
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);

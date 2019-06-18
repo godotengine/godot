@@ -35,7 +35,6 @@
 #include "core/io/resource_saver.h"
 
 class ResourceSaverPNG : public ResourceFormatSaver {
-	GDCLASS(ResourceSaverPNG, ResourceFormatSaver)
 public:
 	static Error save_image(const String &p_path, const Ref<Image> &p_img);
 
