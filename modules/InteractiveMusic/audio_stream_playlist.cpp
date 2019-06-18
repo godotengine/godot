@@ -2,19 +2,16 @@
 #include "core/math/math_funcs.h"
 #include "core/print_string.h"
 
-
-
 AudioStreamPlaylist::AudioStreamPlaylist() {
 	bpm = 120;
 	stream_count = 1;
 	sample_rate = 44100;
 	stereo = true;
-	
-	
+
 	beat_count = 20;
 }
 
-Ref<AudioStreamPlayback> AudioStreamPlaylist::instance_playback() { 
+Ref<AudioStreamPlayback> AudioStreamPlaylist::instance_playback() {
 	Ref<AudioStreamPlaybackPlaylist> playback_playlist;
 	playback_playlist.instance();
 	playback_playlist->playlist = Ref<AudioStreamPlaylist>(this);
@@ -79,7 +76,6 @@ int AudioStreamPlaylist::get_bpm() {
 	return bpm;
 }
 
-
 void AudioStreamPlaylist::_validate_property(PropertyInfo &property) const {
 	String prop = property.name;
 	if (prop.begins_with("stream_")) {
@@ -107,7 +103,7 @@ void AudioStreamPlaylist::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bpm", PROPERTY_HINT_RANGE, "0,400"), "set_bpm", "get_bpm");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,400"), "set_stream_beats", "get_stream_beats");
 
-	for (int i = 0; i < MAX_STREAMS; i++) { 
+	for (int i = 0; i < MAX_STREAMS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "stream_" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_list_stream", "get_list_stream", i);
 	}
 
@@ -134,18 +130,25 @@ void AudioStreamPlaybackPlaylist::stop() {
 }
 
 void AudioStreamPlaybackPlaylist::start(float p_from_pos) {
-	
+
 	fading_samples_total = fading_time * playlist->sample_rate;
-	beat_size = playlist->sample_rate*60/playlist->bpm;
-	beat_amount_remaining = playlist->beat_count * beat_size;
+	if (bpm_list[current] == 0) {
+		beat_size = playlist->sample_rate * 60 / playlist->bpm;
+	} else {
+		beat_size = playlist->sample_rate * 60 / bpm_list[current];
+	}
+	if (beats_list[current] == 0) {
+		beat_amount_remaining = playlist->beat_count * beat_size;
+	} else {
+		beat_amount_remaining = beats_list[current] * beat_size;
+	}
 	if (playlist->audio_streams[current].is_valid()) {
 		seek(p_from_pos);
 		active = true;
 		playback[current]->start();
 	} else {
-		active= false;
+		active = false;
 	}
-
 }
 
 void AudioStreamPlaybackPlaylist::seek(float p_time) {
@@ -172,53 +175,54 @@ void AudioStreamPlaybackPlaylist::clear_buffer(int samples) {
 }
 
 void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
-if(active ==true)	{
-	int dst_offset = 0;
-	int fading_samples = 0;
-	while (p_frames > 0) {
+	if (active == true) {
+		int dst_offset = 0;
+		int fading_samples = 0;
 
-		if (beat_amount_remaining == 0) {
-			fading = true;
-			current = (current + 1) % playlist->stream_count;
-			
-			playback[current]->start();
-			fading_samples = fading_samples_total;
-			beat_amount_remaining = playlist->beat_count * beat_size;
-		}
+		while (p_frames > 0) {
 
-		int to_mix = MIN(MIX_BUFFER_SIZE, MIN(p_frames, beat_amount_remaining));
+			if (beat_amount_remaining == 0) {
+				fading = true;
+				current = (current + 1) % playlist->stream_count;
 
-		clear_buffer(to_mix);
-
-		if (fading) {
-			int to_fade = MIN(fading_samples, to_mix);
-			float from_volume = 1.0 - float(fading_samples) / fading_samples_total;
-			float to_volume = 1.0 - float(fading_samples + to_fade) / fading_samples_total;
-			add_stream_to_buffer(playback[current-1], to_fade, p_rate_scale, from_volume, to_volume);
-			fading_samples -= to_fade;
-			if (fading_samples == 0) {
-				fading = false;
-				playback[current-1]->stop();
+				playback[current]->start();
+				fading_samples = fading_samples_total;
+				beat_size = playlist->sample_rate * 60 / bpm_list[current];
+				beat_amount_remaining = beats_list[current] * beat_size;
 			}
-		}
-		
-		
-		add_stream_to_buffer(playback[current], to_mix, p_rate_scale, 1.0, 1.0);
-		
 
-		for (int i = 0; i < to_mix; i++) {
-			p_buffer[i + dst_offset] = pcm_buffer[i];
+			int to_mix = MIN(MIX_BUFFER_SIZE, MIN(p_frames, beat_amount_remaining));
+
+			clear_buffer(to_mix);
+
+			if (fading) {
+				int to_fade = MIN(fading_samples, to_mix);
+				float from_volume = 1.0 - float(fading_samples) / fading_samples_total;
+				float to_volume = 1.0 - float(fading_samples + to_fade) / fading_samples_total;
+				add_stream_to_buffer(playback[current - 1], to_fade, p_rate_scale, from_volume, to_volume);
+				fading_samples -= to_fade;
+				if (fading_samples == 0) {
+					fading = false;
+					playback[current - 1]->stop();
+				}
+			}
+
+			add_stream_to_buffer(playback[current], to_mix, p_rate_scale, 1.0, 1.0);
+
+			for (int i = 0; i < to_mix; i++) {
+				p_buffer[i + dst_offset] = pcm_buffer[i];
+			}
+			dst_offset += to_mix;
+			p_frames -= to_mix;
+			beat_amount_remaining -= to_mix;
 		}
-		dst_offset += to_mix;
-		p_frames -= to_mix;
-		beat_amount_remaining -= to_mix;
+	} else {
+		for (int i = 0; i < p_frames; i++) {
+			p_buffer[i] = AudioFrame(0.0, 0.0);
+		}
+		stop();
+		return;
 	}
-} else {
-	for (int i = 0; i < p_frames; i++) {
-		p_buffer[i] = AudioFrame(0.0, 0.0);
-	}
-	return;
-}
 }
 
 int AudioStreamPlaybackPlaylist::get_loop_count() const {
@@ -243,9 +247,36 @@ void AudioStreamPlaybackPlaylist::_update_playback_instances() {
 	for (int i = 0; i < AudioStreamPlaylist::MAX_STREAMS; i++) {
 
 		if (playlist->audio_streams[i].is_valid()) {
+			if (playlist->audio_streams[i]->get_bpm() == 0) {
+				bpm_list[i] = playlist->bpm;
+			} else {
+				bpm_list[i] = playlist->audio_streams[i]->get_bpm();
+			}
+
+			if (playlist->audio_streams[i]->get_beat_count() == 0) {
+				beats_list[i] = playlist->beat_count;
+			} else {
+				beats_list[i] = playlist->audio_streams[i]->get_beat_count();
+			}
 			playback[i] = playlist->audio_streams[i]->instance_playback();
 		} else {
 			playback[i].unref();
+		}
+	}
+}
+
+void AudioStreamPlaybackPlaylist::_update_bpm_info() {
+	for (int i = 0; i < AudioStreamPlaylist::MAX_STREAMS; i++) {
+		if (playlist->audio_streams[i]->get_bpm()==0) {
+			bpm_list[i] = playlist->bpm;
+		} else {
+			bpm_list[i] = playlist->audio_streams[i]->get_bpm();
+		}
+
+		if (playlist->audio_streams[i]->get_beat_count() == 0) {
+			beats_list[i] = playlist->beat_count;
+		} else {
+			beats_list[i] = playlist->audio_streams[i]->get_beat_count();
 		}
 	}
 }

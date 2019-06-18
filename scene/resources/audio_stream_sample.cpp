@@ -601,6 +601,23 @@ String AudioStreamSample::get_stream_name() const {
 	return "";
 }
 
+void AudioStreamSample::set_bpm(int p_bpm) {
+	bpm = p_bpm;
+}
+
+int AudioStreamSample::get_bpm() const {
+	return bpm;
+}
+
+void AudioStreamSample::set_beat_count(int p_beats) {
+	beats = p_beats;
+}
+
+int AudioStreamSample::get_beat_count() const {
+	return beats;
+}
+
+
 void AudioStreamSample::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamSample::set_data);
@@ -611,6 +628,12 @@ void AudioStreamSample::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_loop_mode", "loop_mode"), &AudioStreamSample::set_loop_mode);
 	ClassDB::bind_method(D_METHOD("get_loop_mode"), &AudioStreamSample::get_loop_mode);
+
+	ClassDB::bind_method(D_METHOD("set_bpm", "bpm"), &AudioStreamSample::set_bpm);
+	ClassDB::bind_method(D_METHOD("get_bpm"), &AudioStreamSample::get_bpm);
+
+	ClassDB::bind_method(D_METHOD("set_beat_count", "beats"), &AudioStreamSample::set_beat_count);
+	ClassDB::bind_method(D_METHOD("get_beat_count"), &AudioStreamSample::get_beat_count);
 
 	ClassDB::bind_method(D_METHOD("set_loop_begin", "loop_begin"), &AudioStreamSample::set_loop_begin);
 	ClassDB::bind_method(D_METHOD("get_loop_begin"), &AudioStreamSample::get_loop_begin);

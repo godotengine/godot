@@ -74,12 +74,17 @@ void ResourceImporterOGGVorbis::get_import_options(List<ImportOption> *r_options
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "loop_offset"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "BPM"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "beats"), 0));
 }
 
 Error ResourceImporterOGGVorbis::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 
 	bool loop = p_options["loop"];
 	float loop_offset = p_options["loop_offset"];
+	int bpm = p_options["BPM"];
+	int beats = p_options["beats"];
+
 
 	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
 	if (!f) {
@@ -103,6 +108,8 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 	ERR_FAIL_COND_V(!ogg_stream->get_data().size(), ERR_FILE_CORRUPT);
 	ogg_stream->set_loop(loop);
 	ogg_stream->set_loop_offset(loop_offset);
+	ogg_stream->set_bpm(bpm);
+	ogg_stream->set_beat_count(beats);
 
 	return ResourceSaver::save(p_save_path + ".oggstr", ogg_stream);
 }

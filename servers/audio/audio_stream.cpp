@@ -94,6 +94,14 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 
 ////////////////////////////////
 
+int AudioStream::get_bpm() const{
+	return 0;
+}
+
+int AudioStream::get_beat_count() const {
+	return 0;
+}
+
 void AudioStream::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);

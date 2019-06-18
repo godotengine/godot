@@ -69,6 +69,8 @@ private:
 	
 	Ref<AudioStreamPlaylist> playlist;
 	Ref<AudioStreamPlayback> playback[AudioStreamPlaylist::MAX_STREAMS];
+	int bpm_list[AudioStreamPlaylist::MAX_STREAMS];
+	int beats_list[AudioStreamPlaylist::MAX_STREAMS];
 	
 	int current;
 	bool fading;
@@ -80,6 +82,7 @@ private:
 	bool active;
 
 	virtual void _update_playback_instances();
+	virtual void _update_bpm_info();
 
 public:
 	virtual void start(float p_from_pos = 0.0);

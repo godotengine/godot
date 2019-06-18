@@ -91,6 +91,9 @@ public:
 	virtual Ref<AudioStreamPlayback> instance_playback() = 0;
 	virtual String get_stream_name() const = 0;
 
+	virtual int get_bpm() const;
+	virtual int get_beat_count() const;
+
 	virtual float get_length() const = 0; //if supported, otherwise return 0
 };
 

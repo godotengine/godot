@@ -83,6 +83,8 @@ void ResourceImporterWAV::get_import_options(List<ImportOption> *r_options, int 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/normalize"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/loop"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Disabled,RAM (Ima-ADPCM)"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "BPM"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "beats"), 0));
 }
 
 Error ResourceImporterWAV::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -532,6 +534,9 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		}
 	}
 
+	int bpm = p_options["BPM"];
+	int beats = p_options["beats"];
+
 	Ref<AudioStreamSample> sample;
 	sample.instance();
 	sample->set_data(dst_data);
@@ -541,6 +546,8 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	sample->set_loop_begin(loop_begin);
 	sample->set_loop_end(loop_end);
 	sample->set_stereo(format_channels == 2);
+	sample->set_bpm(bpm);
+	sample->set_beat_count(beats);
 
 	ResourceSaver::save(p_save_path + ".sample", sample);
 

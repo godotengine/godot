@@ -254,10 +254,32 @@ float AudioStreamOGGVorbis::get_length() const {
 	return length;
 }
 
+void AudioStreamOGGVorbis::set_bpm(int p_bpm) {
+	bpm = p_bpm;
+}
+
+int AudioStreamOGGVorbis::get_bpm() {
+	return bpm;
+}
+
+void AudioStreamOGGVorbis::set_beat_count(int p_beats) {
+	beats = p_beats;
+}
+
+int AudioStreamOGGVorbis::get_beat_count() {
+	return beats;
+}
+
 void AudioStreamOGGVorbis::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamOGGVorbis::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamOGGVorbis::get_data);
+
+	ClassDB::bind_method(D_METHOD("set_bpm", "bpm"), &AudioStreamOGGVorbis::set_bpm);
+	ClassDB::bind_method(D_METHOD("get_bpm"), &AudioStreamOGGVorbis::get_bpm);
+
+	ClassDB::bind_method(D_METHOD("set_beat_count", "beats"), &AudioStreamOGGVorbis::set_beat_count);
+	ClassDB::bind_method(D_METHOD("get_beat_count"), &AudioStreamOGGVorbis::get_beat_count);
 
 	ClassDB::bind_method(D_METHOD("set_loop", "enable"), &AudioStreamOGGVorbis::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &AudioStreamOGGVorbis::has_loop);
