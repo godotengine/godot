@@ -133,35 +133,13 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 	return NULL;
 }
 
-String GDScriptFunction::_get_call_error(const Variant::CallError &p_err, const String &p_where, const Variant **argptrs) const {
-
-	String err_text;
-
-	if (p_err.error == Variant::CallError::CALL_ERROR_INVALID_ARGUMENT) {
-		int errorarg = p_err.argument;
-		err_text = "Invalid type in " + p_where + ". Cannot convert argument " + itos(errorarg + 1) + " from " + Variant::get_type_name(argptrs[errorarg]->get_type()) + " to " + Variant::get_type_name(p_err.expected) + ".";
-	} else if (p_err.error == Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
-		err_text = "Invalid call to " + p_where + ". Expected " + itos(p_err.argument) + " arguments.";
-	} else if (p_err.error == Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
-		err_text = "Invalid call to " + p_where + ". Expected " + itos(p_err.argument) + " arguments.";
-	} else if (p_err.error == Variant::CallError::CALL_ERROR_INVALID_METHOD) {
-		err_text = "Invalid call. Nonexistent " + p_where + ".";
-	} else if (p_err.error == Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
-		err_text = "Attempt to call " + p_where + " on a null instance.";
-	} else {
-		err_text = "Bug, call error: #" + itos(p_err.error);
-	}
-
-	return err_text;
-}
-
 #ifdef DEBUG_ENABLED
-static String _get_var_type(const Variant *p_type) {
+static String _get_var_type(const Variant *p_var) {
 
 	String basestr;
 
-	if (p_type->get_type() == Variant::OBJECT) {
-		Object *bobj = *p_type;
+	if (p_var->get_type() == Variant::OBJECT) {
+		Object *bobj = *p_var;
 		if (!bobj) {
 			basestr = "null instance";
 		} else {
@@ -176,12 +154,42 @@ static String _get_var_type(const Variant *p_type) {
 		}
 
 	} else {
-		basestr = Variant::get_type_name(p_type->get_type());
+		basestr = Variant::get_type_name(p_var->get_type());
 	}
 
 	return basestr;
 }
-#endif
+#endif // DEBUG_ENABLED
+
+String GDScriptFunction::_get_call_error(const Variant::CallError &p_err, const String &p_where, const Variant **argptrs) const {
+
+	String err_text;
+
+	if (p_err.error == Variant::CallError::CALL_ERROR_INVALID_ARGUMENT) {
+		int errorarg = p_err.argument;
+		// Handle the Object to Object case separately as we don't have further class details.
+#ifdef DEBUG_ENABLED
+		if (p_err.expected == Variant::OBJECT && argptrs[errorarg]->get_type() == p_err.expected) {
+			err_text = "Invalid type in " + p_where + ". The Object-derived class of argument " + itos(errorarg + 1) + " (" + _get_var_type(argptrs[errorarg]) + ") is not a subclass of the expected argument class.";
+		} else
+#endif // DEBUG_ENABLED
+		{
+			err_text = "Invalid type in " + p_where + ". Cannot convert argument " + itos(errorarg + 1) + " from " + Variant::get_type_name(argptrs[errorarg]->get_type()) + " to " + Variant::get_type_name(p_err.expected) + ".";
+		}
+	} else if (p_err.error == Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
+		err_text = "Invalid call to " + p_where + ". Expected " + itos(p_err.argument) + " arguments.";
+	} else if (p_err.error == Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
+		err_text = "Invalid call to " + p_where + ". Expected " + itos(p_err.argument) + " arguments.";
+	} else if (p_err.error == Variant::CallError::CALL_ERROR_INVALID_METHOD) {
+		err_text = "Invalid call. Nonexistent " + p_where + ".";
+	} else if (p_err.error == Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
+		err_text = "Attempt to call " + p_where + " on a null instance.";
+	} else {
+		err_text = "Bug, call error: #" + itos(p_err.error);
+	}
+
+	return err_text;
+}
 
 #if defined(__GNUC__)
 #define OPCODES_TABLE                         \
