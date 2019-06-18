@@ -4,7 +4,7 @@
 		Base class for all resources.
 	</brief_description>
 	<description>
-		Resource is the base class for all resource types, serving primarily as data containers. They are reference counted and freed when no longer in use. They are also loaded only once from disk, and further attempts to load the resource will return the same reference (all this in contrast to a [Node], which is not reference counted and can be instanced from disk as many times as desired). Resources can be saved externally on disk or bundled into another object, such as a [Node] or another resource.
+		Resource is the base class for all Godot-specific resource types, serving primarily as data containers. They are reference counted and freed when no longer in use. They are also cached once loaded from disk, so that any further attempts to load a resource from a given path will return the same reference (all this in contrast to a [Node], which is not reference counted and can be instanced from disk as many times as desired). Resources can be saved externally on disk or bundled into another object, such as a [Node] or another resource.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/resources.html</link>
@@ -14,6 +14,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Virtual function which can be overridden to customize the behavior value of [method setup_local_to_scene].
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">
@@ -29,6 +30,7 @@
 			<return type="Node">
 			</return>
 			<description>
+				If [member resource_local_to_scene] is enabled and the resource was loaded from a [PackedScene] instantiation, returns the local scene where this resource's unique copy is in use. Otherwise, returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
@@ -42,6 +44,8 @@
 			<return type="void">
 			</return>
 			<description>
+				This method is called when a resource with [member resource_local_to_scene] enabled is loaded from a [PackedScene] instantiation. Its behavior can be customized by overriding [method _setup_local_to_scene] from script.
+				For most resources, this method performs no base logic. [ViewportTexture] performs custom logic to properly set the proxy texture and flags in the local viewport.
 			</description>
 		</method>
 		<method name="take_over_path">
@@ -50,12 +54,13 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Sets the path of the resource. Differs from [code]set_path()[/code], if another [Resource] exists with "path" it over-takes it, instead of failing.
+				Sets the path of the resource, potentially overriding an existing cache entry for this path. This differs from setting [member resource_path], as the latter would error out if another resource was already cached for the given path.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene">
+			If [code]true[/code], the resource will be made unique in each instance of its local scene. It can thus be modified in a scene instance without impacting other instances of that same scene.
 		</member>
 		<member name="resource_name" type="String" setter="set_name" getter="get_name">
 			The name of the resource. This is an optional identifier.
