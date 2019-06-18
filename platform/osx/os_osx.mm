@@ -1569,6 +1569,9 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	if (p_desired.layered) {
 		set_window_per_pixel_transparency_enabled(true);
 	}
+
+	update_real_mouse_position();
+
 	return OK;
 }
 
@@ -1905,6 +1908,12 @@ void OS_OSX::warp_mouse_position(const Point2 &p_to) {
 		CGWarpMouseCursorPosition(lMouseWarpPos);
 		CGAssociateMouseAndMouseCursorPosition(true);
 	}
+}
+
+void OS_OSX::update_real_mouse_position() {
+
+	get_mouse_pos([window_object mouseLocationOutsideOfEventStream], [window_view backingScaleFactor]);
+	input->set_mouse_position(Point2(mouse_x, mouse_y));
 }
 
 Point2 OS_OSX::get_mouse_position() const {
@@ -2357,6 +2366,8 @@ void OS_OSX::set_window_position(const Point2 &p_position) {
 	// Godot passes a positive value
 	position.y *= -1;
 	set_native_window_position(get_screens_origin() + position);
+
+	update_real_mouse_position();
 };
 
 Size2 OS_OSX::get_window_size() const {

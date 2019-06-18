@@ -188,6 +188,7 @@ public:
 	virtual void warp_mouse_position(const Point2 &p_to);
 	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
+	void update_real_mouse_position();
 	virtual void set_window_title(const String &p_title);
 
 	virtual Size2 get_window_size() const;
