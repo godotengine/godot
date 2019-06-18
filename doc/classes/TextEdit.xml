@@ -515,15 +515,12 @@
 	</constants>
 	<theme_items>
 		<theme_item name="background_color" type="Color">
-			Sets the background [Color] of this [TextEdit]. [member syntax_highlighting] has to be enabled.
 		</theme_item>
 		<theme_item name="bookmark_color" type="Color">
-			Sets the [Color] of the bookmark marker. [member syntax_highlighting] has to be enabled.
 		</theme_item>
 		<theme_item name="brace_mismatch_color" type="Color">
 		</theme_item>
 		<theme_item name="breakpoint_color" type="Color">
-			Sets the [Color] of the breakpoints. [member breakpoint_gutter] has to be enabled.
 		</theme_item>
 		<theme_item name="caret_background_color" type="Color">
 		</theme_item>
@@ -550,7 +547,6 @@
 		<theme_item name="completion_selected_color" type="Color">
 		</theme_item>
 		<theme_item name="current_line_color" type="Color">
-			Sets the current line highlight [Color]. [member highlight_current_line] has to be enabled.
 		</theme_item>
 		<theme_item name="executing_line_color" type="Color">
 		</theme_item>
@@ -561,48 +557,38 @@
 		<theme_item name="folded" type="Texture">
 		</theme_item>
 		<theme_item name="font" type="Font">
-			Sets the default [Font].
 		</theme_item>
 		<theme_item name="font_color" type="Color">
-			Sets the font [Color].
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color">
 		</theme_item>
 		<theme_item name="function_color" type="Color">
 		</theme_item>
 		<theme_item name="line_number_color" type="Color">
-			Sets the [Color] of the line numbers. [member show_line_numbers] has to be enabled.
 		</theme_item>
 		<theme_item name="line_spacing" type="int">
-			Sets the spacing between the lines.
 		</theme_item>
 		<theme_item name="mark_color" type="Color">
-			Sets the [Color] of marked text.
 		</theme_item>
 		<theme_item name="member_variable_color" type="Color">
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
-			Sets the [StyleBox] of this [TextEdit].
 		</theme_item>
 		<theme_item name="number_color" type="Color">
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
-			Sets the [StyleBox] of this [TextEdit] when [member read_only] is enabled.
 		</theme_item>
 		<theme_item name="safe_line_number_color" type="Color">
 		</theme_item>
 		<theme_item name="selection_color" type="Color">
-			Sets the highlight [Color] of text selections.
 		</theme_item>
 		<theme_item name="space" type="Texture">
 		</theme_item>
 		<theme_item name="symbol_color" type="Color">
 		</theme_item>
 		<theme_item name="tab" type="Texture">
-			Sets a custom [Texture] for tab text characters.
 		</theme_item>
 		<theme_item name="word_highlighted_color" type="Color">
-			Sets the highlight [Color] of multiple occurrences. [member highlight_all_occurrences] has to be enabled.
 		</theme_item>
 	</theme_items>
 </class>

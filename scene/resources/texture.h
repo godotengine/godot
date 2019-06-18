@@ -239,7 +239,6 @@ public:
 };
 
 class ResourceFormatLoaderStreamTexture : public ResourceFormatLoader {
-	GDCLASS(ResourceFormatLoaderStreamTexture, ResourceFormatLoader)
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
@@ -537,7 +536,6 @@ public:
 };
 
 class ResourceFormatLoaderTextureLayered : public ResourceFormatLoader {
-	GDCLASS(ResourceFormatLoaderTextureLayered, ResourceFormatLoader)
 public:
 	enum Compression {
 		COMPRESSION_LOSSLESS,

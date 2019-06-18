@@ -165,7 +165,6 @@ public:
 };
 
 class GDNativeLibraryResourceLoader : public ResourceFormatLoader {
-	GDCLASS(GDNativeLibraryResourceLoader, ResourceFormatLoader)
 public:
 	virtual RES load(const String &p_path, const String &p_original_path, Error *r_error);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
@@ -174,7 +173,6 @@ public:
 };
 
 class GDNativeLibraryResourceSaver : public ResourceFormatSaver {
-	GDCLASS(GDNativeLibraryResourceSaver, ResourceFormatSaver)
 public:
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags);
 	virtual bool recognize(const RES &p_resource) const;

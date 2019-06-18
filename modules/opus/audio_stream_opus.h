@@ -132,7 +132,6 @@ public:
 };
 
 class ResourceFormatLoaderAudioStreamOpus : public ResourceFormatLoader {
-	GDCLASS(ResourceFormatLoaderAudioStreamOpus, ResourceFormatLoader)
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
