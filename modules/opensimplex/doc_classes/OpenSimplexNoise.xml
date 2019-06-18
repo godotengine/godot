@@ -41,6 +41,8 @@
 			<argument index="0" name="x" type="float">
 			</argument>
 			<description>
+				Returns the 1D noise value [code][-1,1][/code] at the given x-coordinate.
+				Note: This method actually returns the 2D noise value [code][-1,1][/code] with fixed y-coordinate value 0.0.
 			</description>
 		</method>
 		<method name="get_noise_2d">
