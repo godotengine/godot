@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ResourceLoader" inherits="Object" category="Core" version="3.2">
 	<brief_description>
-		Resource Loader.
+		Singleton used to load resource files.
 	</brief_description>
 	<description>
-		Resource Loader. This is a static object accessible as [ResourceLoader]. GDScript has a simplified load() function, though.
+		Singleton used to load resource files from the filesystem.
+		It uses the many [ResourceFormatLoader] classes registered in the engine (either built-in or from a plugin) to load files into memory and convert them to a format that can be used by the engine.
+		GDScript has a simplified [method @GDScript.load] built-in method which can be used in most situations, leaving the use of [ResourceLoader] for more advanced scenarios.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,6 +19,8 @@
 			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
+				Returns whether a recognized resource exists for the given [code]path[/code].
+				An optional [code]type_hint[/code] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader].
 			</description>
 		</method>
 		<method name="get_dependencies">
@@ -25,6 +29,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+				Returns the dependencies for the resource at the given [code]path[/code].
 			</description>
 		</method>
 		<method name="get_recognized_extensions_for_type">
@@ -42,6 +47,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+				Deprecated method. Use [method has_cached] or [method exists] instead.
 			</description>
 		</method>
 		<method name="has_cached">
@@ -50,6 +56,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+				Returns whether a cached resource is available for the given [code]path[/code].
+				Once a resource has been loaded by the engine, it is cached in memory for faster access, and future calls to the [method load] or [method load_interactive] methods will use the cached version. The cached resource can be overridden by using [method Resource.take_over_path] on a new resource for that same path.
 			</description>
 		</method>
 		<method name="load">
@@ -62,6 +70,11 @@
 			<argument index="2" name="no_cache" type="bool" default="false">
 			</argument>
 			<description>
+				Loads a resource at the given [code]path[/code], caching the result for further access.
+				The registered [ResourceFormatLoader]s are queried sequentially to find the first one which can handle the file's extension, and then attempt loading. If loading fails, the remaining ResourceFormatLoaders are also attempted.
+				An optional [code]type_hint[/code] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader].
+				If [code]no_cache[/code] is [code]true[/code], the resource cache will be bypassed and the resource will be loaded anew. Otherwise, the cached resource will be returned if it exists.
+				Returns an empty resource if no ResourceFormatLoader could handle the file.
 			</description>
 		</method>
 		<method name="load_interactive">
@@ -72,7 +85,8 @@
 			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Load a resource interactively, the returned object allows to load with high granularity.
+				Starts loading a resource interactively. The returned [ResourceInteractiveLoader] object allows to load with high granularity, calling its [method ResourceInteractiveLoader.poll] method successively to load chunks.
+				An optional [code]type_hint[/code] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader].
 			</description>
 		</method>
 		<method name="set_abort_on_missing_resources">

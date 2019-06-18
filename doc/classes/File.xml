@@ -115,7 +115,7 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Returns the last error that happened when trying to perform operations. Compare with the [code]ERR_FILE_*[/code] constants from [@GlobalScope].
+				Returns the last error that happened when trying to perform operations. Compare with the [code]ERR_FILE_*[/code] constants from [enum @GlobalScope.Error].
 			</description>
 		</method>
 		<method name="get_float" qualifiers="const">
@@ -241,7 +241,7 @@
 			<argument index="2" name="compression_mode" type="int" enum="File.CompressionMode" default="0">
 			</argument>
 			<description>
-				Opens a compressed file for reading or writing. Use COMPRESSION_* constants to set [code]compression_mode[/code].
+				Opens a compressed file for reading or writing. Use [enum CompressionMode] constants to set [code]compression_mode[/code].
 			</description>
 		</method>
 		<method name="open_encrypted">

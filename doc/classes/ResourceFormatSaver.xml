@@ -4,8 +4,8 @@
 		Saves a specific resource type to a file.
 	</brief_description>
 	<description>
-		The engine can save resources when you do it from the editor, or when you call [method ResourceSaver.save]. This is accomplished with multiple [ResourceFormatSaver]s, each handling its own format.
-		By default, Godot saves resources as [code].tres[/code], [code].res[/code] or another built-in format, but you can choose to create your own format by extending this class. You should give it a global class name with [code]class_name[/code] for it to be registered. You may as well implement a [ResourceFormatLoader].
+		The engine can save resources when you do it from the editor, or when you use the [ResourceSaver] singleton. This is accomplished thanks to multiple [ResourceFormatSaver]s, each handling its own format and called automatically by the engine.
+		By default, Godot saves resources as [code].tres[/code] (text-based), [code].res[/code] (binary) or another built-in format, but you can choose to create your own format by extending this class. Be sure to respect the documented return types and values. You should give it a global class name with [code]class_name[/code] for it to be registered. Like built-in ResourceFormatSavers, it will be called automatically when saving resources of its recognized type(s). You may also implement a [ResourceFormatLoader].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,7 +16,7 @@
 			<argument index="0" name="resource" type="Resource">
 			</argument>
 			<description>
-				Gets the list of extensions for files this saver is able to write.
+				Returns the list of extensions available for saving the resource object, provided it is recognized (see [method recognize]).
 			</description>
 		</method>
 		<method name="recognize" qualifiers="virtual">
@@ -25,7 +25,7 @@
 			<argument index="0" name="resource" type="Resource">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the given resource object can be saved by this saver.
+				Returns whether the given resource object can be saved by this saver.
 			</description>
 		</method>
 		<method name="save" qualifiers="virtual">
@@ -38,7 +38,8 @@
 			<argument index="2" name="flags" type="int">
 			</argument>
 			<description>
-				Saves the given resource object to a file. [code]flags[/code] is a bitmask composed with [code]FLAG_*[/code] constants defined in [ResourceSaver]. Returns [code]OK[/code] on success, or an [code]ERR_*[/code] constant listed in [@GlobalScope] if it failed.
+				Saves the given resource object to a file at the target [code]path[/code]. [code]flags[/code] is a bitmask composed with [enum ResourceSaver.SaverFlags] constants.
+				Returns [constant @GlobalScope.OK] on success, or an [enum @GlobalScope.Error] constant in case of failure.
 			</description>
 		</method>
 	</methods>
