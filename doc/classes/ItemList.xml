@@ -73,7 +73,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the [Color] set by [member set_custom_bg_color]. Default value is [code]Color(0, 0, 0, 0)[/code].
+				Returns the custom background color of the item specified by [code]idx[/code] index. Default value is [code]Color(0, 0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_item_custom_fg_color" qualifiers="const">
@@ -82,7 +82,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the [Color] set by [member set_custom_fg_color]. Default value is [code]Color(0, 0, 0, 0)[/code].
+				Returns the custom foreground color of the item specified by [code]idx[/code] index. Default value is [code]Color(0, 0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
@@ -117,7 +117,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the metadata value of the specified index set by [member set_item_metadata].
+				Returns the metadata value of the specified index.
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
@@ -416,7 +416,7 @@
 			Sets the default icon size in pixels.
 		</member>
 		<member name="icon_mode" type="int" setter="set_icon_mode" getter="get_icon_mode" enum="ItemList.IconMode">
-			Sets the default position of the icon to either [const ICON_MODE_LEFT] or [const ICON_MODE_TOP].
+			Sets the default position of the icon to either [constant ICON_MODE_LEFT] or [constant ICON_MODE_TOP].
 		</member>
 		<member name="icon_scale" type="float" setter="set_icon_scale" getter="get_icon_scale">
 			Sets the icon size to its initial size multiplied by the specified scale. Default value is 1.0.
@@ -431,7 +431,7 @@
 			If set to [code]true[/code], all columns will have the same width specified by [member fixed_column_width].
 		</member>
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="ItemList.SelectMode">
-			Allow single or multiple item selection. See the [code]SELECT_*[/code] constants.
+			Allow single or multiple item selection. See the [enum SelectMode] constants.
 		</member>
 	</members>
 	<signals>

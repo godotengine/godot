@@ -99,7 +99,7 @@
 			Particles will be emitted inside this region. Use [enum EmissionShape] for values. Default value: [constant EMISSION_SHAPE_POINT].
 		</member>
 		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
-			The circle's radius if [member emission_shape] is set to [constant EMISSION_SHAPE_CIRCLE].
+			The sphere's radius if [member emission_shape] is set to [constant EMISSION_SHAPE_SPHERE].
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting">
 			If [code]true[/code], particles are being emitted. Default value: [code]true[/code].
@@ -271,7 +271,7 @@
 			All particles will be emitted from a single point.
 		</constant>
 		<constant name="EMISSION_SHAPE_SPHERE" value="1" enum="EmissionShape">
-			Particles will be emitted on the surface of a sphere flattened to two dimensions. 
+			Particles will be emitted on the surface of a sphere flattened to two dimensions.
 		</constant>
 		<constant name="EMISSION_SHAPE_RECTANGLE" value="2" enum="EmissionShape">
 			Particles will be emitted in the area of a rectangle.
