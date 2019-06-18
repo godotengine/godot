@@ -585,7 +585,7 @@ void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vec
 	if (p_rollInfluence > 0.0) {
 		// !BAS! But seeing we apply this frame by frame, makes more sense to me to make this time based
 		// keeping in mind our anti roll factor if it is set
-		contactDamping = s->get_step() / p_rollInfluence;
+		contactDamping = MIN(contactDamping, s->get_step() / p_rollInfluence);
 	}
 
 #define ONLY_USE_LINEAR_MASS
