@@ -647,6 +647,7 @@ void register_scene_types() {
 	ClassDB::register_class<World>();
 	ClassDB::register_class<Environment>();
 	ClassDB::register_class<World2D>();
+	ClassDB::register_virtual_class<Texture>();
 	ClassDB::register_virtual_class<Texture2D>();
 	ClassDB::register_virtual_class<Sky>();
 	ClassDB::register_class<PanoramaSky>();
