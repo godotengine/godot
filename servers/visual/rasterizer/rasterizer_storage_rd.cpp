@@ -35,7 +35,7 @@ Ref<Image> RasterizerStorageRD::_validate_texture_format(const Ref<Image> &p_ima
 		} break;
 		case Image::FORMAT_RGB8: {
 			//this format is not mandatory for specification, check if supported first
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R8G8B8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT) && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R8G8B8_SRGB, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
+			if (false && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R8G8B8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT) && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R8G8B8_SRGB, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
 				r_format.format = RD::DATA_FORMAT_R8G8B8_UNORM;
 				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8_SRGB;
 			} else {
@@ -484,7 +484,7 @@ RID RasterizerStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 	texture.width = p_image->get_width();
 	texture.height = p_image->get_height();
 	texture.layers = 1;
-	texture.mipmaps = p_image->get_mipmap_count();
+	texture.mipmaps = p_image->get_mipmap_count() + 1;
 	texture.depth = 1;
 
 	texture.rd_type = RD::TEXTURE_TYPE_2D;
@@ -503,6 +503,10 @@ RID RasterizerStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 		rd_format.type = texture.rd_type;
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
 		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+			rd_format.shareable_formats.push_back(texture.rd_format);
+			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
+		}
 	}
 	{
 		rd_view.swizzle_r = ret_format.swizzle_r;
@@ -701,6 +705,10 @@ void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
 
 	_clear_render_target(rt);
 
+	if (rt->size.width == 0 || rt->size.height == 0) {
+		rt->dirty = false;
+		return;
+	}
 	//until we implement suport for HDR monitors (and render target is attached to screen), this is enough.
 	rt->color_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 	rt->color_format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
@@ -718,12 +726,8 @@ void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
 		rd_format.type = RD::TEXTURE_TYPE_2D;
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
 		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-	}
-	{
-		rd_view.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-		rd_view.swizzle_g = RD::TEXTURE_SWIZZLE_R;
-		rd_view.swizzle_b = RD::TEXTURE_SWIZZLE_R;
-		rd_view.swizzle_a = rt->flags[RENDER_TARGET_TRANSPARENT] ? RD::TEXTURE_SWIZZLE_A : RD::TEXTURE_SWIZZLE_ONE;
+		rd_format.shareable_formats.push_back(rt->color_format);
+		rd_format.shareable_formats.push_back(rt->color_format_srgb);
 	}
 
 	rt->color = RD::get_singleton()->texture_create(rd_format, rd_view);
@@ -744,6 +748,8 @@ void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
 		_clear_render_target(rt);
 		ERR_FAIL_COND(rt->framebuffer.is_null());
 	}
+
+	rt->dirty = false;
 }
 
 RID RasterizerStorageRD::render_target_create() {
