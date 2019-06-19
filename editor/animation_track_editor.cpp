@@ -2083,8 +2083,6 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 					moving_selection_from_ofs = (mb->get_position().x - timeline->get_name_limit()) / timeline->get_zoom_scale();
 				}
 				accept_event();
-			} else {
-				emit_signal("clear_selection");
 			}
 		}
 
@@ -2326,7 +2324,7 @@ void AnimationTrackEdit::set_in_group(bool p_enable) {
 	update();
 }
 
-void AnimationTrackEdit::append_to_selection(const Rect2 &p_box) {
+void AnimationTrackEdit::append_to_selection(const Rect2 &p_box, bool p_deselection) {
 
 	Rect2 select_rect(timeline->get_name_limit(), 0, get_size().width - timeline->get_name_limit() - timeline->get_buttons_width(), get_size().height);
 	select_rect = select_rect.clip(p_box);
@@ -2339,7 +2337,10 @@ void AnimationTrackEdit::append_to_selection(const Rect2 &p_box) {
 		rect.position.x += offset;
 
 		if (select_rect.intersects(rect)) {
-			emit_signal("select_key", i, false);
+			if (p_deselection)
+				emit_signal("deselect_key", i);
+			else
+				emit_signal("select_key", i, false);
 		}
 	}
 }
@@ -4342,7 +4343,7 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 
 					Rect2 local_rect = box_select_rect;
 					local_rect.position -= track_edits[i]->get_global_position();
-					track_edits[i]->append_to_selection(local_rect);
+					track_edits[i]->append_to_selection(local_rect, mb->get_command());
 				}
 
 				if (_get_track_selected() == -1 && track_edits.size() > 0) { //minimal hack to make shortcuts work
@@ -4374,8 +4375,8 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (!box_selection->is_visible_in_tree()) {
-			if (!mm->get_shift()) {
-				_clear_selection(); //only append if shift is pressed
+			if (!mm->get_command() && !mm->get_shift()) {
+				_clear_selection();
 			}
 			box_selection->show();
 		}
