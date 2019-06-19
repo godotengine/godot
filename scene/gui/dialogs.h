@@ -145,6 +145,9 @@ public:
 	void set_text(String p_text);
 	String get_text() const;
 
+	void set_autowrap(bool p_autowrap);
+	bool has_autowrap();
+
 	AcceptDialog();
 	~AcceptDialog();
 };
