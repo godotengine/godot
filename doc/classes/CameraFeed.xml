@@ -45,10 +45,10 @@
 		<constant name="FEED_RGB" value="1" enum="FeedDataType">
 			Feed supplies RGB images.
 		</constant>
-		<constant name="FEED_YCbCr" value="2" enum="FeedDataType">
+		<constant name="FEED_YCBCR" value="2" enum="FeedDataType">
 			Feed supplies YCbCr images that need to be converted to RGB.
 		</constant>
-		<constant name="FEED_YCbCr_Sep" value="3" enum="FeedDataType">
+		<constant name="FEED_YCBCR_SEP" value="3" enum="FeedDataType">
 			Feed supplies separate Y and CbCr images that need to be combined and converted to RGB.
 		</constant>
 		<constant name="FEED_UNSPECIFIED" value="0" enum="FeedPosition">
