@@ -41,7 +41,7 @@
 class ExportTemplateVersion;
 
 class ExportTemplateManager : public ConfirmationDialog {
-	GDCLASS(ExportTemplateManager, ConfirmationDialog)
+	GDCLASS(ExportTemplateManager, ConfirmationDialog);
 
 	AcceptDialog *template_downloader;
 	VBoxContainer *template_list;

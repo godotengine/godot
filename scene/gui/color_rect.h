@@ -34,7 +34,7 @@
 #include "scene/gui/control.h"
 
 class ColorRect : public Control {
-	GDCLASS(ColorRect, Control)
+	GDCLASS(ColorRect, Control);
 
 	Color color;
 

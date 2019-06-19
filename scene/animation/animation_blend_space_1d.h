@@ -34,7 +34,7 @@
 #include "scene/animation/animation_tree.h"
 
 class AnimationNodeBlendSpace1D : public AnimationRootNode {
-	GDCLASS(AnimationNodeBlendSpace1D, AnimationRootNode)
+	GDCLASS(AnimationNodeBlendSpace1D, AnimationRootNode);
 
 	enum {
 		MAX_BLEND_POINTS = 64

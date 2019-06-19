@@ -147,7 +147,8 @@ class AudioBusLayout;
 
 class AudioServer : public Object {
 
-	GDCLASS(AudioServer, Object)
+	GDCLASS(AudioServer, Object);
+
 public:
 	//re-expose this here, as AudioDriver is not exposed to script
 	enum SpeakerMode {
@@ -390,7 +391,7 @@ VARIANT_ENUM_CAST(AudioServer::SpeakerMode)
 
 class AudioBusLayout : public Resource {
 
-	GDCLASS(AudioBusLayout, Resource)
+	GDCLASS(AudioBusLayout, Resource);
 
 	friend class AudioServer;
 

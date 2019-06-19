@@ -36,7 +36,7 @@
 
 class TextFile : public Resource {
 
-	GDCLASS(TextFile, Resource)
+	GDCLASS(TextFile, Resource);
 
 private:
 	String text;

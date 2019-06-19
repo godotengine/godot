@@ -50,7 +50,7 @@
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
 
-	GDCLASS(ScriptEditorQuickOpen, ConfirmationDialog)
+	GDCLASS(ScriptEditorQuickOpen, ConfirmationDialog);
 
 	LineEdit *search_box;
 	Tree *search_options;
@@ -77,7 +77,7 @@ class ScriptEditorDebugger;
 
 class ScriptEditorBase : public VBoxContainer {
 
-	GDCLASS(ScriptEditorBase, VBoxContainer)
+	GDCLASS(ScriptEditorBase, VBoxContainer);
 
 protected:
 	static void _bind_methods();

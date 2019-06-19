@@ -48,7 +48,8 @@ public:
 
 class EditorProperty : public Container {
 
-	GDCLASS(EditorProperty, Container)
+	GDCLASS(EditorProperty, Container);
+
 private:
 	String label;
 	int text_size;
@@ -167,7 +168,7 @@ public:
 };
 
 class EditorInspectorPlugin : public Reference {
-	GDCLASS(EditorInspectorPlugin, Reference)
+	GDCLASS(EditorInspectorPlugin, Reference);
 
 	friend class EditorInspector;
 	struct AddedEditor {

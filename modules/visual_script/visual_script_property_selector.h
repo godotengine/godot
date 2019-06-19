@@ -36,7 +36,7 @@
 #include "scene/gui/rich_text_label.h"
 
 class VisualScriptPropertySelector : public ConfirmationDialog {
-	GDCLASS(VisualScriptPropertySelector, ConfirmationDialog)
+	GDCLASS(VisualScriptPropertySelector, ConfirmationDialog);
 
 	LineEdit *search_box;
 	Tree *search_options;

@@ -35,7 +35,8 @@
 
 // y(x) curve
 class Curve : public Resource {
-	GDCLASS(Curve, Resource)
+	GDCLASS(Curve, Resource);
+
 public:
 	static const int MIN_X = 0.f;
 	static const int MAX_X = 1.f;

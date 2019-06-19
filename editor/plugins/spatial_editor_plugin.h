@@ -431,7 +431,8 @@ public:
 
 class SpatialEditorViewportContainer : public Container {
 
-	GDCLASS(SpatialEditorViewportContainer, Container)
+	GDCLASS(SpatialEditorViewportContainer, Container);
+
 public:
 	enum View {
 		VIEW_USE_1_VIEWPORT,

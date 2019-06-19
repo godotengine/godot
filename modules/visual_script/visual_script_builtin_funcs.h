@@ -35,7 +35,8 @@
 
 class VisualScriptBuiltinFunc : public VisualScriptNode {
 
-	GDCLASS(VisualScriptBuiltinFunc, VisualScriptNode)
+	GDCLASS(VisualScriptBuiltinFunc, VisualScriptNode);
+
 public:
 	enum BuiltinFunc {
 		MATH_SIN,

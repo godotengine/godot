@@ -50,7 +50,7 @@
 #include "scene_tree_editor.h"
 
 class AnimationTimelineEdit : public Range {
-	GDCLASS(AnimationTimelineEdit, Range)
+	GDCLASS(AnimationTimelineEdit, Range);
 
 	Ref<Animation> animation;
 	int name_limit;
@@ -123,7 +123,7 @@ class AnimationTrackEditor;
 
 class AnimationTrackEdit : public Control {
 
-	GDCLASS(AnimationTrackEdit, Control)
+	GDCLASS(AnimationTrackEdit, Control);
 
 	enum {
 		MENU_CALL_MODE_CONTINUOUS,
@@ -237,7 +237,8 @@ public:
 };
 
 class AnimationTrackEditPlugin : public Reference {
-	GDCLASS(AnimationTrackEditPlugin, Reference)
+	GDCLASS(AnimationTrackEditPlugin, Reference);
+
 public:
 	virtual AnimationTrackEdit *create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage);
 	virtual AnimationTrackEdit *create_audio_track_edit();
@@ -248,7 +249,7 @@ class AnimationTrackKeyEdit;
 class AnimationBezierTrackEdit;
 
 class AnimationTrackEditGroup : public Control {
-	GDCLASS(AnimationTrackEditGroup, Control)
+	GDCLASS(AnimationTrackEditGroup, Control);
 	Ref<Texture> icon;
 	String node_name;
 	NodePath node;
@@ -271,7 +272,7 @@ public:
 };
 
 class AnimationTrackEditor : public VBoxContainer {
-	GDCLASS(AnimationTrackEditor, VBoxContainer)
+	GDCLASS(AnimationTrackEditor, VBoxContainer);
 
 	enum {
 		EDIT_COPY_TRACKS,

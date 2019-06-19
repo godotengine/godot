@@ -46,7 +46,7 @@ class StyleBox;
 
 class CanvasItemMaterial : public Material {
 
-	GDCLASS(CanvasItemMaterial, Material)
+	GDCLASS(CanvasItemMaterial, Material);
 
 public:
 	enum BlendMode {

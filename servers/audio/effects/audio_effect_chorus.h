@@ -36,7 +36,7 @@
 class AudioEffectChorus;
 
 class AudioEffectChorusInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectChorusInstance, AudioEffectInstance)
+	GDCLASS(AudioEffectChorusInstance, AudioEffectInstance);
 	friend class AudioEffectChorus;
 	Ref<AudioEffectChorus> base;
 
@@ -54,7 +54,7 @@ public:
 };
 
 class AudioEffectChorus : public AudioEffect {
-	GDCLASS(AudioEffectChorus, AudioEffect)
+	GDCLASS(AudioEffectChorus, AudioEffect);
 
 	friend class AudioEffectChorusInstance;
 

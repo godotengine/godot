@@ -40,7 +40,8 @@
 class Camera;
 class AudioStreamPlayer3D : public Spatial {
 
-	GDCLASS(AudioStreamPlayer3D, Spatial)
+	GDCLASS(AudioStreamPlayer3D, Spatial);
+
 public:
 	enum AttenuationModel {
 		ATTENUATION_INVERSE_DISTANCE,

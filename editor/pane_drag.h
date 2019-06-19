@@ -35,7 +35,7 @@
 
 class PaneDrag : public Control {
 
-	GDCLASS(PaneDrag, Control)
+	GDCLASS(PaneDrag, Control);
 
 	bool mouse_over;
 

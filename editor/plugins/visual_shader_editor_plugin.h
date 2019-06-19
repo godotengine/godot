@@ -42,7 +42,8 @@
 
 class VisualShaderNodePlugin : public Reference {
 
-	GDCLASS(VisualShaderNodePlugin, Reference)
+	GDCLASS(VisualShaderNodePlugin, Reference);
+
 protected:
 	static void _bind_methods();
 
@@ -245,14 +246,14 @@ public:
 
 class VisualShaderNodePluginDefault : public VisualShaderNodePlugin {
 
-	GDCLASS(VisualShaderNodePluginDefault, VisualShaderNodePlugin)
+	GDCLASS(VisualShaderNodePluginDefault, VisualShaderNodePlugin);
 
 public:
 	virtual Control *create_editor(const Ref<VisualShaderNode> &p_node);
 };
 
 class EditorPropertyShaderMode : public EditorProperty {
-	GDCLASS(EditorPropertyShaderMode, EditorProperty)
+	GDCLASS(EditorPropertyShaderMode, EditorProperty);
 	OptionButton *options;
 
 	void _option_selected(int p_which);
@@ -268,7 +269,7 @@ public:
 };
 
 class EditorInspectorShaderModePlugin : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorShaderModePlugin, EditorInspectorPlugin)
+	GDCLASS(EditorInspectorShaderModePlugin, EditorInspectorPlugin);
 
 public:
 	virtual bool can_handle(Object *p_object);
@@ -278,7 +279,7 @@ public:
 };
 
 class VisualShaderNodePortPreview : public Control {
-	GDCLASS(VisualShaderNodePortPreview, Control)
+	GDCLASS(VisualShaderNodePortPreview, Control);
 	Ref<VisualShader> shader;
 	VisualShader::Type type;
 	int node;

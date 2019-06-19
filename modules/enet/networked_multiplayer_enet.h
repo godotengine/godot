@@ -38,7 +38,8 @@
 
 class NetworkedMultiplayerENet : public NetworkedMultiplayerPeer {
 
-	GDCLASS(NetworkedMultiplayerENet, NetworkedMultiplayerPeer)
+	GDCLASS(NetworkedMultiplayerENet, NetworkedMultiplayerPeer);
+
 public:
 	enum CompressionMode {
 		COMPRESS_NONE,

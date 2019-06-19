@@ -39,7 +39,7 @@ class VisualScriptNodeInstance;
 class VisualScript;
 
 class VisualScriptNode : public Resource {
-	GDCLASS(VisualScriptNode, Resource)
+	GDCLASS(VisualScriptNode, Resource);
 
 	friend class VisualScript;
 
@@ -165,7 +165,7 @@ public:
 
 class VisualScript : public Script {
 
-	GDCLASS(VisualScript, Script)
+	GDCLASS(VisualScript, Script);
 
 	RES_BASE_EXTENSION("vs");
 

@@ -38,7 +38,7 @@ class CollisionObject2D;
 
 class CollisionShape2D : public Node2D {
 
-	GDCLASS(CollisionShape2D, Node2D)
+	GDCLASS(CollisionShape2D, Node2D);
 	Ref<Shape2D> shape;
 	Rect2 rect;
 	uint32_t owner_id;

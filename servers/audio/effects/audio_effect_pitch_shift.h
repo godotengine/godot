@@ -72,7 +72,7 @@ public:
 class AudioEffectPitchShift;
 
 class AudioEffectPitchShiftInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectPitchShiftInstance, AudioEffectInstance)
+	GDCLASS(AudioEffectPitchShiftInstance, AudioEffectInstance);
 	friend class AudioEffectPitchShift;
 	Ref<AudioEffectPitchShift> base;
 
@@ -85,8 +85,11 @@ public:
 };
 
 class AudioEffectPitchShift : public AudioEffect {
-	GDCLASS(AudioEffectPitchShift, AudioEffect)
+	GDCLASS(AudioEffectPitchShift, AudioEffect);
+
 public:
+	friend class AudioEffectPitchShiftInstance;
+
 	enum FFT_Size {
 		FFT_SIZE_256,
 		FFT_SIZE_512,
@@ -95,9 +98,6 @@ public:
 		FFT_SIZE_4096,
 		FFT_SIZE_MAX
 	};
-
-public:
-	friend class AudioEffectPitchShiftInstance;
 
 	float pitch_scale;
 	int oversampling;
