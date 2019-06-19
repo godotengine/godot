@@ -1955,7 +1955,10 @@ public:
 
 		//make sure its not a degenerate
 		bool degenerate = distanceSquared(base[0], base[1]) < NV_EPSILON || distanceSquared(base[0], base[2]) < NV_EPSILON || distanceSquared(base[1], base[2]) < NV_EPSILON;
-		xaDebugAssert(!degenerate);
+		if (degenerate) {
+			xaPrint("This face is degenerate.")
+			return NULL;
+		}
 
 		float min_x = 0;
 
