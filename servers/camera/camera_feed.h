@@ -50,8 +50,8 @@ public:
 	enum FeedDataType {
 		FEED_NOIMAGE, // we don't have an image yet
 		FEED_RGB, // our texture will contain a normal RGB texture that can be used directly
-		FEED_YCbCr, // our texture will contain a YCbCr texture that needs to be converted to RGB before output
-		FEED_YCbCr_Sep // our camera is split into two textures, first plane contains Y data, second plane contains CbCr data
+		FEED_YCBCR, // our texture will contain a YCbCr texture that needs to be converted to RGB before output
+		FEED_YCBCR_SEP // our camera is split into two textures, first plane contains Y data, second plane contains CbCr data
 	};
 
 	enum FeedPosition {

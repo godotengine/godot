@@ -47,9 +47,9 @@ void CameraServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("camera_feed_removed", PropertyInfo(Variant::INT, "id")));
 
 	BIND_ENUM_CONSTANT(FEED_RGBA_IMAGE);
-	BIND_ENUM_CONSTANT(FEED_YCbCr_IMAGE);
+	BIND_ENUM_CONSTANT(FEED_YCBCR_IMAGE);
 	BIND_ENUM_CONSTANT(FEED_Y_IMAGE);
-	BIND_ENUM_CONSTANT(FEED_CbCr_IMAGE);
+	BIND_ENUM_CONSTANT(FEED_CBCR_IMAGE);
 };
 
 CameraServer *CameraServer::singleton = NULL;
