@@ -445,6 +445,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	ConfirmationDialog *scale_dialog;
 	SpinBox *scale;
 
+	void _select_all_tracks_for_copy();
+
 	void _edit_menu_pressed(int p_option);
 	int last_menu_track_opt;
 
@@ -458,8 +460,12 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _selection_changed();
 
+	bool selected_all_tracks;
 	ConfirmationDialog *track_copy_dialog;
 	Tree *track_copy_select;
+	HBoxContainer *track_copy_options;
+	Button *select_all_button;
+
 	struct TrackClipboard {
 		NodePath full_path;
 		NodePath base_path;
