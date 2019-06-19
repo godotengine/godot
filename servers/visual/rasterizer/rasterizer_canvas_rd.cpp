@@ -131,7 +131,7 @@ RasterizerCanvas::TextureBindingID RasterizerCanvasRD::request_texture_binding(R
 			u.binding = 2;
 			RID texture = storage->texture_get_rd_texture(p_normalmap);
 			if (!texture.is_valid()) {
-				//use default white texture
+				//use default normal texture
 				texture = default_textures.normal_texture;
 			}
 			u.ids.push_back(texture);
@@ -202,7 +202,7 @@ void RasterizerCanvasRD::_dispose_bindings() {
 	}
 }
 
-void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_item, RenderTargetFormat p_render_target_format, const Color &p_modulate, const Transform2D &p_canvas_transform_inverse) {
+void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_item, RenderTargetFormat p_render_target_format, RD::TextureSamples p_samples, const Color &p_modulate, const Transform2D &p_canvas_transform_inverse) {
 
 	int cc = p_item->commands.size();
 	const Item::Command *const *commands = p_item->commands.ptr();
@@ -217,10 +217,9 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 		push_constant.dst_rect[i] = 0;
 	}
 	push_constant.flags = 0;
-	push_constant.ninepatch_repeat = 0;
+	push_constant.specular_shininess = 0xFFFFFFFF;
 	push_constant.color_texture_pixel_size[0] = 0;
 	push_constant.color_texture_pixel_size[1] = 0;
-	push_constant.specular_shininess = 0xFFFFFFFF;
 	push_constant.pad[0] = 0;
 	push_constant.pad[1] = 0;
 	push_constant.pad[2] = 0;
@@ -347,7 +346,7 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 				//bind pipeline
 				{
-					RID pipeline = pipeline_variants->variants[p_render_target_format][PIPELINE_VARIANT_QUAD];
+					RID pipeline = pipeline_variants->variants[p_render_target_format][PIPELINE_VARIANT_QUAD].get_render_pipeline(RD::INVALID_ID, p_samples);
 					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
 				}
 
@@ -358,6 +357,7 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 					TextureBinding **texture_binding_ptr = bindings.texture_bindings.getptr(rect->texture_binding.binding_id);
 					ERR_CONTINUE(!texture_binding_ptr);
 					TextureBinding *texture_binding = *texture_binding_ptr;
+
 					RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, texture_binding->uniform_set, 0);
 					if (texture_binding->key.texture.is_valid()) {
 						Size2i tex_size = storage->texture_2d_get_size(texture_binding->key.texture);
@@ -449,7 +449,7 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 				//bind pipeline
 				{
-					RID pipeline = pipeline_variants->variants[p_render_target_format][PIPELINE_VARIANT_NINEPATCH];
+					RID pipeline = pipeline_variants->variants[p_render_target_format][PIPELINE_VARIANT_NINEPATCH].get_render_pipeline(RD::INVALID_ID, p_samples);
 					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
 				}
 
@@ -506,8 +506,8 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 				push_constant.color_texture_pixel_size[0] = texpixel_size.x;
 				push_constant.color_texture_pixel_size[1] = texpixel_size.y;
 
-				push_constant.ninepatch_repeat = int(np->axis_x) << 16;
-				push_constant.ninepatch_repeat |= int(np->axis_y);
+				push_constant.flags |= int(np->axis_x) << FLAGS_NINEPATCH_H_MODE_SHIFT;
+				push_constant.flags |= int(np->axis_y) << FLAGS_NINEPATCH_V_MODE_SHIFT;
 
 				if (np->draw_center) {
 					push_constant.flags |= FLAGS_NINEPACH_DRAW_CENTER;
@@ -926,7 +926,8 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, bool p_clear, con
 	if (p_clear) {
 		clear_colors.push_back(p_clear_color);
 	}
-
+#warning TODO obtain from framebuffer format eventually when this is implemented
+	RD::TextureSamples texture_samples = RD::TEXTURE_SAMPLES_1;
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, p_clear ? RD::INITIAL_ACTION_CLEAR : RD::INITIAL_ACTION_KEEP_COLOR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, clear_colors);
 
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, state.canvas_state_uniform_set, 3);
@@ -950,12 +951,12 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, bool p_clear, con
 			}
 		}
 
-		if (true) { //not skeleton
+		if (false) { //not skeleton
 
 			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, shader.default_material_uniform_set, 1);
 		}
 
-		_render_item(draw_list, ci, render_target_format, p_modulate, canvas_transform_inverse);
+		_render_item(draw_list, ci, render_target_format, texture_samples, p_modulate, canvas_transform_inverse);
 	}
 
 	RD::get_singleton()->draw_list_end();
@@ -1180,7 +1181,7 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 			RD::AttachmentFormat af;
 			af.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 			af.samples = RD::TEXTURE_SAMPLES_1;
-			af.usage_flags = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+			af.usage_flags = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 			Vector<RD::AttachmentFormat> formats;
 			formats.push_back(af);
 			shader.framebuffer_formats[RENDER_TARGET_FORMAT_8_BIT_INT] = RD::get_singleton()->framebuffer_format_create(formats);
@@ -1198,8 +1199,7 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 				ShaderVariant shader_variants[PIPELINE_VARIANT_MAX] = { SHADER_VARIANT_QUAD, SHADER_VARIANT_NINEPATCH, SHADER_VARIANT_VERTICES, SHADER_VARIANT_VERTICES, SHADER_VARIANT_POINTS };
 
 				RID shader_variant = shader.canvas_shader.version_get_shader(shader.default_version, shader_variants[j]);
-				RID pipeline = RD::get_singleton()->render_pipeline_create(shader_variant, fb_format, RD::INVALID_ID, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_blend(), j == PIPELINE_VARIANT_LINES ? RD::DYNAMIC_STATE_LINE_WIDTH : 0);
-				shader.pipeline_variants.variants[i][j] = pipeline;
+				shader.pipeline_variants.variants[i][j].setup(shader_variant, fb_format, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_blend(), j == PIPELINE_VARIANT_LINES ? RD::DYNAMIC_STATE_LINE_WIDTH : 0);
 			}
 		}
 

@@ -45,7 +45,7 @@ public:
 
 		if (alloc_count == max_alloc) {
 			//allocate a new chunk
-			uint32_t chunk_count = alloc_count == 0 ? 0 : (max_alloc / elements_in_chunk + 1);
+			uint32_t chunk_count = alloc_count == 0 ? 0 : (max_alloc / elements_in_chunk);
 
 			//grow chunks
 			chunks = (T **)memrealloc(chunks, sizeof(T *) * (chunk_count + 1));
@@ -140,8 +140,8 @@ public:
 		chunks[idx_chunk][idx_element].~T();
 		validator_chunks[idx_chunk][idx_element] = 0xFFFFFFFF; // go invalid
 
-		free_list_chunks[alloc_count / elements_in_chunk][alloc_count % elements_in_chunk] = idx;
 		alloc_count--;
+		free_list_chunks[alloc_count / elements_in_chunk][alloc_count % elements_in_chunk] = idx;
 	}
 
 	void get_owned_list(List<RID> *p_owned) {
