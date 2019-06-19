@@ -18,6 +18,12 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugU
 	char *message = (char *)malloc(strlen(pCallbackData->pMessage) + 5000);
 	ERR_FAIL_COND_V(!message, false);
 
+	//This error needs to be ignored because the AMD allocator will mix up memory types on IGP processors
+	if (strstr(pCallbackData->pMessage, "Mapping an image with layout") != NULL &&
+			strstr(pCallbackData->pMessage, "can result in undefined behavior if this memory is used by the device") != NULL) {
+		return VK_FALSE;
+	}
+
 	if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
 		strcat(prefix, "VERBOSE : ");
 	} else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {

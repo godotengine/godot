@@ -179,7 +179,7 @@ void ShaderRD::_compile_version(Version *p_version) {
 			StringBuilder builder;
 
 			builder.append(vertex_codev.get_data()); // version info (if exists)
-
+			builder.append("\n"); //make sure defines begin at newline
 			builder.append(variant_defines[i].get_data());
 			for (int j = 0; j < p_version->custom_defines.size(); j++) {
 				builder.append(p_version->custom_defines[j].get_data());
@@ -212,6 +212,7 @@ void ShaderRD::_compile_version(Version *p_version) {
 			StringBuilder builder;
 
 			builder.append(fragment_codev.get_data()); // version info (if exists)
+			builder.append("\n"); //make sure defines begin at newline
 
 			builder.append(variant_defines[i].get_data());
 			for (int j = 0; j < p_version->custom_defines.size(); j++) {

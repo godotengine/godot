@@ -55,7 +55,7 @@ void main() {
 	vec2 vertex_base_arr[4] = vec2[](vec2(0.0,0.0),vec2(0.0,1.0),vec2(1.0,1.0),vec2(1.0,0.0));
 	vec2 vertex_base = vertex_base_arr[gl_VertexIndex];
 
-	vec2 uv = draw_data.src_rect.xy + draw_data.src_rect.zw * ((draw_data.flags&FLAGS_TRANSPOSE_RECT)!=0 ? vertex_base.xy : vertex_base.yx);
+	vec2 uv = draw_data.src_rect.xy + draw_data.src_rect.zw * ((draw_data.flags&FLAGS_TRANSPOSE_RECT)!=0 ? vertex_base.yx : vertex_base.xy);
 	vec4 color = vec4(1.0);
 	vec2 vertex = draw_data.dst_rect.xy + abs(draw_data.dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(draw_data.src_rect.zw, vec2(0.0, 0.0)));
 	uvec4 bone_indices = uvec4(0,0,0,0);
@@ -63,7 +63,7 @@ void main() {
 
 #endif
 
-	mat4 world_matrix  = mat4(draw_data.world[0],draw_data.world[1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0));
+	mat4 world_matrix  = transpose(mat4(draw_data.world[0],draw_data.world[1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0)));
 #if 0
 	if (draw_data.flags&FLAGS_INSTANCING_ENABLED) {
 
@@ -117,7 +117,7 @@ VERTEX_SHADER_CODE
 
 
 #ifdef USE_NINEPATCH
-	pixel_size_interp = abs(draw_data.dst_rect.zw) * vertex;
+	pixel_size_interp = abs(draw_data.dst_rect.zw) * vertex_base;
 #endif
 
 #if !defined(SKIP_TRANSFORM_USED)
@@ -175,6 +175,7 @@ VERTEX_SHADER_CODE
 	}
 #endif
 
+	uv_interp = uv;
 #if !defined(SKIP_TRANSFORM_USED)
 	gl_Position = (canvas_data.screen_transform * canvas_data.canvas_transform) * vec4(vertex,0.0,1.0);
 #else
@@ -284,20 +285,21 @@ void main() {
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
 
-#ifdef USE_TEXTURE_RECT
+#ifndef USE_VERTEX_ARRAYS
 
 #ifdef USE_NINEPATCH
 
 	int draw_center = 2;
 	uv = vec2(
-			map_ninepatch_axis(pixel_size_interp.x, abs(draw_data.dst_rect.z), draw_data.color_texture_pixel_size.x, draw_data.ninepatch_margins.x, draw_data.ninepatch_margins.z, (draw_data.ninepatch_repeat>>16), draw_center),
-			map_ninepatch_axis(pixel_size_interp.y, abs(draw_data.dst_rect.w), draw_data.color_texture_pixel_size.y, draw_data.ninepatch_margins.y, draw_data.ninepatch_margins.w, (draw_data.ninepatch_repeat&0xFFFF), draw_center));
+			map_ninepatch_axis(pixel_size_interp.x, abs(draw_data.dst_rect.z), draw_data.color_texture_pixel_size.x, draw_data.ninepatch_margins.x, draw_data.ninepatch_margins.z, int(draw_data.flags>>FLAGS_NINEPATCH_H_MODE_SHIFT)&0x3, draw_center),
+			map_ninepatch_axis(pixel_size_interp.y, abs(draw_data.dst_rect.w), draw_data.color_texture_pixel_size.y, draw_data.ninepatch_margins.y, draw_data.ninepatch_margins.w, int(draw_data.flags>>FLAGS_NINEPATCH_V_MODE_SHIFT)&0x3, draw_center));
 
 	if (draw_center == 0) {
 		color.a = 0.0;
 	}
 
 	uv = uv * draw_data.src_rect.zw + draw_data.src_rect.xy; //apply region if needed
+
 #endif
 
 	if (bool(draw_data.flags&FLAGS_CLIP_RECT_UV)) {
@@ -369,4 +371,5 @@ FRAGMENT_SHADER_CODE
 #endif
 	//color.rgb *= color.a;
 	frag_color = color;
+
 }

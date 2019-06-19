@@ -3,6 +3,7 @@
 
 #include "servers/visual/rasterizer/rasterizer.h"
 #include "servers/visual/rasterizer/rasterizer_storage_rd.h"
+#include "servers/visual/rasterizer/render_pipeline_vertex_format_cache_rd.h"
 #include "servers/visual/rasterizer/shaders/canvas.glsl.gen.h"
 #include "servers/visual/rendering_device.h"
 
@@ -38,7 +39,9 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		FLAGS_USING_PARTICLES = (1 << 13),
 		FLAGS_USE_PIXEL_SNAP = (1 << 14),
 
-		FLAGS_USE_SKELETON = (1 << 16)
+		FLAGS_USE_SKELETON = (1 << 15),
+		FLAGS_NINEPATCH_H_MODE_SHIFT = 16,
+		FLAGS_NINEPATCH_V_MODE_SHIFT = 18
 	};
 
 	/****************/
@@ -51,13 +54,10 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		PIPELINE_VARIANT_TRIANGLES,
 		PIPELINE_VARIANT_LINES,
 		PIPELINE_VARIANT_POINTS,
-		PIPELINE_VARIANT_TRIANGLES_COMPRESSED,
-		PIPELINE_VARIANT_LINES_COMPRESSED,
-		PIPELINE_VARIANT_POINTS_COMPRESSED,
 		PIPELINE_VARIANT_MAX
 	};
 	struct PipelineVariants {
-		RID variants[RENDER_TARGET_FORMAT_MAX][PIPELINE_VARIANT_MAX];
+		RenderPipelineVertexFormatCacheRD variants[RENDER_TARGET_FORMAT_MAX][PIPELINE_VARIANT_MAX];
 	};
 
 	struct {
@@ -177,10 +177,9 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		float dst_rect[4];
 		float src_rect[4];
 		uint32_t flags;
-		uint32_t ninepatch_repeat;
-		float color_texture_pixel_size[2];
 		uint32_t specular_shininess;
-		uint32_t pad[3];
+		float color_texture_pixel_size[2];
+		uint32_t pad[4];
 	};
 
 	struct SkeletonUniform {
@@ -194,7 +193,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 	Item *items[MAX_RENDER_ITEMS];
 
-	void _render_item(RenderingDevice::DrawListID p_draw_list, const Item *p_item, RenderTargetFormat p_render_target_format, const Color &p_modulate, const Transform2D &p_canvas_transform_inverse);
+	void _render_item(RenderingDevice::DrawListID p_draw_list, const Item *p_item, RenderTargetFormat p_render_target_format, RenderingDevice::TextureSamples p_samples, const Color &p_modulate, const Transform2D &p_canvas_transform_inverse);
 	void _render_items(RID p_to_render_target, bool p_clear, const Color &p_clear_color, int p_item_count, const Color &p_modulate, const Transform2D &p_transform);
 
 	void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);
