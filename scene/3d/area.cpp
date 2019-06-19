@@ -752,7 +752,7 @@ Area::Area() :
 	gravity_is_point = false;
 	gravity_distance_scale = 0;
 	linear_damp = 0.1;
-	angular_damp = 1;
+	angular_damp = 0.1;
 	priority = 0;
 	monitoring = false;
 	monitorable = false;

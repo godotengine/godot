@@ -250,7 +250,7 @@ AreaSW::AreaSW() :
 	gravity_is_point = false;
 	gravity_distance_scale = 0;
 	point_attenuation = 1;
-	angular_damp = 1.0;
+	angular_damp = 0.1;
 	linear_damp = 0.1;
 	priority = 0;
 	set_ray_pickable(false);
