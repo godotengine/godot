@@ -414,7 +414,9 @@ void JoypadLinux::joypad_vibration_start(int p_id, float p_weak_magnitude, float
 	play.type = EV_FF;
 	play.code = effect.id;
 	play.value = 1;
-	write(joy.fd, (const void *)&play, sizeof(play));
+	if (write(joy.fd, (const void *)&play, sizeof(play)) == -1) {
+		print_verbose("Couldn't write to Joypad device.");
+	}
 
 	joy.ff_effect_id = effect.id;
 	joy.ff_effect_timestamp = p_timestamp;
