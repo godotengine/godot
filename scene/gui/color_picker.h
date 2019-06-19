@@ -108,7 +108,8 @@ public:
 	void set_edit_alpha(bool p_show);
 	bool is_editing_alpha() const;
 
-	void set_pick_color(const Color &p_color, bool p_update_sliders = true);
+	void _set_pick_color(const Color &p_color, bool p_update_sliders);
+	void set_pick_color(const Color &p_color);
 	Color get_pick_color() const;
 
 	void add_preset(const Color &p_color);
