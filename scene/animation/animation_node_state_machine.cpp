@@ -599,6 +599,9 @@ void AnimationNodeStateMachine::remove_node(const StringName &p_name) {
 
 	{
 		Ref<AnimationNode> node = states[p_name].node;
+
+		ERR_FAIL_COND(node.is_null());
+
 		node->disconnect("tree_changed", this, "_tree_changed");
 	}
 
