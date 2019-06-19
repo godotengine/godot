@@ -26,7 +26,7 @@ def get_opts():
     return [
         ('ANDROID_NDK_ROOT', 'Path to the Android NDK', os.environ.get("ANDROID_NDK_ROOT", 0)),
         ('ndk_platform', 'Target platform (android-<api>, e.g. "android-18")', "android-18"),
-        EnumVariable('android_arch', 'Target architecture', "armv7", ('armv7', 'armv6', 'arm64v8', 'x86', 'x86_64')),
+        EnumVariable('android_arch', 'Target architecture', "armv7", ('armv7', 'arm64v8', 'x86', 'x86_64')),
         BoolVariable('android_neon', 'Enable NEON support (armv7 only)', True),
         BoolVariable('android_stl', 'Enable Android STL support (for modules)', True)
     ]
@@ -93,7 +93,7 @@ def configure(env):
 
     ## Architecture
 
-    if env['android_arch'] not in ['armv7', 'armv6', 'arm64v8', 'x86', 'x86_64']:
+    if env['android_arch'] not in ['armv7', 'arm64v8', 'x86', 'x86_64']:
         env['android_arch'] = 'armv7'
 
     neon_text = ""
@@ -119,13 +119,6 @@ def configure(env):
         abi_subpath = "x86_64-linux-android"
         arch_subpath = "x86_64"
         env["x86_libtheora_opt_gcc"] = True
-    elif env['android_arch'] == 'armv6':
-        env['ARCH'] = 'arch-arm'
-        env.extra_suffix = ".armv6" + env.extra_suffix
-        target_subpath = "arm-linux-androideabi-4.9"
-        abi_subpath = "arm-linux-androideabi"
-        arch_subpath = "armeabi"
-        can_vectorize = False
     elif env["android_arch"] == "armv7":
         env['ARCH'] = 'arch-arm'
         target_subpath = "arm-linux-androideabi-4.9"
@@ -248,11 +241,6 @@ def configure(env):
 
     elif env['android_arch'] == 'x86_64':
         target_opts = ['-target', 'x86_64-none-linux-android']
-
-    elif env["android_arch"] == "armv6":
-        target_opts = ['-target', 'armv6-none-linux-androideabi']
-        env.Append(CCFLAGS='-march=armv6 -mfpu=vfp -mfloat-abi=softfp'.split())
-        env.Append(CPPFLAGS=['-D__ARM_ARCH_6__'])
 
     elif env["android_arch"] == "armv7":
         target_opts = ['-target', 'armv7-none-linux-androideabi']
