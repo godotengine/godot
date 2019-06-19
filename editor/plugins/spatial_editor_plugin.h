@@ -178,6 +178,12 @@ public:
 		GIZMO_GRID_LAYER = 25
 	};
 
+	enum NavigationScheme {
+		NAVIGATION_GODOT,
+		NAVIGATION_MAYA,
+		NAVIGATION_MODO,
+	};
+
 private:
 	int index;
 	String name;
@@ -259,12 +265,6 @@ private:
 	bool clicked_wants_append;
 
 	PopupMenu *selection_menu;
-
-	enum NavigationScheme {
-		NAVIGATION_GODOT,
-		NAVIGATION_MAYA,
-		NAVIGATION_MODO,
-	};
 
 	enum NavigationZoomStyle {
 		NAVIGATION_ZOOM_VERTICAL,
