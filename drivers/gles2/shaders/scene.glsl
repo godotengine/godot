@@ -262,7 +262,7 @@ void light_compute(
 #endif
 
 		SRGB_APPROX(specular_brdf_NL)
-		specular_interp += specular_brdf_NL * light_color * attenuation;
+		specular_interp += specular_brdf_NL * light_color * attenuation * (1.0 / M_PI);
 	}
 }
 
@@ -1641,18 +1641,30 @@ FRAGMENT_SHADER_CODE
 
 #endif // defined(USE_REFLECTION_PROBE1) || defined(USE_REFLECTION_PROBE2)
 
-	// scales the specular reflections, needs to be be computed before lighting happens,
-	// but after environment and reflection probes are added
-	//TODO: this curve is not really designed for gammaspace, should be adjusted
-	const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
-	const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
-	vec4 r = roughness * c0 + c1;
-	float ndotv = clamp(dot(normal, eye_position), 0.0, 1.0);
-	float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
-	vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
+	// environment BRDF approximation
 
-	vec3 f0 = F0(metallic, specular, albedo);
-	specular_light *= env.x * f0 + env.y;
+	{
+
+#if defined(DIFFUSE_TOON)
+		//simplify for toon, as
+		specular_light *= specular * metallic * albedo * 2.0;
+#else
+
+		// scales the specular reflections, needs to be be computed before lighting happens,
+		// but after environment and reflection probes are added
+		//TODO: this curve is not really designed for gammaspace, should be adjusted
+		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
+		const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
+		vec4 r = roughness * c0 + c1;
+		float ndotv = clamp(dot(normal, eye_position), 0.0, 1.0);
+		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
+		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
+
+		vec3 f0 = F0(metallic, specular, albedo);
+		specular_light *= env.x * f0 + env.y;
+
+#endif
+	}
 
 #ifdef USE_LIGHTMAP
 	//ambient light will come entirely from lightmap is lightmap is used
@@ -2048,6 +2060,17 @@ FRAGMENT_SHADER_CODE
 	specular_light += specular_interp * specular_blob_intensity * light_att;
 	diffuse_light += diffuse_interp * albedo * light_att;
 
+	// Same as above, needed for VERTEX_LIGHTING or else lights are too bright
+	const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
+	const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
+	vec4 r = roughness * c0 + c1;
+	float ndotv = clamp(dot(normal, eye_position), 0.0, 1.0);
+	float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
+	vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
+
+	vec3 f0 = F0(metallic, specular, albedo);
+	specular_light *= env.x * f0 + env.y;
+
 #else
 	//fragment lighting
 	light_compute(
@@ -2114,16 +2137,6 @@ FRAGMENT_SHADER_CODE
 
 	diffuse_light *= 1.0 - metallic;
 	ambient_light *= 1.0 - metallic;
-
-	// environment BRDF approximation
-
-	{
-
-#if defined(DIFFUSE_TOON)
-		//simplify for toon, as
-		specular_light *= specular * metallic * albedo * 2.0;
-#endif
-	}
 
 	gl_FragColor = vec4(ambient_light + diffuse_light + specular_light, alpha);
 
