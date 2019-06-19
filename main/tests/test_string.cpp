@@ -1017,8 +1017,8 @@ bool test_32() {
 	STRIP_TEST(String("abca").lstrip("a") == "bca");
 	STRIP_TEST(String("abc").rstrip("a") == "abc");
 	STRIP_TEST(String("abca").rstrip("a") == "abc");
-	// in utf-8 "¿" has the same first byte as "µ"
-	// and the same second as "ÿ"
+	// in utf-8 "¿" (\u00bf) has the same first byte as "µ" (\u00b5)
+	// and the same second as "ÿ" (\u00ff)
 	STRIP_TEST(String::utf8("¿").lstrip(String::utf8("µÿ")) == String::utf8("¿"));
 	STRIP_TEST(String::utf8("¿").rstrip(String::utf8("µÿ")) == String::utf8("¿"));
 	STRIP_TEST(String::utf8("µ¿ÿ").lstrip(String::utf8("µÿ")) == String::utf8("¿ÿ"));
@@ -1046,8 +1046,8 @@ bool test_32() {
 	STRIP_TEST(String("abca").lstrip("qwajkl") == "bca");
 	STRIP_TEST(String("abc").rstrip("qwajkl") == "abc");
 	STRIP_TEST(String("abca").rstrip("qwajkl") == "abc");
-	// in utf-8 "¿" has the same first byte as "µ"
-	// and the same second as "ÿ"
+	// in utf-8 "¿" (\u00bf) has the same first byte as "µ" (\u00b5)
+	// and the same second as "ÿ" (\u00ff)
 	STRIP_TEST(String::utf8("¿").lstrip(String::utf8("qwaµÿjkl")) == String::utf8("¿"));
 	STRIP_TEST(String::utf8("¿").rstrip(String::utf8("qwaµÿjkl")) == String::utf8("¿"));
 	STRIP_TEST(String::utf8("µ¿ÿ").lstrip(String::utf8("qwaµÿjkl")) == String::utf8("¿ÿ"));
@@ -1068,8 +1068,8 @@ bool test_33() {
 bool test_34() {
 	OS::get_singleton()->print("\n\nTest 34: Cyrillic to_lower()\n");
 
-	String upper = L"АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
-	String lower = L"абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
+	String upper = String::utf8("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ");
+	String lower = String::utf8("абвгдеёжзийклмнопрстуфхцчшщъыьэюя");
 
 	String test = upper.to_lower();
 
