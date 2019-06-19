@@ -201,7 +201,7 @@ public:
 	}
 
 	/* complex helpers */
-	String substr(int p_from, int p_chars) const;
+	String substr(int p_from, int p_chars = -1) const;
 	int find(const String &p_str, int p_from = 0) const; ///< return <0 if failed
 	int find(const char *p_str, int p_from = 0) const; ///< return <0 if failed
 	int find_char(const CharType &p_char, int p_from = 0) const; ///< return <0 if failed
