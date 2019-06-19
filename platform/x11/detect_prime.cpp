@@ -159,10 +159,11 @@ int detect_prime() {
 			if (!stat_loc) {
 				// No need to do anything complicated here. Anything less than
 				// PIPE_BUF will be delivered in one read() call.
-				read(fdset[0], string, sizeof(string) - 1);
-
-				vendors[i] = string;
-				renderers[i] = string + strlen(string) + 1;
+				// Leave it 'Unknown' otherwise.
+				if (read(fdset[0], string, sizeof(string) - 1) > 0) {
+					vendors[i] = string;
+					renderers[i] = string + strlen(string) + 1;
+				}
 			}
 
 			close(fdset[0]);
@@ -190,8 +191,9 @@ int detect_prime() {
 			memcpy(&string, vendor, vendor_len);
 			memcpy(&string[vendor_len], renderer, renderer_len);
 
-			write(fdset[1], string, vendor_len + renderer_len);
-
+			if (write(fdset[1], string, vendor_len + renderer_len) == -1) {
+				print_verbose("Couldn't write vendor/renderer string.");
+			}
 			close(fdset[1]);
 			exit(0);
 		}
