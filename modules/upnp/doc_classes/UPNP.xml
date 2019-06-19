@@ -15,9 +15,6 @@
 		
 		To close a specific port (e.g. after you have finished with it):
 		[codeblock]
-		const port=7777 # Specify the port you wish to close
-		var upnp=UPNP.new() # Create a UPNP class
-		upnp.discover(2000,2,"InternetGatewayDevice") 
 		upnp.delete_port_mapping(port) # This line closes the port
 		[/codeblock]
 		
