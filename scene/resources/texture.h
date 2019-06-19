@@ -46,7 +46,14 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class Texture2D : public Resource {
+class Texture : public Resource {
+	GDCLASS(Texture, Resource);
+
+public:
+	Texture() {}
+};
+
+class Texture2D : public Texture {
 
 	GDCLASS(Texture2D, Resource);
 	OBJ_SAVE_TYPE(Texture2D); //children are all saved as Texture, so they can be exchanged
@@ -336,7 +343,7 @@ public:
 	LargeTexture();
 };
 
-class TextureLayered : public Resource {
+class TextureLayered : public Texture {
 
 	GDCLASS(TextureLayered, Resource);
 

@@ -721,7 +721,8 @@ uint32_t RenderingDeviceVulkan::get_image_format_pixel_size(DataFormat p_format)
 		case DATA_FORMAT_S8_UINT: return 1;
 		case DATA_FORMAT_D16_UNORM_S8_UINT: return 4;
 		case DATA_FORMAT_D24_UNORM_S8_UINT: return 4;
-		case DATA_FORMAT_D32_SFLOAT_S8_UINT: return 5; //?
+		case DATA_FORMAT_D32_SFLOAT_S8_UINT:
+			return 5; //?
 		case DATA_FORMAT_BC1_RGB_UNORM_BLOCK:
 		case DATA_FORMAT_BC1_RGB_SRGB_BLOCK:
 		case DATA_FORMAT_BC1_RGBA_UNORM_BLOCK:
@@ -965,7 +966,8 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_block_byte_size(Data
 		case DATA_FORMAT_ASTC_12x10_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x10_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
-		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK: return 8; //wrong
+		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
+			return 8; //wrong
 		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
 		case DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
 		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
@@ -973,7 +975,8 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_block_byte_size(Data
 		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
 		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
 		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG: return 8; //what varies is resolution
+		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
+			return 8; //what varies is resolution
 		default: {
 		}
 	}
@@ -1027,7 +1030,6 @@ uint32_t RenderingDeviceVulkan::get_image_format_required_size(DataFormat p_form
 		uint32_t bw = w % blockw != 0 ? w + (blockw - w % blockw) : w;
 		uint32_t bh = h % blockh != 0 ? h + (blockh - h % blockh) : h;
 
-		print_line("bw " + itos(bw) + " bh " + itos(bh) + " pixsize " + itos(pixel_size) + " shift " + itos(pixel_rshift));
 		uint32_t s = bw * bh;
 
 		s *= pixel_size;
@@ -1466,6 +1468,30 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	image_create_info.pNext = NULL;
 	image_create_info.flags = 0;
 
+	VkImageFormatListCreateInfoKHR format_list_create_info;
+	Vector<VkFormat> allowed_formats;
+
+	if (p_format.shareable_formats.size()) {
+		image_create_info.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+		for (int i = 0; i < p_format.shareable_formats.size(); i++) {
+			allowed_formats.push_back(vulkan_formats[p_format.shareable_formats[i]]);
+		}
+
+		format_list_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO_KHR;
+		format_list_create_info.pNext = NULL;
+		format_list_create_info.viewFormatCount = allowed_formats.size();
+		format_list_create_info.pViewFormats = allowed_formats.ptr();
+		image_create_info.pNext = &format_list_create_info;
+
+		if (p_format.shareable_formats.find(p_format.format) == -1) {
+			ERR_EXPLAIN("If supplied a list of shareable formats, the current format must be present in the list");
+			ERR_FAIL_V(RID());
+		}
+		if (p_view.format_override != DATA_FORMAT_MAX && p_format.shareable_formats.find(p_view.format_override) == -1) {
+			ERR_EXPLAIN("If supplied a list of shareable formats, the current view format override must be present in the list");
+			ERR_FAIL_V(RID());
+		}
+	}
 	if (p_format.type == TEXTURE_TYPE_CUBE || p_format.type == TEXTURE_TYPE_CUBE_ARRAY) {
 		image_create_info.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 	}
@@ -1674,6 +1700,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	texture.mipmaps = image_create_info.mipLevels;
 	texture.usage_flags = p_format.usage_bits;
 	texture.samples = p_format.samples;
+	texture.allowed_shared_formats = p_format.shareable_formats;
 
 	//set bound and unbound layouts
 	if (p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
@@ -1830,10 +1857,15 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	};
 
 	image_view_create_info.viewType = view_types[texture.type];
-	if (p_view.format_override == DATA_FORMAT_MAX) {
+	if (p_view.format_override == DATA_FORMAT_MAX || p_view.format_override == texture.format) {
 		image_view_create_info.format = vulkan_formats[texture.format];
 	} else {
 		ERR_FAIL_INDEX_V(p_view.format_override, DATA_FORMAT_MAX, RID());
+
+		if (texture.allowed_shared_formats.find(p_view.format_override) == -1) {
+			ERR_EXPLAIN("Format override is not in the list of allowed shareable formats for original texture.");
+			ERR_FAIL_V(RID());
+		}
 		image_view_create_info.format = vulkan_formats[p_view.format_override];
 	}
 
@@ -1908,6 +1940,13 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 	uint32_t width, height;
 	uint32_t image_size = get_image_format_required_size(texture->format, texture->width, texture->height, 1, texture->mipmaps, &width, &height);
 	uint32_t required_size = image_size * texture->depth;
+	uint32_t required_align = get_compressed_image_format_block_byte_size(texture->format);
+	if (required_align == 1) {
+		required_align = get_image_format_pixel_size(texture->format);
+	}
+	if ((required_align % 4) != 0) { //alignment rules are really strange
+		required_align *= 4;
+	}
 
 	if (required_size != (uint32_t)p_data.size()) {
 		ERR_EXPLAIN("Required size for texture update (" + itos(required_size) + ") does not match data supplied size (" + itos(p_data.size()) + ").");
@@ -1947,12 +1986,12 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 
 		uint32_t image_total = get_image_format_required_size(texture->format, texture->width, texture->height, 1, mm_i + 1, &width, &height);
 
-		const uint8_t *read_ptr = r.ptr() + mipmap_offset;
+		const uint8_t *read_ptr_mipmap = r.ptr() + mipmap_offset;
 		image_size = image_total - mipmap_offset;
 
 		for (uint32_t z = 0; z < texture->depth; z++) { //for 3D textures, depth may be > 0
 
-			read_ptr += image_size;
+			const uint8_t *read_ptr = read_ptr_mipmap + image_size * z;
 
 			for (uint32_t x = 0; x < width; x += region_size) {
 				for (uint32_t y = 0; y < height; y += region_size) {
@@ -1965,7 +2004,7 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 					to_allocate >>= get_compressed_image_format_pixel_rshift(texture->format);
 
 					uint32_t alloc_offset, alloc_size;
-					Error err = _staging_buffer_allocate(to_allocate, 32, alloc_offset, alloc_size, false, p_sync_with_draw);
+					Error err = _staging_buffer_allocate(to_allocate, required_align, alloc_offset, alloc_size, false, p_sync_with_draw);
 					ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 					uint8_t *write_ptr;
@@ -2993,7 +3032,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 		bindings.resize(set + 1);
 		uniform_infos.resize(set + 1);
 	}
-#if 1
+#if 0
 	print_line("stage: " + String(shader_stage_names[p_stage]) + " set: " + itos(set) + " binding: " + itos(info.binding) + " type:" + shader_uniform_names[info.type] + " length: " + itos(info.length));
 #endif
 	bindings.write[set].push_back(layout_binding);
@@ -3143,7 +3182,7 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 			for (int j = 0; j < program.getNumPipeInputs(); j++) {
 				if (program.getPipeInput(i).getType()->getQualifier().hasLocation()) {
 					int location = program.getPipeInput(i).getType()->getQualifier().layoutLocation;
-					print_line("found vertex location: " + itos(location));
+
 					if (vertex_input_locations.find(location) == -1) {
 						vertex_input_locations.push_back(location);
 					}
@@ -3534,12 +3573,9 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 
 	uint32_t uniform_count = p_uniforms.size();
 	const Uniform *uniforms = p_uniforms.ptr();
-	print_line("uniform count: " + itos(uniform_count));
 
 	uint32_t set_uniform_count = set.uniform_info.size();
 	const Shader::UniformInfo *set_uniforms = set.uniform_info.ptr();
-
-	print_line("set_uniform count: " + itos(set_uniform_count));
 
 	Vector<VkWriteDescriptorSet> writes;
 	DescriptorPoolKey pool_key;

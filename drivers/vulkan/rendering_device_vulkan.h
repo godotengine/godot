@@ -101,6 +101,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		uint32_t mipmaps;
 		uint32_t usage_flags;
 
+		Vector<DataFormat> allowed_shared_formats;
+
 		VkImageLayout bound_layout; //layout used when bound to framebuffer being drawn
 		VkImageLayout unbound_layout; //layout used otherwise
 		uint32_t aspect_mask;

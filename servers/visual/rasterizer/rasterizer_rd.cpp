@@ -3,6 +3,7 @@
 void RasterizerRD::blit_render_targets_to_screen(int p_screen, const BlitToScreen *p_render_targets, int p_amount) {
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(p_screen);
+
 	for (int i = 0; i < p_amount; i++) {
 		RID texture = storage->render_target_get_texture(p_render_targets[i].render_target);
 		ERR_CONTINUE(texture.is_null());
@@ -15,6 +16,7 @@ void RasterizerRD::blit_render_targets_to_screen(int p_screen, const BlitToScree
 			u.binding = 0;
 			u.ids.push_back(copy_viewports_sampler);
 			u.ids.push_back(rd_texture);
+			uniforms.push_back(u);
 			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, copy_viewports_rd_shader, 0);
 
 			render_target_descriptors[rd_texture] = uniform_set;
@@ -35,6 +37,8 @@ void RasterizerRD::blit_render_targets_to_screen(int p_screen, const BlitToScree
 		RD::get_singleton()->draw_list_set_push_constant(draw_list, push_constant, 4 * sizeof(float));
 		RD::get_singleton()->draw_list_draw(draw_list, true);
 	}
+
+	RD::get_singleton()->draw_list_end();
 }
 
 void RasterizerRD::begin_frame(double frame_step) {
@@ -48,9 +52,6 @@ void RasterizerRD::end_frame(bool p_swap_buffers) {
 }
 
 void RasterizerRD::initialize() {
-	storage = memnew(RasterizerStorageRD);
-	canvas = memnew(RasterizerCanvasRD(storage));
-	scene = memnew(RasterizerSceneForwardRD);
 
 	{ //create framebuffer copy shader
 		RenderingDevice::ShaderStageSource vert;
@@ -60,9 +61,10 @@ void RasterizerRD::initialize() {
 				"layout(push_constant, binding = 0, std140) uniform Pos { vec4 dst_rect; } pos;\n"
 				"layout(location =0) out vec2 uv;\n"
 				"void main() { \n"
-				" vec2 base_arr[4] = float[](vec2(0.0,0.0),vec2(0.0,1.0),vec2(1.0,1.0),vec2(1.0,0.0));\n"
+				" vec2 base_arr[4] = vec2[](vec2(0.0,0.0),vec2(0.0,1.0),vec2(1.0,1.0),vec2(1.0,0.0));\n"
 				" uv = base_arr[gl_VertexIndex];\n"
-				" gl_Position = vec4(dst_rect.xy,uv*dst_rect.zw);\n"
+				" vec2 vtx = pos.dst_rect.xy+uv*pos.dst_rect.zw;\n"
+				" gl_Position = vec4(vtx * 2.0 - 1.0,0.0,1.0);\n"
 				"}\n";
 
 		RenderingDevice::ShaderStageSource frag;
@@ -124,4 +126,7 @@ void RasterizerRD::finalize() {
 }
 
 RasterizerRD::RasterizerRD() {
+	storage = memnew(RasterizerStorageRD);
+	canvas = memnew(RasterizerCanvasRD(storage));
+	scene = memnew(RasterizerSceneForwardRD);
 }
