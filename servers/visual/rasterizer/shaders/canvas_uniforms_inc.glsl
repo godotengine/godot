@@ -17,7 +17,10 @@
 #define FLAGS_USING_PARTICLES (1 << 13)
 #define FLAGS_USE_PIXEL_SNAP (1 << 14)
 
-#define FLAGS_USE_SKELETON (1 << 16)
+#define FLAGS_USE_SKELETON (1 << 15)
+
+#define FLAGS_NINEPATCH_H_MODE_SHIFT 16
+#define FLAGS_NINEPATCH_V_MODE_SHIFT 18
 
 layout(push_constant, binding = 0, std140) uniform DrawData {
 	mat2x4 world;
@@ -26,8 +29,13 @@ layout(push_constant, binding = 0, std140) uniform DrawData {
 	vec4 dst_rect; //for built-in rect and UV
 	vec4 src_rect;
 	uint flags;
-	uint ninepatch_repeat;
+	uint specular_shininess;
 	vec2 color_texture_pixel_size;
+	uint pad0;
+	uint pad1;
+	uint pad2;
+	uint pad3;
+
 } draw_data;
 
 // The values passed per draw primitives are cached within it
