@@ -553,9 +553,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Vector<String> get_abis() {
 		Vector<String> abis;
-		// We can still build armv6 in theory, but it doesn't make much
-		// sense for games, so disabling for now.
-		//abis.push_back("armeabi");
 		abis.push_back("armeabi-v7a");
 		abis.push_back("arm64-v8a");
 		abis.push_back("x86");
