@@ -4568,7 +4568,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				it->set_metadata(0, md);
 			}
 
-			track_copy_dialog->popup_centered_minsize(Size2(300, 500) * EDSCALE);
+			track_copy_dialog->popup_centered_minsize(Size2(350, 500) * EDSCALE);
 		} break;
 		case EDIT_COPY_TRACKS_CONFIRM: {
 
@@ -4962,6 +4962,19 @@ void AnimationTrackEditor::_show_imported_anim_warning() const {
 			TTR("Warning: Editing imported animation"));
 }
 
+void AnimationTrackEditor::_select_all_tracks_for_copy() {
+	TreeItem *track = track_copy_select->get_root()->get_children();
+	while (track) {
+		track->set_checked(0, selected_all_tracks);
+		track = track->get_next();
+	}
+	selected_all_tracks = !selected_all_tracks;
+	if (selected_all_tracks)
+		select_all_button->set_text(TTR("Select All"));
+	else
+		select_all_button->set_text(TTR("Select None"));
+}
+
 void AnimationTrackEditor::_bind_methods() {
 
 	ClassDB::bind_method("_animation_changed", &AnimationTrackEditor::_animation_changed);
@@ -5002,6 +5015,7 @@ void AnimationTrackEditor::_bind_methods() {
 	ClassDB::bind_method("_selection_changed", &AnimationTrackEditor::_selection_changed);
 	ClassDB::bind_method("_snap_mode_changed", &AnimationTrackEditor::_snap_mode_changed);
 	ClassDB::bind_method("_show_imported_anim_warning", &AnimationTrackEditor::_show_imported_anim_warning);
+	ClassDB::bind_method("_select_all_tracks_for_copy", &AnimationTrackEditor::_select_all_tracks_for_copy);
 
 	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::REAL, "position"), PropertyInfo(Variant::BOOL, "drag")));
 	ADD_SIGNAL(MethodInfo("keying_changed"));
@@ -5284,9 +5298,22 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_copy_dialog->set_title(TTR("Select tracks to copy:"));
 	track_copy_dialog->get_ok()->set_text(TTR("Copy"));
 
+	VBoxContainer *track_vbox = memnew(VBoxContainer);
+	track_copy_dialog->add_child(track_vbox);
+
+	selected_all_tracks = true;
+
 	track_copy_select = memnew(Tree);
+	track_copy_select->set_h_size_flags(SIZE_EXPAND_FILL);
+	track_copy_select->set_v_size_flags(SIZE_EXPAND_FILL);
 	track_copy_select->set_hide_root(true);
-	track_copy_dialog->add_child(track_copy_select);
+	track_vbox->add_child(track_copy_select);
+	track_copy_options = memnew(HBoxContainer);
+	track_vbox->add_child(track_copy_options);
+	select_all_button = memnew(Button);
+	select_all_button->set_text(TTR("Select All"));
+	select_all_button->connect("pressed", this, "_select_all_tracks_for_copy");
+	track_copy_options->add_child(select_all_button);
 	track_copy_dialog->connect("confirmed", this, "_edit_menu_pressed", varray(EDIT_COPY_TRACKS_CONFIRM));
 	animation_changing_awaiting_update = false;
 }
