@@ -70,13 +70,13 @@
 		<constant name="FEED_RGBA_IMAGE" value="0" enum="FeedImage">
 			The RGBA camera image.
 		</constant>
-		<constant name="FEED_YCbCr_IMAGE" value="0" enum="FeedImage">
+		<constant name="FEED_YCBCR_IMAGE" value="0" enum="FeedImage">
 			The YCbCr camera image.
 		</constant>
 		<constant name="FEED_Y_IMAGE" value="0" enum="FeedImage">
 			The Y component camera image.
 		</constant>
-		<constant name="FEED_CbCr_IMAGE" value="1" enum="FeedImage">
+		<constant name="FEED_CBCR_IMAGE" value="1" enum="FeedImage">
 			The CbCr component camera image.
 		</constant>
 	</constants>
