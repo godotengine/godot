@@ -286,6 +286,7 @@ private:
 	bool _find_underline(Item *p_item);
 	bool _find_strikethrough(Item *p_item);
 	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = NULL);
+	bool _find_layout_subitem(Item *from, Item *to);
 
 	void _update_scroll();
 	void _scroll_changed(double);
