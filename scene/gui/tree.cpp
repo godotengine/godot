@@ -3148,10 +3148,7 @@ bool Tree::is_anything_selected() {
 
 void Tree::clear() {
 
-	if (blocked > 0) {
-
-		ERR_FAIL_COND(blocked > 0);
-	}
+	ERR_FAIL_COND(blocked > 0);
 
 	if (pressing_for_editor) {
 		if (range_drag_enabled) {

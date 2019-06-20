@@ -1275,13 +1275,13 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					_edit.mode = TRANSFORM_TRANSLATE;
 				}
 
-				if (cursor.region_select && nav_mode == NAVIGATION_NONE) {
+				if (cursor.region_select) {
 					cursor.region_end = m->get_position();
 					surface->update();
 					return;
 				}
 
-				if (_edit.mode == TRANSFORM_NONE && nav_mode == NAVIGATION_NONE)
+				if (_edit.mode == TRANSFORM_NONE)
 					return;
 
 				Vector3 ray_pos = _get_ray_pos(m->get_position());

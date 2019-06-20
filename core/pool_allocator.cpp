@@ -500,9 +500,7 @@ void *PoolAllocator::get(ID p_mem) {
 	if (!needs_locking) {
 
 		Entry *e = get_entry(p_mem);
-		if (!e) {
-			ERR_FAIL_COND_V(!e, NULL);
-		};
+		ERR_FAIL_COND_V(!e, NULL);
 		return &pool[e->pos];
 	}
 

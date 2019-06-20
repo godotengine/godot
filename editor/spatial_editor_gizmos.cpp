@@ -1834,12 +1834,12 @@ void PhysicalBoneSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 			JointSpatialGizmoPlugin::CreateConeTwistJointGizmo(
 					physical_bone->get_joint_offset(),
 					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
-					pb ? pb->get_global_transform() : Transform(),
-					pbp ? pbp->get_global_transform() : Transform(),
+					pb->get_global_transform(),
+					pbp->get_global_transform(),
 					cjd->swing_span,
 					cjd->twist_span,
-					pb ? &points : NULL,
-					pbp ? &points : NULL);
+					&points,
+					&points);
 		} break;
 		case PhysicalBone::JOINT_TYPE_HINGE: {
 
@@ -1847,14 +1847,14 @@ void PhysicalBoneSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 			JointSpatialGizmoPlugin::CreateHingeJointGizmo(
 					physical_bone->get_joint_offset(),
 					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
-					pb ? pb->get_global_transform() : Transform(),
-					pbp ? pbp->get_global_transform() : Transform(),
+					pb->get_global_transform(),
+					pbp->get_global_transform(),
 					hjd->angular_limit_lower,
 					hjd->angular_limit_upper,
 					hjd->angular_limit_enabled,
 					points,
-					pb ? &points : NULL,
-					pbp ? &points : NULL);
+					&points,
+					&points);
 		} break;
 		case PhysicalBone::JOINT_TYPE_SLIDER: {
 
@@ -1862,15 +1862,15 @@ void PhysicalBoneSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 			JointSpatialGizmoPlugin::CreateSliderJointGizmo(
 					physical_bone->get_joint_offset(),
 					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
-					pb ? pb->get_global_transform() : Transform(),
-					pbp ? pbp->get_global_transform() : Transform(),
+					pb->get_global_transform(),
+					pbp->get_global_transform(),
 					sjd->angular_limit_lower,
 					sjd->angular_limit_upper,
 					sjd->linear_limit_lower,
 					sjd->linear_limit_upper,
 					points,
-					pb ? &points : NULL,
-					pbp ? &points : NULL);
+					&points,
+					&points);
 		} break;
 		case PhysicalBone::JOINT_TYPE_6DOF: {
 
@@ -1879,8 +1879,8 @@ void PhysicalBoneSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 					physical_bone->get_joint_offset(),
 
 					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
-					pb ? pb->get_global_transform() : Transform(),
-					pbp ? pbp->get_global_transform() : Transform(),
+					pb->get_global_transform(),
+					pbp->get_global_transform(),
 
 					sdofjd->axis_data[0].angular_limit_lower,
 					sdofjd->axis_data[0].angular_limit_upper,
@@ -1904,8 +1904,8 @@ void PhysicalBoneSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 					sdofjd->axis_data[2].linear_limit_enabled,
 
 					points,
-					pb ? &points : NULL,
-					pbp ? &points : NULL);
+					&points,
+					&points);
 		} break;
 		default:
 			return;

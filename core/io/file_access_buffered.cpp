@@ -141,9 +141,7 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
 
 		int left = cache_data_left();
 		if (left == 0) {
-			if (to_read > 0) {
-				file.offset += to_read;
-			};
+			file.offset += to_read;
 			return total_read;
 		};
 		if (left < 0) {

@@ -573,13 +573,11 @@ void VisualShaderEditor::_update_graph() {
 						name_box->connect("text_entered", this, "_change_input_port_name", varray(name_box, nodes[n_i], i));
 						name_box->connect("focus_exited", this, "_port_name_focus_out", varray(name_box, nodes[n_i], i, false));
 
-						if (is_group) {
-							Button *remove_btn = memnew(Button);
-							remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Remove", "EditorIcons"));
-							remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
-							remove_btn->connect("pressed", this, "_remove_input_port", varray(nodes[n_i], i), CONNECT_DEFERRED);
-							hb->add_child(remove_btn);
-						}
+						Button *remove_btn = memnew(Button);
+						remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Remove", "EditorIcons"));
+						remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
+						remove_btn->connect("pressed", this, "_remove_input_port", varray(nodes[n_i], i), CONNECT_DEFERRED);
+						hb->add_child(remove_btn);
 					} else {
 
 						Label *label = memnew(Label);

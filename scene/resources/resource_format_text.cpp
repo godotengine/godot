@@ -1225,10 +1225,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderText::load_interactive(const 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	if (err != OK) {
-
-		ERR_FAIL_COND_V(err != OK, Ref<ResourceInteractiveLoader>());
-	}
+	ERR_FAIL_COND_V(err != OK, Ref<ResourceInteractiveLoader>());
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew(ResourceInteractiveLoaderText);
 	String path = p_original_path != "" ? p_original_path : p_path;
@@ -1324,10 +1321,7 @@ Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path,
 	Error err;
 	FileAccess *f = FileAccess::open(p_src_path, FileAccess::READ, &err);
 
-	if (err != OK) {
-
-		ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
-	}
+	ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew(ResourceInteractiveLoaderText);
 	String path = p_src_path;

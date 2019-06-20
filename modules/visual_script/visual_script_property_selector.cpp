@@ -188,7 +188,6 @@ void VisualScriptPropertySelector::_update_search() {
 				}
 			}
 		}
-		bool script_methods = false;
 		{
 			if (type != Variant::NIL) {
 				Variant v;
@@ -211,7 +210,7 @@ void VisualScriptPropertySelector::_update_search() {
 		for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
 
 			String name = M->get().name.get_slice(":", 0);
-			if (!script_methods && name.begins_with("_") && !(M->get().flags & METHOD_FLAG_VIRTUAL))
+			if (name.begins_with("_") && !(M->get().flags & METHOD_FLAG_VIRTUAL))
 				continue;
 
 			if (virtuals_only && !(M->get().flags & METHOD_FLAG_VIRTUAL))

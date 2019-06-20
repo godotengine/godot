@@ -1456,9 +1456,7 @@ void Viewport::_gui_show_tooltip() {
 		return;
 	}
 
-	Control *rp = which; //->get_root_parent_control();
-	if (!rp)
-		return;
+	Control *rp = which;
 
 	gui.tooltip_popup = which->make_custom_tooltip(tooltip);
 
