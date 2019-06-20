@@ -4825,14 +4825,18 @@ void TextEdit::deselect() {
 
 void TextEdit::select(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {
 
-	if (p_from_line >= text.size())
+	if (p_from_line < 0)
+		p_from_line = 0;
+	else if (p_from_line >= text.size())
 		p_from_line = text.size() - 1;
 	if (p_from_column >= text[p_from_line].length())
 		p_from_column = text[p_from_line].length();
 	if (p_from_column < 0)
 		p_from_column = 0;
 
-	if (p_to_line >= text.size())
+	if (p_to_line < 0)
+		p_to_line = 0;
+	else if (p_to_line >= text.size())
 		p_to_line = text.size() - 1;
 	if (p_to_column >= text[p_to_line].length())
 		p_to_column = text[p_to_line].length();
