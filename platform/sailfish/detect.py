@@ -37,10 +37,10 @@ def can_build():
         print("glib2-devel not found. Install glib2-devel for all your targets in MerSDK")
         # return False;
 
-    vpx_error = os.system("pkg-config vpx --modversion > /dev/null")
-    if(vpx_error):
-        print("libvpx-devel not found. Install libvpx-devel for all your targets in MerSDK")
-        return False;
+    # vpx_error = os.system("pkg-config vpx --modversion > /dev/null")
+    # if(vpx_error):
+    #     print("libvpx-devel not found. Install libvpx-devel for all your targets in MerSDK")
+    #     return False;
 
     webp_error = os.system("pkg-config libwebp --modversion > /dev/null")
     if(webp_error):
@@ -73,7 +73,7 @@ def get_flags():
         ('builtin_libpng', False),
         ('builtin_openssl', False),
         ('builtin_zlib', False),
-        ('builtin_libvpx', False),
+        # ('builtin_libvpx', False),
         ('builtin_libwebp', False)
     ]
 
