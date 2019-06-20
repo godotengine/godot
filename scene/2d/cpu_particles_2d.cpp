@@ -530,7 +530,8 @@ void CPUParticles2D::_particles_process(float p_delta) {
 		time = Math::fmod(time, lifetime);
 		cycle++;
 		if (one_shot && cycle > 0) {
-			emitting = false;
+			set_emitting(false);
+			_change_notify();
 		}
 	}
 

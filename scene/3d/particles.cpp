@@ -47,6 +47,12 @@ PoolVector<Face3> Particles::get_faces(uint32_t p_usage_flags) const {
 void Particles::set_emitting(bool p_emitting) {
 
 	VS::get_singleton()->particles_set_emitting(particles, p_emitting);
+
+	if (p_emitting && one_shot) {
+		set_process_internal(true);
+	} else if (!p_emitting) {
+		set_process_internal(false);
+	}
 }
 
 void Particles::set_amount(int p_amount) {
@@ -66,8 +72,16 @@ void Particles::set_one_shot(bool p_one_shot) {
 
 	one_shot = p_one_shot;
 	VS::get_singleton()->particles_set_one_shot(particles, one_shot);
-	if (!one_shot && is_emitting())
-		VisualServer::get_singleton()->particles_restart(particles);
+
+	if (is_emitting()) {
+
+		set_process_internal(true);
+		if (!one_shot)
+			VisualServer::get_singleton()->particles_restart(particles);
+	}
+
+	if (!one_shot)
+		set_process_internal(false);
 }
 
 void Particles::set_pre_process_time(float p_time) {
@@ -304,6 +318,16 @@ void Particles::_notification(int p_what) {
 		} else {
 
 			VS::get_singleton()->particles_set_speed_scale(particles, 0);
+		}
+	}
+
+	// Use internal process when emitting and one_shot are on so that when
+	// the shot ends the editor can properly update
+	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
+
+		if (one_shot && !is_emitting()) {
+			_change_notify();
+			set_process_internal(false);
 		}
 	}
 }
