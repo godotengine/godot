@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  resource_saver_png.cpp                                               */
+/*  png_driver_common.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,63 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "resource_saver_png.h"
+#ifndef PNG_DRIVER_COMMON_H
+#define PNG_DRIVER_COMMON_H
 
 #include "core/image.h"
-#include "core/os/file_access.h"
-#include "drivers/png/png_driver_common.h"
-#include "scene/resources/texture.h"
+#include "core/pool_vector.h"
 
-Error ResourceSaverPNG::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+namespace PNGDriverCommon {
 
-	Ref<ImageTexture> texture = p_resource;
+// Attempt to load png from buffer (p_source, p_size) into p_image
+Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image);
 
-	ERR_FAIL_COND_V(!texture.is_valid(), ERR_INVALID_PARAMETER);
-	ERR_EXPLAIN("Can't save empty texture as PNG");
-	ERR_FAIL_COND_V(!texture->get_width() || !texture->get_height(), ERR_INVALID_PARAMETER);
+// Append p_image, as a png, to p_buffer.
+// Contents of p_buffer is unspecified if error returned.
+Error image_to_png(const Ref<Image> &p_image, PoolVector<uint8_t> &p_buffer);
 
-	Ref<Image> img = texture->get_data();
+} // namespace PNGDriverCommon
 
-	Error err = save_image(p_path, img);
-
-	return err;
-};
-
-Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img) {
-
-	PoolVector<uint8_t> buffer;
-	Error err = PNGDriverCommon::image_to_png(p_img, buffer);
-	ERR_FAIL_COND_V(err, err);
-	FileAccess *file = FileAccess::open(p_path, FileAccess::WRITE, &err);
-	ERR_FAIL_COND_V(err, err);
-
-	PoolVector<uint8_t>::Read reader = buffer.read();
-
-	file->store_buffer(reader.ptr(), buffer.size());
-	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-		memdelete(file);
-		return ERR_CANT_CREATE;
-	}
-
-	file->close();
-	memdelete(file);
-
-	return OK;
-}
-
-bool ResourceSaverPNG::recognize(const RES &p_resource) const {
-
-	return (p_resource.is_valid() && p_resource->is_class("ImageTexture"));
-}
-
-void ResourceSaverPNG::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
-
-	if (Object::cast_to<Texture>(*p_resource)) {
-		p_extensions->push_back("png");
-	}
-}
-
-ResourceSaverPNG::ResourceSaverPNG() {
-
-	Image::save_png_func = &save_image;
-};
+#endif
