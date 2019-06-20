@@ -4,7 +4,7 @@
 		Reference frame for GUI.
 	</brief_description>
 	<description>
-		Reference frame for GUI. It's just like an empty control, except a red box is displayed while editing around its size at all times.
+		Reference frame for GUI. It's just like an empty control, except an outline border [member border_color] is displayed while editing around its size at all times.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,6 +12,7 @@
 	</methods>
 	<members>
 		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color">
+			Determines the border [Color] of the [ReferenceRect].
 		</member>
 	</members>
 	<constants>
