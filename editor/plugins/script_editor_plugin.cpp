@@ -1915,9 +1915,7 @@ Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error
 	Ref<TextFile> text_res(text_file);
 	Error err = text_file->load_text(path);
 
-	if (err != OK) {
-		ERR_FAIL_COND_V(err != OK, RES());
-	}
+	ERR_FAIL_COND_V(err != OK, RES());
 
 	text_file->set_file_path(local_path);
 	text_file->set_path(local_path, true);

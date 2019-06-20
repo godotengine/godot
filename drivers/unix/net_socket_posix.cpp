@@ -421,7 +421,7 @@ Error NetSocketPosix::poll(PollType p_type, int p_timeout) const {
 			pfd.events = POLLOUT;
 			break;
 		case POLL_TYPE_IN_OUT:
-			pfd.events = POLLOUT || POLLIN;
+			pfd.events = POLLOUT | POLLIN;
 	}
 
 	int ret = ::poll(&pfd, 1, p_timeout);

@@ -305,49 +305,51 @@ void ScriptEditorDebugger::_scene_tree_rmb_selected(const Vector2 &p_position) {
 }
 
 void ScriptEditorDebugger::_file_selected(const String &p_file) {
-	if (file_dialog_mode == SAVE_NODE) {
+	switch (file_dialog_mode) {
+		case SAVE_NODE: {
+			Array msg;
+			msg.push_back("save_node");
+			msg.push_back(inspected_object_id);
+			msg.push_back(p_file);
+			ppeer->put_var(msg);
+		} break;
+		case SAVE_CSV: {
+			Error err;
+			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
-		Array msg;
-		msg.push_back("save_node");
-		msg.push_back(inspected_object_id);
-		msg.push_back(p_file);
-		ppeer->put_var(msg);
-	} else if (file_dialog_mode == SAVE_CSV) {
+			if (err != OK) {
+				ERR_PRINTS("Failed to open " + p_file);
+				return;
+			}
+			Vector<String> line;
+			line.resize(Performance::MONITOR_MAX);
 
-		Error err;
-		FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
-
-		if (err != OK) {
-			ERR_PRINTS("Failed to open " + p_file);
-			return;
-		}
-		Vector<String> line;
-		line.resize(Performance::MONITOR_MAX);
-
-		// signatures
-		for (int i = 0; i < Performance::MONITOR_MAX; i++) {
-			line.write[i] = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
-		}
-		file->store_csv_line(line);
-
-		// values
-		List<Vector<float> >::Element *E = perf_history.back();
-		while (E) {
-
-			Vector<float> &perf_data = E->get();
-			for (int i = 0; i < perf_data.size(); i++) {
-
-				line.write[i] = String::num_real(perf_data[i]);
+			// signatures
+			for (int i = 0; i < Performance::MONITOR_MAX; i++) {
+				line.write[i] = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
 			}
 			file->store_csv_line(line);
-			E = E->prev();
-		}
-		file->store_string("\n");
 
-		Vector<Vector<String> > profiler_data = profiler->get_data_as_csv();
-		for (int i = 0; i < profiler_data.size(); i++) {
-			file->store_csv_line(profiler_data[i]);
-		}
+			// values
+			List<Vector<float> >::Element *E = perf_history.back();
+			while (E) {
+
+				Vector<float> &perf_data = E->get();
+				for (int i = 0; i < perf_data.size(); i++) {
+
+					line.write[i] = String::num_real(perf_data[i]);
+				}
+				file->store_csv_line(line);
+				E = E->prev();
+			}
+			file->store_string("\n");
+
+			Vector<Vector<String> > profiler_data = profiler->get_data_as_csv();
+			for (int i = 0; i < profiler_data.size(); i++) {
+				file->store_csv_line(profiler_data[i]);
+			}
+
+		} break;
 	}
 }
 
