@@ -5,6 +5,16 @@
 	</brief_description>
 	<description>
 		SpinBox is a numerical input text field. It allows entering integers and floats.
+		[b]Example:[/b]
+		[codeblock]
+		var spin_box = SpinBox.new()
+		add_child(spin_box)
+		var line_edit = spin_box.get_line_edit()
+		line_edit.context_menu_enabled = false
+		spin_box.align = LineEdit.ALIGN_RIGHT
+		[/codeblock]
+		The above code will create a [SpinBox], disable context menu on it and set the text alignment to right.
+		See [Range] class for more options over the [SpinBox].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,23 +23,29 @@
 			<return type="LineEdit">
 			</return>
 			<description>
+				Returns the [LineEdit] instance from this [SpinBox]. You can use it to access properties and methods of [LineEdit].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align">
+			Sets the text alignment of the [SpinBox].
 		</member>
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable">
+			If [code]true[/code], the [SpinBox] will be editable. Otherwise, it will be read only.
 		</member>
 		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix">
+			Adds the specified [code]prefix[/code] string before the numerical value of the [SpinBox].
 		</member>
 		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix">
+			Adds the specified [code]prefix[/code] string after the numerical value of the [SpinBox].
 		</member>
 	</members>
 	<constants>
 	</constants>
 	<theme_items>
 		<theme_item name="updown" type="Texture">
+			Sets a custom [Texture] for up and down arrows of the [SpinBox].
 		</theme_item>
 	</theme_items>
 </class>
