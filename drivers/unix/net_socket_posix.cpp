@@ -59,6 +59,14 @@
 #define MSG_NOSIGNAL SO_NOSIGPIPE
 #endif
 
+// BSD calls this flag IPV6_JOIN_GROUP
+#if !defined(IPV6_ADD_MEMBERSHIP) && defined(IPV6_JOIN_GROUP)
+#define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
+#endif
+#if !defined(IPV6_DROP_MEMBERSHIP) && defined(IPV6_LEAVE_GROUP)
+#define IPV6_DROP_MEMBERSHIP IPV6_LEAVE_GROUP
+#endif
+
 // Some custom defines to minimize ifdefs
 #define SOCK_EMPTY -1
 #define SOCK_BUF(x) x
@@ -225,6 +233,58 @@ bool NetSocketPosix::_can_use_ip(const IP_Address p_ip, const bool p_for_bind) c
 		return false;
 	}
 	return true;
+}
+
+_FORCE_INLINE_ Error NetSocketPosix::_change_multicast_group(IP_Address p_ip, String p_if_name, bool p_add) {
+
+	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(!_can_use_ip(p_ip, false), ERR_INVALID_PARAMETER);
+
+	// Need to force level and af_family to IP(v4) when using dual stacking and provided multicast group is IPv4
+	IP::Type type = _ip_type == IP::TYPE_ANY && p_ip.is_ipv4() ? IP::TYPE_IPV4 : _ip_type;
+	// This needs to be the proper level for the multicast group, no matter if the socket is dual stacking.
+	int level = type == IP::TYPE_IPV4 ? IPPROTO_IP : IPPROTO_IPV6;
+	int ret = -1;
+
+	IP_Address if_ip;
+	uint32_t if_v6id = 0;
+	Map<String, IP::Interface_Info> if_info;
+	IP::get_singleton()->get_local_interfaces(&if_info);
+	for (Map<String, IP::Interface_Info>::Element *E = if_info.front(); E; E = E->next()) {
+		IP::Interface_Info &c = E->get();
+		if (c.name != p_if_name)
+			continue;
+
+		if_v6id = (uint32_t)c.index.to_int64();
+		if (type == IP::TYPE_IPV6)
+			break; // IPv6 uses index.
+
+		for (List<IP_Address>::Element *F = c.ip_addresses.front(); F; F = F->next()) {
+			if (!F->get().is_ipv4())
+				continue; // Wrong IP type
+			if_ip = F->get();
+			break;
+		}
+		break;
+	}
+
+	if (level == IPPROTO_IP) {
+		ERR_FAIL_COND_V(!if_ip.is_valid(), ERR_INVALID_PARAMETER);
+		struct ip_mreq greq;
+		int sock_opt = p_add ? IP_ADD_MEMBERSHIP : IP_DROP_MEMBERSHIP;
+		copymem(&greq.imr_multiaddr, p_ip.get_ipv4(), 4);
+		copymem(&greq.imr_interface, if_ip.get_ipv4(), 4);
+		ret = setsockopt(_sock, level, sock_opt, (const char *)&greq, sizeof(greq));
+	} else {
+		struct ipv6_mreq greq;
+		int sock_opt = p_add ? IPV6_ADD_MEMBERSHIP : IPV6_DROP_MEMBERSHIP;
+		copymem(&greq.ipv6mr_multiaddr, p_ip.get_ipv6(), 16);
+		greq.ipv6mr_interface = if_v6id;
+		ret = setsockopt(_sock, level, sock_opt, (const char *)&greq, sizeof(greq));
+	}
+	ERR_FAIL_COND_V(ret != 0, FAILED);
+
+	return OK;
 }
 
 void NetSocketPosix::_set_socket(SOCKET_TYPE p_sock, IP::Type p_ip_type, bool p_is_stream) {
@@ -624,4 +684,12 @@ Ref<NetSocket> NetSocketPosix::accept(IP_Address &r_ip, uint16_t &r_port) {
 	ns->_set_socket(fd, _ip_type, _is_stream);
 	ns->set_blocking_enabled(false);
 	return Ref<NetSocket>(ns);
+}
+
+Error NetSocketPosix::join_multicast_group(const IP_Address &p_ip, String p_if_name) {
+	return _change_multicast_group(p_ip, p_if_name, true);
+}
+
+Error NetSocketPosix::leave_multicast_group(const IP_Address &p_ip, String p_if_name) {
+	return _change_multicast_group(p_ip, p_if_name, false);
 }
