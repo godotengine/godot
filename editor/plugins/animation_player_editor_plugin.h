@@ -170,7 +170,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _play_bw_from_pressed();
 	void _autoplay_pressed();
 	void _stop_pressed();
-	void _pause_pressed();
 	void _animation_selected(int p_which);
 	void _animation_new();
 	void _animation_rename();
