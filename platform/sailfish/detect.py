@@ -42,10 +42,10 @@ def can_build():
     #     print("libvpx-devel not found. Install libvpx-devel for all your targets in MerSDK")
     #     return False;
 
-    webp_error = os.system("pkg-config libwebp --modversion > /dev/null")
-    if(webp_error):
-        print("libwebp-devel not found. Install libwebp-devel for all your targets in MerSDK\n")
-        return False;
+    # webp_error = os.system("pkg-config libwebp --modversion > /dev/null")
+    # if(webp_error):
+    #     print("libwebp-devel not found. Install libwebp-devel for all your targets in MerSDK\n")
+    #     return False;
 
     return True
 
@@ -74,7 +74,7 @@ def get_flags():
         ('builtin_openssl', False),
         ('builtin_zlib', False),
         # ('builtin_libvpx', False),
-        ('builtin_libwebp', False)
+        # ('builtin_libwebp', False)
     ]
 
 
