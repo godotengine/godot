@@ -561,14 +561,24 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 #endif
 
 					if (can_call) {
-						MessageQueue::get_singleton()->push_call(
-								nc->node,
-								method,
-								s >= 1 ? params[0] : Variant(),
-								s >= 2 ? params[1] : Variant(),
-								s >= 3 ? params[2] : Variant(),
-								s >= 4 ? params[3] : Variant(),
-								s >= 5 ? params[4] : Variant());
+						if (method_call_mode == ANIMATION_METHOD_CALL_DEFERRED) {
+							MessageQueue::get_singleton()->push_call(
+									nc->node,
+									method,
+									s >= 1 ? params[0] : Variant(),
+									s >= 2 ? params[1] : Variant(),
+									s >= 3 ? params[2] : Variant(),
+									s >= 4 ? params[3] : Variant(),
+									s >= 5 ? params[4] : Variant());
+						} else {
+							nc->node->call(
+									method,
+									s >= 1 ? params[0] : Variant(),
+									s >= 2 ? params[1] : Variant(),
+									s >= 3 ? params[2] : Variant(),
+									s >= 4 ? params[3] : Variant(),
+									s >= 5 ? params[4] : Variant());
+						}
 					}
 				}
 
@@ -1470,6 +1480,16 @@ AnimationPlayer::AnimationProcessMode AnimationPlayer::get_animation_process_mod
 	return animation_process_mode;
 }
 
+void AnimationPlayer::set_method_call_mode(AnimationMethodCallMode p_mode) {
+
+	method_call_mode = p_mode;
+}
+
+AnimationPlayer::AnimationMethodCallMode AnimationPlayer::get_method_call_mode() const {
+
+	return method_call_mode;
+}
+
 void AnimationPlayer::_set_process(bool p_process, bool p_force) {
 
 	if (processing == p_process && !p_force)
@@ -1657,6 +1677,9 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation_process_mode", "mode"), &AnimationPlayer::set_animation_process_mode);
 	ClassDB::bind_method(D_METHOD("get_animation_process_mode"), &AnimationPlayer::get_animation_process_mode);
 
+	ClassDB::bind_method(D_METHOD("set_method_call_mode", "mode"), &AnimationPlayer::set_method_call_mode);
+	ClassDB::bind_method(D_METHOD("get_method_call_mode"), &AnimationPlayer::get_method_call_mode);
+
 	ClassDB::bind_method(D_METHOD("get_current_animation_position"), &AnimationPlayer::get_current_animation_position);
 	ClassDB::bind_method(D_METHOD("get_current_animation_length"), &AnimationPlayer::get_current_animation_length);
 
@@ -1675,6 +1698,7 @@ void AnimationPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_default_blend_time", "get_default_blend_time");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playback_active", PROPERTY_HINT_NONE, "", 0), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback_speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), "set_speed_scale", "get_speed_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "method_call_mode", PROPERTY_HINT_ENUM, "Deferred,Immediate"), "set_method_call_mode", "get_method_call_mode");
 
 	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING, "anim_name")));
 	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
@@ -1684,6 +1708,9 @@ void AnimationPlayer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_IDLE);
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_MANUAL);
+
+	BIND_ENUM_CONSTANT(ANIMATION_METHOD_CALL_DEFERRED);
+	BIND_ENUM_CONSTANT(ANIMATION_METHOD_CALL_IMMEDIATE);
 }
 
 AnimationPlayer::AnimationPlayer() {
@@ -1696,6 +1723,7 @@ AnimationPlayer::AnimationPlayer() {
 	end_reached = false;
 	end_notify = false;
 	animation_process_mode = ANIMATION_PROCESS_IDLE;
+	method_call_mode = ANIMATION_METHOD_CALL_DEFERRED;
 	processing = false;
 	default_blend_time = 0;
 	root = SceneStringNames::get_singleton()->path_pp;

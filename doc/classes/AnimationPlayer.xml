@@ -238,6 +238,9 @@
 		<member name="current_animation_position" type="float" setter="" getter="get_current_animation_position">
 			The position (in seconds) of the currently playing animation.
 		</member>
+		<member name="method_call_mode" type="int" setter="set_method_call_mode" getter="get_method_call_mode" enum="AnimationPlayer.AnimationMethodCallMode">
+			The call mode to use for Call Method tracks. Default value: [code]ANIMATION_METHOD_CALL_DEFERRED[/code].
+		</member>
 		<member name="playback_active" type="bool" setter="set_active" getter="is_active">
 			If [code]true[/code], updates animations in response to process-related notifications. Default value: [code]true[/code].
 		</member>
@@ -292,6 +295,12 @@
 		</constant>
 		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessMode">
 			Do not process animation. Use the 'advance' method to process the animation manually.
+		</constant>
+		<constant name="ANIMATION_METHOD_CALL_DEFERRED" value="0" enum="AnimationMethodCallMode">
+			Batch method calls during the animation process, then do the calls after events are processed. This avoids bugs involving deleting nodes or modifying the AnimationPlayer while playing.
+		</constant>
+		<constant name="ANIMATION_METHOD_CALL_IMMEDIATE" value="1" enum="AnimationMethodCallMode">
+			Make method calls immediately when reached in the animation.
 		</constant>
 	</constants>
 </class>
