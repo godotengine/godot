@@ -330,7 +330,7 @@ if webm_cpu_x86:
 if webm_cpu_arm:
     if env["platform"] == 'iphone':
         env_libvpx["ASFLAGS"] = '-arch armv7'
-    elif env["platform"] == 'android' and env["android_arch"] == 'armv7' or env["platform"] == 'x11' or env["platform"] == 'server':
+    elif env["platform"] == 'android' and env["android_arch"] == 'armv7' or env["platform"] == 'x11' or env["platform"] == 'server' or env["platform"] == 'sailfish':
         env_libvpx["ASFLAGS"] = '-mfpu=neon'
     elif env["platform"] == 'uwp':
         env_libvpx["AS"] = 'armasm'
