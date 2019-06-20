@@ -991,10 +991,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(cons
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	if (err != OK) {
-
-		ERR_FAIL_COND_V(err != OK, Ref<ResourceInteractiveLoader>());
-	}
+	ERR_FAIL_COND_V(err != OK, Ref<ResourceInteractiveLoader>());
 
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
 	String path = p_original_path != "" ? p_original_path : p_path;
@@ -1129,9 +1126,8 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		Error err;
 		f = FileAccess::open(p_path, FileAccess::READ, &err);
-		if (err != OK) {
-			ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
-		}
+
+		ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
 
 		Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
 		ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);

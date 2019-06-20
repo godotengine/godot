@@ -82,9 +82,8 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 	float loop_offset = p_options["loop_offset"];
 
 	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
-	if (!f) {
-		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
-	}
+
+	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
 
 	size_t len = f->get_len();
 

@@ -666,10 +666,8 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 	OBJTYPE_WLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
-	if (!type) {
 
-		ERR_FAIL_COND(!type);
-	}
+	ERR_FAIL_COND(!type);
 
 	if (type->constant_map.has(p_name)) {
 

@@ -1018,15 +1018,15 @@ int CSGBrushOperation::MeshMerge::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from
 		max_depth = p_depth;
 	}
 
-	if (p_size <= BVH_LIMIT) {
+	if (p_size == 0) {
+
+		return -1;
+	} else if (p_size <= BVH_LIMIT) {
 
 		for (int i = 0; i < p_size - 1; i++) {
 			p_bb[p_from + i]->next = p_bb[p_from + i + 1] - p_bvh;
 		}
 		return p_bb[p_from] - p_bvh;
-	} else if (p_size == 0) {
-
-		return -1;
 	}
 
 	AABB aabb;
