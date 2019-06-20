@@ -339,14 +339,13 @@ if selected_platform in platform_list:
                 shadow_local_warning = ['-Wshadow-local']
 
         if (env["warnings"] == 'extra'):
-            # FIXME: enable -Wclobbered once #26351 is fixed
             # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
             # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
             env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter']
                 + all_plus_warnings + shadow_local_warning)
             env.Append(CXXFLAGS=['-Wctor-dtor-privacy', '-Wnon-virtual-dtor'])
             if methods.using_gcc(env):
-                env.Append(CCFLAGS=['-Wno-clobbered', '-Walloc-zero',
+                env.Append(CCFLAGS=['-Walloc-zero',
                     '-Wduplicated-branches', '-Wduplicated-cond',
                     '-Wstringop-overflow=4', '-Wlogical-op'])
                 env.Append(CXXFLAGS=['-Wnoexcept', '-Wplacement-new=1'])
