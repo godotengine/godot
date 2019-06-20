@@ -1277,7 +1277,6 @@ void SceneTree::_update_root_rect() {
 			root->set_size_override_stretch(false);
 			root->set_size_override(false, Size2());
 			root->update_canvas_items(); //force them to update just in case
-<<<<<<< HEAD
 
 			if (use_font_oversampling) {
 				WARN_PRINT("Font oversampling does not work in 'Viewport' stretch mode, only '2D'.");
@@ -1286,8 +1285,6 @@ void SceneTree::_update_root_rect() {
 			// force landscape 
 			screen_size = Size2( screen_size.y, screen_size.x );
 			root->set_attach_to_screen_rect(Rect2(margin, screen_size));
-=======
->>>>>>> 2574711843... - force landscape options
 		} break;
 	}
 }

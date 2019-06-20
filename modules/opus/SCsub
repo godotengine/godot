@@ -138,7 +138,7 @@ if env['builtin_opus']:
 
     opus_sources_silk = []
 
-    if env["platform"] in ["android", "iphone", "javascript"]:
+    if env["platform"] in ["android", "iphone", "javascript", "sailfish"]:
         env_opus.Append(CPPDEFINES=["FIXED_POINT"])
         opus_sources_silk = [
             "silk/fixed/LTP_analysis_filter_FIX.c",
