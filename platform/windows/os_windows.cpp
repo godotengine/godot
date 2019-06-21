@@ -1979,6 +1979,17 @@ bool OS_Windows::is_window_always_on_top() const {
 	return video_mode.always_on_top;
 }
 
+void OS_Windows::set_console_visible(bool p_enabled) {
+	if (console_visible == p_enabled)
+		return;
+	ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
+	console_visible = p_enabled;
+}
+
+bool OS_Windows::is_console_visible() const {
+	return console_visible;
+}
+
 bool OS_Windows::get_window_per_pixel_transparency_enabled() const {
 
 	if (!is_layered_allowed()) return false;
@@ -3231,6 +3242,7 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	control_mem = false;
 	meta_mem = false;
 	minimized = false;
+	console_visible = IsWindowVisible(GetConsoleWindow());
 
 	hInstance = _hInstance;
 	pressrc = 0;

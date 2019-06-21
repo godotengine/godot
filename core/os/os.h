@@ -222,6 +222,8 @@ public:
 	virtual bool is_window_maximized() const { return true; }
 	virtual void set_window_always_on_top(bool p_enabled) {}
 	virtual bool is_window_always_on_top() const { return false; }
+	virtual void set_console_visible(bool p_enabled) {}
+	virtual bool is_console_visible() const { return false; }
 	virtual void request_attention() {}
 	virtual void center_window();
 
