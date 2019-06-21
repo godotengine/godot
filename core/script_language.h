@@ -84,6 +84,7 @@ public:
 	static void add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path);
 	static void remove_global_class(const StringName &p_class);
 	static bool is_global_class(const StringName &p_class);
+	static bool is_global_class_base(const StringName &p_class, const StringName &p_base);
 	static StringName get_global_class_language(const StringName &p_class);
 	static String get_global_class_path(const String &p_class);
 	static StringName get_global_class_base(const String &p_class);

@@ -177,6 +177,25 @@ void ScriptServer::remove_global_class(const StringName &p_class) {
 bool ScriptServer::is_global_class(const StringName &p_class) {
 	return global_classes.has(p_class);
 }
+
+bool ScriptServer::is_global_class_base(const StringName &p_class, const StringName &p_base) {
+	StringName base = p_class;
+
+	while (base.operator String().length()) {
+		if (base == p_base) {
+			return true;
+		}
+
+		if (global_classes.has(base)) {
+			base = global_classes[base].base;
+		} else {
+			base = StringName();
+		}
+	}
+
+	return false;
+}
+
 StringName ScriptServer::get_global_class_language(const StringName &p_class) {
 	ERR_FAIL_COND_V(!global_classes.has(p_class), StringName());
 	return global_classes[p_class].language;

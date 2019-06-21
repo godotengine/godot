@@ -2595,6 +2595,10 @@ bool _ClassDB::global_class_exists(const StringName &p_class) const {
 }
 bool _ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inherits) const {
 
+	if (ScriptServer::is_global_class(p_class)) {
+		return ScriptServer::is_global_class_base(p_class, p_inherits);
+	}
+
 	return ClassDB::is_parent_class(p_class, p_inherits);
 }
 bool _ClassDB::can_instance(const StringName &p_class) const {
