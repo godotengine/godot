@@ -70,6 +70,9 @@ class Physics2DServerSW : public Physics2DServer {
 	static Physics2DServerSW *singletonsw;
 
 	//void _clear_query(Query2DSW *p_query);
+	friend class CollisionObject2DSW;
+	SelfList<CollisionObject2DSW>::List pending_shape_update_list;
+	void _update_shapes();
 
 	RID _shape_create(ShapeType p_shape);
 
