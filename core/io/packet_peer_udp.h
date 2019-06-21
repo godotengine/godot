@@ -77,6 +77,8 @@ public:
 	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
 	int get_available_packet_count() const;
 	int get_max_packet_size() const;
+	Error join_multicast_group(IP_Address p_multi_address, String p_if_name);
+	Error leave_multicast_group(IP_Address p_multi_address, String p_if_name);
 
 	PacketPeerUDP();
 	~PacketPeerUDP();
