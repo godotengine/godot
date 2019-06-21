@@ -143,6 +143,8 @@ void Gradient::set_points(Vector<Gradient::Point> &p_points) {
 }
 
 void Gradient::set_offset(int pos, const float offset) {
+
+	ERR_FAIL_COND(pos < 0);
 	if (points.size() <= pos)
 		points.resize(pos + 1);
 	points.write[pos].offset = offset;
@@ -151,12 +153,12 @@ void Gradient::set_offset(int pos, const float offset) {
 }
 
 float Gradient::get_offset(int pos) const {
-	if (points.size() && points.size() > pos)
-		return points[pos].offset;
-	return 0; //TODO: Maybe throw some error instead?
+	ERR_FAIL_INDEX_V(pos, points.size(), 0.0);
+	return points[pos].offset;
 }
 
 void Gradient::set_color(int pos, const Color &color) {
+	ERR_FAIL_COND(pos < 0);
 	if (points.size() <= pos) {
 		points.resize(pos + 1);
 		is_sorted = false;
@@ -166,9 +168,8 @@ void Gradient::set_color(int pos, const Color &color) {
 }
 
 Color Gradient::get_color(int pos) const {
-	if (points.size() && points.size() > pos)
-		return points[pos].color;
-	return Color(0, 0, 0, 1); //TODO: Maybe throw some error instead?
+	ERR_FAIL_INDEX_V(pos, points.size(), Color());
+	return points[pos].color;
 }
 
 int Gradient::get_points_count() const {
