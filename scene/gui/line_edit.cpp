@@ -680,10 +680,8 @@ void LineEdit::_notification(int p_what) {
 			RID ci = get_canvas_item();
 
 			Ref<StyleBox> style = get_stylebox("normal");
-			float disabled_alpha = 1.0; // used to set the disabled input text color
 			if (!is_editable()) {
 				style = get_stylebox("read_only");
-				disabled_alpha = .5;
 				draw_caret = false;
 			}
 
@@ -729,7 +727,7 @@ void LineEdit::_notification(int p_what) {
 			int font_ascent = font->get_ascent();
 
 			Color selection_color = get_color("selection_color");
-			Color font_color = get_color("font_color");
+			Color font_color = is_editable() ? get_color("font_color") : get_color("font_color_uneditable");
 			Color font_color_selected = get_color("font_color_selected");
 			Color cursor_color = get_color("cursor_color");
 
@@ -737,12 +735,11 @@ void LineEdit::_notification(int p_what) {
 			// draw placeholder color
 			if (using_placeholder)
 				font_color.a *= placeholder_alpha;
-			font_color.a *= disabled_alpha;
 
 			bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 			if (right_icon.is_valid() || display_clear_icon) {
 				Ref<Texture> r_icon = display_clear_icon ? Control::get_icon("clear") : right_icon;
-				Color color_icon(1, 1, 1, disabled_alpha * .9);
+				Color color_icon(1, 1, 1, !is_editable() ? .5 * .9 : .9);
 				if (display_clear_icon) {
 					if (clear_button_status.press_attempt && clear_button_status.pressing_inside) {
 						color_icon = get_color("clear_button_color_pressed");
