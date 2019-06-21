@@ -139,8 +139,11 @@ public:
 	_FORCE_INLINE_ void set_ray_pickable(bool p_enable) { ray_pickable = p_enable; }
 	_FORCE_INLINE_ bool is_ray_pickable() const { return ray_pickable; }
 
-	_FORCE_INLINE_ void set_shape_as_disabled(int p_idx, bool p_enable) { shapes.write[p_idx].disabled = p_enable; }
-	_FORCE_INLINE_ bool is_shape_set_as_disabled(int p_idx) const { return shapes[p_idx].disabled; }
+	void set_shape_as_disabled(int p_idx, bool p_enable);
+	_FORCE_INLINE_ bool is_shape_set_as_disabled(int p_idx) const {
+		CRASH_BAD_INDEX(p_idx, shapes.size());
+		return shapes[p_idx].disabled;
+	}
 
 	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) { collision_layer = p_layer; }
 	_FORCE_INLINE_ uint32_t get_collision_layer() const { return collision_layer; }

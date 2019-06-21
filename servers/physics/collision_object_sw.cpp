@@ -76,6 +76,13 @@ void CollisionObjectSW::set_shape_transform(int p_index, const Transform &p_tran
 	//_shapes_changed();
 }
 
+void CollisionObjectSW::set_shape_as_disabled(int p_idx, bool p_enable) {
+	shapes.write[p_idx].disabled = p_enable;
+	if (!pending_shape_update_list.in_list()) {
+		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
+	}
+}
+
 void CollisionObjectSW::remove_shape(ShapeSW *p_shape) {
 
 	//remove a shape, all the times it appears
