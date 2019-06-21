@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="StaticBody2D" inherits="PhysicsBody2D" category="Core" version="3.2">
 	<brief_description>
-		Static body for 2D Physics.
+		Static body for 2D physics.
 	</brief_description>
 	<description>
-		Static body for 2D Physics. A StaticBody2D is a body that is not intended to move. It is ideal for implementing objects in the environment, such as walls or platforms.
+		Static body for 2D physics. A StaticBody2D is a body that is not intended to move. It is ideal for implementing objects in the environment, such as walls or platforms.
 		Additionally, a constant linear or angular velocity can be set for the static body, which will affect colliding bodies as if it were moving (for example, a conveyor belt).
 	</description>
 	<tutorials>
@@ -16,10 +16,10 @@
 			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
 		</member>
 		<member name="constant_angular_velocity" type="float" setter="set_constant_angular_velocity" getter="get_constant_angular_velocity">
-			Constant angular velocity for the body. This does not rotate the body, but affects colliding bodies, as if it were rotating.
+			The body's constant angular velocity. This does not rotate the body, but affects colliding bodies, as if it were rotating.
 		</member>
 		<member name="constant_linear_velocity" type="Vector2" setter="set_constant_linear_velocity" getter="get_constant_linear_velocity">
-			Constant linear velocity for the body. This does not move the body, but affects colliding bodies, as if it were moving.
+			The body's constant linear velocity. This does not move the body, but affects colliding bodies, as if it were moving.
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
 			The body's friction. Values range from [code]0[/code] (no friction) to [code]1[/code] (full friction).

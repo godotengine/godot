@@ -85,7 +85,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns an array of all cells with the given tile id.
+				Returns an array of all cells with the given tile [code]id[/code].
 			</description>
 		</method>
 		<method name="get_used_rect">
@@ -103,7 +103,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the given cell is transposed, i.e. the x and y axes are swapped.
+				Returns [code]true[/code] if the given cell is transposed, i.e. the X and Y axes are swapped.
 			</description>
 		</method>
 		<method name="is_cell_x_flipped" qualifiers="const">
@@ -114,7 +114,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the given cell is flipped in the x axis.
+				Returns [code]true[/code] if the given cell is flipped in the X axis.
 			</description>
 		</method>
 		<method name="is_cell_y_flipped" qualifiers="const">
@@ -125,7 +125,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the given cell is flipped in the y axis.
+				Returns [code]true[/code] if the given cell is flipped in the Y axis.
 			</description>
 		</method>
 		<method name="map_to_world" qualifiers="const">
@@ -161,7 +161,7 @@
 				Sets the tile index for the cell given by a Vector2.
 				An index of [code]-1[/code] clears the cell.
 				Optionally, the tile can also be flipped, transposed, or given autotile coordinates.
-				Note that data such as navigation polygons and collision shapes are not immediately updated for performance reasons.
+				[b]Note:[/b] Data such as navigation polygons and collision shapes are not immediately updated for performance reasons.
 				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
 				Overriding this method also overrides it internally, allowing custom logic to be implemented when tiles are placed/removed:
 				[codeblock]
@@ -189,7 +189,7 @@
 				Sets the tile index for the given cell.
 				An index of [code]-1[/code] clears the cell.
 				Optionally, the tile can also be flipped or transposed.
-				Note that data such as navigation polygons and collision shapes are not immediately updated for performance reasons.
+				[b]Note:[/b] Data such as navigation polygons and collision shapes are not immediately updated for performance reasons.
 				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
 			</description>
 		</method>
@@ -221,7 +221,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Applies autotiling rules to the cell (and its adjacent cells) referenced by its grid-based x and y coordinates.
+				Applies autotiling rules to the cell (and its adjacent cells) referenced by its grid-based X and Y coordinates.
 			</description>
 		</method>
 		<method name="update_bitmask_region">
@@ -232,7 +232,7 @@
 			<argument index="1" name="end" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Applies autotiling rules to the cells in the given region (specified by grid-based x and y coordinates).
+				Applies autotiling rules to the cells in the given region (specified by grid-based X and Y coordinates).
 				Calling with invalid (or missing) parameters applies autotiling rules for the entire tilemap.
 			</description>
 		</method>
@@ -260,7 +260,7 @@
 			The custom [Transform2D] to be applied to the TileMap's cells.
 		</member>
 		<member name="cell_half_offset" type="int" setter="set_half_offset" getter="get_half_offset" enum="TileMap.HalfOffset">
-			Amount to offset alternating tiles. Uses HALF_OFFSET_* constants. Default value: HALF_OFFSET_DISABLED.
+			Amount to offset alternating tiles. See [enum HalfOffset] for possible values. Default value: [code]HALF_OFFSET_DISABLED[/code].
 		</member>
 		<member name="cell_quadrant_size" type="int" setter="set_quadrant_size" getter="get_quadrant_size">
 			The TileMap's quadrant size. Optimizes drawing by batching, using chunks of this size. Default value: 16.
@@ -269,7 +269,7 @@
 			The TileMap's cell size.
 		</member>
 		<member name="cell_tile_origin" type="int" setter="set_tile_origin" getter="get_tile_origin" enum="TileMap.TileOrigin">
-			Position for tile origin. Uses TILE_ORIGIN_* constants. Default value: TILE_ORIGIN_TOP_LEFT.
+			Position for tile origin. See [enum TileOrigin] for possible values. Default value: [code]TILE_ORIGIN_TOP_LEFT[/code].
 		</member>
 		<member name="cell_y_sort" type="bool" setter="set_y_sort_mode" getter="is_y_sort_mode_enabled">
 			If [code]true[/code], the TileMap's children will be drawn in order of their Y coordinate. Default value: [code]false[/code].
@@ -290,7 +290,7 @@
 			If [code]true[/code], TileMap collisions will be handled as a kinematic body. If [code]false[/code], collisions will be handled as static body. Default value: [code]false[/code].
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="TileMap.Mode">
-			The TileMap orientation mode. Uses MODE_* constants. Default value: MODE_SQUARE.
+			The TileMap orientation mode. See [enum Mode] for possible values. Default value: [code]MODE_SQUARE[/code].
 		</member>
 		<member name="occluder_light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask">
 			The light mask assigned to all light occluders in the TileMap. The TileSet's light occluders will cast shadows only from Light2D(s) that have the same light mask(s).

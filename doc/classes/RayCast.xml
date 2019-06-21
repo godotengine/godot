@@ -43,7 +43,8 @@
 			</return>
 			<description>
 				Updates the collision information for the ray.
-				Use this method to update the collision information immediately instead of waiting for the next [code]_physics_process[/code] call, for example if the ray or its parent has changed state. Note: [code]enabled == true[/code] is not required for this to work.
+				Use this method to update the collision information immediately instead of waiting for the next [code]_physics_process[/code] call, for example if the ray or its parent has changed state.
+				[b]Note:[/b] [code]enabled == true[/code] is not required for this to work.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
@@ -66,7 +67,8 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the bit index passed is turned on. Note that bit indexes range from 0-19.
+				Returns [code]true[/code] if the bit index passed is turned on.
+				[b]Note:[/b] Bit indices range from 0-19.
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
@@ -80,7 +82,8 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Returns the collision point at which the ray intersects the closest object. Note: this point is in the [b]global[/b] coordinate system.
+				Returns the collision point at which the ray intersects the closest object.
+				[b]Note:[/b] This point is in the [b]global[/b] coordinate system.
 			</description>
 		</method>
 		<method name="is_colliding" qualifiers="const">
@@ -116,7 +119,8 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
-				Sets the bit index passed to the [code]value[/code] passed. Note that bit indexes range from 0-19.
+				Sets the bit index passed to the [code]value[/code] passed.
+				[b]Note:[/b] Bit indexes range from 0-19.
 			</description>
 		</method>
 	</methods>

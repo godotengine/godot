@@ -22,7 +22,7 @@
 			<argument index="0" name="faces" type="PoolVector3Array">
 			</argument>
 			<description>
-				Set the faces (an array of triangles).
+				Sets the faces (an array of triangles).
 			</description>
 		</method>
 	</methods>

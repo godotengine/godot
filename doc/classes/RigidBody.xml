@@ -4,10 +4,10 @@
 		Physics Body whose position is determined through physics simulation in 3D space.
 	</brief_description>
 	<description>
-		This is the node that implements full 3D physics. This means that you do not control a RigidBody directly. Instead you can apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, collision, bouncing, rotating, etc.
+		This is the node that implements full 3D physics. This means that you do not control a RigidBody directly. Instead, you can apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, collision, bouncing, rotating, etc.
 		A RigidBody has 4 behavior [member mode]s: Rigid, Static, Character, and Kinematic.
-		[b]Note:[/b] Don't change a RigidBody's position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop will yield strange behavior. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
-		If you need to override the default physics behavior, you can write a custom force integration. See [member custom_integrator].
+		[b]Note:[/b] Don't change a RigidBody's position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed Hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop may result in strange behavior. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
+		If you need to override the default physics behavior, you can write a custom force integration function. See [member custom_integrator].
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
@@ -70,7 +70,7 @@
 			<argument index="1" name="impulse" type="Vector3">
 			</argument>
 			<description>
-				Applies a positioned impulse to the body. An impulse is time independent! Applying an impulse every frame would result in a framerate dependent force. For this reason it should only be used when simulating one-time impacts. The position uses the rotation of the global coordinate system, but is centered at the object's origin.
+				Applies a positioned impulse to the body. An impulse is time independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason it should only be used when simulating one-time impacts. The position uses the rotation of the global coordinate system, but is centered at the object's origin.
 			</description>
 		</method>
 		<method name="apply_torque_impulse">
@@ -79,14 +79,15 @@
 			<argument index="0" name="impulse" type="Vector3">
 			</argument>
 			<description>
-				Applies a torque impulse which will be affected by the body mass and shape. This will rotate the body around the passed in vector.
+				Applies a torque impulse which will be affected by the body mass and shape. This will rotate the body around the [code]impulse[/code] vector passed.
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Returns a list of the bodies colliding with this one. By default, number of max contacts reported is at 0, see the [member contacts_reported] property to increase it. Note that the result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
+				Returns a list of the bodies colliding with this one. By default, number of max contacts reported is at 0, see the [member contacts_reported] property to increase it.
+				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
 		<method name="set_axis_velocity">
@@ -107,22 +108,22 @@
 			RigidBody's rotational velocity.
 		</member>
 		<member name="axis_lock_angular_x" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-			Lock the body's rotation in the x-axis.
+			Lock the body's rotation in the X axis.
 		</member>
 		<member name="axis_lock_angular_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-			Lock the body's rotation in the y-axis.
+			Lock the body's rotation in the Y axis.
 		</member>
 		<member name="axis_lock_angular_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-			Lock the body's rotation in the z-axis.
+			Lock the body's rotation in the Z axis.
 		</member>
 		<member name="axis_lock_linear_x" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-			Lock the body's movement in the x-axis.
+			Lock the body's movement in the X axis.
 		</member>
 		<member name="axis_lock_linear_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-			Lock the body's movement in the y-axis.
+			Lock the body's movement in the Y axis.
 		</member>
 		<member name="axis_lock_linear_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-			Lock the body's movement in the z-axis.
+			Lock the body's movement in the Z axis.
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
 			RigidBody's bounciness.
@@ -138,7 +139,7 @@
 		</member>
 		<member name="continuous_cd" type="bool" setter="set_use_continuous_collision_detection" getter="is_using_continuous_collision_detection">
 			If [code]true[/code], continuous collision detection is used.
-			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. Continuous collision detection is more precise, and misses less impacts by small, fast-moving objects. Not using continuous collision detection is faster to compute, but can miss small, fast-moving objects.
+			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. Continuous collision detection is more precise, and misses fewer impacts by small, fast-moving objects. Not using continuous collision detection is faster to compute, but can miss small, fast-moving objects.
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator">
 			If [code]true[/code], internal force integration will be disabled (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
@@ -147,19 +148,19 @@
 			The body's friction, from 0 (frictionless) to 1 (max friction).
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale">
-			This is multiplied by the global 3D gravity setting found in "Project &gt; Project Settings &gt; Physics &gt; 3d" to produce RigidBody's gravity. E.g. a value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
+			This is multiplied by the global 3D gravity setting found in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] to produce RigidBody's gravity. For example, a value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
 			The body's linear damp. Default value: -1, cannot be less than -1. If this value is different from -1, any linear damp derived from the world or areas will be overridden.
 		</member>
 		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity">
-			The body's linear velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
+			The body's linear velocity. Can be used sporadically, but [b]don't set this every frame[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
 		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass">
 			The body's mass.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody.Mode">
-			The body mode from the MODE_* enum. Modes include: MODE_STATIC, MODE_KINEMATIC, MODE_RIGID, and MODE_CHARACTER.
+			The body mode. See [enum Mode] for possible values. Default value: [code]MODE_RIGID[/code].
 		</member>
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 		</member>
@@ -167,7 +168,7 @@
 			If [code]true[/code], the body is sleeping and will not calculate forces until woken up by a collision or the [code]apply_impulse[/code] method.
 		</member>
 		<member name="weight" type="float" setter="set_weight" getter="get_weight">
-			The body's weight based on its mass and the global 3D gravity. Global values are set in "Project &gt; Project Settings &gt; Physics &gt; 3d".
+			The body's weight based on its mass and the global 3D gravity. Global values are set in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b].
 		</member>
 	</members>
 	<signals>
@@ -196,7 +197,7 @@
 			</argument>
 			<description>
 				Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
-				This signal not only receives the body that collided with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body collided with.
+				This signal not only receives the body that collided with this one, but also its [RID] ([code]body_id[/code]), the shape index from the colliding body ([code]body_shape[/code]), and the shape index from this body ([code]local_shape[/code]) the other body collided with.
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -210,7 +211,7 @@
 			</argument>
 			<description>
 				Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
-				This signal not only receives the body that stopped colliding with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body stopped colliding with.
+				This signal not only receives the body that stopped colliding with this one, but also its [RID] ([code]body_id[/code]), the shape index from the colliding body ([code]body_shape[/code]), and the shape index from this body ([code]local_shape[/code]) the other body stopped colliding with.
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">

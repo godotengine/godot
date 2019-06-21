@@ -4,7 +4,7 @@
 		Keeps children controls centered.
 	</brief_description>
 	<description>
-		CenterContainer Keeps children controls centered. This container keeps all children to their minimum size, in the center.
+		CenterContainer keeps children controls centered. This container keeps all children to their minimum size, in the center.
 	</description>
 	<tutorials>
 	</tutorials>

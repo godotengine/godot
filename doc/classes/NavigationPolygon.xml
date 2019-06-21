@@ -4,7 +4,7 @@
 		A node that has methods to draw outlines or use indices of vertices to create navigation polygons.
 	</brief_description>
 	<description>
-		There are two ways to create polygons. Either by using the [method add_outline] method or using the [method add_polygon] method.
+		There are two ways to create polygons. Either by using the [method add_outline] method, or using the [method add_polygon] method.
 		Using [method add_outline]:
 		[codeblock]
 		var polygon = NavigationPolygon.new()

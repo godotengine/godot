@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectReverb" inherits="AudioEffect" category="Core" version="3.2">
 	<brief_description>
-		Adds a Reverb audio effect to an Audio bus.
+		Adds a reverberation audio effect to an Audio bus.
 		Simulates the sound of acoustic environments such as rooms, concert halls, caverns, or an open spaces.
 	</brief_description>
 	<description>
@@ -25,7 +25,7 @@
 			Output percent of predelay. Value can range from 0 to 1. Default value: [code]1[/code].
 		</member>
 		<member name="predelay_msec" type="float" setter="set_predelay_msec" getter="get_predelay_msec">
-			Time between the original signal and the early reflections of the reverb signal. Default value: [code]150ms[/code].
+			Time between the original signal and the early reflections of the reverb signal, in milliseconds. Default value: [code]150ms[/code].
 		</member>
 		<member name="room_size" type="float" setter="set_room_size" getter="get_room_size">
 			Dimensions of simulated room. Bigger means more echoes. Value can range from 0 to 1. Default value: [code]0.8[/code].

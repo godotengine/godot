@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Physics2DServer" inherits="Object" category="Core" version="3.2">
 	<brief_description>
-		Physics 2D Server.
+		Server interface for low-level 2D physics access.
 	</brief_description>
 	<description>
-		Physics 2D Server is the server responsible for all 2D physics. It can create many kinds of physics objects, but does not insert them on the node tree.
+		Physics2DServer is the server responsible for all 2D physics. It can create many kinds of physics objects, but does not insert them on the node tree.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -940,7 +940,7 @@
 			<argument index="0" name="joint" type="RID">
 			</argument>
 			<description>
-				Returns the type of a joint (see [enum JointType]).
+				Returns a joint's type (see [enum JointType]).
 			</description>
 		</method>
 		<method name="joint_set_param">
@@ -1017,7 +1017,7 @@
 			<argument index="0" name="shape" type="RID">
 			</argument>
 			<description>
-				Returns the type of shape (see [enum ShapeType]).
+				Returns a shape's type (see [enum ShapeType]).
 			</description>
 		</method>
 		<method name="shape_set_data">
@@ -1248,13 +1248,13 @@
 		<constant name="JOINT_PARAM_MAX_FORCE" value="2" enum="JointParam">
 		</constant>
 		<constant name="DAMPED_STRING_REST_LENGTH" value="0" enum="DampedStringParam">
-			Set the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
+			Sets the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
 		</constant>
 		<constant name="DAMPED_STRING_STIFFNESS" value="1" enum="DampedStringParam">
-			Set the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length.
+			Sets the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length.
 		</constant>
 		<constant name="DAMPED_STRING_DAMPING" value="2" enum="DampedStringParam">
-			Set the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping).
+			Sets the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping).
 		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0" enum="CCDMode">
 			Disables continuous collision detection. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.

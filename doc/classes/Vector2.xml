@@ -18,7 +18,7 @@
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
-				Constructs a new Vector2 from the given x and y.
+				Constructs a new Vector2 from the given [code]x[/code] and [code]y[/code].
 			</description>
 		</method>
 		<method name="abs">
@@ -32,8 +32,8 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the vector's angle in radians with respect to the x-axis, or [code](1, 0)[/code] vector.
-				Equivalent to the result of atan2 when called with the vector's x and y as parameters: [code]atan2(x, y)[/code].
+				Returns the vector's angle in radians with respect to the X axis, or [code](1, 0)[/code] vector.
+				Equivalent to the result of [method @GDScript.atan2] when called with the vector's [member x] and [member y] as parameters: [code]atan2(x, y)[/code].
 			</description>
 		</method>
 		<method name="angle_to">
@@ -51,14 +51,14 @@
 			<argument index="0" name="to" type="Vector2">
 			</argument>
 			<description>
-				Returns the angle in radians between the line connecting the two points and the x coordinate.
+				Returns the angle in radians between the line connecting the two points and the X coordinate.
 			</description>
 		</method>
 		<method name="aspect">
 			<return type="float">
 			</return>
 			<description>
-				Returns the ratio of x to y.
+				Returns the ratio of [member x] to [member y].
 			</description>
 		</method>
 		<method name="bounce">
@@ -92,7 +92,7 @@
 			<argument index="0" name="with" type="Vector2">
 			</argument>
 			<description>
-				Returns the 2 dimensional analog of the cross product with the given vector.
+				Returns the 2-dimensional analog of the cross product with the given vector.
 			</description>
 		</method>
 		<method name="cubic_interpolate">
@@ -107,7 +107,7 @@
 			<argument index="3" name="t" type="float">
 			</argument>
 			<description>
-				Cubicly interpolates between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
+				Cubically interpolates between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="direction_to">
@@ -245,8 +245,8 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of SLERP between this vector and [code]b[/code], by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
-				Both vectors need to be normalized.
+				Returns the result of spherical linear interpolation between this vector and [code]b[/code], by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
+				[b]Note:[/b] Both vectors must be normalized.
 			</description>
 		</method>
 		<method name="slide">
@@ -277,10 +277,10 @@
 	</methods>
 	<members>
 		<member name="x" type="float" setter="" getter="">
-			The vector's x component. Also accessible by using the index position [code][0][/code].
+			The vector's X component. Also accessible by using the index position [code][0][/code].
 		</member>
 		<member name="y" type="float" setter="" getter="">
-			The vector's y component. Also accessible by using the index position [code][1][/code].
+			The vector's Y component. Also accessible by using the index position [code][1][/code].
 		</member>
 	</members>
 	<constants>

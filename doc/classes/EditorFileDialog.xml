@@ -14,7 +14,7 @@
 			</argument>
 			<description>
 				Adds a comma-delimited file extension filter option to the [EditorFileDialog] with an optional semi-colon-delimited label.
-				Example: "*.tscn, *.scn; Scenes", results in filter text "Scenes (*.tscn, *.scn)".
+				For example, [code]"*.tscn, *.scn; Scenes"[/code] results in filter text "Scenes (*.tscn, *.scn)".
 			</description>
 		</method>
 		<method name="clear_filters">
@@ -59,7 +59,7 @@
 			The view format in which the [EditorFileDialog] displays resources to the user.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="EditorFileDialog.Mode">
-			The purpose of the [EditorFileDialog]. Changes allowed behaviors.
+			The purpose of the [EditorFileDialog], which defines the allowed behaviors.
 		</member>
 		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files">
 			If [code]true[/code], hidden files and directories will be visible in the [EditorFileDialog].

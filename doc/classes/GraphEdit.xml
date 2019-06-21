@@ -4,8 +4,8 @@
 		GraphEdit is an area capable of showing various GraphNodes. It manages connection events between them.
 	</brief_description>
 	<description>
-		GraphEdit manages the showing of GraphNodes it contains, as well as connections and disconnections between them. Signals are sent for each of these two events. Disconnection between GraphNodes slots is disabled by default.
-		It is greatly advised to enable low processor usage mode (see [member OS.low_processor_usage_mode]) when using GraphEdits.
+		GraphEdit manages the showing of GraphNodes it contains, as well as connections and disconnections between them. Signals are sent for each of these two events. Disconnection between GraphNode slots is disabled by default.
+		It is greatly advised to enable low-processor usage mode (see [member OS.low_processor_usage_mode]) when using GraphEdits.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -43,7 +43,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Remove all connections between nodes.
+				Removes all connections between nodes.
 			</description>
 		</method>
 		<method name="connect_node">
@@ -58,7 +58,7 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Create a connection between 'from_port' slot of 'from' GraphNode and 'to_port' slot of 'to' GraphNode. If the connection already exists, no connection is created.
+				Create a connection between the [code]from_port[/code] slot of the [code]from[/code] GraphNode and the [code]to_port[/code] slot of the [code]to[/code] GraphNode. If the connection already exists, no connection is created.
 			</description>
 		</method>
 		<method name="disconnect_node">
@@ -73,14 +73,14 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Remove the connection between 'from_port' slot of 'from' GraphNode and 'to_port' slot of 'to' GraphNode, if connection exists.
+				Removes the connection between the [code]from_port[/code] slot of the [code]from[/code] GraphNode and the [code]to_port[/code] slot of the [code]to[/code] GraphNode. If the connection does not exist, no connection is removed.
 			</description>
 		</method>
 		<method name="get_connection_list" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Returns an Array containing the list of connections. A connection consists in a structure of the form {from_port: 0, from: "GraphNode name 0", to_port: 1, to: "GraphNode name 1" }
+				Returns an Array containing the list of connections. A connection consists in a structure of the form [code]{ from_port: 0, from: "GraphNode name 0", to_port: 1, to: "GraphNode name 1" }[/code].
 			</description>
 		</method>
 		<method name="get_zoom_hbox">
@@ -101,7 +101,7 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the 'from_port' slot of 'from' GraphNode is connected to the 'to_port' slot of 'to' GraphNode.
+				Returns [code]true[/code] if the [code]from_port[/code] slot of the [code]from[/code] GraphNode is connected to the [code]to_port[/code] slot of the [code]to[/code] GraphNode.
 			</description>
 		</method>
 		<method name="is_valid_connection_type" qualifiers="const">
@@ -208,7 +208,7 @@
 			<argument index="3" name="to_slot" type="int">
 			</argument>
 			<description>
-				Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be created.
+				Signal sent to the GraphEdit when the connection between the [code]from_slot[/code] slot of the [code]from[/code] GraphNode and the [code]to_slot[/code] slot of the [code]to[/code] GraphNode is attempted to be created.
 			</description>
 		</signal>
 		<signal name="connection_from_empty">
@@ -248,12 +248,12 @@
 			<argument index="3" name="to_slot" type="int">
 			</argument>
 			<description>
-				Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be removed.
+				Emitted to the GraphEdit when the connection between [code]from_slot[/code] slot of [code]from[/code] GraphNode and [code]to_slot[/code] slot of [code]to[/code] GraphNode is attempted to be removed.
 			</description>
 		</signal>
 		<signal name="duplicate_nodes_request">
 			<description>
-				Signal sent when a GraphNode is attempted to be duplicated in the GraphEdit.
+				Emitted when a GraphNode is attempted to be duplicated in the GraphEdit.
 			</description>
 		</signal>
 		<signal name="node_selected">
@@ -267,7 +267,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Signal sent when a popup is requested. Happens on right-clicking in the GraphEdit. 'p_position' is the position of the mouse pointer when the signal is sent.
+				Emitted when a popup is requested. Happens on right-clicking in the GraphEdit. [code]position[/code] is the position of the mouse pointer when the signal is sent.
 			</description>
 		</signal>
 		<signal name="scroll_offset_changed">

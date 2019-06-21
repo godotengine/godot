@@ -68,7 +68,7 @@
 			<argument index="1" name="impulse" type="Vector2">
 			</argument>
 			<description>
-				Applies a positioned impulse to the body. An impulse is time independent! Applying an impulse every frame would result in a framerate dependent force. For this reason it should only be used when simulating one-time impacts (use the "_force" functions otherwise). The position uses the rotation of the global coordinate system, but is centered at the object's origin.
+				Applies a positioned impulse to the body. An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason it should only be used when simulating one-time impacts (use the "_force" functions otherwise). The position uses the rotation of the global coordinate system, but is centered at the object's origin.
 			</description>
 		</method>
 		<method name="apply_torque_impulse">
@@ -84,7 +84,8 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns a list of the bodies colliding with this one. Use [member contacts_reported] to set the maximum number reported. You must also set [member contact_monitor] to [code]true[/code]. Note that the result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
+				Returns a list of the bodies colliding with this one. Use [member contacts_reported] to set the maximum number reported. You must also set [member contact_monitor] to [code]true[/code].
+				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
 		<method name="set_axis_velocity">
@@ -114,7 +115,7 @@
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp">
-			Damps the body's [member angular_velocity]. If [code]-1[/code] the body will use the "Default Angular Damp" in "Project &gt; Project Settings &gt; Physics &gt; 2d". Default value: [code]-1[/code].
+			Damps the body's [member angular_velocity]. If [code]-1[/code], the body will use the [b]Default Angular Damp[/b] defined in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b]. Default value: [code]-1[/code].
 		</member>
 		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity">
 			The body's rotational velocity.
@@ -148,13 +149,13 @@
 			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction). Default value: [code]1[/code].
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale">
-			Multiplies the gravity applied to the body. The body's gravity is calculated from the "Default Gravity" value in "Project &gt; Project Settings &gt; Physics &gt; 2d" and/or any additional gravity vector applied by [Area2D]s. Default value: [code]1[/code].
+			Multiplies the gravity applied to the body. The body's gravity is calculated from the [b]Default Gravity[/b] value in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] and/or any additional gravity vector applied by [Area2D]s. Default value: [code]1[/code].
 		</member>
 		<member name="inertia" type="float" setter="set_inertia" getter="get_inertia">
 			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body. The moment of inertia is usually computed automatically from the mass and the shapes, but this function allows you to set a custom value. Set 0 (or negative) inertia to return to automatically computing it.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
-			Damps the body's [member linear_velocity]. If [code]-1[/code] the body will use the "Default Linear Damp" in "Project &gt; Project Settings &gt; Physics &gt; 2d". Default value: [code]-1[/code].
+			Damps the body's [member linear_velocity]. If [code]-1[/code], the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b]. Default value: [code]-1[/code].
 		</member>
 		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity">
 			The body's linear velocity.
@@ -163,7 +164,7 @@
 			The body's mass. Default value: [code]1[/code].
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody2D.Mode">
-			The body's mode. See [code]MODE_*[/code] constants. Default value: [constant MODE_RIGID].
+			The body's mode. See [enum Mode] for possible values. Default value: [constant MODE_RIGID].
 		</member>
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 		</member>
@@ -171,7 +172,7 @@
 			If [code]true[/code], the body is sleeping and will not calculate forces until woken up by a collision or by using [method apply_impulse] or [method add_force].
 		</member>
 		<member name="weight" type="float" setter="set_weight" getter="get_weight">
-			The body's weight based on its mass and the "Default Gravity" value in "Project &gt; Project Settings &gt; Physics &gt; 2d".
+			The body's weight based on its mass and the [b]Default Gravity[/b] value in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b].
 		</member>
 	</members>
 	<signals>

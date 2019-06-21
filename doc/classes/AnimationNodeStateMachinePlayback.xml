@@ -4,7 +4,8 @@
 		Playback control for AnimationNodeStateMachine.
 	</brief_description>
 	<description>
-		Allows control of [AnimationTree] state machines created with [AnimationNodeStateMachine]. Retrieve with [code]$AnimationTree.get("parameters/playback")[/code]. Example:
+		Allows control of [AnimationTree] state machines created with [AnimationNodeStateMachine]. Retrieve with [code]$AnimationTree.get("parameters/playback")[/code].
+		[b]Example:[/b]
 		[codeblock]
 		var state_machine = $AnimationTree.get("parameters/playback")
 		state_machine.travel("some_state")

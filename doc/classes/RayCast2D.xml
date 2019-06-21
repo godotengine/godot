@@ -42,7 +42,8 @@
 			<return type="void">
 			</return>
 			<description>
-				Updates the collision information for the ray. Use this method to update the collision information immediately instead of waiting for the next [code]_physics_process[/code] call, for example if the ray or its parent has changed state. Note: [code]enabled == true[/code] is not required for this to work.
+				Updates the collision information for the ray. Use this method to update the collision information immediately instead of waiting for the next [code]_physics_process[/code] call, for example if the ray or its parent has changed state.
+				[b]Note:[/b] [code]enabled == true[/code] is not required for this to work.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
@@ -79,7 +80,8 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the collision point at which the ray intersects the closest object. Note: this point is in the [b]global[/b] coordinate system.
+				Returns the collision point at which the ray intersects the closest object.
+				[b]Note:[/b] this point is in the [b]global[/b] coordinate system.
 			</description>
 		</method>
 		<method name="is_colliding" qualifiers="const">
@@ -115,7 +117,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
-				Set/clear individual bits on the collision mask. This makes selecting the areas scanned easier.
+				Sets or clears individual bits on the collision mask. This makes selecting the areas scanned easier.
 			</description>
 		</method>
 	</methods>

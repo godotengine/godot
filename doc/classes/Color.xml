@@ -4,7 +4,7 @@
 		Color in RGBA format with some support for ARGB format.
 	</brief_description>
 	<description>
-		A color is represented by red, green, and blue [code](r, g, b)[/code] components. Additionally, [code]a[/code] represents the alpha component, often used for transparency. Values are in floating point and usually range from 0 to 1. Some properties (such as [member CanvasItem.modulate]) may accept values &gt; 1.
+		A color is represented by red, green, and blue [code](r, g, b)[/code] components. Additionally, [code]a[/code] represents the alpha component, often used for transparency. Values are in floating-point and usually range from 0 to 1. Some properties (such as [member CanvasItem.modulate]) may accept values greater than 1.
 		You can also create a color from standardized color names by using [method @GDScript.ColorN].
 	</description>
 	<tutorials>
@@ -19,9 +19,9 @@
 				Constructs a color from an HTML hexadecimal color string in ARGB or RGB format. See also [method @GDScript.ColorN].
 				[codeblock]
 				# Each of the following creates the same color RGBA(178, 217, 10, 255)
-				var c1 = Color("#ffb2d90a") # ARGB format with '#'
+				var c1 = Color("#ffb2d90a") # ARGB format with "#"
 				var c2 = Color("ffb2d90a")  # ARGB format
-				var c3 = Color("#b2d90a")   # RGB format with '#'
+				var c3 = Color("#b2d90a")   # RGB format with "#"
 				var c4 = Color("b2d90a")    # RGB format
 				[/codeblock]
 			</description>
@@ -136,7 +136,7 @@
 				The gray value is calculated as [code](r + g + b) / 3[/code].
 				[codeblock]
 				var c = Color(0.2, 0.45, 0.82)
-				var gray = c.gray() # a value of 0.466667
+				var gray = c.gray() # A value of 0.466667
 				[/codeblock]
 			</description>
 		</method>
@@ -147,7 +147,7 @@
 				Returns the inverted color [code](1 - r, 1 - g, 1 - b, a)[/code].
 				[codeblock]
 				var c = Color(0.3, 0.4, 0.9)
-				var inverted_color = c.inverted() # a color of an RGBA(178, 153, 26, 255)
+				var inverted_color = c.inverted() # A color of an RGBA(178, 153, 26, 255)
 				[/codeblock]
 			</description>
 		</method>
@@ -176,7 +176,7 @@
 				[codeblock]
 				var c1 = Color(1.0, 0.0, 0.0)
 				var c2 = Color(0.0, 1.0, 0.0)
-				var li_c = c1.linear_interpolate(c2, 0.5) # a color of an RGBA(128, 128, 0, 255)
+				var li_c = c1.linear_interpolate(c2, 0.5) # A color of an RGBA(128, 128, 0, 255)
 				[/codeblock]
 			</description>
 		</method>
@@ -234,8 +234,8 @@
 				Setting [code]with_alpha[/code] to [code]false[/code] excludes alpha from the hexadecimal string.
 				[codeblock]
 				var c = Color(1, 1, 1, 0.5)
-				var s1 = c.to_html() # Results "7fffffff"
-				var s2 = c.to_html(false) # Results 'ffffff'
+				var s1 = c.to_html() # Returns "7fffffff"
+				var s2 = c.to_html(false) # Returns "ffffff"
 				[/codeblock]
 			</description>
 		</method>

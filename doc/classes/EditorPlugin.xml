@@ -4,7 +4,7 @@
 		Used by the editor to extend its functionality.
 	</brief_description>
 	<description>
-		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins. Also see [EditorScript] to add functions to the editor.
+		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins. See also [EditorScript] to add functions to the editor.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/plugins/editor/index.html</link>
@@ -18,7 +18,7 @@
 			<argument index="1" name="path" type="String">
 			</argument>
 			<description>
-				Add a script at [code]path[/code] to the Autoload list as [code]name[/code].
+				Adds a script at [code]path[/code] to the Autoload list as [code]name[/code].
 			</description>
 		</method>
 		<method name="add_control_to_bottom_panel">
@@ -29,7 +29,7 @@
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
-				Add a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [code]queue_free()[/code].
+				Adds a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [code]queue_free()[/code].
 			</description>
 		</method>
 		<method name="add_control_to_container">
@@ -40,7 +40,7 @@
 			<argument index="1" name="control" type="Control">
 			</argument>
 			<description>
-				Add a custom control to a container (see CONTAINER_* enum). There are many locations where custom controls can be added in the editor UI.
+				Adds a custom control to a container (see [code]CONTAINER_*[/code] enum). There are many locations where custom controls can be added in the editor UI.
 				Please remember that you have to manage the visibility of your custom controls yourself (and likely hide it after adding it).
 				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_container] and free it with [code]queue_free()[/code].
 			</description>
@@ -53,7 +53,7 @@
 			<argument index="1" name="control" type="Control">
 			</argument>
 			<description>
-				Add the control to a specific dock slot (see DOCK_* enum for options).
+				Adds the control to a specific dock slot (see [code]DOCK_*[/code] enum for options).
 				If the dock is repositioned and as long as the plugin is active, the editor will save the dock position on further sessions.
 				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_docks] and free it with [code]queue_free()[/code].
 			</description>
@@ -70,9 +70,9 @@
 			<argument index="3" name="icon" type="Texture">
 			</argument>
 			<description>
-				Add a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed.
+				Adds a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed.
 				When given node or resource is selected, the base type will be instanced (ie, "Spatial", "Control", "Resource"), then the script will be loaded and set to this object.
-				You can use the virtual method [method handles] to check if your custom object is being edited by checking the script or using 'is' keyword.
+				You can use the virtual method [method handles] to check if your custom object is being edited by checking the script or using the [code]is[/code] keyword.
 				During run-time, this will be a simple object with a script so this function does not need to be called then.
 			</description>
 		</method>
@@ -128,7 +128,7 @@
 			<argument index="3" name="ud" type="Variant" default="null">
 			</argument>
 			<description>
-				Add a custom menu to 'Project &gt; Tools' as [code]name[/code] that calls [code]callback[/code] on an instance of [code]handler[/code] with a parameter [code]ud[/code] when user activates it.
+				Adds a custom menu to [b]Project &gt; Tools[/b] as [code]name[/code] that calls [code]callback[/code] on an instance of [code]handler[/code] with a parameter [code]ud[/code] when user activates it.
 			</description>
 		</method>
 		<method name="add_tool_submenu_item">
@@ -234,7 +234,7 @@
 			<return type="PoolStringArray">
 			</return>
 			<description>
-				This is for editors that edit script based objects. You can return a list of breakpoints in the format (script:line), for example: res://path_to_script.gd:25
+				This is for editors that edit script-based objects. You can return a list of breakpoints in the format ([code]script:line[/code]), for example: [code]res://path_to_script.gd:25[/code].
 			</description>
 		</method>
 		<method name="get_editor_interface">
@@ -260,21 +260,22 @@
 			<return type="ScriptCreateDialog">
 			</return>
 			<description>
-				Gets the Editor's dialogue used for making scripts. Note that users can configure it before use.
+				Gets the Editor's dialogue used for making scripts.
+				[b]Note:[/b] Users can configure it before use.
 			</description>
 		</method>
 		<method name="get_state" qualifiers="virtual">
 			<return type="Dictionary">
 			</return>
 			<description>
-				Get the state of your plugin editor. This is used when saving the scene (so state is kept when opening it again) and for switching tabs (so state can be restored when the tab returns).
+				Gets the state of your plugin editor. This is used when saving the scene (so state is kept when opening it again) and for switching tabs (so state can be restored when the tab returns).
 			</description>
 		</method>
 		<method name="get_undo_redo">
 			<return type="UndoRedo">
 			</return>
 			<description>
-				Get the undo/redo object. Most actions in the editor can be undoable, so use this object to make sure this happens when it's worth it.
+				Gets the undo/redo object. Most actions in the editor can be undoable, so use this object to make sure this happens when it's worth it.
 			</description>
 		</method>
 		<method name="get_window_layout" qualifiers="virtual">
@@ -283,7 +284,7 @@
 			<argument index="0" name="layout" type="ConfigFile">
 			</argument>
 			<description>
-				Get the GUI layout of the plugin. This is used to save the project's editor layout when [method queue_save_layout] is called or the editor layout was changed(For example changing the position of a dock).
+				Gets the GUI layout of the plugin. This is used to save the project's editor layout when [method queue_save_layout] is called or the editor layout was changed(For example changing the position of a dock).
 			</description>
 		</method>
 		<method name="handles" qualifiers="virtual">
@@ -299,7 +300,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this is a main screen editor plugin (it goes in the workspaces selector together with '2D', '3D', and 'Script').
+				Returns [code]true[/code] if this is a main screen editor plugin (it goes in the workspace selector together with [b]2D[/b], [b]3D[/b], [b]Script[/b] and [b]AssetLib[/b]).
 			</description>
 		</method>
 		<method name="hide_bottom_panel">
@@ -339,7 +340,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Remove an Autoload [code]name[/code] from the list.
+				Removes an Autoload [code]name[/code] from the list.
 			</description>
 		</method>
 		<method name="remove_control_from_bottom_panel">
@@ -348,7 +349,7 @@
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
-				Remove the control from the bottom panel. You have to manually [code]queue_free()[/code] the control.
+				Removes the control from the bottom panel. You have to manually [code]queue_free()[/code] the control.
 			</description>
 		</method>
 		<method name="remove_control_from_container">
@@ -359,7 +360,7 @@
 			<argument index="1" name="control" type="Control">
 			</argument>
 			<description>
-				Remove the control from the specified container. You have to manually [code]queue_free()[/code] the control.
+				Removes the control from the specified container. You have to manually [code]queue_free()[/code] the control.
 			</description>
 		</method>
 		<method name="remove_control_from_docks">
@@ -368,7 +369,7 @@
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
-				Remove the control from the dock. You have to manually [code]queue_free()[/code] the control.
+				Removes the control from the dock. You have to manually [code]queue_free()[/code] the control.
 			</description>
 		</method>
 		<method name="remove_custom_type">
@@ -377,7 +378,7 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Remove a custom type added by [method add_custom_type]
+				Removes a custom type added by [method add_custom_type].
 			</description>
 		</method>
 		<method name="remove_export_plugin">
@@ -426,7 +427,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Removes a menu [code]name[/code] from 'Project &gt; Tools'.
+				Removes a menu [code]name[/code] from [b]Project &gt; Tools[/b].
 			</description>
 		</method>
 		<method name="save_external_data" qualifiers="virtual">
@@ -480,7 +481,7 @@
 			<argument index="0" name="screen_name" type="String">
 			</argument>
 			<description>
-				Emitted when user changes the workspace (2D, 3D, Script, AssetLib). Also works with custom screens defined by plugins.
+				Emitted when user changes the workspace ([b]2D[/b], [b]3D[/b], [b]Script[/b], [b]AssetLib[/b]). Also works with custom screens defined by plugins.
 			</description>
 		</signal>
 		<signal name="resource_saved">
@@ -493,7 +494,7 @@
 			<argument index="0" name="scene_root" type="Node">
 			</argument>
 			<description>
-				Emitted when the scene is changed in the editor. The argument will return the root node of the scene that has just become active. If this scene is new and empty, the argument will be null.
+				Emitted when the scene is changed in the editor. The argument will return the root node of the scene that has just become active. If this scene is new and empty, the argument will be [code]null[/code].
 			</description>
 		</signal>
 		<signal name="scene_closed">

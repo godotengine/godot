@@ -19,8 +19,8 @@
 			<argument index="2" name="action" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Adds a button with label [i]text[/i] and a custom [i]action[/i] to the dialog and returns the created button. [i]action[/i] will be passed to the [signal custom_action] signal when pressed.
-				If [code]true[/code], [i]right[/i] will place the button to the right of any sibling buttons. Default value: [code]false[/code].
+				Adds a button with label [code]text[/code] and a custom [code]action[/code] to the dialog and returns the created button. [code]action[/code] will be passed to the [signal custom_action] signal when pressed.
+				If [code]true[/code], [code]right[/code] will place the button to the right of any sibling buttons. Default value: [code]false[/code].
 			</description>
 		</method>
 		<method name="add_cancel">
@@ -29,7 +29,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Adds a button with label [i]name[/i] and a cancel action to the dialog and returns the created button.
+				Adds a button with label [code]name[/code] and a cancel action to the dialog and returns the created button.
 			</description>
 		</method>
 		<method name="get_label">
@@ -43,7 +43,7 @@
 			<return type="Button">
 			</return>
 			<description>
-				Returns the OK Button.
+				Returns the OK [Button] instance.
 			</description>
 		</method>
 		<method name="register_text_enter">
@@ -62,7 +62,7 @@
 		</member>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok">
 			If [code]true[/code], the dialog is hidden when the OK button is pressed. You can set it to [code]false[/code] if you want to do e.g. input validation when receiving the [signal confirmed] signal, and handle hiding the dialog in your own logic. Default value: [code]true[/code].
-			Note: Some nodes derived from this class can have a different default value, and potentially their own built-in logic overriding this setting. For example [FileDialog] defaults to [code]false[/code], and has its own input validation code that is called when you press OK, which eventually hides the dialog if the input is valid. As such this property can't be used in [FileDialog] to disable hiding the dialog when pressing OK.
+			[b]Note:[/b] Some nodes derived from this class can have a different default value, and potentially their own built-in logic overriding this setting. For example [FileDialog] defaults to [code]false[/code], and has its own input validation code that is called when you press OK, which eventually hides the dialog if the input is valid. As such, this property can't be used in [FileDialog] to disable hiding the dialog when pressing OK.
 		</member>
 		<member name="dialog_text" type="String" setter="set_text" getter="get_text">
 			The text displayed by the dialog.

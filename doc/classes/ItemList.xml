@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This control provides a selectable list of items that may be in a single (or multiple columns) with option of text, icons, or both text and icon. Tooltips are supported and may be different for every item in the list.
-		Selectable items in the list may be selected or deselected and multiple selection may be enabled. Selection with right mouse button may also be enabled to allow use of popup context menus. Items may also be 'activated' with a double click (or Enter key).
+		Selectable items in the list may be selected or deselected and multiple selection may be enabled. Selection with right mouse button may also be enabled to allow use of popup context menus. Items may also be "activated" by double-clicking them or by pressing Enter.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -31,15 +31,15 @@
 			<argument index="2" name="selectable" type="bool" default="true">
 			</argument>
 			<description>
-				Adds an item to the item list with specified text. Specify an icon of null for a list item with no icon.
-				If selectable is [code]true[/code] the list item will be selectable.
+				Adds an item to the item list with specified text. Specify an [code]icon[/code], or use [code]null[/code] as the [code]icon[/code] for a list item with no icon.
+				If selectable is [code]true[/code], the list item will be selectable.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void">
 			</return>
 			<description>
-				Remove all items from the list.
+				Removes all items from the list.
 			</description>
 		</method>
 		<method name="ensure_current_is_visible">
@@ -91,7 +91,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the icon associated with the specified index. Default value is [code]null[/code]
+				Returns the icon associated with the specified index. Default value is [code]null[/code].
 			</description>
 		</method>
 		<method name="get_item_icon_modulate" qualifiers="const">
@@ -165,7 +165,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns whether or not the item at the specified index is disabled.
+				Returns [code]true[/code] if the item at the specified index is disabled.
 			</description>
 		</method>
 		<method name="is_item_icon_transposed" qualifiers="const">
@@ -182,7 +182,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns whether or not the item at the specified index is selectable.
+				Returns [code]true[/code] if the item at the specified index is selectable.
 			</description>
 		</method>
 		<method name="is_item_tooltip_enabled" qualifiers="const">
@@ -191,7 +191,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns whether the tooltip is enabled for specified item index.
+				Returns [code]true[/code] if the tooltip is enabled for specified item index.
 			</description>
 		</method>
 		<method name="is_selected" qualifiers="const">
@@ -200,7 +200,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns whether or not item at the specified index is currently selected.
+				Returns [code]true[/code] if the item at the specified index is currently selected.
 			</description>
 		</method>
 		<method name="move_item">
@@ -232,7 +232,7 @@
 			</argument>
 			<description>
 				Select the item at the specified index.
-				Note: This method does not trigger the item selection signal.
+				[b]Note:[/b] This method does not trigger the item selection signal.
 			</description>
 		</method>
 		<method name="set_item_custom_bg_color">
@@ -273,8 +273,8 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				Disable (or enable) item at the specified index.
-				Disabled items are not be selectable and do not trigger activation (Enter or double-click) signals.
+				Disables (or enables) the item at the specified index.
+				Disabled items cannot be selected and do not trigger activation signals (when double-clicking or pressing Enter).
 			</description>
 		</method>
 		<method name="set_item_icon">
@@ -285,7 +285,7 @@
 			<argument index="1" name="icon" type="Texture">
 			</argument>
 			<description>
-				Set (or replace) the icon's [Texture] associated with the specified index.
+				Sets (or replaces) the icon's [Texture] associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_icon_modulate">
@@ -338,7 +338,7 @@
 			<argument index="1" name="selectable" type="bool">
 			</argument>
 			<description>
-				Allow or disallow selection of the item associated with the specified index.
+				Allows or disallows selection of the item associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_text">
@@ -360,7 +360,7 @@
 			<argument index="1" name="tooltip" type="String">
 			</argument>
 			<description>
-				Sets tooltip hint for the item associated with the specified index.
+				Sets the tooltip hint for the item associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_tooltip_enabled">
@@ -387,14 +387,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Ensure the item associated with the specified index is not selected.
+				Ensures the item associated with the specified index is not selected.
 			</description>
 		</method>
 		<method name="unselect_all">
 			<return type="void">
 			</return>
 			<description>
-				Ensure there are no items selected.
+				Ensures there are no items selected.
 			</description>
 		</method>
 	</methods>
@@ -409,8 +409,7 @@
 			If [code]true[/code], the control will automatically resize the height to fit its content.
 		</member>
 		<member name="fixed_column_width" type="int" setter="set_fixed_column_width" getter="get_fixed_column_width">
-			Sets the default column width in pixels.
-			If left to default value, each item will have a width equal to the width of its content and the columns will have an uneven width.
+			Sets the default column width in pixels. If left to default value, each item will have a width equal to the width of its content and the columns will have an uneven width.
 		</member>
 		<member name="fixed_icon_size" type="Vector2" setter="set_fixed_icon_size" getter="get_fixed_icon_size">
 			Sets the default icon size in pixels.
@@ -422,8 +421,7 @@
 			Sets the icon size to its initial size multiplied by the specified scale. Default value is 1.0.
 		</member>
 		<member name="max_columns" type="int" setter="set_max_columns" getter="get_max_columns">
-			Sets the maximum columns the list will have.
-			If set to anything other than the default, the content will be split among the specified columns.
+			Sets the maximum columns the list will have. If set to anything other than the default, the content will be split among the specified columns.
 		</member>
 		<member name="max_text_lines" type="int" setter="set_max_text_lines" getter="get_max_text_lines">
 		</member>
@@ -431,7 +429,7 @@
 			If set to [code]true[/code], all columns will have the same width specified by [member fixed_column_width].
 		</member>
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="ItemList.SelectMode">
-			Allow single or multiple item selection. See the [enum SelectMode] constants.
+			Allows single or multiple item selection. See the [enum SelectMode] constants.
 		</member>
 	</members>
 	<signals>
@@ -439,7 +437,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Triggered when specified list item is activated via double click or Enter.
+				Triggered when specified list item is activated via double-clicking or by pressing Enter.
 			</description>
 		</signal>
 		<signal name="item_rmb_selected">
@@ -449,8 +447,7 @@
 			</argument>
 			<description>
 				Triggered when specified list item has been selected via right mouse clicking.
-				The click position is also provided to allow appropriate popup of context menus
-				at the correct location.
+				The click position is also provided to allow appropriate popup of context menus at the correct location.
 				[member allow_rmb_select] must be enabled.
 			</description>
 		</signal>
@@ -491,8 +488,10 @@
 		<constant name="ICON_MODE_LEFT" value="1" enum="IconMode">
 		</constant>
 		<constant name="SELECT_SINGLE" value="0" enum="SelectMode">
+			Only allow selecting a single item.
 		</constant>
 		<constant name="SELECT_MULTI" value="1" enum="SelectMode">
+			Allows selecting multiple items by holding Ctrl or Shift.
 		</constant>
 	</constants>
 	<theme_items>

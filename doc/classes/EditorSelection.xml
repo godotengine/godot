@@ -15,7 +15,7 @@
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
-				Add a node to the selection.
+				Adds a node to the selection.
 			</description>
 		</method>
 		<method name="clear">
@@ -29,14 +29,14 @@
 			<return type="Array">
 			</return>
 			<description>
-				Get the list of selected nodes.
+				Gets the list of selected nodes.
 			</description>
 		</method>
 		<method name="get_transformable_selected_nodes">
 			<return type="Array">
 			</return>
 			<description>
-				Get the list of selected nodes, optimized for transform operations (ie, moving them, rotating, etc). This list avoids situations where a node is selected and also chid/grandchild.
+				Gets the list of selected nodes, optimized for transform operations (i.e. moving them, rotating, etc). This list avoids situations where a node is selected and also child/grandchild.
 			</description>
 		</method>
 		<method name="remove_node">
@@ -45,7 +45,7 @@
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
-				Remove a node from the selection.
+				Removes a node from the selection.
 			</description>
 		</method>
 	</methods>

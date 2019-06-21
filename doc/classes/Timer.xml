@@ -4,7 +4,7 @@
 		A countdown timer.
 	</brief_description>
 	<description>
-		Counts down a specified interval and emits a signal on reaching 0. Can be set to repeat or "one shot" mode.
+		Counts down a specified interval and emits a signal on reaching 0. Can be set to repeat or "one-shot" mode.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -23,7 +23,7 @@
 			</argument>
 			<description>
 				Starts the timer. Sets [code]wait_time[/code] to [code]time_sec[/code] if [code]time_sec &gt; 0[/code]. This also resets the remaining time to [code]wait_time[/code].
-				Note: this method will not resume a paused timer. See [member paused].
+				[b]Note:[/b] this method will not resume a paused timer. See [member paused].
 			</description>
 		</method>
 		<method name="stop">
@@ -49,7 +49,7 @@
 		</member>
 		<member name="time_left" type="float" setter="" getter="get_time_left">
 			The timer's remaining time in seconds. Returns 0 if the timer is inactive.
-			Note: You cannot set this value. To change the timer's remaining time, use [member wait_time].
+			[b]Note:[/b] You cannot set this value. To change the timer's remaining time, use [member wait_time].
 		</member>
 		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time">
 			Wait time in seconds.

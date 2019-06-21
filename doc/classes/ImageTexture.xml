@@ -58,7 +58,7 @@
 			<argument index="0" name="image" type="Image">
 			</argument>
 			<description>
-				Set the [Image] of this [ImageTexture].
+				Sets the [Image] of this [ImageTexture].
 			</description>
 		</method>
 		<method name="set_size_override">

@@ -260,7 +260,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Changes the case of some letters. Replaces underscores with spaces, converts all letters to lowercase, then capitalizes first and every letter following the space character. For [code]capitalize camelCase mixed_with_underscores[/code] it will return [code]Capitalize Camelcase Mixed With Underscores[/code].
+				Changes the case of some letters. Replaces underscores with spaces, converts all letters to lowercase, then capitalizes first and every letter following the space character. For [code]capitalize camelCase mixed_with_underscores[/code], it will return [code]Capitalize Camelcase Mixed With Underscores[/code].
 			</description>
 		</method>
 		<method name="casecmp_to">
@@ -276,7 +276,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Removes indentation from string.
+				Returns a copy of the string with indentation (leading tabs and spaces) removed.
 			</description>
 		</method>
 		<method name="empty">
@@ -471,7 +471,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this string contains a valid color in HTML notation.
+				Returns [code]true[/code] if this string contains a valid color in hexadecimal HTML notation. Other HTML notations such as named colors or [code]hsl()[/code] colors aren't considered valid by this method and will return [code]false[/code].
 			</description>
 		</method>
 		<method name="is_valid_identifier">
@@ -533,7 +533,7 @@
 			<argument index="0" name="expr" type="String">
 			</argument>
 			<description>
-				Does a simple expression match, where [code]*[/code] matches zero or more arbitrary characters and [code]?[/code] matches any single character except '.'.
+				Does a simple case-sensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]).
 			</description>
 		</method>
 		<method name="matchn">
@@ -542,7 +542,7 @@
 			<argument index="0" name="expr" type="String">
 			</argument>
 			<description>
-				Does a simple case insensitive expression match, using [code]?[/code] and [code]*[/code] wildcards (see [method match]).
+				Does a simple case-insensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]).
 			</description>
 		</method>
 		<method name="md5_buffer">
@@ -626,7 +626,7 @@
 			<argument index="1" name="forwhat" type="String">
 			</argument>
 			<description>
-				Replaces occurrences of a substring with the given one inside the string.
+				Replaces occurrences of a case-sensitive substring with the given one inside the string.
 			</description>
 		</method>
 		<method name="replacen">
@@ -637,7 +637,7 @@
 			<argument index="1" name="forwhat" type="String">
 			</argument>
 			<description>
-				Replaces occurrences of a substring with the given one inside the string. Ignores case.
+				Replaces occurrences of a case-insensitive substring with the given one inside the string.
 			</description>
 		</method>
 		<method name="rfind">
@@ -648,7 +648,7 @@
 			<argument index="1" name="from" type="int" default="-1">
 			</argument>
 			<description>
-				Performs a search for a substring, but starts from the end of the string instead of the beginning.
+				Performs a case-sensitive search for a substring, but starts from the end of the string instead of the beginning.
 			</description>
 		</method>
 		<method name="rfindn">
@@ -659,7 +659,7 @@
 			<argument index="1" name="from" type="int" default="-1">
 			</argument>
 			<description>
-				Performs a search for a substring, but starts from the end of the string instead of the beginning. Ignores case.
+				Performs a case-insensitive search for a substring, but starts from the end of the string instead of the beginning.
 			</description>
 		</method>
 		<method name="right">
@@ -684,7 +684,7 @@
 				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings, starting from right.
 				The splits in the returned array are sorted in the same order as the original string, from left to right.
 				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the right up to [code]maxsplit[/code]. The default value of 0 means that all items are split, thus giving the same result as [method split].
-				[b]Example:[/b] [code]"One,Two,Three,Four"[/code] will return [code]["Three","Four"][/code] if split by [code]","[/code] with [code]maxsplit[/code] of 2.
+				For example, [code]"One,Two,Three,Four"[/code] will return [code]["Three","Four"][/code] if split by [code]","[/code] with a [code]maxsplit[/code] value of 2.
 			</description>
 		</method>
 		<method name="rstrip">
@@ -731,7 +731,7 @@
 			<description>
 				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings.
 				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the left up to [code]maxsplit[/code]. The default value of 0 means that all items are split.
-				[b]Example:[/b] [code]"One,Two,Three"[/code] will return [code]["One","Two"][/code] if split by [code]","[/code] with [code]maxsplit[/code] of 2.
+				For example, [code]"One,Two,Three"[/code] will return [code]["One","Two"][/code] if split by [code]","[/code] with a [code]maxsplit[/code] value of 2.
 			</description>
 		</method>
 		<method name="split_floats">
@@ -743,7 +743,7 @@
 			</argument>
 			<description>
 				Splits the string in floats by using a delimiter string and returns an array of the substrings.
-				[b]Example:[/b] [code]"1,2.5,3"[/code] will return [code][1,2.5,3][/code] if split by [code]","[/code].
+				For example, [code]"1,2.5,3"[/code] will return [code][1,2.5,3][/code] if split by [code]","[/code].
 			</description>
 		</method>
 		<method name="strip_edges">
@@ -779,7 +779,7 @@
 			<return type="PoolByteArray">
 			</return>
 			<description>
-				Converts the String (which is a character array) to [PoolByteArray] (which is an array of bytes). The conversion is sped up in comparison to [method to_utf8] with the assumption that all the characters the String contains are only ASCII characters.
+				Converts the String (which is a character array) to [PoolByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8], as this method assumes that all the characters in the String are ASCII characters.
 			</description>
 		</method>
 		<method name="to_float">

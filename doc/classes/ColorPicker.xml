@@ -15,7 +15,8 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Adds the given color to a list of color presets. The presets are displayed in the color picker and the user will be able to select them. Note: the presets list is only for [i]this[/i] color picker.
+				Adds the given color to a list of color presets. The presets are displayed in the color picker and the user will be able to select them.
+				[b]Note:[/b] the presets list is only for [i]this[/i] color picker.
 			</description>
 		</method>
 		<method name="erase_preset">
@@ -24,7 +25,7 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Remove the given color from the list of color presets of this color picker.
+				Removes the given color from the list of color presets of this color picker.
 			</description>
 		</method>
 		<method name="get_presets" qualifiers="const">
@@ -46,7 +47,7 @@
 			If [code]true[/code], shows an alpha channel slider (transparency).
 		</member>
 		<member name="hsv_mode" type="bool" setter="set_hsv_mode" getter="is_hsv_mode">
-			If [code]true[/code], allows to edit color with Hue/Saturation/Value sliders.
+			If [code]true[/code], allows editing the color with Hue/Saturation/Value sliders.
 			[b]Note:[/b] Cannot be enabled if raw mode is on.
 		</member>
 		<member name="presets_enabled" type="bool" setter="set_presets_enabled" getter="are_presets_enabled">
@@ -55,7 +56,7 @@
 		</member>
 		<member name="raw_mode" type="bool" setter="set_raw_mode" getter="is_raw_mode">
 			If [code]true[/code], allows the color R, G, B component values to go beyond 1.0, which can be used for certain special operations that require it (like tinting without darkening or rendering sprites in HDR).
-			[b]Note:[/b] Cannot be enabled if hsv mode is on.
+			[b]Note:[/b] Cannot be enabled if HSV mode is on.
 		</member>
 	</members>
 	<signals>

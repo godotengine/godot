@@ -60,7 +60,7 @@
 				    "protocol": "my-custom-protocol", # A custom sub-protocol string for this channel.
 				}
 				[/codeblock]
-				NOTE: You must keep a reference to channels created this way, or it will be closed.
+				[b]Note:[/b] You must keep a reference to channels created this way, or it will be closed.
 			</description>
 		</method>
 		<method name="create_offer">
@@ -172,7 +172,7 @@
 			The connection is new, data channels and an offer can be created in this state.
 		</constant>
 		<constant name="STATE_CONNECTING" value="1" enum="ConnectionState">
-			The peer is connecting, ICE is in progress, non of the transports has failed.
+			The peer is connecting, ICE is in progress, none of the transports has failed.
 		</constant>
 		<constant name="STATE_CONNECTED" value="2" enum="ConnectionState">
 			The peer is connected, all ICE transports are connected.

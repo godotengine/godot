@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ProgressBar" inherits="Range" category="Core" version="3.2">
 	<brief_description>
-		General purpose progress bar.
+		General-purpose progress bar.
 	</brief_description>
 	<description>
-		General purpose progress bar. Shows fill percentage from right to left.
+		General-purpose progress bar. Shows fill percentage from right to left.
 	</description>
 	<tutorials>
 	</tutorials>

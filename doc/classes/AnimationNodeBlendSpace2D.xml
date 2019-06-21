@@ -21,7 +21,7 @@
 			<argument index="2" name="at_index" type="int" default="-1">
 			</argument>
 			<description>
-				Add a new point that represents a [code]node[/code] at the position set by [code]pos[/code]. You can insert it at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code] , the point is inserted at the end of the blend points array.
+				Adds a new point that represents a [code]node[/code] at the position set by [code]pos[/code]. You can insert it at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code] , the point is inserted at the end of the blend points array.
 			</description>
 		</method>
 		<method name="add_triangle">

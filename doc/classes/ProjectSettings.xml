@@ -15,8 +15,8 @@
 			<argument index="0" name="hint" type="Dictionary">
 			</argument>
 			<description>
-				Adds a custom property info to a property. The dictionary must contain: name:[String](the property's name) and type:[int](see TYPE_* in [@GlobalScope]), and optionally hint:[int](see PROPERTY_HINT_* in [@GlobalScope]), hint_string:[String].
-				Example:
+				Adds a custom property info to a property. The dictionary must contain: name:[String](the property's name) and type:[int](see [code]TYPE_*[/code] in [@GlobalScope]), and optionally hint:[int](see [code]PROPERTY_HINT_*[/code] in [@GlobalScope]), hint_string:[String].
+				[b]Example:[/b]
 				[codeblock]
 				ProjectSettings.set("category/property_name", 0)
 
@@ -82,7 +82,7 @@
 			</argument>
 			<description>
 				Loads the contents of the .pck or .zip file specified by [code]pack[/code] into the resource filesystem ([code]res://[/code]). Returns [code]true[/code] on success.
-				Note: If a file from [code]pack[/code] shares the same path as a file already in the resource filesystem, any attempts to load that file will use the file from [code]pack[/code].
+				[b]Note:[/b] If a file from [code]pack[/code] shares the same path as a file already in the resource filesystem, any attempts to load that file will use the file from [code]pack[/code].
 			</description>
 		</method>
 		<method name="localize_path" qualifiers="const">
@@ -359,7 +359,7 @@
 			Maximum call stack in visual scripting, to avoid infinite recursion.
 		</member>
 		<member name="display/mouse_cursor/custom_image" type="String" setter="" getter="">
-			Custom image for the mouse cursor (limited to 256x256).
+			Custom image for the mouse cursor (limited to 256×256).
 		</member>
 		<member name="display/mouse_cursor/custom_image_hotspot" type="Vector2" setter="" getter="">
 			Hotspot for the custom mouse cursor image.
@@ -380,7 +380,7 @@
 			If [code]true[/code], allows per-pixel transparency in a desktop window. This affects performance, so leave it on [code]false[/code] unless you need it.
 		</member>
 		<member name="display/window/per_pixel_transparency/enabled" type="bool" setter="" getter="">
-			Set the window background to transparent when it starts.
+			Sets the window background to transparent when it starts.
 		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="">
 			Force the window to be always on top.
@@ -389,10 +389,10 @@
 			Force the window to be borderless.
 		</member>
 		<member name="display/window/size/fullscreen" type="bool" setter="" getter="">
-			Set the window to full screen when it starts.
+			Sets the window to full screen when it starts.
 		</member>
 		<member name="display/window/size/height" type="int" setter="" getter="">
-			Set the main window height. On desktop, this is the default window size. Stretch mode settings use this also as a reference when enabled.
+			Sets the main window height. On desktop, this is the default window size. Stretch mode settings use this also as a reference when enabled.
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="">
 			Allows the window to be resizable by default.
@@ -732,7 +732,7 @@
 			If [code]true[/code], forces snapping of polygons to pixels in 2D rendering. May help in some pixel art styles.
 		</member>
 		<member name="rendering/quality/depth_prepass/disable_for_vendors" type="String" setter="" getter="">
-			Disable depth pre-pass for some GPU vendors (usually mobile), as their architecture already does this.
+			Disables depth pre-pass for some GPU vendors (usually mobile), as their architecture already does this.
 		</member>
 		<member name="rendering/quality/depth_prepass/enable" type="bool" setter="" getter="">
 			If [code]true[/code], performs a previous depth pass before rendering materials. This increases performance in scenes with high overdraw, when complex materials and lighting are used.
@@ -744,11 +744,11 @@
 		</member>
 		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="">
 			The video driver to use ("GLES2" or "GLES3").
-			Note that the backend in use can be overridden at runtime via the [code]--video-driver[/code] command line argument, or by the [member rendering/quality/driver/fallback_to_gles2] option if the target system does not support GLES3 and falls back to GLES2. In such cases, this property is not updated, so use [method OS.get_current_video_driver] to query it at run-time.
+			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--video-driver[/code] command line argument, or by the [member rendering/quality/driver/fallback_to_gles2] option if the target system does not support GLES3 and falls back to GLES2. In such cases, this property is not updated, so use [method OS.get_current_video_driver] to query it at run-time.
 		</member>
 		<member name="rendering/quality/driver/fallback_to_gles2" type="bool" setter="" getter="">
 			If [code]true[/code], allows falling back to the GLES2 driver if the GLES3 driver is not supported.
-			Note that the two video drivers are not drop-in replacements for each other, so a game designed for GLES3 might not work properly when falling back to GLES2. In particular, some features of the GLES3 backend are not available in GLES2. Enabling this setting also means that both ETC and ETC2 VRAM-compressed textures will be exported on Android and iOS, increasing the data pack's size.
+			[b]Note:[/b] The two video drivers are not drop-in replacements for each other, so a game designed for GLES3 might not work properly when falling back to GLES2. In particular, some features of the GLES3 backend are not available in GLES2. Enabling this setting also means that both ETC and ETC2 VRAM-compressed textures will be exported on Android and iOS, increasing the data pack's size.
 		</member>
 		<member name="rendering/quality/filters/anisotropic_filter_level" type="int" setter="" getter="">
 			Maximum anisotropic filter level used for textures with anisotropy enabled. Higher values will result in sharper textures when viewed from oblique angles, at the cost of performance. Only power-of-two values are valid (2, 4, 8, 16).

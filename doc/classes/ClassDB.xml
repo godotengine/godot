@@ -15,7 +15,7 @@
 			<argument index="0" name="class" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if you can instance objects from the specified 'class', [code]false[/code] in other case.
+				Returns [code]true[/code] if you can instance objects from the specified [code]class[/code], [code]false[/code] in other case.
 			</description>
 		</method>
 		<method name="class_exists" qualifiers="const">
@@ -24,7 +24,7 @@
 			<argument index="0" name="class" type="String">
 			</argument>
 			<description>
-				Returns whether the specified 'class' is available or not.
+				Returns whether the specified [code]class[/code] is available or not.
 			</description>
 		</method>
 		<method name="class_get_category" qualifiers="const">
@@ -44,7 +44,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
-				Returns the value of the integer constant 'name' of 'class' or its ancestry. Always returns 0 when the constant could not be found.
+				Returns the value of the integer constant [code]name[/code] of [code]class[/code] or its ancestry. Always returns 0 when the constant could not be found.
 			</description>
 		</method>
 		<method name="class_get_integer_constant_list" qualifiers="const">
@@ -55,7 +55,7 @@
 			<argument index="1" name="no_inheritance" type="bool" default="false">
 			</argument>
 			<description>
-				Returns an array with the names all the integer constants of 'class' or its ancestry.
+				Returns an array with the names all the integer constants of [code]class[/code] or its ancestry.
 			</description>
 		</method>
 		<method name="class_get_method_list" qualifiers="const">
@@ -66,7 +66,7 @@
 			<argument index="1" name="no_inheritance" type="bool" default="false">
 			</argument>
 			<description>
-				Returns an array with all the methods of 'class' or its ancestry if 'no_inheritance' is [code]false[/code]. Every element of the array is a [Dictionary] with the following keys: args, default_args, flags, id, name, return: (class_name, hint, hint_string, name, type, usage).
+				Returns an array with all the methods of [code]class[/code] or its ancestry if [code]no_inheritance[/code] is [code]false[/code]. Every element of the array is a [Dictionary] with the following keys: [code]args[/code], [code]default_args[/code], [code]flags[/code], [code]id[/code], [code]name[/code], [code]return: (class_name, hint, hint_string, name, type, usage)[/code].
 			</description>
 		</method>
 		<method name="class_get_property" qualifiers="const">
@@ -77,7 +77,7 @@
 			<argument index="1" name="property" type="String">
 			</argument>
 			<description>
-				Returns the value of 'property' of 'class' or its ancestry.
+				Returns the value of [code]property[/code] of [code]class[/code] or its ancestry.
 			</description>
 		</method>
 		<method name="class_get_property_list" qualifiers="const">
@@ -88,7 +88,7 @@
 			<argument index="1" name="no_inheritance" type="bool" default="false">
 			</argument>
 			<description>
-				Returns an array with all the properties of 'class' or its ancestry if 'no_inheritance' is [code]false[/code].
+				Returns an array with all the properties of [code]class[/code] or its ancestry if [code]no_inheritance[/code] is [code]false[/code].
 			</description>
 		</method>
 		<method name="class_get_signal" qualifiers="const">
@@ -99,7 +99,7 @@
 			<argument index="1" name="signal" type="String">
 			</argument>
 			<description>
-				Returns the 'signal' data of 'class' or its ancestry. The returned value is a [Dictionary] with the following keys: args, default_args, flags, id, name, return: (class_name, hint, hint_string, name, type, usage).
+				Returns the [code]signal[/code] data of [code]class[/code] or its ancestry. The returned value is a [Dictionary] with the following keys: [code]args[/code], [code]default_args[/code], [code]flags[/code], [code]id[/code], [code]name[/code], [code]return: (class_name, hint, hint_string, name, type, usage)[/code].
 			</description>
 		</method>
 		<method name="class_get_signal_list" qualifiers="const">
@@ -110,7 +110,7 @@
 			<argument index="1" name="no_inheritance" type="bool" default="false">
 			</argument>
 			<description>
-				Returns an array with all the signals of 'class' or its ancestry if 'no_inheritance' is [code]false[/code]. Every element of the array is a [Dictionary] as described in [method class_get_signal].
+				Returns an array with all the signals of [code]class[/code] or its ancestry if [code]no_inheritance[/code] is [code]false[/code]. Every element of the array is a [Dictionary] as described in [method class_get_signal].
 			</description>
 		</method>
 		<method name="class_has_integer_constant" qualifiers="const">
@@ -121,7 +121,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
-				Returns whether 'class' or its ancestry has an integer constant called 'name' or not.
+				Returns whether [code]class[/code] or its ancestry has an integer constant called [code]name[/code] or not.
 			</description>
 		</method>
 		<method name="class_has_method" qualifiers="const">
@@ -134,7 +134,7 @@
 			<argument index="2" name="no_inheritance" type="bool" default="false">
 			</argument>
 			<description>
-				Returns whether 'class' (or its ancestry if 'no_inheritance' is false) has a method called 'method' or not.
+				Returns whether [code]class[/code] (or its ancestry if [code]no_inheritance[/code] is false) has a method called [code]method[/code] or not.
 			</description>
 		</method>
 		<method name="class_has_signal" qualifiers="const">
@@ -145,7 +145,7 @@
 			<argument index="1" name="signal" type="String">
 			</argument>
 			<description>
-				Returns whether 'class' or its ancestry has a signal called 'signal' or not.
+				Returns whether [code]class[/code] or its ancestry has a signal called [code]signal[/code] or not.
 			</description>
 		</method>
 		<method name="class_set_property" qualifiers="const">
@@ -158,7 +158,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Sets 'property' value of 'class' to 'value'.
+				Sets [code]property[/code] value of [code]class[/code] to [code]value[/code].
 			</description>
 		</method>
 		<method name="get_class_list" qualifiers="const">
@@ -174,7 +174,7 @@
 			<argument index="0" name="class" type="String">
 			</argument>
 			<description>
-				Returns the names of all the classes that directly or indirectly inherit from 'class'.
+				Returns the names of all the classes that directly or indirectly inherit from [code]class[/code].
 			</description>
 		</method>
 		<method name="get_parent_class" qualifiers="const">
@@ -183,7 +183,7 @@
 			<argument index="0" name="class" type="String">
 			</argument>
 			<description>
-				Returns the parent class of 'class'.
+				Returns the parent class of [code]class[/code].
 			</description>
 		</method>
 		<method name="instance" qualifiers="const">
@@ -192,7 +192,7 @@
 			<argument index="0" name="class" type="String">
 			</argument>
 			<description>
-				Creates an instance of 'class'.
+				Creates an instance of [code]class[/code].
 			</description>
 		</method>
 		<method name="is_class_enabled" qualifiers="const">
@@ -212,7 +212,7 @@
 			<argument index="1" name="inherits" type="String">
 			</argument>
 			<description>
-				Returns whether 'inherits' is an ancestor of 'class' or not.
+				Returns whether [code]inherits[/code] is an ancestor of [code]class[/code] or not.
 			</description>
 		</method>
 	</methods>
