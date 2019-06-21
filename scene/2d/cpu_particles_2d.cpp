@@ -1391,7 +1391,7 @@ CPUParticles2D::CPUParticles2D() {
 
 	set_spread(45);
 	set_flatness(0);
-	set_param(PARAM_INITIAL_LINEAR_VELOCITY, 1);
+	set_param(PARAM_INITIAL_LINEAR_VELOCITY, 0);
 	set_param(PARAM_ANGULAR_VELOCITY, 0);
 	set_param(PARAM_ORBIT_VELOCITY, 0);
 	set_param(PARAM_LINEAR_ACCEL, 0);
