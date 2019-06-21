@@ -51,6 +51,7 @@ Curve::Curve() {
 	_baked_cache_dirty = false;
 	_min_value = 0;
 	_max_value = 1;
+	_minmax_set_once = 0b00;
 }
 
 int Curve::add_point(Vector2 p_pos, real_t left_tangent, real_t right_tangent, TangentMode left_mode, TangentMode right_mode) {
@@ -282,20 +283,24 @@ void Curve::update_auto_tangents(int i) {
 #define MIN_Y_RANGE 0.01
 
 void Curve::set_min_value(float p_min) {
-	if (p_min > _max_value - MIN_Y_RANGE)
+	if (_minmax_set_once & 0b11 && p_min > _max_value - MIN_Y_RANGE) {
 		_min_value = _max_value - MIN_Y_RANGE;
-	else
+	} else {
+		_minmax_set_once |= 0b10; // first bit is "min set"
 		_min_value = p_min;
+	}
 	// Note: min and max are indicative values,
 	// it's still possible that existing points are out of range at this point.
 	emit_signal(SIGNAL_RANGE_CHANGED);
 }
 
 void Curve::set_max_value(float p_max) {
-	if (p_max < _min_value + MIN_Y_RANGE)
+	if (_minmax_set_once & 0b11 && p_max < _min_value + MIN_Y_RANGE) {
 		_max_value = _min_value + MIN_Y_RANGE;
-	else
+	} else {
+		_minmax_set_once |= 0b01; // second bit is "max set"
 		_max_value = p_max;
+	}
 	emit_signal(SIGNAL_RANGE_CHANGED);
 }
 

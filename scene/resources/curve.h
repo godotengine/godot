@@ -143,6 +143,7 @@ private:
 	int _bake_resolution;
 	float _min_value;
 	float _max_value;
+	int _minmax_set_once; // Encodes whether min and max have been set a first time, first bit for min and second for max.
 };
 
 VARIANT_ENUM_CAST(Curve::TangentMode)
