@@ -45,9 +45,9 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
 
 	ClassDB::bind_method(D_METHOD("action_set_deadzone", "action", "deadzone"), &InputMap::action_set_deadzone);
-	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event", "player"), &InputMap::action_add_event, DEFVAL(PLAYER_ALL));
+	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event", "player"), &InputMap::action_add_event, DEFVAL(PLAYER_1));
 	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event", "player"), &InputMap::action_has_event, DEFVAL(PLAYER_ALL));
-	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event", "player"), &InputMap::action_erase_event, DEFVAL(PLAYER_ALL));
+	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event", "player"), &InputMap::action_erase_event, DEFVAL(PLAYER_1));
 	ClassDB::bind_method(D_METHOD("action_erase_events", "action"), &InputMap::action_erase_events);
 	ClassDB::bind_method(D_METHOD("get_action_list", "action", "player"), &InputMap::_get_action_list, DEFVAL(PLAYER_ALL));
 	ClassDB::bind_method(D_METHOD("event_is_action", "event", "action", "player"), &InputMap::event_is_action, DEFVAL(PLAYER_ALL));
@@ -99,18 +99,14 @@ List<StringName> InputMap::get_actions() const {
 	return actions;
 }
 
-List<InputMap::ActionInput>::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, ActionPlayer p_player, bool p_exact_player, bool *p_pressed, float *p_strength) const {
+List<InputMap::ActionInput>::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, ActionPlayer p_player, bool *p_pressed, float *p_strength) const {
 
 	for (List<ActionInput>::Element *E = p_action.inputs.front(); E; E = E->next()) {
 
 		const ActionInput a = E->get();
 
-		if (p_exact_player) {
-			if (a.player != p_player)
-				continue;
-		} else if (a.player != PLAYER_ALL && a.player != p_player) {
+		if (p_player != PLAYER_ALL && a.player != p_player)
 			continue;
-		}
 
 		int device = a.event->get_device();
 		if (device == ALL_DEVICES || device == p_event->get_device()) {
@@ -137,9 +133,10 @@ void InputMap::action_set_deadzone(const StringName &p_action, float p_deadzone)
 
 void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event, ActionPlayer p_player) {
 
+	ERR_FAIL_COND(p_player == PLAYER_ALL);
 	ERR_FAIL_COND(p_event.is_null());
 	ERR_FAIL_COND(!input_map.has(p_action));
-	if (_find_event(input_map[p_action], p_event, p_player, true))
+	if (_find_event(input_map[p_action], p_event, p_player))
 		return; //already gots
 
 	ActionInput a;
@@ -151,14 +148,15 @@ void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent
 bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event, ActionPlayer p_player) {
 
 	ERR_FAIL_COND_V(!input_map.has(p_action), false);
-	return (_find_event(input_map[p_action], p_event, p_player, true) != NULL);
+	return (_find_event(input_map[p_action], p_event, p_player) != NULL);
 }
 
 void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event, ActionPlayer p_player) {
 
+	ERR_FAIL_COND(p_player == PLAYER_ALL);
 	ERR_FAIL_COND(!input_map.has(p_action));
 
-	List<ActionInput>::Element *E = _find_event(input_map[p_action], p_event, p_player, true);
+	List<ActionInput>::Element *E = _find_event(input_map[p_action], p_event, p_player);
 	if (E)
 		input_map[p_action].inputs.erase(E);
 }
@@ -218,7 +216,7 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 
 	bool pressed;
 	float strength;
-	List<ActionInput>::Element *a = _find_event(E->get(), p_event, p_player, true, &pressed, &strength);
+	List<ActionInput>::Element *a = _find_event(E->get(), p_event, p_player, &pressed, &strength);
 	if (a != NULL) {
 		if (p_pressed != NULL)
 			*p_pressed = pressed;

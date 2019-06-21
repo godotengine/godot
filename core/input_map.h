@@ -80,7 +80,7 @@ private:
 
 	mutable Map<StringName, Action> input_map;
 
-	List<ActionInput>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, ActionPlayer p_player = PLAYER_ALL, bool p_exact_player = false, bool *p_pressed = NULL, float *p_strength = NULL) const;
+	List<ActionInput>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, ActionPlayer p_player = PLAYER_ALL, bool *p_pressed = NULL, float *p_strength = NULL) const;
 
 	Array _get_action_list(const StringName &p_action, ActionPlayer player = PLAYER_ALL);
 	Array _get_actions();
@@ -97,9 +97,9 @@ public:
 	void erase_action(const StringName &p_action);
 
 	void action_set_deadzone(const StringName &p_action, float p_deadzone);
-	void action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event, ActionPlayer player = PLAYER_ALL);
+	void action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event, ActionPlayer player = PLAYER_1);
 	bool action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event, ActionPlayer player = PLAYER_ALL);
-	void action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event, ActionPlayer player = PLAYER_ALL);
+	void action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event, ActionPlayer player = PLAYER_1);
 	void action_erase_events(const StringName &p_action);
 
 	const List<ActionInput> *get_action_list(const StringName &p_action, ActionPlayer player = PLAYER_ALL);

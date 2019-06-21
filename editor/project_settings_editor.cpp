@@ -319,7 +319,7 @@ void ProjectSettingsEditor::_device_input_add() {
 	}
 
 	Dictionary event;
-	event["player"] = 0;
+	event["player"] = InputMap::PLAYER_1;
 	event["event"] = ie;
 	if (idx < 0 || idx >= events.size()) {
 		events.push_back(event);
@@ -366,6 +366,7 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 	ie->set_alt(last_wait_for_key->get_alt());
 	ie->set_control(last_wait_for_key->get_control());
 	ie->set_metakey(last_wait_for_key->get_metakey());
+	InputMap::ActionPlayer player = InputMap::PLAYER_1;
 
 	String name = add_at;
 	int idx = edit_idx;
@@ -374,13 +375,27 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 	Dictionary action = old_val.duplicate();
 	Array events = action["events"];
 
-	Dictionary event;
-	event["player"] = 0;
-
+	// Check that we don't already have this event.
 	for (int i = 0; i < events.size(); i++) {
 
-		event = events[i];
-		Ref<InputEventKey> aie = event["event"];
+		Ref<InputEventKey> aie;
+		Dictionary event;
+		if (events[i].get_type() == Variant::OBJECT) {
+			// Old style
+			aie = events[i];
+			if (aie.is_null())
+				continue;
+			event["player"] = InputMap::PLAYER_1;
+			event["event"] = aie;
+		} else {
+			// New style
+			ERR_CONTINUE(events[i].get_type() != Variant::DICTIONARY);
+			event = events[i];
+			aie = event["event"];
+		}
+
+		if (player != event["player"].operator int())
+			continue;
 		if (aie.is_null())
 			continue;
 		if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers()) {
@@ -388,6 +403,8 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 		}
 	}
 
+	Dictionary event;
+	event["player"] = InputMap::PLAYER_1;
 	event["event"] = ie;
 	if (idx < 0 || idx >= events.size()) {
 		events.push_back(event);
@@ -740,9 +757,22 @@ void ProjectSettingsEditor::_update_actions() {
 		}
 
 		for (int i = 0; i < events.size(); i++) {
+			Ref<InputEvent> event;
+			Dictionary ev;
+			if (events[i].get_type() == Variant::OBJECT) {
+				// Old style
+				event = events[i];
+				if (event.is_null())
+					continue;
+				ev["player"] = InputMap::PLAYER_1;
+				ev["event"] = event;
+			} else {
+				// New style
+				ERR_CONTINUE(events[i].get_type() != Variant::DICTIONARY);
+				ev = events[i];
+				event = ev["event"];
+			}
 
-			Dictionary ev = events[i];
-			Ref<InputEvent> event = ev["event"];
 			if (event.is_null())
 				continue;
 
