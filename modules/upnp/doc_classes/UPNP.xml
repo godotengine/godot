@@ -5,6 +5,17 @@
 	</brief_description>
 	<description>
 		Provides UPNP functionality to discover [UPNPDevice]s on the local network and execute commands on them, like managing port mappings (port forwarding) and querying the local and remote network IP address. Note that methods on this class are synchronous and block the calling thread.
+		To forward a specific port:
+		[codeblock]
+		const port=7777 # Specify the port you wish
+		var upnp=UPNP.new() # Create a UPNP class
+		upnp.discover(2000,2,"InternetGatewayDevice")
+		upnp.add_port_mapping(port) # This line does the forwarding
+		[/codeblock]
+
+
+
+
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,6 +27,17 @@
 			</argument>
 			<description>
 				Adds the given [UPNPDevice] to the list of discovered devices.
+				To open a specific port:
+				[codeblock]
+				const PORT = 7777
+				var unpn = UPNP.new()
+				upnp.discover(2000, 2, "InternetGatewayDevice")
+				upnp.add_port_mapping(port)
+				[/codeblock]
+				To close the port (once you are done):
+				[codeblock]
+				upnp.delete_port_mapping(port)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="add_port_mapping" qualifiers="const">
