@@ -1274,9 +1274,7 @@ Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
 	Vector2 vp_ofs = _get_window_offset();
 	Transform2D ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 
-	Ref<InputEvent> out = ev->xformed_by(ai, -vp_ofs);
-
-	return out;
+	return ev->xformed_by(ai, -vp_ofs);
 }
 
 void Viewport::_vp_input_text(const String &p_text) {

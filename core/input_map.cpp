@@ -45,12 +45,12 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
 
 	ClassDB::bind_method(D_METHOD("action_set_deadzone", "action", "deadzone"), &InputMap::action_set_deadzone);
-	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event"), &InputMap::action_add_event);
-	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event"), &InputMap::action_has_event);
-	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event"), &InputMap::action_erase_event);
+	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event", "player"), &InputMap::action_add_event, DEFVAL(PLAYER_ALL));
+	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event", "player"), &InputMap::action_has_event, DEFVAL(PLAYER_ALL));
+	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event", "player"), &InputMap::action_erase_event, DEFVAL(PLAYER_ALL));
 	ClassDB::bind_method(D_METHOD("action_erase_events", "action"), &InputMap::action_erase_events);
-	ClassDB::bind_method(D_METHOD("get_action_list", "action"), &InputMap::_get_action_list, DEFVAL(PLAYER_ALL));
-	ClassDB::bind_method(D_METHOD("event_is_action", "event", "action"), &InputMap::event_is_action);
+	ClassDB::bind_method(D_METHOD("get_action_list", "action", "player"), &InputMap::_get_action_list, DEFVAL(PLAYER_ALL));
+	ClassDB::bind_method(D_METHOD("event_is_action", "event", "action", "player"), &InputMap::event_is_action, DEFVAL(PLAYER_ALL));
 	ClassDB::bind_method(D_METHOD("load_from_globals"), &InputMap::load_from_globals);
 }
 
@@ -105,8 +105,8 @@ List<InputMap::ActionInput>::Element *InputMap::_find_event(Action &p_action, co
 
 		const ActionInput a = E->get();
 
-		if (p_player == PLAYER_ALL) {
-			if (p_exact_player && a.player != p_player)
+		if (p_exact_player) {
+			if (a.player != p_player)
 				continue;
 		} else if (a.player != PLAYER_ALL && a.player != p_player) {
 			continue;
@@ -218,7 +218,7 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 
 	bool pressed;
 	float strength;
-	List<ActionInput>::Element *a = _find_event(E->get(), p_event, p_player, false, &pressed, &strength);
+	List<ActionInput>::Element *a = _find_event(E->get(), p_event, p_player, true, &pressed, &strength);
 	if (a != NULL) {
 		if (p_pressed != NULL)
 			*p_pressed = pressed;
