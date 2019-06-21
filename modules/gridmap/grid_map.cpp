@@ -241,6 +241,7 @@ Vector3 GridMap::get_cell_size() const {
 
 void GridMap::set_octant_size(int p_size) {
 
+	ERR_FAIL_COND(p_size == 0);
 	octant_size = p_size;
 	_recreate_octant_data();
 }

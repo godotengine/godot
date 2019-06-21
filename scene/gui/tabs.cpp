@@ -892,6 +892,8 @@ void Tabs::ensure_tab_visible(int p_idx) {
 }
 
 Rect2 Tabs::get_tab_rect(int p_tab) const {
+
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Rect2());
 	return Rect2(tabs[p_tab].ofs_cache, 0, tabs[p_tab].size_cache, get_size().height);
 }
 
