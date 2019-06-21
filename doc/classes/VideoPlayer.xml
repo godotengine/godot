@@ -4,7 +4,7 @@
 		Control for playing video streams.
 	</brief_description>
 	<description>
-		Control node for playing video streams. Supported formats are WebM and OGV Theora.
+		Control node for playing video streams. Supported formats are [url=https://www.webmproject.org/]WebM[/url] and [url=https://www.theora.org/]Ogg Theora[/url].
 	</description>
 	<tutorials>
 	</tutorials>

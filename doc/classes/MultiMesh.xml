@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="MultiMesh" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
-		Provides high performance mesh instancing.
+		Provides high-performance mesh instancing.
 	</brief_description>
 	<description>
-		MultiMesh provides low level mesh instancing. Drawing thousands of [MeshInstance] nodes can be slow because each object is submitted to the GPU to be drawn individually.
-		MultiMesh is much faster because it can draw thousands of instances with a single draw call, resulting in less API overhead.
+		MultiMesh provides low-level mesh instancing. Drawing thousands of [MeshInstance] nodes can be slow, since each object is submitted to the GPU then drawn individually.
+		MultiMesh is much faster as it can draw thousands of instances with a single draw call, resulting in less API overhead.
 		As a drawback, if the instances are too far away of each other, performance may be reduced as every single instance will always rendered (they are spatially indexed as one, for the whole object).
 		Since instances may have any behavior, the AABB used for visibility must be provided by the user.
 	</description>
@@ -17,7 +17,7 @@
 			<return type="AABB">
 			</return>
 			<description>
-				Returns the visibility AABB.
+				Returns the visibility axis-aligned bounding box.
 			</description>
 		</method>
 		<method name="get_instance_color" qualifiers="const">
@@ -26,7 +26,7 @@
 			<argument index="0" name="instance" type="int">
 			</argument>
 			<description>
-				Get the color of a specific instance.
+				Gets a specific instance's color.
 			</description>
 		</method>
 		<method name="get_instance_custom_data" qualifiers="const">
@@ -62,9 +62,9 @@
 			<argument index="0" name="array" type="PoolRealArray">
 			</argument>
 			<description>
-				Set all data related to the instances in one go. This is especially useful when loading the data from disk or preparing the data from GDNative.
+				Sets all data related to the instances in one go. This is especially useful when loading the data from disk or preparing the data from GDNative.
 				All data is packed in one large float array. An array may look like this: Transform for instance 1, color data for instance 1, custom data for instance 1, transform for instance 2, color data for instance 2, etc...
-				[Transform] is stored as 12 floats, [Transform2D] is stored as 8 floats, COLOR_8BIT / CUSTOM_DATA_8BIT is stored as 1 float (4 bytes as is) and COLOR_FLOAT / CUSTOM_DATA_FLOAT is stored as 4 floats.
+				[Transform] is stored as 12 floats, [Transform2D] is stored as 8 floats, [code]COLOR_8BIT[/code] / [code]CUSTOM_DATA_8BIT[/code] is stored as 1 float (4 bytes as is) and [code]COLOR_FLOAT[/code] / [code]CUSTOM_DATA_FLOAT[/code] is stored as 4 floats.
 			</description>
 		</method>
 		<method name="set_instance_color">
@@ -75,7 +75,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Set the color of a specific instance.
+				Sets the color of a specific instance.
 				For the color to take effect, ensure that [member color_format] is non-[code]null[/code] on the [MultiMesh] and [member SpatialMaterial.vertex_color_use_as_albedo] is [code]true[/code] on the material.
 			</description>
 		</method>
@@ -87,7 +87,7 @@
 			<argument index="1" name="custom_data" type="Color">
 			</argument>
 			<description>
-				Set custom data for a specific instance. Although [Color] is used, it is just a container for 4 numbers.
+				Sets custom data for a specific instance. Although [Color] is used, it is just a container for 4 numbers.
 			</description>
 		</method>
 		<method name="set_instance_transform">
@@ -98,7 +98,7 @@
 			<argument index="1" name="transform" type="Transform">
 			</argument>
 			<description>
-				Set the [Transform] for a specific instance.
+				Sets the [Transform] for a specific instance.
 			</description>
 		</method>
 		<method name="set_instance_transform_2d">
@@ -109,7 +109,7 @@
 			<argument index="1" name="transform" type="Transform2D">
 			</argument>
 			<description>
-				Set the [Transform2D] for a specific instance.
+				Sets the [Transform2D] for a specific instance.
 			</description>
 		</method>
 	</methods>
@@ -121,7 +121,7 @@
 			Format of custom data in custom data array that gets passed to shader.
 		</member>
 		<member name="instance_count" type="int" setter="set_instance_count" getter="get_instance_count">
-			Number of instances that will get drawn. This clears and (re)sizes the buffers. By default all instances are drawn but you can limit this with [member visible_instance_count].
+			Number of instances that will get drawn. This clears and (re)sizes the buffers. By default, all instances are drawn but you can limit this with [member visible_instance_count].
 		</member>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			Mesh to be drawn.

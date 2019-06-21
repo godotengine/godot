@@ -12,7 +12,7 @@
 	</methods>
 	<members>
 		<member name="bias" type="float" setter="set_bias" getter="get_bias">
-			When [member node_a] and [member node_b] move in different directions the [code]bias[/code] controls how fast the joint pulls them back to their original position. The lower the [code]bias[/code] the more the two bodies can pull on the joint. Default value: [code]0[/code]
+			When [member node_a] and [member node_b] move in different directions the [code]bias[/code] controls how fast the joint pulls them back to their original position. The lower the [code]bias[/code] the more the two bodies can pull on the joint. Default value: [code]0[/code].
 		</member>
 		<member name="disable_collision" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision">
 			If [code]true[/code], [member node_a] and [member node_b] can collide. Default value: [code]false[/code].

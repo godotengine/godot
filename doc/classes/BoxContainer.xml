@@ -15,13 +15,13 @@
 			<argument index="0" name="begin" type="bool">
 			</argument>
 			<description>
-				Adds a control to the box as a spacer. If [code]true[/code], [i]begin[/i] will insert the spacer control in front of other children.
+				Adds a control to the box as a spacer. If [code]true[/code], [code]begin[/code] will insert the spacer control in front of other children.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="BoxContainer.AlignMode">
-			The alignment of the container's children (must be one of ALIGN_BEGIN, ALIGN_CENTER, or ALIGN_END).
+			The alignment of the container's children (must be one of [constant ALIGN_BEGIN], [constant ALIGN_CENTER] or [constant ALIGN_END]).
 		</member>
 	</members>
 	<constants>

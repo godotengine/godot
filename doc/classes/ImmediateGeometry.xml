@@ -21,7 +21,7 @@
 			<argument index="3" name="add_uv" type="bool" default="true">
 			</argument>
 			<description>
-				Simple helper to draw a uvsphere, with given latitudes, longitude and radius.
+				Simple helper to draw an UV sphere with given latitude, longitude and radius.
 			</description>
 		</method>
 		<method name="add_vertex">
@@ -42,7 +42,7 @@
 			</argument>
 			<description>
 				Begin drawing (And optionally pass a texture override). When done call end(). For more information on how this works, search for glBegin() glEnd() references.
-			For the type of primitive, use the [Mesh].PRIMITIVE_* enumerations.
+			For the type of primitive, use the [Mesh].[code]PRIMITIVE_*[/code] enumerations.
 			</description>
 		</method>
 		<method name="clear">

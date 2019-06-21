@@ -13,10 +13,10 @@
 	</methods>
 	<members>
 		<member name="omni_attenuation" type="float" setter="set_param" getter="get_param">
-			The light's attenuation (drop-off) curve. A number of presets are available in the Inspector.
+			The light's attenuation (drop-off) curve. A number of presets are available in the [b]Inspector[/b] by right-clicking the curve.
 		</member>
 		<member name="omni_range" type="float" setter="set_param" getter="get_param">
-			Maximum distance the light affects.
+			The light's radius.
 		</member>
 		<member name="omni_shadow_detail" type="int" setter="set_shadow_detail" getter="get_shadow_detail" enum="OmniLight.ShadowDetail">
 			See [enum ShadowDetail].
@@ -27,8 +27,10 @@
 	</members>
 	<constants>
 		<constant name="SHADOW_DUAL_PARABOLOID" value="0" enum="ShadowMode">
+			Shadows are rendered to a dual-paraboloid texture. Faster than [constant SHADOW_CUBE], but lower-quality.
 		</constant>
 		<constant name="SHADOW_CUBE" value="1" enum="ShadowMode">
+			Shadows are rendered to a cubemap. Slower than [constant SHADOW_DUAL_PARABOLOID], but higher-quality.
 		</constant>
 		<constant name="SHADOW_DETAIL_VERTICAL" value="0" enum="ShadowDetail">
 		</constant>

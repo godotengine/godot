@@ -13,10 +13,10 @@
 	</methods>
 	<members>
 		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative">
-			Mouse position relative to the previous position (position at the last frame).
+			The mouse position relative to the previous position (position at the last frame).
 		</member>
 		<member name="speed" type="Vector2" setter="set_speed" getter="get_speed">
-			Mouse speed.
+			The mouse speed in pixels per second.
 		</member>
 	</members>
 	<constants>

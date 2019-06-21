@@ -149,7 +149,7 @@
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
-				Converts a 2D point expressed in the cartesian coordinate system (x and y axis) to the polar coordinate system (a distance from the origin and an angle).
+				Converts a 2D point expressed in the cartesian coordinate system (X and Y axis) to the polar coordinate system (a distance from the origin and an angle).
 			</description>
 		</method>
 		<method name="ceil">
@@ -173,10 +173,8 @@
 			<description>
 				Returns a character as a String of the given ASCII code.
 				[codeblock]
-				# a is 'A'
-				a = char(65)
-				# a is 'a'
-				a = char(65 + 32)
+				a = char(65)      # a is "A"
+				a = char(65 + 32) # a is "a"
 				[/codeblock]
 			</description>
 		</method>
@@ -210,14 +208,13 @@
 			<argument index="1" name="type" type="int">
 			</argument>
 			<description>
-				Converts from a type to another in the best way possible. The [code]type[/code] parameter uses the enum TYPE_* in [@GlobalScope].
+				Converts from a type to another in the best way possible. The [code]type[/code] parameter uses the enum [code]TYPE_*[/code] in [@GlobalScope].
 				[codeblock]
 				a = Vector2(1, 0)
-				# prints 1
+				# Prints 1
 				print(a.length())
 				a = convert(a, TYPE_STRING)
-				# prints 6
-				# (1, 0) is 6 characters
+				# Prints 6 as "(1, 0)" is 6 characters
 				print(a.length())
 				[/codeblock]
 			</description>
@@ -230,7 +227,7 @@
 			<description>
 				Returns the cosine of angle [code]s[/code] in radians.
 				[codeblock]
-				# prints 1 and -1
+				# Prints 1 then -1
 				print(cos(PI * 2))
 				print(cos(PI))
 				[/codeblock]
@@ -244,7 +241,7 @@
 			<description>
 				Returns the hyperbolic cosine of [code]s[/code] in radians.
 				[codeblock]
-				# prints 1.543081
+				# Prints 1.543081
 				print(cosh(1))
 				[/codeblock]
 			</description>
@@ -264,7 +261,7 @@
 			<argument index="0" name="step" type="float">
 			</argument>
 			<description>
-				Deprecated alias for "[method step_decimals]".
+				Deprecated alias for [method step_decimals].
 			</description>
 		</method>
 		<method name="dectime">
@@ -326,7 +323,7 @@
 				The natural exponential function. It raises the mathematical constant [b]e[/b] to the power of [code]s[/code] and returns it.
 				[b]e[/b] has an approximate value of 2.71828.
 				[codeblock]
-				a = exp(2) # approximately 7.39
+				a = exp(2) # Approximately 7.39
 				[/codeblock]
 			</description>
 		</method>
@@ -355,7 +352,7 @@
 			<description>
 				Returns the floating-point remainder of [code]x/y[/code].
 				[codeblock]
-				# remainder is 1.5
+				# Remainder is 1.5
 				var remainder = fmod(7, 5.5)
 				[/codeblock]
 			</description>
@@ -404,7 +401,7 @@
 				    return("bar")
 
 				a = funcref(self, "foo")
-				print(a.call_func()) # prints bar
+				print(a.call_func()) # Prints bar
 				[/codeblock]
 			</description>
 		</method>
@@ -437,7 +434,7 @@
 			<description>
 				Returns the integer hash of the variable passed.
 				[codeblock]
-				print(hash("a")) # prints 177670
+				print(hash("a")) # Prints 177670
 				[/codeblock]
 			</description>
 		</method>
@@ -474,7 +471,7 @@
 				func _ready():
 				    var id = get_instance_id()
 				    var inst = instance_from_id(id)
-				    print(inst.foo) # prints bar
+				    print(inst.foo) # Prints bar
 				[/codeblock]
 			</description>
 		</method>
@@ -490,7 +487,7 @@
 			<description>
 				Returns a normalized value considering the given range.
 				[codeblock]
-				inverse_lerp(3, 5, 4) # returns 0.5
+				inverse_lerp(3, 5, 4) # Returns 0.5
 				[/codeblock]
 			</description>
 		</method>
@@ -551,7 +548,7 @@
 				[b]Note:[/b] Generates a fatal error if Variant can not provide a length.
 				[codeblock]
 				a = [1, 2, 3, 4]
-				len(a) # returns 4
+				len(a) # Returns 4
 				[/codeblock]
 			</description>
 		</method>
@@ -569,8 +566,8 @@
 				If the [code]from[/code] and [code]to[/code] arguments are of type [int] or [float], the return value is a [float].
 				If both are of the same vector type ([Vector2], [Vector3] or [Color]), the return value will be of the same type ([code]lerp[/code] then calls the vector type's [code]linear_interpolate[/code] method).
 				[codeblock]
-				lerp(0, 4, 0.75) # returns 3.0
-				lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # returns Vector2(2, 3.5)
+				lerp(0, 4, 0.75) # Returns 3.0
+				lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # Returns Vector2(2, 3.5)
 				[/codeblock]
 			</description>
 		</method>
@@ -590,9 +587,9 @@
 			</argument>
 			<description>
 				Loads a resource from the filesystem located at [code]path[/code].
-				[b]Note:[/b] Resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
+				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the FileSystem dock and choosing [b]Copy Path[/b].
 				[codeblock]
-				# load a scene called main located in the root of the project directory
+				# Load a scene called main located in the root of the project directory
 				var main = load("res://main.tscn")
 				[/codeblock]
 			</description>
@@ -604,9 +601,9 @@
 			</argument>
 			<description>
 				Natural logarithm. The amount of time needed to reach a certain level of continuous growth.
-				[b]Note:[/b] This is not the same as the log function on your calculator which is a base 10 logarithm.
+				[b]Note:[/b] This is not the same as the "log" function on most calculators, which uses a base 10 logarithm.
 				[codeblock]
-				log(10) # returns 2.302585
+				log(10) # Returns 2.302585
 				[/codeblock]
 			</description>
 		</method>
@@ -620,8 +617,8 @@
 			<description>
 				Returns the maximum of two values.
 				[codeblock]
-				max(1, 2) # returns 2
-				max(-3.99, -4) # returns -3.99
+				max(1, 2) # Returns 2
+				max(-3.99, -4) # Returns -3.99
 				[/codeblock]
 			</description>
 		</method>
@@ -635,8 +632,8 @@
 			<description>
 				Returns the minimum of two values.
 				[codeblock]
-				min(1, 2) # returns 1
-				min(-3.99, -4) # returns -4
+				min(1, 2) # Returns 1
+				min(-3.99, -4) # Returns -4
 				[/codeblock]
 			</description>
 		</method>
@@ -653,7 +650,7 @@
 				Moves [code]from[/code] toward [code]to[/code] by the [code]delta[/code] value.
 				Use a negative [code]delta[/code] value to move away.
 				[codeblock]
-				move_toward(10, 5, 4) # returns 6
+				move_toward(10, 5, 4) # Returns 6
 				[/codeblock]
 			</description>
 		</method>
@@ -665,9 +662,9 @@
 			<description>
 				Returns the nearest larger power of 2 for integer [code]value[/code].
 				[codeblock]
-				nearest_po2(3) # returns 4
-				nearest_po2(4) # returns 4
-				nearest_po2(5) # returns 8
+				nearest_po2(3) # Returns 4
+				nearest_po2(4) # Returns 4
+				nearest_po2(5) # Returns 8
 				[/codeblock]
 			</description>
 		</method>
@@ -683,7 +680,7 @@
 				[codeblock]
 				p = parse_json('["a", "b", "c"]')
 				if typeof(p) == TYPE_ARRAY:
-				    print(p[0]) # prints a
+				    print(p[0]) # Prints a
 				else:
 				    print("unexpected results")
 				[/codeblock]
@@ -697,7 +694,7 @@
 			<argument index="1" name="th" type="float">
 			</argument>
 			<description>
-				Converts a 2D point expressed in the polar coordinate system (a distance from the origin [code]r[/code] and an angle [code]th[/code]) to the cartesian coordinate system (x and y axis).
+				Converts a 2D point expressed in the polar coordinate system (a distance from the origin [code]r[/code] and an angle [code]th[/code]) to the cartesian coordinate system (X and Y axis).
 			</description>
 		</method>
 		<method name="pow">
@@ -710,7 +707,7 @@
 			<description>
 				Returns the result of [code]x[/code] raised to the power of [code]y[/code].
 				[codeblock]
-				pow(2, 5) # returns 32
+				pow(2, 5) # Returns 32
 				[/codeblock]
 			</description>
 		</method>
@@ -723,7 +720,7 @@
 				Returns a resource from the filesystem that is loaded during script parsing.
 				[b]Note:[/b] Resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
 				[codeblock]
-				# load a scene called main located in the root of the project directory
+				# Load a scene called main located in the root of the project directory
 				var main = preload("res://main.tscn")
 				[/codeblock]
 			</description>
@@ -735,7 +732,7 @@
 				Converts one or more arguments to strings in the best way possible and prints them to the console.
 				[codeblock]
 				a = [1, 2, 3]
-				print("a", "b", a) # prints ab[1, 2, 3]
+				print("a", "b", a) # Prints ab[1, 2, 3]
 				[/codeblock]
 			</description>
 		</method>
@@ -775,7 +772,7 @@
 				[codeblock]
 				printraw("A")
 				printraw("B")
-				# prints AB
+				# Prints AB
 				[/codeblock]
 			</description>
 		</method>
@@ -785,7 +782,7 @@
 			<description>
 				Prints one or more arguments to the console with a space between each argument.
 				[codeblock]
-				prints("A", "B", "C") # prints A B C
+				prints("A", "B", "C") # Prints A B C
 				[/codeblock]
 			</description>
 		</method>
@@ -795,7 +792,7 @@
 			<description>
 				Prints one or more arguments to the console with a tab between each argument.
 				[codeblock]
-				printt("A", "B", "C") # prints A       B       C
+				printt("A", "B", "C") # Prints A       B       C
 				[/codeblock]
 			</description>
 		</method>
@@ -807,7 +804,7 @@
 			<description>
 				Pushes an error message to Godot's built-in debugger and to the OS terminal.
 				[codeblock]
-				push_error("test error") # prints "test error" to debugger and terminal as error call
+				push_error("test error") # Prints "test error" to debugger and terminal as error call
 				[/codeblock]
 			</description>
 		</method>
@@ -819,7 +816,7 @@
 			<description>
 				Pushes a warning message to Godot's built-in debugger and to the OS terminal.
 				[codeblock]
-				push_warning("test warning") # prints "test warning" to debugger and terminal as warning call
+				push_warning("test warning") # Prints "test warning" to debugger and terminal as warning call
 				[/codeblock]
 			</description>
 		</method>
@@ -831,7 +828,7 @@
 			<description>
 				Converts from radians to degrees.
 				[codeblock]
-				rad2deg(0.523599) # returns 30
+				rad2deg(0.523599) # Returns 30
 				[/codeblock]
 			</description>
 		</method>
@@ -845,7 +842,7 @@
 			<description>
 				Random range, any floating point value between [code]from[/code] and [code]to[/code].
 				[codeblock]
-				prints(rand_range(0, 1), rand_range(0, 1)) # prints e.g. 0.135591 0.405263
+				prints(rand_range(0, 1), rand_range(0, 1)) # Prints e.g. 0.135591 0.405263
 				[/codeblock]
 			</description>
 		</method>
@@ -864,7 +861,7 @@
 			<description>
 				Returns a random floating point value on the interval [code][0, 1][/code].
 				[codeblock]
-				randf() # returns e.g. 0.375671
+				randf() # Returns e.g. 0.375671
 				[/codeblock]
 			</description>
 		</method>
@@ -874,10 +871,10 @@
 			<description>
 				Returns a random unsigned 32 bit integer. Use remainder to obtain a random value in the interval [code][0, N][/code] (where N is smaller than 2^32 -1).
 				[codeblock]
-				randi()           # returns random integer between 0 and 2^32 - 1
-				randi() % 20      # returns random integer between 0 and 19
-				randi() % 100     # returns random integer between 0 and 99
-				randi() % 100 + 1 # returns random integer between 1 and 100
+				randi()           # Returns random integer between 0 and 2^32 - 1
+				randi() % 20      # Returns random integer between 0 and 19
+				randi() % 100     # Returns random integer between 0 and 99
+				randi() % 100 + 1 # Returns random integer between 1 and 100
 				[/codeblock]
 			</description>
 		</method>
@@ -938,7 +935,7 @@
 			<description>
 				Maps a [code]value[/code] from range [code][istart, istop][/code] to [code][ostart, ostop][/code].
 				[codeblock]
-				range_lerp(75, 0, 100, -1, 1) # returns 0.5
+				range_lerp(75, 0, 100, -1, 1) # Returns 0.5
 				[/codeblock]
 			</description>
 		</method>
@@ -950,7 +947,7 @@
 			<description>
 				Returns the integral value that is nearest to [code]s[/code], with halfway cases rounded away from zero.
 				[codeblock]
-				round(2.6) # returns 3
+				round(2.6) # Returns 3
 				[/codeblock]
 			</description>
 		</method>
@@ -975,9 +972,9 @@
 			<description>
 				Returns the sign of [code]s[/code]: -1 or 1. Returns 0 if [code]s[/code] is 0.
 				[codeblock]
-				sign(-6) # returns -1
-				sign(0)  # returns 0
-				sign(6)  # returns 1
+				sign(-6) # Returns -1
+				sign(0)  # Returns 0
+				sign(6)  # Returns 1
 				[/codeblock]
 			</description>
 		</method>
@@ -989,7 +986,7 @@
 			<description>
 				Returns the sine of angle [code]s[/code] in radians.
 				[codeblock]
-				sin(0.523599) # returns 0.5
+				sin(0.523599) # Returns 0.5
 				[/codeblock]
 			</description>
 		</method>
@@ -1001,8 +998,8 @@
 			<description>
 				Returns the hyperbolic sine of [code]s[/code].
 				[codeblock]
-				a = log(2.0) # returns 0.693147
-				sinh(a) # returns 0.75
+				a = log(2.0) # Returns 0.693147
+				sinh(a) # Returns 0.75
 				[/codeblock]
 			</description>
 		</method>
@@ -1018,9 +1015,9 @@
 			<description>
 				Returns a number smoothly interpolated between the [code]from[/code] and [code]to[/code], based on the [code]weight[/code]. Similar to [method lerp], but interpolates faster at the beginning and slower at the end.
 				[codeblock]
-				smoothstep(0, 2, 0.5) # returns 0.15
-				smoothstep(0, 2, 1.0) # returns 0.5
-				smoothstep(0, 2, 2.0) # returns 1.0
+				smoothstep(0, 2, 0.5) # Returns 0.15
+				smoothstep(0, 2, 1.0) # Returns 0.5
+				smoothstep(0, 2, 2.0) # Returns 1.0
 				[/codeblock]
 			</description>
 		</method>
@@ -1032,7 +1029,7 @@
 			<description>
 				Returns the square root of [code]s[/code].
 				[codeblock]
-				sqrt(9) # returns 3
+				sqrt(9) # Returns 3
 				[/codeblock]
 			</description>
 		</method>
@@ -1072,8 +1069,8 @@
 				[codeblock]
 				var a = [10, 20, 30]
 				var b = str(a);
-				len(a) # returns 3
-				len(b) # returns 12
+				len(a) # Returns 3
+				len(b) # Returns 12
 				[/codeblock]
 			</description>
 		</method>
@@ -1087,7 +1084,7 @@
 				[codeblock]
 				a = '{ "a": 1, "b": 2 }'
 				b = str2var(a)
-				print(b['a']) # prints 1
+				print(b["a"]) # Prints 1
 				[/codeblock]
 			</description>
 		</method>
@@ -1099,7 +1096,7 @@
 			<description>
 				Returns the tangent of angle [code]s[/code] in radians.
 				[codeblock]
-				tan(deg2rad(45)) # returns 1
+				tan(deg2rad(45)) # Returns 1
 				[/codeblock]
 			</description>
 		</method>
@@ -1111,8 +1108,8 @@
 			<description>
 				Returns the hyperbolic tangent of [code]s[/code].
 				[codeblock]
-				a = log(2.0) # returns 0.693147
-				tanh(a)      # returns 0.6
+				a = log(2.0) # Returns 0.693147
+				tanh(a)      # Returns 0.6
 				[/codeblock]
 			</description>
 		</method>
@@ -1124,7 +1121,7 @@
 			<description>
 				Converts a Variant [code]var[/code] to JSON text and return the result. Useful for serializing data to store or send over the network.
 				[codeblock]
-				a = { 'a': 1, 'b': 2 }
+				a = { "a": 1, "b": 2 }
 				b = to_json(a)
 				print(b) # {"a":1, "b":2}
 				[/codeblock]
@@ -1138,8 +1135,8 @@
 			<description>
 				Returns whether the given class exists in [ClassDB].
 				[codeblock]
-				type_exists("Sprite") # returns true
-				type_exists("Variant") # returns false
+				type_exists("Sprite") # Returns true
+				type_exists("Variant") # Returns false
 				[/codeblock]
 			</description>
 		</method>
@@ -1149,11 +1146,11 @@
 			<argument index="0" name="what" type="Variant">
 			</argument>
 			<description>
-				Returns the internal type of the given Variant object, using the TYPE_* enum in [@GlobalScope].
+				Returns the internal type of the given Variant object, using the [code]TYPE_*[/code] enum in [@GlobalScope].
 				[codeblock]
 				p = parse_json('["a", "b", "c"]')
 				if typeof(p) == TYPE_ARRAY:
-				    print(p[0]) # prints a
+				    print(p[0]) # Prints a
 				else:
 				    print("unexpected results")
 				[/codeblock]
@@ -1195,7 +1192,7 @@
 			<description>
 				Converts a Variant [code]var[/code] to a formatted string that can later be parsed using [method str2var].
 				[codeblock]
-				a = { 'a': 1, 'b': 2 }
+				a = { "a": 1, "b": 2 }
 				print(var2str(a))
 				[/codeblock]
 				prints
@@ -1238,17 +1235,17 @@
 				a = wrapf(-0.5, 0.0, 10.0)
 				[/codeblock]
 				[codeblock]
-				# infinite loop between 0.0 and 0.99
+				# Infinite loop between 0.0 and 0.99
 				f = wrapf(f + 0.1, 0.0, 1.0)
 				[/codeblock]
 				[codeblock]
-				# infinite rotation (in radians)
+				# Infinite rotation (in radians)
 				angle = wrapf(angle + 0.1, 0.0, TAU)
 				[/codeblock]
-				Note: If you just want to wrap between 0.0 and [code]n[/code] (where [code]n[/code] is a positive float value) then it's better for performance to use [method fmod] method like [code]fmod(number, n)[/code].
-				The usage of [code]wrapf[/code] is more flexible than using the [method fmod] approach by giving the user a simple control over the minimum value. It also fully supports negative numbers, e.g.
+				[b]Note:[/b] If you just want to wrap between 0.0 and [code]n[/code] (where [code]n[/code] is a positive floating-point value), it is better for performance to use the [method fmod] method like [code]fmod(number, n)[/code].
+				[code]wrapf[/code] is more flexible than using the [method fmod] approach by giving the user a simple control over the minimum value. It also fully supports negative numbers, e.g.
 				[codeblock]
-				# infinite rotation (in radians)
+				# Infinite rotation (in radians)
 				angle = wrapf(angle + 0.1, -PI, PI)
 				[/codeblock]
 			</description>
@@ -1274,11 +1271,11 @@
 				a = wrapi(-1, 0, 10)
 				[/codeblock]
 				[codeblock]
-				# infinite loop between 0 and 9
+				# Infinite loop between 0 and 9
 				frame = wrapi(frame + 1, 0, 10)
 				[/codeblock]
-				Note: If you just want to wrap between 0 and [code]n[/code] (where [code]n[/code] is a positive integer value) then it's better for performance to use modulo operator like [code]number % n[/code].
-				The usage of [code]wrapi[/code] is more flexible than using the modulo approach by giving the user a simple control over the minimum value. It also fully supports negative numbers, e.g.
+				[b]Note:[/b] If you just want to wrap between 0 and [code]n[/code] (where [code]n[/code] is a positive integer value), it is better for performance to use the modulo operator like [code]number % n[/code].
+				[code]wrapi[/code] is more flexible than using the modulo approach by giving the user a simple control over the minimum value. It also fully supports negative numbers, e.g.
 				[codeblock]
 				# result is -2
 				var result = wrapi(-6, -5, -1)

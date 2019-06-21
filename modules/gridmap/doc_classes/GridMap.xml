@@ -86,14 +86,14 @@
 			<return type="Array">
 			</return>
 			<description>
-				Array of [Transform] and [Mesh] references corresponding to the non empty cells in the grid. The transforms are specified in world space.
+				Array of [Transform] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in world space.
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Array of [Vector3] with the non empty cell coordinates in the grid map.
+				Array of [Vector3] with the non-empty cell coordinates in the grid map.
 			</description>
 		</method>
 		<method name="make_baked_meshes">

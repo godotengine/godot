@@ -17,21 +17,21 @@
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
-				Create a NodePath from a string, e.g. "Path2D/PathFollow2D/Sprite:texture:size". A path is absolute if it starts with a slash. Absolute paths are only valid in the global scene tree, not within individual scenes. In a relative path, [code]"."[/code] and [code]".."[/code] indicate the current node and its parent.
+				Creates a NodePath from a string, e.g. [code]"Path2D/PathFollow2D/Sprite:texture:size"[/code]. A path is absolute if it starts with a slash. Absolute paths are only valid in the global scene tree, not within individual scenes. In a relative path, [code]"."[/code] and [code]".."[/code] indicate the current node and its parent.
 				The "subnames" optionally included after the path to the target node can point to resources or properties, and can also be nested.
 				Examples of valid NodePaths (assuming that those nodes exist and have the referenced resources or properties):
 				[codeblock]
 				# Points to the Sprite node
 				"Path2D/PathFollow2D/Sprite"
-				# Points to the Sprite node and its 'texture' resource.
+				# Points to the Sprite node and its "texture" resource.
 				# get_node() would retrieve "Sprite", while get_node_and_resource()
-				# would retrieve both the Sprite node and the 'texture' resource.
+				# would retrieve both the Sprite node and the "texture" resource.
 				"Path2D/PathFollow2D/Sprite:texture"
-				# Points to the Sprite node and its 'position' property.
+				# Points to the Sprite node and its "position" property.
 				"Path2D/PathFollow2D/Sprite:position"
-				# Points to the Sprite node and the 'x' component of its 'position' property.
+				# Points to the Sprite node and the "x" component of its "position" property.
 				"Path2D/PathFollow2D/Sprite:position:x"
-				# Absolute path (from 'root')
+				# Absolute path (from "root")
 				"/root/Level/Path2D"
 				[/codeblock]
 			</description>
@@ -42,9 +42,9 @@
 			<description>
 				Returns a node path with a colon character ([code]:[/code]) prepended, transforming it to a pure property path with no node name (defaults to resolving from the current node).
 				[codeblock]
-				# This will be parsed as a node path to the 'x' property in the 'position' node
+				# This will be parsed as a node path to the "x" property in the "position" node
 				var node_path = NodePath("position:x")
-				# This will be parsed as a node path to the 'x' component of the 'position' property in the current node
+				# This will be parsed as a node path to the "x" component of the "position" property in the current node
 				var property_path = node_path.get_as_property_path()
 				print(property_path) # :position:x
 				[/codeblock]
@@ -67,7 +67,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Get the node name indicated by [code]idx[/code] (0 to [method get_name_count]).
+				Gets the node name indicated by [code]idx[/code] (0 to [method get_name_count]).
 				[codeblock]
 				var node_path = NodePath("Path2D/PathFollow2D/Sprite")
 				print(node_path.get_name(0)) # Path2D
@@ -80,7 +80,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Get the number of node names which make up the path. Subnames (see [method get_subname_count]) are not included.
+				Gets the number of node names which make up the path. Subnames (see [method get_subname_count]) are not included.
 				For example, [code]"Path2D/PathFollow2D/Sprite"[/code] has 3 names.
 			</description>
 		</method>
@@ -90,7 +90,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Get the resource or property name indicated by [code]idx[/code] (0 to [method get_subname_count]).
+				Gets the resource or property name indicated by [code]idx[/code] (0 to [method get_subname_count]).
 				[codeblock]
 				var node_path = NodePath("Path2D/PathFollow2D/Sprite:texture:load_path")
 				print(node_path.get_subname(0)) # texture
@@ -102,7 +102,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Get the number of resource or property names ("subnames") in the path. Each subname is listed after a colon character ([code]:[/code]) in the node path.
+				Gets the number of resource or property names ("subnames") in the path. Each subname is listed after a colon character ([code]:[/code]) in the node path.
 				For example, [code]"Path2D/PathFollow2D/Sprite:texture:load_path"[/code] has 2 subnames.
 			</description>
 		</method>

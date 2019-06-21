@@ -4,7 +4,7 @@
 		Texture-based progress bar. Useful for loading screens and life or stamina bars.
 	</brief_description>
 	<description>
-		TextureProgress works like [ProgressBar] but it uses up to 3 textures instead of Godot's [Theme] resource. Works horizontally, vertically, and radially.
+		TextureProgress works like [ProgressBar], but uses up to 3 textures instead of Godot's [Theme] resource. It can be used to create horizontal, vertical and radial progress bars.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,10 +12,10 @@
 	</methods>
 	<members>
 		<member name="fill_mode" type="int" setter="set_fill_mode" getter="get_fill_mode">
-			The fill direction. Uses FILL_* constants.
+			The fill direction. See [enum FillMode] for possible values.
 		</member>
 		<member name="nine_patch_stretch" type="bool" setter="set_nine_patch_stretch" getter="get_nine_patch_stretch">
-			If [code]true[/code], Godot treats the bar's textures like [NinePatchRect]. Use [code]stretch_margin_*[/code], like [member stretch_margin_bottom], to set up the nine patch's 3x3 grid. Default value: [code]false[/code].
+			If [code]true[/code], Godot treats the bar's textures like in [NinePatchRect]. Use the [code]stretch_margin_*[/code] properties like [member stretch_margin_bottom] to set up the nine patch's 3×3 grid. Default value: [code]false[/code].
 		</member>
 		<member name="radial_center_offset" type="Vector2" setter="set_radial_center_offset" getter="get_radial_center_offset">
 			Offsets [member texture_progress] if [member fill_mode] is [constant FILL_CLOCKWISE] or [constant FILL_COUNTER_CLOCKWISE].
@@ -76,7 +76,7 @@
 			Turns the node into a radial bar. The [member texture_progress] fills clockwise. See [member radial_center_offset], [member radial_initial_angle] and [member radial_fill_degrees] to control the way the bar fills up.
 		</constant>
 		<constant name="FILL_COUNTER_CLOCKWISE" value="5" enum="FillMode">
-			Turns the node into a radial bar. The [member texture_progress] fills counter-clockwise. See [member radial_center_offset], [member radial_initial_angle] and [member radial_fill_degrees] to control the way the bar fills up.
+			Turns the node into a radial bar. The [member texture_progress] fills counterclockwise. See [member radial_center_offset], [member radial_initial_angle] and [member radial_fill_degrees] to control the way the bar fills up.
 		</constant>
 		<constant name="FILL_BILINEAR_LEFT_AND_RIGHT" value="6" enum="FillMode">
 			The [member texture_progress] fills from the center, expanding both towards the left and the right.
@@ -85,7 +85,7 @@
 			The [member texture_progress] fills from the center, expanding both towards the top and the bottom.
 		</constant>
 		<constant name="FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE" value="8" enum="FillMode">
-			Turns the node into a radial bar. The [member texture_progress] fills radially from the center, expanding both clockwise and counter-clockwise. See [member radial_center_offset], [member radial_initial_angle] and [member radial_fill_degrees] to control the way the bar fills up.
+			Turns the node into a radial bar. The [member texture_progress] fills radially from the center, expanding both clockwise and counterclockwise. See [member radial_center_offset], [member radial_initial_angle] and [member radial_fill_degrees] to control the way the bar fills up.
 		</constant>
 	</constants>
 </class>

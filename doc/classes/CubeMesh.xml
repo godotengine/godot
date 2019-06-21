@@ -16,13 +16,13 @@
 			Size of the cuboid mesh. Defaults to (2, 2, 2).
 		</member>
 		<member name="subdivide_depth" type="int" setter="set_subdivide_depth" getter="get_subdivide_depth">
-			Number of extra edge loops inserted along the z-axis. Defaults to 0.
+			Number of extra edge loops inserted along the Z axis. Defaults to 0.
 		</member>
 		<member name="subdivide_height" type="int" setter="set_subdivide_height" getter="get_subdivide_height">
-			Number of extra edge loops inserted along the y-axis. Defaults to 0.
+			Number of extra edge loops inserted along the Y axis. Defaults to 0.
 		</member>
 		<member name="subdivide_width" type="int" setter="set_subdivide_width" getter="get_subdivide_width">
-			Number of extra edge loops inserted along the x-axis. Defaults to 0.
+			Number of extra edge loops inserted along the X axis. Defaults to 0.
 		</member>
 	</members>
 	<constants>

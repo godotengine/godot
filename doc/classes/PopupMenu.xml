@@ -19,7 +19,8 @@
 			<argument index="2" name="accel" type="int" default="0">
 			</argument>
 			<description>
-				Add a new checkable item with text "label". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+				Adds a new checkable item with text [code]label[/code]. An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index.
+				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="add_check_shortcut">
@@ -46,8 +47,8 @@
 			<argument index="3" name="accel" type="int" default="0">
 			</argument>
 			<description>
-				Add a new checkable item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be
-				created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+				Adds a new checkable item with text [code]label[/code] and icon [code]texture[/code]. An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index.
+				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="add_icon_check_shortcut">
@@ -76,7 +77,7 @@
 			<argument index="3" name="accel" type="int" default="0">
 			</argument>
 			<description>
-				Add a new item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator keybinding. If no id is provided, one will be created from the index.
+				Adds a new item with text [code]label[/code] and icon [code]texture[/code]. An [code]id[/code] can optionally be provided, as well as an accelerator keybinding ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index.
 			</description>
 		</method>
 		<method name="add_icon_shortcut">
@@ -103,7 +104,7 @@
 			<argument index="2" name="accel" type="int" default="0">
 			</argument>
 			<description>
-				Add a new item with text "label". An id can optionally be provided, as well as an accelerator keybinding. If no id is provided, one will be created from the index.
+				Adds a new item with text [code]label[/code]. An [code]id[/code] can optionally be provided, as well as an accelerator keybinding ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index.
 			</description>
 		</method>
 		<method name="add_radio_check_item">
@@ -116,7 +117,8 @@
 			<argument index="2" name="accel" type="int" default="0">
 			</argument>
 			<description>
-				The same as [method add_check_item] but the inserted item will look as a radio button. Remember this is just cosmetic and you have to add the logic for checking/unchecking items in radio groups.
+				The same as [method add_check_item], but the inserted item will look as a radio button.
+				[b]Note:[/b] This is purely cosmetic; you must add the logic for checking/unchecking items in radio groups.
 			</description>
 		</method>
 		<method name="add_radio_check_shortcut">
@@ -137,7 +139,7 @@
 			<argument index="0" name="label" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Add a separator between items. Separators also occupy an index.
+				Adds a separator between items. Separators also occupy an index.
 			</description>
 		</method>
 		<method name="add_shortcut">
@@ -178,7 +180,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the accelerator of the item at index "idx". Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+				Returns the accelerator of the item at index [code]idx[/code]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
 			</description>
 		</method>
 		<method name="get_item_count" qualifiers="const">
@@ -194,7 +196,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the icon of the item at index "idx".
+				Returns the icon of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_item_id" qualifiers="const">
@@ -203,7 +205,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the id of the item at index "idx".
+				Returns the id of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_item_index" qualifiers="const">
@@ -212,7 +214,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Find and return the index of the item containing a given id.
+				Finds and return the index of the item containing a given [code]id[/code].
 			</description>
 		</method>
 		<method name="get_item_metadata" qualifiers="const">
@@ -238,7 +240,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the submenu name of the item at index "idx".
+				Returns the submenu name of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
@@ -247,7 +249,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the text of the item at index "idx".
+				Returns the text of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_item_tooltip" qualifiers="const">
@@ -270,7 +272,8 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns whether the item at index "idx" is checkable in some way, i.e., whether has a checkbox or radio button. Note that checkable items just display a checkmark or radio button, but don't have any built-in checking behavior and must be checked/unchecked manually.
+				Returns [code]true[/code] if the item at index [code]idx[/code] is checkable in some way, i.e. if it has a checkbox or radio button.
+				[b]Note:[/b] Checkable items just display a checkmark or radio button, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="is_item_checked" qualifiers="const">
@@ -279,7 +282,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns whether the item at index "idx" is checked.
+				Returns [code]true[/code] if the item at index [code]idx[/code] is checked.
 			</description>
 		</method>
 		<method name="is_item_disabled" qualifiers="const">
@@ -288,7 +291,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns whether the item at index "idx" is disabled. When it is disabled it can't be selected, or its action invoked.
+				Returns [code]true[/code] if the item at index [code]idx[/code] is disabled. When it is disabled it can't be selected, or its action invoked.
 			</description>
 		</method>
 		<method name="is_item_radio_checkable" qualifiers="const">
@@ -297,7 +300,8 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns whether the item at index "idx" has radio-button-style checkability. Remember this is just cosmetic and you have to add the logic for checking/unchecking items in radio groups.
+				Returns [code]true[/code] if the item at index [code]idx[/code] has radio-button-style checkability.
+				[b]Note:[/b] This is purely cosmetic; you must add the logic for checking/unchecking items in radio groups.
 			</description>
 		</method>
 		<method name="is_item_separator" qualifiers="const">
@@ -306,7 +310,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns whether the item is a separator. If it is, it would be displayed as a line.
+				Returns [code]true[/code] if the item is a separator. If it is, it will be displayed as a line.
 			</description>
 		</method>
 		<method name="is_item_shortcut_disabled" qualifiers="const">
@@ -323,7 +327,8 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Removes the item at index "idx" from the menu. Note that the indexes of items after the removed item are going to be shifted by one.
+				Removes the item at index [code]idx[/code] from the menu.
+				[b]Note:[/b] The indices of items after the removed item will be shifted by one.
 			</description>
 		</method>
 		<method name="set_hide_on_window_lose_focus">
@@ -342,7 +347,7 @@
 			<argument index="1" name="accel" type="int">
 			</argument>
 			<description>
-				Set the accelerator of the item at index "idx". Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+				Sets the accelerator of the item at index [code]idx[/code]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
 			</description>
 		</method>
 		<method name="set_item_as_checkable">
@@ -353,7 +358,8 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				Set whether the item at index "idx" has a checkbox. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+				Sets whether the item at index [code]idx[/code] has a checkbox.
+				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="set_item_as_radio_checkable">
@@ -376,7 +382,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				Mark the item at index "idx" as a separator, which means that it would be displayed as a line.
+				Mark the item at index [code]idx[/code] as a separator, which means that it would be displayed as a line.
 			</description>
 		</method>
 		<method name="set_item_checked">
@@ -387,7 +393,7 @@
 			<argument index="1" name="checked" type="bool">
 			</argument>
 			<description>
-				Set the checkstate status of the item at index "idx".
+				Sets the checkstate status of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_item_disabled">
@@ -398,7 +404,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				Sets whether the item at index "idx" is disabled or not. When it is disabled it can't be selected, or its action invoked.
+				Sets whether the item at index [code]idx[/code] is disabled or not. When it is disabled, it can't be selected and its action can't be invoked.
 			</description>
 		</method>
 		<method name="set_item_icon">
@@ -419,7 +425,7 @@
 			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
-				Set the id of the item at index "idx".
+				Sets the [code]id[/code] of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_item_metadata">
@@ -430,7 +436,7 @@
 			<argument index="1" name="metadata" type="Variant">
 			</argument>
 			<description>
-				Sets the metadata of an item, which might be of any type. You can later get it with [method get_item_metadata], which provides a simple way of assigning context data to items.
+				Sets the metadata of an item, which may be of any type. You can later get it with [method get_item_metadata], which provides a simple way of assigning context data to items.
 			</description>
 		</method>
 		<method name="set_item_multistate">
@@ -473,7 +479,7 @@
 			<argument index="1" name="submenu" type="String">
 			</argument>
 			<description>
-				Sets the submenu of the item at index "idx". The submenu is the name of a child PopupMenu node that would be shown when the item is clicked.
+				Sets the submenu of the item at index [code]idx[/code]. The submenu is the name of a child PopupMenu node that would be shown when the item is clicked.
 			</description>
 		</method>
 		<method name="set_item_text">
@@ -484,7 +490,7 @@
 			<argument index="1" name="text" type="String">
 			</argument>
 			<description>
-				Set the text of the item at index "idx".
+				Sets the text of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_item_tooltip">
@@ -533,21 +539,21 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				This event is emitted when user navigated to an item of some id using [code]ui_up[/code] or [code]ui_down[/code] action.
+				Emitted when user navigated to an item of some [code]id[/code] using [code]ui_up[/code] or [code]ui_down[/code] action.
 			</description>
 		</signal>
 		<signal name="id_pressed">
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				This event is emitted when an item of some id is pressed or its accelerator is activated.
+				Emitted when an item of some [code]id[/code] is pressed or its accelerator is activated.
 			</description>
 		</signal>
 		<signal name="index_pressed">
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				This event is emitted when an item of some index is pressed or its accelerator is activated.
+				Emitted when an item of some [code]index[/code] is pressed or its accelerator is activated.
 			</description>
 		</signal>
 	</signals>

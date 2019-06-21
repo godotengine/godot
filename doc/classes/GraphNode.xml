@@ -4,7 +4,7 @@
 		A GraphNode is a container with several input and output slots allowing connections between GraphNodes. Slots can have different, incompatible types.
 	</brief_description>
 	<description>
-		A GraphNode is a container defined by a title. It can have 1 or more input and output slots, which can be enabled (shown) or disabled (not shown) and have different (incompatible) types. Colors can also be assigned to slots. A tuple of input and output slots is defined for each GUI element included in the GraphNode. Input and output connections are left and right slots, but only enabled slots are counted as connections.
+		A GraphNode is a container defined by a title. It can have one or more input and output slots, which can be enabled (shown) or disabled (not shown) and have different (incompatible) types. Colors can also be assigned to slots. A tuple of input and output slots is defined for each GUI element included in the GraphNode. Input and output connections are left and right slots, but only enabled slots are counted as connections.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,7 +13,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Disable all input and output slots of the GraphNode.
+				Disables all input and output slots of the GraphNode.
 			</description>
 		</method>
 		<method name="clear_slot">
@@ -22,7 +22,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Disable input and output slot whose index is 'idx'.
+				Disables input and output slot whose index is [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_input_color">
@@ -31,7 +31,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the color of the input connection 'idx'.
+				Returns the color of the input connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_input_count">
@@ -47,7 +47,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the position of the input connection 'idx'.
+				Returns the position of the input connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_input_type">
@@ -56,7 +56,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the type of the input connection 'idx'.
+				Returns the type of the input connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_output_color">
@@ -65,7 +65,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the color of the output connection 'idx'.
+				Returns the color of the output connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_output_count">
@@ -81,7 +81,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the position of the output connection 'idx'.
+				Returns the position of the output connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_output_type">
@@ -90,7 +90,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the type of the output connection 'idx'.
+				Returns the type of the output connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_slot_color_left" qualifiers="const">
@@ -99,7 +99,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the color set to 'idx' left (input) slot.
+				Returns the color set to [code]idx[/code] left (input) slot.
 			</description>
 		</method>
 		<method name="get_slot_color_right" qualifiers="const">
@@ -108,7 +108,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the color set to 'idx' right (output) slot.
+				Returns the color set to [code]idx[/code] right (output) slot.
 			</description>
 		</method>
 		<method name="get_slot_type_left" qualifiers="const">
@@ -117,7 +117,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the (integer) type of left (input) 'idx' slot.
+				Returns the (integer) type of left (input) [code]idx[/code] slot.
 			</description>
 		</method>
 		<method name="get_slot_type_right" qualifiers="const">
@@ -126,7 +126,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the (integer) type of right (output) 'idx' slot.
+				Returns the (integer) type of right (output) [code]idx[/code] slot.
 			</description>
 		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
@@ -135,7 +135,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if left (input) slot 'idx' is enabled, [code]false[/code] otherwise.
+				Returns [code]true[/code] if left (input) slot [code]idx[/code] is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="is_slot_enabled_right" qualifiers="const">
@@ -144,7 +144,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if right (output) slot 'idx' is enabled, [code]false[/code] otherwise.
+				Returns [code]true[/code] if right (output) slot [code]idx[/code] is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="set_slot">
@@ -176,7 +176,8 @@
 		<member name="comment" type="bool" setter="set_comment" getter="is_comment">
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
-			The offset of the GraphNode, relative to the scroll offset of the [GraphEdit]. Note that you cannot use position directly, as [GraphEdit] is a [Container].
+			The offset of the GraphNode, relative to the scroll offset of the [GraphEdit].
+			[b]Note:[/b] You cannot use position directly, as [GraphEdit] is a [Container].
 		</member>
 		<member name="overlay" type="int" setter="set_overlay" getter="get_overlay" enum="GraphNode.Overlay">
 		</member>

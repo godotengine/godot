@@ -4,7 +4,7 @@
 		A mathematic curve.
 	</brief_description>
 	<description>
-		A curve that can be saved and re-used for other objects. By default it ranges between [code]0[/code] and [code]1[/code] on the y-axis and positions points relative to the [code]0.5[/code] y-position.
+		A curve that can be saved and re-used for other objects. By default, it ranges between [code]0[/code] and [code]1[/code] on the Y axis and positions points relative to the [code]0.5[/code] Y position.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -60,7 +60,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Returns the left [code]TangentMode[/code] for the point at [code]index[/code].
+				Returns the left [enum TangentMode] for the point at [code]index[/code].
 			</description>
 		</method>
 		<method name="get_point_left_tangent" qualifiers="const">
@@ -87,7 +87,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Returns the right [code]TangentMode[/code] for the point at [code]index[/code].
+				Returns the right [enum TangentMode] for the point at [code]index[/code].
 			</description>
 		</method>
 		<method name="get_point_right_tangent" qualifiers="const">
@@ -105,7 +105,7 @@
 			<argument index="0" name="offset" type="float">
 			</argument>
 			<description>
-				Returns the y value for the point that would exist at x-position [code]offset[/code] along the curve.
+				Returns the Y value for the point that would exist at the X position [code]offset[/code] along the curve.
 			</description>
 		</method>
 		<method name="interpolate_baked">
@@ -114,7 +114,7 @@
 			<argument index="0" name="offset" type="float">
 			</argument>
 			<description>
-				Returns the y value for the point that would exist at x-position [code]offset[/code] along the curve using the baked cache. Bakes the curve's points if not already baked.
+				Returns the Y value for the point that would exist at the X position [code]offset[/code] along the curve using the baked cache. Bakes the curve's points if not already baked.
 			</description>
 		</method>
 		<method name="remove_point">
@@ -134,7 +134,7 @@
 			<argument index="1" name="mode" type="int" enum="Curve.TangentMode">
 			</argument>
 			<description>
-				Sets the left [code]TangentMode[/code] for the point at [code]index[/code] to [code]mode[/code].
+				Sets the left [enum TangentMode] for the point at [code]index[/code] to [code]mode[/code].
 			</description>
 		</method>
 		<method name="set_point_left_tangent">
@@ -156,7 +156,7 @@
 			<argument index="1" name="offset" type="float">
 			</argument>
 			<description>
-				Sets the offset from [code]0.5[/code]
+				Sets the offset from [code]0.5[/code].
 			</description>
 		</method>
 		<method name="set_point_right_mode">
@@ -167,7 +167,7 @@
 			<argument index="1" name="mode" type="int" enum="Curve.TangentMode">
 			</argument>
 			<description>
-				Sets the right [code]TangentMode[/code] for the point at [code]index[/code] to [code]mode[/code].
+				Sets the right [enum TangentMode] for the point at [code]index[/code] to [code]mode[/code].
 			</description>
 		</method>
 		<method name="set_point_right_tangent">

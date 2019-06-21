@@ -15,7 +15,7 @@
 	<members>
 		<member name="angle" type="float" setter="set_param" getter="get_param">
 			Initial rotation applied to each particle, in degrees.
-			Only applied when [member flag_disable_z] or [member flag_rotate_y] are [code]true[/code] or the [SpatialMaterial] being used to draw the particle is using [code]BillboardMode.BILLBOARD_PARTICLES[/code].
+			Only applied when [member flag_disable_z] or [member flag_rotate_y] are [code]true[/code] or the [SpatialMaterial] being used to draw the particle is using [constant SpatialMaterial.BILLBOARD_PARTICLES].
 		</member>
 		<member name="angle_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 			Each particle's rotation will be animated along this [CurveTexture].
@@ -25,7 +25,7 @@
 		</member>
 		<member name="angular_velocity" type="float" setter="set_param" getter="get_param">
 			Initial angular velocity applied to each particle. Sets the speed of rotation of the particle.
-			Only applied when [member flag_disable_z] or [member flag_rotate_y] are [code]true[/code] or the [SpatialMaterial] being used to draw the particle is using [code]BillboardMode.BILLBOARD_PARTICLES[/code].
+			Only applied when [member flag_disable_z] or [member flag_rotate_y] are [code]true[/code] or the [SpatialMaterial] being used to draw the particle is using [constant SpatialMaterial.BILLBOARD_PARTICLES].
 		</member>
 		<member name="angular_velocity_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 			Each particle's angular velocity will vary along this [CurveTexture].
@@ -88,13 +88,13 @@
 			The sphere's radius if [code]emission_shape[/code] is set to [constant EMISSION_SHAPE_SPHERE].
 		</member>
 		<member name="flag_align_y" type="bool" setter="set_flag" getter="get_flag">
-			Align y-axis of particle with the direction of its velocity.
+			Align Y axis of particle with the direction of its velocity.
 		</member>
 		<member name="flag_disable_z" type="bool" setter="set_flag" getter="get_flag">
 			If [code]true[/code], particles will not move on the z axis. Default value: [code]true[/code] for [Particles2D], [code]false[/code] for [Particles].
 		</member>
 		<member name="flag_rotate_y" type="bool" setter="set_flag" getter="get_flag">
-			If [code]true[/code], particles rotate around y-axis by [member angle].
+			If [code]true[/code], particles rotate around Y axis by [member angle].
 		</member>
 		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness">
 			Amount of [member spread] in Y/Z plane. A value of [code]1[/code] restricts particles to X/Z plane. Default [code]0[/code].

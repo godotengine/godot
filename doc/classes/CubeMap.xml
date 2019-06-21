@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CubeMap" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
-		A CubeMap is a 6 sided 3D texture.
+		A CubeMap is a 6-sided 3D texture.
 	</brief_description>
 	<description>
 		A 6-sided 3D texture typically used for faking reflections. It can be used to make an object look as if it's reflecting its surroundings. This usually delivers much better performance than other reflection methods.

@@ -146,7 +146,7 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Saves the scene. Returns either OK or ERR_CANT_CREATE. See [@GlobalScope] constants.
+				Saves the scene. Returns either [code]OK[/code] or [code]ERR_CANT_CREATE[/code] (see [@GlobalScope] constants).
 			</description>
 		</method>
 		<method name="save_scene_as">

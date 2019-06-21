@@ -24,7 +24,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Check if the resource changed, if so it will be invalidated and the corresponding signal emitted.
+				Check if the resource changed, if so, it will be invalidated and the corresponding signal emitted.
 			</description>
 		</method>
 		<method name="queue_edited_resource_preview">
@@ -63,7 +63,7 @@
 			<argument index="0" name="generator" type="EditorResourcePreviewGenerator">
 			</argument>
 			<description>
-				Remove a custom preview generator.
+				Removes a custom preview generator.
 			</description>
 		</method>
 	</methods>
@@ -72,7 +72,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				If a preview was invalidated (changed) this signal will emit (using the path of the preview)
+				Emitted if a preview was invalidated (changed). [code]path[/code] corresponds to the path of the preview.
 			</description>
 		</signal>
 	</signals>

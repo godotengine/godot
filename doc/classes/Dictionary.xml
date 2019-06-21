@@ -47,7 +47,7 @@
 			<argument index="0" name="key" type="Variant">
 			</argument>
 			<description>
-				Erase a dictionary key/value pair by key. Returns [code]true[/code] if the given key was present in the dictionary, [code]false[/code] otherwise. Do not erase elements while iterating over the dictionary.
+				Erase a dictionary key/value pair by key. Returns [code]true[/code] if the given key was present in the dictionary, [code]false[/code] otherwise. Does not erase elements while iterating over the dictionary.
 			</description>
 		</method>
 		<method name="get">
@@ -58,7 +58,7 @@
 			<argument index="1" name="default" type="Variant" default="Null">
 			</argument>
 			<description>
-				Returns the current value for the specified key in the [Dictionary]. If the key does not exist, the method returns the value of the optional default argument, or Null if it is omitted.
+				Returns the current value for the specified key in the [Dictionary]. If the key does not exist, the method returns the value of the optional default argument, or [code]null[/code] if it is omitted.
 			</description>
 		</method>
 		<method name="has">

@@ -4,7 +4,7 @@
 		Piston kind of slider between two bodies in 3D.
 	</brief_description>
 	<description>
-		Slides across the x-axis of the pivot object.
+		Slides across the X axis of the pivot object.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -51,7 +51,7 @@
 			The amount of damping that happens once the limit defined by [member linear_limit/lower_distance] and [member linear_limit/upper_distance] is surpassed.
 		</member>
 		<member name="linear_limit/lower_distance" type="float" setter="set_param" getter="get_param">
-			The minimum difference between the pivot points on their x-axis before damping happens.
+			The minimum difference between the pivot points on their X axis before damping happens.
 		</member>
 		<member name="linear_limit/restitution" type="float" setter="set_param" getter="get_param">
 			The amount of restitution once the limits are surpassed. The lower, the more velocity-energy gets lost.
@@ -60,7 +60,7 @@
 			A factor applied to the movement across the slider axis once the limits get surpassed. The lower, the slower the movement.
 		</member>
 		<member name="linear_limit/upper_distance" type="float" setter="set_param" getter="get_param">
-			The maximum difference between the pivot points on their x-axis before damping happens.
+			The maximum difference between the pivot points on their X axis before damping happens.
 		</member>
 		<member name="linear_motion/damping" type="float" setter="set_param" getter="get_param">
 			The amount of damping inside the slider limits.
@@ -83,10 +83,10 @@
 	</members>
 	<constants>
 		<constant name="PARAM_LINEAR_LIMIT_UPPER" value="0" enum="Param">
-			The maximum difference between the pivot points on their x-axis before damping happens.
+			The maximum difference between the pivot points on their X axis before damping happens.
 		</constant>
 		<constant name="PARAM_LINEAR_LIMIT_LOWER" value="1" enum="Param">
-			The minimum difference between the pivot points on their x-axis before damping happens.
+			The minimum difference between the pivot points on their X axis before damping happens.
 		</constant>
 		<constant name="PARAM_LINEAR_LIMIT_SOFTNESS" value="2" enum="Param">
 			A factor applied to the movement across the slider axis once the limits get surpassed. The lower, the slower the movement.

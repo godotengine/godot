@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectPhaser" inherits="AudioEffect" category="Core" version="3.2">
 	<brief_description>
-		Adds a Phaser audio effect to an Audio bus.
+		Adds a phaser audio effect to an Audio bus.
 		Combines the original signal with a copy that is slightly out of phase with the original.
 	</brief_description>
 	<description>
-		Combines phase-shifted signals with the original signal. The movement of the phase-shifted signals is controlled using a Low Frequency Oscillator.
+		Combines phase-shifted signals with the original signal. The movement of the phase-shifted signals is controlled using a low-frequency oscillator.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -19,13 +19,13 @@
 			Output percent of modified sound. Value can range from 0.1 to 0.9. Default value: [code]0.7[/code].
 		</member>
 		<member name="range_max_hz" type="float" setter="set_range_max_hz" getter="get_range_max_hz">
-			Determines the maximum frequency affected by the LFO modulations. Value can range from 10 to 10000. Default value: [code]1600hz[/code].
+			Determines the maximum frequency affected by the LFO modulations, in Hz. Value can range from 10 to 10000. Default value: [code]1600hz[/code].
 		</member>
 		<member name="range_min_hz" type="float" setter="set_range_min_hz" getter="get_range_min_hz">
-			Determines the minimum frequency affected by the LFO modulations. Value can range from 10 to 10000. Default value: [code]440hz[/code].
+			Determines the minimum frequency affected by the LFO modulations, in Hz. Value can range from 10 to 10000. Default value: [code]440hz[/code].
 		</member>
 		<member name="rate_hz" type="float" setter="set_rate_hz" getter="get_rate_hz">
-			Adjusts the rate at which the effect sweeps up and down across the frequency range.
+			Adjusts the rate in Hz at which the effect sweeps up and down across the frequency range.
 		</member>
 	</members>
 	<constants>

@@ -54,7 +54,7 @@
 			<argument index="0" name="option" type="int">
 			</argument>
 			<description>
-				Executes a given action as defined in the MENU_* enum.
+				Executes a given action as defined in the[code]MENU_*[/code] enum.
 			</description>
 		</method>
 		<method name="select">
@@ -65,12 +65,12 @@
 			<argument index="1" name="to" type="int" default="-1">
 			</argument>
 			<description>
-				Selects characters inside [LineEdit] between [code]from[/code] and [code]to[/code]. By default [code]from[/code] is at the beginning and [code]to[/code] at the end.
+				Selects characters inside [LineEdit] between [code]from[/code] and [code]to[/code]. By default, [code]from[/code] is at the beginning and [code]to[/code] at the end.
 				[codeblock]
 				text = "Welcome"
-				select()     # Welcome
-				select(4)    # ome
-				select(2, 5) # lco
+				select()     # Will select "Welcome"
+				select(4)    # Will select "ome"
+				select(2, 5) # Will select "lco"
 				[/codeblock]
 			</description>
 		</method>
@@ -84,7 +84,7 @@
 	</methods>
 	<members>
 		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align">
-			Text alignment as defined in the ALIGN_* enum.
+			Text alignment as defined in the [code]ALIGN_*[/code] enum.
 		</member>
 		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
 			If [code]true[/code], the caret (visual cursor) blinks.
@@ -99,7 +99,7 @@
 			If [code]true[/code], the [LineEdit] will show a clear button if [code]text[/code] is not empty.
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
-			If [code]true[/code], the context menu will appear when right clicked.
+			If [code]true[/code], the context menu will appear when right-clicked.
 		</member>
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable">
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
@@ -147,13 +147,13 @@
 	</signals>
 	<constants>
 		<constant name="ALIGN_LEFT" value="0" enum="Align">
-			Aligns the text on the left hand side of the [LineEdit].
+			Aligns the text on the left-hand side of the [LineEdit].
 		</constant>
 		<constant name="ALIGN_CENTER" value="1" enum="Align">
 			Centers the text in the middle of the [LineEdit].
 		</constant>
 		<constant name="ALIGN_RIGHT" value="2" enum="Align">
-			Aligns the text on the right hand side of the [LineEdit].
+			Aligns the text on the right-hand side of the [LineEdit].
 		</constant>
 		<constant name="ALIGN_FILL" value="3" enum="Align">
 			Stretches whitespaces to fit the [LineEdit]'s width.

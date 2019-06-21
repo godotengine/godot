@@ -47,7 +47,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Deprecated method. Use [method has_cached] or [method exists] instead.
+				[i]Deprecated method.[/i] Use [method has_cached] or [method exists] instead.
 			</description>
 		</method>
 		<method name="has_cached">
@@ -95,7 +95,7 @@
 			<argument index="0" name="abort" type="bool">
 			</argument>
 			<description>
-				Change the behavior on missing sub-resources. Default is to abort load.
+				Changes the behavior on missing sub-resources. The default behavior is to abort loading.
 			</description>
 		</method>
 	</methods>

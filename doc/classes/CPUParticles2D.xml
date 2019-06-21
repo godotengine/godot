@@ -96,7 +96,7 @@
 			The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_RECTANGLE].
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="CPUParticles2D.EmissionShape">
-			Particles will be emitted inside this region. Use [enum EmissionShape] for values. Default value: [constant EMISSION_SHAPE_POINT].
+			Particles will be emitted inside this region. See [enum EmissionShape] for possible values. Default value: [constant EMISSION_SHAPE_POINT].
 		</member>
 		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
 			The sphere's radius if [member emission_shape] is set to [constant EMISSION_SHAPE_SPHERE].
@@ -111,12 +111,12 @@
 			The particle system's frame rate is fixed to a value. For instance, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the simulation of the particle system itself.
 		</member>
 		<member name="flag_align_y" type="bool" setter="set_particle_flag" getter="get_particle_flag">
-			Align y-axis of particle with the direction of its velocity.
+			Align Y axis of particle with the direction of its velocity.
 		</member>
 		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness">
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta">
-			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect. Default value: [code]true[/code]
+			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect. Default value: [code]true[/code].
 		</member>
 		<member name="gravity" type="Vector2" setter="set_gravity" getter="get_gravity">
 			Gravity applied to every particle. Default value: [code](0, 98)[/code].
@@ -206,7 +206,7 @@
 			Tangential acceleration randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
-			Particle texture. If [code]null[/code] particles will be squares.
+			Particle texture. If [code]null[/code], particles will be squares.
 		</member>
 	</members>
 	<constants>

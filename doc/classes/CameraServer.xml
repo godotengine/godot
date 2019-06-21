@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CameraServer" inherits="Object" category="Core" version="3.2">
 	<brief_description>
-		Our camera server keeps track of different cameras accessible in Godot. These are external cameras such as webcams or the cameras on your phone.
+		The CameraServer keeps track of different cameras accessible in Godot. These are external cameras such as webcams or the cameras on your phone.
 	</brief_description>
 	<description>
 	</description>

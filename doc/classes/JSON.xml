@@ -28,7 +28,7 @@
 			<argument index="2" name="sort_keys" type="bool" default="false">
 			</argument>
 			<description>
-				Converts a Variant var to JSON text and returns the result. Useful for serializing data to store or send over the network.
+				Converts a [Variant] var to JSON text and returns the result. Useful for serializing data to store or send over the network.
 			</description>
 		</method>
 	</methods>

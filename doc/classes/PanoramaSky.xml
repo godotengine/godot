@@ -4,7 +4,7 @@
 		A type of [Sky] used to draw a background texture.
 	</brief_description>
 	<description>
-		A resource referenced in an [Environment] that is used to draw a background. The Panorama sky functions similar to skyboxes in other engines except it uses a equirectangular sky map instead of a cube map.
+		A resource referenced in an [Environment] that is used to draw a background. The Panorama sky functions similar to skyboxes in other engines, except it uses an equirectangular sky map instead of a cube map.
 	</description>
 	<tutorials>
 	</tutorials>

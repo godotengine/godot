@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A unit quaternion used for representing 3D rotations.
-		It is similar to [Basis], which implements matrix representation of rotations, and can be parametrized using both an axis-angle pair or Euler angles. But due to its compactness and the way it is stored in memory, certain operations (obtaining axis-angle and performing SLERP, in particular) are more efficient and robust against floating point errors.
+		It is similar to [Basis], which implements matrix representation of rotations, and can be parametrized using both an axis-angle pair or Euler angles. But due to its compactness and the way it is stored in memory, certain operations (obtaining axis-angle and performing SLERP, in particular) are more efficient and robust against floating-point errors.
 		Quaternions need to be (re)normalized.
 	</description>
 	<tutorials>
@@ -27,7 +27,7 @@
 			<argument index="0" name="euler" type="Vector3">
 			</argument>
 			<description>
-				Returns a quaternion that will perform a rotation specified by Euler angles (in the YXZ convention: first Z, then X, and Y last), given in the vector format as (X-angle, Y-angle, Z-angle).
+				Returns a quaternion that will perform a rotation specified by Euler angles (in the YXZ convention: first Z, then X, and Y last), given in the vector format as (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="Quat">
@@ -84,7 +84,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Returns Euler angles (in the YXZ convention: first Z, then X, and Y last) corresponding to the rotation represented by the unit quaternion. Returned vector contains the rotation angles in the format (X-angle, Y-angle, Z-angle).
+				Returns Euler angles (in the YXZ convention: first Z, then X, and Y last) corresponding to the rotation represented by the unit quaternion. Returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="inverse">
@@ -128,14 +128,14 @@
 			<argument index="1" name="angle" type="float">
 			</argument>
 			<description>
-				Set the quaternion to a rotation which rotates around axis by the specified angle, in radians. The axis must be a normalized vector.
+				Sets the quaternion to a rotation which rotates around axis by the specified angle, in radians. The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="set_euler">
 			<argument index="0" name="euler" type="Vector3">
 			</argument>
 			<description>
-				Set the quaternion to a rotation specified by Euler angles (in the YXZ convention: first Z, then X, and Y last), given in the vector format as (X-angle, Y-angle, Z-angle).
+				Sets the quaternion to a rotation specified by Euler angles (in the YXZ convention: first Z, then X, and Y last), given in the vector format as (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="slerp">
@@ -172,16 +172,16 @@
 	</methods>
 	<members>
 		<member name="w" type="float" setter="" getter="">
-			W component of the quaternion. Default value: [code]1[/code]
+			W component of the quaternion. Default value: [code]1[/code].
 		</member>
 		<member name="x" type="float" setter="" getter="">
-			X component of the quaternion. Default value: [code]0[/code]
+			X component of the quaternion. Default value: [code]0[/code].
 		</member>
 		<member name="y" type="float" setter="" getter="">
-			Y component of the quaternion. Default value: [code]0[/code]
+			Y component of the quaternion. Default value: [code]0[/code].
 		</member>
 		<member name="z" type="float" setter="" getter="">
-			Z component of the quaternion. Default value: [code]0[/code]
+			Z component of the quaternion. Default value: [code]0[/code].
 		</member>
 	</members>
 	<constants>

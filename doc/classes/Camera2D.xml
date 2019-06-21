@@ -4,8 +4,8 @@
 		Camera node for 2D scenes.
 	</brief_description>
 	<description>
-		Camera node for 2D scenes. It forces the screen (current layer) to scroll following this node. This makes it easier (and faster) to program scrollable scenes than manually changing the position of [CanvasItem] based nodes.
-		This node is intended to be a simple helper to get things going quickly and it may happen often that more functionality is desired to change how the camera works. To make your own custom camera node, simply inherit from [Node2D] and change the transform of the canvas by calling get_viewport().set_canvas_transform(m) in [Viewport].
+		Camera node for 2D scenes. It forces the screen (current layer) to scroll following this node. This makes it easier (and faster) to program scrollable scenes than manually changing the position of [CanvasItem]-based nodes.
+		This node is intended to be a simple helper to get things going quickly and it may happen that more functionality is desired to change how the camera works. To make your own custom camera node, simply inherit from [Node2D] and change the transform of the canvas by calling get_viewport().set_canvas_transform(m) in [Viewport].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -14,7 +14,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Align the camera to the tracked node
+				Aligns the camera to the tracked node.
 			</description>
 		</method>
 		<method name="clear_current">
@@ -28,7 +28,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Force the camera to update scroll immediately.
+				Forces the camera to update scroll immediately.
 			</description>
 		</method>
 		<method name="get_camera_position" qualifiers="const">
@@ -49,14 +49,14 @@
 			<return type="void">
 			</return>
 			<description>
-				Make this the current 2D camera for the scene (viewport and layer), in case there's many cameras in the scene.
+				Make this the current 2D camera for the scene (viewport and layer), in case there are many cameras in the scene.
 			</description>
 		</method>
 		<method name="reset_smoothing">
 			<return type="void">
 			</return>
 			<description>
-				Set the camera's position immediately to its current smoothing destination.
+				Sets the camera's position immediately to its current smoothing destination.
 				This has no effect if smoothing is disabled.
 			</description>
 		</method>
@@ -69,7 +69,7 @@
 			If [code]true[/code], the camera is the active camera for the current scene. Only one camera can be current, so setting a different camera [code]current[/code] will disable this one.
 		</member>
 		<member name="custom_viewport" type="Node" setter="set_custom_viewport" getter="get_custom_viewport">
-			The custom [Viewport] node attached to the [Camera2D]. If null or not a [Viewport], uses the default viewport instead.
+			The custom [Viewport] node attached to the [Camera2D]. If [code]null[/code] or not a [Viewport], uses the default viewport instead.
 		</member>
 		<member name="drag_margin_bottom" type="float" setter="set_drag_margin" getter="get_drag_margin">
 			Bottom margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
@@ -90,13 +90,13 @@
 			If [code]true[/code], the camera only moves when reaching the vertical drag margins. If [code]false[/code], the camera moves vertically regardless of margins. Default value: [code]true[/code].
 		</member>
 		<member name="editor_draw_drag_margin" type="bool" setter="set_margin_drawing_enabled" getter="is_margin_drawing_enabled">
-			If [code]true[/code], draws the camera's drag margin rectangle in the editor. Default value: [code]false[/code]
+			If [code]true[/code], draws the camera's drag margin rectangle in the editor. Default value: [code]false[/code].
 		</member>
 		<member name="editor_draw_limits" type="bool" setter="set_limit_drawing_enabled" getter="is_limit_drawing_enabled">
-			If [code]true[/code], draws the camera's limits rectangle in the editor. Default value: [code]true[/code]
+			If [code]true[/code], draws the camera's limits rectangle in the editor. Default value: [code]true[/code].
 		</member>
 		<member name="editor_draw_screen" type="bool" setter="set_screen_drawing_enabled" getter="is_screen_drawing_enabled">
-			If [code]true[/code], draws the camera's screen rectangle in the editor. Default value: [code]false[/code]
+			If [code]true[/code], draws the camera's screen rectangle in the editor. Default value: [code]false[/code].
 		</member>
 		<member name="limit_bottom" type="int" setter="set_limit" getter="get_limit">
 			Bottom scroll limit in pixels. The camera stops moving when reaching this value.
@@ -108,7 +108,7 @@
 			Right scroll limit in pixels. The camera stops moving when reaching this value.
 		</member>
 		<member name="limit_smoothed" type="bool" setter="set_limit_smoothing_enabled" getter="is_limit_smoothing_enabled">
-			If [code]true[/code], the camera smoothly stops when reaches its limits. Default value: [code]false[/code]
+			If [code]true[/code], the camera smoothly stops when reaches its limits. Default value: [code]false[/code].
 		</member>
 		<member name="limit_top" type="int" setter="set_limit" getter="get_limit">
 			Top scroll limit in pixels. The camera stops moving when reaching this value.
@@ -117,24 +117,24 @@
 			The camera's offset, useful for looking around or camera shake animations.
 		</member>
 		<member name="offset_h" type="float" setter="set_h_offset" getter="get_h_offset">
-			The horizontal offset of the camera, relative to the drag margins. Default value: [code]0[/code]
+			The horizontal offset of the camera, relative to the drag margins. Default value: [code]0[/code].
 		</member>
 		<member name="offset_v" type="float" setter="set_v_offset" getter="get_v_offset">
-			The vertical offset of the camera, relative to the drag margins. Default value: [code]0[/code]
+			The vertical offset of the camera, relative to the drag margins. Default value: [code]0[/code].
 		</member>
 		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="Camera2D.Camera2DProcessMode">
 		</member>
 		<member name="rotating" type="bool" setter="set_rotating" getter="is_rotating">
-			If [code]true[/code], the camera rotates with the target. Default value: [code]false[/code]
+			If [code]true[/code], the camera rotates with the target. Default value: [code]false[/code].
 		</member>
 		<member name="smoothing_enabled" type="bool" setter="set_enable_follow_smoothing" getter="is_follow_smoothing_enabled">
-			If [code]true[/code], the camera smoothly moves towards the target at [member smoothing_speed]. Default value: [code]false[/code]
+			If [code]true[/code], the camera smoothly moves towards the target at [member smoothing_speed]. Default value: [code]false[/code].
 		</member>
 		<member name="smoothing_speed" type="float" setter="set_follow_smoothing" getter="get_follow_smoothing">
-			Speed in pixels per second of the camera's smoothing effect when [member smoothing_enabled] is [code]true[/code]
+			Speed in pixels per second of the camera's smoothing effect when [member smoothing_enabled] is [code]true[/code].
 		</member>
 		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom">
-			The camera's zoom relative to the viewport. Values larger than [code]Vector2(1, 1)[/code] zoom out and smaller values zoom in. For an example, use [code]Vector2(0.5, 0.5)[/code] for a 2x zoom in, and [code]Vector2(4, 4)[/code] for a 4x zoom out.
+			The camera's zoom relative to the viewport. Values larger than [code]Vector2(1, 1)[/code] zoom out and smaller values zoom in. For an example, use [code]Vector2(0.5, 0.5)[/code] for a 2× zoom-in, and [code]Vector2(4, 4)[/code] for a 4× zoom-out.
 		</member>
 	</members>
 	<constants>

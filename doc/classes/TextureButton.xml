@@ -4,8 +4,8 @@
 		Texture-based button. Supports Pressed, Hover, Disabled and Focused states.
 	</brief_description>
 	<description>
-		[TextureButton] has the same functionality as [Button], except it uses sprites instead of Godot's [Theme] resource. It is faster to create, but it doesn't support localization like more complex Controls.
-		The Normal state's texture is required. Others are optional.
+		[TextureButton] has the same functionality as [Button], except it uses sprites instead of Godot's [Theme] resource. It is faster to create, but it doesn't support localization like more complex [Control]s.
+		The "normal" state must contain a texture ([member texture_normal]); other textures are optional.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -34,7 +34,7 @@
 			Texture to display by default, when the node is [b]not[/b] in the disabled, focused, hover or pressed state.
 		</member>
 		<member name="texture_pressed" type="Texture" setter="set_pressed_texture" getter="get_pressed_texture">
-			Texture to display on mouse down over the node, if the node has keyboard focus and the player presses the enter key or if the player presses the [member BaseButton.shortcut] key.
+			Texture to display on mouse down over the node, if the node has keyboard focus and the player presses the Enter key or if the player presses the [member BaseButton.shortcut] key.
 		</member>
 	</members>
 	<constants>

@@ -252,7 +252,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Returns the info for a given variable as a dictionary. The information includes its name, type, hint and usage.
+				Returns the information for a given variable as a dictionary. The information includes its name, type, hint and usage.
 			</description>
 		</method>
 		<method name="has_custom_signal" qualifiers="const">

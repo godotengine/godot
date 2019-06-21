@@ -4,7 +4,7 @@
 		Editor-only class for defining a collision polygon in 3D space.
 	</brief_description>
 	<description>
-		Allows editing a collision polygon's vertices on a selected plane. Can also set a depth perpendicular to that plane. This class is only available in the editor. It will not appear in the scene tree at runtime. Creates a [Shape] for gameplay. Properties modified during gameplay will have no effect.
+		Allows editing a collision polygon's vertices on a selected plane. Can also set a depth perpendicular to that plane. This class is only available in the editor. It will not appear in the scene tree at run-time. Creates a [Shape] for gameplay. Properties modified during gameplay will have no effect.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -18,7 +18,8 @@
 			If [code]true[/code], no collision will be produced.
 		</member>
 		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon">
-			Array of vertices which define the polygon. Note that the returned value is a copy of the original. Methods which mutate the size or properties of the return value will not impact the original polygon. To change properties of the polygon, assign it to a temporary variable and make changes before reassigning the [code]polygon[/code] member.
+			Array of vertices which define the polygon.
+			[b]Note:[/b] The returned value is a copy of the original. Methods which mutate the size or properties of the return value will not impact the original polygon. To change properties of the polygon, assign it to a temporary variable and make changes before reassigning the [code]polygon[/code] member.
 		</member>
 	</members>
 	<constants>

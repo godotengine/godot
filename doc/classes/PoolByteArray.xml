@@ -4,7 +4,8 @@
 		A pooled [Array] of bytes.
 	</brief_description>
 	<description>
-		An [Array] specifically designed to hold bytes. Optimized for memory usage, does not fragment the memory. Note that this type is passed by value and not by reference.
+		An [Array] specifically designed to hold bytes. Optimized for memory usage, does not fragment the memory.
+		[b]Note:[/b] This type is passed by value and not by reference.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,21 +16,21 @@
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Construct a new [PoolByteArray]. Optionally, you can pass in a generic [Array] that will be converted.
+				Constructs a new [PoolByteArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
 			<argument index="0" name="byte" type="int">
 			</argument>
 			<description>
-				Append an element at the end of the array (alias of [method push_back]).
+				Appends an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="append_array">
 			<argument index="0" name="array" type="PoolByteArray">
 			</argument>
 			<description>
-				Append a [PoolByteArray] at the end of this array.
+				Appends a [PoolByteArray] at the end of this array.
 			</description>
 		</method>
 		<method name="compress">
@@ -74,33 +75,33 @@
 			<argument index="1" name="byte" type="int">
 			</argument>
 			<description>
-				Insert a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
+				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
 		</method>
 		<method name="invert">
 			<description>
-				Reverse the order of the elements in the array.
+				Reverses the order of the elements in the array.
 			</description>
 		</method>
 		<method name="push_back">
 			<argument index="0" name="byte" type="int">
 			</argument>
 			<description>
-				Append an element at the end of the array.
+				Appends an element at the end of the array.
 			</description>
 		</method>
 		<method name="remove">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Remove an element from the array by index.
+				Removes an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Set the size of the array. If the array is grown reserve elements at the end of the array. If the array is shrunk truncate the array to the new size.
+				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
 			</description>
 		</method>
 		<method name="set">
@@ -109,14 +110,14 @@
 			<argument index="1" name="byte" type="int">
 			</argument>
 			<description>
-				Change the byte at the given index.
+				Changes the byte at the given index.
 			</description>
 		</method>
 		<method name="sha256_string">
 			<return type="String">
 			</return>
 			<description>
-				Returns SHA256 string of the PoolByteArray.
+				Returns SHA-256 string of the PoolByteArray.
 			</description>
 		</method>
 		<method name="size">

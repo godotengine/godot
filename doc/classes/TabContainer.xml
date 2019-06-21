@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TabContainer" inherits="Container" category="Core" version="3.2">
 	<brief_description>
-		Tabbed Container.
+		Tabbed container.
 	</brief_description>
 	<description>
 		Sets the active tab's [code]visible[/code] property to the value [code]true[/code]. Sets all other children's to [code]false[/code].
@@ -64,7 +64,7 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-				Returns the [Texture] for the tab at index [code]tab_idx[/code] or null if the tab has no [Texture].
+				Returns the [Texture] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture].
 			</description>
 		</method>
 		<method name="get_tab_title" qualifiers="const">
@@ -100,7 +100,8 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				If [code]disabled[/code] is [code]false[/code], hides the tab at index [code]tab_idx[/code]. Note that its title text will remain, unless also removed with [method set_tab_title].
+				If [code]disabled[/code] is [code]false[/code], hides the tab at index [code]tab_idx[/code].
+				[b]Note:[/b] Its title text will remain, unless also removed with [method set_tab_title].
 			</description>
 		</method>
 		<method name="set_tab_icon">

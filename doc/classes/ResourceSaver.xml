@@ -43,7 +43,7 @@
 			Bundles external resources.
 		</constant>
 		<constant name="FLAG_CHANGE_PATH" value="4" enum="SaverFlags">
-			Change the [member Resource.resource_path] of the saved resource to match its new location.
+			Changes the [member Resource.resource_path] of the saved resource to match its new location.
 		</constant>
 		<constant name="FLAG_OMIT_EDITOR_PROPERTIES" value="8" enum="SaverFlags">
 			Do not save editor-specific metadata (identified by their [code]__editor[/code] prefix).

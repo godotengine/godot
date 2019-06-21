@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectDistortion" inherits="AudioEffect" category="Core" version="3.2">
 	<brief_description>
-		Adds a Distortion audio effect to an Audio bus.
+		Adds a distortion audio effect to an Audio bus.
 		Modify the sound to make it dirty.
 	</brief_description>
 	<description>
-		Modify the sound and make it dirty. Different types are available : clip, tan, lofi (bit crushing), overdrive, or waveshape.
+		Modify the sound and make it dirty. Different types are available: clip, tan, lo-fi (bit crushing), overdrive, or waveshape.
 		By distorting the waveform the frequency content change, which will often make the sound "crunchy" or "abrasive". For games, it can simulate sound coming from some saturated device or speaker very efficiently.
 	</description>
 	<tutorials>
@@ -17,7 +17,7 @@
 			Distortion power. Value can range from 0 to 1. Default value: [code]0[/code].
 		</member>
 		<member name="keep_hf_hz" type="float" setter="set_keep_hf_hz" getter="get_keep_hf_hz">
-			High-pass filter. Frequencies higher than this value will not be affected by the distortion. Value can range from 1 to 20000. Default value: [code]16000[/code].
+			High-pass filter, in Hz. Frequencies higher than this value will not be affected by the distortion. Value can range from 1 to 20000. Default value: [code]16000[/code].
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="AudioEffectDistortion.Mode">
 			Distortion type. Default value: [constant MODE_CLIP].

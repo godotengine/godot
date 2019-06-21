@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Basis" category="Built-In Types" version="3.2">
 	<brief_description>
-		3x3 matrix datatype.
+		3×3 matrix datatype.
 	</brief_description>
 	<description>
-		3x3 matrix used for 3D rotation and scale. Contains 3 vector fields x,y and z as its columns, which can be interpreted as the local basis vectors of a transformation. Can also be accessed as array of 3D vectors. These vectors are orthogonal to each other, but are not necessarily normalized (due to scaling). Almost always used as orthogonal basis for a [Transform].
+		3×3 matrix used for 3D rotation and scale. Contains 3 vector fields X, Y and Z as its columns, which can be interpreted as the local basis vectors of a transformation. Can also be accessed as array of 3D vectors. These vectors are orthogonal to each other, but are not necessarily normalized (due to scaling). Almost always used as an orthogonal basis for a [Transform].
 		For such use, it is composed of a scaling and a rotation matrix, in that order (M = R.S).
 	</description>
 	<tutorials>
@@ -26,7 +26,7 @@
 			<argument index="0" name="from" type="Vector3">
 			</argument>
 			<description>
-				Create a rotation matrix (in the YXZ convention: first Z, then X, and Y last) from the specified Euler angles, given in the vector format as (X-angle, Y-angle, Z-angle).
+				Create a rotation matrix (in the YXZ convention: first Z, then X, and Y last) from the specified Euler angles, given in the vector format as (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="Basis">
@@ -64,7 +64,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Assuming that the matrix is a proper rotation matrix (orthonormal matrix with determinant +1), return Euler angles (in the YXZ convention: first Z, then X, and Y last). Returned vector contains the rotation angles in the format (X-angle, Y-angle, Z-angle).
+				Assuming that the matrix is a proper rotation matrix (orthonormal matrix with determinant +1), return Euler angles (in the YXZ convention: first Z, then X, and Y last). Returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="get_orthogonal_index">
@@ -148,7 +148,7 @@
 			<argument index="0" name="with" type="Vector3">
 			</argument>
 			<description>
-				Transposed dot product with the x axis of the matrix.
+				Transposed dot product with the X axis of the matrix.
 			</description>
 		</method>
 		<method name="tdoty">
@@ -157,7 +157,7 @@
 			<argument index="0" name="with" type="Vector3">
 			</argument>
 			<description>
-				Transposed dot product with the y axis of the matrix.
+				Transposed dot product with the Y axis of the matrix.
 			</description>
 		</method>
 		<method name="tdotz">
@@ -166,7 +166,7 @@
 			<argument index="0" name="with" type="Vector3">
 			</argument>
 			<description>
-				Transposed dot product with the z axis of the matrix.
+				Transposed dot product with the Z axis of the matrix.
 			</description>
 		</method>
 		<method name="transposed">
@@ -191,19 +191,20 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
-				Returns a vector transformed (multiplied) by the transposed matrix. Note that this results in a multiplication by the inverse of the matrix only if it represents a rotation-reflection.
+				Returns a vector transformed (multiplied) by the transposed matrix.
+				[b]Note:[/b] This results in a multiplication by the inverse of the matrix only if it represents a rotation-reflection.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="x" type="Vector3" setter="" getter="">
-			The basis matrix's x vector.
+			The basis matrix's X vector.
 		</member>
 		<member name="y" type="Vector3" setter="" getter="">
-			The basis matrix's y vector.
+			The basis matrix's Y vector.
 		</member>
 		<member name="z" type="Vector3" setter="" getter="">
-			The basis matrix's z vector.
+			The basis matrix's Z vector.
 		</member>
 	</members>
 	<constants>

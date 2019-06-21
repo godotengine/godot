@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Transform2D" category="Built-In Types" version="3.2">
 	<brief_description>
-		2D Transformation. 3x2 matrix.
+		2D transformation (3×2 matrix).
 	</brief_description>
 	<description>
-		Represents one or many transformations in 2D space such as translation, rotation, or scaling. It consists of a two [Vector2] x, y and [Vector2] "origin". It is similar to a 3x2 matrix.
+		Represents one or many transformations in 2D space such as translation, rotation, or scaling. It consists of two [member x] and [member y] [Vector2]s and an [member origin]. It is similar to a 3×2 matrix.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -164,10 +164,10 @@
 			The transform's translation offset.
 		</member>
 		<member name="x" type="Vector2" setter="" getter="">
-			The X axis of 2x2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
+			The X axis of 2×2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
 		<member name="y" type="Vector2" setter="" getter="">
-			The Y axis of 2x2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
+			The Y axis of 2×2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
 	</members>
 	<constants>

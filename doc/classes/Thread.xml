@@ -4,7 +4,7 @@
 		A unit of execution in a process.
 	</brief_description>
 	<description>
-		A unit of execution in a process. Can run methods on [Object]s simultaneously. The use of synchronization via [Mutex], [Semaphore] is advised if working with shared objects.
+		A unit of execution in a process. Can run methods on [Object]s simultaneously. The use of synchronization via [Mutex] or [Semaphore] is advised if working with shared objects.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,7 +13,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns the current [Thread]s id, uniquely identifying it among all threads.
+				Returns the current [Thread]'s ID, uniquely identifying it among all threads.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
@@ -35,8 +35,8 @@
 			<argument index="3" name="priority" type="int" enum="Thread.Priority" default="1">
 			</argument>
 			<description>
-				Starts a new [Thread] that runs "method" on object "instance" with "userdata" passed as an argument. The "priority" of the [Thread] can be changed by passing a PRIORITY_* enum.
-				Returns OK on success, or ERR_CANT_CREATE on failure.
+				Starts a new [Thread] that runs [code]method[/code] on object [code]instance[/code] with [code]userdata[/code] passed as an argument. The [code]priority[/code] of the [Thread] can be changed by passing a value from the [enum Priority] enum.
+				Returns [constant OK] on success, or [constant ERR_CANT_CREATE] on failure.
 			</description>
 		</method>
 		<method name="wait_to_finish">

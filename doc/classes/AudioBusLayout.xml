@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioBusLayout" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
-		Stores information about the audiobusses.
+		Stores information about the audio buses.
 	</brief_description>
 	<description>
 		Stores position, muting, solo, bypass, effects, effect position, volume, and the connections between buses. See [AudioServer] for usage.

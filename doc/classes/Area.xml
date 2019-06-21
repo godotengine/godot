@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Area" inherits="CollisionObject" category="Core" version="3.2">
 	<brief_description>
-		General purpose area node for detection and 3D physics influence.
+		General-purpose area node for detection and 3D physics influence.
 	</brief_description>
 	<description>
 		3D area that detects [CollisionObject] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping).
@@ -47,7 +47,8 @@
 			<argument index="0" name="area" type="Node">
 			</argument>
 			<description>
-				If [code]true[/code], the given area overlaps the Area. Note that the result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
+				If [code]true[/code], the given area overlaps the Area.
+				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
 		<method name="overlaps_body" qualifiers="const">
@@ -56,7 +57,8 @@
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				If [code]true[/code], the given physics body overlaps the Area. Note that the result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
+				If [code]true[/code], the given physics body overlaps the Area.
+				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
 				The [code]body[/code] argument can either be a [PhysicsBody] or a [GridMap] instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
 			</description>
 		</method>
@@ -106,7 +108,7 @@
 			The falloff factor for point gravity. The greater the value, the faster gravity decreases with distance.
 		</member>
 		<member name="gravity_point" type="bool" setter="set_gravity_is_point" getter="is_gravity_a_point">
-			If [code]true[/code], gravity is calculated from a point (set via [member gravity_vec]). Also see [member space_override]. Default value: [code]false[/code].
+			If [code]true[/code], gravity is calculated from a point (set via [member gravity_vec]). See also [member space_override]. Default value: [code]false[/code].
 		</member>
 		<member name="gravity_vec" type="Vector3" setter="set_gravity_vector" getter="get_gravity_vector">
 			The area's gravity vector (not normalized). If gravity is a point (see [member gravity_point]), this will be the point of attraction.

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Tabs" inherits="Control" category="Core" version="3.2">
 	<brief_description>
-		Tabs Control.
+		Tabs control.
 	</brief_description>
 	<description>
 		Simple tabs control, similar to [TabContainer] but is only in charge of drawing tabs, not interact with children.
@@ -26,7 +26,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Moves the Scroll view to make the tab visible.
+				Moves the scroll view to make the tab visible.
 			</description>
 		</method>
 		<method name="get_offset_buttons_visible" qualifiers="const">
@@ -64,7 +64,7 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-				Returns the [Texture] for the tab at index [code]tab_idx[/code] or null if the tab has no [Texture].
+				Returns the [Texture] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture].
 			</description>
 		</method>
 		<method name="get_tab_offset" qualifiers="const">
@@ -95,7 +95,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the [Tabs] rearrange group id.
+				Returns the [Tabs]' rearrange group ID.
 			</description>
 		</method>
 		<method name="move_tab">
@@ -106,7 +106,7 @@
 			<argument index="1" name="to" type="int">
 			</argument>
 			<description>
-				Rearrange tab.
+				Moves a tab from [code]from[/code] to [code]to[/code].
 			</description>
 		</method>
 		<method name="remove_tab">
@@ -115,7 +115,7 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-				Removes tab at index [code]tab_idx[/code]
+				Removes the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_select_with_rmb">
@@ -124,7 +124,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], enables selecting a tab with right mouse button.
+				If [code]true[/code], enables selecting a tab with the right mouse button.
 			</description>
 		</method>
 		<method name="set_tab_disabled">
@@ -135,7 +135,8 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				If [code]disabled[/code] is [code]false[/code], hides the tab at index [code]tab_idx[/code]. Note that its title text will remain, unless also removed with [method set_tab_title].
+				If [code]disabled[/code] is [code]false[/code], hides the tab at index [code]tab_idx[/code].
+				[b]Note:[/b] Its title text will remain unless it is also removed with [method set_tab_title].
 			</description>
 		</method>
 		<method name="set_tab_icon">
@@ -146,7 +147,7 @@
 			<argument index="1" name="icon" type="Texture">
 			</argument>
 			<description>
-				Sets an icon for the tab at index [code]tab_idx[/code].
+				Sets an [code]icon[/code] for the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_tab_title">
@@ -157,7 +158,7 @@
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
-				Sets a title for the tab at index [code]tab_idx[/code].
+				Sets a [code]title[/code] for the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_tabs_rearrange_group">
@@ -166,7 +167,7 @@
 			<argument index="0" name="group_id" type="int">
 			</argument>
 			<description>
-				Defines rearrange group id, choose for each [Tabs] the same value to enable tab drag between [Tabs]. Enable drag with [code]set_drag_to_rearrange_enabled(true)[/code].
+				Defines the rearrange group ID. Choose for each [Tabs] the same value to dragging tabs between [Tabs]. Enable drag with [code]set_drag_to_rearrange_enabled(true)[/code].
 			</description>
 		</method>
 	</methods>
