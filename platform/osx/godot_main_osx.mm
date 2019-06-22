@@ -36,6 +36,12 @@
 #include <unistd.h>
 
 int main(int argc, char **argv) {
+
+#if defined(VULKAN_ENABLED)
+	//MoltenVK - enable full component swizzling support
+	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
+#endif
+
 	int first_arg = 1;
 	const char *dbg_arg = "-NSDocumentRevisionsDebugMode";
 	printf("arguments\n");

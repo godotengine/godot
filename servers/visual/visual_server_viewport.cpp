@@ -678,7 +678,9 @@ void VisualServerViewport::viewport_set_msaa(RID p_viewport, VS::ViewportMSAA p_
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
+#ifndef _MSC_VER
 #warning this will no longer go in the render target, but in the 3D view
+#endif
 	//VSG::storage->render_target_set_msaa(viewport->render_target, p_msaa);
 }
 
