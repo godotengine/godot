@@ -355,6 +355,8 @@ public:
 	void set_outputs(const String &p_outputs);
 	String get_outputs() const;
 
+	bool is_valid_port_name(const String &p_name) const;
+
 	void add_input_port(int p_id, int p_type, const String &p_name);
 	void remove_input_port(int p_id);
 	virtual int get_input_port_count() const;
