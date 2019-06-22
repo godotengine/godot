@@ -2376,6 +2376,22 @@ void VisualScriptEditor::_graph_connected(const String &p_from, int p_from_slot,
 		undo_redo->add_undo_method(script.ptr(), "sequence_disconnect", edited_func, p_from.to_int(), from_port, p_to.to_int());
 	} else {
 
+		Ref<VisualScriptOperator> oper = to_node;
+		if (oper.is_valid() && oper->get_typed() == Variant::NIL) {
+			// it's an operator Node and if the type is already nil
+			if (from_node->get_output_value_port_info(from_port).type != Variant::NIL) {
+				oper->set_typed(from_node->get_output_value_port_info(from_port).type);
+			}
+		}
+
+		Ref<VisualScriptOperator> operf = from_node;
+		if (operf.is_valid() && operf->get_typed() == Variant::NIL) {
+			// it's an operator Node and if the type is already nil
+			if (to_node->get_output_value_port_info(to_port).type != Variant::NIL) {
+				operf->set_typed(to_node->get_output_value_port_info(to_port).type);
+			}
+		}
+
 		// disconnect current, and connect the new one
 		if (script->is_input_value_port_connected(edited_func, p_to.to_int(), to_port)) {
 			int conn_from;
