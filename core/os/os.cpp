@@ -706,6 +706,8 @@ int OS::get_video_driver_count() const {
 const char *OS::get_video_driver_name(int p_driver) const {
 
 	switch (p_driver) {
+		case VIDEO_DRIVER_VULKAN:
+			return "Vulkan";
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 		case VIDEO_DRIVER_GLES3:

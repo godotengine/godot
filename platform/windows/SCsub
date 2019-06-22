@@ -9,7 +9,6 @@ import platform_windows_builders
 common_win = [
     "godot_windows.cpp",
     "camera_win.cpp",
-    "context_gl_windows.cpp",
     "crash_handler_windows.cpp",
     "os_windows.cpp",
     "key_mapping_windows.cpp",
@@ -17,6 +16,11 @@ common_win = [
     "power_windows.cpp",
     "windows_terminal_logger.cpp"
 ]
+
+if (env["renderer"] == "vulkan"):
+    common_win += ["vulkan_context_win.cpp"]
+else:
+    common_win += ["context_gl_windows.cpp"]
 
 res_file = 'godot_res.rc'
 res_target = "godot_res" + env["OBJSUFFIX"]
