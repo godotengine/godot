@@ -866,7 +866,7 @@ void RigidBodyBullet::on_enter_area(AreaBullet *p_area) {
 
 	if (p_area->is_spOv_gravityPoint()) {
 		++countGravityPointSpaces;
-		assert(0 < countGravityPointSpaces);
+		ERR_FAIL_COND(countGravityPointSpaces <= 0);
 	}
 }
 
@@ -888,7 +888,7 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 	if (wasTheAreaFound) {
 		if (p_area->is_spOv_gravityPoint()) {
 			--countGravityPointSpaces;
-			assert(0 <= countGravityPointSpaces);
+			ERR_FAIL_COND(countGravityPointSpaces < 0);
 		}
 
 		--areaWhereIamCount;

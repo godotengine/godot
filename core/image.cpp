@@ -1372,6 +1372,7 @@ void Image::shrink_x2() {
 
 		int new_size = data.size() - ofs;
 		new_img.resize(new_size);
+		ERR_FAIL_COND(new_img.size() == 0);
 
 		{
 			PoolVector<uint8_t>::Write w = new_img.write();
@@ -1391,6 +1392,7 @@ void Image::shrink_x2() {
 		ERR_FAIL_COND(!_can_modify(format));
 		int ps = get_format_pixel_size(format);
 		new_img.resize((width / 2) * (height / 2) * ps);
+		ERR_FAIL_COND(new_img.size() == 0);
 
 		{
 			PoolVector<uint8_t>::Write w = new_img.write();

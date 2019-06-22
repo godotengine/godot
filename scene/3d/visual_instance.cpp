@@ -60,7 +60,7 @@ void VisualInstance::_notification(int p_what) {
 			if (skeleton)
 				VisualServer::get_singleton()->instance_attach_skeleton( instance, skeleton->get_skeleton() );
 			*/
-
+			ERR_FAIL_COND(get_world().is_null());
 			VisualServer::get_singleton()->instance_set_scenario(instance, get_world()->get_scenario());
 			_update_visibility();
 

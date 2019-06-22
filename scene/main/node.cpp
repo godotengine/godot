@@ -71,6 +71,8 @@ void Node::_notification(int p_notification) {
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
+			ERR_FAIL_COND(!get_viewport());
+			ERR_FAIL_COND(!get_tree());
 
 			if (data.pause_mode == PAUSE_MODE_INHERIT) {
 
@@ -94,6 +96,8 @@ void Node::_notification(int p_notification) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			ERR_FAIL_COND(!get_viewport());
+			ERR_FAIL_COND(!get_tree());
 
 			get_tree()->node_count--;
 			orphan_node_count++;
@@ -839,6 +843,8 @@ bool Node::is_processing_internal() const {
 
 void Node::set_process_priority(int p_priority) {
 	data.process_priority = p_priority;
+
+	ERR_FAIL_COND(!data.tree);
 
 	if (is_processing())
 		data.tree->make_group_changed("idle_process");

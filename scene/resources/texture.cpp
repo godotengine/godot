@@ -1487,8 +1487,10 @@ uint32_t CubeMap::get_flags() const {
 
 void CubeMap::set_side(Side p_side, const Ref<Image> &p_image) {
 
+	ERR_FAIL_COND(p_image.is_null());
 	ERR_FAIL_COND(p_image->empty());
 	ERR_FAIL_INDEX(p_side, 6);
+
 	if (!_is_valid()) {
 		format = p_image->get_format();
 		w = p_image->get_width();

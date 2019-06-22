@@ -506,6 +506,8 @@ bool Spatial::is_set_as_toplevel() const {
 Ref<World> Spatial::get_world() const {
 
 	ERR_FAIL_COND_V(!is_inside_world(), Ref<World>());
+	ERR_FAIL_COND_V(!data.viewport, Ref<World>());
+
 	return data.viewport->find_world();
 }
 

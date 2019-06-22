@@ -4644,7 +4644,6 @@ Transform2D RasterizerStorageGLES3::multimesh_instance_get_transform_2d(RID p_mu
 }
 
 Color RasterizerStorageGLES3::multimesh_instance_get_color(RID p_multimesh, int p_index) const {
-
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->size, Color());
