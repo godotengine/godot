@@ -472,6 +472,9 @@ public:
 	void input(const Ref<InputEvent> &p_event);
 	void unhandled_input(const Ref<InputEvent> &p_event);
 
+	String get_focus_group() const;
+	void set_focus_group(String p_focus_group);
+
 	void set_input_player(int p_input_player);
 	int get_input_player() const;
 

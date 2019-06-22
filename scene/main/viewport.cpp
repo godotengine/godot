@@ -1359,15 +1359,21 @@ void Viewport::_gui_prepare_subwindows() {
 	_gui_sort_subwindows();
 }
 
-void Viewport::set_input_player(int p_input_player) {
+void Viewport::set_focus_group(String p_focus_group) {
 	StringName old = focus_group;
-	input_player = p_input_player;
-	focus_group = "_viewport_focus_" + itos(input_player);
-
+	focus_group = "_viewport_focus_" + p_focus_group;
 	if (is_inside_tree()) {
 		remove_from_group(old);
 		add_to_group(focus_group);
 	}
+}
+
+String Viewport::get_focus_group() const {
+	return String(focus_group).replace("_viewport_focus_", "");
+}
+
+void Viewport::set_input_player(int p_input_player) {
+	input_player = p_input_player;
 }
 
 int Viewport::get_input_player() const {
@@ -3039,6 +3045,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mouse_position"), &Viewport::get_mouse_position);
 	ClassDB::bind_method(D_METHOD("warp_mouse", "to_position"), &Viewport::warp_mouse);
 
+	ClassDB::bind_method(D_METHOD("set_focus_group", "focus_group"), &Viewport::set_focus_group);
+	ClassDB::bind_method(D_METHOD("get_focus_group"), &Viewport::get_focus_group);
+
 	ClassDB::bind_method(D_METHOD("set_input_player", "input_player"), &Viewport::set_input_player);
 	ClassDB::bind_method(D_METHOD("get_input_player"), &Viewport::get_input_player);
 
@@ -3104,6 +3113,7 @@ void Viewport::_bind_methods() {
 	ADD_GROUP("Physics", "physics_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_object_picking"), "set_physics_object_picking", "get_physics_object_picking");
 	ADD_GROUP("GUI", "gui_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "gui_focus_group", PROPERTY_HINT_NONE, ""), "set_focus_group", "get_focus_group");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gui_input_player", PROPERTY_HINT_ENUM, "All,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"), "set_input_player", "get_input_player");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");
@@ -3223,8 +3233,9 @@ Viewport::Viewport() {
 	gui_input_group = "_vp_gui_input" + id;
 	unhandled_input_group = "_vp_unhandled_input" + id;
 	unhandled_key_input_group = "_vp_unhandled_key_input" + id;
+	focus_group = "_viewport_focus_main";
 
-	set_input_player(0);
+	input_player = 0;
 	disable_input = false;
 	disable_3d = false;
 	keep_3d_linear = false;
