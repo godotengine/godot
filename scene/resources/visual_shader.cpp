@@ -1762,6 +1762,7 @@ void VisualShaderNodeGroupBase::set_inputs(const String &p_inputs) {
 	for (int i = 0; i < input_port_count; i++) {
 
 		Vector<String> arr = input_strings[i].split(",");
+		ERR_FAIL_COND(arr.size() != 3);
 
 		int port_idx = arr[0].to_int();
 		int port_type = arr[1].to_int();
@@ -1794,6 +1795,7 @@ void VisualShaderNodeGroupBase::set_outputs(const String &p_outputs) {
 	for (int i = 0; i < output_port_count; i++) {
 
 		Vector<String> arr = output_strings[i].split(",");
+		ERR_FAIL_COND(arr.size() != 3);
 
 		int port_idx = arr[0].to_int();
 		int port_type = arr[1].to_int();
@@ -1808,6 +1810,23 @@ void VisualShaderNodeGroupBase::set_outputs(const String &p_outputs) {
 
 String VisualShaderNodeGroupBase::get_outputs() const {
 	return outputs;
+}
+
+bool VisualShaderNodeGroupBase::is_valid_port_name(const String &p_name) const {
+	if (!p_name.is_valid_identifier()) {
+		return false;
+	}
+	for (int i = 0; i < get_input_port_count(); i++) {
+		if (get_input_port_name(i) == p_name) {
+			return false;
+		}
+	}
+	for (int i = 0; i < get_output_port_count(); i++) {
+		if (get_output_port_name(i) == p_name) {
+			return false;
+		}
+	}
+	return true;
 }
 
 void VisualShaderNodeGroupBase::add_input_port(int p_id, int p_type, const String &p_name) {
@@ -1848,6 +1867,8 @@ void VisualShaderNodeGroupBase::add_input_port(int p_id, int p_type, const Strin
 }
 
 void VisualShaderNodeGroupBase::remove_input_port(int p_id) {
+
+	ERR_FAIL_COND(!has_input_port(p_id));
 
 	Vector<String> inputs_strings = inputs.split(";", false);
 	int count = 0;
@@ -1917,6 +1938,8 @@ void VisualShaderNodeGroupBase::add_output_port(int p_id, int p_type, const Stri
 
 void VisualShaderNodeGroupBase::remove_output_port(int p_id) {
 
+	ERR_FAIL_COND(!has_output_port(p_id));
+
 	Vector<String> outputs_strings = outputs.split(";", false);
 	int count = 0;
 	int index = 0;
@@ -1956,6 +1979,9 @@ void VisualShaderNodeGroupBase::clear_output_ports() {
 
 void VisualShaderNodeGroupBase::set_input_port_type(int p_id, int p_type) {
 
+	ERR_FAIL_COND(!has_input_port(p_id));
+	ERR_FAIL_COND(p_type < 0 || p_type > PORT_TYPE_TRANSFORM);
+
 	if (input_ports[p_id].type == p_type)
 		return;
 
@@ -1985,6 +2011,9 @@ VisualShaderNodeGroupBase::PortType VisualShaderNodeGroupBase::get_input_port_ty
 }
 
 void VisualShaderNodeGroupBase::set_input_port_name(int p_id, const String &p_name) {
+
+	ERR_FAIL_COND(!has_input_port(p_id));
+	ERR_FAIL_COND(!is_valid_port_name(p_name));
 
 	if (input_ports[p_id].name == p_name)
 		return;
@@ -2016,6 +2045,9 @@ String VisualShaderNodeGroupBase::get_input_port_name(int p_id) const {
 
 void VisualShaderNodeGroupBase::set_output_port_type(int p_id, int p_type) {
 
+	ERR_FAIL_COND(!has_output_port(p_id));
+	ERR_FAIL_COND(p_type < 0 || p_type > PORT_TYPE_TRANSFORM);
+
 	if (output_ports[p_id].type == p_type)
 		return;
 
@@ -2045,6 +2077,10 @@ VisualShaderNodeGroupBase::PortType VisualShaderNodeGroupBase::get_output_port_t
 }
 
 void VisualShaderNodeGroupBase::set_output_port_name(int p_id, const String &p_name) {
+
+	ERR_FAIL_COND(!has_output_port(p_id));
+	ERR_FAIL_COND(!is_valid_port_name(p_name));
+
 	if (output_ports[p_id].name == p_name)
 		return;
 
@@ -2124,6 +2160,8 @@ void VisualShaderNodeGroupBase::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_outputs", "outputs"), &VisualShaderNodeGroupBase::set_outputs);
 	ClassDB::bind_method(D_METHOD("get_outputs"), &VisualShaderNodeGroupBase::get_outputs);
+
+	ClassDB::bind_method(D_METHOD("is_valid_port_name", "name"), &VisualShaderNodeGroupBase::is_valid_port_name);
 
 	ClassDB::bind_method(D_METHOD("add_input_port", "id", "type", "name"), &VisualShaderNodeGroupBase::add_input_port);
 	ClassDB::bind_method(D_METHOD("remove_input_port", "id"), &VisualShaderNodeGroupBase::remove_input_port);
