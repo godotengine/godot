@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  vulkan_context.cpp                                                   */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "vulkan_context.h"
 #include "core/print_string.h"
 #include "core/project_settings.h"
@@ -229,22 +259,23 @@ Error VulkanContext::_create_physical_device() {
 	String name = "GodotEngine " + String(VERSION_FULL_NAME);
 	CharString namecs = name.utf8();
 	const VkApplicationInfo app = {
-		.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-		.pNext = NULL,
-		.pApplicationName = cs.get_data(),
-		.applicationVersion = 0,
-		.pEngineName = namecs.get_data(),
-		.engineVersion = 0,
-		.apiVersion = VK_API_VERSION_1_0,
+		/*sType*/ VK_STRUCTURE_TYPE_APPLICATION_INFO,
+		/*pNext*/ NULL,
+		/*pApplicationName*/ cs.get_data(),
+		/*applicationVersion*/ 0,
+		/*pEngineName*/ namecs.get_data(),
+		/*engineVersion*/ 0,
+		/*apiVersion*/ VK_API_VERSION_1_0,
 	};
 	VkInstanceCreateInfo inst_info = {
-		.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-		.pNext = NULL,
-		.pApplicationInfo = &app,
-		.enabledLayerCount = enabled_layer_count,
-		.ppEnabledLayerNames = (const char *const *)instance_validation_layers,
-		.enabledExtensionCount = enabled_extension_count,
-		.ppEnabledExtensionNames = (const char *const *)extension_names,
+		/*sType*/ VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+		/*pNext*/ NULL,
+		/*flags*/ 0,
+		/*pApplicationInfo*/ &app,
+		/*enabledLayerCount*/ enabled_layer_count,
+		/*ppEnabledLayerNames*/ (const char *const *)instance_validation_layers,
+		/*enabledExtensionCount*/ enabled_extension_count,
+		/*ppEnabledExtensionNames*/ (const char *const *)extension_names,
 	};
 
 	/*
@@ -468,15 +499,17 @@ Error VulkanContext::_create_device() {
 	queues[0].flags = 0;
 
 	VkDeviceCreateInfo sdevice = {
-		.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-		.pNext = NULL,
-		.queueCreateInfoCount = 1,
-		.pQueueCreateInfos = queues,
-		.enabledLayerCount = 0,
-		.ppEnabledLayerNames = NULL,
-		.enabledExtensionCount = enabled_extension_count,
-		.ppEnabledExtensionNames = (const char *const *)extension_names,
-		.pEnabledFeatures = &physical_device_features, // If specific features are required, pass them in here
+		/*sType*/ VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+		/*pNext*/ NULL,
+		/*flags*/ 0,
+		/*queueCreateInfoCount*/ 1,
+		/*pQueueCreateInfos*/ queues,
+		/*enabledLayerCount*/ 0,
+		/*ppEnabledLayerNames*/ NULL,
+		/*enabledExtensionCount*/ enabled_extension_count,
+		/*ppEnabledExtensionNames*/ (const char *const *)extension_names,
+		/*pEnabledFeatures*/ &physical_device_features, // If specific features are required, pass them in here
+
 	};
 	if (separate_present_queue) {
 		queues[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -604,15 +637,17 @@ Error VulkanContext::_create_semaphores() {
 	// Create semaphores to synchronize acquiring presentable buffers before
 	// rendering and waiting for drawing to be complete before presenting
 	VkSemaphoreCreateInfo semaphoreCreateInfo = {
-		.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
+		/*sType*/ VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+		/*pNext*/ NULL,
+		/*flags*/ 0,
 	};
 
 	// Create fences that we can use to throttle if we get too far
 	// ahead of the image presents
 	VkFenceCreateInfo fence_ci = {
-		.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, .pNext = NULL, .flags = VK_FENCE_CREATE_SIGNALED_BIT
+		/*sType*/ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+		/*pNext*/ NULL,
+		/*flags*/ VK_FENCE_CREATE_SIGNALED_BIT
 	};
 	for (uint32_t i = 0; i < FRAME_LAG; i++) {
 		err = vkCreateFence(device, &fence_ci, NULL, &fences[i]);
@@ -856,26 +891,27 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	}
 
 	VkSwapchainCreateInfoKHR swapchain_ci = {
-		.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-		.pNext = NULL,
-		.surface = window->surface,
-		.minImageCount = desiredNumOfSwapchainImages,
-		.imageFormat = format,
-		.imageColorSpace = color_space,
-		.imageExtent = {
-				.width = swapchainExtent.width,
-				.height = swapchainExtent.height,
+		/*sType*/ VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+		/*pNext*/ NULL,
+		/*flags*/ 0,
+		/*surface*/ window->surface,
+		/*minImageCount*/ desiredNumOfSwapchainImages,
+		/*imageFormat*/ format,
+		/*imageColorSpace*/ color_space,
+		/*imageExtent*/ {
+				/*width*/ swapchainExtent.width,
+				/*height*/ swapchainExtent.height,
 		},
-		.imageArrayLayers = 1,
-		.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-		.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
-		.queueFamilyIndexCount = 0,
-		.pQueueFamilyIndices = NULL,
-		.preTransform = (VkSurfaceTransformFlagBitsKHR)preTransform,
-		.compositeAlpha = compositeAlpha,
-		.presentMode = swapchainPresentMode,
-		.clipped = true,
-		.oldSwapchain = NULL,
+		/*imageArrayLayers*/ 1,
+		/*imageUsage*/ VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		/*imageSharingMode*/ VK_SHARING_MODE_EXCLUSIVE,
+		/*queueFamilyIndexCount*/ 0,
+		/*pQueueFamilyIndices*/ NULL,
+		/*preTransform*/ (VkSurfaceTransformFlagBitsKHR)preTransform,
+		/*compositeAlpha*/ compositeAlpha,
+		/*presentMode*/ swapchainPresentMode,
+		/*clipped*/ true,
+		/*oldSwapchain*/ NULL,
 	};
 
 	err = fpCreateSwapchainKHR(device, &swapchain_ci, NULL, &window->swapchain);
@@ -903,18 +939,25 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 
 	for (uint32_t i = 0; i < swapchainImageCount; i++) {
 		VkImageViewCreateInfo color_image_view = {
-			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-			.pNext = NULL,
-			.flags = 0,
-			.viewType = VK_IMAGE_VIEW_TYPE_2D,
-			.format = format,
-			.components = {
-					.r = VK_COMPONENT_SWIZZLE_R,
-					.g = VK_COMPONENT_SWIZZLE_G,
-					.b = VK_COMPONENT_SWIZZLE_B,
-					.a = VK_COMPONENT_SWIZZLE_A,
+			/*sType*/ VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+			/*pNext*/ NULL,
+			/*flags*/ 0,
+			/*image*/ swapchainImages[i],
+			/*viewType*/ VK_IMAGE_VIEW_TYPE_2D,
+			/*format*/ format,
+			/*components*/ {
+					/*r*/ VK_COMPONENT_SWIZZLE_R,
+					/*g*/ VK_COMPONENT_SWIZZLE_G,
+					/*b*/ VK_COMPONENT_SWIZZLE_B,
+					/*a*/ VK_COMPONENT_SWIZZLE_A,
 			},
-			.subresourceRange = { .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .baseMipLevel = 0, .levelCount = 1, .baseArrayLayer = 0, .layerCount = 1 },
+			/*subresourceRange*/ {
+				/*aspectMask*/ VK_IMAGE_ASPECT_COLOR_BIT,
+				/*baseMipLevel*/ 0,
+				/*levelCount*/ 1,
+				/*baseArrayLayer*/ 0,
+				/*layerCount*/ 1
+			},
 		};
 
 		window->swapchain_image_resources[i].image = swapchainImages[i];
@@ -934,44 +977,44 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	{
 		const VkAttachmentDescription attachment = {
 
-			.flags = 0,
-			.format = format,
-			.samples = VK_SAMPLE_COUNT_1_BIT,
-			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-			.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-			.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-			.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-			.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+			/*flags*/ 0,
+			/*format*/ format,
+			/*samples*/ VK_SAMPLE_COUNT_1_BIT,
+			/*loadOp*/ VK_ATTACHMENT_LOAD_OP_CLEAR,
+			/*storeOp*/ VK_ATTACHMENT_STORE_OP_STORE,
+			/*stencilLoadOp*/ VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+			/*stencilStoreOp*/ VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			/*initialLayout*/ VK_IMAGE_LAYOUT_UNDEFINED,
+			/*finalLayout*/ VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 
 		};
 		const VkAttachmentReference color_reference = {
-			.attachment = 0,
-			.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			/*attachment*/ 0,
+			/*layout*/ VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 		};
 
 		const VkSubpassDescription subpass = {
-			.flags = 0,
-			.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-			.inputAttachmentCount = 0,
-			.pInputAttachments = NULL,
-			.colorAttachmentCount = 1,
-			.pColorAttachments = &color_reference,
-			.pResolveAttachments = NULL,
-			.pDepthStencilAttachment = NULL,
-			.preserveAttachmentCount = 0,
-			.pPreserveAttachments = NULL,
+			/*flags*/ 0,
+			/*pipelineBindPoint*/ VK_PIPELINE_BIND_POINT_GRAPHICS,
+			/*inputAttachmentCount*/ 0,
+			/*pInputAttachments*/ NULL,
+			/*colorAttachmentCount*/ 1,
+			/*pColorAttachments*/ &color_reference,
+			/*pResolveAttachments*/ NULL,
+			/*pDepthStencilAttachment*/ NULL,
+			/*preserveAttachmentCount*/ 0,
+			/*pPreserveAttachments*/ NULL,
 		};
 		const VkRenderPassCreateInfo rp_info = {
-			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-			.pNext = NULL,
-			.flags = 0,
-			.attachmentCount = 1,
-			.pAttachments = &attachment,
-			.subpassCount = 1,
-			.pSubpasses = &subpass,
-			.dependencyCount = 0,
-			.pDependencies = NULL,
+			/*sTyp*/ VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+			/*pNext*/ NULL,
+			/*flags*/ 0,
+			/*attachmentCount*/ 1,
+			/*pAttachments*/ &attachment,
+			/*subpassCount*/ 1,
+			/*pSubpasses*/ &subpass,
+			/*dependencyCount*/ 0,
+			/*pDependencies*/ NULL,
 		};
 
 		err = vkCreateRenderPass(device, &rp_info, NULL, &window->render_pass);
@@ -979,14 +1022,15 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 
 		for (uint32_t i = 0; i < swapchainImageCount; i++) {
 			const VkFramebufferCreateInfo fb_info = {
-				.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-				.pNext = NULL,
-				.renderPass = window->render_pass,
-				.attachmentCount = 1,
-				.pAttachments = &window->swapchain_image_resources[i].view,
-				.width = (uint32_t)window->width,
-				.height = (uint32_t)window->height,
-				.layers = 1,
+				/*sType*/ VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+				/*pNext*/ NULL,
+				/*flags*/ 0,
+				/*renderPass*/ window->render_pass,
+				/*attachmentCount*/ 1,
+				/*pAttachments*/ &window->swapchain_image_resources[i].view,
+				/*width*/ (uint32_t)window->width,
+				/*height*/ (uint32_t)window->height,
+				/*layers*/ 1,
 			};
 
 			err = vkCreateFramebuffer(device, &fb_info, NULL, &window->swapchain_image_resources[i].framebuffer);
@@ -998,19 +1042,19 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 
 	if (separate_present_queue) {
 		const VkCommandPoolCreateInfo present_cmd_pool_info = {
-			.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-			.pNext = NULL,
-			.flags = 0,
-			.queueFamilyIndex = present_queue_family_index,
+			/*sType*/ VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+			/*pNext*/ NULL,
+			/*flags*/ 0,
+			/*queueFamilyIndex*/ present_queue_family_index,
 		};
 		err = vkCreateCommandPool(device, &present_cmd_pool_info, NULL, &window->present_cmd_pool);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 		const VkCommandBufferAllocateInfo present_cmd_info = {
-			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-			.pNext = NULL,
-			.commandPool = window->present_cmd_pool,
-			.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-			.commandBufferCount = 1,
+			/*sType*/ VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+			/*pNext*/ NULL,
+			/*commandPool*/ window->present_cmd_pool,
+			/*level*/ VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+			/*commandBufferCount*/ 1,
 		};
 		for (uint32_t i = 0; i < swapchainImageCount; i++) {
 			err = vkAllocateCommandBuffers(device, &present_cmd_info,
@@ -1018,24 +1062,26 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 			const VkCommandBufferBeginInfo cmd_buf_info = {
-				.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-				.pNext = NULL,
-				.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
-				.pInheritanceInfo = NULL,
+				/*sType*/ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+				/*pNext*/ NULL,
+				/*flags*/ VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
+				/*pInheritanceInfo*/ NULL,
 			};
 			err = vkBeginCommandBuffer(window->swapchain_image_resources[i].graphics_to_present_cmd, &cmd_buf_info);
 			ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
-			VkImageMemoryBarrier image_ownership_barrier = { .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-				.pNext = NULL,
-				.srcAccessMask = 0,
-				.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-				.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-				.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-				.srcQueueFamilyIndex = graphics_queue_family_index,
-				.dstQueueFamilyIndex = present_queue_family_index,
-				.image = window->swapchain_image_resources[i].image,
-				.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 } };
+			VkImageMemoryBarrier image_ownership_barrier = {
+				/*sType*/ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+				/*pNext*/ NULL,
+				/*srcAccessMask*/ 0,
+				/*dstAccessMask*/ VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+				/*oldLayout*/ VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+				/*newLayout*/ VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+				/*srcQueueFamilyIndex*/ graphics_queue_family_index,
+				/*dstQueueFamilyIndex*/ present_queue_family_index,
+				/*image*/ window->swapchain_image_resources[i].image,
+				/*subresourceRange*/ { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
+			};
 
 			vkCmdPipelineBarrier(window->swapchain_image_resources[i].graphics_to_present_cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 					VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, NULL, 0, NULL, 1, &image_ownership_barrier);
@@ -1261,13 +1307,13 @@ Error VulkanContext::swap_buffers() {
 	// If we are using separate queues we have to wait for image ownership,
 	// otherwise wait for draw complete
 	VkPresentInfoKHR present = {
-		.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-		.pNext = NULL,
-		.waitSemaphoreCount = 1,
-		.pWaitSemaphores = (separate_present_queue) ? &image_ownership_semaphores[frame_index] : &draw_complete_semaphores[frame_index],
-		.swapchainCount = 0,
-		.pSwapchains = NULL,
-		.pImageIndices = NULL,
+		/*sType*/ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+		/*pNext*/ NULL,
+		/*waitSemaphoreCount*/ 1,
+		/*pWaitSemaphores*/ (separate_present_queue) ? &image_ownership_semaphores[frame_index] : &draw_complete_semaphores[frame_index],
+		/*swapchainCount*/ 0,
+		/*pSwapchain*/ NULL,
+		/*pImageIndices*/ NULL,
 	};
 
 	VkSwapchainKHR *pSwapchains = (VkSwapchainKHR *)alloca(sizeof(VkSwapchainKHR *) * windows.size());
@@ -1298,21 +1344,21 @@ Error VulkanContext::swap_buffers() {
 		uint32_t eighthOfWidth = width / 8;
 		uint32_t eighthOfHeight = height / 8;
 		VkRectLayerKHR rect = {
-			.offset.x = eighthOfWidth,
-			.offset.y = eighthOfHeight,
-			.extent.width = eighthOfWidth * 6,
-			.extent.height = eighthOfHeight * 6,
-			.layer = 0,
+			/*offset.x*/ eighthOfWidth,
+			/*offset.y*/ eighthOfHeight,
+			/*extent.width*/ eighthOfWidth * 6,
+			/*extent.height*/ eighthOfHeight * 6,
+			/*layer*/ 0,
 		};
 		VkPresentRegionKHR region = {
-			.rectangleCount = 1,
-			.pRectangles = &rect,
+			/*rectangleCount*/ 1,
+			/*pRectangles*/ &rect,
 		};
 		VkPresentRegionsKHR regions = {
-			.sType = VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR,
-			.pNext = present.pNext,
-			.swapchainCount = present.swapchainCount,
-			.pRegions = &region,
+			/*sType*/ VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR,
+			/*pNext*/ present.pNext,
+			/*swapchainCount*/ present.swapchainCount,
+			/*pRegions*/ &region,
 		};
 		present.pNext = &regions;
 	}
@@ -1344,10 +1390,10 @@ Error VulkanContext::swap_buffers() {
 		prev_desired_present_time = ptime.desiredPresentTime;
 
 		VkPresentTimesInfoGOOGLE present_time = {
-			.sType = VK_STRUCTURE_TYPE_PRESENT_TIMES_INFO_GOOGLE,
-			.pNext = present.pNext,
-			.swapchainCount = present.swapchainCount,
-			.pTimes = &ptime,
+			/*sType*/ VK_STRUCTURE_TYPE_PRESENT_TIMES_INFO_GOOGLE,
+			/*pNext*/ present.pNext,
+			/*swapchainCount*/ present.swapchainCount,
+			/*pTimes*/ &ptime,
 		};
 		if (VK_GOOGLE_display_timing_enabled) {
 			present.pNext = &present_time;
@@ -1419,4 +1465,7 @@ VulkanContext::VulkanContext() {
 	buffers_prepared = false;
 	swapchainImageCount = 0;
 	last_window_id = 0;
+}
+
+VulkanContext::~VulkanContext() {
 }

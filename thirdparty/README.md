@@ -143,6 +143,15 @@ See the header of glad.c for instructions on how to generate them for
 the GLES version Godot targets.
 
 
+## glslang
+
+- Upstream: https://github.com/KhronosGroup/glslang
+- Version: rev.3226
+- License: glslang
+
+Important: File `glslang/glslang/Include/Common.h` has
+Godot-made change marked with `// -- GODOT --` comments.
+
 ## jpeg-compressor
 
 - Upstream: https://github.com/richgel999/jpeg-compressor
@@ -262,6 +271,25 @@ Important: The files `utils/bit_reader_utils.{c,h}` have Godot-made
 changes to ensure they build for Javascript/HTML5. Those
 changes are marked with `// -- GODOT --` comments.
 
+
+## Vulkan Ecosystem Components (Vulkan ICD loader and headers)
+
+- Upstream: https://github.com/KhronosGroup/Vulkan-Loader
+- Version: 1.1.113 
+- License: Apache 2.0
+
+
+## wslay
+
+- Upstream: https://github.com/tatsuhiro-t/wslay
+- Version: 1.1.0
+- License: MIT
+
+File extracted from upstream release tarball:
+
+- All `*.c` and `*.h` in `lib/` and `lib/includes/`
+- `wslay.h` has a small Godot addition to fix MSVC build.
+  See `thirdparty/wslay/msvcfix.diff`
 
 ## mbedtls
 
