@@ -30,6 +30,7 @@
 
 #include "text_editor.h"
 
+#include "core/os/keyboard.h"
 #include "editor_node.h"
 
 void TextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
@@ -577,13 +578,21 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			}
 
 			if (!mb->is_pressed()) {
-				_make_context_menu(tx->is_selection_active(), can_fold, is_folded);
+				_make_context_menu(tx->is_selection_active(), can_fold, is_folded, get_local_mouse_position());
 			}
 		}
 	}
+
+	Ref<InputEventKey> k = ev;
+	if (k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_MENU) {
+		TextEdit *tx = code_editor->get_text_edit();
+		int line = tx->cursor_get_line();
+		_make_context_menu(tx->is_selection_active(), tx->can_fold(line), tx->is_folded(line), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->_get_cursor_pixel_pos()));
+		context_menu->grab_focus();
+	}
 }
 
-void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is_folded) {
+void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is_folded, Vector2 p_position) {
 
 	context_menu->clear();
 	if (p_selection) {
@@ -609,7 +618,7 @@ void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is
 	if (p_can_fold || p_is_folded)
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
 
-	context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+	context_menu->set_position(get_global_transform().xform(p_position));
 	context_menu->set_size(Vector2(1, 1));
 	context_menu->popup();
 }

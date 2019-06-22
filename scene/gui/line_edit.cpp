@@ -531,6 +531,16 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					set_cursor_position(text.length());
 					shift_selection_check_post(k->get_shift());
 				} break;
+				case KEY_MENU: {
+					if (context_menu_enabled) {
+						Point2 pos = Point2(get_cursor_pixel_pos(), (get_size().y + get_font("font")->get_height()) / 2);
+						menu->set_position(get_global_transform().xform(pos));
+						menu->set_size(Vector2(1, 1));
+						menu->set_scale(get_global_transform().get_scale());
+						menu->popup();
+						menu->grab_focus();
+					}
+				} break;
 
 				default: {
 
@@ -1051,6 +1061,52 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 	}
 
 	set_cursor_position(ofs);
+}
+
+int LineEdit::get_cursor_pixel_pos() {
+
+	Ref<Font> font = get_font("font");
+	int ofs = window_pos;
+	Ref<StyleBox> style = get_stylebox("normal");
+	int pixel_ofs = 0;
+	Size2 size = get_size();
+	bool display_clear_icon = !text.empty() && is_editable() && clear_button_enabled;
+	int r_icon_width = Control::get_icon("clear")->get_width();
+
+	switch (align) {
+
+		case ALIGN_FILL:
+		case ALIGN_LEFT: {
+
+			pixel_ofs = int(style->get_offset().x);
+		} break;
+		case ALIGN_CENTER: {
+
+			if (window_pos != 0)
+				pixel_ofs = int(style->get_offset().x);
+			else
+				pixel_ofs = int(size.width - (cached_width)) / 2;
+
+			if (display_clear_icon)
+				pixel_ofs -= int(r_icon_width / 2 + style->get_margin(MARGIN_RIGHT));
+		} break;
+		case ALIGN_RIGHT: {
+
+			pixel_ofs = int(size.width - style->get_margin(MARGIN_RIGHT) - (cached_width));
+
+			if (display_clear_icon)
+				pixel_ofs -= int(r_icon_width + style->get_margin(MARGIN_RIGHT));
+		} break;
+	}
+
+	while (ofs < cursor_pos) {
+		if (font != NULL) {
+			pixel_ofs += font->get_char_size(text[ofs]).width;
+		}
+		ofs++;
+	}
+
+	return pixel_ofs;
 }
 
 bool LineEdit::cursor_get_blink_enabled() const {
