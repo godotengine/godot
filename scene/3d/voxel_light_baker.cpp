@@ -1792,19 +1792,82 @@ void VoxelLightBaker::_lightmap_bake_point(uint32_t p_x, LightMap *p_line) {
 	}
 }
 
-Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh, LightMapData &r_lightmap, bool (*p_bake_time_func)(void *, float, float), void *p_bake_time_ud) {
+Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh, float default_texels_per_unit, LightMapData &r_lightmap, bool (*p_bake_time_func)(void *, float, float), void *p_bake_time_ud) {
 
 	//transfer light information to a lightmap
 	Ref<Mesh> mesh = p_mesh;
 
-	int width = mesh->get_lightmap_size_hint().x;
-	int height = mesh->get_lightmap_size_hint().y;
-
 	//step 1 - create lightmap
+	int width;
+	int height;
 	Vector<LightMap> lightmap;
-	lightmap.resize(width * height);
-
 	Transform xform = to_cell_space * p_xform;
+	if (mesh->get_lightmap_size_hint() == Size2()) {
+		double area = 0;
+		double uv_area = 0;
+		for (int i = 0; i < mesh->get_surface_count(); i++) {
+			Array arrays = mesh->surface_get_arrays(i);
+			PoolVector<Vector3> vertices = arrays[Mesh::ARRAY_VERTEX];
+			PoolVector<Vector2> uv2 = arrays[Mesh::ARRAY_TEX_UV2];
+			PoolVector<int> indices = arrays[Mesh::ARRAY_INDEX];
+
+			ERR_FAIL_COND_V(vertices.size() == 0, ERR_INVALID_PARAMETER);
+			ERR_FAIL_COND_V(uv2.size() == 0, ERR_INVALID_PARAMETER);
+
+			int vc = vertices.size();
+			PoolVector<Vector3>::Read vr = vertices.read();
+			PoolVector<Vector2>::Read u2r = uv2.read();
+			PoolVector<int>::Read ir;
+			int ic = 0;
+
+			if (indices.size()) {
+				ic = indices.size();
+				ir = indices.read();
+			}
+
+			int faces = ic ? ic / 3 : vc / 3;
+			for (int j = 0; j < faces; j++) {
+				Vector3 vertex[3];
+				Vector2 uv[3];
+
+				for (int k = 0; k < 3; k++) {
+					int idx = ic ? ir[j * 3 + k] : j * 3 + k;
+					vertex[k] = xform.xform(vr[idx]);
+					uv[k] = u2r[idx];
+				}
+
+				Vector3 p1 = vertex[0];
+				Vector3 p2 = vertex[1];
+				Vector3 p3 = vertex[2];
+				double a = p1.distance_to(p2);
+				double b = p2.distance_to(p3);
+				double c = p3.distance_to(p1);
+				double halfPerimeter = (a + b + c) / 2.0;
+				area += sqrt(halfPerimeter * (halfPerimeter - a) * (halfPerimeter - b) * (halfPerimeter - c));
+
+				Vector2 uv_p1 = uv[0];
+				Vector2 uv_p2 = uv[1];
+				Vector2 uv_p3 = uv[2];
+				double uv_a = uv_p1.distance_to(uv_p2);
+				double uv_b = uv_p2.distance_to(uv_p3);
+				double uv_c = uv_p3.distance_to(uv_p1);
+				double uv_halfPerimeter = (uv_a + uv_b + uv_c) / 2.0;
+				uv_area += sqrt(uv_halfPerimeter * (uv_halfPerimeter - uv_a) * (uv_halfPerimeter - uv_b) * (uv_halfPerimeter - uv_c));
+			}
+		}
+
+		if (uv_area < 0.0001f) {
+			uv_area = 1.0;
+		}
+
+		int pixels = (ceil((1.0 / sqrt(uv_area)) * sqrt(area * default_texels_per_unit)));
+		width = height = CLAMP(pixels, 2, 4096);
+	} else {
+		width = mesh->get_lightmap_size_hint().x;
+		height = mesh->get_lightmap_size_hint().y;
+	}
+
+	lightmap.resize(width * height);
 
 	//step 2 plot faces to lightmap
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
