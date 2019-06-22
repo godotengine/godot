@@ -278,6 +278,7 @@ void Particles2D::_validate_property(PropertyInfo &property) const {
 
 void Particles2D::restart() {
 	VS::get_singleton()->particles_restart(particles);
+	VS::get_singleton()->particles_set_emitting(particles, true);
 }
 
 void Particles2D::_notification(int p_what) {
