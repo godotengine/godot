@@ -250,6 +250,8 @@ void CPUParticles2D::restart() {
 	frame_remainder = 0;
 	cycle = 0;
 
+	set_emitting(true);
+
 	{
 		int pc = particles.size();
 		PoolVector<Particle>::Write w = particles.write();

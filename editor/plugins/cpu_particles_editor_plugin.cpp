@@ -62,6 +62,12 @@ void CPUParticlesEditor::_menu_option(int p_option) {
 			emission_tree_dialog->popup_centered_ratio();
 
 		} break;
+
+		case MENU_OPTION_RESTART: {
+
+			node->restart();
+
+		} break;
 	}
 }
 
@@ -108,6 +114,8 @@ CPUParticlesEditor::CPUParticlesEditor() {
 	options->set_text(TTR("CPUParticles"));
 	options->get_popup()->add_item(TTR("Create Emission Points From Mesh"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
+	options->get_popup()->add_separator();
+	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
 	options->get_popup()->connect("id_pressed", this, "_menu_option");
 }
 

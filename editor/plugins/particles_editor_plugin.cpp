@@ -321,6 +321,11 @@ void ParticlesEditor::_menu_option(int p_option) {
 			ur->commit_action();
 
 		} break;
+		case MENU_OPTION_RESTART: {
+
+			node->restart();
+
+		} break;
 	}
 }
 
@@ -471,6 +476,8 @@ ParticlesEditor::ParticlesEditor() {
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Convert to CPUParticles"), MENU_OPTION_CONVERT_TO_CPU_PARTICLES);
+	options->get_popup()->add_separator();
+	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
 
 	options->get_popup()->connect("id_pressed", this, "_menu_option");
 
