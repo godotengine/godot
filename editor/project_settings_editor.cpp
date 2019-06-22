@@ -842,7 +842,7 @@ void ProjectSettingsEditor::_update_actions() {
 
 			action2->set_editable(2, true);
 			action2->set_cell_mode(2, TreeItem::CELL_MODE_RANGE);
-			action2->set_range_config(2, 0.0, 20.0, 1.0);
+			action2->set_range_config(2, 1.0, 16.0, 1.0);
 			action2->set_range(2, ev["player"]);
 
 			action2->add_button(3, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
