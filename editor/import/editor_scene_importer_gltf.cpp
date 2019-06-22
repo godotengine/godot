@@ -981,7 +981,9 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 					Mesh::PRIMITIVE_TRIANGLES,
 					Mesh::PRIMITIVE_TRIANGLES,
 					Mesh::PRIMITIVE_TRIANGLES,
+#ifndef _MSC_VER
 #warning these will have to be decomposed into proper primitive now that lineloop/strip,etc no longer supported
+#endif
 				};
 
 				primitive = primitives2[mode];
