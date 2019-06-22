@@ -45,6 +45,11 @@
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "servers/visual_server.h"
 
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_device_vulkan.h"
+#include "platform/osx/vulkan_context_osx.h"
+#endif
+
 #include <AppKit/AppKit.h>
 #include <AppKit/NSCursor.h>
 #include <ApplicationServices/ApplicationServices.h>
@@ -98,7 +103,6 @@ public:
 	void process_events();
 	void process_key_events();
 
-	void *framework;
 	//          pthread_key_t   current;
 	bool mouse_grab;
 	Point2 mouse_pos;
@@ -109,8 +113,17 @@ public:
 	id window_view;
 	id autoreleasePool;
 	id cursor;
+
+#if defined(OPENGL_ENABLED)
+	void *framework;
 	NSOpenGLPixelFormat *pixelFormat;
 	NSOpenGLContext *context;
+#endif
+
+#if defined(VULKAN_ENABLED)
+	VulkanContextOSX *context_vulkan;
+	RenderingDeviceVulkan *rendering_device;
+#endif
 
 	bool layered_window;
 	bool waiting_for_vsync;
