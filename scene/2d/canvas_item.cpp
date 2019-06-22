@@ -1074,6 +1074,7 @@ Vector2 CanvasItem::make_canvas_position_local(const Vector2 &screen_point) cons
 
 Ref<InputEvent> CanvasItem::make_input_local(const Ref<InputEvent> &p_event) const {
 
+	ERR_FAIL_COND_V(p_event.is_null(), p_event);
 	ERR_FAIL_COND_V(!is_inside_tree(), p_event);
 
 	return p_event->xformed_by((get_canvas_transform() * get_global_transform()).affine_inverse());
