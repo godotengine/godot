@@ -90,7 +90,7 @@ void GDScriptLanguageProtocol::_bind_methods() {
 Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 
 	lsp::InitializeResult ret;
-
+	workspace.initialize();
 	return ret.to_json();
 }
 
@@ -163,6 +163,7 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	server = NULL;
 	singleton = this;
 	set_scope("textDocument", &text_document);
+	set_scope("completionItem", &text_document);
 	set_scope("workspace", &workspace);
 	workspace.root = ProjectSettings::get_singleton()->get_resource_path();
 }

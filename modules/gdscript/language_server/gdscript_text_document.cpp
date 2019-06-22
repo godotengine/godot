@@ -30,6 +30,7 @@
 
 #include "gdscript_text_document.h"
 #include "../gdscript.h"
+#include "gdscript_extend_parser.h"
 #include "gdscript_language_protocol.h"
 
 void GDScriptTextDocument::_bind_methods() {
@@ -37,11 +38,13 @@ void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("didChange"), &GDScriptTextDocument::didChange);
 	ClassDB::bind_method(D_METHOD("documentSymbol"), &GDScriptTextDocument::documentSymbol);
 	ClassDB::bind_method(D_METHOD("completion"), &GDScriptTextDocument::completion);
+	ClassDB::bind_method(D_METHOD("resolve"), &GDScriptTextDocument::resolve);
 	ClassDB::bind_method(D_METHOD("foldingRange"), &GDScriptTextDocument::foldingRange);
 	ClassDB::bind_method(D_METHOD("codeLens"), &GDScriptTextDocument::codeLens);
 	ClassDB::bind_method(D_METHOD("documentLink"), &GDScriptTextDocument::documentLink);
 	ClassDB::bind_method(D_METHOD("colorPresentation"), &GDScriptTextDocument::colorPresentation);
 	ClassDB::bind_method(D_METHOD("hover"), &GDScriptTextDocument::hover);
+	ClassDB::bind_method(D_METHOD("definition"), &GDScriptTextDocument::definition);
 }
 
 void GDScriptTextDocument::didOpen(const Variant &p_param) {
@@ -75,7 +78,7 @@ Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace().get_file_path(uri);
 	Array arr;
 	if (const Map<String, ExtendGDScriptParser *>::Element *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace().scripts.find(path)) {
-		Vector<lsp::SymbolInformation> list;
+		Vector<lsp::DocumentedSymbolInformation> list;
 		parser->get()->get_symbols().symbol_tree_as_list(uri, list);
 		for (int i = 0; i < list.size(); i++) {
 			arr.push_back(list[i].to_json());
@@ -144,6 +147,18 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 	return arr;
 }
 
+Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
+	lsp::CompletionItem item;
+	item.load(p_params);
+	lsp::CompletionParams params;
+	params.load(p_params["data"]);
+	const lsp::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace().resolve_symbol(params, item.label, item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function);
+	if (symbol) {
+		item.documentation = symbol->render();
+	}
+	return item.to_json();
+}
+
 Array GDScriptTextDocument::foldingRange(const Dictionary &p_params) {
 	Dictionary params = p_params["textDocument"];
 	String path = params["uri"];
@@ -168,7 +183,47 @@ Array GDScriptTextDocument::colorPresentation(const Dictionary &p_params) {
 
 Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
 	Variant ret;
+
+	lsp::TextDocumentPositionParams params;
+	params.load(p_params);
+
+	const lsp::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace().resolve_symbol(params);
+	if (symbol) {
+		lsp::Hover hover;
+		hover.contents = symbol->render();
+		ret = hover.to_json();
+	}
+
 	return ret;
+}
+
+Array GDScriptTextDocument::definition(const Dictionary &p_params) {
+	Array arr;
+
+	lsp::TextDocumentPositionParams params;
+	params.load(p_params);
+
+	const lsp::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace().resolve_symbol(params);
+	if (symbol) {
+		lsp::Location location;
+		location.uri = symbol->uri;
+		location.range = symbol->range;
+
+		const String &path = GDScriptLanguageProtocol::get_singleton()->get_workspace().get_file_path(symbol->uri);
+		if (file_checker->file_exists(path)) {
+			arr.push_back(location.to_json());
+		}
+	}
+
+	return arr;
+}
+
+GDScriptTextDocument::GDScriptTextDocument() {
+	file_checker = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+}
+
+GDScriptTextDocument::~GDScriptTextDocument() {
+	memdelete(file_checker);
 }
 
 void GDScriptTextDocument::sync_script_content(const String &p_uri, const String &p_content) {

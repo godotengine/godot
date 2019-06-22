@@ -35,6 +35,10 @@
 #include "core/variant.h"
 #include "lsp.hpp"
 
+#ifndef LINE_NUMBER_TO_INDEX
+#define LINE_NUMBER_TO_INDEX(p_line) ((p_line)-1)
+#endif
+
 class ExtendGDScriptParser : public GDScriptParser {
 	String path;
 	String code;
@@ -48,6 +52,9 @@ class ExtendGDScriptParser : public GDScriptParser {
 
 	void parse_class_symbol(const GDScriptParser::ClassNode *p_class, lsp::DocumentSymbol &r_symbol);
 	void parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol &r_symbol);
+	String parse_documentation(int p_line);
+
+	const lsp::DocumentSymbol *search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol &p_parent) const;
 
 public:
 	_FORCE_INLINE_ const String &get_path() const { return path; }
@@ -56,7 +63,15 @@ public:
 	_FORCE_INLINE_ const lsp::DocumentSymbol &get_symbols() const { return class_symbol; }
 	_FORCE_INLINE_ const Vector<lsp::Diagnostic> &get_diagnostics() const { return diagnostics; }
 
-	String get_text_for_completion(const lsp::Position &p_cursor);
+	String get_text_for_completion(const lsp::Position &p_cursor) const;
+	String get_text_for_lookup_symbol(const lsp::Position &p_cursor, const String &p_symbol = "", bool p_func_requred = false) const;
+	String get_identifier_under_position(const lsp::Position &p_position, Vector2i &p_offset) const;
+	String get_uri() const;
+
+	const lsp::DocumentSymbol *get_symbol_defined_at_line(int p_line) const;
+	const lsp::DocumentSymbol *get_member_symbol(const String &p_name) const;
+
+	void dump_symbols(HashMap<String, lsp::DocumentedSymbolInformation> &r_symbols);
 
 	Error parse(const String &p_code, const String &p_path);
 };

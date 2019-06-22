@@ -31,6 +31,7 @@
 #ifndef GDSCRIPT_TEXT_DOCUMENT_H
 #define GDSCRIPT_TEXT_DOCUMENT_H
 
+#include "core/os/file_access.h"
 #include "core/reference.h"
 #include "lsp.hpp"
 
@@ -38,6 +39,8 @@ class GDScriptTextDocument : public Reference {
 	GDCLASS(GDScriptTextDocument, Reference)
 protected:
 	static void _bind_methods();
+
+	FileAccess *file_checker;
 
 	void didOpen(const Variant &p_param);
 	void didChange(const Variant &p_param);
@@ -50,11 +53,16 @@ private:
 public:
 	Array documentSymbol(const Dictionary &p_params);
 	Array completion(const Dictionary &p_params);
+	Dictionary resolve(const Dictionary &p_params);
 	Array foldingRange(const Dictionary &p_params);
 	Array codeLens(const Dictionary &p_params);
 	Variant documentLink(const Dictionary &p_params);
 	Array colorPresentation(const Dictionary &p_params);
 	Variant hover(const Dictionary &p_params);
+	Array definition(const Dictionary &p_params);
+
+	GDScriptTextDocument();
+	virtual ~GDScriptTextDocument();
 };
 
 #endif
