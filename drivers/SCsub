@@ -22,6 +22,9 @@ SConscript('alsamidi/SCsub')
 SConscript('coremidi/SCsub')
 SConscript('winmidi/SCsub')
 
+if env["builtin_vulkan_loader"] and not (env["platform"]=="osx" and env['use_static_mvk']):
+    SConscript('vulkan_loader/SCsub')
+
 # Graphics drivers
 if (env["platform"] != "server"):
 #    SConscript('gles3/SCsub')

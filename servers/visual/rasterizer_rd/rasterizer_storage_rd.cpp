@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  rasterizer_storage_rd.cpp                                            */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "rasterizer_storage_rd.h"
 #include "core/engine.h"
 #include "core/project_settings.h"
@@ -70,7 +100,9 @@ Ref<Image> RasterizerStorageRD::_validate_texture_format(const Ref<Image> &p_ima
 		} break;
 		case Image::FORMAT_RGBA5551: {
 			r_format.format = RD::DATA_FORMAT_A1R5G5B5_UNORM_PACK16;
+#ifndef _MSC_VER
 #warning TODO needs something in Texture to convert to this format internally
+#endif
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
@@ -156,7 +188,9 @@ Ref<Image> RasterizerStorageRD::_validate_texture_format(const Ref<Image> &p_ima
 		} break;
 		case Image::FORMAT_RGBE9995: {
 			r_format.format = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
+#ifndef _MSC_VER
 #warning TODO need to make a function in Image to swap bits for this
+#endif
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_IDENTITY;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_IDENTITY;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_IDENTITY;
@@ -539,8 +573,9 @@ RID RasterizerStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 	texture.is_render_target = false;
 	texture.rd_view = rd_view;
 	texture.is_proxy = false;
-
+#ifndef _MSC_VER
 #warning texture owner needs a spinlock to make this really callable from any thread
+#endif
 	return texture_owner.make_rid(texture);
 }
 
