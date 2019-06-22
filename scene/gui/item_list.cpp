@@ -31,6 +31,7 @@
 #include "item_list.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "scene/main/viewport.h"
 
 void ItemList::add_item(const String &p_item, const Ref<Texture> &p_texture, bool p_selectable) {
 
@@ -591,7 +592,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_pressed() && items.size() > 0) {
-		if (p_event->is_action("ui_up")) {
+		if (p_event->is_action("ui_up", get_viewport()->get_input_player())) {
 
 			if (search_string != "") {
 
@@ -626,7 +627,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event->is_action("ui_down")) {
+		} else if (p_event->is_action("ui_down", get_viewport()->get_input_player())) {
 
 			if (search_string != "") {
 
@@ -660,7 +661,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event->is_action("ui_page_up")) {
+		} else if (p_event->is_action("ui_page_up", get_viewport()->get_input_player())) {
 
 			search_string = ""; //any mousepress cancels
 
@@ -675,7 +676,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					break;
 				}
 			}
-		} else if (p_event->is_action("ui_page_down")) {
+		} else if (p_event->is_action("ui_page_down", get_viewport()->get_input_player())) {
 
 			search_string = ""; //any mousepress cancels
 
@@ -691,7 +692,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					break;
 				}
 			}
-		} else if (p_event->is_action("ui_left")) {
+		} else if (p_event->is_action("ui_left", get_viewport()->get_input_player())) {
 
 			search_string = ""; //any mousepress cancels
 
@@ -703,7 +704,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event->is_action("ui_right")) {
+		} else if (p_event->is_action("ui_right", get_viewport()->get_input_player())) {
 
 			search_string = ""; //any mousepress cancels
 
@@ -715,9 +716,9 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event->is_action("ui_cancel")) {
+		} else if (p_event->is_action("ui_cancel", get_viewport()->get_input_player())) {
 			search_string = "";
-		} else if (p_event->is_action("ui_select") && select_mode == SELECT_MULTI) {
+		} else if (p_event->is_action("ui_select", get_viewport()->get_input_player()) && select_mode == SELECT_MULTI) {
 
 			if (current >= 0 && current < items.size()) {
 				if (items[current].selectable && !items[current].disabled && !items[current].selected) {
@@ -728,7 +729,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					emit_signal("multi_selected", current, false);
 				}
 			}
-		} else if (p_event->is_action("ui_accept")) {
+		} else if (p_event->is_action("ui_accept", get_viewport()->get_input_player())) {
 			search_string = ""; //any mousepress cance
 
 			if (current >= 0 && current < items.size()) {

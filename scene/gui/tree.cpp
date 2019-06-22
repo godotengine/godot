@@ -2220,7 +2220,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	bool is_command = k.is_valid() && k->get_command();
-	if (p_event->is_action("ui_right") && p_event->is_pressed()) {
+	if (p_event->is_action("ui_right", get_viewport()->get_input_player()) && p_event->is_pressed()) {
 
 		if (!cursor_can_exit_tree) accept_event();
 
@@ -2237,7 +2237,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 		} else {
 			_go_right();
 		}
-	} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_left", get_viewport()->get_input_player()) && p_event->is_pressed()) {
 
 		if (!cursor_can_exit_tree) accept_event();
 
@@ -2256,19 +2256,19 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 			_go_left();
 		}
 
-	} else if (p_event->is_action("ui_up") && p_event->is_pressed() && !is_command) {
+	} else if (p_event->is_action("ui_up", get_viewport()->get_input_player()) && p_event->is_pressed() && !is_command) {
 
 		if (!cursor_can_exit_tree) accept_event();
 
 		_go_up();
 
-	} else if (p_event->is_action("ui_down") && p_event->is_pressed() && !is_command) {
+	} else if (p_event->is_action("ui_down", get_viewport()->get_input_player()) && p_event->is_pressed() && !is_command) {
 
 		if (!cursor_can_exit_tree) accept_event();
 
 		_go_down();
 
-	} else if (p_event->is_action("ui_page_down") && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_page_down", get_viewport()->get_input_player()) && p_event->is_pressed()) {
 
 		if (!cursor_can_exit_tree) accept_event();
 
@@ -2306,7 +2306,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 		}
 
 		ensure_cursor_is_visible();
-	} else if (p_event->is_action("ui_page_up") && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_page_up", get_viewport()->get_input_player()) && p_event->is_pressed()) {
 
 		if (!cursor_can_exit_tree) accept_event();
 
@@ -2343,7 +2343,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 			prev->select(selected_col);
 		}
 		ensure_cursor_is_visible();
-	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_accept", get_viewport()->get_input_player()) && p_event->is_pressed()) {
 
 		if (selected_item) {
 			//bring up editor if possible
@@ -2353,7 +2353,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 			}
 		}
 		accept_event();
-	} else if (p_event->is_action("ui_select") && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_select", get_viewport()->get_input_player()) && p_event->is_pressed()) {
 
 		if (select_mode == SELECT_MULTI) {
 			if (!selected_item)

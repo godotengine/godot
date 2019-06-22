@@ -30,6 +30,7 @@
 
 #include "slider.h"
 #include "core/os/keyboard.h"
+#include "scene/main/viewport.h"
 
 Size2 Slider::get_minimum_size() const {
 
@@ -101,36 +102,36 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 
 	if (!mm.is_valid() && !mb.is_valid()) {
 
-		if (p_event->is_action("ui_left") && p_event->is_pressed()) {
+		if (p_event->is_action("ui_left", get_viewport()->get_input_player()) && p_event->is_pressed()) {
 
 			if (orientation != HORIZONTAL)
 				return;
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
-		} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_right", get_viewport()->get_input_player()) && p_event->is_pressed()) {
 
 			if (orientation != HORIZONTAL)
 				return;
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
-		} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_up", get_viewport()->get_input_player()) && p_event->is_pressed()) {
 
 			if (orientation != VERTICAL)
 				return;
 
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
-		} else if (p_event->is_action("ui_down") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_down", get_viewport()->get_input_player()) && p_event->is_pressed()) {
 
 			if (orientation != VERTICAL)
 				return;
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
-		} else if (p_event->is_action("ui_home") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_home", get_viewport()->get_input_player()) && p_event->is_pressed()) {
 
 			set_value(get_min());
 			accept_event();
-		} else if (p_event->is_action("ui_end") && p_event->is_pressed()) {
+		} else if (p_event->is_action("ui_end", get_viewport()->get_input_player()) && p_event->is_pressed()) {
 
 			set_value(get_max());
 			accept_event();

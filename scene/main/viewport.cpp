@@ -2283,7 +2283,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
-		if (p_event->is_pressed() && p_event->is_action("ui_cancel") && !gui.modal_stack.empty()) {
+		if (p_event->is_pressed() && p_event->is_action("ui_cancel", get_viewport()->get_input_player()) && !gui.modal_stack.empty()) {
 
 			_gui_sort_modal_stack();
 			Control *top = gui.modal_stack.back()->get();
@@ -2310,32 +2310,32 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (from && p_event->is_pressed()) {
 			Control *next = NULL;
 
-			if (p_event->is_action_pressed("ui_focus_next")) {
+			if (p_event->is_action_pressed("ui_focus_next", get_viewport()->get_input_player())) {
 
 				next = from->find_next_valid_focus();
 			}
 
-			if (p_event->is_action_pressed("ui_focus_prev")) {
+			if (p_event->is_action_pressed("ui_focus_prev", get_viewport()->get_input_player())) {
 
 				next = from->find_prev_valid_focus();
 			}
 
-			if (!mods && p_event->is_action_pressed("ui_up")) {
+			if (!mods && p_event->is_action_pressed("ui_up", get_viewport()->get_input_player())) {
 
 				next = from->_get_focus_neighbour(MARGIN_TOP);
 			}
 
-			if (!mods && p_event->is_action_pressed("ui_left")) {
+			if (!mods && p_event->is_action_pressed("ui_left", get_viewport()->get_input_player())) {
 
 				next = from->_get_focus_neighbour(MARGIN_LEFT);
 			}
 
-			if (!mods && p_event->is_action_pressed("ui_right")) {
+			if (!mods && p_event->is_action_pressed("ui_right", get_viewport()->get_input_player())) {
 
 				next = from->_get_focus_neighbour(MARGIN_RIGHT);
 			}
 
-			if (!mods && p_event->is_action_pressed("ui_down")) {
+			if (!mods && p_event->is_action_pressed("ui_down", get_viewport()->get_input_player())) {
 
 				next = from->_get_focus_neighbour(MARGIN_BOTTOM);
 			}
