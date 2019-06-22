@@ -118,7 +118,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	static const int CONFIG_VERSION = 4;
+	static const int CONFIG_VERSION = 5;
 
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting) const;
