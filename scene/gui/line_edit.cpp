@@ -650,6 +650,11 @@ void LineEdit::_notification(int p_what) {
 			set_cursor_position(get_cursor_position());
 
 		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			placeholder_translated = tr(placeholder);
+			update_placeholder_width();
+			update();
+		} break;
 		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
 			window_has_focus = true;
 			draw_caret = true;
@@ -728,7 +733,7 @@ void LineEdit::_notification(int p_what) {
 			Color font_color_selected = get_color("font_color_selected");
 			Color cursor_color = get_color("cursor_color");
 
-			const String &t = using_placeholder ? placeholder : text;
+			const String &t = using_placeholder ? placeholder_translated : text;
 			// draw placeholder color
 			if (using_placeholder)
 				font_color.a *= placeholder_alpha;
@@ -1148,16 +1153,9 @@ String LineEdit::get_text() const {
 
 void LineEdit::set_placeholder(String p_text) {
 
-	placeholder = tr(p_text);
-	if ((max_length <= 0) || (placeholder.length() <= max_length)) {
-		Ref<Font> font = get_font("font");
-		cached_placeholder_width = 0;
-		if (font != NULL) {
-			for (int i = 0; i < placeholder.length(); i++) {
-				cached_placeholder_width += font->get_char_size(placeholder[i]).width;
-			}
-		}
-	}
+	placeholder = p_text;
+	placeholder_translated = tr(placeholder);
+	update_placeholder_width();
 	update();
 }
 
@@ -1544,6 +1542,18 @@ void LineEdit::_emit_text_change() {
 	emit_signal("text_changed", text);
 	_change_notify("text");
 	text_changed_dirty = false;
+}
+
+void LineEdit::update_placeholder_width() {
+	if ((max_length <= 0) || (placeholder_translated.length() <= max_length)) {
+		Ref<Font> font = get_font("font");
+		cached_placeholder_width = 0;
+		if (font != NULL) {
+			for (int i = 0; i < placeholder_translated.length(); i++) {
+				cached_placeholder_width += font->get_char_size(placeholder_translated[i]).width;
+			}
+		}
+	}
 }
 
 void LineEdit::_clear_redo() {
