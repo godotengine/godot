@@ -1634,7 +1634,9 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("sync"), &VisualServer::sync);
 	ClassDB::bind_method(D_METHOD("draw", "swap_buffers", "frame_step"), &VisualServer::draw, DEFVAL(true), DEFVAL(0.0));
 
+#ifndef _MSC_VER
 #warning TODO all texture methods need re-binding
+#endif
 
 	ClassDB::bind_method(D_METHOD("texture_2d_create", "image"), &VisualServer::texture_2d_create);
 	ClassDB::bind_method(D_METHOD("texture_2d_get", "texture"), &VisualServer::texture_2d_get);
@@ -1919,7 +1921,9 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_create"), &VisualServer::canvas_create);
 	ClassDB::bind_method(D_METHOD("canvas_set_item_mirroring", "canvas", "item", "mirroring"), &VisualServer::canvas_set_item_mirroring);
 	ClassDB::bind_method(D_METHOD("canvas_set_modulate", "canvas", "color"), &VisualServer::canvas_set_modulate);
+#ifndef _MSC_VER
 #warning TODO method bindings need to be fixed
+#endif
 #if 0
 
 	ClassDB::bind_method(D_METHOD("canvas_item_create"), &VisualServer::canvas_item_create);
