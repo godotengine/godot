@@ -1169,7 +1169,7 @@ void VisualScriptEditor::_update_available_nodes() {
 
 		Vector<String> path = E->get().split("/");
 
-		if (filter != String() && path.size() && path[path.size() - 1].findn(filter) == -1)
+		if (filter != String() && path.size() && E->get().findn(filter) == -1)
 			continue;
 
 		String sp;
