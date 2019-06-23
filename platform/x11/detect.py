@@ -62,12 +62,7 @@ def get_opts():
 
 def get_flags():
 
-    return [
-        ('builtin_freetype', False),
-        ('builtin_libpng', False),
-        ('builtin_openssl', False),
-        ('builtin_zlib', False),
-    ]
+    return []
 
 
 def configure(env):
