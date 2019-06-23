@@ -123,7 +123,9 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 		if (m.data_type.kind != GDScriptParser::DataType::UNRESOLVED) {
 			symbol.detail += ": " + m.data_type.to_string();
 		}
-		symbol.detail += " = " + String(m.default_value);
+		if (m.default_value.get_type() != Variant::NIL) {
+			symbol.detail += " = " + JSON::print(m.default_value);
+		}
 
 		symbol.documentation = parse_documentation(line);
 		symbol.uri = uri;
@@ -493,12 +495,39 @@ const lsp::DocumentSymbol *ExtendGDScriptParser::get_member_symbol(const String 
 	return NULL;
 }
 
-void ExtendGDScriptParser::dump_symbols(HashMap<String, lsp::DocumentedSymbolInformation> &r_symbols) {
-	Vector<lsp::DocumentedSymbolInformation> list;
-	class_symbol.symbol_tree_as_list(path, list, path, true);
-	for (int i = 0; i < list.size(); i++) {
-		const lsp::DocumentedSymbolInformation &symbol = list[i];
-		r_symbols.set(symbol.name, symbol);
+void ExtendGDScriptParser::dump_member_symbols(Map<String, const lsp::DocumentSymbol *> &r_symbols) {
+
+	const GDScriptParser::Node *head = get_parse_tree();
+	if (const GDScriptParser::ClassNode *gdclass = dynamic_cast<const GDScriptParser::ClassNode *>(head)) {
+
+		for (const Map<StringName, GDScriptParser::ClassNode::Constant>::Element *E = gdclass->constant_expressions.front(); E; E = E->next()) {
+			get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(E->get().expression->line));
+		}
+
+		for (int i = 0; i < gdclass->subclasses.size(); i++) {
+			const ClassNode *m = gdclass->subclasses[i];
+			r_symbols.insert(JOIN_SYMBOLS(path, m->name), get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m->line)));
+		}
+
+		for (int i = 0; i < gdclass->variables.size(); i++) {
+			const GDScriptParser::ClassNode::Member &m = gdclass->variables[i];
+			r_symbols.insert(JOIN_SYMBOLS(path, m.identifier), get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m.line)));
+		}
+
+		for (int i = 0; i < gdclass->functions.size(); i++) {
+			const GDScriptParser::FunctionNode *m = gdclass->functions[i];
+			r_symbols.insert(JOIN_SYMBOLS(path, m->name), get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m->line)));
+		}
+
+		for (int i = 0; i < gdclass->static_functions.size(); i++) {
+			const GDScriptParser::FunctionNode *m = gdclass->static_functions[i];
+			r_symbols.insert(JOIN_SYMBOLS(path, m->name), get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m->line)));
+		}
+
+		for (int i = 0; i < gdclass->_signals.size(); i++) {
+			const GDScriptParser::ClassNode::Signal &m = gdclass->_signals[i];
+			r_symbols.insert(JOIN_SYMBOLS(path, m.name), get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m.line)));
+		}
 	}
 }
 

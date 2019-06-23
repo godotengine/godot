@@ -39,6 +39,10 @@
 #define LINE_NUMBER_TO_INDEX(p_line) ((p_line)-1)
 #endif
 
+#ifndef JOIN_SYMBOLS
+#define JOIN_SYMBOLS(p_path, name) ((p_path) + "." + (name))
+#endif
+
 class ExtendGDScriptParser : public GDScriptParser {
 	String path;
 	String code;
@@ -70,8 +74,7 @@ public:
 
 	const lsp::DocumentSymbol *get_symbol_defined_at_line(int p_line) const;
 	const lsp::DocumentSymbol *get_member_symbol(const String &p_name) const;
-
-	void dump_symbols(HashMap<String, lsp::DocumentedSymbolInformation> &r_symbols);
+	void dump_member_symbols(Map<String, const lsp::DocumentSymbol *> &r_symbols);
 
 	Error parse(const String &p_code, const String &p_path);
 };

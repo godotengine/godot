@@ -50,27 +50,37 @@ protected:
 
 	void reload_all_workspace_scripts();
 
-	void list_script_files(const String &p_root_dir, List<String> &r_files);
 	ExtendGDScriptParser *get_parse_successed_script(const String &p_path);
 	ExtendGDScriptParser *get_parse_result(const String &p_path);
 
+	void strip_flat_symbols(const String &p_branch);
+	void list_script_files(const String &p_root_dir, List<String> &r_files);
+
 public:
 	String root;
+
 	Map<String, ExtendGDScriptParser *> scripts;
 	Map<String, ExtendGDScriptParser *> parse_results;
+	Map<String, const lsp::DocumentSymbol *> flat_symbols;
 
 public:
 	Array symbol(const Dictionary &p_params);
 
 public:
 	Error initialize();
+
 	Error parse_script(const String &p_path, const String &p_content);
 	Error parse_local_script(const String &p_path);
+
 	String get_file_path(const String &p_uri) const;
 	String get_file_uri(const String &p_path) const;
+
 	void publish_diagnostics(const String &p_path);
 	void completion(const lsp::CompletionParams &p_params, List<ScriptCodeCompletionOption> *r_options);
+
 	const lsp::DocumentSymbol *resolve_symbol(const lsp::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name = "", bool p_func_requred = false);
+	void resolve_related_symbols(const lsp::TextDocumentPositionParams &p_doc_pos, List<const lsp::DocumentSymbol *> &r_list);
+
 	static String marked_documentation(const String &p_bbcode);
 
 	GDScriptWorkspace();

@@ -32,6 +32,7 @@
 #include "core/io/json.h"
 #include "core/os/copymem.h"
 #include "core/project_settings.h"
+#include "editor/editor_node.h"
 
 GDScriptLanguageProtocol *GDScriptLanguageProtocol::singleton = NULL;
 
@@ -157,6 +158,10 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 	CharString charstr = msg.utf8();
 
 	(*peer)->put_packet((const uint8_t *)charstr.ptr(), charstr.length());
+}
+
+bool GDScriptLanguageProtocol::is_smart_resolve_enabled() const {
+	return bool(_EDITOR_GET("network/language_server/enable_smart_resolve"));
 }
 
 GDScriptLanguageProtocol::GDScriptLanguageProtocol() {

@@ -79,6 +79,8 @@ public:
 	void notify_all_clients(const String &p_method, const Variant &p_params = Variant());
 	void notify_client(const String &p_method, const Variant &p_params = Variant(), int p_client = -1);
 
+	bool is_smart_resolve_enabled() const;
+
 	GDScriptLanguageProtocol();
 	~GDScriptLanguageProtocol();
 };
