@@ -41,8 +41,8 @@
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_folding.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_layouts_dialog.h"
 #include "editor/editor_log.h"
-#include "editor/editor_name_dialog.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_run.h"
@@ -85,6 +85,7 @@
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/viewport_container.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -308,7 +309,7 @@ private:
 	int overridden_default_layout;
 	Ref<ConfigFile> default_layout;
 	PopupMenu *editor_layouts;
-	EditorNameDialog *layout_dialog;
+	EditorLayoutsDialog *layout_dialog;
 
 	ConfirmationDialog *custom_build_manage_templates;
 	ConfirmationDialog *install_android_build_template;

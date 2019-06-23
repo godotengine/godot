@@ -4256,6 +4256,7 @@ void EditorNode::_layout_menu_option(int p_id) {
 			layout_dialog->set_title(TTR("Save Layout"));
 			layout_dialog->get_ok()->set_text(TTR("Save"));
 			layout_dialog->popup_centered();
+			layout_dialog->set_name_line_enabled(true);
 		} break;
 		case SETTINGS_LAYOUT_DELETE: {
 
@@ -4263,6 +4264,7 @@ void EditorNode::_layout_menu_option(int p_id) {
 			layout_dialog->set_title(TTR("Delete Layout"));
 			layout_dialog->get_ok()->set_text(TTR("Delete"));
 			layout_dialog->popup_centered();
+			layout_dialog->set_name_line_enabled(false);
 		} break;
 		case SETTINGS_LAYOUT_DEFAULT: {
 
@@ -6029,10 +6031,10 @@ EditorNode::EditorNode() {
 
 	progress_hb = memnew(BackgroundProgress);
 
-	layout_dialog = memnew(EditorNameDialog);
+	layout_dialog = memnew(EditorLayoutsDialog);
 	gui_base->add_child(layout_dialog);
 	layout_dialog->set_hide_on_ok(false);
-	layout_dialog->set_size(Size2(175, 70) * EDSCALE);
+	layout_dialog->set_size(Size2(225, 270) * EDSCALE);
 	layout_dialog->connect("name_confirmed", this, "_dialog_action");
 
 	update_menu = memnew(MenuButton);
