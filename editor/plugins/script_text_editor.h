@@ -201,6 +201,7 @@ public:
 
 	virtual void goto_line(int p_line, bool p_with_error = false);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
+	void goto_line_centered(int p_line);
 	virtual void set_executing_line(int p_line);
 	virtual void clear_executing_line();
 
