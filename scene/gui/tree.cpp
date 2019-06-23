@@ -1128,6 +1128,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			for (int j = p_item->cells[i].buttons.size() - 1; j >= 0; j--) {
 				Ref<Texture> b = p_item->cells[i].buttons[j].texture;
 				Size2 s = b->get_size() + cache.button_pressed->get_minimum_size();
+				if (s.height < label_h)
+					s.height = label_h;
 
 				Point2i o = Point2i(ofs + w - s.width, p_pos.y) - cache.offset + p_draw_ofs;
 
