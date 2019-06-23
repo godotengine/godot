@@ -201,6 +201,13 @@ void TileMap::_fix_cell_transform(Transform2D &xform, const Cell &p_cell, const 
 
 	Size2 s = p_sc;
 	Vector2 offset = p_offset;
+	if (s.y > s.x) {
+		if ((p_cell.flip_h && (p_cell.flip_v || p_cell.transpose)) || (p_cell.flip_v && !p_cell.transpose))
+			offset.y += s.y - s.x;
+	} else if (s.y < s.x) {
+		if ((p_cell.flip_v && (p_cell.flip_h || p_cell.transpose)) || (p_cell.flip_h && !p_cell.transpose))
+			offset.x += s.x - s.y;
+	}
 
 	if (p_cell.transpose) {
 		SWAP(xform.elements[0].x, xform.elements[0].y);
@@ -369,6 +376,13 @@ void TileMap::update_dirty_quadrants() {
 			rect.size = s;
 			rect.size.x += fp_adjust;
 			rect.size.y += fp_adjust;
+			if (rect.size.y > rect.size.x) {
+				if ((c.flip_h && (c.flip_v || c.transpose)) || (c.flip_v && !c.transpose))
+					tile_ofs.y += rect.size.y - rect.size.x;
+			} else if (rect.size.y < rect.size.x) {
+				if ((c.flip_v && (c.flip_h || c.transpose)) || (c.flip_h && !c.transpose))
+					tile_ofs.x += rect.size.x - rect.size.y;
+			}
 
 			if (c.transpose) {
 				SWAP(tile_ofs.x, tile_ofs.y);

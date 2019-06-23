@@ -793,6 +793,14 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 		rect.size = r.size;
 	}
 
+	if (rect.size.y > rect.size.x) {
+		if ((p_flip_h && (p_flip_v || p_transpose)) || (p_flip_v && !p_transpose))
+			tile_ofs.y += rect.size.y - rect.size.x;
+	} else if (rect.size.y < rect.size.x) {
+		if ((p_flip_v && (p_flip_h || p_transpose)) || (p_flip_h && !p_transpose))
+			tile_ofs.x += rect.size.x - rect.size.y;
+	}
+
 	if (p_transpose) {
 		SWAP(tile_ofs.x, tile_ofs.y);
 		/* For a future CheckBox to Center Texture:
