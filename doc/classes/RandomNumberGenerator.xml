@@ -5,6 +5,14 @@
 	</brief_description>
 	<description>
 		RandomNumberGenerator is a class for generating pseudo-random numbers. It currently uses PCG32. The underlying algorithm is an implementation detail. As a result, it should not be depended upon for reproducible random streams across Godot versions.
+		To generate a random float number (within a given range) based on a time-dependant seed:
+		[codeblock]
+		const MIN_RANGE = float(-10)
+		const MAX_RANGE = float(10)
+		var random_number = RandomNumberGenerator.new()
+		random_number.randomize()
+		random_number.randf_range(MIN_RANGE, MAX_RANGE)
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
