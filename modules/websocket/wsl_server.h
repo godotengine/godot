@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  wsl_server.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,73 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-#include "core/error_macros.h"
-#include "core/project_settings.h"
-#ifdef JAVASCRIPT_ENABLED
-#include "emscripten.h"
-#include "emws_client.h"
-#include "emws_peer.h"
-#include "emws_server.h"
-#else
-#include "lws_client.h"
-#include "lws_peer.h"
-#include "lws_server.h"
-#include "wsl_client.h"
-#include "wsl_server.h"
-#endif
+#ifndef WSLSERVER_H
+#define WSLSERVER_H
 
-void register_websocket_types() {
-#define _SET_HINT(NAME, _VAL_, _MAX_) \
-	GLOBAL_DEF(NAME, _VAL_);          \
-	ProjectSettings::get_singleton()->set_custom_property_info(NAME, PropertyInfo(Variant::INT, NAME, PROPERTY_HINT_RANGE, "2," #_MAX_ ",1,or_greater"));
+#ifndef JAVASCRIPT_ENABLED
 
-	// Client buffers project settings
-	_SET_HINT(WSC_IN_BUF, 64, 4096);
-	_SET_HINT(WSC_IN_PKT, 1024, 16384);
-	_SET_HINT(WSC_OUT_BUF, 64, 4096);
-	_SET_HINT(WSC_OUT_PKT, 1024, 16384);
+#include "websocket_server.h"
+#include "wsl_peer.h"
 
-	// Server buffers project settings
-	_SET_HINT(WSS_IN_BUF, 64, 4096);
-	_SET_HINT(WSS_IN_PKT, 1024, 16384);
-	_SET_HINT(WSS_OUT_BUF, 64, 4096);
-	_SET_HINT(WSS_OUT_PKT, 1024, 16384);
+#include "core/io/stream_peer_tcp.h"
+#include "core/io/tcp_server.h"
 
-#ifdef JAVASCRIPT_ENABLED
-	EMWSPeer::make_default();
-	EMWSClient::make_default();
-	EMWSServer::make_default();
-#else
-	LWSPeer::make_default();
-	LWSClient::make_default();
-	LWSServer::make_default();
-	WSLClient::make_default();
-	WSLServer::make_default();
-#endif
+#define WSL_SERVER_TIMEOUT 1000
 
-	ClassDB::register_virtual_class<WebSocketMultiplayerPeer>();
-	ClassDB::register_custom_instance_class<WebSocketServer>();
-	ClassDB::register_custom_instance_class<WebSocketClient>();
-	ClassDB::register_custom_instance_class<WebSocketPeer>();
-}
+class WSLServer : public WebSocketServer {
 
-void unregister_websocket_types() {}
+	GDCIIMPL(WSLServer, WebSocketServer);
+
+private:
+	class PendingPeer : public Reference {
+
+	private:
+		bool _parse_request(String &r_key);
+
+	public:
+		Ref<StreamPeer> connection;
+
+		int time;
+		String request;
+		String key;
+		bool has_request;
+		CharString response;
+		int response_sent;
+
+		PendingPeer() {
+			time = 0;
+			has_request = false;
+			response_sent = 0;
+		}
+
+		Error do_handshake();
+	};
+
+	int _in_buf_size;
+	int _in_pkt_size;
+	int _out_buf_size;
+	int _out_pkt_size;
+
+	List<Ref<PendingPeer> > _pending;
+	Ref<TCP_Server> _server;
+
+public:
+	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
+	Error listen(int p_port, PoolVector<String> p_protocols = PoolVector<String>(), bool gd_mp_api = false);
+	void stop();
+	bool is_listening() const;
+	int get_max_packet_size() const;
+	bool has_peer(int p_id) const;
+	Ref<WebSocketPeer> get_peer(int p_id) const;
+	IP_Address get_peer_address(int p_peer_id) const;
+	int get_peer_port(int p_peer_id) const;
+	void disconnect_peer(int p_peer_id, int p_code = 1000, String p_reason = "");
+	virtual void poll();
+
+	WSLServer();
+	~WSLServer();
+};
+
+#endif // JAVASCRIPT_ENABLED
+
+#endif // WSLSERVER_H

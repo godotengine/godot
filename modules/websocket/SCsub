@@ -5,7 +5,7 @@ Import('env_modules')
 
 # Thirdparty source files
 
-env_lws = env_modules.Clone()
+env_ws = env_modules.Clone()
 
 if env['builtin_libwebsockets'] and not env["platform"] == "javascript": # already builtin for javascript
     thirdparty_dir = "#thirdparty/libwebsockets/"
@@ -90,4 +90,23 @@ if env['builtin_libwebsockets'] and not env["platform"] == "javascript": # alrea
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
-env_lws.add_source_files(env.modules_sources, "*.cpp")
+    wslay_dir = "#thirdparty/wslay/"
+    wslay_sources = [
+        "wslay_net.c",
+        "wslay_event.c",
+        "wslay_queue.c",
+        "wslay_stack.c",
+        "wslay_frame.c",
+    ]
+    wslay_sources = [wslay_dir + s for s in wslay_sources]
+    env_ws.Prepend(CPPPATH=[wslay_dir + "includes/"])
+    env_ws.Append(CPPFLAGS=["-DHAVE_CONFIG_H"])
+    if env["platform"] == "windows" or env["platform"] == "uwp":
+        env_ws.Append(CPPFLAGS=["-DHAVE_WINSOCK2_H"])
+    else:
+        env_ws.Append(CPPFLAGS=["-DHAVE_NETINET_IN_H"])
+    env_wslay = env_ws.Clone()
+    env_wslay.disable_warnings()
+    env_wslay.add_source_files(env.modules_sources, wslay_sources)
+
+env_ws.add_source_files(env.modules_sources, "*.cpp")
