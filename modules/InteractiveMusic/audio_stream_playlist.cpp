@@ -1,6 +1,7 @@
 #include "audio_stream_playlist.h"
 #include "core/math/math_funcs.h"
 #include "core/print_string.h"
+#include <iostream>
 
 AudioStreamPlaylist::AudioStreamPlaylist() {
 	bpm = 120;
@@ -189,6 +190,8 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 				fading_samples = fading_samples_total;
 				beat_size = playlist->sample_rate * 60 / bpm_list[current];
 				beat_amount_remaining = beats_list[current] * beat_size;
+				std::clog << "beat_amount_remaining = " << beats_list[current] << " * " << beat_size << std::endl;
+				std::clog << "beat_amount_remaining = " << beat_amount_remaining << std::endl;
 			}
 
 			int to_mix = MIN(MIX_BUFFER_SIZE, MIN(p_frames, beat_amount_remaining));
@@ -244,7 +247,7 @@ bool AudioStreamPlaybackPlaylist::is_playing() const {
 void AudioStreamPlaybackPlaylist::_update_playback_instances() {
 	stop();
 
-	for (int i = 0; i < AudioStreamPlaylist::MAX_STREAMS; i++) {
+	for (int i = 0; i < playlist->stream_count; i++) {
 
 		if (playlist->audio_streams[i].is_valid()) {
 			if (playlist->audio_streams[i]->get_bpm() == 0) {
