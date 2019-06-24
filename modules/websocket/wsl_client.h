@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  wsl_client.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,58 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-#include "core/error_macros.h"
-#include "core/project_settings.h"
-#ifdef JAVASCRIPT_ENABLED
-#include "emscripten.h"
-#include "emws_client.h"
-#include "emws_peer.h"
-#include "emws_server.h"
-#else
-#include "lws_client.h"
-#include "lws_peer.h"
-#include "lws_server.h"
-#include "wsl_client.h"
-#include "wsl_server.h"
-#endif
+#ifndef WSLCLIENT_H
+#define WSLCLIENT_H
 
-void register_websocket_types() {
-#define _SET_HINT(NAME, _VAL_, _MAX_) \
-	GLOBAL_DEF(NAME, _VAL_);          \
-	ProjectSettings::get_singleton()->set_custom_property_info(NAME, PropertyInfo(Variant::INT, NAME, PROPERTY_HINT_RANGE, "2," #_MAX_ ",1,or_greater"));
+#ifndef JAVASCRIPT_ENABLED
 
-	// Client buffers project settings
-	_SET_HINT(WSC_IN_BUF, 64, 4096);
-	_SET_HINT(WSC_IN_PKT, 1024, 16384);
-	_SET_HINT(WSC_OUT_BUF, 64, 4096);
-	_SET_HINT(WSC_OUT_PKT, 1024, 16384);
+#include "core/error_list.h"
+#include "core/io/stream_peer_ssl.h"
+#include "core/io/stream_peer_tcp.h"
+#include "websocket_client.h"
+#include "wsl_peer.h"
+#include "wslay/wslay.h"
 
-	// Server buffers project settings
-	_SET_HINT(WSS_IN_BUF, 64, 4096);
-	_SET_HINT(WSS_IN_PKT, 1024, 16384);
-	_SET_HINT(WSS_OUT_BUF, 64, 4096);
-	_SET_HINT(WSS_OUT_PKT, 1024, 16384);
+class WSLClient : public WebSocketClient {
 
-#ifdef JAVASCRIPT_ENABLED
-	EMWSPeer::make_default();
-	EMWSClient::make_default();
-	EMWSServer::make_default();
-#else
-	LWSPeer::make_default();
-	LWSClient::make_default();
-	LWSServer::make_default();
-	WSLClient::make_default();
-	WSLServer::make_default();
-#endif
+	GDCIIMPL(WSLClient, WebSocketClient);
 
-	ClassDB::register_virtual_class<WebSocketMultiplayerPeer>();
-	ClassDB::register_custom_instance_class<WebSocketServer>();
-	ClassDB::register_custom_instance_class<WebSocketClient>();
-	ClassDB::register_custom_instance_class<WebSocketPeer>();
-}
+private:
+	int _in_buf_size;
+	int _in_pkt_size;
+	int _out_buf_size;
+	int _out_pkt_size;
+	wslay_event_context_ptr _ctx;
+	Ref<WSLPeer> _peer;
+	// XXX we could use HTTPClient with some hacking instead...
+	Ref<StreamPeerTCP> _tcp;
+	CharString _request;
+	String _response;
+	String _key;
+	String _host;
+	PoolVector<String> _protocols;
+	Ref<StreamPeer> _connection;
+	int _requested;
+	bool _use_ssl;
 
-void unregister_websocket_types() {}
+	void _do_handshake();
+	bool _verify_headers(String &r_protocol);
+
+public:
+	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
+	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocol = PoolVector<String>());
+	int get_max_packet_size() const;
+	Ref<WebSocketPeer> get_peer(int p_peer_id) const;
+	void disconnect_from_host(int p_code = 1000, String p_reason = "");
+	IP_Address get_connected_host() const;
+	uint16_t get_connected_port() const;
+	virtual ConnectionStatus get_connection_status() const;
+	virtual void poll();
+
+	WSLClient();
+	~WSLClient();
+};
+
+#endif // JAVASCRIPT_ENABLED
+
+#endif // WSLCLIENT_H

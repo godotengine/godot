@@ -262,6 +262,13 @@ changes to ensure they build for Javascript/HTML5. Those
 changes are marked with `// -- GODOT --` comments.
 
 
+## wslay
+
+- Upstream: https://github.com/tatsuhiro-t/wslay
+- Version: 1.1.0
+- License: MIT
+
+
 ## libwebsockets
 
 - Upstream: https://github.com/warmcat/libwebsockets
