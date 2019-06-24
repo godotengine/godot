@@ -81,7 +81,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 	bool scenario_draw_canvas_bg = false; //draw canvas, or some layer of it, as BG for 3D instead of in front
 	int scenario_canvas_max_layer = 0;
-	bool cleared = false;
+
 	Color bgcolor = clear_color;
 
 	if (!p_viewport->hide_canvas && !p_viewport->disable_environment && VSG::scene->scenario_owner.owns(p_viewport->scenario)) {
@@ -106,9 +106,10 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 		}
 	}
 
+	VSG::storage->render_target_request_clear(p_viewport->render_target, bgcolor);
+
 	if (!scenario_draw_canvas_bg && can_draw_3d) {
 		_draw_3d(p_viewport, p_eye);
-		cleared = true; //if 3D has drawn, 2D is cleared.
 	}
 
 	if (!p_viewport->hide_canvas) {
@@ -240,8 +241,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 				ptr = ptr->filter_next_ptr;
 			}
 
-			VSG::canvas->render_canvas(p_viewport->render_target, !cleared, bgcolor, canvas, xform, canvas_lights, lights_with_mask, clip_rect);
-			cleared = true;
+			VSG::canvas->render_canvas(p_viewport->render_target, canvas, xform, canvas_lights, lights_with_mask, clip_rect);
 			i++;
 
 			if (scenario_draw_canvas_bg && E->key().get_layer() >= scenario_canvas_max_layer) {
@@ -308,7 +308,7 @@ void VisualServerViewport::draw_viewports() {
 		if (!visible)
 			continue;
 
-		VSG::storage->render_target_clear_used_flag(vp->render_target);
+		VSG::storage->render_target_set_as_unused(vp->render_target);
 #if 0
 		if (vp->use_arvr && arvr_interface.is_valid()) {
 			// override our size, make sure it matches our required size
@@ -380,6 +380,9 @@ void VisualServerViewport::draw_viewports() {
 		}
 	}
 	VSG::scene_render->set_debug_draw_mode(VS::VIEWPORT_DEBUG_DRAW_DISABLED);
+
+	//this needs to be called to make screen swapping more efficient
+	VSG::rasterizer->prepare_for_blitting_render_targets();
 
 	for (Map<int, Vector<Rasterizer::BlitToScreen> >::Element *E = blit_to_screen_list.front(); E; E = E->next()) {
 		VSG::rasterizer->blit_render_targets_to_screen(E->key(), E->get().ptr(), E->get().size());
