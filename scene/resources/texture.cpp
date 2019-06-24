@@ -1502,6 +1502,7 @@ void CubeMap::set_side(Side p_side, const Ref<Image> &p_image) {
 
 Ref<Image> CubeMap::get_side(Side p_side) const {
 
+	ERR_FAIL_INDEX_V(p_side, 6, Ref<Image>());
 	if (!valid[p_side])
 		return Ref<Image>();
 	return VS::get_singleton()->texture_get_data(cubemap, VS::CubeMapSide(p_side));

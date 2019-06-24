@@ -163,6 +163,7 @@ float SpriteBase3D::get_opacity() const {
 
 void SpriteBase3D::set_axis(Vector3::Axis p_axis) {
 
+	ERR_FAIL_INDEX(p_axis, 3);
 	axis = p_axis;
 	_queue_update();
 }
