@@ -24,20 +24,14 @@ void RenderingDeviceVulkan::_add_dependency(RID p_id, RID p_depends_on) {
 void RenderingDeviceVulkan::_free_dependencies(RID p_id) {
 
 	//direct dependencies must be freed
-	List<RID> to_free;
+
 	Map<RID, Set<RID> >::Element *E = dependency_map.find(p_id);
 	if (E) {
 
-		for (Set<RID>::Element *F = E->get().front(); F; F = F->next()) {
-			to_free.push_back(F->get());
+		while (E->get().size()) {
+			free(E->get().front()->get());
 		}
-
 		dependency_map.erase(E);
-
-		while (to_free.front()) {
-			free(to_free.front()->get());
-			to_free.pop_front();
-		}
 	}
 
 	//reverse depenencies must be unreferenced
@@ -47,9 +41,9 @@ void RenderingDeviceVulkan::_free_dependencies(RID p_id) {
 
 		for (Set<RID>::Element *F = E->get().front(); F; F = F->next()) {
 			Map<RID, Set<RID> >::Element *G = dependency_map.find(F->get());
-			if (G) {
-				G->get().erase(p_id);
-			}
+			ERR_CONTINUE(!G);
+			ERR_CONTINUE(!G->get().has(p_id));
+			G->get().erase(p_id);
 		}
 
 		reverse_dependency_map.erase(E);
@@ -1210,7 +1204,6 @@ Error RenderingDeviceVulkan::_buffer_free(Buffer *p_buffer) {
 	ERR_FAIL_COND_V(p_buffer->size == 0, ERR_INVALID_PARAMETER);
 
 	vmaDestroyBuffer(allocator, p_buffer->buffer, p_buffer->allocation);
-	vmaFreeMemory(allocator, p_buffer->allocation);
 	p_buffer->buffer = NULL;
 	p_buffer->allocation = NULL;
 	p_buffer->size = 0;
@@ -1455,6 +1448,16 @@ Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, c
 	return OK;
 }
 
+void RenderingDeviceVulkan::_memory_barrier(VkPipelineStageFlags p_src_stage_mask, VkPipelineStageFlags p_dst_stage_mask, VkAccessFlags p_src_access, VkAccessFlags p_dst_sccess, bool p_sync_with_draw) {
+
+	VkMemoryBarrier mem_barrier;
+	mem_barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+	mem_barrier.pNext = NULL;
+	mem_barrier.srcAccessMask = p_src_access;
+	mem_barrier.dstAccessMask = p_dst_sccess;
+
+	vkCmdPipelineBarrier(p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, p_src_stage_mask, p_dst_stage_mask, 0, 1, &mem_barrier, 0, NULL, 0, NULL);
+}
 /*****************/
 /**** TEXTURE ****/
 /*****************/
@@ -1784,7 +1787,6 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	if (err) {
 		vmaDestroyImage(allocator, texture.image, texture.allocation);
-		vmaFreeMemory(allocator, texture.allocation);
 		ERR_FAIL_V(RID());
 	}
 
@@ -2119,6 +2121,16 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 	}
 
 	return OK;
+}
+
+bool RenderingDeviceVulkan::texture_is_shared(RID p_texture) {
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND_V(!tex, false);
+	return tex->owner.is_valid();
+}
+
+bool RenderingDeviceVulkan::texture_is_valid(RID p_texture) {
+	return texture_owner.owns(p_texture);
 }
 
 bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const {
@@ -2540,7 +2552,9 @@ RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Poo
 		uint64_t data_size = p_data.size();
 		PoolVector<uint8_t>::Read r = p_data.read();
 		_buffer_update(&buffer, 0, r.ptr(), data_size);
+		_memory_barrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, false);
 	}
+
 	return vertex_buffer_owner.make_rid(buffer);
 }
 
@@ -2551,14 +2565,17 @@ RenderingDevice::VertexFormatID RenderingDeviceVulkan::vertex_format_create(cons
 
 	VertexDescriptionKey key;
 	key.vertex_formats = p_vertex_formats;
-	const Map<VertexDescriptionKey, VertexFormatID>::Element *E = vertex_format_cache.find(key);
-	if (E) {
-		return E->get();
+
+	VertexFormatID *idptr = vertex_format_cache.getptr(key);
+	if (idptr) {
+		return *idptr;
 	}
+
 	//does not exist, create one and cache it
 	VertexDescriptionCache vdcache;
 	vdcache.bindings = memnew_arr(VkVertexInputBindingDescription, p_vertex_formats.size());
 	vdcache.attributes = memnew_arr(VkVertexInputAttributeDescription, p_vertex_formats.size());
+
 	Set<int> used_locations;
 	for (int i = 0; i < p_vertex_formats.size(); i++) {
 		ERR_CONTINUE(p_vertex_formats[i].format >= DATA_FORMAT_MAX);
@@ -2588,9 +2605,10 @@ RenderingDevice::VertexFormatID RenderingDeviceVulkan::vertex_format_create(cons
 
 	vdcache.create_info.vertexBindingDescriptionCount = p_vertex_formats.size();
 	vdcache.create_info.pVertexBindingDescriptions = vdcache.bindings;
+	vdcache.vertex_formats = p_vertex_formats;
 
 	VertexFormatID id = VertexFormatID(vertex_format_cache.size()) | (VertexFormatID(ID_TYPE_VERTEX_FORMAT) << ID_BASE_SHIFT);
-	vdcache.E = vertex_format_cache.insert(key, id);
+	vertex_format_cache[key] = id;
 	vertex_formats[id] = vdcache;
 	return id;
 }
@@ -2602,7 +2620,7 @@ RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFo
 	ERR_FAIL_COND_V(!vertex_formats.has(p_vertex_format), RID());
 	const VertexDescriptionCache &vd = vertex_formats[p_vertex_format];
 
-	ERR_FAIL_COND_V(vd.E->key().vertex_formats.size() != p_src_buffers.size(), RID());
+	ERR_FAIL_COND_V(vd.vertex_formats.size() != p_src_buffers.size(), RID());
 
 	for (int i = 0; i < p_src_buffers.size(); i++) {
 		ERR_FAIL_COND_V(!vertex_buffer_owner.owns(p_src_buffers[i]), RID());
@@ -2618,7 +2636,8 @@ RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFo
 
 		//validate with buffer
 		{
-			const VertexDescription &atf = vd.E->key().vertex_formats[i];
+			const VertexDescription &atf = vd.vertex_formats[i];
+
 			uint32_t element_size = get_format_vertex_size(atf.format);
 			ERR_FAIL_COND_V(element_size == 0, RID()); //should never happens since this was prevalidated
 
@@ -2703,6 +2722,7 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 		uint64_t data_size = p_data.size();
 		PoolVector<uint8_t>::Read r = p_data.read();
 		_buffer_update(&index_buffer, 0, r.ptr(), data_size);
+		_memory_barrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT, false);
 	}
 	return index_buffer_owner.make_rid(index_buffer);
 }
@@ -3377,6 +3397,7 @@ RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Po
 		uint64_t data_size = p_data.size();
 		PoolVector<uint8_t>::Read r = p_data.read();
 		_buffer_update(&buffer, 0, r.ptr(), data_size);
+		_memory_barrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_UNIFORM_READ_BIT, false);
 	}
 	return uniform_buffer_owner.make_rid(buffer);
 }
@@ -3395,6 +3416,7 @@ RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Po
 		uint64_t data_size = p_data.size();
 		PoolVector<uint8_t>::Read r = p_data.read();
 		_buffer_update(&buffer, 0, r.ptr(), data_size);
+		_memory_barrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, false);
 	}
 	return storage_buffer_owner.make_rid(buffer);
 }
@@ -3420,6 +3442,7 @@ RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataF
 		uint64_t data_size = p_data.size();
 		PoolVector<uint8_t>::Read r = p_data.read();
 		_buffer_update(&texture_buffer.buffer, 0, r.ptr(), data_size);
+		_memory_barrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, false);
 	}
 
 	VkBufferViewCreateInfo view_create_info;
@@ -3550,6 +3573,9 @@ void RenderingDeviceVulkan::_descriptor_pool_free(const DescriptorPoolKey &p_key
 		vkDestroyDescriptorPool(device, p_pool->pool, NULL);
 		descriptor_pools[p_key].erase(p_pool);
 		memdelete(p_pool);
+		if (descriptor_pools[p_key].empty()) {
+			descriptor_pools.erase(p_key);
+		}
 	}
 }
 
@@ -3986,16 +4012,29 @@ bool RenderingDeviceVulkan::uniform_set_is_valid(RID p_uniform_set) {
 Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, void *p_data, bool p_sync_with_draw) {
 	_THREAD_SAFE_METHOD_
 
+	VkPipelineStageFlags dst_stage_mask;
+	VkAccessFlags dst_access;
+
 	Buffer *buffer = NULL;
 	if (vertex_buffer_owner.owns(p_buffer)) {
+		dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+		dst_access = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
 		buffer = vertex_buffer_owner.getornull(p_buffer);
 	} else if (index_buffer_owner.owns(p_buffer)) {
+		dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+		dst_access = VK_ACCESS_INDEX_READ_BIT;
 		buffer = index_buffer_owner.getornull(p_buffer);
 	} else if (uniform_buffer_owner.owns(p_buffer)) {
+		dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		dst_access = VK_ACCESS_UNIFORM_READ_BIT;
 		buffer = uniform_buffer_owner.getornull(p_buffer);
 	} else if (texture_buffer_owner.owns(p_buffer)) {
+		dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		dst_access = VK_ACCESS_SHADER_READ_BIT;
 		buffer = &texture_buffer_owner.getornull(p_buffer)->buffer;
 	} else if (storage_buffer_owner.owns(p_buffer)) {
+		dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		dst_access = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		buffer = storage_buffer_owner.getornull(p_buffer);
 	} else {
 		ERR_EXPLAIN("Buffer argument is not a valid buffer of any type.");
@@ -4007,7 +4046,14 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 	}
 
-	return _buffer_update(buffer, p_offset, (uint8_t *)p_data, p_size, p_sync_with_draw);
+	Error err = _buffer_update(buffer, p_offset, (uint8_t *)p_data, p_size, p_sync_with_draw);
+	if (err) {
+		return err;
+	}
+
+	_memory_barrier(VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, p_sync_with_draw);
+
+	return err;
 }
 
 /*************************/
@@ -4042,17 +4088,16 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	if (p_vertex_format != INVALID_ID) {
 		//uses vertices, else it does not
 		ERR_FAIL_COND_V(!vertex_formats.has(p_vertex_format), RID());
-		VertexDescriptionCache &vd = vertex_formats[p_vertex_format];
+		const VertexDescriptionCache &vd = vertex_formats[p_vertex_format];
 
 		pipeline_vertex_input_state_create_info = vd.create_info;
 
 		//validate with inputs
 		for (int i = 0; i < shader->vertex_input_locations.size(); i++) {
 			uint32_t location = shader->vertex_input_locations[i];
-			const VertexDescriptionKey &k = vd.E->key();
 			bool found = false;
-			for (int j = 0; j < k.vertex_formats.size(); j++) {
-				if (k.vertex_formats[j].location == location) {
+			for (int j = 0; j < vd.vertex_formats.size(); j++) {
+				if (vd.vertex_formats[j].location == location) {
 					found = true;
 				}
 			}
@@ -4375,6 +4420,11 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	return id;
 }
 
+bool RenderingDeviceVulkan::render_pipeline_is_valid(RID p_pipeline) {
+	_THREAD_SAFE_METHOD_
+	return pipeline_owner.owns(p_pipeline);
+}
+
 /****************/
 /**** SCREEN ****/
 /****************/
@@ -4382,12 +4432,12 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 int RenderingDeviceVulkan::screen_get_width(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	return context->get_screen_width(p_screen);
+	return context->window_get_width(p_screen);
 }
 int RenderingDeviceVulkan::screen_get_height(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	return context->get_screen_height(p_screen);
+	return context->window_get_height(p_screen);
 }
 RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::screen_get_framebuffer_format() const {
 
@@ -4436,11 +4486,11 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(in
 	VkRenderPassBeginInfo render_pass_begin;
 	render_pass_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	render_pass_begin.pNext = NULL;
-	render_pass_begin.renderPass = context->get_render_pass();
-	render_pass_begin.framebuffer = context->get_frame_framebuffer(frame);
+	render_pass_begin.renderPass = context->window_get_render_pass(p_screen);
+	render_pass_begin.framebuffer = context->window_get_framebuffer(p_screen);
 
-	render_pass_begin.renderArea.extent.width = context->get_screen_width(p_screen);
-	render_pass_begin.renderArea.extent.height = context->get_screen_height(p_screen);
+	render_pass_begin.renderArea.extent.width = context->window_get_width(p_screen);
+	render_pass_begin.renderArea.extent.height = context->window_get_height(p_screen);
 	render_pass_begin.renderArea.offset.x = 0;
 	render_pass_begin.renderArea.offset.y = 0;
 
@@ -4648,6 +4698,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 
 	vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
+	draw_list->viewport = Rect2i(viewport_offset, viewport_size);
 	return ID_TYPE_DRAW_LIST;
 }
 
@@ -4793,6 +4844,8 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 
 		vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 		r_split_ids[i] = (DrawListID(1) << DrawListID(ID_TYPE_SPLIT_DRAW_LIST)) + i;
+
+		draw_list[i].viewport = Rect2i(viewport_offset, viewport_size);
 	}
 
 	return OK;
@@ -4939,6 +4992,18 @@ void RenderingDeviceVulkan::draw_list_bind_index_array(DrawListID p_list, RID p_
 	vkCmdBindIndexBuffer(dl->command_buffer, index_array->buffer, index_array->offset, index_array->index_type);
 }
 
+void RenderingDeviceVulkan::draw_list_set_line_width(DrawListID p_list, float p_width) {
+
+	DrawList *dl = _get_draw_list_ptr(p_list);
+	ERR_FAIL_COND(!dl);
+	if (!dl->validation.active) {
+		ERR_EXPLAIN("Submitted Draw Lists can no longer be modified.");
+		ERR_FAIL();
+	}
+
+	vkCmdSetLineWidth(dl->command_buffer, p_width);
+}
+
 void RenderingDeviceVulkan::draw_list_set_push_constant(DrawListID p_list, void *p_data, uint32_t p_data_size) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
@@ -5071,8 +5136,43 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 }
 
 void RenderingDeviceVulkan::draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) {
+	DrawList *dl = _get_draw_list_ptr(p_list);
+	ERR_FAIL_COND(!dl);
+	if (!dl->validation.active) {
+		ERR_EXPLAIN("Submitted Draw Lists can no longer be modified.");
+		ERR_FAIL();
+	}
+
+	Rect2i rect = p_rect;
+	rect.position += dl->viewport.position;
+
+	rect = dl->viewport.clip(rect);
+
+	if (rect.get_area() == 0) {
+		return;
+	}
+	VkRect2D scissor;
+	scissor.offset.x = rect.position.x;
+	scissor.offset.y = rect.position.y;
+	scissor.extent.width = rect.size.width;
+	scissor.extent.height = rect.size.height;
+
+	vkCmdSetScissor(dl->command_buffer, 0, 1, &scissor);
 }
 void RenderingDeviceVulkan::draw_list_disable_scissor(DrawListID p_list) {
+	DrawList *dl = _get_draw_list_ptr(p_list);
+	ERR_FAIL_COND(!dl);
+	if (!dl->validation.active) {
+		ERR_EXPLAIN("Submitted Draw Lists can no longer be modified.");
+		ERR_FAIL();
+	}
+
+	VkRect2D scissor;
+	scissor.offset.x = dl->viewport.position.x;
+	scissor.offset.y = dl->viewport.position.y;
+	scissor.extent.width = dl->viewport.size.width;
+	scissor.extent.height = dl->viewport.size.height;
+	vkCmdSetScissor(dl->command_buffer, 0, 1, &scissor);
 }
 
 void RenderingDeviceVulkan::draw_list_end() {
@@ -5203,6 +5303,7 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 		Buffer b;
 		b.allocation = index_buffer->allocation;
 		b.buffer = index_buffer->buffer;
+		b.size = index_buffer->size;
 		frames[frame].buffers_to_dispose_of.push_back(b);
 		index_buffer_owner.free(p_id);
 	} else if (index_array_owner.owns(p_id)) {
@@ -5256,42 +5357,42 @@ void RenderingDeviceVulkan::finalize_frame() {
 		vkEndCommandBuffer(frames[frame].setup_command_buffer);
 		vkEndCommandBuffer(frames[frame].draw_command_buffer);
 	}
+	screen_prepared = false;
 }
 
-void RenderingDeviceVulkan::_free_pending_resources() {
+void RenderingDeviceVulkan::_free_pending_resources(int p_frame) {
 	//free in dependency usage order, so nothing weird happens
-
 	//pipelines
-	while (frames[frame].pipelines_to_dispose_of.front()) {
-		RenderPipeline *pipeline = &frames[frame].pipelines_to_dispose_of.front()->get();
+	while (frames[p_frame].pipelines_to_dispose_of.front()) {
+		RenderPipeline *pipeline = &frames[p_frame].pipelines_to_dispose_of.front()->get();
 
 		vkDestroyPipeline(device, pipeline->pipeline, NULL);
 
-		frames[frame].pipelines_to_dispose_of.pop_front();
+		frames[p_frame].pipelines_to_dispose_of.pop_front();
 	}
 
 	//uniform sets
-	while (frames[frame].uniform_sets_to_dispose_of.front()) {
-		UniformSet *uniform_set = &frames[frame].uniform_sets_to_dispose_of.front()->get();
+	while (frames[p_frame].uniform_sets_to_dispose_of.front()) {
+		UniformSet *uniform_set = &frames[p_frame].uniform_sets_to_dispose_of.front()->get();
 
 		vkFreeDescriptorSets(device, uniform_set->pool->pool, 1, &uniform_set->descriptor_set);
 		_descriptor_pool_free(uniform_set->pool_key, uniform_set->pool);
 
-		frames[frame].uniform_sets_to_dispose_of.pop_front();
+		frames[p_frame].uniform_sets_to_dispose_of.pop_front();
 	}
 
 	//buffer views
-	while (frames[frame].buffer_views_to_dispose_of.front()) {
-		VkBufferView buffer_view = frames[frame].buffer_views_to_dispose_of.front()->get();
+	while (frames[p_frame].buffer_views_to_dispose_of.front()) {
+		VkBufferView buffer_view = frames[p_frame].buffer_views_to_dispose_of.front()->get();
 
 		vkDestroyBufferView(device, buffer_view, NULL);
 
-		frames[frame].buffer_views_to_dispose_of.pop_front();
+		frames[p_frame].buffer_views_to_dispose_of.pop_front();
 	}
 
 	//shaders
-	while (frames[frame].shaders_to_dispose_of.front()) {
-		Shader *shader = &frames[frame].shaders_to_dispose_of.front()->get();
+	while (frames[p_frame].shaders_to_dispose_of.front()) {
+		Shader *shader = &frames[p_frame].shaders_to_dispose_of.front()->get();
 
 		//descriptor set layout for each set
 		for (int i = 0; i < shader->sets.size(); i++) {
@@ -5306,21 +5407,21 @@ void RenderingDeviceVulkan::_free_pending_resources() {
 			vkDestroyShaderModule(device, shader->pipeline_stages[i].module, NULL);
 		}
 
-		frames[frame].shaders_to_dispose_of.pop_front();
+		frames[p_frame].shaders_to_dispose_of.pop_front();
 	}
 
 	//samplers
-	while (frames[frame].samplers_to_dispose_of.front()) {
-		VkSampler sampler = frames[frame].samplers_to_dispose_of.front()->get();
+	while (frames[p_frame].samplers_to_dispose_of.front()) {
+		VkSampler sampler = frames[p_frame].samplers_to_dispose_of.front()->get();
 
 		vkDestroySampler(device, sampler, NULL);
 
-		frames[frame].samplers_to_dispose_of.pop_front();
+		frames[p_frame].samplers_to_dispose_of.pop_front();
 	}
 
 	//framebuffers
-	while (frames[frame].framebuffers_to_dispose_of.front()) {
-		Framebuffer *framebuffer = &frames[frame].framebuffers_to_dispose_of.front()->get();
+	while (frames[p_frame].framebuffers_to_dispose_of.front()) {
+		Framebuffer *framebuffer = &frames[p_frame].framebuffers_to_dispose_of.front()->get();
 
 		for (Map<Framebuffer::VersionKey, Framebuffer::Version>::Element *E = framebuffer->framebuffers.front(); E; E = E->next()) {
 			//first framebuffer, then render pass because it depends on it
@@ -5328,12 +5429,12 @@ void RenderingDeviceVulkan::_free_pending_resources() {
 			vkDestroyRenderPass(device, E->get().render_pass, NULL);
 		}
 
-		frames[frame].framebuffers_to_dispose_of.pop_front();
+		frames[p_frame].framebuffers_to_dispose_of.pop_front();
 	}
 
 	//textures
-	while (frames[frame].textures_to_dispose_of.front()) {
-		Texture *texture = &frames[frame].textures_to_dispose_of.front()->get();
+	while (frames[p_frame].textures_to_dispose_of.front()) {
+		Texture *texture = &frames[p_frame].textures_to_dispose_of.front()->get();
 
 		if (texture->bound) {
 			WARN_PRINT("Deleted a texture while it was bound..");
@@ -5342,17 +5443,23 @@ void RenderingDeviceVulkan::_free_pending_resources() {
 		if (texture->owner.is_null()) {
 			//actually owns the image and the allocation too
 			vmaDestroyImage(allocator, texture->image, texture->allocation);
-			vmaFreeMemory(allocator, texture->allocation);
 		}
-		frames[frame].textures_to_dispose_of.pop_front();
+		frames[p_frame].textures_to_dispose_of.pop_front();
 	}
 
 	//buffers
-	while (frames[frame].buffers_to_dispose_of.front()) {
-		_buffer_free(&frames[frame].buffers_to_dispose_of.front()->get());
+	while (frames[p_frame].buffers_to_dispose_of.front()) {
 
-		frames[frame].buffers_to_dispose_of.pop_front();
+		_buffer_free(&frames[p_frame].buffers_to_dispose_of.front()->get());
+
+		frames[p_frame].buffers_to_dispose_of.pop_front();
 	}
+}
+
+void RenderingDeviceVulkan::prepare_screen_for_drawing() {
+	_THREAD_SAFE_METHOD_
+	context->prepare_buffers();
+	screen_prepared = true;
 }
 
 void RenderingDeviceVulkan::advance_frame() {
@@ -5363,7 +5470,7 @@ void RenderingDeviceVulkan::advance_frame() {
 	frame = (frame + 1) % frame_count;
 
 	//erase pending resources
-	_free_pending_resources();
+	_free_pending_resources(frame);
 
 	//create setup command buffer and set as the setup buffer
 
@@ -5398,7 +5505,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context) {
 
 	context = p_context;
 	device = p_context->get_device();
-	frame_count = p_context->get_frame_count();
+	frame_count = p_context->get_swapchain_image_count() + 1; //always need one extra to ensure it's unused at any time, without having to use a fence for this.
 	limits = p_context->get_device_limits();
 
 	{ //initialize allocator
@@ -5498,10 +5605,83 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context) {
 	draw_list_count = 0;
 	draw_list_split = false;
 }
+
+template <class T>
+void RenderingDeviceVulkan::_free_rids(T &p_owner, const char *p_type) {
+	List<RID> owned;
+	p_owner.get_owned_list(&owned);
+	if (owned.size()) {
+		WARN_PRINTS(itos(owned.size()) + " RIDs of type '" + p_type + "' were leaked.");
+		for (List<RID>::Element *E = owned.front(); E; E = E->next()) {
+			free(E->get());
+		}
+	}
+}
+
 void RenderingDeviceVulkan::finalize() {
 
+	//free all resources
+
+	context->flush(false, false);
+
+	_free_rids(pipeline_owner, "Pipeline");
+	_free_rids(uniform_set_owner, "UniformSet");
+	_free_rids(texture_buffer_owner, "TextureBuffer");
+	_free_rids(storage_buffer_owner, "StorageBuffer");
+	_free_rids(uniform_buffer_owner, "UniformBuffer");
+	_free_rids(shader_owner, "Shader");
+	_free_rids(index_array_owner, "IndexArray");
+	_free_rids(index_buffer_owner, "IndexBuffer");
+	_free_rids(vertex_array_owner, "VertexArray");
+	_free_rids(vertex_buffer_owner, "VertexBuffer");
+	_free_rids(framebuffer_owner, "Framebuffer");
+	_free_rids(sampler_owner, "Sampler");
+	{
+		//for textures it's a bit more difficult because they may be shared
+		List<RID> owned;
+		texture_owner.get_owned_list(&owned);
+		if (owned.size()) {
+			WARN_PRINTS(itos(owned.size()) + " RIDs of type 'Texture' were leaked.");
+			//free shared first
+			for (List<RID>::Element *E = owned.front(); E;) {
+
+				List<RID>::Element *N = E->next();
+				if (texture_is_shared(E->get())) {
+					free(E->get());
+					owned.erase(E->get());
+				}
+				E = N;
+			}
+			//free non shared second, this will avoid an error trying to free unexisting textures due to dependencies.
+			for (List<RID>::Element *E = owned.front(); E; E = E->next()) {
+				free(E->get());
+			}
+		}
+	}
+
+	//free everything pending
+	for (int i = 0; i < frame_count; i++) {
+		int f = (frame + i) % frame_count;
+		_free_pending_resources(f);
+		vkDestroyCommandPool(device, frames[i].command_pool, NULL);
+	}
+
+	for (int i = 0; i < split_draw_list_allocators.size(); i++) {
+		vkDestroyCommandPool(device, split_draw_list_allocators[i].command_pool, NULL);
+	}
+
 	memdelete_arr(frames);
+
+	for (int i = 0; i < staging_buffer_blocks.size(); i++) {
+		vmaDestroyBuffer(allocator, staging_buffer_blocks[i].buffer, staging_buffer_blocks[i].allocation);
+	}
+
+	//all these should be clear at this point
+	ERR_FAIL_COND(descriptor_pools.size());
+	ERR_FAIL_COND(dependency_map.size());
+	ERR_FAIL_COND(reverse_dependency_map.size());
 }
 
 RenderingDeviceVulkan::RenderingDeviceVulkan() {
+	screen_prepared = false;
 }

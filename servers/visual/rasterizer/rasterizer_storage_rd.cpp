@@ -486,6 +486,7 @@ RID RasterizerStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 	texture.layers = 1;
 	texture.mipmaps = p_image->get_mipmap_count() + 1;
 	texture.depth = 1;
+	texture.format = p_image->get_format();
 
 	texture.rd_type = RD::TEXTURE_TYPE_2D;
 	texture.rd_format = ret_format.format;
@@ -532,6 +533,8 @@ RID RasterizerStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 	texture.width_2d = texture.width;
 	texture.height_2d = texture.height;
 	texture.is_render_target = false;
+	texture.rd_view = rd_view;
+	texture.is_proxy = false;
 
 #warning TODO this is temporary to get things to work
 	texture.image_cache_2d = p_image;
@@ -547,6 +550,28 @@ RID RasterizerStorageRD::texture_2d_layered_create(const Vector<Ref<Image> > &p_
 RID RasterizerStorageRD::texture_3d_create(const Vector<Ref<Image> > &p_slices) {
 
 	return RID();
+}
+
+RID RasterizerStorageRD::texture_proxy_create(RID p_base) {
+	Texture *tex = texture_owner.getornull(p_base);
+	ERR_FAIL_COND_V(!tex, RID());
+	Texture proxy_tex = *tex;
+
+	proxy_tex.rd_view.format_override = tex->rd_format;
+	proxy_tex.rd_texture = RD::get_singleton()->texture_create_shared(proxy_tex.rd_view, tex->rd_texture);
+	if (proxy_tex.rd_texture_srgb.is_valid()) {
+		proxy_tex.rd_view.format_override = tex->rd_format_srgb;
+		proxy_tex.rd_texture_srgb = RD::get_singleton()->texture_create_shared(proxy_tex.rd_view, tex->rd_texture);
+	}
+	proxy_tex.proxy_to = p_base;
+	proxy_tex.is_render_target = false;
+	proxy_tex.is_proxy = true;
+	proxy_tex.proxies.clear();
+
+	RID rid = texture_owner.make_rid(proxy_tex);
+
+	tex->proxies.push_back(rid);
+	return rid;
 }
 
 void RasterizerStorageRD::_texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_immediate) {
@@ -579,6 +604,46 @@ void RasterizerStorageRD::texture_2d_update(RID p_texture, const Ref<Image> &p_i
 	_texture_2d_update(p_texture, p_image, p_layer, false);
 }
 void RasterizerStorageRD::texture_3d_update(RID p_texture, const Ref<Image> &p_image, int p_depth, int p_mipmap) {
+}
+
+void RasterizerStorageRD::texture_proxy_update(RID p_texture, RID p_proxy_to) {
+
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND(!tex);
+	ERR_FAIL_COND(!tex->is_proxy);
+	Texture *proxy_to = texture_owner.getornull(p_proxy_to);
+	ERR_FAIL_COND(!proxy_to);
+	ERR_FAIL_COND(proxy_to->is_proxy);
+
+	if (tex->proxy_to.is_valid()) {
+		//unlink proxy
+		if (RD::get_singleton()->texture_is_valid(tex->rd_texture)) {
+			RD::get_singleton()->free(tex->rd_texture);
+			tex->rd_texture = RID();
+		}
+		if (RD::get_singleton()->texture_is_valid(tex->rd_texture_srgb)) {
+			RD::get_singleton()->free(tex->rd_texture_srgb);
+			tex->rd_texture_srgb = RID();
+		}
+		Texture *prev_tex = texture_owner.getornull(tex->proxy_to);
+		ERR_FAIL_COND(!prev_tex);
+		prev_tex->proxies.erase(p_texture);
+	}
+
+	*tex = *proxy_to;
+
+	tex->proxy_to = p_proxy_to;
+	tex->is_render_target = false;
+	tex->is_proxy = true;
+	tex->proxies.clear();
+	proxy_to->proxies.push_back(p_texture);
+
+	tex->rd_view.format_override = tex->rd_format;
+	tex->rd_texture = RD::get_singleton()->texture_create_shared(tex->rd_view, proxy_to->rd_texture);
+	if (tex->rd_texture_srgb.is_valid()) {
+		tex->rd_view.format_override = tex->rd_format_srgb;
+		tex->rd_texture_srgb = RD::get_singleton()->texture_create_shared(tex->rd_view, proxy_to->rd_texture);
+	}
 }
 
 //these two APIs can be used together or in combination with the others.
@@ -629,20 +694,34 @@ void RasterizerStorageRD::texture_replace(RID p_texture, RID p_by_texture) {
 
 	Texture *tex = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!tex);
+	ERR_FAIL_COND(tex->proxy_to.is_valid()); //cant replace proxy
 	Texture *by_tex = texture_owner.getornull(p_by_texture);
 	ERR_FAIL_COND(!by_tex);
+	ERR_FAIL_COND(by_tex->proxy_to.is_valid()); //cant replace proxy
 
 	if (tex == by_tex) {
 		return;
 	}
 
-	RD::get_singleton()->free(tex->rd_texture);
 	if (tex->rd_texture_srgb.is_valid()) {
 		RD::get_singleton()->free(tex->rd_texture_srgb);
 	}
+	RD::get_singleton()->free(tex->rd_texture);
+
+	Vector<RID> proxies_to_update = tex->proxies;
+	Vector<RID> proxies_to_redirect = by_tex->proxies;
 
 	*tex = *by_tex;
 
+	tex->proxies = proxies_to_update; //restore proxies, so they can be updated
+
+	for (int i = 0; i < proxies_to_update.size(); i++) {
+		texture_proxy_update(proxies_to_update[i], p_texture);
+	}
+	for (int i = 0; i < proxies_to_redirect.size(); i++) {
+		texture_proxy_update(proxies_to_redirect[i], p_texture);
+	}
+	//delete last, so proxies can be updated
 	texture_owner.free(p_by_texture);
 }
 void RasterizerStorageRD::texture_set_size_override(RID p_texture, int p_width, int p_height) {
@@ -650,7 +729,7 @@ void RasterizerStorageRD::texture_set_size_override(RID p_texture, int p_width, 
 	ERR_FAIL_COND(!tex);
 	ERR_FAIL_COND(tex->type != Texture::TYPE_2D);
 	tex->width_2d = p_width;
-	tex->height_2d = p_width;
+	tex->height_2d = p_height;
 }
 
 void RasterizerStorageRD::texture_set_path(RID p_texture, const String &p_path) {
@@ -673,8 +752,8 @@ void RasterizerStorageRD::texture_set_proxy(RID p_proxy, RID p_base) {
 void RasterizerStorageRD::texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {
 }
 
-Size2 RasterizerStorageRD::texture_size_with_proxy(RID p_proxy) const {
-	return Size2();
+Size2 RasterizerStorageRD::texture_size_with_proxy(RID p_proxy) {
+	return texture_2d_get_size(p_proxy);
 }
 
 /* RENDER TARGET API */
@@ -685,9 +764,6 @@ void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
 	if (rt->framebuffer.is_valid()) {
 		RD::get_singleton()->free(rt->framebuffer);
 	}
-	if (rt->color_srgb.is_valid()) {
-		RD::get_singleton()->free(rt->color_srgb);
-	}
 
 	if (rt->color.is_valid()) {
 		RD::get_singleton()->free(rt->color);
@@ -695,13 +771,18 @@ void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
 
 	rt->framebuffer = RID();
 	rt->color = RID();
-	rt->color_srgb = RID();
 
 	rt->dirty = true;
-	rt->texture_dirty = true;
 }
 
 void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
+
+	if (rt->texture.is_null()) {
+		//create a placeholder until updated
+		rt->texture = texture_2d_placeholder_create();
+		Texture *tex = texture_owner.getornull(rt->texture);
+		tex->is_render_target = true;
+	}
 
 	_clear_render_target(rt);
 
@@ -732,14 +813,6 @@ void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
 
 	rt->color = RD::get_singleton()->texture_create(rd_format, rd_view);
 	ERR_FAIL_COND(rt->color.is_null());
-	if (rt->color_format_srgb != RD::DATA_FORMAT_MAX) {
-		rd_view.format_override = rt->color_format_srgb;
-		rt->color_srgb = RD::get_singleton()->texture_create_shared(rd_view, rt->color);
-		if (rt->color_srgb.is_null()) {
-			_clear_render_target(rt);
-			ERR_FAIL_COND(rt->color_srgb.is_null());
-		}
-	}
 
 	Vector<RID> fb_textures;
 	fb_textures.push_back(rt->color);
@@ -749,14 +822,55 @@ void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
 		ERR_FAIL_COND(rt->framebuffer.is_null());
 	}
 
+	{ //update texture
+
+		Texture *tex = texture_owner.getornull(rt->texture);
+
+		//free existing textures
+		if (RD::get_singleton()->texture_is_valid(tex->rd_texture)) {
+			RD::get_singleton()->free(tex->rd_texture);
+		}
+		if (RD::get_singleton()->texture_is_valid(tex->rd_texture_srgb)) {
+			RD::get_singleton()->free(tex->rd_texture_srgb);
+		}
+
+		tex->rd_texture = RID();
+		tex->rd_texture_srgb = RID();
+
+		//create shared textures to the color buffer,
+		//so transparent can be supported
+		RD::TextureView view;
+		view.format_override = rt->color_format;
+		if (!rt->flags[RENDER_TARGET_TRANSPARENT]) {
+			view.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		}
+		tex->rd_texture = RD::get_singleton()->texture_create_shared(view, rt->color);
+		if (rt->color_format_srgb != RD::DATA_FORMAT_MAX) {
+			view.format_override = rt->color_format_srgb;
+			tex->rd_texture_srgb = RD::get_singleton()->texture_create_shared(view, rt->color);
+		}
+		tex->rd_view = view;
+		tex->width = rt->size.width;
+		tex->height = rt->size.height;
+		tex->width_2d = rt->size.width;
+		tex->height_2d = rt->size.height;
+		tex->rd_format = rt->color_format;
+		tex->rd_format_srgb = rt->color_format_srgb;
+		tex->format = rt->image_format;
+
+		Vector<RID> proxies = tex->proxies; //make a copy, since update may change it
+		for (int i = 0; i < proxies.size(); i++) {
+			texture_proxy_update(proxies[i], rt->texture);
+		}
+	}
 	rt->dirty = false;
 }
 
 RID RasterizerStorageRD::render_target_create() {
 	RenderTarget render_target;
 	render_target.dirty = true;
-	render_target.texture_dirty = true;
 	render_target.was_used = false;
+	render_target.clear_requested = false;
 
 	for (int i = 0; i < RENDER_TARGET_FLAG_MAX; i++) {
 		render_target.flags[i] = false;
@@ -774,48 +888,14 @@ void RasterizerStorageRD::render_target_set_size(RID p_render_target, int p_widt
 	rt->size.x = p_width;
 	rt->size.y = p_height;
 	rt->dirty = true;
-	rt->texture_dirty = true;
 }
 
 RID RasterizerStorageRD::render_target_get_texture(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 
-	if (rt->texture_dirty) {
-		if (rt->dirty) {
-			_update_render_target(rt);
-		}
-
-		if (rt->texture.is_null()) {
-			//kinda hacky, but not terrible
-			rt->texture = texture_2d_placeholder_create();
-		}
-
-		Texture *tex = texture_owner.getornull(rt->texture);
-
-		if (!tex->is_render_target) {
-			//first allocation, fix it up
-			RD::get_singleton()->free(tex->rd_texture);
-			if (tex->rd_texture_srgb.is_null()) {
-				RD::get_singleton()->free(tex->rd_texture_srgb);
-			}
-			tex->is_render_target = true;
-		}
-
-		if (!rt->color.is_null()) {
-			//there is a color buffer, update to it
-			tex->rd_texture = rt->color;
-			tex->rd_texture_srgb = rt->color_srgb;
-			tex->width = rt->size.width;
-			tex->height = rt->size.height;
-			tex->width_2d = rt->size.width;
-			tex->height_2d = rt->size.height;
-			tex->rd_format = rt->color_format;
-			tex->rd_format_srgb = rt->color_format_srgb;
-			tex->format = rt->image_format;
-		}
-
-		rt->texture_dirty = false;
+	if (rt->dirty) {
+		_update_render_target(rt);
 	}
 
 	return rt->texture;
@@ -829,7 +909,6 @@ void RasterizerStorageRD::render_target_set_flag(RID p_render_target, RenderTarg
 	ERR_FAIL_COND(!rt);
 	rt->flags[p_flag] = p_value;
 	rt->dirty = true;
-	rt->texture_dirty = true;
 }
 
 bool RasterizerStorageRD::render_target_was_used(RID p_render_target) {
@@ -839,7 +918,7 @@ bool RasterizerStorageRD::render_target_was_used(RID p_render_target) {
 	return rt->was_used;
 }
 
-void RasterizerStorageRD::render_target_clear_used_flag(RID p_render_target) {
+void RasterizerStorageRD::render_target_set_as_unused(RID p_render_target) {
 
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
@@ -864,6 +943,33 @@ RID RasterizerStorageRD::render_target_get_rd_framebuffer(RID p_render_target) {
 	return rt->framebuffer;
 }
 
+void RasterizerStorageRD::render_target_request_clear(RID p_render_target, const Color &p_clear_color) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+	rt->clear_requested = true;
+	rt->clear_color = p_clear_color;
+}
+
+bool RasterizerStorageRD::render_target_is_clear_requested(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, false);
+	return rt->clear_requested;
+}
+
+Color RasterizerStorageRD::render_target_get_clear_request_color(RID p_render_target) {
+
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, Color());
+	return rt->clear_color;
+}
+
+void RasterizerStorageRD::render_target_disable_clear_request(RID p_render_target) {
+
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+	rt->clear_requested = false;
+}
+
 bool RasterizerStorageRD::free(RID p_rid) {
 
 	if (texture_owner.owns(p_rid)) {
@@ -871,9 +977,18 @@ bool RasterizerStorageRD::free(RID p_rid) {
 
 		ERR_FAIL_COND_V(t->is_render_target, false);
 
-		RD::get_singleton()->free(t->rd_texture);
 		if (t->rd_texture_srgb.is_valid()) {
+			//erase this first, as it's a dependency of the one below
 			RD::get_singleton()->free(t->rd_texture_srgb);
+		}
+		RD::get_singleton()->free(t->rd_texture);
+
+		for (int i = 0; i < t->proxies.size(); i++) {
+			Texture *p = texture_owner.getornull(t->proxies[i]);
+			ERR_CONTINUE(!p);
+			p->proxy_to = RID();
+			p->rd_texture = RID();
+			p->rd_texture_srgb = RID();
 		}
 		texture_owner.free(p_rid);
 
