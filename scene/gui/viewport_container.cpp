@@ -135,9 +135,9 @@ void ViewportContainer::_notification(int p_what) {
 				continue;
 
 			if (stretch)
-				draw_texture_rect(c->get_texture(), Rect2(Vector2(), get_size() * Size2(1, -1)));
+				draw_texture_rect(c->get_texture(), Rect2(Vector2(), get_size()));
 			else
-				draw_texture_rect(c->get_texture(), Rect2(Vector2(), c->get_size() * Size2(1, -1)));
+				draw_texture_rect(c->get_texture(), Rect2(Vector2(), c->get_size()));
 		}
 	}
 }

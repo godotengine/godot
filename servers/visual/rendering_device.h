@@ -354,6 +354,8 @@ public:
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
 
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const = 0;
+	virtual bool texture_is_shared(RID p_texture) =0;
+	virtual bool texture_is_valid(RID p_texture) = 0;
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
@@ -811,6 +813,7 @@ public:
 	};
 
 	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags = 0) = 0;
+	virtual bool render_pipeline_is_valid(RID p_pipeline) =0;
 
 	/****************/
 	/**** SCREEN ****/
@@ -850,6 +853,7 @@ public:
 	virtual void draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index) = 0;
 	virtual void draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array) = 0;
 	virtual void draw_list_bind_index_array(DrawListID p_list, RID p_index_array) = 0;
+	virtual void draw_list_set_line_width(DrawListID p_list, float p_width) = 0;
 	virtual void draw_list_set_push_constant(DrawListID p_list, void *p_data, uint32_t p_data_size) = 0;
 
 	virtual void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1) = 0;
@@ -866,6 +870,7 @@ public:
 	virtual void free(RID p_id) = 0;
 
 	//methods below not exposed, used by RenderingDeviceRD
+	virtual void prepare_screen_for_drawing() =0;
 	virtual void finalize_frame() = 0;
 	virtual void advance_frame() = 0;
 

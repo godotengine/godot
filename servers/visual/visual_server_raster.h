@@ -150,12 +150,14 @@ public:
 	BIND1R(RID, texture_2d_create, const Ref<Image> &)
 	BIND2R(RID, texture_2d_layered_create, const Vector<Ref<Image> > &, TextureLayeredType)
 	BIND1R(RID, texture_3d_create, const Vector<Ref<Image> > &)
+	BIND1R(RID, texture_proxy_create, RID)
 
 	//goes pass-through
 	BIND3(texture_2d_update_immediate, RID, const Ref<Image> &, int)
 	//these go through command queue if they are in another thread
 	BIND3(texture_2d_update, RID, const Ref<Image> &, int)
 	BIND4(texture_3d_update, RID, const Ref<Image> &, int, int)
+	BIND2(texture_proxy_update, RID, RID)
 
 	//these also go pass-through
 	BIND0R(RID, texture_2d_placeholder_create)
@@ -181,8 +183,6 @@ public:
 	BIND2(texture_set_path, RID, const String &)
 	BIND1RC(String, texture_get_path, RID)
 	BIND1(texture_debug_usage, List<TextureInfo> *)
-
-	BIND2(texture_set_proxy, RID, RID)
 
 	BIND2(texture_set_force_redraw_if_visible, RID, bool)
 
