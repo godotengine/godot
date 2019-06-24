@@ -492,10 +492,7 @@ Error VulkanContext::_create_device() {
 	return OK;
 }
 
-Error VulkanContext::_create_swap_chain() {
-
-	VkResult err = _create_surface(&surface, inst);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+Error VulkanContext::_initialize_queues(VkSurfaceKHR surface) {
 
 	// Iterate over each queue to learn whether it supports presenting:
 	VkBool32 *supportsPresent = (VkBool32 *)malloc(queue_family_count * sizeof(VkBool32));
@@ -576,7 +573,7 @@ Error VulkanContext::_create_swap_chain() {
 
 	// Get the list of VkFormat's that are supported:
 	uint32_t formatCount;
-	err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &formatCount, NULL);
+	VkResult err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &formatCount, NULL);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	VkSurfaceFormatKHR *surfFormats = (VkSurfaceFormatKHR *)malloc(formatCount * sizeof(VkSurfaceFormatKHR));
 	err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &formatCount, surfFormats);
@@ -591,6 +588,13 @@ Error VulkanContext::_create_swap_chain() {
 		format = surfFormats[0].format;
 	}
 	color_space = surfFormats[0].colorSpace;
+
+	Error serr = _create_semaphores();
+	if (serr) {
+		return serr;
+	}
+
+	queues_initialized = true;
 	return OK;
 }
 
@@ -633,21 +637,111 @@ Error VulkanContext::_create_semaphores() {
 	return OK;
 }
 
-Error VulkanContext::_prepare_buffers() {
+int VulkanContext::_window_create(VkSurfaceKHR p_surface, int p_width, int p_height) {
+
+	if (!queues_initialized) {
+		// We use a single GPU, but we need a surface to initialize the
+		// queues, so this process must be deferred until a surface
+		// is created.
+		_initialize_queues(p_surface);
+	}
+
+	Window window;
+	window.surface = p_surface;
+	window.width = p_width;
+	window.height = p_height;
+	Error err = _update_swap_chain(&window);
+	ERR_FAIL_COND_V(err != OK, -1);
+
+	int id = last_window_id;
+	windows[id] = window;
+	last_window_id++;
+	return id;
+}
+
+void VulkanContext::window_resize(int p_window, int p_width, int p_height) {
+	ERR_FAIL_COND(!windows.has(p_window));
+	windows[p_window].width = p_width;
+	windows[p_window].height = p_height;
+	_update_swap_chain(&windows[p_window]);
+}
+
+int VulkanContext::window_get_width(int p_window) {
+	ERR_FAIL_COND_V(!windows.has(p_window), -1);
+	return windows[p_window].width;
+}
+
+int VulkanContext::window_get_height(int p_window) {
+	ERR_FAIL_COND_V(!windows.has(p_window), -1);
+	return windows[p_window].height;
+}
+
+VkRenderPass VulkanContext::window_get_render_pass(int p_window) {
+	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
+	Window *w = &windows[p_window];
+	//vulkan use of currentbuffer
+	return w->render_pass;
+}
+
+VkFramebuffer VulkanContext::window_get_framebuffer(int p_window) {
+	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
+	ERR_FAIL_COND_V(!buffers_prepared, VK_NULL_HANDLE);
+	Window *w = &windows[p_window];
+	//vulkan use of currentbuffer
+	return w->swapchain_image_resources[w->current_buffer].framebuffer;
+}
+
+void VulkanContext::window_destroy(int p_window_id) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	_clean_up_swap_chain(&windows[p_window_id]);
+	vkDestroySurfaceKHR(inst, windows[p_window_id].surface, NULL);
+	windows.erase(p_window_id);
+}
+
+Error VulkanContext::_clean_up_swap_chain(Window *window) {
+
+	if (!window->swapchain) {
+		return OK;
+	}
+	vkDeviceWaitIdle(device);
+
+	//this destroys images associated it seems
+	fpDestroySwapchainKHR(device, window->swapchain, NULL);
+	window->swapchain = VK_NULL_HANDLE;
+	vkDestroyRenderPass(device, window->render_pass, NULL);
+	if (window->swapchain_image_resources) {
+		for (uint32_t i = 0; i < swapchainImageCount; i++) {
+			vkDestroyImageView(device, window->swapchain_image_resources[i].view, NULL);
+			vkDestroyFramebuffer(device, window->swapchain_image_resources[i].framebuffer, NULL);
+		}
+
+		free(window->swapchain_image_resources);
+		window->swapchain_image_resources = NULL;
+	}
+	if (separate_present_queue) {
+		vkDestroyCommandPool(device, window->present_cmd_pool, NULL);
+	}
+	return OK;
+}
+
+Error VulkanContext::_update_swap_chain(Window *window) {
 	VkResult err;
-	VkSwapchainKHR oldSwapchain = swapchain;
+
+	if (window->swapchain) {
+		_clean_up_swap_chain(window);
+	}
 
 	// Check the surface capabilities and formats
 	VkSurfaceCapabilitiesKHR surfCapabilities;
-	err = fpGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, surface, &surfCapabilities);
+	err = fpGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, window->surface, &surfCapabilities);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 	uint32_t presentModeCount;
-	err = fpGetPhysicalDeviceSurfacePresentModesKHR(gpu, surface, &presentModeCount, NULL);
+	err = fpGetPhysicalDeviceSurfacePresentModesKHR(gpu, window->surface, &presentModeCount, NULL);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	VkPresentModeKHR *presentModes = (VkPresentModeKHR *)malloc(presentModeCount * sizeof(VkPresentModeKHR));
 	ERR_FAIL_COND_V(!presentModes, ERR_CANT_CREATE);
-	err = fpGetPhysicalDeviceSurfacePresentModesKHR(gpu, surface, &presentModeCount, presentModes);
+	err = fpGetPhysicalDeviceSurfacePresentModesKHR(gpu, window->surface, &presentModeCount, presentModes);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 	VkExtent2D swapchainExtent;
@@ -656,8 +750,8 @@ Error VulkanContext::_prepare_buffers() {
 		// If the surface size is undefined, the size is set to the size
 		// of the images requested, which must fit within the minimum and
 		// maximum values.
-		swapchainExtent.width = width;
-		swapchainExtent.height = height;
+		swapchainExtent.width = window->width;
+		swapchainExtent.height = window->height;
 
 		if (swapchainExtent.width < surfCapabilities.minImageExtent.width) {
 			swapchainExtent.width = surfCapabilities.minImageExtent.width;
@@ -673,17 +767,14 @@ Error VulkanContext::_prepare_buffers() {
 	} else {
 		// If the surface size is defined, the swap chain size must match
 		swapchainExtent = surfCapabilities.currentExtent;
-		width = surfCapabilities.currentExtent.width;
-		height = surfCapabilities.currentExtent.height;
+		window->width = surfCapabilities.currentExtent.width;
+		window->height = surfCapabilities.currentExtent.height;
 	}
 
-	if (width == 0 || height == 0) {
-		is_minimized = true;
+	if (window->width == 0 || window->height == 0) {
+		//likely window minimized, no swapchain created
 		return OK;
-	} else {
-		is_minimized = false;
 	}
-
 	// The FIFO present mode is guaranteed by the spec to be supported
 	// and to have no tearing.  It's a great default present mode to use.
 	VkPresentModeKHR swapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
@@ -715,15 +806,15 @@ Error VulkanContext::_prepare_buffers() {
 	// the application wants the late image to be immediately displayed, even
 	// though that may mean some tearing.
 
-	if (presentMode != swapchainPresentMode) {
+	if (window->presentMode != swapchainPresentMode) {
 		for (size_t i = 0; i < presentModeCount; ++i) {
-			if (presentModes[i] == presentMode) {
-				swapchainPresentMode = presentMode;
+			if (presentModes[i] == window->presentMode) {
+				swapchainPresentMode = window->presentMode;
 				break;
 			}
 		}
 	}
-	if (swapchainPresentMode != presentMode) {
+	if (swapchainPresentMode != window->presentMode) {
 		ERR_EXPLAIN("Present mode specified is not supported\n");
 		ERR_FAIL_V(ERR_CANT_CREATE);
 	}
@@ -767,7 +858,7 @@ Error VulkanContext::_prepare_buffers() {
 	VkSwapchainCreateInfoKHR swapchain_ci = {
 		.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
 		.pNext = NULL,
-		.surface = surface,
+		.surface = window->surface,
 		.minImageCount = desiredNumOfSwapchainImages,
 		.imageFormat = format,
 		.imageColorSpace = color_space,
@@ -784,33 +875,33 @@ Error VulkanContext::_prepare_buffers() {
 		.compositeAlpha = compositeAlpha,
 		.presentMode = swapchainPresentMode,
 		.clipped = true,
-		.oldSwapchain = oldSwapchain,
+		.oldSwapchain = NULL,
 	};
-	uint32_t i;
-	err = fpCreateSwapchainKHR(device, &swapchain_ci, NULL, &swapchain);
+
+	err = fpCreateSwapchainKHR(device, &swapchain_ci, NULL, &window->swapchain);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
-	// If we just re-created an existing swapchain, we should destroy the old
-	// swapchain at this point.
-	// Note: destroying the swapchain also cleans up all its associated
-	// presentable images once the platform is done with them.
-	if (oldSwapchain != VK_NULL_HANDLE) {
-		fpDestroySwapchainKHR(device, oldSwapchain, NULL);
+	uint32_t sp_image_count;
+	err = fpGetSwapchainImagesKHR(device, window->swapchain, &sp_image_count, NULL);
+	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+
+	if (swapchainImageCount == 0) {
+		//assign here for the first time.
+		swapchainImageCount = sp_image_count;
+	} else {
+		ERR_FAIL_COND_V(swapchainImageCount != sp_image_count, ERR_BUG);
 	}
-
-	err = fpGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, NULL);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 	VkImage *swapchainImages = (VkImage *)malloc(swapchainImageCount * sizeof(VkImage));
 	ERR_FAIL_COND_V(!swapchainImages, ERR_CANT_CREATE);
-	err = fpGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, swapchainImages);
+	err = fpGetSwapchainImagesKHR(device, window->swapchain, &swapchainImageCount, swapchainImages);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
-	swapchain_image_resources =
+	window->swapchain_image_resources =
 			(SwapchainImageResources *)malloc(sizeof(SwapchainImageResources) * swapchainImageCount);
-	ERR_FAIL_COND_V(!swapchain_image_resources, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V(!window->swapchain_image_resources, ERR_CANT_CREATE);
 
-	for (i = 0; i < swapchainImageCount; i++) {
+	for (uint32_t i = 0; i < swapchainImageCount; i++) {
 		VkImageViewCreateInfo color_image_view = {
 			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 			.pNext = NULL,
@@ -826,118 +917,84 @@ Error VulkanContext::_prepare_buffers() {
 			.subresourceRange = { .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .baseMipLevel = 0, .levelCount = 1, .baseArrayLayer = 0, .layerCount = 1 },
 		};
 
-		swapchain_image_resources[i].image = swapchainImages[i];
+		window->swapchain_image_resources[i].image = swapchainImages[i];
 
-		color_image_view.image = swapchain_image_resources[i].image;
+		color_image_view.image = window->swapchain_image_resources[i].image;
 
-		err = vkCreateImageView(device, &color_image_view, NULL, &swapchain_image_resources[i].view);
+		err = vkCreateImageView(device, &color_image_view, NULL, &window->swapchain_image_resources[i].view);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-	}
-
-	if (VK_GOOGLE_display_timing_enabled) {
-		VkRefreshCycleDurationGOOGLE rc_dur;
-		err = fpGetRefreshCycleDurationGOOGLE(device, swapchain, &rc_dur);
-		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-		refresh_duration = rc_dur.refreshDuration;
-
-		syncd_with_actual_presents = false;
-		// Initially target 1X the refresh duration:
-		target_IPD = refresh_duration;
-		refresh_duration_multiplier = 1;
-		prev_desired_present_time = 0;
-		next_present_id = 1;
 	}
 
 	if (NULL != presentModes) {
 		free(presentModes);
 	}
 
-	return OK;
-}
+	/******** FRAMEBUFFER ************/
 
-Error VulkanContext::_prepare_framebuffers() {
+	{
+		const VkAttachmentDescription attachment = {
 
-	//for this, we only need color (no depth), since Godot does not render to the main
-	//render buffer
+			.flags = 0,
+			.format = format,
+			.samples = VK_SAMPLE_COUNT_1_BIT,
+			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+			.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+			.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+			.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 
-	const VkAttachmentDescription attachment = {
-
-		.flags = 0,
-		.format = format,
-		.samples = VK_SAMPLE_COUNT_1_BIT,
-		.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-		.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-		.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-		.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-		.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-
-	};
-	const VkAttachmentReference color_reference = {
-		.attachment = 0,
-		.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	};
-
-	const VkSubpassDescription subpass = {
-		.flags = 0,
-		.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-		.inputAttachmentCount = 0,
-		.pInputAttachments = NULL,
-		.colorAttachmentCount = 1,
-		.pColorAttachments = &color_reference,
-		.pResolveAttachments = NULL,
-		.pDepthStencilAttachment = NULL,
-		.preserveAttachmentCount = 0,
-		.pPreserveAttachments = NULL,
-	};
-	const VkRenderPassCreateInfo rp_info = {
-		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.attachmentCount = 1,
-		.pAttachments = &attachment,
-		.subpassCount = 1,
-		.pSubpasses = &subpass,
-		.dependencyCount = 0,
-		.pDependencies = NULL,
-	};
-	VkResult err;
-
-	err = vkCreateRenderPass(device, &rp_info, NULL, &render_pass);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-
-	for (uint32_t i = 0; i < swapchainImageCount; i++) {
-		const VkFramebufferCreateInfo fb_info = {
-			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-			.pNext = NULL,
-			.renderPass = render_pass,
-			.attachmentCount = 1,
-			.pAttachments = &swapchain_image_resources[i].view,
-			.width = width,
-			.height = height,
-			.layers = 1,
+		};
+		const VkAttachmentReference color_reference = {
+			.attachment = 0,
+			.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 		};
 
-		err = vkCreateFramebuffer(device, &fb_info, NULL, &swapchain_image_resources[i].framebuffer);
+		const VkSubpassDescription subpass = {
+			.flags = 0,
+			.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+			.inputAttachmentCount = 0,
+			.pInputAttachments = NULL,
+			.colorAttachmentCount = 1,
+			.pColorAttachments = &color_reference,
+			.pResolveAttachments = NULL,
+			.pDepthStencilAttachment = NULL,
+			.preserveAttachmentCount = 0,
+			.pPreserveAttachments = NULL,
+		};
+		const VkRenderPassCreateInfo rp_info = {
+			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+			.pNext = NULL,
+			.flags = 0,
+			.attachmentCount = 1,
+			.pAttachments = &attachment,
+			.subpassCount = 1,
+			.pSubpasses = &subpass,
+			.dependencyCount = 0,
+			.pDependencies = NULL,
+		};
+
+		err = vkCreateRenderPass(device, &rp_info, NULL, &window->render_pass);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+
+		for (uint32_t i = 0; i < swapchainImageCount; i++) {
+			const VkFramebufferCreateInfo fb_info = {
+				.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+				.pNext = NULL,
+				.renderPass = window->render_pass,
+				.attachmentCount = 1,
+				.pAttachments = &window->swapchain_image_resources[i].view,
+				.width = (uint32_t)window->width,
+				.height = (uint32_t)window->height,
+				.layers = 1,
+			};
+
+			err = vkCreateFramebuffer(device, &fb_info, NULL, &window->swapchain_image_resources[i].framebuffer);
+			ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+		}
 	}
 
-	return OK;
-}
-
-Error VulkanContext::_create_buffers() {
-
-	Error error = _prepare_buffers();
-	if (error != OK) {
-		return error;
-	}
-
-	if (minimized) {
-		prepared = false;
-		return OK;
-	}
-
-	_prepare_framebuffers();
+	/******** SEPARATE PRESENT QUEUE ************/
 
 	if (separate_present_queue) {
 		const VkCommandPoolCreateInfo present_cmd_pool_info = {
@@ -946,18 +1003,18 @@ Error VulkanContext::_create_buffers() {
 			.flags = 0,
 			.queueFamilyIndex = present_queue_family_index,
 		};
-		VkResult err = vkCreateCommandPool(device, &present_cmd_pool_info, NULL, &present_cmd_pool);
+		err = vkCreateCommandPool(device, &present_cmd_pool_info, NULL, &window->present_cmd_pool);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 		const VkCommandBufferAllocateInfo present_cmd_info = {
 			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 			.pNext = NULL,
-			.commandPool = present_cmd_pool,
+			.commandPool = window->present_cmd_pool,
 			.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			.commandBufferCount = 1,
 		};
 		for (uint32_t i = 0; i < swapchainImageCount; i++) {
 			err = vkAllocateCommandBuffers(device, &present_cmd_info,
-					&swapchain_image_resources[i].graphics_to_present_cmd);
+					&window->swapchain_image_resources[i].graphics_to_present_cmd);
 			ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 			const VkCommandBufferBeginInfo cmd_buf_info = {
@@ -966,7 +1023,7 @@ Error VulkanContext::_create_buffers() {
 				.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
 				.pInheritanceInfo = NULL,
 			};
-			err = vkBeginCommandBuffer(swapchain_image_resources[i].graphics_to_present_cmd, &cmd_buf_info);
+			err = vkBeginCommandBuffer(window->swapchain_image_resources[i].graphics_to_present_cmd, &cmd_buf_info);
 			ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 			VkImageMemoryBarrier image_ownership_barrier = { .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -977,49 +1034,29 @@ Error VulkanContext::_create_buffers() {
 				.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 				.srcQueueFamilyIndex = graphics_queue_family_index,
 				.dstQueueFamilyIndex = present_queue_family_index,
-				.image = swapchain_image_resources[i].image,
+				.image = window->swapchain_image_resources[i].image,
 				.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 } };
 
-			vkCmdPipelineBarrier(swapchain_image_resources[i].graphics_to_present_cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			vkCmdPipelineBarrier(window->swapchain_image_resources[i].graphics_to_present_cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 					VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, NULL, 0, NULL, 1, &image_ownership_barrier);
-			err = vkEndCommandBuffer(swapchain_image_resources[i].graphics_to_present_cmd);
+			err = vkEndCommandBuffer(window->swapchain_image_resources[i].graphics_to_present_cmd);
 			ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 		}
 	}
 
-	current_buffer = 0;
-	prepared = true;
+	//reset current buffer
+	window->current_buffer = 0;
 
 	return OK;
 }
 
-Error VulkanContext::initialize(int p_width, int p_height, bool p_minimized) {
-
-	screen_width = p_width;
-	screen_height = p_height;
-	minimized = p_minimized;
+Error VulkanContext::initialize() {
 
 	Error err = _create_physical_device();
 	if (err) {
 		return err;
 	}
-
-	err = _create_swap_chain();
-	if (err) {
-		return err;
-	}
-
-	err = _create_semaphores();
-	if (err) {
-		return err;
-	}
-
-	err = _create_buffers();
-	if (err) {
-		return err;
-	}
-
-	print_line("Vulkan context creation success o_O");
+	print_line("Vulkan physical device creation success o_O");
 	return OK;
 }
 
@@ -1040,10 +1077,7 @@ void VulkanContext::append_command_buffer(const VkCommandBuffer &pCommandBuffer)
 void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 
 	// ensure everything else pending is executed
-	for (int i = 0; i < FRAME_LAG; i++) {
-		int to_fence = (frame_index + i) % FRAME_LAG;
-		vkWaitForFences(device, 1, &fences[to_fence], VK_TRUE, UINT64_MAX);
-	}
+	vkDeviceWaitIdle(device);
 
 	//flush the pending setup buffer
 
@@ -1066,7 +1100,7 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 		VkResult err = vkQueueSubmit(graphics_queue, 1, &submit_info, fences[frame_index]);
 		command_buffer_queue.write[0] = NULL;
 		ERR_FAIL_COND(err);
-		vkWaitForFences(device, 1, &fences[frame_index], VK_TRUE, UINT64_MAX);
+		vkDeviceWaitIdle(device);
 	}
 
 	if (p_flush_pending && command_buffer_count > 1) {
@@ -1088,41 +1122,68 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 		VkResult err = vkQueueSubmit(graphics_queue, 1, &submit_info, fences[frame_index]);
 		command_buffer_queue.write[0] = NULL;
 		ERR_FAIL_COND(err);
-		vkWaitForFences(device, 1, &fences[frame_index], VK_TRUE, UINT64_MAX);
+		vkDeviceWaitIdle(device);
 
 		command_buffer_count = 1;
 	}
 }
 
-Error VulkanContext::swap_buffers() {
+Error VulkanContext::prepare_buffers() {
 
-	//	print_line("swapbuffers?");
+	if (!queues_initialized) {
+		return OK;
+	}
+
 	VkResult err;
 
 	// Ensure no more than FRAME_LAG renderings are outstanding
 	vkWaitForFences(device, 1, &fences[frame_index], VK_TRUE, UINT64_MAX);
 	vkResetFences(device, 1, &fences[frame_index]);
 
-	do {
-		// Get the index of the next available swapchain image:
-		err =
-				fpAcquireNextImageKHR(device, swapchain, UINT64_MAX,
-						image_acquired_semaphores[frame_index], VK_NULL_HANDLE, &current_buffer);
+	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
 
-		if (err == VK_ERROR_OUT_OF_DATE_KHR) {
-			// swapchain is out of date (e.g. the window was resized) and
-			// must be recreated:
-			print_line("early out of data");
-			resize_notify();
-		} else if (err == VK_SUBOPTIMAL_KHR) {
-			print_line("early suboptimal");
-			// swapchain is not as optimal as it could be, but the platform's
-			// presentation engine will still present the image correctly.
-			break;
-		} else {
-			ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+		Window *w = &E->get();
+
+		if (w->swapchain == VK_NULL_HANDLE) {
+			continue;
 		}
-	} while (err != VK_SUCCESS);
+
+		do {
+			// Get the index of the next available swapchain image:
+			err =
+					fpAcquireNextImageKHR(device, w->swapchain, UINT64_MAX,
+							image_acquired_semaphores[frame_index], VK_NULL_HANDLE, &w->current_buffer);
+
+			if (err == VK_ERROR_OUT_OF_DATE_KHR) {
+				// swapchain is out of date (e.g. the window was resized) and
+				// must be recreated:
+				print_line("early out of data");
+				//resize_notify();
+				_update_swap_chain(w);
+			} else if (err == VK_SUBOPTIMAL_KHR) {
+				print_line("early suboptimal");
+				// swapchain is not as optimal as it could be, but the platform's
+				// presentation engine will still present the image correctly.
+				break;
+			} else {
+				ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+			}
+		} while (err != VK_SUCCESS);
+	}
+
+	buffers_prepared = true;
+
+	return OK;
+}
+
+Error VulkanContext::swap_buffers() {
+
+	if (!queues_initialized) {
+		return OK;
+	}
+
+	//	print_line("swapbuffers?");
+	VkResult err;
 
 #if 0
 	if (VK_GOOGLE_display_timing_enabled) {
@@ -1182,8 +1243,21 @@ Error VulkanContext::swap_buffers() {
 		pipe_stage_flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		submit_info.waitSemaphoreCount = 1;
 		submit_info.pWaitSemaphores = &draw_complete_semaphores[frame_index];
-		submit_info.commandBufferCount = 1;
-		submit_info.pCommandBuffers = &swapchain_image_resources[current_buffer].graphics_to_present_cmd;
+		submit_info.commandBufferCount = 0;
+
+		VkCommandBuffer *cmdbufptr = (VkCommandBuffer *)alloca(sizeof(VkCommandBuffer *) * windows.size());
+		submit_info.pCommandBuffers = cmdbufptr;
+
+		for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
+			Window *w = &E->get();
+
+			if (w->swapchain == VK_NULL_HANDLE) {
+				continue;
+			}
+			cmdbufptr[submit_info.commandBufferCount] = w->swapchain_image_resources[w->current_buffer].graphics_to_present_cmd;
+			submit_info.commandBufferCount++;
+		}
+
 		submit_info.signalSemaphoreCount = 1;
 		submit_info.pSignalSemaphores = &image_ownership_semaphores[frame_index];
 		err = vkQueueSubmit(present_queue, 1, &submit_info, nullFence);
@@ -1197,10 +1271,28 @@ Error VulkanContext::swap_buffers() {
 		.pNext = NULL,
 		.waitSemaphoreCount = 1,
 		.pWaitSemaphores = (separate_present_queue) ? &image_ownership_semaphores[frame_index] : &draw_complete_semaphores[frame_index],
-		.swapchainCount = 1,
-		.pSwapchains = &swapchain,
-		.pImageIndices = &current_buffer,
+		.swapchainCount = 0,
+		.pSwapchains = NULL,
+		.pImageIndices = NULL,
 	};
+
+	VkSwapchainKHR *pSwapchains = (VkSwapchainKHR *)alloca(sizeof(VkSwapchainKHR *) * windows.size());
+	uint32_t *pImageIndices = (uint32_t *)alloca(sizeof(uint32_t *) * windows.size());
+
+	present.pSwapchains = pSwapchains;
+	present.pImageIndices = pImageIndices;
+
+	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
+		Window *w = &E->get();
+
+		if (w->swapchain == VK_NULL_HANDLE) {
+			continue;
+		}
+		pSwapchains[present.swapchainCount] = w->swapchain;
+		pImageIndices[present.swapchainCount] = w->current_buffer;
+		present.swapchainCount++;
+	}
+
 #if 0
 	if (VK_KHR_incremental_present_enabled) {
 		// If using VK_KHR_incremental_present, we provide a hint of the region
@@ -1289,6 +1381,7 @@ Error VulkanContext::swap_buffers() {
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	}
 
+	buffers_prepared = false;
 	return OK;
 }
 
@@ -1302,30 +1395,15 @@ VkDevice VulkanContext::get_device() {
 VkPhysicalDevice VulkanContext::get_physical_device() {
 	return gpu;
 }
-int VulkanContext::get_frame_count() const {
+int VulkanContext::get_swapchain_image_count() const {
 	return swapchainImageCount;
 }
 uint32_t VulkanContext::get_graphics_queue() const {
 	return graphics_queue_family_index;
 }
 
-int VulkanContext::get_screen_width(int p_screen) {
-	return width;
-}
-
-int VulkanContext::get_screen_height(int p_screen) {
-	return height;
-}
-
-VkFramebuffer VulkanContext::get_frame_framebuffer(int p_frame) {
-	return swapchain_image_resources[p_frame].framebuffer;
-}
 VkFormat VulkanContext::get_screen_format() const {
 	return format;
-}
-
-VkRenderPass VulkanContext::get_render_pass() {
-	return render_pass;
 }
 
 VkPhysicalDeviceLimits VulkanContext::get_device_limits() const {
@@ -1333,16 +1411,18 @@ VkPhysicalDeviceLimits VulkanContext::get_device_limits() const {
 }
 
 VulkanContext::VulkanContext() {
-	presentMode = VK_PRESENT_MODE_FIFO_KHR;
 	command_buffer_count = 0;
 	instance_validation_layers = NULL;
 	use_validation_layers = true;
 	VK_KHR_incremental_present_enabled = true;
 	VK_GOOGLE_display_timing_enabled = true;
-	swapchain = NULL;
-	prepared = false;
 
 	command_buffer_queue.resize(1); //first one is the setup command always
 	command_buffer_queue.write[0] = NULL;
 	command_buffer_count = 1;
+	queues_initialized = false;
+
+	buffers_prepared = false;
+	swapchainImageCount = 0;
+	last_window_id = 0;
 }

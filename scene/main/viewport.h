@@ -58,7 +58,8 @@ class ViewportTexture : public Texture2D {
 	friend class Viewport;
 	Viewport *vp;
 
-	RID proxy;
+	mutable RID proxy_ph;
+	mutable RID proxy;
 
 protected:
 	static void _bind_methods();
