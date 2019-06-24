@@ -182,10 +182,12 @@ public:
 	virtual RID texture_2d_create(const Ref<Image> &p_image) = 0;
 	virtual RID texture_2d_layered_create(const Vector<Ref<Image> > &p_layers, VS::TextureLayeredType p_layered_type) = 0;
 	virtual RID texture_3d_create(const Vector<Ref<Image> > &p_slices) = 0; //all slices, then all the mipmaps, must be coherent
+	virtual RID texture_proxy_create(RID p_base) = 0; //all slices, then all the mipmaps, must be coherent
 
 	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0; //mostly used for video and streaming
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
 	virtual void texture_3d_update(RID p_texture, const Ref<Image> &p_image, int p_depth, int p_mipmap) = 0;
+	virtual void texture_proxy_update(RID p_proxy, RID p_base) = 0;
 
 	//these two APIs can be used together or in combination with the others.
 	virtual RID texture_2d_placeholder_create() = 0;
@@ -212,10 +214,9 @@ public:
 
 	virtual void texture_debug_usage(List<VS::TextureInfo> *r_info) = 0;
 
-	virtual void texture_set_proxy(RID p_proxy, RID p_base) = 0;
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
 
-	virtual Size2 texture_size_with_proxy(RID p_proxy) const = 0;
+	virtual Size2 texture_size_with_proxy(RID p_proxy) = 0;
 
 	/* SKY API */
 
@@ -553,7 +554,12 @@ public:
 	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) = 0;
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) = 0;
 	virtual bool render_target_was_used(RID p_render_target) = 0;
-	virtual void render_target_clear_used_flag(RID p_render_target) = 0;
+	virtual void render_target_set_as_unused(RID p_render_target) = 0;
+
+	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) = 0;
+	virtual bool render_target_is_clear_requested(RID p_render_target) = 0;
+	virtual Color render_target_get_clear_request_color(RID p_render_target) = 0;
+	virtual void render_target_disable_clear_request(RID p_render_target) = 0;
 
 	/* CANVAS SHADOW */
 
@@ -700,51 +706,56 @@ public:
 		}
 	};
 
+	typedef uint64_t PolygonID;
+	virtual PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) = 0;
+	virtual void free_polygon(PolygonID p_polygon) = 0;
+
+	//also easier to wrap to avoid mistakes
+	struct Polygon {
+
+		PolygonID polygon_id;
+		Rect2 rect_cache;
+
+		_FORCE_INLINE_ void create(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) {
+			ERR_FAIL_COND(polygon_id != 0);
+			{
+				uint32_t pc = p_points.size();
+				const Vector2 *v2 = p_points.ptr();
+				rect_cache.position = *v2;
+				for (uint32_t i = 1; i < pc; i++) {
+					rect_cache.expand_to(v2[i]);
+				}
+			}
+			polygon_id = singleton->request_polygon(p_indices, p_points, p_colors, p_uvs, p_bones, p_weights);
+		}
+
+		_FORCE_INLINE_ Polygon() { polygon_id = 0; }
+		_FORCE_INLINE_ ~Polygon() {
+			if (polygon_id) singleton->free_polygon(polygon_id);
+		}
+	};
+
+	//item
+
 	struct Item {
 
 		struct Command {
 
 			enum Type {
 
-				TYPE_LINE,
-				TYPE_POLYLINE,
 				TYPE_RECT,
 				TYPE_NINEPATCH,
-				TYPE_PRIMITIVE,
 				TYPE_POLYGON,
+				TYPE_PRIMITIVE,
 				TYPE_MESH,
 				TYPE_MULTIMESH,
 				TYPE_PARTICLES,
-				TYPE_CIRCLE,
 				TYPE_TRANSFORM,
 				TYPE_CLIP_IGNORE,
 			};
 
 			Type type;
 			virtual ~Command() {}
-		};
-
-		struct CommandLine : public Command {
-
-			Point2 from, to;
-			Color color;
-			float width;
-			bool antialiased;
-			CommandLine() { type = TYPE_LINE; }
-		};
-		struct CommandPolyLine : public Command {
-
-			bool antialiased;
-			bool multiline;
-			Vector<Point2> triangles;
-			Vector<Color> triangle_colors;
-			Vector<Point2> lines;
-			Vector<Color> line_colors;
-			CommandPolyLine() {
-				type = TYPE_POLYLINE;
-				antialiased = false;
-				multiline = false;
-			}
 		};
 
 		struct CommandRect : public Command {
@@ -780,35 +791,27 @@ public:
 			}
 		};
 
-		struct CommandPrimitive : public Command {
-
-			Vector<Point2> points;
-			Vector<Point2> uvs;
-			Vector<Color> colors;
-			float width;
-			Color specular_shininess;
-			TextureBinding texture_binding;
-			CommandPrimitive() {
-				type = TYPE_PRIMITIVE;
-				width = 1;
-			}
-		};
-
 		struct CommandPolygon : public Command {
 
-			Vector<int> indices;
-			Vector<Point2> points;
-			Vector<Point2> uvs;
-			Vector<Color> colors;
-			Vector<int> bones;
-			Vector<float> weights;
-			int count;
-			bool antialiased;
+			VS::PrimitiveType primitive;
+			Polygon polygon;
 			Color specular_shininess;
 			TextureBinding texture_binding;
 			CommandPolygon() {
 				type = TYPE_POLYGON;
-				count = 0;
+			}
+		};
+
+		struct CommandPrimitive : public Command {
+
+			uint32_t point_count;
+			Vector2 points[4];
+			Vector2 uvs[4];
+			Color colors[4];
+			Color specular_shininess;
+			TextureBinding texture_binding;
+			CommandPrimitive() {
+				type = TYPE_PRIMITIVE;
 			}
 		};
 
@@ -836,14 +839,6 @@ public:
 			Color specular_shininess;
 			TextureBinding texture_binding;
 			CommandParticles() { type = TYPE_PARTICLES; }
-		};
-
-		struct CommandCircle : public Command {
-
-			Point2 pos;
-			float radius;
-			Color color;
-			CommandCircle() { type = TYPE_CIRCLE; }
 		};
 
 		struct CommandTransform : public Command {
@@ -926,37 +921,6 @@ public:
 				Rect2 r;
 
 				switch (c->type) {
-					case Item::Command::TYPE_LINE: {
-
-						const Item::CommandLine *line = static_cast<const Item::CommandLine *>(c);
-						r.position = line->from;
-						r.expand_to(line->to);
-					} break;
-					case Item::Command::TYPE_POLYLINE: {
-
-						const Item::CommandPolyLine *pline = static_cast<const Item::CommandPolyLine *>(c);
-						if (pline->triangles.size()) {
-							for (int j = 0; j < pline->triangles.size(); j++) {
-
-								if (j == 0) {
-									r.position = pline->triangles[j];
-								} else {
-									r.expand_to(pline->triangles[j]);
-								}
-							}
-						} else {
-
-							for (int j = 0; j < pline->lines.size(); j++) {
-
-								if (j == 0) {
-									r.position = pline->lines[j];
-								} else {
-									r.expand_to(pline->lines[j]);
-								}
-							}
-						}
-
-					} break;
 					case Item::Command::TYPE_RECT: {
 
 						const Item::CommandRect *crect = static_cast<const Item::CommandRect *>(c);
@@ -968,22 +932,21 @@ public:
 						const Item::CommandNinePatch *style = static_cast<const Item::CommandNinePatch *>(c);
 						r = style->rect;
 					} break;
-					case Item::Command::TYPE_PRIMITIVE: {
 
-						const Item::CommandPrimitive *primitive = static_cast<const Item::CommandPrimitive *>(c);
-						r.position = primitive->points[0];
-						for (int j = 1; j < primitive->points.size(); j++) {
-							r.expand_to(primitive->points[j]);
-						}
-					} break;
 					case Item::Command::TYPE_POLYGON: {
 
 						const Item::CommandPolygon *polygon = static_cast<const Item::CommandPolygon *>(c);
-						int l = polygon->points.size();
-						const Point2 *pp = &polygon->points[0];
-						r.position = pp[0];
-						for (int j = 1; j < l; j++) {
-							r.expand_to(pp[j]);
+						r = polygon->polygon.rect_cache;
+					} break;
+					case Item::Command::TYPE_PRIMITIVE: {
+
+						const Item::CommandPrimitive *primitive = static_cast<const Item::CommandPrimitive *>(c);
+						for (int j = 0; j < primitive->point_count; j++) {
+							if (j == 0) {
+								r.position = primitive->points[0];
+							} else {
+								r.expand_to(primitive->points[j]);
+							}
 						}
 					} break;
 					case Item::Command::TYPE_MESH: {
@@ -1010,12 +973,6 @@ public:
 							r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
 						}
 
-					} break;
-					case Item::Command::TYPE_CIRCLE: {
-
-						const Item::CommandCircle *circle = static_cast<const Item::CommandCircle *>(c);
-						r.position = Point2(-circle->radius, -circle->radius) + circle->pos;
-						r.size = Point2(circle->radius * 2.0, circle->radius * 2.0);
 					} break;
 					case Item::Command::TYPE_TRANSFORM: {
 
@@ -1079,7 +1036,7 @@ public:
 		}
 	};
 
-	virtual void canvas_render_items(RID p_to_render_target, bool p_clear, const Color &p_clear_color, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform) = 0;
+	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform) = 0;
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) = 0;
 
 	struct LightOccluderInstance {
@@ -1138,6 +1095,7 @@ public:
 		//lens distorted parameters for VR should go here
 	};
 
+	virtual void prepare_for_blitting_render_targets() = 0;
 	virtual void blit_render_targets_to_screen(int p_screen, const BlitToScreen *p_render_targets, int p_amount) = 0;
 
 	virtual void end_frame(bool p_swap_buffers) = 0;

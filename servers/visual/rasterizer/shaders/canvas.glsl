@@ -8,13 +8,14 @@
 VERSION_DEFINES
 /* clang-format on */
 
-#ifdef USE_VERTEX_ARRAYS
+#ifdef USE_ATTRIBUTES
 layout(location = 0) in vec2 vertex_attrib;
 layout(location = 3) in vec4 color_attrib;
 layout(location = 4) in vec2 uv_attrib;
 
 layout(location = 6) in uvec4 bone_indices_attrib;
 layout(location = 7) in vec4 bone_weights_attrib;
+
 #endif
 
 #include "canvas_uniforms_inc.glsl"
@@ -42,12 +43,45 @@ VERTEX_SHADER_GLOBALS
 void main() {
 
 	vec4 instance_custom = vec4(0.0);
+#ifdef USE_PRIMITIVE
 
-#ifdef USE_VERTEX_ARRAYS
+//weird bug,
+//this works
+	vec2 vertex;
+	vec2 uv;
+	vec4 color;
+
+	if (gl_VertexIndex==0) {
+		vertex = draw_data.points[0];
+		uv = draw_data.uvs[0];
+		color = vec4(unpackHalf2x16(draw_data.colors[0]),unpackHalf2x16(draw_data.colors[1]));
+	} else if (gl_VertexIndex==1) {
+		vertex = draw_data.points[1];
+		uv = draw_data.uvs[1];
+		color = vec4(unpackHalf2x16(draw_data.colors[2]),unpackHalf2x16(draw_data.colors[3]));
+	} else if (gl_VertexIndex==2) {
+		vertex = draw_data.points[2];
+		uv = draw_data.uvs[2];
+		color = vec4(unpackHalf2x16(draw_data.colors[4]),unpackHalf2x16(draw_data.colors[5]));
+
+	} else {
+		vertex = draw_data.points[3];
+		uv = draw_data.uvs[3];
+		color = vec4(unpackHalf2x16(draw_data.colors[6]),unpackHalf2x16(draw_data.colors[7]));
+	}
+//      this does not
+//	vec2 vertex = draw_data.points[gl_VertexIndex];
+//	vec2 uv = draw_data.uvs[gl_VertexIndex];
+//	vec4 color = vec4(unpackHalf2x16(draw_data.colors[gl_VertexIndex*2+0]),unpackHalf2x16(draw_data.colors[gl_VertexIndex*2+1]));
+	uvec4 bone_indices = uvec4(0,0,0,0);
+	vec4 bone_weights = vec4(0,0,0,0);
+
+#elif defined(USE_ATTRIBUTES)
 
 	vec2 vertex = vertex_attrib;
 	vec4 color = color_attrib;
 	vec2 uv = uv_attrib;
+
 	uvec4 bone_indices = bone_indices_attrib;
 	vec4 bone_weights = bone_weights_attrib;
 #else
@@ -55,16 +89,17 @@ void main() {
 	vec2 vertex_base_arr[4] = vec2[](vec2(0.0,0.0),vec2(0.0,1.0),vec2(1.0,1.0),vec2(1.0,0.0));
 	vec2 vertex_base = vertex_base_arr[gl_VertexIndex];
 
-	vec2 uv = draw_data.src_rect.xy + draw_data.src_rect.zw * ((draw_data.flags&FLAGS_TRANSPOSE_RECT)!=0 ? vertex_base.yx : vertex_base.xy);
-	vec4 color = vec4(1.0);
+	vec2 uv = draw_data.src_rect.xy + abs(draw_data.src_rect.zw) * ((draw_data.flags&FLAGS_TRANSPOSE_RECT)!=0 ? vertex_base.yx : vertex_base.xy);
+	vec4 color = draw_data.modulation;
 	vec2 vertex = draw_data.dst_rect.xy + abs(draw_data.dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(draw_data.src_rect.zw, vec2(0.0, 0.0)));
 	uvec4 bone_indices = uvec4(0,0,0,0);
 	vec4 bone_weights = vec4(0,0,0,0);
 
 #endif
 
-	mat4 world_matrix  = transpose(mat4(draw_data.world[0],draw_data.world[1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0)));
+	mat4 world_matrix  = mat4(vec4(draw_data.world_x,0.0,0.0),vec4(draw_data.world_y,0.0,0.0),vec4(0.0,0.0,1.0,0.0),vec4(draw_data.world_ofs,0.0,1.0));
 #if 0
+
 	if (draw_data.flags&FLAGS_INSTANCING_ENABLED) {
 
 		uint offset = draw_data.flags&FLAGS_INSTANCING_STRIDE_MASK;
@@ -101,10 +136,13 @@ void main() {
 
 #endif
 
+#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 	if (bool(draw_data.flags&FLAGS_USING_PARTICLES)) {
 		//scale by texture size
 		vertex /= draw_data.color_texture_pixel_size;
 	}
+#endif
+
 #ifdef USE_POINT_SIZE
 	float point_size = 1.0;
 #endif
@@ -134,6 +172,7 @@ VERTEX_SHADER_CODE
 		uv += 1e-5;
 	}
 
+#ifdef USE_ATTRIBUTES
 #if 0
 	if (bool(draw_data.flags&FLAGS_USE_SKELETON) && bone_weights != vec4(0.0)) { //must be a valid bone
 		//skeleton transform
@@ -173,6 +212,7 @@ VERTEX_SHADER_CODE
 
 		//outvec = bone_matrix * outvec;
 	}
+#endif
 #endif
 
 	uv_interp = uv;
@@ -285,7 +325,7 @@ void main() {
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
 
-#ifndef USE_VERTEX_ARRAYS
+#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 
 #ifdef USE_NINEPATCH
 
@@ -300,8 +340,7 @@ void main() {
 
 	uv = uv * draw_data.src_rect.zw + draw_data.src_rect.xy; //apply region if needed
 
-#endif
-
+#endif	
 	if (bool(draw_data.flags&FLAGS_CLIP_RECT_UV)) {
 
 		uv = clamp(uv, draw_data.src_rect.xy, draw_data.src_rect.xy + abs(draw_data.src_rect.zw));
@@ -362,7 +401,6 @@ FRAGMENT_SHADER_CODE
 #endif
 	}
 
-	color *= draw_data.modulation;
 #if 0
 	if (canvas_data.light_count > 0 ) {
 		//do lighting
