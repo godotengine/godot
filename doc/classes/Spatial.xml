@@ -274,6 +274,7 @@
 			</argument>
 			<description>
 				Changes the node's position by given offset [Vector3].
+				Note that the translation [code]offset[/code] is affected by the node's scale, so if scaled by e.g. [code](10, 1, 1)[/code], a translation by an offset of [code](2, 0, 0)[/code] would actually add 20 ([code]2 * 10[/code]) to the X coordinate.
 			</description>
 		</method>
 		<method name="translate_object_local">
