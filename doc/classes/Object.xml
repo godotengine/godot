@@ -374,6 +374,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Set property into the object, after the current frame's physics step. This is equivalent to calling [method set] via [method call_deferred], i.e. [code]call_deferred("set", [property, value])[/code].
 			</description>
 		</method>
 		<method name="set_indexed">
