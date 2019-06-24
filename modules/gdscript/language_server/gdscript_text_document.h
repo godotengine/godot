@@ -47,6 +47,8 @@ protected:
 
 	void sync_script_content(const String &p_path, const String &p_content);
 
+	Array native_member_completions;
+
 private:
 	lsp::TextDocumentItem load_document_item(const Variant &p_param);
 
@@ -60,6 +62,8 @@ public:
 	Array colorPresentation(const Dictionary &p_params);
 	Variant hover(const Dictionary &p_params);
 	Array definition(const Dictionary &p_params);
+
+	void initialize();
 
 	GDScriptTextDocument();
 	virtual ~GDScriptTextDocument();

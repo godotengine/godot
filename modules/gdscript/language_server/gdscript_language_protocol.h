@@ -62,6 +62,8 @@ class GDScriptLanguageProtocol : public JSONRPC {
 	String process_message(const String &p_text);
 	String format_output(const String &p_text);
 
+	bool _initialized;
+
 protected:
 	static void _bind_methods();
 

@@ -80,9 +80,18 @@ void ExtendGDScriptParser::update_diagnostics() {
 }
 
 void ExtendGDScriptParser::update_symbols() {
+
+	members.clear();
+
 	const GDScriptParser::Node *head = get_parse_tree();
 	if (const GDScriptParser::ClassNode *gdclass = dynamic_cast<const GDScriptParser::ClassNode *>(head)) {
+
 		parse_class_symbol(gdclass, class_symbol);
+
+		for (int i = 0; i < class_symbol.children.size(); i++) {
+			const lsp::DocumentSymbol &symbol = class_symbol.children[i];
+			members.set(symbol.name, &symbol);
+		}
 	}
 }
 
@@ -448,87 +457,32 @@ const lsp::DocumentSymbol *ExtendGDScriptParser::get_symbol_defined_at_line(int 
 }
 
 const lsp::DocumentSymbol *ExtendGDScriptParser::get_member_symbol(const String &p_name) const {
-	const GDScriptParser::Node *head = get_parse_tree();
 
-	if (const GDScriptParser::ClassNode *gdclass = dynamic_cast<const GDScriptParser::ClassNode *>(head)) {
-
-		if (const Map<StringName, GDScriptParser::ClassNode::Constant>::Element *E = gdclass->constant_expressions.find(p_name)) {
-			return get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(E->get().expression->line));
-		}
-
-		for (int i = 0; i < gdclass->subclasses.size(); i++) {
-			const ClassNode *m = gdclass->subclasses[i];
-			if (m && m->name == p_name) {
-				return get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m->line));
-			}
-		}
-
-		for (int i = 0; i < gdclass->variables.size(); i++) {
-			const GDScriptParser::ClassNode::Member &m = gdclass->variables[i];
-			if (m.identifier == p_name) {
-				return get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m.line));
-			}
-		}
-
-		for (int i = 0; i < gdclass->functions.size(); i++) {
-			const GDScriptParser::FunctionNode *m = gdclass->functions[i];
-			if (m->name == p_name) {
-				return get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m->line));
-			}
-		}
-
-		for (int i = 0; i < gdclass->static_functions.size(); i++) {
-			const GDScriptParser::FunctionNode *m = gdclass->static_functions[i];
-			if (m->name == p_name) {
-				return get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m->line));
-			}
-		}
-
-		for (int i = 0; i < gdclass->_signals.size(); i++) {
-			const GDScriptParser::ClassNode::Signal &m = gdclass->_signals[i];
-			if (m.name == p_name) {
-				return get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m.line));
-			}
-		}
+	const lsp::DocumentSymbol *const *ptr = members.getptr(p_name);
+	if (ptr) {
+		return *ptr;
 	}
 
 	return NULL;
 }
 
-void ExtendGDScriptParser::dump_member_symbols(Map<String, const lsp::DocumentSymbol *> &r_symbols) {
+const Array &ExtendGDScriptParser::get_member_completions() {
 
-	const GDScriptParser::Node *head = get_parse_tree();
-	if (const GDScriptParser::ClassNode *gdclass = dynamic_cast<const GDScriptParser::ClassNode *>(head)) {
+	if (member_completions.empty()) {
 
-		for (const Map<StringName, GDScriptParser::ClassNode::Constant>::Element *E = gdclass->constant_expressions.front(); E; E = E->next()) {
-			get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(E->get().expression->line));
-		}
+		const String *name = members.next(NULL);
+		while (name) {
 
-		for (int i = 0; i < gdclass->subclasses.size(); i++) {
-			const ClassNode *m = gdclass->subclasses[i];
-			r_symbols.insert(JOIN_SYMBOLS(path, m->name), get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m->line)));
-		}
+			const lsp::DocumentSymbol *symbol = members.get(*name);
+			lsp::CompletionItem item = symbol->make_completion_item(false);
+			item.data = JOIN_SYMBOLS(path, *name);
+			member_completions.push_back(item.to_json());
 
-		for (int i = 0; i < gdclass->variables.size(); i++) {
-			const GDScriptParser::ClassNode::Member &m = gdclass->variables[i];
-			r_symbols.insert(JOIN_SYMBOLS(path, m.identifier), get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m.line)));
-		}
-
-		for (int i = 0; i < gdclass->functions.size(); i++) {
-			const GDScriptParser::FunctionNode *m = gdclass->functions[i];
-			r_symbols.insert(JOIN_SYMBOLS(path, m->name), get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m->line)));
-		}
-
-		for (int i = 0; i < gdclass->static_functions.size(); i++) {
-			const GDScriptParser::FunctionNode *m = gdclass->static_functions[i];
-			r_symbols.insert(JOIN_SYMBOLS(path, m->name), get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m->line)));
-		}
-
-		for (int i = 0; i < gdclass->_signals.size(); i++) {
-			const GDScriptParser::ClassNode::Signal &m = gdclass->_signals[i];
-			r_symbols.insert(JOIN_SYMBOLS(path, m.name), get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m.line)));
+			name = members.next(name);
 		}
 	}
+
+	return member_completions;
 }
 
 Error ExtendGDScriptParser::parse(const String &p_code, const String &p_path) {

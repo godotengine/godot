@@ -43,22 +43,28 @@
 #define JOIN_SYMBOLS(p_path, name) ((p_path) + "." + (name))
 #endif
 
+typedef HashMap<String, const lsp::DocumentSymbol *> ClassMembers;
+
 class ExtendGDScriptParser : public GDScriptParser {
+
 	String path;
 	String code;
 	Vector<String> lines;
 
 	lsp::DocumentSymbol class_symbol;
 	Vector<lsp::Diagnostic> diagnostics;
+	ClassMembers members;
 
 	void update_diagnostics();
-	void update_symbols();
 
+	void update_symbols();
 	void parse_class_symbol(const GDScriptParser::ClassNode *p_class, lsp::DocumentSymbol &r_symbol);
 	void parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol &r_symbol);
-	String parse_documentation(int p_line);
 
+	String parse_documentation(int p_line);
 	const lsp::DocumentSymbol *search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol &p_parent) const;
+
+	Array member_completions;
 
 public:
 	_FORCE_INLINE_ const String &get_path() const { return path; }
@@ -66,6 +72,7 @@ public:
 	_FORCE_INLINE_ const Vector<String> &get_lines() const { return lines; }
 	_FORCE_INLINE_ const lsp::DocumentSymbol &get_symbols() const { return class_symbol; }
 	_FORCE_INLINE_ const Vector<lsp::Diagnostic> &get_diagnostics() const { return diagnostics; }
+	_FORCE_INLINE_ const ClassMembers &get_members() const { return members; }
 
 	String get_text_for_completion(const lsp::Position &p_cursor) const;
 	String get_text_for_lookup_symbol(const lsp::Position &p_cursor, const String &p_symbol = "", bool p_func_requred = false) const;
@@ -74,7 +81,8 @@ public:
 
 	const lsp::DocumentSymbol *get_symbol_defined_at_line(int p_line) const;
 	const lsp::DocumentSymbol *get_member_symbol(const String &p_name) const;
-	void dump_member_symbols(Map<String, const lsp::DocumentSymbol *> &r_symbols);
+
+	const Array &get_member_completions();
 
 	Error parse(const String &p_code, const String &p_path);
 };

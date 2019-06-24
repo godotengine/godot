@@ -30,6 +30,8 @@
 
 #include "gdscript_text_document.h"
 #include "../gdscript.h"
+#include "core/os/os.h"
+#include "editor/editor_settings.h"
 #include "gdscript_extend_parser.h"
 #include "gdscript_language_protocol.h"
 
@@ -71,6 +73,33 @@ lsp::TextDocumentItem GDScriptTextDocument::load_document_item(const Variant &p_
 	return doc;
 }
 
+void GDScriptTextDocument::initialize() {
+
+	if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
+
+		const HashMap<StringName, ClassMembers> &native_members = GDScriptLanguageProtocol::get_singleton()->get_workspace().native_members;
+
+		const StringName *class_ptr = native_members.next(NULL);
+		while (class_ptr) {
+
+			const ClassMembers &members = native_members.get(*class_ptr);
+
+			const String *name = members.next(NULL);
+			while (name) {
+
+				const lsp::DocumentSymbol *symbol = members.get(*name);
+				lsp::CompletionItem item = symbol->make_completion_item(false);
+				item.data = JOIN_SYMBOLS(String(*class_ptr), *name);
+				native_member_completions.push_back(item.to_json());
+
+				name = members.next(name);
+			}
+
+			class_ptr = native_members.next(class_ptr);
+		}
+	}
+}
+
 Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 	Dictionary params = p_params["textDocument"];
 	String uri = params["uri"];
@@ -87,6 +116,7 @@ Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 }
 
 Array GDScriptTextDocument::completion(const Dictionary &p_params) {
+
 	Array arr;
 
 	lsp::CompletionParams params;
@@ -98,17 +128,15 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 
 	if (!options.empty()) {
 
+		int i = 0;
+		arr.resize(options.size());
+
 		for (const List<ScriptCodeCompletionOption>::Element *E = options.front(); E; E = E->next()) {
 
 			const ScriptCodeCompletionOption &option = E->get();
 			lsp::CompletionItem item;
 			item.label = option.display;
-			item.insertText = option.insert_text;
 			item.data = request_data;
-
-			if (params.context.triggerKind == lsp::CompletionTriggerKind::TriggerCharacter && (params.context.triggerCharacter == "'" || params.context.triggerCharacter == "\"") && (option.insert_text.begins_with("'") || option.insert_text.begins_with("\""))) {
-				item.insertText = option.insert_text.substr(1, option.insert_text.length() - 2);
-			}
 
 			switch (option.kind) {
 				case ScriptCodeCompletionOption::KIND_ENUM:
@@ -142,50 +170,24 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 					item.kind = lsp::CompletionItemKind::Text;
 					break;
 			}
-			arr.push_back(item.to_json());
-		}
 
+			arr[i] = item.to_json(true);
+			i++;
+		}
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 
-		for (Map<String, const lsp::DocumentSymbol *>::Element *E = GDScriptLanguageProtocol::get_singleton()->get_workspace().flat_symbols.front(); E; E = E->next()) {
-			const lsp::DocumentSymbol *symbol = E->get();
-			if (!symbol) continue;
+		arr = native_member_completions.duplicate();
 
-			lsp::CompletionItem item;
-			item.label = symbol->name;
-			item.data = E->key();
+		for (Map<String, ExtendGDScriptParser *>::Element *E = GDScriptLanguageProtocol::get_singleton()->get_workspace().scripts.front(); E; E = E->next()) {
 
-			switch (symbol->kind) {
-				case lsp::SymbolKind::Enum:
-					item.kind = lsp::CompletionItemKind::Enum;
-					break;
-				case lsp::SymbolKind::Class:
-					item.kind = lsp::CompletionItemKind::Class;
-					break;
-				case lsp::SymbolKind::Property:
-					item.kind = lsp::CompletionItemKind::Property;
-					break;
-				case lsp::SymbolKind::Method:
-				case lsp::SymbolKind::Function:
-					item.kind = lsp::CompletionItemKind::Method;
-					break;
-				case lsp::SymbolKind::Event:
-					item.kind = lsp::CompletionItemKind::Event;
-					break;
-				case lsp::SymbolKind::Constant:
-					item.kind = lsp::CompletionItemKind::Constant;
-					break;
-				case lsp::SymbolKind::Variable:
-					item.kind = lsp::CompletionItemKind::Variable;
-					break;
-				case lsp::SymbolKind::File:
-					item.kind = lsp::CompletionItemKind::File;
-					break;
-				default:
-					item.kind = lsp::CompletionItemKind::Text;
-					break;
+			ExtendGDScriptParser *script = E->get();
+			const Array &items = script->get_member_completions();
+
+			const int start_size = arr.size();
+			arr.resize(start_size + items.size());
+			for (int i = start_size; i < arr.size(); i++) {
+				arr[i] = items[i - start_size];
 			}
-			arr.push_back(item.to_json());
 		}
 	}
 	return arr;
@@ -202,19 +204,50 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 	const lsp::DocumentSymbol *symbol = NULL;
 
 	if (data.get_type() == Variant::DICTIONARY) {
+
 		params.load(p_params["data"]);
-		GDScriptLanguageProtocol::get_singleton()->get_workspace().resolve_symbol(params, item.label, item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function);
+		symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace().resolve_symbol(params, item.label, item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function);
 
 	} else if (data.get_type() == Variant::STRING) {
 
-		if (Map<String, const lsp::DocumentSymbol *>::Element *E = GDScriptLanguageProtocol::get_singleton()->get_workspace().flat_symbols.find(data)) {
-			symbol = E->get();
+		String query = data;
+		int seperator_pos = query.find_last(".");
+		if (seperator_pos >= 0 && seperator_pos < query.length() - 1) {
+
+			String class_ = query.substr(0, seperator_pos);
+			StringName class_name = class_;
+			String member_name = query.substr(seperator_pos + 1, query.length());
+
+			if (const ClassMembers *members = GDScriptLanguageProtocol::get_singleton()->get_workspace().native_members.getptr(class_name)) {
+				if (const lsp::DocumentSymbol *const *member = members->getptr(member_name)) {
+					symbol = *member;
+				}
+			}
+
+			if (!symbol) {
+				if (const Map<String, ExtendGDScriptParser *>::Element *E = GDScriptLanguageProtocol::get_singleton()->get_workspace().scripts.find(class_name)) {
+					symbol = E->get()->get_member_symbol(member_name);
+				}
+			}
 		}
 	}
 
 	if (symbol) {
 		item.documentation = symbol->render();
 	}
+
+	if (item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function) {
+		item.insertText = item.label + "(";
+		if (symbol && symbol->detail.find(",") == -1) {
+			item.insertText += ")";
+		}
+	} else if (item.kind == lsp::CompletionItemKind::Event) {
+		if (params.context.triggerKind == lsp::CompletionTriggerKind::TriggerCharacter && (params.context.triggerCharacter == "(")) {
+			const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
+			item.insertText = quote_style + item.label + quote_style;
+		}
+	}
+
 	return item.to_json();
 }
 
@@ -247,17 +280,20 @@ Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
 
 	const lsp::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace().resolve_symbol(params);
 	if (symbol) {
+
 		lsp::Hover hover;
 		hover.contents = symbol->render();
 		return hover.to_json();
+
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
+
 		Dictionary ret;
 		Array contents;
 		List<const lsp::DocumentSymbol *> list;
 		GDScriptLanguageProtocol::get_singleton()->get_workspace().resolve_related_symbols(params, list);
 		for (List<const lsp::DocumentSymbol *>::Element *E = list.front(); E; E = E->next()) {
-			if (const lsp::DocumentSymbol *symbol = E->get()) {
-				contents.push_back(symbol->render().value);
+			if (const lsp::DocumentSymbol *s = E->get()) {
+				contents.push_back(s->render().value);
 			}
 		}
 		ret["contents"] = contents;
@@ -289,16 +325,13 @@ Array GDScriptTextDocument::definition(const Dictionary &p_params) {
 		GDScriptLanguageProtocol::get_singleton()->get_workspace().resolve_related_symbols(params, list);
 		for (List<const lsp::DocumentSymbol *>::Element *E = list.front(); E; E = E->next()) {
 
-			if (const lsp::DocumentSymbol *symbol = E->get()) {
+			if (const lsp::DocumentSymbol *s = E->get()) {
 
 				lsp::Location location;
-				location.uri = symbol->uri;
-				location.range = symbol->range;
+				location.uri = s->uri;
+				location.range = s->range;
 
-				const String &path = GDScriptLanguageProtocol::get_singleton()->get_workspace().get_file_path(symbol->uri);
-				if (file_checker->file_exists(path)) {
-					arr.push_back(location.to_json());
-				}
+				arr.push_back(location.to_json());
 			}
 		}
 	}

@@ -64,9 +64,9 @@ void GDScriptWorkspace::remove_cache_parser(const String &p_path) {
 const lsp::DocumentSymbol *GDScriptWorkspace::get_native_symbol(const String &p_class, const String &p_member) const {
 
 	StringName class_name = p_class;
-	StringName end_pos;
+	StringName empty;
 
-	while (class_name != end_pos) {
+	while (class_name != empty) {
 		if (const Map<StringName, lsp::DocumentSymbol>::Element *E = native_symbols.find(class_name)) {
 			const lsp::DocumentSymbol &class_symbol = E->value();
 
@@ -157,22 +157,6 @@ ExtendGDScriptParser *GDScriptWorkspace::get_parse_result(const String &p_path) 
 		return S->get();
 	}
 	return NULL;
-}
-
-void GDScriptWorkspace::strip_flat_symbols(const String &p_branch) {
-
-	typedef Map<String, const lsp::DocumentSymbol *>::Element *Item;
-
-	List<Item> removal_items;
-	for (Item E = flat_symbols.front(); E; E = E->next()) {
-		if (E->key().begins_with(p_branch)) {
-			removal_items.push_back(E);
-		}
-	}
-
-	for (List<Item>::Element *E = removal_items.front(); E; E = E->next()) {
-		flat_symbols.erase(E->get());
-	}
 }
 
 String GDScriptWorkspace::marked_documentation(const String &p_bbcode) {
@@ -327,13 +311,14 @@ Error GDScriptWorkspace::initialize() {
 	}
 
 	if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
-		// expand symbol trees to the flat symbol pool
 		for (Map<StringName, lsp::DocumentSymbol>::Element *E = native_symbols.front(); E; E = E->next()) {
+			ClassMembers members;
 			const lsp::DocumentSymbol &class_symbol = E->get();
 			for (int i = 0; i < class_symbol.children.size(); i++) {
 				const lsp::DocumentSymbol &symbol = class_symbol.children[i];
-				flat_symbols.insert(JOIN_SYMBOLS(class_symbol.name, symbol.name), &symbol);
+				members.set(symbol.name, &symbol);
 			}
+			native_members.set(E->key(), members);
 		}
 	}
 
@@ -354,12 +339,6 @@ Error GDScriptWorkspace::parse_script(const String &p_path, const String &p_cont
 		remove_cache_parser(p_path);
 		parse_results[p_path] = parser;
 		scripts[p_path] = parser;
-
-		if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
-			// update flat symbol pool
-			strip_flat_symbols(p_path);
-			parser->dump_member_symbols(flat_symbols);
-		}
 
 	} else {
 		if (last_parser && last_script && last_parser->get() != last_script->get()) {
@@ -383,14 +362,16 @@ Error GDScriptWorkspace::parse_local_script(const String &p_path) {
 }
 
 String GDScriptWorkspace::get_file_path(const String &p_uri) const {
-	String path = p_uri.replace("file://", "").http_unescape();
-	path = path.replace(root + "/", "res://");
-	return ProjectSettings::get_singleton()->localize_path(path);
+	String path = p_uri;
+	path = path.replace(root_uri + "/", "res://");
+	path = path.http_unescape();
+	return path;
 }
 
 String GDScriptWorkspace::get_file_uri(const String &p_path) const {
-	String path = ProjectSettings::get_singleton()->globalize_path(p_path);
-	return "file://" + path;
+	String uri = p_path;
+	uri = uri.replace("res://", root_uri + "/");
+	return uri;
 }
 
 void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
@@ -486,14 +467,19 @@ void GDScriptWorkspace::resolve_related_symbols(const lsp::TextDocumentPositionP
 		Vector2i offset;
 		symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, offset);
 
-		for (Map<String, const lsp::DocumentSymbol *>::Element *E = flat_symbols.front(); E; E = E->next()) {
-			String id = E->key();
-			int idx = id.find_last(".");
-			if (idx >= 0 && idx < id.length() - 1) {
-				String name = id.substr(idx + 1, id.length());
-				if (name == symbol_identifier) {
-					r_list.push_back(E->get());
-				}
+		const StringName *class_ptr = native_members.next(NULL);
+		while (class_ptr) {
+			const ClassMembers &members = native_members.get(*class_ptr);
+			if (const lsp::DocumentSymbol *const *symbol = members.getptr(symbol_identifier)) {
+				r_list.push_back(*symbol);
+			}
+			class_ptr = native_members.next(class_ptr);
+		}
+
+		for (Map<String, ExtendGDScriptParser *>::Element *E = scripts.front(); E; E = E->next()) {
+			const ClassMembers &members = E->get()->get_members();
+			if (const lsp::DocumentSymbol *const *symbol = members.getptr(symbol_identifier)) {
+				r_list.push_back(*symbol);
 			}
 		}
 	}

@@ -91,7 +91,27 @@ void GDScriptLanguageProtocol::_bind_methods() {
 Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 
 	lsp::InitializeResult ret;
-	workspace.initialize();
+
+	String root_uri = p_params["rootUri"];
+	String root = p_params["rootPath"];
+	bool is_same_workspace = root == workspace.root;
+	is_same_workspace = root.to_lower() == workspace.root.to_lower();
+#ifdef WINDOWS_ENABLED
+	is_same_workspace = root.replace("\\", "/").to_lower() == workspace.root.to_lower();
+#endif
+
+	if (root_uri.length() && is_same_workspace) {
+		workspace.root_uri = root_uri;
+	} else {
+		workspace.root_uri = "file://" + workspace.root;
+	}
+
+	if (!_initialized) {
+		workspace.initialize();
+		text_document.initialize();
+		_initialized = true;
+	}
+
 	return ret.to_json();
 }
 
@@ -167,6 +187,7 @@ bool GDScriptLanguageProtocol::is_smart_resolve_enabled() const {
 GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	server = NULL;
 	singleton = this;
+	_initialized = false;
 	set_scope("textDocument", &text_document);
 	set_scope("completionItem", &text_document);
 	set_scope("workspace", &workspace);

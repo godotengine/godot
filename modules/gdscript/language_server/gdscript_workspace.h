@@ -58,10 +58,11 @@ protected:
 
 public:
 	String root;
+	String root_uri;
 
 	Map<String, ExtendGDScriptParser *> scripts;
 	Map<String, ExtendGDScriptParser *> parse_results;
-	Map<String, const lsp::DocumentSymbol *> flat_symbols;
+	HashMap<StringName, ClassMembers> native_members;
 
 public:
 	Array symbol(const Dictionary &p_params);

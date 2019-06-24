@@ -46,11 +46,11 @@ struct TextDocumentIdentifier {
 	 */
 	DocumentUri uri;
 
-	void load(const Dictionary &p_params) {
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
 		uri = p_params["uri"];
 	}
 
-	Dictionary to_json() const {
+	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
 		dict["uri"] = uri;
 		return dict;
@@ -78,12 +78,12 @@ struct Position {
 	 */
 	int character = 0;
 
-	void load(const Dictionary &p_params) {
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
 		line = p_params["line"];
 		character = p_params["character"];
 	}
 
-	Dictionary to_json() const {
+	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
 		dict["line"] = line;
 		dict["character"] = character;
@@ -107,12 +107,12 @@ struct Range {
 	 */
 	Position end;
 
-	void load(const Dictionary &p_params) {
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
 		start.load(p_params["start"]);
 		end.load(p_params["end"]);
 	}
 
-	Dictionary to_json() const {
+	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
 		dict["start"] = start.to_json();
 		dict["end"] = end.to_json();
@@ -127,12 +127,12 @@ struct Location {
 	DocumentUri uri;
 	Range range;
 
-	void load(const Dictionary &p_params) {
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
 		uri = p_params["uri"];
 		range.load(p_params["range"]);
 	}
 
-	Dictionary to_json() const {
+	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
 		dict["uri"] = uri;
 		dict["range"] = range.to_json();
@@ -186,15 +186,63 @@ struct TextDocumentPositionParams {
 	 */
 	Position position;
 
-	void load(const Dictionary &p_params) {
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
 		textDocument.load(p_params["textDocument"]);
 		position.load(p_params["position"]);
 	}
 
-	Dictionary to_json() const {
+	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
 		dict["textDocument"] = textDocument.to_json();
 		dict["position"] = position.to_json();
+		return dict;
+	}
+};
+
+/**
+ * A textual edit applicable to a text document.
+ */
+struct TextEdit {
+	/**
+	 * The range of the text document to be manipulated. To insert
+	 * text into a document create a range where start === end.
+	 */
+	Range range;
+
+	/**
+	 * The string to be inserted. For delete operations use an
+	 * empty string.
+	 */
+	String newText;
+};
+
+/**
+ * Represents a reference to a command.
+ * Provides a title which will be used to represent a command in the UI.
+ * Commands are identified by a string identifier.
+ * The recommended way to handle commands is to implement their execution on the server side if the client and server provides the corresponding capabilities.
+ * Alternatively the tool extension code could handle the command. The protocol currently doesn’t specify a set of well-known commands.
+ */
+struct Command {
+	/**
+	 * Title of the command, like `save`.
+	 */
+	String title;
+	/**
+	 * The identifier of the actual command handler.
+	 */
+	String command;
+	/**
+	 * Arguments that the command handler should be
+	 * invoked with.
+	 */
+	Array arguments;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+		dict["title"] = title;
+		dict["command"] = command;
+		if (arguments.size()) dict["arguments"] = arguments;
 		return dict;
 	}
 };
@@ -674,256 +722,6 @@ struct MarkupContent {
 };
 
 /**
- * A symbol kind.
- */
-namespace SymbolKind {
-static const int File = 1;
-static const int Module = 2;
-static const int Namespace = 3;
-static const int Package = 4;
-static const int Class = 5;
-static const int Method = 6;
-static const int Property = 7;
-static const int Field = 8;
-static const int Constructor = 9;
-static const int Enum = 10;
-static const int Interface = 11;
-static const int Function = 12;
-static const int Variable = 13;
-static const int Constant = 14;
-static const int String = 15;
-static const int Number = 16;
-static const int Boolean = 17;
-static const int Array = 18;
-static const int Object = 19;
-static const int Key = 20;
-static const int Null = 21;
-static const int EnumMember = 22;
-static const int Struct = 23;
-static const int Event = 24;
-static const int Operator = 25;
-static const int TypeParameter = 26;
-}; // namespace SymbolKind
-
-/**
- * Represents information about programming constructs like variables, classes,
- * interfaces etc.
- */
-struct SymbolInformation {
-	/**
-	 * The name of this symbol.
-	 */
-	String name;
-
-	/**
-	 * The kind of this symbol.
-	 */
-	int kind = SymbolKind::File;
-
-	/**
-	 * Indicates if this symbol is deprecated.
-	 */
-	bool deprecated = false;
-
-	/**
-	 * The location of this symbol. The location's range is used by a tool
-	 * to reveal the location in the editor. If the symbol is selected in the
-	 * tool the range's start information is used to position the cursor. So
-	 * the range usually spans more then the actual symbol's name and does
-	 * normally include things like visibility modifiers.
-	 *
-	 * The range doesn't have to denote a node range in the sense of a abstract
-	 * syntax tree. It can therefore not be used to re-construct a hierarchy of
-	 * the symbols.
-	 */
-	Location location;
-
-	/**
-	 * The name of the symbol containing this symbol. This information is for
-	 * user interface purposes (e.g. to render a qualifier in the user interface
-	 * if necessary). It can't be used to re-infer a hierarchy for the document
-	 * symbols.
-	 */
-	String containerName;
-
-	Dictionary to_json() const {
-		Dictionary dict;
-		dict["name"] = name;
-		dict["kind"] = kind;
-		dict["deprecated"] = deprecated;
-		dict["location"] = location.to_json();
-		dict["containerName"] = containerName;
-		return dict;
-	}
-};
-
-struct DocumentedSymbolInformation : public SymbolInformation {
-	/**
-	 * A human-readable string with additional information
-	 */
-	String detail;
-
-	/**
-	 * A human-readable string that represents a doc-comment.
-	 */
-	String documentation;
-};
-
-/**
- * Represents programming constructs like variables, classes, interfaces etc. that appear in a document. Document symbols can be
- * hierarchical and they have two ranges: one that encloses its definition and one that points to its most interesting range,
- * e.g. the range of an identifier.
- */
-struct DocumentSymbol {
-
-	/**
-	 * The name of this symbol. Will be displayed in the user interface and therefore must not be
-	 * an empty string or a string only consisting of white spaces.
-	 */
-	String name;
-
-	/**
-	 * More detail for this symbol, e.g the signature of a function.
-	 */
-	String detail;
-
-	/**
-	 * Documentation for this symbol
-	 */
-	String documentation;
-
-	/**
-	 * The kind of this symbol.
-	 */
-	int kind = SymbolKind::File;
-
-	/**
-	 * Indicates if this symbol is deprecated.
-	 */
-	bool deprecated = false;
-
-	/**
-	 * The range enclosing this symbol not including leading/trailing whitespace but everything else
-	 * like comments. This information is typically used to determine if the clients cursor is
-	 * inside the symbol to reveal in the symbol in the UI.
-	 */
-	Range range;
-
-	/**
-	 * The range that should be selected and revealed when this symbol is being picked, e.g the name of a function.
-	 * Must be contained by the `range`.
-	 */
-	Range selectionRange;
-
-	DocumentUri uri;
-	String script_path;
-
-	/**
-	 * Children of this symbol, e.g. properties of a class.
-	 */
-	Vector<DocumentSymbol> children;
-
-	Dictionary to_json() const {
-		Dictionary dict;
-		dict["name"] = name;
-		dict["detail"] = detail;
-		dict["kind"] = kind;
-		dict["deprecated"] = deprecated;
-		dict["range"] = range.to_json();
-		dict["selectionRange"] = selectionRange.to_json();
-		Array arr;
-		arr.resize(children.size());
-		for (int i = 0; i < children.size(); i++) {
-			arr[i] = children[i].to_json();
-		}
-		dict["children"] = arr;
-		return dict;
-	}
-
-	void symbol_tree_as_list(const String &p_uri, Vector<DocumentedSymbolInformation> &r_list, const String &p_container = "", bool p_join_name = false) const {
-		DocumentedSymbolInformation si;
-		if (p_join_name && !p_container.empty()) {
-			si.name = p_container + ">" + name;
-		} else {
-			si.name = name;
-		}
-		si.kind = kind;
-		si.containerName = p_container;
-		si.deprecated = deprecated;
-		si.location.uri = p_uri;
-		si.location.range = range;
-		si.detail = detail;
-		si.documentation = documentation;
-		r_list.push_back(si);
-		for (int i = 0; i < children.size(); i++) {
-			children[i].symbol_tree_as_list(p_uri, r_list, si.name, p_join_name);
-		}
-	}
-
-	MarkupContent render() const {
-		MarkupContent markdown;
-		if (detail.length()) {
-			markdown.value = "\t" + detail + "\n\n";
-		}
-		if (documentation.length()) {
-			markdown.value += documentation + "\n\n";
-		}
-		if (script_path.length()) {
-			markdown.value += "Defined in [" + script_path + "](" + uri + ")";
-		}
-		return markdown;
-	}
-};
-
-/**
- * A textual edit applicable to a text document.
- */
-struct TextEdit {
-	/**
-	 * The range of the text document to be manipulated. To insert
-	 * text into a document create a range where start === end.
-	 */
-	Range range;
-
-	/**
-	 * The string to be inserted. For delete operations use an
-	 * empty string.
-	 */
-	String newText;
-};
-
-/**
- * Represents a reference to a command.
- * Provides a title which will be used to represent a command in the UI.
- * Commands are identified by a string identifier.
- * The recommended way to handle commands is to implement their execution on the server side if the client and server provides the corresponding capabilities.
- * Alternatively the tool extension code could handle the command. The protocol currently doesn’t specify a set of well-known commands.
- */
-struct Command {
-	/**
-	 * Title of the command, like `save`.
-	 */
-	String title;
-	/**
-	 * The identifier of the actual command handler.
-	 */
-	String command;
-	/**
-	 * Arguments that the command handler should be
-	 * invoked with.
-	 */
-	Array arguments;
-
-	Dictionary to_json() const {
-		Dictionary dict;
-		dict["title"] = title;
-		dict["command"] = command;
-		if (arguments.size()) dict["arguments"] = arguments;
-		return dict;
-	}
-};
-
-/**
  * The kind of a completion entry.
  */
 namespace CompletionItemKind {
@@ -1088,20 +886,22 @@ struct CompletionItem {
 	 */
 	Variant data;
 
-	Dictionary to_json() const {
+	_FORCE_INLINE_ Dictionary to_json(bool minimized = false) const {
 		Dictionary dict;
 		dict["label"] = label;
 		dict["kind"] = kind;
-		dict["detail"] = detail;
-		dict["documentation"] = documentation.to_json();
-		dict["deprecated"] = deprecated;
-		dict["preselect"] = preselect;
-		dict["sortText"] = sortText;
-		dict["filterText"] = filterText;
-		dict["insertText"] = insertText;
-		if (commitCharacters.size()) dict["commitCharacters"] = commitCharacters;
-		dict["command"] = command.to_json();
 		dict["data"] = data;
+		if (!minimized) {
+			dict["insertText"] = insertText;
+			dict["detail"] = detail;
+			dict["documentation"] = documentation.to_json();
+			dict["deprecated"] = deprecated;
+			dict["preselect"] = preselect;
+			dict["sortText"] = sortText;
+			dict["filterText"] = filterText;
+			if (commitCharacters.size()) dict["commitCharacters"] = commitCharacters;
+			dict["command"] = command.to_json();
+		}
 		return dict;
 	}
 
@@ -1142,6 +942,251 @@ struct CompletionList {
 	 * The completion items.
 	 */
 	Vector<CompletionItem> items;
+};
+
+/**
+ * A symbol kind.
+ */
+namespace SymbolKind {
+static const int File = 1;
+static const int Module = 2;
+static const int Namespace = 3;
+static const int Package = 4;
+static const int Class = 5;
+static const int Method = 6;
+static const int Property = 7;
+static const int Field = 8;
+static const int Constructor = 9;
+static const int Enum = 10;
+static const int Interface = 11;
+static const int Function = 12;
+static const int Variable = 13;
+static const int Constant = 14;
+static const int String = 15;
+static const int Number = 16;
+static const int Boolean = 17;
+static const int Array = 18;
+static const int Object = 19;
+static const int Key = 20;
+static const int Null = 21;
+static const int EnumMember = 22;
+static const int Struct = 23;
+static const int Event = 24;
+static const int Operator = 25;
+static const int TypeParameter = 26;
+}; // namespace SymbolKind
+
+/**
+ * Represents information about programming constructs like variables, classes,
+ * interfaces etc.
+ */
+struct SymbolInformation {
+	/**
+	 * The name of this symbol.
+	 */
+	String name;
+
+	/**
+	 * The kind of this symbol.
+	 */
+	int kind = SymbolKind::File;
+
+	/**
+	 * Indicates if this symbol is deprecated.
+	 */
+	bool deprecated = false;
+
+	/**
+	 * The location of this symbol. The location's range is used by a tool
+	 * to reveal the location in the editor. If the symbol is selected in the
+	 * tool the range's start information is used to position the cursor. So
+	 * the range usually spans more then the actual symbol's name and does
+	 * normally include things like visibility modifiers.
+	 *
+	 * The range doesn't have to denote a node range in the sense of a abstract
+	 * syntax tree. It can therefore not be used to re-construct a hierarchy of
+	 * the symbols.
+	 */
+	Location location;
+
+	/**
+	 * The name of the symbol containing this symbol. This information is for
+	 * user interface purposes (e.g. to render a qualifier in the user interface
+	 * if necessary). It can't be used to re-infer a hierarchy for the document
+	 * symbols.
+	 */
+	String containerName;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["name"] = name;
+		dict["kind"] = kind;
+		dict["deprecated"] = deprecated;
+		dict["location"] = location.to_json();
+		dict["containerName"] = containerName;
+		return dict;
+	}
+};
+
+struct DocumentedSymbolInformation : public SymbolInformation {
+	/**
+	 * A human-readable string with additional information
+	 */
+	String detail;
+
+	/**
+	 * A human-readable string that represents a doc-comment.
+	 */
+	String documentation;
+};
+
+/**
+ * Represents programming constructs like variables, classes, interfaces etc. that appear in a document. Document symbols can be
+ * hierarchical and they have two ranges: one that encloses its definition and one that points to its most interesting range,
+ * e.g. the range of an identifier.
+ */
+struct DocumentSymbol {
+
+	/**
+	 * The name of this symbol. Will be displayed in the user interface and therefore must not be
+	 * an empty string or a string only consisting of white spaces.
+	 */
+	String name;
+
+	/**
+	 * More detail for this symbol, e.g the signature of a function.
+	 */
+	String detail;
+
+	/**
+	 * Documentation for this symbol
+	 */
+	String documentation;
+
+	/**
+	 * The kind of this symbol.
+	 */
+	int kind = SymbolKind::File;
+
+	/**
+	 * Indicates if this symbol is deprecated.
+	 */
+	bool deprecated = false;
+
+	/**
+	 * The range enclosing this symbol not including leading/trailing whitespace but everything else
+	 * like comments. This information is typically used to determine if the clients cursor is
+	 * inside the symbol to reveal in the symbol in the UI.
+	 */
+	Range range;
+
+	/**
+	 * The range that should be selected and revealed when this symbol is being picked, e.g the name of a function.
+	 * Must be contained by the `range`.
+	 */
+	Range selectionRange;
+
+	DocumentUri uri;
+	String script_path;
+
+	/**
+	 * Children of this symbol, e.g. properties of a class.
+	 */
+	Vector<DocumentSymbol> children;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["name"] = name;
+		dict["detail"] = detail;
+		dict["kind"] = kind;
+		dict["deprecated"] = deprecated;
+		dict["range"] = range.to_json();
+		dict["selectionRange"] = selectionRange.to_json();
+		Array arr;
+		arr.resize(children.size());
+		for (int i = 0; i < children.size(); i++) {
+			arr[i] = children[i].to_json();
+		}
+		dict["children"] = arr;
+		return dict;
+	}
+
+	void symbol_tree_as_list(const String &p_uri, Vector<DocumentedSymbolInformation> &r_list, const String &p_container = "", bool p_join_name = false) const {
+		DocumentedSymbolInformation si;
+		if (p_join_name && !p_container.empty()) {
+			si.name = p_container + ">" + name;
+		} else {
+			si.name = name;
+		}
+		si.kind = kind;
+		si.containerName = p_container;
+		si.deprecated = deprecated;
+		si.location.uri = p_uri;
+		si.location.range = range;
+		si.detail = detail;
+		si.documentation = documentation;
+		r_list.push_back(si);
+		for (int i = 0; i < children.size(); i++) {
+			children[i].symbol_tree_as_list(p_uri, r_list, si.name, p_join_name);
+		}
+	}
+
+	_FORCE_INLINE_ MarkupContent render() const {
+		MarkupContent markdown;
+		if (detail.length()) {
+			markdown.value = "\t" + detail + "\n\n";
+		}
+		if (documentation.length()) {
+			markdown.value += documentation + "\n\n";
+		}
+		if (script_path.length()) {
+			markdown.value += "Defined in [" + script_path + "](" + uri + ")";
+		}
+		return markdown;
+	}
+
+	_FORCE_INLINE_ CompletionItem make_completion_item(bool with_doc = false) const {
+
+		lsp::CompletionItem item;
+		item.label = name;
+
+		if (with_doc) {
+			item.documentation = render();
+		}
+
+		switch (kind) {
+			case lsp::SymbolKind::Enum:
+				item.kind = lsp::CompletionItemKind::Enum;
+				break;
+			case lsp::SymbolKind::Class:
+				item.kind = lsp::CompletionItemKind::Class;
+				break;
+			case lsp::SymbolKind::Property:
+				item.kind = lsp::CompletionItemKind::Property;
+				break;
+			case lsp::SymbolKind::Method:
+			case lsp::SymbolKind::Function:
+				item.kind = lsp::CompletionItemKind::Method;
+				break;
+			case lsp::SymbolKind::Event:
+				item.kind = lsp::CompletionItemKind::Event;
+				break;
+			case lsp::SymbolKind::Constant:
+				item.kind = lsp::CompletionItemKind::Constant;
+				break;
+			case lsp::SymbolKind::Variable:
+				item.kind = lsp::CompletionItemKind::Variable;
+				break;
+			case lsp::SymbolKind::File:
+				item.kind = lsp::CompletionItemKind::File;
+				break;
+			default:
+				item.kind = lsp::CompletionItemKind::Text;
+				break;
+		}
+
+		return item;
+	}
 };
 
 /**
@@ -1194,7 +1239,7 @@ struct FoldingRange {
 	 */
 	String kind = FoldingRangeKind::Region;
 
-	Dictionary to_json() const {
+	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
 		dict["startLine"] = startLine;
 		dict["startCharacter"] = startCharacter;
@@ -1276,7 +1321,7 @@ struct Hover {
 	 */
 	Range range;
 
-	Dictionary to_json() const {
+	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
 		dict["range"] = range.to_json();
 		dict["contents"] = contents.to_json();
@@ -1410,7 +1455,7 @@ struct ServerCapabilities {
 	 */
 	ExecuteCommandOptions executeCommandProvider;
 
-	Dictionary to_json() {
+	_FORCE_INLINE_ Dictionary to_json() {
 		Dictionary dict;
 		dict["textDocumentSync"] = (int)textDocumentSync.change;
 		dict["completionProvider"] = completionProvider.to_json();
@@ -1444,7 +1489,7 @@ struct InitializeResult {
 	 */
 	ServerCapabilities capabilities;
 
-	Dictionary to_json() {
+	_FORCE_INLINE_ Dictionary to_json() {
 		Dictionary dict;
 		dict["capabilities"] = capabilities.to_json();
 		return dict;
