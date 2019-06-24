@@ -125,7 +125,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 				first = true;
 				continue;
 			}
-			if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')) {
+			if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-')) {
 				if (r_error) {
 					*r_error = vformat(TTR("The character '%s' is not allowed in Identifier."), String::chr(c));
 				}
@@ -137,7 +137,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 				}
 				return false;
 			}
-			if (first && c == '_') {
+			if (first && c == '-') {
 				if (r_error) {
 					*r_error = vformat(TTR("The character '%s' cannot be the first character in a Identifier segment."), String::chr(c));
 				}
