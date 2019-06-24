@@ -122,6 +122,8 @@ Error StreamPeerMbedTLS::_do_handshake() {
 
 Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs, const String &p_for_hostname) {
 
+	ERR_FAIL_COND_V(p_base.is_null(), ERR_INVALID_PARAMETER);
+
 	base = p_base;
 	int ret = 0;
 	int authmode = p_validate_certs ? MBEDTLS_SSL_VERIFY_REQUIRED : MBEDTLS_SSL_VERIFY_NONE;
