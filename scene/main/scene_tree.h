@@ -152,6 +152,7 @@ private:
 	StretchAspect stretch_aspect;
 	Size2i stretch_min;
 	real_t stretch_shrink;
+	bool stretch_use_filter;
 
 	void _update_font_oversampling(float p_ratio);
 	void _update_root_rect();
@@ -386,7 +387,7 @@ public:
 	void get_nodes_in_group(const StringName &p_group, List<Node *> *p_list);
 	bool has_group(const StringName &p_identifier) const;
 
-	void set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 p_minsize, real_t p_shrink = 1);
+	void set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 p_minsize, real_t p_shrink = 1, bool p_use_filter = false);
 
 	void set_use_font_oversampling(bool p_oversampling);
 	bool is_using_font_oversampling() const;

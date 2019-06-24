@@ -333,7 +333,7 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	end_frame(true);
 }
 
-void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
+void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen, bool p_use_filter) {
 
 	ERR_FAIL_COND(storage->frame.current_rt);
 
@@ -350,7 +350,7 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 	}
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
-	glBlitFramebuffer(0, 0, rt->width, rt->height, p_screen_rect.position.x, win_size.height - p_screen_rect.position.y - p_screen_rect.size.height, p_screen_rect.position.x + p_screen_rect.size.width, win_size.height - p_screen_rect.position.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	glBlitFramebuffer(0, 0, rt->width, rt->height, p_screen_rect.position.x, win_size.height - p_screen_rect.position.y - p_screen_rect.size.height, p_screen_rect.position.x + p_screen_rect.size.width, win_size.height - p_screen_rect.position.y, GL_COLOR_BUFFER_BIT, p_use_filter ? GL_LINEAR : GL_NEAREST);
 
 #else
 	canvas->canvas_begin();

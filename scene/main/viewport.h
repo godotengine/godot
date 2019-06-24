@@ -479,7 +479,7 @@ public:
 	void set_keep_3d_linear(bool p_keep_3d_linear);
 	bool get_keep_3d_linear() const;
 
-	void set_attach_to_screen_rect(const Rect2 &p_rect);
+	void set_attach_to_screen_rect(const Rect2 &p_rect, bool p_use_filter = false);
 	Rect2 get_attach_to_screen_rect() const;
 
 	void set_use_render_direct_to_screen(bool p_render_direct_to_screen);

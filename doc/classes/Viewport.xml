@@ -152,7 +152,11 @@
 			</return>
 			<argument index="0" name="rect" type="Rect2">
 			</argument>
+			<argument index="1" name="use_filter" type="bool" default="false">
+			</argument>
 			<description>
+				Attaches the viewport to the screen.
+				If [code]use_filter[/code] is [code]true[/code], the viewport will be stretched with linear interpolation. If [code]false[/code], the viewport will be scaled with nearest-neighbor interpolation (recommended for pixel art).
 			</description>
 		</method>
 		<method name="set_input_as_handled">

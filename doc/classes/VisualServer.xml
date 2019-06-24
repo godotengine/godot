@@ -3602,8 +3602,10 @@
 			</argument>
 			<argument index="2" name="screen" type="int" default="0">
 			</argument>
+			<argument index="3" name="use_filter" type="bool" default="false">
+			</argument>
 			<description>
-				Copies viewport to a region of the screen specified by [code]rect[/code]. If Viewport.[member Viewport.render_direct_to_screen] is [code]true[/code], then viewport does not use a framebuffer and the contents of the viewport are rendered directly to screen. However, note that the root viewport is drawn last, therefore it will draw over the screen. Accordingly, you must set the root viewport to an area that does not cover the area that you have attached this viewport to.
+				Copies viewport to a region of the screen specified by [code]rect[/code]. If [member Viewport.render_direct_to_screen] is [code]true[/code], then viewport does not use a framebuffer and the contents of the viewport are rendered directly to screen. However, note that the root viewport is drawn last, therefore it will draw over the screen. Accordingly, you must set the root viewport to an area that does not cover the area that you have attached this viewport to.
 				For example, you can set the root viewport to not render at all with the following code:
 				[codeblock]
 				func _ready():
@@ -3611,6 +3613,7 @@
 				    $Viewport.set_attach_to_screen_rect(Rect2(0, 0, 600, 600))
 				[/codeblock]
 				Using this can result in significant optimization, especially on lower-end devices. However, it comes at the cost of having to manage your viewports manually. For a further optimization see, [method viewport_set_render_direct_to_screen].
+				If [code]use_filter[/code] is [code]true[/code], [code]viewport[/code] will be stretched with linear interpolation. If [code]use_filter[/code] is [code]false[/code], [code]viewport[/code] will be scaled with nearest-neighbor interpolation (recommended for pixel art).
 			</description>
 		</method>
 		<method name="viewport_create">

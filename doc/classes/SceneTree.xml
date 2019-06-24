@@ -256,8 +256,11 @@
 			</argument>
 			<argument index="3" name="shrink" type="float" default="1">
 			</argument>
+			<argument index="4" name="use_filter" type="bool" default="false">
+			</argument>
 			<description>
-				Configures screen stretching to the given [enum StretchMode], [enum StretchAspect], minimum size and [code]shrink[/code].
+				Configures screen stretching to the given [enum StretchMode], [enum StretchAspect], minimum size and [code]shrink[/code]. Screen stretch settings define how the viewport will be resized or scaled when the window size changes.
+				If [code]use_filter[/code] is [code]true[/code], the root viewport will be stretched with linear interpolation. If [code]use_filter[/code] is [code]false[/code], the root viewport will be scaled with nearest-neighbor interpolation (recommended for pixel art).
 			</description>
 		</method>
 	</methods>

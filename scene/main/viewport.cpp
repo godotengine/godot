@@ -2728,9 +2728,9 @@ bool Viewport::is_using_own_world() const {
 	return own_world.is_valid();
 }
 
-void Viewport::set_attach_to_screen_rect(const Rect2 &p_rect) {
+void Viewport::set_attach_to_screen_rect(const Rect2 &p_rect, bool p_use_filter) {
 
-	VS::get_singleton()->viewport_attach_to_screen(viewport, p_rect);
+	VS::get_singleton()->viewport_attach_to_screen(viewport, p_rect, 0, p_use_filter);
 	to_screen_rect = p_rect;
 }
 
@@ -3016,7 +3016,7 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener_2d", "enable"), &Viewport::set_as_audio_listener_2d);
 	ClassDB::bind_method(D_METHOD("is_audio_listener_2d"), &Viewport::is_audio_listener_2d);
-	ClassDB::bind_method(D_METHOD("set_attach_to_screen_rect", "rect"), &Viewport::set_attach_to_screen_rect);
+	ClassDB::bind_method(D_METHOD("set_attach_to_screen_rect", "rect", "use_filter"), &Viewport::set_attach_to_screen_rect, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_use_render_direct_to_screen", "enable"), &Viewport::set_use_render_direct_to_screen);
 	ClassDB::bind_method(D_METHOD("is_using_render_direct_to_screen"), &Viewport::is_using_render_direct_to_screen);
 

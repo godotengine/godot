@@ -397,7 +397,7 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	end_frame(true);
 }
 
-void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
+void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen, bool p_use_filter) {
 
 	ERR_FAIL_COND(storage->frame.current_rt);
 
@@ -419,7 +419,11 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 		glBindTexture(GL_TEXTURE_2D, rt->color);
 	}
 
-	// TODO normals
+	// TODO: Normals
+	// TODO: Implement `p_use_filter` for linear filtering
+	if (p_use_filter) {
+		WARN_PRINT_ONCE("Linear filtering is only available in the GLES3 backend.");
+	}
 
 	canvas->draw_generic_textured_rect(p_screen_rect, Rect2(0, 0, 1, -1));
 

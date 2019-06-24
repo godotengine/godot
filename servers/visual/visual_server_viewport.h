@@ -66,6 +66,7 @@ public:
 		bool disable_3d;
 		bool disable_3d_by_usage;
 		bool keep_3d_linear;
+		bool use_filter;
 
 		RID shadow_atlas;
 		int shadow_atlas_size;
@@ -119,6 +120,7 @@ public:
 			disable_3d = false;
 			disable_3d_by_usage = false;
 			keep_3d_linear = false;
+			use_filter = false;
 			debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
 			for (int i = 0; i < VS::VIEWPORT_RENDER_INFO_MAX; i++) {
 				render_info[i] = 0;
@@ -158,7 +160,7 @@ public:
 
 	void viewport_set_size(RID p_viewport, int p_width, int p_height);
 
-	void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), int p_screen = 0);
+	void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), int p_screen = 0, bool p_use_filter = false);
 	void viewport_set_render_direct_to_screen(RID p_viewport, bool p_enable);
 	void viewport_detach(RID p_viewport);
 

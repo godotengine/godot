@@ -346,7 +346,7 @@ void VisualServerViewport::draw_viewports() {
 			if (vp->viewport_to_screen_rect != Rect2() && (!vp->viewport_render_direct_to_screen || !VSG::rasterizer->is_low_end())) {
 				//copy to screen if set as such
 				VSG::rasterizer->set_current_render_target(RID());
-				VSG::rasterizer->blit_render_target_to_screen(vp->render_target, vp->viewport_to_screen_rect, vp->viewport_to_screen);
+				VSG::rasterizer->blit_render_target_to_screen(vp->render_target, vp->viewport_to_screen_rect, vp->viewport_to_screen, vp->use_filter);
 			}
 		}
 
@@ -420,7 +420,7 @@ void VisualServerViewport::viewport_set_clear_mode(RID p_viewport, VS::ViewportC
 	viewport->clear_mode = p_clear_mode;
 }
 
-void VisualServerViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect, int p_screen) {
+void VisualServerViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect, int p_screen, bool p_use_filter) {
 
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
@@ -435,6 +435,7 @@ void VisualServerViewport::viewport_attach_to_screen(RID p_viewport, const Rect2
 
 	viewport->viewport_to_screen_rect = p_rect;
 	viewport->viewport_to_screen = p_screen;
+	viewport->use_filter = p_use_filter;
 }
 
 void VisualServerViewport::viewport_set_render_direct_to_screen(RID p_viewport, bool p_enable) {

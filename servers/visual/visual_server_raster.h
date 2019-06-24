@@ -454,7 +454,7 @@ public:
 
 	BIND2(viewport_set_clear_mode, RID, ViewportClearMode)
 
-	BIND3(viewport_attach_to_screen, RID, const Rect2 &, int)
+	BIND4(viewport_attach_to_screen, RID, const Rect2 &, int, bool)
 	BIND2(viewport_set_render_direct_to_screen, RID, bool)
 	BIND1(viewport_detach, RID)
 
