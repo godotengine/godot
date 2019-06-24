@@ -278,6 +278,7 @@ String Particles::get_configuration_warning() const {
 void Particles::restart() {
 
 	VisualServer::get_singleton()->particles_restart(particles);
+	VisualServer::get_singleton()->particles_set_emitting(particles, true);
 }
 
 AABB Particles::capture_aabb() const {
