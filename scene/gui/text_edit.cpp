@@ -662,10 +662,8 @@ void TextEdit::_notification(int p_what) {
 			int xmargin_end = size.width - cache.style_normal->get_margin(MARGIN_RIGHT);
 			//let's do it easy for now:
 			cache.style_normal->draw(ci, Rect2(Point2(), size));
-			float readonly_alpha = 1.0; // used to set the input text color when in read-only mode
 			if (readonly) {
 				cache.style_readonly->draw(ci, Rect2(Point2(), size));
-				readonly_alpha = .5;
 				draw_caret = false;
 			}
 			if (has_focus())
@@ -675,8 +673,7 @@ void TextEdit::_notification(int p_what) {
 
 			int visible_rows = get_visible_rows() + 1;
 
-			Color color = cache.font_color;
-			color.a *= readonly_alpha;
+			Color color = readonly ? cache.font_color_readonly : cache.font_color;
 
 			if (syntax_coloring) {
 				if (cache.background_color.a > 0.01) {
@@ -871,10 +868,7 @@ void TextEdit::_notification(int p_what) {
 					color_map = _get_line_syntax_highlighting(line);
 				}
 				// ensure we at least use the font color
-				Color current_color = cache.font_color;
-				if (readonly) {
-					current_color.a *= readonly_alpha;
-				}
+				Color current_color = readonly ? cache.font_color_readonly : cache.font_color;
 
 				bool underlined = false;
 
@@ -1061,10 +1055,7 @@ void TextEdit::_notification(int p_what) {
 
 						if (syntax_coloring) {
 							if (color_map.has(last_wrap_column + j)) {
-								current_color = color_map[last_wrap_column + j].color;
-								if (readonly) {
-									current_color.a *= readonly_alpha;
-								}
+								current_color = readonly ? cache.font_color_readonly : color_map[last_wrap_column + j].color;
 							}
 							color = current_color;
 						}
@@ -1252,8 +1243,7 @@ void TextEdit::_notification(int p_what) {
 						if (cursor.column == last_wrap_column + j && cursor.line == line && cursor_wrap_index == line_wrap_index && block_caret && draw_caret && !insert_mode) {
 							color = cache.caret_background_color;
 						} else if (!syntax_coloring && block_caret) {
-							color = cache.font_color;
-							color.a *= readonly_alpha;
+							color = readonly ? cache.font_color_readonly : cache.font_color;
 						}
 
 						if (str[j] >= 32) {
@@ -4555,6 +4545,7 @@ void TextEdit::_update_caches() {
 	cache.safe_line_number_color = get_color("safe_line_number_color");
 	cache.font_color = get_color("font_color");
 	cache.font_color_selected = get_color("font_color_selected");
+	cache.font_color_readonly = get_color("font_color_readonly");
 	cache.keyword_color = get_color("keyword_color");
 	cache.function_color = get_color("function_color");
 	cache.member_variable_color = get_color("member_variable_color");
