@@ -127,13 +127,6 @@ def configure(env):
 
     ## Link flags
 
-    env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
-
-    # Allow increasing memory buffer size during runtime. This is efficient
-    # when using WebAssembly (in comparison to asm.js) and works well for
-    # us since we don't know requirements at compile-time.
-    env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
-
     # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
     env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
 

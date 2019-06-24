@@ -1,16 +1,10 @@
-		// The following is concatenated with generated code, and acts as the end
-		// of a wrapper for said code. See pre.js for the other part of the
-		// wrapper.
-		exposedLibs['PATH'] = PATH;
-		exposedLibs['FS'] = FS;
-		return Module;
-	},
-};
+var Engine = {};
 
 (function() {
 	var engine = Engine;
 
 	var DOWNLOAD_ATTEMPTS_MAX = 4;
+	var CAN_USE_WEB_ASSEMBLY = typeof WebAssembly === "object" && !navigator.platform.match(/iPad|iPhone|iPod/);
 
 	var basePath = null;
 	var wasmFilenameExtensionOverride = null;
@@ -47,6 +41,7 @@
 
 		var initPromise = null;
 		var unloadAfterInit = true;
+		var memorySize = 268435456;
 
 		var preloadedFiles = [];
 
@@ -69,27 +64,37 @@
 				);
 				requestAnimationFrame(animateProgress);
 				if (unloadAfterInit)
-					initPromise.then(Engine.unloadEngine);
+					initPromise.then(Engine.unload);
 			}
 			return initPromise;
 		};
 
-		function instantiate(wasmBuf) {
+		function instantiate(initializer) {
 
 			var rtenvProps = {
 				engine: this,
 				ENV: {},
+				thisProgram: executableName || getBaseName(basePath),
 			};
 			if (typeof stdout === 'function')
 				rtenvProps.print = stdout;
 			if (typeof stderr === 'function')
 				rtenvProps.printErr = stderr;
-			rtenvProps.instantiateWasm = function(imports, onSuccess) {
-				WebAssembly.instantiate(wasmBuf, imports).then(function(result) {
-					onSuccess(result.instance);
-				});
-				return {};
-			};
+
+			if (typeof WebAssembly === 'object' && initializer instanceof ArrayBuffer) {
+				rtenvProps.instantiateWasm = function(imports, onSuccess) {
+					WebAssembly.instantiate(initializer, imports).then(function(result) {
+						onSuccess(result.instance);
+					});
+					return {};
+				};
+			} else if (initializer.asm && initializer.mem) {
+				rtenvProps.asm = initializer.asm;
+				rtenvProps.memoryInitializerRequest = initializer.mem;
+				rtenvProps.TOTAL_MEMORY = memorySize;
+			} else {
+				throw new Error("Invalid initializer");
+			}
 
 			return new Promise(function(resolve, reject) {
 				rtenvProps.onRuntimeInitialized = resolve;
@@ -124,7 +129,6 @@
 		};
 
 		this.start = function() {
-
 			return this.init().then(
 				Function.prototype.apply.bind(synchronousStart, this, arguments)
 			);
@@ -250,6 +254,10 @@
 			canvas = elem;
 		};
 
+		this.setMemorySize = function(size) {
+			memorySize = size;
+		};
+
 		this.setExecutableName = function(newName) {
 
 			executableName = newName;
@@ -263,7 +271,7 @@
 		this.setUnloadAfterInit = function(enabled) {
 
 			if (enabled && !unloadAfterInit && initPromise) {
-				initPromise.then(Engine.unloadEngine);
+				initPromise.then(Engine.unload);
 			}
 			unloadAfterInit = enabled;
 		};
@@ -293,7 +301,9 @@
 			stderr = printErr;
 		};
 
-
+		this.isUsingWebAssembly = function() {
+			return CAN_USE_WEB_ASSEMBLY;
+		};
 	}; // Engine()
 
 	Engine.RuntimeEnvironment = engine.RuntimeEnvironment;
@@ -321,22 +331,100 @@
 	}
 
 	Engine.load = function(newBasePath) {
-
+		var modulePath;
 		if (newBasePath !== undefined) basePath = getBasePath(newBasePath);
 		if (engineLoadPromise === null) {
-			if (typeof WebAssembly !== 'object')
-				return Promise.reject(new Error("Browser doesn't support WebAssembly"));
-			// TODO cache/retrieve module to/from idb
-			engineLoadPromise = loadPromise(basePath + '.' + (wasmFilenameExtensionOverride || 'wasm')).then(function(xhr) {
-				return xhr.response;
-			});
-			engineLoadPromise = engineLoadPromise.catch(function(err) {
-				engineLoadPromise = null;
-				throw err;
-			});
+
+			if (CAN_USE_WEB_ASSEMBLY) {
+				modulePath = basePath + '.module-wasm.js';
+
+				// TODO: cache/retrieve module to/from idb
+				engineLoadPromise = loadPromise(basePath + '.' + (wasmFilenameExtensionOverride || 'wasm'))
+					.then(function(xhr) {
+						return xhr.response;
+					}, function(err) {
+						engineLoadPromise = null;
+						throw err;
+					});
+			} else {
+				modulePath = basePath + '.module-asmjs.js';
+
+				var asmjsPromise = loadPromise(basePath + '.asm.js').then(function(xhr) {
+					return asmjsModulePromise(xhr.response);
+				});
+				var memPromise = loadPromise(basePath + '.mem');
+
+				engineLoadPromise = Promise.all([asmjsPromise, memPromise]).then(function(results) {
+					return {
+						asm: results[0],
+						mem: results[1],
+					};
+				});
+			}
 		}
-		return engineLoadPromise;
+
+		return Promise
+			.all([
+				engineLoadPromise,
+				loadPromise(modulePath).then(function(xhr) {
+					return emscriptenRuntimePromise(xhr.response);
+				})
+			])
+			.then(function(results) {
+				Engine.RuntimeEnvironment = results[1];
+				return results[0];
+			});
 	};
+
+	function wrappedModulePromise(parts) {
+		var elem = document.createElement('script');
+		var script = new Blob(parts);
+
+		var url = URL.createObjectURL(script);
+		elem.src = url;
+
+		return new Promise(function (resolve, reject) {
+			elem.addEventListener('load', function() {
+				URL.revokeObjectURL(url);
+				setTimeout(function() {
+					resolve();
+				}, 1);
+			});
+
+			elem.addEventListener('error', function(err) {
+				URL.revokeObjectURL(url);
+				reject(err);
+			});
+
+			document.body.appendChild(elem);
+		});
+	}
+
+	function emscriptenRuntimePromise(module) {
+		return wrappedModulePromise([
+			'window["__runtime"] = function(Module, exposedLibs) {',
+			module,
+			'; exposedLibs["FS"] = FS;',
+			'exposedLibs["PATH"] = PATH;',
+			'return Module; };'
+		]).then(function() {
+			var runtime = window.__runtime;
+			window.__runtime = undefined;
+			return runtime;
+		})
+	}
+
+	function asmjsModulePromise(module) {
+		return wrappedModulePromise([
+			'window["__asm"] = (function() { var Module = {}; ',
+			module,
+			'; return Module.asm; })();'
+		]).then(function() {
+			var asm = window.__asm;
+			window.__asm = undefined;
+			return asm;
+		});
+	}
 
 	Engine.unload = function() {
 		engineLoadPromise = null;
@@ -399,6 +487,7 @@
 				break;
 
 			case 'error':
+			case 'timeout':
 				if (++tracker[file].attempts >= DOWNLOAD_ATTEMPTS_MAX) {
 					tracker[file].final = true;
 					reject(new Error("Failed loading file '" + file + "'"));

@@ -2,6 +2,9 @@
 
 Import('env')
 
+WASM_SUFFIX = '.wasm'
+ASMJS_SUFFIX = '.asmjs'
+
 javascript_files = [
     'audio_driver_javascript.cpp',
     'http_client_javascript.cpp',
@@ -10,35 +13,73 @@ javascript_files = [
     'os_javascript.cpp',
 ]
 
-build = env.add_program(['#bin/godot${PROGSUFFIX}.js', '#bin/godot${PROGSUFFIX}.wasm'], javascript_files);
-js, wasm = build
-
 js_libraries = [
     'http_request.js',
 ]
 for lib in js_libraries:
     env.Append(LINKFLAGS=['--js-library', env.File(lib).path])
-env.Depends(build, js_libraries)
 
 js_modules = [
     'id_handler.js',
 ]
 for module in js_modules:
     env.Append(LINKFLAGS=['--pre-js', env.File(module).path])
+
+wasm_env = env.Clone()
+wasm_env.Append(
+    OBJSUFFIX=WASM_SUFFIX + '.bc',
+    LINKFLAGS=[
+        '-s', 'BINARYEN=1',
+        '-s', 'BINARYEN_TRAP_MODE=\'clamp\'',
+        '-s', 'ALLOW_MEMORY_GROWTH=1'
+    ]
+)
+
+asmjs_env = env.Clone()
+asmjs_env.Append(
+    OBJSUFFIX=ASMJS_SUFFIX + env['OBJSUFFIX'],
+    LINKFLAGS=[
+        '-s', 'ASM_JS=1',
+        '-s', 'WASM=0',
+        '-Wno-separate-asm',
+        '--separate-asm',
+        '--memory-init-file', '1'
+    ]
+)
+
+wasm_module, wasm = wasm_env.add_program([
+    '#bin/godot${PROGSUFFIX}' + WASM_SUFFIX + '.js',
+    '#bin/godot${PROGSUFFIX}' + WASM_SUFFIX + '.wasm'
+], javascript_files)
+asmjs_module, asmjs, memory = asmjs_env.add_program([
+    '#bin/godot${PROGSUFFIX}' + ASMJS_SUFFIX + '.js',
+    '#bin/godot${PROGSUFFIX}' + ASMJS_SUFFIX + '.asm.js',
+    '#bin/godot${PROGSUFFIX}' + ASMJS_SUFFIX + '.js.mem'
+], javascript_files)
+build = (wasm_module, wasm, asmjs_module, asmjs, memory)
+
+env.Depends(build, js_libraries)
 env.Depends(build, js_modules)
 
-wrapper_start = env.File('pre.js')
-wrapper_end = env.File('engine.js')
-js_wrapped = env.Textfile('#bin/godot', [wrapper_start, js, wrapper_end], TEXTFILESUFFIX='${PROGSUFFIX}.wrapped.js')
+engine = env.File('engine.js')
 
 zip_dir = env.Dir('#bin/.javascript_zip')
 zip_files = env.InstallAs([
+    zip_dir.File('godot.module-wasm.js'),
+    zip_dir.File('godot.module-asmjs.js'),
     zip_dir.File('godot.js'),
     zip_dir.File('godot.wasm'),
+    zip_dir.File('godot.asm.js'),
+    zip_dir.File('godot.mem'),
     zip_dir.File('godot.html')
 ], [
-    js_wrapped,
+    wasm_module,
+    asmjs_module,
+    engine,
     wasm,
+    asmjs,
+    memory,
     '#misc/dist/html/full-size.html'
 ])
+
 env.Zip('#bin/godot', zip_files, ZIPROOT=zip_dir, ZIPSUFFIX='${PROGSUFFIX}${ZIPSUFFIX}', ZIPCOMSTR='Archving $SOURCES as $TARGET')

@@ -35,8 +35,8 @@
 #include "platform/javascript/logo.gen.h"
 #include "platform/javascript/run_icon.gen.h"
 
-#define EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE "webassembly_release.zip"
-#define EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG "webassembly_debug.zip"
+#define EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE "javascript_release.zip"
+#define EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG "javascript_debug.zip"
 
 class EditorExportPlatformJavaScript : public EditorExportPlatform {
 
@@ -86,9 +86,12 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	String str_export;
 	Vector<String> lines = str_template.split("\n");
 
+	int memory_mb = 1 << (p_preset->get("options/asmjs_memory_size").operator int() + 5);
+
 	for (int i = 0; i < lines.size(); i++) {
 
 		String current_line = lines[i];
+		current_line = current_line.replace("$GODOT_TOTAL_MEMORY", itos(memory_mb * 1024 * 1024));
 		current_line = current_line.replace("$GODOT_BASENAME", p_name);
 		current_line = current_line.replace("$GODOT_HEAD_INCLUDE", p_preset->get("html/head_include"));
 		current_line = current_line.replace("$GODOT_DEBUG_ENABLED", p_debug ? "true" : "false");
@@ -122,7 +125,7 @@ void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportP
 }
 
 void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_options) {
-
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "options/asmjs_memory_size", PROPERTY_HINT_ENUM, "32 MB,64 MB,128 MB,256 MB,512 MB,1 GB"), 3)); // S3TC
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_desktop"), true)); // S3TC
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
@@ -271,14 +274,9 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 			}
 			_fix_html(data, p_preset, p_path.get_file().get_basename(), p_debug);
 			file = p_path.get_file();
-
-		} else if (file == "godot.js") {
-
-			file = p_path.get_file().get_basename() + ".js";
-		} else if (file == "godot.wasm") {
-
-			file = p_path.get_file().get_basename() + ".wasm";
 		}
+
+		file = file.replace("godot", p_path.get_file().get_basename());
 
 		String dst = p_path.get_base_dir().plus_file(file);
 		FileAccess *f = FileAccess::open(dst, FileAccess::WRITE);

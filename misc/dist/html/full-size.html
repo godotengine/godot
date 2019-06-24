@@ -143,6 +143,7 @@ $GODOT_HEAD_INCLUDE
 		(function() {
 
 			const MAIN_PACK = '$GODOT_BASENAME.pck';
+			const MEMORY_SIZE = $GODOT_TOTAL_MEMORY;
 			const INDETERMINATE_STATUS_STEP_MS = 100;
 
 			var canvas = document.getElementById('canvas');
@@ -153,6 +154,8 @@ $GODOT_HEAD_INCLUDE
 
 			var initializing = true;
 			var statusMode = 'hidden';
+
+			engine.setMemorySize(MEMORY_SIZE);
 
 			var animationCallbacks = [];
 			function animate(time) {
