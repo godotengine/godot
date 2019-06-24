@@ -23,6 +23,8 @@ public:
 		RenderingDevice::DataFormat rd_format;
 		RenderingDevice::DataFormat rd_format_srgb;
 
+		RD::TextureView rd_view;
+
 		Image::Format format;
 		int width;
 		int height;
@@ -34,9 +36,13 @@ public:
 		int width_2d;
 
 		bool is_render_target;
+		bool is_proxy;
 
 		Ref<Image> image_cache_2d;
 		String path;
+
+		RID proxy_to;
+		Vector<RID> proxies;
 	};
 
 	struct TextureToRDFormat {
@@ -67,7 +73,6 @@ public:
 		Size2i size;
 		RID framebuffer;
 		RID color;
-		RID color_srgb;
 
 		//used for retrieving from CPU
 		RD::DataFormat color_format;
@@ -79,8 +84,11 @@ public:
 		//texture generated for this owner (nor RD).
 		RID texture;
 		bool dirty;
-		bool texture_dirty;
 		bool was_used;
+
+		//clear request
+		bool clear_requested;
+		Color clear_color;
 	};
 
 	RID_Owner<RenderTarget> render_target_owner;
@@ -94,12 +102,14 @@ public:
 	virtual RID texture_2d_create(const Ref<Image> &p_image);
 	virtual RID texture_2d_layered_create(const Vector<Ref<Image> > &p_layers, VS::TextureLayeredType p_layered_type);
 	virtual RID texture_3d_create(const Vector<Ref<Image> > &p_slices); //all slices, then all the mipmaps, must be coherent
+	virtual RID texture_proxy_create(RID p_base);
 
 	virtual void _texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_immediate);
 
 	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0); //mostly used for video and streaming
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0);
 	virtual void texture_3d_update(RID p_texture, const Ref<Image> &p_image, int p_depth, int p_mipmap);
+	virtual void texture_proxy_update(RID p_texture, RID p_proxy_to);
 
 	//these two APIs can be used together or in combination with the others.
 	virtual RID texture_2d_placeholder_create();
@@ -125,7 +135,7 @@ public:
 	virtual void texture_set_proxy(RID p_proxy, RID p_base);
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable);
 
-	virtual Size2 texture_size_with_proxy(RID p_proxy) const;
+	virtual Size2 texture_size_with_proxy(RID p_proxy);
 
 	//internal usage
 
@@ -625,7 +635,12 @@ public:
 	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id);
 	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
 	bool render_target_was_used(RID p_render_target);
-	void render_target_clear_used_flag(RID p_render_target);
+	void render_target_set_as_unused(RID p_render_target);
+
+	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color);
+	virtual bool render_target_is_clear_requested(RID p_render_target);
+	virtual Color render_target_get_clear_request_color(RID p_render_target);
+	virtual void render_target_disable_clear_request(RID p_render_target);
 
 	Size2 render_target_get_size(RID p_render_target);
 	RID render_target_get_rd_framebuffer(RID p_render_target);

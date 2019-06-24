@@ -395,8 +395,10 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	XFree(visualInfo);
 
-	context_vulkan = memnew(VulkanContextX11(x11_window, x11_display));
-	context_vulkan->initialize(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, false);
+	context_vulkan = memnew(VulkanContextX11);
+	context_vulkan->initialize();
+	context_vulkan->window_create(x11_window, x11_display, get_video_mode().width, get_video_mode().height);
+
 	//temporary
 	rendering_device = memnew(RenderingDeviceVulkan);
 	rendering_device->initialize(context_vulkan);
@@ -1091,6 +1093,12 @@ void OS_X11::finalize() {
 	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
+
+	rendering_device->finalize();
+	memdelete(rendering_device);
+
+	memdelete(context_vulkan);
+
 	//memdelete(rasterizer);
 
 	memdelete(power_manager);
@@ -2341,6 +2349,7 @@ void OS_X11::_window_changed(XEvent *event) {
 
 	current_videomode.width = event->xconfigure.width;
 	current_videomode.height = event->xconfigure.height;
+	context_vulkan->window_resize(0, current_videomode.width, current_videomode.height);
 }
 
 void OS_X11::process_xevents() {
