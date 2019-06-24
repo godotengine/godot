@@ -96,9 +96,9 @@ void Particles2DEditorPlugin::_menu_callback(int p_idx) {
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Convert to CPUParticles"));
 			ur->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", particles, cpu_particles, true, false);
-			ur->add_do_reference(particles);
+			ur->add_do_reference(cpu_particles);
 			ur->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", cpu_particles, particles, false, false);
-			ur->add_undo_reference(this);
+			ur->add_undo_reference(particles);
 			ur->commit_action();
 
 		} break;
