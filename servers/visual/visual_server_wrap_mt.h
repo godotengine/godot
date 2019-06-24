@@ -81,12 +81,14 @@ public:
 	virtual RID texture_2d_create(const Ref<Image> &p_image) { return visual_server->texture_2d_create(p_image); }
 	virtual RID texture_2d_layered_create(const Vector<Ref<Image> > &p_layers, TextureLayeredType p_layered_type) { return visual_server->texture_2d_layered_create(p_layers, p_layered_type); }
 	virtual RID texture_3d_create(const Vector<Ref<Image> > &p_slices) { return visual_server->texture_3d_create(p_slices); }
+	virtual RID texture_proxy_create(RID p_base) { return visual_server->texture_proxy_create(p_base); }
 
 	//goes pass-through
 	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) { visual_server->texture_2d_update_immediate(p_texture, p_image, p_layer); }
 	//these go through command queue if they are in another thread
 	FUNC3(texture_2d_update, RID, const Ref<Image> &, int)
 	FUNC4(texture_3d_update, RID, const Ref<Image> &, int, int)
+	FUNC2(texture_proxy_update, RID, RID)
 
 	//these also go pass-through
 	virtual RID texture_2d_placeholder_create() { return visual_server->texture_2d_placeholder_create(); }
@@ -112,8 +114,6 @@ public:
 	FUNC2(texture_set_path, RID, const String &)
 	FUNC1RC(String, texture_get_path, RID)
 	FUNC1S(texture_debug_usage, List<TextureInfo> *)
-
-	FUNC2(texture_set_proxy, RID, RID)
 
 	FUNC2(texture_set_force_redraw_if_visible, RID, bool)
 

@@ -99,10 +99,12 @@ public:
 	virtual RID texture_2d_create(const Ref<Image> &p_image) = 0;
 	virtual RID texture_2d_layered_create(const Vector<Ref<Image> > &p_layers, TextureLayeredType p_layered_type) = 0;
 	virtual RID texture_3d_create(const Vector<Ref<Image> > &p_slices) = 0; //all slices, then all the mipmaps, must be coherent
+	virtual RID texture_proxy_create(RID p_base) = 0;
 
 	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0; //mostly used for video and streaming
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
 	virtual void texture_3d_update(RID p_texture, const Ref<Image> &p_image, int p_depth, int p_mipmap) = 0;
+	virtual void texture_proxy_update(RID p_texture, RID p_proxy_to) = 0;
 
 	//these two APIs can be used together or in combination with the others.
 	virtual RID texture_2d_placeholder_create() = 0;
@@ -152,7 +154,6 @@ public:
 	virtual void texture_debug_usage(List<TextureInfo> *r_info) = 0;
 	Array _texture_debug_usage_bind();
 
-	virtual void texture_set_proxy(RID p_proxy, RID p_base) = 0;
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
 
 	/* SKY API */
