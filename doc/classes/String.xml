@@ -388,6 +388,18 @@
 				Converts a string containing a hexadecimal number into an integer.
 			</description>
 		</method>
+		<method name="http_escape">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="http_unescape">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="insert">
 			<return type="String">
 			</return>

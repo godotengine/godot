@@ -44,6 +44,12 @@
 				Returns if the given line is foldable, that is, it has indented lines right below it.
 			</description>
 		</method>
+		<method name="center_viewport_to_cursor">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="clear_colors">
 			<return type="void">
 			</return>
