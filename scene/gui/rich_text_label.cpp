@@ -314,6 +314,18 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				align = align_it->align;
 
 			} break;
+			case ITEM_INDENT: {
+
+				if (it != l.from) {
+					ItemIndent *indent_it = static_cast<ItemIndent *>(it);
+
+					int indent = indent_it->level * tab_size * cfont->get_char_size(' ').width;
+					margin += indent;
+					begin += indent;
+					wofs += indent;
+				}
+
+			} break;
 			case ITEM_TEXT: {
 
 				ItemText *text = static_cast<ItemText *>(it);
@@ -1301,6 +1313,23 @@ bool RichTextLabel::_find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item)
 	return false;
 }
 
+bool RichTextLabel::_find_layout_subitem(Item *from, Item *to) {
+
+	if (from && from != to) {
+		if (from->type != ITEM_FONT && from->type != ITEM_COLOR && from->type != ITEM_UNDERLINE && from->type != ITEM_STRIKETHROUGH)
+			return true;
+
+		for (List<Item *>::Element *E = from->subitems.front(); E; E = E->next()) {
+			bool layout = _find_layout_subitem(E->get(), to);
+
+			if (layout)
+				return true;
+		}
+	}
+
+	return false;
+}
+
 void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 	if (p_frame->first_invalid_line == p_frame->lines.size())
@@ -1421,7 +1450,7 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 	if (p_ensure_newline) {
 		Item *from = current_frame->lines[current_frame->lines.size() - 1].from;
 		// only create a new line for Item types that generate content/layout, ignore those that represent formatting/styling
-		if (from && from->type != ITEM_FONT && from->type != ITEM_COLOR && from->type != ITEM_UNDERLINE && from->type != ITEM_STRIKETHROUGH) {
+		if (_find_layout_subitem(from, p_item)) {
 			_invalidate_current_line(current_frame);
 			current_frame->lines.resize(current_frame->lines.size() + 1);
 		}
