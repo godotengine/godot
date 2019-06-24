@@ -193,7 +193,7 @@ void ImageTexture::update(const Ref<Image> &p_image, bool p_immediate) {
 	ERR_FAIL_COND(texture.is_null());
 	ERR_FAIL_COND(p_image->get_width() != w || p_image->get_height() != h);
 	ERR_FAIL_COND(p_image->get_format() != format);
-	ERR_FAIL_COND(mipmaps != p_image->get_format());
+	ERR_FAIL_COND(mipmaps != p_image->has_mipmaps());
 
 	if (p_immediate) {
 		VisualServer::get_singleton()->texture_2d_update_immediate(texture, p_image);
@@ -1583,11 +1583,18 @@ void ProxyTexture::_bind_methods() {
 void ProxyTexture::set_base(const Ref<Texture2D> &p_texture) {
 
 	ERR_FAIL_COND(p_texture == this);
+
 	base = p_texture;
 	if (base.is_valid()) {
-		VS::get_singleton()->texture_set_proxy(proxy, base->get_rid());
-	} else {
-		VS::get_singleton()->texture_set_proxy(proxy, RID());
+		if (proxy_ph.is_valid()) {
+			VS::get_singleton()->texture_proxy_update(proxy, base->get_rid());
+			VS::get_singleton()->free(proxy_ph);
+			proxy_ph = RID();
+		} else if (proxy.is_valid()) {
+			VS::get_singleton()->texture_proxy_update(proxy, base->get_rid());
+		} else {
+			proxy = VS::get_singleton()->texture_proxy_create(base->get_rid());
+		}
 	}
 }
 
@@ -1610,6 +1617,10 @@ int ProxyTexture::get_height() const {
 }
 RID ProxyTexture::get_rid() const {
 
+	if (proxy.is_null()) {
+		proxy_ph = VS::get_singleton()->texture_2d_placeholder_create();
+		proxy = VS::get_singleton()->texture_proxy_create(proxy_ph);
+	}
 	return proxy;
 }
 
@@ -1627,7 +1638,12 @@ ProxyTexture::ProxyTexture() {
 
 ProxyTexture::~ProxyTexture() {
 
-	//VS::get_singleton()->free(proxy);
+	if (proxy_ph.is_valid()) {
+		VS::get_singleton()->free(proxy_ph);
+	}
+	if (proxy.is_valid()) {
+		VS::get_singleton()->free(proxy);
+	}
 }
 //////////////////////////////////////////////
 
@@ -1672,7 +1688,7 @@ void AnimatedTexture::_update_proxy() {
 	}
 
 	if (frames[current_frame].texture.is_valid()) {
-		VisualServer::get_singleton()->texture_set_proxy(proxy, frames[current_frame].texture->get_rid());
+		VisualServer::get_singleton()->texture_proxy_update(proxy, frames[current_frame].texture->get_rid());
 	}
 }
 
@@ -1821,6 +1837,9 @@ void AnimatedTexture::_bind_methods() {
 
 AnimatedTexture::AnimatedTexture() {
 	//proxy = VS::get_singleton()->texture_create();
+	proxy_ph = VS::get_singleton()->texture_2d_placeholder_create();
+	proxy = VS::get_singleton()->texture_proxy_create(proxy_ph);
+
 	VisualServer::get_singleton()->texture_set_force_redraw_if_visible(proxy, true);
 	time = 0;
 	frame_count = 1;
@@ -1838,6 +1857,7 @@ AnimatedTexture::AnimatedTexture() {
 
 AnimatedTexture::~AnimatedTexture() {
 	VS::get_singleton()->free(proxy);
+	VS::get_singleton()->free(proxy_ph);
 	if (rw_lock) {
 		memdelete(rw_lock);
 	}
