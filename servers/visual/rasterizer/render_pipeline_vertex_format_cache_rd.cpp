@@ -22,7 +22,10 @@ void RenderPipelineVertexFormatCacheRD::_clear() {
 	for (int v = 0; v < RD::TEXTURE_SAMPLES_MAX; v++) {
 		if (versions[v]) {
 			for (uint32_t i = 0; i < version_count[v]; i++) {
-				RD::get_singleton()->free(versions[v][i].pipeline);
+				//shader may be gone, so this may not be valid
+				if (RD::get_singleton()->render_pipeline_is_valid(versions[v][i].pipeline)) {
+					RD::get_singleton()->free(versions[v][i].pipeline);
+				}
 			}
 			version_count[v] = 0;
 			memfree(versions[v]);

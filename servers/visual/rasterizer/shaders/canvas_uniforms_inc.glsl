@@ -17,24 +17,28 @@
 #define FLAGS_USING_PARTICLES (1 << 13)
 #define FLAGS_USE_PIXEL_SNAP (1 << 14)
 
-#define FLAGS_USE_SKELETON (1 << 15)
 
 #define FLAGS_NINEPATCH_H_MODE_SHIFT 16
 #define FLAGS_NINEPATCH_V_MODE_SHIFT 18
 
-layout(push_constant, binding = 0, std140) uniform DrawData {
-	mat2x4 world;
+layout(push_constant, binding = 0, std430) uniform DrawData {
+	vec2 world_x;
+	vec2 world_y;
+	vec2 world_ofs;
+	uint flags;
+	uint specular_shininess;
+#ifdef USE_PRIMITIVE
+	vec2 points[4];
+	uint colors[8];
+	vec2 uvs[4];
+#else
 	vec4 modulation;
 	vec4 ninepatch_margins;
 	vec4 dst_rect; //for built-in rect and UV
 	vec4 src_rect;
-	uint flags;
-	uint specular_shininess;
 	vec2 color_texture_pixel_size;
-	uint pad0;
-	uint pad1;
-	uint pad2;
-	uint pad3;
+	uint pad[6];
+#endif
 
 } draw_data;
 
@@ -51,16 +55,18 @@ layout(set = 0, binding = 5) uniform textureBuffer instancing_buffer;
 
 //
 
-/* SET2: Per Canvas Item Settings */
+/* SET2: Is the skeleton */
 
-layout(set = 1, binding = 1) uniform textureBuffer skeleton_buffer;
+#ifdef USE_ATTRIBUTES
 
-layout(set = 1, binding = 2, std140) uniform SkeletonData {
-	mat4 skeleton_transform;
+layout(set = 2, binding = 0) uniform textureBuffer skeleton_buffer;
+
+layout(set = 2, binding = 1, std140) uniform SkeletonData {
+	mat4 skeleton_transform; //in world coordinates
 	mat4 skeleton_transform_inverse;
 } skeleton_data;
 
-// this set (set 2) is also used for instance specific uniforms
+#endif
 
 /* SET3: Per Scene settings */
 

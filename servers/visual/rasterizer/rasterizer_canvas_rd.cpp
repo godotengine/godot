@@ -1,5 +1,5 @@
 #include "rasterizer_canvas_rd.h"
-
+#include "core/math/math_funcs.h"
 void RasterizerCanvasRD::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
 
 	p_mat4[0] = p_transform.elements[0][0];
@@ -33,6 +33,16 @@ void RasterizerCanvasRD::_update_transform_2d_to_mat2x4(const Transform2D &p_tra
 	p_mat2x4[7] = p_transform.elements[2][1];
 }
 
+void RasterizerCanvasRD::_update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3) {
+
+	p_mat2x3[0] = p_transform.elements[0][0];
+	p_mat2x3[1] = p_transform.elements[0][1];
+	p_mat2x3[2] = p_transform.elements[1][0];
+	p_mat2x3[3] = p_transform.elements[1][1];
+	p_mat2x3[4] = p_transform.elements[2][0];
+	p_mat2x3[5] = p_transform.elements[2][1];
+}
+
 void RasterizerCanvasRD::_update_transform_to_mat4(const Transform &p_transform, float *p_mat4) {
 
 	p_mat4[0] = p_transform.basis.elements[0][0];
@@ -51,6 +61,70 @@ void RasterizerCanvasRD::_update_transform_to_mat4(const Transform &p_transform,
 	p_mat4[13] = p_transform.origin.y;
 	p_mat4[14] = p_transform.origin.z;
 	p_mat4[15] = 1;
+}
+
+RID RasterizerCanvasRD::_create_texture_binding(RID p_texture, RID p_normalmap, RID p_specular, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat, RID p_multimesh) {
+
+	Vector<RD::Uniform> uniform_set;
+
+	{ // COLOR TEXTURE
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.binding = 1;
+		RID texture = storage->texture_get_rd_texture(p_texture);
+		if (!texture.is_valid()) {
+			//use default white texture
+			texture = default_textures.white_texture;
+		}
+		u.ids.push_back(texture);
+		uniform_set.push_back(u);
+	}
+
+	{ // NORMAL TEXTURE
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.binding = 2;
+		RID texture = storage->texture_get_rd_texture(p_normalmap);
+		if (!texture.is_valid()) {
+			//use default normal texture
+			texture = default_textures.normal_texture;
+		}
+		u.ids.push_back(texture);
+		uniform_set.push_back(u);
+	}
+
+	{ // SPECULAR TEXTURE
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.binding = 3;
+		RID texture = storage->texture_get_rd_texture(p_specular);
+		if (!texture.is_valid()) {
+			//use default white texture
+			texture = default_textures.white_texture;
+		}
+		u.ids.push_back(texture);
+		uniform_set.push_back(u);
+	}
+
+	{ // SAMPLER
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_SAMPLER;
+		u.binding = 4;
+		RID sampler = default_samplers.samplers[p_filter][p_repeat];
+		ERR_FAIL_COND_V(sampler.is_null(), RID());
+		u.ids.push_back(sampler);
+		uniform_set.push_back(u);
+	}
+
+	{ // MULTIMESH TEXTURE BUFFER
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_TEXTURE_BUFFER;
+		u.binding = 5;
+		u.ids.push_back(default_textures.default_multimesh_tb);
+		uniform_set.push_back(u);
+	}
+
+	return RD::get_singleton()->uniform_set_create(uniform_set, shader.default_version_rd_shader, 0);
 }
 
 RasterizerCanvas::TextureBindingID RasterizerCanvasRD::request_texture_binding(RID p_texture, RID p_normalmap, RID p_specular, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat, RID p_multimesh) {
@@ -99,77 +173,7 @@ RasterizerCanvas::TextureBindingID RasterizerCanvasRD::request_texture_binding(R
 	}
 
 	if (binding->uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(binding->uniform_set)) {
-		//needs to be re-created
-
-		/* from GLSL:
-		layout(set = 0, binding = 1) uniform texture2D color_texture;
-		layout(set = 0, binding = 2) uniform texture2D normal_texture;
-		layout(set = 0, binding = 3) uniform texture2D specular_texture;
-		layout(set = 0, binding = 4) uniform sampler texture_sampler;
-
-		layout(set = 0, binding = 5) uniform textureBuffer instancing_buffer;
-		*/
-
-		Vector<RD::Uniform> uniform_set;
-
-		{ // COLOR TEXTURE
-			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 1;
-			RID texture = storage->texture_get_rd_texture(p_texture);
-			if (!texture.is_valid()) {
-				//use default white texture
-				texture = default_textures.white_texture;
-			}
-			u.ids.push_back(texture);
-			uniform_set.push_back(u);
-		}
-
-		{ // NORMAL TEXTURE
-			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 2;
-			RID texture = storage->texture_get_rd_texture(p_normalmap);
-			if (!texture.is_valid()) {
-				//use default normal texture
-				texture = default_textures.normal_texture;
-			}
-			u.ids.push_back(texture);
-			uniform_set.push_back(u);
-		}
-
-		{ // SPECULAR TEXTURE
-			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 3;
-			RID texture = storage->texture_get_rd_texture(p_specular);
-			if (!texture.is_valid()) {
-				//use default white texture
-				texture = default_textures.white_texture;
-			}
-			u.ids.push_back(texture);
-			uniform_set.push_back(u);
-		}
-
-		{ // SAMPLER
-			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_SAMPLER;
-			u.binding = 4;
-			RID sampler = default_samplers.samplers[p_filter][p_repeat];
-			ERR_FAIL_COND_V(sampler.is_null(), 0);
-			u.ids.push_back(sampler);
-			uniform_set.push_back(u);
-		}
-
-		{ // MULTIMESH TEXTURE BUFFER
-			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE_BUFFER;
-			u.binding = 5;
-			u.ids.push_back(default_textures.default_multimesh_tb);
-			uniform_set.push_back(u);
-		}
-
-		binding->uniform_set = RD::get_singleton()->uniform_set_create(uniform_set, shader.default_version_rd_shader, 0);
+		binding->uniform_set = _create_texture_binding(p_texture, p_normalmap, p_specular, p_filter, p_repeat, p_multimesh);
 	}
 
 	return id;
@@ -191,7 +195,7 @@ void RasterizerCanvasRD::_dispose_bindings() {
 
 	while (bindings.to_dispose_list.first()) {
 		TextureBinding *binding = bindings.to_dispose_list.first()->self();
-		if (binding->uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(binding->uniform_set)) {
+		if (binding->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(binding->uniform_set)) {
 			RD::get_singleton()->free(binding->uniform_set);
 		}
 
@@ -202,14 +206,302 @@ void RasterizerCanvasRD::_dispose_bindings() {
 	}
 }
 
-void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_item, RenderTargetFormat p_render_target_format, RD::TextureSamples p_samples, const Color &p_modulate, const Transform2D &p_canvas_transform_inverse) {
+RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights) {
+
+	// Care must be taken to generate array formats
+	// in ways where they could be reused, so we will
+	// put single-occuring elements first, and repeated
+	// elements later. This way the generated formats are
+	// the same no matter the length of the arrays.
+	// This dramatically reduces the amount of pipeline objects
+	// that need to be created for these formats.
+
+	uint32_t vertex_count = p_points.size();
+	uint32_t base_offset = 0;
+	uint32_t stride = 2; //vertices always repeat
+	if ((uint32_t)p_colors.size() == vertex_count) {
+		stride += 4;
+	} else {
+		base_offset += 4;
+	}
+	if ((uint32_t)p_uvs.size() == vertex_count) {
+		stride += 2;
+	} else {
+		base_offset += 2;
+	}
+	if ((uint32_t)p_bones.size() == vertex_count * 4) {
+		stride += 4;
+	} else {
+		base_offset += 4;
+	}
+	if ((uint32_t)p_weights.size() == vertex_count * 4) {
+		stride += 4;
+	} else {
+		base_offset += 4;
+	}
+
+	uint32_t buffer_size = base_offset + stride * p_points.size();
+
+	PoolVector<uint8_t> polygon_buffer;
+	polygon_buffer.resize(buffer_size * sizeof(float));
+	Vector<RD::VertexDescription> descriptions;
+	descriptions.resize(5);
+
+	{
+		PoolVector<uint8_t>::Read r = polygon_buffer.read();
+		float *fptr = (float *)r.ptr();
+		uint32_t *uptr = (uint32_t *)r.ptr();
+		uint32_t single_offset = 0;
+
+		{ //vertices
+			RD::VertexDescription vd;
+			vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+			vd.offset = base_offset * sizeof(float);
+			vd.location = VS::ARRAY_VERTEX;
+			vd.stride = stride * sizeof(float);
+
+			descriptions.write[0] = vd;
+
+			const Vector2 *points_ptr = p_points.ptr();
+
+			for (uint32_t i = 0; i < vertex_count; i++) {
+				fptr[base_offset + i * stride + 0] = points_ptr[i].x;
+				fptr[base_offset + i * stride + 1] = points_ptr[i].y;
+			}
+
+			base_offset += 2;
+		}
+
+		//colors
+		if ((uint32_t)p_colors.size() == vertex_count) {
+			RD::VertexDescription vd;
+			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+			vd.offset = base_offset * sizeof(float);
+			vd.location = VS::ARRAY_COLOR;
+			vd.stride = stride * sizeof(float);
+
+			descriptions.write[1] = vd;
+
+			const Color *color_ptr = p_colors.ptr();
+
+			for (uint32_t i = 0; i < vertex_count; i++) {
+				fptr[base_offset + i * stride + 0] = color_ptr[i].r;
+				fptr[base_offset + i * stride + 1] = color_ptr[i].g;
+				fptr[base_offset + i * stride + 2] = color_ptr[i].b;
+				fptr[base_offset + i * stride + 3] = color_ptr[i].a;
+			}
+			base_offset += 4;
+		} else {
+			RD::VertexDescription vd;
+			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+			vd.offset = single_offset * sizeof(float);
+			vd.location = VS::ARRAY_COLOR;
+			vd.stride = 0;
+
+			descriptions.write[1] = vd;
+
+			Color color = p_colors.size() ? p_colors[0] : Color(1, 1, 1, 1);
+			fptr[single_offset + 0] = color.r;
+			fptr[single_offset + 1] = color.g;
+			fptr[single_offset + 2] = color.b;
+			fptr[single_offset + 3] = color.a;
+
+			single_offset += 4;
+		}
+
+		//uvs
+		if ((uint32_t)p_uvs.size() == vertex_count) {
+			RD::VertexDescription vd;
+			vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+			vd.offset = base_offset * sizeof(float);
+			vd.location = VS::ARRAY_TEX_UV;
+			vd.stride = stride * sizeof(float);
+
+			descriptions.write[2] = vd;
+
+			const Vector2 *uv_ptr = p_uvs.ptr();
+
+			for (uint32_t i = 0; i < vertex_count; i++) {
+				fptr[base_offset + i * stride + 0] = uv_ptr[i].x;
+				fptr[base_offset + i * stride + 1] = uv_ptr[i].y;
+			}
+			base_offset += 2;
+		} else {
+			RD::VertexDescription vd;
+			vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+			vd.offset = single_offset * sizeof(float);
+			vd.location = VS::ARRAY_TEX_UV;
+			vd.stride = 0;
+
+			descriptions.write[2] = vd;
+
+			Vector2 uv;
+			fptr[single_offset + 0] = uv.x;
+			fptr[single_offset + 1] = uv.y;
+
+			single_offset += 2;
+		}
+
+		//bones
+		if ((uint32_t)p_indices.size() == vertex_count * 4) {
+			RD::VertexDescription vd;
+			vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
+			vd.offset = base_offset * sizeof(float);
+			vd.location = VS::ARRAY_BONES;
+			vd.stride = stride * sizeof(float);
+
+			descriptions.write[3] = vd;
+
+			const int *bone_ptr = p_bones.ptr();
+
+			for (uint32_t i = 0; i < vertex_count; i++) {
+				uptr[base_offset + i * stride + 0] = bone_ptr[i * 4 + 0];
+				uptr[base_offset + i * stride + 1] = bone_ptr[i * 4 + 1];
+				uptr[base_offset + i * stride + 2] = bone_ptr[i * 4 + 2];
+				uptr[base_offset + i * stride + 3] = bone_ptr[i * 4 + 3];
+			}
+
+			base_offset += 4;
+		} else {
+			RD::VertexDescription vd;
+			vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
+			vd.offset = single_offset * sizeof(float);
+			vd.location = VS::ARRAY_BONES;
+			vd.stride = 0;
+
+			descriptions.write[3] = vd;
+
+			uptr[single_offset + 0] = 0;
+			uptr[single_offset + 1] = 0;
+			uptr[single_offset + 2] = 0;
+			uptr[single_offset + 3] = 0;
+			single_offset += 4;
+		}
+
+		//bones
+		if ((uint32_t)p_weights.size() == vertex_count * 4) {
+			RD::VertexDescription vd;
+			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+			vd.offset = base_offset * sizeof(float);
+			vd.location = VS::ARRAY_WEIGHTS;
+			vd.stride = stride * sizeof(float);
+
+			descriptions.write[4] = vd;
+
+			const float *weight_ptr = p_weights.ptr();
+
+			for (uint32_t i = 0; i < vertex_count; i++) {
+				fptr[base_offset + i * stride + 0] = weight_ptr[i * 4 + 0];
+				fptr[base_offset + i * stride + 1] = weight_ptr[i * 4 + 1];
+				fptr[base_offset + i * stride + 2] = weight_ptr[i * 4 + 2];
+				fptr[base_offset + i * stride + 3] = weight_ptr[i * 4 + 3];
+			}
+
+			base_offset += 4;
+		} else {
+			RD::VertexDescription vd;
+			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+			vd.offset = single_offset * sizeof(float);
+			vd.location = VS::ARRAY_WEIGHTS;
+			vd.stride = 0;
+
+			descriptions.write[4] = vd;
+
+			fptr[single_offset + 0] = 0.0;
+			fptr[single_offset + 1] = 0.0;
+			fptr[single_offset + 2] = 0.0;
+			fptr[single_offset + 3] = 0.0;
+			single_offset += 4;
+		}
+
+		//check that everything is as it should be
+		ERR_FAIL_COND_V(single_offset != (base_offset - stride), 0);
+		ERR_FAIL_COND_V(((base_offset - stride) + stride * vertex_count) != buffer_size, 0);
+	}
+
+	RD::VertexFormatID vertex_id = RD::get_singleton()->vertex_format_create(descriptions);
+	ERR_FAIL_COND_V(vertex_id == RD::INVALID_ID, 0);
+
+	PolygonBuffers pb;
+	pb.vertex_buffer = RD::get_singleton()->vertex_buffer_create(polygon_buffer.size(), polygon_buffer);
+	Vector<RID> buffers;
+	buffers.resize(descriptions.size());
+	for (int i = 0; i < descriptions.size(); i++) {
+		buffers.write[i] = pb.vertex_buffer;
+	}
+	pb.vertex_array = RD::get_singleton()->vertex_array_create(p_points.size(), vertex_id, buffers);
+
+	if (p_indices.size()) {
+		//create indices, as indices were requested
+		PoolVector<uint8_t> index_buffer;
+		index_buffer.resize(p_indices.size() * sizeof(int32_t));
+		{
+			PoolVector<uint8_t>::Write w = index_buffer.write();
+			copymem(w.ptr(), p_indices.ptr(), sizeof(int32_t) * p_indices.size());
+		}
+		pb.index_buffer = RD::get_singleton()->index_buffer_create(p_indices.size(), RD::INDEX_BUFFER_FORMAT_UINT32, index_buffer);
+		pb.indices = RD::get_singleton()->index_array_create(pb.index_buffer, 0, p_indices.size());
+	}
+
+	pb.vertex_format_id = vertex_id;
+
+	PolygonID id = polygon_buffers.last_id++;
+
+	polygon_buffers.polygons[id] = pb;
+
+	return id;
+}
+
+void RasterizerCanvasRD::free_polygon(PolygonID p_polygon) {
+
+	PolygonBuffers *pb_ptr = polygon_buffers.polygons.getptr(p_polygon);
+	ERR_FAIL_COND(!pb_ptr);
+
+	PolygonBuffers &pb = *pb_ptr;
+
+	if (pb.indices.is_valid()) {
+		RD::get_singleton()->free(pb.indices);
+	}
+	if (pb.index_buffer.is_valid()) {
+		RD::get_singleton()->free(pb.index_buffer);
+	}
+
+	RD::get_singleton()->free(pb.vertex_array);
+	RD::get_singleton()->free(pb.vertex_buffer);
+
+	polygon_buffers.polygons.erase(p_polygon);
+}
+
+Size2i RasterizerCanvasRD::_bind_texture_binding(TextureBindingID p_binding, RD::DrawListID p_draw_list) {
+
+	TextureBinding **texture_binding_ptr = bindings.texture_bindings.getptr(p_binding);
+	ERR_FAIL_COND_V(!texture_binding_ptr, Size2i());
+	TextureBinding *texture_binding = *texture_binding_ptr;
+
+	if (!RD::get_singleton()->uniform_set_is_valid(texture_binding->uniform_set)) {
+		//texture may have changed (erased or replaced, see if we can fix)
+		texture_binding->uniform_set = _create_texture_binding(texture_binding->key.texture, texture_binding->key.normalmap, texture_binding->key.specular, texture_binding->key.texture_filter, texture_binding->key.texture_repeat, texture_binding->key.multimesh);
+		ERR_FAIL_COND_V(!texture_binding->uniform_set.is_valid(), Size2i(1, 1));
+	}
+
+	RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, texture_binding->uniform_set, 0);
+	if (texture_binding->key.texture.is_valid()) {
+		return storage->texture_2d_get_size(texture_binding->key.texture);
+	} else {
+		return Size2i(1, 1);
+	}
+}
+
+////////////////////
+void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_item, RenderTargetFormat p_render_target_format, RD::TextureSamples p_samples, const Color &p_modulate, const Transform2D &p_canvas_transform_inverse, Item *&current_clip) {
 
 	int cc = p_item->commands.size();
 	const Item::Command *const *commands = p_item->commands.ptr();
 
 	//create an empty push constant
 	PushConstant push_constant;
-	_update_transform_2d_to_mat2x4(p_canvas_transform_inverse * p_item->final_transform, push_constant.world);
+	Transform2D base_transform = p_canvas_transform_inverse * p_item->final_transform;
+	_update_transform_2d_to_mat2x3(base_transform, push_constant.world);
 	for (int i = 0; i < 4; i++) {
 		push_constant.modulation[i] = 0;
 		push_constant.ninepatch_margins[i] = 0;
@@ -226,120 +518,14 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 	PipelineVariants *pipeline_variants = &shader.pipeline_variants;
 
+	bool reclip = false;
+
 	for (int i = 0; i < cc; i++) {
 
 		const Item::Command *c = commands[i];
 		push_constant.flags = 0; //reset on each command for sanity
 
 		switch (c->type) {
-#if 0
-			case Item::Command::TYPE_LINE: {
-
-				Item::CommandLine *line = static_cast<Item::CommandLine *>(c);
-				_set_texture_rect_mode(false);
-
-				_bind_canvas_texture(RID(), RID());
-
-				glVertexAttrib4f(VS::ARRAY_COLOR, line->color.r, line->color.g, line->color.b, line->color.a);
-
-				if (line->width <= 1) {
-					Vector2 verts[2] = {
-						Vector2(line->from.x, line->from.y),
-						Vector2(line->to.x, line->to.y)
-					};
-
-#ifdef GLES_OVER_GL
-					if (line->antialiased)
-						glEnable(GL_LINE_SMOOTH);
-#endif
-					//glLineWidth(line->width);
-					_draw_gui_primitive(2, verts, NULL, NULL);
-
-#ifdef GLES_OVER_GL
-					if (line->antialiased)
-						glDisable(GL_LINE_SMOOTH);
-#endif
-				} else {
-					//thicker line
-
-					Vector2 t = (line->from - line->to).normalized().tangent() * line->width * 0.5;
-
-					Vector2 verts[4] = {
-						line->from - t,
-						line->from + t,
-						line->to + t,
-						line->to - t,
-					};
-
-					//glLineWidth(line->width);
-					_draw_gui_primitive(4, verts, NULL, NULL);
-#ifdef GLES_OVER_GL
-					if (line->antialiased) {
-						glEnable(GL_LINE_SMOOTH);
-						for (int j = 0; j < 4; j++) {
-							Vector2 vertsl[2] = {
-								verts[j],
-								verts[(j + 1) % 4],
-							};
-							_draw_gui_primitive(2, vertsl, NULL, NULL);
-						}
-						glDisable(GL_LINE_SMOOTH);
-					}
-#endif
-				}
-
-			} break;
-			case Item::Command::TYPE_POLYLINE: {
-
-				Item::CommandPolyLine *pline = static_cast<Item::CommandPolyLine *>(c);
-				_set_texture_rect_mode(false);
-
-				_bind_canvas_texture(RID(), RID());
-
-				if (pline->triangles.size()) {
-
-					_draw_generic(GL_TRIANGLE_STRIP, pline->triangles.size(), pline->triangles.ptr(), NULL, pline->triangle_colors.ptr(), pline->triangle_colors.size() == 1);
-#ifdef GLES_OVER_GL
-					glEnable(GL_LINE_SMOOTH);
-					if (pline->multiline) {
-						//needs to be different
-					} else {
-						_draw_generic(GL_LINE_LOOP, pline->lines.size(), pline->lines.ptr(), NULL, pline->line_colors.ptr(), pline->line_colors.size() == 1);
-					}
-					glDisable(GL_LINE_SMOOTH);
-#endif
-				} else {
-
-#ifdef GLES_OVER_GL
-					if (pline->antialiased)
-						glEnable(GL_LINE_SMOOTH);
-#endif
-
-					if (pline->multiline) {
-						int todo = pline->lines.size() / 2;
-						int max_per_call = data.polygon_buffer_size / (sizeof(real_t) * 4);
-						int offset = 0;
-
-						while (todo) {
-							int to_draw = MIN(max_per_call, todo);
-							_draw_generic(GL_LINES, to_draw * 2, &pline->lines.ptr()[offset], NULL, pline->line_colors.size() == 1 ? pline->line_colors.ptr() : &pline->line_colors.ptr()[offset], pline->line_colors.size() == 1);
-							todo -= to_draw;
-							offset += to_draw * 2;
-						}
-
-					} else {
-
-						_draw_generic(GL_LINE_STRIP, pline->lines.size(), pline->lines.ptr(), NULL, pline->line_colors.ptr(), pline->line_colors.size() == 1);
-					}
-
-#ifdef GLES_OVER_GL
-					if (pline->antialiased)
-						glDisable(GL_LINE_SMOOTH);
-#endif
-				}
-
-			} break;
-#endif
 			case Item::Command::TYPE_RECT: {
 
 				const Item::CommandRect *rect = static_cast<const Item::CommandRect *>(c);
@@ -354,18 +540,9 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 				Size2 texpixel_size;
 				{
-					TextureBinding **texture_binding_ptr = bindings.texture_bindings.getptr(rect->texture_binding.binding_id);
-					ERR_CONTINUE(!texture_binding_ptr);
-					TextureBinding *texture_binding = *texture_binding_ptr;
-
-					RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, texture_binding->uniform_set, 0);
-					if (texture_binding->key.texture.is_valid()) {
-						Size2i tex_size = storage->texture_2d_get_size(texture_binding->key.texture);
-						if (tex_size.x != 0 && tex_size.y != 0) {
-							texpixel_size.x = 1.0 / tex_size.x;
-							texpixel_size.y = 1.0 / tex_size.y;
-						}
-					}
+					texpixel_size = _bind_texture_binding(rect->texture_binding.binding_id, p_draw_list);
+					texpixel_size.x = 1.0 / texpixel_size.x;
+					texpixel_size.y = 1.0 / texpixel_size.y;
 				}
 
 				Rect2 src_rect;
@@ -457,17 +634,9 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 				Size2 texpixel_size;
 				{
-					TextureBinding **texture_binding_ptr = bindings.texture_bindings.getptr(np->texture_binding.binding_id);
-					ERR_CONTINUE(!texture_binding_ptr);
-					TextureBinding *texture_binding = *texture_binding_ptr;
-					RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, texture_binding->uniform_set, 0);
-					if (texture_binding->key.texture.is_valid()) {
-						Size2i tex_size = storage->texture_2d_get_size(texture_binding->key.texture);
-						if (tex_size.x != 0 && tex_size.y != 0) {
-							texpixel_size.x = 1.0 / tex_size.x;
-							texpixel_size.y = 1.0 / tex_size.y;
-						}
-					}
+					texpixel_size = _bind_texture_binding(np->texture_binding.binding_id, p_draw_list);
+					texpixel_size.x = 1.0 / texpixel_size.x;
+					texpixel_size.y = 1.0 / texpixel_size.y;
 				}
 
 				Rect2 src_rect;
@@ -491,7 +660,7 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 				push_constant.modulation[0] = np->color.r * p_modulate.r;
 				push_constant.modulation[1] = np->color.g * p_modulate.g;
 				push_constant.modulation[2] = np->color.b * p_modulate.b;
-				push_constant.modulation[3] = np->color.a;
+				push_constant.modulation[3] = np->color.a * p_modulate.a;
 
 				push_constant.src_rect[0] = src_rect.position.x;
 				push_constant.src_rect[1] = src_rect.position.y;
@@ -523,54 +692,92 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 				RD::get_singleton()->draw_list_draw(p_draw_list, true);
 
 			} break;
-#if 0
-case Item::Command::TYPE_PRIMITIVE : {
-
-				Item::CommandPrimitive *primitive = static_cast<Item::CommandPrimitive *>(c);
-				_set_texture_rect_mode(false);
-
-				ERR_CONTINUE(primitive->points.size() < 1);
-
-				RasterizerStorageGLES3::Texture *texture = _bind_canvas_texture(primitive->texture, primitive->normal_map);
-
-				if (texture) {
-					Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
-					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
-				}
-				if (primitive->colors.size() == 1 && primitive->points.size() > 1) {
-
-					Color col = primitive->colors[0];
-					glVertexAttrib4f(VS::ARRAY_COLOR, col.r, col.g, col.b, col.a);
-
-				} else if (primitive->colors.empty()) {
-					glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
-				}
-
-				_draw_gui_primitive(primitive->points.size(), primitive->points.ptr(), primitive->colors.ptr(), primitive->uvs.ptr());
-
-			} break;
 			case Item::Command::TYPE_POLYGON: {
 
-				Item::CommandPolygon *polygon = static_cast<Item::CommandPolygon *>(c);
-				_set_texture_rect_mode(false);
+				const Item::CommandPolygon *polygon = static_cast<const Item::CommandPolygon *>(c);
 
-				RasterizerStorageGLES3::Texture *texture = _bind_canvas_texture(polygon->texture, polygon->normal_map);
-
-				if (texture) {
-					Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
-					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
+				PolygonBuffers *pb = polygon_buffers.polygons.getptr(polygon->polygon.polygon_id);
+				ERR_CONTINUE(!pb);
+				//bind pipeline
+				{
+					static const PipelineVariant variant[VS::PRIMITIVE_MAX] = { PIPELINE_VARIANT_ATTRIBUTE_POINTS, PIPELINE_VARIANT_ATTRIBUTE_LINES, PIPELINE_VARIANT_ATTRIBUTE_TRIANGLES };
+					ERR_CONTINUE(polygon->primitive < 0 || polygon->primitive >= VS::PRIMITIVE_MAX);
+					RID pipeline = pipeline_variants->variants[p_render_target_format][variant[polygon->primitive]].get_render_pipeline(pb->vertex_format_id, p_samples);
+					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
 				}
 
-				_draw_polygon(polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1, polygon->bones.ptr(), polygon->weights.ptr());
-#ifdef GLES_OVER_GL
-				if (polygon->antialiased) {
-					glEnable(GL_LINE_SMOOTH);
-					_draw_generic(GL_LINE_LOOP, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
-					glDisable(GL_LINE_SMOOTH);
+				if (polygon->primitive == VS::PRIMITIVE_LINES) {
+					//not supported in most hardware, so pointless
+					//RD::get_singleton()->draw_list_set_line_width(p_draw_list, polygon->line_width);
 				}
-#endif
+
+				//bind textures
+
+				Size2 texpixel_size;
+				{
+					texpixel_size = _bind_texture_binding(polygon->texture_binding.binding_id, p_draw_list);
+					texpixel_size.x = 1.0 / texpixel_size.x;
+					texpixel_size.y = 1.0 / texpixel_size.y;
+				}
+
+				push_constant.modulation[0] = p_modulate.r;
+				push_constant.modulation[1] = p_modulate.g;
+				push_constant.modulation[2] = p_modulate.b;
+				push_constant.modulation[3] = p_modulate.a;
+
+				for (int j = 0; j < 4; j++) {
+					push_constant.src_rect[j] = 0;
+					push_constant.dst_rect[j] = 0;
+					push_constant.ninepatch_margins[j] = 0;
+				}
+
+				push_constant.color_texture_pixel_size[0] = texpixel_size.x;
+				push_constant.color_texture_pixel_size[1] = texpixel_size.y;
+
+				RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(PushConstant));
+				RD::get_singleton()->draw_list_bind_vertex_array(p_draw_list, pb->vertex_array);
+				if (pb->indices.is_valid()) {
+					RD::get_singleton()->draw_list_bind_index_array(p_draw_list, pb->indices);
+				}
+				RD::get_singleton()->draw_list_draw(p_draw_list, pb->indices.is_valid());
 
 			} break;
+			case Item::Command::TYPE_PRIMITIVE: {
+
+				const Item::CommandPrimitive *primitive = static_cast<const Item::CommandPrimitive *>(c);
+
+				//bind pipeline
+				{
+					static const PipelineVariant variant[4] = { PIPELINE_VARIANT_PRIMITIVE_POINTS, PIPELINE_VARIANT_PRIMITIVE_LINES, PIPELINE_VARIANT_PRIMITIVE_TRIANGLES, PIPELINE_VARIANT_PRIMITIVE_TRIANGLES };
+					ERR_CONTINUE(primitive->point_count == 0 || primitive->point_count > 4);
+					RID pipeline = pipeline_variants->variants[p_render_target_format][variant[primitive->point_count - 1]].get_render_pipeline(RD::INVALID_ID, p_samples);
+					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
+				}
+
+				//bind textures
+
+				{
+					_bind_texture_binding(primitive->texture_binding.binding_id, p_draw_list);
+				}
+
+				for (uint32_t j = 0; j < primitive->point_count; j++) {
+					push_constant.points[j * 2 + 0] = primitive->points[j].x;
+					push_constant.points[j * 2 + 1] = primitive->points[j].y;
+					push_constant.uvs[j * 2 + 0] = primitive->uvs[j].x;
+					push_constant.uvs[j * 2 + 1] = primitive->uvs[j].y;
+					Color col = primitive->colors[j] * p_modulate;
+					push_constant.colors[j * 2 + 0] = (uint32_t(Math::make_half_float(col.g)) << 16) | Math::make_half_float(col.r);
+					push_constant.colors[j * 2 + 1] = (uint32_t(Math::make_half_float(col.a)) << 16) | Math::make_half_float(col.b);
+				}
+				RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(PushConstant));
+
+				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, primitive_arrays.index_array[primitive->point_count - 1]);
+
+				RD::get_singleton()->draw_list_draw(p_draw_list, true);
+
+			} break;
+
+#if 0
 			case Item::Command::TYPE_MESH: {
 
 				Item::CommandMesh *mesh = static_cast<Item::CommandMesh *>(c);
@@ -850,70 +1057,43 @@ case Item::Command::TYPE_PRIMITIVE : {
 				_set_texture_rect_mode(false);
 
 			} break;
-			case Item::Command::TYPE_CIRCLE: {
-
-				_set_texture_rect_mode(false);
-
-				Item::CommandCircle *circle = static_cast<Item::CommandCircle *>(c);
-				static const int numpoints = 32;
-				Vector2 points[numpoints + 1];
-				points[numpoints] = circle->pos;
-				int indices[numpoints * 3];
-
-				for (int j = 0; j < numpoints; j++) {
-
-					points[j] = circle->pos + Vector2(Math::sin(j * Math_PI * 2.0 / numpoints), Math::cos(j * Math_PI * 2.0 / numpoints)) * circle->radius;
-					indices[j * 3 + 0] = j;
-					indices[j * 3 + 1] = (j + 1) % numpoints;
-					indices[j * 3 + 2] = numpoints;
-				}
-
-				_bind_canvas_texture(RID(), RID());
-				_draw_polygon(indices, numpoints * 3, numpoints + 1, points, NULL, &circle->color, true, NULL, NULL);
-
-				//_draw_polygon(numpoints*3,indices,points,NULL,&circle->color,RID(),true);
-				//canvas_draw_circle(circle->indices.size(),circle->indices.ptr(),circle->points.ptr(),circle->uvs.ptr(),circle->colors.ptr(),circle->texture,circle->colors.size()==1);
-			} break;
+#endif
 			case Item::Command::TYPE_TRANSFORM: {
 
-				Item::CommandTransform *transform = static_cast<Item::CommandTransform *>(c);
-				state.extra_matrix = transform->xform;
-				state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX, state.extra_matrix);
+				const Item::CommandTransform *transform = static_cast<const Item::CommandTransform *>(c);
+				base_transform = base_transform * transform->xform;
+				_update_transform_2d_to_mat2x3(base_transform, push_constant.world);
 
 			} break;
 			case Item::Command::TYPE_CLIP_IGNORE: {
 
-				Item::CommandClipIgnore *ci = static_cast<Item::CommandClipIgnore *>(c);
+				const Item::CommandClipIgnore *ci = static_cast<const Item::CommandClipIgnore *>(c);
 				if (current_clip) {
 
 					if (ci->ignore != reclip) {
-						if (ci->ignore) {
 
-							glDisable(GL_SCISSOR_TEST);
+						if (ci->ignore) {
+							RD::get_singleton()->draw_list_disable_scissor(p_draw_list);
 							reclip = true;
 						} else {
 
-							glEnable(GL_SCISSOR_TEST);
-							//glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
-							//current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
-							int y = storage->frame.current_rt->height - (current_clip->final_clip_rect.position.y + current_clip->final_clip_rect.size.y);
-							if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP])
-								y = current_clip->final_clip_rect.position.y;
-
-							glScissor(current_clip->final_clip_rect.position.x, y, current_clip->final_clip_rect.size.x, current_clip->final_clip_rect.size.y);
-
+							RD::get_singleton()->draw_list_enable_scissor(p_draw_list, current_clip->final_clip_rect);
 							reclip = false;
 						}
 					}
 				}
 
 			} break;
-#endif
 		}
+	}
+
+	if (current_clip && reclip) {
+		//will make it re-enable clipping if needed afterwards
+		current_clip = NULL;
 	}
 }
 
-void RasterizerCanvasRD::_render_items(RID p_to_render_target, bool p_clear, const Color &p_clear_color, int p_item_count, const Color &p_modulate, const Transform2D &p_transform) {
+void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count, const Color &p_modulate, const Transform2D &p_transform) {
 
 	Item *current_clip = NULL;
 
@@ -923,12 +1103,15 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, bool p_clear, con
 	RID framebuffer = storage->render_target_get_rd_framebuffer(p_to_render_target);
 
 	Vector<Color> clear_colors;
-	if (p_clear) {
-		clear_colors.push_back(p_clear_color);
+	bool clear = false;
+	if (storage->render_target_is_clear_requested(p_to_render_target)) {
+		clear = true;
+		clear_colors.push_back(storage->render_target_get_clear_request_color(p_to_render_target));
+		storage->render_target_disable_clear_request(p_to_render_target);
 	}
 #warning TODO obtain from framebuffer format eventually when this is implemented
 	RD::TextureSamples texture_samples = RD::TEXTURE_SAMPLES_1;
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, p_clear ? RD::INITIAL_ACTION_CLEAR : RD::INITIAL_ACTION_KEEP_COLOR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, clear_colors);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, clear ? RD::INITIAL_ACTION_CLEAR : RD::INITIAL_ACTION_KEEP_COLOR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, clear_colors);
 
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, state.canvas_state_uniform_set, 3);
 
@@ -953,10 +1136,10 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, bool p_clear, con
 
 		if (false) { //not skeleton
 
-			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, shader.default_material_uniform_set, 1);
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, shader.default_skeleton_uniform_set, 1);
 		}
 
-		_render_item(draw_list, ci, render_target_format, texture_samples, p_modulate, canvas_transform_inverse);
+		_render_item(draw_list, ci, render_target_format, texture_samples, p_modulate, canvas_transform_inverse, current_clip);
 	}
 
 	RD::get_singleton()->draw_list_end();
@@ -979,7 +1162,7 @@ void RasterizerCanvasRD::_update_canvas_state_uniform_set() {
 	state.canvas_state_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader.default_version_rd_shader, 3); // uses index 3
 }
 
-void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, bool p_clear, const Color &p_clear_color, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform) {
+void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform) {
 
 	int item_count = 0;
 
@@ -1008,10 +1191,9 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, bool p_clea
 
 		bool backbuffer_copy = ci->copy_back_buffer; // || shader uses SCREEN_TEXTURE
 		if (!ci->next || backbuffer_copy || item_count == MAX_RENDER_ITEMS - 1) {
-			_render_items(p_to_render_target, p_clear, p_clear_color, item_count, p_modulate, p_canvas_transform);
+			_render_items(p_to_render_target, item_count, p_modulate, p_canvas_transform);
 			//then reset
 			item_count = 0;
-			p_clear = false;
 		}
 
 		if (ci->copy_back_buffer) {
@@ -1170,8 +1352,10 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 		Vector<String> variants;
 		variants.push_back(""); //none by default is first variant
 		variants.push_back("#define USE_NINEPATCH\n"); //ninepatch is the second variant
-		variants.push_back("#define USE_VERTEX_ARRAYS\n"); //vertex arrays is the last variant
-		variants.push_back("#define USE_POINT_SIZE\n"); //for point drawing
+		variants.push_back("#define USE_PRIMITIVE\n"); //primitve is the third
+		variants.push_back("#define USE_PRIMITIVE\n#define USE_POINT_SIZE\n"); //points need point size
+		variants.push_back("#define USE_ATTRIBUTES\n"); // attributes for vertex arrays
+		variants.push_back("#define USE_ATTRIBUTES\n#define USE_POINT_SIZE\n"); //attributes with point size
 		shader.canvas_shader.initialize(variants);
 
 		shader.default_version = shader.canvas_shader.version_create();
@@ -1195,11 +1379,29 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 		for (int i = 0; i < RENDER_TARGET_FORMAT_MAX; i++) {
 			RD::FramebufferFormatID fb_format = shader.framebuffer_formats[i];
 			for (int j = 0; j < PIPELINE_VARIANT_MAX; j++) {
-				RD::RenderPrimitive primitive[PIPELINE_VARIANT_MAX] = { RD::RENDER_PRIMITIVE_TRIANGLES, RD::RENDER_PRIMITIVE_TRIANGLES, RD::RENDER_PRIMITIVE_TRIANGLES, RD::RENDER_PRIMITIVE_LINES, RD::RENDER_PRIMITIVE_POINTS };
-				ShaderVariant shader_variants[PIPELINE_VARIANT_MAX] = { SHADER_VARIANT_QUAD, SHADER_VARIANT_NINEPATCH, SHADER_VARIANT_VERTICES, SHADER_VARIANT_VERTICES, SHADER_VARIANT_POINTS };
+				RD::RenderPrimitive primitive[PIPELINE_VARIANT_MAX] = {
+					RD::RENDER_PRIMITIVE_TRIANGLES,
+					RD::RENDER_PRIMITIVE_TRIANGLES,
+					RD::RENDER_PRIMITIVE_TRIANGLES,
+					RD::RENDER_PRIMITIVE_LINES,
+					RD::RENDER_PRIMITIVE_POINTS,
+					RD::RENDER_PRIMITIVE_TRIANGLES,
+					RD::RENDER_PRIMITIVE_LINES,
+					RD::RENDER_PRIMITIVE_POINTS,
+				};
+				ShaderVariant shader_variants[PIPELINE_VARIANT_MAX] = {
+					SHADER_VARIANT_QUAD,
+					SHADER_VARIANT_NINEPATCH,
+					SHADER_VARIANT_PRIMITIVE,
+					SHADER_VARIANT_PRIMITIVE,
+					SHADER_VARIANT_PRIMITIVE_POINTS,
+					SHADER_VARIANT_ATTRIBUTES,
+					SHADER_VARIANT_ATTRIBUTES,
+					SHADER_VARIANT_ATTRIBUTES_POINTS
+				};
 
 				RID shader_variant = shader.canvas_shader.version_get_shader(shader.default_version, shader_variants[j]);
-				shader.pipeline_variants.variants[i][j].setup(shader_variant, fb_format, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_blend(), j == PIPELINE_VARIANT_LINES ? RD::DYNAMIC_STATE_LINE_WIDTH : 0);
+				shader.pipeline_variants.variants[i][j].setup(shader_variant, fb_format, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_blend(), 0);
 			}
 		}
 
@@ -1216,6 +1418,11 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 		}
 	}
 
+	{
+		//polygon buffers
+		polygon_buffers.last_id = 1;
+	}
+
 	{ // default index buffer
 
 		PoolVector<uint8_t> pv;
@@ -1230,17 +1437,24 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 			p32[4] = 2;
 			p32[5] = 3;
 		}
-		RID index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, pv);
-		shader.quad_index_array = RD::get_singleton()->index_array_create(index_buffer, 0, 6);
+		shader.quad_index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, pv);
+		shader.quad_index_array = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 6);
+	}
+
+	{ //primitive
+		primitive_arrays.index_array[0] = shader.quad_index_array = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 1);
+		primitive_arrays.index_array[1] = shader.quad_index_array = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 2);
+		primitive_arrays.index_array[2] = shader.quad_index_array = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 3);
+		primitive_arrays.index_array[3] = shader.quad_index_array = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 6);
 	}
 
 	{ //default skeleton buffer
 
-		shader.default_material_skeleton_uniform = RD::get_singleton()->uniform_buffer_create(sizeof(SkeletonUniform));
+		shader.default_skeleton_uniform = RD::get_singleton()->uniform_buffer_create(sizeof(SkeletonUniform));
 		SkeletonUniform su;
 		_update_transform_2d_to_mat4(Transform2D(), su.skeleton_inverse);
 		_update_transform_2d_to_mat4(Transform2D(), su.skeleton_transform);
-		RD::get_singleton()->buffer_update(shader.default_material_skeleton_uniform, 0, sizeof(SkeletonUniform), &su);
+		RD::get_singleton()->buffer_update(shader.default_skeleton_uniform, 0, sizeof(SkeletonUniform), &su);
 	}
 
 	{ //default material uniform set
@@ -1248,7 +1462,7 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 		RD::Uniform u;
 		u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 		u.binding = 2;
-		u.ids.push_back(shader.default_material_skeleton_uniform);
+		u.ids.push_back(shader.default_skeleton_uniform);
 		default_material_uniforms.push_back(u);
 
 		u.ids.clear();
@@ -1257,8 +1471,68 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 		u.ids.push_back(default_textures.default_multimesh_tb);
 		default_material_uniforms.push_back(u);
 
-		shader.default_material_uniform_set = RD::get_singleton()->uniform_set_create(default_material_uniforms, shader.default_version_rd_shader, 1);
+		shader.default_skeleton_uniform_set = RD::get_singleton()->uniform_set_create(default_material_uniforms, shader.canvas_shader.version_get_shader(shader.default_version, SHADER_VARIANT_ATTRIBUTES), 2);
 	}
 
 	ERR_FAIL_COND(sizeof(PushConstant) != 128);
+}
+
+RasterizerCanvasRD::~RasterizerCanvasRD() {
+
+	//canvas state
+
+	if (state.canvas_state_buffer.is_valid()) {
+		RD::get_singleton()->free(state.canvas_state_buffer);
+	}
+
+	if (state.canvas_state_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(state.canvas_state_uniform_set)) {
+		RD::get_singleton()->free(state.canvas_state_uniform_set);
+	}
+
+	//bindings
+	{
+
+		free_texture_binding(bindings.default_empty);
+
+		//dispose pending
+		_dispose_bindings();
+		//anything remains?
+		if (bindings.texture_bindings.size()) {
+			ERR_PRINT("Some texture bindings were not properly freed (leaked canvasitems?");
+			const TextureBindingID *key = NULL;
+			while ((key = bindings.texture_bindings.next(key))) {
+				TextureBinding *tb = bindings.texture_bindings[*key];
+				tb->reference_count = 1;
+				free_texture_binding(*key);
+			}
+			//dispose pending
+			_dispose_bindings();
+		}
+	}
+
+	//shaders
+
+	RD::get_singleton()->free(shader.default_skeleton_uniform_set);
+	RD::get_singleton()->free(shader.default_skeleton_uniform);
+	shader.canvas_shader.version_free(shader.default_version);
+
+	//buffers
+	RD::get_singleton()->free(shader.quad_index_array);
+	RD::get_singleton()->free(shader.quad_index_buffer);
+
+	//pipelines don't need freeing, they are all gone after shaders are gone
+
+	//samplers
+	for (int i = 1; i < VS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < VS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			RD::get_singleton()->free(default_samplers.samplers[i][j]);
+		}
+	}
+
+	//textures
+	RD::get_singleton()->free(default_textures.white_texture);
+	RD::get_singleton()->free(default_textures.black_texture);
+	RD::get_singleton()->free(default_textures.normal_texture);
+	RD::get_singleton()->free(default_textures.aniso_texture);
+	RD::get_singleton()->free(default_textures.default_multimesh_tb);
 }

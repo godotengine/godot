@@ -74,7 +74,13 @@ void ViewportTexture::setup_local_to_scene() {
 
 	vp->viewport_textures.insert(this);
 
-	VS::get_singleton()->texture_set_proxy(proxy, vp->texture_rid);
+	if (proxy_ph.is_valid()) {
+		VS::get_singleton()->texture_proxy_update(proxy, vp->texture_rid);
+		VS::get_singleton()->free(proxy_ph);
+	} else {
+		ERR_FAIL_COND(proxy.is_valid()); //should be invalid
+		proxy = VS::get_singleton()->texture_proxy_create(vp->texture_rid);
+	}
 }
 
 void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
@@ -112,6 +118,10 @@ Size2 ViewportTexture::get_size() const {
 RID ViewportTexture::get_rid() const {
 
 	//ERR_FAIL_COND_V_MSG(!vp, RID(), "Viewport Texture must be set to use it.");
+	if (proxy.is_null()) {
+		proxy_ph = VS::get_singleton()->texture_2d_placeholder_create();
+		proxy = VS::get_singleton()->texture_proxy_create(proxy_ph);
+	}
 	return proxy;
 }
 
@@ -146,6 +156,9 @@ ViewportTexture::~ViewportTexture() {
 		vp->viewport_textures.erase(this);
 	}
 
+	if (proxy_ph.is_valid()) {
+		VS::get_singleton()->free(proxy_ph);
+	}
 	VS::get_singleton()->free(proxy);
 }
 
@@ -3309,7 +3322,7 @@ Viewport::Viewport() {
 	default_texture.instance();
 	default_texture->vp = const_cast<Viewport *>(this);
 	viewport_textures.insert(default_texture.ptr());
-	VS::get_singleton()->texture_set_proxy(default_texture->proxy, texture_rid);
+	default_texture->proxy = VS::get_singleton()->texture_proxy_create(texture_rid);
 
 	//internal_listener = SpatialSoundServer::get_singleton()->listener_create();
 	audio_listener = false;

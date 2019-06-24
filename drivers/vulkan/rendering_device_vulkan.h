@@ -6,6 +6,9 @@
 #include "core/rid_owner.h"
 #include "servers/visual/rendering_device.h"
 #include "thirdparty/glslang/glslang/Public/ShaderLang.h"
+#ifdef DEBUG_ENABLED
+#define _DEBUG
+#endif
 #include "vk_mem_alloc.h"
 #include <vulkan/vulkan.h>
 //todo:
@@ -177,6 +180,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	Error _buffer_free(Buffer *p_buffer);
 	Error _buffer_update(Buffer *p_buffer, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_use_draw_command_buffer = false, uint32_t p_required_align = 32);
 
+	void _memory_barrier(VkPipelineStageFlags p_src_stage_mask, VkPipelineStageFlags p_dst_stage_mask, VkAccessFlags p_src_access, VkAccessFlags p_dst_sccess, bool p_sync_with_draw);
+
 	/*********************/
 	/**** FRAMEBUFFER ****/
 	/*********************/
@@ -274,15 +279,13 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	struct VertexDescriptionKey {
 		Vector<VertexDescription> vertex_formats;
-		int buffer_count;
-		bool operator<(const VertexDescriptionKey &p_key) const {
-			if (buffer_count != p_key.buffer_count) {
-				return buffer_count < p_key.buffer_count;
-			}
-			if (vertex_formats.size() != p_key.vertex_formats.size()) {
-				return vertex_formats.size() < p_key.vertex_formats.size();
+		bool operator==(const VertexDescriptionKey &p_key) const {
+			int vdc = vertex_formats.size();
+			int vdck = p_key.vertex_formats.size();
+
+			if (vdc != vdck) {
+				return false;
 			} else {
-				int vdc = vertex_formats.size();
 				const VertexDescription *a_ptr = vertex_formats.ptr();
 				const VertexDescription *b_ptr = p_key.vertex_formats.ptr();
 				for (int i = 0; i < vdc; i++) {
@@ -290,29 +293,51 @@ class RenderingDeviceVulkan : public RenderingDevice {
 					const VertexDescription &b = b_ptr[i];
 
 					if (a.location != b.location) {
-						return a.location < b.location;
+						return false;
 					}
 					if (a.offset != b.offset) {
-						return a.offset < b.offset;
+						return false;
 					}
 					if (a.format != b.format) {
-						return a.format < b.format;
+						return false;
 					}
 					if (a.stride != b.stride) {
-						return a.stride < b.stride;
+						return false;
 					}
-					return a.frequency < b.frequency;
+					return a.frequency != b.frequency;
 				}
-				return false; //they are equal
+				return true; //they are equal
 			}
+		}
+
+		uint32_t hash() const {
+			int vdc = vertex_formats.size();
+			uint32_t h = hash_djb2_one_32(vdc);
+			const VertexDescription *ptr = vertex_formats.ptr();
+			for (int i = 0; i < vdc; i++) {
+				const VertexDescription &vd = ptr[i];
+				h = hash_djb2_one_32(vd.location, h);
+				h = hash_djb2_one_32(vd.offset, h);
+				h = hash_djb2_one_32(vd.format, h);
+				h = hash_djb2_one_32(vd.stride, h);
+				h = hash_djb2_one_32(vd.frequency, h);
+			}
+			return h;
+		}
+	};
+
+	struct VertexDescriptionHash {
+		static _FORCE_INLINE_ uint32_t hash(const VertexDescriptionKey &p_key) {
+			return p_key.hash();
 		}
 	};
 
 	// This is a cache and it's never freed, it ensures that
 	// ID used for a specific format always remain the same.
-	Map<VertexDescriptionKey, VertexFormatID> vertex_format_cache;
+	HashMap<VertexDescriptionKey, VertexFormatID, VertexDescriptionHash> vertex_format_cache;
+
 	struct VertexDescriptionCache {
-		const Map<VertexDescriptionKey, VertexFormatID>::Element *E;
+		Vector<VertexDescription> vertex_formats;
 		VkVertexInputBindingDescription *bindings;
 		VkVertexInputAttributeDescription *attributes;
 		VkPipelineVertexInputStateCreateInfo create_info;
@@ -570,7 +595,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	struct DrawList {
 
 		VkCommandBuffer command_buffer; //if persistent, this is owned, otherwise it's shared with the ringbuffer
-
+		Rect2i viewport;
 		struct Validation {
 			bool active; //means command buffer was not closes, so you can keep adding things
 			FramebufferFormatID framebuffer_format;
@@ -669,7 +694,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	int frame_count; //total amount of frames
 	uint64_t frames_drawn;
 
-	void _free_pending_resources();
+	void _free_pending_resources(int p_frame);
 
 	VmaAllocator allocator;
 
@@ -677,12 +702,19 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	void _free_internal(RID p_id);
 
+	bool screen_prepared;
+
+	template <class T>
+	void _free_rids(T &p_owner, const char *p_type);
+
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<PoolVector<uint8_t> > &p_data = Vector<PoolVector<uint8_t> >());
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw = false);
 
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const;
+	virtual bool texture_is_shared(RID p_texture);
+	virtual bool texture_is_valid(RID p_texture);
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
@@ -739,6 +771,7 @@ public:
 	/*************************/
 
 	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags = 0);
+	virtual bool render_pipeline_is_valid(RID p_pipeline);
 
 	/****************/
 	/**** SCREEN ****/
@@ -760,6 +793,7 @@ public:
 	virtual void draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index);
 	virtual void draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array);
 	virtual void draw_list_bind_index_array(DrawListID p_list, RID p_index_array);
+	virtual void draw_list_set_line_width(DrawListID p_list, float p_width);
 	virtual void draw_list_set_push_constant(DrawListID p_list, void *p_data, uint32_t p_data_size);
 
 	virtual void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1);
@@ -775,6 +809,7 @@ public:
 
 	virtual void free(RID p_id);
 
+	virtual void prepare_screen_for_drawing();
 	void initialize(VulkanContext *p_context);
 	void finalize();
 

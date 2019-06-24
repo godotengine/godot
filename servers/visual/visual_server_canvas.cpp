@@ -35,7 +35,7 @@
 
 static const int z_range = VS::CANVAS_ITEM_Z_MAX - VS::CANVAS_ITEM_Z_MIN + 1;
 
-void VisualServerCanvas::_render_canvas_item_tree(RID p_to_render_target, bool p_clear, const Color &p_clear_color, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights) {
+void VisualServerCanvas::_render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights) {
 
 	memset(z_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 	memset(z_last_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
@@ -62,7 +62,7 @@ void VisualServerCanvas::_render_canvas_item_tree(RID p_to_render_target, bool p
 		}
 	}
 
-	VSG::canvas_render->canvas_render_items(p_to_render_target, p_clear, p_clear_color, list, p_modulate, p_lights, p_transform);
+	VSG::canvas_render->canvas_render_items(p_to_render_target, list, p_modulate, p_lights, p_transform);
 }
 
 void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2D p_transform, VisualServerCanvas::Item *p_material_owner, const Color p_modulate, VisualServerCanvas::Item **r_items, int &r_index) {
@@ -243,7 +243,7 @@ void VisualServerCanvas::_light_mask_canvas_items(int p_z, RasterizerCanvas::Ite
 	}
 }
 
-void VisualServerCanvas::render_canvas(RID p_render_target, bool p_clear, const Color &p_clear_color, Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect) {
+void VisualServerCanvas::render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect) {
 
 	if (p_canvas->children_order_dirty) {
 
@@ -264,30 +264,30 @@ void VisualServerCanvas::render_canvas(RID p_render_target, bool p_clear, const 
 
 	if (!has_mirror) {
 
-		_render_canvas_item_tree(p_render_target, p_clear, p_clear_color, ci, l, NULL, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
+		_render_canvas_item_tree(p_render_target, ci, l, NULL, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
 
 	} else {
 		//used for parallaxlayer mirroring
 		for (int i = 0; i < l; i++) {
 
 			const Canvas::ChildItem &ci2 = p_canvas->child_items[i];
-			_render_canvas_item_tree(p_render_target, p_clear, p_clear_color, NULL, 0, ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
+			_render_canvas_item_tree(p_render_target, NULL, 0, ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
 
 			//mirroring (useful for scrolling backgrounds)
 			if (ci2.mirror.x != 0) {
 
 				Transform2D xform2 = p_transform * Transform2D(0, Vector2(ci2.mirror.x, 0));
-				_render_canvas_item_tree(p_render_target, false, Color(), NULL, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				_render_canvas_item_tree(p_render_target, NULL, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
 			if (ci2.mirror.y != 0) {
 
 				Transform2D xform2 = p_transform * Transform2D(0, Vector2(0, ci2.mirror.y));
-				_render_canvas_item_tree(p_render_target, false, Color(), NULL, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				_render_canvas_item_tree(p_render_target, NULL, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
 			if (ci2.mirror.y != 0 && ci2.mirror.x != 0) {
 
 				Transform2D xform2 = p_transform * Transform2D(0, ci2.mirror);
-				_render_canvas_item_tree(p_render_target, false, Color(), NULL, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				_render_canvas_item_tree(p_render_target, NULL, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
 		}
 	}
@@ -487,15 +487,27 @@ void VisualServerCanvas::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandLine *line = memnew(Item::CommandLine);
+	Item::CommandPrimitive *line = memnew(Item::CommandPrimitive);
 	ERR_FAIL_COND(!line);
-	line->color = p_color;
-	line->from = p_from;
-	line->to = p_to;
-	line->width = p_width;
-	line->antialiased = p_antialiased;
-	canvas_item->rect_dirty = true;
+	if (p_width > 1.001) {
 
+		Vector2 t = (p_from - p_to).tangent().normalized();
+		line->points[0] = p_from + t * p_width;
+		line->points[1] = p_from - t * p_width;
+		line->points[2] = p_to - t * p_width;
+		line->points[3] = p_to + t * p_width;
+		line->point_count = 4;
+	} else {
+		line->point_count = 2;
+		line->points[0] = p_from;
+		line->points[1] = p_to;
+	}
+	for (int i = 0; i < line->point_count; i++) {
+		line->colors[i] = p_color;
+	}
+	line->specular_shininess = Color(1, 1, 1, 1);
+
+	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(line);
 }
 
@@ -505,21 +517,29 @@ void VisualServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Point
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandPolyLine *pline = memnew(Item::CommandPolyLine);
+	Item::CommandPolygon *pline = memnew(Item::CommandPolygon);
 	ERR_FAIL_COND(!pline);
 
-	pline->antialiased = p_antialiased;
-	pline->multiline = false;
+	pline->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, RID(), RID(), RID(), VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED, RID());
 
-	if (p_width <= 1) {
-		pline->lines = p_points;
-		pline->line_colors = p_colors;
-		if (pline->line_colors.size() == 0) {
-			pline->line_colors.push_back(Color(1, 1, 1, 1));
-		} else if (pline->line_colors.size() > 1 && pline->line_colors.size() != pline->lines.size()) {
-			pline->line_colors.resize(1);
+	if (true || p_width <= 1) {
+#define TODO make thick lines possible
+		Vector<int> indices;
+		int pc = p_points.size();
+		indices.resize((pc - 1) * 2);
+		{
+			int *iptr = indices.ptrw();
+			for (int i = 0; i < (pc - 1); i++) {
+				iptr[i * 2 + 0] = i;
+				iptr[i * 2 + 1] = i + 1;
+			}
 		}
+
+		pline->primitive = VS::PRIMITIVE_LINES;
+		pline->specular_shininess = Color(1, 1, 1, 1);
+		pline->polygon.create(indices, p_points, p_colors);
 	} else {
+#if 0
 		//make a trianglestrip for drawing the line...
 		Vector2 prev_t;
 		pline->triangles.resize(p_points.size() * 2);
@@ -579,6 +599,7 @@ void VisualServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Point
 
 			prev_t = t;
 		}
+#endif
 	}
 	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(pline);
@@ -590,18 +611,18 @@ void VisualServerCanvas::canvas_item_add_multiline(RID p_item, const Vector<Poin
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandPolyLine *pline = memnew(Item::CommandPolyLine);
+	Item::CommandPolygon *pline = memnew(Item::CommandPolygon);
 	ERR_FAIL_COND(!pline);
 
-	pline->antialiased = false; //todo
-	pline->multiline = true;
+	pline->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, RID(), RID(), RID(), VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED, RID());
 
-	pline->lines = p_points;
-	pline->line_colors = p_colors;
-	if (pline->line_colors.size() == 0) {
-		pline->line_colors.push_back(Color(1, 1, 1, 1));
-	} else if (pline->line_colors.size() > 1 && pline->line_colors.size() != pline->lines.size()) {
-		pline->line_colors.resize(1);
+	if (true || p_width <= 1) {
+#define TODO make thick lines possible
+
+		pline->primitive = VS::PRIMITIVE_LINES;
+		pline->specular_shininess = Color(1, 1, 1, 1);
+		pline->polygon.create(Vector<int>(), p_points, p_colors);
+	} else {
 	}
 
 	canvas_item->rect_dirty = true;
@@ -627,12 +648,39 @@ void VisualServerCanvas::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandCircle *circle = memnew(Item::CommandCircle);
+	Item::CommandPolygon *circle = memnew(Item::CommandPolygon);
 	ERR_FAIL_COND(!circle);
-	circle->color = p_color;
-	circle->pos = p_pos;
-	circle->radius = p_radius;
 
+	circle->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, RID(), RID(), RID(), VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED, RID());
+
+	circle->primitive = VS::PRIMITIVE_TRIANGLES;
+	circle->specular_shininess = Color(1, 1, 1, 1);
+
+	Vector<int> indices;
+	Vector<Vector2> points;
+
+	static const int circle_points = 64;
+
+	points.resize(circle_points);
+	for (int i = 0; i < circle_points; i++) {
+		float angle = (i / float(circle_points)) * 2 * Math_PI;
+		points.write[i].x = Math::cos(angle) * p_radius;
+		points.write[i].y = Math::sin(angle) * p_radius;
+		points.write[i] += p_pos;
+	}
+	indices.resize((circle_points - 2) * 3);
+
+	for (int i = 0; i < circle_points - 2; i++) {
+		indices.write[i * 3 + 0] = 0;
+		indices.write[i * 3 + 1] = i + 1;
+		indices.write[i * 3 + 2] = i + 2;
+	}
+
+	Vector<Color> color;
+	color.push_back(p_color);
+	circle->polygon.create(indices, points, color);
+
+	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(circle);
 }
 
@@ -746,17 +794,33 @@ void VisualServerCanvas::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_r
 }
 void VisualServerCanvas::canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, float p_width, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
 
+	uint32_t pc = p_points.size();
+	ERR_FAIL_COND(pc == 0 || pc > 4);
+
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
 	Item::CommandPrimitive *prim = memnew(Item::CommandPrimitive);
 	ERR_FAIL_COND(!prim);
+
+	for (int i = 0; i < p_points.size(); i++) {
+		prim->points[i] = p_points[i];
+		if (i < p_uvs.size()) {
+			prim->uvs[i] = p_uvs[i];
+		}
+		if (i < p_colors.size()) {
+			prim->colors[i] = p_colors[i];
+		} else if (p_colors.size()) {
+			prim->colors[i] = p_colors[0];
+		} else {
+			prim->colors[i] = Color(1, 1, 1, 1);
+		}
+	}
+
+	prim->point_count = p_points.size();
+
 	prim->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
 	prim->specular_shininess = p_specular_color_shininess;
-	prim->points = p_points;
-	prim->uvs = p_uvs;
-	prim->colors = p_colors;
-	prim->width = p_width;
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(prim);
@@ -779,14 +843,11 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 
 	Item::CommandPolygon *polygon = memnew(Item::CommandPolygon);
 	ERR_FAIL_COND(!polygon);
+	polygon->primitive = VS::PRIMITIVE_TRIANGLES;
 	polygon->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
 	polygon->specular_shininess = p_specular_color_shininess;
-	polygon->points = p_points;
-	polygon->uvs = p_uvs;
-	polygon->colors = p_colors;
-	polygon->indices = indices;
-	polygon->count = indices.size();
-	polygon->antialiased = p_antialiased;
+	polygon->polygon.create(indices, p_points, p_colors, p_uvs);
+
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(polygon);
@@ -806,32 +867,13 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 
 	const Vector<int> &indices = p_indices;
 
-	int count = p_count * 3;
-
-	if (indices.empty()) {
-
-		ERR_FAIL_COND(vertex_count % 3 != 0);
-		if (p_count == -1)
-			count = vertex_count;
-	} else {
-
-		ERR_FAIL_COND(indices.size() % 3 != 0);
-		if (p_count == -1)
-			count = indices.size();
-	}
-
 	Item::CommandPolygon *polygon = memnew(Item::CommandPolygon);
 	ERR_FAIL_COND(!polygon);
 	polygon->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
 	polygon->specular_shininess = p_specular_color_shininess;
-	polygon->points = p_points;
-	polygon->uvs = p_uvs;
-	polygon->colors = p_colors;
-	polygon->bones = p_bones;
-	polygon->weights = p_weights;
-	polygon->indices = indices;
-	polygon->count = count;
-	polygon->antialiased = p_antialiased;
+	polygon->polygon.create(indices, p_points, p_colors, p_uvs, p_bones, p_weights);
+
+	polygon->primitive = VS::PRIMITIVE_TRIANGLES;
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(polygon);

@@ -3,6 +3,7 @@
 
 #include "core/print_string.h"
 #include "core/rid.h"
+#include <typeinfo>
 
 class RID_AllocBase {
 
@@ -91,7 +92,7 @@ public:
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
-		if (unlikely(idx >= alloc_count)) {
+		if (unlikely(idx >= max_alloc)) {
 			return NULL;
 		}
 
@@ -110,7 +111,7 @@ public:
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
-		if (unlikely(idx >= alloc_count)) {
+		if (unlikely(idx >= max_alloc)) {
 			return false;
 		}
 
@@ -125,17 +126,13 @@ public:
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
-		if (unlikely(idx >= alloc_count)) {
-			return;
-		}
+		ERR_FAIL_COND(idx >= max_alloc);
 
 		uint32_t idx_chunk = idx / elements_in_chunk;
 		uint32_t idx_element = idx % elements_in_chunk;
 
 		uint32_t validator = uint32_t(id >> 32);
-		if (validator_chunks[idx_chunk][idx_element] != validator) {
-			return;
-		}
+		ERR_FAIL_COND(validator_chunks[idx_chunk][idx_element] != validator);
 
 		chunks[idx_chunk][idx_element].~T();
 		validator_chunks[idx_chunk][idx_element] = 0xFFFFFFFF; // go invalid
@@ -148,7 +145,7 @@ public:
 		for (size_t i = 0; i < alloc_count; i++) {
 			uint64_t idx = free_list_chunks[i / elements_in_chunk][i % elements_in_chunk];
 			uint64_t validator = validator_chunks[idx / elements_in_chunk][idx % elements_in_chunk];
-			p_owned->push_back(_make_from_id((validator << 32) & idx));
+			p_owned->push_back(_make_from_id((validator << 32) | idx));
 		}
 	}
 
@@ -170,9 +167,9 @@ public:
 	~RID_Alloc() {
 		if (alloc_count) {
 			if (description) {
-				print_error("ERROR: " + itos(alloc_count) + " RID allocations of type " + description + " were leaked at exit.");
+				print_error("ERROR: " + itos(alloc_count) + " RID allocations of type '" + description + "' were leaked at exit.");
 			} else {
-				print_error("ERROR: " + itos(alloc_count) + " RID allocations of unspecified type were leaked at exit.");
+				print_error("ERROR: " + itos(alloc_count) + " RID allocations of type '" + typeid(T).name() + "' were leaked at exit.");
 			}
 
 			for (uint32_t i = 0; i < alloc_count; i++) {
@@ -181,7 +178,7 @@ public:
 			}
 		}
 
-		uint32_t chunk_count = alloc_count == 0 ? 0 : (max_alloc / elements_in_chunk + 1);
+		uint32_t chunk_count = max_alloc / elements_in_chunk;
 		for (uint32_t i = 0; i < chunk_count; i++) {
 			memfree(chunks[i]);
 			memfree(validator_chunks[i]);

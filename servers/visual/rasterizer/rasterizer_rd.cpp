@@ -1,5 +1,9 @@
 #include "rasterizer_rd.h"
 
+void RasterizerRD::prepare_for_blitting_render_targets() {
+	RD::get_singleton()->prepare_screen_for_drawing();
+}
+
 void RasterizerRD::blit_render_targets_to_screen(int p_screen, const BlitToScreen *p_render_targets, int p_amount) {
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(p_screen);

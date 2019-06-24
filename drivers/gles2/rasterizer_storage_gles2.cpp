@@ -5358,7 +5358,7 @@ bool RasterizerStorageGLES2::render_target_was_used(RID p_render_target) {
 	return rt->used_in_frame;
 }
 
-void RasterizerStorageGLES2::render_target_clear_used_flag(RID p_render_target) {
+void RasterizerStorageGLES2::render_target_set_as_unused(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
