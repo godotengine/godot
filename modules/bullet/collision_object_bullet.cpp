@@ -305,7 +305,7 @@ void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transfor
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 
 	shapes.write[p_index].set_transform(p_transform);
-	reload_shapes();
+	shape_changed(p_index);
 }
 
 const btTransform &RigidCollisionObjectBullet::get_bt_shape_transform(int p_index) const {
