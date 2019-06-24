@@ -120,7 +120,7 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	layout_names->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
 	layout_names->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -5);
 	layout_names->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	layout_names->set_select_mode(ItemList::SelectMode::SELECT_MULTI);
+	layout_names->set_select_mode(ItemList::SELECT_MULTI);
 	layout_names->set_allow_rmb_select(true);
 
 	name = memnew(LineEdit);
