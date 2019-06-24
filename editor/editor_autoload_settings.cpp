@@ -789,7 +789,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 			}
 		}
 
-		if (!info.is_singleton && !info.in_editor) {
+		if (!info.is_singleton && !info.in_editor && info.node != NULL) {
 			memdelete(info.node);
 			info.node = NULL;
 		}
