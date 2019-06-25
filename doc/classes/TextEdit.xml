@@ -552,7 +552,7 @@
 		<theme_item name="number_color" type="Color">
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
-			Sets the [StyleBox] of this [TextEdit] when [member read_only] is enabled.
+			Sets the [StyleBox] of this [TextEdit] when [member readonly] is enabled.
 		</theme_item>
 		<theme_item name="safe_line_number_color" type="Color">
 		</theme_item>
