@@ -170,14 +170,6 @@ String GDScriptWorkspace::marked_documentation(const String &p_bbcode) {
 	markdown = "";
 	for (int i = 0; i < lines.size(); i++) {
 		String line = lines[i];
-		line = line.replace("[code]", "`");
-		line = line.replace("[/code]", "`");
-		line = line.replace("[i]", "*");
-		line = line.replace("[/i]", "*");
-		line = line.replace("[b]", "**");
-		line = line.replace("[/b]", "**");
-		line = line.replace("[u]", "__");
-		line = line.replace("[/u]", "__");
 		int block_start = line.find("[codeblock]");
 		if (block_start != -1) {
 			code_block_indent = block_start;
@@ -186,14 +178,31 @@ String GDScriptWorkspace::marked_documentation(const String &p_bbcode) {
 			line = "\n";
 		} else if (in_code_block) {
 			line = "\t" + line.substr(code_block_indent, line.length());
-		} else {
-			line = line.strip_edges();
 		}
+
 		if (in_code_block && line.find("[/codeblock]") != -1) {
 			line = "'''\n";
 			line = "\n";
 			in_code_block = false;
 		}
+
+		if (!in_code_block) {
+			line = line.strip_edges();
+			line = line.replace("[code]", "`");
+			line = line.replace("[/code]", "`");
+			line = line.replace("[i]", "*");
+			line = line.replace("[/i]", "*");
+			line = line.replace("[b]", "**");
+			line = line.replace("[/b]", "**");
+			line = line.replace("[u]", "__");
+			line = line.replace("[/u]", "__");
+			line = line.replace("[method ", "`");
+			line = line.replace("[member ", "`");
+			line = line.replace("[signal ", "`");
+			line = line.replace("[", "`");
+			line = line.replace("]", "`");
+		}
+
 		if (!in_code_block && i < lines.size() - 1) {
 			line += "\n";
 		}
@@ -310,6 +319,8 @@ Error GDScriptWorkspace::initialize() {
 		native_symbols.insert(class_name, class_symbol);
 	}
 
+	reload_all_workspace_scripts();
+
 	if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 		for (Map<StringName, lsp::DocumentSymbol>::Element *E = native_symbols.front(); E; E = E->next()) {
 			ClassMembers members;
@@ -320,9 +331,12 @@ Error GDScriptWorkspace::initialize() {
 			}
 			native_members.set(E->key(), members);
 		}
-	}
 
-	reload_all_workspace_scripts();
+		// cache member completions
+		for (Map<String, ExtendGDScriptParser *>::Element *S = scripts.front(); S; S = S->next()) {
+			S->get()->get_member_completions();
+		}
+	}
 
 	return OK;
 }
@@ -477,9 +491,22 @@ void GDScriptWorkspace::resolve_related_symbols(const lsp::TextDocumentPositionP
 		}
 
 		for (Map<String, ExtendGDScriptParser *>::Element *E = scripts.front(); E; E = E->next()) {
-			const ClassMembers &members = E->get()->get_members();
+			const ExtendGDScriptParser *script = E->get();
+			const ClassMembers &members = script->get_members();
 			if (const lsp::DocumentSymbol *const *symbol = members.getptr(symbol_identifier)) {
 				r_list.push_back(*symbol);
+			}
+
+			const HashMap<String, ClassMembers> &inner_classes = script->get_inner_classes();
+			const String *_class = inner_classes.next(NULL);
+			while (_class) {
+
+				const ClassMembers *inner_class = inner_classes.getptr(*_class);
+				if (const lsp::DocumentSymbol *const *symbol = inner_class->getptr(symbol_identifier)) {
+					r_list.push_back(*symbol);
+				}
+
+				_class = inner_classes.next(_class);
 			}
 		}
 	}

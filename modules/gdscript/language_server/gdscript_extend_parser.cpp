@@ -91,6 +91,16 @@ void ExtendGDScriptParser::update_symbols() {
 		for (int i = 0; i < class_symbol.children.size(); i++) {
 			const lsp::DocumentSymbol &symbol = class_symbol.children[i];
 			members.set(symbol.name, &symbol);
+
+			// cache level one inner classes
+			if (symbol.kind == lsp::SymbolKind::Class) {
+				ClassMembers inner_class;
+				for (int j = 0; j < symbol.children.size(); j++) {
+					const lsp::DocumentSymbol &s = symbol.children[j];
+					inner_class.set(s.name, &s);
+				}
+				inner_classes.set(symbol.name, inner_class);
+			}
 		}
 	}
 }
@@ -112,7 +122,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 	r_symbol.range.end.line = LINE_NUMBER_TO_INDEX(p_class->end_line);
 	r_symbol.selectionRange.start.line = r_symbol.range.start.line;
 	r_symbol.detail = "class " + r_symbol.name;
-	r_symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(p_class->line));
+	bool is_root_class = &r_symbol == &class_symbol;
+	r_symbol.documentation = parse_documentation(is_root_class ? 0 : LINE_NUMBER_TO_INDEX(p_class->line), is_root_class);
 
 	for (int i = 0; i < p_class->variables.size(); ++i) {
 
@@ -192,7 +203,26 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 		if (c.type.kind != GDScriptParser::DataType::UNRESOLVED) {
 			symbol.detail += ": " + c.type.to_string();
 		}
-		symbol.detail += " = " + String(node->value);
+
+		String value_text;
+		if (node->value.get_type() == Variant::OBJECT) {
+			RES res = node->value;
+			if (res.is_valid() && !res->get_path().empty()) {
+				value_text = "preload(\"" + res->get_path() + "\")";
+				if (symbol.documentation.empty()) {
+					if (Map<String, ExtendGDScriptParser *>::Element *S = GDScriptLanguageProtocol::get_singleton()->get_workspace().scripts.find(res->get_path())) {
+						symbol.documentation = S->get()->class_symbol.documentation;
+					}
+				}
+			} else {
+				value_text = JSON::print(node->value);
+			}
+		} else {
+			value_text = JSON::print(node->value);
+		}
+		if (!value_text.empty()) {
+			symbol.detail += " = " + value_text;
+		}
 
 		r_symbol.children.push_back(symbol);
 	}
@@ -296,29 +326,43 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 	}
 }
 
-String ExtendGDScriptParser::parse_documentation(int p_line) {
+String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 	ERR_FAIL_INDEX_V(p_line, lines.size(), String());
 
 	List<String> doc_lines;
 
-	// inline comment
-	String inline_comment = lines[p_line];
-	int comment_start = inline_comment.find("#");
-	if (comment_start != -1) {
-		inline_comment = inline_comment.substr(comment_start, inline_comment.length());
-		if (inline_comment.length() > 1) {
-			doc_lines.push_back(inline_comment.substr(1, inline_comment.length()));
+	if (!p_docs_down) { // inline comment
+		String inline_comment = lines[p_line];
+		int comment_start = inline_comment.find("#");
+		if (comment_start != -1) {
+			inline_comment = inline_comment.substr(comment_start, inline_comment.length());
+			if (inline_comment.length() > 1) {
+				doc_lines.push_back(inline_comment.substr(1, inline_comment.length()));
+			}
 		}
 	}
 
-	// upper line comments
-	for (int i = p_line - 1; i >= 0; --i) {
+	int step = p_docs_down ? 1 : -1;
+	int start_line = p_docs_down ? p_line : p_line - 1;
+	for (int i = start_line; true; i += step) {
+
+		if (i < 0 || i >= lines.size()) break;
+
 		String line_comment = lines[i].strip_edges(true, false);
 		if (line_comment.begins_with("#")) {
 			if (line_comment.length() > 1) {
-				doc_lines.push_front(line_comment.substr(1, line_comment.length()));
+				line_comment = line_comment.substr(1, line_comment.length());
+				if (p_docs_down) {
+					doc_lines.push_back(line_comment);
+				} else {
+					doc_lines.push_front(line_comment);
+				}
 			} else {
-				doc_lines.push_front("");
+				if (p_docs_down) {
+					doc_lines.push_back("");
+				} else {
+					doc_lines.push_front("");
+				}
 			}
 		} else {
 			break;
@@ -456,11 +500,20 @@ const lsp::DocumentSymbol *ExtendGDScriptParser::get_symbol_defined_at_line(int 
 	return search_symbol_defined_at_line(p_line, class_symbol);
 }
 
-const lsp::DocumentSymbol *ExtendGDScriptParser::get_member_symbol(const String &p_name) const {
+const lsp::DocumentSymbol *ExtendGDScriptParser::get_member_symbol(const String &p_name, const String &p_subclass) const {
 
-	const lsp::DocumentSymbol *const *ptr = members.getptr(p_name);
-	if (ptr) {
-		return *ptr;
+	if (p_subclass.empty()) {
+		const lsp::DocumentSymbol *const *ptr = members.getptr(p_name);
+		if (ptr) {
+			return *ptr;
+		}
+	} else {
+		if (const ClassMembers *_class = inner_classes.getptr(p_subclass)) {
+			const lsp::DocumentSymbol *const *ptr = _class->getptr(p_name);
+			if (ptr) {
+				return *ptr;
+			}
+		}
 	}
 
 	return NULL;
@@ -474,11 +527,28 @@ const Array &ExtendGDScriptParser::get_member_completions() {
 		while (name) {
 
 			const lsp::DocumentSymbol *symbol = members.get(*name);
-			lsp::CompletionItem item = symbol->make_completion_item(false);
+			lsp::CompletionItem item = symbol->make_completion_item();
 			item.data = JOIN_SYMBOLS(path, *name);
 			member_completions.push_back(item.to_json());
 
 			name = members.next(name);
+		}
+
+		const String *_class = inner_classes.next(NULL);
+		while (_class) {
+
+			const ClassMembers *inner_class = inner_classes.getptr(*_class);
+			const String *member_name = inner_class->next(NULL);
+			while (member_name) {
+				const lsp::DocumentSymbol *symbol = inner_class->get(*member_name);
+				lsp::CompletionItem item = symbol->make_completion_item();
+				item.data = JOIN_SYMBOLS(path, JOIN_SYMBOLS(*_class, *member_name));
+				member_completions.push_back(item.to_json());
+
+				member_name = inner_class->next(member_name);
+			}
+
+			_class = inner_classes.next(_class);
 		}
 	}
 

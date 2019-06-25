@@ -886,12 +886,12 @@ struct CompletionItem {
 	 */
 	Variant data;
 
-	_FORCE_INLINE_ Dictionary to_json(bool minimized = false) const {
+	_FORCE_INLINE_ Dictionary to_json(bool resolved = false) const {
 		Dictionary dict;
 		dict["label"] = label;
 		dict["kind"] = kind;
 		dict["data"] = data;
-		if (!minimized) {
+		if (resolved) {
 			dict["insertText"] = insertText;
 			dict["detail"] = detail;
 			dict["documentation"] = documentation.to_json();
@@ -1145,12 +1145,12 @@ struct DocumentSymbol {
 		return markdown;
 	}
 
-	_FORCE_INLINE_ CompletionItem make_completion_item(bool with_doc = false) const {
+	_FORCE_INLINE_ CompletionItem make_completion_item(bool resolved = false) const {
 
 		lsp::CompletionItem item;
 		item.label = name;
 
-		if (with_doc) {
+		if (resolved) {
 			item.documentation = render();
 		}
 

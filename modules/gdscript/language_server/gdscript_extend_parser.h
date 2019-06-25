@@ -39,8 +39,12 @@
 #define LINE_NUMBER_TO_INDEX(p_line) ((p_line)-1)
 #endif
 
+#ifndef SYMBOL_SEPERATOR
+#define SYMBOL_SEPERATOR "::"
+#endif
+
 #ifndef JOIN_SYMBOLS
-#define JOIN_SYMBOLS(p_path, name) ((p_path) + "." + (name))
+#define JOIN_SYMBOLS(p_path, name) ((p_path) + SYMBOL_SEPERATOR + (name))
 #endif
 
 typedef HashMap<String, const lsp::DocumentSymbol *> ClassMembers;
@@ -54,6 +58,7 @@ class ExtendGDScriptParser : public GDScriptParser {
 	lsp::DocumentSymbol class_symbol;
 	Vector<lsp::Diagnostic> diagnostics;
 	ClassMembers members;
+	HashMap<String, ClassMembers> inner_classes;
 
 	void update_diagnostics();
 
@@ -61,7 +66,7 @@ class ExtendGDScriptParser : public GDScriptParser {
 	void parse_class_symbol(const GDScriptParser::ClassNode *p_class, lsp::DocumentSymbol &r_symbol);
 	void parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol &r_symbol);
 
-	String parse_documentation(int p_line);
+	String parse_documentation(int p_line, bool p_docs_down = false);
 	const lsp::DocumentSymbol *search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol &p_parent) const;
 
 	Array member_completions;
@@ -73,6 +78,7 @@ public:
 	_FORCE_INLINE_ const lsp::DocumentSymbol &get_symbols() const { return class_symbol; }
 	_FORCE_INLINE_ const Vector<lsp::Diagnostic> &get_diagnostics() const { return diagnostics; }
 	_FORCE_INLINE_ const ClassMembers &get_members() const { return members; }
+	_FORCE_INLINE_ const HashMap<String, ClassMembers> &get_inner_classes() const { return inner_classes; }
 
 	String get_text_for_completion(const lsp::Position &p_cursor) const;
 	String get_text_for_lookup_symbol(const lsp::Position &p_cursor, const String &p_symbol = "", bool p_func_requred = false) const;
@@ -80,7 +86,7 @@ public:
 	String get_uri() const;
 
 	const lsp::DocumentSymbol *get_symbol_defined_at_line(int p_line) const;
-	const lsp::DocumentSymbol *get_member_symbol(const String &p_name) const;
+	const lsp::DocumentSymbol *get_member_symbol(const String &p_name, const String &p_subclass = "") const;
 
 	const Array &get_member_completions();
 

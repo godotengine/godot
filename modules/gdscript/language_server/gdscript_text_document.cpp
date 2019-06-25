@@ -88,7 +88,7 @@ void GDScriptTextDocument::initialize() {
 			while (name) {
 
 				const lsp::DocumentSymbol *symbol = members.get(*name);
-				lsp::CompletionItem item = symbol->make_completion_item(false);
+				lsp::CompletionItem item = symbol->make_completion_item();
 				item.data = JOIN_SYMBOLS(String(*class_ptr), *name);
 				native_member_completions.push_back(item.to_json());
 
@@ -171,7 +171,7 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 					break;
 			}
 
-			arr[i] = item.to_json(true);
+			arr[i] = item.to_json();
 			i++;
 		}
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
@@ -211,12 +211,18 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 	} else if (data.get_type() == Variant::STRING) {
 
 		String query = data;
-		int seperator_pos = query.find_last(".");
-		if (seperator_pos >= 0 && seperator_pos < query.length() - 1) {
 
-			String class_ = query.substr(0, seperator_pos);
+		Vector<String> param_symbols = query.split(SYMBOL_SEPERATOR, false);
+
+		if (param_symbols.size() >= 2) {
+
+			String class_ = param_symbols[0];
 			StringName class_name = class_;
-			String member_name = query.substr(seperator_pos + 1, query.length());
+			String member_name = param_symbols[param_symbols.size() - 1];
+			String inner_class_name;
+			if (param_symbols.size() >= 3) {
+				inner_class_name = param_symbols[1];
+			}
 
 			if (const ClassMembers *members = GDScriptLanguageProtocol::get_singleton()->get_workspace().native_members.getptr(class_name)) {
 				if (const lsp::DocumentSymbol *const *member = members->getptr(member_name)) {
@@ -226,7 +232,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 
 			if (!symbol) {
 				if (const Map<String, ExtendGDScriptParser *>::Element *E = GDScriptLanguageProtocol::get_singleton()->get_workspace().scripts.find(class_name)) {
-					symbol = E->get()->get_member_symbol(member_name);
+					symbol = E->get()->get_member_symbol(member_name, inner_class_name);
 				}
 			}
 		}
@@ -248,7 +254,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		}
 	}
 
-	return item.to_json();
+	return item.to_json(true);
 }
 
 Array GDScriptTextDocument::foldingRange(const Dictionary &p_params) {
