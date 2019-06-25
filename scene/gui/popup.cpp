@@ -141,7 +141,7 @@ void Popup::popup_centered(const Size2 &p_size) {
 	rect.size = p_size == Size2() ? get_size() : p_size;
 	rect.position = ((window_size - rect.size) / 2.0).floor();
 
-	popup(rect);
+	_popup(rect, true);
 }
 
 void Popup::popup_centered_ratio(float p_screen_ratio) {
@@ -151,18 +151,29 @@ void Popup::popup_centered_ratio(float p_screen_ratio) {
 	rect.size = (window_size * p_screen_ratio).floor();
 	rect.position = ((window_size - rect.size) / 2.0).floor();
 
-	popup(rect);
+	_popup(rect, true);
 }
 
 void Popup::popup(const Rect2 &p_bounds) {
+
+	_popup(p_bounds);
+}
+
+void Popup::_popup(const Rect2 &p_bounds, const bool p_centered) {
 
 	emit_signal("about_to_show");
 	show_modal(exclusive);
 
 	// Fit the popup into the optionally provided bounds.
 	if (!p_bounds.has_no_area()) {
-		set_position(p_bounds.position);
 		set_size(p_bounds.size);
+
+		// check if p_bounds.size was using an outdated cached values
+		if (p_centered && p_bounds.size != get_size()) {
+			set_position(p_bounds.position - ((get_size() - p_bounds.size) / 2.0).floor());
+		} else {
+			set_position(p_bounds.position);
+		}
 	}
 	_fix_size();
 
