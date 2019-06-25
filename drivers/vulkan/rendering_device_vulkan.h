@@ -37,6 +37,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	static const VkBlendOp blend_operations[RenderingDevice::BLEND_OP_MAX];
 	static const VkSamplerAddressMode address_modes[SAMPLER_REPEAT_MODE_MAX];
 	static const VkBorderColor sampler_border_colors[SAMPLER_BORDER_COLOR_MAX];
+	static const VkImageType vulkan_image_type[TEXTURE_TYPE_MAX];
 
 	// Functions used for format
 	// validation, and ensures the
@@ -47,7 +48,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	static void get_compressed_image_format_block_dimensions(DataFormat p_format, uint32_t &r_w, uint32_t &r_h);
 	uint32_t get_compressed_image_format_block_byte_size(DataFormat p_format);
 	static uint32_t get_compressed_image_format_pixel_rshift(DataFormat p_format);
-	static uint32_t get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw = NULL, uint32_t *r_blockh = NULL);
+	static uint32_t get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw = NULL, uint32_t *r_blockh = NULL, uint32_t *r_depth = NULL);
 	static uint32_t get_image_required_mipmaps(uint32_t p_width, uint32_t p_height, uint32_t p_depth);
 
 	/***************************/
@@ -115,6 +116,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	RID_Owner<Texture> texture_owner;
 	uint32_t texture_upload_region_size_px;
+
+	PoolVector<uint8_t> _texture_get_data_from_image(Texture *tex, VkImage p_image, VmaAllocation p_allocation, uint32_t p_layer);
 
 	/*****************/
 	/**** SAMPLER ****/
@@ -701,6 +704,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	VulkanContext *context;
 
 	void _free_internal(RID p_id);
+	void _flush(bool p_setup, bool p_draw);
 
 	bool screen_prepared;
 
@@ -711,6 +715,7 @@ public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<PoolVector<uint8_t> > &p_data = Vector<PoolVector<uint8_t> >());
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw = false);
+	virtual PoolVector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer);
 
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const;
 	virtual bool texture_is_shared(RID p_texture);
