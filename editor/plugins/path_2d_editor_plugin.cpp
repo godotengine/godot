@@ -396,8 +396,8 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			if (point != pointout) {
 				smooth = true;
 				// Draw the line with a dark and light color to be visible on all backgrounds
-				vpc->draw_line(point, pointout, Color(0, 0, 0, 0.5), Math::round(EDSCALE), true);
-				vpc->draw_line(point, pointout, Color(1, 1, 1, 0.5), Math::round(EDSCALE), true);
+				vpc->draw_line(point, pointout, Color(0, 0, 0, 0.5), Math::round(EDSCALE));
+				vpc->draw_line(point, pointout, Color(1, 1, 1, 0.5), Math::round(EDSCALE));
 				vpc->draw_texture_rect(curve_handle, Rect2(pointout - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
 			}
 		}
@@ -407,8 +407,8 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			if (point != pointin) {
 				smooth = true;
 				// Draw the line with a dark and light color to be visible on all backgrounds
-				vpc->draw_line(point, pointin, Color(0, 0, 0, 0.5), Math::round(EDSCALE), true);
-				vpc->draw_line(point, pointin, Color(1, 1, 1, 0.5), Math::round(EDSCALE), true);
+				vpc->draw_line(point, pointin, Color(0, 0, 0, 0.5), Math::round(EDSCALE));
+				vpc->draw_line(point, pointin, Color(1, 1, 1, 0.5), Math::round(EDSCALE));
 				vpc->draw_texture_rect(curve_handle, Rect2(pointin - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
 			}
 		}

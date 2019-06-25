@@ -176,7 +176,7 @@ void RayCast2D::_notification(int p_what) {
 				draw_col.g = g;
 				draw_col.b = g;
 			}
-			draw_line(Vector2(), cast_to, draw_col, 2, true);
+			draw_line(Vector2(), cast_to, draw_col, 2);
 			Vector<Vector2> pts;
 			float tsize = 8;
 			pts.push_back(xf.xform(Vector2(tsize, 0)));

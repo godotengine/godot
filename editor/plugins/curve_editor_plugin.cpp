@@ -612,7 +612,7 @@ struct CanvasItemPlotCurve {
 
 	void operator()(Vector2 pos0, Vector2 pos1, bool in_definition) {
 		// FIXME: Using a line width greater than 1 breaks curve rendering
-		ci.draw_line(pos0, pos1, in_definition ? color1 : color2, 1, true);
+		ci.draw_line(pos0, pos1, in_definition ? color1 : color2, 1);
 	}
 };
 
@@ -693,13 +693,13 @@ void CurveEditor::_draw() {
 
 		if (i != 0) {
 			Vector2 control_pos = get_tangent_view_pos(i, TANGENT_LEFT);
-			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE), true);
+			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE));
 			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(2), tangent_color);
 		}
 
 		if (i != curve.get_point_count() - 1) {
 			Vector2 control_pos = get_tangent_view_pos(i, TANGENT_RIGHT);
-			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE), true);
+			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE));
 			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(2), tangent_color);
 		}
 	}

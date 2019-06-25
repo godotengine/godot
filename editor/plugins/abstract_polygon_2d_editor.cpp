@@ -612,7 +612,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 				Vector2 point = xform.xform(p);
 				Vector2 next_point = xform.xform(p2);
 
-				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE), true);
+				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE));
 			}
 		}
 
@@ -636,7 +636,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 					p2 = points[(i + 1) % n_points] + offset;
 
 				const Vector2 next_point = xform.xform(p2);
-				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE), true);
+				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE));
 			}
 		}
 

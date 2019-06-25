@@ -112,7 +112,7 @@ void Path2D::_notification(int p_what) {
 
 				real_t frac = j / 8.0;
 				Vector2 p = curve->interpolate(i, frac);
-				draw_line(prev_p, p, color, line_width, true);
+				draw_line(prev_p, p, color, line_width);
 				prev_p = p;
 			}
 		}
