@@ -260,7 +260,11 @@ bool EditorHelpSearch::Runner::_is_class_disabled_by_feature_profile(const Strin
 	StringName class_name = p_class;
 	while (class_name != StringName()) {
 
-		if (!ClassDB::class_exists(class_name) || profile->is_class_disabled(class_name)) {
+		if (!ClassDB::class_exists(class_name)) {
+			return false;
+		}
+
+		if (profile->is_class_disabled(class_name)) {
 			return true;
 		}
 		class_name = ClassDB::get_parent_class(class_name);
