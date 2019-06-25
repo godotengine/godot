@@ -1007,7 +1007,7 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_pixel_rshift(DataFor
 	return 0;
 }
 
-uint32_t RenderingDeviceVulkan::get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw, uint32_t *r_blockh) {
+uint32_t RenderingDeviceVulkan::get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw, uint32_t *r_blockh, uint32_t *r_depth) {
 
 	uint32_t w = p_width;
 	uint32_t h = p_height;
@@ -1034,6 +1034,9 @@ uint32_t RenderingDeviceVulkan::get_image_format_required_size(DataFormat p_form
 		}
 		if (r_blockh) {
 			*r_blockh = bh;
+		}
+		if (r_depth) {
+			*r_depth = d;
 		}
 		w = MAX(blockw, w >> 1);
 		h = MAX(blockh, h >> 1);
@@ -1166,6 +1169,17 @@ const VkBorderColor RenderingDeviceVulkan::sampler_border_colors[RenderingDevice
 	VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
 	VK_BORDER_COLOR_INT_OPAQUE_WHITE
 };
+
+const VkImageType RenderingDeviceVulkan::vulkan_image_type[RenderingDevice::TEXTURE_TYPE_MAX] = {
+	VK_IMAGE_TYPE_1D,
+	VK_IMAGE_TYPE_2D,
+	VK_IMAGE_TYPE_3D,
+	VK_IMAGE_TYPE_2D,
+	VK_IMAGE_TYPE_1D,
+	VK_IMAGE_TYPE_2D,
+	VK_IMAGE_TYPE_3D
+};
+
 /***************************/
 /**** BUFFER MANAGEMENT ****/
 /***************************/
@@ -1308,26 +1322,7 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 						} else {
 
 							//flush EVERYTHING including setup commands. IF not immediate, also need to flush the draw commands
-							context->flush(true, p_on_draw_command_buffer);
-							//re-create the setup command
-							{
-								VkCommandBufferBeginInfo cmdbuf_begin;
-								cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-								cmdbuf_begin.pNext = NULL;
-								cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-								cmdbuf_begin.pInheritanceInfo = NULL;
-
-								VkResult err = vkBeginCommandBuffer(frames[frame].setup_command_buffer, &cmdbuf_begin);
-								ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-								context->set_setup_buffer(frames[frame].setup_command_buffer); //append now so it's added before everything else
-
-								if (p_on_draw_command_buffer) {
-
-									err = vkBeginCommandBuffer(frames[frame].draw_command_buffer, &cmdbuf_begin);
-									ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-									context->append_command_buffer(frames[frame].draw_command_buffer);
-								}
-							}
+							_flush(true, p_on_draw_command_buffer);
 
 							//clear the whole staging buffer
 							for (int i = 0; i < staging_buffer_blocks.size(); i++) {
@@ -1371,7 +1366,7 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 					continue; //and try again
 				} else {
 
-					context->flush(false); // flush previous frames (but don't touch setup command, so this frame)
+					_flush(false, false);
 
 					for (int i = 0; i < staging_buffer_blocks.size(); i++) {
 						//clear all blocks but the ones from this frame
@@ -1498,19 +1493,9 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		image_create_info.flags |= VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
 	}*/
 
-	const VkImageType image_type[TEXTURE_TYPE_MAX] = {
-		VK_IMAGE_TYPE_1D,
-		VK_IMAGE_TYPE_2D,
-		VK_IMAGE_TYPE_3D,
-		VK_IMAGE_TYPE_2D,
-		VK_IMAGE_TYPE_1D,
-		VK_IMAGE_TYPE_2D,
-		VK_IMAGE_TYPE_3D
-	};
-
 	ERR_FAIL_INDEX_V(p_format.type, TEXTURE_TYPE_MAX, RID());
 
-	image_create_info.imageType = image_type[p_format.type];
+	image_create_info.imageType = vulkan_image_type[p_format.type];
 
 	ERR_FAIL_COND_V_MSG(p_format.width < 1, RID(), "Width must be equal or greater than 1 for all textures");
 
@@ -1573,6 +1558,9 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	if (p_format.usage_bits & TEXTURE_USAGE_CAN_UPDATE_BIT) {
 		image_create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	}
+	if (p_format.usage_bits & TEXTURE_USAGE_CAN_RETRIEVE_BIT) {
+		image_create_info.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 	}
 
 	image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -1651,7 +1639,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	VmaAllocationCreateInfo allocInfo;
 	allocInfo.flags = 0;
-	allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+	allocInfo.usage = p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT ? VMA_MEMORY_USAGE_CPU_ONLY : VMA_MEMORY_USAGE_GPU_ONLY;
 	allocInfo.requiredFlags = 0;
 	allocInfo.preferredFlags = 0;
 	allocInfo.memoryTypeBits = 0;
@@ -1906,8 +1894,8 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 	ERR_FAIL_COND_V(p_layer >= layer_count, ERR_INVALID_PARAMETER);
 
 	uint32_t width, height;
-	uint32_t image_size = get_image_format_required_size(texture->format, texture->width, texture->height, 1, texture->mipmaps, &width, &height);
-	uint32_t required_size = image_size * texture->depth;
+	uint32_t image_size = get_image_format_required_size(texture->format, texture->width, texture->height, texture->depth, texture->mipmaps, &width, &height);
+	uint32_t required_size = image_size;
 	uint32_t required_align = get_compressed_image_format_block_byte_size(texture->format);
 	if (required_align == 1) {
 		required_align = get_image_format_pixel_size(texture->format);
@@ -1950,14 +1938,15 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 	uint32_t mipmap_offset = 0;
 	for (uint32_t mm_i = 0; mm_i < texture->mipmaps; mm_i++) {
 
-		uint32_t image_total = get_image_format_required_size(texture->format, texture->width, texture->height, 1, mm_i + 1, &width, &height);
+		uint32_t depth;
+		uint32_t image_total = get_image_format_required_size(texture->format, texture->width, texture->height, texture->depth, mm_i + 1, &width, &height, &depth);
 
 		const uint8_t *read_ptr_mipmap = r.ptr() + mipmap_offset;
 		image_size = image_total - mipmap_offset;
 
-		for (uint32_t z = 0; z < texture->depth; z++) { //for 3D textures, depth may be > 0
+		for (uint32_t z = 0; z < depth; z++) { //for 3D textures, depth may be > 0
 
-			const uint8_t *read_ptr = read_ptr_mipmap + image_size * z;
+			const uint8_t *read_ptr = read_ptr_mipmap + image_size * z / depth;
 
 			for (uint32_t x = 0; x < width; x += region_size) {
 				for (uint32_t y = 0; y < height; y += region_size) {
@@ -2085,6 +2074,260 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 	}
 
 	return OK;
+}
+
+PoolVector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture *tex, VkImage p_image, VmaAllocation p_allocation, uint32_t p_layer) {
+
+	uint32_t width, height, depth;
+	uint32_t image_size = get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, tex->mipmaps, &width, &height, &depth);
+
+	PoolVector<uint8_t> image_data;
+	image_data.resize(image_size);
+
+	void *img_mem;
+	vmaMapMemory(allocator, p_allocation, &img_mem);
+
+	uint32_t blockw, blockh;
+	get_compressed_image_format_block_dimensions(tex->format, blockw, blockh);
+	uint32_t block_size = get_compressed_image_format_block_byte_size(tex->format);
+	uint32_t pixel_size = get_image_format_pixel_size(tex->format);
+
+	{
+		PoolVector<uint8_t>::Write w = image_data.write();
+
+		uint32_t mipmap_offset = 0;
+		for (uint32_t mm_i = 0; mm_i < tex->mipmaps; mm_i++) {
+
+			uint32_t image_total = get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, mm_i + 1, &width, &height, &depth);
+
+			uint8_t *write_ptr_mipmap = w.ptr() + mipmap_offset;
+			image_size = image_total - mipmap_offset;
+
+			VkImageSubresource image_sub_resorce;
+			image_sub_resorce.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			image_sub_resorce.arrayLayer = p_layer;
+			image_sub_resorce.mipLevel = mm_i;
+			VkSubresourceLayout layout;
+			vkGetImageSubresourceLayout(device, p_image, &image_sub_resorce, &layout);
+
+			for (uint32_t z = 0; z < depth; z++) {
+				uint8_t *write_ptr = write_ptr_mipmap + z * image_size / depth;
+				const uint8_t *slice_read_ptr = ((uint8_t *)img_mem) + layout.offset + z * layout.depthPitch;
+
+				if (block_size > 1) {
+					//compressed
+					uint32_t line_width = (block_size * (width / blockw));
+					for (uint32_t y = 0; y < height / blockh; y++) {
+						const uint8_t *rptr = slice_read_ptr + y * layout.rowPitch;
+						uint8_t *wptr = write_ptr + y * line_width;
+
+						copymem(wptr, rptr, line_width);
+					}
+
+				} else {
+					//uncompressed
+					for (uint32_t y = 0; y < height; y++) {
+						const uint8_t *rptr = slice_read_ptr + y * layout.rowPitch;
+						uint8_t *wptr = write_ptr + y * pixel_size * width;
+						copymem(wptr, rptr, pixel_size * width);
+					}
+				}
+			}
+
+			mipmap_offset = image_total;
+		}
+	}
+
+	vmaUnmapMemory(allocator, p_allocation);
+
+	return image_data;
+}
+
+PoolVector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t p_layer) {
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND_V(!tex, PoolVector<uint8_t>());
+
+	ERR_FAIL_COND_V_MSG(tex->bound, PoolVector<uint8_t>(),
+			"Texture can't be retrieved while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+	ERR_FAIL_COND_V_MSG(!(tex->usage_flags & TEXTURE_USAGE_CAN_RETRIEVE_BIT), PoolVector<uint8_t>(),
+			"Texture requires the TEXTURE_USAGE_CAN_RETRIEVE_BIT in order to be retrieved.");
+
+	uint32_t layer_count = tex->layers;
+	if (tex->type == TEXTURE_TYPE_CUBE || tex->type == TEXTURE_TYPE_CUBE_ARRAY) {
+		layer_count *= 6;
+	}
+	ERR_FAIL_COND_V(p_layer >= layer_count, PoolVector<uint8_t>());
+
+	if (tex->usage_flags & TEXTURE_USAGE_CPU_READ_BIT) {
+		//does not need anything fancy, map and read.
+		return _texture_get_data_from_image(tex, tex->image, tex->allocation, p_layer);
+	} else {
+		VkImageCreateInfo image_create_info;
+		image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		image_create_info.pNext = NULL;
+		image_create_info.flags = 0;
+		image_create_info.imageType = vulkan_image_type[tex->type];
+		image_create_info.format = vulkan_formats[tex->format];
+		image_create_info.extent.width = tex->width;
+		image_create_info.extent.height = tex->height;
+		image_create_info.extent.depth = tex->depth;
+		image_create_info.mipLevels = tex->mipmaps;
+		image_create_info.arrayLayers = 1; //for retrieving, only one layer
+		image_create_info.samples = rasterization_sample_count[tex->samples];
+		image_create_info.tiling = VK_IMAGE_TILING_LINEAR; // for retrieving, linear is recommended
+		image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+		image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		image_create_info.queueFamilyIndexCount = 0;
+		image_create_info.pQueueFamilyIndices = NULL;
+		image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+		VmaAllocationCreateInfo allocInfo;
+		allocInfo.flags = 0;
+		allocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+		allocInfo.requiredFlags = 0;
+		allocInfo.preferredFlags = 0;
+		allocInfo.memoryTypeBits = 0;
+		allocInfo.pool = NULL;
+		allocInfo.pUserData = NULL;
+
+		VkImage image;
+		VmaAllocation allocation;
+		VmaAllocationInfo allocation_info;
+
+		//Allocate the image
+		VkResult err = vmaCreateImage(allocator, &image_create_info, &allocInfo, &image, &allocation, &allocation_info);
+		ERR_FAIL_COND_V(err, PoolVector<uint8_t>());
+
+		VkCommandBuffer command_buffer = frames[frame].setup_command_buffer;
+		//PRE Copy the image
+
+		{ //Source
+			VkImageMemoryBarrier image_memory_barrier;
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = NULL;
+			image_memory_barrier.srcAccessMask = 0;
+			image_memory_barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			image_memory_barrier.oldLayout = tex->unbound_layout;
+			image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+
+			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.image = tex->image;
+			image_memory_barrier.subresourceRange.aspectMask = tex->aspect_mask;
+			image_memory_barrier.subresourceRange.baseMipLevel = 0;
+			image_memory_barrier.subresourceRange.levelCount = tex->mipmaps;
+			image_memory_barrier.subresourceRange.baseArrayLayer = p_layer;
+			image_memory_barrier.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
+		}
+		{ //Dest
+			VkImageMemoryBarrier image_memory_barrier;
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = NULL;
+			image_memory_barrier.srcAccessMask = 0;
+			image_memory_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.image = image;
+			image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			image_memory_barrier.subresourceRange.baseMipLevel = 0;
+			image_memory_barrier.subresourceRange.levelCount = tex->mipmaps;
+			image_memory_barrier.subresourceRange.baseArrayLayer = 0;
+			image_memory_barrier.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
+		}
+
+		//COPY
+
+		{
+
+			for (uint32_t i = 0; i < tex->mipmaps; i++) {
+
+				uint32_t mm_width, mm_height, mm_depth;
+				get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, i + 1, &mm_width, &mm_height, &mm_depth);
+
+				VkImageCopy image_copy_region;
+				image_copy_region.srcSubresource.aspectMask = tex->aspect_mask;
+				image_copy_region.srcSubresource.baseArrayLayer = p_layer;
+				image_copy_region.srcSubresource.layerCount = 1;
+				image_copy_region.srcSubresource.mipLevel = i;
+				image_copy_region.srcOffset.x = 0;
+				image_copy_region.srcOffset.y = 0;
+				image_copy_region.srcOffset.z = 0;
+
+				image_copy_region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				image_copy_region.dstSubresource.baseArrayLayer = p_layer;
+				image_copy_region.dstSubresource.layerCount = 1;
+				image_copy_region.dstSubresource.mipLevel = i;
+				image_copy_region.dstOffset.x = 0;
+				image_copy_region.dstOffset.y = 0;
+				image_copy_region.dstOffset.z = 0;
+
+				image_copy_region.extent.width = mm_width;
+				image_copy_region.extent.height = mm_height;
+				image_copy_region.extent.depth = mm_depth;
+
+				vkCmdCopyImage(command_buffer, tex->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &image_copy_region);
+				print_line("copying mipmap " + itos(i) + " w: " + itos(mm_width) + " h " + itos(mm_height) + " d " + itos(mm_depth));
+			}
+		}
+
+		// RESTORE LAYOUT for SRC and DST
+
+		{ //restore src
+			VkImageMemoryBarrier image_memory_barrier;
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = NULL;
+			image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			image_memory_barrier.newLayout = tex->unbound_layout;
+			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.image = tex->image;
+			image_memory_barrier.subresourceRange.aspectMask = tex->aspect_mask;
+			image_memory_barrier.subresourceRange.baseMipLevel = 0;
+			image_memory_barrier.subresourceRange.levelCount = tex->mipmaps;
+			image_memory_barrier.subresourceRange.baseArrayLayer = p_layer;
+			image_memory_barrier.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
+		}
+
+		{ //make dst readable
+
+			VkImageMemoryBarrier image_memory_barrier;
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = NULL;
+			image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			image_memory_barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.image = image;
+			image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			image_memory_barrier.subresourceRange.baseMipLevel = 0;
+			image_memory_barrier.subresourceRange.levelCount = tex->mipmaps;
+			image_memory_barrier.subresourceRange.baseArrayLayer = 0;
+			image_memory_barrier.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
+		}
+
+		//flush everything so memory can be safely mapped
+		_flush(true, false);
+
+		PoolVector<uint8_t> ret = _texture_get_data_from_image(tex, image, allocation, p_layer);
+		vmaDestroyImage(allocator, image, allocation);
+		return ret;
+	}
 }
 
 bool RenderingDeviceVulkan::texture_is_shared(RID p_texture) {
@@ -5293,6 +5536,42 @@ void RenderingDeviceVulkan::advance_frame() {
 	}
 }
 
+void RenderingDeviceVulkan::_flush(bool p_setup, bool p_draw) {
+
+	//not doing this crashes RADV (undefined behavior)
+	if (p_setup) {
+		vkEndCommandBuffer(frames[frame].setup_command_buffer);
+	}
+	if (p_draw) {
+		vkEndCommandBuffer(frames[frame].draw_command_buffer);
+	}
+	context->flush(p_setup, p_draw);
+	//re-create the setup command
+	if (p_setup) {
+		VkCommandBufferBeginInfo cmdbuf_begin;
+		cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		cmdbuf_begin.pNext = NULL;
+		cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		cmdbuf_begin.pInheritanceInfo = NULL;
+
+		VkResult err = vkBeginCommandBuffer(frames[frame].setup_command_buffer, &cmdbuf_begin);
+		ERR_FAIL_COND(err);
+		context->set_setup_buffer(frames[frame].setup_command_buffer); //append now so it's added before everything else
+	}
+
+	if (p_draw) {
+		VkCommandBufferBeginInfo cmdbuf_begin;
+		cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		cmdbuf_begin.pNext = NULL;
+		cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		cmdbuf_begin.pInheritanceInfo = NULL;
+
+		VkResult err = vkBeginCommandBuffer(frames[frame].draw_command_buffer, &cmdbuf_begin);
+		ERR_FAIL_COND(err);
+		context->append_command_buffer(frames[frame].draw_command_buffer);
+	}
+}
+
 void RenderingDeviceVulkan::initialize(VulkanContext *p_context) {
 
 	context = p_context;
@@ -5414,7 +5693,7 @@ void RenderingDeviceVulkan::finalize() {
 
 	//free all resources
 
-	context->flush(false, false);
+	_flush(false, false);
 
 	_free_rids(pipeline_owner, "Pipeline");
 	_free_rids(uniform_set_owner, "UniformSet");
