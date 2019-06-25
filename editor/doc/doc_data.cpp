@@ -1126,6 +1126,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 
 				const PropertyDoc &p = c.theme_properties[i];
 				_write_string(f, 2, "<theme_item name=\"" + p.name + "\" type=\"" + p.type + "\">");
+				_write_string(f, 3, p.description.strip_edges().xml_escape());
 				_write_string(f, 2, "</theme_item>");
 			}
 			_write_string(f, 1, "</theme_items>");
