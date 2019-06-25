@@ -428,6 +428,9 @@ public:
 	bool is_refusing_new_network_connections() const;
 
 	static void add_idle_callback(IdleCallback p_callback);
+
+	//default texture settings
+
 	SceneTree();
 	~SceneTree();
 };

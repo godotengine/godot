@@ -560,6 +560,7 @@ public:
 	virtual bool render_target_is_clear_requested(RID p_render_target) = 0;
 	virtual Color render_target_get_clear_request_color(RID p_render_target) = 0;
 	virtual void render_target_disable_clear_request(RID p_render_target) = 0;
+	virtual void render_target_do_clear_request(RID p_render_target) = 0;
 
 	/* CANVAS SHADOW */
 
