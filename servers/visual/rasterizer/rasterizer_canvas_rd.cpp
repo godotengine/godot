@@ -1061,8 +1061,7 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 			case Item::Command::TYPE_TRANSFORM: {
 
 				const Item::CommandTransform *transform = static_cast<const Item::CommandTransform *>(c);
-				base_transform = base_transform * transform->xform;
-				_update_transform_2d_to_mat2x3(base_transform, push_constant.world);
+				_update_transform_2d_to_mat2x3(base_transform * transform->xform, push_constant.world);
 
 			} break;
 			case Item::Command::TYPE_CLIP_IGNORE: {

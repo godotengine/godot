@@ -771,8 +771,6 @@ void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
 
 	rt->framebuffer = RID();
 	rt->color = RID();
-
-	rt->dirty = true;
 }
 
 void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
@@ -787,7 +785,6 @@ void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
 	_clear_render_target(rt);
 
 	if (rt->size.width == 0 || rt->size.height == 0) {
-		rt->dirty = false;
 		return;
 	}
 	//until we implement suport for HDR monitors (and render target is attached to screen), this is enough.
@@ -863,18 +860,18 @@ void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
 			texture_proxy_update(proxies[i], rt->texture);
 		}
 	}
-	rt->dirty = false;
 }
 
 RID RasterizerStorageRD::render_target_create() {
 	RenderTarget render_target;
-	render_target.dirty = true;
+
 	render_target.was_used = false;
 	render_target.clear_requested = false;
 
 	for (int i = 0; i < RENDER_TARGET_FLAG_MAX; i++) {
 		render_target.flags[i] = false;
 	}
+	_update_render_target(&render_target);
 	return render_target_owner.make_rid(render_target);
 }
 
@@ -887,16 +884,12 @@ void RasterizerStorageRD::render_target_set_size(RID p_render_target, int p_widt
 	ERR_FAIL_COND(!rt);
 	rt->size.x = p_width;
 	rt->size.y = p_height;
-	rt->dirty = true;
+	_update_render_target(rt);
 }
 
 RID RasterizerStorageRD::render_target_get_texture(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
-
-	if (rt->dirty) {
-		_update_render_target(rt);
-	}
 
 	return rt->texture;
 }
@@ -908,7 +901,7 @@ void RasterizerStorageRD::render_target_set_flag(RID p_render_target, RenderTarg
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	rt->flags[p_flag] = p_value;
-	rt->dirty = true;
+	_update_render_target(rt);
 }
 
 bool RasterizerStorageRD::render_target_was_used(RID p_render_target) {
@@ -935,10 +928,6 @@ Size2 RasterizerStorageRD::render_target_get_size(RID p_render_target) {
 RID RasterizerStorageRD::render_target_get_rd_framebuffer(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
-
-	if (rt->dirty) {
-		_update_render_target(rt);
-	}
 
 	return rt->framebuffer;
 }
@@ -970,6 +959,20 @@ void RasterizerStorageRD::render_target_disable_clear_request(RID p_render_targe
 	rt->clear_requested = false;
 }
 
+void RasterizerStorageRD::render_target_do_clear_request(RID p_render_target) {
+
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+	if (!rt->clear_requested) {
+		return;
+	}
+	Vector<Color> clear_colors;
+	clear_colors.push_back(rt->clear_color);
+	RD::get_singleton()->draw_list_begin(rt->framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, clear_colors);
+	RD::get_singleton()->draw_list_end();
+	rt->clear_requested = false;
+}
+
 bool RasterizerStorageRD::free(RID p_rid) {
 
 	if (texture_owner.owns(p_rid)) {
@@ -998,8 +1001,9 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		_clear_render_target(rt);
 
 		if (rt->texture.is_valid()) {
-			//no memory to be freed from here
-			texture_owner.free(rt->texture);
+			Texture *tex = texture_owner.getornull(rt->texture);
+			tex->is_render_target = false;
+			free(rt->texture);
 		}
 
 		render_target_owner.free(p_rid);
