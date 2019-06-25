@@ -523,14 +523,14 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 	};
 
 	if (p_selected) {
-		state_machine_draw->draw_line(p_from, p_to, accent, 6, true);
+		state_machine_draw->draw_line(p_from, p_to, accent, 6);
 	}
 
 	if (p_travel) {
 		linecolor = accent;
 		linecolor.set_hsv(1.0, linecolor.get_s(), linecolor.get_v());
 	}
-	state_machine_draw->draw_line(p_from, p_to, linecolor, 2, true);
+	state_machine_draw->draw_line(p_from, p_to, linecolor, 2);
 
 	Ref<Texture2D> icon = icons[p_mode + (p_auto_advance ? 3 : 0)];
 

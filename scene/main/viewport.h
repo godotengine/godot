@@ -147,6 +147,21 @@ public:
 		CLEAR_MODE_ONLY_NEXT_FRAME
 	};
 
+	enum DefaultCanvasItemTextureFilter {
+		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST,
+		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR,
+		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS,
+		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS,
+		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX
+	};
+
+	enum DefaultCanvasItemTextureRepeat {
+		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED,
+		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED,
+		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR,
+		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX,
+	};
+
 private:
 	friend class ViewportTexture;
 
@@ -315,6 +330,12 @@ private:
 
 		GUI();
 	} gui;
+
+	DefaultCanvasItemTextureFilter default_canvas_item_texture_filter;
+	DefaultCanvasItemTextureRepeat default_canvas_item_texture_repeat;
+
+	void _propagate_update_default_filter(Node *p_node);
+	void _propagate_update_default_repeat(Node *p_node);
 
 	bool disable_input;
 
@@ -551,6 +572,12 @@ public:
 
 	bool gui_is_dragging() const;
 
+	void set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFilter p_filter);
+	DefaultCanvasItemTextureFilter get_default_canvas_item_texture_filter() const;
+
+	void set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRepeat p_repeat);
+	DefaultCanvasItemTextureRepeat get_default_canvas_item_texture_repeat() const;
+
 	Viewport();
 	~Viewport();
 };
@@ -562,5 +589,7 @@ VARIANT_ENUM_CAST(Viewport::Usage);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
 VARIANT_ENUM_CAST(Viewport::ClearMode);
 VARIANT_ENUM_CAST(Viewport::RenderInfo);
+VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureFilter);
+VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureRepeat);
 
 #endif

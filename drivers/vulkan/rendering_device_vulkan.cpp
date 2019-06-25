@@ -1785,7 +1785,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	if (p_data.size()) {
 
 		for (uint32_t i = 0; i < image_create_info.arrayLayers; i++) {
-			texture_update(id, i, p_data[i], true);
+			texture_update(id, i, p_data[i]);
 		}
 	}
 	return id;
@@ -1880,6 +1880,9 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw) {
 
 	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V_MSG(draw_list && p_sync_with_draw, ERR_INVALID_PARAMETER,
+			"Updating textures in 'sync to draw' mode is forbidden during creation of a draw list");
 
 	Texture *texture = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND_V(!texture, ERR_INVALID_PARAMETER);
@@ -3883,6 +3886,9 @@ bool RenderingDeviceVulkan::uniform_set_is_valid(RID p_uniform_set) {
 
 Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, void *p_data, bool p_sync_with_draw) {
 	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V_MSG(draw_list && p_sync_with_draw, ERR_INVALID_PARAMETER,
+			"Updating buffers in 'sync to draw' mode is forbidden during creation of a draw list");
 
 	VkPipelineStageFlags dst_stage_mask;
 	VkAccessFlags dst_access;
