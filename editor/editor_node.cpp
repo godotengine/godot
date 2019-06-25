@@ -302,6 +302,19 @@ void EditorNode::_notification(int p_what) {
 
 			scene_root->set_size_override(true, Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height")));
 
+			{
+				int current_filter = GLOBAL_GET("rendering/canvas_textures/default_texture_filter");
+				if (current_filter != scene_root->get_default_canvas_item_texture_filter()) {
+					Viewport::DefaultCanvasItemTextureFilter tf = (Viewport::DefaultCanvasItemTextureFilter)current_filter;
+					scene_root->set_default_canvas_item_texture_filter(tf);
+				}
+				int current_repeat = GLOBAL_GET("rendering/canvas_textures/default_texture_repeat");
+				if (current_repeat != scene_root->get_default_canvas_item_texture_repeat()) {
+					Viewport::DefaultCanvasItemTextureRepeat tr = (Viewport::DefaultCanvasItemTextureRepeat)current_repeat;
+					scene_root->set_default_canvas_item_texture_repeat(tr);
+				}
+			}
+
 			ResourceImporterTexture::get_singleton()->update_imports();
 		} break;
 

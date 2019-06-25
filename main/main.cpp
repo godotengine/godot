@@ -1732,6 +1732,11 @@ bool Main::start() {
 			bool font_oversampling = GLOBAL_DEF("rendering/quality/dynamic_fonts/use_oversampling", true);
 			sml->set_use_font_oversampling(font_oversampling);
 
+			int texture_filter = GLOBAL_DEF("rendering/canvas_textures/default_texture_filter", 1);
+			int texture_repeat = GLOBAL_DEF("rendering/canvas_textures/default_texture_repeat", 0);
+			sml->get_root()->set_default_canvas_item_texture_filter(Viewport::DefaultCanvasItemTextureFilter(texture_filter));
+			sml->get_root()->set_default_canvas_item_texture_repeat(Viewport::DefaultCanvasItemTextureRepeat(texture_repeat));
+
 		} else {
 
 			GLOBAL_DEF("display/window/stretch/mode", "disabled");
@@ -1744,6 +1749,11 @@ bool Main::start() {
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 			GLOBAL_DEF("gui/common/snap_controls_to_pixels", true);
 			GLOBAL_DEF("rendering/quality/dynamic_fonts/use_oversampling", true);
+
+			GLOBAL_DEF("rendering/canvas_textures/default_texture_filter", 1);
+			ProjectSettings::get_singleton()->set_custom_property_info("rendering/canvas_textures/default_texture_filter", PropertyInfo(Variant::INT, "rendering/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,MipmapLinear,MipmapNearest"));
+			GLOBAL_DEF("rendering/canvas_textures/default_texture_repeat", 0);
+			ProjectSettings::get_singleton()->set_custom_property_info("rendering/canvas_textures/default_texture_repeat", PropertyInfo(Variant::INT, "rendering/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"));
 		}
 
 		String local_game_path;
