@@ -1,4 +1,5 @@
 #include "rasterizer_storage_rd.h"
+#include "core/engine.h"
 
 Ref<Image> RasterizerStorageRD::_validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format) {
 
@@ -487,6 +488,7 @@ RID RasterizerStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 	texture.mipmaps = p_image->get_mipmap_count() + 1;
 	texture.depth = 1;
 	texture.format = p_image->get_format();
+	texture.validated_format = image->get_format();
 
 	texture.rd_type = RD::TEXTURE_TYPE_2D;
 	texture.rd_format = ret_format.format;
@@ -503,7 +505,7 @@ RID RasterizerStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 		rd_format.mipmaps = texture.mipmaps;
 		rd_format.type = texture.rd_type;
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
-		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_RETRIEVE_BIT;
 		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
 			rd_format.shareable_formats.push_back(texture.rd_format);
 			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
@@ -535,9 +537,6 @@ RID RasterizerStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 	texture.is_render_target = false;
 	texture.rd_view = rd_view;
 	texture.is_proxy = false;
-
-#warning TODO this is temporary to get things to work
-	texture.image_cache_2d = p_image;
 
 #warning texture owner needs a spinlock to make this really callable from any thread
 	return texture_owner.make_rid(texture);
@@ -588,9 +587,9 @@ void RasterizerStorageRD::_texture_2d_update(RID p_texture, const Ref<Image> &p_
 		ERR_FAIL_INDEX(p_layer, tex->layers);
 	}
 
-#warning TODO this is temporary to get things to work
-	tex->image_cache_2d = p_image;
-
+#ifdef TOOLS_ENABLED
+	tex->image_cache_2d.unref();
+#endif
 	TextureToRDFormat f;
 	Ref<Image> validated = _validate_texture_format(p_image, f);
 
@@ -678,8 +677,28 @@ Ref<Image> RasterizerStorageRD::texture_2d_get(RID p_texture) const {
 	Texture *tex = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND_V(!tex, Ref<Image>());
 
-#warning TODO this is temporary to get things to work
-	return tex->image_cache_2d;
+#ifdef TOOLS_ENABLED
+	if (tex->image_cache_2d.is_valid()) {
+		return tex->image_cache_2d;
+	}
+#endif
+	PoolVector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
+	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
+	Ref<Image> image;
+	image.instance();
+	image->create(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
+	ERR_FAIL_COND_V(image->empty(), Ref<Image>());
+	if (tex->format != tex->validated_format) {
+		image->convert(tex->format);
+	}
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		tex->image_cache_2d = image;
+	}
+#endif
+
+	return image;
 }
 Ref<Image> RasterizerStorageRD::texture_2d_layer_get(RID p_texture, int p_layer) const {
 
@@ -803,7 +822,7 @@ void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
 		rd_format.mipmaps = 1;
 		rd_format.type = RD::TEXTURE_TYPE_2D;
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
-		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_RETRIEVE_BIT;
 		rd_format.shareable_formats.push_back(rt->color_format);
 		rd_format.shareable_formats.push_back(rt->color_format_srgb);
 	}
