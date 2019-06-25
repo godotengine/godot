@@ -3615,18 +3615,19 @@ void CanvasItemEditor::_update_scrollbars() {
 	// Constraints the view offset and updates the scrollbars
 	Point2 begin = canvas_item_rect.position;
 	Point2 end = canvas_item_rect.position + canvas_item_rect.size - local_rect.size / zoom;
+	bool constrain_editor_view = bool(EditorSettings::get_singleton()->get("editors/2d/constrain_editor_view"));
 
 	if (canvas_item_rect.size.height <= (local_rect.size.y / zoom)) {
-		if (ABS(begin.y - previous_update_view_offset.y) < ABS(begin.y - view_offset.y)) {
+		if (constrain_editor_view && ABS(begin.y - previous_update_view_offset.y) < ABS(begin.y - view_offset.y)) {
 			view_offset.y = previous_update_view_offset.y;
 		}
 
 		v_scroll->hide();
 	} else {
-		if (view_offset.y > end.y && view_offset.y > previous_update_view_offset.y) {
+		if (constrain_editor_view && view_offset.y > end.y && view_offset.y > previous_update_view_offset.y) {
 			view_offset.y = MAX(end.y, previous_update_view_offset.y);
 		}
-		if (view_offset.y < begin.y && view_offset.y < previous_update_view_offset.y) {
+		if (constrain_editor_view && view_offset.y < begin.y && view_offset.y < previous_update_view_offset.y) {
 			view_offset.y = MIN(begin.y, previous_update_view_offset.y);
 		}
 
@@ -3637,16 +3638,16 @@ void CanvasItemEditor::_update_scrollbars() {
 	}
 
 	if (canvas_item_rect.size.width <= (local_rect.size.x / zoom)) {
-		if (ABS(begin.x - previous_update_view_offset.x) < ABS(begin.x - view_offset.x)) {
+		if (constrain_editor_view && ABS(begin.x - previous_update_view_offset.x) < ABS(begin.x - view_offset.x)) {
 			view_offset.x = previous_update_view_offset.x;
 		}
 
 		h_scroll->hide();
 	} else {
-		if (view_offset.x > end.x && view_offset.x > previous_update_view_offset.x) {
+		if (constrain_editor_view && view_offset.x > end.x && view_offset.x > previous_update_view_offset.x) {
 			view_offset.x = MAX(end.x, previous_update_view_offset.x);
 		}
-		if (view_offset.x < begin.x && view_offset.x < previous_update_view_offset.x) {
+		if (constrain_editor_view && view_offset.x < begin.x && view_offset.x < previous_update_view_offset.x) {
 			view_offset.x = MIN(begin.x, previous_update_view_offset.x);
 		}
 
