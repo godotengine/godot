@@ -1104,7 +1104,7 @@ void ScriptEditorDebugger::_performance_draw() {
 			h2 = (1.0 - h2) * r.size.y;
 
 			if (E != perf_history.front())
-				perf_draw->draw_line(r.position + Point2(from, h2), r.position + Point2(from + spacing, prev), c, Math::round(EDSCALE), true);
+				perf_draw->draw_line(r.position + Point2(from, h2), r.position + Point2(from + spacing, prev), c, Math::round(EDSCALE));
 			prev = h2;
 			E = E->next();
 			from -= spacing;
