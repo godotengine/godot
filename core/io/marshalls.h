@@ -189,9 +189,6 @@ class EncodedObjectAsID : public Reference {
 
 	ObjectID id;
 
-protected:
-	static void _bind_methods();
-
 public:
 	void set_object_id(ObjectID p_id);
 	ObjectID get_object_id() const;
