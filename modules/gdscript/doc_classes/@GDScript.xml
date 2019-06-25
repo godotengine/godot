@@ -1241,6 +1241,16 @@
 				# infinite loop between 0.0 and 0.99
 				f = wrapf(f + 0.1, 0.0, 1.0)
 				[/codeblock]
+				[codeblock]
+				# infinite rotation (in radians)
+				angle = wrapf(angle + 0.1, 0.0, TAU)
+				[/codeblock]
+				Note: If you just want to wrap between 0.0 and [code]n[/code] (where [code]n[/code] is a positive float value) then it's better for performance to use [method fmod] method like [code]fmod(number, n)[/code].
+				The usage of [code]wrapf[/code] is more flexible than using the [method fmod] approach by giving the user a simple control over the minimum value. It also fully supports negative numbers, e.g.
+				[codeblock]
+				# infinite rotation (in radians)
+				angle = wrapf(angle + 0.1, -PI, PI)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="wrapi">
@@ -1266,6 +1276,12 @@
 				[codeblock]
 				# infinite loop between 0 and 9
 				frame = wrapi(frame + 1, 0, 10)
+				[/codeblock]
+				Note: If you just want to wrap between 0 and [code]n[/code] (where [code]n[/code] is a positive integer value) then it's better for performance to use modulo operator like [code]number % n[/code].
+				The usage of [code]wrapi[/code] is more flexible than using the modulo approach by giving the user a simple control over the minimum value. It also fully supports negative numbers, e.g.
+				[codeblock]
+				# result is -2
+				var result = wrapi(-6, -5, -1)
 				[/codeblock]
 			</description>
 		</method>
