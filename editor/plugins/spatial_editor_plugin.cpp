@@ -2397,8 +2397,7 @@ void SpatialEditorViewport::_draw() {
 				_edit.mouse_pos,
 				center,
 				get_color("accent_color", "Editor") * Color(1, 1, 1, 0.6),
-				Math::round(2 * EDSCALE),
-				true);
+				Math::round(2 * EDSCALE));
 	}
 	if (previewing) {
 

@@ -265,6 +265,11 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 		//VSG::canvas_render->canvas_debug_viewport_shadows(lights_with_shadow);
 	}
+
+	if (VSG::storage->render_target_is_clear_requested(p_viewport->render_target)) {
+		//was never cleared in the end, force clear it
+		VSG::storage->render_target_do_clear_request(p_viewport->render_target);
+	}
 }
 
 void VisualServerViewport::draw_viewports() {
