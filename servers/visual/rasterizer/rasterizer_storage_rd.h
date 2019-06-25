@@ -26,6 +26,8 @@ public:
 		RD::TextureView rd_view;
 
 		Image::Format format;
+		Image::Format validated_format;
+
 		int width;
 		int height;
 		int depth;

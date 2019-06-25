@@ -1635,6 +1635,9 @@ void VisualServer::_bind_methods() {
 
 #warning TODO all texture methods need re-binding
 
+	ClassDB::bind_method(D_METHOD("texture_2d_create", "image"), &VisualServer::texture_2d_create);
+	ClassDB::bind_method(D_METHOD("texture_2d_get", "texture"), &VisualServer::texture_2d_get);
+
 #ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("sky_create"), &VisualServer::sky_create);
 	ClassDB::bind_method(D_METHOD("sky_set_texture", "sky", "cube_map", "radiance_size"), &VisualServer::sky_set_texture);

@@ -1056,9 +1056,6 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 	if (p_flush_setup && command_buffer_queue[0]) {
 
 		//use a fence to wait for everything done
-
-		vkResetFences(device, 1, &fences[frame_index]);
-
 		VkSubmitInfo submit_info;
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.pNext = NULL;
@@ -1069,7 +1066,7 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 		submit_info.pCommandBuffers = command_buffer_queue.ptr();
 		submit_info.signalSemaphoreCount = 0;
 		submit_info.pSignalSemaphores = NULL;
-		VkResult err = vkQueueSubmit(graphics_queue, 1, &submit_info, fences[frame_index]);
+		VkResult err = vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
 		command_buffer_queue.write[0] = NULL;
 		ERR_FAIL_COND(err);
 		vkDeviceWaitIdle(device);
@@ -1078,8 +1075,6 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 	if (p_flush_pending && command_buffer_count > 1) {
 
 		//use a fence to wait for everything done
-
-		vkResetFences(device, 1, &fences[frame_index]);
 
 		VkSubmitInfo submit_info;
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1091,8 +1086,7 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 		submit_info.pCommandBuffers = command_buffer_queue.ptr() + 1;
 		submit_info.signalSemaphoreCount = 0;
 		submit_info.pSignalSemaphores = NULL;
-		VkResult err = vkQueueSubmit(graphics_queue, 1, &submit_info, fences[frame_index]);
-		command_buffer_queue.write[0] = NULL;
+		VkResult err = vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
 		ERR_FAIL_COND(err);
 		vkDeviceWaitIdle(device);
 

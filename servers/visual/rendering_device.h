@@ -294,7 +294,8 @@ public:
 		TEXTURE_USAGE_STORAGE_ATOMIC_BIT = (1 << 4),
 		TEXTURE_USAGE_CPU_READ_BIT = (1 << 5),
 		TEXTURE_USAGE_CAN_UPDATE_BIT = (1 << 6),
-		TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT = (1 << 7),
+		TEXTURE_USAGE_CAN_RETRIEVE_BIT = (1 << 7),
+		TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT = (1 << 8),
 	};
 
 	enum TextureSwizzle {
@@ -352,6 +353,7 @@ public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<PoolVector<uint8_t> > &p_data = Vector<PoolVector<uint8_t> >()) = 0;
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture) = 0;
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
+	virtual PoolVector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer) = 0; // CPU textures will return immediately, while GPU textures will most likely force a flush
 
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const = 0;
 	virtual bool texture_is_shared(RID p_texture) =0;
