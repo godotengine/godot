@@ -103,7 +103,18 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 	if (root_uri.length() && is_same_workspace) {
 		workspace.root_uri = root_uri;
 	} else {
+
 		workspace.root_uri = "file://" + workspace.root;
+
+		Dictionary params;
+		params["path"] = workspace.root;
+		Dictionary request = make_notification("gdscrip_client/changeWorkspace", params);
+		if (Ref<WebSocketPeer> *peer = clients.getptr(lastest_client_id)) {
+			String msg = JSON::print(request);
+			msg = format_output(msg);
+			CharString charstr = msg.utf8();
+			(*peer)->put_packet((const uint8_t *)charstr.ptr(), charstr.length());
+		}
 	}
 
 	if (!_initialized) {
@@ -116,18 +127,6 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 }
 
 void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
-
-	Dictionary params;
-	params["type"] = 3;
-	params["message"] = "GDScript Language Server initialized!";
-	Dictionary test_message = make_notification("window/showMessage", params);
-
-	if (Ref<WebSocketPeer> *peer = clients.getptr(lastest_client_id)) {
-		String msg = JSON::print(test_message);
-		msg = format_output(msg);
-		CharString charstr = msg.utf8();
-		(*peer)->put_packet((const uint8_t *)charstr.ptr(), charstr.length());
-	}
 }
 
 void GDScriptLanguageProtocol::poll() {

@@ -52,7 +52,6 @@ typedef HashMap<String, const lsp::DocumentSymbol *> ClassMembers;
 class ExtendGDScriptParser : public GDScriptParser {
 
 	String path;
-	String code;
 	Vector<String> lines;
 
 	lsp::DocumentSymbol class_symbol;
@@ -73,7 +72,6 @@ class ExtendGDScriptParser : public GDScriptParser {
 
 public:
 	_FORCE_INLINE_ const String &get_path() const { return path; }
-	_FORCE_INLINE_ const String &get_code() const { return code; }
 	_FORCE_INLINE_ const Vector<String> &get_lines() const { return lines; }
 	_FORCE_INLINE_ const lsp::DocumentSymbol &get_symbols() const { return class_symbol; }
 	_FORCE_INLINE_ const Vector<lsp::Diagnostic> &get_diagnostics() const { return diagnostics; }

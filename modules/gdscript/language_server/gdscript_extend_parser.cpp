@@ -557,7 +557,6 @@ const Array &ExtendGDScriptParser::get_member_completions() {
 
 Error ExtendGDScriptParser::parse(const String &p_code, const String &p_path) {
 	path = p_path;
-	code = p_code;
 	lines = p_code.split("\n");
 
 	Error err = GDScriptParser::parse(p_code, p_path.get_base_dir(), false, p_path, false, NULL, false);
