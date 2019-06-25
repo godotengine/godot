@@ -1951,6 +1951,8 @@
 			<argument index="2" name="scenario" type="RID">
 			</argument>
 			<description>
+				Returns an array of object IDs intersecting with the provided 3D ray. Only visual 3D nodes are considered, such as [MeshInstance] or [DirectionalLight]. Use [method @GDscript.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World] you want to query.
+				Warning: this function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
 		<method name="light_directional_set_blend_splits">
