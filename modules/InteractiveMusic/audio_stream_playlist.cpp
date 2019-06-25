@@ -195,6 +195,9 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 			}
 
 			int to_mix = MIN(MIX_BUFFER_SIZE, MIN(p_frames, beat_amount_remaining));
+			if (to_mix < 0) {
+				to_mix = MIX_BUFFER_SIZE;
+			}
 
 			clear_buffer(to_mix);
 

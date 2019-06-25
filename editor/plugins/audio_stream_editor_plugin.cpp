@@ -63,6 +63,7 @@ void AudioStreamEditor::_notification(int p_what) {
 }
 
 void AudioStreamEditor::_draw_preview() {
+	return;
 	Rect2 rect = _preview->get_rect();
 	Size2 size = get_size();
 
