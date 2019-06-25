@@ -130,7 +130,7 @@ void CollisionShape2D::_notification(int p_what) {
 					draw_col = draw_col.darkened(0.25);
 				}
 				Vector2 line_to(0, 20);
-				draw_line(Vector2(), line_to, draw_col, 2, true);
+				draw_line(Vector2(), line_to, draw_col, 2);
 				Vector<Vector2> pts;
 				float tsize = 8;
 				pts.push_back(line_to + (Vector2(0, tsize)));
