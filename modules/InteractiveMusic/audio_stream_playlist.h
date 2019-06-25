@@ -2,6 +2,8 @@
 #include "core/resource.h"
 #include "servers/audio/audio_stream.h"
 
+class AudioStreamPlaybackPlaylist;
+
 class AudioStreamPlaylist : public AudioStream {
 	GDCLASS(AudioStreamPlaylist, AudioStream)
 	OBJ_SAVE_TYPE(AudioStream)

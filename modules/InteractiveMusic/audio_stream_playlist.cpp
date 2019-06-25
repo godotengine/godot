@@ -131,17 +131,25 @@ void AudioStreamPlaybackPlaylist::stop() {
 }
 
 void AudioStreamPlaybackPlaylist::start(float p_from_pos) {
-
+	current = 0;
 	fading_samples_total = fading_time * playlist->sample_rate;
-	if (bpm_list[current] == 0) {
+	if (playlist->audio_streams[current]->get_bpm() == 0) {
 		beat_size = playlist->sample_rate * 60 / playlist->bpm;
 	} else {
-		beat_size = playlist->sample_rate * 60 / bpm_list[current];
+		int bpm_test = playlist->audio_streams[current]->get_bpm();
+		std::clog << "BPM= " << bpm_test << std::endl;
+		beat_size = playlist->sample_rate * 60 / playlist->audio_streams[current]->get_bpm();
 	}
-	if (beats_list[current] == 0) {
-		beat_amount_remaining = playlist->beat_count * beat_size;
+	if (playlist->audio_streams[current]->get_beat_count() == 0) {
+		beat_amount_remaining = playlist->audio_streams[current]->get_length() * beat_size;
+		std::clog << "beats_amount_remaining= " << beat_amount_remaining << std::endl;
+
 	} else {
-		beat_amount_remaining = beats_list[current] * beat_size;
+		int beats_test = playlist->audio_streams[current]->get_beat_count();
+
+		std::clog << "beats= " << beats_test << std::endl;
+
+		beat_amount_remaining = playlist->audio_streams[current]->get_beat_count() * beat_size;
 	}
 	if (playlist->audio_streams[current].is_valid()) {
 		seek(p_from_pos);
@@ -176,7 +184,14 @@ void AudioStreamPlaybackPlaylist::clear_buffer(int samples) {
 }
 
 void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
-	if (active == true) {
+	if (active != true) {
+		for (int i = 0; i < p_frames; i++) {
+			p_buffer[i] = AudioFrame(0.0, 0.0);
+		}
+		stop();
+		return;
+		
+	} else {
 		int dst_offset = 0;
 		int fading_samples = 0;
 
@@ -189,9 +204,12 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 				playback[current]->start();
 				fading_samples = fading_samples_total;
 				beat_size = playlist->sample_rate * 60 / bpm_list[current];
-				beat_amount_remaining = beats_list[current] * beat_size;
-				std::clog << "beat_amount_remaining = " << beats_list[current] << " * " << beat_size << std::endl;
-				std::clog << "beat_amount_remaining = " << beat_amount_remaining << std::endl;
+				if (playlist->audio_streams[current]->get_beat_count() == 0) {
+					beat_amount_remaining = playlist->audio_streams[current]->get_length() * beat_size;
+				} else {
+					beat_amount_remaining = playlist->audio_streams[current]->get_beat_count() * beat_size;
+				} //std::clog << "beat_amount_remaining = " << beats_list[current] << " * " << beat_size << std::endl;
+				//std::clog << "beat_amount_remaining = " << beat_amount_remaining << std::endl;
 			}
 
 			int to_mix = MIN(MIX_BUFFER_SIZE, MIN(p_frames, beat_amount_remaining));
@@ -221,13 +239,7 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 			dst_offset += to_mix;
 			p_frames -= to_mix;
 			beat_amount_remaining -= to_mix;
-		}
-	} else {
-		for (int i = 0; i < p_frames; i++) {
-			p_buffer[i] = AudioFrame(0.0, 0.0);
-		}
-		stop();
-		return;
+			}
 	}
 }
 
@@ -253,17 +265,6 @@ void AudioStreamPlaybackPlaylist::_update_playback_instances() {
 	for (int i = 0; i < playlist->stream_count; i++) {
 
 		if (playlist->audio_streams[i].is_valid()) {
-			if (playlist->audio_streams[i]->get_bpm() == 0) {
-				bpm_list[i] = playlist->bpm;
-			} else {
-				bpm_list[i] = playlist->audio_streams[i]->get_bpm();
-			}
-
-			if (playlist->audio_streams[i]->get_beat_count() == 0) {
-				beats_list[i] = playlist->beat_count;
-			} else {
-				beats_list[i] = playlist->audio_streams[i]->get_beat_count();
-			}
 			playback[i] = playlist->audio_streams[i]->instance_playback();
 		} else {
 			playback[i].unref();
