@@ -1019,7 +1019,7 @@ void EditorPropertyEasing::_draw_easing() {
 		prev = h;
 	}
 
-	easing_draw->draw_multiline(lines, line_color, 1.0, true);
+	easing_draw->draw_multiline(lines, line_color, 1.0);
 	f->draw(ci, Point2(10, 10 + f->get_ascent()), String::num(exp, 2), font_color);
 }
 
