@@ -572,6 +572,8 @@
 		<theme_item name="font_color" type="Color">
 			Sets the font [Color].
 		</theme_item>
+		<theme_item name="font_color_readonly" type="Color">
+		</theme_item>
 		<theme_item name="font_color_selected" type="Color">
 		</theme_item>
 		<theme_item name="function_color" type="Color">

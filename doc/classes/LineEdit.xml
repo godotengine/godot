@@ -200,6 +200,8 @@
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color">
 		</theme_item>
+		<theme_item name="font_color_uneditable" type="Color">
+		</theme_item>
 		<theme_item name="minimum_spaces" type="int">
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
