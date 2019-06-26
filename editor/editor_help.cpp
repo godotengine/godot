@@ -389,7 +389,6 @@ void EditorHelp::_update_doc() {
 				if (prev) {
 
 					class_desc->add_text(" , ");
-					prev = false;
 				}
 
 				_add_type(E->get().name);
@@ -544,7 +543,6 @@ void EditorHelp::_update_doc() {
 				class_desc->pop(); //cell
 				class_desc->push_cell();
 				class_desc->pop(); //cell
-				any_previous = false;
 			}
 
 			String group_prefix;

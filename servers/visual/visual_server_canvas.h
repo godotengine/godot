@@ -84,8 +84,8 @@ public:
 
 			if (Math::is_equal_approx(p_left->ysort_pos.y, p_right->ysort_pos.y))
 				return p_left->ysort_pos.x < p_right->ysort_pos.x;
-			else
-				return p_left->ysort_pos.y < p_right->ysort_pos.y;
+
+			return p_left->ysort_pos.y < p_right->ysort_pos.y;
 		}
 	};
 

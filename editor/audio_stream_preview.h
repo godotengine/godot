@@ -78,7 +78,7 @@ protected:
 public:
 	static AudioStreamPreviewGenerator *get_singleton() { return singleton; }
 
-	Ref<AudioStreamPreview> generate_preview(const Ref<AudioStream> &p_preview);
+	Ref<AudioStreamPreview> generate_preview(const Ref<AudioStream> &p_stream);
 
 	AudioStreamPreviewGenerator();
 };

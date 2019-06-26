@@ -286,7 +286,7 @@ public:
 
 				if (name == "value") {
 
-					Variant value = p_value;
+					const Variant &value = p_value;
 
 					setting = true;
 					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
@@ -302,7 +302,7 @@ public:
 				}
 				if (name == "in_handle") {
 
-					Variant value = p_value;
+					const Variant &value = p_value;
 
 					setting = true;
 					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
@@ -318,7 +318,7 @@ public:
 				}
 				if (name == "out_handle") {
 
-					Variant value = p_value;
+					const Variant &value = p_value;
 
 					setting = true;
 					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
@@ -4894,7 +4894,7 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 			continue;
 		}
 
-		if (!prop_exists || p_animation->track_get_type(i) != Animation::TYPE_VALUE || cleanup_keys->is_pressed() == false)
+		if (!prop_exists || p_animation->track_get_type(i) != Animation::TYPE_VALUE || !cleanup_keys->is_pressed())
 			continue;
 
 		for (int j = 0; j < p_animation->track_get_key_count(i); j++) {

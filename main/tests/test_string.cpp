@@ -57,7 +57,7 @@ bool test_2() {
 	OS::get_singleton()->print("\n\nTest 2: Assign from string (operator=)\n");
 
 	String s = "Dolly";
-	String t = s;
+	const String &t = s;
 
 	OS::get_singleton()->print("\tExpected: Dolly\n");
 	OS::get_singleton()->print("\tResulted: %ls\n", t.c_str());
@@ -70,7 +70,7 @@ bool test_3() {
 	OS::get_singleton()->print("\n\nTest 3: Assign from c-string (copycon)\n");
 
 	String s("Sheep");
-	String t(s);
+	const String &t(s);
 
 	OS::get_singleton()->print("\tExpected: Sheep\n");
 	OS::get_singleton()->print("\tResulted: %ls\n", t.c_str());
@@ -1062,7 +1062,7 @@ bool test_33() {
 	OS::get_singleton()->print("\n\nTest 33: parse_utf8(null, -1)\n");
 
 	String empty;
-	return empty.parse_utf8(NULL, -1) == true;
+	return empty.parse_utf8(NULL, -1);
 }
 
 bool test_34() {

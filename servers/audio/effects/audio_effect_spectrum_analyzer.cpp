@@ -231,8 +231,8 @@ Ref<AudioEffectInstance> AudioEffectSpectrumAnalyzer::instance() {
 	return ins;
 }
 
-void AudioEffectSpectrumAnalyzer::set_buffer_length(float p_volume) {
-	buffer_length = p_volume;
+void AudioEffectSpectrumAnalyzer::set_buffer_length(float p_seconds) {
+	buffer_length = p_seconds;
 }
 
 float AudioEffectSpectrumAnalyzer::get_buffer_length() const {

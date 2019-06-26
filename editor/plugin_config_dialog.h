@@ -62,7 +62,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void config(const String &p_plugin_dir_name);
+	void config(const String &p_config_path);
 
 	PluginConfigDialog();
 	~PluginConfigDialog();

@@ -649,7 +649,7 @@ Open connection dialog with TreeItem data to CREATE a brand-new connection.
 void ConnectionsDock::_open_connection_dialog(TreeItem &item) {
 
 	String signal = item.get_metadata(0).operator Dictionary()["name"];
-	String signalname = signal;
+	const String &signalname = signal;
 	String midname = selectedNode->get_name();
 	for (int i = 0; i < midname.length(); i++) { //TODO: Regex filter may be cleaner.
 		CharType c = midname[i];

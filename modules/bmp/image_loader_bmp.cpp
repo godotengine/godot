@@ -262,7 +262,7 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 
 			PoolVector<uint8_t> bmp_color_table;
 			// Color table is usually 4 bytes per color -> [B][G][R][0]
-			err = bmp_color_table.resize(color_table_size * 4);
+			bmp_color_table.resize(color_table_size * 4);
 			PoolVector<uint8_t>::Write bmp_color_table_w = bmp_color_table.write();
 			f->get_buffer(bmp_color_table_w.ptr(), color_table_size * 4);
 

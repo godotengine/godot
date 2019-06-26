@@ -474,7 +474,6 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 
 	if (r_valid)
 		*r_valid = false;
-	return;
 }
 
 Variant Object::get(const StringName &p_name, bool *r_valid) const {
@@ -810,11 +809,7 @@ bool Object::has_method(const StringName &p_method) const {
 
 	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
 
-	if (method) {
-		return true;
-	}
-
-	return false;
+	return method != NULL;
 }
 
 Variant Object::getvar(const Variant &p_key, bool *r_valid) const {
@@ -1485,7 +1480,7 @@ Error Object::connect(const StringName &p_signal, Object *p_to_object, const Str
 			return OK;
 		} else {
 			ERR_EXPLAIN("Signal '" + p_signal + "' is already connected to given method '" + p_to_method + "' in that object.");
-			ERR_FAIL_COND_V(s->slot_map.has(target), ERR_INVALID_PARAMETER);
+			ERR_FAIL_V(ERR_INVALID_PARAMETER);
 		}
 	}
 
@@ -1542,11 +1537,11 @@ void Object::_disconnect(const StringName &p_signal, Object *p_to_object, const 
 	Signal *s = signal_map.getptr(p_signal);
 	if (!s) {
 		ERR_EXPLAIN("Nonexistent signal: " + p_signal);
-		ERR_FAIL_COND(!s);
+		ERR_FAIL();
 	}
 	if (s->lock > 0) {
 		ERR_EXPLAIN("Attempt to disconnect signal '" + p_signal + "' while emitting (locks: " + itos(s->lock) + ")");
-		ERR_FAIL_COND(s->lock > 0);
+		ERR_FAIL();
 	}
 
 	Signal::Target target(p_to_object->get_instance_id(), p_to_method);

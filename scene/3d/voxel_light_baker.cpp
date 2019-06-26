@@ -212,9 +212,7 @@ static bool fast_tri_box_overlap(const Vector3 &boxcenter, const Vector3 boxhalf
 	/*  compute plane equation of triangle: normal*x+d=0 */
 	normal = e0.cross(e1);
 	d = -normal.dot(v0); /* plane eq: normal.x+d=0 */
-	if (!planeBoxOverlap(normal, d, boxhalfsize)) return false;
-
-	return true; /* box and triangle overlaps */
+	return planeBoxOverlap(normal, d, boxhalfsize); /* if true, box and triangle overlaps */
 }
 
 static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector3 *p_normal, Vector2 &r_uv, Vector3 &r_normal) {

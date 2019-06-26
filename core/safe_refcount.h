@@ -189,11 +189,7 @@ public:
 
 	_ALWAYS_INLINE_ bool unref() { // true if must be disposed of
 
-		if (atomic_decrement(&count) == 0) {
-			return true;
-		}
-
-		return false;
+		return atomic_decrement(&count) == 0;
 	}
 
 	_ALWAYS_INLINE_ uint32_t get() const { // nothrow

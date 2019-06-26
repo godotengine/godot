@@ -1252,7 +1252,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 
 	data.resize(data_size);
 
-	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1 ? true : false, img_format, data));
+	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1, img_format, data));
 
 	return Ref<Image>(img);
 #else

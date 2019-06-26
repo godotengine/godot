@@ -1324,7 +1324,7 @@ Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path,
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew(ResourceInteractiveLoaderText);
-	String path = p_src_path;
+	const String &path = p_src_path;
 	ria->local_path = ProjectSettings::get_singleton()->localize_path(path);
 	ria->res_path = ria->local_path;
 	//ria->set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
@@ -1441,7 +1441,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 			int len = varray.size();
 			for (int i = 0; i < len; i++) {
 
-				Variant v = varray.get(i);
+				const Variant &v = varray.get(i);
 				_find_resources(v);
 			}
 

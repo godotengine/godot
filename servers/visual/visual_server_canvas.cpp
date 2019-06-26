@@ -783,7 +783,7 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 	ERR_FAIL_COND(!p_bones.empty() && p_bones.size() != vertex_count * 4);
 	ERR_FAIL_COND(!p_weights.empty() && p_weights.size() != vertex_count * 4);
 
-	Vector<int> indices = p_indices;
+	const Vector<int> &indices = p_indices;
 
 	int count = p_count * 3;
 

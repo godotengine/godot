@@ -1042,55 +1042,37 @@ int Control::get_constant(const StringName &p_name, const StringName &p_type) co
 bool Control::has_icon_override(const StringName &p_name) const {
 
 	const Ref<Texture> *tex = data.icon_override.getptr(p_name);
-	if (tex)
-		return true;
-	else
-		return false;
+	return tex != NULL;
 }
 
 bool Control::has_shader_override(const StringName &p_name) const {
 
 	const Ref<Shader> *sdr = data.shader_override.getptr(p_name);
-	if (sdr)
-		return true;
-	else
-		return false;
+	return sdr != NULL;
 }
 
 bool Control::has_stylebox_override(const StringName &p_name) const {
 
 	const Ref<StyleBox> *style = data.style_override.getptr(p_name);
-	if (style)
-		return true;
-	else
-		return false;
+	return style != NULL;
 }
 
 bool Control::has_font_override(const StringName &p_name) const {
 
 	const Ref<Font> *font = data.font_override.getptr(p_name);
-	if (font)
-		return true;
-	else
-		return false;
+	return font != NULL;
 }
 
 bool Control::has_color_override(const StringName &p_name) const {
 
 	const Color *color = data.color_override.getptr(p_name);
-	if (color)
-		return true;
-	else
-		return false;
+	return color != NULL;
 }
 
 bool Control::has_constant_override(const StringName &p_name) const {
 
 	const int *constant = data.constant_override.getptr(p_name);
-	if (constant)
-		return true;
-	else
-		return false;
+	return constant != NULL;
 }
 
 bool Control::has_icon(const StringName &p_name, const StringName &p_type) const {
@@ -1997,10 +1979,7 @@ Control *Control::find_next_valid_focus() const {
 			break;
 		}
 
-		if (next_child) {
-
-			from = next_child;
-		} else {
+		if (!next_child) {
 
 			next_child = _next_control(from);
 			if (!next_child) { //nothing else.. go up and find either window or subwindow

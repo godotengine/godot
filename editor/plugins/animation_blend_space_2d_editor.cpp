@@ -1043,7 +1043,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	error_panel->add_child(error_label);
 	error_label->set_text("eh");
 
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	set_custom_minimum_size(Size2(0, 300 * EDSCALE));
 
@@ -1061,7 +1061,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	open_file->set_title(TTR("Open Animation Node"));
 	open_file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	open_file->connect("file_selected", this, "_file_opened");
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	selected_point = -1;
 	selected_triangle = -1;

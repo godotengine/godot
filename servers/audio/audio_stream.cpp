@@ -223,7 +223,7 @@ float AudioStreamPlaybackMicrophone::get_playback_position() const {
 }
 
 void AudioStreamPlaybackMicrophone::seek(float p_time) {
-	return; // Can't seek a microphone input
+	// Can't seek a microphone input
 }
 
 AudioStreamPlaybackMicrophone::~AudioStreamPlaybackMicrophone() {

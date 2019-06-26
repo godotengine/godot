@@ -229,10 +229,7 @@ bool NetSocketPosix::_can_use_ip(const IP_Address p_ip, const bool p_for_bind) c
 	}
 	// Check if socket support this IP type.
 	IP::Type type = p_ip.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
-	if (_ip_type != IP::TYPE_ANY && !p_ip.is_wildcard() && _ip_type != type) {
-		return false;
-	}
-	return true;
+	return !(_ip_type != IP::TYPE_ANY && !p_ip.is_wildcard() && _ip_type != type);
 }
 
 _FORCE_INLINE_ Error NetSocketPosix::_change_multicast_group(IP_Address p_ip, String p_if_name, bool p_add) {

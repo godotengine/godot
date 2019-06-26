@@ -73,8 +73,6 @@ private:
 		bool restart_if_changed;
 		VariantContainer() :
 				order(0),
-				variant(Variant()),
-				initial(Variant()),
 				has_default_value(false),
 				hide_from_editor(false),
 				save(false),
@@ -83,7 +81,6 @@ private:
 		VariantContainer(const Variant &p_variant, int p_order) :
 				order(p_order),
 				variant(p_variant),
-				initial(Variant()),
 				has_default_value(false),
 				hide_from_editor(false),
 				save(false),
@@ -123,7 +120,7 @@ private:
 	void _load_defaults(Ref<ConfigFile> p_extra_config = NULL);
 	void _load_default_text_editor_theme();
 	bool _save_text_editor_theme(String p_file);
-	bool _is_default_text_editor_theme(String p_file);
+	bool _is_default_text_editor_theme(String p_theme_name);
 
 protected:
 	static void _bind_methods();

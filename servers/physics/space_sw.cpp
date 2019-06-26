@@ -118,7 +118,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3 &p_from, const Vecto
 		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
-		if (p_pick_ray && !(static_cast<CollisionObjectSW *>(space->intersection_query_results[i])->is_ray_pickable()))
+		if (p_pick_ray && !(space->intersection_query_results[i]->is_ray_pickable()))
 			continue;
 
 		if (p_exclude.has(space->intersection_query_results[i]->get_self()))
@@ -439,7 +439,7 @@ bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform &p_shape_
 			continue;
 	}
 
-	if (rcd.best_len == 0)
+	if (rcd.best_len == 0 || !rcd.best_object)
 		return false;
 
 	r_info->collider_id = rcd.best_object->get_instance_id();

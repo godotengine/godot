@@ -435,7 +435,6 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 
 					_queue_page(page + j);
 				}
-				buff = pages.write[page].buffer.ptrw();
 				//queue pages
 				buffer_mutex->unlock();
 			}

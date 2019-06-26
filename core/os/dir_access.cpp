@@ -373,7 +373,7 @@ Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flag
 			if (current_is_dir())
 				dirs.push_back(n);
 			else {
-				String rel_path = n;
+				const String &rel_path = n;
 				if (!n.is_rel_path()) {
 					list_dir_end();
 					return ERR_BUG;

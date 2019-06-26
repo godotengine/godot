@@ -808,7 +808,7 @@ void ProjectSettingsEditor::update_plugins() {
 
 void ProjectSettingsEditor::_item_selected(const String &p_path) {
 
-	String selected_path = p_path;
+	const String &selected_path = p_path;
 	if (selected_path == String())
 		return;
 	category->set_text(globals_editor->get_current_section());

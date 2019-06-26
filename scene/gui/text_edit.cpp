@@ -1593,7 +1593,6 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 
 	insert_text_at_cursor(ch_pair);
 	cursor_set_column(cursor_position_to_move);
-	return;
 }
 
 void TextEdit::_consume_backspace_for_pair_symbol(int prev_line, int prev_column) {
@@ -5395,11 +5394,7 @@ bool TextEdit::is_line_comment(int p_line) const {
 	for (int i = 0; i < line_length - 1; i++) {
 		if (_is_symbol(text[p_line][i]) && cri_map.has(i)) {
 			const Text::ColorRegionInfo &cri = cri_map[i];
-			if (color_regions[cri.region].begin_key == "#" || color_regions[cri.region].begin_key == "//") {
-				return true;
-			} else {
-				return false;
-			}
+			return color_regions[cri.region].begin_key == "#" || color_regions[cri.region].begin_key == "//";
 		} else if (_is_whitespace(text[p_line][i])) {
 			continue;
 		} else {
@@ -5448,9 +5443,7 @@ bool TextEdit::is_folded(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), false);
 	if (p_line + 1 >= text.size())
 		return false;
-	if (!is_line_hidden(p_line) && is_line_hidden(p_line + 1))
-		return true;
-	return false;
+	return !is_line_hidden(p_line) && is_line_hidden(p_line + 1);
 }
 
 Vector<int> TextEdit::get_folded_lines() const {

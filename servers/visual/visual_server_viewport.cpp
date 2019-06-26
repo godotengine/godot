@@ -253,8 +253,6 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 			} else {
 				_draw_3d(p_viewport, p_eye);
 			}
-
-			scenario_draw_canvas_bg = false;
 		}
 
 		//VSG::canvas_render->canvas_debug_viewport_shadows(lights_with_shadow);

@@ -404,8 +404,6 @@ _FORCE_INLINE_ bool is_str_less(const L *l_ptr, const R *r_ptr) {
 		l_ptr++;
 		r_ptr++;
 	}
-
-	CRASH_COND(true); // unreachable
 }
 
 /* end of namespace */

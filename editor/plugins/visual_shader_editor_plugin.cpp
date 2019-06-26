@@ -158,10 +158,7 @@ bool VisualShaderEditor::_is_available(int p_mode) {
 		p_mode = temp_mode;
 	}
 
-	if (p_mode != -1 && ((p_mode & current_mode) == 0)) {
-		return false;
-	}
-	return true;
+	return (p_mode == -1 || (p_mode & current_mode) != 0);
 }
 
 void VisualShaderEditor::_update_options_menu() {

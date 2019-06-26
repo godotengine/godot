@@ -263,7 +263,7 @@ void TileSetEditor::_notification(int p_what) {
 TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
 	editor = p_editor;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 	current_tile = -1;
 
 	VBoxContainer *left_container = memnew(VBoxContainer);
@@ -829,8 +829,8 @@ void TileSetEditor::_on_workspace_draw() {
 			case EDITMODE_BITMASK: {
 				Color c(1, 0, 0, 0.5);
 				Color ci(0.3, 0.6, 1, 0.5);
-				for (float x = 0; x < region.size.x / (spacing + size.x); x++) {
-					for (float y = 0; y < region.size.y / (spacing + size.y); y++) {
+				for (int x = 0; x < region.size.x / (spacing + size.x); x++) {
+					for (int y = 0; y < region.size.y / (spacing + size.y); y++) {
 						Vector2 coord(x, y);
 						Point2 anchor(coord.x * (spacing + size.x), coord.y * (spacing + size.y));
 						anchor += WORKSPACE_MARGIN;
@@ -2009,11 +2009,7 @@ bool TileSetEditor::_sort_tiles(Variant p_a, Variant p_b) {
 		return true;
 
 	} else if (pos_a.y == pos_b.y) {
-		if (pos_a.x < pos_b.x) {
-			return true;
-		} else {
-			return false;
-		}
+		return (pos_a.x < pos_b.x);
 	} else {
 		return false;
 	}

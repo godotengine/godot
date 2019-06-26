@@ -205,7 +205,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 	for (const Map<String, Map<StringName, Variant> >::Element *E = p_source_file_options.front(); E; E = E->next(), idx++) {
 
 		PackData &pack_data = pack_data_files.write[idx];
-		String source = E->key();
+		const String &source = E->key();
 		const Map<StringName, Variant> &options = E->get();
 
 		Ref<Image> image;

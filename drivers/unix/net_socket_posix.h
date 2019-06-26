@@ -77,7 +77,7 @@ public:
 	virtual void close();
 	virtual Error bind(IP_Address p_addr, uint16_t p_port);
 	virtual Error listen(int p_max_pending);
-	virtual Error connect_to_host(IP_Address p_addr, uint16_t p_port);
+	virtual Error connect_to_host(IP_Address p_host, uint16_t p_port);
 	virtual Error poll(PollType p_type, int timeout) const;
 	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read);
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port);

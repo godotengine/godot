@@ -459,14 +459,13 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									if (p_font_color_shadow.a > 0) {
 										float x_ofs_shadow = align_ofs + pofs;
 										float y_ofs_shadow = y + lh - line_descent;
-										float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + shadow_ofs, c[i], c[i + 1], p_font_color_shadow);
+										font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + shadow_ofs, c[i], c[i + 1], p_font_color_shadow);
 
 										if (p_shadow_as_outline) {
 											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(-shadow_ofs.x, shadow_ofs.y), c[i], c[i + 1], p_font_color_shadow);
 											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(shadow_ofs.x, -shadow_ofs.y), c[i], c[i + 1], p_font_color_shadow);
 											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c[i], c[i + 1], p_font_color_shadow);
 										}
-										x_ofs_shadow += move;
 									}
 
 									if (selected) {
@@ -947,11 +946,67 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 			return;
 
 		if (b->get_button_index() == BUTTON_LEFT) {
+			if (b->is_pressed() && !b->is_doubleclick()) {
+				scroll_updated = false;
+				int line = 0;
+				Item *item = NULL;
 
-			if (true) {
+				bool outside;
+				_find_click(main, b->get_position(), &item, &line, &outside);
 
-				if (b->is_pressed() && !b->is_doubleclick()) {
-					scroll_updated = false;
+				if (item) {
+
+					if (selection.enabled) {
+
+						selection.click = item;
+						selection.click_char = line;
+
+						// Erase previous selection.
+						if (selection.active) {
+							selection.from = NULL;
+							selection.from_char = '\0';
+							selection.to = NULL;
+							selection.to_char = '\0';
+							selection.active = false;
+
+							update();
+						}
+					}
+				}
+			} else if (b->is_pressed() && b->is_doubleclick() && selection.enabled) {
+
+				//doubleclick: select word
+				int line = 0;
+				Item *item = NULL;
+				bool outside;
+
+				_find_click(main, b->get_position(), &item, &line, &outside);
+
+				while (item && item->type != ITEM_TEXT) {
+
+					item = _get_next_item(item, true);
+				}
+
+				if (item && item->type == ITEM_TEXT) {
+
+					String itext = static_cast<ItemText *>(item)->text;
+
+					int beg, end;
+					if (select_word(itext, line, beg, end)) {
+
+						selection.from = item;
+						selection.to = item;
+						selection.from_char = beg;
+						selection.to_char = end - 1;
+						selection.active = true;
+						update();
+					}
+				}
+			} else if (!b->is_pressed()) {
+
+				selection.click = NULL;
+
+				if (!b->is_doubleclick() && !scroll_updated) {
 					int line = 0;
 					Item *item = NULL;
 
@@ -960,71 +1015,11 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 
 					if (item) {
 
-						if (selection.enabled) {
+						Variant meta;
+						if (!outside && _find_meta(item, &meta)) {
+							//meta clicked
 
-							selection.click = item;
-							selection.click_char = line;
-
-							// Erase previous selection.
-							if (selection.active) {
-								selection.from = NULL;
-								selection.from_char = '\0';
-								selection.to = NULL;
-								selection.to_char = '\0';
-								selection.active = false;
-
-								update();
-							}
-						}
-					}
-				} else if (b->is_pressed() && b->is_doubleclick() && selection.enabled) {
-
-					//doubleclick: select word
-					int line = 0;
-					Item *item = NULL;
-					bool outside;
-
-					_find_click(main, b->get_position(), &item, &line, &outside);
-
-					while (item && item->type != ITEM_TEXT) {
-
-						item = _get_next_item(item, true);
-					}
-
-					if (item && item->type == ITEM_TEXT) {
-
-						String itext = static_cast<ItemText *>(item)->text;
-
-						int beg, end;
-						if (select_word(itext, line, beg, end)) {
-
-							selection.from = item;
-							selection.to = item;
-							selection.from_char = beg;
-							selection.to_char = end - 1;
-							selection.active = true;
-							update();
-						}
-					}
-				} else if (!b->is_pressed()) {
-
-					selection.click = NULL;
-
-					if (!b->is_doubleclick() && !scroll_updated) {
-						int line = 0;
-						Item *item = NULL;
-
-						bool outside;
-						_find_click(main, b->get_position(), &item, &line, &outside);
-
-						if (item) {
-
-							Variant meta;
-							if (!outside && _find_meta(item, &meta)) {
-								//meta clicked
-
-								emit_signal("meta_clicked", meta);
-							}
+							emit_signal("meta_clicked", meta);
 						}
 					}
 				}

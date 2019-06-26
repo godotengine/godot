@@ -911,7 +911,7 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 			if (incr == 0) {
 
 				ERR_EXPLAIN("unhandled opcode: " + itos(code[ip]));
-				ERR_BREAK(incr == 0);
+				ERR_BREAK(true);
 			}
 
 			ip += incr;
@@ -974,7 +974,7 @@ MainLoop *test(TestType p_type) {
 			if (tk.get_token() == GDScriptTokenizer::TK_IDENTIFIER)
 				text = "'" + tk.get_token_identifier() + "' (identifier)";
 			else if (tk.get_token() == GDScriptTokenizer::TK_CONSTANT) {
-				Variant c = tk.get_token_constant();
+				const Variant &c = tk.get_token_constant();
 				if (c.get_type() == Variant::STRING)
 					text = "\"" + String(c) + "\"";
 				else

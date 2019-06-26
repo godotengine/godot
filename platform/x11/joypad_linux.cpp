@@ -101,7 +101,6 @@ void JoypadLinux::joy_thread_func(void *p_user) {
 		JoypadLinux *joy = (JoypadLinux *)p_user;
 		joy->run_joypad_thread();
 	}
-	return;
 }
 
 void JoypadLinux::run_joypad_thread() {

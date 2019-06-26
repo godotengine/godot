@@ -807,7 +807,7 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 
 	canvas_item_editor = NULL;
 	editor = p_editor;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	wip_active = false;
 	edited_point = PosVertex();

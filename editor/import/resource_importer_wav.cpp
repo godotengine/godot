@@ -210,12 +210,6 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			print_line("bits: "+itos(format_bits));
 			*/
 
-			int len = frames;
-			if (format_channels == 2)
-				len *= 2;
-			if (format_bits > 8)
-				len *= 2;
-
 			data.resize(frames * format_channels);
 
 			if (format_bits == 8) {

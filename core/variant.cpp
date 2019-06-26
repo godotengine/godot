@@ -709,7 +709,7 @@ bool Variant::is_zero() const {
 		// atomic types
 		case BOOL: {
 
-			return _data._bool == false;
+			return !(_data._bool);
 		} break;
 		case INT: {
 

@@ -63,10 +63,7 @@ Rect2 Sprite::_edit_get_rect() const {
 }
 
 bool Sprite::_edit_use_rect() const {
-	if (texture.is_null())
-		return false;
-
-	return true;
+	return texture.is_valid();
 }
 
 Rect2 Sprite::get_anchorable_rect() const {

@@ -119,7 +119,7 @@ public:
 
 class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 
-	GDCLASS(AudioStreamPlaybackMicrophone, AudioStreamPlayback);
+	GDCLASS(AudioStreamPlaybackMicrophone, AudioStreamPlaybackResampled);
 	friend class AudioStreamMicrophone;
 
 	bool active;

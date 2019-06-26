@@ -566,7 +566,7 @@ Error ProjectSettings::_load_settings_text(const String p_path) {
 				if (config_version > CONFIG_VERSION) {
 					memdelete(f);
 					ERR_EXPLAIN(vformat("Can't open project at '%s', its `config_version` (%d) is from a more recent and incompatible version of the engine. Expected config version: %d.", p_path, config_version, CONFIG_VERSION));
-					ERR_FAIL_COND_V(config_version > CONFIG_VERSION, ERR_FILE_CANT_OPEN);
+					ERR_FAIL_V(ERR_FILE_CANT_OPEN);
 				}
 			} else {
 				if (section == String()) {
