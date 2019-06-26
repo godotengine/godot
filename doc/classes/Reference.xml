@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Reference" inherits="Object" category="Core" version="3.2">
 	<brief_description>
-		Base class for anything that keeps a reference count.
+		Base class for reference-counted objects.
 	</brief_description>
 	<description>
-		Base class for anything that keeps a reference count. Resource and many other helper objects inherit this. References keep an internal reference counter so they are only released when no longer in use.
+		Base class for any object that keeps a reference count. [Resource] and many other helper objects inherit this class.
+		References keep an internal reference counter so that they are automatically released when no longer in use, and only then. References therefore do not need to be freed manually with [method Object.free].
+		In the vast majority of use cases, instantiating and using [Reference]-derived types is all you need to do. The methods provided in this class are only for advanced users, and can cause issues if misused.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,20 +15,24 @@
 			<return type="bool">
 			</return>
 			<description>
+				Initializes the internal reference counter. Use this only if you really know what you are doing.
+				Returns whether the initialization was successful.
 			</description>
 		</method>
 		<method name="reference">
 			<return type="bool">
 			</return>
 			<description>
-				Increase the internal reference counter. Use this only if you really know what you are doing.
+				Increments the internal reference counter. Use this only if you really know what you are doing.
+				Returns whether the increment was successful.
 			</description>
 		</method>
 		<method name="unreference">
 			<return type="bool">
 			</return>
 			<description>
-				Decrease the internal reference counter. Use this only if you really know what you are doing.
+				Decrements the internal reference counter. Use this only if you really know what you are doing.
+				Returns whether the decrement was successful.
 			</description>
 		</method>
 	</methods>

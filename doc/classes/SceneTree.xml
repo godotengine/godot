@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SceneTree" inherits="MainLoop" category="Core" version="3.2">
 	<brief_description>
-		SceneTree manages a hierarchy of nodes.
+		Manages the game loop via a hierarchy of nodes.
 	</brief_description>
 	<description>
-		As one of the most important classes, the [SceneTree] manages the hierarchy of nodes in a scene as well as scenes themselves. Nodes can be added, retrieved and removed. The whole scene tree (and thus the current scene) can be paused. Scenes can be loaded, switched and reloaded. You can also use the SceneTree to organize your nodes into groups: every node can be assigned as many groups as you want to create, e.g. a "enemy" group. You can then iterate these groups or even call methods and set properties on all the group's members at once.
+		As one of the most important classes, the [SceneTree] manages the hierarchy of nodes in a scene as well as scenes themselves. Nodes can be added, retrieved and removed. The whole scene tree (and thus the current scene) can be paused. Scenes can be loaded, switched and reloaded.
+		You can also use the [SceneTree] to organize your nodes into groups: every node can be assigned as many groups as you want to create, e.g. a "enemy" group. You can then iterate these groups or even call methods and set properties on all the group's members at once.
+		[SceneTree] is the default [MainLoop] implementation used by scenes, and is thus in charge of the game loop.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/scene_tree.html</link>
@@ -41,7 +43,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Changes to the scene at the given [code]path[/code].
+				Changes the running scene to the one at the given [code]path[/code], after loading it into a [PackedScene] and creating a new instance.
+				Returns [constant @GlobalScope.OK] on success, [constant @GlobalScope.ERR_CANT_OPEN] if the [code]path[/code] cannot be loaded into a [PackedScene], or [constant @GlobalScope.ERR_CANT_CREATE] if that scene cannot be instantiated.
 			</description>
 		</method>
 		<method name="change_scene_to">
@@ -50,7 +53,8 @@
 			<argument index="0" name="packed_scene" type="PackedScene">
 			</argument>
 			<description>
-				Changes to the given [PackedScene].
+				Changes the running scene to a new instance of the given [PackedScene].
+				Returns [constant @GlobalScope.OK] on success or [constant @GlobalScope.ERR_CANT_CREATE] if the scene cannot be instantiated.
 			</description>
 		</method>
 		<method name="create_timer">
@@ -61,7 +65,7 @@
 			<argument index="1" name="pause_mode_process" type="bool" default="true">
 			</argument>
 			<description>
-				Returns a [SceneTreeTimer] which will [signal SceneTreeTimer.timeout] after the given time in seconds elapsed in this SceneTree. If [code]pause_mode_process[/code] is set to [code]false[/code], pausing the SceneTree will also pause the timer.
+				Returns a [SceneTreeTimer] which will [signal SceneTreeTimer.timeout] after the given time in seconds elapsed in this [SceneTree]. If [code]pause_mode_process[/code] is set to [code]false[/code], pausing the [SceneTree] will also pause the timer.
 				Commonly used to create a one-shot delay timer as in the following example:
 				[codeblock]
 				func some_function():
@@ -75,28 +79,28 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the current frame, i.e. number of frames since the application started.
+				Returns the current frame number, i.e. the total frame count since the application started.
 			</description>
 		</method>
 		<method name="get_network_connected_peers" qualifiers="const">
 			<return type="PoolIntArray">
 			</return>
 			<description>
-				Returns the peer IDs of all connected peers of this SceneTree's [member network_peer].
+				Returns the peer IDs of all connected peers of this [SceneTree]'s [member network_peer].
 			</description>
 		</method>
 		<method name="get_network_unique_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the unique peer ID of this SceneTree's [member network_peer].
+				Returns the unique peer ID of this [SceneTree]'s [member network_peer].
 			</description>
 		</method>
 		<method name="get_node_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of nodes in this SceneTree.
+				Returns the number of nodes in this [SceneTree].
 			</description>
 		</method>
 		<method name="get_nodes_in_group">
@@ -105,7 +109,7 @@
 			<argument index="0" name="group" type="String">
 			</argument>
 			<description>
-				Returns all nodes assigned to the given group.
+				Returns a list of all nodes assigned to the given group.
 			</description>
 		</method>
 		<method name="get_rpc_sender_id" qualifiers="const">
@@ -135,14 +139,14 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the most recent InputEvent was marked as handled with [method set_input_as_handled].
+				Returns [code]true[/code] if the most recent [InputEvent] was marked as handled with [method set_input_as_handled].
 			</description>
 		</method>
 		<method name="is_network_server" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this SceneTree's [member network_peer] is in server mode (listening for connections).
+				Returns [code]true[/code] if this [SceneTree]'s [member network_peer] is in server mode (listening for connections).
 			</description>
 		</method>
 		<method name="notify_group">
@@ -190,6 +194,7 @@
 			</return>
 			<description>
 				Reloads the currently active scene.
+				Returns an [enum @GlobalScope.Error] code as described in [method change_scene], with the addition of [constant @GlobalScope.ERR_UNCONFIGURED] if no [member current_scene] was defined yet.
 			</description>
 		</method>
 		<method name="set_auto_accept_quit">
@@ -198,7 +203,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], the application automatically accepts quitting.
+				If [code]true[/code], the application automatically accepts quitting. Defaults to [code]true[/code].
 			</description>
 		</method>
 		<method name="set_group">
@@ -233,7 +238,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Marks the most recent input event as handled.
+				Marks the most recent [InputEvent] as handled.
 			</description>
 		</method>
 		<method name="set_quit_on_go_back">
@@ -242,7 +247,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], the application quits automatically on going back (e.g. on Android).
+				If [code]true[/code], the application quits automatically on going back (e.g. on Android). Defaults to [code]true[/code].
 			</description>
 		</method>
 		<method name="set_screen_stretch">
@@ -257,7 +262,7 @@
 			<argument index="3" name="shrink" type="float" default="1">
 			</argument>
 			<description>
-				Configures screen stretching to the given [enum StretchMode], [enum StretchAspect], minimum size and [code]shrink[/code].
+				Configures screen stretching to the given [enum StretchMode], [enum StretchAspect], minimum size and [code]shrink[/code] ratio.
 			</description>
 		</method>
 	</methods>
@@ -266,34 +271,34 @@
 			The current scene.
 		</member>
 		<member name="debug_collisions_hint" type="bool" setter="set_debug_collisions_hint" getter="is_debugging_collisions_hint">
+			If [code]true[/code], collision shapes will be visible when running the game from the editor for debugging purposes.
 		</member>
 		<member name="debug_navigation_hint" type="bool" setter="set_debug_navigation_hint" getter="is_debugging_navigation_hint">
+			If [code]true[/code], navigation polygons will be visible when running the game from the editor for debugging purposes.
 		</member>
 		<member name="edited_scene_root" type="Node" setter="set_edited_scene_root" getter="get_edited_scene_root">
 			The root of the edited scene.
 		</member>
 		<member name="multiplayer" type="MultiplayerAPI" setter="set_multiplayer" getter="get_multiplayer">
-			The default [MultiplayerAPI] instance for this SceneTree.
+			The default [MultiplayerAPI] instance for this [SceneTree].
 		</member>
 		<member name="multiplayer_poll" type="bool" setter="set_multiplayer_poll_enabled" getter="is_multiplayer_poll_enabled">
-			If [code]true[/code], (default) enable the automatic polling of the [MultiplayerAPI] for this SceneTree during [signal idle_frame].
+			If [code]true[/code] (default value), enable the automatic polling of the [MultiplayerAPI] for this [SceneTree] during [signal idle_frame].
 			When [code]false[/code] you need to manually call [method MultiplayerAPI.poll] for processing network packets and delivering RPCs/RSETs. This allows to run RPCs/RSETs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protection when accessing the [MultiplayerAPI] from threads.
 		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
-			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the SceneTree will become a network server (check with [method is_network_server]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to SceneTree's signals.
+			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the [SceneTree] will become a network server (check with [method is_network_server]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to [SceneTree]'s signals.
 		</member>
 		<member name="paused" type="bool" setter="set_pause" getter="is_paused">
-			If [code]true[/code], the SceneTree is paused.
-			Doing so will have the following behavior:
-			* 2D and 3D physics will be stopped.
-			* _process and _physics_process will not be called anymore in nodes.
-			* _input and _input_event will not be called anymore either.
+			If [code]true[/code], the [SceneTree] is paused. Doing so will have the following behavior:
+			- 2D and 3D physics will be stopped.
+			- [method Node._process], [method Node._physics_process] and [method Node._input] will not be called anymore in nodes.
 		</member>
 		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections">
-			If [code]true[/code], the SceneTree's [member network_peer] refuses new incoming connections.
+			If [code]true[/code], the [SceneTree]'s [member network_peer] refuses new incoming connections.
 		</member>
 		<member name="root" type="Viewport" setter="" getter="get_root">
-			The SceneTree's [Viewport].
+			The [SceneTree]'s root [Viewport].
 		</member>
 		<member name="use_font_oversampling" type="bool" setter="set_use_font_oversampling" getter="is_using_font_oversampling">
 			If [code]true[/code], font oversampling is used.
@@ -302,12 +307,12 @@
 	<signals>
 		<signal name="connected_to_server">
 			<description>
-				Emitted whenever this SceneTree's [member network_peer] successfully connected to a server. Only emitted on clients.
+				Emitted whenever this [SceneTree]'s [member network_peer] successfully connected to a server. Only emitted on clients.
 			</description>
 		</signal>
 		<signal name="connection_failed">
 			<description>
-				Emitted whenever this SceneTree's [member network_peer] fails to establish a connection to a server. Only emitted on clients.
+				Emitted whenever this [SceneTree]'s [member network_peer] fails to establish a connection to a server. Only emitted on clients.
 			</description>
 		</signal>
 		<signal name="files_dropped">
@@ -316,33 +321,33 @@
 			<argument index="1" name="screen" type="int">
 			</argument>
 			<description>
-				Emitted whenever files are drag-and-dropped onto the window.
+				Emitted when files are dragged from the OS file manager and dropped in the game window. The arguments are a list of file paths and the identifier of the screen where the drag originated.
 			</description>
 		</signal>
 		<signal name="idle_frame">
 			<description>
-				Emitted immediately before [method Node._process] is called on every node in the SceneTree.
+				Emitted immediately before [method Node._process] is called on every node in the [SceneTree].
 			</description>
 		</signal>
 		<signal name="network_peer_connected">
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Emitted whenever this SceneTree's [member network_peer] connects with a new peer. ID is the peer ID of the new peer. Clients get notified when other clients connect to the same server. Upon connecting to a server, a client also receives this signal for the server (with ID being 1).
+				Emitted whenever this [SceneTree]'s [member network_peer] connects with a new peer. ID is the peer ID of the new peer. Clients get notified when other clients connect to the same server. Upon connecting to a server, a client also receives this signal for the server (with ID being 1).
 			</description>
 		</signal>
 		<signal name="network_peer_disconnected">
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Emitted whenever this SceneTree's [member network_peer] disconnects from a peer. Clients get notified when other clients disconnect from the same server.
+				Emitted whenever this [SceneTree]'s [member network_peer] disconnects from a peer. Clients get notified when other clients disconnect from the same server.
 			</description>
 		</signal>
 		<signal name="node_added">
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
-				Emitted whenever a node is added to the SceneTree.
+				Emitted whenever a node is added to the [SceneTree].
 			</description>
 		</signal>
 		<signal name="node_configuration_warning_changed">
@@ -356,18 +361,19 @@
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
-				Emitted whenever a node is removed from the SceneTree.
+				Emitted whenever a node is removed from the [SceneTree].
 			</description>
 		</signal>
 		<signal name="node_renamed">
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
+				Emitted whenever a node is renamed.
 			</description>
 		</signal>
 		<signal name="physics_frame">
 			<description>
-				Emitted immediately before [method Node._physics_process] is called on every node in the SceneTree.
+				Emitted immediately before [method Node._physics_process] is called on every node in the [SceneTree].
 			</description>
 		</signal>
 		<signal name="screen_resized">
@@ -377,12 +383,12 @@
 		</signal>
 		<signal name="server_disconnected">
 			<description>
-				Emitted whenever this SceneTree's [member network_peer] disconnected from server. Only emitted on clients.
+				Emitted whenever this [SceneTree]'s [member network_peer] disconnected from server. Only emitted on clients.
 			</description>
 		</signal>
 		<signal name="tree_changed">
 			<description>
-				Emitted whenever the SceneTree hierarchy changed (children being moved or renamed, etc.).
+				Emitted whenever the [SceneTree] hierarchy changed (children being moved or renamed, etc.).
 			</description>
 		</signal>
 	</signals>

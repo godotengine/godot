@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="UndoRedo" inherits="Object" category="Core" version="3.2">
 	<brief_description>
-		Helper to manage UndoRedo in the editor or custom tools.
+		Helper to manage undo/redo operations in the editor or custom tools.
 	</brief_description>
 	<description>
-		Helper to manage UndoRedo in the editor or custom tools. It works by registering methods and property changes inside 'actions'.
+		Helper to manage undo/redo operations in the editor or custom tools. It works by registering methods and property changes inside 'actions'.
 		Common behavior is to create an action, then add do/undo calls to functions or property changes, then committing the action.
-		Here's an example on how to add an action to Godot editor's own 'undoredo':
+		Here's an example on how to add an action to the Godot editor's own [UndoRedo], from a plugin:
 		[codeblock]
 		var undo_redo = get_undo_redo() # Method of EditorPlugin.
 
@@ -137,7 +137,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Get the version, each time a new action is committed, the version number of the UndoRedo is increased automatically.
+				Get the version, each time a new action is committed, the version number of the [UndoRedo] is increased automatically.
 				This is useful mostly to check if something changed from a saved version.
 			</description>
 		</method>
@@ -145,7 +145,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if an 'redo' action is available.
+				Returns [code]true[/code] if a 'redo' action is available.
 			</description>
 		</method>
 		<method name="has_undo">
@@ -159,20 +159,21 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the [UndoRedo] is currently committing the action, i.e. running its 'do' method or property change (see [method commit_action]).
 			</description>
 		</method>
 		<method name="redo">
 			<return type="bool">
 			</return>
 			<description>
-				Redo last action.
+				Redo the last action.
 			</description>
 		</method>
 		<method name="undo">
 			<return type="bool">
 			</return>
 			<description>
-				Undo last action.
+				Undo the last action.
 			</description>
 		</method>
 	</methods>
@@ -185,10 +186,10 @@
 	</signals>
 	<constants>
 		<constant name="MERGE_DISABLE" value="0" enum="MergeMode">
-			Makes [code]do[/code]/[code]undo[/code] operations stay in separate actions.
+			Makes 'do'/'undo' operations stay in separate actions.
 		</constant>
 		<constant name="MERGE_ENDS" value="1" enum="MergeMode">
-			Makes so that the action's [code]do[/code] operation is from the first action created and the [code]undo[/code] operation is from the last subsequent action with the same name.
+			Makes so that the action's 'do' operation is from the first action created and the 'undo' operation is from the last subsequent action with the same name.
 		</constant>
 		<constant name="MERGE_ALL" value="2" enum="MergeMode">
 			Makes subsequent actions with the same name be merged into one.
