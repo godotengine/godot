@@ -166,7 +166,7 @@ void ProjectExportDialog::_update_presets() {
 
 void ProjectExportDialog::_update_export_all() {
 
-	bool can_export = EditorExport::get_singleton()->get_export_preset_count() > 0 ? true : false;
+	bool can_export = EditorExport::get_singleton()->get_export_preset_count() > 0;
 
 	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
 		Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
@@ -986,7 +986,7 @@ void ProjectExportDialog::_export_all_dialog_action(const String &p_str) {
 
 	export_all_dialog->hide();
 
-	_export_all(p_str == "release" ? false : true);
+	_export_all(p_str != "release");
 }
 
 void ProjectExportDialog::_export_all(bool p_debug) {

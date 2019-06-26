@@ -1393,7 +1393,7 @@ Node *Node::get_node(const NodePath &p_path) const {
 	Node *node = get_node_or_null(p_path);
 	if (!node) {
 		ERR_EXPLAIN("Node not found: " + p_path);
-		ERR_FAIL_COND_V(!node, NULL);
+		ERR_FAIL_V(NULL);
 	}
 	return node;
 }

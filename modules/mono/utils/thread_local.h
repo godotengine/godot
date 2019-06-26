@@ -76,7 +76,7 @@ struct ThreadLocalStorage {
 	void *get_value() const;
 	void set_value(void *p_value) const;
 
-	void alloc(void(_CALLBACK_FUNC_ *p_dest_callback)(void *));
+	void alloc(void(_CALLBACK_FUNC_ *p_destr_callback)(void *));
 	void free();
 
 private:

@@ -275,15 +275,13 @@ void EditorSpatialGizmo::add_unscaled_billboard(const Ref<Material> &p_material,
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLE_FAN, a);
 	mesh->surface_set_material(0, p_material);
 
-	if (true) {
-		float md = 0;
-		for (int i = 0; i < vs.size(); i++) {
+	float md = 0;
+	for (int i = 0; i < vs.size(); i++) {
 
-			md = MAX(0, vs[i].length());
-		}
-		if (md) {
-			mesh->set_custom_aabb(AABB(Vector3(-md, -md, -md), Vector3(md, md, md) * 2.0));
-		}
+		md = MAX(0, vs[i].length());
+	}
+	if (md) {
+		mesh->set_custom_aabb(AABB(Vector3(-md, -md, -md), Vector3(md, md, md) * 2.0));
 	}
 
 	selectable_icon_size = p_scale;
@@ -432,9 +430,7 @@ bool EditorSpatialGizmo::intersect_frustum(const Camera *p_camera, const Vector<
 			}
 		}
 
-		if (!any_out)
-			return true;
-		return false;
+		return !any_out;
 	}
 
 	if (collision_segments.size()) {

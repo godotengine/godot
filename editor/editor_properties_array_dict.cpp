@@ -791,7 +791,7 @@ void EditorPropertyDictionary::update_property() {
 
 				} break;
 				case Variant::_RID: {
-					prop = memnew(EditorPropertyNil);
+					prop = memnew(EditorPropertyRID);
 
 				} break;
 				case Variant::OBJECT: {

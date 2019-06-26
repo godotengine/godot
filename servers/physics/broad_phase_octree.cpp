@@ -45,7 +45,7 @@ void BroadPhaseOctree::move(ID p_id, const AABB &p_aabb) {
 void BroadPhaseOctree::set_static(ID p_id, bool p_static) {
 
 	CollisionObjectSW *it = octree.get(p_id);
-	octree.set_pairable(p_id, p_static ? false : true, 1 << it->get_type(), p_static ? 0 : 0xFFFFF); //pair everything, don't care 1?
+	octree.set_pairable(p_id, !p_static, 1 << it->get_type(), p_static ? 0 : 0xFFFFF); //pair everything, don't care 1?
 }
 void BroadPhaseOctree::remove(ID p_id) {
 

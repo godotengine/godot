@@ -248,8 +248,8 @@ public:
 	Variant(unsigned short p_short);
 	Variant(signed char p_char); // real one
 	Variant(unsigned char p_char);
-	Variant(int64_t p_char); // real one
-	Variant(uint64_t p_char);
+	Variant(int64_t p_int); // real one
+	Variant(uint64_t p_int);
 	Variant(float p_float);
 	Variant(double p_double);
 	Variant(const String &p_string);
@@ -262,11 +262,11 @@ public:
 	Variant(const Plane &p_plane);
 	Variant(const ::AABB &p_aabb);
 	Variant(const Quat &p_quat);
-	Variant(const Basis &p_transform);
+	Variant(const Basis &p_matrix);
 	Variant(const Transform2D &p_transform);
 	Variant(const Transform &p_transform);
 	Variant(const Color &p_color);
-	Variant(const NodePath &p_path);
+	Variant(const NodePath &p_node_path);
 	Variant(const RefPtr &p_resource);
 	Variant(const RID &p_rid);
 	Variant(const Object *p_object);
@@ -283,17 +283,17 @@ public:
 	Variant(const PoolVector<Face3> &p_face_array);
 
 	Variant(const Vector<Variant> &p_array);
-	Variant(const Vector<uint8_t> &p_raw_array);
-	Variant(const Vector<int> &p_int_array);
-	Variant(const Vector<real_t> &p_real_array);
-	Variant(const Vector<String> &p_string_array);
-	Variant(const Vector<StringName> &p_string_array);
-	Variant(const Vector<Vector3> &p_vector3_array);
-	Variant(const Vector<Color> &p_color_array);
+	Variant(const Vector<uint8_t> &p_array);
+	Variant(const Vector<int> &p_array);
+	Variant(const Vector<real_t> &p_array);
+	Variant(const Vector<String> &p_array);
+	Variant(const Vector<StringName> &p_array);
+	Variant(const Vector<Vector3> &p_array);
+	Variant(const Vector<Color> &p_array);
 	Variant(const Vector<Plane> &p_array); // helper
 	Variant(const Vector<RID> &p_array); // helper
 	Variant(const Vector<Vector2> &p_array); // helper
-	Variant(const PoolVector<Vector2> &p_array); // helper
+	Variant(const PoolVector<Vector2> &p_vector2_array); // helper
 
 	Variant(const IP_Address &p_address);
 

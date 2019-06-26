@@ -404,7 +404,7 @@ public:
 	void set_spin_degrees(float p_spin_degrees);
 	float get_spin_degrees() const;
 
-	void set_spin_sides(int p_sides);
+	void set_spin_sides(int p_spin_sides);
 	int get_spin_sides() const;
 
 	void set_path_node(const NodePath &p_path);

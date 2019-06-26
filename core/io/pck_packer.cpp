@@ -109,10 +109,7 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src) {
 
 Error PCKPacker::flush(bool p_verbose) {
 
-	if (!file) {
-		ERR_FAIL_COND_V(!file, ERR_INVALID_PARAMETER);
-		return ERR_INVALID_PARAMETER;
-	};
+	ERR_FAIL_COND_V(!file, ERR_INVALID_PARAMETER);
 
 	// write the index
 

@@ -146,7 +146,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		if (is_stdout_verbose()) {
 			WARN_PRINT("IME is disabled");
 		}
-		modifiers = XSetLocaleModifiers("@im=none");
+		XSetLocaleModifiers("@im=none");
 		WARN_PRINT("Error setting locale modifiers");
 	}
 
@@ -1032,9 +1032,7 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 		}
 		XSetWMNormalHints(x11_display, x11_window, xsh);
 		XFree(xsh);
-	}
 
-	if (!p_enabled) {
 		// put back or remove decorations according to the last set borderless state
 		Hints hints;
 		Atom property;
@@ -1201,7 +1199,7 @@ Point2 OS_X11::get_window_position() const {
 void OS_X11::set_window_position(const Point2 &p_position) {
 	int x = 0;
 	int y = 0;
-	if (get_borderless_window() == false) {
+	if (!get_borderless_window()) {
 		//exclude window decorations
 		XSync(x11_display, False);
 		Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
@@ -3051,8 +3049,6 @@ void OS_X11::alert(const String &p_alert, const String &p_title) {
 	} else {
 		print_line(p_alert);
 	}
-
-	return;
 }
 
 bool g_set_icon_error = false;

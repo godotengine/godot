@@ -545,10 +545,7 @@ bool EditorAutoloadSettings::can_drop_data_fw(const Point2 &p_point, const Varia
 
 		int section = tree->get_drop_section_at_position(p_point);
 
-		if (section < -1)
-			return false;
-
-		return true;
+		return section >= -1;
 	}
 
 	return false;
@@ -650,7 +647,7 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 		return false;
 	}
 
-	String path = p_path;
+	const String &path = p_path;
 	if (!FileAccess::exists(path)) {
 		EditorNode::get_singleton()->show_warning(TTR("Invalid path.") + "\n" + TTR("File does not exist."));
 		return false;
@@ -663,7 +660,7 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 
 	name = "autoload/" + name;
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 
 	undo_redo->create_action(TTR("Add AutoLoad"));
 	// Singleton autoloads are represented with a leading "*" in their path.
@@ -690,7 +687,7 @@ void EditorAutoloadSettings::autoload_remove(const String &p_name) {
 
 	String name = "autoload/" + p_name;
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 
 	int order = ProjectSettings::get_singleton()->get_order(name);
 

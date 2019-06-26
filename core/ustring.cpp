@@ -3799,11 +3799,7 @@ bool String::is_valid_filename() const {
 		return false;
 	}
 
-	if (find(":") != -1 || find("/") != -1 || find("\\") != -1 || find("?") != -1 || find("*") != -1 || find("\"") != -1 || find("|") != -1 || find("%") != -1 || find("<") != -1 || find(">") != -1) {
-		return false;
-	} else {
-		return true;
-	}
+	return !(find(":") != -1 || find("/") != -1 || find("\\") != -1 || find("?") != -1 || find("*") != -1 || find("\"") != -1 || find("|") != -1 || find("%") != -1 || find("<") != -1 || find(">") != -1);
 }
 
 bool String::is_valid_ip_address() const {
@@ -3941,7 +3937,6 @@ String String::percent_decode() const {
 			uint8_t a = LOWERCASE(cs[i + 1]);
 			uint8_t b = LOWERCASE(cs[i + 2]);
 
-			c = 0;
 			if (a >= '0' && a <= '9')
 				c = (a - '0') << 4;
 			else if (a >= 'a' && a <= 'f')

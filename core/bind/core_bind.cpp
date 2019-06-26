@@ -76,7 +76,7 @@ RES _ResourceLoader::load(const String &p_path, const String &p_type_hint, bool 
 
 	if (err != OK) {
 		ERR_EXPLAIN("Error loading resource: '" + p_path + "'");
-		ERR_FAIL_COND_V(err != OK, ret);
+		ERR_FAIL_V(ret);
 	}
 	return ret;
 }

@@ -977,7 +977,8 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	ftmp = FileAccess::open(tmppath, FileAccess::READ);
 	if (!ftmp) {
 		memdelete(f);
-		ERR_FAIL_COND_V(!ftmp, ERR_CANT_CREATE);
+		ERR_EXPLAIN("Can't open file to read from path: " + String(tmppath));
+		ERR_FAIL_V(ERR_CANT_CREATE);
 	}
 
 	const int bufsize = 16384;
@@ -1455,10 +1456,7 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 		err += TTR("Custom release template not found.") + "\n";
 	}
 
-	if (dvalid || rvalid)
-		valid = true;
-	else
-		valid = false;
+	valid = dvalid || rvalid;
 
 	if (!err.empty())
 		r_error = err;

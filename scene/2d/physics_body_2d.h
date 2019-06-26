@@ -157,8 +157,8 @@ private:
 		bool operator<(const ShapePair &p_sp) const {
 			if (body_shape == p_sp.body_shape)
 				return local_shape < p_sp.local_shape;
-			else
-				return body_shape < p_sp.body_shape;
+
+			return body_shape < p_sp.body_shape;
 		}
 
 		ShapePair() {}

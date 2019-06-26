@@ -475,17 +475,17 @@ String RenameDialog::_substitute(const String &subject, const Node *node, int co
 	if (root_node) {
 		result = result.replace("${ROOT}", root_node->get_name());
 	}
-
-	Node *parent_node = node->get_parent();
-	if (parent_node) {
-		if (node == root_node) {
-			// Can not substitute parent of root.
-			result = result.replace("${PARENT}", "");
-		} else {
-			result = result.replace("${PARENT}", parent_node->get_name());
+	if (node) {
+		Node *parent_node = node->get_parent();
+		if (parent_node) {
+			if (node == root_node) {
+				// Can not substitute parent of root.
+				result = result.replace("${PARENT}", "");
+			} else {
+				result = result.replace("${PARENT}", parent_node->get_name());
+			}
 		}
 	}
-
 	return result;
 }
 

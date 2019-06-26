@@ -139,7 +139,7 @@ public:
 	bool is_selected() const;
 
 	void set_label_reference(Control *p_control);
-	void set_bottom_editor(Control *p_editor);
+	void set_bottom_editor(Control *p_control);
 
 	void set_use_folding(bool p_use_folding);
 	bool is_using_folding() const;
@@ -317,7 +317,7 @@ class EditorInspector : public ScrollContainer {
 	void _node_removed(Node *p_node);
 
 	void _changed_callback(Object *p_changed, const char *p_prop);
-	void _edit_request_change(Object *p_changed, const String &p_prop);
+	void _edit_request_change(Object *p_object, const String &p_prop);
 
 	void _filter_changed(const String &p_text);
 	void _parse_added_editors(VBoxContainer *current_vbox, Ref<EditorInspectorPlugin> ped);

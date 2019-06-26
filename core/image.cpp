@@ -2402,7 +2402,7 @@ Color Image::get_pixel(int p_x, int p_y) const {
 #ifdef DEBUG_ENABLED
 	if (!ptr) {
 		ERR_EXPLAIN("Image must be locked with 'lock()' before using get_pixel()");
-		ERR_FAIL_COND_V(!ptr, Color());
+		ERR_FAIL_V(Color());
 	}
 
 	ERR_FAIL_INDEX_V(p_x, width, Color());
@@ -2541,7 +2541,7 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 #ifdef DEBUG_ENABLED
 	if (!ptr) {
 		ERR_EXPLAIN("Image must be locked with 'lock()' before using set_pixel()");
-		ERR_FAIL_COND(!ptr);
+		ERR_FAIL();
 	}
 
 	ERR_FAIL_INDEX(p_x, width);

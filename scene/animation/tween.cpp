@@ -583,9 +583,7 @@ bool Tween::_apply_tween_value(InterpolateData &p_data, Variant &value) {
 			}
 
 			// Did we get an error from the function call?
-			if (error.error == Variant::CallError::CALL_OK)
-				return true;
-			return false;
+			return error.error == Variant::CallError::CALL_OK;
 		}
 
 		case INTER_CALLBACK:

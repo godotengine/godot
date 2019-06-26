@@ -83,11 +83,7 @@ bool TCP_Server::is_connection_available() const {
 		return false;
 
 	Error err = _sock->poll(NetSocket::POLL_TYPE_IN, 0);
-	if (err != OK) {
-		return false;
-	}
-
-	return true;
+	return (err == OK);
 }
 
 Ref<StreamPeerTCP> TCP_Server::take_connection() {
