@@ -479,7 +479,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					connecting_color = gn->get_connection_input_color(j);
 					connecting_target = false;
 					connecting_to = pos;
-					just_disconnected = true;
+					just_disconnected = false;
 
 					return;
 				}
@@ -550,11 +550,18 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			emit_signal("connection_request", from, from_slot, to, to_slot);
 
 		} else if (!just_disconnected) {
+
 			String from = connecting_from;
 			int from_slot = connecting_index;
 			Vector2 ofs = Vector2(mb->get_position().x, mb->get_position().y);
-			emit_signal("connection_to_empty", from, from_slot, ofs);
+
+			if (!connecting_out) {
+				emit_signal("connection_from_empty", from, from_slot, ofs);
+			} else {
+				emit_signal("connection_to_empty", from, from_slot, ofs);
+			}
 		}
+
 		connecting = false;
 		top_layer->update();
 		update();
@@ -1292,6 +1299,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
 	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
+	ADD_SIGNAL(MethodInfo("connection_from_empty", PropertyInfo(Variant::STRING, "to"), PropertyInfo(Variant::INT, "to_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("delete_nodes_request"));
 	ADD_SIGNAL(MethodInfo("_begin_node_move"));
 	ADD_SIGNAL(MethodInfo("_end_node_move"));
