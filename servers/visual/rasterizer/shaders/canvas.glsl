@@ -59,20 +59,11 @@ void main() {
 		vertex = draw_data.points[1];
 		uv = draw_data.uvs[1];
 		color = vec4(unpackHalf2x16(draw_data.colors[2]),unpackHalf2x16(draw_data.colors[3]));
-	} else if (gl_VertexIndex==2) {
+	} else {
 		vertex = draw_data.points[2];
 		uv = draw_data.uvs[2];
 		color = vec4(unpackHalf2x16(draw_data.colors[4]),unpackHalf2x16(draw_data.colors[5]));
-
-	} else {
-		vertex = draw_data.points[3];
-		uv = draw_data.uvs[3];
-		color = vec4(unpackHalf2x16(draw_data.colors[6]),unpackHalf2x16(draw_data.colors[7]));
 	}
-//      this does not
-//	vec2 vertex = draw_data.points[gl_VertexIndex];
-//	vec2 uv = draw_data.uvs[gl_VertexIndex];
-//	vec4 color = vec4(unpackHalf2x16(draw_data.colors[gl_VertexIndex*2+0]),unpackHalf2x16(draw_data.colors[gl_VertexIndex*2+1]));
 	uvec4 bone_indices = uvec4(0,0,0,0);
 	vec4 bone_weights = vec4(0,0,0,0);
 
