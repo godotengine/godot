@@ -77,7 +77,7 @@ void GDScriptTextDocument::initialize() {
 
 	if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 
-		const HashMap<StringName, ClassMembers> &native_members = GDScriptLanguageProtocol::get_singleton()->get_workspace().native_members;
+		const HashMap<StringName, ClassMembers> &native_members = GDScriptLanguageProtocol::get_singleton()->get_workspace()->native_members;
 
 		const StringName *class_ptr = native_members.next(NULL);
 		while (class_ptr) {
@@ -103,9 +103,9 @@ void GDScriptTextDocument::initialize() {
 Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 	Dictionary params = p_params["textDocument"];
 	String uri = params["uri"];
-	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace().get_file_path(uri);
+	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(uri);
 	Array arr;
-	if (const Map<String, ExtendGDScriptParser *>::Element *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace().scripts.find(path)) {
+	if (const Map<String, ExtendGDScriptParser *>::Element *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(path)) {
 		Vector<lsp::DocumentedSymbolInformation> list;
 		parser->get()->get_symbols().symbol_tree_as_list(uri, list);
 		for (int i = 0; i < list.size(); i++) {
@@ -124,7 +124,7 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 	Dictionary request_data = params.to_json();
 
 	List<ScriptCodeCompletionOption> options;
-	GDScriptLanguageProtocol::get_singleton()->get_workspace().completion(params, &options);
+	GDScriptLanguageProtocol::get_singleton()->get_workspace()->completion(params, &options);
 
 	if (!options.empty()) {
 
@@ -178,7 +178,7 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 
 		arr = native_member_completions.duplicate();
 
-		for (Map<String, ExtendGDScriptParser *>::Element *E = GDScriptLanguageProtocol::get_singleton()->get_workspace().scripts.front(); E; E = E->next()) {
+		for (Map<String, ExtendGDScriptParser *>::Element *E = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.front(); E; E = E->next()) {
 
 			ExtendGDScriptParser *script = E->get();
 			const Array &items = script->get_member_completions();
@@ -206,7 +206,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 	if (data.get_type() == Variant::DICTIONARY) {
 
 		params.load(p_params["data"]);
-		symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace().resolve_symbol(params, item.label, item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function);
+		symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params, item.label, item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function);
 
 	} else if (data.get_type() == Variant::STRING) {
 
@@ -224,14 +224,14 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 				inner_class_name = param_symbols[1];
 			}
 
-			if (const ClassMembers *members = GDScriptLanguageProtocol::get_singleton()->get_workspace().native_members.getptr(class_name)) {
+			if (const ClassMembers *members = GDScriptLanguageProtocol::get_singleton()->get_workspace()->native_members.getptr(class_name)) {
 				if (const lsp::DocumentSymbol *const *member = members->getptr(member_name)) {
 					symbol = *member;
 				}
 			}
 
 			if (!symbol) {
-				if (const Map<String, ExtendGDScriptParser *>::Element *E = GDScriptLanguageProtocol::get_singleton()->get_workspace().scripts.find(class_name)) {
+				if (const Map<String, ExtendGDScriptParser *>::Element *E = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(class_name)) {
 					symbol = E->get()->get_member_symbol(member_name, inner_class_name);
 				}
 			}
@@ -284,7 +284,7 @@ Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
 	lsp::TextDocumentPositionParams params;
 	params.load(p_params);
 
-	const lsp::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace().resolve_symbol(params);
+	const lsp::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params);
 	if (symbol) {
 
 		lsp::Hover hover;
@@ -296,7 +296,7 @@ Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
 		Dictionary ret;
 		Array contents;
 		List<const lsp::DocumentSymbol *> list;
-		GDScriptLanguageProtocol::get_singleton()->get_workspace().resolve_related_symbols(params, list);
+		GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(params, list);
 		for (List<const lsp::DocumentSymbol *>::Element *E = list.front(); E; E = E->next()) {
 			if (const lsp::DocumentSymbol *s = E->get()) {
 				contents.push_back(s->render().value);
@@ -315,20 +315,20 @@ Array GDScriptTextDocument::definition(const Dictionary &p_params) {
 	lsp::TextDocumentPositionParams params;
 	params.load(p_params);
 
-	const lsp::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace().resolve_symbol(params);
+	const lsp::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params);
 	if (symbol) {
 		lsp::Location location;
 		location.uri = symbol->uri;
 		location.range = symbol->range;
 
-		const String &path = GDScriptLanguageProtocol::get_singleton()->get_workspace().get_file_path(symbol->uri);
+		const String &path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(symbol->uri);
 		if (file_checker->file_exists(path)) {
 			arr.push_back(location.to_json());
 		}
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 
 		List<const lsp::DocumentSymbol *> list;
-		GDScriptLanguageProtocol::get_singleton()->get_workspace().resolve_related_symbols(params, list);
+		GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(params, list);
 		for (List<const lsp::DocumentSymbol *>::Element *E = list.front(); E; E = E->next()) {
 
 			if (const lsp::DocumentSymbol *s = E->get()) {
@@ -354,6 +354,6 @@ GDScriptTextDocument::~GDScriptTextDocument() {
 }
 
 void GDScriptTextDocument::sync_script_content(const String &p_uri, const String &p_content) {
-	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace().get_file_path(p_uri);
-	GDScriptLanguageProtocol::get_singleton()->get_workspace().parse_script(path, p_content);
+	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(p_uri);
+	GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_script(path, p_content);
 }

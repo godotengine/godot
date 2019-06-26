@@ -38,6 +38,12 @@
 
 void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("symbol"), &GDScriptWorkspace::symbol);
+	ClassDB::bind_method(D_METHOD("parse_script", "p_path", "p_content"), &GDScriptWorkspace::parse_script);
+	ClassDB::bind_method(D_METHOD("parse_local_script", "p_path"), &GDScriptWorkspace::parse_local_script);
+	ClassDB::bind_method(D_METHOD("get_file_path", "p_uri"), &GDScriptWorkspace::get_file_path);
+	ClassDB::bind_method(D_METHOD("get_file_uri", "p_path"), &GDScriptWorkspace::get_file_uri);
+	ClassDB::bind_method(D_METHOD("publish_diagnostics", "p_path"), &GDScriptWorkspace::publish_diagnostics);
+	ClassDB::bind_method(D_METHOD("generate_script_api", "p_path"), &GDScriptWorkspace::generate_script_api);
 }
 
 void GDScriptWorkspace::remove_cache_parser(const String &p_path) {
@@ -510,6 +516,14 @@ void GDScriptWorkspace::resolve_related_symbols(const lsp::TextDocumentPositionP
 			}
 		}
 	}
+}
+
+Dictionary GDScriptWorkspace::generate_script_api(const String &p_path) {
+	Dictionary api;
+	if (const ExtendGDScriptParser *parser = get_parse_successed_script(p_path)) {
+		api = parser->generate_api();
+	}
+	return api;
 }
 
 GDScriptWorkspace::GDScriptWorkspace() {

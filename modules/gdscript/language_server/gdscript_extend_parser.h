@@ -65,6 +65,9 @@ class ExtendGDScriptParser : public GDScriptParser {
 	void parse_class_symbol(const GDScriptParser::ClassNode *p_class, lsp::DocumentSymbol &r_symbol);
 	void parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol &r_symbol);
 
+	Dictionary dump_function_api(const GDScriptParser::FunctionNode *p_func) const;
+	Dictionary dump_class_api(const GDScriptParser::ClassNode *p_class) const;
+
 	String parse_documentation(int p_line, bool p_docs_down = false);
 	const lsp::DocumentSymbol *search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol &p_parent) const;
 
@@ -87,6 +90,7 @@ public:
 	const lsp::DocumentSymbol *get_member_symbol(const String &p_name, const String &p_subclass = "") const;
 
 	const Array &get_member_completions();
+	Dictionary generate_api() const;
 
 	Error parse(const String &p_code, const String &p_path);
 };

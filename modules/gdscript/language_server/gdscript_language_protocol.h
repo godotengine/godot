@@ -52,8 +52,8 @@ class GDScriptLanguageProtocol : public JSONRPC {
 	WebSocketServer *server;
 	int lastest_client_id;
 
-	GDScriptTextDocument text_document;
-	GDScriptWorkspace workspace;
+	Ref<GDScriptTextDocument> text_document;
+	Ref<GDScriptWorkspace> workspace;
 
 	void on_data_received(int p_id);
 	void on_client_connected(int p_id, const String &p_protocal);
@@ -72,7 +72,9 @@ protected:
 
 public:
 	_FORCE_INLINE_ static GDScriptLanguageProtocol *get_singleton() { return singleton; }
-	_FORCE_INLINE_ GDScriptWorkspace &get_workspace() { return workspace; }
+	_FORCE_INLINE_ Ref<GDScriptWorkspace> get_workspace() { return workspace; }
+	_FORCE_INLINE_ Ref<GDScriptTextDocument> get_text_document() { return text_document; }
+	_FORCE_INLINE_ bool is_initialized() const { return _initialized; }
 
 	void poll();
 	Error start(int p_port);

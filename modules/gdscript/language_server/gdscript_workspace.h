@@ -82,6 +82,8 @@ public:
 	const lsp::DocumentSymbol *resolve_symbol(const lsp::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name = "", bool p_func_requred = false);
 	void resolve_related_symbols(const lsp::TextDocumentPositionParams &p_doc_pos, List<const lsp::DocumentSymbol *> &r_list);
 
+	Dictionary generate_script_api(const String &p_path);
+
 	static String marked_documentation(const String &p_bbcode);
 
 	GDScriptWorkspace();

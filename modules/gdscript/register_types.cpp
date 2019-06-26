@@ -44,6 +44,7 @@ Ref<ResourceFormatSaverGDScript> resource_saver_gd;
 
 #ifdef TOOLS_ENABLED
 
+#include "core/engine.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -131,8 +132,11 @@ static void _editor_init() {
 	Ref<EditorExportGDScript> gd_export;
 	gd_export.instance();
 	EditorExport::get_singleton()->add_export_plugin(gd_export);
-	EditorNode::get_singleton()->add_editor_plugin(memnew(GDScriptLanguageServer));
+
 	register_lsp_types();
+	GDScriptLanguageServer *lsp_plugin = memnew(GDScriptLanguageServer);
+	EditorNode::get_singleton()->add_editor_plugin(lsp_plugin);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("GDScriptLanguageProtocol", GDScriptLanguageProtocol::get_singleton()));
 }
 
 #endif

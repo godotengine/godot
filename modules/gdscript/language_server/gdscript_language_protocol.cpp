@@ -86,6 +86,12 @@ void GDScriptLanguageProtocol::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("on_data_received"), &GDScriptLanguageProtocol::on_data_received);
 	ClassDB::bind_method(D_METHOD("on_client_connected"), &GDScriptLanguageProtocol::on_client_connected);
 	ClassDB::bind_method(D_METHOD("on_client_disconnected"), &GDScriptLanguageProtocol::on_client_disconnected);
+	ClassDB::bind_method(D_METHOD("notify_all_clients", "p_method", "p_params"), &GDScriptLanguageProtocol::notify_all_clients, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("notify_client", "p_method", "p_params", "p_client"), &GDScriptLanguageProtocol::notify_client, DEFVAL(Variant()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("is_smart_resolve_enabled"), &GDScriptLanguageProtocol::is_smart_resolve_enabled);
+	ClassDB::bind_method(D_METHOD("get_text_document"), &GDScriptLanguageProtocol::get_text_document);
+	ClassDB::bind_method(D_METHOD("get_workspace"), &GDScriptLanguageProtocol::get_workspace);
+	ClassDB::bind_method(D_METHOD("is_initialized"), &GDScriptLanguageProtocol::is_initialized);
 }
 
 Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
@@ -94,20 +100,20 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 
 	String root_uri = p_params["rootUri"];
 	String root = p_params["rootPath"];
-	bool is_same_workspace = root == workspace.root;
-	is_same_workspace = root.to_lower() == workspace.root.to_lower();
+	bool is_same_workspace = root == workspace->root;
+	is_same_workspace = root.to_lower() == workspace->root.to_lower();
 #ifdef WINDOWS_ENABLED
-	is_same_workspace = root.replace("\\", "/").to_lower() == workspace.root.to_lower();
+	is_same_workspace = root.replace("\\", "/").to_lower() == workspace->root.to_lower();
 #endif
 
 	if (root_uri.length() && is_same_workspace) {
-		workspace.root_uri = root_uri;
+		workspace->root_uri = root_uri;
 	} else {
 
-		workspace.root_uri = "file://" + workspace.root;
+		workspace->root_uri = "file://" + workspace->root;
 
 		Dictionary params;
-		params["path"] = workspace.root;
+		params["path"] = workspace->root;
 		Dictionary request = make_notification("gdscrip_client/changeWorkspace", params);
 		if (Ref<WebSocketPeer> *peer = clients.getptr(lastest_client_id)) {
 			String msg = JSON::print(request);
@@ -118,8 +124,8 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 	}
 
 	if (!_initialized) {
-		workspace.initialize();
-		text_document.initialize();
+		workspace->initialize();
+		text_document->initialize();
 		_initialized = true;
 	}
 
@@ -187,10 +193,12 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	server = NULL;
 	singleton = this;
 	_initialized = false;
-	set_scope("textDocument", &text_document);
-	set_scope("completionItem", &text_document);
-	set_scope("workspace", &workspace);
-	workspace.root = ProjectSettings::get_singleton()->get_resource_path();
+	workspace.instance();
+	text_document.instance();
+	set_scope("textDocument", text_document.ptr());
+	set_scope("completionItem", text_document.ptr());
+	set_scope("workspace", workspace.ptr());
+	workspace->root = ProjectSettings::get_singleton()->get_resource_path();
 }
 
 GDScriptLanguageProtocol::~GDScriptLanguageProtocol() {
