@@ -495,9 +495,6 @@ Size2i RasterizerCanvasRD::_bind_texture_binding(TextureBindingID p_binding, RD:
 ////////////////////
 void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_item, RenderTargetFormat p_render_target_format, RD::TextureSamples p_samples, const Color &p_modulate, const Transform2D &p_canvas_transform_inverse, Item *&current_clip) {
 
-	int cc = p_item->commands.size();
-	const Item::Command *const *commands = p_item->commands.ptr();
-
 	//create an empty push constant
 	PushConstant push_constant;
 	Transform2D base_transform = p_canvas_transform_inverse * p_item->final_transform;
@@ -521,9 +518,9 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 	bool reclip = false;
 
-	for (int i = 0; i < cc; i++) {
+	const Item::Command *c = p_item->commands;
+	while (c) {
 
-		const Item::Command *c = commands[i];
 		push_constant.flags = 0; //reset on each command for sanity
 
 		switch (c->type) {
@@ -1100,6 +1097,8 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 			} break;
 		}
+
+		c = c->next;
 	}
 
 	if (current_clip && reclip) {

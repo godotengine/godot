@@ -184,7 +184,7 @@ void VisualServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		VisualServerRaster::redraw_request();
 	}
 
-	if ((!ci->commands.empty() && p_clip_rect.intersects(global_rect)) || ci->vp_render || ci->copy_back_buffer) {
+	if ((ci->commands != NULL && p_clip_rect.intersects(global_rect)) || ci->vp_render || ci->copy_back_buffer) {
 		//something to draw?
 		ci->final_transform = xform;
 		ci->final_modulate = Color(modulate.r * ci->self_modulate.r, modulate.g * ci->self_modulate.g, modulate.b * ci->self_modulate.b, modulate.a * ci->self_modulate.a);
@@ -486,7 +486,7 @@ void VisualServerCanvas::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandPrimitive *line = memnew(Item::CommandPrimitive);
+	Item::CommandPrimitive *line = canvas_item->alloc_command<Item::CommandPrimitive>();
 	ERR_FAIL_COND(!line);
 	if (p_width > 1.001) {
 
@@ -505,9 +505,6 @@ void VisualServerCanvas::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		line->colors[i] = p_color;
 	}
 	line->specular_shininess = Color(1, 1, 1, 1);
-
-	canvas_item->rect_dirty = true;
-	canvas_item->commands.push_back(line);
 }
 
 void VisualServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width) {
@@ -516,7 +513,7 @@ void VisualServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Point
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandPolygon *pline = memnew(Item::CommandPolygon);
+	Item::CommandPolygon *pline = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_COND(!pline);
 
 	pline->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, RID(), RID(), RID(), VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED, RID());
@@ -600,8 +597,6 @@ void VisualServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Point
 		}
 #endif
 	}
-	canvas_item->rect_dirty = true;
-	canvas_item->commands.push_back(pline);
 }
 
 void VisualServerCanvas::canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width) {
@@ -610,7 +605,7 @@ void VisualServerCanvas::canvas_item_add_multiline(RID p_item, const Vector<Poin
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandPolygon *pline = memnew(Item::CommandPolygon);
+	Item::CommandPolygon *pline = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_COND(!pline);
 
 	pline->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, RID(), RID(), RID(), VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED, RID());
@@ -623,9 +618,6 @@ void VisualServerCanvas::canvas_item_add_multiline(RID p_item, const Vector<Poin
 		pline->polygon.create(Vector<int>(), p_points, p_colors);
 	} else {
 	}
-
-	canvas_item->rect_dirty = true;
-	canvas_item->commands.push_back(pline);
 }
 
 void VisualServerCanvas::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, const Color &p_color) {
@@ -633,13 +625,10 @@ void VisualServerCanvas::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandRect *rect = memnew(Item::CommandRect);
+	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
 	ERR_FAIL_COND(!rect);
 	rect->modulate = p_color;
 	rect->rect = p_rect;
-	canvas_item->rect_dirty = true;
-
-	canvas_item->commands.push_back(rect);
 }
 
 void VisualServerCanvas::canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color) {
@@ -647,7 +636,7 @@ void VisualServerCanvas::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandPolygon *circle = memnew(Item::CommandPolygon);
+	Item::CommandPolygon *circle = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_COND(!circle);
 
 	circle->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, RID(), RID(), RID(), VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED, RID());
@@ -678,9 +667,6 @@ void VisualServerCanvas::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 	Vector<Color> color;
 	color.push_back(p_color);
 	circle->polygon.create(indices, points, color);
-
-	canvas_item->rect_dirty = true;
-	canvas_item->commands.push_back(circle);
 }
 
 void VisualServerCanvas::canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile, const Color &p_modulate, bool p_transpose, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
@@ -688,7 +674,7 @@ void VisualServerCanvas::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandRect *rect = memnew(Item::CommandRect);
+	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
 	ERR_FAIL_COND(!rect);
 	rect->modulate = p_modulate;
 	rect->rect = p_rect;
@@ -715,8 +701,6 @@ void VisualServerCanvas::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 	}
 	rect->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
 	rect->specular_shininess = p_specular_color_shininess;
-	canvas_item->rect_dirty = true;
-	canvas_item->commands.push_back(rect);
 }
 
 void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, bool p_clip_uv, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
@@ -724,7 +708,7 @@ void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const R
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandRect *rect = memnew(Item::CommandRect);
+	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
 	ERR_FAIL_COND(!rect);
 	rect->modulate = p_modulate;
 	rect->rect = p_rect;
@@ -751,10 +735,6 @@ void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const R
 	if (p_clip_uv) {
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_CLIP_UV;
 	}
-
-	canvas_item->rect_dirty = true;
-
-	canvas_item->commands.push_back(rect);
 }
 
 void VisualServerCanvas::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, VS::NinePatchAxisMode p_x_axis_mode, VS::NinePatchAxisMode p_y_axis_mode, bool p_draw_center, const Color &p_modulate, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
@@ -762,7 +742,7 @@ void VisualServerCanvas::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_r
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandNinePatch *style = memnew(Item::CommandNinePatch);
+	Item::CommandNinePatch *style = canvas_item->alloc_command<Item::CommandNinePatch>();
 	ERR_FAIL_COND(!style);
 	style->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
 	style->specular_shininess = p_specular_color_shininess;
@@ -776,9 +756,6 @@ void VisualServerCanvas::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_r
 	style->margin[MARGIN_BOTTOM] = p_bottomright.y;
 	style->axis_x = p_x_axis_mode;
 	style->axis_y = p_y_axis_mode;
-	canvas_item->rect_dirty = true;
-
-	canvas_item->commands.push_back(style);
 }
 void VisualServerCanvas::canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, float p_width, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
 
@@ -788,7 +765,7 @@ void VisualServerCanvas::canvas_item_add_primitive(RID p_item, const Vector<Poin
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandPrimitive *prim = memnew(Item::CommandPrimitive);
+	Item::CommandPrimitive *prim = canvas_item->alloc_command<Item::CommandPrimitive>();
 	ERR_FAIL_COND(!prim);
 
 	for (int i = 0; i < p_points.size(); i++) {
@@ -809,9 +786,6 @@ void VisualServerCanvas::canvas_item_add_primitive(RID p_item, const Vector<Poin
 
 	prim->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
 	prim->specular_shininess = p_specular_color_shininess;
-	canvas_item->rect_dirty = true;
-
-	canvas_item->commands.push_back(prim);
 }
 
 void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
@@ -834,16 +808,12 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 		ERR_FAIL();
 	}
 
-	Item::CommandPolygon *polygon = memnew(Item::CommandPolygon);
+	Item::CommandPolygon *polygon = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_COND(!polygon);
 	polygon->primitive = VS::PRIMITIVE_TRIANGLES;
 	polygon->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
 	polygon->specular_shininess = p_specular_color_shininess;
 	polygon->polygon.create(indices, p_points, p_colors, p_uvs);
-
-	canvas_item->rect_dirty = true;
-
-	canvas_item->commands.push_back(polygon);
 }
 
 void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights, RID p_texture, int p_count, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
@@ -860,16 +830,13 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 
 	const Vector<int> &indices = p_indices;
 
-	Item::CommandPolygon *polygon = memnew(Item::CommandPolygon);
+	Item::CommandPolygon *polygon = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_COND(!polygon);
 	polygon->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
 	polygon->specular_shininess = p_specular_color_shininess;
 	polygon->polygon.create(indices, p_points, p_colors, p_uvs, p_bones, p_weights);
 
 	polygon->primitive = VS::PRIMITIVE_TRIANGLES;
-	canvas_item->rect_dirty = true;
-
-	canvas_item->commands.push_back(polygon);
 }
 
 void VisualServerCanvas::canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform) {
@@ -877,11 +844,9 @@ void VisualServerCanvas::canvas_item_add_set_transform(RID p_item, const Transfo
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandTransform *tr = memnew(Item::CommandTransform);
+	Item::CommandTransform *tr = canvas_item->alloc_command<Item::CommandTransform>();
 	ERR_FAIL_COND(!tr);
 	tr->xform = p_transform;
-
-	canvas_item->commands.push_back(tr);
 }
 
 void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform, const Color &p_modulate, RID p_texture, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
@@ -889,22 +854,20 @@ void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, con
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandMesh *m = memnew(Item::CommandMesh);
+	Item::CommandMesh *m = canvas_item->alloc_command<Item::CommandMesh>();
 	ERR_FAIL_COND(!m);
 	m->mesh = p_mesh;
 	m->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
 	m->specular_shininess = p_specular_color_shininess;
 	m->transform = p_transform;
 	m->modulate = p_modulate;
-
-	canvas_item->commands.push_back(m);
 }
 void VisualServerCanvas::canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandParticles *part = memnew(Item::CommandParticles);
+	Item::CommandParticles *part = canvas_item->alloc_command<Item::CommandParticles>();
 	ERR_FAIL_COND(!part);
 	part->particles = p_particles;
 	part->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
@@ -912,9 +875,6 @@ void VisualServerCanvas::canvas_item_add_particles(RID p_item, RID p_particles, 
 
 	//take the chance and request processing for them, at least once until they become visible again
 	VSG::storage->particles_request_process(p_particles);
-
-	canvas_item->rect_dirty = true;
-	canvas_item->commands.push_back(part);
 }
 
 void VisualServerCanvas::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture, RID p_normal_map, RID p_specular_map, const Color &p_specular_color_shininess, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat) {
@@ -922,14 +882,11 @@ void VisualServerCanvas::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandMultiMesh *mm = memnew(Item::CommandMultiMesh);
+	Item::CommandMultiMesh *mm = canvas_item->alloc_command<Item::CommandMultiMesh>();
 	ERR_FAIL_COND(!mm);
 	mm->multimesh = p_mesh;
 	mm->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, mm->multimesh);
 	mm->specular_shininess = p_specular_color_shininess;
-
-	canvas_item->rect_dirty = true;
-	canvas_item->commands.push_back(mm);
 }
 
 void VisualServerCanvas::canvas_item_add_clip_ignore(RID p_item, bool p_ignore) {
@@ -937,11 +894,9 @@ void VisualServerCanvas::canvas_item_add_clip_ignore(RID p_item, bool p_ignore) 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	Item::CommandClipIgnore *ci = memnew(Item::CommandClipIgnore);
+	Item::CommandClipIgnore *ci = canvas_item->alloc_command<Item::CommandClipIgnore>();
 	ERR_FAIL_COND(!ci);
 	ci->ignore = p_ignore;
-
-	canvas_item->commands.push_back(ci);
 }
 void VisualServerCanvas::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) {
 
