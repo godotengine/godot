@@ -182,8 +182,8 @@ private:
 		RUN_DEBUG_NAVIGATION,
 		RUN_DEPLOY_REMOTE_DEBUG,
 		RUN_RELOAD_SCRIPTS,
-		SETTINGS_UPDATE_ALWAYS,
-		SETTINGS_UPDATE_CHANGES,
+		SETTINGS_UPDATE_CONTINUOUSLY,
+		SETTINGS_UPDATE_WHEN_CHANGED,
 		SETTINGS_UPDATE_SPINNER_HIDE,
 		SETTINGS_PREFERENCES,
 		SETTINGS_LAYOUT_SAVE,
@@ -328,7 +328,7 @@ private:
 	CheckButton *file_export_lib_merge;
 	LineEdit *file_export_password;
 	String current_path;
-	MenuButton *update_menu;
+	MenuButton *update_spinner;
 
 	String defer_load_scene;
 	String defer_export;
@@ -394,9 +394,9 @@ private:
 
 	bool waiting_for_sources_changed;
 
-	uint32_t circle_step_msec;
-	uint64_t circle_step_frame;
-	int circle_step;
+	uint32_t update_spinner_step_msec;
+	uint64_t update_spinner_step_frame;
+	int update_spinner_step;
 
 	Vector<EditorPlugin *> editor_plugins;
 	EditorPlugin *editor_plugin_screen;
@@ -628,6 +628,8 @@ private:
 	void _dim_timeout();
 
 	void _license_tree_selected();
+
+	void _update_update_spinner();
 
 	Vector<Ref<EditorResourceConversionPlugin> > resource_conversion_plugins;
 

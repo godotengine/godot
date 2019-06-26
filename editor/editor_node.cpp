@@ -260,24 +260,25 @@ void EditorNode::_notification(int p_what) {
 			last_checked_version = editor_data.get_undo_redo().get_version();
 		}
 
-		//update the circle
+		// update the animation frame of the update spinner
 		uint64_t frame = Engine::get_singleton()->get_frames_drawn();
 		uint32_t tick = OS::get_singleton()->get_ticks_msec();
 
-		if (frame != circle_step_frame && (tick - circle_step_msec) > (1000 / 8)) {
+		if (frame != update_spinner_step_frame && (tick - update_spinner_step_msec) > (1000 / 8)) {
 
-			circle_step++;
-			if (circle_step >= 8)
-				circle_step = 0;
+			update_spinner_step++;
+			if (update_spinner_step >= 8)
+				update_spinner_step = 0;
 
-			circle_step_msec = tick;
-			circle_step_frame = frame + 1;
+			update_spinner_step_msec = tick;
+			update_spinner_step_frame = frame + 1;
 
-			// update the circle itself only when its enabled
-			if (!update_menu->get_popup()->is_item_checked(3)) {
-				update_menu->set_icon(gui_base->get_icon("Progress" + itos(circle_step + 1), "EditorIcons"));
+			// update the icon itself only when the spinner is visible
+			if (EditorSettings::get_singleton()->get("interface/editor/show_update_spinner")) {
+				update_spinner->set_icon(gui_base->get_icon("Progress" + itos(update_spinner_step + 1), "EditorIcons"));
 			}
 		}
+
 		editor_selection->update();
 
 		scene_root->set_size_override(true, Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height")));
@@ -400,10 +401,8 @@ void EditorNode::_notification(int p_what) {
 		scene_tab_add->set_icon(gui_base->get_icon("Add", "EditorIcons"));
 
 		// clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons")); don't have access to that node. needs to become a class property
-		update_menu->set_icon(gui_base->get_icon("Collapse", "EditorIcons"));
 		dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
 		dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
-		update_menu->set_icon(gui_base->get_icon("Progress1", "EditorIcons"));
 
 		PopupMenu *p = help_menu->get_popup();
 		p->set_item_icon(p->get_item_index(HELP_SEARCH), gui_base->get_icon("HelpSearch", "EditorIcons"));
@@ -412,11 +411,24 @@ void EditorNode::_notification(int p_what) {
 		p->set_item_icon(p->get_item_index(HELP_ISSUES), gui_base->get_icon("Instance", "EditorIcons"));
 		p->set_item_icon(p->get_item_index(HELP_COMMUNITY), gui_base->get_icon("Instance", "EditorIcons"));
 		p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_icon("Godot", "EditorIcons"));
+
+		_update_update_spinner();
 	}
 
 	if (p_what == Control::NOTIFICATION_RESIZED) {
 		_update_scene_tabs();
 	}
+}
+
+void EditorNode::_update_update_spinner() {
+	update_spinner->set_visible(EditorSettings::get_singleton()->get("interface/editor/show_update_spinner"));
+
+	bool update_continuously = EditorSettings::get_singleton()->get("interface/editor/update_continuously");
+	PopupMenu *update_popup = update_spinner->get_popup();
+	update_popup->set_item_checked(update_popup->get_item_index(SETTINGS_UPDATE_CONTINUOUSLY), update_continuously);
+	update_popup->set_item_checked(update_popup->get_item_index(SETTINGS_UPDATE_WHEN_CHANGED), !update_continuously);
+
+	OS::get_singleton()->set_low_processor_usage_mode(!update_continuously);
 }
 
 void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_name) {
@@ -2426,28 +2438,21 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_reload_scripts", !ischecked);
 
 		} break;
-		case SETTINGS_UPDATE_ALWAYS: {
+		case SETTINGS_UPDATE_CONTINUOUSLY: {
 
-			update_menu->get_popup()->set_item_checked(0, true);
-			update_menu->get_popup()->set_item_checked(1, false);
-			OS::get_singleton()->set_low_processor_usage_mode(false);
-			EditorSettings::get_singleton()->set_project_metadata("editor_options", "update_always", true);
-
+			EditorSettings::get_singleton()->set("interface/editor/update_continuously", true);
+			_update_update_spinner();
 			show_accept(TTR("This option is deprecated. Situations where refresh must be forced are now considered a bug. Please report."), TTR("OK"));
 		} break;
-		case SETTINGS_UPDATE_CHANGES: {
+		case SETTINGS_UPDATE_WHEN_CHANGED: {
 
-			update_menu->get_popup()->set_item_checked(0, false);
-			update_menu->get_popup()->set_item_checked(1, true);
-			OS::get_singleton()->set_low_processor_usage_mode(true);
-			EditorSettings::get_singleton()->set_project_metadata("editor_options", "update_always", false);
+			EditorSettings::get_singleton()->set("interface/editor/update_continuously", false);
+			_update_update_spinner();
 		} break;
 		case SETTINGS_UPDATE_SPINNER_HIDE: {
 
-			update_menu->set_icon(gui_base->get_icon("Collapse", "EditorIcons"));
-			update_menu->get_popup()->toggle_item_checked(3);
-			bool checked = update_menu->get_popup()->is_item_checked(3);
-			EditorSettings::get_singleton()->set_project_metadata("editor_options", "update_spinner_hide", checked);
+			EditorSettings::get_singleton()->set("interface/editor/show_update_spinner", false);
+			_update_update_spinner();
 		} break;
 		case SETTINGS_PREFERENCES: {
 
@@ -5440,6 +5445,8 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("run/auto_save/save_before_running", true);
 	EDITOR_DEF_RST("interface/editor/save_each_scene_on_quit", true);
 	EDITOR_DEF("interface/editor/quit_confirmation", true);
+	EDITOR_DEF("interface/editor/show_update_spinner", false);
+	EDITOR_DEF("interface/editor/update_continuously", false);
 	EDITOR_DEF_RST("interface/scene_tabs/restore_scenes_on_load", false);
 	EDITOR_DEF_RST("interface/scene_tabs/show_thumbnail_on_hover", true);
 	EDITOR_DEF_RST("interface/inspector/capitalize_properties", true);
@@ -6037,22 +6044,17 @@ EditorNode::EditorNode() {
 	layout_dialog->set_size(Size2(225, 270) * EDSCALE);
 	layout_dialog->connect("name_confirmed", this, "_dialog_action");
 
-	update_menu = memnew(MenuButton);
-	update_menu->set_tooltip(TTR("Spins when the editor window redraws."));
-	right_menu_hb->add_child(update_menu);
-	update_menu->set_icon(gui_base->get_icon("Progress1", "EditorIcons"));
-	update_menu->get_popup()->connect("id_pressed", this, "_menu_option");
-	p = update_menu->get_popup();
-	p->add_radio_check_item(TTR("Update Always"), SETTINGS_UPDATE_ALWAYS);
-	p->add_radio_check_item(TTR("Update Changes"), SETTINGS_UPDATE_CHANGES);
+	update_spinner = memnew(MenuButton);
+	update_spinner->set_tooltip(TTR("Spins when the editor window redraws."));
+	right_menu_hb->add_child(update_spinner);
+	update_spinner->set_icon(gui_base->get_icon("Progress1", "EditorIcons"));
+	update_spinner->get_popup()->connect("id_pressed", this, "_menu_option");
+	p = update_spinner->get_popup();
+	p->add_radio_check_item(TTR("Update Continuously"), SETTINGS_UPDATE_CONTINUOUSLY);
+	p->add_radio_check_item(TTR("Update When Changed"), SETTINGS_UPDATE_WHEN_CHANGED);
 	p->add_separator();
-	p->add_check_item(TTR("Disable Update Spinner"), SETTINGS_UPDATE_SPINNER_HIDE);
-	int update_always = EditorSettings::get_singleton()->get_project_metadata("editor_options", "update_always", false);
-	int hide_spinner = EditorSettings::get_singleton()->get_project_metadata("editor_options", "update_spinner_hide", false);
-	_menu_option(update_always ? SETTINGS_UPDATE_ALWAYS : SETTINGS_UPDATE_CHANGES);
-	if (hide_spinner) {
-		_menu_option(SETTINGS_UPDATE_SPINNER_HIDE);
-	}
+	p->add_item(TTR("Hide Update Spinner"), SETTINGS_UPDATE_SPINNER_HIDE);
+	_update_update_spinner();
 
 	// Instantiate and place editor docks
 
@@ -6341,9 +6343,9 @@ EditorNode::EditorNode() {
 		particles_mat_convert.instance();
 		resource_conversion_plugins.push_back(particles_mat_convert);
 	}
-	circle_step_msec = OS::get_singleton()->get_ticks_msec();
-	circle_step_frame = Engine::get_singleton()->get_frames_drawn();
-	circle_step = 0;
+	update_spinner_step_msec = OS::get_singleton()->get_ticks_msec();
+	update_spinner_step_frame = Engine::get_singleton()->get_frames_drawn();
+	update_spinner_step = 0;
 
 	editor_plugin_screen = NULL;
 	editor_plugins_over = memnew(EditorPluginList);
