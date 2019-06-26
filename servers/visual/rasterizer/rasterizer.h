@@ -740,6 +740,18 @@ public:
 
 	struct Item {
 
+		//commands are allocated in blocks of 4k to improve performance
+		//and cache coherence.
+		//blocks always grow but never shrink.
+
+		struct CommandBlock {
+			enum {
+				MAX_SIZE = 4096
+			};
+			uint32_t usage;
+			uint8_t *memory;
+		};
+
 		struct Command {
 
 			enum Type {
@@ -755,6 +767,7 @@ public:
 				TYPE_CLIP_IGNORE,
 			};
 
+			Command *next;
 			Type type;
 			virtual ~Command() {}
 		};
@@ -871,7 +884,7 @@ public:
 		//VS::MaterialBlendMode blend_mode;
 		int light_mask;
 		int z_final;
-		Vector<Command *> commands;
+
 		mutable bool custom_rect;
 		mutable bool rect_dirty;
 		mutable Rect2 rect;
@@ -903,8 +916,8 @@ public:
 				return rect;
 
 			//must update rect
-			int s = commands.size();
-			if (s == 0) {
+
+			if (commands == NULL) {
 
 				rect = Rect2();
 				rect_dirty = false;
@@ -915,11 +928,10 @@ public:
 			bool found_xform = false;
 			bool first = true;
 
-			const Item::Command *const *cmd = &commands[0];
+			const Item::Command *c = commands;
 
-			for (int i = 0; i < s; i++) {
+			while (c) {
 
-				const Item::Command *c = cmd[i];
 				Rect2 r;
 
 				switch (c->type) {
@@ -981,12 +993,12 @@ public:
 						const Item::CommandTransform *transform = static_cast<const Item::CommandTransform *>(c);
 						xf = transform->xform;
 						found_xform = true;
+
+					} //passthrough
+					default: {
+						c = c->next;
 						continue;
-					} break;
-
-					case Item::Command::TYPE_CLIP_IGNORE: {
-
-					} break;
+					}
 				}
 
 				if (found_xform) {
@@ -997,18 +1009,90 @@ public:
 				if (first) {
 					rect = r;
 					first = false;
-				} else
+				} else {
 					rect = rect.merge(r);
+				}
+				c = c->next;
 			}
 
 			rect_dirty = false;
 			return rect;
 		}
 
+		Command *commands;
+		Command *last_command;
+		Vector<CommandBlock> blocks;
+		uint32_t current_block;
+
+		template <class T>
+		T *alloc_command() {
+			T *command;
+			if (commands == NULL) {
+				// As the most common use case of canvas items is to
+				// use only one command, the first is done with it's
+				// own allocation. The rest of them use blocks.
+				command = memnew(T);
+				command->next = NULL;
+				commands = command;
+				last_command = command;
+			} else {
+				//Subsequent commands go into a block.
+
+				while (true) {
+					if (unlikely(current_block == (uint32_t)blocks.size())) {
+						// If we need more blocks, we allocate them
+						// (they won't be freed until this CanvasItem is
+						// deleted, though).
+						CommandBlock cb;
+						cb.memory = (uint8_t *)memalloc(CommandBlock::MAX_SIZE);
+						cb.usage = 0;
+						blocks.push_back(cb);
+					}
+
+					CommandBlock *c = &blocks.write[current_block];
+					size_t space_left = CommandBlock::MAX_SIZE - c->usage;
+					if (space_left < sizeof(T)) {
+						current_block++;
+						continue;
+					}
+
+					//allocate block and add to the linked list
+					void *memory = c->memory + c->usage;
+					command = memnew_placement(memory, T);
+					command->next = NULL;
+					last_command->next = command;
+					last_command = command;
+					c->usage += sizeof(T);
+					break;
+				}
+			}
+
+			rect_dirty = true;
+			return command;
+		}
+
 		void clear() {
-			for (int i = 0; i < commands.size(); i++)
-				memdelete(commands[i]);
-			commands.clear();
+			Command *c = commands;
+			while (c) {
+				Command *n = c->next;
+				if (c == commands) {
+					memdelete(commands);
+				} else {
+					c->~Command();
+				}
+				c = n;
+			}
+			{
+				uint32_t cbc = MIN((current_block + 1), blocks.size());
+				CommandBlock *blockptr = blocks.ptrw();
+				for (uint32_t i = 0; i < cbc; i++) {
+					blockptr[i].usage = 0;
+				}
+			}
+
+			last_command = NULL;
+			commands = NULL;
+			current_block = 0;
 			clip = false;
 			rect_dirty = true;
 			final_clip_owner = NULL;
@@ -1016,6 +1100,9 @@ public:
 			light_masked = false;
 		}
 		Item() {
+			commands = NULL;
+			last_command = NULL;
+			current_block = 0;
 			light_mask = 1;
 			vp_render = NULL;
 			next = NULL;
@@ -1035,6 +1122,9 @@ public:
 		}
 		virtual ~Item() {
 			clear();
+			for (int i = 0; i < blocks.size(); i++) {
+				memfree(blocks[i].memory);
+			}
 			if (copy_back_buffer) memdelete(copy_back_buffer);
 		}
 	};
