@@ -179,6 +179,23 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	/**** MATERIALS ****/
 	/*******************/
 
+	/******************/
+	/**** LIGHTING ****/
+	/******************/
+
+	enum {
+		LIGHT_GRID_WIDTH = 16,
+		LIGHT_GRID_HEIGHT = 16,
+		MAX_LIGHTS = 128
+	};
+
+	struct {
+		RID grid_texture;
+		RID grid_buffer;
+		PoolVector<uint8_t> grid_texture_data;
+		PoolVector<uint8_t> grid_buffer_data;
+	} lighting;
+
 	/***************/
 	/**** STATE ****/
 	/***************/
@@ -213,16 +230,17 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 				float ninepatch_margins[4];
 				float dst_rect[4];
 				float src_rect[4];
-				float color_texture_pixel_size[2];
-				uint32_t pad[6];
+				float pad[2];
 			};
 			//primitive
 			struct {
-				float points[8]; // vec2 points[4]
-				uint32_t colors[8]; // colors encoded as half
-				float uvs[8]; // vec2 points[4]
+				float points[6]; // vec2 points[4]
+				float uvs[6]; // vec2 points[4]
+				uint32_t colors[6]; // colors encoded as half
 			};
 		};
+		float color_texture_pixel_size[2];
+		uint32_t lights[4];
 	};
 
 	struct SkeletonUniform {
