@@ -216,6 +216,17 @@
 				Intersects [code]polyline[/code] with [code]polygon[/code] and returns an array of intersected polylines. This performs [code]OPERATION_INTERSECTION[/code] between the polyline and the polygon. This operation can be thought of as chopping a line with a closed shape.
 			</description>
 		</method>
+		<method name="is_point_in_polygon">
+			<return type="bool">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<argument index="1" name="polygon" type="PoolVector2Array">
+			</argument>
+			<description>
+				Returns [code]true[/code] if [code]point[/code] is inside [code]polygon[/code] or if it's located exactly [i]on[/i] polygon's boundary, otherwise returns [code]false[/code].
+			</description>
+		</method>
 		<method name="is_polygon_clockwise">
 			<return type="bool">
 			</return>

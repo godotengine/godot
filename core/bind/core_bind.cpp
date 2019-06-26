@@ -1524,6 +1524,11 @@ bool _Geometry::is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
 	return Geometry::is_polygon_clockwise(p_polygon);
 }
 
+bool _Geometry::is_point_in_polygon(const Point2 &p_point, const Vector<Vector2> &p_polygon) {
+
+	return Geometry::is_point_in_polygon(p_point, p_polygon);
+}
+
 Vector<int> _Geometry::triangulate_polygon(const Vector<Vector2> &p_polygon) {
 
 	return Geometry::triangulate_polygon(p_polygon);
@@ -1706,6 +1711,7 @@ void _Geometry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("point_is_inside_triangle", "point", "a", "b", "c"), &_Geometry::point_is_inside_triangle);
 
 	ClassDB::bind_method(D_METHOD("is_polygon_clockwise", "polygon"), &_Geometry::is_polygon_clockwise);
+	ClassDB::bind_method(D_METHOD("is_point_in_polygon", "point", "polygon"), &_Geometry::is_point_in_polygon);
 	ClassDB::bind_method(D_METHOD("triangulate_polygon", "polygon"), &_Geometry::triangulate_polygon);
 	ClassDB::bind_method(D_METHOD("triangulate_delaunay_2d", "points"), &_Geometry::triangulate_delaunay_2d);
 	ClassDB::bind_method(D_METHOD("convex_hull_2d", "points"), &_Geometry::convex_hull_2d);
