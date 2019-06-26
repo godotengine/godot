@@ -871,6 +871,7 @@ public:
 		bool update_when_visible;
 		//VS::MaterialBlendMode blend_mode;
 		int light_mask;
+		int z_final;
 		Vector<Command *> commands;
 		mutable bool custom_rect;
 		mutable bool rect_dirty;
@@ -1031,6 +1032,7 @@ public:
 			distance_field = false;
 			light_masked = false;
 			update_when_visible = false;
+			z_final = 0;
 		}
 		virtual ~Item() {
 			clear();
