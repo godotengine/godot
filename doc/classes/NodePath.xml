@@ -47,6 +47,7 @@
 				# This will be parsed as a node path to the 'x' component of the 'position' property in the current node
 				var property_path = node_path.get_as_property_path()
 				print(property_path) # :position:x
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_concatenated_subnames">
@@ -80,7 +81,7 @@
 			</return>
 			<description>
 				Get the number of node names which make up the path. Subnames (see [method get_subname_count]) are not included.
-				For example, [code]"Path2D/PathFollow2D/Sprite"[code] has 3 names.
+				For example, [code]"Path2D/PathFollow2D/Sprite"[/code] has 3 names.
 			</description>
 		</method>
 		<method name="get_subname">

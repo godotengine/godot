@@ -4388,9 +4388,10 @@
 			The amount of draw calls in frame.
 		</constant>
 		<constant name="INFO_USAGE_VIDEO_MEM_TOTAL" value="6" enum="RenderInfo">
+			Unimplemented in the GLES2 and GLES3 rendering backends, always returns 0.
 		</constant>
 		<constant name="INFO_VIDEO_MEM_USED" value="7" enum="RenderInfo">
-			The amount of vertex memory and texture memory used.
+			The amount of video memory used, i.e. texture and vertex memory combined.
 		</constant>
 		<constant name="INFO_TEXTURE_MEM_USED" value="8" enum="RenderInfo">
 			The amount of texture memory used.

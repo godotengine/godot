@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VehicleWheel" inherits="Spatial" category="Core" version="3.2">
 	<brief_description>
-		Physics object that simulates the behaviour of a wheel.
+		Physics object that simulates the behavior of a wheel.
 	</brief_description>
 	<description>
-		This node needs to be used as a child node of [VehicleBody] and simulates the behaviour of one of its wheels. This node also acts as a collider to detect if the wheel is touching a surface.
+		This node needs to be used as a child node of [VehicleBody] and simulates the behavior of one of its wheels. This node also acts as a collider to detect if the wheel is touching a surface.
 	</description>
 	<tutorials>
 	</tutorials>
