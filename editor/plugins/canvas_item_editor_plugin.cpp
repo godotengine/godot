@@ -3618,7 +3618,8 @@ void CanvasItemEditor::_update_scrollbars() {
 	bool constrain_editor_view = bool(EditorSettings::get_singleton()->get("editors/2d/constrain_editor_view"));
 
 	if (canvas_item_rect.size.height <= (local_rect.size.y / zoom)) {
-		if (constrain_editor_view && ABS(begin.y - previous_update_view_offset.y) < ABS(begin.y - view_offset.y)) {
+		float centered = -(size.y / 2) / zoom + screen_rect.y / 2;
+		if (constrain_editor_view && ABS(centered - previous_update_view_offset.y) < ABS(centered - view_offset.y)) {
 			view_offset.y = previous_update_view_offset.y;
 		}
 
@@ -3638,7 +3639,8 @@ void CanvasItemEditor::_update_scrollbars() {
 	}
 
 	if (canvas_item_rect.size.width <= (local_rect.size.x / zoom)) {
-		if (constrain_editor_view && ABS(begin.x - previous_update_view_offset.x) < ABS(begin.x - view_offset.x)) {
+		float centered = -(size.x / 2) / zoom + screen_rect.x / 2;
+		if (constrain_editor_view && ABS(centered - previous_update_view_offset.x) < ABS(centered - view_offset.x)) {
 			view_offset.x = previous_update_view_offset.x;
 		}
 
