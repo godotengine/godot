@@ -100,10 +100,7 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 	struct stat flags;
 	bool success = (stat(p_dir.utf8().get_data(), &flags) == 0);
 
-	if (success && S_ISDIR(flags.st_mode))
-		return true;
-
-	return false;
+	return (success && S_ISDIR(flags.st_mode));
 }
 
 uint64_t DirAccessUnix::get_modified_time(String p_file) {

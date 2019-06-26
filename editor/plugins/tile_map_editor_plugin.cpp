@@ -1848,7 +1848,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	manual_position = Vector2(0, 0);
 	canvas_item_editor_viewport = NULL;
 	editor = p_editor;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	tool = TOOL_NONE;
 	selection_active = false;

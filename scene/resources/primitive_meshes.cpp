@@ -743,8 +743,6 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, radius;
 
-	radius = bottom_radius > top_radius ? bottom_radius : top_radius;
-
 	PoolVector<Vector3> points;
 	PoolVector<Vector3> normals;
 	PoolVector<float> tangents;

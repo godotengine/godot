@@ -165,7 +165,7 @@ protected:
 	_validate_property(PropertyInfo &property) const;
 
 	static void _bind_methods();
-	virtual void _notification(int p_notification);
+	virtual void _notification(int p_what);
 
 public:
 	SkeletonIK();
@@ -192,7 +192,7 @@ public:
 	void set_use_magnet(bool p_use);
 	bool is_using_magnet() const;
 
-	void set_magnet_position(const Vector3 &p_constraint);
+	void set_magnet_position(const Vector3 &p_local_position);
 	const Vector3 &get_magnet_position() const;
 
 	void set_min_distance(real_t p_min_distance);

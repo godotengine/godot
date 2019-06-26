@@ -723,7 +723,7 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 			real_t rollingFriction = 0.f;
 
 			if (wheelInfo.m_raycastInfo.m_isInContact) {
-				if (engine_force != 0.f && wheelInfo.engine_traction != false) {
+				if (engine_force != 0.f && wheelInfo.engine_traction) {
 					rollingFriction = -engine_force * s->get_step();
 				} else {
 					real_t defaultRollingFrictionImpulse = 0.f;
@@ -928,8 +928,7 @@ void VehicleBody::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "steering", PROPERTY_HINT_RANGE, "-180,180.0,0.01"), "set_steering", "get_steering");
 }
 
-VehicleBody::VehicleBody() :
-		RigidBody() {
+VehicleBody::VehicleBody() {
 
 	m_pitchControl = 0;
 	m_currentVehicleSpeedKmHour = real_t(0.);

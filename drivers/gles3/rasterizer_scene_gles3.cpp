@@ -2426,7 +2426,7 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 			e->sort_key |= SORT_KEY_LIGHTMAP_CAPTURE_FLAG;
 		}
 
-		e->sort_key |= uint64_t(p_material->render_priority + 128) << RenderList::SORT_KEY_PRIORITY_SHIFT;
+		e->sort_key |= (uint64_t(p_material->render_priority) + 128) << RenderList::SORT_KEY_PRIORITY_SHIFT;
 	}
 
 	/*

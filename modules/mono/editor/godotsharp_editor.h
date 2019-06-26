@@ -35,7 +35,7 @@
 #include "monodevelop_instance.h"
 
 class GodotSharpEditor : public Node {
-	GDCLASS(GodotSharpEditor, Object);
+	GDCLASS(GodotSharpEditor, Node);
 
 	EditorNode *editor;
 

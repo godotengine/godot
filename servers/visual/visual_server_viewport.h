@@ -138,9 +138,8 @@ public:
 			if (left_to_screen == right_to_screen) {
 
 				return p_left->parent == p_right->self;
-			} else {
-				return right_to_screen;
 			}
+			return right_to_screen;
 		}
 	};
 

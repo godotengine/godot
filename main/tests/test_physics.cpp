@@ -329,7 +329,6 @@ public:
 		make_grid(5, 5, 2.5, 1, gxf);
 		test_fall();
 		quit = false;
-		return;
 	}
 	virtual bool iteration(float p_time) {
 

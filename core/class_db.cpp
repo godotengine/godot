@@ -552,7 +552,7 @@ void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherit
 
 	OBJTYPE_WLOCK;
 
-	StringName name = p_class;
+	const StringName &name = p_class;
 
 	ERR_FAIL_COND(classes.has(name));
 

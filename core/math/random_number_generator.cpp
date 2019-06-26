@@ -30,8 +30,7 @@
 
 #include "random_number_generator.h"
 
-RandomNumberGenerator::RandomNumberGenerator() :
-		randbase() {}
+RandomNumberGenerator::RandomNumberGenerator() {}
 
 void RandomNumberGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &RandomNumberGenerator::set_seed);

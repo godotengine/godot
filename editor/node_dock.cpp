@@ -119,13 +119,13 @@ NodeDock::NodeDock() {
 	groups_button->connect("pressed", this, "show_groups");
 
 	connections = memnew(ConnectionsDock(EditorNode::get_singleton()));
-	connections->set_undoredo(EditorNode::get_singleton()->get_undo_redo());
+	connections->set_undoredo(EditorNode::get_undo_redo());
 	add_child(connections);
 	connections->set_v_size_flags(SIZE_EXPAND_FILL);
 	connections->hide();
 
 	groups = memnew(GroupsEditor);
-	groups->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
+	groups->set_undo_redo(EditorNode::get_undo_redo());
 	add_child(groups);
 	groups->set_v_size_flags(SIZE_EXPAND_FILL);
 	groups->hide();

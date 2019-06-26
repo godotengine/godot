@@ -48,7 +48,7 @@
 
 String Collada::Effect::get_texture_path(const String &p_source, Collada &state) const {
 
-	String image = p_source;
+	const String &image = p_source;
 	ERR_FAIL_COND_V(!state.state.image_map.has(image), "");
 	return state.state.image_map[image].path;
 }
@@ -1101,6 +1101,7 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 							Vector<float> values = _read_float_array(parser);
 							if (polygons) {
 
+								ERR_CONTINUE(prim.vertex_size == 0);
 								prim.polygons.push_back(values.size() / prim.vertex_size);
 								int from = prim.indices.size();
 								prim.indices.resize(from + values.size());
@@ -2522,7 +2523,6 @@ Error Collada::load(const String &p_path, int p_flags) {
 	state.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	state.import_flags = p_flags;
 	/* Skip headers */
-	err = OK;
 	while ((err = parser.read()) == OK) {
 
 		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {

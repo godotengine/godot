@@ -601,7 +601,8 @@ Vector<uint8_t> FileAccess::get_file_as_array(const String &p_path, Error *r_err
 		if (r_error) { // if error requested, do not throw error
 			return Vector<uint8_t>();
 		}
-		ERR_FAIL_COND_V(!f, Vector<uint8_t>());
+		ERR_EXPLAIN("Can't open file from path: " + String(p_path));
+		ERR_FAIL_V(Vector<uint8_t>());
 	}
 	Vector<uint8_t> data;
 	data.resize(f->get_len());
@@ -621,7 +622,8 @@ String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
 		if (r_error) {
 			return String();
 		}
-		ERR_FAIL_COND_V(err != OK, String());
+		ERR_EXPLAIN("Can't get file as string from path: " + String(p_path));
+		ERR_FAIL_V(String());
 	}
 
 	String ret;

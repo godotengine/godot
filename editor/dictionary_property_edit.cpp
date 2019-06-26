@@ -42,7 +42,6 @@ void DictionaryPropertyEdit::_notif_changev(const String &p_v) {
 void DictionaryPropertyEdit::_set_key(const Variant &p_old_key, const Variant &p_new_key) {
 
 	// TODO: Set key of a dictionary is not allowed yet
-	return;
 }
 
 void DictionaryPropertyEdit::_set_value(const Variant &p_key, const Variant &p_value) {
@@ -129,7 +128,7 @@ bool DictionaryPropertyEdit::_set(const StringName &p_name, const Variant &p_val
 		if (type == "key" && index < keys.size()) {
 
 			const Variant &key = keys[index];
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = EditorNode::get_undo_redo();
 
 			ur->create_action(TTR("Change Dictionary Key"));
 			ur->add_do_method(this, "_set_key", key, p_value);
@@ -144,7 +143,7 @@ bool DictionaryPropertyEdit::_set(const StringName &p_name, const Variant &p_val
 			if (dict.has(key)) {
 
 				Variant value = dict[key];
-				UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+				UndoRedo *ur = EditorNode::get_undo_redo();
 
 				ur->create_action(TTR("Change Dictionary Value"));
 				ur->add_do_method(this, "_set_value", key, p_value);

@@ -107,7 +107,7 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 		}
 
 		if (save_changed_setting) {
-			if (props[p_name].save != true) {
+			if (!props[p_name].save) {
 				props[p_name].save = true;
 				changed = true;
 			}
@@ -690,7 +690,7 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	keys.sort();
 
 	for (const List<String>::Element *E = keys.front(); E; E = E->next()) {
-		String key = E->get();
+		const String &key = E->get();
 		if (key.begins_with("text_editor/highlighting/") && key.find("color") >= 0) {
 			cf->set_value(theme_section, key.replace("text_editor/highlighting/", ""), ((Color)props[key].variant).to_html());
 		}
@@ -698,10 +698,7 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 
 	Error err = cf->save(p_file);
 
-	if (err == OK) {
-		return true;
-	}
-	return false;
+	return err == OK;
 }
 
 bool EditorSettings::_is_default_text_editor_theme(String p_theme_name) {

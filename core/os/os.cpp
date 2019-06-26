@@ -239,7 +239,8 @@ void OS::print_all_resources(String p_to_file) {
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
 			_OSPRF = NULL;
-			ERR_FAIL_COND(err != OK);
+			ERR_EXPLAIN("Can't print all resources to file: " + String(p_to_file));
+			ERR_FAIL();
 		}
 	}
 

@@ -1868,7 +1868,7 @@ AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
 	anim_editor = memnew(AnimationPlayerEditor(editor, this));
-	anim_editor->set_undo_redo(editor->get_undo_redo());
+	anim_editor->set_undo_redo(EditorNode::get_undo_redo());
 	editor->add_bottom_panel_item(TTR("Animation"), anim_editor);
 }
 

@@ -917,7 +917,7 @@ uint32_t VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, 
 				}
 				r_offsets[i] = elem_size;
 				continue;
-			} break;
+			}
 			default: {
 				ERR_FAIL_V(0);
 			}
@@ -953,15 +953,12 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 			switch (var.get_type()) {
 				case Variant::POOL_VECTOR2_ARRAY: {
 					PoolVector<Vector2> v2 = var;
-					array_len = v2.size();
 				} break;
 				case Variant::POOL_VECTOR3_ARRAY: {
 					PoolVector<Vector3> v3 = var;
-					array_len = v3.size();
 				} break;
 				default: {
 					Array v = var;
-					array_len = v.size();
 				} break;
 			}
 
@@ -1151,7 +1148,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 
 	if (err) {
 		ERR_EXPLAIN("Invalid array format for surface");
-		ERR_FAIL_COND(err != OK);
+		ERR_FAIL();
 	}
 
 	Vector<PoolVector<uint8_t> > blend_shape_data;
@@ -1165,9 +1162,9 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 		AABB laabb;
 		Error err2 = _surface_set_data(p_blend_shapes[i], format & ~ARRAY_FORMAT_INDEX, offsets, total_elem_size, vertex_array_shape, array_len, noindex, 0, laabb, bone_aabb);
 		aabb.merge_with(laabb);
-		if (err2) {
+		if (err2 != OK) {
 			ERR_EXPLAIN("Invalid blend shape array format for surface");
-			ERR_FAIL_COND(err2 != OK);
+			ERR_FAIL();
 		}
 
 		blend_shape_data.push_back(vertex_array_shape);

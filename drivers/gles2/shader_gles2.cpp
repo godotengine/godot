@@ -182,14 +182,11 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 
 #endif
 
-	int define_line_ofs = 1;
-
 	for (int j = 0; j < conditional_count; j++) {
 		bool enable = (conditional_version.version & (1 << j)) > 0;
 
 		if (enable) {
 			strings.push_back(conditional_defines[j]);
-			define_line_ofs++;
 			DEBUG_PRINT(conditional_defines[j]);
 		}
 	}
@@ -206,7 +203,6 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 
 		ERR_FAIL_COND_V(!cc, NULL);
 		v.code_version = cc->version;
-		define_line_ofs += 2;
 	}
 
 	// program

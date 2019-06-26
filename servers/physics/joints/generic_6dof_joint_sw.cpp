@@ -421,7 +421,6 @@ void Generic6DOFJointSW::calcAnchorPos(void) {
 	const Vector3 &pA = m_calculatedTransformA.origin;
 	const Vector3 &pB = m_calculatedTransformB.origin;
 	m_AnchorPos = pA * weight + pB * (real_t(1.0) - weight);
-	return;
 } // Generic6DOFJointSW::calcAnchorPos()
 
 void Generic6DOFJointSW::set_param(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisParam p_param, real_t p_value) {

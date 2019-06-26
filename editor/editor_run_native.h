@@ -36,7 +36,7 @@
 
 class EditorRunNative : public HBoxContainer {
 
-	GDCLASS(EditorRunNative, BoxContainer);
+	GDCLASS(EditorRunNative, HBoxContainer);
 
 	Map<int, MenuButton *> menus;
 	bool first;

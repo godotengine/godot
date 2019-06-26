@@ -69,10 +69,7 @@ bool AnimatedSprite::_edit_use_rect() const {
 	Ref<Texture> t;
 	if (animation)
 		t = frames->get_frame(animation, frame);
-	if (t.is_null())
-		return false;
-
-	return true;
+	return t.is_valid();
 }
 
 Rect2 AnimatedSprite::get_anchorable_rect() const {

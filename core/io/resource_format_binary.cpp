@@ -720,7 +720,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
 		error = ERR_FILE_CORRUPT;
 		memdelete(obj); //bye
 		ERR_EXPLAIN(local_path + ":Resource type in resource field not a resource, type is: " + obj->get_class());
-		ERR_FAIL_COND_V(!r, ERR_FILE_CORRUPT);
+		ERR_FAIL_V(ERR_FILE_CORRUPT);
 	}
 
 	RES res = RES(r);
@@ -1694,7 +1694,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 			int len = varray.size();
 			for (int i = 0; i < len; i++) {
 
-				Variant v = varray.get(i);
+				const Variant &v = varray.get(i);
 				_find_resources(v);
 			}
 

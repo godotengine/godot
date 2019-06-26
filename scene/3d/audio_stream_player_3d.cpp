@@ -93,7 +93,7 @@ void AudioStreamPlayer3D::_mix_audio() {
 		}
 
 		bool interpolate_filter = !started;
-		;
+
 		if (!found) {
 			//create new if was not used before
 			if (prev_output_count < MAX_OUTPUTS) {
@@ -872,8 +872,8 @@ void AudioStreamPlayer3D::set_stream_paused(bool p_pause) {
 
 	if (p_pause != stream_paused) {
 		stream_paused = p_pause;
-		stream_paused_fade_in = stream_paused ? false : true;
-		stream_paused_fade_out = stream_paused ? true : false;
+		stream_paused_fade_in = !stream_paused;
+		stream_paused_fade_out = stream_paused;
 	}
 }
 

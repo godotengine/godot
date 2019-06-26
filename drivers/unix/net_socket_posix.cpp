@@ -221,10 +221,7 @@ bool NetSocketPosix::_can_use_ip(const IP_Address p_ip, const bool p_for_bind) c
 	}
 	// Check if socket support this IP type.
 	IP::Type type = p_ip.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
-	if (_ip_type != IP::TYPE_ANY && !p_ip.is_wildcard() && _ip_type != type) {
-		return false;
-	}
-	return true;
+	return !(_ip_type != IP::TYPE_ANY && !p_ip.is_wildcard() && _ip_type != type);
 }
 
 void NetSocketPosix::_set_socket(SOCKET_TYPE p_sock, IP::Type p_ip_type, bool p_is_stream) {

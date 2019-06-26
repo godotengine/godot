@@ -470,7 +470,6 @@ void Label::regenerate_word_cache() {
 					wc->word_len = i - word_pos;
 					wc->space_count = space_count;
 					current_word_size = char_width;
-					space_count = 0;
 					word_pos = i;
 				}
 			}

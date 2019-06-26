@@ -179,7 +179,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		// Check for segment split.
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && mode == MODE_EDIT && on_edge == true) {
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && mode == MODE_EDIT && on_edge) {
 			Vector2 gpoint2 = mb->get_position();
 			Ref<Curve2D> curve = node->get_curve();
 

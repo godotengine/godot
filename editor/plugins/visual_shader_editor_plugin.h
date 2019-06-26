@@ -176,12 +176,12 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
 
-	void _add_input_port(int p_node, int p_port, int p_type, const String &p_name);
+	void _add_input_port(int p_node, int p_port, int p_port_type, const String &p_name);
 	void _remove_input_port(int p_node, int p_port);
 	void _change_input_port_type(int p_type, int p_node, int p_port);
 	void _change_input_port_name(const String &p_text, Object *line_edit, int p_node, int p_port);
 
-	void _add_output_port(int p_node, int p_port, int p_type, const String &p_name);
+	void _add_output_port(int p_node, int p_port, int p_port_type, const String &p_name);
 	void _remove_output_port(int p_node, int p_port);
 	void _change_output_port_type(int p_type, int p_node, int p_port);
 	void _change_output_port_name(const String &p_text, Object *line_edit, int p_node, int p_port);
@@ -204,7 +204,7 @@ class VisualShaderEditor : public VBoxContainer {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	bool _is_available(int p_flags);
+	bool _is_available(int p_mode);
 	void _update_created_node(GraphNode *node);
 
 protected:

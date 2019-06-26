@@ -82,7 +82,7 @@ public:
 	/* NetworkedMultiplayerPeer */
 	void set_transfer_mode(TransferMode p_mode);
 	TransferMode get_transfer_mode() const;
-	void set_target_peer(int p_peer_id);
+	void set_target_peer(int p_target_peer);
 	int get_packet_peer() const;
 	int get_unique_id() const;
 	virtual bool is_server() const = 0;

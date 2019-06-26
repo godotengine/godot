@@ -917,7 +917,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					}
 
 					for (Set<String>::Element *j = valid_inheritors.front(); j; j = j->next()) {
-						String t = j->get();
+						const String &t = j->get();
 
 						bool is_custom_resource = false;
 						Ref<Texture> icon;

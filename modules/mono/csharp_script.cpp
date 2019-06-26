@@ -2898,10 +2898,7 @@ void CSharpScript::update_exports() {
 }
 
 bool CSharpScript::has_script_signal(const StringName &p_signal) const {
-	if (_signals.has(p_signal))
-		return true;
-
-	return false;
+	return _signals.has(p_signal);
 }
 
 void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {

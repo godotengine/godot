@@ -143,7 +143,7 @@ public:
 	void set_particles_anim_v_frames(int p_frames);
 	int get_particles_anim_v_frames() const;
 
-	void set_particles_anim_loop(bool p_frames);
+	void set_particles_anim_loop(bool p_loop);
 	bool get_particles_anim_loop() const;
 
 	static void init_shaders();

@@ -337,7 +337,7 @@ public:
 	_FORCE_INLINE_ static CSharpLanguage *get_singleton() { return singleton; }
 
 	static void release_script_gchandle(Ref<MonoGCHandle> &p_gchandle);
-	static void release_script_gchandle(MonoObject *p_pinned_expected_obj, Ref<MonoGCHandle> &p_gchandle);
+	static void release_script_gchandle(MonoObject *p_expected_obj, Ref<MonoGCHandle> &p_gchandle);
 
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);

@@ -332,7 +332,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _update_scroll(double);
 	void _update_step(double p_new_step);
-	void _update_length(double p_new_step);
+	void _update_length(double p_new_len);
 	void _dropped_track(int p_from_track, int p_to_track);
 
 	void _add_track(int p_type);

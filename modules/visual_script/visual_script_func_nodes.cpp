@@ -51,10 +51,7 @@ int VisualScriptFunctionCall::get_output_sequence_port_count() const {
 
 bool VisualScriptFunctionCall::has_input_sequence_port() const {
 
-	if ((method_cache.flags & METHOD_FLAG_CONST && call_mode != CALL_MODE_INSTANCE) || (call_mode == CALL_MODE_BASIC_TYPE && Variant::is_method_const(basic_type, function)))
-		return false;
-	else
-		return true;
+	return !((method_cache.flags & METHOD_FLAG_CONST && call_mode != CALL_MODE_INSTANCE) || (call_mode == CALL_MODE_BASIC_TYPE && Variant::is_method_const(basic_type, function)));
 }
 #ifdef TOOLS_ENABLED
 
@@ -949,7 +946,7 @@ int VisualScriptPropertySet::get_output_sequence_port_count() const {
 
 bool VisualScriptPropertySet::has_input_sequence_port() const {
 
-	return call_mode != CALL_MODE_BASIC_TYPE ? true : false;
+	return call_mode != CALL_MODE_BASIC_TYPE;
 }
 
 Node *VisualScriptPropertySet::_get_base_node() const {

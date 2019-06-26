@@ -314,7 +314,8 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		if (!f) {
 			ret = unzGoToNextFile(pkg);
 			fc++;
-			ERR_CONTINUE(!f);
+			ERR_EXPLAIN("Can't open file from path: " + String(to_write));
+			ERR_CONTINUE(true);
 		}
 
 		f->store_buffer(data.ptr(), data.size());
@@ -406,9 +407,7 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 		} break;
 		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED:
 		case HTTPRequest::RESULT_CONNECTION_ERROR:
-		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH: {
-			template_list_state->set_text(TTR("Can't connect."));
-		} break;
+		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
 		case HTTPRequest::RESULT_SSL_HANDSHAKE_ERROR:
 		case HTTPRequest::RESULT_CANT_CONNECT: {
 			template_list_state->set_text(TTR("Can't connect."));

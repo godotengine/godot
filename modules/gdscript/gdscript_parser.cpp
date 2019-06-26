@@ -1150,7 +1150,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 		if (!expr) {
 			ERR_EXPLAIN("GDScriptParser bug, couldn't figure out what expression is...");
-			ERR_FAIL_COND_V(!expr, NULL);
+			ERR_FAIL_V(NULL);
 		}
 
 		/******************/
@@ -1493,7 +1493,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 		if (next_op == -1) {
 
 			_set_error("Yet another parser bug....");
-			ERR_FAIL_COND_V(next_op == -1, NULL);
+			ERR_FAIL_V(NULL);
 		}
 
 		// OK! create operator..
@@ -5944,11 +5944,8 @@ bool GDScriptParser::_is_type_compatible(const DataType &p_container, const Data
 
 	if (p_container.kind == DataType::BUILTIN && p_container.builtin_type == Variant::OBJECT) {
 		// Object built-in is a special case, it's compatible with any object and with null
-		if (p_expression.kind == DataType::BUILTIN && p_expression.builtin_type == Variant::NIL) {
-			return true;
-		}
 		if (p_expression.kind == DataType::BUILTIN) {
-			return false;
+			return p_expression.builtin_type == Variant::NIL;
 		}
 		// If it's not a built-in, must be an object
 		return true;

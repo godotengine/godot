@@ -457,8 +457,8 @@ void AudioStreamPlayer2D::set_stream_paused(bool p_pause) {
 
 	if (p_pause != stream_paused) {
 		stream_paused = p_pause;
-		stream_paused_fade_in = p_pause ? false : true;
-		stream_paused_fade_out = p_pause ? true : false;
+		stream_paused_fade_in = !p_pause;
+		stream_paused_fade_out = p_pause;
 	}
 }
 

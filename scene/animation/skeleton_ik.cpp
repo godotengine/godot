@@ -423,7 +423,6 @@ void SkeletonIK::_notification(int p_what) {
 }
 
 SkeletonIK::SkeletonIK() :
-		Node(),
 		interpolation(1),
 		override_tip_basis(true),
 		use_magnet(false),

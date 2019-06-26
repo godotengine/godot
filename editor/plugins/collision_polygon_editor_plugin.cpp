@@ -527,7 +527,7 @@ Polygon3DEditor::Polygon3DEditor(EditorNode *p_editor) {
 
 	node = NULL;
 	editor = p_editor;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	add_child(memnew(VSeparator));
 	button_create = memnew(ToolButton);

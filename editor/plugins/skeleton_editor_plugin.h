@@ -69,7 +69,7 @@ protected:
 	PhysicalBone *create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos);
 
 public:
-	void edit(Skeleton *p_mesh);
+	void edit(Skeleton *p_node);
 
 	SkeletonEditor();
 	~SkeletonEditor();

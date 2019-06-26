@@ -478,7 +478,7 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
 			v.id = 0;
-			ERR_FAIL_COND_V(iloglen <= 0, NULL);
+			ERR_FAIL_COND_V(iloglen < 0, NULL);
 		}
 
 		if (iloglen == 0) {
