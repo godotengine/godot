@@ -512,9 +512,10 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 	push_constant.specular_shininess = 0xFFFFFFFF;
 	push_constant.color_texture_pixel_size[0] = 0;
 	push_constant.color_texture_pixel_size[1] = 0;
-	push_constant.pad[0] = 0;
+
 	push_constant.pad[1] = 0;
 	push_constant.pad[2] = 0;
+	push_constant.pad[3] = 0;
 
 	PipelineVariants *pipeline_variants = &shader.pipeline_variants;
 
@@ -760,7 +761,9 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 					_bind_texture_binding(primitive->texture_binding.binding_id, p_draw_list);
 				}
 
-				for (uint32_t j = 0; j < primitive->point_count; j++) {
+				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, primitive_arrays.index_array[MIN(3, primitive->point_count) - 1]);
+
+				for (uint32_t j = 0; j < MIN(3, primitive->point_count); j++) {
 					push_constant.points[j * 2 + 0] = primitive->points[j].x;
 					push_constant.points[j * 2 + 1] = primitive->points[j].y;
 					push_constant.uvs[j * 2 + 0] = primitive->uvs[j].x;
@@ -770,10 +773,23 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 					push_constant.colors[j * 2 + 1] = (uint32_t(Math::make_half_float(col.a)) << 16) | Math::make_half_float(col.b);
 				}
 				RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(PushConstant));
-
-				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, primitive_arrays.index_array[primitive->point_count - 1]);
-
 				RD::get_singleton()->draw_list_draw(p_draw_list, true);
+
+				if (primitive->point_count == 4) {
+					for (uint32_t j = 1; j < 3; j++) {
+						//second half of triangle
+						push_constant.points[j * 2 + 0] = primitive->points[j + 1].x;
+						push_constant.points[j * 2 + 1] = primitive->points[j + 1].y;
+						push_constant.uvs[j * 2 + 0] = primitive->uvs[j + 1].x;
+						push_constant.uvs[j * 2 + 1] = primitive->uvs[j + 1].y;
+						Color col = primitive->colors[j + 1] * p_modulate;
+						push_constant.colors[j * 2 + 0] = (uint32_t(Math::make_half_float(col.g)) << 16) | Math::make_half_float(col.r);
+						push_constant.colors[j * 2 + 1] = (uint32_t(Math::make_half_float(col.a)) << 16) | Math::make_half_float(col.b);
+					}
+
+					RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(PushConstant));
+					RD::get_singleton()->draw_list_draw(p_draw_list, true);
+				}
 
 			} break;
 
@@ -1364,7 +1380,7 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 			RD::AttachmentFormat af;
 			af.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 			af.samples = RD::TEXTURE_SAMPLES_1;
-			af.usage_flags = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+			af.usage_flags = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_RETRIEVE_BIT;
 			Vector<RD::AttachmentFormat> formats;
 			formats.push_back(af);
 			shader.framebuffer_formats[RENDER_TARGET_FORMAT_8_BIT_INT] = RD::get_singleton()->framebuffer_format_create(formats);
