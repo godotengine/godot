@@ -511,7 +511,7 @@ folder.
 ## xatlas
 
 - Upstream: https://github.com/jpcy/xatlas
-- Version: git (b8ec29b, 2018)
+- Version: git (b7d7bb, 2019)
 - License: MIT
 
 Files extracted from upstream source:
