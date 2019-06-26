@@ -2477,21 +2477,18 @@ bool Node::has_node_and_resource(const NodePath &p_path) const {
 
 	if (!has_node(p_path))
 		return false;
-	Node *node = get_node(p_path);
+	RES res;
+	Vector<StringName> leftover_path;
+	Node *node = get_node_and_resource(p_path, res, leftover_path, false);
 
-	bool result = false;
-
-	node->get_indexed(p_path.get_subnames(), &result);
-
-	return result;
+	return (node && res.is_valid());
 }
 
 Array Node::_get_node_and_resource(const NodePath &p_path) {
 
-	Node *node;
 	RES res;
 	Vector<StringName> leftover_path;
-	node = get_node_and_resource(p_path, res, leftover_path);
+	Node *node = get_node_and_resource(p_path, res, leftover_path, false);
 	Array result;
 
 	if (node)
@@ -2521,7 +2518,7 @@ Node *Node::get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<Str
 
 		int j = 0;
 		// If not p_last_is_property, we shouldn't consider the last one as part of the resource
-		for (; j < p_path.get_subname_count() - p_last_is_property; j++) {
+		for (; j < p_path.get_subname_count() - (int)p_last_is_property; j++) {
 			RES new_res = j == 0 ? node->get(p_path.get_subname(j)) : r_res->get(p_path.get_subname(j));
 
 			if (new_res.is_null()) {
