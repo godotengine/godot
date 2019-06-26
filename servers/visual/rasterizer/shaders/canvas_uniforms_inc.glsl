@@ -21,6 +21,8 @@
 #define FLAGS_NINEPATCH_H_MODE_SHIFT 16
 #define FLAGS_NINEPATCH_V_MODE_SHIFT 18
 
+#define FLAGS_LIGHT_COUNT_SHIFT 20
+
 layout(push_constant, binding = 0, std430) uniform DrawData {
 	vec2 world_x;
 	vec2 world_y;
@@ -28,17 +30,19 @@ layout(push_constant, binding = 0, std430) uniform DrawData {
 	uint flags;
 	uint specular_shininess;
 #ifdef USE_PRIMITIVE
-	vec2 points[4];
-	uint colors[8];
-	vec2 uvs[4];
+	vec2 points[3];
+	vec2 uvs[3];
+	uint colors[6];
 #else
 	vec4 modulation;
 	vec4 ninepatch_margins;
 	vec4 dst_rect; //for built-in rect and UV
 	vec4 src_rect;
-	vec2 color_texture_pixel_size;
-	uint pad[6];
+	vec2 pad;
+
 #endif
+	vec2 color_texture_pixel_size;
+	uint lights[4];
 
 } draw_data;
 
