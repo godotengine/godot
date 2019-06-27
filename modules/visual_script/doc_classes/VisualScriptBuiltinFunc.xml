@@ -213,7 +213,7 @@
 			[/codeblock]
 		</constant>
 		<constant name="FUNC_MAX" value="65" enum="BuiltinFunc">
-			The maximum value the [member function] property can have.
+			Represents the size of the [enum BuiltinFunc] enum.
 		</constant>
 	</constants>
 </class>

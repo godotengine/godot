@@ -273,7 +273,7 @@
 			Display a camera feed in the background.
 		</constant>
 		<constant name="BG_MAX" value="7" enum="BGMode">
-			Helper constant keeping track of the enum's size, has no direct usage in API calls.
+			Represents the size of the [enum BGMode] enum.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="GlowBlendMode">
 			Additive glow blending mode. Mostly used for particles, glows (bloom), lens flare, bright sources.

@@ -295,6 +295,7 @@
 		<constant name="TEXTURE_DETAIL_NORMAL" value="15" enum="TextureParam">
 		</constant>
 		<constant name="TEXTURE_MAX" value="16" enum="TextureParam">
+			Represents the size of the [enum TextureParam] enum.
 		</constant>
 		<constant name="DETAIL_UV_1" value="0" enum="DetailUV">
 		</constant>
@@ -325,6 +326,7 @@
 		<constant name="FEATURE_DETAIL" value="11" enum="Feature">
 		</constant>
 		<constant name="FEATURE_MAX" value="12" enum="Feature">
+			Represents the size of the [enum Feature] enum.
 		</constant>
 		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
 			Default blend mode.
@@ -395,6 +397,7 @@
 		<constant name="FLAG_USE_SHADOW_TO_OPACITY" value="18" enum="Flags">
 		</constant>
 		<constant name="FLAG_MAX" value="19" enum="Flags">
+			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
 			Default diffuse scattering algorithm.

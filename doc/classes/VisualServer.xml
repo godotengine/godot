@@ -1951,7 +1951,7 @@
 			<argument index="2" name="scenario" type="RID">
 			</argument>
 			<description>
-				Returns an array of object IDs intersecting with the provided 3D ray. Only visual 3D nodes are considered, such as [MeshInstance] or [DirectionalLight]. Use [method @GDscript.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World] you want to query.
+				Returns an array of object IDs intersecting with the provided 3D ray. Only visual 3D nodes are considered, such as [MeshInstance] or [DirectionalLight]. Use [method @GDScript.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World] you want to query.
 				Warning: this function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
@@ -3710,7 +3710,7 @@
 			<argument index="1" name="clear_mode" type="int" enum="VisualServer.ViewportClearMode">
 			</argument>
 			<description>
-				Sets the clear mode of a viewport. See [enum VisualServer.ViewportClearMode] for options.
+				Sets the clear mode of a viewport. See [enum ViewportClearMode] for options.
 			</description>
 		</method>
 		<method name="viewport_set_debug_draw">
@@ -3721,7 +3721,7 @@
 			<argument index="1" name="draw" type="int" enum="VisualServer.ViewportDebugDraw">
 			</argument>
 			<description>
-				Sets the debug draw mode of a viewport. See [enum VisualServer.ViewportDebugDraw] for options.
+				Sets the debug draw mode of a viewport. See [enum ViewportDebugDraw] for options.
 			</description>
 		</method>
 		<method name="viewport_set_disable_3d">
@@ -4020,7 +4020,7 @@
 			Shader is a particle shader.
 		</constant>
 		<constant name="SHADER_MAX" value="3" enum="ShaderMode">
-			Marks maximum of the shader types array. used internally.
+			Represents the size of the [enum ShaderMode] enum.
 		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
 			Array is a vertex array.
@@ -4050,7 +4050,7 @@
 			Array is index array.
 		</constant>
 		<constant name="ARRAY_MAX" value="9" enum="ArrayType">
-			Marks the maximum of the array types. Used internally.
+			Represents the size of the [enum ArrayType] enum.
 		</constant>
 		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
 			Flag used to mark a vertex array.
@@ -4135,7 +4135,7 @@
 			Primitive to draw consists of a triangle strip (the last 2 vertices are always combined with the first to make a triangle).
 		</constant>
 		<constant name="PRIMITIVE_MAX" value="7" enum="PrimitiveType">
-			Marks the primitive types endpoint. used internally.
+			Represents the size of the [enum PrimitiveType] enum.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
 		</constant>
@@ -4186,7 +4186,7 @@
 		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14" enum="LightParam">
 		</constant>
 		<constant name="LIGHT_PARAM_MAX" value="15" enum="LightParam">
-			The light parameters endpoint. Used internally.
+			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_DUAL_PARABOLOID" value="0" enum="LightOmniShadowMode">
 		</constant>
@@ -4263,7 +4263,7 @@
 		<constant name="VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME" value="5" enum="ViewportRenderInfo">
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_MAX" value="6" enum="ViewportRenderInfo">
-			Marks end of VIEWPORT_RENDER_INFO* constants. Used internally.
+			Represents the size of the [enum ViewportRenderInfo] enum.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DISABLED" value="0" enum="ViewportDebugDraw">
 			Debug draw is disabled. Default setting.
@@ -4310,7 +4310,7 @@
 		<constant name="INSTANCE_LIGHTMAP_CAPTURE" value="8" enum="InstanceType">
 		</constant>
 		<constant name="INSTANCE_MAX" value="9" enum="InstanceType">
-			The max value for INSTANCE_* constants, used internally.
+			Represents the size of the [enum InstanceType] enum.
 		</constant>
 		<constant name="INSTANCE_GEOMETRY_MASK" value="30" enum="InstanceType">
 			A combination of the flags of geometry instances (mesh, multimesh, immediate and particles).
@@ -4320,6 +4320,7 @@
 		<constant name="INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE" value="1" enum="InstanceFlags">
 		</constant>
 		<constant name="INSTANCE_FLAG_MAX" value="2" enum="InstanceFlags">
+			Represents the size of the [enum InstanceFlags] enum.
 		</constant>
 		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">
 		</constant>
@@ -4444,6 +4445,7 @@
 		<constant name="ENV_BG_KEEP" value="5" enum="EnvironmentBG">
 		</constant>
 		<constant name="ENV_BG_MAX" value="7" enum="EnvironmentBG">
+			Represents the size of the [enum EnvironmentBG] enum.
 		</constant>
 		<constant name="ENV_DOF_BLUR_QUALITY_LOW" value="0" enum="EnvironmentDOFBlurQuality">
 		</constant>

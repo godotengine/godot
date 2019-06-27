@@ -163,7 +163,7 @@
 			</argument>
 			<description>
 				Duplicates the node, returning a new node.
-				You can fine-tune the behavior using the [code]flags[/code] (see [enum Node.DuplicateFlags]).
+				You can fine-tune the behavior using the [code]flags[/code] (see [enum DuplicateFlags]).
 			</description>
 		</method>
 		<method name="find_node" qualifiers="const">

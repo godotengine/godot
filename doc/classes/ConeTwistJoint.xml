@@ -25,7 +25,7 @@
 		</member>
 		<member name="swing_span" type="float" setter="_set_swing_span" getter="_get_swing_span">
 			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
-			The swing span defines, how much rotation will not get corrected allong the swing axis.
+			The swing span defines, how much rotation will not get corrected along the swing axis.
 			Could be defined as looseness in the [ConeTwistJoint].
 			If below 0.05, this behavior is locked. Default value: [code]PI/4[/code].
 		</member>
@@ -37,7 +37,7 @@
 	<constants>
 		<constant name="PARAM_SWING_SPAN" value="0" enum="Param">
 			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
-			The swing span defines, how much rotation will not get corrected allong the swing axis.
+			The swing span defines, how much rotation will not get corrected along the swing axis.
 			Could be defined as looseness in the [ConeTwistJoint].
 			If below 0.05, this behavior is locked. Default value: [code]PI/4[/code].
 		</constant>
@@ -56,7 +56,7 @@
 			Defines, how fast the swing- and twist-speed-difference on both sides gets synced.
 		</constant>
 		<constant name="PARAM_MAX" value="5" enum="Param">
-			End flag of PARAM_* constants, used internally.
+			Represents the size of the [enum Param] enum.
 		</constant>
 	</constants>
 </class>

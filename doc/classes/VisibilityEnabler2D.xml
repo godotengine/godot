@@ -49,6 +49,7 @@
 		<constant name="ENABLER_PAUSE_ANIMATED_SPRITES" value="5" enum="Enabler">
 		</constant>
 		<constant name="ENABLER_MAX" value="6" enum="Enabler">
+			Represents the size of the [enum Enabler] enum.
 		</constant>
 	</constants>
 </class>
