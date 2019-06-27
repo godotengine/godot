@@ -30,7 +30,7 @@
 
 #include "config_file.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access_encrypted.h"
 #include "core/os/keyboard.h"
 #include "core/variant_parser.h"
 
@@ -137,6 +137,48 @@ Error ConfigFile::save(const String &p_path) {
 		return err;
 	}
 
+	return _internal_save(file);
+}
+
+Error ConfigFile::save_encrypted(const String &p_path, const Vector<uint8_t> &p_key) {
+
+	Error err;
+	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+
+	if (err)
+		return err;
+
+	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+	err = fae->open_and_parse(f, p_key, FileAccessEncrypted::MODE_WRITE_AES256);
+	if (err) {
+		memdelete(fae);
+		memdelete(f);
+		return err;
+	}
+	return _internal_save(fae);
+}
+
+Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass) {
+
+	Error err;
+	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+
+	if (err)
+		return err;
+
+	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+	err = fae->open_and_parse_password(f, p_pass, FileAccessEncrypted::MODE_WRITE_AES256);
+	if (err) {
+		memdelete(fae);
+		memdelete(f);
+		return err;
+	}
+
+	return _internal_save(fae);
+}
+
+Error ConfigFile::_internal_save(FileAccess *file) {
+
 	for (OrderedHashMap<String, OrderedHashMap<String, Variant> >::Element E = values.front(); E; E = E.next()) {
 
 		if (E != values.front())
@@ -164,6 +206,48 @@ Error ConfigFile::load(const String &p_path) {
 	if (!f)
 		return ERR_CANT_OPEN;
 
+	return _internal_load(p_path, f);
+}
+
+Error ConfigFile::load_encrypted(const String &p_path, const Vector<uint8_t> &p_key) {
+
+	Error err;
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+
+	if (err)
+		return err;
+
+	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+	err = fae->open_and_parse(f, p_key, FileAccessEncrypted::MODE_READ);
+	if (err) {
+		memdelete(fae);
+		memdelete(f);
+		return err;
+	}
+	return _internal_load(p_path, fae);
+}
+
+Error ConfigFile::load_encrypted_pass(const String &p_path, const String &p_pass) {
+
+	Error err;
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+
+	if (err)
+		return err;
+
+	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+	err = fae->open_and_parse_password(f, p_pass, FileAccessEncrypted::MODE_READ);
+	if (err) {
+		memdelete(fae);
+		memdelete(f);
+		return err;
+	}
+
+	return _internal_load(p_path, fae);
+}
+
+Error ConfigFile::_internal_load(const String &p_path, FileAccess *f) {
+
 	VariantParser::StreamFile stream;
 	stream.f = f;
 
@@ -182,7 +266,7 @@ Error ConfigFile::load(const String &p_path) {
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
+		Error err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
 		if (err == ERR_FILE_EOF) {
 			memdelete(f);
 			return OK;
@@ -215,6 +299,12 @@ void ConfigFile::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &ConfigFile::load);
 	ClassDB::bind_method(D_METHOD("save", "path"), &ConfigFile::save);
+
+	ClassDB::bind_method(D_METHOD("load_encrypted", "path", "key"), &ConfigFile::load_encrypted);
+	ClassDB::bind_method(D_METHOD("load_encrypted_pass", "path", "pass"), &ConfigFile::load_encrypted_pass);
+
+	ClassDB::bind_method(D_METHOD("save_encrypted", "path", "key"), &ConfigFile::save_encrypted);
+	ClassDB::bind_method(D_METHOD("save_encrypted_pass", "path", "pass"), &ConfigFile::save_encrypted_pass);
 }
 
 ConfigFile::ConfigFile() {
