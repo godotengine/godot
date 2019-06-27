@@ -331,7 +331,7 @@
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1024" value="6" enum="ShadowAtlasQuadrantSubdiv">
 		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_MAX" value="7" enum="ShadowAtlasQuadrantSubdiv">
-			Enum limiter. Do not use it directly.
+			Represents the size of the [enum ShadowAtlasQuadrantSubdiv] enum.
 		</constant>
 		<constant name="RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
 			Amount of objects in frame.
@@ -352,7 +352,7 @@
 			Amount of draw calls in frame.
 		</constant>
 		<constant name="RENDER_INFO_MAX" value="6" enum="RenderInfo">
-			Enum limiter. Do not use it directly.
+			Represents the size of the [enum RenderInfo] enum.
 		</constant>
 		<constant name="DEBUG_DRAW_DISABLED" value="0" enum="DebugDraw">
 			Objects are displayed normally.

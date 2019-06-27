@@ -194,6 +194,7 @@
 		<constant name="TYPE_LIGHT" value="2" enum="Type">
 		</constant>
 		<constant name="TYPE_MAX" value="3" enum="Type">
+			Represents the size of the [enum Type] enum.
 		</constant>
 		<constant name="NODE_ID_INVALID" value="-1">
 		</constant>

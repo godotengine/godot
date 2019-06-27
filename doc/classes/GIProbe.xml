@@ -57,6 +57,7 @@
 		<constant name="SUBDIV_512" value="3" enum="Subdiv">
 		</constant>
 		<constant name="SUBDIV_MAX" value="4" enum="Subdiv">
+			Represents the size of the [enum Subdiv] enum.
 		</constant>
 	</constants>
 </class>

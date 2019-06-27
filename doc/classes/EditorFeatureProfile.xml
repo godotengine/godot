@@ -124,6 +124,7 @@
 		<constant name="FEATURE_FILESYSTEM_DOCK" value="6" enum="Feature">
 		</constant>
 		<constant name="FEATURE_MAX" value="7" enum="Feature">
+			Represents the size of the [enum Feature] enum.
 		</constant>
 	</constants>
 </class>

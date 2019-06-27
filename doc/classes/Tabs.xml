@@ -234,6 +234,7 @@
 			Align the tabs to the right.
 		</constant>
 		<constant name="ALIGN_MAX" value="3" enum="TabAlign">
+			Represents the size of the [enum TabAlign] enum.
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0" enum="CloseButtonDisplayPolicy">
 		</constant>
@@ -242,6 +243,7 @@
 		<constant name="CLOSE_BUTTON_SHOW_ALWAYS" value="2" enum="CloseButtonDisplayPolicy">
 		</constant>
 		<constant name="CLOSE_BUTTON_MAX" value="3" enum="CloseButtonDisplayPolicy">
+			Represents the size of the [enum CloseButtonDisplayPolicy] enum.
 		</constant>
 	</constants>
 	<theme_items>

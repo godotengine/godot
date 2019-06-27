@@ -15,13 +15,13 @@
 			<argument index="0" name="aabb" type="AABB">
 			</argument>
 			<description>
-				Overrides the bounding box of this node with a custom one. To remove it, set an AABB with all fields set to zero.
+				Overrides the bounding box of this node with a custom one. To remove it, set an [AABB] with all fields set to zero.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="cast_shadow" type="int" setter="set_cast_shadows_setting" getter="get_cast_shadows_setting" enum="GeometryInstance.ShadowCastingSetting">
-			The selected shadow casting flag. See SHADOW_CASTING_SETTING_* constants for values.
+			The selected shadow casting flag. See [enum ShadowCastingSetting] for possible values.
 		</member>
 		<member name="extra_cull_margin" type="float" setter="set_extra_cull_margin" getter="get_extra_cull_margin">
 			The extra distance added to the GeometryInstance's bounding box ([AABB]) to increase its cull box.
@@ -40,7 +40,7 @@
 		</member>
 		<member name="material_override" type="Material" setter="set_material_override" getter="get_material_override">
 			The material override for the whole geometry.
-			If there is a material in material_override, it will be used instead of any material set in any material slot of the mesh.
+			If there is a material in [code]material_override[/code], it will be used instead of any material set in any material slot of the mesh.
 		</member>
 		<member name="use_in_baked_light" type="bool" setter="set_flag" getter="get_flag">
 			If [code]true[/code], this GeometryInstance will be used when baking lights using a [GIProbe] and/or any other form of baked lighting.
@@ -64,9 +64,12 @@
 		</constant>
 		<constant name="FLAG_USE_BAKED_LIGHT" value="0" enum="Flags">
 			Will allow the GeometryInstance to be used when baking lights using a [GIProbe] and/or any other form of baked lighting.
-			Added documentation for GeometryInstance and VisualInstance
+		</constant>
+		<constant name="FLAG_DRAW_NEXT_FRAME_IF_VISIBLE" value="1" enum="Flags">
+			Unused in this class, exposed for consistency with [enum VisualServer.InstanceFlags].
 		</constant>
 		<constant name="FLAG_MAX" value="2" enum="Flags">
+			Represents the size of the [enum Flags] enum.
 		</constant>
 	</constants>
 </class>

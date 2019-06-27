@@ -22,8 +22,10 @@
 	</methods>
 	<constants>
 		<constant name="MAGNITUDE_AVERAGE" value="0" enum="MagnitudeMode">
+			Use the average value as magnitude.
 		</constant>
 		<constant name="MAGNITUDE_MAX" value="1" enum="MagnitudeMode">
+			Use the maximum value as magnitude.
 		</constant>
 	</constants>
 </class>
