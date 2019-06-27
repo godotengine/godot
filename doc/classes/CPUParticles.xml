@@ -19,11 +19,83 @@
 				Sets this node's properties to match a given [Particles] node with an assigned [ParticlesMaterial].
 			</description>
 		</method>
+		<method name="get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_param_curve" qualifiers="const">
+			<return type="Curve">
+			</return>
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_param_randomness" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_particle_flag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="flag" type="int" enum="CPUParticles.Flags">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="restart">
 			<return type="void">
 			</return>
 			<description>
 				Restarts the particle emitter.
+			</description>
+		</method>
+		<method name="set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_param_curve">
+			<return type="void">
+			</return>
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
+			</argument>
+			<argument index="1" name="curve" type="Curve">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_param_randomness">
+			<return type="void">
+			</return>
+			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
+			</argument>
+			<argument index="1" name="randomness" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_particle_flag">
+			<return type="void">
+			</return>
+			<argument index="0" name="flag" type="int" enum="CPUParticles.Flags">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

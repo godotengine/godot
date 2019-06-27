@@ -15,9 +15,27 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_draw_flag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_item_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_draw_flag">
+			<return type="void">
+			</return>
+			<argument index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
 			<description>
 			</description>
 		</method>

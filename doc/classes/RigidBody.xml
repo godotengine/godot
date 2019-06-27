@@ -82,12 +82,30 @@
 				Applies a torque impulse which will be affected by the body mass and shape. This will rotate the body around the [code]impulse[/code] vector passed.
 			</description>
 		</method>
+		<method name="get_axis_lock" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="axis" type="int" enum="PhysicsServer.BodyAxis">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
 				Returns a list of the bodies colliding with this one. By default, number of max contacts reported is at 0, see the [member contacts_reported] property to increase it.
 				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
+			</description>
+		</method>
+		<method name="set_axis_lock">
+			<return type="void">
+			</return>
+			<argument index="0" name="axis" type="int" enum="PhysicsServer.BodyAxis">
+			</argument>
+			<argument index="1" name="lock" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_axis_velocity">

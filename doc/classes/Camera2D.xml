@@ -45,6 +45,22 @@
 				Returns the location of the [Camera2D]'s screen-center, relative to the origin.
 			</description>
 		</method>
+		<method name="get_drag_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_limit" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="make_current">
 			<return type="void">
 			</return>
@@ -58,6 +74,26 @@
 			<description>
 				Sets the camera's position immediately to its current smoothing destination.
 				This has no effect if smoothing is disabled.
+			</description>
+		</method>
+		<method name="set_drag_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<argument index="1" name="drag_margin" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_limit">
+			<return type="void">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<argument index="1" name="limit" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

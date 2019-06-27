@@ -9,6 +9,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_flag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_custom_aabb">
 			<return type="void">
 			</return>
@@ -16,6 +24,16 @@
 			</argument>
 			<description>
 				Overrides the bounding box of this node with a custom one. To remove it, set an [AABB] with all fields set to zero.
+			</description>
+		</method>
+		<method name="set_flag">
+			<return type="void">
+			</return>
+			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
