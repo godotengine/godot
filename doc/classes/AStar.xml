@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A* (A star) is a computer algorithm that is widely used in pathfinding and graph traversal, the process of plotting an efficiently directed path between multiple points. It enjoys widespread use due to its performance and accuracy. Godot's A* implementation make use of vectors as points.
-		You must add points manually with [method AStar.add_point] and create segments manually with [method AStar.connect_points]. So you can test if there is a path between two points with the [method AStar.are_points_connected] function, get the list of existing ids in the found path with [method AStar.get_id_path], or the points list with [method AStar.get_point_path].
+		You must add points manually with [method add_point] and create segments manually with [method connect_points]. So you can test if there is a path between two points with the [method are_points_connected] function, get the list of existing ids in the found path with [method get_id_path], or the points list with [method get_point_path].
 	</description>
 	<tutorials>
 	</tutorials>

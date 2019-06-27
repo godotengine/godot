@@ -56,7 +56,7 @@
 			<return type="int" enum="WebRTCDataChannel.ChannelState">
 			</return>
 			<description>
-				Returns the current state of this channel, see [enum WebRTCDataChannel.ChannelState].
+				Returns the current state of this channel, see [enum ChannelState].
 			</description>
 		</method>
 		<method name="is_negotiated" qualifiers="const">

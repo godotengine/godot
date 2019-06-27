@@ -136,7 +136,7 @@
 			The degree to which this area's reverb is a uniform effect. Ranges from [code]0[/code] to [code]1[/code] with [code]0.1[/code] precision.
 		</member>
 		<member name="space_override" type="int" setter="set_space_override_mode" getter="get_space_override_mode" enum="Area.SpaceOverride">
-			Override mode for gravity and damping calculations within this area. See [enum Area.SpaceOverride] for possible values.
+			Override mode for gravity and damping calculations within this area. See [enum SpaceOverride] for possible values.
 		</member>
 	</members>
 	<signals>

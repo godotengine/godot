@@ -68,7 +68,7 @@
 			</argument>
 			<description>
 				Clips [code]polygon_a[/code] against [code]polygon_b[/code] and returns an array of clipped polygons. This performs [code]OPERATION_DIFFERENCE[/code] between polygons. Returns an empty array if [code]polygon_b[/code] completely overlaps [code]polygon_a[/code]. 
-				If [code]polygon_b[/code] is enclosed by [code]polygon_a[/code], returns an outer polygon (boundary) and inner polygon (hole) which could be distiguished by calling [method is_polygon_clockwise].
+				If [code]polygon_b[/code] is enclosed by [code]polygon_a[/code], returns an outer polygon (boundary) and inner polygon (hole) which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
 		<method name="clip_polyline_with_polygon_2d">
@@ -100,7 +100,7 @@
 			</argument>
 			<description>
 				Mutually excludes common area defined by intersection of [code]polygon_a[/code] and [code]polygon_b[/code] (see [method intersect_polygons_2d]) and returns an array of excluded polygons. This performs [code]OPERATION_XOR[/code] between polygons. In other words, returns all but common area between polygons. 
-				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distiguished by calling [method is_polygon_clockwise].
+				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
 		<method name="get_closest_point_to_segment">
@@ -202,7 +202,7 @@
 			</argument>
 			<description>
 				Intersects [code]polygon_a[/code] with [code]polygon_b[/code] and returns an array of intersected polygons. This performs [code]OPERATION_INTERSECTION[/code] between polygons. In other words, returns common area shared by polygons. Returns an empty array if no intersection occurs.
-				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distiguished by calling [method is_polygon_clockwise].
+				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
 		<method name="intersect_polyline_with_polygon_2d">
@@ -269,7 +269,7 @@
 			</argument>
 			<description>
 				Merges (combines) [code]polygon_a[/code] and [code]polygon_b[/code] and returns an array of merged polygons. This performs [code]OPERATION_UNION[/code] between polygons.
-				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distiguished by calling [method is_polygon_clockwise].
+				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
 		<method name="offset_polygon_2d">
@@ -283,8 +283,8 @@
 			</argument>
 			<description>
 				Inflates or deflates [code]polygon[/code] by [code]delta[/code] units (pixels). If [code]delta[/code] is positive, makes the polygon grow outward. If [code]delta[/code] is negative, shrinks the polygon inward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. Returns an empty array if [code]delta[/code] is negative and the absolute value of it approximately exceeds the minimum bounding rectangle dimensions of the polygon.
-				Each polygon's vertices will be rounded as determined by [code]join_type[/code], see [enum Geometry.PolyJoinType].
-				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distiguished by calling [method is_polygon_clockwise].
+				Each polygon's vertices will be rounded as determined by [code]join_type[/code], see [enum PolyJoinType].
+				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
 		<method name="offset_polyline_2d">
@@ -300,9 +300,9 @@
 			</argument>
 			<description>
 				Inflates or deflates [code]polyline[/code] by [code]delta[/code] units (pixels), producing polygons. If [code]delta[/code] is positive, makes the polyline grow outward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. If [code]delta[/code] is negative, returns an empty array.
-				Each polygon's vertices will be rounded as determined by [code]join_type[/code], see [enum Geometry.PolyJoinType].
-				Each polygon's endpoints will be rounded as determined by [code]end_type[/code], see [enum Geometry.PolyEndType].
-				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distiguished by calling [method is_polygon_clockwise].
+				Each polygon's vertices will be rounded as determined by [code]join_type[/code], see [enum PolyJoinType].
+				Each polygon's endpoints will be rounded as determined by [code]end_type[/code], see [enum PolyEndType].
+				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
 		<method name="point_is_inside_triangle" qualifiers="const">

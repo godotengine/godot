@@ -64,7 +64,7 @@
 			</argument>
 			<description>
 				Returns the bitmask of the subtile from an autotile given its coordinates.
-				The value is the sum of the values in [enum TileSet.AutotileBindings] present in the subtile (e.g. a value of 5 means the bitmask has bindings in both the top left and top right).
+				The value is the sum of the values in [enum AutotileBindings] present in the subtile (e.g. a value of 5 means the bitmask has bindings in both the top left and top right).
 			</description>
 		</method>
 		<method name="autotile_get_bitmask_mode" qualifiers="const">
@@ -73,7 +73,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns the [enum TileSet.BitmaskMode] of the autotile.
+				Returns the [enum BitmaskMode] of the autotile.
 			</description>
 		</method>
 		<method name="autotile_get_icon_coordinate" qualifiers="const">
@@ -160,7 +160,7 @@
 			</argument>
 			<description>
 				Sets the bitmask of the subtile from an autotile given its coordinates.
-				The value is the sum of the values in [enum TileSet.AutotileBindings] present in the subtile (e.g. a value of 5 means the bitmask has bindings in both the top left and top right).
+				The value is the sum of the values in [enum AutotileBindings] present in the subtile (e.g. a value of 5 means the bitmask has bindings in both the top left and top right).
 			</description>
 		</method>
 		<method name="autotile_set_bitmask_mode">
@@ -171,7 +171,7 @@
 			<argument index="1" name="mode" type="int" enum="TileSet.BitmaskMode">
 			</argument>
 			<description>
-				Sets the [enum TileSet.BitmaskMode] of the autotile.
+				Sets the [enum BitmaskMode] of the autotile.
 			</description>
 		</method>
 		<method name="autotile_set_icon_coordinate">
@@ -503,7 +503,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns the tile's [enum TileSet.TileMode].
+				Returns the tile's [enum TileMode].
 			</description>
 		</method>
 		<method name="tile_get_z_index" qualifiers="const">
@@ -719,7 +719,7 @@
 			<argument index="1" name="tilemode" type="int" enum="TileSet.TileMode">
 			</argument>
 			<description>
-				Sets the tile's [enum TileSet.TileMode].
+				Sets the tile's [enum TileMode].
 			</description>
 		</method>
 		<method name="tile_set_z_index">
