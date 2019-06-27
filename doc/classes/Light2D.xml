@@ -43,7 +43,7 @@
 			Minimum layer value of objects that are affected by the Light2D. Default value: [code]0[/code].
 		</member>
 		<member name="range_z_max" type="int" setter="set_z_range_max" getter="get_z_range_max">
-			Maximum [code]Z[/code] value of objects that are affected by the Light2D. Default value: [code]1024[/code].
+			Maximum [code]z[/code] value of objects that are affected by the Light2D. Default value: [code]1024[/code].
 		</member>
 		<member name="range_z_min" type="int" setter="set_z_range_min" getter="get_z_range_min">
 			Minimum [code]z[/code] value of objects that are affected by the Light2D. Default value: [code]-1024[/code].

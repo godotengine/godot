@@ -191,19 +191,19 @@
 			Serialize a [Variant] to a string.
 		</constant>
 		<constant name="STR_TO_VAR" value="59" enum="BuiltinFunc">
-			Deserialize a [Variant] from a string serialized using [code]VAR_TO_STR[/code].
+			Deserialize a [Variant] from a string serialized using [constant VAR_TO_STR].
 		</constant>
 		<constant name="VAR_TO_BYTES" value="60" enum="BuiltinFunc">
 			Serialize a [Variant] to a [PoolByteArray].
 		</constant>
 		<constant name="BYTES_TO_VAR" value="61" enum="BuiltinFunc">
-			Deserialize a [Variant] from a [PoolByteArray] serialized using [code]VAR_TO_BYTES[/code].
+			Deserialize a [Variant] from a [PoolByteArray] serialized using [constant VAR_TO_BYTES].
 		</constant>
 		<constant name="COLORN" value="62" enum="BuiltinFunc">
 			Return the [Color] with the given name and alpha ranging from 0 to 1. Note: names are defined in color_names.inc.
 		</constant>
 		<constant name="MATH_SMOOTHSTEP" value="63" enum="BuiltinFunc">
-			Return a number smoothly interpolated between the first two inputs, based on the third input. Similar to [code]MATH_LERP[/code], but interpolates faster at the beginning and slower at the end. Using Hermite interpolation formula:
+			Return a number smoothly interpolated between the first two inputs, based on the third input. Similar to [constant MATH_LERP], but interpolates faster at the beginning and slower at the end. Using Hermite interpolation formula:
 			[codeblock]
 			var t = clamp((weight - from) / (to - from), 0.0, 1.0)
 			return t * t * (3.0 - 2.0 * t)

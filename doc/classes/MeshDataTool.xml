@@ -46,7 +46,7 @@
 			</argument>
 			<description>
 				Uses specified surface of given [Mesh] to populate data for MeshDataTool.
-				Requires [Mesh] with primitive type [code]PRIMITIVE_TRIANGLES[/code].
+				Requires [Mesh] with primitive type [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
 		<method name="get_edge_count" qualifiers="const">
@@ -139,8 +139,8 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns format of [Mesh]. Format is an integer made up of [Mesh] format flags combined together. For example, a mesh containing both vertices and normals would return a format of [code]3[/code] because [code]ARRAY_FORMAT_VERTEX[/code] is [code]1[/code] and [code]ARRAY_FORMAT_NORMAL[/code] is [code]2[/code].
-				For list of format flags see [ArrayMesh].
+				Returns format of [Mesh]. Format is an integer made up of [Mesh] format flags combined together. For example, a mesh containing both vertices and normals would return a format of [code]3[/code] because [constant ArrayMesh.ARRAY_FORMAT_VERTEX] is [code]1[/code] and [constant ArrayMesh.ARRAY_FORMAT_NORMAL] is [code]2[/code].
+				For list of format flags see [enum ArrayMesh.ArrayFormat].
 			</description>
 		</method>
 		<method name="get_material" qualifiers="const">

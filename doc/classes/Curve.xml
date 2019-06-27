@@ -23,7 +23,7 @@
 			<argument index="4" name="right_mode" type="int" enum="Curve.TangentMode" default="0">
 			</argument>
 			<description>
-				Adds a point to the curve. For each side, if the [code]*_mode[/code] is [code]TANGENT_LINEAR[/code], the [code]*_tangent[/code] angle (in degrees) uses the slope of the curve halfway to the adjacent point. Allows custom assignments to the [code]*_tangent[/code] angle if [code]*_mode[/code] is set to [code]TANGENT_FREE[/code].
+				Adds a point to the curve. For each side, if the [code]*_mode[/code] is [constant TANGENT_LINEAR], the [code]*_tangent[/code] angle (in degrees) uses the slope of the curve halfway to the adjacent point. Allows custom assignments to the [code]*_tangent[/code] angle if [code]*_mode[/code] is set to [constant TANGENT_FREE].
 			</description>
 		</method>
 		<method name="bake">

@@ -35,7 +35,7 @@
 			<argument index="0" name="bbcode" type="String">
 			</argument>
 			<description>
-				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [code]OK[/code] if successful.
+				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [constant OK] if successful.
 			</description>
 		</method>
 		<method name="clear">
@@ -93,7 +93,7 @@
 			<argument index="0" name="bbcode" type="String">
 			</argument>
 			<description>
-				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [code]OK[/code] if parses [code]bbcode[/code] successfully.
+				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [constant OK] if parses [code]bbcode[/code] successfully.
 			</description>
 		</method>
 		<method name="pop">
