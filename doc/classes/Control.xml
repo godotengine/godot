@@ -173,6 +173,14 @@
 				The methods [method can_drop_data] and [method drop_data] must be implemented on controls that want to receive drop data.
 			</description>
 		</method>
+		<method name="get_anchor" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_begin" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -240,6 +248,14 @@
 				Returns [member margin_right] and [member margin_bottom].
 			</description>
 		</method>
+		<method name="get_focus_neighbour" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_focus_owner" qualifiers="const">
 			<return type="Control">
 			</return>
@@ -270,6 +286,14 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
 			</argument>
 			<description>
 			</description>
@@ -574,12 +598,32 @@
 				Sets [member margin_right] and [member margin_bottom] at the same time.
 			</description>
 		</method>
+		<method name="set_focus_neighbour">
+			<return type="void">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<argument index="1" name="neighbour" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_global_position">
 			<return type="void">
 			</return>
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<argument index="1" name="keep_margins" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<argument index="1" name="offset" type="float">
 			</argument>
 			<description>
 			</description>

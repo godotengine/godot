@@ -9,6 +9,24 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="is_enabler_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="enabler" type="int" enum="VisibilityEnabler2D.Enabler">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_enabler">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabler" type="int" enum="VisibilityEnabler2D.Enabler">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="freeze_bodies" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="true">

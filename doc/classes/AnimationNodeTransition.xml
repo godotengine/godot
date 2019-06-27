@@ -7,6 +7,42 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_input_caption" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="input" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_input_set_as_auto_advance" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="input" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_input_as_auto_advance">
+			<return type="void">
+			</return>
+			<argument index="0" name="input" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_input_caption">
+			<return type="void">
+			</return>
+			<argument index="0" name="input" type="int">
+			</argument>
+			<argument index="1" name="caption" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="input_0/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">

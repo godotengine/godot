@@ -18,11 +18,29 @@
 				Returns the axis-aligned bounding box that contains all the particles that are active in the current frame.
 			</description>
 		</method>
+		<method name="get_draw_pass_mesh" qualifiers="const">
+			<return type="Mesh">
+			</return>
+			<argument index="0" name="pass" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="restart">
 			<return type="void">
 			</return>
 			<description>
 				Restarts the particle emission, clearing existing particles.
+			</description>
+		</method>
+		<method name="set_draw_pass_mesh">
+			<return type="void">
+			</return>
+			<argument index="0" name="pass" type="int">
+			</argument>
+			<argument index="1" name="mesh" type="Mesh">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

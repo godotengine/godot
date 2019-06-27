@@ -323,8 +323,14 @@ void DocData::generate(bool p_basic_types) {
 			if (E->get().name == "" || (E->get().name[0] == '_' && !(E->get().flags & METHOD_FLAG_VIRTUAL)))
 				continue; //hidden, don't count
 
-			if (skip_setter_getter_methods && setters_getters.has(E->get().name) && E->get().name.find("/") == -1)
-				continue;
+			if (skip_setter_getter_methods && setters_getters.has(E->get().name)) {
+				// Don't skip parametric setters and getters, i.e. method which require
+				// one or more parameters to define what property should be set or retrieved.
+				// E.g. CPUParticles::set_param(Parameter param, float value).
+				if (E->get().arguments.size() == 0 /* getter */ || (E->get().arguments.size() == 1 && E->get().return_val.type == Variant::NIL /* setter */)) {
+					continue;
+				}
+			}
 
 			MethodDoc method;
 
@@ -366,21 +372,6 @@ void DocData::generate(bool p_basic_types) {
 
 					method.arguments.push_back(argument);
 				}
-
-				/*
-				String hint;
-				switch(arginfo.hint) {
-					case PROPERTY_HINT_DIR: hint="A directory."; break;
-					case PROPERTY_HINT_RANGE: hint="Range - min: "+arginfo.hint_string.get_slice(",",0)+" max: "+arginfo.hint_string.get_slice(",",1)+" step: "+arginfo.hint_string.get_slice(",",2); break;
-					case PROPERTY_HINT_ENUM: hint="Values: "; for(int j=0;j<arginfo.hint_string.get_slice_count(",");j++) { if (j>0) hint+=", "; hint+=arginfo.hint_string.get_slice(",",j)+"="+itos(j); } break;
-					case PROPERTY_HINT_LENGTH: hint="Length: "+arginfo.hint_string; break;
-					case PROPERTY_HINT_FLAGS: hint="Values: "; for(int j=0;j<arginfo.hint_string.get_slice_count(",");j++) { if (j>0) hint+=", "; hint+=arginfo.hint_string.get_slice(",",j)+"="+itos(1<<j); } break;
-					case PROPERTY_HINT_FILE: hint="A file:"; break;
-					//case PROPERTY_HINT_RESOURCE_TYPE: hint="Type: "+arginfo.hint_string; break;
-				};
-				if (hint!="")
-					_write_string(f,4,hint);
-*/
 			}
 
 			c.methods.push_back(method);

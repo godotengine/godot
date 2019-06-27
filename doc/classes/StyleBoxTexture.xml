@@ -9,6 +9,22 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_expand_margin_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_margin_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_expand_margin_all">
 			<return type="void">
 			</return>
@@ -27,6 +43,26 @@
 			<argument index="2" name="size_right" type="float">
 			</argument>
 			<argument index="3" name="size_bottom" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_expand_margin_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<argument index="1" name="size" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_margin_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<argument index="1" name="size" type="float">
 			</argument>
 			<description>
 			</description>
