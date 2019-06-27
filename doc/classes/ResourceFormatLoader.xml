@@ -55,7 +55,7 @@
 			<argument index="1" name="original_path" type="String">
 			</argument>
 			<description>
-				Loads a resource when the engine finds this loader to be compatible. If the loaded resource is the result of an import, [code]original_path[/code] will target the source file. Returns a [Resource] object on success, or an [enum @GlobalScope.Error] constant in case of failure.
+				Loads a resource when the engine finds this loader to be compatible. If the loaded resource is the result of an import, [code]original_path[/code] will target the source file. Returns a [Resource] object on success, or an [enum Error] constant in case of failure.
 			</description>
 		</method>
 		<method name="rename_dependencies" qualifiers="virtual">
@@ -67,7 +67,7 @@
 			</argument>
 			<description>
 				If implemented, renames dependencies within the given resource and saves it. [code]renames[/code] is a dictionary [code]{ String =&gt; String }[/code] mapping old dependency paths to new paths.
-				Returns [constant @GlobalScope.OK] on success, or an [enum @GlobalScope.Error] constant in case of failure.
+				Returns [constant OK] on success, or an [enum Error] constant in case of failure.
 			</description>
 		</method>
 	</methods>
