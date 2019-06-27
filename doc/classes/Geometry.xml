@@ -67,7 +67,7 @@
 			<argument index="1" name="polygon_b" type="PoolVector2Array">
 			</argument>
 			<description>
-				Clips [code]polygon_a[/code] against [code]polygon_b[/code] and returns an array of clipped polygons. This performs [code]OPERATION_DIFFERENCE[/code] between polygons. Returns an empty array if [code]polygon_b[/code] completely overlaps [code]polygon_a[/code]. 
+				Clips [code]polygon_a[/code] against [code]polygon_b[/code] and returns an array of clipped polygons. This performs [constant OPERATION_DIFFERENCE] between polygons. Returns an empty array if [code]polygon_b[/code] completely overlaps [code]polygon_a[/code].
 				If [code]polygon_b[/code] is enclosed by [code]polygon_a[/code], returns an outer polygon (boundary) and inner polygon (hole) which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
@@ -79,7 +79,7 @@
 			<argument index="1" name="polygon" type="PoolVector2Array">
 			</argument>
 			<description>
-				Clips [code]polyline[/code] against [code]polygon[/code] and returns an array of clipped polylines. This performs [code]OPERATION_DIFFERENCE[/code] between the polyline and the polygon. This operation can be thought of as cutting a line with a closed shape.
+				Clips [code]polyline[/code] against [code]polygon[/code] and returns an array of clipped polylines. This performs [constant OPERATION_DIFFERENCE] between the polyline and the polygon. This operation can be thought of as cutting a line with a closed shape.
 			</description>
 		</method>
 		<method name="convex_hull_2d">
@@ -99,7 +99,7 @@
 			<argument index="1" name="polygon_b" type="PoolVector2Array">
 			</argument>
 			<description>
-				Mutually excludes common area defined by intersection of [code]polygon_a[/code] and [code]polygon_b[/code] (see [method intersect_polygons_2d]) and returns an array of excluded polygons. This performs [code]OPERATION_XOR[/code] between polygons. In other words, returns all but common area between polygons. 
+				Mutually excludes common area defined by intersection of [code]polygon_a[/code] and [code]polygon_b[/code] (see [method intersect_polygons_2d]) and returns an array of excluded polygons. This performs [constant OPERATION_XOR] between polygons. In other words, returns all but common area between polygons. 
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
@@ -201,7 +201,7 @@
 			<argument index="1" name="polygon_b" type="PoolVector2Array">
 			</argument>
 			<description>
-				Intersects [code]polygon_a[/code] with [code]polygon_b[/code] and returns an array of intersected polygons. This performs [code]OPERATION_INTERSECTION[/code] between polygons. In other words, returns common area shared by polygons. Returns an empty array if no intersection occurs.
+				Intersects [code]polygon_a[/code] with [code]polygon_b[/code] and returns an array of intersected polygons. This performs [constant OPERATION_INTERSECTION] between polygons. In other words, returns common area shared by polygons. Returns an empty array if no intersection occurs.
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
@@ -213,7 +213,7 @@
 			<argument index="1" name="polygon" type="PoolVector2Array">
 			</argument>
 			<description>
-				Intersects [code]polyline[/code] with [code]polygon[/code] and returns an array of intersected polylines. This performs [code]OPERATION_INTERSECTION[/code] between the polyline and the polygon. This operation can be thought of as chopping a line with a closed shape.
+				Intersects [code]polyline[/code] with [code]polygon[/code] and returns an array of intersected polylines. This performs [constant OPERATION_INTERSECTION] between the polyline and the polygon. This operation can be thought of as chopping a line with a closed shape.
 			</description>
 		</method>
 		<method name="is_point_in_polygon">
@@ -268,7 +268,7 @@
 			<argument index="1" name="polygon_b" type="PoolVector2Array">
 			</argument>
 			<description>
-				Merges (combines) [code]polygon_a[/code] and [code]polygon_b[/code] and returns an array of merged polygons. This performs [code]OPERATION_UNION[/code] between polygons.
+				Merges (combines) [code]polygon_a[/code] and [code]polygon_b[/code] and returns an array of merged polygons. This performs [constant OPERATION_UNION] between polygons.
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>

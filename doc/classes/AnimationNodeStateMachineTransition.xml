@@ -16,7 +16,7 @@
 			[/codeblock]
 		</member>
 		<member name="auto_advance" type="bool" setter="set_auto_advance" getter="has_auto_advance">
-			Turn on the transition automatically when this state is reached. This works best with [code]SWITCH_MODE_AT_END[/code].
+			Turn on the transition automatically when this state is reached. This works best with [constant SWITCH_MODE_AT_END].
 		</member>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled">
 			Don't use this transition during [method AnimationNodeStateMachinePlayback.travel] or [member auto_advance].

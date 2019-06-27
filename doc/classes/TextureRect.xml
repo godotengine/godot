@@ -29,7 +29,7 @@
 	</members>
 	<constants>
 		<constant name="STRETCH_SCALE_ON_EXPAND" value="0" enum="StretchMode">
-			Scale to fit the node's bounding rectangle, only if [code]expand[/code] is [code]true[/code]. Default [code]stretch_mode[/code], for backwards compatibility. Until you set [code]expand[/code] to [code]true[/code], the texture will behave like [code]STRETCH_KEEP[/code].
+			Scale to fit the node's bounding rectangle, only if [code]expand[/code] is [code]true[/code]. Default [code]stretch_mode[/code], for backwards compatibility. Until you set [code]expand[/code] to [code]true[/code], the texture will behave like [constant STRETCH_KEEP].
 		</constant>
 		<constant name="STRETCH_SCALE" value="1" enum="StretchMode">
 			Scale to fit the node's bounding rectangle.

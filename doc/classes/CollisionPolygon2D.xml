@@ -12,7 +12,7 @@
 	</methods>
 	<members>
 		<member name="build_mode" type="int" setter="set_build_mode" getter="get_build_mode" enum="CollisionPolygon2D.BuildMode">
-			Collision build mode. Use one of the [code]BUILD_*[/code] constants. Default value: [code]BUILD_SOLIDS[/code].
+			Collision build mode. Use one of the [code]BUILD_*[/code] constants. Default value: [constant BUILD_SOLIDS].
 		</member>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled">
 			If [code]true[/code], no collisions will be detected.

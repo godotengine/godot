@@ -4,7 +4,7 @@
 		Base class for keys events with modifiers.
 	</brief_description>
 	<description>
-		Contains keys events information with modifiers support like [code]SHIFT[/code] or [code]ALT[/code]. See [method Node._input].
+		Contains keys events information with modifiers support like [code]Shift[/code] or [code]Alt[/code]. See [method Node._input].
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
@@ -13,19 +13,19 @@
 	</methods>
 	<members>
 		<member name="alt" type="bool" setter="set_alt" getter="get_alt">
-			State of the Alt modifier.
+			State of the [code]Alt[/code] modifier.
 		</member>
 		<member name="command" type="bool" setter="set_command" getter="get_command">
-			State of the Command modifier.
+			State of the [code]Command[/code] modifier.
 		</member>
 		<member name="control" type="bool" setter="set_control" getter="get_control">
-			State of the Ctrl modifier.
+			State of the [code]Ctrl[/code] modifier.
 		</member>
 		<member name="meta" type="bool" setter="set_metakey" getter="get_metakey">
-			State of the Meta modifier.
+			State of the [code]Meta[/code] modifier.
 		</member>
 		<member name="shift" type="bool" setter="set_shift" getter="get_shift">
-			State of the Shift modifier.
+			State of the [code]Shift[/code] modifier.
 		</member>
 	</members>
 	<constants>

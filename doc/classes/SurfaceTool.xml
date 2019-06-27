@@ -90,7 +90,7 @@
 			</argument>
 			<description>
 				Insert a triangle fan made of array data into [Mesh] being constructed.
-				Requires primitive type be set to [code]PRIMITIVE_TRIANGLES[/code].
+				Requires primitive type be set to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
 		<method name="add_uv">
@@ -148,7 +148,7 @@
 			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType">
 			</argument>
 			<description>
-				Called before adding any Vertices. Takes the primitive type as an argument (e.g. Mesh.PRIMITIVE_TRIANGLES).
+				Called before adding any Vertices. Takes the primitive type as an argument (e.g. [constant Mesh.PRIMITIVE_TRIANGLES]).
 			</description>
 		</method>
 		<method name="clear">
@@ -212,8 +212,8 @@
 			</argument>
 			<description>
 				Generates normals from Vertices so you do not have to do it manually.
-				Setting "flip" [code]true[/code] inverts resulting normals.
-				Requires primitive type to be set to [code]PRIMITIVE_TRIANGLES[/code].
+				Setting [code]flip[/code] to [code]true[/code] inverts the resulting normals.
+				Requires primitive type to be set to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
 		<method name="generate_tangents">

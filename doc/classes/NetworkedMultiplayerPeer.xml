@@ -45,7 +45,7 @@
 			</argument>
 			<description>
 				Sets the peer to which packets will be sent.
-				The [code]id[/code] can be one of: [code]TARGET_PEER_BROADCAST[/code] to send to all connected peers, [code]TARGET_PEER_SERVER[/code] to send to the peer acting as server, a valid peer ID to send to that specific peer, a negative peer ID to send to all peers except that one. Default: [code]TARGET_PEER_BROADCAST[/code]
+				The [code]id[/code] can be one of: [constant TARGET_PEER_BROADCAST] to send to all connected peers, [constant TARGET_PEER_SERVER] to send to the peer acting as server, a valid peer ID to send to that specific peer, a negative peer ID to send to all peers except that one. Default: [constant TARGET_PEER_BROADCAST]
 			</description>
 		</method>
 	</methods>
@@ -90,10 +90,10 @@
 	</signals>
 	<constants>
 		<constant name="TRANSFER_MODE_UNRELIABLE" value="0" enum="TransferMode">
-			Packets are not acknowledged, no resend attempts are made for lost packets. Packets may arrive in any order. Potentially faster than [code]TRANSFER_MODE_UNRELIABLE_ORDERED[/code]. Use for non-critical data, and always consider whether the order matters.
+			Packets are not acknowledged, no resend attempts are made for lost packets. Packets may arrive in any order. Potentially faster than [constant TRANSFER_MODE_UNRELIABLE_ORDERED]. Use for non-critical data, and always consider whether the order matters.
 		</constant>
 		<constant name="TRANSFER_MODE_UNRELIABLE_ORDERED" value="1" enum="TransferMode">
-			Packets are not acknowledged, no resend attempts are made for lost packets. Packets are received in the order they were sent in. Potentially faster than [code]TRANSFER_MODE_RELIABLE[/code]. Use for non-critical data or data that would be outdated if received late due to resend attempt(s) anyway, for example movement and positional data.
+			Packets are not acknowledged, no resend attempts are made for lost packets. Packets are received in the order they were sent in. Potentially faster than [constant TRANSFER_MODE_RELIABLE]. Use for non-critical data or data that would be outdated if received late due to resend attempt(s) anyway, for example movement and positional data.
 		</constant>
 		<constant name="TRANSFER_MODE_RELIABLE" value="2" enum="TransferMode">
 			Packets must be received and resend attempts should be made until the packets are acknowledged. Packets must be received in the order they were sent in. Most reliable transfer mode, but potentially slowest due to the overhead. Use for critical data that must be transmitted and arrive in order, for example an ability being triggered or a chat message. Consider carefully if the information really is critical, and use sparingly.
