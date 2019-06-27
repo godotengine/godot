@@ -316,7 +316,7 @@
 			<argument index="0" name="shape" type="int" enum="Input.CursorShape" default="0">
 			</argument>
 			<description>
-				Sets the default cursor shape to be used in the viewport instead of [code]CURSOR_ARROW[/code].
+				Sets the default cursor shape to be used in the viewport instead of [constant CURSOR_ARROW].
 				Note that if you want to change the default cursor shape for [Control]'s nodes, use [member Control.mouse_default_cursor_shape] instead.
 			</description>
 		</method>
@@ -413,7 +413,7 @@
 			Wait cursor. Indicates that the application is busy performing an operation.
 		</constant>
 		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
-			Busy cursor. See [code]CURSOR_WAIT[/code].
+			Busy cursor. See [constant CURSOR_WAIT].
 		</constant>
 		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
 			Drag cursor. Usually displayed when dragging something.
@@ -434,16 +434,16 @@
 			Window resize mouse cursor. The cursor is a double headed arrow that goes from the bottom left to the top right. It tells the user they can resize the window or the panel both horizontally and vertically.
 		</constant>
 		<constant name="CURSOR_FDIAGSIZE" value="12" enum="CursorShape">
-			Window resize mouse cursor. The cursor is a double headed arrow that goes from the top left to the bottom right, the opposite of [code]CURSOR_BDIAGSIZE[/code]. It tells the user they can resize the window or the panel both horizontally and vertically.
+			Window resize mouse cursor. The cursor is a double headed arrow that goes from the top left to the bottom right, the opposite of [constant CURSOR_BDIAGSIZE]. It tells the user they can resize the window or the panel both horizontally and vertically.
 		</constant>
 		<constant name="CURSOR_MOVE" value="13" enum="CursorShape">
 			Move cursor. Indicates that something can be moved.
 		</constant>
 		<constant name="CURSOR_VSPLIT" value="14" enum="CursorShape">
-			Vertical split mouse cursor. On Windows, it's the same as [code]CURSOR_VSIZE[/code].
+			Vertical split mouse cursor. On Windows, it's the same as [constant CURSOR_VSIZE].
 		</constant>
 		<constant name="CURSOR_HSPLIT" value="15" enum="CursorShape">
-			Horizontal split mouse cursor. On Windows, it's the same as [code]CURSOR_HSIZE[/code].
+			Horizontal split mouse cursor. On Windows, it's the same as [constant CURSOR_HSIZE].
 		</constant>
 		<constant name="CURSOR_HELP" value="16" enum="CursorShape">
 			Help cursor. Usually a question mark.

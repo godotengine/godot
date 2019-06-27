@@ -138,8 +138,8 @@
 			The maximum number of contacts to report. Default value: [code]0[/code].
 		</member>
 		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidBody2D.CCDMode">
-			Continuous collision detection mode. Default value: [code]CCD_MODE_DISABLED[/code].
-			Continuous collision detection tries to predict where a moving body will collide instead of moving it and correcting its movement after collision. Continuous collision detection is slower, but more precise and misses fewer collisions with small, fast-moving objects. Raycasting and shapecasting methods are available. See [code]CCD_MODE_[/code] constants for details.
+			Continuous collision detection mode. Default value: [constant CCD_MODE_DISABLED].
+			Continuous collision detection tries to predict where a moving body will collide instead of moving it and correcting its movement after collision. Continuous collision detection is slower, but more precise and misses fewer collisions with small, fast-moving objects. Raycasting and shapecasting methods are available. See [enum CCDMode] for details.
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator">
 			If [code]true[/code], internal force integration is disabled for this body. Aside from collision response, the body will only move as determined by the [method _integrate_forces] function.
@@ -163,7 +163,7 @@
 			The body's mass. Default value: [code]1[/code].
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody2D.Mode">
-			The body's mode. See [code]MODE_*[/code] constants. Default value: [code]MODE_RIGID[/code].
+			The body's mode. See [code]MODE_*[/code] constants. Default value: [constant MODE_RIGID].
 		</member>
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 		</member>
@@ -229,7 +229,7 @@
 			Static mode. The body behaves like a [StaticBody2D] and does not move.
 		</constant>
 		<constant name="MODE_CHARACTER" value="2" enum="Mode">
-			Character mode. Similar to [code]MODE_RIGID[/code], but the body can not rotate.
+			Character mode. Similar to [constant MODE_RIGID], but the body can not rotate.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
 			Kinematic mode. The body behaves like a [KinematicBody2D], and must be moved by code.

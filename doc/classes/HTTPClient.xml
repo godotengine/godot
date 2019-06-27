@@ -193,7 +193,7 @@
 			HTTP POST method. The POST method is used to submit an entity to the specified resource, often causing a change in state or side effects on the server. This is often used for forms and submitting data or uploading files.
 		</constant>
 		<constant name="METHOD_PUT" value="3" enum="Method">
-			HTTP PUT method. The PUT method asks to replace all current representations of the target resource with the request payload. (You can think of [code]POST[/code] as "create or update" and [code]PUT[/code] as "update", although many services tend to not make a clear distinction or change their meaning).
+			HTTP PUT method. The PUT method asks to replace all current representations of the target resource with the request payload. (You can think of POST as "create or update" and PUT as "update", although many services tend to not make a clear distinction or change their meaning).
 		</constant>
 		<constant name="METHOD_DELETE" value="4" enum="Method">
 			HTTP DELETE method. The DELETE method requests to delete the specified resource.

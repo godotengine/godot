@@ -168,7 +168,7 @@
 			If [code]true[/code], the ancestor [Viewport] is currently using this Camera. Default value: [code]false[/code].
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="Camera.DopplerTracking">
-			If not [code]DOPPLER_TRACKING_DISABLED[/code] this Camera will simulate the Doppler effect for objects changed in particular [code]_process[/code] methods. Default value: [code]DOPPLER_TRACKING_DISABLED[/code].
+			If not [constant DOPPLER_TRACKING_DISABLED] this Camera will simulate the Doppler effect for objects changed in particular [code]_process[/code] methods. Default value: [constant DOPPLER_TRACKING_DISABLED].
 		</member>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The [Environment] to use for this Camera.
@@ -185,13 +185,13 @@
 			The horizontal (X) offset of the Camera viewport.
 		</member>
 		<member name="keep_aspect" type="int" setter="set_keep_aspect_mode" getter="get_keep_aspect_mode" enum="Camera.KeepAspect">
-			The axis to lock during [member fov]/[member size] adjustments. Can be either [code]KEEP_WIDTH[/code] or [code]KEEP_HEIGHT[/code].
+			The axis to lock during [member fov]/[member size] adjustments. Can be either [constant KEEP_WIDTH] or [constant KEEP_HEIGHT].
 		</member>
 		<member name="near" type="float" setter="set_znear" getter="get_znear">
 			The distance to the near culling boundary for this Camera relative to its local z-axis.
 		</member>
 		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera.Projection">
-			The camera's projection mode. In [code]PROJECTION_PERSPECTIVE[/code] mode, objects' z-distance from the camera's local space scales their perceived size.
+			The camera's projection mode. In [constant PROJECTION_PERSPECTIVE] mode, objects' z-distance from the camera's local space scales their perceived size.
 		</member>
 		<member name="size" type="float" setter="set_size" getter="get_size">
 			The camera's size measured as 1/2 the width or height. Only applicable in orthogonal mode. Since [member keep_aspect] locks on axis, [code]size[/code] sets the other axis' size length.
