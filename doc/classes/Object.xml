@@ -30,7 +30,7 @@
 			<description>
 				Virtual method which can be overridden to customize the return value of [method get_property_list].
 				Returns the object's property list as an [Array] of dictionaries.
-				Each property's [Dictionary] must contain at least [code]name: String[/code] and [code]type: int[/code] (see [enum @GlobalScope.Variant.Type]) entries. Optionally, it can also include [code]hint: int[/code] (see [enum @GlobalScope.PropertyHint]), [code]hint_string: String[/code], and [code]usage: int[/code] (see [enum @GlobalScope.PropertyUsageFlags]).
+				Each property's [Dictionary] must contain at least [code]name: String[/code] and [code]type: int[/code] (see [enum Variant.Type]) entries. Optionally, it can also include [code]hint: int[/code] (see [enum PropertyHint]), [code]hint_string: String[/code], and [code]usage: int[/code] (see [enum PropertyUsageFlags]).
 			</description>
 		</method>
 		<method name="_init" qualifiers="virtual">
@@ -77,7 +77,7 @@
 			<argument index="1" name="arguments" type="Array" default="[  ]">
 			</argument>
 			<description>
-				Adds a user-defined [code]signal[/code]. Arguments are optional, but can be added as an [Array] of dictionaries, each containing [code]name: String[/code] and [code]type: int[/code] (see [enum @GlobalScope.Variant.Type]) entries.
+				Adds a user-defined [code]signal[/code]. Arguments are optional, but can be added as an [Array] of dictionaries, each containing [code]name: String[/code] and [code]type: int[/code] (see [enum Variant.Type]) entries.
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg">
@@ -256,7 +256,7 @@
 			</return>
 			<description>
 				Returns the object's property list as an [Array] of dictionaries.
-				Each property's [Dictionary] contain at least [code]name: String[/code] and [code]type: int[/code] (see [enum @GlobalScope.Variant.Type]) entries. Optionally, it can also include [code]hint: int[/code] (see [enum @GlobalScope.PropertyHint]), [code]hint_string: String[/code], and [code]usage: int[/code] (see [enum @GlobalScope.PropertyUsageFlags]).
+				Each property's [Dictionary] contain at least [code]name: String[/code] and [code]type: int[/code] (see [enum Variant.Type]) entries. Optionally, it can also include [code]hint: int[/code] (see [enum PropertyHint]), [code]hint_string: String[/code], and [code]usage: int[/code] (see [enum PropertyUsageFlags]).
 			</description>
 		</method>
 		<method name="get_script" qualifiers="const">
