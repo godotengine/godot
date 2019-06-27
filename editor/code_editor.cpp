@@ -166,6 +166,8 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 		result_line = -1;
 		result_col = -1;
 		text_edit->set_search_text("");
+		text_edit->set_search_flags(p_flags);
+		text_edit->set_current_search_result(line, col);
 		set_error(text.empty() ? "" : TTR("No Matches"));
 	}
 
