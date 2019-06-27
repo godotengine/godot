@@ -760,6 +760,8 @@ OS::OS() {
 }
 
 OS::~OS() {
+	if (last_error)
+		memfree(last_error);
 	memdelete(_logger);
 	singleton = NULL;
 }
