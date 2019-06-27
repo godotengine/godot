@@ -1384,7 +1384,7 @@
 			The amount of damping of the rotation across axes orthogonal to the slider.
 		</constant>
 		<constant name="SLIDER_JOINT_MAX" value="22" enum="SliderJointParam">
-			End flag of SLIDER_JOINT_* constants, used internally.
+			Represents the size of the [enum SliderJointParam] enum.
 		</constant>
 		<constant name="CONE_TWIST_JOINT_SWING_SPAN" value="0" enum="ConeTwistJointParam">
 			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
@@ -1566,7 +1566,7 @@
 			Constant to set/get a body's angular dampening factor.
 		</constant>
 		<constant name="BODY_PARAM_MAX" value="6" enum="BodyParameter">
-			This is the last ID for body parameters. Any attempt to set this property is ignored. Any attempt to get it returns 0.
+			Represents the size of the [enum BodyParameter] enum.
 		</constant>
 		<constant name="BODY_STATE_TRANSFORM" value="0" enum="BodyState">
 			Constant to set/get the current transform matrix of the body.

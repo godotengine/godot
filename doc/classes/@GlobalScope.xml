@@ -968,7 +968,7 @@
 			Joypad Button 15
 		</constant>
 		<constant name="JOY_BUTTON_MAX" value="16" enum="JoystickList">
-			Joypad Button 16
+			Represents the maximum number of joystick buttons supported.
 		</constant>
 		<constant name="JOY_SONY_CIRCLE" value="1" enum="JoystickList">
 			DUALSHOCK circle button
@@ -1090,6 +1090,7 @@
 		<constant name="JOY_AXIS_9" value="9" enum="JoystickList">
 		</constant>
 		<constant name="JOY_AXIS_MAX" value="10" enum="JoystickList">
+			Represents the maximum number of joystick axes supported.
 		</constant>
 		<constant name="JOY_ANALOG_LX" value="0" enum="JoystickList">
 			Joypad Left Stick Horizontal Axis
@@ -1449,7 +1450,7 @@
 			Variable is of type [PoolColorArray].
 		</constant>
 		<constant name="TYPE_MAX" value="27" enum="Variant.Type">
-			Marker for end of type constants.
+			Represents the size of the [enum Variant.Type] enum.
 		</constant>
 		<constant name="OP_EQUAL" value="0" enum="Variant.Operator">
 		</constant>
@@ -1502,6 +1503,7 @@
 		<constant name="OP_IN" value="24" enum="Variant.Operator">
 		</constant>
 		<constant name="OP_MAX" value="25" enum="Variant.Operator">
+			Represents the size of the [enum Variant.Operator] enum.
 		</constant>
 	</constants>
 </class>

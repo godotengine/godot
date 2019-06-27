@@ -211,7 +211,7 @@
 			HTTP PATCH method. The PATCH method is used to apply partial modifications to a resource.
 		</constant>
 		<constant name="METHOD_MAX" value="9" enum="Method">
-			Marker for end of [code]METHOD_*[/code] enum. Not used.
+			Represents the size of the [enum Method] enum.
 		</constant>
 		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">
 			Status: Disconnected from the server.

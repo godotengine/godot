@@ -32,6 +32,7 @@
 		<constant name="FFT_SIZE_4096" value="4" enum="FFT_Size">
 		</constant>
 		<constant name="FFT_SIZE_MAX" value="5" enum="FFT_Size">
+			Represents the size of the [enum FFT_Size] enum.
 		</constant>
 	</constants>
 </class>

@@ -18,8 +18,10 @@
 	</members>
 	<constants>
 		<constant name="RENDER_PRIORITY_MAX" value="127">
+			Maximum value for the [member render_priority] parameter.
 		</constant>
 		<constant name="RENDER_PRIORITY_MIN" value="-128">
+			Minimum value for the [member render_priority] parameter.
 		</constant>
 	</constants>
 </class>

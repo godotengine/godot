@@ -194,6 +194,7 @@
 			Array of indices.
 		</constant>
 		<constant name="ARRAY_MAX" value="9" enum="ArrayType">
+			Represents the size of the [enum ArrayType] enum.
 		</constant>
 	</constants>
 </class>

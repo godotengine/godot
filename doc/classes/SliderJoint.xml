@@ -149,7 +149,7 @@
 			The amount of damping of the rotation across axes orthogonal to the slider.
 		</constant>
 		<constant name="PARAM_MAX" value="22" enum="Param">
-			End flag of PARAM_* constants, used internally.
+			Represents the size of the [enum Param] enum.
 		</constant>
 	</constants>
 </class>

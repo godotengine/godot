@@ -225,6 +225,7 @@
 			For triangles, the index array is interpreted as triples, referring to the vertices of each triangle. For lines, the index array is in pairs indicating the start and end of each line.
 		</constant>
 		<constant name="ARRAY_MAX" value="9" enum="ArrayType">
+			Represents the size of the [enum ArrayType] enum.
 		</constant>
 		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
 			Array format will include vertices (mandatory).

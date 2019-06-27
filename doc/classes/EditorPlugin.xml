@@ -546,6 +546,7 @@
 		<constant name="DOCK_SLOT_RIGHT_BR" value="7" enum="DockSlot">
 		</constant>
 		<constant name="DOCK_SLOT_MAX" value="8" enum="DockSlot">
+			Represents the size of the [enum DockSlot] enum.
 		</constant>
 	</constants>
 </class>

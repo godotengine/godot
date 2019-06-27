@@ -181,6 +181,7 @@
 			Reverse the last undo action.
 		</constant>
 		<constant name="MENU_MAX" value="7" enum="MenuItems">
+			Represents the size of the [enum MenuItems] enum.
 		</constant>
 	</constants>
 	<theme_items>
