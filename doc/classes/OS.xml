@@ -102,7 +102,7 @@
 			<description>
 				Execute the file at the given path with the arguments passed as an array of strings. Platform path resolution will take place. The resolved file must exist and be executable.
 				The arguments are used in the given order and separated by a space, so [code]OS.execute('ping', ['-w', '3', 'godotengine.org'], false)[/code] will resolve to [code]ping -w 3 godotengine.org[/code] in the system's shell.
-				This method has slightly different behaviour based on whether the [code]blocking[/code] mode is enabled.
+				This method has slightly different behavior based on whether the [code]blocking[/code] mode is enabled.
 				When [code]blocking[/code] is enabled, the Godot thread will pause its execution while waiting for the process to terminate. The shell output of the process will be written to the [code]output[/code] array as a single string. When the process terminates, the Godot thread will resume execution.
 				When [code]blocking[/code] is disabled, the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so [code]output[/code] will be empty.
 				The return value also depends on the blocking mode. When blocking, the method will return -2 (no process ID information is available in blocking mode). When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return -1.
@@ -222,7 +222,7 @@
 			</return>
 			<description>
 				Returns IME cursor position (currently edited portion of the string) relative to the characters in the composition string.
-				[code]NOTIFICATION_OS_IME_UPDATE[/code] is sent to the application to notify it of changes to the IME cursor position.
+				[constant MainLoop.NOTIFICATION_OS_IME_UPDATE] is sent to the application to notify it of changes to the IME cursor position.
 			</description>
 		</method>
 		<method name="get_ime_text" qualifiers="const">
@@ -230,7 +230,7 @@
 			</return>
 			<description>
 				Returns IME intermediate composition string.
-				[code]NOTIFICATION_OS_IME_UPDATE[/code] is sent to the application to notify it of changes to the IME composition string.
+				[constant MainLoop.NOTIFICATION_OS_IME_UPDATE] is sent to the application to notify it of changes to the IME composition string.
 			</description>
 		</method>
 		<method name="get_latin_keyboard_variant" qualifiers="const">
@@ -280,7 +280,7 @@
 			<return type="int" enum="OS.PowerState">
 			</return>
 			<description>
-				Returns the current state of the device regarding battery and power. See [code]POWERSTATE_*[/code] constants.
+				Returns the current state of the device regarding battery and power. See [enum PowerState] constants.
 			</description>
 		</method>
 		<method name="get_process_id" qualifiers="const">

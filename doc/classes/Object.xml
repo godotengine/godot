@@ -9,7 +9,7 @@
 		Objects do not manage memory. If a class inherits from Object, you will have to delete instances of it manually. To do so, call the [method free] method from your script or delete the instance from C++.
 		Some classes that extend Object add memory management. This is the case of [Reference], which counts references and deletes itself automatically when no longer referenced. [Node], another fundamental type, deletes all its children when freed from memory.
 		Objects export properties, which are mainly useful for storage and editing, but not really so much in programming. Properties are exported in [method _get_property_list] and handled in [method _get] and [method _set]. However, scripting languages and C++ have simpler means to export them.
-		Objects also receive notifications. Notifications are a simple way to notify the object about simple events, so they can all be handled together. See [method _notification].
+		Objects also receive notifications. Notifications are a simple way to notify the object about different events, so they can all be handled together. See [method _notification].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -20,6 +20,7 @@
 			<argument index="0" name="property" type="String">
 			</argument>
 			<description>
+				Virtual method which can be overridden to customize the return value of [method get].
 				Returns the given property. Returns [code]null[/code] if the [code]property[/code] does not exist.
 			</description>
 		</method>
@@ -27,14 +28,16 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns the object's property list as an [Array] of dictionaries. Dictionaries must contain: name:String, type:int (see TYPE_* enum in [@GlobalScope]) and optionally: hint:int (see PROPERTY_HINT_* in [@GlobalScope]), hint_string:String, usage:int (see PROPERTY_USAGE_* in [@GlobalScope]).
+				Virtual method which can be overridden to customize the return value of [method get_property_list].
+				Returns the object's property list as an [Array] of dictionaries.
+				Each property's [Dictionary] must contain at least [code]name: String[/code] and [code]type: int[/code] (see [enum @GlobalScope.Variant.Type]) entries. Optionally, it can also include [code]hint: int[/code] (see [enum @GlobalScope.PropertyHint]), [code]hint_string: String[/code], and [code]usage: int[/code] (see [enum @GlobalScope.PropertyUsageFlags]).
 			</description>
 		</method>
 		<method name="_init" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<description>
-				The virtual method called upon initialization.
+				Called when the object is initialized.
 			</description>
 		</method>
 		<method name="_notification" qualifiers="virtual">
@@ -43,7 +46,7 @@
 			<argument index="0" name="what" type="int">
 			</argument>
 			<description>
-				Notify the object internally using an ID.
+				Called whenever the object receives a notification, which is identified in [code]what[/code] by a constant. The base [Object] has two constants [constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE], but subclasses such as [Node] define a lot more notifications which are also received by this method.
 			</description>
 		</method>
 		<method name="_set" qualifiers="virtual">
@@ -54,6 +57,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Virtual method which can be overridden to customize the return value of [method set].
 				Sets a property. Returns [code]true[/code] if the [code]property[/code] exists.
 			</description>
 		</method>
@@ -61,8 +65,8 @@
 			<return type="String">
 			</return>
 			<description>
+				Virtual method which can be overridden to customize the return value of [method to_string], and thus the object's representation where it is converted to a string, e.g. with [code]print(obj)[/code].
 				Returns a [String] representing the object. Default is [code]"[ClassName:RID]"[/code].
-				Override this method to customize the [String] representation of the object when it's being converted to a string, for example: [code]print(obj)[/code].
 			</description>
 		</method>
 		<method name="add_user_signal">
@@ -73,7 +77,7 @@
 			<argument index="1" name="arguments" type="Array" default="[  ]">
 			</argument>
 			<description>
-				Adds a user-defined [code]signal[/code]. Arguments are optional, but can be added as an [Array] of dictionaries, each containing "name" and "type" (from [@GlobalScope] TYPE_*).
+				Adds a user-defined [code]signal[/code]. Arguments are optional, but can be added as an [Array] of dictionaries, each containing [code]name: String[/code] and [code]type: int[/code] (see [enum @GlobalScope.Variant.Type]) entries.
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg">
@@ -82,7 +86,10 @@
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
-				Calls the [code]method[/code] on the object and returns a result. Pass parameters as a comma separated list.
+				Calls the [code]method[/code] on the object and returns the result. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
+				[codeblock]
+				call("set", "position", Vector2(42.0, 0.0))
+				[/codeblock]
 			</description>
 		</method>
 		<method name="call_deferred" qualifiers="vararg">
@@ -91,7 +98,10 @@
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
-				Calls the [code]method[/code] on the object during idle time and returns a result. Pass parameters as a comma separated list.
+				Calls the [code]method[/code] on the object during idle time and returns the result. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
+				[codeblock]
+				call_deferred("set", "position", Vector2(42.0, 0.0))
+				[/codeblock]
 			</description>
 		</method>
 		<method name="callv">
@@ -102,14 +112,17 @@
 			<argument index="1" name="arg_array" type="Array">
 			</argument>
 			<description>
-				Calls the [code]method[/code] on the object and returns a result. Pass parameters as an [Array].
+				Calls the [code]method[/code] on the object and returns the result. Contrarily to [method call], this method does not support a variable number of arguments but expected all parameters passed via a single [Array].
+				[codeblock]
+				callv("set", [ "position", Vector2(42.0, 0.0) ])
+				[/codeblock]
 			</description>
 		</method>
 		<method name="can_translate_messages" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the object can translate strings.
+				Returns [code]true[/code] if the object can translate strings. See [method set_message_translation] and [method tr].
 			</description>
 		</method>
 		<method name="connect">
@@ -126,9 +139,15 @@
 			<argument index="4" name="flags" type="int" default="0">
 			</argument>
 			<description>
-				Connects a [code]signal[/code] to a [code]method[/code] on a [code]target[/code] object. Pass optional [code]binds[/code] to the call. Use [code]flags[/code] to set deferred or one shot connections. See [code]CONNECT_*[/code] constants.
-				A [code]signal[/code] can only be connected once to a [code]method[/code]. It will throw an error if already connected. To avoid this, first, use [method is_connected] to check for existing connections.
+				Connects a [code]signal[/code] to a [code]method[/code] on a [code]target[/code] object. Pass optional [code]binds[/code] to the call as an [Array] of parameters. Use [code]flags[/code] to set deferred or one shot connections. See [enum ConnectFlags] constants.
+				A [code]signal[/code] can only be connected once to a [code]method[/code]. It will throw an error if already connected, unless the signal was connected with [constant CONNECT_REFERENCE_COUNTED]. To avoid this, first, use [method is_connected] to check for existing connections.
 				If the [code]target[/code] is destroyed in the game's lifecycle, the connection will be lost.
+				Examples:
+				[codeblock]
+				connect("pressed", self, "_on_Button_pressed") # BaseButton signal
+				connect("text_entered", self, "_on_LineEdit_text_entered") # LineEdit signal
+				connect("hit", self, "_on_Player_hit", [ weapon_type, damage ]) # User-defined signal
+				[/codeblock]
 			</description>
 		</method>
 		<method name="disconnect">
@@ -151,14 +170,18 @@
 			<argument index="0" name="signal" type="String">
 			</argument>
 			<description>
-				Emits the given [code]signal[/code].
+				Emits the given [code]signal[/code]. The signal must exist, so it should be a built-in signal of this class or one of its parent classes, or a user-defined signal. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
+				[codeblock]
+				emit_signal("hit", weapon_type, damage)
+				emit_signal("game_over")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="free">
 			<return type="void">
 			</return>
 			<description>
-				Deletes the object from memory.
+				Deletes the object from memory. Any pre-existing reference to the freed object will now return [code]null[/code].
 			</description>
 		</method>
 		<method name="get" qualifiers="const">
@@ -167,7 +190,7 @@
 			<argument index="0" name="property" type="String">
 			</argument>
 			<description>
-				Returns a [Variant] for a [code]property[/code].
+				Returns the [Variant] value of the given [code]property[/code].
 			</description>
 		</method>
 		<method name="get_class" qualifiers="const">
@@ -182,10 +205,10 @@
 			</return>
 			<description>
 				Returns an [Array] of dictionaries with information about signals that are connected to the object.
-				Inside each [Dictionary] there are 3 fields:
-				- "source" is a reference to signal emitter.
-				- "signal_name" is name of connected signal.
-				- "method_name" is a name of method to which signal is connected.
+				Each [Dictionary] contains three String entries:
+				- [code]source[/code] is a reference to the signal emitter.
+				- [code]signal_name[/code] is the name of the connected signal.
+				- [code]method_name[/code] is the name of the method to which the signal is connected.
 			</description>
 		</method>
 		<method name="get_indexed" qualifiers="const">
@@ -194,8 +217,7 @@
 			<argument index="0" name="property" type="NodePath">
 			</argument>
 			<description>
-				Get indexed object property by String.
-				Property indices get accessed with colon separation, for example: [code]position:x[/code]
+				Get the object's property indexed by the given [NodePath]. The node path should be relative to the current object and can use the colon character ([code]:[/code]) to access nested properties. Examples: [code]"position:x"[/code] or [code]"material:next_pass:blend_mode"[/code].
 			</description>
 		</method>
 		<method name="get_instance_id" qualifiers="const">
@@ -212,7 +234,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Returns the object's metadata for the given [code]name[/code].
+				Returns the object's metadata entry for the given [code]name[/code].
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
@@ -233,14 +255,15 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns the list of properties as an [Array] of dictionaries. Dictionaries contain: name:String, type:int (see TYPE_* enum in [@GlobalScope]) and optionally: hint:int (see PROPERTY_HINT_* in [@GlobalScope]), hint_string:String, usage:int (see PROPERTY_USAGE_* in [@GlobalScope]).
+				Returns the object's property list as an [Array] of dictionaries.
+				Each property's [Dictionary] contain at least [code]name: String[/code] and [code]type: int[/code] (see [enum @GlobalScope.Variant.Type]) entries. Optionally, it can also include [code]hint: int[/code] (see [enum @GlobalScope.PropertyHint]), [code]hint_string: String[/code], and [code]usage: int[/code] (see [enum @GlobalScope.PropertyUsageFlags]).
 			</description>
 		</method>
 		<method name="get_script" qualifiers="const">
 			<return type="Reference">
 			</return>
 			<description>
-				Returns the object's [Script] or [code]null[/code] if one doesn't exist.
+				Returns the object's [Script] instance, or [code]null[/code] if none is assigned.
 			</description>
 		</method>
 		<method name="get_signal_connection_list" qualifiers="const">
@@ -265,7 +288,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if a metadata is found with the given [code]name[/code].
+				Returns [code]true[/code] if a metadata entry is found with the given [code]name[/code].
 			</description>
 		</method>
 		<method name="has_method" qualifiers="const">
@@ -296,10 +319,10 @@
 		<method name="is_class" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="type" type="String">
+			<argument index="0" name="class" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the object inherits from the given [code]type[/code].
+				Returns [code]true[/code] if the object inherits from the given [code]class[/code].
 			</description>
 		</method>
 		<method name="is_connected" qualifiers="const">
@@ -319,7 +342,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the [code]queue_free[/code] method was called for the object.
+				Returns [code]true[/code] if the [method Node.queue_free] method was called for the object.
 			</description>
 		</method>
 		<method name="notification">
@@ -330,13 +353,15 @@
 			<argument index="1" name="reversed" type="bool" default="false">
 			</argument>
 			<description>
-				Notify the object of something.
+				Send a given notification to the object, which will also trigger a call to the [method _notification] method of all classes that the object inherits from.
+				If [code]reversed[/code] is [code]true[/code], [method _notification] is called first on the object's own class, and then up to its successive parent classes. If [code]reversed[/code] is [code]false[/code], [method _notification] is called first on the highest ancestor ([Object] itself), and then down to its successive inheriting classes.
 			</description>
 		</method>
 		<method name="property_list_changed_notify">
 			<return type="void">
 			</return>
 			<description>
+				Notify the editor that the property list has changed, so that editor plugins can take the new values into account. Does nothing on export builds.
 			</description>
 		</method>
 		<method name="remove_meta">
@@ -345,6 +370,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Removes a given entry from the object's metadata.
 			</description>
 		</method>
 		<method name="set">
@@ -355,7 +381,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Set property into the object.
+				Assigns a new value to the given property. If the [code]property[/code] does not exist, nothing will happen.
 			</description>
 		</method>
 		<method name="set_block_signals">
@@ -375,7 +401,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Set property into the object, after the current frame's physics step. This is equivalent to calling [method set] via [method call_deferred], i.e. [code]call_deferred("set", [property, value])[/code].
+				Assigns a new value to the given property, after the current frame's physics step. This is equivalent to calling [method set] via [method call_deferred], i.e. [code]call_deferred("set", property, value)[/code].
 			</description>
 		</method>
 		<method name="set_indexed">
@@ -386,6 +412,12 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Assigns a new value to the property identified by the [NodePath]. The node path should be relative to the current object and can use the colon character ([code]:[/code]) to access nested properties. Example:
+				[codeblock]
+				set_indexed("position", Vector2(42, 0))
+				set_indexed("position:y", -10)
+				print(position) # (42, -10)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_message_translation">
@@ -394,7 +426,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Define whether the object can translate strings (with calls to [method tr]). Default is [code]true[/code].
+				Defines whether the object can translate strings (with calls to [method tr]). Default is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_meta">
@@ -405,7 +437,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Set a metadata into the object. Metadata is serialized. Metadata can be [i]anything[/i].
+				Adds or changes a given entry in the object's metadata. Metadata are serialized, and can take any [Variant] value.
 			</description>
 		</method>
 		<method name="set_script">
@@ -414,7 +446,7 @@
 			<argument index="0" name="script" type="Reference">
 			</argument>
 			<description>
-				Set a script into the object, scripts extend the object functionality.
+				Assigns a script to the object. Each object can have a single script assigned to it, which are used to extend its functionality.
 			</description>
 		</method>
 		<method name="to_string">
@@ -431,14 +463,15 @@
 			<argument index="0" name="message" type="String">
 			</argument>
 			<description>
-				Translate a message. Only works if message translation is enabled (which it is by default). See [method set_message_translation].
+				Translates a message using translation catalogs configured in the Project Settings.
+				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] unchanged. See [method set_message_translation].
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="script_changed">
 			<description>
-				Emitted whenever the script of the Object is changed.
+				Emitted whenever the object's script is changed.
 			</description>
 		</signal>
 	</signals>
@@ -459,6 +492,7 @@
 			One shot connections disconnect themselves after emission.
 		</constant>
 		<constant name="CONNECT_REFERENCE_COUNTED" value="8" enum="ConnectFlags">
+			Connect a signal as reference counted. This means that a given signal can be connected several times to the same target, and will only be fully disconnected once no references are left.
 		</constant>
 	</constants>
 </class>

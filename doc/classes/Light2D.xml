@@ -78,7 +78,7 @@
 	</members>
 	<constants>
 		<constant name="MODE_ADD" value="0" enum="Mode">
-			Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behaviour of a light.
+			Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behavior of a light.
 		</constant>
 		<constant name="MODE_SUB" value="1" enum="Mode">
 			Subtracts the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.

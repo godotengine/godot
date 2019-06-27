@@ -27,7 +27,7 @@
 			The distance from the first vertex, measured in 3D units along the path. This sets this node's position to a point within the path.
 		</member>
 		<member name="rotation_mode" type="int" setter="set_rotation_mode" getter="get_rotation_mode" enum="PathFollow.RotationMode">
-			Allows or forbids rotation on one or more axes, depending on the constants being used.
+			Allows or forbids rotation on one or more axes, depending on the [enum RotationMode] constants being used.
 		</member>
 		<member name="unit_offset" type="float" setter="set_unit_offset" getter="get_unit_offset">
 			The distance from the first vertex, considering 0.0 as the first vertex and 1.0 as the last. This is just another way of expressing the offset within the path, as the offset supplied is multiplied internally by the path's length.

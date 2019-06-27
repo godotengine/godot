@@ -6,8 +6,8 @@
 	<description>
 		Nodes are Godot's building blocks. They can be assigned as the child of another node, resulting in a tree arrangement. A given node can contain any number of nodes as children with the requirement that all siblings (direct children of a node) should have unique names.
 		A tree of nodes is called a [i]scene[/i]. Scenes can be saved to the disk and then instanced into other scenes. This allows for very high flexibility in the architecture and data model of Godot projects.
-		[b]Scene tree:[/b] The [SceneTree] contains the active tree of nodes. When a node is added to the scene tree, it receives the NOTIFICATION_ENTER_TREE notification and its [method _enter_tree] callback is triggered. Child nodes are always added [i]after[/i] their parent node, i.e. the [method _enter_tree] callback of a parent node will be triggered before its child's.
-		Once all nodes have been added in the scene tree, they receive the NOTIFICATION_READY notification and their respective [method _ready] callbacks are triggered. For groups of nodes, the [method _ready] callback is called in reverse order, starting with the children and moving up to the parent nodes.
+		[b]Scene tree:[/b] The [SceneTree] contains the active tree of nodes. When a node is added to the scene tree, it receives the [constant NOTIFICATION_ENTER_TREE] notification and its [method _enter_tree] callback is triggered. Child nodes are always added [i]after[/i] their parent node, i.e. the [method _enter_tree] callback of a parent node will be triggered before its child's.
+		Once all nodes have been added in the scene tree, they receive the [constant NOTIFICATION_READY] notification and their respective [method _ready] callbacks are triggered. For groups of nodes, the [method _ready] callback is called in reverse order, starting with the children and moving up to the parent nodes.
 		This means that when adding a node to the scene tree, the following order will be used for the callbacks: [method _enter_tree] of the parent, [method _enter_tree] of the children, [method _ready] of the children and finally [method _ready] of the parent (recursively for the entire scene tree).
 		[b]Processing:[/b] Nodes can override the "process" state, so that they receive a callback on each frame requesting them to process (do something). Normal processing (callback [method _process], toggled with [method set_process]) happens as fast as possible and is dependent on the frame rate, so the processing time [i]delta[/i] is passed as an argument. Physics processing (callback [method _physics_process], toggled with [method set_physics_process]) happens a fixed number of times per second (60 by default) and is useful for code related to the physics engine.
 		Nodes can also process input events. When present, the [method _input] function will be called for each input that the program receives. In many cases, this can be overkill (unless used for simple projects), and the [method _unhandled_input] function might be preferred; it is called when the input event was not handled by anyone else (typically, GUI [Control] nodes), ensuring that the node only receives the events that were meant for it.
@@ -25,7 +25,7 @@
 			</return>
 			<description>
 				Called when the node enters the [SceneTree] (e.g. upon instancing, scene changing, or after calling [method add_child] in a script). If the node has children, its [method _enter_tree] callback will be called first, and then that of the children.
-				Corresponds to the NOTIFICATION_ENTER_TREE notification in [method Object._notification].
+				Corresponds to the [constant NOTIFICATION_ENTER_TREE] notification in [method Object._notification].
 			</description>
 		</method>
 		<method name="_exit_tree" qualifiers="virtual">
@@ -33,7 +33,7 @@
 			</return>
 			<description>
 				Called when the node is about to leave the [SceneTree] (e.g. upon freeing, scene changing, or after calling [method remove_child] in a script). If the node has children, its [method _exit_tree] callback will be called last, after all its children have left the tree.
-				Corresponds to the NOTIFICATION_EXIT_TREE notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited]
+				Corresponds to the [constant NOTIFICATION_EXIT_TREE] notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited]
 			</description>
 		</method>
 		<method name="_get_configuration_warning" qualifiers="virtual">
@@ -64,7 +64,7 @@
 			<description>
 				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant.
 				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
-				Corresponds to the NOTIFICATION_PHYSICS_PROCESS notification in [method Object._notification].
+				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
@@ -75,7 +75,7 @@
 			<description>
 				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [code]delta[/code] time since the previous frame is not constant.
 				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
-				Corresponds to the NOTIFICATION_PROCESS notification in [method Object._notification].
+				Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method Object._notification].
 			</description>
 		</method>
 		<method name="_ready" qualifiers="virtual">
@@ -83,7 +83,7 @@
 			</return>
 			<description>
 				Called when the node is "ready", i.e. when both the node and its children have entered the scene tree. If the node has children, their [method _ready] callbacks get triggered first, and the parent node will receive the ready notification afterwards.
-				Corresponds to the NOTIFICATION_READY notification in [method Object._notification]. See also the [code]onready[/code] keyword for variables.
+				Corresponds to the [constant NOTIFICATION_READY] notification in [method Object._notification]. See also the [code]onready[/code] keyword for variables.
 				Usually used for initialization. For even earlier initialization, [method Object._init] may be used. Also see [method _enter_tree].
 			</description>
 		</method>
@@ -120,7 +120,7 @@
 			</argument>
 			<description>
 				Adds a child node. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
-				Setting "legible_unique_name" [code]true[/code] creates child nodes with human-readable names, based on the name of the node being instanced instead of its type.
+				Setting [code]legible_unique_name[/code] to [code]true[/code] creates child nodes with human-readable names, based on the name of the node being instanced instead of its type.
 			</description>
 		</method>
 		<method name="add_child_below_node">
@@ -134,7 +134,7 @@
 			</argument>
 			<description>
 				Adds a child node. The child is placed below the given node in the list of children.
-				Setting "legible_unique_name" [code]true[/code] creates child nodes with human-readable names, based on the name of the node being instanced instead of its type.
+				Setting [code]legible_unique_name[/code] to [code]true[/code] creates child nodes with human-readable names, based on the name of the node being instanced instead of its type.
 			</description>
 		</method>
 		<method name="add_to_group">
@@ -146,7 +146,7 @@
 			</argument>
 			<description>
 				Adds the node to a group. Groups are helpers to name and organize a subset of nodes, for example "enemies" or "collectables". A node can be in any number of groups. Nodes can be assigned a group at any time, but will not be added until they are inside the scene tree (see [method is_inside_tree]). See notes in the description, and the group methods in [SceneTree].
-				[code]persistent[/code] option is used when packing node to [PackedScene] and saving to file. Non-persistent groups aren't stored.
+				The [code]persistent[/code] option is used when packing node to [PackedScene] and saving to file. Non-persistent groups aren't stored.
 			</description>
 		</method>
 		<method name="can_process" qualifiers="const">
@@ -314,7 +314,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the time elapsed since the last physics-bound frame (see [method _physics_process]). This is always a constant value in physics processing unless the frames per second is changed in [OS].
+				Returns the time elapsed since the last physics-bound frame (see [method _physics_process]). This is always a constant value in physics processing unless the frames per second is changed via [member Engine.target_fps].
 			</description>
 		</method>
 		<method name="get_position_in_parent" qualifiers="const">
@@ -475,7 +475,7 @@
 			<argument index="1" name="to_position" type="int">
 			</argument>
 			<description>
-				Moves a child node to a different position (order) amongst the other children. Since calls, signals, etc are performed by tree order, changing the order of children nodes may be useful.
+				Moves a child node to a different position (order) among the other children. Since calls, signals, etc are performed by tree order, changing the order of children nodes may be useful.
 			</description>
 		</method>
 		<method name="print_stray_nodes">
@@ -525,7 +525,7 @@
 			<argument index="2" name="parent_first" type="bool" default="false">
 			</argument>
 			<description>
-				Calls the given method (if present) with the arguments given in [code]args[/code] on this node and recursively on all its children. If the parent_first argument is [code]true[/code] then the method will be called on the current node first, then on all children. If it is [code]false[/code] then the children will be called first.
+				Calls the given method (if present) with the arguments given in [code]args[/code] on this node and recursively on all its children. If the [code]parent_first[/code] argument is [code]true[/code] then the method will be called on the current node first, then on all children. If it is [code]false[/code] then the children will be called first.
 			</description>
 		</method>
 		<method name="propagate_notification">
@@ -534,7 +534,7 @@
 			<argument index="0" name="what" type="int">
 			</argument>
 			<description>
-				Notifies the current node and all its children recursively by calling notification() on all of them.
+				Notifies the current node and all its children recursively by calling [method Object.notification] on all of them.
 			</description>
 		</method>
 		<method name="queue_free">
@@ -730,7 +730,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disables physics (i.e. fixed framerate) processing. When a node is being processed, it will receive a NOTIFICATION_PHYSICS_PROCESS at a fixed (usually 60 fps, see [OS] to change) interval (and the [method _physics_process] callback will be called if exists). Enabled automatically if [method _physics_process] is overridden. Any calls to this before [method _ready] will be ignored.
+				Enables or disables physics (i.e. fixed framerate) processing. When a node is being processed, it will receive a [constant NOTIFICATION_PHYSICS_PROCESS] at a fixed (usually 60 FPS, see [member Engine.target_fps] to change) interval (and the [method _physics_process] callback will be called if exists). Enabled automatically if [method _physics_process] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_physics_process_internal">
@@ -739,7 +739,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disables internal physics for this node. Internal physics processing happens in isolation from the normal [method _physics_process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or physics processing is disabled for scripting ([method set_physics_process]). Only useful for advanced uses to manipulate built-in nodes behaviour.
+				Enables or disables internal physics for this node. Internal physics processing happens in isolation from the normal [method _physics_process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or physics processing is disabled for scripting ([method set_physics_process]). Only useful for advanced uses to manipulate built-in nodes behavior.
 			</description>
 		</method>
 		<method name="set_process">
@@ -748,7 +748,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disables processing. When a node is being processed, it will receive a NOTIFICATION_PROCESS on every drawn frame (and the [method _process] callback will be called if exists). Enabled automatically if [method _process] is overridden. Any calls to this before [method _ready] will be ignored.
+				Enables or disables processing. When a node is being processed, it will receive a [constant NOTIFICATION_PROCESS] on every drawn frame (and the [method _process] callback will be called if exists). Enabled automatically if [method _process] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_process_input">
@@ -766,7 +766,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disabled internal processing for this node. Internal processing happens in isolation from the normal [method _process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or processing is disabled for scripting ([method set_process]). Only useful for advanced uses to manipulate built-in nodes behaviour.
+				Enables or disabled internal processing for this node. Internal processing happens in isolation from the normal [method _process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or processing is disabled for scripting ([method set_process]). Only useful for advanced uses to manipulate built-in nodes behavior.
 			</description>
 		</method>
 		<method name="set_process_priority">
@@ -775,6 +775,7 @@
 			<argument index="0" name="priority" type="int">
 			</argument>
 			<description>
+				Sets the node's priority in the execution order of the enabled processing callbacks (i.e. [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS] and their internal counterparts). Nodes with a higher process priority will have their processing callbacks executed first.
 			</description>
 		</method>
 		<method name="set_process_unhandled_input">
@@ -878,7 +879,7 @@
 			Notification received every frame when the process flag is set (see [method set_process]).
 		</constant>
 		<constant name="NOTIFICATION_PARENTED" value="18">
-			Notification received when a node is set as a child of another node. Note that this doesn't mean that a node entered the Scene Tree.
+			Notification received when a node is set as a child of another node. Note that this doesn't mean that a node entered the [SceneTree].
 		</constant>
 		<constant name="NOTIFICATION_UNPARENTED" value="19">
 			Notification received when a node is unparented (parent removed it from the list of children).
@@ -902,32 +903,54 @@
 			Notification received every frame when the internal physics process flag is set (see [method set_physics_process_internal]).
 		</constant>
 		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="1002">
+			Notification received from the OS when the mouse enters the game window.
+			Implemented on desktop and web platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_MOUSE_EXIT" value="1003">
+			Notification received from the OS when the mouse leaves the game window.
+			Implemented on desktop and web platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_FOCUS_IN" value="1004">
+			Notification received from the OS when the game window is focused.
+			Implemented on all platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_FOCUS_OUT" value="1005">
+			Notification received from the OS when the game window is unfocused.
+			Implemented on all platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_QUIT_REQUEST" value="1006">
+			Notification received from the OS when a quit request is sent (e.g. closing the window with a "Close" button or Alt+F4).
+			Implemented on desktop platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="1007">
+			Notification received from the OS when a go back request is sent (e.g. pressing the "Back" button on Android).
+			Specific to the Android platform.
 		</constant>
 		<constant name="NOTIFICATION_WM_UNFOCUS_REQUEST" value="1008">
+			Notification received from the OS when an unfocus request is sent (e.g. another OS window wants to take the focus).
+			No supported platforms currently send this notification.
 		</constant>
 		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="1009">
+			Notification received from the OS when the application is exceeding its allocated memory.
+			Specific to the iOS platform.
 		</constant>
 		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="1010">
 			Notification received when translations may have changed. Can be triggered by the user changing the locale. Can be used to respond to language changes, for example to change the UI strings on the fly. Useful when working with the built-in translation support, like [method Object.tr].
 		</constant>
 		<constant name="NOTIFICATION_WM_ABOUT" value="1011">
+			Notification received from the OS when a request for "About" information is sent.
+			Specific to the macOS platform.
 		</constant>
 		<constant name="NOTIFICATION_CRASH" value="1012">
+			Notification received from Godot's crash handler when the engine is about to crash.
+			Implemented on desktop platforms if the crash handler is enabled.
 		</constant>
 		<constant name="NOTIFICATION_OS_IME_UPDATE" value="1013">
+			Notification received from the OS when an update of the Input Method Engine occurs (e.g. change of IME cursor position or composition string).
+			Specific to the macOS platform.
 		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0" enum="PauseMode">
-			Inherits pause mode from the node's parent. For the root node, it is equivalent to PAUSE_MODE_STOP. Default.
+			Inherits pause mode from the node's parent. For the root node, it is equivalent to [constant PAUSE_MODE_STOP]. Default.
 		</constant>
 		<constant name="PAUSE_MODE_STOP" value="1" enum="PauseMode">
 			Stop processing when the [SceneTree] is paused.

@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Maintains a list of resources, nodes, exported, and overridden properties, and built-in scripts associated with a scene.
+		This class cannot be instantiated directly, it is retrieved for a given scene as the result of [method PackedScene.get_state].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -23,6 +24,7 @@
 			</return>
 			<description>
 				Returns the number of signal connections in the scene.
+				The [code]idx[/code] argument used to query connection metadata in other [code]get_connection_*[/code] methods in the interval [code][0, get_connection_count() - 1][/code].
 			</description>
 		</method>
 		<method name="get_connection_flags" qualifiers="const">
@@ -31,7 +33,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the flags for the signal at [code]idx[/code]. See [Object]'s [code]CONNECT_*[/code] flags.
+				Returns the connection flags for the signal at [code]idx[/code]. See [enum Object.ConnectFlags] constants.
 			</description>
 		</method>
 		<method name="get_connection_method" qualifiers="const">
@@ -75,6 +77,7 @@
 			</return>
 			<description>
 				Returns the number of nodes in the scene.
+				The [code]idx[/code] argument used to query node data in other [code]get_node_*[/code] methods in the interval [code][0, get_node_count() - 1][/code].
 			</description>
 		</method>
 		<method name="get_node_groups" qualifiers="const">
@@ -92,6 +95,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the node's index, which is its position relative to its siblings. This is only relevant and saved in scenes for cases where new nodes are added to an instanced or inherited scene among siblings from the base scene. Despite the name, this index is not related to the [code]idx[/code] argument used here and in other methods.
 			</description>
 		</method>
 		<method name="get_node_instance" qualifiers="const">
@@ -100,7 +104,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the scene for the node at [code]idx[/code] or [code]null[/code] if the node is not an instance.
+				Returns a [PackedScene] for the node at [code]idx[/code] (i.e. the whole branch starting at this node, with its child nodes and resources), or [code]null[/code] if the node is not an instance.
 			</description>
 		</method>
 		<method name="get_node_instance_placeholder" qualifiers="const">
@@ -139,6 +143,7 @@
 			</argument>
 			<description>
 				Returns the path to the node at [code]idx[/code].
+				If [code]for_parent[/code] is [code]true[/code], returns the path of the [code]idx[/code] node's parent instead.
 			</description>
 		</method>
 		<method name="get_node_property_count" qualifiers="const">
@@ -148,6 +153,7 @@
 			</argument>
 			<description>
 				Returns the number of exported or overridden properties for the node at [code]idx[/code].
+				The [code]prop_idx[/code] argument used to query node property data in other [code]get_node_property_*[/code] methods in the interval [code][0, get_node_property_count() - 1][/code].
 			</description>
 		</method>
 		<method name="get_node_property_name" qualifiers="const">
