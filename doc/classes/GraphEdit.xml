@@ -211,6 +211,17 @@
 				Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be created.
 			</description>
 		</signal>
+		<signal name="connection_from_empty">
+			<argument index="0" name="to" type="String">
+			</argument>
+			<argument index="1" name="to_slot" type="int">
+			</argument>
+			<argument index="2" name="release_position" type="Vector2">
+			</argument>
+			<description>
+				Signal sent when user dragging connection from input port into empty space of the graph.
+			</description>
+		</signal>
 		<signal name="connection_to_empty">
 			<argument index="0" name="from" type="String">
 			</argument>
@@ -219,6 +230,7 @@
 			<argument index="2" name="release_position" type="Vector2">
 			</argument>
 			<description>
+				Signal sent when user dragging connection from output port into empty space of the graph.
 			</description>
 		</signal>
 		<signal name="delete_nodes_request">

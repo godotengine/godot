@@ -257,7 +257,7 @@ bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_po
 	VisualShaderNode::PortType from_port_type = g->nodes[p_from_node].node->get_output_port_type(p_from_port);
 	VisualShaderNode::PortType to_port_type = g->nodes[p_to_node].node->get_input_port_type(p_to_port);
 
-	if (MAX(0, from_port_type - 2) != (MAX(0, to_port_type - 2))) {
+	if (!is_port_types_compatible(from_port_type, to_port_type)) {
 		return false;
 	}
 
@@ -269,6 +269,10 @@ bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_po
 	}
 
 	return true;
+}
+
+bool VisualShader::is_port_types_compatible(int p_a, int p_b) const {
+	return MAX(0, p_a - 2) == (MAX(0, p_b - 2));
 }
 
 void VisualShader::connect_nodes_forced(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
@@ -295,8 +299,8 @@ Error VisualShader::connect_nodes(Type p_type, int p_from_node, int p_from_port,
 	VisualShaderNode::PortType from_port_type = g->nodes[p_from_node].node->get_output_port_type(p_from_port);
 	VisualShaderNode::PortType to_port_type = g->nodes[p_to_node].node->get_input_port_type(p_to_port);
 
-	if (MAX(0, from_port_type - 2) != (MAX(0, to_port_type - 2))) {
-		ERR_EXPLAIN("Incompatible port types (scalar/vec/bool with transform");
+	if (!is_port_types_compatible(from_port_type, to_port_type)) {
+		ERR_EXPLAIN("Incompatible port types (scalar/vec/bool) with transform");
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 		return ERR_INVALID_PARAMETER;
 	}
