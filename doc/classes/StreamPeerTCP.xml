@@ -17,7 +17,7 @@
 			<argument index="1" name="port" type="int">
 			</argument>
 			<description>
-				Connect to the specified host:port pair. A hostname will be resolved if valid. Returns [code]OK[/code] on success or [code]FAILED[/code] on failure.
+				Connect to the specified host:port pair. A hostname will be resolved if valid. Returns [constant OK] on success or [constant FAILED] on failure.
 			</description>
 		</method>
 		<method name="disconnect_from_host">

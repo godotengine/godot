@@ -18,14 +18,14 @@
 			If [code]true[/code], Godot treats the bar's textures like [NinePatchRect]. Use [code]stretch_margin_*[/code], like [member stretch_margin_bottom], to set up the nine patch's 3x3 grid. Default value: [code]false[/code].
 		</member>
 		<member name="radial_center_offset" type="Vector2" setter="set_radial_center_offset" getter="get_radial_center_offset">
-			Offsets [member texture_progress] if [member fill_mode] is [code]FILL_CLOCKWISE[/code] or [code]FILL_COUNTER_CLOCKWISE[/code].
+			Offsets [member texture_progress] if [member fill_mode] is [constant FILL_CLOCKWISE] or [constant FILL_COUNTER_CLOCKWISE].
 		</member>
 		<member name="radial_fill_degrees" type="float" setter="set_fill_degrees" getter="get_fill_degrees">
-			Upper limit for the fill of [member texture_progress] if [member fill_mode] is [code]FILL_CLOCKWISE[/code] or [code]FILL_COUNTER_CLOCKWISE[/code]. When the node's [code]value[/code] is equal to its [code]max_value[/code], the texture fills up to this angle.
+			Upper limit for the fill of [member texture_progress] if [member fill_mode] is [constant FILL_CLOCKWISE] or [constant FILL_COUNTER_CLOCKWISE]. When the node's [code]value[/code] is equal to its [code]max_value[/code], the texture fills up to this angle.
 			See [member Range.value], [member Range.max_value].
 		</member>
 		<member name="radial_initial_angle" type="float" setter="set_radial_initial_angle" getter="get_radial_initial_angle">
-			Starting angle for the fill of [member texture_progress] if [member fill_mode] is [code]FILL_CLOCKWISE[/code] or [code]FILL_COUNTER_CLOCKWISE[/code]. When the node's [code]value[/code] is equal to its [code]min_value[/code], the texture doesn't show up at all. When the [code]value[/code] increases, the texture fills and tends towards [member radial_fill_degrees].
+			Starting angle for the fill of [member texture_progress] if [member fill_mode] is [constant FILL_CLOCKWISE] or [constant FILL_COUNTER_CLOCKWISE]. When the node's [code]value[/code] is equal to its [code]min_value[/code], the texture doesn't show up at all. When the [code]value[/code] increases, the texture fills and tends towards [member radial_fill_degrees].
 		</member>
 		<member name="stretch_margin_bottom" type="int" setter="set_stretch_margin" getter="get_stretch_margin">
 			The height of the 9-patch's bottom row. A margin of 16 means the 9-slice's bottom corners and side will have a height of 16 pixels. You can set all 4 margin values individually to create panels with non-uniform borders.

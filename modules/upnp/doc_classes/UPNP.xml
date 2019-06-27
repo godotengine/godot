@@ -171,7 +171,7 @@
 			No port maps are available. May also be returned if port mapping functionality is not available.
 		</constant>
 		<constant name="UPNP_RESULT_CONFLICT_WITH_OTHER_MECHANISM" value="12" enum="UPNPResult">
-			Conflict with other mechanism. May be returned instead of [code]UPNP_RESULT_CONFLICT_WITH_OTHER_MAPPING[/code] if a port mapping conflicts with an existing one.
+			Conflict with other mechanism. May be returned instead of [constant UPNP_RESULT_CONFLICT_WITH_OTHER_MAPPING] if a port mapping conflicts with an existing one.
 		</constant>
 		<constant name="UPNP_RESULT_CONFLICT_WITH_OTHER_MAPPING" value="13" enum="UPNPResult">
 			Conflict with an existing port mapping.
