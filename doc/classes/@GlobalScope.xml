@@ -1137,127 +1137,160 @@
 		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MidiMessageList">
 		</constant>
 		<constant name="OK" value="0" enum="Error">
-			Functions that return Error return OK when no error occurred. Most functions don't return errors and/or just print errors to STDOUT.
+			Methods that return [enum Error] return [constant OK] when no error occurred. Note that many functions don't return an error code but will print error messages to stdout.
+			Since [constant OK] has value 0, and all other failure codes are positive integers, it can also be used in boolean checks, e.g.:
+			[codeblock]
+			var err = method_that_returns_error()
+			if (err != OK):
+			    print("Failure!)
+			# Or, equivalent:
+			if (err):
+			    print("Still failing!)
+			[/codeblock]
 		</constant>
 		<constant name="FAILED" value="1" enum="Error">
 			Generic error.
 		</constant>
 		<constant name="ERR_UNAVAILABLE" value="2" enum="Error">
-			Unavailable error
+			Unavailable error.
 		</constant>
 		<constant name="ERR_UNCONFIGURED" value="3" enum="Error">
-			Unconfigured error
+			Unconfigured error.
 		</constant>
 		<constant name="ERR_UNAUTHORIZED" value="4" enum="Error">
-			Unauthorized error
+			Unauthorized error.
 		</constant>
 		<constant name="ERR_PARAMETER_RANGE_ERROR" value="5" enum="Error">
-			Parameter range error
+			Parameter range error.
 		</constant>
 		<constant name="ERR_OUT_OF_MEMORY" value="6" enum="Error">
-			Out of memory (OOM) error
+			Out of memory (OOM) error.
 		</constant>
 		<constant name="ERR_FILE_NOT_FOUND" value="7" enum="Error">
-			File: Not found error
+			File: Not found error.
 		</constant>
 		<constant name="ERR_FILE_BAD_DRIVE" value="8" enum="Error">
-			File: Bad drive error
+			File: Bad drive error.
 		</constant>
 		<constant name="ERR_FILE_BAD_PATH" value="9" enum="Error">
-			File: Bad path error
+			File: Bad path error.
 		</constant>
 		<constant name="ERR_FILE_NO_PERMISSION" value="10" enum="Error">
-			File: No permission error
+			File: No permission error.
 		</constant>
 		<constant name="ERR_FILE_ALREADY_IN_USE" value="11" enum="Error">
-			File: Already in use error
+			File: Already in use error.
 		</constant>
 		<constant name="ERR_FILE_CANT_OPEN" value="12" enum="Error">
-			File: Can't open error
+			File: Can't open error.
 		</constant>
 		<constant name="ERR_FILE_CANT_WRITE" value="13" enum="Error">
-			File: Can't write error
+			File: Can't write error.
 		</constant>
 		<constant name="ERR_FILE_CANT_READ" value="14" enum="Error">
-			File: Can't read error
+			File: Can't read error.
 		</constant>
 		<constant name="ERR_FILE_UNRECOGNIZED" value="15" enum="Error">
-			File: Unrecognized error
+			File: Unrecognized error.
 		</constant>
 		<constant name="ERR_FILE_CORRUPT" value="16" enum="Error">
-			File: Corrupt error
+			File: Corrupt error.
 		</constant>
 		<constant name="ERR_FILE_MISSING_DEPENDENCIES" value="17" enum="Error">
-			File: Missing dependencies error
+			File: Missing dependencies error.
 		</constant>
 		<constant name="ERR_FILE_EOF" value="18" enum="Error">
-			File: End of file (EOF) error
+			File: End of file (EOF) error.
 		</constant>
 		<constant name="ERR_CANT_OPEN" value="19" enum="Error">
-			Can't open error
+			Can't open error.
 		</constant>
 		<constant name="ERR_CANT_CREATE" value="20" enum="Error">
-			Can't create error
-		</constant>
-		<constant name="ERR_PARSE_ERROR" value="43" enum="Error">
-			Parse error
+			Can't create error.
 		</constant>
 		<constant name="ERR_QUERY_FAILED" value="21" enum="Error">
-			Query failed error
+			Query failed error.
 		</constant>
 		<constant name="ERR_ALREADY_IN_USE" value="22" enum="Error">
-			Already in use error
+			Already in use error.
 		</constant>
 		<constant name="ERR_LOCKED" value="23" enum="Error">
-			Locked error
+			Locked error.
 		</constant>
 		<constant name="ERR_TIMEOUT" value="24" enum="Error">
-			Timeout error
+			Timeout error.
+		</constant>
+		<constant name="ERR_CANT_CONNECT" value="25" enum="Error">
+			Can't connect error.
+		</constant>
+		<constant name="ERR_CANT_RESOLVE" value="26" enum="Error">
+			Can't resolve error.
+		</constant>
+		<constant name="ERR_CONNECTION_ERROR" value="27" enum="Error">
+			Connection error.
 		</constant>
 		<constant name="ERR_CANT_ACQUIRE_RESOURCE" value="28" enum="Error">
-			Can't acquire resource error
+			Can't acquire resource error.
+		</constant>
+		<constant name="ERR_CANT_FORK" value="29" enum="Error">
+			Can't fork process error.
 		</constant>
 		<constant name="ERR_INVALID_DATA" value="30" enum="Error">
-			Invalid data error
+			Invalid data error.
 		</constant>
 		<constant name="ERR_INVALID_PARAMETER" value="31" enum="Error">
-			Invalid parameter error
+			Invalid parameter error.
 		</constant>
 		<constant name="ERR_ALREADY_EXISTS" value="32" enum="Error">
-			Already exists error
+			Already exists error.
 		</constant>
 		<constant name="ERR_DOES_NOT_EXIST" value="33" enum="Error">
-			Does not exist error
+			Does not exist error.
 		</constant>
 		<constant name="ERR_DATABASE_CANT_READ" value="34" enum="Error">
-			Database: Read error
+			Database: Read error.
 		</constant>
 		<constant name="ERR_DATABASE_CANT_WRITE" value="35" enum="Error">
-			Database: Write error
+			Database: Write error.
 		</constant>
 		<constant name="ERR_COMPILATION_FAILED" value="36" enum="Error">
-			Compilation failed error
+			Compilation failed error.
 		</constant>
 		<constant name="ERR_METHOD_NOT_FOUND" value="37" enum="Error">
-			Method not found error
+			Method not found error.
 		</constant>
 		<constant name="ERR_LINK_FAILED" value="38" enum="Error">
-			Linking failed error
+			Linking failed error.
 		</constant>
 		<constant name="ERR_SCRIPT_FAILED" value="39" enum="Error">
-			Script failed error
+			Script failed error.
 		</constant>
 		<constant name="ERR_CYCLIC_LINK" value="40" enum="Error">
-			Cycling link (import cycle) error
+			Cycling link (import cycle) error.
+		</constant>
+		<constant name="ERR_INVALID_DECLARATION" value="41" enum="Error">
+			Invalid declaration error.
+		</constant>
+		<constant name="ERR_DUPLICATE_SYMBOL" value="42" enum="Error">
+			Duplicate symbol error.
+		</constant>
+		<constant name="ERR_PARSE_ERROR" value="43" enum="Error">
+			Parse error.
 		</constant>
 		<constant name="ERR_BUSY" value="44" enum="Error">
-			Busy error
+			Busy error.
+		</constant>
+		<constant name="ERR_SKIP" value="45" enum="Error">
+			Skip error.
 		</constant>
 		<constant name="ERR_HELP" value="46" enum="Error">
-			Help error
+			Help error.
 		</constant>
 		<constant name="ERR_BUG" value="47" enum="Error">
-			Bug error
+			Bug error.
+		</constant>
+		<constant name="ERR_PRINTER_ON_FIRE" value="48" enum="Error">
+			Printer on fire error. (This is an easter egg, no engine methods return this error code.)
 		</constant>
 		<constant name="PROPERTY_HINT_NONE" value="0" enum="PropertyHint">
 			No hint for edited property.
