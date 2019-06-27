@@ -293,7 +293,7 @@
 			Maximum acceleration for the motor at the axes.
 		</constant>
 		<constant name="PARAM_MAX" value="22" enum="Param">
-			End flag of PARAM_* constants, used internally.
+			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="FLAG_ENABLE_LINEAR_LIMIT" value="0" enum="Flag">
 			If [code]set[/code] there is linear motion possible within the given limits.
@@ -311,7 +311,7 @@
 		<constant name="FLAG_ENABLE_LINEAR_MOTOR" value="5" enum="Flag">
 		</constant>
 		<constant name="FLAG_MAX" value="6" enum="Flag">
-			End flag of FLAG_* constants, used internally.
+			Represents the size of the [enum Flag] enum.
 		</constant>
 	</constants>
 </class>

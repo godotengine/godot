@@ -66,7 +66,7 @@
 			Maximum acceleration for the motor.
 		</constant>
 		<constant name="PARAM_MAX" value="8" enum="Param">
-			End flag of PARAM_* constants, used internally.
+			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="FLAG_USE_LIMIT" value="0" enum="Flag">
 			If [code]true[/code], the hinges maximum and minimum rotation, defined by [member angular_limit/lower] and [member angular_limit/upper] has effects.
@@ -75,7 +75,7 @@
 			When activated, a motor turns the hinge.
 		</constant>
 		<constant name="FLAG_MAX" value="2" enum="Flag">
-			End flag of FLAG_* constants, used internally.
+			Represents the size of the [enum Flag] enum.
 		</constant>
 	</constants>
 </class>

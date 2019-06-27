@@ -26,6 +26,7 @@
 			This enabler will freeze [RigidBody] nodes.
 		</constant>
 		<constant name="ENABLER_MAX" value="2" enum="Enabler">
+			Represents the size of the [enum Enabler] enum.
 		</constant>
 	</constants>
 </class>

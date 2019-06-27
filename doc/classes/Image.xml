@@ -590,6 +590,7 @@
 			Ericsson Texture Compression format 2 variant RGB8_PUNCHTHROUGH_ALPHA1, which compresses RGBA data to make alpha either fully transparent or fully opaque. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_MAX" value="37" enum="Format">
+			Represents the size of the [enum Format] enum.
 		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">
 		</constant>

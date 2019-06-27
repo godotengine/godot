@@ -45,6 +45,7 @@
 			Not a number: [code]nan[/code]
 		</constant>
 		<constant name="MATH_CONSTANT_MAX" value="8" enum="MathConstant">
+			Represents the size of the [enum MathConstant] enum.
 		</constant>
 	</constants>
 </class>

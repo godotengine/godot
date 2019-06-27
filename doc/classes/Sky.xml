@@ -12,9 +12,9 @@
 	</methods>
 	<members>
 		<member name="radiance_size" type="int" setter="set_radiance_size" getter="get_radiance_size" enum="Sky.RadianceSize">
-			The Sky's radiance map size.
-			The higher the radiance map size, the more detailed the lighting from the Sky will be.
-			See RADIANCE_SIZE_* constants for values. Default size is RADIANCE_SIZE_512.
+			The [Sky]'s radiance map size.
+			The higher the radiance map size, the more detailed the lighting from the [Sky] will be.
+			See [enum RadianceSize] constants for values. Default size is [constant RADIANCE_SIZE_512].
 		</member>
 	</members>
 	<constants>
@@ -40,7 +40,7 @@
 			Radiance texture size is 2048x2048 pixels.
 		</constant>
 		<constant name="RADIANCE_SIZE_MAX" value="7" enum="RadianceSize">
-			Radiance texture size is the largest size it can be.
+			Represents the size of the [enum RadianceSize] enum.
 		</constant>
 	</constants>
 </class>

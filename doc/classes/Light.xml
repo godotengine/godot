@@ -83,6 +83,7 @@
 		<constant name="PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14" enum="Param">
 		</constant>
 		<constant name="PARAM_MAX" value="15" enum="Param">
+			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
 			Light is ignored when baking. Note: hiding a light does [i]not[/i] affect baking.
