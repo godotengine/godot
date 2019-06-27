@@ -45,7 +45,7 @@
 			<return type="int" enum="StreamPeerTCP.Status">
 			</return>
 			<description>
-				Returns the status of the connection, see [enum StreamPeerTCP.Status].
+				Returns the status of the connection, see [enum Status].
 			</description>
 		</method>
 		<method name="is_connected_to_host" qualifiers="const">
