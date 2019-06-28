@@ -259,6 +259,7 @@ void StyleBoxTexture::set_region_rect(const Rect2 &p_region_rect) {
 
 	region_rect = p_region_rect;
 	emit_changed();
+	_change_notify("region");
 }
 
 Rect2 StyleBoxTexture::get_region_rect() const {
