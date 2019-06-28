@@ -656,6 +656,9 @@ void AudioStreamSample::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_end"), "set_loop_end", "get_loop_end");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_rate"), "set_mix_rate", "get_mix_rate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stereo"), "set_stereo", "is_stereo");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "BPM"), "set_bpm", "get_bpm");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "Beats"), "set_beat_count", "get_beat_count");
+
 
 	BIND_ENUM_CONSTANT(FORMAT_8_BITS);
 	BIND_ENUM_CONSTANT(FORMAT_16_BITS);
@@ -676,6 +679,8 @@ AudioStreamSample::AudioStreamSample() {
 	mix_rate = 44100;
 	data = NULL;
 	data_bytes = 0;
+	bpm = 0;
+	beats = 0;
 }
 AudioStreamSample::~AudioStreamSample() {
 

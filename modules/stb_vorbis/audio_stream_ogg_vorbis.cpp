@@ -290,6 +290,8 @@ void AudioStreamOGGVorbis::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "loop_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_loop_offset", "get_loop_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "BPM"), "set_bpm", "get_bpm");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "Beats"), "set_beat_count", "get_beat_count");
 }
 
 AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
@@ -302,6 +304,8 @@ AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
 	loop_offset = 0;
 	decode_mem_size = 0;
 	loop = false;
+	bpm = 0;
+	beats = 0;
 }
 
 AudioStreamOGGVorbis::~AudioStreamOGGVorbis() {
