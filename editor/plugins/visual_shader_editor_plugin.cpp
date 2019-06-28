@@ -2764,3 +2764,30 @@ void VisualShaderNodePortPreview::_bind_methods() {
 
 VisualShaderNodePortPreview::VisualShaderNodePortPreview() {
 }
+
+//////////////////////////////////
+
+String VisualShaderConversionPlugin::converts_to() const {
+
+	return "Shader";
+}
+
+bool VisualShaderConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+
+	Ref<VisualShader> vshader = p_resource;
+	return vshader.is_valid();
+}
+
+Ref<Resource> VisualShaderConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+
+	Ref<VisualShader> vshader = p_resource;
+	ERR_FAIL_COND_V(!vshader.is_valid(), Ref<Resource>());
+
+	Ref<Shader> shader;
+	shader.instance();
+
+	String code = vshader->get_code();
+	shader->set_code(code);
+
+	return shader;
+}
