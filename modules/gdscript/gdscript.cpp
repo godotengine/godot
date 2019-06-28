@@ -1410,8 +1410,6 @@ void GDScriptLanguage::init() {
 
 		StringName n = E->get();
 		String s = String(n);
-		if (s.begins_with("_"))
-			n = s.substr(1, s.length());
 
 		if (globals.has(n))
 			continue;

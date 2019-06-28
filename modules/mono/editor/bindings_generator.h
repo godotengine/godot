@@ -381,7 +381,7 @@ class BindingsGenerator {
 
 			itype.name = p_cname;
 			itype.cname = p_cname;
-			itype.proxy_name = itype.name.begins_with("_") ? itype.name.substr(1, itype.name.length()) : itype.name;
+			itype.proxy_name = itype.name;
 			itype.api_type = p_api_type;
 			itype.is_object_type = true;
 			itype.class_doc = &EditorHelp::get_doc_data()->class_list[itype.proxy_name];

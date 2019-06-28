@@ -3583,7 +3583,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				tokenizer->advance(2);
 
 				// Check if name is shadowing something else
-				if (ClassDB::class_exists(name) || ClassDB::class_exists("_" + name.operator String())) {
+				if (ClassDB::class_exists(name)) {
 					_set_error("Class '" + String(name) + "' shadows a native class.");
 					return;
 				}
@@ -5467,7 +5467,7 @@ bool GDScriptParser::_parse_type(DataType &r_type, bool p_can_be_void) {
 		} break;
 		case GDScriptTokenizer::TK_IDENTIFIER: {
 			r_type.native_type = tokenizer->get_token_identifier();
-			if (ClassDB::class_exists(r_type.native_type) || ClassDB::class_exists("_" + r_type.native_type.operator String())) {
+			if (ClassDB::class_exists(r_type.native_type)) {
 				r_type.kind = DataType::NATIVE;
 			} else {
 				r_type.kind = DataType::UNRESOLVED;
@@ -6691,9 +6691,6 @@ bool GDScriptParser::_get_function_signature(DataType &p_base_type, const String
 
 	// Only native remains
 	if (!ClassDB::class_exists(native)) {
-		native = "_" + native.operator String();
-	}
-	if (!ClassDB::class_exists(native)) {
 		if (!check_types) return false;
 		ERR_EXPLAIN("Parser bug: Class '" + String(native) + "' not found.");
 		ERR_FAIL_V(false);
@@ -7200,9 +7197,6 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 
 	// Check ClassDB
 	if (!ClassDB::class_exists(native)) {
-		native = "_" + native.operator String();
-	}
-	if (!ClassDB::class_exists(native)) {
 		if (!check_types) return false;
 		ERR_EXPLAIN("Parser bug: Class '" + String(native) + "' not found.");
 		ERR_FAIL_V(false);
@@ -7320,12 +7314,12 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 	if (!p_base_type) {
 		// Possibly this is a global, check before failing
 
-		if (ClassDB::class_exists(p_identifier) || ClassDB::class_exists("_" + p_identifier.operator String())) {
+		if (ClassDB::class_exists(p_identifier)) {
 			DataType result;
 			result.has_type = true;
 			result.is_constant = true;
 			result.is_meta_type = true;
-			if (Engine::get_singleton()->has_singleton(p_identifier) || Engine::get_singleton()->has_singleton("_" + p_identifier.operator String())) {
+			if (Engine::get_singleton()->has_singleton(p_identifier)) {
 				result.is_meta_type = false;
 			}
 			result.kind = DataType::NATIVE;

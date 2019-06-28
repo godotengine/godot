@@ -168,8 +168,6 @@ static void return_doc_from_retinfo(DocData::MethodDoc &p_method, const Property
 
 	if (p_retinfo.type == Variant::INT && p_retinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 		p_method.return_enum = p_retinfo.class_name;
-		if (p_method.return_enum.begins_with("_")) //proxy class
-			p_method.return_enum = p_method.return_enum.substr(1, p_method.return_enum.length());
 		p_method.return_type = "int";
 	} else if (p_retinfo.class_name != StringName()) {
 		p_method.return_type = p_retinfo.class_name;
@@ -190,8 +188,6 @@ static void argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const Pr
 
 	if (p_arginfo.type == Variant::INT && p_arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 		p_argument.enumeration = p_arginfo.class_name;
-		if (p_argument.enumeration.begins_with("_")) //proxy class
-			p_argument.enumeration = p_argument.enumeration.substr(1, p_argument.enumeration.length());
 		p_argument.type = "int";
 	} else if (p_arginfo.class_name != StringName()) {
 		p_argument.type = p_arginfo.class_name;
@@ -219,8 +215,6 @@ void DocData::generate(bool p_basic_types) {
 
 		String name = classes.front()->get();
 		String cname = name;
-		if (cname.begins_with("_")) //proxy class
-			cname = cname.substr(1, name.length());
 
 		class_list[cname] = ClassDoc();
 		ClassDoc &c = class_list[cname];
@@ -580,8 +574,6 @@ void DocData::generate(bool p_basic_types) {
 			pd.type = s.ptr->get_class();
 			while (String(ClassDB::get_parent_class(pd.type)) != "Object")
 				pd.type = ClassDB::get_parent_class(pd.type);
-			if (pd.type.begins_with("_"))
-				pd.type = pd.type.substr(1, pd.type.length());
 			c.properties.push_back(pd);
 		}
 	}

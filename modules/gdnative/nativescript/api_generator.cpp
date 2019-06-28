@@ -202,13 +202,7 @@ List<ClassAPI> generate_c_api_classes() {
 		class_api.api_type = ClassDB::get_api_type(e->get());
 		class_api.class_name = class_name;
 		class_api.super_class_name = ClassDB::get_parent_class(class_name);
-		{
-			String name = class_name;
-			if (name.begins_with("_")) {
-				name.remove(0);
-			}
-			class_api.is_singleton = Engine::get_singleton()->has_singleton(name);
-		}
+		class_api.is_singleton = Engine::get_singleton()->has_singleton(class_name);
 		class_api.is_instanciable = !class_api.is_singleton && ClassDB::can_instance(class_name);
 
 		{

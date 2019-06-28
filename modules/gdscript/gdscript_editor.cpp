@@ -782,10 +782,7 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 										native_type.kind = GDScriptParser::DataType::NATIVE;
 										native_type.native_type = native_type.script_type->get_instance_base_type();
 										if (!ClassDB::class_exists(native_type.native_type)) {
-											native_type.native_type = String("_") + native_type.native_type;
-											if (!ClassDB::class_exists(native_type.native_type)) {
-												native_type.has_type = false;
-											}
+											native_type.has_type = false;
 										}
 									}
 								}
@@ -1337,38 +1334,24 @@ static bool _guess_identifier_type(GDScriptCompletionContext &p_context, const S
 		return false;
 	}
 
-	for (int i = 0; i < 2; i++) {
-		StringName target_id;
-		switch (i) {
-			case 0:
-				// Check ClassDB
-				target_id = p_identifier;
-				break;
-			case 1:
-				// ClassDB again for underscore-prefixed classes
-				target_id = String("_") + p_identifier;
-				break;
-		}
-
-		if (ClassDB::class_exists(target_id)) {
-			r_type.type.has_type = true;
-			r_type.type.kind = GDScriptParser::DataType::NATIVE;
-			r_type.type.native_type = target_id;
-			if (Engine::get_singleton()->has_singleton(target_id)) {
-				r_type.type.is_meta_type = false;
-				r_type.value = Engine::get_singleton()->get_singleton_object(target_id);
-			} else {
-				r_type.type.is_meta_type = true;
-				const Map<StringName, int>::Element *target_elem = GDScriptLanguage::get_singleton()->get_global_map().find(target_id);
-				// Check because classes like EditorNode are in ClassDB by now, but unknown to GDScript
-				if (!target_elem) {
-					return false;
-				}
-				int idx = target_elem->get();
-				r_type.value = GDScriptLanguage::get_singleton()->get_global_array()[idx];
+	if (ClassDB::class_exists(p_identifier)) {
+		r_type.type.has_type = true;
+		r_type.type.kind = GDScriptParser::DataType::NATIVE;
+		r_type.type.native_type = p_identifier;
+		if (Engine::get_singleton()->has_singleton(p_identifier)) {
+			r_type.type.is_meta_type = false;
+			r_type.value = Engine::get_singleton()->get_singleton_object(p_identifier);
+		} else {
+			r_type.type.is_meta_type = true;
+			const Map<StringName, int>::Element *target_elem = GDScriptLanguage::get_singleton()->get_global_map().find(p_identifier);
+			// Check because classes like EditorNode are in ClassDB by now, but unknown to GDScript
+			if (!target_elem) {
+				return false;
 			}
-			return true;
+			int idx = target_elem->get();
+			r_type.value = GDScriptLanguage::get_singleton()->get_global_array()[idx];
 		}
+		return true;
 	}
 
 	// Check autoload singletons
@@ -1482,10 +1465,7 @@ static bool _guess_identifier_type_from_base(GDScriptCompletionContext &p_contex
 			case GDScriptParser::DataType::NATIVE: {
 				StringName class_name = base_type.native_type;
 				if (!ClassDB::class_exists(class_name)) {
-					class_name = String("_") + class_name;
-					if (!ClassDB::class_exists(class_name)) {
-						return false;
-					}
+					return false;
 				}
 
 				// Skip constants since they're all integers. Type does not matter because int has no members
@@ -1669,10 +1649,7 @@ static bool _guess_method_return_type_from_base(GDScriptCompletionContext &p_con
 			case GDScriptParser::DataType::NATIVE: {
 				StringName native = base_type.native_type;
 				if (!ClassDB::class_exists(native)) {
-					native = String("_") + native;
-					if (!ClassDB::class_exists(native)) {
-						return false;
-					}
+					return false;
 				}
 				MethodBind *mb = ClassDB::get_method(native, p_method);
 				if (mb) {
@@ -1999,10 +1976,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 			case GDScriptParser::DataType::NATIVE: {
 				StringName type = base_type.native_type;
 				if (!ClassDB::class_exists(type)) {
-					type = String("_") + type;
-					if (!ClassDB::class_exists(type)) {
-						return;
-					}
+					return;
 				}
 
 				if (!p_only_functions) {
@@ -2229,11 +2203,8 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 			case GDScriptParser::DataType::NATIVE: {
 				StringName class_name = base_type.native_type;
 				if (!ClassDB::class_exists(class_name)) {
-					class_name = String("_") + class_name;
-					if (!ClassDB::class_exists(class_name)) {
-						base_type.has_type = false;
-						break;
-					}
+					base_type.has_type = false;
+					break;
 				}
 
 				List<MethodInfo> methods;
@@ -2601,10 +2572,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 
 			StringName class_name = native_type.native_type;
 			if (!ClassDB::class_exists(class_name)) {
-				class_name = String("_") + class_name;
-				if (!ClassDB::class_exists(class_name)) {
-					break;
-				}
+				break;
 			}
 
 			bool use_type_hint = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints").operator bool();
@@ -2700,10 +2668,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 
 						StringName class_name = base_type.native_type;
 						if (!ClassDB::class_exists(class_name)) {
-							class_name = String("_") + class_name;
-							if (!ClassDB::class_exists(class_name)) {
-								break;
-							}
+							break;
 						}
 
 						List<MethodInfo> signals;
@@ -2765,9 +2730,6 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 			ClassDB::get_class_list(&native_classes);
 			for (List<StringName>::Element *E = native_classes.front(); E; E = E->next()) {
 				String class_name = E->get().operator String();
-				if (class_name.begins_with("_")) {
-					class_name = class_name.right(1);
-				}
 				if (Engine::get_singleton()->has_singleton(class_name)) {
 					continue;
 				}
@@ -3041,11 +3003,8 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			case GDScriptParser::DataType::NATIVE: {
 				StringName class_name = base_type.native_type;
 				if (!ClassDB::class_exists(class_name)) {
-					class_name = String("_") + class_name;
-					if (!ClassDB::class_exists(class_name)) {
-						base_type.has_type = false;
-						break;
-					}
+					base_type.has_type = false;
+					break;
 				}
 
 				if (ClassDB::has_method(class_name, p_symbol, true)) {
@@ -3098,11 +3057,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 
 				StringName parent = ClassDB::get_parent_class(class_name);
 				if (parent != StringName()) {
-					if (String(parent).begins_with("_")) {
-						base_type.native_type = String(parent).right(1);
-					} else {
-						base_type.native_type = parent;
-					}
+					base_type.native_type = parent;
 				} else {
 					base_type.has_type = false;
 				}
@@ -3162,13 +3117,6 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS;
 		r_result.class_name = p_symbol;
 		return OK;
-	} else {
-		String under_prefix = "_" + p_symbol;
-		if (ClassDB::class_exists(under_prefix)) {
-			r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS;
-			r_result.class_name = p_symbol;
-			return OK;
-		}
 	}
 
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -3331,10 +3279,6 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 								r_result.class_name = obj->get_class();
 							}
 
-							// proxy class remove the underscore.
-							if (r_result.class_name.begins_with("_")) {
-								r_result.class_name = r_result.class_name.right(1);
-							}
 							return OK;
 						}
 					} else {

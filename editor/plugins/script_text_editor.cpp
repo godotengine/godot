@@ -316,11 +316,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 
 	for (List<StringName>::Element *E = types.front(); E; E = E->next()) {
 
-		String n = E->get();
-		if (n.begins_with("_"))
-			n = n.substr(1, n.length());
-
-		text_edit->add_keyword_color(n, colors_cache.type_color);
+		text_edit->add_keyword_color(E->get(), colors_cache.type_color);
 	}
 	_update_member_keywords();
 
@@ -778,8 +774,6 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	} else if (script->get_language()->lookup_code(code_editor->get_text_edit()->get_text_for_lookup_completion(), p_symbol, script->get_path(), base, result) == OK) {
 
 		_goto_line(p_row);
-
-		result.class_name = result.class_name.trim_prefix("_");
 
 		switch (result.type) {
 			case ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION: {
