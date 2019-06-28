@@ -148,6 +148,7 @@ private:
 	bool invalidated;
 
 	void update_dir();
+	void update_file_name();
 	void update_file_list();
 	void update_filters();
 

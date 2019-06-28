@@ -381,6 +381,18 @@ void FileDialog::_tree_item_activated() {
 	}
 }
 
+void FileDialog::update_file_name() {
+	int idx = filter->get_selected() - 1;
+	if ((idx == -1 && filter->get_item_count() == 2) || (filter->get_item_count() > 2 && idx >= 0 && idx < filter->get_item_count() - 2)) {
+		if (idx == -1) idx += 1;
+		String filter_str = filters[idx];
+		String file_str = file->get_text();
+		String base_name = file_str.get_basename();
+		file_str = base_name + "." + filter_str.strip_edges().to_lower();
+		file->set_text(file_str);
+	}
+}
+
 void FileDialog::update_file_list() {
 
 	tree->clear();
@@ -506,6 +518,7 @@ void FileDialog::update_file_list() {
 
 void FileDialog::_filter_selected(int) {
 
+	update_file_name();
 	update_file_list();
 }
 
@@ -797,6 +810,7 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_select_drive"), &FileDialog::_select_drive);
 	ClassDB::bind_method(D_METHOD("_make_dir"), &FileDialog::_make_dir);
 	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &FileDialog::_make_dir_confirm);
+	ClassDB::bind_method(D_METHOD("_update_file_name"), &FileDialog::update_file_name);
 	ClassDB::bind_method(D_METHOD("_update_file_list"), &FileDialog::update_file_list);
 	ClassDB::bind_method(D_METHOD("_update_dir"), &FileDialog::update_dir);
 	ClassDB::bind_method(D_METHOD("_go_up"), &FileDialog::_go_up);
