@@ -2808,6 +2808,7 @@ EditorPropertyResource::EditorPropertyResource() {
 	assign->set_drag_forwarding(this);
 	assign->connect("draw", this, "_button_draw");
 	hbc->add_child(assign);
+	add_focusable(assign);
 
 	preview = memnew(TextureRect);
 	preview->set_expand(true);
@@ -2828,6 +2829,7 @@ EditorPropertyResource::EditorPropertyResource() {
 	edit->connect("pressed", this, "_update_menu");
 	hbc->add_child(edit);
 	edit->connect("gui_input", this, "_button_input");
+	add_focusable(edit);
 
 	file = NULL;
 	scene_tree = NULL;
