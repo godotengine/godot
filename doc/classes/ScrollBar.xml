@@ -4,7 +4,7 @@
 		Base class for scroll bars.
 	</brief_description>
 	<description>
-		Scrollbars are a [Range] based [Control], that display a draggable area (the size of the page). Horizontal ([HScrollBar]) and Vertical ([VScrollBar]) versions are available.
+		Scrollbars are a [Range]-based [Control], that display a draggable area (the size of the page). Horizontal ([HScrollBar]) and Vertical ([VScrollBar]) versions are available.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,7 +17,7 @@
 	<signals>
 		<signal name="scrolling">
 			<description>
-				Emitted whenever the scrollbar is being scrolled.
+				Emitted when the scrollbar is being scrolled.
 			</description>
 		</signal>
 	</signals>

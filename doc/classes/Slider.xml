@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Slider" inherits="Range" category="Core" version="3.2">
 	<brief_description>
-		Base class for GUI Sliders.
+		Base class for GUI sliders.
 	</brief_description>
 	<description>
-		Base class for GUI Sliders.
+		Base class for GUI sliders.
 	</description>
 	<tutorials>
 	</tutorials>

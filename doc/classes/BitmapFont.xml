@@ -23,7 +23,7 @@
 			<argument index="4" name="advance" type="float" default="-1">
 			</argument>
 			<description>
-				Adds a character to the font, where [code]character[/code] is the unicode value, [code]texture[/code] is the texture index, [code]rect[/code] is the region in the texture (in pixels!), [code]align[/code] is the (optional) alignment for the character and [code]advance[/code] is the (optional) advance.
+				Adds a character to the font, where [code]character[/code] is the Unicode value, [code]texture[/code] is the texture index, [code]rect[/code] is the region in the texture (in pixels!), [code]align[/code] is the (optional) alignment for the character and [code]advance[/code] is the (optional) advance.
 			</description>
 		</method>
 		<method name="add_kerning_pair">

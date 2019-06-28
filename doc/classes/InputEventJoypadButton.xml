@@ -4,7 +4,7 @@
 		Input event for gamepad buttons.
 	</brief_description>
 	<description>
-		Input event type for gamepad buttons. For joysticks see [InputEventJoypadMotion].
+		Input event type for gamepad buttons. For gamepad analog sticks and joysticks, see [InputEventJoypadMotion].
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>

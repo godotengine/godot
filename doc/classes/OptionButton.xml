@@ -19,7 +19,7 @@
 			<argument index="2" name="id" type="int" default="-1">
 			</argument>
 			<description>
-				Add an item, with a "texture" icon, text "label" and (optionally) id. If no "id" is passed, "id" becomes the item index. New items are appended at the end.
+				Adds an item, with a [code]texture[/code] icon, text [code]label[/code] and (optionally) [code]id[/code]. If no [code]id[/code] is passed, [code]id[/code] becomes the item index. New items are appended at the end.
 			</description>
 		</method>
 		<method name="add_item">
@@ -30,14 +30,14 @@
 			<argument index="1" name="id" type="int" default="-1">
 			</argument>
 			<description>
-				Add an item, with text "label" and (optionally) id. If no "id" is passed, "id" becomes the item index. New items are appended at the end.
+				Adds an item, with text [code]label[/code] and (optionally) [code]id[/code]. If no [code]id[/code] is passed, [code]id[/code] becomes the item index. New items are appended at the end.
 			</description>
 		</method>
 		<method name="add_separator">
 			<return type="void">
 			</return>
 			<description>
-				Add a separator to the list of items. Separators help to group items. Separator also takes up an index and is appended at the end.
+				Adds a separator to the list of items. Separators help to group items. Separator also takes up an index and is appended at the end.
 			</description>
 		</method>
 		<method name="clear">
@@ -60,7 +60,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the icon of the item at index "idx".
+				Returns the icon of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_item_id" qualifiers="const">
@@ -95,7 +95,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the text of the item at index "idx".
+				Returns the text of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_popup" qualifiers="const">
@@ -160,7 +160,7 @@
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
-				Set the icon of an item at index "idx".
+				Sets the icon of an item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_item_id">
@@ -171,7 +171,7 @@
 			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
-				Set the ID of an item at index "idx".
+				Sets the ID of an item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_item_metadata">
@@ -192,7 +192,7 @@
 			<argument index="1" name="text" type="String">
 			</argument>
 			<description>
-				Set the text of an item at index "idx".
+				Sets the text of an item at index [code]idx[/code].
 			</description>
 		</method>
 	</methods>
@@ -205,14 +205,14 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				This signal is emitted when user navigated to an item using [code]ui_up[/code] or [code]ui_down[/code] action. ID of the item selected is passed as argument.
+				Emitted the when user navigates to an item using the [code]ui_up[/code] or [code]ui_down[/code] actions. The index of the item selected is passed as argument.
 			</description>
 		</signal>
 		<signal name="item_selected">
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				This signal is emitted when the current item was changed by the user. Index of the item selected is passed as argument.
+				Emitted when the current item has been changed by the user. The index of the item selected is passed as argument.
 			</description>
 		</signal>
 	</signals>

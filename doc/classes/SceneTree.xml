@@ -283,11 +283,11 @@
 			The default [MultiplayerAPI] instance for this [SceneTree].
 		</member>
 		<member name="multiplayer_poll" type="bool" setter="set_multiplayer_poll_enabled" getter="is_multiplayer_poll_enabled">
-			If [code]true[/code] (default value), enable the automatic polling of the [MultiplayerAPI] for this [SceneTree] during [signal idle_frame].
-			When [code]false[/code] you need to manually call [method MultiplayerAPI.poll] for processing network packets and delivering RPCs/RSETs. This allows to run RPCs/RSETs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protection when accessing the [MultiplayerAPI] from threads.
+			If [code]true[/code] (default value), enables automatic polling of the [MultiplayerAPI] for this SceneTree during [signal idle_frame].
+			If [code]false[/code], you need to manually call [method MultiplayerAPI.poll] to process network packets and deliver RPCs/RSETs. This allows running RPCs/RSETs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protection when accessing the [MultiplayerAPI] from threads.
 		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
-			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the [SceneTree] will become a network server (check with [method is_network_server]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to [SceneTree]'s signals.
+			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the [SceneTree] will become a network server (check with [method is_network_server]) and will set the root node's network mode to master (see [code]NETWORK_MODE_*[/code] constants in [Node]), or it will become a regular peer with the root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to [SceneTree]'s signals.
 		</member>
 		<member name="paused" type="bool" setter="set_pause" getter="is_paused">
 			If [code]true[/code], the [SceneTree] is paused. Doing so will have the following behavior:
@@ -354,7 +354,7 @@
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
-				Emitted when a node's configuration changed. Only emitted in tool mode.
+				Emitted when a node's configuration changed. Only emitted in [code]tool[/code] mode.
 			</description>
 		</signal>
 		<signal name="node_removed">
@@ -378,7 +378,7 @@
 		</signal>
 		<signal name="screen_resized">
 			<description>
-				Emitted whenever the screen resolution (fullscreen) or window size (windowed) changes.
+				Emitted when the screen resolution (fullscreen) or window size (windowed) changes.
 			</description>
 		</signal>
 		<signal name="server_disconnected">
@@ -415,10 +415,10 @@
 			Keep the specified display resolution. No interpolation. Content may appear pixelated.
 		</constant>
 		<constant name="STRETCH_ASPECT_IGNORE" value="0" enum="StretchAspect">
-			Fill the window with the content stretched to cover excessive space. Content may appear elongated.
+			Fill the window with the content stretched to cover excessive space. Content may appear stretched.
 		</constant>
 		<constant name="STRETCH_ASPECT_KEEP" value="1" enum="StretchAspect">
-			Retain the same aspect ratio by padding with black bars in either axes. No expansion of content.
+			Retain the same aspect ratio by padding with black bars on either axis. This prevents distortion.
 		</constant>
 		<constant name="STRETCH_ASPECT_KEEP_WIDTH" value="2" enum="StretchAspect">
 			Expand vertically. Left/right black bars may appear if the window is too wide.
@@ -427,7 +427,7 @@
 			Expand horizontally. Top/bottom black bars may appear if the window is too tall.
 		</constant>
 		<constant name="STRETCH_ASPECT_EXPAND" value="4" enum="StretchAspect">
-			Expand in both directions, retaining the same aspect ratio. No black bars.
+			Expand in both directions, retaining the same aspect ratio. This prevents distortion while avoiding black bars.
 		</constant>
 	</constants>
 </class>

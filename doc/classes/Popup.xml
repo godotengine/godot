@@ -24,7 +24,7 @@
 			<argument index="0" name="size" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Popup (show the control in modal form) in the center of the screen relative to its current canvas transform, at the current size, or at a size determined by "size".
+				Popup (show the control in modal form) in the center of the screen relative to its current canvas transform, at the current size, or at a size determined by [code]size[/code].
 			</description>
 		</method>
 		<method name="popup_centered_clamped">
@@ -65,12 +65,12 @@
 	<signals>
 		<signal name="about_to_show">
 			<description>
-				This signal is emitted when a popup is about to be shown. (often used in [PopupMenu] for clearing the list of options and creating a new one according to the current context).
+				Emitted when a popup is about to be shown. This is often used in [PopupMenu] to clear the list of options then create a new one according to the current context.
 			</description>
 		</signal>
 		<signal name="popup_hide">
 			<description>
-				This signal is emitted when a popup is hidden.
+				Emitted when a popup is hidden.
 			</description>
 		</signal>
 	</signals>

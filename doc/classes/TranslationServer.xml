@@ -47,7 +47,7 @@
 			<argument index="0" name="locale" type="String">
 			</argument>
 			<description>
-				Returns a locale's language and its variant (e.g. "en_US" would return "English (United States)").
+				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
 			</description>
 		</method>
 		<method name="remove_translation">

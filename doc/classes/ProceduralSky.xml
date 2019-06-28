@@ -4,8 +4,8 @@
 		Type of [Sky] that is generated procedurally based on user input parameters.
 	</brief_description>
 	<description>
-		ProceduralSky provides a way to create an effective background quickly by defining procedural parameters for the sun, the sky and the ground. The sky and ground are very similar, they are defined by a color at the horizon, another color, and finally an easing curve to interpolate between these two colors. Similarly the sun is described by a position in the sky, a color, and an easing curve. However, the sun also defines a minimum and maximum angle, these two values define at what distance the easing curve begins and ends from the sun, and thus end up defining the size of the sun in the sky.
-		The ProceduralSky is updated on the CPU after the parameters change and stored in a texture and then displayed as a background in the scene. This makes it relatively unsuitable for realtime updates during gameplay. But with a small texture size it is still feasible to update relatively frequently because it is updated on a background thread when multi-threading is available.
+		ProceduralSky provides a way to create an effective background quickly by defining procedural parameters for the sun, the sky and the ground. The sky and ground are very similar, they are defined by a color at the horizon, another color, and finally an easing curve to interpolate between these two colors. Similarly, the sun is described by a position in the sky, a color, and an easing curve. However, the sun also defines a minimum and maximum angle, these two values define at what distance the easing curve begins and ends from the sun, and thus end up defining the size of the sun in the sky.
+		The ProceduralSky is updated on the CPU after the parameters change. It is stored in a texture and then displayed as a background in the scene. This makes it relatively unsuitable for real-time updates during gameplay. However, with a small enough texture size, it can still be updated relatively frequently, as it is updated on a background thread when multi-threading is available.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -43,7 +43,7 @@
 			Distance from sun where it goes from solid to starting to fade.
 		</member>
 		<member name="sun_color" type="Color" setter="set_sun_color" getter="get_sun_color">
-			Color of the sun.
+			The sun's color.
 		</member>
 		<member name="sun_curve" type="float" setter="set_sun_curve" getter="get_sun_curve">
 			How quickly the sun fades away between [member sun_angle_min] and [member sun_angle_max].
@@ -52,7 +52,7 @@
 			Amount of energy contribution from the sun.
 		</member>
 		<member name="sun_latitude" type="float" setter="set_sun_latitude" getter="get_sun_latitude">
-			The suns height using polar coordinates.
+			The sun's height using polar coordinates.
 		</member>
 		<member name="sun_longitude" type="float" setter="set_sun_longitude" getter="get_sun_longitude">
 			The direction of the sun using polar coordinates.

@@ -4,7 +4,8 @@
 		Casts light in a 2D environment.
 	</brief_description>
 	<description>
-		Casts light in a 2D environment. Light is defined by a (usually grayscale) texture, a color, an energy value, a mode (see constants), and various other parameters (range and shadows-related). Note that Light2D can be used as a mask.
+		Casts light in a 2D environment. Light is defined by a (usually grayscale) texture, a color, an energy value, a mode (see constants), and various other parameters (range and shadows-related).
+		[b]Note:[/b] Light2D can also be used as a mask.
 	</description>
 	<tutorials>
 		<link>http://docs.godotengine.org/en/latest/tutorials/2d/2d_lights_and_shadows.html</link>
@@ -25,7 +26,7 @@
 			The Light2D's energy value. The larger the value, the stronger the light.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Light2D.Mode">
-			The Light2D's mode. See MODE_* constants for values.
+			The Light2D's mode. See [code]MODE_*[/code] constants for values.
 		</member>
 		<member name="offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset">
 			The offset of the Light2D's [code]texture[/code].
@@ -58,7 +59,7 @@
 			If [code]true[/code], the Light2D will cast shadows. Default value: [code]false[/code].
 		</member>
 		<member name="shadow_filter" type="int" setter="set_shadow_filter" getter="get_shadow_filter" enum="Light2D.ShadowFilter">
-			Shadow filter type. Use [enum ShadowFilter] constants as values. Default value: [constant SHADOW_FILTER_NONE].
+			Shadow filter type. See [enum ShadowFilter] for possible values. Default value: [constant SHADOW_FILTER_NONE].
 		</member>
 		<member name="shadow_filter_smooth" type="float" setter="set_shadow_smooth" getter="get_shadow_smooth">
 			Smoothing value for shadows.

@@ -4,7 +4,7 @@
 		Directional light from a distance, as from the Sun.
 	</brief_description>
 	<description>
-		A directional light is a type of [Light] node that models an infinite number of parallel rays covering the entire scene. It is used for lights with strong intensity that are located far away from the scene to model sunlight or moonlight. The worldspace location of the DirectionalLight transform (origin) is ignored. Only the basis is used do determine light direction.
+		A directional light is a type of [Light] node that models an infinite number of parallel rays covering the entire scene. It is used for lights with strong intensity that are located far away from the scene to model sunlight or moonlight. The worldspace location of the DirectionalLight transform (origin) is ignored. Only the basis is used to determine light direction.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
@@ -13,10 +13,10 @@
 	</methods>
 	<members>
 		<member name="directional_shadow_bias_split_scale" type="float" setter="set_param" getter="get_param">
-			Amount of extra bias for shadow splits that are far away. If self shadowing occurs only on the splits far away, this value can fix them.
+			Amount of extra bias for shadow splits that are far away. If self-shadowing occurs only on the splits far away, increasing this value can fix them.
 		</member>
 		<member name="directional_shadow_blend_splits" type="bool" setter="set_blend_splits" getter="is_blend_splits_enabled">
-			If [code]true[/code], shadow detail is sacrificed in exchange for smoother transitions between splits. Default value:[code]false[/code].
+			If [code]true[/code], shadow detail is sacrificed in exchange for smoother transitions between splits. Default value: [code]false[/code].
 		</member>
 		<member name="directional_shadow_depth_range" type="int" setter="set_shadow_depth_range" getter="get_shadow_depth_range" enum="DirectionalLight.ShadowDepthRange">
 			Optimizes shadow rendering for detail versus movement. See [enum ShadowDepthRange].
@@ -31,10 +31,10 @@
 			Can be used to fix special cases of self shadowing when objects are perpendicular to the light.
 		</member>
 		<member name="directional_shadow_split_1" type="float" setter="set_param" getter="get_param">
-			The distance from camera to shadow split 1. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is one of the [code]SHADOW_PARALLEL_*_SPLITS[/code] constants.
+			The distance from camera to shadow split 1. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or [code]SHADOW_PARALLEL_4_SPLITS[/code].
 		</member>
 		<member name="directional_shadow_split_2" type="float" setter="set_param" getter="get_param">
-			The distance from shadow split 1 to split 2. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [code]SHADOW_PARALLEL_3_SPLITS[/code] or [code]SHADOW_PARALLEL_4_SPLITS[/code].
+			The distance from shadow split 1 to split 2. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or [code]SHADOW_PARALLEL_4_SPLITS[/code].
 		</member>
 		<member name="directional_shadow_split_3" type="float" setter="set_param" getter="get_param">
 			The distance from shadow split 2 to split 3. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [code]SHADOW_PARALLEL_4_SPLITS[/code].

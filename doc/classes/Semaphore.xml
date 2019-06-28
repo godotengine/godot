@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Semaphore" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
-		A synchronization Semaphore.
+		A synchronization semaphore.
 	</brief_description>
 	<description>
-		A synchronization Semaphore. Element used to synchronize multiple [Thread]s. Initialized to zero on creation. Be careful to avoid deadlocks. For a binary version, see [Mutex].
+		A synchronization semaphore which can be used to synchronize multiple [Thread]s. Initialized to zero on creation. Be careful to avoid deadlocks. For a binary version, see [Mutex].
 	</description>
 	<tutorials>
 	</tutorials>

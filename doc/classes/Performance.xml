@@ -4,8 +4,9 @@
 		Exposes performance-related data.
 	</brief_description>
 	<description>
-		This class provides access to a number of different monitors related to performance, such as memory usage, draw calls, and FPS. These are the same as the values displayed in the [i]Monitor[/i] tab in the editor's [i]Debugger[/i] panel. By using the [method get_monitor] method of this class, you can access this data from your code. Note that a few of these monitors are only available in debug mode and will always return 0 when used in a release build.
-		Many of these monitors are not updated in real-time, so there may be a short delay between changes.
+		This class provides access to a number of different monitors related to performance, such as memory usage, draw calls, and FPS. These are the same as the values displayed in the [b]Monitor[/b] tab in the editor's [b]Debugger[/b] panel. By using the [method get_monitor] method of this class, you can access this data from your code.
+		[b]Note:[/b] A few of these monitors are only available in debug mode and will always return 0 when used in a release build.
+		[b]Note:[/b] Many of these monitors are not updated in real-time, so there may be a short delay between changes.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -67,7 +68,7 @@
 			Vertices drawn per frame. 3D only.
 		</constant>
 		<constant name="RENDER_MATERIAL_CHANGES_IN_FRAME" value="14" enum="Monitor">
-			Material changes per frame. 3D only
+			Material changes per frame. 3D only.
 		</constant>
 		<constant name="RENDER_SHADER_CHANGES_IN_FRAME" value="15" enum="Monitor">
 			Shader changes per frame. 3D only.

@@ -4,7 +4,7 @@
 		Branches program flow based on a given input's value.
 	</brief_description>
 	<description>
-		Branches the flow based on an input's value. Use "Case Count" in the Inspector to set the number of branches and each comparison's optional type.
+		Branches the flow based on an input's value. Use [b]Case Count[/b] in the Inspector to set the number of branches and each comparison's optional type.
 		[b]Input Ports:[/b]
 		- Sequence: [code]'input' is[/code]
 		- Data (variant): [code]=[/code]

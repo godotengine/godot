@@ -23,7 +23,7 @@
 	</members>
 	<constants>
 		<constant name="HINTING_NONE" value="0" enum="Hinting">
-			Disable font hinting (smoother but less crisp).
+			Disables font hinting (smoother but less crisp).
 		</constant>
 		<constant name="HINTING_LIGHT" value="1" enum="Hinting">
 			Use the light font hinting mode.

@@ -13,7 +13,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if an animation if currently being played.
+				Returns [code]true[/code] if an animation is currently being played.
 			</description>
 		</method>
 		<method name="play">
@@ -24,14 +24,14 @@
 			<argument index="1" name="backwards" type="bool" default="false">
 			</argument>
 			<description>
-				Play the animation set in parameter. If no parameter is provided, the current animation is played. Property [code]backwards[/code] plays the animation in reverse if set to [code]true[/code].
+				Plays the animation named [code]anim[/code]. If no [code]anim[/code] is provided, the current animation is played. If [code]backwards[/code] is [code]true[/code], the animation will be played in reverse.
 			</description>
 		</method>
 		<method name="stop">
 			<return type="void">
 			</return>
 			<description>
-				Stop the current animation (does not reset the frame counter).
+				Stops the current animation (does not reset the frame counter).
 			</description>
 		</method>
 	</methods>

@@ -29,7 +29,7 @@
 			<argument index="0" name="from_position" type="float" default="0.0">
 			</argument>
 			<description>
-				Plays the audio from the given position 'from_position', in seconds.
+				Plays the audio from the given position [code]from_position[/code], in seconds.
 			</description>
 		</method>
 		<method name="seek">

@@ -13,7 +13,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Close the UDP socket the [PacketPeerUDP] is currently listening on.
+				Closes the UDP socket the [PacketPeerUDP] is currently listening on.
 			</description>
 		</method>
 		<method name="get_packet_ip" qualifiers="const">
@@ -45,7 +45,7 @@
 			<argument index="1" name="interface_name" type="String">
 			</argument>
 			<description>
-				Join the multicast group specified by [code]multicast_address[/code] using the interface identified by [code]interface_name[/code].
+				Joins the multicast group specified by [code]multicast_address[/code] using the interface identified by [code]interface_name[/code].
 				You can join the same multicast group with multiple interfaces. Use [method IP.get_local_interfaces] to know which are available.
 			</description>
 		</method>
@@ -57,7 +57,7 @@
 			<argument index="1" name="interface_name" type="String">
 			</argument>
 			<description>
-				Remove the interface identified by [code]interface_name[/code] from the multicast group specified by [code]multicast_address[/code].
+				Removes the interface identified by [code]interface_name[/code] from the multicast group specified by [code]multicast_address[/code].
 			</description>
 		</method>
 		<method name="listen">
@@ -70,10 +70,10 @@
 			<argument index="2" name="recv_buf_size" type="int" default="65536">
 			</argument>
 			<description>
-				Make this [PacketPeerUDP] listen on the "port" binding to "bind_address" with a buffer size "recv_buf_size".
-				If "bind_address" is set as "*" (default), the peer will listen on all available addresses (both IPv4 and IPv6).
-				If "bind_address" is set as "0.0.0.0" (for IPv4) or "::" (for IPv6), the peer will listen on all available addresses matching that IP type.
-				If "bind_address" is set to any valid address (e.g. "192.168.1.101", "::1", etc), the peer will only listen on the interface with that addresses (or fail if no interface with the given address exists).
+				Makes this [PacketPeerUDP] listen on the [code]port[/code] binding to [code]bind_address[/code] with a buffer size [code]recv_buf_size[/code].
+				If [code]bind_address[/code] is set to [code]"*"[/code] (default), the peer will listen on all available addresses (both IPv4 and IPv6).
+				If [code]bind_address[/code] is set to [code]"0.0.0.0"[/code] (for IPv4) or [code]"::"[/code] (for IPv6), the peer will listen on all available addresses matching that IP type.
+				If [code]bind_address[/code] is set to any valid address (e.g. [code]"192.168.1.101"[/code], [code]"::1"[/code], etc), the peer will only listen on the interface with that addresses (or fail if no interface with the given address exists).
 			</description>
 		</method>
 		<method name="set_dest_address">
@@ -84,14 +84,14 @@
 			<argument index="1" name="port" type="int">
 			</argument>
 			<description>
-				Set the destination address and port for sending packets and variables, a hostname will be resolved using if valid.
+				Sets the destination address and port for sending packets and variables. A hostname will be resolved using DNS if needed.
 			</description>
 		</method>
 		<method name="wait">
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Wait for a packet to arrive on the listening port, see [method listen].
+				Waits for a packet to arrive on the listening port. See [method listen].
 			</description>
 		</method>
 	</methods>

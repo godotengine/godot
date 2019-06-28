@@ -43,7 +43,7 @@
 			The particle system's frame rate is fixed to a value. For instance, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the simulation of the particle system itself.
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta">
-			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect. Default value: [code]true[/code]
+			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect. Default value: [code]true[/code].
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime">
 			Amount of time each particle will exist. Default value: [code]1[/code].
@@ -70,7 +70,7 @@
 			Particle system's running speed scaling ratio. Default value: [code]1[/code]. A value of [code]0[/code] can be used to pause the particles.
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
-			Particle texture. If [code]null[/code] particles will be squares.
+			Particle texture. If [code]null[/code], particles will be squares.
 		</member>
 		<member name="visibility_rect" type="Rect2" setter="set_visibility_rect" getter="get_visibility_rect">
 			Editor visibility helper.

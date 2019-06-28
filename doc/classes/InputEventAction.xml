@@ -4,7 +4,7 @@
 		Input event type for actions.
 	</brief_description>
 	<description>
-		Contains a generic action which can be targeted from several type of inputs. Actions can be created from the project settings menu [code]Project &gt; Project Settings &gt; Input Map[/code]. See [method Node._input].
+		Contains a generic action which can be targeted from several types of inputs. Actions can be created from the [b]Input Map[/b] tab in the [b]Project &gt; Project Settings[/b] menu. See [method Node._input].
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html#actions</link>
@@ -19,7 +19,7 @@
 			If [code]true[/code], the action's state is pressed. If [code]false[/code], the action's state is released.
 		</member>
 		<member name="strength" type="float" setter="set_strength" getter="get_strength">
-			The action's strength between 0 and 1. This value is consired as equal to 0 if pressed is [code]false[/code]. The event strength allows faking analog joypad motion events, by precising how strongly is the joypad axis bent or pressed.
+			The action's strength between 0 and 1. This value is considered as equal to 0 if pressed is [code]false[/code]. The event strength allows faking analog joypad motion events, by precising how strongly is the joypad axis bent or pressed.
 		</member>
 	</members>
 	<constants>

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="WebSocketClient" inherits="WebSocketMultiplayerPeer" category="Core" version="3.2">
 	<brief_description>
-		A WebSocket client implementation
+		A WebSocket client implementation.
 	</brief_description>
 	<description>
-		This class implements a WebSocket client compatible with any RFC 6455 complaint WebSocket server.
+		This class implements a WebSocket client compatible with any RFC 6455-compliant WebSocket server.
 		This client can be optionally used as a network peer for the [MultiplayerAPI].
 		After starting the client ([method connect_to_url]), you will need to [method NetworkedMultiplayerPeer.poll] it at regular intervals (e.g. inside [method Node._process]).
-		You will received appropriate signals when connecting, disconnecting, or when new data is available.
+		You will receive appropriate signals when connecting, disconnecting, or when new data is available.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -22,8 +22,8 @@
 			<argument index="2" name="gd_mp_api" type="bool" default="false">
 			</argument>
 			<description>
-				Connect to the given URL requesting one of the given [code]protocols[/code] as sub-protocol.
-				If [code]true[/code] is passed as [code]gd_mp_api[/code], the client will behave like a network peer for the [MultiplayerAPI], connections to non Godot servers will not work, and [signal data_received] will not be emitted.
+				Connects to the given URL requesting one of the given [code]protocols[/code] as sub-protocol.
+				If [code]true[/code] is passed as [code]gd_mp_api[/code], the client will behave like a network peer for the [MultiplayerAPI], connections to non-Godot servers will not work, and [signal data_received] will not be emitted.
 				If [code]false[/code] is passed instead (default), you must call [PacketPeer] functions ([code]put_packet[/code], [code]get_packet[/code], etc.) on the [WebSocketPeer] returned via [code]get_peer(1)[/code] and not on this object directly (e.g. [code]get_peer(1).put_packet(data)[/code]).
 			</description>
 		</method>
@@ -35,13 +35,14 @@
 			<argument index="1" name="reason" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Disconnect this client from the connected host. See [method WebSocketPeer.close] for more info.
+				Disconnects this client from the connected host. See [method WebSocketPeer.close] for more information.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="verify_ssl" type="bool" setter="set_verify_ssl_enabled" getter="is_verify_ssl_enabled">
-			Enable or disable SSL certificate verification. Note: You must specify the certificates to be used in the project settings for it to work when exported.
+			If [code]true[/code], SSL certificate verification is enabled.
+			[b]Note:[/b] You must specify the certificates to be used in the Project Settings for it to work when exported.
 		</member>
 	</members>
 	<signals>
@@ -66,7 +67,8 @@
 		</signal>
 		<signal name="data_received">
 			<description>
-				Emitted when a WebSocket message is received. Note: This signal is NOT emitted when used as high level multiplayer peer.
+				Emitted when a WebSocket message is received.
+				[b]Note:[/b] This signal is [i]not[/i] emitted when used as high-level multiplayer peer.
 			</description>
 		</signal>
 		<signal name="server_close_request">

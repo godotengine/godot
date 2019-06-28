@@ -83,7 +83,7 @@
 			<argument index="3" name="body" type="PoolByteArray">
 			</argument>
 			<description>
-				This signal is emitted upon request completion.
+				Emitted when a request is completed.
 			</description>
 		</signal>
 	</signals>

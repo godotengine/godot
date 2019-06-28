@@ -4,7 +4,7 @@
 		Abstraction and base class for packet-based protocols.
 	</brief_description>
 	<description>
-		PacketPeer is an abstraction and base class for packet-based protocols (such as UDP). It provides an API for sending and receiving packets both as raw data or variables. This makes it easy to transfer data over a protocol, without having to encode data as low level bytes or having to worry about network ordering.
+		PacketPeer is an abstraction and base class for packet-based protocols (such as UDP). It provides an API for sending and receiving packets both as raw data or variables. This makes it easy to transfer data over a protocol, without having to encode data as low-level bytes or having to worry about network ordering.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -20,7 +20,7 @@
 			<return type="PoolByteArray">
 			</return>
 			<description>
-				Get a raw packet.
+				Gets a raw packet.
 			</description>
 		</method>
 		<method name="get_packet_error" qualifiers="const">
@@ -36,8 +36,8 @@
 			<argument index="0" name="allow_objects" type="bool" default="false">
 			</argument>
 			<description>
-				Get a Variant. When [code]allow_objects[/code] (or [member allow_object_decoding]) is [code]true[/code] decoding objects is allowed.
-				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
+				Gets a Variant. If [code]allow_objects[/code] (or [member allow_object_decoding]) is [code]true[/code], decoding objects is allowed.
+				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
 		<method name="put_packet">
@@ -46,7 +46,7 @@
 			<argument index="0" name="buffer" type="PoolByteArray">
 			</argument>
 			<description>
-				Send a raw packet.
+				Sends a raw packet.
 			</description>
 		</method>
 		<method name="put_var">
@@ -57,15 +57,15 @@
 			<argument index="1" name="full_objects" type="bool" default="false">
 			</argument>
 			<description>
-				Send a Variant as a packet. When [code]full_objects[/code] (or [member allow_object_decoding]) is [code]true[/code] encoding objects is allowed (and can potentially include code).
+				Sends a [Variant] as a packet. If [code]full_objects[/code] (or [member allow_object_decoding]) is [code]true[/code], encoding objects is allowed (and can potentially include code).
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="allow_object_decoding" type="bool" setter="set_allow_object_decoding" getter="is_object_decoding_allowed">
-			Deprecated. Use [code]get_var[/code] and [code]put_var[/code] parameters instead.
-			If [code]true[/code] the PacketPeer will allow encoding and decoding of object via [method get_var] and [method put_var].
-			[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
+			[i]Deprecated.[/i] Use [code]get_var[/code] and [code]put_var[/code] parameters instead.
+			If [code]true[/code], the PacketPeer will allow encoding and decoding of object via [method get_var] and [method put_var].
+			[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 		</member>
 	</members>
 	<constants>

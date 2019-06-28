@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="LargeTexture" inherits="Texture" category="Core" version="3.2">
 	<brief_description>
-		A Texture capable of storing many smaller Textures with offsets.
+		A [Texture] capable of storing many smaller textures with offsets.
 	</brief_description>
 	<description>
-		A Texture capable of storing many smaller Textures with offsets.
-		You can dynamically add pieces([Texture]) to this [LargeTexture] using different offsets.
+		A [Texture] capable of storing many smaller textures with offsets.
+		You can dynamically add pieces ([Texture]s) to this [LargeTexture] using different offsets.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -18,7 +18,7 @@
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
-				Add another [Texture] to this [LargeTexture], starting on offset "ofs".
+				Adds [code]texture[/code] to this [LargeTexture], starting on offset [code]ofs[/code].
 			</description>
 		</method>
 		<method name="clear">
@@ -41,7 +41,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the offset of the piece with index "idx".
+				Returns the offset of the piece with the index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_piece_texture" qualifiers="const">
@@ -50,7 +50,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the [Texture] of the piece with index "idx".
+				Returns the [Texture] of the piece with the index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_piece_offset">
@@ -61,7 +61,7 @@
 			<argument index="1" name="ofs" type="Vector2">
 			</argument>
 			<description>
-				Sets the offset of the piece with index "idx" to "ofs".
+				Sets the offset of the piece with the index [code]idx[/code] to [code]ofs[/code].
 			</description>
 		</method>
 		<method name="set_piece_texture">
@@ -72,7 +72,7 @@
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
-				Sets the [Texture] of the piece with index "idx" to "texture".
+				Sets the [Texture] of the piece with index [code]idx[/code] to [code]texture[/code].
 			</description>
 		</method>
 		<method name="set_size">

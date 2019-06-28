@@ -29,7 +29,7 @@
 			<argument index="0" name="from_position" type="float" default="0.0">
 			</argument>
 			<description>
-				Plays the audio from the given position 'from_position', in seconds.
+				Plays the audio from the given position [code]from_position[/code], in seconds.
 			</description>
 		</method>
 		<method name="seek">
@@ -78,16 +78,16 @@
 			If [code]true[/code], the audio should be dampened according to the direction of the sound.
 		</member>
 		<member name="emission_angle_filter_attenuation_db" type="float" setter="set_emission_angle_filter_attenuation_db" getter="get_emission_angle_filter_attenuation_db">
-			dampens audio if camera is outside of 'emission_angle_degrees' and 'emission_angle_enabled' is set by this factor, in dB.
+			Dampens audio if camera is outside of [member emission_angle_degrees] and [member emission_angle_enabled] is set by this factor, in dB.
 		</member>
 		<member name="max_db" type="float" setter="set_max_db" getter="get_max_db">
 			Sets the absolute maximum of the soundlevel, in dB.
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance">
-			Sets the distance from which the 'out_of_range_mode' takes effect. Has no effect if set to 0.
+			Sets the distance from which the [member out_of_range_mode] takes effect. Has no effect if set to 0.
 		</member>
 		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" enum="AudioStreamPlayer3D.OutOfRangeMode">
-			Decides if audio should pause when source is outside of 'max_distance' range.
+			Decides if audio should pause when source is outside of [member max_distance] range.
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale">
 			Changes the pitch and the tempo of the audio.
@@ -110,7 +110,7 @@
 	<signals>
 		<signal name="finished">
 			<description>
-				Fires when the audio stops playing.
+				Emitted when the audio stops playing.
 			</description>
 		</signal>
 	</signals>

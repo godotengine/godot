@@ -4,9 +4,9 @@
 		Kinematic body 3D node.
 	</brief_description>
 	<description>
-		Kinematic bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all (to other types of bodies, such a character or a rigid body, these are the same as a static body). They have however, two main uses:
-		Simulated Motion: When these bodies are moved manually, either from code or from an AnimationPlayer (with process mode set to fixed), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
-		Kinematic Characters: KinematicBody also has an API for moving objects (the [method move_and_collide] and [method move_and_slide] methods) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
+		Kinematic bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all; to other types of bodies, such as a character or a rigid body, these are the same as a static body. However, they have two main uses:
+		[b]Simulated motion:[/b] When these bodies are moved manually, either from code or from an AnimationPlayer (with process mode set to fixed), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
+		[b]Kinematic characters:[/b] KinematicBody also has an API for moving objects (the [method move_and_collide] and [method move_and_slide] methods) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/physics/kinematic_character_2d.html</link>
@@ -94,7 +94,7 @@
 				If [code]stop_on_slope[/code] is [code]true[/code], body will not slide on slopes if you include gravity in [code]linear_velocity[/code].
 				If the body collides, it will change direction a maximum of [code]max_slides[/code] times before it stops.
 				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 45 degrees.
-				If [code]infinite_inertia[/code] is [code]true[/code], body will be able to push [RigidBody] nodes, but it won't also detect any collisions with them. If [code]false[/code] it will interact with [RigidBody] nodes like with [StaticBody].
+				If [code]infinite_inertia[/code] is [code]true[/code], body will be able to push [RigidBody] nodes, but it won't also detect any collisions with them. If [code]false[/code], it will interact with [RigidBody] nodes like with [StaticBody].
 				Returns the [code]linear_velocity[/code] vector, rotated and/or scaled if a slide collision occurred. To get detailed information about collisions that occurred, use [method get_slide_collision].
 			</description>
 		</method>
@@ -139,13 +139,13 @@
 			If the body is at least this close to another body, this body will consider them to be colliding.
 		</member>
 		<member name="move_lock_x" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-			Lock the body's movement in the x-axis.
+			Lock the body's X axis movement.
 		</member>
 		<member name="move_lock_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-			Lock the body's movement in the y-axis.
+			Lock the body's Y axis movement.
 		</member>
 		<member name="move_lock_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
-			Lock the body's movement in the z-axis.
+			Lock the body's Z axis movement.
 		</member>
 	</members>
 	<constants>

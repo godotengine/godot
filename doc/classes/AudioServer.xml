@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioServer" inherits="Object" category="Core" version="3.2">
 	<brief_description>
-		Server interface for low level audio access.
+		Server interface for low-level audio access.
 	</brief_description>
 	<description>
-		AudioServer is a low level server interface for audio access. It is in charge of creating sample data (playable audio) as well as its playback via a voice interface.
+		AudioServer is a low-level server interface for audio access. It is in charge of creating sample data (playable audio) as well as its playback via a voice interface.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html</link>
@@ -407,7 +407,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Unlocks the audiodriver's main loop. After locking it always unlock it.
+				Unlocks the audio driver's main loop. (After locking it, you should always unlock it.)
 			</description>
 		</method>
 	</methods>

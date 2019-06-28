@@ -4,7 +4,7 @@
 		Tint the entire canvas.
 	</brief_description>
 	<description>
-		[CanvasModulate] tints the canvas elements using its assigned [code]color[/code].
+		[CanvasModulate] tints the canvas elements using its assigned [member color].
 	</description>
 	<tutorials>
 	</tutorials>

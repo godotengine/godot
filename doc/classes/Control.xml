@@ -4,12 +4,12 @@
 		All User Interface nodes inherit from Control. A control's anchors and margins adapt its position and size relative to its parent.
 	</brief_description>
 	<description>
-		Base class for all User Interface or [i]UI[/i] related nodes. [Control] features a bounding rectangle that defines its extents, an anchor position relative to its parent control or the current viewport, and margins that represent an offset to the anchor. The margins update automatically when the node, any of its parents, or the screen size change.
+		Base class for all UI-related nodes. [Control] features a bounding rectangle that defines its extents, an anchor position relative to its parent control or the current viewport, and margins that represent an offset to the anchor. The margins update automatically when the node, any of its parents, or the screen size change.
 		For more information on Godot's UI system, anchors, margins, and containers, see the related tutorials in the manual. To build flexible UIs, you'll need a mix of UI elements that inherit from [Control] and [Container] nodes.
 		[b]User Interface nodes and input[/b]
 		Godot sends input events to the scene's root node first, by calling [method Node._input]. [method Node._input] forwards the event down the node tree to the nodes under the mouse cursor, or on keyboard focus. To do so, it calls [method MainLoop._input_event]. Call [method accept_event] so no other node receives the event. Once you accepted an input, it becomes handled so [method Node._unhandled_input] will not process it.
 		Only one [Control] node can be in keyboard focus. Only the node in focus will receive keyboard events. To get the focus, call [method grab_focus]. [Control] nodes lose focus when another node grabs it, or if you hide the node in focus.
-		Set [member mouse_filter] to [constant MOUSE_FILTER_IGNORE] to tell a [Control] node to ignore mouse or touch events. You'll need it if you place an icon on top of a button.
+		Sets [member mouse_filter] to [constant MOUSE_FILTER_IGNORE] to tell a [Control] node to ignore mouse or touch events. You'll need it if you place an icon on top of a button.
 		[Theme] resources change the Control's appearance. If you change the [Theme] on a [Control] node, it affects all of its children. To override some of the theme's parameters, call one of the [code]add_*_override[/code] methods, like [method add_font_override]. You can override the theme with the inspector.
 	</description>
 	<tutorials>
@@ -135,9 +135,9 @@
 				extends Control
 
 				func can_drop_data(position, data):
-				    # check position if it is relevant to you
-				    # otherwise just check data
-				    return typeof(data) == TYPE_DICTIONARY and data.has('expected')
+				    # Check position if it is relevant to you
+				    # Otherwise, just check data
+				    return typeof(data) == TYPE_DICTIONARY and data.has("expected")
 				[/codeblock]
 			</description>
 		</method>
@@ -154,10 +154,10 @@
 				extends ColorRect
 
 				func can_drop_data(position, data):
-				    return typeof(data) == TYPE_DICTIONARY and data.has('color')
+				    return typeof(data) == TYPE_DICTIONARY and data.has("color")
 
 				func drop_data(position, data):
-				    color = data['color']
+				    color = data["color"]
 				[/codeblock]
 			</description>
 		</method>
@@ -221,7 +221,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Returns null if there is no data to drag. Controls that want to receive drop data should implement [method can_drop_data] and [method drop_data]. [code]position[/code] is local to this control. Drag may be forced with [method force_drag].
+				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Returns [code]null[/code] if there is no data to drag. Controls that want to receive drop data should implement [method can_drop_data] and [method drop_data]. [code]position[/code] is local to this control. Drag may be forced with [method force_drag].
 				A preview that will follow the mouse that should represent the data can be set with [method set_drag_preview]. A good time to set the preview is in this method.
 				[codeblock]
 				extends Control
@@ -862,16 +862,16 @@
 			Show the system's forbidden mouse cursor when the user hovers the node. Often a crossed circle.
 		</constant>
 		<constant name="CURSOR_VSIZE" value="9" enum="CursorShape">
-			Show the system's vertical resize mouse cursor when the user hovers the node. A double headed vertical arrow. It tells the user they can resize the window or the panel vertically.
+			Show the system's vertical resize mouse cursor when the user hovers the node. A double-headed vertical arrow. It tells the user they can resize the window or the panel vertically.
 		</constant>
 		<constant name="CURSOR_HSIZE" value="10" enum="CursorShape">
-			Show the system's horizontal resize mouse cursor when the user hovers the node. A double headed horizontal arrow. It tells the user they can resize the window or the panel horizontally.
+			Show the system's horizontal resize mouse cursor when the user hovers the node. A double-headed horizontal arrow. It tells the user they can resize the window or the panel horizontally.
 		</constant>
 		<constant name="CURSOR_BDIAGSIZE" value="11" enum="CursorShape">
-			Show the system's window resize mouse cursor when the user hovers the node. The cursor is a double headed arrow that goes from the bottom left to the top right. It tells the user they can resize the window or the panel both horizontally and vertically.
+			Show the system's window resize mouse cursor when the user hovers the node. The cursor is a double-headed arrow that goes from the bottom left to the top right. It tells the user they can resize the window or the panel both horizontally and vertically.
 		</constant>
 		<constant name="CURSOR_FDIAGSIZE" value="12" enum="CursorShape">
-			Show the system's window resize mouse cursor when the user hovers the node. The cursor is a double headed arrow that goes from the top left to the bottom right, the opposite of [constant CURSOR_BDIAGSIZE]. It tells the user they can resize the window or the panel both horizontally and vertically.
+			Show the system's window resize mouse cursor when the user hovers the node. The cursor is a double-headed arrow that goes from the top left to the bottom right, the opposite of [constant CURSOR_BDIAGSIZE]. It tells the user they can resize the window or the panel both horizontally and vertically.
 		</constant>
 		<constant name="CURSOR_MOVE" value="13" enum="CursorShape">
 			Show the system's move mouse cursor when the user hovers the node. It shows 2 double-headed arrows at a 90 degree angle. It tells the user they can move a UI element freely.
@@ -931,7 +931,7 @@
 			Snap all 4 anchors to a horizontal line that cuts the parent control in half. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_WIDE" value="15" enum="LayoutPreset">
-			Snap all 4 anchors to the respective corners of the parent control. Set all 4 margins to 0 after you applied this preset and the [Control] will fit its parent control. This is equivalent to to the "Full Rect" layout option in the editor. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the respective corners of the parent control. Set all 4 margins to 0 after you applied this preset and the [Control] will fit its parent control. This is equivalent to the "Full Rect" layout option in the editor. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_MODE_MINSIZE" value="0" enum="LayoutPresetMode">
 		</constant>
@@ -957,13 +957,13 @@
 			Tells the parent [Container] to align the node with its end, either the bottom or the right edge. It doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="MOUSE_FILTER_STOP" value="0" enum="MouseFilter">
-			The control will receive mouse button input events through [method _gui_input] if clicked on. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals. These events are automatically marked as handled and they will not propagate further to other controls. This also results in blocking signals in other controls.
+			The control will receive mouse button input events through [method _gui_input] if clicked on. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals. These events are automatically marked as handled, and they will not propagate further to other controls. This also results in blocking signals in other controls.
 		</constant>
 		<constant name="MOUSE_FILTER_PASS" value="1" enum="MouseFilter">
 			The control will receive mouse button input events through [method _gui_input] if clicked on. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals. If this control does not handle the event, the parent control (if any) will be considered, and so on until there is no more parent control to potentially handle it. This also allows signals to fire in other controls. Even if no control handled it at all, the event will still be handled automatically, so unhandled input will not be fired.
 		</constant>
 		<constant name="MOUSE_FILTER_IGNORE" value="2" enum="MouseFilter">
-			The control will not receive mouse button input events through [method _gui_input]. Also the control will not receive the [signal mouse_entered] nor [signal mouse_exited] signals. This will not block other controls from receiving these events or firing the signals. Ignored events will not be handled automatically.
+			The control will not receive mouse button input events through [method _gui_input]. The control will also not receive the [signal mouse_entered] nor [signal mouse_exited] signals. This will not block other controls from receiving these events or firing the signals. Ignored events will not be handled automatically.
 		</constant>
 		<constant name="GROW_DIRECTION_BEGIN" value="0" enum="GrowDirection">
 			The control will grow to the left or top to make up if its minimum size is changed to be greater than its current size on the respective axis.

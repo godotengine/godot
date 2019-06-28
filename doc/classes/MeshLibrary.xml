@@ -4,7 +4,7 @@
 		Library of meshes.
 	</brief_description>
 	<description>
-		Library of meshes. Contains a list of [Mesh] resources, each with name and ID. Useful for GridMap or painting Terrain.
+		Library of meshes. Contains a list of [Mesh] resources, each with name and ID. This resource is used in [GridMap].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -94,7 +94,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Get an unused id for a new item.
+				Gets an unused id for a new item.
 			</description>
 		</method>
 		<method name="remove_item">
@@ -103,7 +103,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Remove the item.
+				Removes the item.
 			</description>
 		</method>
 		<method name="set_item_mesh">
@@ -114,7 +114,7 @@
 			<argument index="1" name="mesh" type="Mesh">
 			</argument>
 			<description>
-				Set the mesh of the item.
+				Sets the mesh of the item.
 			</description>
 		</method>
 		<method name="set_item_name">
@@ -125,7 +125,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
-				Set the name of the item.
+				Sets the name of the item.
 			</description>
 		</method>
 		<method name="set_item_navmesh">

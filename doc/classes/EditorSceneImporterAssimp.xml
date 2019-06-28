@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorSceneImporterAssimp" inherits="EditorSceneImporter" category="Core" version="3.2">
 	<brief_description>
-		This is a multi-format 3d asset importer.
+		Multi-format 3D asset importer based on [url=http://assimp.org/]Assimp[/url].
 	</brief_description>
 	<description>
-		This is a multi-format 3d asset importer.
-		Use these FBX export settings from Autodesk Maya.
+		This is a multi-format 3D asset importer based on [url=http://assimp.org/]Assimp[/url]. See [url=https://assimp-docs.readthedocs.io/en/latest/about/intoduction.html#installation]this page[/url] for a full list of supported formats.
+		If exporting a FBX scene from Autodesk Maya, use these FBX export settings:
 		[codeblock]
-		* Smoothing Groups
-		* Smooth Mesh
-		* Triangluate (For mesh with blendshapes)
-		* Bake Animation
-		* Resample All
-		* Deformed Models
-		* Skins
-		* Blend Shapes
-		* Curve Filters
-		* Constant Key Reducer
-		* Auto Tangents Only
-		* DO NOT CHECK Constraints (Will Break File)
-		* Can check Embed Media (Embeds textures into FBX file to import)
-		-- Note: When importing embed media, texture and mesh will be a un-alterable file.
-		--       Reimport of fbx with updated texture is need if texture is updated.
-		* Units: Centimeters
-		* Up Axis: Y
-		* Binary format in FBX 2017
+		- Smoothing Groups
+		- Smooth Mesh
+		- Triangluate (for meshes with blend shapes)
+		- Bake Animation
+		- Resample All
+		- Deformed Models
+		- Skins
+		- Blend Shapes
+		- Curve Filters
+		- Constant Key Reducer
+		- Auto Tangents Only
+		- *Do not check* Constraints (as it will break the file)
+		- Can check Embed Media (embeds textures into the exported FBX file)
+		  - Note that when importing embedded media, the texture and mesh will be a single immutable file.
+		  - You will have to re-export then re-import the FBX if the texture has changed.
+		- Units: Centimeters
+		- Up Axis: Y
+		- Binary format in FBX 2017
 		[/codeblock]
 	</description>
 	<tutorials>

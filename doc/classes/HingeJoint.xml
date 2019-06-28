@@ -4,7 +4,7 @@
 		A hinge between two 3D bodies.
 	</brief_description>
 	<description>
-		Normally uses the z-axis of body A as the hinge axis, another axis can be specified when adding it manually though.
+		A HingeJoint normally uses the Z axis of body A as the hinge axis, another axis can be specified when adding it manually though.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -18,7 +18,7 @@
 			If [code]true[/code], the hinges maximum and minimum rotation, defined by [member angular_limit/lower] and [member angular_limit/upper] has effects.
 		</member>
 		<member name="angular_limit/lower" type="float" setter="_set_lower_limit" getter="_get_lower_limit">
-			The minimum rotation. only active if [member angular_limit/enable] is [code]true[/code].
+			The minimum rotation. Only active if [member angular_limit/enable] is [code]true[/code].
 		</member>
 		<member name="angular_limit/relaxation" type="float" setter="set_param" getter="get_param">
 			The lower this value, the more the rotation gets slowed down.
@@ -26,7 +26,7 @@
 		<member name="angular_limit/softness" type="float" setter="set_param" getter="get_param">
 		</member>
 		<member name="angular_limit/upper" type="float" setter="_set_upper_limit" getter="_get_upper_limit">
-			The maximum rotation. only active if [member angular_limit/enable] is [code]true[/code].
+			The maximum rotation. Only active if [member angular_limit/enable] is [code]true[/code].
 		</member>
 		<member name="motor/enable" type="bool" setter="set_flag" getter="get_flag">
 			When activated, a motor turns the hinge.
@@ -46,10 +46,10 @@
 			The speed with which the two bodies get pulled together when they move in different directions.
 		</constant>
 		<constant name="PARAM_LIMIT_UPPER" value="1" enum="Param">
-			The maximum rotation. only active if [member angular_limit/enable] is [code]true[/code].
+			The maximum rotation. Only active if [member angular_limit/enable] is [code]true[/code].
 		</constant>
 		<constant name="PARAM_LIMIT_LOWER" value="2" enum="Param">
-			The minimum rotation. only active if [member angular_limit/enable] is [code]true[/code].
+			The minimum rotation. Only active if [member angular_limit/enable] is [code]true[/code].
 		</constant>
 		<constant name="PARAM_LIMIT_BIAS" value="3" enum="Param">
 			The speed with which the rotation across the axis perpendicular to the hinge gets corrected.

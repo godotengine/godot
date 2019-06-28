@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Sprite" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
-		General purpose Sprite node.
+		General-purpose sprite node.
 	</brief_description>
 	<description>
 		A node that displays a 2D texture. The texture displayed can be a region from a larger atlas texture, or a frame from a sprite sheet animation.
@@ -29,7 +29,7 @@
 			</argument>
 			<description>
 				Returns [code]true[/code], if the pixel at the given position is opaque and [code]false[/code] in other case.
-				Note: It also returns [code]false[/code], if the sprite's texture is null or if the given position is invalid.
+				[b]Note:[/b] It also returns [code]false[/code], if the sprite's texture is [code]null[/code] or if the given position is invalid.
 			</description>
 		</method>
 	</methods>

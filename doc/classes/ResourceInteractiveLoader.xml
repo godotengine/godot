@@ -4,7 +4,7 @@
 		Interactive [Resource] loader.
 	</brief_description>
 	<description>
-		Interactive [Resource] loader. This object is returned by [ResourceLoader] when performing an interactive load. It allows to load with high granularity, so this is mainly useful for displaying loading bars/percentages.
+		Interactive [Resource] loader. This object is returned by [ResourceLoader] when performing an interactive load. It allows loading resources with high granularity, which makes it mainly useful for displaying loading bars or percentages.
 	</description>
 	<tutorials>
 	</tutorials>

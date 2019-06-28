@@ -238,7 +238,7 @@
 			</argument>
 			<description>
 				Sets mix amount of a Mix node given its name and value.
-				A Mix node adds input b to input a by a the amount given by ratio.
+				A Mix node adds input b to input a by the amount given by ratio.
 			</description>
 		</method>
 		<method name="node_exists" qualifiers="const">
@@ -285,7 +285,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
-				Get the node type, will return from NODE_* enum.
+				Gets the node type, will return from [code]NODE_*[/code] enum.
 			</description>
 		</method>
 		<method name="node_rename">
@@ -503,7 +503,7 @@
 			<argument index="1" name="seconds" type="float">
 			</argument>
 			<description>
-				Sets the time seek value of the TimeSeek node with name [code]id[/code] to [code]seconds[/code]
+				Sets the time seek value of the TimeSeek node with name [code]id[/code] to [code]seconds[/code].
 				This functions as a seek in the [Animation] or the blend or mix of [Animation]s input in it.
 			</description>
 		</method>

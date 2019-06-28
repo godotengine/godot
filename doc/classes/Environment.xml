@@ -5,10 +5,9 @@
 	</brief_description>
 	<description>
 		Resource for environment nodes (like [WorldEnvironment]) that define multiple environment operations (such as background [Sky] or [Color], ambient light, fog, depth-of-field...). These parameters affect the final render of the scene. The order of these operations is:
-		- DOF Blur
-		- Motion Blur
-		- Bloom
-		- Tonemap (auto exposure)
+		- Depth of Field Blur
+		- Glow
+		- Tonemap (Auto Exposure)
 		- Adjustments
 	</description>
 	<tutorials>
@@ -282,7 +281,7 @@
 			Screen glow blending mode. Increases brightness, used frequently with bloom.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_SOFTLIGHT" value="2" enum="GlowBlendMode">
-			Softlight glow blending mode. Modifies contrast, exposes shadows and highlights, vivid bloom.
+			Soft light glow blending mode. Modifies contrast, exposes shadows and highlights, vivid bloom.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_REPLACE" value="3" enum="GlowBlendMode">
 			Replace glow blending mode. Replaces all pixels' color by the glow value.
@@ -291,7 +290,7 @@
 			Linear tonemapper operator. Reads the linear data and performs an exposure adjustment.
 		</constant>
 		<constant name="TONE_MAPPER_REINHARDT" value="1" enum="ToneMapper">
-			Reinhardt tonemapper operator. Performs a variation on rendered pixels' colors by this formula: color = color / (1 + color).
+			Reinhardt tonemapper operator. Performs a variation on rendered pixels' colors by this formula: [code]color = color / (1 + color)[/code].
 		</constant>
 		<constant name="TONE_MAPPER_FILMIC" value="2" enum="ToneMapper">
 			Filmic tonemapper operator.

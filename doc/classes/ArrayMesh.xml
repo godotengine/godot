@@ -31,7 +31,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Add name for a blend shape that will be added with [method add_surface_from_arrays]. Must be called before surface is added.
+				Adds name for a blend shape that will be added with [method add_surface_from_arrays]. Must be called before surface is added.
 			</description>
 		</method>
 		<method name="add_surface_from_arrays">
@@ -57,7 +57,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Remove all blend shapes from this [ArrayMesh].
+				Removes all blend shapes from this [ArrayMesh].
 			</description>
 		</method>
 		<method name="get_blend_shape_count" qualifiers="const">
@@ -100,7 +100,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Returns the index of the first surface with this name held within this [ArrayMesh]. If none are found -1 is returned.
+				Returns the index of the first surface with this name held within this [ArrayMesh]. If none are found, -1 is returned.
 			</description>
 		</method>
 		<method name="surface_get_array_index_len" qualifiers="const">
@@ -136,7 +136,7 @@
 			<argument index="0" name="surf_idx" type="int">
 			</argument>
 			<description>
-				Get the name assigned to this surface.
+				Gets the name assigned to this surface.
 			</description>
 		</method>
 		<method name="surface_get_primitive_type" qualifiers="const">
@@ -154,7 +154,7 @@
 			<argument index="0" name="surf_idx" type="int">
 			</argument>
 			<description>
-				Remove a surface at position surf_idx, shifting greater surfaces one surf_idx slot down.
+				Removes a surface at position [code]surf_idx[/code], shifting greater surfaces one [code]surf_idx[/code] slot down.
 			</description>
 		</method>
 		<method name="surface_set_name">
@@ -165,7 +165,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
-				Set a name for a given surface.
+				Sets a name for a given surface.
 			</description>
 		</method>
 		<method name="surface_update_region">
@@ -178,7 +178,8 @@
 			<argument index="2" name="data" type="PoolByteArray">
 			</argument>
 			<description>
-				Updates a specified region of mesh arrays on GPU. Warning: only use if you know what you are doing. You can easily cause crashes by calling this function with improper arguments.
+				Updates a specified region of mesh arrays on the GPU.
+				[b]Warning:[/b] Only use if you know what you are doing. You can easily cause crashes by calling this function with improper arguments.
 			</description>
 		</method>
 	</methods>
