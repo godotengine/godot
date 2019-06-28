@@ -2249,6 +2249,7 @@ Ref<Theme> Control::get_theme() const {
 void Control::set_tooltip(const String &p_tooltip) {
 
 	data.tooltip = p_tooltip;
+	update_configuration_warning();
 }
 
 String Control::get_tooltip(const Point2 &p_pos) const {
@@ -2540,6 +2541,7 @@ void Control::set_mouse_filter(MouseFilter p_filter) {
 
 	ERR_FAIL_INDEX(p_filter, 3);
 	data.mouse_filter = p_filter;
+	update_configuration_warning();
 }
 
 Control::MouseFilter Control::get_mouse_filter() const {
@@ -2703,6 +2705,20 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 		}
 	}
 }
+
+String Control::get_configuration_warning() const {
+	String warning = CanvasItem::get_configuration_warning();
+
+	if (data.mouse_filter == MOUSE_FILTER_IGNORE && data.tooltip != "") {
+		if (warning != String()) {
+			warning += "\n";
+		}
+		warning += TTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\".");
+	}
+
+	return warning;
+}
+
 void Control::set_clip_contents(bool p_clip) {
 
 	data.clip_contents = p_clip;
