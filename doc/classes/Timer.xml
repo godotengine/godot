@@ -36,10 +36,10 @@
 	</methods>
 	<members>
 		<member name="autostart" type="bool" setter="set_autostart" getter="has_autostart" default="false">
-			If [code]true[/code], the timer will automatically start when entering the scene tree. Default value: [code]false[/code].
+			If [code]true[/code], the timer will automatically start when entering the scene tree.
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="is_one_shot" default="false">
-			If [code]true[/code], the timer will stop when reaching 0. If [code]false[/code], it will restart. Default value: [code]false[/code].
+			If [code]true[/code], the timer will stop when reaching 0. If [code]false[/code], it will restart.
 		</member>
 		<member name="paused" type="bool" setter="set_paused" getter="is_paused" default="null">
 			If [code]true[/code], the timer is paused and will not process until it is unpaused again, even if [method start] is called.

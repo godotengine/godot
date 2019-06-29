@@ -28,7 +28,7 @@
 		<member name="follow_viewport_scale" type="float" setter="set_follow_viewport_scale" getter="get_follow_viewport_scale" default="1.0">
 		</member>
 		<member name="layer" type="int" setter="set_layer" getter="get_layer" default="1">
-			Layer index for draw order. Lower values are drawn first. Default value: [code]1[/code].
+			Layer index for draw order. Lower values are drawn first.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The layer's base offset.

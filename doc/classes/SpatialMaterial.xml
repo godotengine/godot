@@ -21,7 +21,7 @@
 			The strength of the anisotropy effect.
 		</member>
 		<member name="anisotropy_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], anisotropy is enabled. Changes the shape of the specular blob and aligns it to tangent space. Default value: [code]false[/code].
+			If [code]true[/code], anisotropy is enabled. Changes the shape of the specular blob and aligns it to tangent space.
 		</member>
 		<member name="anisotropy_flowmap" type="Texture" setter="set_texture" getter="get_texture" default="null">
 		</member>
@@ -39,7 +39,7 @@
 		<member name="clearcoat" type="float" setter="set_clearcoat" getter="get_clearcoat" default="null">
 		</member>
 		<member name="clearcoat_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], clearcoat rendering is enabled. Adds a secondary transparent pass to the material. Default value: [code]false[/code].
+			If [code]true[/code], clearcoat rendering is enabled. Adds a secondary transparent pass to the material.
 		</member>
 		<member name="clearcoat_gloss" type="float" setter="set_clearcoat_gloss" getter="get_clearcoat_gloss" default="null">
 		</member>
@@ -98,24 +98,24 @@
 		<member name="flags_albedo_tex_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
 		<member name="flags_disable_ambient_light" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the object receives no ambient light. Default value: [code]false[/code].
+			If [code]true[/code], the object receives no ambient light.
 		</member>
 		<member name="flags_do_not_receive_shadows" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the object receives no shadow that would otherwise be cast onto it. Default value: [code]false[/code].
+			If [code]true[/code], the object receives no shadow that would otherwise be cast onto it.
 		</member>
 		<member name="flags_ensure_correct_normals" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
 		<member name="flags_fixed_size" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the object is rendered at the same size regardless of distance. Default value: [code]false[/code].
+			If [code]true[/code], the object is rendered at the same size regardless of distance.
 		</member>
 		<member name="flags_no_depth_test" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], depth testing is disabled and the object will be drawn in render order.
 		</member>
 		<member name="flags_transparent" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], transparency is enabled on the body. Default value: [code]false[/code]. See also [member params_blend_mode].
+			If [code]true[/code], transparency is enabled on the body. See also [member params_blend_mode].
 		</member>
 		<member name="flags_unshaded" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the object is unaffected by lighting. Default value: [code]false[/code].
+			If [code]true[/code], the object is unaffected by lighting.
 		</member>
 		<member name="flags_use_point_size" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], render point size can be changed.
@@ -124,10 +124,10 @@
 		<member name="flags_use_shadow_to_opacity" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
 		<member name="flags_vertex_lighting" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], lighting is calculated per vertex rather than per pixel. This may increase performance on low-end devices. Default value: [code]false[/code].
+			If [code]true[/code], lighting is calculated per vertex rather than per pixel. This may increase performance on low-end devices.
 		</member>
 		<member name="flags_world_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], triplanar mapping is calculated in world space rather than object local space. See also [member uv1_triplanar]. Default value: [code]false[/code].
+			If [code]true[/code], triplanar mapping is calculated in world space rather than object local space. See also [member uv1_triplanar].
 		</member>
 		<member name="metallic" type="float" setter="set_metallic" getter="get_metallic" default="0.0">
 			The reflectivity of the object's surface. The higher the value, the more light is reflected.
@@ -196,10 +196,10 @@
 		<member name="proximity_fade_distance" type="float" setter="set_proximity_fade_distance" getter="get_proximity_fade_distance" default="null">
 		</member>
 		<member name="proximity_fade_enable" type="bool" setter="set_proximity_fade" getter="is_proximity_fade_enabled" default="false">
-			If [code]true[/code], the proximity and distance fade effect is enabled. Default value: [code]false[/code].
+			If [code]true[/code], the proximity and distance fade effect is enabled.
 		</member>
 		<member name="refraction_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], the refraction effect is enabled. Distorts transparency based on light from behind the object. Default value: [code]false[/code].
+			If [code]true[/code], the refraction effect is enabled. Distorts transparency based on light from behind the object.
 		</member>
 		<member name="refraction_scale" type="float" setter="set_refraction" getter="get_refraction" default="null">
 			The strength of the refraction effect.
@@ -211,7 +211,7 @@
 		<member name="rim" type="float" setter="set_rim" getter="get_rim" default="null">
 		</member>
 		<member name="rim_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], rim effect is enabled. Default value: [code]false[/code].
+			If [code]true[/code], rim effect is enabled.
 		</member>
 		<member name="rim_texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
 		</member>
@@ -237,7 +237,7 @@
 			The color used by the transmission effect. Represents the light passing through an object.
 		</member>
 		<member name="transmission_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], the transmission effect is enabled. Default value: [code]false[/code].
+			If [code]true[/code], the transmission effect is enabled.
 		</member>
 		<member name="transmission_texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
 		</member>
@@ -258,10 +258,10 @@
 		<member name="uv2_triplanar_sharpness" type="float" setter="set_uv2_triplanar_blend_sharpness" getter="get_uv2_triplanar_blend_sharpness" default="1.0">
 		</member>
 		<member name="vertex_color_is_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the model's vertex colors are processed as sRGB mode. Default value: [code]false[/code].
+			If [code]true[/code], the model's vertex colors are processed as sRGB mode.
 		</member>
 		<member name="vertex_color_use_as_albedo" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the vertex color is used as albedo color. Default value: [code]false[/code].
+			If [code]true[/code], the vertex color is used as albedo color.
 		</member>
 	</members>
 	<constants>
@@ -433,7 +433,7 @@
 			No specular blob.
 		</constant>
 		<constant name="BILLBOARD_DISABLED" value="0" enum="BillboardMode">
-			Default value.
+			Billboard mode is disabled.
 		</constant>
 		<constant name="BILLBOARD_ENABLED" value="1" enum="BillboardMode">
 			The object's Z axis will always face the camera.

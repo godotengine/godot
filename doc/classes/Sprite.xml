@@ -35,13 +35,13 @@
 	</methods>
 	<members>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
-			If [code]true[/code], texture is centered. Default value: [code]true[/code].
+			If [code]true[/code], texture is centered.
 		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
-			If [code]true[/code], texture is flipped horizontally. Default value: [code]false[/code].
+			If [code]true[/code], texture is flipped horizontally.
 		</member>
 		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
-			If [code]true[/code], texture is flipped vertically. Default value: [code]false[/code].
+			If [code]true[/code], texture is flipped vertically.
 		</member>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
 			Current frame to display from sprite sheet. [member vframes] or [member hframes] must be greater than 1.
@@ -56,7 +56,7 @@
 			The texture's drawing offset.
 		</member>
 		<member name="region_enabled" type="bool" setter="set_region" getter="is_region" default="false">
-			If [code]true[/code], texture is cut from a larger atlas texture. See [member region_rect]. Default value: [code]false[/code].
+			If [code]true[/code], texture is cut from a larger atlas texture. See [member region_rect].
 		</member>
 		<member name="region_filter_clip" type="bool" setter="set_region_filter_clip" getter="is_region_filter_clip_enabled" default="false">
 			If [code]true[/code], the outermost pixels get blurred out.

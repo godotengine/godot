@@ -66,7 +66,7 @@
 			</return>
 			<description>
 				Virtual method which can be overridden to customize the return value of [method to_string], and thus the object's representation where it is converted to a string, e.g. with [code]print(obj)[/code].
-				Returns a [String] representing the object. Default is [code]"[ClassName:RID]"[/code].
+				Returns a [String] representing the object. If not overridden, defaults to [code]"[ClassName:RID]"[/code].
 			</description>
 		</method>
 		<method name="add_user_signal">
@@ -426,7 +426,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Defines whether the object can translate strings (with calls to [method tr]). Default is [code]true[/code].
+				Defines whether the object can translate strings (with calls to [method tr]). Enabled by default.
 			</description>
 		</method>
 		<method name="set_meta">
@@ -453,7 +453,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns a [String] representing the object. Default is [code]"[ClassName:RID]"[/code].
+				Returns a [String] representing the object. If not overridden, defaults to [code]"[ClassName:RID]"[/code].
 				Override the method [method _to_string] to customize the [String] representation.
 			</description>
 		</method>

@@ -203,7 +203,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], the application automatically accepts quitting. Defaults to [code]true[/code].
+				If [code]true[/code], the application automatically accepts quitting. Enabled by default.
 			</description>
 		</method>
 		<method name="set_group">
@@ -247,7 +247,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], the application quits automatically on going back (e.g. on Android). Defaults to [code]true[/code].
+				If [code]true[/code], the application quits automatically on going back (e.g. on Android). Enabled by default.
 			</description>
 		</method>
 		<method name="set_screen_stretch">

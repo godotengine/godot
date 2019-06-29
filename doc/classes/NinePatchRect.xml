@@ -18,7 +18,7 @@
 			Doesn't do anything at the time of writing.
 		</member>
 		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled" default="true">
-			If [code]true[/code], draw the panel's center. Else, only draw the 9-slice's borders. Default value: [code]true[/code].
+			If [code]true[/code], draw the panel's center. Else, only draw the 9-slice's borders.
 		</member>
 		<member name="patch_margin_bottom" type="int" setter="set_patch_margin" getter="get_patch_margin" default="0">
 			The height of the 9-slice's bottom row. A margin of 16 means the 9-slice's bottom corners and side will have a height of 16 pixels. You can set all 4 margin values individually to create panels with non-uniform borders.
@@ -48,7 +48,7 @@
 	</signals>
 	<constants>
 		<constant name="AXIS_STRETCH_MODE_STRETCH" value="0" enum="AxisStretchMode">
-			Doesn't do anything at the time of writing. Default value for [code]axis_stretch_horizontal[/code] and [code]axis_stretch_vertical[/code].
+			Doesn't do anything at the time of writing.
 		</constant>
 		<constant name="AXIS_STRETCH_MODE_TILE" value="1" enum="AxisStretchMode">
 			Doesn't do anything at the time of writing.

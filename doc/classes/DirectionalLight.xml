@@ -16,7 +16,7 @@
 			Amount of extra bias for shadow splits that are far away. If self-shadowing occurs only on the splits far away, increasing this value can fix them.
 		</member>
 		<member name="directional_shadow_blend_splits" type="bool" setter="set_blend_splits" getter="is_blend_splits_enabled" default="false">
-			If [code]true[/code], shadow detail is sacrificed in exchange for smoother transitions between splits. Default value: [code]false[/code].
+			If [code]true[/code], shadow detail is sacrificed in exchange for smoother transitions between splits.
 		</member>
 		<member name="directional_shadow_depth_range" type="int" setter="set_shadow_depth_range" getter="get_shadow_depth_range" enum="DirectionalLight.ShadowDepthRange" default="0">
 			Optimizes shadow rendering for detail versus movement. See [enum ShadowDepthRange].
@@ -51,7 +51,7 @@
 			Splits the view frustum in 4 areas, each with its own shadow map.
 		</constant>
 		<constant name="SHADOW_DEPTH_RANGE_STABLE" value="0" enum="ShadowDepthRange">
-			Keeps the shadow stable when the camera moves, at the cost of lower effective shadow resolution. Default value.
+			Keeps the shadow stable when the camera moves, at the cost of lower effective shadow resolution.
 		</constant>
 		<constant name="SHADOW_DEPTH_RANGE_OPTIMIZED" value="1" enum="ShadowDepthRange">
 			Tries to achieve maximum shadow resolution. May result in saw effect on shadow edges.

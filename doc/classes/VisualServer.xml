@@ -4008,7 +4008,7 @@
 			Texture is a video surface.
 		</constant>
 		<constant name="TEXTURE_FLAGS_DEFAULT" value="7" enum="TextureFlags">
-			Default flags. [constant TEXTURE_FLAG_MIPMAPS], [constant TEXTURE_FLAG_REPEAT] and [constant TEXTURE_FLAG_FILTER] are are enabled.
+			Default flags. [constant TEXTURE_FLAG_MIPMAPS], [constant TEXTURE_FLAG_REPEAT] and [constant TEXTURE_FLAG_FILTER] are enabled.
 		</constant>
 		<constant name="SHADER_SPATIAL" value="0" enum="ShaderMode">
 			Shader is a 3D shader.

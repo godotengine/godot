@@ -1390,7 +1390,7 @@
 			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
 			The swing span defines, how much rotation will not get corrected allong the swing axis.
 			Could be defined as looseness in the [ConeTwistJoint].
-			If below 0.05, this behavior is locked. Default value: [code]PI/4[/code].
+			If below 0.05, this behavior is locked.
 		</constant>
 		<constant name="CONE_TWIST_JOINT_TWIST_SPAN" value="1" enum="ConeTwistJointParam">
 			Twist is the rotation around the twist axis, this value defined how far the joint can twist.

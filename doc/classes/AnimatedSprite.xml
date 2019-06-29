@@ -40,13 +40,13 @@
 			The current animation from the [code]frames[/code] resource. If this value changes, the [code]frame[/code] counter is reset.
 		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
-			If [code]true[/code], texture will be centered. Default value: [code]true[/code].
+			If [code]true[/code], texture will be centered.
 		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
-			If [code]true[/code], texture is flipped horizontally. Default value: [code]false[/code].
+			If [code]true[/code], texture is flipped horizontally.
 		</member>
 		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
-			If [code]true[/code], texture is flipped vertically. Default value: [code]false[/code].
+			If [code]true[/code], texture is flipped vertically.
 		</member>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
 			The displayed animation frame's index.

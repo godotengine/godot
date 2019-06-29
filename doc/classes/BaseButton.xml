@@ -58,7 +58,7 @@
 			[ButtonGroup] associated to the button.
 		</member>
 		<member name="keep_pressed_outside" type="bool" setter="set_keep_pressed_outside" getter="is_keep_pressed_outside" default="false">
-			If [code]true[/code], the button stays pressed when moving the cursor outside the button while pressing it. Default value: [code]false[/code].
+			If [code]true[/code], the button stays pressed when moving the cursor outside the button while pressing it.
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
 			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if toggle_mode is active).
