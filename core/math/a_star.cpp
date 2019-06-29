@@ -216,6 +216,8 @@ int AStar::get_closest_point(const Vector3 &p_point) const {
 
 	for (const Map<int, Point *>::Element *E = points.front(); E; E = E->next()) {
 
+		if (!E->get()->enabled)
+			continue; //Disabled points should not be considered
 		real_t d = p_point.distance_squared_to(E->get()->pos);
 		if (closest_id < 0 || d < closest_dist) {
 			closest_dist = d;
@@ -233,6 +235,10 @@ Vector3 AStar::get_closest_position_in_segment(const Vector3 &p_point) const {
 	Vector3 closest_point;
 
 	for (const Set<Segment>::Element *E = segments.front(); E; E = E->next()) {
+
+		if (!(E->get().from_point->enabled && E->get().to_point->enabled)) {
+			continue;
+		}
 
 		Vector3 segment[2] = {
 			E->get().from_point->pos,
