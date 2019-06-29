@@ -216,7 +216,7 @@ void PluginScriptLanguage::get_public_constants(List<Pair<String, Variant> > *p_
 		Dictionary constants;
 		_desc.get_public_constants(_data, (godot_dictionary *)&constants);
 		for (const Variant *key = constants.next(); key; key = constants.next(key)) {
-			Variant value = constants[key];
+			Variant value = constants[*key];
 			p_constants->push_back(Pair<String, Variant>(*key, value));
 		}
 	}
