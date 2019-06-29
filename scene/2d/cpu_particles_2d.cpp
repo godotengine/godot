@@ -1410,7 +1410,7 @@ CPUParticles2D::CPUParticles2D() {
 	set_emission_sphere_radius(1);
 	set_emission_rect_extents(Vector2(1, 1));
 
-	set_gravity(Vector2(0, 98.8));
+	set_gravity(Vector2(0, 98));
 
 	for (int i = 0; i < PARAM_MAX; i++) {
 		set_param_randomness(Parameter(i), 0);
