@@ -805,6 +805,9 @@ public:
 
 	void set_result(const Variant &p_result);
 	Variant get_result() const;
+
+	JSONParseResult() :
+			error_line(-1) {}
 };
 
 class _JSON : public Object {
