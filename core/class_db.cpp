@@ -545,6 +545,11 @@ bool ClassDB::can_instance(const StringName &p_class) {
 
 	ClassInfo *ti = classes.getptr(p_class);
 	ERR_FAIL_COND_V(!ti, false);
+#ifdef TOOLS_ENABLED
+	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
+		return false;
+	}
+#endif
 	return (!ti->disabled && ti->creation_func != NULL);
 }
 
@@ -980,6 +985,13 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 	type->property_setget[p_pinfo.name] = psg;
 }
 
+void ClassDB::set_property_default_value(StringName p_class, const StringName &p_name, const Variant &p_default) {
+	if (!default_values.has(p_class)) {
+		default_values[p_class] = HashMap<StringName, Variant>();
+	}
+	default_values[p_class][p_name] = p_default;
+}
+
 void ClassDB::get_property_list(StringName p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
 
 	OBJTYPE_RLOCK;
@@ -1383,27 +1395,47 @@ void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p
 }
 
 HashMap<StringName, HashMap<StringName, Variant> > ClassDB::default_values;
+Set<StringName> ClassDB::default_values_cached;
 
 Variant ClassDB::class_get_default_property_value(const StringName &p_class, const StringName &p_property) {
 
-	if (!default_values.has(p_class)) {
+	if (!default_values_cached.has(p_class)) {
 
-		default_values[p_class] = HashMap<StringName, Variant>();
+		if (!default_values.has(p_class)) {
+			default_values[p_class] = HashMap<StringName, Variant>();
+		}
 
-		if (ClassDB::can_instance(p_class)) {
+		Object *c = NULL;
+		bool cleanup_c = false;
 
-			Object *c = ClassDB::instance(p_class);
+		if (Engine::get_singleton()->has_singleton(p_class)) {
+			c = Engine::get_singleton()->get_singleton_object(p_class);
+			cleanup_c = false;
+		} else if (ClassDB::can_instance(p_class)) {
+			c = ClassDB::instance(p_class);
+			cleanup_c = true;
+		}
+
+		if (c) {
+
 			List<PropertyInfo> plist;
 			c->get_property_list(&plist);
 			for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
 				if (E->get().usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) {
 
-					Variant v = c->get(E->get().name);
-					default_values[p_class][E->get().name] = v;
+					if (!default_values[p_class].has(E->get().name)) {
+						Variant v = c->get(E->get().name);
+						default_values[p_class][E->get().name] = v;
+					}
 				}
 			}
-			memdelete(c);
+
+			if (cleanup_c) {
+				memdelete(c);
+			}
 		}
+
+		default_values_cached.insert(p_class);
 	}
 
 	if (!default_values.has(p_class)) {
@@ -1422,6 +1454,12 @@ RWLock *ClassDB::lock = NULL;
 void ClassDB::init() {
 
 	lock = RWLock::create();
+}
+
+void ClassDB::cleanup_defaults() {
+
+	default_values.clear();
+	default_values_cached.clear();
 }
 
 void ClassDB::cleanup() {
@@ -1443,7 +1481,6 @@ void ClassDB::cleanup() {
 	classes.clear();
 	resource_base_extensions.clear();
 	compat_classes.clear();
-	default_values.clear();
 
 	memdelete(lock);
 }

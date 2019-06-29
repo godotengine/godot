@@ -264,6 +264,7 @@ void ARVRController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rumble"), &ARVRController::get_rumble);
 	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &ARVRController::set_rumble);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rumble", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_rumble", "get_rumble");
+	ADD_PROPERTY_DEFAULT("rumble", 0.0);
 
 	ClassDB::bind_method(D_METHOD("get_mesh"), &ARVRController::get_mesh);
 

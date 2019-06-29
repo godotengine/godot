@@ -1473,6 +1473,10 @@ void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
 
 Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path) {
 
+	if (!EditorSettings::get_singleton()) {
+		return NULL;
+	}
+
 	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	if (!sc.is_valid()) {
 		ERR_EXPLAIN("Used ED_GET_SHORTCUT with invalid shortcut: " + p_path);
@@ -1506,6 +1510,15 @@ Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 		ie->set_alt(bool(p_keycode & KEY_MASK_ALT));
 		ie->set_control(bool(p_keycode & KEY_MASK_CTRL));
 		ie->set_metakey(bool(p_keycode & KEY_MASK_META));
+	}
+
+	if (!EditorSettings::get_singleton()) {
+		Ref<ShortCut> sc;
+		sc.instance();
+		sc->set_name(p_name);
+		sc->set_shortcut(ie);
+		sc->set_meta("original", ie);
+		return sc;
 	}
 
 	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);

@@ -37,12 +37,13 @@ class TypeName:
 
 
 class PropertyDef:
-    def __init__(self, name, type_name, setter, getter, text):  # type: (str, TypeName, Optional[str], Optional[str], Optional[str]) -> None
+    def __init__(self, name, type_name, setter, getter, text, default_value):  # type: (str, TypeName, Optional[str], Optional[str], Optional[str], Optional[str]) -> None
         self.name = name
         self.type_name = type_name
         self.setter = setter
         self.getter = getter
         self.text = text
+        self.default_value = default_value
 
 class ParameterDef:
     def __init__(self, name, type_name, default_value):  # type: (str, TypeName, Optional[str]) -> None
@@ -81,9 +82,10 @@ class EnumDef:
 
 
 class ThemeItemDef:
-    def __init__(self, name, type_name):  # type: (str, TypeName) -> None
+    def __init__(self, name, type_name, default_value):  # type: (str, TypeName, Optional[str]) -> None
         self.name = name
         self.type_name = type_name
+        self.default_value = default_value
 
 
 class ClassDef:
@@ -144,8 +146,9 @@ class State:
                 type_name = TypeName.from_element(property)
                 setter = property.get("setter") or None  # Use or None so '' gets turned into None.
                 getter = property.get("getter") or None
+                default_value = property.get("default") or None
 
-                property_def = PropertyDef(property_name, type_name, setter, getter, property.text)
+                property_def = PropertyDef(property_name, type_name, setter, getter, property.text, default_value)
                 class_def.properties[property_name] = property_def
 
         methods = class_root.find("methods")
@@ -230,7 +233,8 @@ class State:
                 assert theme_item.tag == "theme_item"
 
                 theme_item_name = theme_item.attrib["name"]
-                theme_item_def = ThemeItemDef(theme_item_name, TypeName.from_element(theme_item))
+                default_value = theme_item.get("default") or None
+                theme_item_def = ThemeItemDef(theme_item_name, TypeName.from_element(theme_item), default_value)
                 if theme_item_name not in class_def.theme_items:
                     class_def.theme_items[theme_item_name] = []
                 class_def.theme_items[theme_item_name].append(theme_item_def)
@@ -400,8 +404,9 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
         for property_def in class_def.properties.values():
             type_rst = property_def.type_name.to_rst(state)
             ref = ":ref:`{0}<class_{1}_property_{0}>`".format(property_def.name, class_name)
-            ml.append((type_rst, ref))
-        format_table(f, ml)
+            default = property_def.default_value
+            ml.append((type_rst, ref, default))
+        format_table(f, ml, True)
 
     # Methods overview
     if len(class_def.methods) > 0:
@@ -415,11 +420,11 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Theme properties
     if class_def.theme_items is not None and len(class_def.theme_items) > 0:
         f.write(make_heading('Theme Properties', '-'))
-        ml = []
+        pl = []
         for theme_item_list in class_def.theme_items.values():
             for theme_item in theme_item_list:
-                ml.append((theme_item.type_name.to_rst(state), theme_item.name))
-        format_table(f, ml)
+                pl.append((theme_item.type_name.to_rst(state), theme_item.name, theme_item.default_value))
+        format_table(f, pl, True)
 
     # Signals
     if len(class_def.signals) > 0:
@@ -488,14 +493,16 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             f.write(".. _class_{}_property_{}:\n\n".format(class_name, property_def.name))
             f.write('- {} **{}**\n\n'.format(property_def.type_name.to_rst(state), property_def.name))
 
-            setget = []
+            info = []
+            if property_def.default_value is not None:
+                info.append(("*Default*", property_def.default_value))
             if property_def.setter is not None and not property_def.setter.startswith("_"):
-                setget.append(("*Setter*", property_def.setter + '(value)'))
+                info.append(("*Setter*", property_def.setter + '(value)'))
             if property_def.getter is not None and not property_def.getter.startswith("_"):
-                setget.append(('*Getter*', property_def.getter + '()'))
+                info.append(('*Getter*', property_def.getter + '()'))
 
-            if len(setget) > 0:
-                format_table(f, setget)
+            if len(info) > 0:
+                format_table(f, info)
 
             if property_def.text is not None and property_def.text.strip() != '':
                 f.write(rstize_text(property_def.text.strip(), state))
@@ -873,33 +880,33 @@ def rstize_text(text, state):  # type: (str, State) -> str
     return text
 
 
-def format_table(f, pp):  # type: (TextIO, Iterable[Tuple[str, ...]]) -> None
-    longest_t = 0
-    longest_s = 0
-    for s in pp:
-        sl = len(s[0])
-        if sl > longest_s:
-            longest_s = sl
-        tl = len(s[1])
-        if tl > longest_t:
-            longest_t = tl
+def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterable[Tuple[str, ...]]) -> None
+    if len(data) == 0:
+        return
+    
+    column_sizes = [0] * len(data[0])
+    for row in data:
+        for i, text in enumerate(row):
+            text_length = len(text or '')
+            if text_length > column_sizes[i]:
+                column_sizes[i] = text_length
 
-    sep = "+"
-    for i in range(longest_s + 2):
-        sep += "-"
-    sep += "+"
-    for i in range(longest_t + 2):
-        sep += "-"
+    sep = ""
+    for size in column_sizes:
+        if size == 0 and remove_empty_columns:
+            continue
+        sep += "+" + "-" * (size + 2)
     sep += "+\n"
     f.write(sep)
-    for s in pp:
-        rt = s[0]
-        while len(rt) < longest_s:
-            rt += " "
-        st = s[1]
-        while len(st) < longest_t:
-            st += " "
-        f.write("| " + rt + " | " + st + " |\n")
+    
+    for row in data:
+        row_text = "|"
+        for i, text in enumerate(row):
+            if column_sizes[i] == 0 and remove_empty_columns:
+                continue
+            row_text += " " + (text or '').ljust(column_sizes[i]) + " |"
+        row_text += "\n"
+        f.write(row_text)
         f.write(sep)
     f.write('\n')
 

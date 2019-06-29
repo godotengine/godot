@@ -33,9 +33,13 @@
 #include "servers/arvr/arvr_positional_tracker.h"
 #include "servers/visual/visual_server_globals.h"
 
+void ARVRInterfaceGDNative::_bind_methods() {
+	ADD_PROPERTY_DEFAULT("interface_is_initialized", false);
+	ADD_PROPERTY_DEFAULT("ar_is_anchor_detection_enabled", false);
+}
+
 ARVRInterfaceGDNative::ARVRInterfaceGDNative() {
-	// testing
-	printf("Construct gdnative interface\n");
+	print_verbose("Construct gdnative interface\n");
 
 	// we won't have our data pointer until our library gets set
 	data = NULL;
@@ -44,9 +48,9 @@ ARVRInterfaceGDNative::ARVRInterfaceGDNative() {
 }
 
 ARVRInterfaceGDNative::~ARVRInterfaceGDNative() {
-	printf("Destruct gdnative interface\n");
+	print_verbose("Destruct gdnative interface\n");
 
-	if (is_initialized()) {
+	if (interface != NULL && is_initialized()) {
 		uninitialize();
 	};
 
@@ -99,13 +103,10 @@ int ARVRInterfaceGDNative::get_capabilities() const {
 }
 
 bool ARVRInterfaceGDNative::get_anchor_detection_is_enabled() const {
-	bool enabled;
 
 	ERR_FAIL_COND_V(interface == NULL, false);
 
-	enabled = interface->get_anchor_detection_is_enabled(data);
-
-	return enabled;
+	return interface->get_anchor_detection_is_enabled(data);
 }
 
 void ARVRInterfaceGDNative::set_anchor_detection_is_enabled(bool p_enable) {
@@ -137,21 +138,16 @@ bool ARVRInterfaceGDNative::is_stereo() {
 }
 
 bool ARVRInterfaceGDNative::is_initialized() const {
-	bool initialized;
 
 	ERR_FAIL_COND_V(interface == NULL, false);
 
-	initialized = interface->is_initialized(data);
-
-	return initialized;
+	return interface->is_initialized(data);
 }
 
 bool ARVRInterfaceGDNative::initialize() {
-	bool initialized;
-
 	ERR_FAIL_COND_V(interface == NULL, false);
 
-	initialized = interface->initialize(data);
+	bool initialized = interface->initialize(data);
 
 	if (initialized) {
 		// if we successfully initialize our interface and we don't have a primary interface yet, this becomes our primary interface

@@ -1541,7 +1541,7 @@ Vector2 KinematicCollision2D::get_remainder() const {
 	return collision.remainder;
 }
 Object *KinematicCollision2D::get_local_shape() const {
-	ERR_FAIL_COND_V(!owner, NULL);
+	if (!owner) return NULL;
 	uint32_t ownerid = owner->shape_find_owner(collision.local_shape);
 	return owner->shape_owner_get_owner(ownerid);
 }
