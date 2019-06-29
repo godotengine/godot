@@ -99,7 +99,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags">
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" default="4">
 			The texture's flags.
 		</member>
 	</members>

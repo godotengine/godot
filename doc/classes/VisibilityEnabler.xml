@@ -11,10 +11,10 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="freeze_bodies" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+		<member name="freeze_bodies" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="true">
 			If [code]true[/code], [RigidBody] nodes will be paused.
 		</member>
-		<member name="pause_animations" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+		<member name="pause_animations" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="true">
 			If [code]true[/code], [AnimationPlayer] nodes will be paused.
 		</member>
 	</members>

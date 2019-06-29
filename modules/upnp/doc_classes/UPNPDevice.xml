@@ -53,22 +53,22 @@
 		</method>
 	</methods>
 	<members>
-		<member name="description_url" type="String" setter="set_description_url" getter="get_description_url">
+		<member name="description_url" type="String" setter="set_description_url" getter="get_description_url" default="&quot;&quot;">
 			URL to the device description.
 		</member>
-		<member name="igd_control_url" type="String" setter="set_igd_control_url" getter="get_igd_control_url">
+		<member name="igd_control_url" type="String" setter="set_igd_control_url" getter="get_igd_control_url" default="&quot;&quot;">
 			IDG control URL.
 		</member>
-		<member name="igd_our_addr" type="String" setter="set_igd_our_addr" getter="get_igd_our_addr">
+		<member name="igd_our_addr" type="String" setter="set_igd_our_addr" getter="get_igd_our_addr" default="&quot;&quot;">
 			Address of the local machine in the network connecting it to this [UPNPDevice].
 		</member>
-		<member name="igd_service_type" type="String" setter="set_igd_service_type" getter="get_igd_service_type">
+		<member name="igd_service_type" type="String" setter="set_igd_service_type" getter="get_igd_service_type" default="&quot;&quot;">
 			IGD service type.
 		</member>
-		<member name="igd_status" type="int" setter="set_igd_status" getter="get_igd_status" enum="UPNPDevice.IGDStatus">
+		<member name="igd_status" type="int" setter="set_igd_status" getter="get_igd_status" enum="UPNPDevice.IGDStatus" default="9">
 			IGD status. See [enum IGDStatus].
 		</member>
-		<member name="service_type" type="String" setter="set_service_type" getter="get_service_type">
+		<member name="service_type" type="String" setter="set_service_type" getter="get_service_type" default="&quot;&quot;">
 			Service type.
 		</member>
 	</members>

@@ -11,9 +11,9 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="material" type="Material" setter="set_material" getter="get_material">
+		<member name="material" type="Material" setter="set_material" getter="get_material" default="null">
 		</member>
-		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh" default="null">
 			The mesh resource to use as a CSG shape.
 		</member>
 	</members>

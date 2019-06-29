@@ -40,28 +40,28 @@
 		</method>
 	</methods>
 	<members>
-		<member name="access" type="int" setter="set_access" getter="get_access" enum="EditorFileDialog.Access">
+		<member name="access" type="int" setter="set_access" getter="get_access" enum="EditorFileDialog.Access" default="0">
 			The location from which the user may select a file, including [code]res://[/code], [code]user://[/code], and the local file system.
 		</member>
-		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir">
+		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir" default="&quot;res://&quot;">
 			The currently occupied directory.
 		</member>
-		<member name="current_file" type="String" setter="set_current_file" getter="get_current_file">
+		<member name="current_file" type="String" setter="set_current_file" getter="get_current_file" default="&quot;&quot;">
 			The currently selected file.
 		</member>
-		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path">
+		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path" default="&quot;res://&quot;">
 			The file system path in the address bar.
 		</member>
-		<member name="disable_overwrite_warning" type="bool" setter="set_disable_overwrite_warning" getter="is_overwrite_warning_disabled">
+		<member name="disable_overwrite_warning" type="bool" setter="set_disable_overwrite_warning" getter="is_overwrite_warning_disabled" default="false">
 			If [code]true[/code], the [EditorFileDialog] will not warn the user before overwriting files.
 		</member>
-		<member name="display_mode" type="int" setter="set_display_mode" getter="get_display_mode" enum="EditorFileDialog.DisplayMode">
+		<member name="display_mode" type="int" setter="set_display_mode" getter="get_display_mode" enum="EditorFileDialog.DisplayMode" default="0">
 			The view format in which the [EditorFileDialog] displays resources to the user.
 		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="EditorFileDialog.Mode">
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="EditorFileDialog.Mode" default="4">
 			The purpose of the [EditorFileDialog], which defines the allowed behaviors.
 		</member>
-		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files">
+		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files" default="false">
 			If [code]true[/code], hidden files and directories will be visible in the [EditorFileDialog].
 		</member>
 	</members>

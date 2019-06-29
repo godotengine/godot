@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeScalarFunc.Function">
+		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeScalarFunc.Function" default="13">
 		</member>
 	</members>
 	<constants>

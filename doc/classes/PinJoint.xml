@@ -11,13 +11,13 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="params/bias" type="float" setter="set_param" getter="get_param">
+		<member name="params/bias" type="float" setter="set_param" getter="get_param" default="0.3">
 			The force with which the pinned objects stay in positional relation to each other. The higher, the stronger.
 		</member>
-		<member name="params/damping" type="float" setter="set_param" getter="get_param">
+		<member name="params/damping" type="float" setter="set_param" getter="get_param" default="1.0">
 			The force with which the pinned objects stay in velocity relation to each other. The higher, the stronger.
 		</member>
-		<member name="params/impulse_clamp" type="float" setter="set_param" getter="get_param">
+		<member name="params/impulse_clamp" type="float" setter="set_param" getter="get_param" default="0.0">
 			If above 0, this value is the maximum value for an impulse that this Joint produces.
 		</member>
 	</members>

@@ -33,9 +33,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="feed_is_active" type="bool" setter="set_active" getter="is_active">
+		<member name="feed_is_active" type="bool" setter="set_active" getter="is_active" default="false">
 		</member>
-		<member name="feed_transform" type="Transform2D" setter="set_transform" getter="get_transform">
+		<member name="feed_transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D( 1, 0, 0, -1, 0, 1 )">
 		</member>
 	</members>
 	<constants>

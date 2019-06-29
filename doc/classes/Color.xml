@@ -263,37 +263,37 @@
 		</method>
 	</methods>
 	<members>
-		<member name="a" type="float" setter="" getter="">
+		<member name="a" type="float" setter="" getter="" default="1.0">
 			Alpha value (range 0 to 1).
 		</member>
-		<member name="a8" type="int" setter="" getter="">
+		<member name="a8" type="int" setter="" getter="" default="255">
 			Alpha value (range 0 to 255).
 		</member>
-		<member name="b" type="float" setter="" getter="">
+		<member name="b" type="float" setter="" getter="" default="0.0">
 			Blue value (range 0 to 1).
 		</member>
-		<member name="b8" type="int" setter="" getter="">
+		<member name="b8" type="int" setter="" getter="" default="0">
 			Blue value (range 0 to 255).
 		</member>
-		<member name="g" type="float" setter="" getter="">
+		<member name="g" type="float" setter="" getter="" default="0.0">
 			Green value (range 0 to 1).
 		</member>
-		<member name="g8" type="int" setter="" getter="">
+		<member name="g8" type="int" setter="" getter="" default="0">
 			Green value (range 0 to 255).
 		</member>
-		<member name="h" type="float" setter="" getter="">
+		<member name="h" type="float" setter="" getter="" default="0.0">
 			HSV hue value (range 0 to 1).
 		</member>
-		<member name="r" type="float" setter="" getter="">
+		<member name="r" type="float" setter="" getter="" default="0.0">
 			Red value (range 0 to 1).
 		</member>
-		<member name="r8" type="int" setter="" getter="">
+		<member name="r8" type="int" setter="" getter="" default="0">
 			Red value (range 0 to 255).
 		</member>
-		<member name="s" type="float" setter="" getter="">
+		<member name="s" type="float" setter="" getter="" default="0.0">
 			HSV saturation value (range 0 to 1).
 		</member>
-		<member name="v" type="float" setter="" getter="">
+		<member name="v" type="float" setter="" getter="" default="0.0">
 			HSV value (range 0 to 1).
 		</member>
 	</members>

@@ -9,27 +9,27 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="bias" type="float" setter="set_bias" getter="get_bias">
+		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.4">
 		</member>
-		<member name="bounds" type="AABB" setter="set_bounds" getter="get_bounds">
+		<member name="bounds" type="AABB" setter="set_bounds" getter="get_bounds" default="AABB( 0, 0, 0, 1, 1, 1 )">
 		</member>
-		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size">
+		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="1.0">
 		</member>
-		<member name="compress" type="bool" setter="set_compress" getter="is_compressed">
+		<member name="compress" type="bool" setter="set_compress" getter="is_compressed" default="false">
 		</member>
-		<member name="dynamic_data" type="PoolIntArray" setter="set_dynamic_data" getter="get_dynamic_data">
+		<member name="dynamic_data" type="PoolIntArray" setter="set_dynamic_data" getter="get_dynamic_data" default="PoolIntArray(  )">
 		</member>
-		<member name="dynamic_range" type="int" setter="set_dynamic_range" getter="get_dynamic_range">
+		<member name="dynamic_range" type="int" setter="set_dynamic_range" getter="get_dynamic_range" default="1">
 		</member>
-		<member name="energy" type="float" setter="set_energy" getter="get_energy">
+		<member name="energy" type="float" setter="set_energy" getter="get_energy" default="1.0">
 		</member>
-		<member name="interior" type="bool" setter="set_interior" getter="is_interior">
+		<member name="interior" type="bool" setter="set_interior" getter="is_interior" default="false">
 		</member>
-		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias">
+		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias" default="0.4">
 		</member>
-		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation">
+		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation" default="1.0">
 		</member>
-		<member name="to_cell_xform" type="Transform" setter="set_to_cell_xform" getter="get_to_cell_xform">
+		<member name="to_cell_xform" type="Transform" setter="set_to_cell_xform" getter="get_to_cell_xform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 		</member>
 	</members>
 	<constants>

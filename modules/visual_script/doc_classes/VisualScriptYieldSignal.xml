@@ -9,13 +9,13 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type">
+		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" default="&quot;Object&quot;">
 		</member>
-		<member name="call_mode" type="int" setter="set_call_mode" getter="get_call_mode" enum="VisualScriptYieldSignal.CallMode">
+		<member name="call_mode" type="int" setter="set_call_mode" getter="get_call_mode" enum="VisualScriptYieldSignal.CallMode" default="0">
 		</member>
-		<member name="node_path" type="NodePath" setter="set_base_path" getter="get_base_path">
+		<member name="node_path" type="NodePath" setter="set_base_path" getter="get_base_path" default="null">
 		</member>
-		<member name="signal" type="String" setter="set_signal" getter="get_signal">
+		<member name="signal" type="String" setter="set_signal" getter="get_signal" default="&quot;&quot;">
 		</member>
 	</members>
 	<constants>

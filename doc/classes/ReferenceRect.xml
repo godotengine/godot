@@ -11,10 +11,10 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color">
+		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color( 1, 0, 0, 1 )">
 			Sets the border [Color] of the [ReferenceRect].
 		</member>
-		<member name="editor_only" type="bool" setter="set_editor_only" getter="get_editor_only">
+		<member name="editor_only" type="bool" setter="set_editor_only" getter="get_editor_only" default="true">
 			If set to [code]true[/code], the [ReferenceRect] will only be visible while in editor. Otherwise, [ReferenceRect] will be visible in game.
 		</member>
 	</members>

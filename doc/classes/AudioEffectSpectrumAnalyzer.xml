@@ -9,11 +9,11 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length">
+		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="2.0">
 		</member>
-		<member name="fft_size" type="int" setter="set_fft_size" getter="get_fft_size" enum="AudioEffectSpectrumAnalyzer.FFT_Size">
+		<member name="fft_size" type="int" setter="set_fft_size" getter="get_fft_size" enum="AudioEffectSpectrumAnalyzer.FFT_Size" default="2">
 		</member>
-		<member name="tap_back_pos" type="float" setter="set_tap_back_pos" getter="get_tap_back_pos">
+		<member name="tap_back_pos" type="float" setter="set_tap_back_pos" getter="get_tap_back_pos" default="0.01">
 		</member>
 	</members>
 	<constants>

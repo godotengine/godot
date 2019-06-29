@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="constant" type="int" setter="set_global_constant" getter="get_global_constant">
+		<member name="constant" type="int" setter="set_global_constant" getter="get_global_constant" default="0">
 		</member>
 	</members>
 	<constants>

@@ -12,15 +12,15 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled">
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
 			A disabled collision shape has no effect in the world.
 		</member>
-		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled">
+		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" default="false">
 			Sets whether this collision shape should only detect collision on one side (top or bottom).
 		</member>
-		<member name="one_way_collision_margin" type="float" setter="set_one_way_collision_margin" getter="get_one_way_collision_margin">
+		<member name="one_way_collision_margin" type="float" setter="set_one_way_collision_margin" getter="get_one_way_collision_margin" default="1.0">
 		</member>
-		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape">
+		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape" default="null">
 			The actual shape owned by this collision shape.
 		</member>
 	</members>

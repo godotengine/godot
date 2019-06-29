@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeVectorDerivativeFunc.Function">
+		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeVectorDerivativeFunc.Function" default="0">
 		</member>
 	</members>
 	<constants>

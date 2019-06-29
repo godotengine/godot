@@ -141,10 +141,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin">
+		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.08">
 			If the body is at least this close to another body, this body will consider them to be colliding.
 		</member>
-		<member name="motion/sync_to_physics" type="bool" setter="set_sync_to_physics" getter="is_sync_to_physics_enabled">
+		<member name="motion/sync_to_physics" type="bool" setter="set_sync_to_physics" getter="is_sync_to_physics_enabled" default="false">
 			If [code]true[/code], the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do [b]not[/b] use together with [method move_and_slide] or [method move_and_collide] functions.
 		</member>
 	</members>

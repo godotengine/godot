@@ -85,7 +85,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble">
+		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble" default="0.0">
 			The degree to which the tracker rumbles. Ranges from [code]0.0[/code] to [code]1.0[/code] with precision [code].01[/code].
 		</member>
 	</members>

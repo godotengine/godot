@@ -40,7 +40,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="verify_ssl" type="bool" setter="set_verify_ssl_enabled" getter="is_verify_ssl_enabled">
+		<member name="verify_ssl" type="bool" setter="set_verify_ssl_enabled" getter="is_verify_ssl_enabled" default="null">
 			If [code]true[/code], SSL certificate verification is enabled.
 			[b]Note:[/b] You must specify the certificates to be used in the Project Settings for it to work when exported.
 		</member>

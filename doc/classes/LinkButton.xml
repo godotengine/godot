@@ -11,9 +11,9 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="text" type="String" setter="set_text" getter="get_text">
+		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 		</member>
-		<member name="underline" type="int" setter="set_underline_mode" getter="get_underline_mode" enum="LinkButton.UnderlineMode">
+		<member name="underline" type="int" setter="set_underline_mode" getter="get_underline_mode" enum="LinkButton.UnderlineMode" default="0">
 		</member>
 	</members>
 	<constants>
@@ -32,13 +32,13 @@
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color" type="Color">
+		<theme_item name="font_color" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color">
+		<theme_item name="font_color_hover" type="Color" default="Color( 0.941176, 0.941176, 0.941176, 1 )">
 		</theme_item>
-		<theme_item name="font_color_pressed" type="Color">
+		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
-		<theme_item name="underline_spacing" type="int">
+		<theme_item name="underline_spacing" type="int" default="2">
 		</theme_item>
 	</theme_items>
 </class>

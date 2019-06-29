@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="base" type="Texture" setter="set_base" getter="get_base">
+		<member name="base" type="Texture" setter="set_base" getter="get_base" default="null">
 		</member>
 	</members>
 	<constants>

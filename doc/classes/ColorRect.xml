@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_frame_color" getter="get_frame_color">
+		<member name="color" type="Color" setter="set_frame_color" getter="get_frame_color" default="Color( 1, 1, 1, 1 )">
 			The fill color.
 			[codeblock]
 			$ColorRect.color = Color(1, 0, 0, 1) # Set ColorRect's color to red.

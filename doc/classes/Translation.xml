@@ -56,7 +56,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="locale" type="String" setter="set_locale" getter="get_locale">
+		<member name="locale" type="String" setter="set_locale" getter="get_locale" default="&quot;en&quot;">
 			The locale of the translation.
 		</member>
 	</members>

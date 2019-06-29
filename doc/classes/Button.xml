@@ -11,19 +11,19 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="align" type="int" setter="set_text_align" getter="get_text_align" enum="Button.TextAlign">
+		<member name="align" type="int" setter="set_text_align" getter="get_text_align" enum="Button.TextAlign" default="1">
 			Text alignment policy for the button's text, use one of the [code]ALIGN_*[/code] constants.
 		</member>
-		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text">
+		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text" default="false">
 			When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text. This property is disabled by default.
 		</member>
-		<member name="flat" type="bool" setter="set_flat" getter="is_flat">
+		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
 			Flat buttons don't display decoration.
 		</member>
-		<member name="icon" type="Texture" setter="set_button_icon" getter="get_button_icon">
+		<member name="icon" type="Texture" setter="set_button_icon" getter="get_button_icon" default="null">
 			Button's icon, if text is present the icon will be placed before the text.
 		</member>
-		<member name="text" type="String" setter="set_text" getter="get_text">
+		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The button's text that will be displayed inside the button's area.
 		</member>
 	</members>
@@ -45,17 +45,17 @@
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color" type="Color">
+		<theme_item name="font_color" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
 		</theme_item>
-		<theme_item name="font_color_disabled" type="Color">
+		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color">
+		<theme_item name="font_color_hover" type="Color" default="Color( 0.941176, 0.941176, 0.941176, 1 )">
 		</theme_item>
-		<theme_item name="font_color_pressed" type="Color">
+		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">
 		</theme_item>
-		<theme_item name="hseparation" type="int">
+		<theme_item name="hseparation" type="int" default="2">
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 		</theme_item>

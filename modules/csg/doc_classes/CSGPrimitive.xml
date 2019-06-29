@@ -10,7 +10,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="invert_faces" type="bool" setter="set_invert_faces" getter="is_inverting_faces">
+		<member name="invert_faces" type="bool" setter="set_invert_faces" getter="is_inverting_faces" default="false">
 			Invert the faces of the mesh.
 		</member>
 	</members>

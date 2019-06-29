@@ -9,15 +9,15 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_color" getter="get_color">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 0, 0, 0, 1 )">
 		</member>
-		<member name="grow_begin" type="float" setter="set_grow_begin" getter="get_grow_begin">
+		<member name="grow_begin" type="float" setter="set_grow_begin" getter="get_grow_begin" default="1.0">
 		</member>
-		<member name="grow_end" type="float" setter="set_grow_end" getter="get_grow_end">
+		<member name="grow_end" type="float" setter="set_grow_end" getter="get_grow_end" default="1.0">
 		</member>
-		<member name="thickness" type="int" setter="set_thickness" getter="get_thickness">
+		<member name="thickness" type="int" setter="set_thickness" getter="get_thickness" default="1">
 		</member>
-		<member name="vertical" type="bool" setter="set_vertical" getter="is_vertical">
+		<member name="vertical" type="bool" setter="set_vertical" getter="is_vertical" default="false">
 		</member>
 	</members>
 	<constants>

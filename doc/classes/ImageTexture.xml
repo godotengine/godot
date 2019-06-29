@@ -72,10 +72,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="lossy_quality" type="float" setter="set_lossy_storage_quality" getter="get_lossy_storage_quality">
+		<member name="lossy_quality" type="float" setter="set_lossy_storage_quality" getter="get_lossy_storage_quality" default="0.7">
 			The storage quality for [constant STORAGE_COMPRESS_LOSSY].
 		</member>
-		<member name="storage" type="int" setter="set_storage" getter="get_storage" enum="ImageTexture.Storage">
+		<member name="storage" type="int" setter="set_storage" getter="get_storage" enum="ImageTexture.Storage" default="0">
 			The storage type (raw, lossy, or compressed).
 		</member>
 	</members>

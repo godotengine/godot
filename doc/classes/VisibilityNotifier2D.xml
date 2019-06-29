@@ -19,7 +19,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="rect" type="Rect2" setter="set_rect" getter="get_rect">
+		<member name="rect" type="Rect2" setter="set_rect" getter="get_rect" default="Rect2( -10, -10, 20, 20 )">
 			The VisibilityNotifier2D's bounding rectangle.
 		</member>
 	</members>

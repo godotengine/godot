@@ -26,7 +26,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="switch_on_hover" type="bool" setter="set_switch_on_hover" getter="is_switch_on_hover">
+		<member name="switch_on_hover" type="bool" setter="set_switch_on_hover" getter="is_switch_on_hover" default="false">
 			If [code]true[/code], when the cursor hovers above another MenuButton within the same parent which also has [code]switch_on_hover[/code] enabled, it will close the current MenuButton and open the other one.
 		</member>
 	</members>
@@ -46,17 +46,17 @@
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color" type="Color">
+		<theme_item name="font_color" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
 		</theme_item>
-		<theme_item name="font_color_disabled" type="Color">
+		<theme_item name="font_color_disabled" type="Color" default="Color( 1, 1, 1, 0.3 )">
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color">
+		<theme_item name="font_color_hover" type="Color" default="Color( 0.941176, 0.941176, 0.941176, 1 )">
 		</theme_item>
-		<theme_item name="font_color_pressed" type="Color">
+		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">
 		</theme_item>
-		<theme_item name="hseparation" type="int">
+		<theme_item name="hseparation" type="int" default="3">
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 		</theme_item>

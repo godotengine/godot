@@ -11,73 +11,73 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="angular_limit/damping" type="float" setter="set_param" getter="get_param">
+		<member name="angular_limit/damping" type="float" setter="set_param" getter="get_param" default="0.0">
 			The amount of damping of the rotation when the limit is surpassed.
 			A lower damping value allows a rotation initiated by body A to travel to body B slower.
 		</member>
-		<member name="angular_limit/lower_angle" type="float" setter="_set_lower_limit_angular" getter="_get_lower_limit_angular">
+		<member name="angular_limit/lower_angle" type="float" setter="_set_lower_limit_angular" getter="_get_lower_limit_angular" default="0.0">
 			The lower limit of rotation in the slider.
 		</member>
-		<member name="angular_limit/restitution" type="float" setter="set_param" getter="get_param">
+		<member name="angular_limit/restitution" type="float" setter="set_param" getter="get_param" default="0.7">
 			The amount of restitution of the rotation when the limit is surpassed.
 			Does not affect damping.
 		</member>
-		<member name="angular_limit/softness" type="float" setter="set_param" getter="get_param">
+		<member name="angular_limit/softness" type="float" setter="set_param" getter="get_param" default="1.0">
 			A factor applied to the all rotation once the limit is surpassed.
 			Makes all rotation slower when between 0 and 1.
 		</member>
-		<member name="angular_limit/upper_angle" type="float" setter="_set_upper_limit_angular" getter="_get_upper_limit_angular">
+		<member name="angular_limit/upper_angle" type="float" setter="_set_upper_limit_angular" getter="_get_upper_limit_angular" default="0.0">
 			The upper limit of rotation in the slider.
 		</member>
-		<member name="angular_motion/damping" type="float" setter="set_param" getter="get_param">
+		<member name="angular_motion/damping" type="float" setter="set_param" getter="get_param" default="1.0">
 			The amount of damping of the rotation in the limits.
 		</member>
-		<member name="angular_motion/restitution" type="float" setter="set_param" getter="get_param">
+		<member name="angular_motion/restitution" type="float" setter="set_param" getter="get_param" default="0.7">
 			The amount of restitution of the rotation in the limits.
 		</member>
-		<member name="angular_motion/softness" type="float" setter="set_param" getter="get_param">
+		<member name="angular_motion/softness" type="float" setter="set_param" getter="get_param" default="1.0">
 			A factor applied to the all rotation in the limits.
 		</member>
-		<member name="angular_ortho/damping" type="float" setter="set_param" getter="get_param">
+		<member name="angular_ortho/damping" type="float" setter="set_param" getter="get_param" default="1.0">
 			The amount of damping of the rotation across axes orthogonal to the slider.
 		</member>
-		<member name="angular_ortho/restitution" type="float" setter="set_param" getter="get_param">
+		<member name="angular_ortho/restitution" type="float" setter="set_param" getter="get_param" default="0.7">
 			The amount of restitution of the rotation across axes orthogonal to the slider.
 		</member>
-		<member name="angular_ortho/softness" type="float" setter="set_param" getter="get_param">
+		<member name="angular_ortho/softness" type="float" setter="set_param" getter="get_param" default="1.0">
 			A factor applied to the all rotation across axes orthogonal to the slider.
 		</member>
-		<member name="linear_limit/damping" type="float" setter="set_param" getter="get_param">
+		<member name="linear_limit/damping" type="float" setter="set_param" getter="get_param" default="1.0">
 			The amount of damping that happens once the limit defined by [member linear_limit/lower_distance] and [member linear_limit/upper_distance] is surpassed.
 		</member>
-		<member name="linear_limit/lower_distance" type="float" setter="set_param" getter="get_param">
+		<member name="linear_limit/lower_distance" type="float" setter="set_param" getter="get_param" default="-1.0">
 			The minimum difference between the pivot points on their X axis before damping happens.
 		</member>
-		<member name="linear_limit/restitution" type="float" setter="set_param" getter="get_param">
+		<member name="linear_limit/restitution" type="float" setter="set_param" getter="get_param" default="0.7">
 			The amount of restitution once the limits are surpassed. The lower, the more velocity-energy gets lost.
 		</member>
-		<member name="linear_limit/softness" type="float" setter="set_param" getter="get_param">
+		<member name="linear_limit/softness" type="float" setter="set_param" getter="get_param" default="1.0">
 			A factor applied to the movement across the slider axis once the limits get surpassed. The lower, the slower the movement.
 		</member>
-		<member name="linear_limit/upper_distance" type="float" setter="set_param" getter="get_param">
+		<member name="linear_limit/upper_distance" type="float" setter="set_param" getter="get_param" default="1.0">
 			The maximum difference between the pivot points on their X axis before damping happens.
 		</member>
-		<member name="linear_motion/damping" type="float" setter="set_param" getter="get_param">
+		<member name="linear_motion/damping" type="float" setter="set_param" getter="get_param" default="0.0">
 			The amount of damping inside the slider limits.
 		</member>
-		<member name="linear_motion/restitution" type="float" setter="set_param" getter="get_param">
+		<member name="linear_motion/restitution" type="float" setter="set_param" getter="get_param" default="0.7">
 			The amount of restitution inside the slider limits.
 		</member>
-		<member name="linear_motion/softness" type="float" setter="set_param" getter="get_param">
+		<member name="linear_motion/softness" type="float" setter="set_param" getter="get_param" default="1.0">
 			A factor applied to the movement across the slider axis as long as the slider is in the limits. The lower, the slower the movement.
 		</member>
-		<member name="linear_ortho/damping" type="float" setter="set_param" getter="get_param">
+		<member name="linear_ortho/damping" type="float" setter="set_param" getter="get_param" default="1.0">
 			The amount of damping when movement is across axes orthogonal to the slider.
 		</member>
-		<member name="linear_ortho/restitution" type="float" setter="set_param" getter="get_param">
+		<member name="linear_ortho/restitution" type="float" setter="set_param" getter="get_param" default="0.7">
 			The amount of restitution when movement is across axes orthogonal to the slider.
 		</member>
-		<member name="linear_ortho/softness" type="float" setter="set_param" getter="get_param">
+		<member name="linear_ortho/softness" type="float" setter="set_param" getter="get_param" default="1.0">
 			A factor applied to the movement across axes orthogonal to the slider.
 		</member>
 	</members>

@@ -23,18 +23,18 @@
 		</method>
 	</methods>
 	<members>
-		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone">
+		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone" default="0">
 		</member>
-		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll">
+		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
 			The current horizontal scroll value.
 		</member>
-		<member name="scroll_horizontal_enabled" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled">
+		<member name="scroll_horizontal_enabled" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled" default="true">
 			If [code]true[/code], enables horizontal scrolling.
 		</member>
-		<member name="scroll_vertical" type="int" setter="set_v_scroll" getter="get_v_scroll">
+		<member name="scroll_vertical" type="int" setter="set_v_scroll" getter="get_v_scroll" default="0">
 			The current vertical scroll value.
 		</member>
-		<member name="scroll_vertical_enabled" type="bool" setter="set_enable_v_scroll" getter="is_v_scroll_enabled">
+		<member name="scroll_vertical_enabled" type="bool" setter="set_enable_v_scroll" getter="is_v_scroll_enabled" default="true">
 			If [code]true[/code], enables vertical scrolling.
 		</member>
 	</members>

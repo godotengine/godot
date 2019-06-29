@@ -49,15 +49,15 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bounds" type="AABB" setter="set_bounds" getter="get_bounds">
+		<member name="bounds" type="AABB" setter="set_bounds" getter="get_bounds" default="AABB( 0, 0, 0, 0, 0, 0 )">
 		</member>
-		<member name="cell_space_transform" type="Transform" setter="set_cell_space_transform" getter="get_cell_space_transform">
+		<member name="cell_space_transform" type="Transform" setter="set_cell_space_transform" getter="get_cell_space_transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 		</member>
-		<member name="cell_subdiv" type="int" setter="set_cell_subdiv" getter="get_cell_subdiv">
+		<member name="cell_subdiv" type="int" setter="set_cell_subdiv" getter="get_cell_subdiv" default="1">
 		</member>
-		<member name="energy" type="float" setter="set_energy" getter="get_energy">
+		<member name="energy" type="float" setter="set_energy" getter="get_energy" default="1.0">
 		</member>
-		<member name="octree" type="PoolByteArray" setter="set_octree" getter="get_octree">
+		<member name="octree" type="PoolByteArray" setter="set_octree" getter="get_octree" default="PoolByteArray(  )">
 		</member>
 	</members>
 	<constants>
