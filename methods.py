@@ -181,7 +181,7 @@ def win32_spawn(sh, escape, cmd, args, env):
             env[e] = str(env[e])
     proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, startupinfo=startupinfo, shell=False, env=env)
-    data, err = proc.communicate()
+    _, err = proc.communicate()
     rv = proc.wait()
     if rv:
         print("=====")
@@ -242,7 +242,7 @@ def use_windows_spawn_fix(self, platform=None):
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, startupinfo=startupinfo, shell=False, env=env)
-        data, err = proc.communicate()
+        _, err = proc.communicate()
         rv = proc.wait()
         if rv:
             print("=====")
@@ -487,7 +487,7 @@ def find_visual_c_batch_file(env):
     from SCons.Tool.MSCommon.vc import get_default_version, get_host_target, find_batch_file
 
     version = get_default_version(env)
-    (host_platform, target_platform,req_target_platform) = get_host_target(env)
+    (host_platform, target_platform, _) = get_host_target(env)
     return find_batch_file(env, version, host_platform, target_platform)[0]
 
 def generate_cpp_hint_file(filename):
@@ -598,7 +598,7 @@ def detect_darwin_sdk_path(platform, env):
             sdk_path = decode_utf8(subprocess.check_output(['xcrun', '--sdk', sdk_name, '--show-sdk-path']).strip())
             if sdk_path:
                 env[var_name] = sdk_path
-        except (subprocess.CalledProcessError, OSError) as e:
+        except (subprocess.CalledProcessError, OSError):
             print("Failed to find SDK path while running xcrun --sdk {} --show-sdk-path.".format(sdk_name))
             raise
 
