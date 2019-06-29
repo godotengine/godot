@@ -1829,6 +1829,7 @@ TileMap::TileMap() {
 	half_offset = HALF_OFFSET_DISABLED;
 	use_parent = false;
 	collision_parent = NULL;
+	use_kinematic = false;
 	navigation = NULL;
 	y_sort_mode = false;
 	occluder_light_mask = 1;

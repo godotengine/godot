@@ -44,6 +44,7 @@ Line2D::Line2D() {
 	_end_cap_mode = LINE_CAP_NONE;
 	_width = 10;
 	_default_color = Color(0.4, 0.5, 1);
+	_texture_mode = LINE_TEXTURE_NONE;
 	_sharp_limit = 2.f;
 	_round_precision = 8;
 }
