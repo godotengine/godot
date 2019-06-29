@@ -302,4 +302,13 @@ public:
 	VisualShaderNodePortPreview();
 };
 
+class VisualShaderConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(VisualShaderConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const;
+	virtual bool handles(const Ref<Resource> &p_resource) const;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
+};
+
 #endif // VISUAL_SHADER_EDITOR_PLUGIN_H
