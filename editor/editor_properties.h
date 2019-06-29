@@ -32,12 +32,12 @@
 #define EDITOR_PROPERTIES_H
 
 #include "editor/create_dialog.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/property_selector.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/line_edit.h"
 
 class EditorPropertyNil : public EditorProperty {
 	GDCLASS(EditorPropertyNil, EditorProperty);
@@ -308,7 +308,11 @@ class EditorPropertyEasing : public EditorProperty {
 	GDCLASS(EditorPropertyEasing, EditorProperty);
 	Control *easing_draw;
 	PopupMenu *preset;
+	EditorSpinSlider *spin;
+	bool setting;
+
 	bool full;
+	bool flip;
 
 	enum {
 		EASING_ZERO,
@@ -321,12 +325,15 @@ class EditorPropertyEasing : public EditorProperty {
 
 	};
 
-	bool flip;
-
 	void _drag_easing(const Ref<InputEvent> &p_ev);
 	void _draw_easing();
-	void _notification(int p_what);
 	void _set_preset(int);
+
+	void _setup_spin();
+	void _spin_value_changed(double p_value);
+	void _spin_focus_exited();
+
+	void _notification(int p_what);
 
 protected:
 	static void _bind_methods();
