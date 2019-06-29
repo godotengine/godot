@@ -21,7 +21,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="config_file" type="ConfigFile" setter="set_config_file" getter="get_config_file" default="null">
+		<member name="config_file" type="ConfigFile" setter="set_config_file" getter="get_config_file">
 		</member>
 		<member name="load_once" type="bool" setter="set_load_once" getter="should_load_once" default="true">
 		</member>

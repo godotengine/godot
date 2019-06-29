@@ -41,13 +41,13 @@
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="is_one_shot" default="false">
 			If [code]true[/code], the timer will stop when reaching 0. If [code]false[/code], it will restart.
 		</member>
-		<member name="paused" type="bool" setter="set_paused" getter="is_paused" default="null">
+		<member name="paused" type="bool" setter="set_paused" getter="is_paused">
 			If [code]true[/code], the timer is paused and will not process until it is unpaused again, even if [method start] is called.
 		</member>
 		<member name="process_mode" type="int" setter="set_timer_process_mode" getter="get_timer_process_mode" enum="Timer.TimerProcessMode" default="1">
 			Processing mode. See [enum TimerProcessMode].
 		</member>
-		<member name="time_left" type="float" setter="" getter="get_time_left" default="null">
+		<member name="time_left" type="float" setter="" getter="get_time_left">
 			The timer's remaining time in seconds. Returns 0 if the timer is inactive.
 			[b]Note:[/b] You cannot set this value. To change the timer's remaining time, use [member wait_time].
 		</member>

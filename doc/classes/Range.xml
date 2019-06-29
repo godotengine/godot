@@ -45,7 +45,7 @@
 		<member name="page" type="float" setter="set_page" getter="get_page" default="0.0">
 			Page size. Used mainly for [ScrollBar]. ScrollBar's length is its size multiplied by [code]page[/code] over the difference between [code]min_value[/code] and [code]max_value[/code].
 		</member>
-		<member name="ratio" type="float" setter="set_as_ratio" getter="get_as_ratio" default="null">
+		<member name="ratio" type="float" setter="set_as_ratio" getter="get_as_ratio">
 			The value mapped between 0 and 1.
 		</member>
 		<member name="rounded" type="bool" setter="set_use_rounded_values" getter="is_using_rounded_values" default="false">

@@ -714,7 +714,7 @@
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
 			Enables whether rendering of children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered.
 		</member>
-		<member name="rect_global_position" type="Vector2" setter="_set_global_position" getter="get_global_position" default="null">
+		<member name="rect_global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
 			The node's global position, relative to the world (usually to the top-left corner of the window).
 		</member>
 		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2( 0, 0 )">

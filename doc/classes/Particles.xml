@@ -36,13 +36,13 @@
 		<member name="draw_pass_1" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh" default="null">
 			[Mesh] that is drawn for the first draw pass.
 		</member>
-		<member name="draw_pass_2" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh" default="null">
+		<member name="draw_pass_2" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
 			[Mesh] that is drawn for the second draw pass.
 		</member>
-		<member name="draw_pass_3" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh" default="null">
+		<member name="draw_pass_3" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
 			[Mesh] that is drawn for the third draw pass.
 		</member>
-		<member name="draw_pass_4" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh" default="null">
+		<member name="draw_pass_4" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
 			[Mesh] that is drawn for the fourth draw pass.
 		</member>
 		<member name="draw_passes" type="int" setter="set_draw_passes" getter="get_draw_passes" default="1">

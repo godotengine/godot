@@ -18,7 +18,7 @@
 		<member name="collider_id" type="int" setter="" getter="get_collider_id" default="0">
 			The colliding body's unique [RID].
 		</member>
-		<member name="collider_metadata" type="Variant" setter="" getter="get_collider_metadata" default="null">
+		<member name="collider_metadata" type="Variant" setter="" getter="get_collider_metadata">
 			The colliding body's metadata. See [Object].
 		</member>
 		<member name="collider_shape" type="Object" setter="" getter="get_collider_shape" default="null">

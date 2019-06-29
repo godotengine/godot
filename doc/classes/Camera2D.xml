@@ -68,7 +68,7 @@
 		<member name="current" type="bool" setter="_set_current" getter="is_current" default="false">
 			If [code]true[/code], the camera is the active camera for the current scene. Only one camera can be current, so setting a different camera [code]current[/code] will disable this one.
 		</member>
-		<member name="custom_viewport" type="Node" setter="set_custom_viewport" getter="get_custom_viewport" default="null">
+		<member name="custom_viewport" type="Node" setter="set_custom_viewport" getter="get_custom_viewport">
 			The custom [Viewport] node attached to the [Camera2D]. If [code]null[/code] or not a [Viewport], uses the default viewport instead.
 		</member>
 		<member name="drag_margin_bottom" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
