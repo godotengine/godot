@@ -974,6 +974,7 @@ void TileSetEditor::_on_workspace_draw() {
 			workspace->draw_rect(region, c, false);
 		}
 	}
+	delete tiles;
 
 	if (edit_mode == EDITMODE_REGION) {
 		if (workspace_mode != WORKSPACE_EDIT) {
@@ -1068,6 +1069,7 @@ void TileSetEditor::_on_workspace_overlay_draw() {
 			c = Color(0.1, 0.1, 0.1);
 			workspace_overlay->draw_string(font, region.position, tile_id_name, c);
 		}
+		delete tiles;
 	}
 
 	int t_id = get_current_tile();
@@ -1115,10 +1117,12 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 							set_current_tile(t_id);
 							workspace->update();
 							workspace_overlay->update();
+							delete tiles;
 							return;
 						}
 					}
 				}
+				delete tiles;
 			}
 		}
 
@@ -3118,6 +3122,7 @@ void TileSetEditor::update_workspace_minsize() {
 				workspace_min_size.y = region.position.y + region.size.y;
 		}
 	}
+	delete tiles;
 
 	workspace->set_custom_minimum_size(workspace_min_size + WORKSPACE_MARGIN * 2);
 	workspace_container->set_custom_minimum_size(workspace_min_size + WORKSPACE_MARGIN * 2);
