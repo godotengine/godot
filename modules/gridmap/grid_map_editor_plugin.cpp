@@ -235,7 +235,7 @@ void GridMapEditor::_menu_option(int p_option) {
 			options->get_popup()->set_item_checked(idx, !options->get_popup()->is_item_checked(idx));
 		} break;
 
-		case MENU_OPTION_SELECTION_DUPLICATE: // fallthrough
+		case MENU_OPTION_SELECTION_DUPLICATE:
 		case MENU_OPTION_SELECTION_CUT: {
 			if (!(selection.active && input_action == INPUT_NONE))
 				break;
