@@ -26,25 +26,25 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bias" type="float" setter="set_bias" getter="get_bias">
+		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="1.5">
 		</member>
-		<member name="compress" type="bool" setter="set_compress" getter="is_compressed">
+		<member name="compress" type="bool" setter="set_compress" getter="is_compressed" default="false">
 		</member>
-		<member name="data" type="GIProbeData" setter="set_probe_data" getter="get_probe_data">
+		<member name="data" type="GIProbeData" setter="set_probe_data" getter="get_probe_data" default="null">
 		</member>
-		<member name="dynamic_range" type="int" setter="set_dynamic_range" getter="get_dynamic_range">
+		<member name="dynamic_range" type="int" setter="set_dynamic_range" getter="get_dynamic_range" default="4">
 		</member>
-		<member name="energy" type="float" setter="set_energy" getter="get_energy">
+		<member name="energy" type="float" setter="set_energy" getter="get_energy" default="1.0">
 		</member>
-		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents">
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 10, 10, 10 )">
 		</member>
-		<member name="interior" type="bool" setter="set_interior" getter="is_interior">
+		<member name="interior" type="bool" setter="set_interior" getter="is_interior" default="false">
 		</member>
-		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias">
+		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias" default="0.0">
 		</member>
-		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation">
+		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation" default="0.7">
 		</member>
-		<member name="subdiv" type="int" setter="set_subdiv" getter="get_subdiv" enum="GIProbe.Subdiv">
+		<member name="subdiv" type="int" setter="set_subdiv" getter="get_subdiv" enum="GIProbe.Subdiv" default="1">
 		</member>
 	</members>
 	<constants>

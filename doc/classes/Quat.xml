@@ -171,16 +171,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="w" type="float" setter="" getter="">
+		<member name="w" type="float" setter="" getter="" default="1.0">
 			W component of the quaternion. Default value: [code]1[/code].
 		</member>
-		<member name="x" type="float" setter="" getter="">
+		<member name="x" type="float" setter="" getter="" default="0.0">
 			X component of the quaternion. Default value: [code]0[/code].
 		</member>
-		<member name="y" type="float" setter="" getter="">
+		<member name="y" type="float" setter="" getter="" default="0.0">
 			Y component of the quaternion. Default value: [code]0[/code].
 		</member>
-		<member name="z" type="float" setter="" getter="">
+		<member name="z" type="float" setter="" getter="" default="0.0">
 			Z component of the quaternion. Default value: [code]0[/code].
 		</member>
 	</members>

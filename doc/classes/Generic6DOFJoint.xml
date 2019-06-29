@@ -11,236 +11,236 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="angular_limit_x/damping" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="angular_limit_x/damping" type="float" setter="set_param_x" getter="get_param_x" default="1.0">
 			The amount of rotational damping across the X axis.
 			The lower, the longer an impulse from one side takes to travel to the other side.
 		</member>
-		<member name="angular_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
+		<member name="angular_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x" default="true">
 			If [code]true[/code], rotation across the X axis is limited.
 		</member>
-		<member name="angular_limit_x/erp" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="angular_limit_x/erp" type="float" setter="set_param_x" getter="get_param_x" default="0.5">
 			When rotating across the X axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
 		</member>
-		<member name="angular_limit_x/force_limit" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="angular_limit_x/force_limit" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
 			The maximum amount of force that can occur, when rotating around the X axis.
 		</member>
-		<member name="angular_limit_x/lower_angle" type="float" setter="_set_angular_lo_limit_x" getter="_get_angular_lo_limit_x">
+		<member name="angular_limit_x/lower_angle" type="float" setter="_set_angular_lo_limit_x" getter="_get_angular_lo_limit_x" default="0.0">
 			The minimum rotation in negative direction to break loose and rotate around the X axis.
 		</member>
-		<member name="angular_limit_x/restitution" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="angular_limit_x/restitution" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
 			The amount of rotational restitution across the X axis. The lower, the more restitution occurs.
 		</member>
-		<member name="angular_limit_x/softness" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="angular_limit_x/softness" type="float" setter="set_param_x" getter="get_param_x" default="0.5">
 			The speed of all rotations across the X axis.
 		</member>
-		<member name="angular_limit_x/upper_angle" type="float" setter="_set_angular_hi_limit_x" getter="_get_angular_hi_limit_x">
+		<member name="angular_limit_x/upper_angle" type="float" setter="_set_angular_hi_limit_x" getter="_get_angular_hi_limit_x" default="0.0">
 			The minimum rotation in positive direction to break loose and rotate around the X axis.
 		</member>
-		<member name="angular_limit_y/damping" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="angular_limit_y/damping" type="float" setter="set_param_y" getter="get_param_y" default="1.0">
 			The amount of rotational damping across the Y axis. The lower, the more dampening occurs.
 		</member>
-		<member name="angular_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
+		<member name="angular_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y" default="true">
 			If [code]true[/code], rotation across the Y axis is limited.
 		</member>
-		<member name="angular_limit_y/erp" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="angular_limit_y/erp" type="float" setter="set_param_y" getter="get_param_y" default="0.5">
 			When rotating across the Y axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
 		</member>
-		<member name="angular_limit_y/force_limit" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="angular_limit_y/force_limit" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
 			The maximum amount of force that can occur, when rotating around the Y axis.
 		</member>
-		<member name="angular_limit_y/lower_angle" type="float" setter="_set_angular_lo_limit_y" getter="_get_angular_lo_limit_y">
+		<member name="angular_limit_y/lower_angle" type="float" setter="_set_angular_lo_limit_y" getter="_get_angular_lo_limit_y" default="0.0">
 			The minimum rotation in negative direction to break loose and rotate around the Y axis.
 		</member>
-		<member name="angular_limit_y/restitution" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="angular_limit_y/restitution" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
 			The amount of rotational restitution across the Y axis. The lower, the more restitution occurs.
 		</member>
-		<member name="angular_limit_y/softness" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="angular_limit_y/softness" type="float" setter="set_param_y" getter="get_param_y" default="0.5">
 			The speed of all rotations across the Y axis.
 		</member>
-		<member name="angular_limit_y/upper_angle" type="float" setter="_set_angular_hi_limit_y" getter="_get_angular_hi_limit_y">
+		<member name="angular_limit_y/upper_angle" type="float" setter="_set_angular_hi_limit_y" getter="_get_angular_hi_limit_y" default="0.0">
 			The minimum rotation in positive direction to break loose and rotate around the Y axis.
 		</member>
-		<member name="angular_limit_z/damping" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="angular_limit_z/damping" type="float" setter="set_param_z" getter="get_param_z" default="1.0">
 			The amount of rotational damping across the Z axis. The lower, the more dampening occurs.
 		</member>
-		<member name="angular_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
+		<member name="angular_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z" default="true">
 			If [code]true[/code], rotation across the Z axis is limited.
 		</member>
-		<member name="angular_limit_z/erp" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="angular_limit_z/erp" type="float" setter="set_param_z" getter="get_param_z" default="0.5">
 			When rotating across the Z axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
 		</member>
-		<member name="angular_limit_z/force_limit" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="angular_limit_z/force_limit" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 			The maximum amount of force that can occur, when rotating around the Z axis.
 		</member>
-		<member name="angular_limit_z/lower_angle" type="float" setter="_set_angular_lo_limit_z" getter="_get_angular_lo_limit_z">
+		<member name="angular_limit_z/lower_angle" type="float" setter="_set_angular_lo_limit_z" getter="_get_angular_lo_limit_z" default="0.0">
 			The minimum rotation in negative direction to break loose and rotate around the Z axis.
 		</member>
-		<member name="angular_limit_z/restitution" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="angular_limit_z/restitution" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 			The amount of rotational restitution across the Z axis. The lower, the more restitution occurs.
 		</member>
-		<member name="angular_limit_z/softness" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="angular_limit_z/softness" type="float" setter="set_param_z" getter="get_param_z" default="0.5">
 			The speed of all rotations across the Z axis.
 		</member>
-		<member name="angular_limit_z/upper_angle" type="float" setter="_set_angular_hi_limit_z" getter="_get_angular_hi_limit_z">
+		<member name="angular_limit_z/upper_angle" type="float" setter="_set_angular_hi_limit_z" getter="_get_angular_hi_limit_z" default="0.0">
 			The minimum rotation in positive direction to break loose and rotate around the Z axis.
 		</member>
-		<member name="angular_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
+		<member name="angular_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x" default="false">
 			If [code]true[/code], a rotating motor at the X axis is enabled.
 		</member>
-		<member name="angular_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="angular_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x" default="300.0">
 			Maximum acceleration for the motor at the X axis.
 		</member>
-		<member name="angular_motor_x/target_velocity" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="angular_motor_x/target_velocity" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
 			Target speed for the motor at the X axis.
 		</member>
-		<member name="angular_motor_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
+		<member name="angular_motor_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y" default="false">
 			If [code]true[/code], a rotating motor at the Y axis is enabled.
 		</member>
-		<member name="angular_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="angular_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y" default="300.0">
 			Maximum acceleration for the motor at the Y axis.
 		</member>
-		<member name="angular_motor_y/target_velocity" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="angular_motor_y/target_velocity" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
 			Target speed for the motor at the Y axis.
 		</member>
-		<member name="angular_motor_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
+		<member name="angular_motor_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z" default="false">
 			If [code]true[/code], a rotating motor at the Z axis is enabled.
 		</member>
-		<member name="angular_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="angular_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z" default="300.0">
 			Maximum acceleration for the motor at the Z axis.
 		</member>
-		<member name="angular_motor_z/target_velocity" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="angular_motor_z/target_velocity" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 			Target speed for the motor at the Z axis.
 		</member>
-		<member name="angular_spring_x/damping" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="angular_spring_x/damping" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
 		</member>
-		<member name="angular_spring_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
+		<member name="angular_spring_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x" default="false">
 		</member>
-		<member name="angular_spring_x/equilibrium_point" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="angular_spring_x/equilibrium_point" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
 		</member>
-		<member name="angular_spring_x/stiffness" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="angular_spring_x/stiffness" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
 		</member>
-		<member name="angular_spring_y/damping" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="angular_spring_y/damping" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
 		</member>
-		<member name="angular_spring_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
+		<member name="angular_spring_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y" default="false">
 		</member>
-		<member name="angular_spring_y/equilibrium_point" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="angular_spring_y/equilibrium_point" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
 		</member>
-		<member name="angular_spring_y/stiffness" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="angular_spring_y/stiffness" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
 		</member>
-		<member name="angular_spring_z/damping" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="angular_spring_z/damping" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 		</member>
-		<member name="angular_spring_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
+		<member name="angular_spring_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z" default="false">
 		</member>
-		<member name="angular_spring_z/equilibrium_point" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="angular_spring_z/equilibrium_point" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 		</member>
-		<member name="angular_spring_z/stiffness" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="angular_spring_z/stiffness" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 		</member>
-		<member name="linear_limit_x/damping" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="linear_limit_x/damping" type="float" setter="set_param_x" getter="get_param_x" default="1.0">
 			The amount of damping that happens at the X motion.
 		</member>
-		<member name="linear_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
+		<member name="linear_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x" default="true">
 			If [code]true[/code], the linear motion across the X axis is limited.
 		</member>
-		<member name="linear_limit_x/lower_distance" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="linear_limit_x/lower_distance" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
 			The minimum difference between the pivot points' X axis.
 		</member>
-		<member name="linear_limit_x/restitution" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="linear_limit_x/restitution" type="float" setter="set_param_x" getter="get_param_x" default="0.5">
 			The amount of restitution on the X axis movement. The lower, the more momentum gets lost.
 		</member>
-		<member name="linear_limit_x/softness" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="linear_limit_x/softness" type="float" setter="set_param_x" getter="get_param_x" default="0.7">
 			A factor applied to the movement across the X axis. The lower, the slower the movement.
 		</member>
-		<member name="linear_limit_x/upper_distance" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="linear_limit_x/upper_distance" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
 			The maximum difference between the pivot points' X axis.
 		</member>
-		<member name="linear_limit_y/damping" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="linear_limit_y/damping" type="float" setter="set_param_y" getter="get_param_y" default="1.0">
 			The amount of damping that happens at the Y motion.
 		</member>
-		<member name="linear_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
+		<member name="linear_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y" default="true">
 			If [code]true[/code], the linear motion across the Y axis is limited.
 		</member>
-		<member name="linear_limit_y/lower_distance" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="linear_limit_y/lower_distance" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
 			The minimum difference between the pivot points' Y axis.
 		</member>
-		<member name="linear_limit_y/restitution" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="linear_limit_y/restitution" type="float" setter="set_param_y" getter="get_param_y" default="0.5">
 			The amount of restitution on the Y axis movement. The lower, the more momentum gets lost.
 		</member>
-		<member name="linear_limit_y/softness" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="linear_limit_y/softness" type="float" setter="set_param_y" getter="get_param_y" default="0.7">
 			A factor applied to the movement across the Y axis. The lower, the slower the movement.
 		</member>
-		<member name="linear_limit_y/upper_distance" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="linear_limit_y/upper_distance" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
 			The maximum difference between the pivot points' Y axis.
 		</member>
-		<member name="linear_limit_z/damping" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="linear_limit_z/damping" type="float" setter="set_param_z" getter="get_param_z" default="1.0">
 			The amount of damping that happens at the Z motion.
 		</member>
-		<member name="linear_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
+		<member name="linear_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z" default="true">
 			If [code]true[/code], the linear motion across the Z axis is limited.
 		</member>
-		<member name="linear_limit_z/lower_distance" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="linear_limit_z/lower_distance" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 			The minimum difference between the pivot points' Z axis.
 		</member>
-		<member name="linear_limit_z/restitution" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="linear_limit_z/restitution" type="float" setter="set_param_z" getter="get_param_z" default="0.5">
 			The amount of restitution on the Z axis movement. The lower, the more momentum gets lost.
 		</member>
-		<member name="linear_limit_z/softness" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="linear_limit_z/softness" type="float" setter="set_param_z" getter="get_param_z" default="0.7">
 			A factor applied to the movement across the Z axis. The lower, the slower the movement.
 		</member>
-		<member name="linear_limit_z/upper_distance" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="linear_limit_z/upper_distance" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 			The maximum difference between the pivot points' Z axis.
 		</member>
-		<member name="linear_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
+		<member name="linear_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x" default="false">
 			If [code]true[/code], then there is a linear motor on the X axis. It will attempt to reach the target velocity while staying within the force limits.
 		</member>
-		<member name="linear_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="linear_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
 			The maximum force the linear motor can apply on the X axis while trying to reach the target velocity.
 		</member>
-		<member name="linear_motor_x/target_velocity" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="linear_motor_x/target_velocity" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
 			The speed that the linear motor will attempt to reach on the X axis.
 		</member>
-		<member name="linear_motor_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
+		<member name="linear_motor_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y" default="false">
 			If [code]true[/code], then there is a linear motor on the Y axis. It will attempt to reach the target velocity while staying within the force limits.
 		</member>
-		<member name="linear_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="linear_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
 			The maximum force the linear motor can apply on the Y axis while trying to reach the target velocity.
 		</member>
-		<member name="linear_motor_y/target_velocity" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="linear_motor_y/target_velocity" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
 			The speed that the linear motor will attempt to reach on the Y axis.
 		</member>
-		<member name="linear_motor_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
+		<member name="linear_motor_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z" default="false">
 			If [code]true[/code], then there is a linear motor on the Z axis. It will attempt to reach the target velocity while staying within the force limits.
 		</member>
-		<member name="linear_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="linear_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 			The maximum force the linear motor can apply on the Z axis while trying to reach the target velocity.
 		</member>
-		<member name="linear_motor_z/target_velocity" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="linear_motor_z/target_velocity" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 			The speed that the linear motor will attempt to reach on the Z axis.
 		</member>
-		<member name="linear_spring_x/damping" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="linear_spring_x/damping" type="float" setter="set_param_x" getter="get_param_x" default="0.01">
 		</member>
-		<member name="linear_spring_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
+		<member name="linear_spring_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x" default="false">
 		</member>
-		<member name="linear_spring_x/equilibrium_point" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="linear_spring_x/equilibrium_point" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
 		</member>
-		<member name="linear_spring_x/stiffness" type="float" setter="set_param_x" getter="get_param_x">
+		<member name="linear_spring_x/stiffness" type="float" setter="set_param_x" getter="get_param_x" default="0.01">
 		</member>
-		<member name="linear_spring_y/damping" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="linear_spring_y/damping" type="float" setter="set_param_y" getter="get_param_y" default="0.01">
 		</member>
-		<member name="linear_spring_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
+		<member name="linear_spring_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y" default="false">
 		</member>
-		<member name="linear_spring_y/equilibrium_point" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="linear_spring_y/equilibrium_point" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
 		</member>
-		<member name="linear_spring_y/stiffness" type="float" setter="set_param_y" getter="get_param_y">
+		<member name="linear_spring_y/stiffness" type="float" setter="set_param_y" getter="get_param_y" default="0.01">
 		</member>
-		<member name="linear_spring_z/damping" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="linear_spring_z/damping" type="float" setter="set_param_z" getter="get_param_z" default="0.01">
 		</member>
-		<member name="linear_spring_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
+		<member name="linear_spring_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z" default="false">
 		</member>
-		<member name="linear_spring_z/equilibrium_point" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="linear_spring_z/equilibrium_point" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 		</member>
-		<member name="linear_spring_z/stiffness" type="float" setter="set_param_z" getter="get_param_z">
+		<member name="linear_spring_z/stiffness" type="float" setter="set_param_z" getter="get_param_z" default="0.01">
 		</member>
-		<member name="precision" type="int" setter="set_precision" getter="get_precision">
+		<member name="precision" type="int" setter="set_precision" getter="get_precision" default="1">
 		</member>
 	</members>
 	<constants>

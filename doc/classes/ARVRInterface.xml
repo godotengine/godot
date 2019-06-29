@@ -72,13 +72,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="ar_is_anchor_detection_enabled" type="bool" setter="set_anchor_detection_is_enabled" getter="get_anchor_detection_is_enabled">
+		<member name="ar_is_anchor_detection_enabled" type="bool" setter="set_anchor_detection_is_enabled" getter="get_anchor_detection_is_enabled" default="false">
 			On an AR interface, is our anchor detection enabled?
 		</member>
-		<member name="interface_is_initialized" type="bool" setter="set_is_initialized" getter="is_initialized">
+		<member name="interface_is_initialized" type="bool" setter="set_is_initialized" getter="is_initialized" default="false">
 			Has this interface been initialized?
 		</member>
-		<member name="interface_is_primary" type="bool" setter="set_is_primary" getter="is_primary">
+		<member name="interface_is_primary" type="bool" setter="set_is_primary" getter="is_primary" default="false">
 			Is this our primary interface?
 		</member>
 	</members>

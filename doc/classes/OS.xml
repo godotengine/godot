@@ -800,58 +800,125 @@
 		</method>
 	</methods>
 	<members>
-		<member name="clipboard" type="String" setter="set_clipboard" getter="get_clipboard">
+		<member name="clipboard" type="String" setter="set_clipboard" getter="get_clipboard" default="&quot;
+[godotengine/godot] Large shaders difficult to edit because of live recompile interruptions (#30164)
+Contrib/godot
+	x
+loganjk &lt;notifications@github.com&gt;
+	
+Fri, 28 Jun, 19:52 (16 hours ago)
+	
+	
+to godotengine/godot, Subscribed
+
+Godot version:
+3.1.1 win64 (Classical)
+
+OS/device including version:
+Windows 10 Pro, Intel i7-4790K, integrated GPU only (Intel HD Graphics 4600), driver igdkmd64.sys version 20.19.15.5058
+
+Issue description:
+
+With a GLES2 fragment shader of about 2,000 lines, I find the interruptions due to live recompile (and parsing?) to be annoying. I would prefer to have an option to turn off this behavior so I can recompile/parse only when desired and otherwise have the editor window behave like a simple text editor. I looked in the editor and project settings, but could not find a way to do this or at least greatly increase the delay before recompile/parsing to permit longer pauses in typing.
+
+The problem is not only that there the editor window freezes, but that sometimes keystrokes I made after the freeze began, before I noticed the freeze, are not remembered by the editor and are lost, leading to typos if I am not careful.
+
+I realize that most shaders are probably small enough that this is not a problem, but it would be a great \&quot;quality of life\&quot; improvement for me. An alternative is to use a separate editor and copy/paste when I want into Godot&apos;s editor window, but I&apos;d prefer to do everything in Godot if possible.
+
+Thanks for considering.
+
+—
+You are receiving this because you are subscribed to this thread.
+Reply to this email directly, view it on GitHub, or mute the thread.
+Zireael07 &lt;notifications@github.com&gt;
+	
+Fri, 28 Jun, 20:26 (15 hours ago)
+	
+	
+to godotengine/godot, Subscribed
+
+With a large shader, even moving around in shader editor (by arrow keys or mouse) gets laggy.
+Hugo Locurcio &lt;notifications@github.com&gt;
+	
+Fri, 28 Jun, 23:09 (13 hours ago)
+	
+	
+to godotengine/godot, Subscribed
+
+    I looked in the editor and project settings, but could not find a way to do this or at least greatly increase the delay before recompile/parsing to permit longer pauses in typing.
+
+You can increase Text Editor → Completion → Idle Parse Delay in the Editor Settings. Note that this affects both the script editor and shader editor, and will cause error reporting to take longer to appear.
+loganjk &lt;notifications@github.com&gt;
+	
+Fri, 28 Jun, 23:21 (12 hours ago)
+	
+	
+to godotengine/godot, Subscribed
+
+Closed #30164.
+loganjk &lt;notifications@github.com&gt;
+	
+Fri, 28 Jun, 23:21 (12 hours ago)
+	
+	
+to godotengine/godot, Subscribed
+
+I changed Idle Parse Delay before and it had no effect, but it seems that&apos;s because I did not restart the editor afterwards! Thanks very much, problem solved.
+	
+	
+	
+&quot;">
 			The clipboard from the host OS. Might be unavailable on some platforms.
 		</member>
-		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen">
+		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen" default="0">
 			The current screen index (starting from 0).
 		</member>
-		<member name="exit_code" type="int" setter="set_exit_code" getter="get_exit_code">
+		<member name="exit_code" type="int" setter="set_exit_code" getter="get_exit_code" default="0">
 			The exit code passed to the OS when the main loop exits.
 		</member>
-		<member name="keep_screen_on" type="bool" setter="set_keep_screen_on" getter="is_keep_screen_on">
+		<member name="keep_screen_on" type="bool" setter="set_keep_screen_on" getter="is_keep_screen_on" default="true">
 			If [code]true[/code], the engine tries to keep the screen on while the game is running. Useful on mobile.
 		</member>
-		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode">
+		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode" default="false">
 			If [code]true[/code], the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
 		</member>
-		<member name="max_window_size" type="Vector2" setter="set_max_window_size" getter="get_max_window_size">
+		<member name="max_window_size" type="Vector2" setter="set_max_window_size" getter="get_max_window_size" default="Vector2( 0, 0 )">
 			The maximum size of the window (without counting window manager decorations). Does not affect fullscreen mode. Set to [code](0, 0)[/code] to reset to the system default value.
 		</member>
-		<member name="min_window_size" type="Vector2" setter="set_min_window_size" getter="get_min_window_size">
+		<member name="min_window_size" type="Vector2" setter="set_min_window_size" getter="get_min_window_size" default="Vector2( 0, 0 )">
 			The minimum size of the window (without counting window manager decorations). Does not affect fullscreen mode. Set to [code](0, 0)[/code] to reset to the system default value.
 		</member>
-		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation">
+		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation" default="0">
 			The current screen orientation.
 		</member>
-		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled">
+		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled" default="true">
 			If [code]true[/code], vertical synchronization (Vsync) is enabled.
 		</member>
-		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window">
+		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window" default="false">
 			If [code]true[/code], removes the window frame.
 			[b]Note:[/b] Setting [code]window_borderless[/code] to [code]false[/code] disables per-pixel transparency.
 		</member>
-		<member name="window_fullscreen" type="bool" setter="set_window_fullscreen" getter="is_window_fullscreen">
+		<member name="window_fullscreen" type="bool" setter="set_window_fullscreen" getter="is_window_fullscreen" default="false">
 			If [code]true[/code], the window is fullscreen.
 		</member>
-		<member name="window_maximized" type="bool" setter="set_window_maximized" getter="is_window_maximized">
+		<member name="window_maximized" type="bool" setter="set_window_maximized" getter="is_window_maximized" default="false">
 			If [code]true[/code], the window is maximized.
 		</member>
-		<member name="window_minimized" type="bool" setter="set_window_minimized" getter="is_window_minimized">
+		<member name="window_minimized" type="bool" setter="set_window_minimized" getter="is_window_minimized" default="false">
 			If [code]true[/code], the window is minimized.
 		</member>
-		<member name="window_per_pixel_transparency_enabled" type="bool" setter="set_window_per_pixel_transparency_enabled" getter="get_window_per_pixel_transparency_enabled">
+		<member name="window_per_pixel_transparency_enabled" type="bool" setter="set_window_per_pixel_transparency_enabled" getter="get_window_per_pixel_transparency_enabled" default="false">
 			If [code]true[/code], the window background is transparent and window frame is removed.
 			Use [code]get_tree().get_root().set_transparent_background(true)[/code] to disable main viewport background rendering.
 			[b]Note:[/b] This property has no effect if [b]Project &gt; Project Settings &gt; Display &gt; Window &gt; Per-pixel transparency &gt; Allowed[/b] setting is disabled.
 		</member>
-		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position">
+		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position" default="Vector2( 0, 436 )">
 			The window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.
 		</member>
-		<member name="window_resizable" type="bool" setter="set_window_resizable" getter="is_window_resizable">
+		<member name="window_resizable" type="bool" setter="set_window_resizable" getter="is_window_resizable" default="true">
 			If [code]true[/code], the window is resizable by the user.
 		</member>
-		<member name="window_size" type="Vector2" setter="set_window_size" getter="get_window_size">
+		<member name="window_size" type="Vector2" setter="set_window_size" getter="get_window_size" default="Vector2( 1024, 600 )">
 			The size of the window (without counting window manager decorations).
 		</member>
 	</members>

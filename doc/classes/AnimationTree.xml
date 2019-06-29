@@ -35,15 +35,15 @@
 		</method>
 	</methods>
 	<members>
-		<member name="active" type="bool" setter="set_active" getter="is_active">
+		<member name="active" type="bool" setter="set_active" getter="is_active" default="false">
 		</member>
-		<member name="anim_player" type="NodePath" setter="set_animation_player" getter="get_animation_player">
+		<member name="anim_player" type="NodePath" setter="set_animation_player" getter="get_animation_player" default="NodePath(&quot;&quot;)">
 		</member>
-		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="AnimationTree.AnimationProcessMode">
+		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="AnimationTree.AnimationProcessMode" default="1">
 		</member>
-		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track">
+		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track" default="NodePath(&quot;&quot;)">
 		</member>
-		<member name="tree_root" type="AnimationNode" setter="set_tree_root" getter="get_tree_root">
+		<member name="tree_root" type="AnimationNode" setter="set_tree_root" getter="get_tree_root" default="null">
 		</member>
 	</members>
 	<constants>

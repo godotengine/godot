@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="input_name" type="String" setter="set_input_name" getter="get_input_name">
+		<member name="input_name" type="String" setter="set_input_name" getter="get_input_name" default="&quot;[None]&quot;">
 		</member>
 	</members>
 	<signals>

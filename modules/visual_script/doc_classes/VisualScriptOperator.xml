@@ -14,9 +14,9 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="Variant.Operator">
+		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="Variant.Operator" default="6">
 		</member>
-		<member name="type" type="int" setter="set_typed" getter="get_typed" enum="Variant.Type">
+		<member name="type" type="int" setter="set_typed" getter="get_typed" enum="Variant.Type" default="0">
 		</member>
 	</members>
 	<constants>

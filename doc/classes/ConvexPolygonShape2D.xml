@@ -21,7 +21,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points">
+		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points" default="PoolVector2Array(  )">
 			The polygon's list of vertices. Can be in either clockwise or counterclockwise order.
 		</member>
 	</members>

@@ -48,7 +48,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="anchor_id" type="int" setter="set_anchor_id" getter="get_anchor_id">
+		<member name="anchor_id" type="int" setter="set_anchor_id" getter="get_anchor_id" default="1">
 			The anchor's ID. You can set this before the anchor itself exists. The first anchor gets an ID of [code]1[/code], the second an ID of [code]2[/code], etc. When anchors get removed, the engine can then assign the corresponding ID to new anchors. The most common situation where anchors "disappear" is when the AR server identifies that two anchors represent different parts of the same plane and merges them.
 		</member>
 	</members>

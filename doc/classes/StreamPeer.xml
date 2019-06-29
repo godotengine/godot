@@ -271,7 +271,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="big_endian" type="bool" setter="set_big_endian" getter="is_big_endian_enabled">
+		<member name="big_endian" type="bool" setter="set_big_endian" getter="is_big_endian_enabled" default="false">
 			If [code]true[/code], this [StreamPeer] will using big-endian format for encoding and decoding.
 		</member>
 	</members>

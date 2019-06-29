@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeTransformVecMult.Operator">
+		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeTransformVecMult.Operator" default="0">
 		</member>
 	</members>
 	<constants>

@@ -171,19 +171,19 @@
 		</method>
 	</methods>
 	<members>
-		<member name="right_disconnects" type="bool" setter="set_right_disconnects" getter="is_right_disconnects_enabled">
+		<member name="right_disconnects" type="bool" setter="set_right_disconnects" getter="is_right_disconnects_enabled" default="false">
 			If [code]true[/code], enables disconnection of existing connections in the GraphEdit by dragging the right end.
 		</member>
-		<member name="scroll_offset" type="Vector2" setter="set_scroll_ofs" getter="get_scroll_ofs">
+		<member name="scroll_offset" type="Vector2" setter="set_scroll_ofs" getter="get_scroll_ofs" default="Vector2( 0, 0 )">
 			The scroll offset.
 		</member>
-		<member name="snap_distance" type="int" setter="set_snap" getter="get_snap">
+		<member name="snap_distance" type="int" setter="set_snap" getter="get_snap" default="20">
 			The snapping distance in pixels.
 		</member>
-		<member name="use_snap" type="bool" setter="set_use_snap" getter="is_using_snap">
+		<member name="use_snap" type="bool" setter="set_use_snap" getter="is_using_snap" default="true">
 			If [code]true[/code], enables snapping.
 		</member>
-		<member name="zoom" type="float" setter="set_zoom" getter="get_zoom">
+		<member name="zoom" type="float" setter="set_zoom" getter="get_zoom" default="1.0">
 			The current zoom value.
 		</member>
 	</members>
@@ -280,25 +280,25 @@
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="activity" type="Color">
+		<theme_item name="activity" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
-		<theme_item name="bezier_len_neg" type="int">
+		<theme_item name="bezier_len_neg" type="int" default="160">
 		</theme_item>
-		<theme_item name="bezier_len_pos" type="int">
+		<theme_item name="bezier_len_pos" type="int" default="80">
 		</theme_item>
 		<theme_item name="bg" type="StyleBox">
 		</theme_item>
-		<theme_item name="grid_major" type="Color">
+		<theme_item name="grid_major" type="Color" default="Color( 1, 1, 1, 0.2 )">
 		</theme_item>
-		<theme_item name="grid_minor" type="Color">
+		<theme_item name="grid_minor" type="Color" default="Color( 1, 1, 1, 0.05 )">
 		</theme_item>
 		<theme_item name="minus" type="Texture">
 		</theme_item>
 		<theme_item name="more" type="Texture">
 		</theme_item>
-		<theme_item name="port_grab_distance_horizontal" type="int">
+		<theme_item name="port_grab_distance_horizontal" type="int" default="48">
 		</theme_item>
-		<theme_item name="port_grab_distance_vertical" type="int">
+		<theme_item name="port_grab_distance_vertical" type="int" default="6">
 		</theme_item>
 		<theme_item name="reset" type="Texture">
 		</theme_item>

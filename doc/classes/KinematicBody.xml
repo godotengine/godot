@@ -135,16 +135,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin">
+		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.001">
 			If the body is at least this close to another body, this body will consider them to be colliding.
 		</member>
-		<member name="move_lock_x" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+		<member name="move_lock_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's X axis movement.
 		</member>
-		<member name="move_lock_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+		<member name="move_lock_y" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's Y axis movement.
 		</member>
-		<member name="move_lock_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+		<member name="move_lock_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's Z axis movement.
 		</member>
 	</members>

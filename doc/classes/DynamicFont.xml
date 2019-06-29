@@ -62,32 +62,32 @@
 		</method>
 	</methods>
 	<members>
-		<member name="extra_spacing_bottom" type="int" setter="set_spacing" getter="get_spacing">
+		<member name="extra_spacing_bottom" type="int" setter="set_spacing" getter="get_spacing" default="0">
 			Extra spacing at the bottom in pixels.
 		</member>
-		<member name="extra_spacing_char" type="int" setter="set_spacing" getter="get_spacing">
+		<member name="extra_spacing_char" type="int" setter="set_spacing" getter="get_spacing" default="0">
 			Extra character spacing in pixels.
 		</member>
-		<member name="extra_spacing_space" type="int" setter="set_spacing" getter="get_spacing">
+		<member name="extra_spacing_space" type="int" setter="set_spacing" getter="get_spacing" default="0">
 			Extra space spacing in pixels.
 		</member>
-		<member name="extra_spacing_top" type="int" setter="set_spacing" getter="get_spacing">
+		<member name="extra_spacing_top" type="int" setter="set_spacing" getter="get_spacing" default="0">
 			Extra spacing at the top in pixels.
 		</member>
-		<member name="font_data" type="DynamicFontData" setter="set_font_data" getter="get_font_data">
+		<member name="font_data" type="DynamicFontData" setter="set_font_data" getter="get_font_data" default="null">
 			The font data.
 		</member>
-		<member name="outline_color" type="Color" setter="set_outline_color" getter="get_outline_color">
+		<member name="outline_color" type="Color" setter="set_outline_color" getter="get_outline_color" default="Color( 1, 1, 1, 1 )">
 		</member>
-		<member name="outline_size" type="int" setter="set_outline_size" getter="get_outline_size">
+		<member name="outline_size" type="int" setter="set_outline_size" getter="get_outline_size" default="0">
 		</member>
-		<member name="size" type="int" setter="set_size" getter="get_size">
+		<member name="size" type="int" setter="set_size" getter="get_size" default="16">
 			The font size.
 		</member>
-		<member name="use_filter" type="bool" setter="set_use_filter" getter="get_use_filter">
+		<member name="use_filter" type="bool" setter="set_use_filter" getter="get_use_filter" default="false">
 			If [code]true[/code], filtering is used.
 		</member>
-		<member name="use_mipmaps" type="bool" setter="set_use_mipmaps" getter="get_use_mipmaps">
+		<member name="use_mipmaps" type="bool" setter="set_use_mipmaps" getter="get_use_mipmaps" default="false">
 			If [code]true[/code], mipmapping is used.
 		</member>
 	</members>

@@ -11,10 +11,10 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="audio_stream" type="AudioStream" setter="set_audio_stream" getter="get_audio_stream">
+		<member name="audio_stream" type="AudioStream" setter="set_audio_stream" getter="get_audio_stream" default="null">
 			The current [AudioStream].
 		</member>
-		<member name="random_pitch" type="float" setter="set_random_pitch" getter="get_random_pitch">
+		<member name="random_pitch" type="float" setter="set_random_pitch" getter="get_random_pitch" default="1.1">
 			The intensity of random pitch variation.
 		</member>
 	</members>

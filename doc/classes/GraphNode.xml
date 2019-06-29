@@ -173,21 +173,21 @@
 		</method>
 	</methods>
 	<members>
-		<member name="comment" type="bool" setter="set_comment" getter="is_comment">
+		<member name="comment" type="bool" setter="set_comment" getter="is_comment" default="false">
 		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The offset of the GraphNode, relative to the scroll offset of the [GraphEdit].
 			[b]Note:[/b] You cannot use position directly, as [GraphEdit] is a [Container].
 		</member>
-		<member name="overlay" type="int" setter="set_overlay" getter="get_overlay" enum="GraphNode.Overlay">
+		<member name="overlay" type="int" setter="set_overlay" getter="get_overlay" enum="GraphNode.Overlay" default="0">
 		</member>
-		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable">
+		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable" default="false">
 		</member>
-		<member name="selected" type="bool" setter="set_selected" getter="is_selected">
+		<member name="selected" type="bool" setter="set_selected" getter="is_selected" default="false">
 		</member>
-		<member name="show_close" type="bool" setter="set_show_close_button" getter="is_close_button_visible">
+		<member name="show_close" type="bool" setter="set_show_close_button" getter="is_close_button_visible" default="false">
 		</member>
-		<member name="title" type="String" setter="set_title" getter="get_title">
+		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
 		</member>
 	</members>
 	<signals>
@@ -235,9 +235,9 @@
 		</theme_item>
 		<theme_item name="close" type="Texture">
 		</theme_item>
-		<theme_item name="close_color" type="Color">
+		<theme_item name="close_color" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
-		<theme_item name="close_offset" type="int">
+		<theme_item name="close_offset" type="int" default="18">
 		</theme_item>
 		<theme_item name="comment" type="StyleBox">
 		</theme_item>
@@ -251,7 +251,7 @@
 		</theme_item>
 		<theme_item name="port" type="Texture">
 		</theme_item>
-		<theme_item name="port_offset" type="int">
+		<theme_item name="port_offset" type="int" default="3">
 		</theme_item>
 		<theme_item name="position" type="StyleBox">
 		</theme_item>
@@ -259,13 +259,13 @@
 		</theme_item>
 		<theme_item name="selectedframe" type="StyleBox">
 		</theme_item>
-		<theme_item name="separation" type="int">
+		<theme_item name="separation" type="int" default="1">
 		</theme_item>
-		<theme_item name="title_color" type="Color">
+		<theme_item name="title_color" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
 		<theme_item name="title_font" type="Font">
 		</theme_item>
-		<theme_item name="title_offset" type="int">
+		<theme_item name="title_offset" type="int" default="20">
 		</theme_item>
 	</theme_items>
 </class>

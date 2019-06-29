@@ -11,10 +11,10 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="curve" type="Curve" setter="set_curve" getter="get_curve">
+		<member name="curve" type="Curve" setter="set_curve" getter="get_curve" default="null">
 			The [code]curve[/code] rendered onto the texture.
 		</member>
-		<member name="width" type="int" setter="set_width" getter="get_width">
+		<member name="width" type="int" setter="set_width" getter="get_width" default="2048">
 			The width of the texture.
 		</member>
 	</members>

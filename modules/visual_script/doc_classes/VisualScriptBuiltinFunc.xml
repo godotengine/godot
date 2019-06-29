@@ -12,7 +12,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="function" type="int" setter="set_func" getter="get_func" enum="VisualScriptBuiltinFunc.BuiltinFunc">
+		<member name="function" type="int" setter="set_func" getter="get_func" enum="VisualScriptBuiltinFunc.BuiltinFunc" default="0">
 			The function to be executed.
 		</member>
 	</members>

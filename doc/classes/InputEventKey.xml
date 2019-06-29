@@ -19,16 +19,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="echo" type="bool" setter="set_echo" getter="is_echo">
+		<member name="echo" type="bool" setter="set_echo" getter="is_echo" default="false">
 			If [code]true[/code], the key was already pressed before this event. It means the user is holding the key down.
 		</member>
-		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
+		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
 			If [code]true[/code], the key's state is pressed. If [code]false[/code], the key's state is released.
 		</member>
-		<member name="scancode" type="int" setter="set_scancode" getter="get_scancode">
+		<member name="scancode" type="int" setter="set_scancode" getter="get_scancode" default="0">
 			Key scancode, one of the [enum KeyList] constants.
 		</member>
-		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode">
+		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode" default="0">
 			Key Unicode identifier when relevant. Unicode identifiers for the composite characters and complex scripts may not be available unless IME input mode is active. See [method OS.set_ime_active] for more information.
 		</member>
 	</members>

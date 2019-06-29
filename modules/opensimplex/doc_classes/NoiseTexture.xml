@@ -12,21 +12,21 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="as_normalmap" type="bool" setter="set_as_normalmap" getter="is_normalmap">
+		<member name="as_normalmap" type="bool" setter="set_as_normalmap" getter="is_normalmap" default="false">
 			If [code]true[/code], the resulting texture contains a normal map created from the original noise interpreted as a bump map.
 		</member>
-		<member name="bump_strength" type="float" setter="set_bump_strength" getter="get_bump_strength">
+		<member name="bump_strength" type="float" setter="set_bump_strength" getter="get_bump_strength" default="8.0">
 		</member>
-		<member name="height" type="int" setter="set_height" getter="get_height">
+		<member name="height" type="int" setter="set_height" getter="get_height" default="512">
 			Height of the generated texture.
 		</member>
-		<member name="noise" type="OpenSimplexNoise" setter="set_noise" getter="get_noise">
+		<member name="noise" type="OpenSimplexNoise" setter="set_noise" getter="get_noise" default="null">
 			The [OpenSimplexNoise] instance used to generate the noise.
 		</member>
-		<member name="seamless" type="bool" setter="set_seamless" getter="get_seamless">
+		<member name="seamless" type="bool" setter="set_seamless" getter="get_seamless" default="false">
 			Whether the texture can be tiled without visible seams or not. Seamless textures take longer to generate.
 		</member>
-		<member name="width" type="int" setter="set_width" getter="get_width">
+		<member name="width" type="int" setter="set_width" getter="get_width" default="512">
 			Width of the generated texture.
 		</member>
 	</members>

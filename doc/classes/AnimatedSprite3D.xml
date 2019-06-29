@@ -34,16 +34,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="animation" type="String" setter="set_animation" getter="get_animation">
+		<member name="animation" type="String" setter="set_animation" getter="get_animation" default="&quot;default&quot;">
 			The current animation from the [code]frames[/code] resource. If this value changes, the [code]frame[/code] counter is reset.
 		</member>
-		<member name="frame" type="int" setter="set_frame" getter="get_frame">
+		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
 			The displayed animation frame's index.
 		</member>
-		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
+		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames" default="null">
 			The [SpriteFrames] resource containing the animation(s).
 		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing">
+		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" default="false">
 			If [code]true[/code], the [member animation] is currently playing.
 		</member>
 	</members>

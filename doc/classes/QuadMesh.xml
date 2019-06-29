@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size">
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 1, 1 )">
 			Size in the X and Y axes. Default is [code]Vector2(1, 1)[/code].
 		</member>
 	</members>

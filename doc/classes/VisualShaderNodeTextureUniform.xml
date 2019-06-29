@@ -9,9 +9,9 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="color_default" type="int" setter="set_color_default" getter="get_color_default" enum="VisualShaderNodeTextureUniform.ColorDefault">
+		<member name="color_default" type="int" setter="set_color_default" getter="get_color_default" enum="VisualShaderNodeTextureUniform.ColorDefault" default="0">
 		</member>
-		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeTextureUniform.TextureType">
+		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeTextureUniform.TextureType" default="0">
 		</member>
 	</members>
 	<constants>

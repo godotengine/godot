@@ -113,19 +113,19 @@
 		</method>
 	</methods>
 	<members>
-		<member name="lacunarity" type="float" setter="set_lacunarity" getter="get_lacunarity">
+		<member name="lacunarity" type="float" setter="set_lacunarity" getter="get_lacunarity" default="2.0">
 			Difference in period between [member octaves].
 		</member>
-		<member name="octaves" type="int" setter="set_octaves" getter="get_octaves">
+		<member name="octaves" type="int" setter="set_octaves" getter="get_octaves" default="3">
 			Number of OpenSimplex noise layers that are sampled to get the fractal noise.
 		</member>
-		<member name="period" type="float" setter="set_period" getter="get_period">
+		<member name="period" type="float" setter="set_period" getter="get_period" default="64.0">
 			Period of the base octave. A lower period results in a higher-frequency noise (more value changes across the same distance).
 		</member>
-		<member name="persistence" type="float" setter="set_persistence" getter="get_persistence">
+		<member name="persistence" type="float" setter="set_persistence" getter="get_persistence" default="0.5">
 			Contribution factor of the different octaves. A [code]persistence[/code] value of 1 means all the octaves have the same contribution, a value of 0.5 means each octave contributes half as much as the previous one.
 		</member>
-		<member name="seed" type="int" setter="set_seed" getter="get_seed">
+		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="0">
 			Seed used to generate random values, different seeds will generate different noise maps.
 		</member>
 	</members>

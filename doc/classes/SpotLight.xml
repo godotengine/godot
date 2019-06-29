@@ -12,16 +12,16 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="spot_angle" type="float" setter="set_param" getter="get_param">
+		<member name="spot_angle" type="float" setter="set_param" getter="get_param" default="45.0">
 			The spotlight's angle in degrees.
 		</member>
-		<member name="spot_angle_attenuation" type="float" setter="set_param" getter="get_param">
+		<member name="spot_angle_attenuation" type="float" setter="set_param" getter="get_param" default="1.0">
 			The spotlight's angular attenuation curve.
 		</member>
-		<member name="spot_attenuation" type="float" setter="set_param" getter="get_param">
+		<member name="spot_attenuation" type="float" setter="set_param" getter="get_param" default="1.0">
 			The spotlight's light energy attenuation curve.
 		</member>
-		<member name="spot_range" type="float" setter="set_param" getter="get_param">
+		<member name="spot_range" type="float" setter="set_param" getter="get_param" default="5.0">
 			The maximal range that can be reached by the spotlight.
 		</member>
 	</members>

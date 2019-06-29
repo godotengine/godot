@@ -76,7 +76,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="custom_solver_bias" type="float" setter="set_custom_solver_bias" getter="get_custom_solver_bias">
+		<member name="custom_solver_bias" type="float" setter="set_custom_solver_bias" getter="get_custom_solver_bias" default="0.0">
 		</member>
 	</members>
 	<constants>
