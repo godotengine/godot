@@ -286,8 +286,8 @@ void ScriptCreateDialog::_create_new() {
 		}
 	}
 
-	hide();
 	emit_signal("script_created", scr);
+	hide();
 }
 
 void ScriptCreateDialog::_load_exist() {
@@ -300,8 +300,8 @@ void ScriptCreateDialog::_load_exist() {
 		return;
 	}
 
-	hide();
 	emit_signal("script_created", p_script.get_ref_ptr());
+	hide();
 }
 
 void ScriptCreateDialog::_lang_changed(int l) {
