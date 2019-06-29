@@ -284,7 +284,7 @@ Error PluginScript::reload(bool p_keep_state) {
 
 	Dictionary *members = (Dictionary *)&manifest.member_lines;
 	for (const Variant *key = members->next(); key != NULL; key = members->next(key)) {
-		_member_lines[*key] = (*members)[key];
+		_member_lines[*key] = (*members)[*key];
 	}
 	Array *methods = (Array *)&manifest.methods;
 	for (int i = 0; i < methods->size(); ++i) {
