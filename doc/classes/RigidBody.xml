@@ -125,7 +125,7 @@
 		<member name="axis_lock_linear_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's movement in the Z axis.
 		</member>
-		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce" default="null">
+		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
 			RigidBody's bounciness.
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
@@ -144,7 +144,7 @@
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" default="false">
 			If [code]true[/code], internal force integration will be disabled (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
 		</member>
-		<member name="friction" type="float" setter="set_friction" getter="get_friction" default="null">
+		<member name="friction" type="float" setter="set_friction" getter="get_friction">
 			The body's friction, from 0 (frictionless) to 1 (max friction).
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">

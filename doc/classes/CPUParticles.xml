@@ -85,19 +85,19 @@
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="CPUParticles.DrawOrder" default="0">
 			Particle draw order. Uses [enum DrawOrder] values.
 		</member>
-		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents" default="null">
+		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
 			The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_BOX].
 		</member>
 		<member name="emission_colors" type="PoolColorArray" setter="set_emission_colors" getter="get_emission_colors" default="PoolColorArray(  )">
 		</member>
-		<member name="emission_normals" type="PoolVector3Array" setter="set_emission_normals" getter="get_emission_normals" default="null">
+		<member name="emission_normals" type="PoolVector3Array" setter="set_emission_normals" getter="get_emission_normals">
 		</member>
 		<member name="emission_points" type="PoolVector3Array" setter="set_emission_points" getter="get_emission_points" default="PoolVector3Array(  )">
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="CPUParticles.EmissionShape" default="0">
 			Particles will be emitted inside this region. See [enum EmissionShape] for possible values.
 		</member>
-		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius" default="null">
+		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
 			The sphere's radius if [enum EmissionShape] is set to [constant EMISSION_SHAPE_SPHERE].
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
@@ -163,14 +163,14 @@
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot" default="false">
 			If [code]true[/code], only one emission cycle occurs. If set [code]true[/code] during a cycle, emission will stop at the cycle's end.
 		</member>
-		<member name="orbit_velocity" type="float" setter="set_param" getter="get_param" default="null">
+		<member name="orbit_velocity" type="float" setter="set_param" getter="get_param">
 			Orbital velocity applied to each particle. Makes the particles circle around origin in the local XY plane. Specified in number of full rotations around origin per second.
 			This property is only available when [member flag_disable_z] is [code]true[/code].
 		</member>
-		<member name="orbit_velocity_curve" type="Curve" setter="set_param_curve" getter="get_param_curve" default="null">
+		<member name="orbit_velocity_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Each particle's orbital velocity will vary along this [Curve].
 		</member>
-		<member name="orbit_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness" default="null">
+		<member name="orbit_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 			Orbital velocity randomness ratio.
 		</member>
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time" default="0.0">

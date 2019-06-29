@@ -748,6 +748,8 @@
 		<member name="node/name_num_separator" type="int" setter="" getter="" default="0">
 			What to use to separate node name from number. This is mostly an editor setting.
 		</member>
+		<member name="physics/2d/default_gravity" type="int" setter="" getter="" default="98">
+		</member>
 		<member name="physics/2d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 		</member>
 		<member name="physics/2d/thread_model" type="int" setter="" getter="" default="1">

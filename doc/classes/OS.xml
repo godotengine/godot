@@ -800,74 +800,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="clipboard" type="String" setter="set_clipboard" getter="get_clipboard" default="&quot;
-[godotengine/godot] Large shaders difficult to edit because of live recompile interruptions (#30164)
-Contrib/godot
-	x
-loganjk &lt;notifications@github.com&gt;
-	
-Fri, 28 Jun, 19:52 (16 hours ago)
-	
-	
-to godotengine/godot, Subscribed
-
-Godot version:
-3.1.1 win64 (Classical)
-
-OS/device including version:
-Windows 10 Pro, Intel i7-4790K, integrated GPU only (Intel HD Graphics 4600), driver igdkmd64.sys version 20.19.15.5058
-
-Issue description:
-
-With a GLES2 fragment shader of about 2,000 lines, I find the interruptions due to live recompile (and parsing?) to be annoying. I would prefer to have an option to turn off this behavior so I can recompile/parse only when desired and otherwise have the editor window behave like a simple text editor. I looked in the editor and project settings, but could not find a way to do this or at least greatly increase the delay before recompile/parsing to permit longer pauses in typing.
-
-The problem is not only that there the editor window freezes, but that sometimes keystrokes I made after the freeze began, before I noticed the freeze, are not remembered by the editor and are lost, leading to typos if I am not careful.
-
-I realize that most shaders are probably small enough that this is not a problem, but it would be a great \&quot;quality of life\&quot; improvement for me. An alternative is to use a separate editor and copy/paste when I want into Godot&apos;s editor window, but I&apos;d prefer to do everything in Godot if possible.
-
-Thanks for considering.
-
-—
-You are receiving this because you are subscribed to this thread.
-Reply to this email directly, view it on GitHub, or mute the thread.
-Zireael07 &lt;notifications@github.com&gt;
-	
-Fri, 28 Jun, 20:26 (15 hours ago)
-	
-	
-to godotengine/godot, Subscribed
-
-With a large shader, even moving around in shader editor (by arrow keys or mouse) gets laggy.
-Hugo Locurcio &lt;notifications@github.com&gt;
-	
-Fri, 28 Jun, 23:09 (13 hours ago)
-	
-	
-to godotengine/godot, Subscribed
-
-    I looked in the editor and project settings, but could not find a way to do this or at least greatly increase the delay before recompile/parsing to permit longer pauses in typing.
-
-You can increase Text Editor → Completion → Idle Parse Delay in the Editor Settings. Note that this affects both the script editor and shader editor, and will cause error reporting to take longer to appear.
-loganjk &lt;notifications@github.com&gt;
-	
-Fri, 28 Jun, 23:21 (12 hours ago)
-	
-	
-to godotengine/godot, Subscribed
-
-Closed #30164.
-loganjk &lt;notifications@github.com&gt;
-	
-Fri, 28 Jun, 23:21 (12 hours ago)
-	
-	
-to godotengine/godot, Subscribed
-
-I changed Idle Parse Delay before and it had no effect, but it seems that&apos;s because I did not restart the editor afterwards! Thanks very much, problem solved.
-	
-	
-	
-&quot;">
+		<member name="clipboard" type="String" setter="set_clipboard" getter="get_clipboard" default="&quot;an editor if it were&quot;">
 			The clipboard from the host OS. Might be unavailable on some platforms.
 		</member>
 		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen" default="0">

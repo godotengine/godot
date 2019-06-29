@@ -103,7 +103,7 @@
 		</member>
 		<member name="filter/low_hanging_obstacles" type="bool" setter="set_filter_low_hanging_obstacles" getter="get_filter_low_hanging_obstacles" default="false">
 		</member>
-		<member name="geometry/collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="null">
+		<member name="geometry/collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
 		</member>
 		<member name="geometry/parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type" default="0">
 		</member>

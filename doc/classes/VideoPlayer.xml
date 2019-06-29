@@ -66,10 +66,10 @@
 		</member>
 		<member name="stream" type="VideoStream" setter="set_stream" getter="get_stream" default="null">
 		</member>
-		<member name="stream_position" type="float" setter="set_stream_position" getter="get_stream_position" default="null">
+		<member name="stream_position" type="float" setter="set_stream_position" getter="get_stream_position">
 			The current position of the stream, in seconds.
 		</member>
-		<member name="volume" type="float" setter="set_volume" getter="get_volume" default="null">
+		<member name="volume" type="float" setter="set_volume" getter="get_volume">
 			Audio volume as a linear value.
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">

@@ -115,19 +115,19 @@
 		</method>
 	</methods>
 	<members>
-		<member name="global_position" type="Vector2" setter="set_global_position" getter="get_global_position" default="null">
+		<member name="global_position" type="Vector2" setter="set_global_position" getter="get_global_position">
 			Global position.
 		</member>
-		<member name="global_rotation" type="float" setter="set_global_rotation" getter="get_global_rotation" default="null">
+		<member name="global_rotation" type="float" setter="set_global_rotation" getter="get_global_rotation">
 			Global rotation in radians.
 		</member>
-		<member name="global_rotation_degrees" type="float" setter="set_global_rotation_degrees" getter="get_global_rotation_degrees" default="null">
+		<member name="global_rotation_degrees" type="float" setter="set_global_rotation_degrees" getter="get_global_rotation_degrees">
 			Global rotation in degrees.
 		</member>
-		<member name="global_scale" type="Vector2" setter="set_global_scale" getter="get_global_scale" default="null">
+		<member name="global_scale" type="Vector2" setter="set_global_scale" getter="get_global_scale">
 			Global scale.
 		</member>
-		<member name="global_transform" type="Transform2D" setter="set_global_transform" getter="get_global_transform" default="null">
+		<member name="global_transform" type="Transform2D" setter="set_global_transform" getter="get_global_transform">
 			Global [Transform2D].
 		</member>
 		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2( 0, 0 )">
@@ -142,7 +142,7 @@
 		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2( 1, 1 )">
 			The node's scale. Unscaled value: [code](1, 1)[/code].
 		</member>
-		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform" default="null">
+		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform">
 			Local [Transform2D].
 		</member>
 		<member name="z_as_relative" type="bool" setter="set_z_as_relative" getter="is_z_relative" default="true">

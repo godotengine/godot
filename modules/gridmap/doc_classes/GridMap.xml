@@ -213,7 +213,7 @@
 		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library" default="null">
 			The assigned [MeshLibrary].
 		</member>
-		<member name="theme" type="MeshLibrary" setter="set_theme" getter="get_theme" default="null">
+		<member name="theme" type="MeshLibrary" setter="set_theme" getter="get_theme">
 			Deprecated, use [member mesh_library] instead.
 		</member>
 	</members>

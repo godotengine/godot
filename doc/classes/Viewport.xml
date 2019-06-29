@@ -219,7 +219,7 @@
 		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener" getter="is_audio_listener" default="false">
 			If [code]true[/code], the viewport will process 3D audio streams.
 		</member>
-		<member name="canvas_transform" type="Transform2D" setter="set_canvas_transform" getter="get_canvas_transform" default="null">
+		<member name="canvas_transform" type="Transform2D" setter="set_canvas_transform" getter="get_canvas_transform">
 			The canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
 		</member>
 		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw" default="0">
@@ -228,7 +228,7 @@
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
 			If [code]true[/code], the viewport will disable 3D rendering. For actual disabling use [code]usage[/code].
 		</member>
-		<member name="global_canvas_transform" type="Transform2D" setter="set_global_canvas_transform" getter="get_global_canvas_transform" default="null">
+		<member name="global_canvas_transform" type="Transform2D" setter="set_global_canvas_transform" getter="get_global_canvas_transform">
 			The global canvas transform of the viewport. The canvas transform is relative to this.
 		</member>
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
@@ -293,7 +293,7 @@
 		<member name="world" type="World" setter="set_world" getter="get_world" default="null">
 			The custom [World] which can be used as 3D environment source.
 		</member>
-		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d" default="null">
+		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">
 			The custom [World2D] which can be used as 2D environment source.
 		</member>
 	</members>

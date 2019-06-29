@@ -18,7 +18,7 @@
 		<member name="type" type="int" setter="set_constant_type" getter="get_constant_type" enum="Variant.Type" default="0">
 			The constant's type.
 		</member>
-		<member name="value" type="Variant" setter="set_constant_value" getter="get_constant_value" default="null">
+		<member name="value" type="Variant" setter="set_constant_value" getter="get_constant_value">
 			The constant's value.
 		</member>
 	</members>
