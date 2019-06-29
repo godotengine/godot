@@ -56,7 +56,6 @@
 #endif // MINGW hack
 #endif
 #else // UNIX
-#include <net/if.h>
 #include <netdb.h>
 #ifdef ANDROID_ENABLED
 // We could drop this file once we up our API level to 24,
@@ -73,6 +72,7 @@
 #ifdef __FreeBSD__
 #include <netinet/in.h>
 #endif
+#include <net/if.h> // Order is important on OpenBSD, leave as last
 #endif
 
 static IP_Address _sockaddr2ip(struct sockaddr *p_addr) {
