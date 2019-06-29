@@ -248,19 +248,26 @@ void DocData::generate(bool p_basic_types) {
 			prop.setter = setter;
 			prop.getter = getter;
 
-			if (ClassDB::can_instance(name)) { // Cannot get default value of classes that can't be instanced
-				Variant default_value = ClassDB::class_get_default_property_value(name, E->get().name);
-				prop.default_value = default_value.get_construct_string();
+			Variant default_value = Variant();
+			bool default_value_valid = false;
+
+			if (ClassDB::can_instance(name)) {
+				default_value = ClassDB::class_get_default_property_value(name, E->get().name, &default_value_valid);
 			} else {
+				// Cannot get default value of classes that can't be instanced
 				List<StringName> inheriting_classes;
 				ClassDB::get_direct_inheriters_from_class(name, &inheriting_classes);
 				for (List<StringName>::Element *E2 = inheriting_classes.front(); E2; E2 = E2->next()) {
 					if (ClassDB::can_instance(E2->get())) {
-						Variant default_value = ClassDB::class_get_default_property_value(E2->get(), E->get().name);
-						prop.default_value = default_value.get_construct_string();
-						break;
+						default_value = ClassDB::class_get_default_property_value(E2->get(), E->get().name, &default_value_valid);
+						if (default_value_valid)
+							break;
 					}
 				}
+			}
+
+			if (default_value_valid) {
+				prop.default_value = default_value.get_construct_string();
 			}
 
 			bool found_type = false;
