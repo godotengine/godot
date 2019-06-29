@@ -41,7 +41,7 @@
 			The sample rate for mixing this audio.
 		</member>
 		<member name="stereo" type="bool" setter="set_stereo" getter="is_stereo" default="false">
-			If [code]true[/code], audio is stereo. Default value: [code]false[/code].
+			If [code]true[/code], audio is stereo.
 		</member>
 	</members>
 	<constants>

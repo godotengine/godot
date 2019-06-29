@@ -94,7 +94,7 @@
 			</argument>
 			<description>
 				Moves the cursor at the specified [code]column[/code] index.
-				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs. Default value is [code]true[/code].
+				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs.
 			</description>
 		</method>
 		<method name="cursor_set_line">
@@ -110,8 +110,8 @@
 			</argument>
 			<description>
 				Moves the cursor at the specified [code]line[/code] index.
-				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs. Default value is [code]true[/code].
-				If [code]can_be_hidden[/code] is set to true, the specified [code]line[/code] can be hidden using [method set_line_as_hidden]. Default value is [code]true[/code].
+				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs.
+				If [code]can_be_hidden[/code] is set to true, the specified [code]line[/code] can be hidden using [method set_line_as_hidden].
 			</description>
 		</method>
 		<method name="cut">

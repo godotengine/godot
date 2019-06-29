@@ -93,7 +93,7 @@
 			The name of the area's audio bus.
 		</member>
 		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" default="false">
-			If [code]true[/code], the area's audio bus overrides the default audio bus. Default value: [code]false[/code].
+			If [code]true[/code], the area's audio bus overrides the default audio bus.
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
 			The area's physics layer(s). Collidable objects can exist in any of 32 different layers. A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See also [member collision_mask].
@@ -108,7 +108,7 @@
 			The falloff factor for point gravity. The greater the value, the faster gravity decreases with distance.
 		</member>
 		<member name="gravity_point" type="bool" setter="set_gravity_is_point" getter="is_gravity_a_point" default="false">
-			If [code]true[/code], gravity is calculated from a point (set via [member gravity_vec]). See also [member space_override]. Default value: [code]false[/code].
+			If [code]true[/code], gravity is calculated from a point (set via [member gravity_vec]). See also [member space_override].
 		</member>
 		<member name="gravity_vec" type="Vector2" setter="set_gravity_vector" getter="get_gravity_vector" default="Vector2( 0, 1 )">
 			The area's gravity vector (not normalized). If gravity is a point (see [member gravity_point]), this will be the point of attraction.
@@ -117,13 +117,13 @@
 			The rate at which objects stop moving in this area. Represents the linear velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
 		</member>
 		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable" default="true">
-			If [code]true[/code], other monitoring areas can detect this area. Default value: [code]true[/code].
+			If [code]true[/code], other monitoring areas can detect this area.
 		</member>
 		<member name="monitoring" type="bool" setter="set_monitoring" getter="is_monitoring" default="true">
-			If [code]true[/code], the area detects bodies or areas entering and exiting it. Default value: [code]true[/code].
+			If [code]true[/code], the area detects bodies or areas entering and exiting it.
 		</member>
 		<member name="priority" type="float" setter="set_priority" getter="get_priority" default="0.0">
-			The area's priority. Higher priority areas are processed first. Default value: 0.
+			The area's priority. Higher priority areas are processed first.
 		</member>
 		<member name="space_override" type="int" setter="set_space_override_mode" getter="get_space_override_mode" enum="Area2D.SpaceOverride" default="0">
 			Override mode for gravity and damping calculations within this area. See [enum SpaceOverride] for possible values.

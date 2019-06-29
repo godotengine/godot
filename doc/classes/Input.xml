@@ -335,7 +335,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Whether to accumulate similar input events sent by the operating system. Defaults to [code]true[/code].
+				Whether to accumulate similar input events sent by the operating system. Enabled by default.
 			</description>
 		</method>
 		<method name="start_joy_vibration">

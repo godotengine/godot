@@ -73,7 +73,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the custom background color of the item specified by [code]idx[/code] index. Default value is [code]Color(0, 0, 0, 0)[/code].
+				Returns the custom background color of the item specified by [code]idx[/code] index.
 			</description>
 		</method>
 		<method name="get_item_custom_fg_color" qualifiers="const">
@@ -82,7 +82,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the custom foreground color of the item specified by [code]idx[/code] index. Default value is [code]Color(0, 0, 0, 0)[/code].
+				Returns the custom foreground color of the item specified by [code]idx[/code] index.
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
@@ -91,7 +91,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the icon associated with the specified index. Default value is [code]null[/code].
+				Returns the icon associated with the specified index.
 			</description>
 		</method>
 		<method name="get_item_icon_modulate" qualifiers="const">
@@ -418,7 +418,7 @@
 			Sets the default position of the icon to either [constant ICON_MODE_LEFT] or [constant ICON_MODE_TOP].
 		</member>
 		<member name="icon_scale" type="float" setter="set_icon_scale" getter="get_icon_scale" default="1.0">
-			Sets the icon size to its initial size multiplied by the specified scale. Default value is 1.0.
+			Sets the icon size to its initial size multiplied by the specified scale.
 		</member>
 		<member name="max_columns" type="int" setter="set_max_columns" getter="get_max_columns" default="1">
 			Sets the maximum columns the list will have. If set to anything other than the default, the content will be split among the specified columns.

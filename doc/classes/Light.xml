@@ -13,7 +13,7 @@
 	</methods>
 	<members>
 		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only" default="false">
-			If [code]true[/code], the light only appears in the editor and will not be visible at runtime. Default value: [code]false[/code].
+			If [code]true[/code], the light only appears in the editor and will not be visible at runtime.
 		</member>
 		<member name="light_bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="Light.BakeMode" default="1">
 			The light's bake mode. See [enum BakeMode].
@@ -31,7 +31,7 @@
 			Secondary multiplier used with indirect light (light bounces). This works on both [BakedLightmap] and [GIProbe].
 		</member>
 		<member name="light_negative" type="bool" setter="set_negative" getter="is_negative" default="false">
-			If [code]true[/code], the light's effect is reversed, darkening areas and casting bright shadows. Default value: [code]false[/code].
+			If [code]true[/code], the light's effect is reversed, darkening areas and casting bright shadows.
 		</member>
 		<member name="light_specular" type="float" setter="set_param" getter="get_param" default="0.5">
 			The intensity of the specular blob in objects affected by the light. At [code]0[/code] the light becomes a pure diffuse light.
@@ -46,7 +46,7 @@
 			Attempts to reduce [member shadow_bias] gap.
 		</member>
 		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow" default="false">
-			If [code]true[/code], the light will cast shadows. Default value: [code]false[/code].
+			If [code]true[/code], the light will cast shadows.
 		</member>
 		<member name="shadow_reverse_cull_face" type="bool" setter="set_shadow_reverse_cull_face" getter="get_shadow_reverse_cull_face" default="false">
 		</member>
