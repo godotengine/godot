@@ -360,6 +360,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the amount of time in milliseconds it took for the boot logo to appear.
 			</description>
 		</method>
 		<method name="get_static_memory_peak_usage" qualifiers="const">
@@ -493,6 +494,7 @@
 			<return type="Rect2">
 			</return>
 			<description>
+				Returns unobscured area of the window where interactive controls should be rendered.
 			</description>
 		</method>
 		<method name="has_environment" qualifiers="const">
