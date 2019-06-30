@@ -126,7 +126,8 @@
 			Lock the body's movement in the Z axis.
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
-			RigidBody's bounciness.
+			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
+			Deprecated, use [member PhysicsMaterial.bounce] instead via [member physics_material_override].
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
 			If [code]true[/code], the RigidBody will not calculate forces and will act as a static body while there is no movement. It will wake up when forces are applied through other collisions or when the [code]apply_impulse[/code] method is used.
@@ -146,6 +147,7 @@
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
 			The body's friction, from 0 (frictionless) to 1 (max friction).
+			Deprecated, use [member PhysicsMaterial.friction] instead via [member physics_material_override].
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
 			This is multiplied by the global 3D gravity setting found in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] to produce RigidBody's gravity. For example, a value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.

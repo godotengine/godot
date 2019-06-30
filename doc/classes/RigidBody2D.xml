@@ -127,7 +127,8 @@
 			The body's total applied torque.
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
-			The body's bounciness.
+			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
+			Deprecated, use [member PhysicsMaterial.bounce] instead via [member physics_material_override].
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
 			If [code]true[/code], the body will not calculate forces and will act as a static body if there is no movement. The body will wake up when other forces are applied via collisions or by using [method apply_impulse] or [method add_force].
@@ -147,6 +148,7 @@
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
 			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction).
+			Deprecated, use [member PhysicsMaterial.friction] instead via [member physics_material_override].
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
 			Multiplies the gravity applied to the body. The body's gravity is calculated from the [b]Default Gravity[/b] value in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] and/or any additional gravity vector applied by [Area2D]s.
