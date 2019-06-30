@@ -14,7 +14,7 @@
 		<member name="absorbent" type="bool" setter="set_absorbent" getter="is_absorbent" default="false">
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce" default="0.0">
-			The body's bounciness.
+			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction" default="1.0">
 			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction).
