@@ -241,7 +241,6 @@
 
 class CameraFeedIOS : public CameraFeed {
 private:
-	bool is_arkit; // if true this feed is updated through ARKit (should only have one and not yet implemented)
 	AVCaptureDevice *device;
 	MyCaptureSession *capture_session;
 
@@ -258,10 +257,6 @@ public:
 	void deactivate_feed();
 };
 
-bool CameraFeedIOS::get_is_arkit() const {
-	return is_arkit;
-};
-
 AVCaptureDevice *CameraFeedIOS::get_device() const {
 	return device;
 };
@@ -274,24 +269,16 @@ CameraFeedIOS::CameraFeedIOS() {
 
 void CameraFeedIOS::set_device(AVCaptureDevice *p_device) {
 	device = p_device;
-	if (device == NULL) {
-		///@TODO finish this!
-		is_arkit = true;
-		name = "ARKit";
-		position = CameraFeed::FEED_BACK;
-	} else {
-		is_arkit = false;
-		[device retain];
+	[device retain];
 
-		// get some info
-		NSString *device_name = p_device.localizedName;
-		name = device_name.UTF8String;
-		position = CameraFeed::FEED_UNSPECIFIED;
-		if ([p_device position] == AVCaptureDevicePositionBack) {
-			position = CameraFeed::FEED_BACK;
-		} else if ([p_device position] == AVCaptureDevicePositionFront) {
-			position = CameraFeed::FEED_FRONT;
-		};
+	// get some info
+	NSString *device_name = p_device.localizedName;
+	name = device_name.UTF8String;
+	position = CameraFeed::FEED_UNSPECIFIED;
+	if ([p_device position] == AVCaptureDevicePositionBack) {
+		position = CameraFeed::FEED_BACK;
+	} else if ([p_device position] == AVCaptureDevicePositionFront) {
+		position = CameraFeed::FEED_FRONT;
 	};
 };
 
@@ -308,15 +295,11 @@ CameraFeedIOS::~CameraFeedIOS() {
 };
 
 bool CameraFeedIOS::activate_feed() {
-	if (is_arkit) {
-		///@TODO to implement;
+	if (capture_session) {
+		// already recording!
 	} else {
-		if (capture_session) {
-			// already recording!
-		} else {
-			// start camera capture
-			capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
-		};
+		// start camera capture
+		capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
 	};
 
 	return true;
@@ -376,14 +359,14 @@ void CameraIOS::update_feeds() {
 	// this way of doing things is deprecated but still works,
 	// rewrite to using AVCaptureDeviceDiscoverySession
 
-	AVCaptureDeviceDiscoverySession *session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeBuiltInTelephotoCamera, AVCaptureDeviceTypeBuiltInDualCamera, AVCaptureDeviceTypeBuiltInTrueDepthCamera] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+	AVCaptureDeviceDiscoverySession *session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeBuiltInTelephotoCamera, AVCaptureDeviceTypeBuiltInDualCamera, AVCaptureDeviceTypeBuiltInTrueDepthCamera, AVCaptureDeviceTypeBuiltInWideAngleCamera] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
 
 	// remove devices that are gone..
 	for (int i = feeds.size() - 1; i >= 0; i--) {
-		Ref<CameraFeedIOS> feed = (Ref<CameraFeedIOS>)feeds[i];
+		Ref<CameraFeedIOS> feed(feeds[i]);
 
-		if (feed->get_is_arkit()) {
-			// ignore, this is our arkit entry
+		if (feed.is_null()) {
+			// feed not managed by us
 		} else if (![session.devices containsObject:feed->get_device()]) {
 			// remove it from our array, this will also destroy it ;)
 			remove_feed(feed);
@@ -393,9 +376,13 @@ void CameraIOS::update_feeds() {
 	// add new devices..
 	for (AVCaptureDevice *device in session.devices) {
 		bool found = false;
+
 		for (int i = 0; i < feeds.size() && !found; i++) {
-			Ref<CameraFeedIOS> feed = (Ref<CameraFeedIOS>)feeds[i];
-			if (feed->get_device() == device) {
+			Ref<CameraFeedIOS> feed(feeds[i]);
+
+			if (feed.is_null()) {
+				// feed not managed by us
+			} else if (feed->get_device() == device) {
 				found = true;
 			};
 		};
@@ -410,9 +397,13 @@ void CameraIOS::update_feeds() {
 };
 
 CameraIOS::CameraIOS() {
+	print_line("Requesting Camera permissions");
+
 	[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
 							 completionHandler:^(BOOL granted) {
 								 if (granted) {
+									 print_line("Access to cameras granted!");
+
 									 // Find available cameras we have at this time
 									 update_feeds();
 

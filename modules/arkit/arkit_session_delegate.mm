@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  camera_ios.h                                                         */
+/*  arkit_session_delegate.mm                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,18 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAMERAIOS_H
-#define CAMERAIOS_H
+#include "arkit_session_delegate.h"
+#include "arkit_interface.h"
 
-#include "servers/camera_server.h"
+@implementation ARKitSessionDelegate
 
-class CameraIOS : public CameraServer {
-private:
-public:
-	CameraIOS();
-	~CameraIOS();
+@synthesize arkit_interface;
 
-	void update_feeds();
-};
+- (void)session:(ARSession *)session didAddAnchors:(NSArray<ARAnchor *> *)anchors {
+	for (ARAnchor *anchor in anchors) {
+		arkit_interface->_add_or_update_anchor(anchor);
+	}
+}
 
-#endif /* CAMERAIOS_H */
+- (void)session:(ARSession *)session didRemoveAnchors:(NSArray<ARAnchor *> *)anchors {
+	for (ARAnchor *anchor in anchors) {
+		arkit_interface->_remove_anchor(anchor);
+	}
+}
+
+- (void)session:(ARSession *)session didUpdateAnchors:(NSArray<ARAnchor *> *)anchors {
+	for (ARAnchor *anchor in anchors) {
+		arkit_interface->_add_or_update_anchor(anchor);
+	}
+}
+
+@end
