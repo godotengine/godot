@@ -10,7 +10,7 @@
  * */
 #ifndef MINIXML_H_INCLUDED
 #define MINIXML_H_INCLUDED
-#define IS_WHITE_SPACE(c) ((c==' ') || (c=='\t') || (c=='\r') || (c=='\n'))
+#define IS_WHITE_SPACE(c) ((c)==' ' || (c)=='\t' || (c)=='\r' || (c)=='\n')
 
 /* if a callback function pointer is set to NULL,
  * the function is not called */

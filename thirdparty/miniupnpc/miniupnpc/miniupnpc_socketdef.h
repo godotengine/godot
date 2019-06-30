@@ -28,6 +28,13 @@
 
 #endif
 
+#ifdef _MSC_VER
+#define MSC_CAST_INT (int)
+#else
+#define MSC_CAST_INT
+#endif
+
+/* definition of PRINT_SOCKET_ERROR */
 #ifdef _WIN32
 #define PRINT_SOCKET_ERROR(x)    fprintf(stderr, "Socket error: %s, %d\n", x, WSAGetLastError());
 #else
