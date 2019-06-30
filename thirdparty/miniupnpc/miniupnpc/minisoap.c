@@ -25,12 +25,6 @@
 /* only for malloc */
 #include <stdlib.h>
 
-#ifdef _WIN32
-#define PRINT_SOCKET_ERROR(x)    fprintf(stderr, "Socket error: %s, %d\n", x, WSAGetLastError());
-#else
-#define PRINT_SOCKET_ERROR(x) perror(x)
-#endif
-
 /* httpWrite sends the headers and the body to the socket
  * and returns the number of bytes sent */
 static int
@@ -79,11 +73,10 @@ int soapPostSubmit(SOCKET fd,
 				   const char * body,
 				   const char * httpversion)
 {
-	int bodysize;
 	char headerbuf[512];
 	int headerssize;
 	char portstr[8];
-	bodysize = (int)strlen(body);
+	int bodysize = (int)strlen(body);
 	/* We are not using keep-alive HTTP connections.
 	 * HTTP/1.1 needs the header Connection: close to do that.
 	 * This is the default with HTTP/1.0
