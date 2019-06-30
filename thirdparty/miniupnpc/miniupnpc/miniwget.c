@@ -243,7 +243,7 @@ getHTTPResponse(SOCKET s, int * size, int * status_code)
 					/* reading chunk size */
 					if(chunksize_buf_index == 0) {
 						/* skipping any leading CR LF */
-						if(i<n && buf[i] == '\r') i++;
+						if(buf[i] == '\r') i++;
 						if(i<n && buf[i] == '\n') i++;
 					}
 					while(i<n && isxdigit(buf[i])
@@ -350,7 +350,7 @@ getHTTPResponse(SOCKET s, int * size, int * status_code)
 		}
 	}
 end_of_stream:
-	free(header_buf); header_buf = NULL;
+	free(header_buf);
 	*size = content_buf_used;
 	if(content_buf_used == 0)
 	{
@@ -371,7 +371,7 @@ miniwget3(const char * host,
           int * status_code)
 {
 	char buf[2048];
-    SOCKET s;
+	SOCKET s;
 	int n;
 	int len;
 	int sent;
@@ -559,7 +559,7 @@ parseURL(const char * url,
 #else
 			/* under windows, scope is numerical */
 			char tmp[8];
-			int l;
+			size_t l;
 			scope++;
 			/* "%25" is just '%' in URL encoding */
 			if(scope[0] == '2' && scope[1] == '5')
@@ -659,4 +659,3 @@ miniwget_getaddr(const char * url, int * size,
 #endif
 	return miniwget2(hostname, port, path, size, addr, addrlen, scope_id, status_code);
 }
-

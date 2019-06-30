@@ -1,8 +1,8 @@
-/* $Id: connecthostport.c,v 1.15 2015/10/09 16:26:19 nanard Exp $ */
+/* $Id: connecthostport.c,v 1.21 2019/04/23 12:11:08 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project : miniupnp
  * Author : Thomas Bernard
- * Copyright (c) 2010-2018 Thomas Bernard
+ * Copyright (c) 2010-2019 Thomas Bernard
  * This software is subject to the conditions detailed in the
  * LICENCE file provided in this distribution. */
 
@@ -40,13 +40,6 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #endif /* #else _WIN32 */
-
-/* definition of PRINT_SOCKET_ERROR */
-#ifdef _WIN32
-#define PRINT_SOCKET_ERROR(x)    fprintf(stderr, "Socket error: %s, %d\n", x, WSAGetLastError());
-#else
-#define PRINT_SOCKET_ERROR(x) perror(x)
-#endif
 
 #if defined(__amigaos__) || defined(__amigaos4__)
 #define herror(A) printf("%s\n", A)
@@ -123,8 +116,22 @@ SOCKET connecthostport(const char * host, unsigned short port,
 		int err;
 		FD_ZERO(&wset);
 		FD_SET(s, &wset);
-		if((n = select(s + 1, NULL, &wset, NULL, NULL)) == -1 && errno == EINTR)
+#ifdef MINIUPNPC_SET_SOCKET_TIMEOUT
+		timeout.tv_sec = 3;
+		timeout.tv_usec = 0;
+		n = select(s + 1, NULL, &wset, NULL, &timeout);
+#else
+		n = select(s + 1, NULL, &wset, NULL, NULL);
+#endif
+		if(n == -1 && errno == EINTR)
 			continue;
+#ifdef MINIUPNPC_SET_SOCKET_TIMEOUT
+		if(n == 0) {
+			errno = ETIMEDOUT;
+			n = -1;
+			break;
+		}
+#endif
 		/*len = 0;*/
 		/*n = getpeername(s, NULL, &len);*/
 		len = sizeof(err);
@@ -163,7 +170,7 @@ SOCKET connecthostport(const char * host, unsigned short port,
 		for(i = 0, j = 1; host[j] && (host[j] != ']') && i < MAXHOSTNAMELEN; i++, j++)
 		{
 			tmp_host[i] = host[j];
-			if(0 == memcmp(host+j, "%25", 3))	/* %25 is just url encoding for '%' */
+			if(0 == strncmp(host+j, "%25", 3))	/* %25 is just url encoding for '%' */
 				j+=2;							/* skip "25" */
 		}
 		tmp_host[i] = '\0';
@@ -183,9 +190,11 @@ SOCKET connecthostport(const char * host, unsigned short port,
 #endif
 		return INVALID_SOCKET;
 	}
-	s = -1;
+	s = INVALID_SOCKET;
 	for(p = ai; p; p = p->ai_next)
 	{
+		if(!ISINVALID(s))
+			closesocket(s);
 		s = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
 		if(ISINVALID(s))
 			continue;
@@ -208,7 +217,7 @@ SOCKET connecthostport(const char * host, unsigned short port,
 			PRINT_SOCKET_ERROR("setsockopt");
 		}
 #endif /* #ifdef MINIUPNPC_SET_SOCKET_TIMEOUT */
-		n = connect(s, p->ai_addr, p->ai_addrlen);
+		n = connect(s, p->ai_addr, MSC_CAST_INT p->ai_addrlen);
 #ifdef MINIUPNPC_IGNORE_EINTR
 		/* EINTR The system call was interrupted by a signal that was caught
 		 * EINPROGRESS The socket is nonblocking and the connection cannot
@@ -220,8 +229,22 @@ SOCKET connecthostport(const char * host, unsigned short port,
 			int err;
 			FD_ZERO(&wset);
 			FD_SET(s, &wset);
-			if((n = select(s + 1, NULL, &wset, NULL, NULL)) == -1 && errno == EINTR)
+#ifdef MINIUPNPC_SET_SOCKET_TIMEOUT
+			timeout.tv_sec = 3;
+			timeout.tv_usec = 0;
+			n = select(s + 1, NULL, &wset, NULL, &timeout);
+#else
+			n = select(s + 1, NULL, &wset, NULL, NULL);
+#endif
+			if(n == -1 && errno == EINTR)
 				continue;
+#ifdef MINIUPNPC_SET_SOCKET_TIMEOUT
+			if(n == 0) {
+				errno = ETIMEDOUT;
+				n = -1;
+				break;
+			}
+#endif
 			/*len = 0;*/
 			/*n = getpeername(s, NULL, &len);*/
 			len = sizeof(err);
@@ -237,15 +260,8 @@ SOCKET connecthostport(const char * host, unsigned short port,
 			}
 		}
 #endif /* #ifdef MINIUPNPC_IGNORE_EINTR */
-		if(n < 0)
-		{
-			closesocket(s);
-			continue;
-		}
-		else
-		{
+		if(n >= 0)	/* connect() was successful */
 			break;
-		}
 	}
 	freeaddrinfo(ai);
 	if(ISINVALID(s))
@@ -256,9 +272,9 @@ SOCKET connecthostport(const char * host, unsigned short port,
 	if(n < 0)
 	{
 		PRINT_SOCKET_ERROR("connect");
+		closesocket(s);
 		return INVALID_SOCKET;
 	}
 #endif /* #ifdef USE_GETHOSTBYNAME */
 	return s;
 }
-

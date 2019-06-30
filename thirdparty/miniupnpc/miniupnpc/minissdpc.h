@@ -32,13 +32,13 @@ MINIUPNP_LIBSPEC int
 connectToMiniSSDPD(const char * socketpath);
 
 MINIUPNP_LIBSPEC int
-disconnectFromMiniSSDPD(int fd);
+disconnectFromMiniSSDPD(int s);
 
 MINIUPNP_LIBSPEC int
-requestDevicesFromMiniSSDPD(int fd, const char * devtype);
+requestDevicesFromMiniSSDPD(int s, const char * devtype);
 
 MINIUPNP_LIBSPEC struct UPNPDev *
-receiveDevicesFromMiniSSDPD(int fd, int * error);
+receiveDevicesFromMiniSSDPD(int s, int * error);
 
 #endif /* !(defined(_WIN32) || defined(__amigaos__) || defined(__amigaos4__)) */
 
