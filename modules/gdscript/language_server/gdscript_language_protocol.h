@@ -84,6 +84,7 @@ public:
 	void notify_client(const String &p_method, const Variant &p_params = Variant(), int p_client = -1);
 
 	bool is_smart_resolve_enabled() const;
+	bool is_goto_native_symbols_enabled() const;
 
 	GDScriptLanguageProtocol();
 	~GDScriptLanguageProtocol();

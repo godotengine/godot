@@ -84,8 +84,6 @@ public:
 
 	Dictionary generate_script_api(const String &p_path);
 
-	static String marked_documentation(const String &p_bbcode);
-
 	GDScriptWorkspace();
 	~GDScriptWorkspace();
 };

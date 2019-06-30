@@ -32,6 +32,7 @@
 #include "../gdscript.h"
 #include "core/os/os.h"
 #include "editor/editor_settings.h"
+#include "editor/plugins/script_text_editor.h"
 #include "gdscript_extend_parser.h"
 #include "gdscript_language_protocol.h"
 
@@ -47,6 +48,7 @@ void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("colorPresentation"), &GDScriptTextDocument::colorPresentation);
 	ClassDB::bind_method(D_METHOD("hover"), &GDScriptTextDocument::hover);
 	ClassDB::bind_method(D_METHOD("definition"), &GDScriptTextDocument::definition);
+	ClassDB::bind_method(D_METHOD("show_native_symbol_in_editor"), &GDScriptTextDocument::show_native_symbol_in_editor);
 }
 
 void GDScriptTextDocument::didOpen(const Variant &p_param) {
@@ -324,6 +326,31 @@ Array GDScriptTextDocument::definition(const Dictionary &p_params) {
 		const String &path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(symbol->uri);
 		if (file_checker->file_exists(path)) {
 			arr.push_back(location.to_json());
+		} else if (!symbol->native_class.empty() && GDScriptLanguageProtocol::get_singleton()->is_goto_native_symbols_enabled()) {
+			String id;
+			switch (symbol->kind) {
+				case lsp::SymbolKind::Class:
+					id = "class_name:" + symbol->name;
+					break;
+				case lsp::SymbolKind::Constant:
+					id = "class_constant:" + symbol->native_class + ":" + symbol->name;
+					break;
+				case lsp::SymbolKind::Property:
+				case lsp::SymbolKind::Variable:
+					id = "class_property:" + symbol->native_class + ":" + symbol->name;
+					break;
+				case lsp::SymbolKind::Enum:
+					id = "class_enum:" + symbol->native_class + ":" + symbol->name;
+					break;
+				case lsp::SymbolKind::Method:
+				case lsp::SymbolKind::Function:
+					id = "class_method:" + symbol->native_class + ":" + symbol->name;
+					break;
+				default:
+					id = "class_global:" + symbol->native_class + ":" + symbol->name;
+					break;
+			}
+			call_deferred("show_native_symbol_in_editor", id);
 		}
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 
@@ -332,12 +359,12 @@ Array GDScriptTextDocument::definition(const Dictionary &p_params) {
 		for (List<const lsp::DocumentSymbol *>::Element *E = list.front(); E; E = E->next()) {
 
 			if (const lsp::DocumentSymbol *s = E->get()) {
-
-				lsp::Location location;
-				location.uri = s->uri;
-				location.range = s->range;
-
-				arr.push_back(location.to_json());
+				if (!s->uri.empty()) {
+					lsp::Location location;
+					location.uri = s->uri;
+					location.range = s->range;
+					arr.push_back(location.to_json());
+				}
 			}
 		}
 	}
@@ -356,4 +383,9 @@ GDScriptTextDocument::~GDScriptTextDocument() {
 void GDScriptTextDocument::sync_script_content(const String &p_uri, const String &p_content) {
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(p_uri);
 	GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_script(path, p_content);
+}
+
+void GDScriptTextDocument::show_native_symbol_in_editor(const String &p_symbol_id) {
+	ScriptEditor::get_singleton()->call_deferred("_help_class_goto", p_symbol_id);
+	OS::get_singleton()->move_window_to_foreground();
 }

@@ -38,6 +38,7 @@ GDScriptLanguageServer::GDScriptLanguageServer() {
 	thread_exit = false;
 	_EDITOR_DEF("network/language_server/remote_port", 6008);
 	_EDITOR_DEF("network/language_server/enable_smart_resolve", false);
+	_EDITOR_DEF("network/language_server/show_native_symbols_in_editor", false);
 }
 
 void GDScriptLanguageServer::_notification(int p_what) {

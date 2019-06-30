@@ -1064,6 +1064,11 @@ struct DocumentSymbol {
 	String documentation;
 
 	/**
+	 * Class name for the native symbols
+	 */
+	String native_class;
+
+	/**
 	 * The kind of this symbol.
 	 */
 	int kind = SymbolKind::File;

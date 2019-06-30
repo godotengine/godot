@@ -165,58 +165,6 @@ ExtendGDScriptParser *GDScriptWorkspace::get_parse_result(const String &p_path) 
 	return NULL;
 }
 
-String GDScriptWorkspace::marked_documentation(const String &p_bbcode) {
-
-	String markdown = p_bbcode.strip_edges();
-
-	Vector<String> lines = markdown.split("\n");
-	bool in_code_block = false;
-	int code_block_indent = -1;
-
-	markdown = "";
-	for (int i = 0; i < lines.size(); i++) {
-		String line = lines[i];
-		int block_start = line.find("[codeblock]");
-		if (block_start != -1) {
-			code_block_indent = block_start;
-			in_code_block = true;
-			line = "'''gdscript";
-			line = "\n";
-		} else if (in_code_block) {
-			line = "\t" + line.substr(code_block_indent, line.length());
-		}
-
-		if (in_code_block && line.find("[/codeblock]") != -1) {
-			line = "'''\n";
-			line = "\n";
-			in_code_block = false;
-		}
-
-		if (!in_code_block) {
-			line = line.strip_edges();
-			line = line.replace("[code]", "`");
-			line = line.replace("[/code]", "`");
-			line = line.replace("[i]", "*");
-			line = line.replace("[/i]", "*");
-			line = line.replace("[b]", "**");
-			line = line.replace("[/b]", "**");
-			line = line.replace("[u]", "__");
-			line = line.replace("[/u]", "__");
-			line = line.replace("[method ", "`");
-			line = line.replace("[member ", "`");
-			line = line.replace("[signal ", "`");
-			line = line.replace("[", "`");
-			line = line.replace("]", "`");
-		}
-
-		if (!in_code_block && i < lines.size() - 1) {
-			line += "\n";
-		}
-		markdown += line + "\n";
-	}
-	return markdown;
-}
-
 Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
 	String query = p_params["query"];
 	Array arr;
@@ -244,24 +192,26 @@ Error GDScriptWorkspace::initialize() {
 		lsp::DocumentSymbol class_symbol;
 		String class_name = E->key();
 		class_symbol.name = class_name;
+		class_symbol.native_class = class_name;
 		class_symbol.kind = lsp::SymbolKind::Class;
 		class_symbol.detail = String("<Native> class ") + class_name;
 		if (!class_data.inherits.empty()) {
 			class_symbol.detail += " extends " + class_data.inherits;
 		}
-		class_symbol.documentation = marked_documentation(class_data.brief_description) + "\n" + marked_documentation(class_data.description);
+		class_symbol.documentation = ExtendGDScriptParser::marked_documentation(class_data.brief_description) + "\n" + ExtendGDScriptParser::marked_documentation(class_data.description);
 
 		for (int i = 0; i < class_data.constants.size(); i++) {
 			const DocData::ConstantDoc &const_data = class_data.constants[i];
 			lsp::DocumentSymbol symbol;
 			symbol.name = const_data.name;
+			symbol.native_class = class_name;
 			symbol.kind = lsp::SymbolKind::Constant;
 			symbol.detail = "const " + class_name + "." + const_data.name;
 			if (const_data.enumeration.length()) {
 				symbol.detail += ": " + const_data.enumeration;
 			}
 			symbol.detail += " = " + const_data.value;
-			symbol.documentation = marked_documentation(const_data.description);
+			symbol.documentation = ExtendGDScriptParser::marked_documentation(const_data.description);
 			class_symbol.children.push_back(symbol);
 		}
 
@@ -274,6 +224,7 @@ Error GDScriptWorkspace::initialize() {
 			const DocData::PropertyDoc &data = class_data.properties[i];
 			lsp::DocumentSymbol symbol;
 			symbol.name = data.name;
+			symbol.native_class = class_name;
 			symbol.kind = lsp::SymbolKind::Property;
 			symbol.detail = String(i >= theme_prop_start_idx ? "<Theme> var" : "var") + " " + class_name + "." + data.name;
 			if (data.enumeration.length()) {
@@ -281,7 +232,7 @@ Error GDScriptWorkspace::initialize() {
 			} else {
 				symbol.detail += ": " + data.type;
 			}
-			symbol.documentation = marked_documentation(data.description);
+			symbol.documentation = ExtendGDScriptParser::marked_documentation(data.description);
 			class_symbol.children.push_back(symbol);
 		}
 
@@ -295,6 +246,7 @@ Error GDScriptWorkspace::initialize() {
 
 			lsp::DocumentSymbol symbol;
 			symbol.name = data.name;
+			symbol.native_class = class_name;
 			symbol.kind = i >= signal_start_idx ? lsp::SymbolKind::Event : lsp::SymbolKind::Method;
 
 			String params = "";
@@ -318,7 +270,7 @@ Error GDScriptWorkspace::initialize() {
 			}
 
 			symbol.detail = "func " + class_name + "." + data.name + "(" + params + ") -> " + data.return_type;
-			symbol.documentation = marked_documentation(data.description);
+			symbol.documentation = ExtendGDScriptParser::marked_documentation(data.description);
 			class_symbol.children.push_back(symbol);
 		}
 

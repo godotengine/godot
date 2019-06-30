@@ -46,6 +46,7 @@ protected:
 	void didChange(const Variant &p_param);
 
 	void sync_script_content(const String &p_path, const String &p_content);
+	void show_native_symbol_in_editor(const String &p_symbol_id);
 
 	Array native_member_completions;
 

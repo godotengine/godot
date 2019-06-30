@@ -189,6 +189,10 @@ bool GDScriptLanguageProtocol::is_smart_resolve_enabled() const {
 	return bool(_EDITOR_GET("network/language_server/enable_smart_resolve"));
 }
 
+bool GDScriptLanguageProtocol::is_goto_native_symbols_enabled() const {
+	return bool(_EDITOR_GET("network/language_server/show_native_symbols_in_editor"));
+}
+
 GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	server = NULL;
 	singleton = this;

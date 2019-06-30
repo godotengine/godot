@@ -123,7 +123,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 	r_symbol.selectionRange.start.line = r_symbol.range.start.line;
 	r_symbol.detail = "class " + r_symbol.name;
 	bool is_root_class = &r_symbol == &class_symbol;
-	r_symbol.documentation = parse_documentation(is_root_class ? 0 : LINE_NUMBER_TO_INDEX(p_class->line), is_root_class);
+	r_symbol.documentation = parse_documentation_as_markdown(is_root_class ? 0 : LINE_NUMBER_TO_INDEX(p_class->line), is_root_class);
 
 	for (int i = 0; i < p_class->variables.size(); ++i) {
 
@@ -150,7 +150,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 			symbol.detail += " = " + JSON::print(m.default_value);
 		}
 
-		symbol.documentation = parse_documentation(line);
+		symbol.documentation = parse_documentation_as_markdown(line);
 		symbol.uri = uri;
 		symbol.script_path = path;
 
@@ -170,7 +170,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 		symbol.range.end.line = symbol.range.start.line;
 		symbol.range.end.character = lines[line].length();
 		symbol.selectionRange.start.line = symbol.range.start.line;
-		symbol.documentation = parse_documentation(line);
+		symbol.documentation = parse_documentation_as_markdown(line);
 		symbol.uri = uri;
 		symbol.script_path = path;
 		symbol.detail = "signal " + signal.name + "(";
@@ -198,7 +198,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 		symbol.range.end.line = symbol.range.start.line;
 		symbol.range.end.character = lines[line].length();
 		symbol.selectionRange.start.line = symbol.range.start.line;
-		symbol.documentation = parse_documentation(line);
+		symbol.documentation = parse_documentation_as_markdown(line);
 		symbol.uri = uri;
 		symbol.script_path = path;
 
@@ -266,7 +266,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 	r_symbol.range.end.line = MAX(p_func->body->end_line - 2, p_func->body->line);
 	r_symbol.range.end.character = lines[r_symbol.range.end.line].length();
 	r_symbol.selectionRange.start.line = r_symbol.range.start.line;
-	r_symbol.documentation = GDScriptWorkspace::marked_documentation(parse_documentation(line));
+	r_symbol.documentation = parse_documentation_as_markdown(line);
 	r_symbol.uri = uri;
 	r_symbol.script_path = path;
 
@@ -324,9 +324,65 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 		if (var->datatype.kind != GDScriptParser::DataType::UNRESOLVED) {
 			symbol.detail += ": " + var->datatype.to_string();
 		}
-		symbol.documentation = GDScriptWorkspace::marked_documentation(parse_documentation(line));
+		symbol.documentation = parse_documentation_as_markdown(line);
 		r_symbol.children.push_back(symbol);
 	}
+}
+
+String ExtendGDScriptParser::marked_documentation(const String &p_bbcode) {
+
+	String markdown = p_bbcode.strip_edges();
+
+	Vector<String> lines = markdown.split("\n");
+	bool in_code_block = false;
+	int code_block_indent = -1;
+
+	markdown = "";
+	for (int i = 0; i < lines.size(); i++) {
+		String line = lines[i];
+		int block_start = line.find("[codeblock]");
+		if (block_start != -1) {
+			code_block_indent = block_start;
+			in_code_block = true;
+			line = "'''gdscript";
+			line = "\n";
+		} else if (in_code_block) {
+			line = "\t" + line.substr(code_block_indent, line.length());
+		}
+
+		if (in_code_block && line.find("[/codeblock]") != -1) {
+			line = "'''\n";
+			line = "\n";
+			in_code_block = false;
+		}
+
+		if (!in_code_block) {
+			line = line.strip_edges();
+			line = line.replace("[code]", "`");
+			line = line.replace("[/code]", "`");
+			line = line.replace("[i]", "*");
+			line = line.replace("[/i]", "*");
+			line = line.replace("[b]", "**");
+			line = line.replace("[/b]", "**");
+			line = line.replace("[u]", "__");
+			line = line.replace("[/u]", "__");
+			line = line.replace("[method ", "`");
+			line = line.replace("[member ", "`");
+			line = line.replace("[signal ", "`");
+			line = line.replace("[enum ", "`");
+			line = line.replace("[constant ", "`");
+			line = line.replace("[", "`");
+			line = line.replace("]", "`");
+		}
+
+		if (!in_code_block && i < lines.size() - 1) {
+			line += "\n\n";
+		} else if (i < lines.size() - 1) {
+			line += "\n";
+		}
+		markdown += line;
+	}
+	return markdown;
 }
 
 String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
@@ -353,19 +409,11 @@ String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 
 		String line_comment = lines[i].strip_edges(true, false);
 		if (line_comment.begins_with("#")) {
-			if (line_comment.length() > 1) {
-				line_comment = line_comment.substr(1, line_comment.length());
-				if (p_docs_down) {
-					doc_lines.push_back(line_comment);
-				} else {
-					doc_lines.push_front(line_comment);
-				}
+			line_comment = line_comment.substr(1, line_comment.length());
+			if (p_docs_down) {
+				doc_lines.push_back(line_comment);
 			} else {
-				if (p_docs_down) {
-					doc_lines.push_back("");
-				} else {
-					doc_lines.push_front("");
-				}
+				doc_lines.push_front(line_comment);
 			}
 		} else {
 			break;
@@ -374,8 +422,7 @@ String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 
 	String doc;
 	for (List<String>::Element *E = doc_lines.front(); E; E = E->next()) {
-		String content = E->get();
-		doc += content + "\n";
+		doc += E->get() + "\n";
 	}
 	return doc;
 }
@@ -494,6 +541,10 @@ const lsp::DocumentSymbol *ExtendGDScriptParser::search_symbol_defined_at_line(i
 		}
 	}
 	return ret;
+}
+
+String ExtendGDScriptParser::parse_documentation_as_markdown(int p_line, bool p_docs_down) {
+	return marked_documentation(parse_documentation(p_line, p_docs_down));
 }
 
 const lsp::DocumentSymbol *ExtendGDScriptParser::get_symbol_defined_at_line(int p_line) const {
