@@ -19,7 +19,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="aabb" type="AABB" setter="set_aabb" getter="get_aabb">
+		<member name="aabb" type="AABB" setter="set_aabb" getter="get_aabb" default="AABB( -1, -1, -1, 2, 2, 2 )">
 			The VisibilityNotifier's bounding box.
 		</member>
 	</members>

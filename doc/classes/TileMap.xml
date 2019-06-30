@@ -254,48 +254,50 @@
 		</method>
 	</methods>
 	<members>
-		<member name="cell_clip_uv" type="bool" setter="set_clip_uv" getter="get_clip_uv">
+		<member name="cell_clip_uv" type="bool" setter="set_clip_uv" getter="get_clip_uv" default="false">
 		</member>
-		<member name="cell_custom_transform" type="Transform2D" setter="set_custom_transform" getter="get_custom_transform">
+		<member name="cell_custom_transform" type="Transform2D" setter="set_custom_transform" getter="get_custom_transform" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
 			The custom [Transform2D] to be applied to the TileMap's cells.
 		</member>
-		<member name="cell_half_offset" type="int" setter="set_half_offset" getter="get_half_offset" enum="TileMap.HalfOffset">
-			Amount to offset alternating tiles. See [enum HalfOffset] for possible values. Default value: [code]HALF_OFFSET_DISABLED[/code].
+		<member name="cell_half_offset" type="int" setter="set_half_offset" getter="get_half_offset" enum="TileMap.HalfOffset" default="2">
+			Amount to offset alternating tiles. See [enum HalfOffset] for possible values.
 		</member>
-		<member name="cell_quadrant_size" type="int" setter="set_quadrant_size" getter="get_quadrant_size">
-			The TileMap's quadrant size. Optimizes drawing by batching, using chunks of this size. Default value: 16.
+		<member name="cell_quadrant_size" type="int" setter="set_quadrant_size" getter="get_quadrant_size" default="16">
+			The TileMap's quadrant size. Optimizes drawing by batching, using chunks of this size.
 		</member>
-		<member name="cell_size" type="Vector2" setter="set_cell_size" getter="get_cell_size">
+		<member name="cell_size" type="Vector2" setter="set_cell_size" getter="get_cell_size" default="Vector2( 64, 64 )">
 			The TileMap's cell size.
 		</member>
-		<member name="cell_tile_origin" type="int" setter="set_tile_origin" getter="get_tile_origin" enum="TileMap.TileOrigin">
-			Position for tile origin. See [enum TileOrigin] for possible values. Default value: [code]TILE_ORIGIN_TOP_LEFT[/code].
+		<member name="cell_tile_origin" type="int" setter="set_tile_origin" getter="get_tile_origin" enum="TileMap.TileOrigin" default="0">
+			Position for tile origin. See [enum TileOrigin] for possible values.
 		</member>
-		<member name="cell_y_sort" type="bool" setter="set_y_sort_mode" getter="is_y_sort_mode_enabled">
-			If [code]true[/code], the TileMap's children will be drawn in order of their Y coordinate. Default value: [code]false[/code].
+		<member name="cell_y_sort" type="bool" setter="set_y_sort_mode" getter="is_y_sort_mode_enabled" default="false">
+			If [code]true[/code], the TileMap's children will be drawn in order of their Y coordinate.
 		</member>
-		<member name="collision_bounce" type="float" setter="set_collision_bounce" getter="get_collision_bounce">
-			Bounce value for static body collisions (see [code]collision_use_kinematic[/code]). Default value: 0.
+		<member name="collision_bounce" type="float" setter="set_collision_bounce" getter="get_collision_bounce" default="0.0">
+			Bounce value for static body collisions (see [code]collision_use_kinematic[/code]).
 		</member>
-		<member name="collision_friction" type="float" setter="set_collision_friction" getter="get_collision_friction">
-			Friction value for static body collisions (see [code]collision_use_kinematic[/code]). Default value: 1.
+		<member name="collision_friction" type="float" setter="set_collision_friction" getter="get_collision_friction" default="1.0">
+			Friction value for static body collisions (see [code]collision_use_kinematic[/code]).
 		</member>
-		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
 			The collision layer(s) for all colliders in the TileMap.
 		</member>
-		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The collision mask(s) for all colliders in the TileMap.
 		</member>
-		<member name="collision_use_kinematic" type="bool" setter="set_collision_use_kinematic" getter="get_collision_use_kinematic">
-			If [code]true[/code], TileMap collisions will be handled as a kinematic body. If [code]false[/code], collisions will be handled as static body. Default value: [code]false[/code].
+		<member name="collision_use_kinematic" type="bool" setter="set_collision_use_kinematic" getter="get_collision_use_kinematic" default="false">
+			If [code]true[/code], TileMap collisions will be handled as a kinematic body. If [code]false[/code], collisions will be handled as static body.
 		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="TileMap.Mode">
-			The TileMap orientation mode. See [enum Mode] for possible values. Default value: [code]MODE_SQUARE[/code].
+		<member name="collision_use_parent" type="bool" setter="set_collision_use_parent" getter="get_collision_use_parent" default="false">
 		</member>
-		<member name="occluder_light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask">
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="TileMap.Mode" default="0">
+			The TileMap orientation mode. See [enum Mode] for possible values.
+		</member>
+		<member name="occluder_light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask" default="1">
 			The light mask assigned to all light occluders in the TileMap. The TileSet's light occluders will cast shadows only from Light2D(s) that have the same light mask(s).
 		</member>
-		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
+		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset" default="null">
 			The assigned [TileSet].
 		</member>
 	</members>

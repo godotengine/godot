@@ -55,28 +55,28 @@
 		</method>
 	</methods>
 	<members>
-		<member name="access" type="int" setter="set_access" getter="get_access" enum="FileDialog.Access">
+		<member name="access" type="int" setter="set_access" getter="get_access" enum="FileDialog.Access" default="0">
 			The file system access scope. See enum [code]Access[/code] constants.
 		</member>
-		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir">
+		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir" default="&quot;res://&quot;">
 			The current working directory of the file dialog.
 		</member>
-		<member name="current_file" type="String" setter="set_current_file" getter="get_current_file">
+		<member name="current_file" type="String" setter="set_current_file" getter="get_current_file" default="&quot;&quot;">
 			The currently selected file of the file dialog.
 		</member>
-		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path">
+		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path" default="&quot;res://&quot;">
 			The currently selected file path of the file dialog.
 		</member>
-		<member name="filters" type="PoolStringArray" setter="set_filters" getter="get_filters">
+		<member name="filters" type="PoolStringArray" setter="set_filters" getter="get_filters" default="PoolStringArray(  )">
 			The available file type filters. For example, this shows only [code].png[/code] and [code].gd[/code] files: [code]set_filters(PoolStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]))[/code].
 		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="FileDialog.Mode">
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="FileDialog.Mode" default="4">
 			The dialog's open or save mode, which affects the selection behavior. See enum [code]Mode[/code] constants.
 		</member>
-		<member name="mode_overrides_title" type="bool" setter="set_mode_overrides_title" getter="is_mode_overriding_title">
+		<member name="mode_overrides_title" type="bool" setter="set_mode_overrides_title" getter="is_mode_overriding_title" default="true">
 			If [code]true[/code], changing the [code]Mode[/code] property will set the window title accordingly (e.g. setting mode to [constant MODE_OPEN_FILE] will change the window title to "Open a File").
 		</member>
-		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files">
+		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files" default="false">
 			If [code]true[/code], the dialog will show hidden files.
 		</member>
 	</members>
@@ -130,7 +130,7 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="files_disabled" type="Color">
+		<theme_item name="files_disabled" type="Color" default="Color( 0, 0, 0, 0.7 )">
 		</theme_item>
 		<theme_item name="folder" type="Texture">
 		</theme_item>

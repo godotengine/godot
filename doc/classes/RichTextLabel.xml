@@ -222,38 +222,38 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode">
-			If [code]true[/code], the label uses BBCode formatting. Default value: [code]false[/code].
+		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" default="false">
+			If [code]true[/code], the label uses BBCode formatting.
 		</member>
-		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode">
+		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode" default="&quot;&quot;">
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
 		</member>
-		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined">
-			If [code]true[/code], the label underlines meta tags such as [code][url]{text}[/url][/code]. Default value: [code]true[/code].
+		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined" default="true">
+			If [code]true[/code], the label underlines meta tags such as [code][url]{text}[/url][/code].
 		</member>
-		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
-			If [code]true[/code], the label uses the custom font color. Default value: [code]false[/code].
+		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color" default="false">
+			If [code]true[/code], the label uses the custom font color.
 		</member>
-		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible">
+		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible" default="1.0">
 			The text's visibility, as a [float] between 0.0 and 1.0.
 		</member>
-		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active">
-			If [code]true[/code], the scrollbar is visible. Does not block scrolling completely. See [method scroll_to_line]. Default value: [code]true[/code].
+		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active" default="true">
+			If [code]true[/code], the scrollbar is visible. Does not block scrolling completely. See [method scroll_to_line].
 		</member>
-		<member name="scroll_following" type="bool" setter="set_scroll_follow" getter="is_scroll_following">
-			If [code]true[/code], the window scrolls down to display new content automatically. Default value: [code]false[/code].
+		<member name="scroll_following" type="bool" setter="set_scroll_follow" getter="is_scroll_following" default="false">
+			If [code]true[/code], the window scrolls down to display new content automatically.
 		</member>
-		<member name="selection_enabled" type="bool" setter="set_selection_enabled" getter="is_selection_enabled">
+		<member name="selection_enabled" type="bool" setter="set_selection_enabled" getter="is_selection_enabled" default="false">
 			If [code]true[/code], the label allows text selection.
 		</member>
-		<member name="tab_size" type="int" setter="set_tab_size" getter="get_tab_size">
+		<member name="tab_size" type="int" setter="set_tab_size" getter="get_tab_size" default="4">
 			The number of spaces associated with a single tab length. Does not affect [code]\t[/code] in text tags, only indent tags.
 		</member>
-		<member name="text" type="String" setter="set_text" getter="get_text">
+		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The raw text of the label.
 			When set, clears the tag stack and adds a raw text tag to the top of it. Does not parse BBCodes. Does not modify [member bbcode_text].
 		</member>
-		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters">
+		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
 			The restricted number of characters to display in the label. If [code]-1[/code], all characters will be displayed.
 		</member>
 	</members>
@@ -327,17 +327,17 @@
 		</theme_item>
 		<theme_item name="bold_italics_font" type="Font">
 		</theme_item>
-		<theme_item name="default_color" type="Color">
+		<theme_item name="default_color" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">
 		</theme_item>
-		<theme_item name="font_color_selected" type="Color">
+		<theme_item name="font_color_selected" type="Color" default="Color( 0.490196, 0.490196, 0.490196, 1 )">
 		</theme_item>
-		<theme_item name="font_color_shadow" type="Color">
+		<theme_item name="font_color_shadow" type="Color" default="Color( 0, 0, 0, 0 )">
 		</theme_item>
 		<theme_item name="italics_font" type="Font">
 		</theme_item>
-		<theme_item name="line_separation" type="int">
+		<theme_item name="line_separation" type="int" default="1">
 		</theme_item>
 		<theme_item name="mono_font" type="Font">
 		</theme_item>
@@ -345,17 +345,17 @@
 		</theme_item>
 		<theme_item name="normal_font" type="Font">
 		</theme_item>
-		<theme_item name="selection_color" type="Color">
+		<theme_item name="selection_color" type="Color" default="Color( 0.1, 0.1, 1, 0.8 )">
 		</theme_item>
-		<theme_item name="shadow_as_outline" type="int">
+		<theme_item name="shadow_as_outline" type="int" default="0">
 		</theme_item>
-		<theme_item name="shadow_offset_x" type="int">
+		<theme_item name="shadow_offset_x" type="int" default="1">
 		</theme_item>
-		<theme_item name="shadow_offset_y" type="int">
+		<theme_item name="shadow_offset_y" type="int" default="1">
 		</theme_item>
-		<theme_item name="table_hseparation" type="int">
+		<theme_item name="table_hseparation" type="int" default="3">
 		</theme_item>
-		<theme_item name="table_vseparation" type="int">
+		<theme_item name="table_vseparation" type="int" default="3">
 		</theme_item>
 	</theme_items>
 </class>

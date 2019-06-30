@@ -11,15 +11,15 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="absorbent" type="bool" setter="set_absorbent" getter="is_absorbent">
+		<member name="absorbent" type="bool" setter="set_absorbent" getter="is_absorbent" default="false">
 		</member>
-		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
-			The body's bounciness. Default value: [code]0[/code].
+		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce" default="0.0">
+			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
 		</member>
-		<member name="friction" type="float" setter="set_friction" getter="get_friction">
-			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction). Default value: [code]1[/code].
+		<member name="friction" type="float" setter="set_friction" getter="get_friction" default="1.0">
+			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction).
 		</member>
-		<member name="rough" type="bool" setter="set_rough" getter="is_rough">
+		<member name="rough" type="bool" setter="set_rough" getter="is_rough" default="false">
 		</member>
 	</members>
 	<constants>

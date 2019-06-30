@@ -550,20 +550,20 @@
 		</method>
 	</methods>
 	<members>
-		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search">
-			If [code]true[/code], allows to navigate [PopupMenu] with letter keys. Default value: [code]false[/code].
+		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="false">
+			If [code]true[/code], allows to navigate [PopupMenu] with letter keys.
 		</member>
-		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection">
+		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection" default="true">
 			If [code]true[/code], hides the [PopupMenu] when a checkbox or radio button is selected.
 		</member>
-		<member name="hide_on_item_selection" type="bool" setter="set_hide_on_item_selection" getter="is_hide_on_item_selection">
+		<member name="hide_on_item_selection" type="bool" setter="set_hide_on_item_selection" getter="is_hide_on_item_selection" default="true">
 			If [code]true[/code], hides the [PopupMenu] when an item is selected.
 		</member>
-		<member name="hide_on_state_item_selection" type="bool" setter="set_hide_on_state_item_selection" getter="is_hide_on_state_item_selection">
+		<member name="hide_on_state_item_selection" type="bool" setter="set_hide_on_state_item_selection" getter="is_hide_on_state_item_selection" default="false">
 			If [code]true[/code], hides the [PopupMenu] when a state item is selected.
 		</member>
-		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay">
-			Sets the delay time for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item. Default value: [code]0.3[/code] seconds.
+		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay" default="0.3">
+			Sets the delay time in seconds for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item.
 		</member>
 	</members>
 	<signals>
@@ -598,21 +598,21 @@
 		<theme_item name="font" type="Font">
 			Sets a custom [Font].
 		</theme_item>
-		<theme_item name="font_color" type="Color">
+		<theme_item name="font_color" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
 			Sets a custom [Color] for the [Font].
 		</theme_item>
-		<theme_item name="font_color_accel" type="Color">
+		<theme_item name="font_color_accel" type="Color" default="Color( 0.7, 0.7, 0.7, 0.8 )">
 		</theme_item>
-		<theme_item name="font_color_disabled" type="Color">
+		<theme_item name="font_color_disabled" type="Color" default="Color( 0.4, 0.4, 0.4, 0.8 )">
 			Sets a custom [Color] for disabled text.
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color">
+		<theme_item name="font_color_hover" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
 			Sets a custom [Color] for the hovered text.
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">
 			Sets a custom [StyleBox] when the [PopupMenu] is hovered.
 		</theme_item>
-		<theme_item name="hseparation" type="int">
+		<theme_item name="hseparation" type="int" default="4">
 			Sets the horizontal space separation between each item.
 		</theme_item>
 		<theme_item name="labeled_separator_left" type="StyleBox">
@@ -640,7 +640,7 @@
 		<theme_item name="unchecked" type="Texture">
 			Sets a custom [Texture] icon for [code]unchecked[/code] of checkbox items.
 		</theme_item>
-		<theme_item name="vseparation" type="int">
+		<theme_item name="vseparation" type="int" default="4">
 			Sets the vertical space separation between each item.
 		</theme_item>
 	</theme_items>

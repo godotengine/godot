@@ -120,18 +120,18 @@
 		</method>
 	</methods>
 	<members>
-		<member name="editor_hint" type="bool" setter="set_editor_hint" getter="is_editor_hint">
+		<member name="editor_hint" type="bool" setter="set_editor_hint" getter="is_editor_hint" default="true">
 			If [code]true[/code], it is running inside the editor. Useful for tool scripts.
 		</member>
-		<member name="iterations_per_second" type="int" setter="set_iterations_per_second" getter="get_iterations_per_second">
+		<member name="iterations_per_second" type="int" setter="set_iterations_per_second" getter="get_iterations_per_second" default="60">
 			The number of fixed iterations per second (for fixed process and physics).
 		</member>
-		<member name="physics_jitter_fix" type="float" setter="set_physics_jitter_fix" getter="get_physics_jitter_fix">
+		<member name="physics_jitter_fix" type="float" setter="set_physics_jitter_fix" getter="get_physics_jitter_fix" default="0.5">
 		</member>
-		<member name="target_fps" type="int" setter="set_target_fps" getter="get_target_fps">
-			The desired frames per second. If the hardware cannot keep up, this setting may not be respected. Defaults to 0, which indicates no limit.
+		<member name="target_fps" type="int" setter="set_target_fps" getter="get_target_fps" default="0">
+			The desired frames per second. If the hardware cannot keep up, this setting may not be respected. A value of 0 means no limit.
 		</member>
-		<member name="time_scale" type="float" setter="set_time_scale" getter="get_time_scale">
+		<member name="time_scale" type="float" setter="set_time_scale" getter="get_time_scale" default="1.0">
 			Controls how fast or slow the in-game clock ticks versus the real life one. It defaults to 1.0. A value of 2.0 means the game moves twice as fast as real life, whilst a value of 0.5 means the game moves at half the regular speed.
 		</member>
 	</members>

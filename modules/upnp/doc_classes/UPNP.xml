@@ -134,13 +134,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="discover_ipv6" type="bool" setter="set_discover_ipv6" getter="is_discover_ipv6">
+		<member name="discover_ipv6" type="bool" setter="set_discover_ipv6" getter="is_discover_ipv6" default="false">
 			If [code]true[/code], IPv6 is used for [UPNPDevice] discovery.
 		</member>
-		<member name="discover_local_port" type="int" setter="set_discover_local_port" getter="get_discover_local_port">
+		<member name="discover_local_port" type="int" setter="set_discover_local_port" getter="get_discover_local_port" default="0">
 			If [code]0[/code], the local port to use for discovery is chosen automatically by the system. If [code]1[/code], discovery will be done from the source port 1900 (same as destination port). Otherwise, the value will be used as the port.
 		</member>
-		<member name="discover_multicast_if" type="String" setter="set_discover_multicast_if" getter="get_discover_multicast_if">
+		<member name="discover_multicast_if" type="String" setter="set_discover_multicast_if" getter="get_discover_multicast_if" default="&quot;&quot;">
 			Multicast interface to use for discovery. Uses the default multicast interface if empty.
 		</member>
 	</members>

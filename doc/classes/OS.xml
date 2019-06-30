@@ -800,58 +800,58 @@
 		</method>
 	</methods>
 	<members>
-		<member name="clipboard" type="String" setter="set_clipboard" getter="get_clipboard">
+		<member name="clipboard" type="String" setter="set_clipboard" getter="get_clipboard" default="&quot;&quot;">
 			The clipboard from the host OS. Might be unavailable on some platforms.
 		</member>
-		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen">
+		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen" default="0">
 			The current screen index (starting from 0).
 		</member>
-		<member name="exit_code" type="int" setter="set_exit_code" getter="get_exit_code">
+		<member name="exit_code" type="int" setter="set_exit_code" getter="get_exit_code" default="0">
 			The exit code passed to the OS when the main loop exits.
 		</member>
-		<member name="keep_screen_on" type="bool" setter="set_keep_screen_on" getter="is_keep_screen_on">
+		<member name="keep_screen_on" type="bool" setter="set_keep_screen_on" getter="is_keep_screen_on" default="true">
 			If [code]true[/code], the engine tries to keep the screen on while the game is running. Useful on mobile.
 		</member>
-		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode">
+		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode" default="false">
 			If [code]true[/code], the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
 		</member>
-		<member name="max_window_size" type="Vector2" setter="set_max_window_size" getter="get_max_window_size">
+		<member name="max_window_size" type="Vector2" setter="set_max_window_size" getter="get_max_window_size" default="Vector2( 0, 0 )">
 			The maximum size of the window (without counting window manager decorations). Does not affect fullscreen mode. Set to [code](0, 0)[/code] to reset to the system default value.
 		</member>
-		<member name="min_window_size" type="Vector2" setter="set_min_window_size" getter="get_min_window_size">
+		<member name="min_window_size" type="Vector2" setter="set_min_window_size" getter="get_min_window_size" default="Vector2( 0, 0 )">
 			The minimum size of the window (without counting window manager decorations). Does not affect fullscreen mode. Set to [code](0, 0)[/code] to reset to the system default value.
 		</member>
-		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation">
+		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation" default="0">
 			The current screen orientation.
 		</member>
-		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled">
+		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled" default="true">
 			If [code]true[/code], vertical synchronization (Vsync) is enabled.
 		</member>
-		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window">
+		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window" default="false">
 			If [code]true[/code], removes the window frame.
 			[b]Note:[/b] Setting [code]window_borderless[/code] to [code]false[/code] disables per-pixel transparency.
 		</member>
-		<member name="window_fullscreen" type="bool" setter="set_window_fullscreen" getter="is_window_fullscreen">
+		<member name="window_fullscreen" type="bool" setter="set_window_fullscreen" getter="is_window_fullscreen" default="false">
 			If [code]true[/code], the window is fullscreen.
 		</member>
-		<member name="window_maximized" type="bool" setter="set_window_maximized" getter="is_window_maximized">
+		<member name="window_maximized" type="bool" setter="set_window_maximized" getter="is_window_maximized" default="false">
 			If [code]true[/code], the window is maximized.
 		</member>
-		<member name="window_minimized" type="bool" setter="set_window_minimized" getter="is_window_minimized">
+		<member name="window_minimized" type="bool" setter="set_window_minimized" getter="is_window_minimized" default="false">
 			If [code]true[/code], the window is minimized.
 		</member>
-		<member name="window_per_pixel_transparency_enabled" type="bool" setter="set_window_per_pixel_transparency_enabled" getter="get_window_per_pixel_transparency_enabled">
+		<member name="window_per_pixel_transparency_enabled" type="bool" setter="set_window_per_pixel_transparency_enabled" getter="get_window_per_pixel_transparency_enabled" default="false">
 			If [code]true[/code], the window background is transparent and window frame is removed.
 			Use [code]get_tree().get_root().set_transparent_background(true)[/code] to disable main viewport background rendering.
 			[b]Note:[/b] This property has no effect if [b]Project &gt; Project Settings &gt; Display &gt; Window &gt; Per-pixel transparency &gt; Allowed[/b] setting is disabled.
 		</member>
-		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position">
+		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position" default="Vector2( 0, 0 )">
 			The window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.
 		</member>
-		<member name="window_resizable" type="bool" setter="set_window_resizable" getter="is_window_resizable">
+		<member name="window_resizable" type="bool" setter="set_window_resizable" getter="is_window_resizable" default="true">
 			If [code]true[/code], the window is resizable by the user.
 		</member>
-		<member name="window_size" type="Vector2" setter="set_window_size" getter="get_window_size">
+		<member name="window_size" type="Vector2" setter="set_window_size" getter="get_window_size" default="Vector2( 0, 0 )">
 			The size of the window (without counting window manager decorations).
 		</member>
 	</members>

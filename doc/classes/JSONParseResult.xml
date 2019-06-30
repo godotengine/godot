@@ -14,10 +14,10 @@
 		<member name="error" type="int" setter="set_error" getter="get_error" enum="Error">
 			The error type if the JSON source was not successfully parsed. See the [@GlobalScope] [code]ERR_*[/code] constants.
 		</member>
-		<member name="error_line" type="int" setter="set_error_line" getter="get_error_line">
+		<member name="error_line" type="int" setter="set_error_line" getter="get_error_line" default="-1">
 			The line number where the error occurred if JSON source was not successfully parsed.
 		</member>
-		<member name="error_string" type="String" setter="set_error_string" getter="get_error_string">
+		<member name="error_string" type="String" setter="set_error_string" getter="get_error_string" default="&quot;&quot;">
 			The error message if JSON source was not successfully parsed. See the [@GlobalScope] [code]ERR_*[/code] constants.
 		</member>
 		<member name="result" type="Variant" setter="set_result" getter="get_result">

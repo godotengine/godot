@@ -99,13 +99,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags">
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" default="4">
 			The texture's flags.
 		</member>
 	</members>
 	<constants>
 		<constant name="FLAGS_DEFAULT" value="7" enum="Flags">
-			Default flags. [constant FLAG_MIPMAPS], [constant FLAG_REPEAT] and [constant FLAG_FILTER] are are enabled.
+			Default flags. [constant FLAG_MIPMAPS], [constant FLAG_REPEAT] and [constant FLAG_FILTER] are enabled.
 		</constant>
 		<constant name="FLAG_MIPMAPS" value="1" enum="Flags">
 			Generates mipmaps, which are smaller versions of the same texture to use when zoomed out, keeping the aspect ratio.

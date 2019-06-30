@@ -11,15 +11,15 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="cutoff_hz" type="float" setter="set_cutoff" getter="get_cutoff">
+		<member name="cutoff_hz" type="float" setter="set_cutoff" getter="get_cutoff" default="2000.0">
 			Threshold frequency for the filter, in Hz.
 		</member>
-		<member name="db" type="int" setter="set_db" getter="get_db" enum="AudioEffectFilter.FilterDB">
+		<member name="db" type="int" setter="set_db" getter="get_db" enum="AudioEffectFilter.FilterDB" default="0">
 		</member>
-		<member name="gain" type="float" setter="set_gain" getter="get_gain">
+		<member name="gain" type="float" setter="set_gain" getter="get_gain" default="1.0">
 			Gain amount of the frequencies after the filter.
 		</member>
-		<member name="resonance" type="float" setter="set_resonance" getter="get_resonance">
+		<member name="resonance" type="float" setter="set_resonance" getter="get_resonance" default="0.5">
 			Amount of boost in the overtones near the cutoff frequency.
 		</member>
 	</members>

@@ -25,11 +25,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color">
+		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color( 0, 0, 0, 1 )">
 			The currently selected color.
 		</member>
-		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha">
-			If [code]true[/code], the alpha channel in the displayed [ColorPicker] will be visible. Default value: [code]true[/code].
+		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" default="true">
+			If [code]true[/code], the alpha channel in the displayed [ColorPicker] will be visible.
 		</member>
 	</members>
 	<signals>
@@ -56,17 +56,17 @@
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color" type="Color">
+		<theme_item name="font_color" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
-		<theme_item name="font_color_disabled" type="Color">
+		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.3 )">
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color">
+		<theme_item name="font_color_hover" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
-		<theme_item name="font_color_pressed" type="Color">
+		<theme_item name="font_color_pressed" type="Color" default="Color( 0.8, 0.8, 0.8, 1 )">
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">
 		</theme_item>
-		<theme_item name="hseparation" type="int">
+		<theme_item name="hseparation" type="int" default="2">
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 		</theme_item>

@@ -197,13 +197,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="x" type="Vector3" setter="" getter="">
+		<member name="x" type="Vector3" setter="" getter="" default="Vector3( 1, 0, 0 )">
 			The basis matrix's X vector.
 		</member>
-		<member name="y" type="Vector3" setter="" getter="">
+		<member name="y" type="Vector3" setter="" getter="" default="Vector3( 0, 1, 0 )">
 			The basis matrix's Y vector.
 		</member>
-		<member name="z" type="Vector3" setter="" getter="">
+		<member name="z" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 1 )">
 			The basis matrix's Z vector.
 		</member>
 	</members>

@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="factor" type="float" setter="set_factor" getter="get_factor">
+		<member name="factor" type="float" setter="set_factor" getter="get_factor" default="1.0">
 		</member>
 	</members>
 	<constants>

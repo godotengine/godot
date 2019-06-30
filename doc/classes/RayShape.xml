@@ -11,11 +11,11 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="length" type="float" setter="set_length" getter="get_length">
+		<member name="length" type="float" setter="set_length" getter="get_length" default="1.0">
 			The ray's length.
 		</member>
-		<member name="slips_on_slope" type="bool" setter="set_slips_on_slope" getter="get_slips_on_slope">
-			If [code]true[/code], allow the shape to return the correct normal. Default value: [code]false[/code].
+		<member name="slips_on_slope" type="bool" setter="set_slips_on_slope" getter="get_slips_on_slope" default="false">
+			If [code]true[/code], allow the shape to return the correct normal.
 		</member>
 	</members>
 	<constants>

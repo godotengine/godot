@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="extents" type="Vector2" setter="set_extents" getter="get_extents">
+		<member name="extents" type="Vector2" setter="set_extents" getter="get_extents" default="Vector2( 10, 10 )">
 			The rectangle's half extents. The width and height of this shape is twice the half extents.
 		</member>
 	</members>

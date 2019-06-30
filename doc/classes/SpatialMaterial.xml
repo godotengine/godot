@@ -12,20 +12,20 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo">
+		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" default="Color( 1, 1, 1, 1 )">
 			The material's base color.
 		</member>
-		<member name="albedo_texture" type="Texture" setter="set_texture" getter="get_texture">
+		<member name="albedo_texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
 		</member>
 		<member name="anisotropy" type="float" setter="set_anisotropy" getter="get_anisotropy">
 			The strength of the anisotropy effect.
 		</member>
-		<member name="anisotropy_enabled" type="bool" setter="set_feature" getter="get_feature">
-			If [code]true[/code], anisotropy is enabled. Changes the shape of the specular blob and aligns it to tangent space. Default value: [code]false[/code].
+		<member name="anisotropy_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], anisotropy is enabled. Changes the shape of the specular blob and aligns it to tangent space.
 		</member>
 		<member name="anisotropy_flowmap" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
-		<member name="ao_enabled" type="bool" setter="set_feature" getter="get_feature">
+		<member name="ao_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], ambient occlusion is enabled.
 		</member>
 		<member name="ao_light_affect" type="float" setter="set_ao_light_affect" getter="get_ao_light_affect">
@@ -38,8 +38,8 @@
 		</member>
 		<member name="clearcoat" type="float" setter="set_clearcoat" getter="get_clearcoat">
 		</member>
-		<member name="clearcoat_enabled" type="bool" setter="set_feature" getter="get_feature">
-			If [code]true[/code], clearcoat rendering is enabled. Adds a secondary transparent pass to the material. Default value: [code]false[/code].
+		<member name="clearcoat_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], clearcoat rendering is enabled. Adds a secondary transparent pass to the material.
 		</member>
 		<member name="clearcoat_gloss" type="float" setter="set_clearcoat_gloss" getter="get_clearcoat_gloss">
 		</member>
@@ -47,7 +47,7 @@
 		</member>
 		<member name="depth_deep_parallax" type="bool" setter="set_depth_deep_parallax" getter="is_depth_deep_parallax_enabled">
 		</member>
-		<member name="depth_enabled" type="bool" setter="set_feature" getter="get_feature">
+		<member name="depth_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], depth mapping is enabled (also called "parallax mapping" or "height mapping"). See also [member normal_enabled].
 		</member>
 		<member name="depth_flip_binormal" type="bool" setter="set_depth_deep_parallax_flip_binormal" getter="get_depth_deep_parallax_flip_binormal">
@@ -66,7 +66,7 @@
 		</member>
 		<member name="detail_blend_mode" type="int" setter="set_detail_blend_mode" getter="get_detail_blend_mode" enum="SpatialMaterial.BlendMode">
 		</member>
-		<member name="detail_enabled" type="bool" setter="set_feature" getter="get_feature">
+		<member name="detail_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 		</member>
 		<member name="detail_mask" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
@@ -78,12 +78,12 @@
 		</member>
 		<member name="distance_fade_min_distance" type="float" setter="set_distance_fade_min_distance" getter="get_distance_fade_min_distance">
 		</member>
-		<member name="distance_fade_mode" type="int" setter="set_distance_fade" getter="get_distance_fade" enum="SpatialMaterial.DistanceFadeMode">
+		<member name="distance_fade_mode" type="int" setter="set_distance_fade" getter="get_distance_fade" enum="SpatialMaterial.DistanceFadeMode" default="0">
 		</member>
 		<member name="emission" type="Color" setter="set_emission" getter="get_emission">
 			The emitted light's color. See [member emission_enabled].
 		</member>
-		<member name="emission_enabled" type="bool" setter="set_feature" getter="get_feature">
+		<member name="emission_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], the body emits light.
 		</member>
 		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy">
@@ -95,52 +95,52 @@
 		</member>
 		<member name="emission_texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
-		<member name="flags_albedo_tex_force_srgb" type="bool" setter="set_flag" getter="get_flag">
+		<member name="flags_albedo_tex_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
-		<member name="flags_disable_ambient_light" type="bool" setter="set_flag" getter="get_flag">
-			If [code]true[/code], the object receives no ambient light. Default value: [code]false[/code].
+		<member name="flags_disable_ambient_light" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the object receives no ambient light.
 		</member>
-		<member name="flags_do_not_receive_shadows" type="bool" setter="set_flag" getter="get_flag">
-			If [code]true[/code], the object receives no shadow that would otherwise be cast onto it. Default value: [code]false[/code].
+		<member name="flags_do_not_receive_shadows" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the object receives no shadow that would otherwise be cast onto it.
 		</member>
-		<member name="flags_ensure_correct_normals" type="bool" setter="set_flag" getter="get_flag">
+		<member name="flags_ensure_correct_normals" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
-		<member name="flags_fixed_size" type="bool" setter="set_flag" getter="get_flag">
-			If [code]true[/code], the object is rendered at the same size regardless of distance. Default value: [code]false[/code].
+		<member name="flags_fixed_size" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the object is rendered at the same size regardless of distance.
 		</member>
-		<member name="flags_no_depth_test" type="bool" setter="set_flag" getter="get_flag">
+		<member name="flags_no_depth_test" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], depth testing is disabled and the object will be drawn in render order.
 		</member>
-		<member name="flags_transparent" type="bool" setter="set_feature" getter="get_feature">
-			If [code]true[/code], transparency is enabled on the body. Default value: [code]false[/code]. See also [member params_blend_mode].
+		<member name="flags_transparent" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], transparency is enabled on the body. See also [member params_blend_mode].
 		</member>
-		<member name="flags_unshaded" type="bool" setter="set_flag" getter="get_flag">
-			If [code]true[/code], the object is unaffected by lighting. Default value: [code]false[/code].
+		<member name="flags_unshaded" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the object is unaffected by lighting.
 		</member>
-		<member name="flags_use_point_size" type="bool" setter="set_flag" getter="get_flag">
+		<member name="flags_use_point_size" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], render point size can be changed.
 			[b]Note:[/b] this is only effective for objects whose geometry is point-based rather than triangle-based. See also [member params_point_size].
 		</member>
-		<member name="flags_use_shadow_to_opacity" type="bool" setter="set_flag" getter="get_flag">
+		<member name="flags_use_shadow_to_opacity" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
-		<member name="flags_vertex_lighting" type="bool" setter="set_flag" getter="get_flag">
-			If [code]true[/code], lighting is calculated per vertex rather than per pixel. This may increase performance on low-end devices. Default value: [code]false[/code].
+		<member name="flags_vertex_lighting" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], lighting is calculated per vertex rather than per pixel. This may increase performance on low-end devices.
 		</member>
-		<member name="flags_world_triplanar" type="bool" setter="set_flag" getter="get_flag">
-			If [code]true[/code], triplanar mapping is calculated in world space rather than object local space. See also [member uv1_triplanar]. Default value: [code]false[/code].
+		<member name="flags_world_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], triplanar mapping is calculated in world space rather than object local space. See also [member uv1_triplanar].
 		</member>
-		<member name="metallic" type="float" setter="set_metallic" getter="get_metallic">
+		<member name="metallic" type="float" setter="set_metallic" getter="get_metallic" default="0.0">
 			The reflectivity of the object's surface. The higher the value, the more light is reflected.
 		</member>
-		<member name="metallic_specular" type="float" setter="set_specular" getter="get_specular">
+		<member name="metallic_specular" type="float" setter="set_specular" getter="get_specular" default="0.5">
 			General reflectivity amount.
 			[b]Note:[/b] unlike [member metallic], this is not energy-conserving, so it should be left at [code]0.5[/code] in most cases. See also [member roughness].
 		</member>
-		<member name="metallic_texture" type="Texture" setter="set_texture" getter="get_texture">
+		<member name="metallic_texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
 		</member>
-		<member name="metallic_texture_channel" type="int" setter="set_metallic_texture_channel" getter="get_metallic_texture_channel" enum="SpatialMaterial.TextureChannel">
+		<member name="metallic_texture_channel" type="int" setter="set_metallic_texture_channel" getter="get_metallic_texture_channel" enum="SpatialMaterial.TextureChannel" default="2">
 		</member>
-		<member name="normal_enabled" type="bool" setter="set_feature" getter="get_feature">
+		<member name="normal_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], normal mapping is enabled.
 		</member>
 		<member name="normal_scale" type="float" setter="set_normal_scale" getter="get_normal_scale">
@@ -150,39 +150,39 @@
 		</member>
 		<member name="params_alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold">
 		</member>
-		<member name="params_billboard_keep_scale" type="bool" setter="set_flag" getter="get_flag">
+		<member name="params_billboard_keep_scale" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
-		<member name="params_billboard_mode" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="SpatialMaterial.BillboardMode">
+		<member name="params_billboard_mode" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="SpatialMaterial.BillboardMode" default="0">
 			Controls how the object faces the camera. See [enum BillboardMode].
 		</member>
-		<member name="params_blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="SpatialMaterial.BlendMode">
+		<member name="params_blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="SpatialMaterial.BlendMode" default="0">
 			The material's blend mode.
 			[b]Note:[/b] Values other than [code]Mix[/code] force the object into the transparent pipeline. See [enum BlendMode].
 		</member>
-		<member name="params_cull_mode" type="int" setter="set_cull_mode" getter="get_cull_mode" enum="SpatialMaterial.CullMode">
+		<member name="params_cull_mode" type="int" setter="set_cull_mode" getter="get_cull_mode" enum="SpatialMaterial.CullMode" default="0">
 			Which side of the object is not drawn when backfaces are rendered. See [enum CullMode].
 		</member>
-		<member name="params_depth_draw_mode" type="int" setter="set_depth_draw_mode" getter="get_depth_draw_mode" enum="SpatialMaterial.DepthDrawMode">
+		<member name="params_depth_draw_mode" type="int" setter="set_depth_draw_mode" getter="get_depth_draw_mode" enum="SpatialMaterial.DepthDrawMode" default="0">
 			Determines when depth rendering takes place. See [enum DepthDrawMode]. See also [member flags_transparent].
 		</member>
-		<member name="params_diffuse_mode" type="int" setter="set_diffuse_mode" getter="get_diffuse_mode" enum="SpatialMaterial.DiffuseMode">
+		<member name="params_diffuse_mode" type="int" setter="set_diffuse_mode" getter="get_diffuse_mode" enum="SpatialMaterial.DiffuseMode" default="0">
 			The algorithm used for diffuse light scattering. See [enum DiffuseMode].
 		</member>
-		<member name="params_grow" type="bool" setter="set_grow_enabled" getter="is_grow_enabled">
+		<member name="params_grow" type="bool" setter="set_grow_enabled" getter="is_grow_enabled" default="false">
 			If [code]true[/code], enables the vertex grow setting. See [member params_grow_amount].
 		</member>
 		<member name="params_grow_amount" type="float" setter="set_grow" getter="get_grow">
 			Grows object vertices in the direction of their normals.
 		</member>
-		<member name="params_line_width" type="float" setter="set_line_width" getter="get_line_width">
+		<member name="params_line_width" type="float" setter="set_line_width" getter="get_line_width" default="1.0">
 		</member>
-		<member name="params_point_size" type="float" setter="set_point_size" getter="get_point_size">
+		<member name="params_point_size" type="float" setter="set_point_size" getter="get_point_size" default="1.0">
 			The point size in pixels. See [member flags_use_point_size].
 		</member>
-		<member name="params_specular_mode" type="int" setter="set_specular_mode" getter="get_specular_mode" enum="SpatialMaterial.SpecularMode">
+		<member name="params_specular_mode" type="int" setter="set_specular_mode" getter="get_specular_mode" enum="SpatialMaterial.SpecularMode" default="0">
 			The method for rendering the specular blob. See [enum SpecularMode].
 		</member>
-		<member name="params_use_alpha_scissor" type="bool" setter="set_flag" getter="get_flag">
+		<member name="params_use_alpha_scissor" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
 		<member name="particles_anim_h_frames" type="int" setter="set_particles_anim_h_frames" getter="get_particles_anim_h_frames">
 			The number of horizontal frames in the particle sprite sheet. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member params_billboard_mode].
@@ -195,11 +195,11 @@
 		</member>
 		<member name="proximity_fade_distance" type="float" setter="set_proximity_fade_distance" getter="get_proximity_fade_distance">
 		</member>
-		<member name="proximity_fade_enable" type="bool" setter="set_proximity_fade" getter="is_proximity_fade_enabled">
-			If [code]true[/code], the proximity and distance fade effect is enabled. Default value: [code]false[/code].
+		<member name="proximity_fade_enable" type="bool" setter="set_proximity_fade" getter="is_proximity_fade_enabled" default="false">
+			If [code]true[/code], the proximity and distance fade effect is enabled.
 		</member>
-		<member name="refraction_enabled" type="bool" setter="set_feature" getter="get_feature">
-			If [code]true[/code], the refraction effect is enabled. Distorts transparency based on light from behind the object. Default value: [code]false[/code].
+		<member name="refraction_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], the refraction effect is enabled. Distorts transparency based on light from behind the object.
 		</member>
 		<member name="refraction_scale" type="float" setter="set_refraction" getter="get_refraction">
 			The strength of the refraction effect.
@@ -210,22 +210,22 @@
 		</member>
 		<member name="rim" type="float" setter="set_rim" getter="get_rim">
 		</member>
-		<member name="rim_enabled" type="bool" setter="set_feature" getter="get_feature">
-			If [code]true[/code], rim effect is enabled. Default value: [code]false[/code].
+		<member name="rim_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], rim effect is enabled.
 		</member>
 		<member name="rim_texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
 		<member name="rim_tint" type="float" setter="set_rim_tint" getter="get_rim_tint">
 			The amount of to blend light and albedo color when rendering rim effect. If [code]0[/code] the light color is used, while [code]1[/code] means albedo color is used. An intermediate value generally works best.
 		</member>
-		<member name="roughness" type="float" setter="set_roughness" getter="get_roughness">
+		<member name="roughness" type="float" setter="set_roughness" getter="get_roughness" default="1.0">
 			Surface reflection. A value of [code]0[/code] represents a perfect mirror while a value of [code]1[/code] completely blurs the reflection. See also [member metallic].
 		</member>
-		<member name="roughness_texture" type="Texture" setter="set_texture" getter="get_texture">
+		<member name="roughness_texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
 		</member>
-		<member name="roughness_texture_channel" type="int" setter="set_roughness_texture_channel" getter="get_roughness_texture_channel" enum="SpatialMaterial.TextureChannel">
+		<member name="roughness_texture_channel" type="int" setter="set_roughness_texture_channel" getter="get_roughness_texture_channel" enum="SpatialMaterial.TextureChannel" default="1">
 		</member>
-		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature">
+		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], subsurface scattering is enabled. Emulates light that penetrates an object's surface, is scattered, and then emerges.
 		</member>
 		<member name="subsurf_scatter_strength" type="float" setter="set_subsurface_scattering_strength" getter="get_subsurface_scattering_strength">
@@ -236,32 +236,32 @@
 		<member name="transmission" type="Color" setter="set_transmission" getter="get_transmission">
 			The color used by the transmission effect. Represents the light passing through an object.
 		</member>
-		<member name="transmission_enabled" type="bool" setter="set_feature" getter="get_feature">
-			If [code]true[/code], the transmission effect is enabled. Default value: [code]false[/code].
+		<member name="transmission_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], the transmission effect is enabled.
 		</member>
 		<member name="transmission_texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
-		<member name="uv1_offset" type="Vector3" setter="set_uv1_offset" getter="get_uv1_offset">
+		<member name="uv1_offset" type="Vector3" setter="set_uv1_offset" getter="get_uv1_offset" default="Vector3( 0, 0, 0 )">
 		</member>
-		<member name="uv1_scale" type="Vector3" setter="set_uv1_scale" getter="get_uv1_scale">
+		<member name="uv1_scale" type="Vector3" setter="set_uv1_scale" getter="get_uv1_scale" default="Vector3( 1, 1, 1 )">
 		</member>
-		<member name="uv1_triplanar" type="bool" setter="set_flag" getter="get_flag">
+		<member name="uv1_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
-		<member name="uv1_triplanar_sharpness" type="float" setter="set_uv1_triplanar_blend_sharpness" getter="get_uv1_triplanar_blend_sharpness">
+		<member name="uv1_triplanar_sharpness" type="float" setter="set_uv1_triplanar_blend_sharpness" getter="get_uv1_triplanar_blend_sharpness" default="1.0">
 		</member>
-		<member name="uv2_offset" type="Vector3" setter="set_uv2_offset" getter="get_uv2_offset">
+		<member name="uv2_offset" type="Vector3" setter="set_uv2_offset" getter="get_uv2_offset" default="Vector3( 0, 0, 0 )">
 		</member>
-		<member name="uv2_scale" type="Vector3" setter="set_uv2_scale" getter="get_uv2_scale">
+		<member name="uv2_scale" type="Vector3" setter="set_uv2_scale" getter="get_uv2_scale" default="Vector3( 1, 1, 1 )">
 		</member>
-		<member name="uv2_triplanar" type="bool" setter="set_flag" getter="get_flag">
+		<member name="uv2_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
-		<member name="uv2_triplanar_sharpness" type="float" setter="set_uv2_triplanar_blend_sharpness" getter="get_uv2_triplanar_blend_sharpness">
+		<member name="uv2_triplanar_sharpness" type="float" setter="set_uv2_triplanar_blend_sharpness" getter="get_uv2_triplanar_blend_sharpness" default="1.0">
 		</member>
-		<member name="vertex_color_is_srgb" type="bool" setter="set_flag" getter="get_flag">
-			If [code]true[/code], the model's vertex colors are processed as sRGB mode. Default value: [code]false[/code].
+		<member name="vertex_color_is_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the model's vertex colors are processed as sRGB mode.
 		</member>
-		<member name="vertex_color_use_as_albedo" type="bool" setter="set_flag" getter="get_flag">
-			If [code]true[/code], the vertex color is used as albedo color. Default value: [code]false[/code].
+		<member name="vertex_color_use_as_albedo" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the vertex color is used as albedo color.
 		</member>
 	</members>
 	<constants>
@@ -433,7 +433,7 @@
 			No specular blob.
 		</constant>
 		<constant name="BILLBOARD_DISABLED" value="0" enum="BillboardMode">
-			Default value.
+			Billboard mode is disabled.
 		</constant>
 		<constant name="BILLBOARD_ENABLED" value="1" enum="BillboardMode">
 			The object's Z axis will always face the camera.

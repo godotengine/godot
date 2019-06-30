@@ -11,9 +11,9 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="input_buffer_max_size" type="int" setter="set_input_buffer_max_size" getter="get_input_buffer_max_size">
+		<member name="input_buffer_max_size" type="int" setter="set_input_buffer_max_size" getter="get_input_buffer_max_size" default="65532">
 		</member>
-		<member name="output_buffer_max_size" type="int" setter="set_output_buffer_max_size" getter="get_output_buffer_max_size">
+		<member name="output_buffer_max_size" type="int" setter="set_output_buffer_max_size" getter="get_output_buffer_max_size" default="65532">
 		</member>
 		<member name="stream_peer" type="StreamPeer" setter="set_stream_peer" getter="get_stream_peer">
 			The wrapped [StreamPeer] object.

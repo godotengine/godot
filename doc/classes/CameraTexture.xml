@@ -11,13 +11,13 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="camera_feed_id" type="int" setter="set_camera_feed_id" getter="get_camera_feed_id">
+		<member name="camera_feed_id" type="int" setter="set_camera_feed_id" getter="get_camera_feed_id" default="0">
 			The ID of the [CameraFeed] for which we want to display the image.
 		</member>
-		<member name="camera_is_active" type="bool" setter="set_camera_active" getter="get_camera_active">
+		<member name="camera_is_active" type="bool" setter="set_camera_active" getter="get_camera_active" default="false">
 			Convenience property that gives access to the active property of the [CameraFeed].
 		</member>
-		<member name="which_feed" type="int" setter="set_which_feed" getter="get_which_feed" enum="CameraServer.FeedImage">
+		<member name="which_feed" type="int" setter="set_which_feed" getter="get_which_feed" enum="CameraServer.FeedImage" default="0">
 			Which image within the [CameraFeed] we want access to, important if the camera image is split in a Y and CbCr component.
 		</member>
 	</members>

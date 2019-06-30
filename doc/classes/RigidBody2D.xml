@@ -114,64 +114,66 @@
 		</method>
 	</methods>
 	<members>
-		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp">
-			Damps the body's [member angular_velocity]. If [code]-1[/code], the body will use the [b]Default Angular Damp[/b] defined in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b]. Default value: [code]-1[/code].
+		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="-1.0">
+			Damps the body's [member angular_velocity]. If [code]-1[/code], the body will use the [b]Default Angular Damp[/b] defined in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b].
 		</member>
-		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity">
+		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity" default="0.0">
 			The body's rotational velocity.
 		</member>
-		<member name="applied_force" type="Vector2" setter="set_applied_force" getter="get_applied_force">
+		<member name="applied_force" type="Vector2" setter="set_applied_force" getter="get_applied_force" default="Vector2( 0, 0 )">
 			The body's total applied force.
 		</member>
-		<member name="applied_torque" type="float" setter="set_applied_torque" getter="get_applied_torque">
+		<member name="applied_torque" type="float" setter="set_applied_torque" getter="get_applied_torque" default="0.0">
 			The body's total applied torque.
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
-			The body's bounciness. Default value: [code]0[/code].
+			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
+			Deprecated, use [member PhysicsMaterial.bounce] instead via [member physics_material_override].
 		</member>
-		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep">
-			If [code]true[/code], the body will not calculate forces and will act as a static body if there is no movement. The body will wake up when other forces are applied via collisions or by using [method apply_impulse] or [method add_force]. Default value: [code]true[/code].
+		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
+			If [code]true[/code], the body will not calculate forces and will act as a static body if there is no movement. The body will wake up when other forces are applied via collisions or by using [method apply_impulse] or [method add_force].
 		</member>
-		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled">
-			If [code]true[/code], the body will emit signals when it collides with another RigidBody2D. See also [member contacts_reported]. Default value: [code]false[/code].
+		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="false">
+			If [code]true[/code], the body will emit signals when it collides with another RigidBody2D. See also [member contacts_reported].
 		</member>
-		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported">
-			The maximum number of contacts to report. Default value: [code]0[/code].
+		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported" default="0">
+			The maximum number of contacts to report.
 		</member>
-		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidBody2D.CCDMode">
-			Continuous collision detection mode. Default value: [constant CCD_MODE_DISABLED].
+		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidBody2D.CCDMode" default="0">
+			Continuous collision detection mode.
 			Continuous collision detection tries to predict where a moving body will collide instead of moving it and correcting its movement after collision. Continuous collision detection is slower, but more precise and misses fewer collisions with small, fast-moving objects. Raycasting and shapecasting methods are available. See [enum CCDMode] for details.
 		</member>
-		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator">
+		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" default="false">
 			If [code]true[/code], internal force integration is disabled for this body. Aside from collision response, the body will only move as determined by the [method _integrate_forces] function.
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
-			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction). Default value: [code]1[/code].
+			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction).
+			Deprecated, use [member PhysicsMaterial.friction] instead via [member physics_material_override].
 		</member>
-		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale">
-			Multiplies the gravity applied to the body. The body's gravity is calculated from the [b]Default Gravity[/b] value in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] and/or any additional gravity vector applied by [Area2D]s. Default value: [code]1[/code].
+		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
+			Multiplies the gravity applied to the body. The body's gravity is calculated from the [b]Default Gravity[/b] value in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] and/or any additional gravity vector applied by [Area2D]s.
 		</member>
 		<member name="inertia" type="float" setter="set_inertia" getter="get_inertia">
 			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body. The moment of inertia is usually computed automatically from the mass and the shapes, but this function allows you to set a custom value. Set 0 (or negative) inertia to return to automatically computing it.
 		</member>
-		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
-			Damps the body's [member linear_velocity]. If [code]-1[/code], the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b]. Default value: [code]-1[/code].
+		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="-1.0">
+			Damps the body's [member linear_velocity]. If [code]-1[/code], the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b].
 		</member>
-		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity">
+		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2( 0, 0 )">
 			The body's linear velocity.
 		</member>
-		<member name="mass" type="float" setter="set_mass" getter="get_mass">
-			The body's mass. Default value: [code]1[/code].
+		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
+			The body's mass.
 		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody2D.Mode">
-			The body's mode. See [enum Mode] for possible values. Default value: [constant MODE_RIGID].
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody2D.Mode" default="0">
+			The body's mode. See [enum Mode] for possible values.
 		</member>
-		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
+		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override" default="null">
 		</member>
-		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping">
+		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" default="false">
 			If [code]true[/code], the body is sleeping and will not calculate forces until woken up by a collision or by using [method apply_impulse] or [method add_force].
 		</member>
-		<member name="weight" type="float" setter="set_weight" getter="get_weight">
+		<member name="weight" type="float" setter="set_weight" getter="get_weight" default="9.8">
 			The body's weight based on its mass and the [b]Default Gravity[/b] value in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b].
 		</member>
 	</members>

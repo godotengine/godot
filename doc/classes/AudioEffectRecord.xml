@@ -29,7 +29,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamSample.Format">
+		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamSample.Format" default="1">
 		</member>
 	</members>
 	<constants>

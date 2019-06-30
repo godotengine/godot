@@ -137,9 +137,9 @@
 		</member>
 		<member name="input_9/name" type="String" setter="set_input_caption" getter="get_input_caption">
 		</member>
-		<member name="input_count" type="int" setter="set_enabled_inputs" getter="get_enabled_inputs">
+		<member name="input_count" type="int" setter="set_enabled_inputs" getter="get_enabled_inputs" default="0">
 		</member>
-		<member name="xfade_time" type="float" setter="set_cross_fade_time" getter="get_cross_fade_time">
+		<member name="xfade_time" type="float" setter="set_cross_fade_time" getter="get_cross_fade_time" default="0.0">
 		</member>
 	</members>
 	<constants>

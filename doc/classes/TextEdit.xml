@@ -94,7 +94,7 @@
 			</argument>
 			<description>
 				Moves the cursor at the specified [code]column[/code] index.
-				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs. Default value is [code]true[/code].
+				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs.
 			</description>
 		</method>
 		<method name="cursor_set_line">
@@ -110,8 +110,8 @@
 			</argument>
 			<description>
 				Moves the cursor at the specified [code]line[/code] index.
-				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs. Default value is [code]true[/code].
-				If [code]can_be_hidden[/code] is set to true, the specified [code]line[/code] can be hidden using [method set_line_as_hidden]. Default value is [code]true[/code].
+				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs.
+				If [code]can_be_hidden[/code] is set to true, the specified [code]line[/code] can be hidden using [method set_line_as_hidden].
 			</description>
 		</method>
 		<method name="cut">
@@ -380,65 +380,65 @@
 		</method>
 	</methods>
 	<members>
-		<member name="breakpoint_gutter" type="bool" setter="set_breakpoint_gutter_enabled" getter="is_breakpoint_gutter_enabled">
+		<member name="breakpoint_gutter" type="bool" setter="set_breakpoint_gutter_enabled" getter="is_breakpoint_gutter_enabled" default="false">
 			If [code]true[/code], the breakpoint gutter is visible.
 		</member>
-		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
+		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled" default="false">
 			If [code]true[/code], the caret (visual cursor) blinks.
 		</member>
-		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed">
+		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed" default="0.65">
 			Duration (in seconds) of a caret's blinking cycle.
 		</member>
-		<member name="caret_block_mode" type="bool" setter="cursor_set_block_mode" getter="cursor_is_block_mode">
+		<member name="caret_block_mode" type="bool" setter="cursor_set_block_mode" getter="cursor_is_block_mode" default="false">
 			If [code]true[/code], the caret displays as a rectangle.
 			If [code]false[/code], the caret displays as a bar.
 		</member>
-		<member name="caret_moving_by_right_click" type="bool" setter="set_right_click_moves_caret" getter="is_right_click_moving_caret">
+		<member name="caret_moving_by_right_click" type="bool" setter="set_right_click_moves_caret" getter="is_right_click_moving_caret" default="true">
 			If [code]true[/code], a right-click moves the cursor at the mouse position before displaying the context menu.
 			If [code]false[/code], the context menu disregards mouse location.
 		</member>
-		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
+		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
 			If [code]true[/code], a right-click displays the context menu.
 		</member>
-		<member name="draw_spaces" type="bool" setter="set_draw_spaces" getter="is_drawing_spaces">
+		<member name="draw_spaces" type="bool" setter="set_draw_spaces" getter="is_drawing_spaces" default="false">
 			If [code]true[/code], the "space" character will have a visible representation.
 		</member>
-		<member name="draw_tabs" type="bool" setter="set_draw_tabs" getter="is_drawing_tabs">
+		<member name="draw_tabs" type="bool" setter="set_draw_tabs" getter="is_drawing_tabs" default="false">
 			If [code]true[/code], the "tab" character will have a visible representation.
 		</member>
-		<member name="fold_gutter" type="bool" setter="set_draw_fold_gutter" getter="is_drawing_fold_gutter">
+		<member name="fold_gutter" type="bool" setter="set_draw_fold_gutter" getter="is_drawing_fold_gutter" default="false">
 			If [code]true[/code], the fold gutter is visible. This enables folding groups of indented lines.
 		</member>
-		<member name="hiding_enabled" type="bool" setter="set_hiding_enabled" getter="is_hiding_enabled">
+		<member name="hiding_enabled" type="bool" setter="set_hiding_enabled" getter="is_hiding_enabled" default="false">
 			If [code]true[/code], all lines that have been set to hidden by [method set_line_as_hidden], will not be visible.
 		</member>
-		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled">
+		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled" default="false">
 			If [code]true[/code], all occurrences of the selected text will be highlighted.
 		</member>
-		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled">
+		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled" default="false">
 			If [code]true[/code], the line containing the cursor is highlighted.
 		</member>
-		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
+		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color" default="false">
 		</member>
-		<member name="readonly" type="bool" setter="set_readonly" getter="is_readonly">
+		<member name="readonly" type="bool" setter="set_readonly" getter="is_readonly" default="false">
 			If [code]true[/code], read-only mode is enabled. Existing text cannot be modified and new text cannot be added.
 		</member>
-		<member name="show_line_numbers" type="bool" setter="set_show_line_numbers" getter="is_show_line_numbers_enabled">
+		<member name="show_line_numbers" type="bool" setter="set_show_line_numbers" getter="is_show_line_numbers_enabled" default="false">
 			If [code]true[/code], line numbers are displayed to the left of the text.
 		</member>
-		<member name="smooth_scrolling" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled">
+		<member name="smooth_scrolling" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled" default="false">
 			If [code]true[/code], sets the [code]step[/code] of the scrollbars to [code]0.25[/code] which results in smoother scrolling.
 		</member>
-		<member name="syntax_highlighting" type="bool" setter="set_syntax_coloring" getter="is_syntax_coloring_enabled">
+		<member name="syntax_highlighting" type="bool" setter="set_syntax_coloring" getter="is_syntax_coloring_enabled" default="false">
 			If [code]true[/code], any custom color properties that have been set for this [TextEdit] will be visible.
 		</member>
-		<member name="text" type="String" setter="set_text" getter="get_text">
+		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [TextEdit].
 		</member>
-		<member name="v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed">
+		<member name="v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed" default="80.0">
 			Vertical scroll sensitivity.
 		</member>
-		<member name="wrap_enabled" type="bool" setter="set_wrap_enabled" getter="is_wrap_enabled">
+		<member name="wrap_enabled" type="bool" setter="set_wrap_enabled" getter="is_wrap_enabled" default="false">
 			If [code]true[/code], enables text wrapping when it goes beyond the edge of what is visible.
 		</member>
 	</members>
@@ -520,45 +520,45 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="background_color" type="Color">
+		<theme_item name="background_color" type="Color" default="Color( 0, 0, 0, 0 )">
 			Sets the background [Color] of this [TextEdit]. [member syntax_highlighting] has to be enabled.
 		</theme_item>
-		<theme_item name="bookmark_color" type="Color">
+		<theme_item name="bookmark_color" type="Color" default="Color( 0.08, 0.49, 0.98, 1 )">
 			Sets the [Color] of the bookmark marker. [member syntax_highlighting] has to be enabled.
 		</theme_item>
-		<theme_item name="brace_mismatch_color" type="Color">
+		<theme_item name="brace_mismatch_color" type="Color" default="Color( 1, 0.2, 0.2, 1 )">
 		</theme_item>
-		<theme_item name="breakpoint_color" type="Color">
+		<theme_item name="breakpoint_color" type="Color" default="Color( 0.8, 0.8, 0.4, 0.2 )">
 			Sets the [Color] of the breakpoints. [member breakpoint_gutter] has to be enabled.
 		</theme_item>
-		<theme_item name="caret_background_color" type="Color">
+		<theme_item name="caret_background_color" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
-		<theme_item name="caret_color" type="Color">
+		<theme_item name="caret_color" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
 		</theme_item>
-		<theme_item name="code_folding_color" type="Color">
+		<theme_item name="code_folding_color" type="Color" default="Color( 0.8, 0.8, 0.8, 0.8 )">
 		</theme_item>
 		<theme_item name="completion" type="StyleBox">
 		</theme_item>
-		<theme_item name="completion_background_color" type="Color">
+		<theme_item name="completion_background_color" type="Color" default="Color( 0.172549, 0.164706, 0.196078, 1 )">
 		</theme_item>
-		<theme_item name="completion_existing_color" type="Color">
+		<theme_item name="completion_existing_color" type="Color" default="Color( 0.87451, 0.87451, 0.87451, 0.129412 )">
 		</theme_item>
-		<theme_item name="completion_font_color" type="Color">
+		<theme_item name="completion_font_color" type="Color" default="Color( 0.666667, 0.666667, 0.666667, 1 )">
 		</theme_item>
-		<theme_item name="completion_lines" type="int">
+		<theme_item name="completion_lines" type="int" default="7">
 		</theme_item>
-		<theme_item name="completion_max_width" type="int">
+		<theme_item name="completion_max_width" type="int" default="50">
 		</theme_item>
-		<theme_item name="completion_scroll_color" type="Color">
+		<theme_item name="completion_scroll_color" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
-		<theme_item name="completion_scroll_width" type="int">
+		<theme_item name="completion_scroll_width" type="int" default="3">
 		</theme_item>
-		<theme_item name="completion_selected_color" type="Color">
+		<theme_item name="completion_selected_color" type="Color" default="Color( 0.262745, 0.258824, 0.266667, 1 )">
 		</theme_item>
-		<theme_item name="current_line_color" type="Color">
+		<theme_item name="current_line_color" type="Color" default="Color( 0.25, 0.25, 0.26, 0.8 )">
 			Sets the [Color] of the breakpoints. [member breakpoint_gutter] has to be enabled.
 		</theme_item>
-		<theme_item name="executing_line_color" type="Color">
+		<theme_item name="executing_line_color" type="Color" default="Color( 0.2, 0.8, 0.2, 0.4 )">
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">
 		</theme_item>
@@ -569,47 +569,47 @@
 		<theme_item name="font" type="Font">
 			Sets the default [Font].
 		</theme_item>
-		<theme_item name="font_color" type="Color">
+		<theme_item name="font_color" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
 			Sets the font [Color].
 		</theme_item>
-		<theme_item name="font_color_readonly" type="Color">
+		<theme_item name="font_color_readonly" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 0.5 )">
 		</theme_item>
-		<theme_item name="font_color_selected" type="Color">
+		<theme_item name="font_color_selected" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
-		<theme_item name="function_color" type="Color">
+		<theme_item name="function_color" type="Color" default="Color( 0.4, 0.635294, 0.807843, 1 )">
 		</theme_item>
-		<theme_item name="line_number_color" type="Color">
+		<theme_item name="line_number_color" type="Color" default="Color( 0.666667, 0.666667, 0.666667, 0.4 )">
 			Sets the [Color] of the line numbers. [member show_line_numbers] has to be enabled.
 		</theme_item>
-		<theme_item name="line_spacing" type="int">
+		<theme_item name="line_spacing" type="int" default="4">
 			Sets the spacing between the lines.
 		</theme_item>
-		<theme_item name="mark_color" type="Color">
+		<theme_item name="mark_color" type="Color" default="Color( 1, 0.4, 0.4, 0.4 )">
 			Sets the [Color] of marked text.
 		</theme_item>
-		<theme_item name="member_variable_color" type="Color">
+		<theme_item name="member_variable_color" type="Color" default="Color( 0.901961, 0.305882, 0.34902, 1 )">
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit].
 		</theme_item>
-		<theme_item name="number_color" type="Color">
+		<theme_item name="number_color" type="Color" default="Color( 0.921569, 0.584314, 0.196078, 1 )">
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit] when [member readonly] is enabled.
 		</theme_item>
-		<theme_item name="safe_line_number_color" type="Color">
+		<theme_item name="safe_line_number_color" type="Color" default="Color( 0.666667, 0.784314, 0.666667, 0.6 )">
 		</theme_item>
-		<theme_item name="selection_color" type="Color">
+		<theme_item name="selection_color" type="Color" default="Color( 0.490196, 0.490196, 0.490196, 1 )">
 			Sets the highlight [Color] of text selections.
 		</theme_item>
 		<theme_item name="space" type="Texture">
 		</theme_item>
-		<theme_item name="symbol_color" type="Color">
+		<theme_item name="symbol_color" type="Color" default="Color( 0.941176, 0.941176, 0.941176, 1 )">
 		</theme_item>
 		<theme_item name="tab" type="Texture">
 			Sets a custom [Texture] for tab text characters.
 		</theme_item>
-		<theme_item name="word_highlighted_color" type="Color">
+		<theme_item name="word_highlighted_color" type="Color" default="Color( 0.8, 0.9, 0.9, 0.15 )">
 			Sets the highlight [Color] of multiple occurrences. [member highlight_all_occurrences] has to be enabled.
 		</theme_item>
 	</theme_items>

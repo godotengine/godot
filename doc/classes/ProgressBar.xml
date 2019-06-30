@@ -11,8 +11,8 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="percent_visible" type="bool" setter="set_percent_visible" getter="is_percent_visible">
-			If [code]true[/code], the fill percentage is displayed on the bar. Default value: [code]true[/code].
+		<member name="percent_visible" type="bool" setter="set_percent_visible" getter="is_percent_visible" default="true">
+			If [code]true[/code], the fill percentage is displayed on the bar.
 		</member>
 	</members>
 	<constants>
@@ -24,9 +24,9 @@
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color" type="Color">
+		<theme_item name="font_color" type="Color" default="Color( 0.941176, 0.941176, 0.941176, 1 )">
 		</theme_item>
-		<theme_item name="font_color_shadow" type="Color">
+		<theme_item name="font_color_shadow" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
 	</theme_items>
 </class>

@@ -11,16 +11,16 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="columns" type="int" setter="set_columns" getter="get_columns">
+		<member name="columns" type="int" setter="set_columns" getter="get_columns" default="1">
 			The number of columns in the [GridContainer]. If modified, [GridContainer] reorders its children to accommodate the new layout.
 		</member>
 	</members>
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="hseparation" type="int">
+		<theme_item name="hseparation" type="int" default="4">
 		</theme_item>
-		<theme_item name="vseparation" type="int">
+		<theme_item name="vseparation" type="int" default="4">
 		</theme_item>
 	</theme_items>
 </class>

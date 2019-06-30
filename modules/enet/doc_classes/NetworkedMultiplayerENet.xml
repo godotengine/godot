@@ -106,16 +106,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="always_ordered" type="bool" setter="set_always_ordered" getter="is_always_ordered">
+		<member name="always_ordered" type="bool" setter="set_always_ordered" getter="is_always_ordered" default="false">
 			Enforce ordered packets when using [constant NetworkedMultiplayerPeer.TRANSFER_MODE_UNRELIABLE] (thus behaving similarly to [constant NetworkedMultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED]). This is the only way to use ordering with the RPC system.
 		</member>
-		<member name="channel_count" type="int" setter="set_channel_count" getter="get_channel_count">
-			The number of channels to be used by ENet. Default: [code]3[/code]. Channels are used to separate different kinds of data. In reliable or ordered mode, for example, the packet delivery order is ensured on a per channel basis.
+		<member name="channel_count" type="int" setter="set_channel_count" getter="get_channel_count" default="3">
+			The number of channels to be used by ENet. Channels are used to separate different kinds of data. In reliable or ordered mode, for example, the packet delivery order is ensured on a per channel basis.
 		</member>
-		<member name="compression_mode" type="int" setter="set_compression_mode" getter="get_compression_mode" enum="NetworkedMultiplayerENet.CompressionMode">
-			The compression method used for network packets. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all. Default value: [constant COMPRESS_NONE].
+		<member name="compression_mode" type="int" setter="set_compression_mode" getter="get_compression_mode" enum="NetworkedMultiplayerENet.CompressionMode" default="0">
+			The compression method used for network packets. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all.
 		</member>
-		<member name="transfer_channel" type="int" setter="set_transfer_channel" getter="get_transfer_channel">
+		<member name="transfer_channel" type="int" setter="set_transfer_channel" getter="get_transfer_channel" default="-1">
 			Set the default channel to be used to transfer data. By default, this value is [code]-1[/code] which means that ENet will only use 2 channels, one for reliable and one for unreliable packets. Channel [code]0[/code] is reserved, and cannot be used. Setting this member to any value between [code]0[/code] and [member channel_count] (excluded) will force ENet to use that channel for sending data.
 		</member>
 	</members>

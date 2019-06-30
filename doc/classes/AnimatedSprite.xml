@@ -36,31 +36,31 @@
 		</method>
 	</methods>
 	<members>
-		<member name="animation" type="String" setter="set_animation" getter="get_animation">
+		<member name="animation" type="String" setter="set_animation" getter="get_animation" default="&quot;default&quot;">
 			The current animation from the [code]frames[/code] resource. If this value changes, the [code]frame[/code] counter is reset.
 		</member>
-		<member name="centered" type="bool" setter="set_centered" getter="is_centered">
-			If [code]true[/code], texture will be centered. Default value: [code]true[/code].
+		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
+			If [code]true[/code], texture will be centered.
 		</member>
-		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h">
-			If [code]true[/code], texture is flipped horizontally. Default value: [code]false[/code].
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
+			If [code]true[/code], texture is flipped horizontally.
 		</member>
-		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v">
-			If [code]true[/code], texture is flipped vertically. Default value: [code]false[/code].
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
+			If [code]true[/code], texture is flipped vertically.
 		</member>
-		<member name="frame" type="int" setter="set_frame" getter="get_frame">
+		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
 			The displayed animation frame's index.
 		</member>
-		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
+		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames" default="null">
 			The [SpriteFrames] resource containing the animation(s).
 		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The texture's drawing offset.
 		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing">
+		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" default="false">
 			If [code]true[/code], the [member animation] is currently playing.
 		</member>
-		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale">
+		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			The animation speed is multiplied by this value.
 		</member>
 	</members>

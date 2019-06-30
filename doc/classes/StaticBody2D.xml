@@ -14,17 +14,19 @@
 	<members>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
 			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
+			Deprecated, use [member PhysicsMaterial.bounce] instead via [member physics_material_override].
 		</member>
-		<member name="constant_angular_velocity" type="float" setter="set_constant_angular_velocity" getter="get_constant_angular_velocity">
+		<member name="constant_angular_velocity" type="float" setter="set_constant_angular_velocity" getter="get_constant_angular_velocity" default="0.0">
 			The body's constant angular velocity. This does not rotate the body, but affects colliding bodies, as if it were rotating.
 		</member>
-		<member name="constant_linear_velocity" type="Vector2" setter="set_constant_linear_velocity" getter="get_constant_linear_velocity">
+		<member name="constant_linear_velocity" type="Vector2" setter="set_constant_linear_velocity" getter="get_constant_linear_velocity" default="Vector2( 0, 0 )">
 			The body's constant linear velocity. This does not move the body, but affects colliding bodies, as if it were moving.
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
 			The body's friction. Values range from [code]0[/code] (no friction) to [code]1[/code] (full friction).
+			Deprecated, use [member PhysicsMaterial.friction] instead via [member physics_material_override].
 		</member>
-		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
+		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override" default="null">
 		</member>
 	</members>
 	<constants>

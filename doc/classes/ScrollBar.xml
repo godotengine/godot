@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="custom_step" type="float" setter="set_custom_step" getter="get_custom_step">
+		<member name="custom_step" type="float" setter="set_custom_step" getter="get_custom_step" default="-1.0">
 		</member>
 	</members>
 	<signals>

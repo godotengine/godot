@@ -9,11 +9,11 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="assign_op" type="int" setter="set_assign_op" getter="get_assign_op" enum="VisualScriptPropertySet.AssignOp">
+		<member name="assign_op" type="int" setter="set_assign_op" getter="get_assign_op" enum="VisualScriptPropertySet.AssignOp" default="0">
 		</member>
 		<member name="base_script" type="String" setter="set_base_script" getter="get_base_script">
 		</member>
-		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type">
+		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" default="&quot;Object&quot;">
 		</member>
 		<member name="basic_type" type="int" setter="set_basic_type" getter="get_basic_type" enum="Variant.Type">
 		</member>
@@ -21,9 +21,9 @@
 		</member>
 		<member name="node_path" type="NodePath" setter="set_base_path" getter="get_base_path">
 		</member>
-		<member name="property" type="String" setter="set_property" getter="get_property">
+		<member name="property" type="String" setter="set_property" getter="get_property" default="&quot;&quot;">
 		</member>
-		<member name="set_mode" type="int" setter="set_call_mode" getter="get_call_mode" enum="VisualScriptPropertySet.CallMode">
+		<member name="set_mode" type="int" setter="set_call_mode" getter="get_call_mode" enum="VisualScriptPropertySet.CallMode" default="0">
 		</member>
 	</members>
 	<constants>

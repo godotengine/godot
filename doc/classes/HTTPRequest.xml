@@ -59,16 +59,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit">
+		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit" default="-1">
 			Maximum allowed size for response bodies.
 		</member>
-		<member name="download_file" type="String" setter="set_download_file" getter="get_download_file">
+		<member name="download_file" type="String" setter="set_download_file" getter="get_download_file" default="&quot;&quot;">
 			The file to download into. Will output any received file into it.
 		</member>
-		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects">
+		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects" default="8">
 			Maximum number of allowed redirects.
 		</member>
-		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads">
+		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads" default="false">
 			If [code]true[/code], multithreading is used to improve performance.
 		</member>
 	</members>

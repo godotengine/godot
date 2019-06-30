@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="constant" type="Color" setter="set_constant" getter="get_constant">
+		<member name="constant" type="Color" setter="set_constant" getter="get_constant" default="Color( 1, 1, 1, 1 )">
 		</member>
 	</members>
 	<constants>

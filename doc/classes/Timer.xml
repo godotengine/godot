@@ -35,23 +35,23 @@
 		</method>
 	</methods>
 	<members>
-		<member name="autostart" type="bool" setter="set_autostart" getter="has_autostart">
-			If [code]true[/code], the timer will automatically start when entering the scene tree. Default value: [code]false[/code].
+		<member name="autostart" type="bool" setter="set_autostart" getter="has_autostart" default="false">
+			If [code]true[/code], the timer will automatically start when entering the scene tree.
 		</member>
-		<member name="one_shot" type="bool" setter="set_one_shot" getter="is_one_shot">
-			If [code]true[/code], the timer will stop when reaching 0. If [code]false[/code], it will restart. Default value: [code]false[/code].
+		<member name="one_shot" type="bool" setter="set_one_shot" getter="is_one_shot" default="false">
+			If [code]true[/code], the timer will stop when reaching 0. If [code]false[/code], it will restart.
 		</member>
 		<member name="paused" type="bool" setter="set_paused" getter="is_paused">
 			If [code]true[/code], the timer is paused and will not process until it is unpaused again, even if [method start] is called.
 		</member>
-		<member name="process_mode" type="int" setter="set_timer_process_mode" getter="get_timer_process_mode" enum="Timer.TimerProcessMode">
+		<member name="process_mode" type="int" setter="set_timer_process_mode" getter="get_timer_process_mode" enum="Timer.TimerProcessMode" default="1">
 			Processing mode. See [enum TimerProcessMode].
 		</member>
 		<member name="time_left" type="float" setter="" getter="get_time_left">
 			The timer's remaining time in seconds. Returns 0 if the timer is inactive.
 			[b]Note:[/b] You cannot set this value. To change the timer's remaining time, use [member wait_time].
 		</member>
-		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time">
+		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time" default="1.0">
 			Wait time in seconds.
 		</member>
 	</members>

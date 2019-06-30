@@ -105,7 +105,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Gets the priority of this plugin for the recognized extension. Higher priority plugins will be preferred. Default value is 1.0.
+				Gets the priority of this plugin for the recognized extension. Higher priority plugins will be preferred. The default priority is [code]1.0[/code].
 			</description>
 		</method>
 		<method name="get_recognized_extensions" qualifiers="virtual">

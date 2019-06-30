@@ -77,43 +77,43 @@
 		</method>
 	</methods>
 	<members>
-		<member name="agent/height" type="float" setter="set_agent_height" getter="get_agent_height">
+		<member name="agent/height" type="float" setter="set_agent_height" getter="get_agent_height" default="2.0">
 		</member>
-		<member name="agent/max_climb" type="float" setter="set_agent_max_climb" getter="get_agent_max_climb">
+		<member name="agent/max_climb" type="float" setter="set_agent_max_climb" getter="get_agent_max_climb" default="0.9">
 		</member>
-		<member name="agent/max_slope" type="float" setter="set_agent_max_slope" getter="get_agent_max_slope">
+		<member name="agent/max_slope" type="float" setter="set_agent_max_slope" getter="get_agent_max_slope" default="45.0">
 		</member>
-		<member name="agent/radius" type="float" setter="set_agent_radius" getter="get_agent_radius">
+		<member name="agent/radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="0.6">
 		</member>
-		<member name="cell/height" type="float" setter="set_cell_height" getter="get_cell_height">
+		<member name="cell/height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.2">
 		</member>
-		<member name="cell/size" type="float" setter="set_cell_size" getter="get_cell_size">
+		<member name="cell/size" type="float" setter="set_cell_size" getter="get_cell_size" default="0.3">
 		</member>
-		<member name="detail/sample_distance" type="float" setter="set_detail_sample_distance" getter="get_detail_sample_distance">
+		<member name="detail/sample_distance" type="float" setter="set_detail_sample_distance" getter="get_detail_sample_distance" default="6.0">
 		</member>
-		<member name="detail/sample_max_error" type="float" setter="set_detail_sample_max_error" getter="get_detail_sample_max_error">
+		<member name="detail/sample_max_error" type="float" setter="set_detail_sample_max_error" getter="get_detail_sample_max_error" default="1.0">
 		</member>
-		<member name="edge/max_error" type="float" setter="set_edge_max_error" getter="get_edge_max_error">
+		<member name="edge/max_error" type="float" setter="set_edge_max_error" getter="get_edge_max_error" default="1.3">
 		</member>
-		<member name="edge/max_length" type="float" setter="set_edge_max_length" getter="get_edge_max_length">
+		<member name="edge/max_length" type="float" setter="set_edge_max_length" getter="get_edge_max_length" default="12.0">
 		</member>
-		<member name="filter/filter_walkable_low_height_spans" type="bool" setter="set_filter_walkable_low_height_spans" getter="get_filter_walkable_low_height_spans">
+		<member name="filter/filter_walkable_low_height_spans" type="bool" setter="set_filter_walkable_low_height_spans" getter="get_filter_walkable_low_height_spans" default="false">
 		</member>
-		<member name="filter/ledge_spans" type="bool" setter="set_filter_ledge_spans" getter="get_filter_ledge_spans">
+		<member name="filter/ledge_spans" type="bool" setter="set_filter_ledge_spans" getter="get_filter_ledge_spans" default="false">
 		</member>
-		<member name="filter/low_hanging_obstacles" type="bool" setter="set_filter_low_hanging_obstacles" getter="get_filter_low_hanging_obstacles">
+		<member name="filter/low_hanging_obstacles" type="bool" setter="set_filter_low_hanging_obstacles" getter="get_filter_low_hanging_obstacles" default="false">
 		</member>
 		<member name="geometry/collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
 		</member>
-		<member name="geometry/parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type">
+		<member name="geometry/parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type" default="0">
 		</member>
-		<member name="polygon/verts_per_poly" type="float" setter="set_verts_per_poly" getter="get_verts_per_poly">
+		<member name="polygon/verts_per_poly" type="float" setter="set_verts_per_poly" getter="get_verts_per_poly" default="6.0">
 		</member>
-		<member name="region/merge_size" type="float" setter="set_region_merge_size" getter="get_region_merge_size">
+		<member name="region/merge_size" type="float" setter="set_region_merge_size" getter="get_region_merge_size" default="20.0">
 		</member>
-		<member name="region/min_size" type="float" setter="set_region_min_size" getter="get_region_min_size">
+		<member name="region/min_size" type="float" setter="set_region_min_size" getter="get_region_min_size" default="8.0">
 		</member>
-		<member name="sample_partition_type/sample_partition_type" type="int" setter="set_sample_partition_type" getter="get_sample_partition_type">
+		<member name="sample_partition_type/sample_partition_type" type="int" setter="set_sample_partition_type" getter="get_sample_partition_type" default="0">
 		</member>
 	</members>
 	<constants>

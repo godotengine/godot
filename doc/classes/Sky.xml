@@ -11,9 +11,9 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="radiance_size" type="int" setter="set_radiance_size" getter="get_radiance_size" enum="Sky.RadianceSize">
+		<member name="radiance_size" type="int" setter="set_radiance_size" getter="get_radiance_size" enum="Sky.RadianceSize" default="2">
 			The [Sky]'s radiance map size. The higher the radiance map size, the more detailed the lighting from the [Sky] will be.
-			See [enum RadianceSize] constants for values. Default size is [constant RADIANCE_SIZE_512].
+			See [enum RadianceSize] constants for values.
 		</member>
 	</members>
 	<constants>

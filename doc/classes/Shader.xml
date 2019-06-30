@@ -45,7 +45,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="code" type="String" setter="set_code" getter="get_code">
+		<member name="code" type="String" setter="set_code" getter="get_code" default="&quot;&quot;">
 		</member>
 	</members>
 	<constants>

@@ -22,26 +22,26 @@
 		</method>
 	</methods>
 	<members>
-		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data">
+		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data" default="PoolByteArray(  )">
 			Contains the audio data in bytes.
 		</member>
-		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamSample.Format">
+		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamSample.Format" default="0">
 			Audio format. See [code]FORMAT_*[/code] constants for values.
 		</member>
-		<member name="loop_begin" type="int" setter="set_loop_begin" getter="get_loop_begin">
+		<member name="loop_begin" type="int" setter="set_loop_begin" getter="get_loop_begin" default="0">
 			Loop start in bytes.
 		</member>
-		<member name="loop_end" type="int" setter="set_loop_end" getter="get_loop_end">
+		<member name="loop_end" type="int" setter="set_loop_end" getter="get_loop_end" default="0">
 			Loop end in bytes.
 		</member>
-		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="AudioStreamSample.LoopMode">
+		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="AudioStreamSample.LoopMode" default="0">
 			Loop mode. See [code]LOOP_*[/code] constants for values.
 		</member>
-		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate">
+		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate" default="44100">
 			The sample rate for mixing this audio.
 		</member>
-		<member name="stereo" type="bool" setter="set_stereo" getter="is_stereo">
-			If [code]true[/code], audio is stereo. Default value: [code]false[/code].
+		<member name="stereo" type="bool" setter="set_stereo" getter="is_stereo" default="false">
+			If [code]true[/code], audio is stereo.
 		</member>
 	</members>
 	<constants>

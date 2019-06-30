@@ -162,42 +162,42 @@
 		</method>
 	</methods>
 	<members>
-		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask">
+		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="1048575">
 			The culling mask that describes which 3D render layers are rendered by this camera.
 		</member>
-		<member name="current" type="bool" setter="set_current" getter="is_current">
-			If [code]true[/code], the ancestor [Viewport] is currently using this camera. Default value: [code]false[/code].
+		<member name="current" type="bool" setter="set_current" getter="is_current" default="false">
+			If [code]true[/code], the ancestor [Viewport] is currently using this camera.
 		</member>
-		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="Camera.DopplerTracking">
-			If not [constant DOPPLER_TRACKING_DISABLED], this camera will simulate the Doppler effect for objects changed in particular [code]_process[/code] methods. See [enum DopplerTracking] for possible values. Default value: [constant DOPPLER_TRACKING_DISABLED].
+		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="Camera.DopplerTracking" default="0">
+			If not [constant DOPPLER_TRACKING_DISABLED], this camera will simulate the Doppler effect for objects changed in particular [code]_process[/code] methods. See [enum DopplerTracking] for possible values.
 		</member>
-		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
+		<member name="environment" type="Environment" setter="set_environment" getter="get_environment" default="null">
 			The [Environment] to use for this camera.
 		</member>
-		<member name="far" type="float" setter="set_zfar" getter="get_zfar">
+		<member name="far" type="float" setter="set_zfar" getter="get_zfar" default="100.0">
 			The distance to the far culling boundary for this camera relative to its local Z axis.
 		</member>
-		<member name="fov" type="float" setter="set_fov" getter="get_fov">
+		<member name="fov" type="float" setter="set_fov" getter="get_fov" default="70.0">
 			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [code]fov[/code] sets the other axis' field of view angle.
 		</member>
-		<member name="frustum_offset" type="Vector2" setter="set_frustum_offset" getter="get_frustum_offset">
+		<member name="frustum_offset" type="Vector2" setter="set_frustum_offset" getter="get_frustum_offset" default="Vector2( 0, 0 )">
 		</member>
-		<member name="h_offset" type="float" setter="set_h_offset" getter="get_h_offset">
+		<member name="h_offset" type="float" setter="set_h_offset" getter="get_h_offset" default="0.0">
 			The horizontal (X) offset of the camera viewport.
 		</member>
-		<member name="keep_aspect" type="int" setter="set_keep_aspect_mode" getter="get_keep_aspect_mode" enum="Camera.KeepAspect">
+		<member name="keep_aspect" type="int" setter="set_keep_aspect_mode" getter="get_keep_aspect_mode" enum="Camera.KeepAspect" default="1">
 			The axis to lock during [member fov]/[member size] adjustments. Can be either [constant KEEP_WIDTH] or [constant KEEP_HEIGHT].
 		</member>
-		<member name="near" type="float" setter="set_znear" getter="get_znear">
+		<member name="near" type="float" setter="set_znear" getter="get_znear" default="0.05">
 			The distance to the near culling boundary for this camera relative to its local Z axis.
 		</member>
-		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera.Projection">
+		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera.Projection" default="0">
 			The camera's projection mode. In [constant PROJECTION_PERSPECTIVE] mode, objects' Z distance from the camera's local space scales their perceived size.
 		</member>
-		<member name="size" type="float" setter="set_size" getter="get_size">
+		<member name="size" type="float" setter="set_size" getter="get_size" default="1.0">
 			The camera's size measured as 1/2 the width or height. Only applicable in orthogonal mode. Since [member keep_aspect] locks on axis, [code]size[/code] sets the other axis' size length.
 		</member>
-		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset">
+		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset" default="0.0">
 			The vertical (Y) offset of the camera viewport.
 		</member>
 	</members>

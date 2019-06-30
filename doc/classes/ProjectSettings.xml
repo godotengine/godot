@@ -161,686 +161,751 @@
 		</method>
 	</methods>
 	<members>
-		<member name="android/modules" type="String" setter="" getter="">
+		<member name="android/modules" type="String" setter="" getter="" default="&quot;&quot;">
 			Comma-separated list of custom Android modules (which must have been built in the Android export templates) using their Java package path, e.g. [code]org/godotengine/org/GodotPaymentV3,org/godotengine/godot/MyCustomSingleton"[/code].
 		</member>
-		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="">
+		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color( 0.137255, 0.137255, 0.137255, 1 )">
 			Background color for the boot splash.
 		</member>
-		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="">
+		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], scale the boot splash image to the full window length when engine starts. If [code]false[/code], the engine will leave it at the default pixel size.
 		</member>
-		<member name="application/boot_splash/image" type="String" setter="" getter="">
+		<member name="application/boot_splash/image" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to an image used as the boot splash.
 		</member>
-		<member name="application/boot_splash/use_filter" type="bool" setter="" getter="">
+		<member name="application/boot_splash/use_filter" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], applies linear filtering when scaling the image (recommended for high resolution artwork). If [code]false[/code], uses nearest-neighbor interpolation (recommended for pixel art).
 		</member>
-		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="">
+		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="" default="&quot;&quot;">
 			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If left empty, [code]user://[/code] resolves to a project-specific folder in Godot's own configuration folder (see [method OS.get_user_data_dir]). If a custom directory name is defined, this name will be used instead and appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
 			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.
 		</member>
-		<member name="application/config/icon" type="String" setter="" getter="">
+		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon used for the project, set when project loads. Exporters will also use this icon when possible.
 		</member>
-		<member name="application/config/macos_native_icon" type="String" setter="" getter="">
+		<member name="application/config/macos_native_icon" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="application/config/name" type="String" setter="" getter="">
+		<member name="application/config/name" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's name. It is used both by the Project Manager and by exporters. The project name can be translated by translating its value in localization files.
 		</member>
-		<member name="application/config/project_settings_override" type="String" setter="" getter="">
+		<member name="application/config/project_settings_override" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code].
 		</member>
-		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="">
+		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the project will save user data to its own user directory (see [member application/config/custom_user_dir_name]). This setting is only effective on desktop platforms. A name must be set in the [member application/config/custom_user_dir_name] setting for this to take effect. If [code]false[/code], the project will save user data to [code](OS user data directory)/Godot/app_userdata/(project name)[/code].
 		</member>
-		<member name="application/config/windows_native_icon" type="String" setter="" getter="">
+		<member name="application/config/windows_native_icon" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="application/run/disable_stderr" type="bool" setter="" getter="">
+		<member name="application/run/disable_stderr" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], disables printing to standard error in an exported build.
 		</member>
-		<member name="application/run/disable_stdout" type="bool" setter="" getter="">
+		<member name="application/run/disable_stdout" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], disables printing to standard output in an exported build.
 		</member>
-		<member name="application/run/frame_delay_msec" type="int" setter="" getter="">
+		<member name="application/run/frame_delay_msec" type="int" setter="" getter="" default="0">
 			Forces a delay between frames in the main loop (in milliseconds). This may be useful if you plan to disable vertical synchronization.
 		</member>
-		<member name="application/run/low_processor_mode" type="bool" setter="" getter="">
+		<member name="application/run/low_processor_mode" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables low-processor usage mode. This setting only works on desktop platforms. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) in most games.
 		</member>
-		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="">
+		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="" default="6900">
 			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
 		</member>
-		<member name="application/run/main_scene" type="String" setter="" getter="">
+		<member name="application/run/main_scene" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to the main scene file that will be loaded when the project runs.
 		</member>
-		<member name="audio/channel_disable_threshold_db" type="float" setter="" getter="">
+		<member name="audio/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
-		<member name="audio/channel_disable_time" type="float" setter="" getter="">
+		<member name="audio/channel_disable_time" type="float" setter="" getter="" default="2.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
-		<member name="audio/default_bus_layout" type="String" setter="" getter="">
+		<member name="audio/default_bus_layout" type="String" setter="" getter="" default="&quot;res://default_bus_layout.tres&quot;">
 		</member>
-		<member name="audio/driver" type="String" setter="" getter="">
+		<member name="audio/driver" type="String" setter="" getter="" default="&quot;PulseAudio&quot;">
 			Specifies the audio driver to use. This setting is platform-dependent as each platform supports different audio drivers. If left empty, the default audio driver will be used.
 		</member>
-		<member name="audio/enable_audio_input" type="bool" setter="" getter="">
+		<member name="audio/enable_audio_input" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
 		</member>
-		<member name="audio/mix_rate" type="int" setter="" getter="">
+		<member name="audio/mix_rate" type="int" setter="" getter="" default="44100">
 			Mixing rate used for audio. In general, it's better to not touch this and leave it to the host operating system.
 		</member>
-		<member name="audio/output_latency" type="int" setter="" getter="">
+		<member name="audio/output_latency" type="int" setter="" getter="" default="15">
 			Output latency in milliseconds for audio. Lower values will result in lower audio latency at the cost of increased CPU usage. Low values may result in audible cracking on slower hardware.
 		</member>
-		<member name="audio/video_delay_compensation_ms" type="int" setter="" getter="">
+		<member name="audio/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
 			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
 		</member>
-		<member name="compression/formats/gzip/compression_level" type="int" setter="" getter="">
+		<member name="compression/formats/gzip/compression_level" type="int" setter="" getter="" default="-1">
 			Default compression level for gzip. Affects compressed scenes and resources.
 		</member>
-		<member name="compression/formats/zlib/compression_level" type="int" setter="" getter="">
+		<member name="compression/formats/zlib/compression_level" type="int" setter="" getter="" default="-1">
 			Default compression level for Zlib. Affects compressed scenes and resources.
 		</member>
-		<member name="compression/formats/zstd/compression_level" type="int" setter="" getter="">
+		<member name="compression/formats/zstd/compression_level" type="int" setter="" getter="" default="3">
 			Default compression level for Zstandard. Affects compressed scenes and resources.
 		</member>
-		<member name="compression/formats/zstd/long_distance_matching" type="bool" setter="" getter="">
+		<member name="compression/formats/zstd/long_distance_matching" type="bool" setter="" getter="" default="false">
 			Enables long-distance matching in Zstandard.
 		</member>
-		<member name="compression/formats/zstd/window_log_size" type="int" setter="" getter="">
+		<member name="compression/formats/zstd/window_log_size" type="int" setter="" getter="" default="27">
 		</member>
-		<member name="debug/gdscript/completion/autocomplete_setters_and_getters" type="bool" setter="" getter="">
+		<member name="debug/gdscript/completion/autocomplete_setters_and_getters" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], displays getters and setters in autocompletion results in the script editor. This setting is meant to be used when porting old projects (Godot 2), as using member variables is the preferred style from Godot 3 onwards.
 		</member>
-		<member name="debug/gdscript/warnings/constant_used_as_function" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/constant_used_as_function" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a constant is used as a function.
 		</member>
-		<member name="debug/gdscript/warnings/deprecated_keyword" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/deprecated_keyword" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when deprecated keywords such as [code]slave[/code] are used.
 		</member>
-		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
 		</member>
-		<member name="debug/gdscript/warnings/function_conflicts_constant" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/function_conflicts_constant" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a function is declared with the same name as a constant.
 		</member>
-		<member name="debug/gdscript/warnings/function_conflicts_variable" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/function_conflicts_variable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a function is declared with the same name as a variable. This will turn into an error in a future version when first-class functions become supported in GDScript.
 		</member>
-		<member name="debug/gdscript/warnings/function_may_yield" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/function_may_yield" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a function assigned to a variable may yield and return a function state instead of a value.
 		</member>
-		<member name="debug/gdscript/warnings/function_used_as_property" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/function_used_as_property" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when using a function as if it was a property.
 		</member>
-		<member name="debug/gdscript/warnings/incompatible_ternary" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/incompatible_ternary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a ternary operator may emit values with incompatible types.
 		</member>
-		<member name="debug/gdscript/warnings/integer_division" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/integer_division" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when dividing an integer by another integer (the decimal part will be discarded).
 		</member>
-		<member name="debug/gdscript/warnings/narrowing_conversion" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/narrowing_conversion" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
 		</member>
-		<member name="debug/gdscript/warnings/property_used_as_function" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/property_used_as_function" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when using a property as if it was a function.
 		</member>
-		<member name="debug/gdscript/warnings/return_value_discarded" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/return_value_discarded" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
 		</member>
-		<member name="debug/gdscript/warnings/shadowed_variable" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/shadowed_variable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when defining a local or subclass member variable that would shadow a variable at an upper level (such as a member variable).
 		</member>
-		<member name="debug/gdscript/warnings/standalone_expression" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/standalone_expression" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
 		</member>
-		<member name="debug/gdscript/warnings/treat_warnings_as_errors" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/treat_warnings_as_errors" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], all warnings will be reported as if they were errors.
 		</member>
-		<member name="debug/gdscript/warnings/unassigned_variable" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/unassigned_variable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when using a variable that wasn't previously assigned.
 		</member>
-		<member name="debug/gdscript/warnings/unassigned_variable_op_assign" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/unassigned_variable_op_assign" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when assigning a variable using an assignment operator like [code]+=[/code] if the variable wasn't previously assigned.
 		</member>
-		<member name="debug/gdscript/warnings/unreachable_code" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/unreachable_code" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when unreachable code is detected (such as after a [code]return[/code] statement that will always be executed).
 		</member>
-		<member name="debug/gdscript/warnings/unsafe_call_argument" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/unsafe_call_argument" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables warnings when using an expression whose type may not be compatible with the function parameter expected.
 		</member>
-		<member name="debug/gdscript/warnings/unsafe_cast" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/unsafe_cast" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables warnings when performing an unsafe cast.
 		</member>
-		<member name="debug/gdscript/warnings/unsafe_method_access" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/unsafe_method_access" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables warnings when calling a method whose presence is not guaranteed at compile-time in the class.
 		</member>
-		<member name="debug/gdscript/warnings/unsafe_property_access" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/unsafe_property_access" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables warnings when accessing a property whose presence is not guaranteed at compile-time in the class.
 		</member>
-		<member name="debug/gdscript/warnings/unused_argument" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/unused_argument" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a function parameter is unused.
 		</member>
-		<member name="debug/gdscript/warnings/unused_class_variable" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/unused_class_variable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a member variable is unused.
 		</member>
-		<member name="debug/gdscript/warnings/unused_signal" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/unused_signal" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a signal is unused.
 		</member>
-		<member name="debug/gdscript/warnings/unused_variable" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/unused_variable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a local variable is unused.
 		</member>
-		<member name="debug/gdscript/warnings/variable_conflicts_function" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/variable_conflicts_function" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a variable is declared with the same name as a function. This will turn into an error in a future version when first-class functions become supported in GDScript.
 		</member>
-		<member name="debug/gdscript/warnings/void_assignment" type="bool" setter="" getter="">
+		<member name="debug/gdscript/warnings/void_assignment" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when assigning the result of a function that returns [code]void[/code] to a variable.
 		</member>
-		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="">
+		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug on https://github.com/godotengine/godot/issues&quot;">
 			Message to be displayed before the backtrace when the engine crashes.
 		</member>
-		<member name="debug/settings/fps/force_fps" type="int" setter="" getter="">
+		<member name="debug/settings/fps/force_fps" type="int" setter="" getter="" default="0">
 		</member>
-		<member name="debug/settings/gdscript/max_call_stack" type="int" setter="" getter="">
+		<member name="debug/settings/gdscript/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack allowed for debugging GDScript.
 		</member>
-		<member name="debug/settings/profiler/max_functions" type="int" setter="" getter="">
+		<member name="debug/settings/profiler/max_functions" type="int" setter="" getter="" default="16384">
 			Maximum amount of functions per frame allowed when profiling.
 		</member>
-		<member name="debug/settings/stdout/print_fps" type="bool" setter="" getter="">
+		<member name="debug/settings/stdout/print_fps" type="bool" setter="" getter="" default="false">
 			Print frames per second to standard output every second.
 		</member>
-		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="">
+		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="" default="false">
 			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc.
 		</member>
-		<member name="debug/settings/visual_script/max_call_stack" type="int" setter="" getter="">
+		<member name="debug/settings/visual_script/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack in visual scripting, to avoid infinite recursion.
 		</member>
-		<member name="display/mouse_cursor/custom_image" type="String" setter="" getter="">
+		<member name="display/mouse_cursor/custom_image" type="String" setter="" getter="" default="&quot;&quot;">
 			Custom image for the mouse cursor (limited to 256×256).
 		</member>
-		<member name="display/mouse_cursor/custom_image_hotspot" type="Vector2" setter="" getter="">
+		<member name="display/mouse_cursor/custom_image_hotspot" type="Vector2" setter="" getter="" default="Vector2( 0, 0 )">
 			Hotspot for the custom mouse cursor image.
 		</member>
-		<member name="display/mouse_cursor/tooltip_position_offset" type="Vector2" setter="" getter="">
+		<member name="display/mouse_cursor/tooltip_position_offset" type="Vector2" setter="" getter="" default="Vector2( 10, 10 )">
 			Position offset for tooltips, relative to the mouse cursor's hotspot.
 		</member>
-		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="">
+		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], allows HiDPI display on Windows and macOS. This setting has no effect on desktop Linux, as DPI-awareness fallbacks are not supported there.
 		</member>
-		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="">
+		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
 		</member>
-		<member name="display/window/handheld/orientation" type="String" setter="" getter="">
+		<member name="display/window/handheld/orientation" type="String" setter="" getter="" default="&quot;landscape&quot;">
 			Default orientation on mobile devices.
 		</member>
-		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="">
+		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], allows per-pixel transparency in a desktop window. This affects performance, so leave it on [code]false[/code] unless you need it.
 		</member>
-		<member name="display/window/per_pixel_transparency/enabled" type="bool" setter="" getter="">
+		<member name="display/window/per_pixel_transparency/enabled" type="bool" setter="" getter="" default="false">
 			Sets the window background to transparent when it starts.
 		</member>
-		<member name="display/window/size/always_on_top" type="bool" setter="" getter="">
+		<member name="display/window/size/always_on_top" type="bool" setter="" getter="" default="false">
 			Force the window to be always on top.
 		</member>
-		<member name="display/window/size/borderless" type="bool" setter="" getter="">
+		<member name="display/window/size/borderless" type="bool" setter="" getter="" default="false">
 			Force the window to be borderless.
 		</member>
-		<member name="display/window/size/fullscreen" type="bool" setter="" getter="">
+		<member name="display/window/size/fullscreen" type="bool" setter="" getter="" default="false">
 			Sets the window to full screen when it starts.
 		</member>
-		<member name="display/window/size/height" type="int" setter="" getter="">
+		<member name="display/window/size/height" type="int" setter="" getter="" default="600">
 			Sets the main window height. On desktop, this is the default window size. Stretch mode settings use this also as a reference when enabled.
 		</member>
-		<member name="display/window/size/resizable" type="bool" setter="" getter="">
+		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
 		</member>
-		<member name="display/window/size/test_height" type="int" setter="" getter="">
+		<member name="display/window/size/test_height" type="int" setter="" getter="" default="0">
 			If greater than zero, uses a different height for the window when running from the editor. The main use for this is to test with stretch modes.
 		</member>
-		<member name="display/window/size/test_width" type="int" setter="" getter="">
+		<member name="display/window/size/test_width" type="int" setter="" getter="" default="0">
 			If greater than zero, uses a different width for the window when running from the editor. The main use for this is to test with stretch modes.
 		</member>
-		<member name="display/window/size/width" type="int" setter="" getter="">
+		<member name="display/window/size/width" type="int" setter="" getter="" default="1024">
 			Sets the main window width. On desktop platforms, this is the default window size. Stretch mode settings use this also as a reference when enabled.
 		</member>
-		<member name="display/window/vsync/use_vsync" type="bool" setter="" getter="">
+		<member name="display/window/vsync/use_vsync" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables vertical synchronization. This eliminates tearing that may appear in moving scenes, at the cost of higher input latency and stuttering at lower framerates. If [code]false[/code], vertical synchronization will be disabled, however, many platforms will enforce it regardless (such as mobile platforms and HTML5).
 		</member>
-		<member name="editor/active" type="bool" setter="" getter="">
+		<member name="editor/active" type="bool" setter="" getter="" default="false">
 			Internal editor setting, don't touch.
 		</member>
-		<member name="editor/search_in_file_extensions" type="PoolStringArray" setter="" getter="">
+		<member name="editor/search_in_file_extensions" type="PoolStringArray" setter="" getter="" default="PoolStringArray( &quot;gd&quot;, &quot;shader&quot; )">
 		</member>
-		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="">
+		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 		</member>
-		<member name="gui/common/swap_ok_cancel" type="bool" setter="" getter="">
+		<member name="gui/common/swap_ok_cancel" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], swaps OK and Cancel buttons in dialogs on Windows and UWP to follow interface conventions.
 		</member>
-		<member name="gui/theme/custom" type="String" setter="" getter="">
+		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
 			Use a custom theme resource, set a path to it here.
 		</member>
-		<member name="gui/theme/custom_font" type="String" setter="" getter="">
+		<member name="gui/theme/custom_font" type="String" setter="" getter="" default="&quot;&quot;">
 			Use a custom default font resource, set a path to it here.
 		</member>
-		<member name="gui/theme/use_hidpi" type="bool" setter="" getter="">
+		<member name="gui/theme/use_hidpi" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], makes sure the theme used works with HiDPI.
 		</member>
-		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="">
+		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="" default="2000">
 			Timer setting for incremental search in Tree, IntemList, etc. controls (in milliseconds).
 		</member>
-		<member name="gui/timers/text_edit_idle_detect_sec" type="float" setter="" getter="">
+		<member name="gui/timers/text_edit_idle_detect_sec" type="float" setter="" getter="" default="3">
 			Timer for detecting idle in the editor (in seconds).
 		</member>
-		<member name="input/ui_accept" type="Dictionary" setter="" getter="">
+		<member name="input/ui_accept" type="Dictionary" setter="" getter="" default="{
+&quot;deadzone&quot;: 0.5,
+&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777221,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+, Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777222,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+, Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:32,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+, Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:0,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null)
+ ]
+}">
 		</member>
-		<member name="input/ui_cancel" type="Dictionary" setter="" getter="">
+		<member name="input/ui_cancel" type="Dictionary" setter="" getter="" default="{
+&quot;deadzone&quot;: 0.5,
+&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777217,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+, Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:1,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null)
+ ]
+}">
 		</member>
-		<member name="input/ui_down" type="Dictionary" setter="" getter="">
+		<member name="input/ui_down" type="Dictionary" setter="" getter="" default="{
+&quot;deadzone&quot;: 0.5,
+&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777234,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+, Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:13,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null)
+ ]
+}">
 		</member>
-		<member name="input/ui_end" type="Dictionary" setter="" getter="">
+		<member name="input/ui_end" type="Dictionary" setter="" getter="" default="{
+&quot;deadzone&quot;: 0.5,
+&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777230,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+ ]
+}">
 		</member>
-		<member name="input/ui_focus_next" type="Dictionary" setter="" getter="">
+		<member name="input/ui_focus_next" type="Dictionary" setter="" getter="" default="{
+&quot;deadzone&quot;: 0.5,
+&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777218,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+ ]
+}">
 		</member>
-		<member name="input/ui_focus_prev" type="Dictionary" setter="" getter="">
+		<member name="input/ui_focus_prev" type="Dictionary" setter="" getter="" default="{
+&quot;deadzone&quot;: 0.5,
+&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:true,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777218,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+ ]
+}">
 		</member>
-		<member name="input/ui_home" type="Dictionary" setter="" getter="">
+		<member name="input/ui_home" type="Dictionary" setter="" getter="" default="{
+&quot;deadzone&quot;: 0.5,
+&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777229,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+ ]
+}">
 		</member>
-		<member name="input/ui_left" type="Dictionary" setter="" getter="">
+		<member name="input/ui_left" type="Dictionary" setter="" getter="" default="{
+&quot;deadzone&quot;: 0.5,
+&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777231,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+, Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:14,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null)
+ ]
+}">
 		</member>
-		<member name="input/ui_page_down" type="Dictionary" setter="" getter="">
+		<member name="input/ui_page_down" type="Dictionary" setter="" getter="" default="{
+&quot;deadzone&quot;: 0.5,
+&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777236,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+ ]
+}">
 		</member>
-		<member name="input/ui_page_up" type="Dictionary" setter="" getter="">
+		<member name="input/ui_page_up" type="Dictionary" setter="" getter="" default="{
+&quot;deadzone&quot;: 0.5,
+&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777235,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+ ]
+}">
 		</member>
-		<member name="input/ui_right" type="Dictionary" setter="" getter="">
+		<member name="input/ui_right" type="Dictionary" setter="" getter="" default="{
+&quot;deadzone&quot;: 0.5,
+&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777233,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+, Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:15,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null)
+ ]
+}">
 		</member>
-		<member name="input/ui_select" type="Dictionary" setter="" getter="">
+		<member name="input/ui_select" type="Dictionary" setter="" getter="" default="{
+&quot;deadzone&quot;: 0.5,
+&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:32,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+, Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:3,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null)
+ ]
+}">
 		</member>
-		<member name="input/ui_up" type="Dictionary" setter="" getter="">
+		<member name="input/ui_up" type="Dictionary" setter="" getter="" default="{
+&quot;deadzone&quot;: 0.5,
+&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777232,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
+, Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:12,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null)
+ ]
+}">
 		</member>
-		<member name="input_devices/pointing/emulate_mouse_from_touch" type="bool" setter="" getter="">
+		<member name="input_devices/pointing/emulate_mouse_from_touch" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], sends mouse input events when tapping or swiping on the touchscreen.
 		</member>
-		<member name="input_devices/pointing/emulate_touch_from_mouse" type="bool" setter="" getter="">
+		<member name="input_devices/pointing/emulate_touch_from_mouse" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], sends touch input events when clicking or dragging the mouse.
 		</member>
-		<member name="layer_names/2d_physics/layer_1" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_10" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_11" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_11" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_12" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_12" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_13" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_13" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_14" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_15" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_16" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_16" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_17" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_17" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_18" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_18" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_19" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_2" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_20" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_3" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_4" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_5" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_6" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_7" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_8" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_physics/layer_9" type="String" setter="" getter="">
+		<member name="layer_names/2d_physics/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_1" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_10" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_11" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_11" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_12" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_12" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_13" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_13" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_14" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_15" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_16" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_16" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_17" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_17" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_18" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_18" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_19" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_2" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_20" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_3" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_4" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_5" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_6" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_7" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_8" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/2d_render/layer_9" type="String" setter="" getter="">
+		<member name="layer_names/2d_render/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_1" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_10" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_11" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_11" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_12" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_12" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_13" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_13" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_14" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_15" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_16" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_16" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_17" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_17" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_18" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_18" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_19" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_2" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_20" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_3" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_4" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_5" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_6" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_7" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_8" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_physics/layer_9" type="String" setter="" getter="">
+		<member name="layer_names/3d_physics/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_1" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_10" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_11" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_11" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_12" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_12" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_13" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_13" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_14" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_15" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_16" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_16" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_17" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_17" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_18" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_18" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_19" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_2" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_20" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_3" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_4" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_5" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_6" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_7" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_8" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="layer_names/3d_render/layer_9" type="String" setter="" getter="">
+		<member name="layer_names/3d_render/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
-		<member name="locale/fallback" type="String" setter="" getter="">
+		<member name="locale/fallback" type="String" setter="" getter="" default="&quot;en&quot;">
 			The locale to fall back to if a translation isn't available in a given language. If left empty, [code]en[/code] (English) will be used.
 		</member>
-		<member name="locale/test" type="String" setter="" getter="">
+		<member name="locale/test" type="String" setter="" getter="" default="&quot;&quot;">
 			If non-empty, this locale will be used when running the project from the editor.
 		</member>
-		<member name="logging/file_logging/enable_file_logging" type="bool" setter="" getter="">
+		<member name="logging/file_logging/enable_file_logging" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], logs all output to files.
 		</member>
-		<member name="logging/file_logging/log_path" type="String" setter="" getter="">
+		<member name="logging/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/log.txt&quot;">
 			Path to logs within the project. Using an [code]user://[/code] path is recommended.
 		</member>
-		<member name="logging/file_logging/max_log_files" type="int" setter="" getter="">
+		<member name="logging/file_logging/max_log_files" type="int" setter="" getter="" default="10">
 			Specifies the maximum amount of log files allowed (used for rotation).
 		</member>
-		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="">
+		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="" default="1024">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
 		</member>
-		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="">
+		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="" default="60">
 			This is used by servers when used in multi-threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
 		</member>
-		<member name="network/limits/debugger_stdout/max_chars_per_second" type="int" setter="" getter="">
+		<member name="network/limits/debugger_stdout/max_chars_per_second" type="int" setter="" getter="" default="2048">
 			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
-		<member name="network/limits/debugger_stdout/max_errors_per_frame" type="int" setter="" getter="">
+		<member name="network/limits/debugger_stdout/max_errors_per_frame" type="int" setter="" getter="" default="10">
 			Maximum amount of errors allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
-		<member name="network/limits/debugger_stdout/max_messages_per_frame" type="int" setter="" getter="">
+		<member name="network/limits/debugger_stdout/max_messages_per_frame" type="int" setter="" getter="" default="10">
 			Maximum amount of messages allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
-		<member name="network/limits/packet_peer_stream/max_buffer_po2" type="int" setter="" getter="">
+		<member name="network/limits/packet_peer_stream/max_buffer_po2" type="int" setter="" getter="" default="16">
 			Default size of packet peer stream for deserializing Godot data. Over this size, data is dropped.
 		</member>
-		<member name="network/limits/websocket_client/max_in_buffer_kb" type="int" setter="" getter="">
+		<member name="network/limits/websocket_client/max_in_buffer_kb" type="int" setter="" getter="" default="64">
 		</member>
-		<member name="network/limits/websocket_client/max_in_packets" type="int" setter="" getter="">
+		<member name="network/limits/websocket_client/max_in_packets" type="int" setter="" getter="" default="1024">
 		</member>
-		<member name="network/limits/websocket_client/max_out_buffer_kb" type="int" setter="" getter="">
+		<member name="network/limits/websocket_client/max_out_buffer_kb" type="int" setter="" getter="" default="64">
 		</member>
-		<member name="network/limits/websocket_client/max_out_packets" type="int" setter="" getter="">
+		<member name="network/limits/websocket_client/max_out_packets" type="int" setter="" getter="" default="1024">
 		</member>
-		<member name="network/limits/websocket_server/max_in_buffer_kb" type="int" setter="" getter="">
+		<member name="network/limits/websocket_server/max_in_buffer_kb" type="int" setter="" getter="" default="64">
 		</member>
-		<member name="network/limits/websocket_server/max_in_packets" type="int" setter="" getter="">
+		<member name="network/limits/websocket_server/max_in_packets" type="int" setter="" getter="" default="1024">
 		</member>
-		<member name="network/limits/websocket_server/max_out_buffer_kb" type="int" setter="" getter="">
+		<member name="network/limits/websocket_server/max_out_buffer_kb" type="int" setter="" getter="" default="64">
 		</member>
-		<member name="network/limits/websocket_server/max_out_packets" type="int" setter="" getter="">
+		<member name="network/limits/websocket_server/max_out_packets" type="int" setter="" getter="" default="1024">
 		</member>
-		<member name="network/remote_fs/page_read_ahead" type="int" setter="" getter="">
+		<member name="network/remote_fs/page_read_ahead" type="int" setter="" getter="" default="4">
 			Amount of read ahead used by remote filesystem. Higher values decrease the effects of latency at the cost of higher bandwidth usage.
 		</member>
-		<member name="network/remote_fs/page_size" type="int" setter="" getter="">
+		<member name="network/remote_fs/page_size" type="int" setter="" getter="" default="65536">
 			Page size used by remote filesystem (in bytes).
 		</member>
-		<member name="node/name_casing" type="int" setter="" getter="">
+		<member name="node/name_casing" type="int" setter="" getter="" default="0">
 			When creating node names automatically, set the type of casing in this project. This is mostly an editor setting.
 		</member>
-		<member name="node/name_num_separator" type="int" setter="" getter="">
+		<member name="node/name_num_separator" type="int" setter="" getter="" default="0">
 			What to use to separate node name from number. This is mostly an editor setting.
 		</member>
-		<member name="physics/2d/physics_engine" type="String" setter="" getter="">
+		<member name="physics/2d/default_gravity" type="int" setter="" getter="" default="98">
 		</member>
-		<member name="physics/2d/thread_model" type="int" setter="" getter="">
+		<member name="physics/2d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
+		</member>
+		<member name="physics/2d/thread_model" type="int" setter="" getter="" default="1">
 			Sets whether physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
 		</member>
-		<member name="physics/3d/active_soft_world" type="bool" setter="" getter="">
+		<member name="physics/3d/active_soft_world" type="bool" setter="" getter="" default="true">
 		</member>
-		<member name="physics/3d/physics_engine" type="String" setter="" getter="">
+		<member name="physics/3d/default_gravity" type="float" setter="" getter="" default="9.8">
+		</member>
+		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use.
 		</member>
-		<member name="physics/common/physics_fps" type="int" setter="" getter="">
+		<member name="physics/common/physics_fps" type="int" setter="" getter="" default="60">
 			Frames per second used in the physics. Physics always needs a fixed amount of frames per second.
 		</member>
-		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="">
+		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Fix to improve physics jitter, specially on monitors where refresh rate is different than the physics FPS.
 		</member>
-		<member name="rendering/environment/default_clear_color" type="Color" setter="" getter="">
+		<member name="rendering/environment/default_clear_color" type="Color" setter="" getter="" default="Color( 0.3, 0.3, 0.3, 1 )">
 			Default background clear color. Overriddable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method VisualServer.set_default_clear_color].
 		</member>
-		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="">
+		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="" default="4096">
 			Max buffer size for blend shapes. Any blend shape bigger than this will not work.
 		</member>
-		<member name="rendering/limits/buffers/canvas_polygon_buffer_size_kb" type="int" setter="" getter="">
+		<member name="rendering/limits/buffers/canvas_polygon_buffer_size_kb" type="int" setter="" getter="" default="128">
 			Max buffer size for drawing polygons. Any polygon bigger than this will not work.
 		</member>
-		<member name="rendering/limits/buffers/canvas_polygon_index_buffer_size_kb" type="int" setter="" getter="">
+		<member name="rendering/limits/buffers/canvas_polygon_index_buffer_size_kb" type="int" setter="" getter="" default="128">
 			Max index buffer size for drawing polygons. Any polygon bigger than this will not work.
 		</member>
-		<member name="rendering/limits/buffers/immediate_buffer_size_kb" type="int" setter="" getter="">
+		<member name="rendering/limits/buffers/immediate_buffer_size_kb" type="int" setter="" getter="" default="2048">
 			Max buffer size for drawing immediate objects (ImmediateGeometry nodes). Nodes using more than this size will not work.
 		</member>
-		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="">
+		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="" default="65536">
 			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not meshes themselves.
 		</member>
-		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="">
+		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
 			Shaders have a time variable that constantly increases. At some point, it needs to be rolled back to zero to avoid precision errors on shader animations. This setting specifies when (in seconds).
 		</member>
-		<member name="rendering/quality/2d/gles2_use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="">
+		<member name="rendering/quality/2d/gles2_use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="" default="false">
 			Some NVIDIA GPU drivers have a bug which produces flickering issues for the [code]draw_rect[/code] method, especially as used in [TileMap]. Refer to [url=https://github.com/godotengine/godot/issues/9913]GitHub issue 9913[/url] for details.
 			If [code]true[/code], this option enables a "safe" code path for such NVIDIA GPUs at the cost of performance. This option only impacts the GLES2 rendering backend (so the bug stays if you use GLES3), and only desktop platforms.
 		</member>
-		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="">
+		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces snapping of polygons to pixels in 2D rendering. May help in some pixel art styles.
 		</member>
-		<member name="rendering/quality/depth_prepass/disable_for_vendors" type="String" setter="" getter="">
+		<member name="rendering/quality/depth_prepass/disable_for_vendors" type="String" setter="" getter="" default="&quot;PowerVR,Mali,Adreno,Apple&quot;">
 			Disables depth pre-pass for some GPU vendors (usually mobile), as their architecture already does this.
 		</member>
-		<member name="rendering/quality/depth_prepass/enable" type="bool" setter="" getter="">
+		<member name="rendering/quality/depth_prepass/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], performs a previous depth pass before rendering materials. This increases performance in scenes with high overdraw, when complex materials and lighting are used.
 		</member>
-		<member name="rendering/quality/directional_shadow/size" type="int" setter="" getter="">
+		<member name="rendering/quality/directional_shadow/size" type="int" setter="" getter="" default="4096">
 			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance.
 		</member>
-		<member name="rendering/quality/directional_shadow/size.mobile" type="int" setter="" getter="">
+		<member name="rendering/quality/directional_shadow/size.mobile" type="int" setter="" getter="" default="2048">
 		</member>
-		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="">
+		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="" default="&quot;GLES3&quot;">
 			The video driver to use ("GLES2" or "GLES3").
 			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--video-driver[/code] command line argument, or by the [member rendering/quality/driver/fallback_to_gles2] option if the target system does not support GLES3 and falls back to GLES2. In such cases, this property is not updated, so use [method OS.get_current_video_driver] to query it at run-time.
 		</member>
-		<member name="rendering/quality/driver/fallback_to_gles2" type="bool" setter="" getter="">
+		<member name="rendering/quality/driver/fallback_to_gles2" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], allows falling back to the GLES2 driver if the GLES3 driver is not supported.
 			[b]Note:[/b] The two video drivers are not drop-in replacements for each other, so a game designed for GLES3 might not work properly when falling back to GLES2. In particular, some features of the GLES3 backend are not available in GLES2. Enabling this setting also means that both ETC and ETC2 VRAM-compressed textures will be exported on Android and iOS, increasing the data pack's size.
 		</member>
-		<member name="rendering/quality/filters/anisotropic_filter_level" type="int" setter="" getter="">
+		<member name="rendering/quality/filters/anisotropic_filter_level" type="int" setter="" getter="" default="4">
 			Maximum anisotropic filter level used for textures with anisotropy enabled. Higher values will result in sharper textures when viewed from oblique angles, at the cost of performance. Only power-of-two values are valid (2, 4, 8, 16).
 		</member>
-		<member name="rendering/quality/filters/use_nearest_mipmap_filter" type="bool" setter="" getter="">
+		<member name="rendering/quality/filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
 		</member>
-		<member name="rendering/quality/intended_usage/framebuffer_allocation" type="int" setter="" getter="">
+		<member name="rendering/quality/intended_usage/framebuffer_allocation" type="int" setter="" getter="" default="2">
 			Strategy used for framebuffer allocation. The simpler it is, the less resources it uses (but the less features it supports).
 		</member>
-		<member name="rendering/quality/intended_usage/framebuffer_allocation.mobile" type="int" setter="" getter="">
+		<member name="rendering/quality/intended_usage/framebuffer_allocation.mobile" type="int" setter="" getter="" default="3">
 		</member>
-		<member name="rendering/quality/reflections/high_quality_ggx" type="bool" setter="" getter="">
+		<member name="rendering/quality/reflections/high_quality_ggx" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], uses a high amount of samples to create blurred variants of reflection probes and panorama backgrounds (sky). Those blurred variants are used by rough materials.
 		</member>
-		<member name="rendering/quality/reflections/high_quality_ggx.mobile" type="bool" setter="" getter="">
+		<member name="rendering/quality/reflections/high_quality_ggx.mobile" type="bool" setter="" getter="" default="false">
 		</member>
-		<member name="rendering/quality/reflections/texture_array_reflections" type="bool" setter="" getter="">
+		<member name="rendering/quality/reflections/texture_array_reflections" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], uses texture arrays instead of mipmaps for reflection probes and panorama backgrounds (sky). This reduces jitter noise on reflections, but costs more performance and memory.
 		</member>
-		<member name="rendering/quality/reflections/texture_array_reflections.mobile" type="bool" setter="" getter="">
+		<member name="rendering/quality/reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
 		</member>
-		<member name="rendering/quality/shading/force_blinn_over_ggx" type="bool" setter="" getter="">
+		<member name="rendering/quality/shading/force_blinn_over_ggx" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses faster but lower-quality Blinn model to generate blurred reflections instead of the GGX model.
 		</member>
-		<member name="rendering/quality/shading/force_blinn_over_ggx.mobile" type="bool" setter="" getter="">
+		<member name="rendering/quality/shading/force_blinn_over_ggx.mobile" type="bool" setter="" getter="" default="true">
 		</member>
-		<member name="rendering/quality/shading/force_lambert_over_burley" type="bool" setter="" getter="">
+		<member name="rendering/quality/shading/force_lambert_over_burley" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses faster but lower-quality Lambert material lighting model instead of Burley.
 		</member>
-		<member name="rendering/quality/shading/force_lambert_over_burley.mobile" type="bool" setter="" getter="">
+		<member name="rendering/quality/shading/force_lambert_over_burley.mobile" type="bool" setter="" getter="" default="true">
 		</member>
-		<member name="rendering/quality/shading/force_vertex_shading" type="bool" setter="" getter="">
+		<member name="rendering/quality/shading/force_vertex_shading" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces vertex shading for all rendering. This can increase performance a lot, but also reduces quality immensely. Can be used to optimize performance on low-end mobile devices.
 		</member>
-		<member name="rendering/quality/shading/force_vertex_shading.mobile" type="bool" setter="" getter="">
+		<member name="rendering/quality/shading/force_vertex_shading.mobile" type="bool" setter="" getter="" default="true">
 		</member>
-		<member name="rendering/quality/shadow_atlas/quadrant_0_subdiv" type="int" setter="" getter="">
+		<member name="rendering/quality/shadow_atlas/quadrant_0_subdiv" type="int" setter="" getter="" default="1">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
-		<member name="rendering/quality/shadow_atlas/quadrant_1_subdiv" type="int" setter="" getter="">
+		<member name="rendering/quality/shadow_atlas/quadrant_1_subdiv" type="int" setter="" getter="" default="2">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
-		<member name="rendering/quality/shadow_atlas/quadrant_2_subdiv" type="int" setter="" getter="">
+		<member name="rendering/quality/shadow_atlas/quadrant_2_subdiv" type="int" setter="" getter="" default="3">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
-		<member name="rendering/quality/shadow_atlas/quadrant_3_subdiv" type="int" setter="" getter="">
+		<member name="rendering/quality/shadow_atlas/quadrant_3_subdiv" type="int" setter="" getter="" default="4">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
-		<member name="rendering/quality/shadow_atlas/size" type="int" setter="" getter="">
+		<member name="rendering/quality/shadow_atlas/size" type="int" setter="" getter="" default="4096">
 			Size for shadow atlas (used for OmniLights and SpotLights). See documentation.
 		</member>
-		<member name="rendering/quality/shadow_atlas/size.mobile" type="int" setter="" getter="">
+		<member name="rendering/quality/shadow_atlas/size.mobile" type="int" setter="" getter="" default="2048">
 		</member>
-		<member name="rendering/quality/shadows/filter_mode" type="int" setter="" getter="">
+		<member name="rendering/quality/shadows/filter_mode" type="int" setter="" getter="" default="1">
 			Shadow filter mode. Higher-quality settings result in smoother shadows that flicker less when moving. "Disabled" is the fastest option, but also has the lowest quality. "PCF5" is smoother but is also slower. "PCF13" is the smoothest option, but is also the slowest.
 		</member>
-		<member name="rendering/quality/shadows/filter_mode.mobile" type="int" setter="" getter="">
+		<member name="rendering/quality/shadows/filter_mode.mobile" type="int" setter="" getter="" default="0">
 		</member>
-		<member name="rendering/quality/subsurface_scattering/follow_surface" type="bool" setter="" getter="">
+		<member name="rendering/quality/subsurface_scattering/follow_surface" type="bool" setter="" getter="" default="false">
 			Improves quality of subsurface scattering, but cost significantly increases.
 		</member>
-		<member name="rendering/quality/subsurface_scattering/quality" type="int" setter="" getter="">
+		<member name="rendering/quality/subsurface_scattering/quality" type="int" setter="" getter="" default="1">
 			Quality setting for subsurface scaterring (samples taken).
 		</member>
-		<member name="rendering/quality/subsurface_scattering/scale" type="int" setter="" getter="">
+		<member name="rendering/quality/subsurface_scattering/scale" type="int" setter="" getter="" default="1.0">
 		</member>
-		<member name="rendering/quality/subsurface_scattering/weight_samples" type="bool" setter="" getter="">
+		<member name="rendering/quality/subsurface_scattering/weight_samples" type="bool" setter="" getter="" default="true">
 			Weight subsurface scattering samples. Helps to avoid reading samples from unrelated parts of the screen.
 		</member>
-		<member name="rendering/quality/voxel_cone_tracing/high_quality" type="bool" setter="" getter="">
+		<member name="rendering/quality/voxel_cone_tracing/high_quality" type="bool" setter="" getter="" default="true">
 			Use high-quality voxel cone tracing. This results in better-looking reflections, but is much more expensive on the GPU.
 		</member>
-		<member name="rendering/threads/thread_model" type="int" setter="" getter="">
+		<member name="rendering/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
 		</member>
-		<member name="rendering/vram_compression/import_bptc" type="bool" setter="" getter="">
+		<member name="rendering/vram_compression/import_bptc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the BPTC algorithm. This texture compression algorithm is only supported on desktop platforms, and only when using the GLES3 renderer.
 		</member>
-		<member name="rendering/vram_compression/import_etc" type="bool" setter="" getter="">
+		<member name="rendering/vram_compression/import_etc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression algorithm. This algorithm doesn't support alpha channels in textures.
 		</member>
-		<member name="rendering/vram_compression/import_etc2" type="bool" setter="" getter="">
+		<member name="rendering/vram_compression/import_etc2" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm. This texture compression algorithm is only supported when using the GLES3 renderer.
 		</member>
-		<member name="rendering/vram_compression/import_pvrtc" type="bool" setter="" getter="">
+		<member name="rendering/vram_compression/import_pvrtc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the PowerVR Texture Compression algorithm. This texture compression algorithm is only supported on iOS.
 		</member>
-		<member name="rendering/vram_compression/import_s3tc" type="bool" setter="" getter="">
+		<member name="rendering/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 		</member>
-		<member name="script" type="Script" setter="" getter="">
+		<member name="script" type="Script" setter="" getter="" default="null">
 		</member>
 	</members>
 	<constants>

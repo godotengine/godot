@@ -180,7 +180,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="blocking_mode_enabled" type="bool" setter="set_blocking_mode" getter="is_blocking_mode_enabled">
+		<member name="blocking_mode_enabled" type="bool" setter="set_blocking_mode" getter="is_blocking_mode_enabled" default="false">
 			If [code]true[/code], execution will block until all data is read from the response.
 		</member>
 		<member name="connection" type="StreamPeer" setter="set_connection" getter="get_connection">

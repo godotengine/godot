@@ -34,40 +34,40 @@
 		</method>
 	</methods>
 	<members>
-		<member name="centered" type="bool" setter="set_centered" getter="is_centered">
-			If [code]true[/code], texture is centered. Default value: [code]true[/code].
+		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
+			If [code]true[/code], texture is centered.
 		</member>
-		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h">
-			If [code]true[/code], texture is flipped horizontally. Default value: [code]false[/code].
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
+			If [code]true[/code], texture is flipped horizontally.
 		</member>
-		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v">
-			If [code]true[/code], texture is flipped vertically. Default value: [code]false[/code].
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
+			If [code]true[/code], texture is flipped vertically.
 		</member>
-		<member name="frame" type="int" setter="set_frame" getter="get_frame">
+		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
 			Current frame to display from sprite sheet. [member vframes] or [member hframes] must be greater than 1.
 		</member>
-		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes">
+		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes" default="1">
 			The number of columns in the sprite sheet.
 		</member>
-		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
+		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map" default="null">
 			The normal map gives depth to the Sprite.
 		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The texture's drawing offset.
 		</member>
-		<member name="region_enabled" type="bool" setter="set_region" getter="is_region">
-			If [code]true[/code], texture is cut from a larger atlas texture. See [member region_rect]. Default value: [code]false[/code].
+		<member name="region_enabled" type="bool" setter="set_region" getter="is_region" default="false">
+			If [code]true[/code], texture is cut from a larger atlas texture. See [member region_rect].
 		</member>
-		<member name="region_filter_clip" type="bool" setter="set_region_filter_clip" getter="is_region_filter_clip_enabled">
+		<member name="region_filter_clip" type="bool" setter="set_region_filter_clip" getter="is_region_filter_clip_enabled" default="false">
 			If [code]true[/code], the outermost pixels get blurred out.
 		</member>
-		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect">
+		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2( 0, 0, 0, 0 )">
 			The region of the atlas texture to display. [member region_enabled] must be [code]true[/code].
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
 			[Texture] object to draw.
 		</member>
-		<member name="vframes" type="int" setter="set_vframes" getter="get_vframes">
+		<member name="vframes" type="int" setter="set_vframes" getter="get_vframes" default="1">
 			The number of rows in the sprite sheet.
 		</member>
 	</members>

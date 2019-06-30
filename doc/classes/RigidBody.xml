@@ -101,73 +101,75 @@
 		</method>
 	</methods>
 	<members>
-		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp">
+		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="-1.0">
 			Damps RigidBody's rotational forces.
 		</member>
-		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity">
+		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3( 0, 0, 0 )">
 			RigidBody's rotational velocity.
 		</member>
-		<member name="axis_lock_angular_x" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+		<member name="axis_lock_angular_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's rotation in the X axis.
 		</member>
-		<member name="axis_lock_angular_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+		<member name="axis_lock_angular_y" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's rotation in the Y axis.
 		</member>
-		<member name="axis_lock_angular_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+		<member name="axis_lock_angular_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's rotation in the Z axis.
 		</member>
-		<member name="axis_lock_linear_x" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+		<member name="axis_lock_linear_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's movement in the X axis.
 		</member>
-		<member name="axis_lock_linear_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+		<member name="axis_lock_linear_y" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's movement in the Y axis.
 		</member>
-		<member name="axis_lock_linear_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+		<member name="axis_lock_linear_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's movement in the Z axis.
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
-			RigidBody's bounciness.
+			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
+			Deprecated, use [member PhysicsMaterial.bounce] instead via [member physics_material_override].
 		</member>
-		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep">
+		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
 			If [code]true[/code], the RigidBody will not calculate forces and will act as a static body while there is no movement. It will wake up when forces are applied through other collisions or when the [code]apply_impulse[/code] method is used.
 		</member>
-		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled">
+		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="false">
 			If [code]true[/code], the RigidBody will emit signals when it collides with another RigidBody.
 		</member>
-		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported">
+		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported" default="0">
 			The maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
 		</member>
-		<member name="continuous_cd" type="bool" setter="set_use_continuous_collision_detection" getter="is_using_continuous_collision_detection">
+		<member name="continuous_cd" type="bool" setter="set_use_continuous_collision_detection" getter="is_using_continuous_collision_detection" default="false">
 			If [code]true[/code], continuous collision detection is used.
 			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. Continuous collision detection is more precise, and misses fewer impacts by small, fast-moving objects. Not using continuous collision detection is faster to compute, but can miss small, fast-moving objects.
 		</member>
-		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator">
+		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" default="false">
 			If [code]true[/code], internal force integration will be disabled (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
 			The body's friction, from 0 (frictionless) to 1 (max friction).
+			Deprecated, use [member PhysicsMaterial.friction] instead via [member physics_material_override].
 		</member>
-		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale">
+		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
 			This is multiplied by the global 3D gravity setting found in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] to produce RigidBody's gravity. For example, a value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
 		</member>
-		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
-			The body's linear damp. Default value: -1, cannot be less than -1. If this value is different from -1, any linear damp derived from the world or areas will be overridden.
+		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="-1.0">
+			The body's linear damp. Cannot be less than -1.0. If this value is different from -1.0, any linear damp derived from the world or areas will be overridden.
 		</member>
-		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity">
+		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3( 0, 0, 0 )">
 			The body's linear velocity. Can be used sporadically, but [b]don't set this every frame[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
 		</member>
-		<member name="mass" type="float" setter="set_mass" getter="get_mass">
+		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
 			The body's mass.
 		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody.Mode">
-			The body mode. See [enum Mode] for possible values. Default value: [code]MODE_RIGID[/code].
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody.Mode" default="0">
+			The body mode. See [enum Mode] for possible values.
 		</member>
-		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
+		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override" default="null">
 		</member>
-		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping">
+		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" default="false">
 			If [code]true[/code], the body is sleeping and will not calculate forces until woken up by a collision or the [code]apply_impulse[/code] method.
 		</member>
-		<member name="weight" type="float" setter="set_weight" getter="get_weight">
+		<member name="weight" type="float" setter="set_weight" getter="get_weight" default="9.8">
 			The body's weight based on its mass and the global 3D gravity. Global values are set in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b].
 		</member>
 	</members>

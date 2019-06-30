@@ -87,10 +87,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="colors" type="PoolColorArray" setter="set_colors" getter="get_colors">
+		<member name="colors" type="PoolColorArray" setter="set_colors" getter="get_colors" default="PoolColorArray( 0, 0, 0, 1, 1, 1, 1, 1 )">
 			Gradient's colors returned as a [PoolColorArray].
 		</member>
-		<member name="offsets" type="PoolRealArray" setter="set_offsets" getter="get_offsets">
+		<member name="offsets" type="PoolRealArray" setter="set_offsets" getter="get_offsets" default="PoolRealArray( 0, 1 )">
 			Gradient's offsets returned as a [PoolRealArray].
 		</member>
 	</members>

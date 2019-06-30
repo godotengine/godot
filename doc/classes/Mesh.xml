@@ -94,7 +94,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="lightmap_size_hint" type="Vector2" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint">
+		<member name="lightmap_size_hint" type="Vector2" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint" default="Vector2( 0, 0 )">
 		</member>
 	</members>
 	<constants>

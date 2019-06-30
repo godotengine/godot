@@ -417,7 +417,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="endian_swap" type="bool" setter="set_endian_swap" getter="get_endian_swap">
+		<member name="endian_swap" type="bool" setter="set_endian_swap" getter="get_endian_swap" default="false">
 			If [code]true[/code], the file's endianness is swapped. Use this if you're dealing with files written on big-endian machines.
 			[b]Note:[/b] This is about the file format, not CPU type. This is always reset to [code]false[/code] whenever you open the file.
 		</member>

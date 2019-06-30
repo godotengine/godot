@@ -28,16 +28,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align">
+		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align" default="0">
 			Sets the text alignment of the [SpinBox].
 		</member>
-		<member name="editable" type="bool" setter="set_editable" getter="is_editable">
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
 			If [code]true[/code], the [SpinBox] will be editable. Otherwise, it will be read only.
 		</member>
-		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix">
+		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix" default="&quot;&quot;">
 			Adds the specified [code]prefix[/code] string before the numerical value of the [SpinBox].
 		</member>
-		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix">
+		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" default="&quot;&quot;">
 			Adds the specified [code]prefix[/code] string after the numerical value of the [SpinBox].
 		</member>
 	</members>

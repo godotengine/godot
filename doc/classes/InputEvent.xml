@@ -102,7 +102,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="device" type="int" setter="set_device" getter="get_device">
+		<member name="device" type="int" setter="set_device" getter="get_device" default="0">
 			The event's device ID.
 		</member>
 	</members>

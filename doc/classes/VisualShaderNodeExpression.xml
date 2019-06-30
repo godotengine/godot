@@ -15,7 +15,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="expression" type="String" setter="set_expression" getter="get_expression">
+		<member name="expression" type="String" setter="set_expression" getter="get_expression" default="&quot;&quot;">
 		</member>
 	</members>
 	<constants>

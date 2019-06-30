@@ -11,13 +11,13 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="depth" type="float" setter="set_depth" getter="get_depth">
+		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">
 			Extrusion depth when [member mode] is [constant MODE_DEPTH].
 		</member>
-		<member name="material" type="Material" setter="set_material" getter="get_material">
+		<member name="material" type="Material" setter="set_material" getter="get_material" default="null">
 			Material to use for the resulting mesh.
 		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="CSGPolygon.Mode">
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="CSGPolygon.Mode" default="0">
 			Extrusion mode.
 		</member>
 		<member name="path_continuous_u" type="bool" setter="set_path_continuous_u" getter="is_path_continuous_u">
@@ -38,10 +38,10 @@
 		<member name="path_rotation" type="int" setter="set_path_rotation" getter="get_path_rotation" enum="CSGPolygon.PathRotation">
 			The method by which each slice is rotated along the path when [member mode] is [constant MODE_PATH].
 		</member>
-		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon">
+		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon" default="PoolVector2Array( 0, 0, 0, 1, 1, 1, 1, 0 )">
 			Point array that defines the shape that we'll extrude.
 		</member>
-		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces">
+		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces" default="false">
 			Generates smooth normals so smooth shading is applied to our mesh.
 		</member>
 		<member name="spin_degrees" type="float" setter="set_spin_degrees" getter="get_spin_degrees">

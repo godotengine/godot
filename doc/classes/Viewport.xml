@@ -210,87 +210,87 @@
 		</method>
 	</methods>
 	<members>
-		<member name="arvr" type="bool" setter="set_use_arvr" getter="use_arvr">
-			If [code]true[/code], the viewport will be used in AR/VR process. Default value: [code]false[/code].
+		<member name="arvr" type="bool" setter="set_use_arvr" getter="use_arvr" default="false">
+			If [code]true[/code], the viewport will be used in AR/VR process.
 		</member>
-		<member name="audio_listener_enable_2d" type="bool" setter="set_as_audio_listener_2d" getter="is_audio_listener_2d">
-			If [code]true[/code], the viewport will process 2D audio streams. Default value: [code]false[/code].
+		<member name="audio_listener_enable_2d" type="bool" setter="set_as_audio_listener_2d" getter="is_audio_listener_2d" default="false">
+			If [code]true[/code], the viewport will process 2D audio streams.
 		</member>
-		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener" getter="is_audio_listener">
-			If [code]true[/code], the viewport will process 3D audio streams. Default value: [code]false[/code].
+		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener" getter="is_audio_listener" default="false">
+			If [code]true[/code], the viewport will process 3D audio streams.
 		</member>
 		<member name="canvas_transform" type="Transform2D" setter="set_canvas_transform" getter="get_canvas_transform">
 			The canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
 		</member>
-		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw">
-			The overlay mode for test rendered geometry in debug purposes. Default value: [constant DEBUG_DRAW_DISABLED].
+		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw" default="0">
+			The overlay mode for test rendered geometry in debug purposes.
 		</member>
-		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled">
-			If [code]true[/code], the viewport will disable 3D rendering. For actual disabling use [code]usage[/code]. Default value: [code]false[/code].
+		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
+			If [code]true[/code], the viewport will disable 3D rendering. For actual disabling use [code]usage[/code].
 		</member>
 		<member name="global_canvas_transform" type="Transform2D" setter="set_global_canvas_transform" getter="get_global_canvas_transform">
 			The global canvas transform of the viewport. The canvas transform is relative to this.
 		</member>
-		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled">
-			If [code]true[/code], the viewport will not receive input event. Default value: [code]false[/code].
+		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
+			If [code]true[/code], the viewport will not receive input event.
 		</member>
-		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled">
-			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly. Default value: [code]true[/code].
+		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled" default="true">
+			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.
 		</member>
-		<member name="handle_input_locally" type="bool" setter="set_handle_input_locally" getter="is_handling_input_locally">
+		<member name="handle_input_locally" type="bool" setter="set_handle_input_locally" getter="is_handling_input_locally" default="true">
 		</member>
-		<member name="hdr" type="bool" setter="set_hdr" getter="get_hdr">
-			If [code]true[/code], the viewport rendering will receive benefits from High Dynamic Range algorithm. Default value: [code]true[/code].
+		<member name="hdr" type="bool" setter="set_hdr" getter="get_hdr" default="true">
+			If [code]true[/code], the viewport rendering will receive benefits from High Dynamic Range algorithm.
 		</member>
-		<member name="keep_3d_linear" type="bool" setter="set_keep_3d_linear" getter="get_keep_3d_linear">
+		<member name="keep_3d_linear" type="bool" setter="set_keep_3d_linear" getter="get_keep_3d_linear" default="false">
 			If [code]true[/code], the result after 3D rendering will not have a linear to sRGB color conversion applied. This is important when the viewport is used as a render target where the result is used as a texture on a 3D object rendered in another viewport. It is also important if the viewport is used to create data that is not color based (noise, heightmaps, pickmaps, etc.). Do not enable this when the viewport is used as a texture on a 2D object or if the viewport is your final output.
 		</member>
-		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA">
-			The multisample anti-aliasing mode. Default value: [constant MSAA_DISABLED].
+		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA" default="0">
+			The multisample anti-aliasing mode.
 		</member>
-		<member name="own_world" type="bool" setter="set_use_own_world" getter="is_using_own_world">
-			If [code]true[/code], the viewport will use [World] defined in [code]world[/code] property. Default value: [code]false[/code].
+		<member name="own_world" type="bool" setter="set_use_own_world" getter="is_using_own_world" default="false">
+			If [code]true[/code], the viewport will use [World] defined in [code]world[/code] property.
 		</member>
-		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking">
-			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process. Default value: [code]false[/code].
+		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
+			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
 		</member>
-		<member name="render_direct_to_screen" type="bool" setter="set_use_render_direct_to_screen" getter="is_using_render_direct_to_screen">
-			If [code]true[/code], renders the Viewport directly to the screen instead of to the root viewport. Only available in GLES2. This is a low-level optimization and should not be used in most cases. If used, reading from the Viewport or from [code]SCREEN_TEXTURE[/code] becomes unavailable. For more information see [method VisualServer.viewport_set_render_direct_to_screen].  Default value: [code]false[/code].
+		<member name="render_direct_to_screen" type="bool" setter="set_use_render_direct_to_screen" getter="is_using_render_direct_to_screen" default="false">
+			If [code]true[/code], renders the Viewport directly to the screen instead of to the root viewport. Only available in GLES2. This is a low-level optimization and should not be used in most cases. If used, reading from the Viewport or from [code]SCREEN_TEXTURE[/code] becomes unavailable. For more information see [method VisualServer.viewport_set_render_direct_to_screen].
 		</member>
-		<member name="render_target_clear_mode" type="int" setter="set_clear_mode" getter="get_clear_mode" enum="Viewport.ClearMode">
-			The clear mode when viewport used as a render target. Default value: [constant CLEAR_MODE_ALWAYS].
+		<member name="render_target_clear_mode" type="int" setter="set_clear_mode" getter="get_clear_mode" enum="Viewport.ClearMode" default="0">
+			The clear mode when viewport used as a render target.
 		</member>
-		<member name="render_target_update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="Viewport.UpdateMode">
-			The update mode when viewport used as a render target. Default value: [constant UPDATE_WHEN_VISIBLE].
+		<member name="render_target_update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="Viewport.UpdateMode" default="2">
+			The update mode when viewport used as a render target.
 		</member>
-		<member name="render_target_v_flip" type="bool" setter="set_vflip" getter="get_vflip">
-			If [code]true[/code], the result of rendering will be flipped vertically. Default value: [code]false[/code].
+		<member name="render_target_v_flip" type="bool" setter="set_vflip" getter="get_vflip" default="false">
+			If [code]true[/code], the result of rendering will be flipped vertically.
 		</member>
-		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv">
-			The subdivision amount of first quadrant on shadow atlas. Default value: [code]SHADOW_ATLAS_QUADRANT_SUBDIV_4[/code].
+		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
+			The subdivision amount of first quadrant on shadow atlas.
 		</member>
-		<member name="shadow_atlas_quad_1" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv">
-			The subdivision amount of second quadrant on shadow atlas. Default value: [code]SHADOW_ATLAS_QUADRANT_SUBDIV_4[/code].
+		<member name="shadow_atlas_quad_1" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
+			The subdivision amount of second quadrant on shadow atlas.
 		</member>
-		<member name="shadow_atlas_quad_2" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv">
-			The subdivision amount of third quadrant on shadow atlas. Default value: [code]SHADOW_ATLAS_QUADRANT_SUBDIV_16[/code].
+		<member name="shadow_atlas_quad_2" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="3">
+			The subdivision amount of third quadrant on shadow atlas.
 		</member>
-		<member name="shadow_atlas_quad_3" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv">
-			The subdivision amount of fourth quadrant on shadow atlas. Default value: [code]SHADOW_ATLAS_QUADRANT_SUBDIV_64[/code].
+		<member name="shadow_atlas_quad_3" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="4">
+			The subdivision amount of fourth quadrant on shadow atlas.
 		</member>
-		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size">
+		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="0">
 			The resolution of shadow atlas. Both width and height is equal to one value.
 		</member>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size">
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 0, 0 )">
 			The width and height of viewport.
 		</member>
-		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background">
-			If [code]true[/code], the viewport should render its background as transparent. Default value: [code]false[/code].
+		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" default="false">
+			If [code]true[/code], the viewport should render its background as transparent.
 		</member>
-		<member name="usage" type="int" setter="set_usage" getter="get_usage" enum="Viewport.Usage">
-			The rendering mode of viewport. Default value: [code]USAGE_3D[/code].
+		<member name="usage" type="int" setter="set_usage" getter="get_usage" enum="Viewport.Usage" default="2">
+			The rendering mode of viewport.
 		</member>
-		<member name="world" type="World" setter="set_world" getter="get_world">
+		<member name="world" type="World" setter="set_world" getter="get_world" default="null">
 			The custom [World] which can be used as 3D environment source.
 		</member>
 		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">

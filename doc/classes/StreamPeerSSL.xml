@@ -54,7 +54,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="blocking_handshake" type="bool" setter="set_blocking_handshake_enabled" getter="is_blocking_handshake_enabled">
+		<member name="blocking_handshake" type="bool" setter="set_blocking_handshake_enabled" getter="is_blocking_handshake_enabled" default="true">
 		</member>
 	</members>
 	<constants>

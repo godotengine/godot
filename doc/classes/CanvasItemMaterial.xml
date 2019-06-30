@@ -11,10 +11,10 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="CanvasItemMaterial.BlendMode">
+		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="CanvasItemMaterial.BlendMode" default="0">
 			The manner in which a material's rendering is applied to underlying textures.
 		</member>
-		<member name="light_mode" type="int" setter="set_light_mode" getter="get_light_mode" enum="CanvasItemMaterial.LightMode">
+		<member name="light_mode" type="int" setter="set_light_mode" getter="get_light_mode" enum="CanvasItemMaterial.LightMode" default="0">
 			The manner in which material reacts to lighting.
 		</member>
 		<member name="particles_anim_h_frames" type="int" setter="set_particles_anim_h_frames" getter="get_particles_anim_h_frames">
@@ -23,7 +23,7 @@
 		</member>
 		<member name="particles_anim_v_frames" type="int" setter="set_particles_anim_v_frames" getter="get_particles_anim_v_frames">
 		</member>
-		<member name="particles_animation" type="bool" setter="set_particles_animation" getter="get_particles_animation">
+		<member name="particles_animation" type="bool" setter="set_particles_animation" getter="get_particles_animation" default="false">
 		</member>
 	</members>
 	<constants>

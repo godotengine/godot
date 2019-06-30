@@ -125,23 +125,23 @@
 		</method>
 	</methods>
 	<members>
-		<member name="cast_to" type="Vector3" setter="set_cast_to" getter="get_cast_to">
+		<member name="cast_to" type="Vector3" setter="set_cast_to" getter="get_cast_to" default="Vector3( 0, -1, 0 )">
 			The ray's destination point, relative to the RayCast's [code]position[/code].
 		</member>
-		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled">
-			If [code]true[/code], collision with [Area]s will be reported. Default value: [code]false[/code].
+		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
+			If [code]true[/code], collision with [Area]s will be reported.
 		</member>
-		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled">
-			If [code]true[/code], collision with [PhysicsBody]s will be reported. Default value: [code]true[/code].
+		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled" default="true">
+			If [code]true[/code], collision with [PhysicsBody]s will be reported.
 		</member>
-		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The ray's collision mask. Only objects in at least one collision layer enabled in the mask will be detected.
 		</member>
-		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled">
-			If [code]true[/code], collisions will be reported. Default value: [code]false[/code].
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="false">
+			If [code]true[/code], collisions will be reported.
 		</member>
-		<member name="exclude_parent" type="bool" setter="set_exclude_parent_body" getter="get_exclude_parent_body">
-			If [code]true[/code], collisions will be ignored for this RayCast's immediate parent. Default value: [code]true[/code].
+		<member name="exclude_parent" type="bool" setter="set_exclude_parent_body" getter="get_exclude_parent_body" default="true">
+			If [code]true[/code], collisions will be ignored for this RayCast's immediate parent.
 		</member>
 	</members>
 	<constants>

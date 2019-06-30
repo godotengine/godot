@@ -64,7 +64,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="layers" type="int" setter="set_layer_mask" getter="get_layer_mask">
+		<member name="layers" type="int" setter="set_layer_mask" getter="get_layer_mask" default="1">
 			The render layer(s) this VisualInstance is drawn on.
 			This object will only be visible for [Camera]s whose cull mask includes the render object this VisualInstance is set to.
 		</member>

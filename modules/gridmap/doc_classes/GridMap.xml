@@ -189,28 +189,28 @@
 		</method>
 	</methods>
 	<members>
-		<member name="cell_center_x" type="bool" setter="set_center_x" getter="get_center_x">
+		<member name="cell_center_x" type="bool" setter="set_center_x" getter="get_center_x" default="true">
 			If [code]true[/code], grid items are centered on the X axis.
 		</member>
-		<member name="cell_center_y" type="bool" setter="set_center_y" getter="get_center_y">
+		<member name="cell_center_y" type="bool" setter="set_center_y" getter="get_center_y" default="true">
 			If [code]true[/code], grid items are centered on the Y axis.
 		</member>
-		<member name="cell_center_z" type="bool" setter="set_center_z" getter="get_center_z">
+		<member name="cell_center_z" type="bool" setter="set_center_z" getter="get_center_z" default="true">
 			If [code]true[/code], grid items are centered on the Z axis.
 		</member>
-		<member name="cell_octant_size" type="int" setter="set_octant_size" getter="get_octant_size">
+		<member name="cell_octant_size" type="int" setter="set_octant_size" getter="get_octant_size" default="8">
 			The size of each octant measured in number of cells. This applies to all three axis.
 		</member>
-		<member name="cell_scale" type="float" setter="set_cell_scale" getter="get_cell_scale">
+		<member name="cell_scale" type="float" setter="set_cell_scale" getter="get_cell_scale" default="1.0">
 		</member>
-		<member name="cell_size" type="Vector3" setter="set_cell_size" getter="get_cell_size">
+		<member name="cell_size" type="Vector3" setter="set_cell_size" getter="get_cell_size" default="Vector3( 2, 2, 2 )">
 			The dimensions of the grid's cells.
 		</member>
-		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
 		</member>
-		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 		</member>
-		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
+		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library" default="null">
 			The assigned [MeshLibrary].
 		</member>
 		<member name="theme" type="MeshLibrary" setter="set_theme" getter="get_theme">

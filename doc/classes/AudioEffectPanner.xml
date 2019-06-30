@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="pan" type="float" setter="set_pan" getter="get_pan">
+		<member name="pan" type="float" setter="set_pan" getter="get_pan" default="0.0">
 			Pan position. Value can range from -1 (fully left) to 1 (fully right).
 		</member>
 	</members>

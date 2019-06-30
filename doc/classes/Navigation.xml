@@ -97,7 +97,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="up_vector" type="Vector3" setter="set_up_vector" getter="get_up_vector">
+		<member name="up_vector" type="Vector3" setter="set_up_vector" getter="get_up_vector" default="Vector3( 0, 1, 0 )">
 			Defines which direction is up. By default, this is [code](0, 1, 0)[/code], which is the world's "up" direction.
 		</member>
 	</members>

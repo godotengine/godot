@@ -172,18 +172,18 @@
 		</method>
 	</methods>
 	<members>
-		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab">
+		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="0">
 			Select tab at index [code]tab_idx[/code].
 		</member>
-		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled">
+		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
-		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled">
+		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled" default="true">
 		</member>
-		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="Tabs.TabAlign">
+		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="Tabs.TabAlign" default="1">
 			The alignment of all tabs. See enum [code]TabAlign[/code] constants for details.
 		</member>
-		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="Tabs.CloseButtonDisplayPolicy">
+		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="Tabs.CloseButtonDisplayPolicy" default="0">
 		</member>
 	</members>
 	<signals>
@@ -260,21 +260,21 @@
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color_bg" type="Color">
+		<theme_item name="font_color_bg" type="Color" default="Color( 0.690196, 0.690196, 0.690196, 1 )">
 		</theme_item>
-		<theme_item name="font_color_disabled" type="Color">
+		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
 		</theme_item>
-		<theme_item name="font_color_fg" type="Color">
+		<theme_item name="font_color_fg" type="Color" default="Color( 0.941176, 0.941176, 0.941176, 1 )">
 		</theme_item>
-		<theme_item name="hseparation" type="int">
+		<theme_item name="hseparation" type="int" default="4">
 		</theme_item>
 		<theme_item name="increment" type="Texture">
 		</theme_item>
 		<theme_item name="increment_highlight" type="Texture">
 		</theme_item>
-		<theme_item name="label_valign_bg" type="int">
+		<theme_item name="label_valign_bg" type="int" default="2">
 		</theme_item>
-		<theme_item name="label_valign_fg" type="int">
+		<theme_item name="label_valign_fg" type="int" default="0">
 		</theme_item>
 		<theme_item name="panel" type="StyleBox">
 		</theme_item>
@@ -284,7 +284,7 @@
 		</theme_item>
 		<theme_item name="tab_fg" type="StyleBox">
 		</theme_item>
-		<theme_item name="top_margin" type="int">
+		<theme_item name="top_margin" type="int" default="24">
 		</theme_item>
 	</theme_items>
 </class>

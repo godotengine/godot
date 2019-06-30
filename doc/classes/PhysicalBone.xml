@@ -33,21 +33,21 @@
 		</method>
 	</methods>
 	<members>
-		<member name="body_offset" type="Transform" setter="set_body_offset" getter="get_body_offset">
+		<member name="body_offset" type="Transform" setter="set_body_offset" getter="get_body_offset" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 		</member>
-		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
+		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce" default="0.0">
 		</member>
-		<member name="friction" type="float" setter="set_friction" getter="get_friction">
+		<member name="friction" type="float" setter="set_friction" getter="get_friction" default="1.0">
 		</member>
-		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale">
+		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
 		</member>
-		<member name="joint_offset" type="Transform" setter="set_joint_offset" getter="get_joint_offset">
+		<member name="joint_offset" type="Transform" setter="set_joint_offset" getter="get_joint_offset" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 		</member>
-		<member name="joint_type" type="int" setter="set_joint_type" getter="get_joint_type" enum="PhysicalBone.JointType">
+		<member name="joint_type" type="int" setter="set_joint_type" getter="get_joint_type" enum="PhysicalBone.JointType" default="0">
 		</member>
-		<member name="mass" type="float" setter="set_mass" getter="get_mass">
+		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
 		</member>
-		<member name="weight" type="float" setter="set_weight" getter="get_weight">
+		<member name="weight" type="float" setter="set_weight" getter="get_weight" default="9.8">
 		</member>
 	</members>
 	<constants>

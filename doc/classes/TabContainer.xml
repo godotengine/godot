@@ -137,17 +137,17 @@
 		</method>
 	</methods>
 	<members>
-		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab">
+		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="0">
 			The current tab index. When set, this index's [Control] node's [code]visible[/code] property is set to [code]true[/code] and all others are set to [code]false[/code].
 		</member>
-		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled">
+		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
-		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="TabContainer.TabAlign">
+		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="TabContainer.TabAlign" default="1">
 			The alignment of all tabs in the tab container. See the [code]ALIGN_*[/code] constants for details.
 		</member>
-		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible">
-			If [code]true[/code], tabs are visible. If [code]false[/code], tabs' content and titles are hidden. Default value: [code]true[/code].
+		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible" default="true">
+			If [code]true[/code], tabs are visible. If [code]false[/code], tabs' content and titles are hidden.
 		</member>
 	</members>
 	<signals>
@@ -189,21 +189,21 @@
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color_bg" type="Color">
+		<theme_item name="font_color_bg" type="Color" default="Color( 0.690196, 0.690196, 0.690196, 1 )">
 		</theme_item>
-		<theme_item name="font_color_disabled" type="Color">
+		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
 		</theme_item>
-		<theme_item name="font_color_fg" type="Color">
+		<theme_item name="font_color_fg" type="Color" default="Color( 0.941176, 0.941176, 0.941176, 1 )">
 		</theme_item>
-		<theme_item name="hseparation" type="int">
+		<theme_item name="hseparation" type="int" default="4">
 		</theme_item>
 		<theme_item name="increment" type="Texture">
 		</theme_item>
 		<theme_item name="increment_highlight" type="Texture">
 		</theme_item>
-		<theme_item name="label_valign_bg" type="int">
+		<theme_item name="label_valign_bg" type="int" default="2">
 		</theme_item>
-		<theme_item name="label_valign_fg" type="int">
+		<theme_item name="label_valign_fg" type="int" default="0">
 		</theme_item>
 		<theme_item name="menu" type="Texture">
 		</theme_item>
@@ -211,7 +211,7 @@
 		</theme_item>
 		<theme_item name="panel" type="StyleBox">
 		</theme_item>
-		<theme_item name="side_margin" type="int">
+		<theme_item name="side_margin" type="int" default="8">
 		</theme_item>
 		<theme_item name="tab_bg" type="StyleBox">
 		</theme_item>
@@ -219,7 +219,7 @@
 		</theme_item>
 		<theme_item name="tab_fg" type="StyleBox">
 		</theme_item>
-		<theme_item name="top_margin" type="int">
+		<theme_item name="top_margin" type="int" default="24">
 		</theme_item>
 	</theme_items>
 </class>
