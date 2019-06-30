@@ -800,7 +800,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="clipboard" type="String" setter="set_clipboard" getter="get_clipboard" default="&quot;an editor if it were&quot;">
+		<member name="clipboard" type="String" setter="set_clipboard" getter="get_clipboard" default="&quot;&quot;">
 			The clipboard from the host OS. Might be unavailable on some platforms.
 		</member>
 		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen" default="0">
@@ -845,13 +845,13 @@
 			Use [code]get_tree().get_root().set_transparent_background(true)[/code] to disable main viewport background rendering.
 			[b]Note:[/b] This property has no effect if [b]Project &gt; Project Settings &gt; Display &gt; Window &gt; Per-pixel transparency &gt; Allowed[/b] setting is disabled.
 		</member>
-		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position" default="Vector2( 0, 436 )">
+		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position" default="Vector2( 0, 0 )">
 			The window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.
 		</member>
 		<member name="window_resizable" type="bool" setter="set_window_resizable" getter="is_window_resizable" default="true">
 			If [code]true[/code], the window is resizable by the user.
 		</member>
-		<member name="window_size" type="Vector2" setter="set_window_size" getter="get_window_size" default="Vector2( 1024, 600 )">
+		<member name="window_size" type="Vector2" setter="set_window_size" getter="get_window_size" default="Vector2( 0, 0 )">
 			The size of the window (without counting window manager decorations).
 		</member>
 	</members>

@@ -1317,6 +1317,26 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "window_position"), "set_window_position", "get_window_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "window_size"), "set_window_size", "get_window_size");
 
+	// Those default values need to be specified for the docs generator,
+	// to avoid using values from the documentation writer's own OS instance.
+	ADD_PROPERTY_DEFAULT("clipboard", "");
+	ADD_PROPERTY_DEFAULT("current_screen", 0);
+	ADD_PROPERTY_DEFAULT("exit_code", 0);
+	ADD_PROPERTY_DEFAULT("vsync_enabled", true);
+	ADD_PROPERTY_DEFAULT("low_processor_usage_mode", false);
+	ADD_PROPERTY_DEFAULT("keep_screen_on", true);
+	ADD_PROPERTY_DEFAULT("min_window_size", Vector2());
+	ADD_PROPERTY_DEFAULT("max_window_size", Vector2());
+	ADD_PROPERTY_DEFAULT("screen_orientation", 0);
+	ADD_PROPERTY_DEFAULT("window_borderless", false);
+	ADD_PROPERTY_DEFAULT("window_per_pixel_transparency_enabled", false);
+	ADD_PROPERTY_DEFAULT("window_fullscreen", false);
+	ADD_PROPERTY_DEFAULT("window_maximized", false);
+	ADD_PROPERTY_DEFAULT("window_minimized", false);
+	ADD_PROPERTY_DEFAULT("window_resizable", true);
+	ADD_PROPERTY_DEFAULT("window_position", Vector2());
+	ADD_PROPERTY_DEFAULT("window_size", Vector2());
+
 	BIND_ENUM_CONSTANT(VIDEO_DRIVER_GLES2);
 	BIND_ENUM_CONSTANT(VIDEO_DRIVER_GLES3);
 
