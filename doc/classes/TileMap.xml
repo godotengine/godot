@@ -274,6 +274,12 @@
 		<member name="cell_y_sort" type="bool" setter="set_y_sort_mode" getter="is_y_sort_mode_enabled">
 			If [code]true[/code], the TileMap's children will be drawn in order of their Y coordinate. Default value: [code]false[/code].
 		</member>
+		<member name="compatibility_mode" type="bool" setter="set_compatibility_mode" getter="is_on_compatibility_mode">
+			If [code]true[/code], the compatibility with the tilemaps made in godot 3.0-3.1 is maintained (textures move when the tile origin changes and rotate if the texture size is not homogeneous). This mode presents problems when doing flip_h, flip_v and transpose in non homogeneous isometric tiles (ex 2: 1), in which the texture could not coincide with the collision, then it is not recommended for isometric tiles or not squared tiles. If [code]false[/code], the textures do not move when doing flip_h, flip_v and transpose if offset is not used, nor when changing the tile origin. Compatibility mode doesn´t work with centered textures option, because displacing textures with tile_origin option or in irregular tiles is opposite to center those textures. Default value: [code]true[/code].
+		</member>
+		<member name="centered_textures" type="bool" setter="set_centered_textures" getter="is_centered_textures_enabled">
+			If [code]true[/code], the textures will be centered in the middle of each tile, this is useful for certain isometric or top-down modes when textures are made larger or smaller than the tiles to avoid flickering or for any other reason. The offset is still applied, but from the center of the tile. If used, compatibility mode is ignored. If [code]false[/code], the texture position start in top-left if compatibility mode isn´t enabled. Default value: [code]false[/code].
+		</member>
 		<member name="collision_bounce" type="float" setter="set_collision_bounce" getter="get_collision_bounce">
 			Bounce value for static body collisions (see [code]collision_use_kinematic[/code]). Default value: 0.
 		</member>
