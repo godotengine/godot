@@ -418,6 +418,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					}
 				}
 			}
+			script_create_dialog->connect("script_created", this, "_script_created");
+			script_create_dialog->connect("popup_hide", this, "_script_creation_closed");
 			script_create_dialog->config(inherits, path);
 			script_create_dialog->popup_centered();
 
@@ -1646,6 +1648,11 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	_update_script_button();
 }
 
+void SceneTreeDock::_script_creation_closed() {
+	script_create_dialog->disconnect("script_created", this, "_script_created");
+	script_create_dialog->disconnect("popup_hide", this, "_script_creation_closed");
+}
+
 void SceneTreeDock::_toggle_editable_children_from_selection() {
 
 	List<Node *> selection = editor_selection->get_selected_node_list();
@@ -2505,6 +2512,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_node_selected"), &SceneTreeDock::_node_selected);
 	ClassDB::bind_method(D_METHOD("_node_renamed"), &SceneTreeDock::_node_renamed);
 	ClassDB::bind_method(D_METHOD("_script_created"), &SceneTreeDock::_script_created);
+	ClassDB::bind_method(D_METHOD("_script_creation_closed"), &SceneTreeDock::_script_creation_closed);
 	ClassDB::bind_method(D_METHOD("_load_request"), &SceneTreeDock::_load_request);
 	ClassDB::bind_method(D_METHOD("_script_open_request"), &SceneTreeDock::_script_open_request);
 	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &SceneTreeDock::_unhandled_key_input);
@@ -2660,7 +2668,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	script_create_dialog = memnew(ScriptCreateDialog);
 	script_create_dialog->set_inheritance_base_type("Node");
 	add_child(script_create_dialog);
-	script_create_dialog->connect("script_created", this, "_script_created");
 
 	reparent_dialog = memnew(ReparentDialog);
 	add_child(reparent_dialog);
