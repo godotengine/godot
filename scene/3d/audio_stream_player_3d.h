@@ -115,6 +115,7 @@ private:
 	bool stream_paused_fade_out;
 	StringName bus;
 
+	static void _calc_output_vol(const Vector3 &source_dir, real_t tightness, Output &output);
 	void _mix_audio();
 	static void _mix_audios(void *self) { reinterpret_cast<AudioStreamPlayer3D *>(self)->_mix_audio(); }
 
