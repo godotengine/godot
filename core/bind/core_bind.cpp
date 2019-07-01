@@ -2964,6 +2964,10 @@ float _Engine::get_physics_jitter_fix() const {
 	return Engine::get_singleton()->get_physics_jitter_fix();
 }
 
+float _Engine::get_physics_interpolation_fraction() const {
+	return Engine::get_singleton()->get_physics_interpolation_fraction();
+}
+
 void _Engine::set_target_fps(int p_fps) {
 	Engine::get_singleton()->set_target_fps(p_fps);
 }
@@ -3052,6 +3056,7 @@ void _Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_iterations_per_second"), &_Engine::get_iterations_per_second);
 	ClassDB::bind_method(D_METHOD("set_physics_jitter_fix", "physics_jitter_fix"), &_Engine::set_physics_jitter_fix);
 	ClassDB::bind_method(D_METHOD("get_physics_jitter_fix"), &_Engine::get_physics_jitter_fix);
+	ClassDB::bind_method(D_METHOD("get_physics_interpolation_fraction"), &_Engine::get_physics_interpolation_fraction);
 	ClassDB::bind_method(D_METHOD("set_target_fps", "target_fps"), &_Engine::set_target_fps);
 	ClassDB::bind_method(D_METHOD("get_target_fps"), &_Engine::get_target_fps);
 

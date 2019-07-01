@@ -227,6 +227,7 @@ Engine::Engine() {
 	frames_drawn = 0;
 	ips = 60;
 	physics_jitter_fix = 0.5;
+	_physics_interpolation_fraction = 0.0f;
 	_frame_delay = 0;
 	_fps = 1;
 	_target_fps = 0;

@@ -178,6 +178,10 @@ MainFrameTime MainTimerSync::advance_checked(float p_frame_slice, int p_iteratio
 	// track deficit
 	time_deficit = p_idle_step - ret.idle_step;
 
+	// p_frame_slice is 1.0 / iterations_per_sec
+	// i.e. the time in seconds taken by a physics tick
+	ret.interpolation_fraction = time_accum / p_frame_slice;
+
 	return ret;
 }
 
