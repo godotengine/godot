@@ -71,7 +71,7 @@ private:
 	struct Output {
 
 		AudioFilterSW filter;
-		AudioFilterSW::Processor filter_process[6];
+		AudioFilterSW::Processor filter_process[8];
 		AudioFrame vol[4];
 		float filter_gain;
 		float pitch_scale;

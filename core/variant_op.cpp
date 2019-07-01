@@ -2183,7 +2183,8 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 					return;
 				}
 
-				return obj->set(p_index, p_value, r_valid);
+				obj->set(p_index, p_value, r_valid);
+				return;
 			}
 		} break;
 		case DICTIONARY: {

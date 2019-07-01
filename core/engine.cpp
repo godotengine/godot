@@ -197,8 +197,10 @@ void Engine::add_singleton(const Singleton &p_singleton) {
 Object *Engine::get_singleton_object(const String &p_name) const {
 
 	const Map<StringName, Object *>::Element *E = singleton_ptrs.find(p_name);
-	ERR_EXPLAIN("Failed to retrieve non-existent singleton '" + p_name + "'");
-	ERR_FAIL_COND_V(!E, NULL);
+	if (!E) {
+		ERR_EXPLAIN("Failed to retrieve non-existent singleton '" + p_name + "'");
+		ERR_FAIL_V(NULL);
+	}
 	return E->get();
 };
 

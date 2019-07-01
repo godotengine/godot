@@ -1464,7 +1464,10 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 		ERR_FAIL_V(ERR_UNAVAILABLE);
 	}
 
-	ERR_FAIL_COND_V(width == 0 || height == 0, ERR_UNCONFIGURED);
+	if (width == 0 || height == 0) {
+		ERR_EXPLAIN("Cannot generate mipmaps with width or height equal to 0.");
+		ERR_FAIL_V(ERR_UNCONFIGURED);
+	}
 
 	int mmcount;
 
@@ -2532,7 +2535,7 @@ Color Image::get_pixel(int p_x, int p_y) const {
 }
 
 void Image::set_pixelv(const Point2 &p_dst, const Color &p_color) {
-	return set_pixel(p_dst.x, p_dst.y, p_color);
+	set_pixel(p_dst.x, p_dst.y, p_color);
 }
 
 void Image::set_pixel(int p_x, int p_y, const Color &p_color) {

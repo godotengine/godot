@@ -436,8 +436,6 @@ Error VariantParser::_parse_enginecfg(Stream *p_stream, Vector<String> &strings,
 			line++;
 		}
 	}
-
-	return OK;
 }
 
 template <class T>
@@ -799,8 +797,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 			}
 
-			return OK;
-
 		} else if (id == "Resource" || id == "SubResource" || id == "ExtResource") {
 
 			get_token(p_stream, token, line, r_err_str);
@@ -864,8 +860,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 			}
-
-			return OK;
 #ifndef DISABLE_DEPRECATED
 		} else if (id == "InputEvent") {
 
@@ -1256,8 +1250,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 		r_err_str = "Expected value, got " + String(tk_name[token.type]) + ".";
 		return ERR_PARSE_ERROR;
 	}
-
-	return ERR_PARSE_ERROR;
 }
 
 Error VariantParser::_parse_array(Array &array, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser) {
@@ -1301,8 +1293,6 @@ Error VariantParser::_parse_array(Array &array, Stream *p_stream, int &line, Str
 		array.push_back(v);
 		need_comma = true;
 	}
-
-	return OK;
 }
 
 Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser) {
@@ -1372,8 +1362,6 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 			at_key = true;
 		}
 	}
-
-	return OK;
 }
 
 Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser, bool p_simple_tag) {
@@ -1557,8 +1545,6 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 			line++;
 		}
 	}
-
-	return OK;
 }
 
 Error VariantParser::parse(Stream *p_stream, Variant &r_ret, String &r_err_str, int &r_err_line, ResourceParser *p_res_parser) {

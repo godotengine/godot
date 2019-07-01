@@ -481,8 +481,6 @@ signed char String::nocasecmp_to(const String &p_str) const {
 		this_str++;
 		that_str++;
 	}
-
-	return 0; //should never reach anyway
 }
 
 signed char String::casecmp_to(const String &p_str) const {
@@ -513,8 +511,6 @@ signed char String::casecmp_to(const String &p_str) const {
 		this_str++;
 		that_str++;
 	}
-
-	return 0; //should never reach anyway
 }
 
 signed char String::naturalnocasecmp_to(const String &p_str) const {
@@ -731,8 +727,6 @@ String String::get_slicec(CharType p_splitter, int p_slice) const {
 
 		i++;
 	}
-
-	return String(); //no find!
 }
 
 Vector<String> String::split_spaces() const {

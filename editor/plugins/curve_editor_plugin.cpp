@@ -156,9 +156,9 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 		Vector2 mpos = mm.get_position();
 
 		if (_dragging && _curve_ref.is_valid()) {
-			Curve &curve = **_curve_ref;
 
 			if (_selected_point != -1) {
+				Curve &curve = **_curve_ref;
 
 				if (!_has_undo_data) {
 					// Save full curve state before dragging points,

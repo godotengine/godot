@@ -482,8 +482,6 @@ Error HTTPClient::poll() {
 					return OK;
 				}
 			}
-			// Wait for response
-			return OK;
 		} break;
 		case STATUS_DISCONNECTED: {
 			return ERR_UNCONFIGURED;
