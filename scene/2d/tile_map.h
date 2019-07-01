@@ -181,6 +181,8 @@ private:
 	bool used_size_cache_dirty;
 	bool quadrant_order_dirty;
 	bool y_sort_mode;
+	bool compatibility_mode;
+	bool centered_textures;
 	bool clip_uv;
 	float fp_adjust;
 	float friction;
@@ -310,6 +312,12 @@ public:
 
 	void set_y_sort_mode(bool p_enable);
 	bool is_y_sort_mode_enabled() const;
+
+	void set_compatibility_mode(bool p_enable);
+	bool is_compatibility_mode_enabled() const;
+
+	void set_centered_textures(bool p_enable);
+	bool is_centered_textures_enabled() const;
 
 	Array get_used_cells() const;
 	Array get_used_cells_by_id(int p_id) const;
