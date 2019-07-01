@@ -218,6 +218,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 void EditorResourcePreview::_thread() {
 
 #ifndef SERVER_ENABLED
+	exited = false;
 	while (!exit) {
 
 		preview_sem->wait();
@@ -452,8 +453,8 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 void EditorResourcePreview::start() {
 	ERR_FAIL_COND(thread);
 	thread = Thread::create(_thread_func, this);
-	exited = false;
 }
+
 void EditorResourcePreview::stop() {
 	if (thread) {
 		exit = true;
