@@ -37,9 +37,6 @@
 #include "emws_peer.h"
 #include "emws_server.h"
 #else
-#include "lws_client.h"
-#include "lws_peer.h"
-#include "lws_server.h"
 #include "wsl_client.h"
 #include "wsl_server.h"
 #endif
@@ -66,9 +63,7 @@ void register_websocket_types() {
 	EMWSClient::make_default();
 	EMWSServer::make_default();
 #else
-	LWSPeer::make_default();
-	LWSClient::make_default();
-	LWSServer::make_default();
+	WSLPeer::make_default();
 	WSLClient::make_default();
 	WSLServer::make_default();
 #endif
