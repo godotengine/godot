@@ -2700,6 +2700,8 @@ Variant _Thread::wait_to_finish() {
 	target_method = StringName();
 	target_instance = NULL;
 	userdata = Variant();
+	if (thread)
+		memdelete(thread);
 	thread = NULL;
 
 	return r;
