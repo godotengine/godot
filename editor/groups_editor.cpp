@@ -59,7 +59,7 @@ void GroupDialog::_group_selected() {
 void GroupDialog::_load_nodes(Node *p_current) {
 	String item_name = p_current->get_name();
 	if (p_current != scene_tree->get_edited_scene_root()) {
-		item_name = String(p_current->get_parent()->get_name()) + "/" + String(item_name);
+		item_name = String(p_current->get_parent()->get_name()) + "/" + item_name;
 	}
 
 	bool keep = true;

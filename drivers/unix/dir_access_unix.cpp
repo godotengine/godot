@@ -313,7 +313,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	// try_dir is the directory we are trying to change into
 	String try_dir = "";
 	if (p_dir.is_rel_path()) {
-		String next_dir = current_dir + "/" + p_dir;
+		String next_dir = current_dir.plus_file(p_dir);
 		next_dir = next_dir.simplify_path();
 		try_dir = next_dir;
 	} else {

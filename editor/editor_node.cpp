@@ -2818,7 +2818,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 	Ref<ConfigFile> cf;
 	cf.instance();
-	String addon_path = "res://addons/" + p_addon + "/plugin.cfg";
+	String addon_path = String("res://addons").plus_file(p_addon).plus_file("plugin.cfg");
 	if (!DirAccess::exists(addon_path.get_base_dir())) {
 		ProjectSettings *ps = ProjectSettings::get_singleton();
 		PoolStringArray enabled_plugins = ps->get("editor_plugins/enabled");
@@ -2845,7 +2845,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 	}
 
 	String path = cf->get_value("plugin", "script");
-	path = "res://addons/" + p_addon + "/" + path;
+	path = String("res://addons").plus_file(p_addon).plus_file(path);
 
 	Ref<Script> script = ResourceLoader::load(path);
 
