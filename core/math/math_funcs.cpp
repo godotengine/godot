@@ -161,8 +161,6 @@ uint32_t Math::larger_prime(uint32_t p_val) {
 			return primes[idx];
 		idx++;
 	}
-
-	return 0;
 }
 
 double Math::random(double from, double to) {

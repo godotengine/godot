@@ -332,7 +332,7 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 	}
 
 	Variant::CallError unchecked_error;
-	return _create_instance(NULL, 0, p_this, Object::cast_to<Reference>(p_this), unchecked_error);
+	return _create_instance(NULL, 0, p_this, Object::cast_to<Reference>(p_this) != NULL, unchecked_error);
 }
 
 PlaceHolderScriptInstance *GDScript::placeholder_instance_create(Object *p_this) {

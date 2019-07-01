@@ -346,7 +346,7 @@ class CommandQueueMT {
 				}
 				return NULL;
 			}
-		} else if (write_ptr >= dealloc_ptr) {
+		} else {
 			// ahead of dealloc_ptr, check that there is room
 
 			if ((COMMAND_MEM_SIZE - write_ptr) < alloc_size + sizeof(uint32_t)) {

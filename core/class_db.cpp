@@ -920,7 +920,7 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 #ifdef DEBUG_METHODS_ENABLED
 		if (!mb_set) {
 			ERR_EXPLAIN("Invalid Setter: " + p_class + "::" + p_setter + " for property: " + p_pinfo.name);
-			ERR_FAIL_COND(!mb_set);
+			ERR_FAIL();
 		} else {
 			int exp_args = 1 + (p_index >= 0 ? 1 : 0);
 			if (mb_set->get_argument_count() != exp_args) {
@@ -939,7 +939,7 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 
 		if (!mb_get) {
 			ERR_EXPLAIN("Invalid Getter: " + p_class + "::" + p_getter + " for property: " + p_pinfo.name);
-			ERR_FAIL_COND(!mb_get);
+			ERR_FAIL();
 		} else {
 
 			int exp_args = 0 + (p_index >= 0 ? 1 : 0);

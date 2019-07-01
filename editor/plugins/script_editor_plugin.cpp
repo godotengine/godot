@@ -3463,7 +3463,7 @@ void ScriptEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 
 void ScriptEditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
 
-	return script_editor->get_breakpoints(p_breakpoints);
+	script_editor->get_breakpoints(p_breakpoints);
 }
 
 void ScriptEditorPlugin::edited_scene_changed() {

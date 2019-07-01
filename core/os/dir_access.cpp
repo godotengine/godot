@@ -43,8 +43,6 @@ String DirAccess::_get_root_path() const {
 		case ACCESS_USERDATA: return OS::get_singleton()->get_user_data_dir();
 		default: return "";
 	}
-
-	return "";
 }
 String DirAccess::_get_root_string() const {
 
@@ -54,8 +52,6 @@ String DirAccess::_get_root_string() const {
 		case ACCESS_USERDATA: return "user://";
 		default: return "";
 	}
-
-	return "";
 }
 
 int DirAccess::get_current_drive() {

@@ -200,7 +200,7 @@ ScriptEditor *EditorInterface::get_script_editor() {
 }
 
 void EditorInterface::select_file(const String &p_file) {
-	return EditorNode::get_singleton()->get_filesystem_dock()->select_file(p_file);
+	EditorNode::get_singleton()->get_filesystem_dock()->select_file(p_file);
 }
 
 String EditorInterface::get_selected_path() const {
