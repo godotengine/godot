@@ -409,6 +409,7 @@ public:
 
 	bool is_polygon_clockwise(const Vector<Vector2> &p_polygon);
 	bool is_point_in_polygon(const Point2 &p_point, const Vector<Vector2> &p_polygon);
+	Vector2 get_polygon_centroid(const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_delaunay_2d(const Vector<Vector2> &p_points);
 	Vector<Point2> convex_hull_2d(const Vector<Point2> &p_points);

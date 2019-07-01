@@ -185,6 +185,15 @@
 				Given the two 2d segments ([code]p1[/code], [code]p2[/code]) and ([code]q1[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PoolVector2Array] that contains this point on ([code]p1[/code], [code]p2[/code]) as well the accompanying point on ([code]q1[/code], [code]q2[/code]).
 			</description>
 		</method>
+		<method name="get_polygon_centroid">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="polygon" type="PoolVector2Array">
+			</argument>
+			<description>
+				Calculates the centroid (also known as "center of mass" or "center of gravity") of the [code]polygon[/code] and returns the consistent result regardless of polygon orientation, see [method is_polygon_clockwise]. For accurate results, the polygon must be strictly simple, meaning there should be no self-intersecting edges.
+			</description>
+		</method>
 		<method name="get_uv84_normal_bit">
 			<return type="int">
 			</return>
