@@ -45,6 +45,7 @@ public:
 	Line2D::LineCapMode begin_cap_mode;
 	Line2D::LineCapMode end_cap_mode;
 	float width;
+	Curve *curve;
 	Color default_color;
 	Gradient *gradient;
 	Line2D::LineTextureMode texture_mode;
