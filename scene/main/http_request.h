@@ -88,8 +88,6 @@ private:
 
 	int redirections;
 
-	HTTPClient::Status status;
-
 	bool _update_connection();
 
 	int max_redirects;
