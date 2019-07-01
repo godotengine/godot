@@ -181,6 +181,8 @@ private:
 	int channel_count;
 	int to_mix;
 
+	float global_rate_scale;
+
 	struct Bus {
 
 		StringName name;
@@ -338,6 +340,9 @@ public:
 	float get_bus_peak_volume_right_db(int p_bus, int p_channel) const;
 
 	bool is_bus_channel_active(int p_bus, int p_channel) const;
+
+	void set_global_rate_scale(float p_scale);
+	float get_global_rate_scale() const;
 
 	virtual void init();
 	virtual void finish();

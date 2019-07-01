@@ -944,6 +944,15 @@ bool AudioServer::is_bus_channel_active(int p_bus, int p_channel) const {
 	return buses[p_bus]->channels[p_channel].active;
 }
 
+void AudioServer::set_global_rate_scale(float p_scale) {
+
+	global_rate_scale = p_scale;
+}
+float AudioServer::get_global_rate_scale() const {
+
+	return global_rate_scale;
+}
+
 void AudioServer::init_channels_and_buffers() {
 	channel_count = get_channel_count();
 	temp_buffer.resize(channel_count);
@@ -1352,6 +1361,9 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bus_peak_volume_left_db", "bus_idx", "channel"), &AudioServer::get_bus_peak_volume_left_db);
 	ClassDB::bind_method(D_METHOD("get_bus_peak_volume_right_db", "bus_idx", "channel"), &AudioServer::get_bus_peak_volume_right_db);
 
+	ClassDB::bind_method(D_METHOD("set_global_rate_scale", "scale"), &AudioServer::set_global_rate_scale);
+	ClassDB::bind_method(D_METHOD("get_global_rate_scale"), &AudioServer::get_global_rate_scale);
+
 	ClassDB::bind_method(D_METHOD("lock"), &AudioServer::lock);
 	ClassDB::bind_method(D_METHOD("unlock"), &AudioServer::unlock);
 
@@ -1371,6 +1383,10 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bus_layout", "bus_layout"), &AudioServer::set_bus_layout);
 	ClassDB::bind_method(D_METHOD("generate_bus_layout"), &AudioServer::generate_bus_layout);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bus_count"), "set_bus_count", "get_bus_count");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "device"), "set_device", "get_device");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_rate_scale"), "set_global_rate_scale", "get_global_rate_scale");
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
 
@@ -1396,6 +1412,7 @@ AudioServer::AudioServer() {
 #endif
 	mix_time = 0;
 	mix_size = 0;
+	global_rate_scale = 1;
 }
 
 AudioServer::~AudioServer() {

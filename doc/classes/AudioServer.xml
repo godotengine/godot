@@ -177,6 +177,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_global_rate_scale">
+			<return type="float">
+			</return>
+			<description>
+				Returns the global rate scale at which audio is being played.
+			</description>
+		</method>
 		<method name="get_mix_rate" qualifiers="const">
 			<return type="float">
 			</return>
@@ -390,6 +397,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_global_rate_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="scale" type="float">
+			</argument>
+			<description>
+				Scales the rate at which audio is played (i.e. setting it to [code]0.5[/code] will make the audio be played twice as fast).
+			</description>
+		</method>
 		<method name="swap_bus_effects">
 			<return type="void">
 			</return>
@@ -411,6 +427,16 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="bus_count" type="int" setter="set_bus_count" getter="get_bus_count">
+			Adds and removes buses to make the number of buses match [code]amount[/code].
+		</member>
+		<member name="device" type="string" setter="set_device" getter="get_device">
+		</member>
+		<member name="global_rate_scale" type="float" setter="set_global_rate_scale" getter="get_global_rate_scale">
+			Scales the rate at which audio is played (i.e. setting it to [code]0.5[/code] will make the audio be played twice as fast).
+		</member>
+	</members>
 	<signals>
 		<signal name="bus_layout_changed">
 			<description>
