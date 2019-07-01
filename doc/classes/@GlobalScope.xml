@@ -1005,16 +1005,16 @@
 			Xbox controller Y button.
 		</constant>
 		<constant name="JOY_DS_A" value="1" enum="JoystickList">
-			DualShock controller A button.
+			Nintendo controller A button.
 		</constant>
 		<constant name="JOY_DS_B" value="0" enum="JoystickList">
-			DualShock controller B button.
+			Nintendo controller B button.
 		</constant>
 		<constant name="JOY_DS_X" value="3" enum="JoystickList">
-			DualShock controller X button.
+			Nintendo controller X button.
 		</constant>
 		<constant name="JOY_DS_Y" value="2" enum="JoystickList">
-			DualShock controller Y button.
+			Nintendo controller Y button.
 		</constant>
 		<constant name="JOY_VR_GRIP" value="2" enum="JoystickList">
 			Grip (side) buttons on a VR controller.
