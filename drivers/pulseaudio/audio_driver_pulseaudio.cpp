@@ -191,6 +191,14 @@ Error AudioDriverPulseAudio::init_device() {
 	spec.format = PA_SAMPLE_S16LE;
 	spec.channels = pa_map.channels;
 	spec.rate = mix_rate;
+	pa_map.map[0] = PA_CHANNEL_POSITION_FRONT_LEFT;
+	pa_map.map[1] = PA_CHANNEL_POSITION_FRONT_RIGHT;
+	pa_map.map[2] = PA_CHANNEL_POSITION_FRONT_CENTER;
+	pa_map.map[3] = PA_CHANNEL_POSITION_LFE;
+	pa_map.map[4] = PA_CHANNEL_POSITION_REAR_LEFT;
+	pa_map.map[5] = PA_CHANNEL_POSITION_REAR_RIGHT;
+	pa_map.map[6] = PA_CHANNEL_POSITION_SIDE_LEFT;
+	pa_map.map[7] = PA_CHANNEL_POSITION_SIDE_RIGHT;
 
 	pa_str = pa_stream_new(pa_ctx, "Sound", &spec, &pa_map);
 	if (pa_str == NULL) {
