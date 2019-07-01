@@ -257,7 +257,7 @@ void ProjectSettingsEditor::_device_input_add() {
 			Ref<InputEventJoypadMotion> jm;
 			jm.instance();
 			jm->set_axis(device_index->get_selected() >> 1);
-			jm->set_axis_value(device_index->get_selected() & 1 ? 1 : -1);
+			jm->set_axis_value((device_index->get_selected() & 1) ? 1 : -1);
 			jm->set_device(_get_current_device());
 
 			for (int i = 0; i < events.size(); i++) {
@@ -483,7 +483,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			for (int i = 0; i < JOY_AXIS_MAX * 2; i++) {
 
 				String desc = _axis_names[i];
-				device_index->add_item(TTR("Axis") + " " + itos(i / 2) + " " + (i & 1 ? "+" : "-") + desc);
+				device_index->add_item(TTR("Axis") + " " + itos(i / 2) + " " + ((i & 1) ? "+" : "-") + desc);
 			}
 			device_input->popup_centered_minsize(Size2(350, 95) * EDSCALE);
 

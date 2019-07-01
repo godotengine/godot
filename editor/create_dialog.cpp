@@ -329,8 +329,9 @@ void CreateDialog::_update_search() {
 		if (cpp_type && !ClassDB::can_instance(type))
 			continue; // can't create what can't be instanced
 
-		bool skip = false;
 		if (cpp_type) {
+			bool skip = false;
+
 			for (Set<StringName>::Element *E = type_blacklist.front(); E && !skip; E = E->next()) {
 				if (ClassDB::is_parent_class(type, E->get()))
 					skip = true;

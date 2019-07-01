@@ -149,8 +149,10 @@ _ResourceLoader::_ResourceLoader() {
 }
 
 Error _ResourceSaver::save(const String &p_path, const RES &p_resource, SaverFlags p_flags) {
-
-	ERR_FAIL_COND_V(p_resource.is_null(), ERR_INVALID_PARAMETER);
+	if (p_resource.is_null()) {
+		ERR_EXPLAIN("Can't save empty resource to path: " + String(p_path))
+		ERR_FAIL_V(ERR_INVALID_PARAMETER);
+	}
 	return ResourceSaver::save(p_path, p_resource, p_flags);
 }
 
@@ -246,11 +248,11 @@ PoolStringArray _OS::get_connected_midi_inputs() {
 }
 
 void _OS::open_midi_inputs() {
-	return OS::get_singleton()->open_midi_inputs();
+	OS::get_singleton()->open_midi_inputs();
 }
 
 void _OS::close_midi_inputs() {
-	return OS::get_singleton()->close_midi_inputs();
+	OS::get_singleton()->close_midi_inputs();
 }
 
 void _OS::set_video_mode(const Size2 &p_size, bool p_fullscreen, bool p_resizeable, int p_screen) {
@@ -2266,7 +2268,7 @@ bool _Directory::current_is_dir() const {
 void _Directory::list_dir_end() {
 
 	ERR_FAIL_COND(!d);
-	return d->list_dir_end();
+	d->list_dir_end();
 }
 
 int _Directory::get_drive_count() {

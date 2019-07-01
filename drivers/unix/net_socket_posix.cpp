@@ -684,10 +684,10 @@ Ref<NetSocket> NetSocketPosix::accept(IP_Address &r_ip, uint16_t &r_port) {
 	return Ref<NetSocket>(ns);
 }
 
-Error NetSocketPosix::join_multicast_group(const IP_Address &p_ip, String p_if_name) {
-	return _change_multicast_group(p_ip, p_if_name, true);
+Error NetSocketPosix::join_multicast_group(const IP_Address &p_multi_address, String p_if_name) {
+	return _change_multicast_group(p_multi_address, p_if_name, true);
 }
 
-Error NetSocketPosix::leave_multicast_group(const IP_Address &p_ip, String p_if_name) {
-	return _change_multicast_group(p_ip, p_if_name, false);
+Error NetSocketPosix::leave_multicast_group(const IP_Address &p_multi_address, String p_if_name) {
+	return _change_multicast_group(p_multi_address, p_if_name, false);
 }

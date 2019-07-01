@@ -275,8 +275,6 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		int margin = 0;
 
 		{
-			int ofs = 0;
-
 			NodePath path = animation->track_get_path(track);
 
 			Node *node = NULL;
@@ -290,6 +288,8 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			int h = font->get_height();
 
 			if (node) {
+				int ofs = 0;
+
 				Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
 
 				h = MAX(h, icon->get_height());

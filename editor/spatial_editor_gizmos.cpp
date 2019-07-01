@@ -147,7 +147,7 @@ void EditorSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p
 	}
 
 	ERR_FAIL_COND(!gizmo_plugin);
-	return gizmo_plugin->set_handle(this, p_idx, p_camera, p_point);
+	gizmo_plugin->set_handle(this, p_idx, p_camera, p_point);
 }
 
 void EditorSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
@@ -158,7 +158,7 @@ void EditorSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool
 	}
 
 	ERR_FAIL_COND(!gizmo_plugin);
-	return gizmo_plugin->commit_handle(this, p_idx, p_restore, p_cancel);
+	gizmo_plugin->commit_handle(this, p_idx, p_restore, p_cancel);
 }
 
 void EditorSpatialGizmo::set_spatial_node(Spatial *p_node) {

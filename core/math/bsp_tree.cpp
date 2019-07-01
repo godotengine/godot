@@ -142,7 +142,7 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 		}
 
 		return _get_points_inside(node->over, p_points, p_indices, p_center, p_half_extents, p_indices_count);
-	} else if (dist_min <= 0) { //all points behind plane
+	} else { //all points behind plane
 
 		if (node->under == UNDER_LEAF) {
 
@@ -150,8 +150,6 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 		}
 		return _get_points_inside(node->under, p_points, p_indices, p_center, p_half_extents, p_indices_count);
 	}
-
-	return 0;
 }
 
 int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) const {
@@ -271,8 +269,6 @@ bool BSP_Tree::point_is_inside(const Vector3 &p_point) const {
 		ERR_FAIL_COND_V(idx < MAX_NODES && idx >= node_count, false);
 #endif
 	}
-
-	return false;
 }
 
 static int _bsp_find_best_half_plane(const Face3 *p_faces, const Vector<int> &p_indices, real_t p_tolerance) {

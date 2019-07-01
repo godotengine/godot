@@ -90,7 +90,6 @@ void Navigation::_navmesh_link(int p_id) {
 		if (!valid) {
 			nm.polygons.pop_back();
 			ERR_CONTINUE(!valid);
-			continue;
 		}
 
 		p.center = center;

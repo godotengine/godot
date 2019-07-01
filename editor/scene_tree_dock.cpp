@@ -1493,7 +1493,6 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		if (p_nodes.find(validate) != -1) {
 			ERR_EXPLAIN("Selection changed at some point.. can't reparent");
 			ERR_FAIL();
-			return;
 		}
 		validate = validate->get_parent();
 	}

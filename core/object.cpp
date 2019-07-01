@@ -742,13 +742,11 @@ void Object::call_multilevel(const StringName &p_method, const Variant **p_args,
 		if (Object::cast_to<Reference>(this)) {
 			ERR_EXPLAIN("Can't 'free' a reference.");
 			ERR_FAIL();
-			return;
 		}
 
 		if (_lock_index.get() > 1) {
 			ERR_EXPLAIN("Object is locked and can't be freed.");
 			ERR_FAIL();
-			return;
 		}
 #endif
 
@@ -1467,7 +1465,7 @@ Error Object::connect(const StringName &p_signal, Object *p_to_object, const Str
 
 		if (!signal_is_valid) {
 			ERR_EXPLAIN("In Object of type '" + String(get_class()) + "': Attempt to connect nonexistent signal '" + p_signal + "' to method '" + p_to_object->get_class() + "." + p_to_method + "'");
-			ERR_FAIL_COND_V(!signal_is_valid, ERR_INVALID_PARAMETER);
+			ERR_FAIL_V(ERR_INVALID_PARAMETER);
 		}
 		signal_map[p_signal] = Signal();
 		s = &signal_map[p_signal];
@@ -1517,7 +1515,7 @@ bool Object::is_connected(const StringName &p_signal, Object *p_to_object, const
 			return false;
 
 		ERR_EXPLAIN("Nonexistent signal: " + p_signal);
-		ERR_FAIL_COND_V(!s, false);
+		ERR_FAIL_V(false);
 	}
 
 	Signal::Target target(p_to_object->get_instance_id(), p_to_method);

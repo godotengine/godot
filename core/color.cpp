@@ -388,9 +388,8 @@ bool Color::html_is_valid(const String &p_color) {
 		return false;
 	}
 
-	int a = 255;
 	if (alpha) {
-		a = _parse_col(color, 0);
+		int a = _parse_col(color, 0);
 		if (a < 0) {
 			return false;
 		}

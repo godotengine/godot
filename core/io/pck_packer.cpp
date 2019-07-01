@@ -63,10 +63,11 @@ void PCKPacker::_bind_methods() {
 Error PCKPacker::pck_start(const String &p_file, int p_alignment) {
 
 	file = FileAccess::open(p_file, FileAccess::WRITE);
-	if (file == NULL) {
 
-		return ERR_CANT_CREATE;
-	};
+	if (!file) {
+		ERR_EXPLAIN("Can't open file to write: " + String(p_file));
+		ERR_FAIL_V(ERR_CANT_CREATE);
+	}
 
 	alignment = p_alignment;
 

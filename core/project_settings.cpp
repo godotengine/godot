@@ -863,8 +863,6 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		ERR_EXPLAIN("Unknown config file format: " + p_path);
 		ERR_FAIL_V(ERR_FILE_UNRECOGNIZED);
 	}
-
-	return OK;
 }
 
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed) {
