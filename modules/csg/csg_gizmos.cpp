@@ -120,6 +120,10 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 		Vector3 ra, rb;
 		Geometry::get_closest_points_between_segments(Vector3(), Vector3(4096, 0, 0), sg[0], sg[1], ra, rb);
 		float d = ra.x;
+		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
+		}
+
 		if (d < 0.001)
 			d = 0.001;
 
@@ -135,6 +139,10 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 		Vector3 ra, rb;
 		Geometry::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = ra[p_idx];
+		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
+		}
+
 		if (d < 0.001)
 			d = 0.001;
 
@@ -154,6 +162,9 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 		Vector3 ra, rb;
 		Geometry::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = axis.dot(ra);
+		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
+		}
 
 		if (d < 0.001)
 			d = 0.001;
@@ -173,6 +184,9 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 		Vector3 ra, rb;
 		Geometry::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = axis.dot(ra);
+		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
+		}
 
 		if (d < 0.001)
 			d = 0.001;
