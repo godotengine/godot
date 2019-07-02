@@ -222,7 +222,7 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 			_editor_select(EDITOR_SCRIPT);
 		} else if (ED_IS_SHORTCUT("editor/editor_help", p_event)) {
 			emit_signal("request_help_search", "");
-		} else if (ED_IS_SHORTCUT("editor/editor_assetlib", p_event)) {
+		} else if (ED_IS_SHORTCUT("editor/editor_assetlib", p_event) && StreamPeerSSL::is_available()) {
 			_editor_select(EDITOR_ASSETLIB);
 		} else if (ED_IS_SHORTCUT("editor/editor_next", p_event)) {
 			_editor_select_next();
@@ -5090,10 +5090,11 @@ void EditorNode::_feature_profile_changed() {
 
 		main_editor_buttons[EDITOR_3D]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
 		main_editor_buttons[EDITOR_SCRIPT]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
-		main_editor_buttons[EDITOR_ASSETLIB]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB));
+		if (StreamPeerSSL::is_available())
+			main_editor_buttons[EDITOR_ASSETLIB]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB));
 		if ((profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D) && singleton->main_editor_buttons[EDITOR_3D]->is_pressed()) ||
 				(profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT) && singleton->main_editor_buttons[EDITOR_SCRIPT]->is_pressed()) ||
-				(profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB) && singleton->main_editor_buttons[EDITOR_ASSETLIB]->is_pressed())) {
+				(StreamPeerSSL::is_available() && profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB) && singleton->main_editor_buttons[EDITOR_ASSETLIB]->is_pressed())) {
 			_editor_select(EDITOR_2D);
 		}
 	} else {
@@ -5106,7 +5107,8 @@ void EditorNode::_feature_profile_changed() {
 		filesystem_dock->set_visible(true);
 		main_editor_buttons[EDITOR_3D]->set_visible(true);
 		main_editor_buttons[EDITOR_SCRIPT]->set_visible(true);
-		main_editor_buttons[EDITOR_ASSETLIB]->set_visible(true);
+		if (StreamPeerSSL::is_available())
+			main_editor_buttons[EDITOR_ASSETLIB]->set_visible(true);
 	}
 
 	_update_dock_slots_visibility();

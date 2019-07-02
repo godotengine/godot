@@ -39,7 +39,9 @@ StreamPeerSSL *(*StreamPeerSSL::_create)() = NULL;
 
 StreamPeerSSL *StreamPeerSSL::create() {
 
-	return _create();
+	if (_create)
+		return _create();
+	return NULL;
 }
 
 StreamPeerSSL::LoadCertsFromMemory StreamPeerSSL::load_certs_func = NULL;
