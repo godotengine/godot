@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  PancakeFallbackConfigChooser.java                                    */
+/*  RegularFallbackConfigChooser.java                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot.xr.pancake;
+package org.godotengine.godot.xr.regular;
 
 import android.util.Log;
 import javax.microedition.khronos.egl.EGL10;
@@ -37,13 +37,13 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import org.godotengine.godot.utils.GLUtils;
 
 /* Fallback if 32bit View is not supported*/
-public class PancakeFallbackConfigChooser extends PancakeConfigChooser {
+public class RegularFallbackConfigChooser extends RegularConfigChooser {
 
-	private static final String TAG = PancakeFallbackConfigChooser.class.getSimpleName();
+	private static final String TAG = RegularFallbackConfigChooser.class.getSimpleName();
 
-	private PancakeConfigChooser fallback;
+	private RegularConfigChooser fallback;
 
-	public PancakeFallbackConfigChooser(int r, int g, int b, int a, int depth, int stencil, PancakeConfigChooser fallback) {
+	public RegularFallbackConfigChooser(int r, int g, int b, int a, int depth, int stencil, RegularConfigChooser fallback) {
 		super(r, g, b, a, depth, stencil);
 		this.fallback = fallback;
 	}

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  PancakeContextFactory.java                                           */
+/*  RegularContextFactory.java                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot.xr.pancake;
+package org.godotengine.godot.xr.regular;
 
 import android.opengl.GLSurfaceView;
 import android.util.Log;
@@ -42,8 +42,8 @@ import org.godotengine.godot.utils.GLUtils;
 /**
  * Factory used to setup the opengl context for pancake games.
  */
-public class PancakeContextFactory implements GLSurfaceView.EGLContextFactory {
-	private static final String TAG = PancakeContextFactory.class.getSimpleName();
+public class RegularContextFactory implements GLSurfaceView.EGLContextFactory {
+	private static final String TAG = RegularContextFactory.class.getSimpleName();
 
 	private static final int _EGL_CONTEXT_FLAGS_KHR = 0x30FC;
 	private static final int _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR = 0x00000001;
