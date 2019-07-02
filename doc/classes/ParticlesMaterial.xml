@@ -66,6 +66,9 @@
 		<member name="damping_random" type="float" setter="set_param_randomness" getter="get_param_randomness" default="0.0">
 			Damping randomness ratio.
 		</member>
+		<member name="direction" type="Vector3" setter="set_direction" getter="get_direction" default="Vector3( 1, 0, 0 )">
+			Unit vector specifying the particles' emission direction.
+		</member>
 		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
 			The box's extents if [code]emission_shape[/code] is set to [constant EMISSION_SHAPE_BOX].
 		</member>

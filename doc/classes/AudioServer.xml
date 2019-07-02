@@ -68,13 +68,6 @@
 				Returns the amount of channels of the bus at index [code]bus_idx[/code].
 			</description>
 		</method>
-		<method name="get_bus_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the number of available buses.
-			</description>
-		</method>
 		<method name="get_bus_effect">
 			<return type="AudioEffect">
 			</return>
@@ -165,36 +158,25 @@
 				Returns the volume of the bus at index [code]bus_idx[/code] in dB.
 			</description>
 		</method>
-		<method name="get_device">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_device_list">
 			<return type="Array">
 			</return>
 			<description>
-			</description>
-		</method>
-		<method name="get_global_rate_scale">
-			<return type="float">
-			</return>
-			<description>
-				Returns the global rate scale at which audio is being played.
+				Returns the names of all audio devices detected on the system.
 			</description>
 		</method>
 		<method name="get_mix_rate" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Returns the sample rate at the output of the audioserver.
+				Returns the sample rate at the output of the [AudioServer].
 			</description>
 		</method>
 		<method name="get_output_latency" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Returns the audio driver's output latency.
 			</description>
 		</method>
 		<method name="get_speaker_mode" qualifiers="const">
@@ -258,7 +240,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Locks the audio drivers mainloop. Remember to unlock it afterwards.
+				Locks the audio driver's main loop. Remember to unlock it afterwards.
 			</description>
 		</method>
 		<method name="move_bus">
@@ -301,15 +283,6 @@
 			</argument>
 			<description>
 				If [code]true[/code], the bus at index [code]bus_idx[/code] is bypassing effects.
-			</description>
-		</method>
-		<method name="set_bus_count">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="int">
-			</argument>
-			<description>
-				Adds and removes buses to make the number of buses match [code]amount[/code].
 			</description>
 		</method>
 		<method name="set_bus_effect_enabled">
@@ -389,23 +362,6 @@
 				Sets the volume of the bus at index [code]bus_idx[/code] to [code]volume_db[/code].
 			</description>
 		</method>
-		<method name="set_device">
-			<return type="void">
-			</return>
-			<argument index="0" name="device" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_global_rate_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="scale" type="float">
-			</argument>
-			<description>
-				Scales the rate at which audio is played (i.e. setting it to [code]0.5[/code] will make the audio be played twice as fast).
-			</description>
-		</method>
 		<method name="swap_bus_effects">
 			<return type="void">
 			</return>
@@ -428,12 +384,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bus_count" type="int" setter="set_bus_count" getter="get_bus_count">
-			Adds and removes buses to make the number of buses match [code]amount[/code].
+		<member name="bus_count" type="int" setter="set_bus_count" getter="get_bus_count" default="1">
+			Number of available audio buses.
 		</member>
-		<member name="device" type="string" setter="set_device" getter="get_device">
+		<member name="device" type="String" setter="set_device" getter="get_device" default="&quot;Default&quot;">
+			Name of the current device (see [method get_device_list]).
 		</member>
-		<member name="global_rate_scale" type="float" setter="set_global_rate_scale" getter="get_global_rate_scale">
+		<member name="global_rate_scale" type="float" setter="set_global_rate_scale" getter="get_global_rate_scale" default="1.0">
 			Scales the rate at which audio is played (i.e. setting it to [code]0.5[/code] will make the audio be played twice as fast).
 		</member>
 	</members>
@@ -446,15 +403,16 @@
 	</signals>
 	<constants>
 		<constant name="SPEAKER_MODE_STEREO" value="0" enum="SpeakerMode">
-			Two or fewer speakers are detected.
+			Two or fewer speakers were detected.
 		</constant>
 		<constant name="SPEAKER_SURROUND_31" value="1" enum="SpeakerMode">
+			A 3.1 channel surround setup was detected.
 		</constant>
 		<constant name="SPEAKER_SURROUND_51" value="2" enum="SpeakerMode">
-			A 5.1 channel surround setup detected.
+			A 5.1 channel surround setup was  detected.
 		</constant>
 		<constant name="SPEAKER_SURROUND_71" value="3" enum="SpeakerMode">
-			A 7.1 channel surround setup detected.
+			A 7.1 channel surround setup was  detected.
 		</constant>
 	</constants>
 </class>
