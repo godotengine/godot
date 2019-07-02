@@ -48,7 +48,7 @@ static const bool default_reloadable = true;
 // Defined in gdnative_api_struct.gen.cpp
 extern const godot_gdnative_core_api_struct api_struct;
 
-Map<String, Vector<Ref<GDNative> > > *GDNativeLibrary::loaded_libraries = NULL;
+Map<String, Vector<Ref<GDNative> > > GDNativeLibrary::loaded_libraries;
 
 GDNativeLibrary::GDNativeLibrary() {
 	config_file.instance();
@@ -57,10 +57,6 @@ GDNativeLibrary::GDNativeLibrary() {
 	load_once = default_load_once;
 	singleton = default_singleton;
 	reloadable = default_reloadable;
-
-	if (GDNativeLibrary::loaded_libraries == NULL) {
-		GDNativeLibrary::loaded_libraries = memnew((Map<String, Vector<Ref<GDNative> > >));
-	}
 }
 
 GDNativeLibrary::~GDNativeLibrary() {
@@ -318,10 +314,10 @@ bool GDNative::initialize() {
 #endif
 
 	if (library->should_load_once()) {
-		if (GDNativeLibrary::loaded_libraries->has(lib_path)) {
+		if (GDNativeLibrary::loaded_libraries.has(lib_path)) {
 			// already loaded. Don't load again.
 			// copy some of the stuff instead
-			this->native_handle = (*GDNativeLibrary::loaded_libraries)[lib_path][0]->native_handle;
+			this->native_handle = GDNativeLibrary::loaded_libraries[lib_path][0]->native_handle;
 			initialized = true;
 			return true;
 		}
@@ -377,11 +373,11 @@ bool GDNative::initialize() {
 
 	initialized = true;
 
-	if (library->should_load_once() && !GDNativeLibrary::loaded_libraries->has(lib_path)) {
+	if (library->should_load_once() && !GDNativeLibrary::loaded_libraries.has(lib_path)) {
 		Vector<Ref<GDNative> > gdnatives;
 		gdnatives.resize(1);
 		gdnatives.write[0] = Ref<GDNative>(this);
-		GDNativeLibrary::loaded_libraries->insert(lib_path, gdnatives);
+		GDNativeLibrary::loaded_libraries.insert(lib_path, gdnatives);
 	}
 
 	return true;
@@ -395,7 +391,7 @@ bool GDNative::terminate() {
 	}
 
 	if (library->should_load_once()) {
-		Vector<Ref<GDNative> > *gdnatives = &(*GDNativeLibrary::loaded_libraries)[library->get_current_library_path()];
+		Vector<Ref<GDNative> > *gdnatives = &GDNativeLibrary::loaded_libraries[library->get_current_library_path()];
 		if (gdnatives->size() > 1) {
 			// there are other GDNative's still using this library, so we actually don't terminate
 			gdnatives->erase(Ref<GDNative>(this));
@@ -405,7 +401,7 @@ bool GDNative::terminate() {
 			// we're the last one, terminate!
 			gdnatives->clear();
 			// whew this looks scary, but all it does is remove the entry completely
-			GDNativeLibrary::loaded_libraries->erase(GDNativeLibrary::loaded_libraries->find(library->get_current_library_path()));
+			GDNativeLibrary::loaded_libraries.erase(GDNativeLibrary::loaded_libraries.find(library->get_current_library_path()));
 		}
 	}
 

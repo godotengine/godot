@@ -4990,6 +4990,20 @@ bool RasterizerSceneGLES3::free(RID p_rid) {
 		reflection_probe_instance_owner.free(p_rid);
 		memdelete(reflection_instance);
 
+	} else if (environment_owner.owns(p_rid)) {
+
+		Environment *environment = environment_owner.get(p_rid);
+
+		environment_owner.free(p_rid);
+		memdelete(environment);
+
+	} else if (gi_probe_instance_owner.owns(p_rid)) {
+
+		GIProbeInstance *gi_probe_instance = gi_probe_instance_owner.get(p_rid);
+
+		gi_probe_instance_owner.free(p_rid);
+		memdelete(gi_probe_instance);
+
 	} else {
 		return false;
 	}
