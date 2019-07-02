@@ -2315,7 +2315,7 @@ void EditorPropertyResource::_update_menu_items() {
 
 	menu->clear();
 
-	if (get_edited_property() == "script" && base_type == "Script" && Object::cast_to<Node>(get_edited_object())) {
+	if (base_type == "Script" && Object::cast_to<Node>(get_edited_object())) {
 		menu->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
 		menu->add_separator();
 	} else if (base_type != "") {
