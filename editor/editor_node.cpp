@@ -2485,7 +2485,16 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			bool was_visible = OS::get_singleton()->is_console_visible();
 			OS::get_singleton()->set_console_visible(!was_visible);
 			EditorSettings::get_singleton()->set_setting("interface/editor/hide_console_window", !was_visible);
+		} break;
+		case EDITOR_SCREENSHOT: {
 
+			screenshot_timer->start();
+		} break;
+		case EDITOR_OPEN_SCREENSHOT: {
+
+			bool is_checked = settings_menu->get_popup()->is_item_checked(settings_menu->get_popup()->get_item_index(EDITOR_OPEN_SCREENSHOT));
+			settings_menu->get_popup()->set_item_checked(settings_menu->get_popup()->get_item_index(EDITOR_OPEN_SCREENSHOT), !is_checked);
+			EditorSettings::get_singleton()->set_project_metadata("screenshot_options", "open_screenshot", !is_checked);
 		} break;
 		case SETTINGS_PICK_MAIN_SCENE: {
 
@@ -2538,6 +2547,30 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 		}
 	}
+}
+
+void EditorNode::_request_screenshot() {
+	_screenshot();
+}
+
+void EditorNode::_screenshot(bool p_use_utc) {
+	String name = "editor_screenshot_" + OS::get_singleton()->get_iso_date_time(p_use_utc).replace(":", "") + ".png";
+	NodePath path = String("user://") + name;
+	_save_screenshot(path);
+	if (EditorSettings::get_singleton()->get_project_metadata("screenshot_options", "open_screenshot", true)) {
+		OS::get_singleton()->shell_open(String("file://") + ProjectSettings::get_singleton()->globalize_path(path));
+	}
+}
+
+void EditorNode::_save_screenshot(NodePath p_path) {
+
+	Viewport *viewport = EditorInterface::get_singleton()->get_editor_viewport()->get_viewport();
+	viewport->set_clear_mode(Viewport::CLEAR_MODE_ONLY_NEXT_FRAME);
+	Ref<Image> img = viewport->get_texture()->get_data();
+	img->flip_y();
+	viewport->set_clear_mode(Viewport::CLEAR_MODE_ALWAYS);
+	Error error = img->save_png(p_path);
+	ERR_FAIL_COND(error != OK);
 }
 
 void EditorNode::_tool_menu_option(int p_idx) {
@@ -5160,6 +5193,10 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_resources_changed"), &EditorNode::_resources_changed);
 	ClassDB::bind_method(D_METHOD("_feature_profile_changed"), &EditorNode::_feature_profile_changed);
 
+	ClassDB::bind_method("_screenshot", &EditorNode::_screenshot);
+	ClassDB::bind_method("_request_screenshot", &EditorNode::_request_screenshot);
+	ClassDB::bind_method("_save_screenshot", &EditorNode::_save_screenshot);
+
 	ADD_SIGNAL(MethodInfo("play_pressed"));
 	ADD_SIGNAL(MethodInfo("pause_pressed"));
 	ADD_SIGNAL(MethodInfo("stop_pressed"));
@@ -5886,6 +5923,16 @@ EditorNode::EditorNode() {
 	editor_layouts->connect("id_pressed", this, "_layout_menu_option");
 	p->add_submenu_item(TTR("Editor Layout"), "Layouts");
 #ifdef OSX_ENABLED
+	p->add_shortcut(ED_SHORTCUT("editor/take_screenshot", TTR("Take Screenshot"), KEY_MASK_CMD | KEY_F12), EDITOR_SCREENSHOT);
+#else
+	p->add_shortcut(ED_SHORTCUT("editor/take_screenshot", TTR("Take Screenshot"), KEY_MASK_CTRL | KEY_F12), EDITOR_SCREENSHOT);
+#endif
+	p->set_item_tooltip(p->get_item_count() - 1, TTR("Screenshots are stored in the Editor Data/Settings Folder."));
+	p->add_check_shortcut(ED_SHORTCUT("editor/open_screenshot", TTR("Automatically Open Screenshots")), EDITOR_OPEN_SCREENSHOT);
+	bool is_open_screenshot = EditorSettings::get_singleton()->get_project_metadata("screenshot_options", "open_screenshot", true);
+	p->set_item_checked(p->get_item_count() - 1, is_open_screenshot);
+	p->set_item_tooltip(p->get_item_count() - 1, TTR("Open in an external image editor."));
+#ifdef OSX_ENABLED
 	p->add_shortcut(ED_SHORTCUT("editor/fullscreen_mode", TTR("Toggle Fullscreen"), KEY_MASK_CMD | KEY_MASK_CTRL | KEY_F), SETTINGS_TOGGLE_FULLSCREEN);
 #else
 	p->add_shortcut(ED_SHORTCUT("editor/fullscreen_mode", TTR("Toggle Fullscreen"), KEY_MASK_SHIFT | KEY_F11), SETTINGS_TOGGLE_FULLSCREEN);
@@ -6477,6 +6524,13 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT("editor/editor_assetlib", TTR("Open Asset Library"));
 	ED_SHORTCUT("editor/editor_next", TTR("Open the next Editor"));
 	ED_SHORTCUT("editor/editor_prev", TTR("Open the previous Editor"));
+
+	screenshot_timer = memnew(Timer);
+	screenshot_timer->set_one_shot(true);
+	screenshot_timer->set_wait_time(settings_menu->get_popup()->get_submenu_popup_delay() + 0.1f);
+	screenshot_timer->connect("timeout", this, "_request_screenshot");
+	add_child(screenshot_timer);
+	screenshot_timer->set_owner(get_owner());
 }
 
 EditorNode::~EditorNode() {
