@@ -486,6 +486,15 @@ msgstr ""
 msgid "Warning: Editing imported animation"
 msgstr "Advertencia: Edición de animación importada"
 
+#: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Select All"
+msgstr "Seleccionar Todo"
+
+#: editor/animation_track_editor.cpp
+msgid "Select None"
+msgstr "Deseleccionar todo"
+
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Mostrar solo las pistas de los nodos seleccionados en el árbol."
@@ -1351,7 +1360,8 @@ msgid "Must not collide with an existing engine class name."
 msgstr "No debe coincidir con el nombre de una clase ya existente del motor."
 
 #: editor/editor_autoload_settings.cpp
-msgid "Must not collide with an existing buit-in type name."
+#, fuzzy
+msgid "Must not collide with an existing built-in type name."
 msgstr "No debe coincidir con un nombre de tipo buit-in existente."
 
 #: editor/editor_autoload_settings.cpp
@@ -1556,7 +1566,8 @@ msgid "Node Dock"
 msgstr "Nodos"
 
 #: editor/editor_feature_profile.cpp
-msgid "Filesystem Dock"
+#, fuzzy
+msgid "FileSystem and Import Docks"
 msgstr "Sistema de Archivos"
 
 #: editor/editor_feature_profile.cpp
@@ -1610,8 +1621,9 @@ msgstr ""
 "El formato '%s' del archivo no es válido, la importación ha sido cancelada."
 
 #: editor/editor_feature_profile.cpp
+#, fuzzy
 msgid ""
-"Profile '%s' already exists. Remote it first before importing, import "
+"Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
 msgstr ""
 "El perfil '%s' ya existe. Elimínalo primero antes de importar, importación "
@@ -1626,7 +1638,8 @@ msgid "Unset"
 msgstr "Desactivar"
 
 #: editor/editor_feature_profile.cpp
-msgid "Current Profile"
+#, fuzzy
+msgid "Current Profile:"
 msgstr "Perfil Actual"
 
 #: editor/editor_feature_profile.cpp
@@ -1649,12 +1662,9 @@ msgid "Export"
 msgstr "Exportar"
 
 #: editor/editor_feature_profile.cpp
-msgid "Available Profiles"
+#, fuzzy
+msgid "Available Profiles:"
 msgstr "Perfiles Disponibles"
-
-#: editor/editor_feature_profile.cpp
-msgid "Enabled Classes"
-msgstr "Clases Activadas"
 
 #: editor/editor_feature_profile.cpp
 msgid "Class Options"
@@ -2745,8 +2755,32 @@ msgid "Editor Layout"
 msgstr "Layout del Editor"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Take Screenshot"
+msgstr "Convertir en Raíz de Escena"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Screenshots are stored in the Editor Data/Settings Folder."
+msgstr "Abrir Editor de Datos/Carpeta de Configuración"
+
+#: editor/editor_node.cpp
+msgid "Automatically Open Screenshots"
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open in an external image editor."
+msgstr "Abrir Editor siguiente"
+
+#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Cambiar a Pantalla Completa"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Toggle System Console"
+msgstr "Act/desact. CanvasItem visible"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -2855,15 +2889,18 @@ msgid "Spins when the editor window redraws."
 msgstr "Gira cuando la ventana del editor se redibuja."
 
 #: editor/editor_node.cpp
-msgid "Update Always"
-msgstr "Actualizar Siempre"
+#, fuzzy
+msgid "Update Continuously"
+msgstr "Continuo"
 
 #: editor/editor_node.cpp
-msgid "Update Changes"
+#, fuzzy
+msgid "Update When Changed"
 msgstr "Actualizar Cambios"
 
 #: editor/editor_node.cpp
-msgid "Disable Update Spinner"
+#, fuzzy
+msgid "Hide Update Spinner"
 msgstr "Desactivar Indicador de Actividad"
 
 #: editor/editor_node.cpp
@@ -3168,6 +3205,11 @@ msgid "Page: "
 msgstr "Página: "
 
 #: editor/editor_properties_array_dict.cpp
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Remove Item"
+msgstr "Eliminar Item"
+
+#: editor/editor_properties_array_dict.cpp
 msgid "New Key:"
 msgstr "Nueva Clave:"
 
@@ -3178,11 +3220,6 @@ msgstr "Nuevo Valor:"
 #: editor/editor_properties_array_dict.cpp
 msgid "Add Key/Value Pair"
 msgstr "Agregar Par Clave/Valor"
-
-#: editor/editor_properties_array_dict.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Remove Item"
-msgstr "Eliminar Item"
 
 #: editor/editor_run_native.cpp
 msgid ""
@@ -5313,6 +5350,14 @@ msgid "Load Emission Mask"
 msgstr "Cargar Máscara de Emisión"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/cpu_particles_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Restart"
+msgstr "Reiniciar Ahora"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
 msgstr "Borrar máscara de emisión"
@@ -6223,8 +6268,18 @@ msgid "Find Next"
 msgstr "Buscar Siguiente"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Filter scripts"
+msgstr "Filtrar propiedades"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
 msgstr "Alternar la ordenación alfabética de la lista de métodos."
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Filter methods"
+msgstr "Modo de filtrado:"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
@@ -6466,11 +6521,6 @@ msgstr "Marcadores"
 #: scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Cortar"
-
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
-msgid "Select All"
-msgstr "Seleccionar Todo"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
@@ -8019,52 +8069,8 @@ msgid "Boolean uniform."
 msgstr "Boolean uniforme."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'camera' input parameter for all shader modes."
-msgstr "Parámetro de entrada de 'camera' para todos los modos de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'inv_camera' input parameter for all shader modes."
-msgstr "Parámetro de entrada 'inv_camera' para todos los modos de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'inv_projection' input parameter for all shader modes."
-msgstr "Parámetro de entrada' inv_projection' para todos los modos de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'normal' input parameter for all shader modes."
-msgstr "Parámetro de entrada 'normal' para todos los modos de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'projection' input parameter for all shader modes."
-msgstr "Parámetro de entrada 'projection' para todos los modos de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'time' input parameter for all shader modes."
-msgstr "Parámetro de entrada 'time' para todos los modos de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'viewport_size' input parameter for all shader modes."
-msgstr "Parámetro de entrada 'viewport_size' para todos los modos de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'world' input parameter for all shader modes."
-msgstr "Parámetro de entrada 'world' para todos los modos de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'alpha' input parameter for all shader modes."
-msgstr "Parámetro de entrada 'alpha' para todos los modos de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'color' input parameter for all shader modes."
-msgstr "Parámetro de entrada 'color' para todos los modos de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'texture_pixel_size' input parameter for all shader modes."
-msgstr ""
-"Parámetro de entrada 'texture_pixel_size' para todos los modos de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'uv' input parameter for all shader modes."
+#, fuzzy
+msgid "'%s' input parameter for all shader modes."
 msgstr "Parámetro de entrada 'uv' para todos los modos de shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8072,216 +8078,34 @@ msgid "Input parameter."
 msgstr "Parámetro de entrada."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'alpha' input parameter for vertex and fragment shader modes."
-msgstr ""
-"Parámetro de entrada 'alpha' para vértices y fragmentos en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'binormal' input parameter for vertex and fragment shader modes."
-msgstr ""
-"Parámetro de entrada 'binormal' para vértices y fragmentos en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'color' input parameter for vertex and fragment shader modes."
-msgstr ""
-"Parámetro de entrada 'color' para vértices y fragmentos en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'fragcoord' input parameter for fragment and light shader modes."
-msgstr ""
-"Parámetro de entrada 'fragcoord' para fragmentos y luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'point_coord' input parameter for fragment shader mode."
-msgstr "Parámetro de entrada 'point_coord' para fragmentos en modo de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'screen_uv' input parameter for fragment shader mode."
-msgstr "Parámetro de entrada 'screen_uv' para fragmentos en modo de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'side' input parameter for fragment shader mode."
-msgstr "Parámetro de entrada 'side' para fragmentos en modo de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'tangent' input parameter for vertex and fragment shader modes."
-msgstr ""
-"Parámetro de entrada 'tangent' para vértices y fragmentos en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'uv' input parameter for vertex and fragment shader modes."
+#, fuzzy
+msgid "'%s' input parameter for vertex and fragment shader modes."
 msgstr "Parámetro de entrada 'uv' para vértices y fragmentos en modo shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'uv2' input parameter for vertex and fragment shader modes."
-msgstr "Parámetro de entrada 'uv2' para vértices y fragmentos en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'vertex' input parameter for vertex and fragment shader modes."
-msgstr ""
-"Parámetro de entrada 'vertex' para vértices y fragmentos en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'view' input parameter for fragment and light shader modes."
+#, fuzzy
+msgid "'%s' input parameter for fragment and light shader modes."
 msgstr "Parámetro de entrada 'view' para fragmentos y luces en modo shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'albedo' input parameter for light shader mode."
-msgstr "Parámetro de entrada 'albedo' para luces en modo shader."
+#, fuzzy
+msgid "'%s' input parameter for fragment shader mode."
+msgstr "Parámetro de entrada 'side' para fragmentos en modo de shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'attenuation' input parameter for light shader mode."
-msgstr "Parámetro de entrada 'attenuation' para luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'diffuse' input parameter for light shader mode."
+#, fuzzy
+msgid "'%s' input parameter for light shader mode."
 msgstr "Parámetro de entrada 'diffuse' para luces en modo shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light' input parameter for light shader mode."
-msgstr "Parámetro de entrada 'light' para luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_color' input parameter for light shader mode."
-msgstr "Parámetro de entrada 'light_color' para luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'roughness' input parameter for light shader mode."
-msgstr "Parámetro de entrada 'roughness' para luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'specular' input parameter for light shader mode."
-msgstr "Parámetro de entrada 'specular' para luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'transmission' input parameter for light shader mode."
-msgstr "Parámetro de entrada 'transmission' para luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'modelview' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'modelview' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'point_size' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'point_size' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'tangent' input parameter for vertex and fragment shader mode."
-msgstr ""
-"Parámetro de entrada 'tangent' para vértices y fragmentos en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_pass' input parameter for vertex and fragment shader modes."
-msgstr ""
-"Parámetro de entrada 'light_pass' para vértices y fragmentos en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'point_coord' input parameter for fragment and light shader modes."
-msgstr ""
-"Parámetro de entrada 'point_coord' para fragmentos y luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'screen_pixel_size' input parameter for fragment shader mode."
-msgstr ""
-"Parámetro de entrada 'screen_pixel_size' para fragmentos en modo de shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'screen_uv' input parameter for fragment and light shader modes."
-msgstr ""
-"Parámetro de entrada 'screen_uv' para fragmentos y luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_alpha' input parameter for light shader mode."
-msgstr "Parámetro de entrada 'light_alpha' para luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_height' input parameter for light shader mode."
-msgstr "Parámetro de entrada 'light_height' para luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_uv' input parameter for light shader mode."
-msgstr "Parámetro de entrada 'light_uv' para luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_vec' input parameter for light shader mode."
-msgstr "Parámetro de entrada 'light_vec' para luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'normal' input parameter for light shader mode."
-msgstr "Parámetro de entrada 'normal' para luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'shadow_color' input parameter for light shader mode."
-msgstr "Parámetro de entrada 'shadow_color' para luces en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'extra' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'extra' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'projection' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'projection' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'vertex' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'vertex' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'world' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'world' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'active' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'active' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'alpha' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'alpha' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'color' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'color' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'custom' input parameter for vertex shader mode."
+#, fuzzy
+msgid "'%s' input parameter for vertex shader mode."
 msgstr "Parámetro de entrada 'custom' para vértices en modo shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'custom_alpha' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'custom_alpha' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'delta' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'delta' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'emission_transform' input parameter for vertex shader mode."
-msgstr ""
-"Parámetro de entrada 'emission_transform' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'index' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'index' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'lifetime' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'lifetime' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'restart' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'restart' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'time' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'time' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'transform' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'transform' para vértices en modo shader."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'velocity' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'velocity' para vértices en modo shader."
+#, fuzzy
+msgid "'%s' input parameter for vertex and fragment shader mode."
+msgstr "Parámetro de entrada 'uv' para vértices y fragmentos en modo shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar function."
@@ -10044,6 +9868,11 @@ msgid "Add Child Node"
 msgstr "Añadir Nodo Hijo"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Expand/Collapse All"
+msgstr "Colapsar Todo"
+
+#: editor/scene_tree_dock.cpp
 msgid "Change Type"
 msgstr "Cambiar Tipo"
 
@@ -10072,7 +9901,8 @@ msgid "Delete (No Confirm)"
 msgstr "Eliminar (Sin confirmar)"
 
 #: editor/scene_tree_dock.cpp
-msgid "Add/Create a New Node"
+#, fuzzy
+msgid "Add/Create a New Node."
 msgstr "Añadir/Crear un Nuevo Nodo"
 
 #: editor/scene_tree_dock.cpp
@@ -11579,6 +11409,17 @@ msgstr ""
 "Este hueso no tiene una pose de DESCANSO adecuada. Ve al nodo Skeleton2D y "
 "asígnale una."
 
+#: scene/2d/tile_map.cpp
+#, fuzzy
+msgid ""
+"TileMap with Use Parent on needs a parent CollisionObject2D to give shapes "
+"to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, "
+"KinematicBody2D, etc. to give them a shape."
+msgstr ""
+"CollisionShape2D solo sirve para proveer de una forma de colisión a un nodo "
+"derivado de CollisionObject2D. Por favor, úsalo solo como hijo de Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D, etc. para dotarlos de forma."
+
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
@@ -11882,8 +11723,13 @@ msgid "Pick a color from the screen."
 msgstr "Selecciona un color de la pantalla."
 
 #: scene/gui/color_picker.cpp
-msgid "Raw Mode"
-msgstr "Modo Raw"
+msgid "HSV"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Raw"
+msgstr "Yaw"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
@@ -11894,8 +11740,9 @@ msgid "Add current color as a preset."
 msgstr "Añadir el color actual como preset."
 
 #: scene/gui/container.cpp
+#, fuzzy
 msgid ""
-"Container by itself serves no purpose unless a script configures it's "
+"Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
 "If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
@@ -11904,6 +11751,12 @@ msgstr ""
 "comportamiento de colocación de sus hijos.\n"
 "Si no tienes intención de añadir un script, utiliza un nodo 'Control' "
 "sencillo."
+
+#: scene/gui/control.cpp
+msgid ""
+"The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
+"\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
+msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -12000,6 +11853,202 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "Enabled Classes"
+#~ msgstr "Clases Activadas"
+
+#~ msgid "Update Always"
+#~ msgstr "Actualizar Siempre"
+
+#~ msgid "'camera' input parameter for all shader modes."
+#~ msgstr "Parámetro de entrada de 'camera' para todos los modos de shader."
+
+#~ msgid "'inv_camera' input parameter for all shader modes."
+#~ msgstr "Parámetro de entrada 'inv_camera' para todos los modos de shader."
+
+#~ msgid "'inv_projection' input parameter for all shader modes."
+#~ msgstr ""
+#~ "Parámetro de entrada' inv_projection' para todos los modos de shader."
+
+#~ msgid "'normal' input parameter for all shader modes."
+#~ msgstr "Parámetro de entrada 'normal' para todos los modos de shader."
+
+#~ msgid "'projection' input parameter for all shader modes."
+#~ msgstr "Parámetro de entrada 'projection' para todos los modos de shader."
+
+#~ msgid "'time' input parameter for all shader modes."
+#~ msgstr "Parámetro de entrada 'time' para todos los modos de shader."
+
+#~ msgid "'viewport_size' input parameter for all shader modes."
+#~ msgstr ""
+#~ "Parámetro de entrada 'viewport_size' para todos los modos de shader."
+
+#~ msgid "'world' input parameter for all shader modes."
+#~ msgstr "Parámetro de entrada 'world' para todos los modos de shader."
+
+#~ msgid "'alpha' input parameter for all shader modes."
+#~ msgstr "Parámetro de entrada 'alpha' para todos los modos de shader."
+
+#~ msgid "'color' input parameter for all shader modes."
+#~ msgstr "Parámetro de entrada 'color' para todos los modos de shader."
+
+#~ msgid "'texture_pixel_size' input parameter for all shader modes."
+#~ msgstr ""
+#~ "Parámetro de entrada 'texture_pixel_size' para todos los modos de shader."
+
+#~ msgid "'alpha' input parameter for vertex and fragment shader modes."
+#~ msgstr ""
+#~ "Parámetro de entrada 'alpha' para vértices y fragmentos en modo shader."
+
+#~ msgid "'binormal' input parameter for vertex and fragment shader modes."
+#~ msgstr ""
+#~ "Parámetro de entrada 'binormal' para vértices y fragmentos en modo shader."
+
+#~ msgid "'color' input parameter for vertex and fragment shader modes."
+#~ msgstr ""
+#~ "Parámetro de entrada 'color' para vértices y fragmentos en modo shader."
+
+#~ msgid "'fragcoord' input parameter for fragment and light shader modes."
+#~ msgstr ""
+#~ "Parámetro de entrada 'fragcoord' para fragmentos y luces en modo shader."
+
+#~ msgid "'point_coord' input parameter for fragment shader mode."
+#~ msgstr ""
+#~ "Parámetro de entrada 'point_coord' para fragmentos en modo de shader."
+
+#~ msgid "'screen_uv' input parameter for fragment shader mode."
+#~ msgstr "Parámetro de entrada 'screen_uv' para fragmentos en modo de shader."
+
+#~ msgid "'tangent' input parameter for vertex and fragment shader modes."
+#~ msgstr ""
+#~ "Parámetro de entrada 'tangent' para vértices y fragmentos en modo shader."
+
+#~ msgid "'uv2' input parameter for vertex and fragment shader modes."
+#~ msgstr ""
+#~ "Parámetro de entrada 'uv2' para vértices y fragmentos en modo shader."
+
+#~ msgid "'vertex' input parameter for vertex and fragment shader modes."
+#~ msgstr ""
+#~ "Parámetro de entrada 'vertex' para vértices y fragmentos en modo shader."
+
+#~ msgid "'albedo' input parameter for light shader mode."
+#~ msgstr "Parámetro de entrada 'albedo' para luces en modo shader."
+
+#~ msgid "'attenuation' input parameter for light shader mode."
+#~ msgstr "Parámetro de entrada 'attenuation' para luces en modo shader."
+
+#~ msgid "'light' input parameter for light shader mode."
+#~ msgstr "Parámetro de entrada 'light' para luces en modo shader."
+
+#~ msgid "'light_color' input parameter for light shader mode."
+#~ msgstr "Parámetro de entrada 'light_color' para luces en modo shader."
+
+#~ msgid "'roughness' input parameter for light shader mode."
+#~ msgstr "Parámetro de entrada 'roughness' para luces en modo shader."
+
+#~ msgid "'specular' input parameter for light shader mode."
+#~ msgstr "Parámetro de entrada 'specular' para luces en modo shader."
+
+#~ msgid "'transmission' input parameter for light shader mode."
+#~ msgstr "Parámetro de entrada 'transmission' para luces en modo shader."
+
+#~ msgid "'modelview' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'modelview' para vértices en modo shader."
+
+#~ msgid "'point_size' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'point_size' para vértices en modo shader."
+
+#~ msgid "'tangent' input parameter for vertex and fragment shader mode."
+#~ msgstr ""
+#~ "Parámetro de entrada 'tangent' para vértices y fragmentos en modo shader."
+
+#~ msgid "'light_pass' input parameter for vertex and fragment shader modes."
+#~ msgstr ""
+#~ "Parámetro de entrada 'light_pass' para vértices y fragmentos en modo "
+#~ "shader."
+
+#~ msgid "'point_coord' input parameter for fragment and light shader modes."
+#~ msgstr ""
+#~ "Parámetro de entrada 'point_coord' para fragmentos y luces en modo shader."
+
+#~ msgid "'screen_pixel_size' input parameter for fragment shader mode."
+#~ msgstr ""
+#~ "Parámetro de entrada 'screen_pixel_size' para fragmentos en modo de "
+#~ "shader."
+
+#~ msgid "'screen_uv' input parameter for fragment and light shader modes."
+#~ msgstr ""
+#~ "Parámetro de entrada 'screen_uv' para fragmentos y luces en modo shader."
+
+#~ msgid "'light_alpha' input parameter for light shader mode."
+#~ msgstr "Parámetro de entrada 'light_alpha' para luces en modo shader."
+
+#~ msgid "'light_height' input parameter for light shader mode."
+#~ msgstr "Parámetro de entrada 'light_height' para luces en modo shader."
+
+#~ msgid "'light_uv' input parameter for light shader mode."
+#~ msgstr "Parámetro de entrada 'light_uv' para luces en modo shader."
+
+#~ msgid "'light_vec' input parameter for light shader mode."
+#~ msgstr "Parámetro de entrada 'light_vec' para luces en modo shader."
+
+#~ msgid "'normal' input parameter for light shader mode."
+#~ msgstr "Parámetro de entrada 'normal' para luces en modo shader."
+
+#~ msgid "'shadow_color' input parameter for light shader mode."
+#~ msgstr "Parámetro de entrada 'shadow_color' para luces en modo shader."
+
+#~ msgid "'extra' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'extra' para vértices en modo shader."
+
+#~ msgid "'projection' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'projection' para vértices en modo shader."
+
+#~ msgid "'vertex' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'vertex' para vértices en modo shader."
+
+#~ msgid "'world' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'world' para vértices en modo shader."
+
+#~ msgid "'active' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'active' para vértices en modo shader."
+
+#~ msgid "'alpha' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'alpha' para vértices en modo shader."
+
+#~ msgid "'color' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'color' para vértices en modo shader."
+
+#~ msgid "'custom_alpha' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'custom_alpha' para vértices en modo shader."
+
+#~ msgid "'delta' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'delta' para vértices en modo shader."
+
+#~ msgid "'emission_transform' input parameter for vertex shader mode."
+#~ msgstr ""
+#~ "Parámetro de entrada 'emission_transform' para vértices en modo shader."
+
+#~ msgid "'index' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'index' para vértices en modo shader."
+
+#~ msgid "'lifetime' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'lifetime' para vértices en modo shader."
+
+#~ msgid "'restart' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'restart' para vértices en modo shader."
+
+#~ msgid "'time' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'time' para vértices en modo shader."
+
+#~ msgid "'transform' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'transform' para vértices en modo shader."
+
+#~ msgid "'velocity' input parameter for vertex shader mode."
+#~ msgstr "Parámetro de entrada 'velocity' para vértices en modo shader."
+
+#~ msgid "Raw Mode"
+#~ msgstr "Modo Raw"
 
 #~ msgid "Path to Node:"
 #~ msgstr "Ruta al nodo:"
@@ -12563,9 +12612,6 @@ msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Toggle Spatial Visible"
 #~ msgstr "Act/desact. Spatial visible"
-
-#~ msgid "Toggle CanvasItem Visible"
-#~ msgstr "Act/desact. CanvasItem visible"
 
 #~ msgid "Condition"
 #~ msgstr "Condición"
@@ -13538,9 +13584,6 @@ msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Images:"
 #~ msgstr "Imágenes:"
-
-#~ msgid "Select None"
-#~ msgstr "Deseleccionar todo"
 
 #~ msgid "Group"
 #~ msgstr "Grupo"

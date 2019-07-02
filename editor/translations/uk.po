@@ -456,6 +456,16 @@ msgstr ""
 msgid "Warning: Editing imported animation"
 msgstr "Попередження: Редагуємо імпортовану анімацію"
 
+#: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Select All"
+msgstr "Виділити все"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Select None"
+msgstr "Позначити вузол"
+
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Показувати доріжки лише для вузлів, які позначено у ієрархії."
@@ -1320,7 +1330,8 @@ msgid "Must not collide with an existing engine class name."
 msgstr "Назва має відрізнятися від наявної назви класу рушія."
 
 #: editor/editor_autoload_settings.cpp
-msgid "Must not collide with an existing buit-in type name."
+#, fuzzy
+msgid "Must not collide with an existing built-in type name."
 msgstr "Назва не повинна збігатися із наявною назвою вбудованого типу."
 
 #: editor/editor_autoload_settings.cpp
@@ -1523,7 +1534,8 @@ msgid "Node Dock"
 msgstr "Бічна панель вузлів"
 
 #: editor/editor_feature_profile.cpp
-msgid "Filesystem Dock"
+#, fuzzy
+msgid "FileSystem and Import Docks"
 msgstr "Бічна панель файлової системи"
 
 #: editor/editor_feature_profile.cpp
@@ -1575,8 +1587,9 @@ msgid "File '%s' format is invalid, import aborted."
 msgstr "Формат файла «%s» є некоректним, імпортування перервано."
 
 #: editor/editor_feature_profile.cpp
+#, fuzzy
 msgid ""
-"Profile '%s' already exists. Remote it first before importing, import "
+"Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
 msgstr ""
 "Профіль із назвою «%s» вже існує. Перед імпортуванням слід вилучити наявний "
@@ -1591,7 +1604,8 @@ msgid "Unset"
 msgstr "Не встановлено"
 
 #: editor/editor_feature_profile.cpp
-msgid "Current Profile"
+#, fuzzy
+msgid "Current Profile:"
 msgstr "Поточний профіль"
 
 #: editor/editor_feature_profile.cpp
@@ -1614,12 +1628,9 @@ msgid "Export"
 msgstr "Експортування"
 
 #: editor/editor_feature_profile.cpp
-msgid "Available Profiles"
+#, fuzzy
+msgid "Available Profiles:"
 msgstr "Доступні профілі"
-
-#: editor/editor_feature_profile.cpp
-msgid "Enabled Classes"
-msgstr "Увімкнені класи"
 
 #: editor/editor_feature_profile.cpp
 msgid "Class Options"
@@ -2700,8 +2711,32 @@ msgid "Editor Layout"
 msgstr "Редактор компонування"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Take Screenshot"
+msgstr "Зробити кореневим для сцени"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Screenshots are stored in the Editor Data/Settings Folder."
+msgstr "Відкриття теки даних/параметрів редактора"
+
+#: editor/editor_node.cpp
+msgid "Automatically Open Screenshots"
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open in an external image editor."
+msgstr "Відкрити наступний редактор"
+
+#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Перемикач повноекранного режиму"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Toggle System Console"
+msgstr "Перемкнути видимість CanvasItem"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -2810,15 +2845,18 @@ msgid "Spins when the editor window redraws."
 msgstr "Обертається, коли перемальовується вікно редактора."
 
 #: editor/editor_node.cpp
-msgid "Update Always"
-msgstr "Завжди оновлювати"
+#, fuzzy
+msgid "Update Continuously"
+msgstr "Неперервна"
 
 #: editor/editor_node.cpp
-msgid "Update Changes"
+#, fuzzy
+msgid "Update When Changed"
 msgstr "Оновлювати зміни"
 
 #: editor/editor_node.cpp
-msgid "Disable Update Spinner"
+#, fuzzy
+msgid "Hide Update Spinner"
 msgstr "Вимкнути оновлення лічильника"
 
 #: editor/editor_node.cpp
@@ -3123,6 +3161,11 @@ msgid "Page: "
 msgstr "Сторінка: "
 
 #: editor/editor_properties_array_dict.cpp
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Remove Item"
+msgstr "Вилучити елемент"
+
+#: editor/editor_properties_array_dict.cpp
 msgid "New Key:"
 msgstr "Новий ключ:"
 
@@ -3133,11 +3176,6 @@ msgstr "Нове значення:"
 #: editor/editor_properties_array_dict.cpp
 msgid "Add Key/Value Pair"
 msgstr "Додати пару ключ-значення"
-
-#: editor/editor_properties_array_dict.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Remove Item"
-msgstr "Вилучити елемент"
 
 #: editor/editor_run_native.cpp
 msgid ""
@@ -5265,6 +5303,14 @@ msgid "Load Emission Mask"
 msgstr "Завантажити маску випромінювання"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/cpu_particles_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Restart"
+msgstr "Перезавантажити зараз"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
 msgstr "Очистити маску випромінювання"
@@ -6173,8 +6219,18 @@ msgid "Find Next"
 msgstr "Знайти наступне"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Filter scripts"
+msgstr "Фільтрувати властивості"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
 msgstr "Увімкнути або вимкнути упорядковування за абеткою у списку методів."
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Filter methods"
+msgstr "Режим фільтрування:"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
@@ -6416,11 +6472,6 @@ msgstr "Закладки"
 #: scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Вирізати"
-
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
-msgid "Select All"
-msgstr "Виділити все"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
@@ -7974,51 +8025,8 @@ msgid "Boolean uniform."
 msgstr "Однорідне булеве."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'camera' input parameter for all shader modes."
-msgstr "Вхідний параметр «camera» для усіх режимів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'inv_camera' input parameter for all shader modes."
-msgstr "Вхідний параметр «inv_camera» для усіх режимів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'inv_projection' input parameter for all shader modes."
-msgstr "Вхідний параметр «inv_projection» для усіх режимів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'normal' input parameter for all shader modes."
-msgstr "Вхідний параметр «normal» для усіх режимів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'projection' input parameter for all shader modes."
-msgstr "Вхідний параметр «projection» для усіх режимів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'time' input parameter for all shader modes."
-msgstr "Вхідний параметр «time» для усіх режимів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'viewport_size' input parameter for all shader modes."
-msgstr "Вхідний параметр «viewport_size» для усіх режимів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'world' input parameter for all shader modes."
-msgstr "Вхідний параметр «world» для усіх режимів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'alpha' input parameter for all shader modes."
-msgstr "Вхідний параметр «alpha» для усіх режимів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'color' input parameter for all shader modes."
-msgstr "Вхідний параметр «color» для усіх режимів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'texture_pixel_size' input parameter for all shader modes."
-msgstr "Вхідний параметр «texture_pixel_size» для усіх режимів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'uv' input parameter for all shader modes."
+#, fuzzy
+msgid "'%s' input parameter for all shader modes."
 msgstr "Вхідний параметр «uv» для усіх режимів шейдера."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8026,205 +8034,34 @@ msgid "Input parameter."
 msgstr "Вхідний параметр."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'alpha' input parameter for vertex and fragment shader modes."
-msgstr "Вхідний параметр «alpha» для режиму вершин і фрагментів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'binormal' input parameter for vertex and fragment shader modes."
-msgstr "Вхідний параметр «binormal» для режиму вершин і фрагментів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'color' input parameter for vertex and fragment shader modes."
-msgstr "Вхідний параметр «color» для режиму вершин і фрагментів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'fragcoord' input parameter for fragment and light shader modes."
-msgstr "Вхідний параметр «fragcoord» для режимів фрагментів та світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'point_coord' input parameter for fragment shader mode."
-msgstr "Вхідний параметр «point_coord» для режиму фрагментів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'screen_uv' input parameter for fragment shader mode."
-msgstr "Вхідний параметр «screen_uv» для режимів фрагментів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'side' input parameter for fragment shader mode."
-msgstr "Вхідний параметр «side» для режимів фрагментів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'tangent' input parameter for vertex and fragment shader modes."
-msgstr "Вхідний параметр «tangent» для режиму вершин і фрагментів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'uv' input parameter for vertex and fragment shader modes."
+#, fuzzy
+msgid "'%s' input parameter for vertex and fragment shader modes."
 msgstr "Вхідний параметр «uv» для режиму вершин і фрагментів шейдера."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'uv2' input parameter for vertex and fragment shader modes."
-msgstr "Вхідний параметр «uv2» для режиму вершин і фрагментів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'vertex' input parameter for vertex and fragment shader modes."
-msgstr "Вхідний параметр «vertex» для режиму вершин і фрагментів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'view' input parameter for fragment and light shader modes."
+#, fuzzy
+msgid "'%s' input parameter for fragment and light shader modes."
 msgstr "Вхідний параметр «view» для режимів фрагментів та світла шейдера."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'albedo' input parameter for light shader mode."
-msgstr "Вхідний параметр «albedo» для режиму світла шейдера."
+#, fuzzy
+msgid "'%s' input parameter for fragment shader mode."
+msgstr "Вхідний параметр «side» для режимів фрагментів шейдера."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'attenuation' input parameter for light shader mode."
-msgstr "Вхідний параметр «attenuation» для режиму світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'diffuse' input parameter for light shader mode."
+#, fuzzy
+msgid "'%s' input parameter for light shader mode."
 msgstr "Вхідний параметр «diffuse» для режиму світла шейдера."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light' input parameter for light shader mode."
-msgstr "Вхідний параметр «light» для режиму світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_color' input parameter for light shader mode."
-msgstr "Вхідний параметр «light_color» для режиму світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'roughness' input parameter for light shader mode."
-msgstr "Вхідний параметр «roughness» для режиму світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'specular' input parameter for light shader mode."
-msgstr "Вхідний параметр «specular» для режиму світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'transmission' input parameter for light shader mode."
-msgstr "Вхідний параметр «transmission» для режиму світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'modelview' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «modelview» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'point_size' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «point_size» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'tangent' input parameter for vertex and fragment shader mode."
-msgstr "Вхідний параметр «tangent» для режиму вершин і фрагментів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_pass' input parameter for vertex and fragment shader modes."
-msgstr "Вхідний параметр «light_pass» для режиму вершин і фрагментів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'point_coord' input parameter for fragment and light shader modes."
-msgstr ""
-"Вхідний параметр «point_coord» для режимів фрагментів та світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'screen_pixel_size' input parameter for fragment shader mode."
-msgstr "Вхідний параметр «screen_pixel_size» для режиму фрагментів шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'screen_uv' input parameter for fragment and light shader modes."
-msgstr "Вхідний параметр «screen_uv» для режимів фрагментів та світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_alpha' input parameter for light shader mode."
-msgstr "Вхідний параметр «light_alpha» для режиму світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_height' input parameter for light shader mode."
-msgstr "Вхідний параметр «light_height» для режиму світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_uv' input parameter for light shader mode."
-msgstr "Вхідний параметр «light_uv» для режиму світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_vec' input parameter for light shader mode."
-msgstr "Вхідний параметр «light_vec» для режиму світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'normal' input parameter for light shader mode."
-msgstr "Вхідний параметр «normal» для режиму світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'shadow_color' input parameter for light shader mode."
-msgstr "Вхідний параметр «shadow_color» для режиму світла шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'extra' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «extra» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'projection' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «projection» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'vertex' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «vertex» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'world' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «world» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'active' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «active» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'alpha' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «alpha» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'color' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «color» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'custom' input parameter for vertex shader mode."
+#, fuzzy
+msgid "'%s' input parameter for vertex shader mode."
 msgstr "Вхідний параметр «custom» для режиму вершин шейдера."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'custom_alpha' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «custom_alph» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'delta' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «delta» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'emission_transform' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «emission_transform» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'index' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «index» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'lifetime' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «lifetime» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'restart' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «restart» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'time' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «time» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'transform' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «transform» для режиму вершин шейдера."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'velocity' input parameter for vertex shader mode."
-msgstr "Вхідний параметр «velocity» для режиму вершин шейдера."
+#, fuzzy
+msgid "'%s' input parameter for vertex and fragment shader mode."
+msgstr "Вхідний параметр «uv» для режиму вершин і фрагментів шейдера."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar function."
@@ -9992,6 +9829,11 @@ msgid "Add Child Node"
 msgstr "Додати дочірній вузол"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Expand/Collapse All"
+msgstr "Згорнути все"
+
+#: editor/scene_tree_dock.cpp
 msgid "Change Type"
 msgstr "Змінити тип"
 
@@ -10020,7 +9862,8 @@ msgid "Delete (No Confirm)"
 msgstr "Вилучити (без підтвердження)"
 
 #: editor/scene_tree_dock.cpp
-msgid "Add/Create a New Node"
+#, fuzzy
+msgid "Add/Create a New Node."
 msgstr "Додати або створити новий вузол"
 
 #: editor/scene_tree_dock.cpp
@@ -11515,6 +11358,17 @@ msgstr ""
 "Цій кістці бракує належної пози REST. Перейдіть до вузла Skeleton2D і "
 "встановіть її."
 
+#: scene/2d/tile_map.cpp
+#, fuzzy
+msgid ""
+"TileMap with Use Parent on needs a parent CollisionObject2D to give shapes "
+"to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, "
+"KinematicBody2D, etc. to give them a shape."
+msgstr ""
+"CollisionShape2D призначено лише для надання форми для зіткнень похідному "
+"вузлу CollisionObject2D. Будь ласка, використовуйте його як дочірній елемент "
+"Area2D, StaticBody2D, RigidBody2D, KinematicBody2D тощо, щоб надати їм форми."
+
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
@@ -11817,8 +11671,13 @@ msgid "Pick a color from the screen."
 msgstr "Вибрати колір з екрана."
 
 #: scene/gui/color_picker.cpp
-msgid "Raw Mode"
-msgstr "Raw (сирий) режим"
+msgid "HSV"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Raw"
+msgstr "Відхилення"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
@@ -11829,8 +11688,9 @@ msgid "Add current color as a preset."
 msgstr "Додати поточний колір як шаблон."
 
 #: scene/gui/container.cpp
+#, fuzzy
 msgid ""
-"Container by itself serves no purpose unless a script configures it's "
+"Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
 "If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
@@ -11839,6 +11699,12 @@ msgstr ""
 "розташування його дочірніх об'єктів.\n"
 "Якщо ви не маєте наміру додавати скрипт, будь ласка, скористайтеся замість "
 "контейнера звичайним вузлом «Control»."
+
+#: scene/gui/control.cpp
+msgid ""
+"The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
+"\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
+msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -11936,6 +11802,187 @@ msgstr "Змінні величини можна пов'язувати лише 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
+
+#~ msgid "Enabled Classes"
+#~ msgstr "Увімкнені класи"
+
+#~ msgid "Update Always"
+#~ msgstr "Завжди оновлювати"
+
+#~ msgid "'camera' input parameter for all shader modes."
+#~ msgstr "Вхідний параметр «camera» для усіх режимів шейдера."
+
+#~ msgid "'inv_camera' input parameter for all shader modes."
+#~ msgstr "Вхідний параметр «inv_camera» для усіх режимів шейдера."
+
+#~ msgid "'inv_projection' input parameter for all shader modes."
+#~ msgstr "Вхідний параметр «inv_projection» для усіх режимів шейдера."
+
+#~ msgid "'normal' input parameter for all shader modes."
+#~ msgstr "Вхідний параметр «normal» для усіх режимів шейдера."
+
+#~ msgid "'projection' input parameter for all shader modes."
+#~ msgstr "Вхідний параметр «projection» для усіх режимів шейдера."
+
+#~ msgid "'time' input parameter for all shader modes."
+#~ msgstr "Вхідний параметр «time» для усіх режимів шейдера."
+
+#~ msgid "'viewport_size' input parameter for all shader modes."
+#~ msgstr "Вхідний параметр «viewport_size» для усіх режимів шейдера."
+
+#~ msgid "'world' input parameter for all shader modes."
+#~ msgstr "Вхідний параметр «world» для усіх режимів шейдера."
+
+#~ msgid "'alpha' input parameter for all shader modes."
+#~ msgstr "Вхідний параметр «alpha» для усіх режимів шейдера."
+
+#~ msgid "'color' input parameter for all shader modes."
+#~ msgstr "Вхідний параметр «color» для усіх режимів шейдера."
+
+#~ msgid "'texture_pixel_size' input parameter for all shader modes."
+#~ msgstr "Вхідний параметр «texture_pixel_size» для усіх режимів шейдера."
+
+#~ msgid "'alpha' input parameter for vertex and fragment shader modes."
+#~ msgstr "Вхідний параметр «alpha» для режиму вершин і фрагментів шейдера."
+
+#~ msgid "'binormal' input parameter for vertex and fragment shader modes."
+#~ msgstr "Вхідний параметр «binormal» для режиму вершин і фрагментів шейдера."
+
+#~ msgid "'color' input parameter for vertex and fragment shader modes."
+#~ msgstr "Вхідний параметр «color» для режиму вершин і фрагментів шейдера."
+
+#~ msgid "'fragcoord' input parameter for fragment and light shader modes."
+#~ msgstr ""
+#~ "Вхідний параметр «fragcoord» для режимів фрагментів та світла шейдера."
+
+#~ msgid "'point_coord' input parameter for fragment shader mode."
+#~ msgstr "Вхідний параметр «point_coord» для режиму фрагментів шейдера."
+
+#~ msgid "'screen_uv' input parameter for fragment shader mode."
+#~ msgstr "Вхідний параметр «screen_uv» для режимів фрагментів шейдера."
+
+#~ msgid "'tangent' input parameter for vertex and fragment shader modes."
+#~ msgstr "Вхідний параметр «tangent» для режиму вершин і фрагментів шейдера."
+
+#~ msgid "'uv2' input parameter for vertex and fragment shader modes."
+#~ msgstr "Вхідний параметр «uv2» для режиму вершин і фрагментів шейдера."
+
+#~ msgid "'vertex' input parameter for vertex and fragment shader modes."
+#~ msgstr "Вхідний параметр «vertex» для режиму вершин і фрагментів шейдера."
+
+#~ msgid "'albedo' input parameter for light shader mode."
+#~ msgstr "Вхідний параметр «albedo» для режиму світла шейдера."
+
+#~ msgid "'attenuation' input parameter for light shader mode."
+#~ msgstr "Вхідний параметр «attenuation» для режиму світла шейдера."
+
+#~ msgid "'light' input parameter for light shader mode."
+#~ msgstr "Вхідний параметр «light» для режиму світла шейдера."
+
+#~ msgid "'light_color' input parameter for light shader mode."
+#~ msgstr "Вхідний параметр «light_color» для режиму світла шейдера."
+
+#~ msgid "'roughness' input parameter for light shader mode."
+#~ msgstr "Вхідний параметр «roughness» для режиму світла шейдера."
+
+#~ msgid "'specular' input parameter for light shader mode."
+#~ msgstr "Вхідний параметр «specular» для режиму світла шейдера."
+
+#~ msgid "'transmission' input parameter for light shader mode."
+#~ msgstr "Вхідний параметр «transmission» для режиму світла шейдера."
+
+#~ msgid "'modelview' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «modelview» для режиму вершин шейдера."
+
+#~ msgid "'point_size' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «point_size» для режиму вершин шейдера."
+
+#~ msgid "'tangent' input parameter for vertex and fragment shader mode."
+#~ msgstr "Вхідний параметр «tangent» для режиму вершин і фрагментів шейдера."
+
+#~ msgid "'light_pass' input parameter for vertex and fragment shader modes."
+#~ msgstr ""
+#~ "Вхідний параметр «light_pass» для режиму вершин і фрагментів шейдера."
+
+#~ msgid "'point_coord' input parameter for fragment and light shader modes."
+#~ msgstr ""
+#~ "Вхідний параметр «point_coord» для режимів фрагментів та світла шейдера."
+
+#~ msgid "'screen_pixel_size' input parameter for fragment shader mode."
+#~ msgstr "Вхідний параметр «screen_pixel_size» для режиму фрагментів шейдера."
+
+#~ msgid "'screen_uv' input parameter for fragment and light shader modes."
+#~ msgstr ""
+#~ "Вхідний параметр «screen_uv» для режимів фрагментів та світла шейдера."
+
+#~ msgid "'light_alpha' input parameter for light shader mode."
+#~ msgstr "Вхідний параметр «light_alpha» для режиму світла шейдера."
+
+#~ msgid "'light_height' input parameter for light shader mode."
+#~ msgstr "Вхідний параметр «light_height» для режиму світла шейдера."
+
+#~ msgid "'light_uv' input parameter for light shader mode."
+#~ msgstr "Вхідний параметр «light_uv» для режиму світла шейдера."
+
+#~ msgid "'light_vec' input parameter for light shader mode."
+#~ msgstr "Вхідний параметр «light_vec» для режиму світла шейдера."
+
+#~ msgid "'normal' input parameter for light shader mode."
+#~ msgstr "Вхідний параметр «normal» для режиму світла шейдера."
+
+#~ msgid "'shadow_color' input parameter for light shader mode."
+#~ msgstr "Вхідний параметр «shadow_color» для режиму світла шейдера."
+
+#~ msgid "'extra' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «extra» для режиму вершин шейдера."
+
+#~ msgid "'projection' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «projection» для режиму вершин шейдера."
+
+#~ msgid "'vertex' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «vertex» для режиму вершин шейдера."
+
+#~ msgid "'world' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «world» для режиму вершин шейдера."
+
+#~ msgid "'active' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «active» для режиму вершин шейдера."
+
+#~ msgid "'alpha' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «alpha» для режиму вершин шейдера."
+
+#~ msgid "'color' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «color» для режиму вершин шейдера."
+
+#~ msgid "'custom_alpha' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «custom_alph» для режиму вершин шейдера."
+
+#~ msgid "'delta' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «delta» для режиму вершин шейдера."
+
+#~ msgid "'emission_transform' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «emission_transform» для режиму вершин шейдера."
+
+#~ msgid "'index' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «index» для режиму вершин шейдера."
+
+#~ msgid "'lifetime' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «lifetime» для режиму вершин шейдера."
+
+#~ msgid "'restart' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «restart» для режиму вершин шейдера."
+
+#~ msgid "'time' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «time» для режиму вершин шейдера."
+
+#~ msgid "'transform' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «transform» для режиму вершин шейдера."
+
+#~ msgid "'velocity' input parameter for vertex shader mode."
+#~ msgstr "Вхідний параметр «velocity» для режиму вершин шейдера."
+
+#~ msgid "Raw Mode"
+#~ msgstr "Raw (сирий) режим"
 
 #~ msgid "Path to Node:"
 #~ msgstr "Шлях до вузла:"
@@ -12480,9 +12527,6 @@ msgstr "Сталі не можна змінювати."
 
 #~ msgid "Toggle Spatial Visible"
 #~ msgstr "Перемкнути просторову видимість"
-
-#~ msgid "Toggle CanvasItem Visible"
-#~ msgstr "Перемкнути видимість CanvasItem"
 
 #~ msgid "Condition"
 #~ msgstr "Умова"
