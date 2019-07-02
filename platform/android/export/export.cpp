@@ -824,11 +824,17 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							encode_uint32(min_gles3 ? 0x00030000 : 0x00020000, &p_manifest.write[iofs + 16]);
 						}
 
-						if (tname == "meta-data" && attrname == "value") {
+						if (tname == "meta-data" && attrname == "name" && string_table[attr_value] == "xr_mode_metadata_name") {
+							// Update the meta-data 'android:name' attribute based on the selected XR mode.
+							if (xr_mode_index == 1 /* XRMode.OVR */) {
+								string_table.write[attr_value] = "com.samsung.android.vr.application.mode";
+							}
+						}
+
+						if (tname == "meta-data" && attrname == "value" && string_table[attr_value] == "xr_mode_metadata_value") {
+							// Update the meta-data 'android:value' attribute based on the selected XR mode.
 							if (xr_mode_index == 1 /* XRMode.OVR */) {
 								string_table.write[attr_value] = "vr_only";
-							} else {
-								string_table.write[attr_value] = "";
 							}
 						}
 
