@@ -411,6 +411,7 @@ Particles::Particles() {
 
 	particles = VS::get_singleton()->particles_create();
 	set_base(particles);
+	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
 	set_one_shot(false);
 	set_amount(8);
