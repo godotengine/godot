@@ -25,8 +25,8 @@
 <!--The following values are replaced when Godot exports, modifying them here has no effect. Do these changes in the-->
 <!--export preset. Adding new ones is fine.-->
 
-<!-- Metadata for VR app detection on Oculus devices. This is modified by the exporter based on the selected xr mode. Changing this value here has no effect. -->
-        <meta-data android:name="com.samsung.android.vr.application.mode" android:value=""/>
+<!-- XR mode metadata. This is modified by the exporter based on the selected xr mode. DO NOT CHANGE the values here. -->
+        <meta-data android:name="xr_mode_metadata_name" android:value="xr_mode_metadata_value"/>
 
         <activity android:name="org.godotengine.godot.Godot"
                   android:label="@string/godot_project_name_string"
