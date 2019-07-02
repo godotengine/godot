@@ -3,18 +3,19 @@
 # Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 # Scott Starkey <yekrats@gmail.com>, 2019.
+# AlexHoratio <yukithetupper@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2019-06-16 19:42+0000\n"
-"Last-Translator: Scott Starkey <yekrats@gmail.com>\n"
+"PO-Revision-Date: 2019-07-02 10:48+0000\n"
+"Last-Translator: AlexHoratio <yukithetupper@gmail.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.7-dev\n"
+"X-Generator: Weblate 3.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -29,7 +30,7 @@ msgstr "Ne sufiĉas bitokoj por malĉifri bitokojn, aŭ nevalida formo."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Nevalida enigo %i (ne pasita) en esprimo"
+msgstr "Nevalida enigo %i (ne pasitis) en esprimo"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -53,7 +54,7 @@ msgstr "Malvalidaj argumentoj por konstrui '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "En voko al '%s':"
 
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -70,11 +71,11 @@ msgstr "Spegulo"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr ""
+msgstr "Tempo:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr ""
+msgstr "Valoro:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -82,215 +83,215 @@ msgstr "Enmetu ŝlosilon ĉi tien"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr ""
+msgstr "Duplikati Elektita(j)n Ŝlosilo(j)n"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr ""
+msgstr "Forigi Elektita(j)n Ŝlosilo(j)n"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr ""
+msgstr "Aldoni Bezier-punkton"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr ""
+msgstr "Movi Bezier-punktojn"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "Animado Duplikati Ŝlosilojn"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr ""
+msgstr "Animado Forigi Ŝlosilojn"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr ""
+msgstr "Animado Aliigi Kernakadron Fojon"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "Animado Aliigi Transiron"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr ""
+msgstr "Animado Aliigi Transformon"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr ""
+msgstr "Animado Aliigi Kernakadron Valoron"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "Animado Aliigi Alvokon"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
-msgstr ""
+msgstr "Aliigi Animadon Longecon"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "Aliigi Animadon Iteracion"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr ""
+msgstr "Atributo Vojeto"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
-msgstr ""
+msgstr "3D Transformo Vojeto"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "Alvoki Metodon Vojeto"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "Bezier-kurbo Vojeto"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "Aŭdio Reproduktado Vojeto"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Playback Track"
-msgstr ""
+msgstr "Animado Reproduktado Vojeto"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
-msgstr ""
+msgstr "Animado loneco (filmeroj)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (seconds)"
-msgstr ""
+msgstr "Animado loneco (sekundoj)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
-msgstr ""
+msgstr "Adici Vojeton"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr ""
+msgstr "Animado Iteracianti"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr ""
+msgstr "Funkcioj:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr ""
+msgstr "Aŭdio Filmitaĵero:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr ""
+msgstr "Animado Filmitaĵero:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
-msgstr ""
+msgstr "Aliigi Vojeton Vojon"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr ""
+msgstr "Baskuligi tio ĉi vojeto ŝaltita/malŝaltita."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "Aktualigi Modon (Kiel tio ĉi atributo estas determinigis)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
-msgstr ""
+msgstr "Interpolado Modo"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr ""
+msgstr "Iteracio Volvi Modo (Interpoli finon kun komenco de iteracio)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
-msgstr ""
+msgstr "Forigi tio ĉi vojeton."
 
 #: editor/animation_track_editor.cpp
 msgid "Time (s): "
-msgstr ""
+msgstr "Fojo (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr ""
+msgstr "Baskuligi Vojeton Ŝaltitis"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
-msgstr ""
+msgstr "Seninterrompa"
 
 #: editor/animation_track_editor.cpp
 msgid "Discrete"
-msgstr ""
+msgstr "Diskreta"
 
 #: editor/animation_track_editor.cpp
 msgid "Trigger"
-msgstr ""
+msgstr "Startigilo"
 
 #: editor/animation_track_editor.cpp
 msgid "Capture"
-msgstr ""
+msgstr "Kapti"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "Plej apuda"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
 msgid "Linear"
-msgstr ""
+msgstr "Lineara"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "Kubika"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr ""
+msgstr "Krampi Iteracion Interpolon"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr ""
+msgstr "Ĉirkaŭvolvi Iteracion Interpolon"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr ""
+msgstr "Enmeti Ŝlosilon"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
-msgstr ""
+msgstr "Duobligi Ŝlosilo(j)n"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
-msgstr ""
+msgstr "Forigi Ŝlosilo(j)n"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
-msgstr ""
+msgstr "Aliigi Animadon Aktualigon Modon"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Interpolation Mode"
-msgstr ""
+msgstr "Aliigi Animadon Interpolon Modon"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
-msgstr ""
+msgstr "Aliigi Animadon Iteracion Modon"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
-msgstr ""
+msgstr "Formovi Animadon Vojeton"
 
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr ""
+msgstr "Fari NOVAN vojeton por %s kaj enmeti ŝlosilon?"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr ""
+msgstr "Fari %d NOVAJN vojetojn kaj enmeti ŝlosilojn?"
 
 #: editor/animation_track_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/editor_feature_profile.cpp
@@ -301,39 +302,39 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_create_dialog.cpp
 msgid "Create"
-msgstr ""
+msgstr "Krei"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert"
-msgstr ""
+msgstr "Animado Enmetu"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr ""
+msgstr "AnimationPlayer ne povas animi si mem, nur aliajn ludantojn."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
-msgstr ""
+msgstr "Animado Krei & Enmeti"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr ""
+msgstr "Animado Enmeti Vojeton & Ŝlosilon"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Key"
-msgstr ""
+msgstr "Animado Enmeti Ŝlosilon"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Step"
-msgstr ""
+msgstr "Aliigi Animadon Paŝon"
 
 #: editor/animation_track_editor.cpp
 msgid "Rearrange Tracks"
-msgstr ""
+msgstr "Rearanĝi Vojetojn"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr ""
+msgstr "Transforma vojetoj nur almetas al Spatial nodojn."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -342,71 +343,76 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
+"Aŭdio vojetoj nur volas indiki al nodojn de tipojn:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr ""
+msgstr "Animado vojetoj nur volas indiki al AnimationPlayer nodojn."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
-msgstr ""
+msgstr "Animado legilo ne volas animi si mem, nur aliajn ludantojn."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "Ĝi ne estas ebla adici novan vojeton sen radiko"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
-msgstr ""
+msgstr "Adici Bezier-vojeton"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "Vojeto vojo estas malvalida, do ne volas adici ŝlosilon."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "Vojeto ne estas de tipo Spatial, ne volas enmeti ŝlosilon"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Transform Track Key"
-msgstr ""
+msgstr "Adici Transformon Vojeton Ŝlosilon"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track Key"
-msgstr ""
+msgstr "Adici Vojeton Ŝlosilon"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr ""
+msgstr "Vojeto vojo estas malvalida, do ne volas adici metodon ŝlosilon."
 
 #: editor/animation_track_editor.cpp
 msgid "Add Method Track Key"
-msgstr ""
+msgstr "Adici Metodon Vojeton Ŝlosilon"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
-msgstr ""
+msgstr "Metodon ne trovis en objekto: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
-msgstr ""
+msgstr "Animado Movi Ŝlosilojn"
 
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
-msgstr ""
+msgstr "Tondujo estas malplena"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
-msgstr ""
+msgstr "Elpoŝigi Vojetojn"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
-msgstr ""
+msgstr "Animado Skali Ŝlosilojn"
 
 #: editor/animation_track_editor.cpp
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
+"Tio ĉi opcio ne funkcias por Bezier redakti, ĉar ĝi estas nur unuopa vojeto."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -420,34 +426,43 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
+"Tio ĉi animado apartenas al enporta sceno, do aliigoj al enportajn vojetojn "
+"ne konservos.\n"
+"\n"
+"Por ŝalti la eblecon aldoni proprajn vojetojn, navigu al la enporto-agordoj "
+"de la sceno kaj agordu \n"
+"\"Animado > Memorilo\" al \"Dosieroj\", ŝaltu \"Animado -> Konservi Proprajn "
+"Vojetojn\", poste re-enportu.\n"
+"Alterne, uzu enporto-antaŭelekton ke enportas animadojn al malkunajn "
+"dosierojn."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr ""
+msgstr "Averto: Redaktanti importis animadon"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "Nur vidigi vojetojn el elektis nodojn en arbo."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
-msgstr ""
+msgstr "Grupigi vojetoj de nodo aŭ montri ilin kiel klara listo."
 
 #: editor/animation_track_editor.cpp
 msgid "Snap:"
-msgstr ""
+msgstr "Klako:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
-msgstr ""
+msgstr "Animado paŝo valoro."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "Sekundoj"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
-msgstr ""
+msgstr "FPS"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -456,107 +471,107 @@ msgstr ""
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr ""
+msgstr "Editori"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation properties."
-msgstr ""
+msgstr "Animado atributoj."
 
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"
-msgstr ""
+msgstr "Duplikati Vojetojn"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
-msgstr ""
+msgstr "Skali Elektaron"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale From Cursor"
-msgstr ""
+msgstr "Skali El Kursoron"
 
 #: editor/animation_track_editor.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr ""
+msgstr "Duobligi Elektaron"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Transposed"
-msgstr ""
+msgstr "Duobligi Transmetis"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Selection"
-msgstr ""
+msgstr "Forigi Elektaron"
 
 #: editor/animation_track_editor.cpp
 msgid "Go to Next Step"
-msgstr ""
+msgstr "Iri al Neksta Paŝo"
 
 #: editor/animation_track_editor.cpp
 msgid "Go to Previous Step"
-msgstr ""
+msgstr "Iri al Antaŭa Paŝo"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
-msgstr ""
+msgstr "Optimigi Animadon"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation"
-msgstr ""
+msgstr "Senrubigi Animadon"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr ""
+msgstr "Elekti la nodon ke estos animatan:"
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "Uzu Bezier-kurbojn"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr ""
+msgstr "Anim. Optimiganto"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
-msgstr ""
+msgstr "Maks. Lineara Eraro:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Angular Error:"
-msgstr ""
+msgstr "Maks. Angula Eraro:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr ""
+msgstr "Maks. Optimigebla Angulo:"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize"
-msgstr ""
+msgstr "Optimigi"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
-msgstr ""
+msgstr "Forigi Nevalidajn Ŝlosilojn"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
-msgstr ""
+msgstr "Forigi maladrestrajn kaj malplenajn vojetojn"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
-msgstr ""
+msgstr "Senrubigi ciuĵn animadojn"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr ""
+msgstr "Senrubigi Animado(j)n (NE MALFARA!)"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up"
-msgstr ""
+msgstr "Senrubigi"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Ratio:"
-msgstr ""
+msgstr "Skali Rejŝo:"
 
 #: editor/animation_track_editor.cpp
 msgid "Select tracks to copy:"
-msgstr ""
+msgstr "Elekti vojetojn por duplikati:"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -565,96 +580,96 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
-msgstr ""
+msgstr "Duplikati"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
-msgstr ""
+msgstr "Adici Aŭdio-Vojeton Eltondaĵon"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr ""
+msgstr "Aliigi Aŭdio-Vojeton Eltondaĵon Komencon Deiĝon"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
-msgstr ""
+msgstr "Aliigi Aŭdio-Vojeton Eltondaĵon Finon Deiĝon"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr ""
+msgstr "Regrandigi Vicon"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr ""
+msgstr "Aliigi Vicanon-Tipon"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value"
-msgstr ""
+msgstr "Aliigi Vicanon"
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
-msgstr ""
+msgstr "Iri al Lineon"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr ""
+msgstr "Lineo-Numeron:"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
-msgstr ""
+msgstr "Ne Rezultoj"
 
 #: editor/code_editor.cpp
 msgid "Replaced %d occurrence(s)."
-msgstr ""
+msgstr "Anstataŭigis %d apero(j)n."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
-msgstr ""
+msgstr "Kongrui Usklon"
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Whole Words"
-msgstr ""
+msgstr "Plenaj Vortoj"
 
 #: editor/code_editor.cpp editor/rename_dialog.cpp
 msgid "Replace"
-msgstr ""
+msgstr "Anstataŭigi"
 
 #: editor/code_editor.cpp
 msgid "Replace All"
-msgstr ""
+msgstr "Anstataŭigi Ĉiujn"
 
 #: editor/code_editor.cpp
 msgid "Selection Only"
-msgstr ""
+msgstr "Nur Elektaro"
 
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
 msgid "Standard"
-msgstr ""
+msgstr "Norma"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom In"
-msgstr ""
+msgstr "Zomi"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
-msgstr ""
+msgstr "Malzomi"
 
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr ""
+msgstr "Rekomencigi Zomon"
 
 #: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
-msgstr ""
+msgstr "Avertoj"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers."
-msgstr ""
+msgstr "Lineoj kaj kolumnoj numeroj."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
@@ -708,9 +723,8 @@ msgid "Extra Call Arguments:"
 msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Advanced"
-msgstr "Ekvilibra"
+msgstr "Altnivela"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
@@ -1314,9 +1328,8 @@ msgid "Rearrange Autoloads"
 msgstr ""
 
 #: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid path."
-msgstr "Nevalida tipara grando."
+msgstr "Nevalida dosierindiko."
 
 #: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
 msgid "File does not exist."
@@ -9744,18 +9757,16 @@ msgid "Path is not local."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid base path."
-msgstr "Nevalida tipara grando."
+msgstr "Nevalida dosierindiko."
 
 #: editor/script_create_dialog.cpp
 msgid "A directory with the same name exists."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid extension."
-msgstr "Nevalida tipara grando."
+msgstr "Nevalida kromprogramo."
 
 #: editor/script_create_dialog.cpp
 msgid "Wrong extension chosen."

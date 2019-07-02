@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-05-30 03:41+0000\n"
+"PO-Revision-Date: 2019-07-02 10:51+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -22,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.7-dev\n"
+"X-Generator: Weblate 3.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -82,9 +82,8 @@ msgid "Time:"
 msgstr "Aika:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Value:"
-msgstr "Arvo"
+msgstr "Arvo:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -434,10 +433,18 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
+"Tämä animaatio kuuluu tuotuun skeneen, joten muutoksia tuotuihin raitoihin "
+"ei tallenneta.\n"
+"\n"
+"Lisätäksesi mukautettuja raitoja, mene skenen tuontiasetuksiin ja aseta\n"
+"\"Animation > Storage\" arvoksi \"Files\", kytke päälle \"Animation > Keep "
+"Custom Tracks\" ja tee tuonti sen jälkeen uudelleen.\n"
+"Vaihtoehtoisesti, käytä sellaisia tuonnin esiasetuksia, jotka tuovat "
+"animaatiot erillisiin tiedostoihin."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr ""
+msgstr "Varoitus: muokataan tuotua animaatiota"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -671,38 +678,32 @@ msgid "Line and column numbers."
 msgstr "Rivi- ja sarakenumerot."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method in target node must be specified."
-msgstr "Kohdesolmun metodi täytyy määrittää!"
+msgstr "Kohdesolmun metodi täytyy määrittää."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"Kohdemetodia ei löytynyt! Määrittele voimassa oleva metodi tai kiinnitä "
-"skripti solmuun."
+"Kohdemetodia ei löytynyt. Määrittele kelvollinen metodi tai kiinnitä "
+"kohdesolmulle skripti."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Node:"
 msgstr "Yhdistä solmuun:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Script:"
-msgstr "Isäntään yhdistäminen epäonnistui:"
+msgstr "Yhdistä skriptiin:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "From Signal:"
-msgstr "Signaalit:"
+msgstr "Signaalista:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Scene does not contain any script."
-msgstr "Solmu ei sisällä geometriaa."
+msgstr "Skene ei sisällä yhtään skriptiä."
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
@@ -730,9 +731,8 @@ msgid "Extra Call Arguments:"
 msgstr "Ylimääräiset argumentit:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Advanced"
-msgstr "Edistyneet asetukset"
+msgstr "Edistyneet"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
@@ -742,6 +742,7 @@ msgstr "Lykätty"
 msgid ""
 "Defers the signal, storing it in a queue and only firing it at idle time."
 msgstr ""
+"Lykkää signaalia, tallentaen sen jonoon ja laukaisten sen vain joutoajalla."
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
@@ -749,12 +750,11 @@ msgstr "Ainutkertainen"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
-msgstr ""
+msgstr "Katkaisee signaalin ensimmäisen lähetyksen jälkeen."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Cannot connect signal"
-msgstr "Yhdistä signaali: "
+msgstr "Ei voida yhdistää signaalia"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -796,14 +796,12 @@ msgid "Disconnect"
 msgstr "Katkaise yhteys"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect a Signal to a Method"
-msgstr "Yhdistä signaali: "
+msgstr "Yhdistä signaali metodiin"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit Connection:"
-msgstr "Muokkaa yhteyttä: "
+msgstr "Muokkaa yhteyttä:"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
@@ -879,22 +877,20 @@ msgid "Dependencies For:"
 msgstr "Riippuvuudet:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
 "Skeneä '%s' muokataan parhaillaan.\n"
-"Muutokset tulevat voimaan vasta päivityksen jälkeen."
+"Muutokset tulevat voimaan vasta uudelleenlatauksen jälkeen."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
 "Resurssi '%s' on käytössä.\n"
-"Muutokset tulevat voimaan päivitettäessä."
+"Muutokset tulevat voimaan uudelleenlatauksen jälkeen."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -987,9 +983,8 @@ msgid "Permanently delete %d item(s)? (No undo!)"
 msgstr "Poista pysyvästi %d kohdetta? (Ei voi kumota!)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Show Dependencies"
-msgstr "Riippuvuudet"
+msgstr "Näytä riippuvuudet"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Orphan Resource Explorer"
@@ -1252,7 +1247,7 @@ msgstr "Avaa ääniväylän asettelu"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no '%s' file."
-msgstr ""
+msgstr "Tiedostoa '%s' ei ole."
 
 #: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Layout"
@@ -1309,29 +1304,23 @@ msgid "Valid characters:"
 msgstr "Kelvolliset merkit:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing engine class name."
+msgstr "Ei saa mennä päällekkäin olemassa olevan engine-luokkanimen kanssa."
+
+#: editor/editor_autoload_settings.cpp
+msgid "Must not collide with an existing buit-in type name."
 msgstr ""
-"Virheellinen nimi. Ei saa mennä päällekkäin olemassa olevan luokan nimen "
+"Ei saa mennä päällekkäin olemassa olevan sisäänrakennetun tyypin nimen "
 "kanssa."
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
-msgid "Must not collide with an existing buit-in type name."
-msgstr ""
-"Virheellinen nimi. Ei saa mennä päällekkäin jo olemassa olevan, "
-"sisäänrakennetun tyypin nimen kanssa."
-
-#: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing global constant name."
 msgstr ""
-"Virheellinen nimi. Ei saa mennä päällekkäin jo olemassa olevan globaalin "
-"vakion nimen kanssa."
+"Ei saa mennä päällekkäin olemassa olevan globaalin vakion nimen kanssa."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Keyword cannot be used as an autoload name."
-msgstr ""
+msgstr "Avainsanaa ei voi käyttää automaattisesti latautuvien nimenä."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
@@ -1362,7 +1351,6 @@ msgid "Rearrange Autoloads"
 msgstr "Järjestele uudelleen automaattiset lataukset"
 
 #: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid path."
 msgstr "Virheellinen polku."
 
@@ -1417,9 +1405,8 @@ msgid "[unsaved]"
 msgstr "[tallentamaton]"
 
 #: editor/editor_dir_dialog.cpp
-#, fuzzy
 msgid "Please select a base directory first."
-msgstr "Valitse ensin päähakemisto"
+msgstr "Ole hyvä ja valitse ensin päähakemisto."
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -1503,121 +1490,106 @@ msgid "Template file not found:"
 msgstr "Mallitiedostoa ei löytynyt:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "3D Editor"
-msgstr "Editori"
+msgstr "3D-editori"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Script Editor"
-msgstr "Avaa skriptieditori"
+msgstr "Skriptieditori"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Asset Library"
-msgstr "Avaa asset-kirjasto"
+msgstr "Asset-kirjasto"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Scene Tree Editing"
-msgstr "Skenepuu (solmut):"
+msgstr "Skenepuun muokkaus"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Dock"
-msgstr "Tuo"
+msgstr "Tuontitelakka"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Node Dock"
-msgstr "Solmu siirretty"
+msgstr "Solmutelakka"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Filesystem Dock"
-msgstr "Tiedostojärjestelmä"
+msgstr "Tiedostojärjestelmätelakka"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Erase profile '%s'? (no undo)"
-msgstr "Korvaa kaikki (ei voi perua)"
+msgstr "Poista profiili '%s'? (ei voi perua)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
 msgstr ""
+"Profiilin täytyy olla kelvollinen tiedostonimi ja se ei voi sisältää merkkiä "
+"'.'"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Profile with this name already exists."
-msgstr "Tällä nimellä löytyy jo kansio tai tiedosto."
+msgstr "Tällä nimellä löytyy jo profiili."
 
 #: editor/editor_feature_profile.cpp
 msgid "(Editor Disabled, Properties Disabled)"
-msgstr ""
+msgstr "(Editori pois käytöstä, ominaisuudet pois käytöstä)"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(Properties Disabled)"
-msgstr "Vain ominaisuudet"
+msgstr "(Ominaisuudet pois käytöstä)"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(Editor Disabled)"
-msgstr "Leikkaus pois käytöstä"
+msgstr "(Editori pois käytöstä)"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Options:"
-msgstr "Luokan kuvaus:"
+msgstr "Luokan valinnat:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enable Contextual Editor"
-msgstr "Avaa seuraava editori"
+msgstr "Ota asiayhteydellinen editori käyttöön"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Properties:"
-msgstr "Ominaisuudet:"
+msgstr "Käytössä olevat ominaisuudet:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Features:"
-msgstr "Ominaisuudet"
+msgstr "Käytössä olevat ominaisuudet:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Classes:"
-msgstr "Etsi luokkia"
+msgstr "Käytössä olevat luokat:"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
-msgstr ""
+msgstr "Tiedoston '%s' tiedostomuoto on virheellinen, tuonti keskeytetty."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Profile '%s' already exists. Remote it first before importing, import "
 "aborted."
 msgstr ""
+"Profiili '%s' on jo olemassa. Poista se ensin ennen tuontia, tuonti "
+"keskeytetty."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Error saving profile to path: '%s'."
-msgstr "Virhe ladattaessa mallia '%s'"
+msgstr "Virhe tallennettaessa profiilia polkuun: '%s'."
 
 #: editor/editor_feature_profile.cpp
 msgid "Unset"
-msgstr ""
+msgstr "Poista asetus"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Current Profile"
-msgstr "Nykyinen versio:"
+msgstr "Nykyinen profiili"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Make Current"
-msgstr "Nykyinen:"
+msgstr "Aseta nykyiseksi"
 
 #: editor/editor_feature_profile.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -1635,44 +1607,36 @@ msgid "Export"
 msgstr "Vie"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Available Profiles"
-msgstr "Saatavilla olevat solmut:"
+msgstr "Saatavilla olevat profiilit"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Classes"
-msgstr "Etsi luokkia"
+msgstr "Käytössä olevat luokat"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Options"
-msgstr "Luokan kuvaus"
+msgstr "Luokan valinnat"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "New profile name:"
-msgstr "Uusi nimi:"
+msgstr "Uusi profiilin nimi:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Erase Profile"
-msgstr "Tyhjennä alue"
+msgstr "Tyhjennä profiili"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Profile(s)"
-msgstr "Tuotu projekti"
+msgstr "Tuo profiileja"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Export Profile"
-msgstr "Vie projekti"
+msgstr "Vie profiili"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Manage Editor Feature Profiles"
-msgstr "Hallinnoi vientimalleja"
+msgstr "Hallinnoi editorin ominaisuusprofiileja"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
@@ -1795,9 +1759,8 @@ msgid "(Un)favorite current folder."
 msgstr "Kansio suosikkeihin."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Toggle visibility of hidden files."
-msgstr "Näytä piilotiedostot"
+msgstr "Aseta piilotiedostojen näyttäminen."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -1834,6 +1797,7 @@ msgid ""
 "There are multiple importers for different types pointing to file %s, import "
 "aborted"
 msgstr ""
+"Tiedostoon %s osoittaville eri tyypeille on useita tuojia, tuonti keskeytetty"
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
@@ -2176,14 +2140,13 @@ msgstr ""
 "Lue ohjeet skenejen tuomisesta, jotta ymmärrät paremmin tämän työnkulun."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This resource belongs to a scene that was instanced or inherited.\n"
 "Changes to it won't be kept when saving the current scene."
 msgstr ""
 "Tämä resurssi kuuluu skeneen, josta on luotu ilmentymä, tai joka on "
-"periytyvä.\n"
-"Muutokset siihen eivät ole pysyviä, kun tallennat nykyisen skenen."
+"peritty.\n"
+"Siihen tehtyjä muutoksia ei säilytetä, kun tallennat nykyisen skenen."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2194,7 +2157,6 @@ msgstr ""
 "paneelista ja tuo se uudelleen."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This scene was imported, so changes to it won't be kept.\n"
 "Instancing it or inheriting will allow making changes to it.\n"
@@ -2208,7 +2170,6 @@ msgstr ""
 "ymmärrät paremmin tämän työnkulun."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This is a remote object, so changes to it won't be kept.\n"
 "Please read the documentation relevant to debugging to better understand "
@@ -2239,9 +2200,8 @@ msgid "Open Base Scene"
 msgstr "Avaa kantaskene"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Quick Open..."
-msgstr "Skenen pika-avaus..."
+msgstr "Pika-avaus..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
@@ -2474,12 +2434,11 @@ msgstr "Sulje muut välilehdet"
 
 #: editor/editor_node.cpp
 msgid "Close Tabs to the Right"
-msgstr ""
+msgstr "Sulje oikealla olevat välilehdet"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Close All Tabs"
-msgstr "Sulje kaikki"
+msgstr "Sulje kaikki välilehdet"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -2613,7 +2572,7 @@ msgstr "Avaa projektin datakansio"
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template"
-msgstr ""
+msgstr "Asenna Androidin käännösmalli"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2739,9 +2698,8 @@ msgid "Open Editor Settings Folder"
 msgstr "Avaa editorin asetuskansio"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Manage Editor Features"
-msgstr "Hallinnoi vientimalleja"
+msgstr "Hallinnoi editorin ominaisuuksia"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -2871,18 +2829,20 @@ msgstr "Älä tallenna"
 
 #: editor/editor_node.cpp
 msgid "Android build template is missing, please install relevant templates."
-msgstr ""
+msgstr "Androidin käännösmalli puuttuu, ole hyvä ja asenna olennaiset mallit."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Manage Templates"
-msgstr "Hallinnoi vientimalleja"
+msgstr "Hallinnoi malleja"
 
 #: editor/editor_node.cpp
 msgid ""
 "This will install the Android project for custom builds.\n"
 "Note that, in order to use it, it needs to be enabled per export preset."
 msgstr ""
+"Tämä asentaa Android-projektin mukautettuja käännöksiä varten.\n"
+"Huomaa, että käyttääksesi sitä, se täytyy ottaa käyttöön kussakin "
+"vientiesiasetuksessa."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2890,6 +2850,9 @@ msgid ""
 "Remove the \"build\" directory manually before attempting this operation "
 "again."
 msgstr ""
+"Androidin käännösmalli on jo asennettu, eikä sitä ylikirjoiteta.\n"
+"Poista \"build\" hakemisto käsin ennen kuin yrität tätä toimenpidettä "
+"uudelleen."
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
@@ -3362,9 +3325,8 @@ msgid "SSL Handshake Error"
 msgstr "Virhe SSL kättelyssä"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uncompressing Android Build Sources"
-msgstr "Puretaan assetteja"
+msgstr "Puretaan Android-käännöksen lähdetiedostoja"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
@@ -3383,9 +3345,8 @@ msgid "Remove Template"
 msgstr "Poista malli"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Select Template File"
-msgstr "Valitse mallin tiedosto"
+msgstr "Valitse mallitiedosto"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -3445,9 +3406,8 @@ msgid "No name provided."
 msgstr "Nimeä ei annettu."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Provided name contains invalid characters."
-msgstr "Annettu nimi sisältää virheellisiä kirjainmerkkejä"
+msgstr "Annettu nimi sisältää virheellisiä kirjainmerkkejä."
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
@@ -3474,26 +3434,22 @@ msgid "Duplicating folder:"
 msgstr "Kahdennetaan kansio:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "New Inherited Scene"
-msgstr "Uusi peritty skene..."
+msgstr "Uusi periytetty skene"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open Scenes"
-msgstr "Avaa skene"
+msgstr "Avaa skenejä"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
 msgstr "Luo ilmentymä"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Add to Favorites"
 msgstr "Lisää suosikkeihin"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Remove from Favorites"
 msgstr "Poista suosikeista"
 
@@ -3543,21 +3499,18 @@ msgid "Rename"
 msgstr "Nimeä uudelleen"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Previous Folder/File"
-msgstr "Edellinen kansio"
+msgstr "Edellinen kansio/tiedosto"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Next Folder/File"
-msgstr "Seuraava kansio"
+msgstr "Seuraava kansio/tiedosto"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
 msgstr "Skannaa tiedostojärjestelmä uudelleen"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Toggle Split Mode"
 msgstr "Aseta jaettu tila"
 
@@ -3610,6 +3563,8 @@ msgid ""
 "Include the files with the following extensions. Add or remove them in "
 "ProjectSettings."
 msgstr ""
+"Sisällä tiedostot seuraavilla tiedostopäätteillä. Lisää tai poista niitä "
+"projektin asetuksista."
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4051,9 +4006,8 @@ msgid "Open Animation Node"
 msgstr "Avaa animaatiosolmu"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Triangle already exists."
-msgstr "Kolmio on jo olemassa"
+msgstr "Kolmio on jo olemassa."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Add Triangle"
@@ -4198,7 +4152,6 @@ msgid "Edit Filtered Tracks:"
 msgstr "Muokkaa suodatettuja raitoja:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Enable Filtering"
 msgstr "Kytke suodatus"
 
@@ -4334,9 +4287,8 @@ msgid "Enable Onion Skinning"
 msgstr "Käytä onion skinningiä"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Onion Skinning Options"
-msgstr "Onion skinning"
+msgstr "Onion skinning -valinnat"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Directions"
@@ -4904,6 +4856,8 @@ msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
 msgstr ""
+"Aktiivisena ollessaan, Control solmujen siirtäminen muuttaa niiden "
+"ankkureita marginaalien sijaan."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -4919,41 +4873,35 @@ msgstr "Muuta ankkureita"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Lock Selected"
-msgstr "Valintatyökalu"
+msgstr "Lukitse valitut"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Unlock Selected"
-msgstr "Poista valitut"
+msgstr "Vapauta valitut"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Group Selected"
-msgstr "Kopioi valinta"
+msgstr "Ryhmitä valitut"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Ungroup Selected"
-msgstr "Kopioi valinta"
+msgstr "Poista ryhmitys valituilta"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
 msgstr "Liitä asento"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Custom Bone(s) from Node(s)"
 msgstr "Luo mukautetut luut solmuista"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Bones"
-msgstr "Tyhjennä asento"
+msgstr "Poista luut"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
@@ -5041,7 +4989,6 @@ msgid "Snapping Options"
 msgstr "Tarttumisen asetukset"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Grid"
 msgstr "Tartu ruudukkoon"
 
@@ -5063,37 +5010,30 @@ msgid "Use Pixel Snap"
 msgstr "Tartu pikseleihin"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Smart Snapping"
 msgstr "Älykäs tarttuminen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Parent"
 msgstr "Tartu isäntään"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Node Anchor"
 msgstr "Tartu solmun ankkuriin"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Node Sides"
 msgstr "Tartu solmun reunoihin"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Node Center"
 msgstr "Tartu solmun keskipisteeseen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Other Nodes"
 msgstr "Tartu muihin solmuihin"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Guides"
 msgstr "Tartu apuviivoihin"
 
@@ -5177,7 +5117,7 @@ msgstr "Rajaa valintaan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
-msgstr ""
+msgstr "Esikatsele kankaan skaalausta"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -5233,9 +5173,8 @@ msgid "Divide grid step by 2"
 msgstr "Jaa ruudukon välistys kahdella"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Pan View"
-msgstr "Takanäkymä"
+msgstr "Panorointinäkymä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -5260,7 +5199,6 @@ msgid "Error instancing scene from %s"
 msgstr "Virhe luotaessa ilmentymää kohteesta %s"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Change Default Type"
 msgstr "Muuta oletustyyppiä"
 
@@ -5349,14 +5287,12 @@ msgid "Create Emission Points From Node"
 msgstr "Luo säteilypisteet solmusta"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Flat 0"
-msgstr "Tasainen0"
+msgstr "Tasainen 0"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Flat 1"
-msgstr "Tasainen1"
+msgstr "Tasainen 1"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease In"
@@ -5383,27 +5319,22 @@ msgid "Load Curve Preset"
 msgstr "Lataa käyrän esiasetus"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Add Point"
 msgstr "Lisää piste"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Point"
 msgstr "Poista piste"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Left Linear"
 msgstr "Vasen lineaarinen"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Right Linear"
 msgstr "Oikea lineaarinen"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Load Preset"
 msgstr "Lataa esiasetus"
 
@@ -5460,18 +5391,16 @@ msgid "This doesn't work on scene root!"
 msgstr "Tämä ei toimi skenen juuressa!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Trimesh Static Shape"
-msgstr "Luo konkaavi muoto"
+msgstr "Luo staattinen konkaavi muoto"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Failed creating shapes!"
-msgstr ""
+msgstr "Muotojen luonti epäonnistui!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Convex Shape(s)"
-msgstr "Luo konveksi muoto"
+msgstr "Luo konvekseja muotoja"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5527,9 +5456,8 @@ msgid "Create Trimesh Collision Sibling"
 msgstr "Luo konkaavi törmäysmuoto sisareksi"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Convex Collision Sibling(s)"
-msgstr "Luo konveksi törmäysmuoto sisareksi"
+msgstr "Luo konvekseja törmäysmuotoja sisariksi"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -5891,7 +5819,6 @@ msgid "Split Segment (in curve)"
 msgstr "Puolita osa (käyrässä)"
 
 #: editor/plugins/physical_bone_plugin.cpp
-#, fuzzy
 msgid "Move Joint"
 msgstr "Siirrä liitosta"
 
@@ -6339,18 +6266,16 @@ msgid "Debug with External Editor"
 msgstr "Debuggaa ulkoisella editorilla"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Open Godot online documentation."
-msgstr "Avaa Godotin online-dokumentaatio"
+msgstr "Avaa Godotin online-dokumentaatio."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Request Docs"
 msgstr "Pyydä dokumentaatiota"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Help improve the Godot documentation by giving feedback."
-msgstr "Auta parantamaan Godotin dokumentaatiota antamalla palautetta"
+msgstr "Auta parantamaan Godotin dokumentaatiota antamalla palautetta."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
@@ -6395,30 +6320,26 @@ msgid "Search Results"
 msgstr "Haun tulokset"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Connections to method:"
-msgstr "Yhdistä solmuun:"
+msgstr "Yhteydet metodiin:"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Source"
-msgstr "Lähde:"
+msgstr "Lähde"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Signal"
-msgstr "Signaalit"
+msgstr "Signaali"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Target"
-msgstr "Kohdepolku:"
+msgstr "Kohde"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
-msgstr "Mitään ei ole yhdistetty syötteeseen '%s' solmussa '%s'."
+msgstr ""
+"Yhdistetty metodi '%s' signaalille '%s' puuttuu solmusta '%s' solmuun '%s'."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -6467,7 +6388,7 @@ msgstr "Syntaksin korostaja"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
-msgstr ""
+msgstr "Kirjanmerkit"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -6496,24 +6417,20 @@ msgid "Toggle Comment"
 msgstr "Lisää tai poista kommentit"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Toggle Bookmark"
-msgstr "Kytke liikkuminen päälle/pois"
+msgstr "Aseta kirjanmerkki"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Next Bookmark"
-msgstr "Mene seuraavaan keskeytyskohtaan"
+msgstr "Mene seuraavaan kirjanmerkkiin"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Previous Bookmark"
-msgstr "Mene edelliseen keskeytyskohtaan"
+msgstr "Mene edelliseen kirjanmerkkiin"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Remove All Bookmarks"
-msgstr "Poista kaikki"
+msgstr "Poista kaikki kirjanmerkit"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
@@ -6589,13 +6506,12 @@ msgid "Contextual Help"
 msgstr "Asiayhteydellinen ohje"
 
 #: editor/plugins/shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "This shader has been modified on on disk.\n"
 "What action should be taken?"
 msgstr ""
-"Seuraavat tiedostot ovat uudempia levyllä.\n"
-"Mikä toimenpide tulisi suorittaa?:"
+"Tätä sävytintä on muokattu levyllä.\n"
+"Mikä toimenpide tulisi suorittaa?"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Shader"
@@ -6940,7 +6856,6 @@ msgid "Right View"
 msgstr "Oikea näkymä"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Switch Perspective/Orthogonal View"
 msgstr "Vaihda perspektiiviseen/ortogonaaliseen näkymään"
 
@@ -6986,7 +6901,6 @@ msgid "Transform"
 msgstr "Muunna"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Object to Floor"
 msgstr "Kohdista objekti lattiaan"
 
@@ -7176,22 +7090,20 @@ msgid "Settings:"
 msgstr "Asetukset:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "No Frames Selected"
-msgstr "Rajaa valintaan"
+msgstr "Ei valittuja ruutuja"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Add %d Frame(s)"
-msgstr "Lisää frame"
+msgstr "Lisää %d ruutua"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
-msgstr "Lisää frame"
+msgstr "Lisää ruutu"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
-msgstr "VIRHE: Ei voitu ladata framen resurssia!"
+msgstr "VIRHE: Ei voitu ladata ruudun resurssia!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Resource clipboard is empty or not a texture!"
@@ -7199,7 +7111,7 @@ msgstr "Resurssileikepöytä on tyhjä tai ei sisällä tekstuuria!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Paste Frame"
-msgstr "Liitä frame"
+msgstr "Liitä ruutu"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
@@ -7234,13 +7146,12 @@ msgid "Animation Frames:"
 msgstr "Animaatioruudut:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Add a Texture from File"
-msgstr "Lisää tekstuurit ruutuvalikoimaan."
+msgstr "Lisää tekstuuri tiedostosta"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frames from a Sprite Sheet"
-msgstr ""
+msgstr "Lisää ruudut Sprite Sheetistä"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -7259,29 +7170,24 @@ msgid "Move (After)"
 msgstr "Siirrä (jälkeen)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Select Frames"
-msgstr "Pinokehykset"
+msgstr "Valitse ruudut"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Horizontal:"
-msgstr "Käännä vaakasuorasti"
+msgstr "Vaakasuora:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Vertical:"
-msgstr "Kärkipisteet"
+msgstr "Pystysuora:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Select/Clear All Frames"
-msgstr "Valitse kaikki"
+msgstr "Valitse tai tyhjää kaikki ruudut"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Create Frames from Sprite Sheet"
-msgstr "Luo skenestä"
+msgstr "Luo ruudut Sprite Sheetistä"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "SpriteFrames"
@@ -7353,9 +7259,8 @@ msgid "Remove All"
 msgstr "Poista kaikki"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Theme"
-msgstr "Muokkaa teemaa..."
+msgstr "Muokkaa teemaa"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme editing menu."
@@ -7382,23 +7287,20 @@ msgid "Create From Current Editor Theme"
 msgstr "Luo nykyisestä editorin teemasta"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Button"
-msgstr "Hiiren painike"
+msgstr "Vaihtopainike"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Disabled Button"
-msgstr "Keskipainike"
+msgstr "Toimintakyvytön painike"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Item"
 msgstr "Osanen"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Disabled Item"
-msgstr "Poistettu käytöstä"
+msgstr "Toimintakyvytön osanen"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Check Item"
@@ -7418,21 +7320,19 @@ msgstr "Valittu valintapainike"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Named Sep."
-msgstr ""
+msgstr "Nimetty erotin"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Submenu"
-msgstr ""
+msgstr "Alivalikko"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Item 1"
-msgstr "Osanen"
+msgstr "Osanen 1"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Item 2"
-msgstr "Osanen"
+msgstr "Osanen 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
@@ -7443,9 +7343,8 @@ msgid "Many"
 msgstr "Useita"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Disabled LineEdit"
-msgstr "Poistettu käytöstä"
+msgstr "Toimintakyvytön LineEdit"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -7460,13 +7359,12 @@ msgid "Tab 3"
 msgstr "Välilehti 3"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Editable Item"
-msgstr "Muokattavat alisolmut"
+msgstr "Muokattava osanen"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Subtree"
-msgstr ""
+msgstr "Alipuu"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has,Many,Options"
@@ -7546,14 +7444,12 @@ msgid "Mirror Y"
 msgstr "Peilaa Y"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Disable Autotile"
-msgstr "Automaattiruudutus"
+msgstr "Poista automaattiruudutus käytöstä"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Enable Priority"
-msgstr "Muokkaa ruudun prioriteettia"
+msgstr "Ota prioriteetti käyttöön"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
@@ -7564,33 +7460,30 @@ msgid ""
 "Shift+RMB: Line Draw\n"
 "Shift+Ctrl+RMB: Rectangle Paint"
 msgstr ""
+"Shift+Hiiren oikea: Piirrä viiva\n"
+"Shift+Ctrl+Hiiren oikea: Suorakaidemaalaus"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
 msgstr "Poimi ruutu"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate Left"
 msgstr "Kierrä vasemmalle"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate Right"
 msgstr "Kierrä oikealle"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Flip Horizontally"
 msgstr "Käännä vaakasuorasti"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Flip Vertically"
 msgstr "Käännä pystysuorasti"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Transform"
 msgstr "Tyhjennä muunnos"
 
@@ -7627,44 +7520,36 @@ msgid "Select the previous shape, subtile, or Tile."
 msgstr "Valitse edellinen muoto, aliruutu tai ruutu."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Region Mode"
-msgstr "Käynnistystila:"
+msgstr "Aluetila"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Collision Mode"
-msgstr "Interpolaatiotila"
+msgstr "Törmäystila"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occlusion Mode"
-msgstr "Muokkaa peittopolygonia"
+msgstr "Peittotila"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation Mode"
-msgstr "Luo navigointiverkko"
+msgstr "Siirtymistila"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Bitmask Mode"
-msgstr "Kääntötila"
+msgstr "Bittimaskitila"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Priority Mode"
-msgstr "Vientitila:"
+msgstr "Prioriteettitila"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Icon Mode"
-msgstr "Panorointitila"
+msgstr "Kuvaketila"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Z Index Mode"
-msgstr "Panorointitila"
+msgstr "Z-indeksitila"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
@@ -7748,7 +7633,6 @@ msgid "Delete polygon."
 msgstr "Poista polygoni."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "LMB: Set bit on.\n"
 "RMB: Set bit off.\n"
@@ -7757,6 +7641,7 @@ msgid ""
 msgstr ""
 "Hiiren vasen: aseta bitti päälle.\n"
 "Hiiren oikea: aseta bitti pois päältä.\n"
+"Shift+Hiiren vasen: aseta jokeribitti.\n"
 "Napsauta toista ruutua muokataksesi sitä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -7870,77 +7755,64 @@ msgid "TileSet"
 msgstr "Ruutuvalikoima"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add input +"
-msgstr "Lisää syöte"
+msgstr "Lisää tulo +"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add output +"
-msgstr "Lisää syöte"
+msgstr "Lisää lähtö +"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Scalar"
-msgstr "Skaalaus:"
+msgstr "Skalaari"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector"
-msgstr "Tarkastelu"
+msgstr "Vektori"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
-msgstr ""
+msgstr "Totuusarvo"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add input port"
-msgstr "Lisää syöte"
+msgstr "Lisää tuloportti"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add output port"
-msgstr ""
+msgstr "Lisää lähtöportti"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Change input port type"
-msgstr "Muuta oletustyyppiä"
+msgstr "Muuta tuloportin tyyppiä"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Change output port type"
-msgstr "Muuta oletustyyppiä"
+msgstr "Muuta lähtöportin tyyppiä"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Change input port name"
-msgstr "Vaihda syötteen nimi"
+msgstr "Vaihda tuloportin nimi"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Change output port name"
-msgstr "Vaihda syötteen nimi"
+msgstr "Vaihda lähtöportin nimi"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Remove input port"
-msgstr "Poista piste"
+msgstr "Poista tuloportti"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Remove output port"
-msgstr "Poista piste"
+msgstr "Poista lähtöportti"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Set expression"
-msgstr "Vaihda lauseketta"
+msgstr "Aseta lauseke"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Resize VisualShader node"
-msgstr "VisualShader"
+msgstr "Muuta VisualShader solmun kokoa"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set Uniform Name"
@@ -7979,83 +7851,77 @@ msgid "Light"
 msgstr "Valo"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Create Shader Node"
-msgstr "Luo solmu"
+msgstr "Luo Shader solmu"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Color function."
-msgstr "Mene funktioon"
+msgstr "Värifunktio."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color operator."
-msgstr ""
+msgstr "Värioperaattori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Grayscale function."
-msgstr "Tee funktio"
+msgstr "Harmaasävyfunktio."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts HSV vector to RGB equivalent."
-msgstr ""
+msgstr "Muuntaa HSV-vektorin RGB-vastaavaksi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts RGB vector to HSV equivalent."
-msgstr ""
+msgstr "Muuntaa RGB-vektori HSV-vastaavaksi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Sepia function."
-msgstr "Nimeä funktio uudelleen"
+msgstr "Seepia-funktio."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Burn operator."
-msgstr ""
+msgstr "Poltto-operaattori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Darken operator."
-msgstr ""
+msgstr "Tummennusoperaattori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Difference operator."
-msgstr "Vain eroavaisuudet"
+msgstr "Eroavaisuusoperaattori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Dodge operator."
-msgstr ""
+msgstr "Värinväistöoperaattori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "HardLight operator"
-msgstr ""
+msgstr "HardLight-operaattori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Lighten operator."
-msgstr ""
+msgstr "Vaalennusoperaattori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Overlay operator."
-msgstr ""
+msgstr "Peitto-operaattori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Screen operator."
-msgstr ""
+msgstr "Näyttöoperaattori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "SoftLight operator."
-msgstr ""
+msgstr "SoftLight-operaattori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Color constant."
-msgstr "Muuttumaton"
+msgstr "Värivakio."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Color uniform."
-msgstr "Tyhjennä muunnos"
+msgstr "Väri-uniform."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8248,218 +8114,218 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'light_uv' input parameter for light shader mode."
-msgstr ""
+msgstr "'light_uv' syöteparametri valosävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'light_vec' input parameter for light shader mode."
-msgstr ""
+msgstr "'light_vec' syöteparametri valosävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'normal' input parameter for light shader mode."
-msgstr ""
+msgstr "'normal' syöteparametri valosävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'shadow_color' input parameter for light shader mode."
-msgstr ""
+msgstr "'shadow_color' syöteparametri valosävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'extra' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'extra' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'projection' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'projection' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'vertex' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'vertex' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'world' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'world' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'active' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'active' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'alpha' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'alpha' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'color' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'color' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'custom' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'custom' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'custom_alpha' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'custom_alpha' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'delta' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'delta' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'emission_transform' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'emission_transform' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'index' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'index' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'lifetime' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'lifetime' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'restart' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'restart' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'time' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'time' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'transform' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'transform' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'velocity' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'velocity' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Scalar function."
-msgstr "Muuta skalaarifunktiota"
+msgstr "Skalaarifunktio."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Scalar operator."
-msgstr "Muuta skalaarioperaattoria"
+msgstr "Skalaarioperaattori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "E constant (2.718282). Represents the base of the natural logarithm."
-msgstr ""
+msgstr "E-vakio (2.718282). Kuvastaa luonnollisen logaritmin kantalukua."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Epsilon constant (0.00001). Smallest possible scalar number."
-msgstr ""
+msgstr "Epsilon-vakio  (0.00001). Pienin mahdollinen skaalariluku."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Phi constant (1.618034). Golden ratio."
-msgstr ""
+msgstr "Fii-vakio (1.618034). Kultainen leikkaus."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi/4 constant (0.785398) or 45 degrees."
-msgstr ""
+msgstr "Pii/4-vakio (0.785398) eli 45 astetta."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi/2 constant (1.570796) or 90 degrees."
-msgstr ""
+msgstr "Pii/2-vakio (1.570796) eli 90 astetta."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi constant (3.141593) or 180 degrees."
-msgstr ""
+msgstr "Pii-vakio (3.141593) eli 180 astetta."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Tau constant (6.283185) or 360 degrees."
-msgstr ""
+msgstr "Tau-vakio (6.283185) eli 360 astetta."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sqrt2 constant (1.414214). Square root of 2."
-msgstr ""
+msgstr "Sqrt2-vakio (1.414214). Kahden neliöjuuri."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the absolute value of the parameter."
-msgstr ""
+msgstr "Palauttaa parametrin absoluuttisen arvon."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-cosine of the parameter."
-msgstr ""
+msgstr "Palauttaa parametrin arkuskosinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Returns the inverse hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "(Vain GLES3) Palauttaa parametrin käänteisen hyperbolisen kosinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-sine of the parameter."
-msgstr ""
+msgstr "Palauttaa parametrin arkussinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Returns the inverse hyperbolic sine of the parameter."
-msgstr ""
+msgstr "(Vain GLES3) Palauttaa parametrin käänteisen hyperbolisen sinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameter."
-msgstr ""
+msgstr "Palauttaa parametrin arkustangentin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameters."
-msgstr ""
+msgstr "Palauttaa parametrien arkustangentin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Returns the inverse hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "(Vain GLES3) Palauttaa parametrin käänteisen hyperbolisen tangentin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
 msgstr ""
+"Etsii lähimmän kokonaisluvun, joka on suurempi tai yhtä suuri kuin parametri."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Constrains a value to lie between two further values."
-msgstr ""
+msgstr "Rajoittaa arvon kahden muun arvon rajoittamaan väliin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the cosine of the parameter."
-msgstr ""
+msgstr "Palauttaa parametrin kosinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Returns the hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "(Vain GLES3) Palauttaa parametrin hyperbolisen kosinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in radians to degrees."
-msgstr ""
+msgstr "Muuntaa suureen radiaaneista asteiksi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-e Exponential."
-msgstr ""
+msgstr "E-kantainen eksponentti."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-2 Exponential."
-msgstr ""
+msgstr "2-kantainen eksponentti."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the nearest integer less than or equal to the parameter."
 msgstr ""
+"Etsii lähimmän kokonaisluvun, joka on vähemmän tai yhtä suuri kuin parametri."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Computes the fractional part of the argument."
-msgstr ""
+msgstr "Laskee argumentin desimaaliosan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse of the square root of the parameter."
-msgstr ""
+msgstr "Palauttaa parametrin käänteisen neliöjuuren."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Natural logarithm."
-msgstr ""
+msgstr "Luonnollinen logaritmi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-2 logarithm."
-msgstr ""
+msgstr "2-kantainen logaritmi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the greater of two values."
-msgstr ""
+msgstr "Palauttaa suuremman kahdesta arvosta."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the lesser of two values."
-msgstr ""
+msgstr "Palauttaa pienemmän kahdesta arvosta."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Linear interpolation between two scalars."

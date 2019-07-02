@@ -49,12 +49,13 @@
 # Breadp4ck <iii103@mail.ru>, 2019.
 # Dark King <damir@t1c.ru>, 2019.
 # Teashrock <kajitsu22@gmail.com>, 2019.
+# Дмитрий Ефимов <daefimov@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-06-16 02:33+0000\n"
-"Last-Translator: Teashrock <kajitsu22@gmail.com>\n"
+"PO-Revision-Date: 2019-07-02 10:48+0000\n"
+"Last-Translator: Дмитрий Ефимов <daefimov@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -63,7 +64,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.7-dev\n"
+"X-Generator: Weblate 3.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -721,12 +722,11 @@ msgid "Method in target node must be specified."
 msgstr "Метод должен быть указан в целевом Узле!"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"Целевой метод не найден! Укажите правильный метод или прикрепите скрипт на "
+"Целевой метод не найден. Укажите правильный метод или прикрепите скрипт на "
 "целевой узел."
 
 #: editor/connections_dialog.cpp
@@ -735,9 +735,8 @@ msgid "Connect to Node:"
 msgstr "Присоединить к узлу:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Script:"
-msgstr "Не удаётся подключиться к хосту:"
+msgstr "Соединить со скриптом:"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -794,12 +793,11 @@ msgstr "Один раз"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
-msgstr ""
+msgstr "Отключает сигнал после его первого вызова."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Cannot connect signal"
-msgstr "Подключить сигнал: "
+msgstr "Не удается подключить сигнал"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
