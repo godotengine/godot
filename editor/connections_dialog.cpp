@@ -459,6 +459,21 @@ ConnectDialog::~ConnectDialog() {
 
 //////////////////////////////////////////
 
+// Originally copied and adapted from EditorProperty, try to keep style in sync.
+Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
+
+	EditorHelpBit *help_bit = memnew(EditorHelpBit);
+	help_bit->add_style_override("panel", get_stylebox("panel", "TooltipPanel"));
+	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
+
+	String text = TTR("Signal:") + " [u][b]" + p_text.get_slice("::", 0) + "[/b][/u]";
+	text += p_text.get_slice("::", 1).strip_edges() + "\n";
+	text += p_text.get_slice("::", 2).strip_edges();
+	help_bit->set_text(text);
+	help_bit->call_deferred("set_text", text); //hack so it uses proper theme once inside scene
+	return help_bit;
+}
+
 struct _ConnectionsDockMethodInfoSort {
 
 	_FORCE_INLINE_ bool operator()(const MethodInfo &a, const MethodInfo &b) const {
@@ -892,8 +907,8 @@ void ConnectionsDock::update_tree() {
 
 			MethodInfo &mi = E->get();
 
-			String signaldesc;
-			signaldesc = mi.name + "(";
+			StringName signal_name = mi.name;
+			String signaldesc = "(";
 			PoolStringArray argnames;
 			if (mi.arguments.size()) {
 				signaldesc += " ";
@@ -914,19 +929,56 @@ void ConnectionsDock::update_tree() {
 				}
 				signaldesc += " ";
 			}
-
 			signaldesc += ")";
 
 			TreeItem *item = tree->create_item(pitem);
-			item->set_text(0, signaldesc);
+			item->set_text(0, String(signal_name) + signaldesc);
 			Dictionary sinfo;
-			sinfo["name"] = mi.name;
+			sinfo["name"] = signal_name;
 			sinfo["args"] = argnames;
 			item->set_metadata(0, sinfo);
 			item->set_icon(0, get_icon("Signal", "EditorIcons"));
 
+			// Set tooltip with the signal's documentation
+			{
+				String descr;
+				bool found = false;
+
+				Map<StringName, Map<StringName, String> >::Element *G = descr_cache.find(base);
+				if (G) {
+					Map<StringName, String>::Element *F = G->get().find(signal_name);
+					if (F) {
+						found = true;
+						descr = F->get();
+					}
+				}
+
+				if (!found) {
+					DocData *dd = EditorHelp::get_doc_data();
+					Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(base);
+					while (F && descr == String()) {
+						for (int i = 0; i < F->get().signals.size(); i++) {
+							if (F->get().signals[i].name == signal_name.operator String()) {
+								descr = F->get().signals[i].description.strip_edges();
+								break;
+							}
+						}
+						if (!F->get().inherits.empty()) {
+							F = dd->class_list.find(F->get().inherits);
+						} else {
+							break;
+						}
+					}
+					descr_cache[base][signal_name] = descr;
+				}
+
+				// "::" separators used in make_custom_tooltip for formatting.
+				item->set_tooltip(0, String(signal_name) + "::" + signaldesc + "::" + descr);
+			}
+
+			// List existing connections
 			List<Object::Connection> connections;
-			selectedNode->get_signal_connection_list(mi.name, &connections);
+			selectedNode->get_signal_connection_list(signal_name, &connections);
 
 			for (List<Object::Connection>::Element *F = connections.front(); F; F = F->next()) {
 
@@ -980,7 +1032,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 
 	VBoxContainer *vbc = this;
 
-	tree = memnew(Tree);
+	tree = memnew(ConnectionsDockTree);
 	tree->set_columns(1);
 	tree->set_select_mode(Tree::SELECT_ROW);
 	tree->set_hide_root(true);

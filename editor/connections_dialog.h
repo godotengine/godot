@@ -106,6 +106,13 @@ public:
 
 //////////////////////////////////////////
 
+// Custom Tree needed to use a RichTextLabel as tooltip control
+// when display signal documentation.
+class ConnectionsDockTree : public Tree {
+
+	virtual Control *make_custom_tooltip(const String &p_text) const;
+};
+
 class ConnectionsDock : public VBoxContainer {
 
 	GDCLASS(ConnectionsDock, VBoxContainer);
@@ -123,7 +130,7 @@ class ConnectionsDock : public VBoxContainer {
 	};
 
 	Node *selectedNode;
-	Tree *tree;
+	ConnectionsDockTree *tree;
 	EditorNode *editor;
 
 	ConfirmationDialog *disconnect_all_dialog;
@@ -132,6 +139,8 @@ class ConnectionsDock : public VBoxContainer {
 	PopupMenu *signal_menu;
 	PopupMenu *slot_menu;
 	UndoRedo *undo_redo;
+
+	Map<StringName, Map<StringName, String> > descr_cache;
 
 	void _make_or_edit_connection();
 	void _connect(Connection cToMake);
