@@ -446,6 +446,16 @@ msgstr ""
 msgid "Warning: Editing imported animation"
 msgstr "Varoitus: muokataan tuotua animaatiota"
 
+#: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Select All"
+msgstr "Valitse kaikki"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Select None"
+msgstr "Valitse solmu"
+
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Näytä raidat vain puussa valituista solmuista."
@@ -1308,7 +1318,8 @@ msgid "Must not collide with an existing engine class name."
 msgstr "Ei saa mennä päällekkäin olemassa olevan engine-luokkanimen kanssa."
 
 #: editor/editor_autoload_settings.cpp
-msgid "Must not collide with an existing buit-in type name."
+#, fuzzy
+msgid "Must not collide with an existing built-in type name."
 msgstr ""
 "Ei saa mennä päällekkäin olemassa olevan sisäänrakennetun tyypin nimen "
 "kanssa."
@@ -1514,7 +1525,8 @@ msgid "Node Dock"
 msgstr "Solmutelakka"
 
 #: editor/editor_feature_profile.cpp
-msgid "Filesystem Dock"
+#, fuzzy
+msgid "FileSystem and Import Docks"
 msgstr "Tiedostojärjestelmätelakka"
 
 #: editor/editor_feature_profile.cpp
@@ -1568,8 +1580,9 @@ msgid "File '%s' format is invalid, import aborted."
 msgstr "Tiedoston '%s' tiedostomuoto on virheellinen, tuonti keskeytetty."
 
 #: editor/editor_feature_profile.cpp
+#, fuzzy
 msgid ""
-"Profile '%s' already exists. Remote it first before importing, import "
+"Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
 msgstr ""
 "Profiili '%s' on jo olemassa. Poista se ensin ennen tuontia, tuonti "
@@ -1584,7 +1597,8 @@ msgid "Unset"
 msgstr "Poista asetus"
 
 #: editor/editor_feature_profile.cpp
-msgid "Current Profile"
+#, fuzzy
+msgid "Current Profile:"
 msgstr "Nykyinen profiili"
 
 #: editor/editor_feature_profile.cpp
@@ -1607,12 +1621,9 @@ msgid "Export"
 msgstr "Vie"
 
 #: editor/editor_feature_profile.cpp
-msgid "Available Profiles"
+#, fuzzy
+msgid "Available Profiles:"
 msgstr "Saatavilla olevat profiilit"
-
-#: editor/editor_feature_profile.cpp
-msgid "Enabled Classes"
-msgstr "Käytössä olevat luokat"
 
 #: editor/editor_feature_profile.cpp
 msgid "Class Options"
@@ -2682,8 +2693,32 @@ msgid "Editor Layout"
 msgstr "Editorin ulkoasu"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Take Screenshot"
+msgstr "Tee skenen juuri"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Screenshots are stored in the Editor Data/Settings Folder."
+msgstr "Avaa editorin data/asetuskansio"
+
+#: editor/editor_node.cpp
+msgid "Automatically Open Screenshots"
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open in an external image editor."
+msgstr "Avaa seuraava editori"
+
+#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Siirry koko näytön tilaan"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Toggle System Console"
+msgstr "Aseta CanvasItem näkyvyys päälle/pois"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -2792,15 +2827,18 @@ msgid "Spins when the editor window redraws."
 msgstr "Pyörii kun editorin ikkuna päivittyy."
 
 #: editor/editor_node.cpp
-msgid "Update Always"
-msgstr "Päivitä aina"
+#, fuzzy
+msgid "Update Continuously"
+msgstr "Jatkuva"
 
 #: editor/editor_node.cpp
-msgid "Update Changes"
+#, fuzzy
+msgid "Update When Changed"
 msgstr "Päivitä muutokset"
 
 #: editor/editor_node.cpp
-msgid "Disable Update Spinner"
+#, fuzzy
+msgid "Hide Update Spinner"
 msgstr "Poista päivitysanimaatio"
 
 #: editor/editor_node.cpp
@@ -3103,6 +3141,11 @@ msgid "Page: "
 msgstr "Sivu: "
 
 #: editor/editor_properties_array_dict.cpp
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Remove Item"
+msgstr "Poista"
+
+#: editor/editor_properties_array_dict.cpp
 msgid "New Key:"
 msgstr "Uusi avain:"
 
@@ -3113,11 +3156,6 @@ msgstr "Uusi arvo:"
 #: editor/editor_properties_array_dict.cpp
 msgid "Add Key/Value Pair"
 msgstr "Lisää avain/arvopari"
-
-#: editor/editor_properties_array_dict.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Remove Item"
-msgstr "Poista"
 
 #: editor/editor_run_native.cpp
 msgid ""
@@ -5242,6 +5280,14 @@ msgid "Load Emission Mask"
 msgstr "Lataa emissiomaski"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/cpu_particles_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Restart"
+msgstr "Käynnistä uudelleen nyt"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
 msgstr "Tyhjennä emissiomaski"
@@ -6152,8 +6198,18 @@ msgid "Find Next"
 msgstr "Etsi seuraava"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Filter scripts"
+msgstr "Suodata ominaisuuksia"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
 msgstr "Käytä metodilistalla aakkosellista järjestystä."
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Filter methods"
+msgstr "Suodatustila:"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
@@ -6394,11 +6450,6 @@ msgstr "Kirjanmerkit"
 #: scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Leikkaa"
-
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
-msgid "Select All"
-msgstr "Valitse kaikki"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
@@ -7944,52 +7995,9 @@ msgid "Boolean uniform."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'camera' input parameter for all shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'inv_camera' input parameter for all shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'inv_projection' input parameter for all shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'normal' input parameter for all shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'projection' input parameter for all shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'time' input parameter for all shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'viewport_size' input parameter for all shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'world' input parameter for all shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'alpha' input parameter for all shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'color' input parameter for all shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'texture_pixel_size' input parameter for all shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'uv' input parameter for all shader modes."
-msgstr ""
+#, fuzzy
+msgid "'%s' input parameter for all shader modes."
+msgstr "'normal' syöteparametri valosävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -7997,204 +8005,34 @@ msgid "Input parameter."
 msgstr "Tartu isäntään"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'alpha' input parameter for vertex and fragment shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'binormal' input parameter for vertex and fragment shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'color' input parameter for vertex and fragment shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'fragcoord' input parameter for fragment and light shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'point_coord' input parameter for fragment shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'screen_uv' input parameter for fragment shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'side' input parameter for fragment shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'tangent' input parameter for vertex and fragment shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'uv' input parameter for vertex and fragment shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'uv2' input parameter for vertex and fragment shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'vertex' input parameter for vertex and fragment shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'view' input parameter for fragment and light shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'albedo' input parameter for light shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'attenuation' input parameter for light shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'diffuse' input parameter for light shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light' input parameter for light shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_color' input parameter for light shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'roughness' input parameter for light shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'specular' input parameter for light shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'transmission' input parameter for light shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'modelview' input parameter for vertex shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'point_size' input parameter for vertex shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'tangent' input parameter for vertex and fragment shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_pass' input parameter for vertex and fragment shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'point_coord' input parameter for fragment and light shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'screen_pixel_size' input parameter for fragment shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'screen_uv' input parameter for fragment and light shader modes."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_alpha' input parameter for light shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_height' input parameter for light shader mode."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_uv' input parameter for light shader mode."
-msgstr "'light_uv' syöteparametri valosävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'light_vec' input parameter for light shader mode."
-msgstr "'light_vec' syöteparametri valosävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'normal' input parameter for light shader mode."
-msgstr "'normal' syöteparametri valosävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'shadow_color' input parameter for light shader mode."
-msgstr "'shadow_color' syöteparametri valosävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'extra' input parameter for vertex shader mode."
-msgstr "'extra' syöteparametri kärkipistesävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'projection' input parameter for vertex shader mode."
-msgstr "'projection' syöteparametri kärkipistesävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'vertex' input parameter for vertex shader mode."
-msgstr "'vertex' syöteparametri kärkipistesävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'world' input parameter for vertex shader mode."
-msgstr "'world' syöteparametri kärkipistesävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'active' input parameter for vertex shader mode."
-msgstr "'active' syöteparametri kärkipistesävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'alpha' input parameter for vertex shader mode."
-msgstr "'alpha' syöteparametri kärkipistesävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'color' input parameter for vertex shader mode."
-msgstr "'color' syöteparametri kärkipistesävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'custom' input parameter for vertex shader mode."
+#, fuzzy
+msgid "'%s' input parameter for vertex and fragment shader modes."
 msgstr "'custom' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'custom_alpha' input parameter for vertex shader mode."
-msgstr "'custom_alpha' syöteparametri kärkipistesävytintilaan."
+#, fuzzy
+msgid "'%s' input parameter for fragment and light shader modes."
+msgstr "'normal' syöteparametri valosävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'delta' input parameter for vertex shader mode."
-msgstr "'delta' syöteparametri kärkipistesävytintilaan."
+#, fuzzy
+msgid "'%s' input parameter for fragment shader mode."
+msgstr "'custom' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'emission_transform' input parameter for vertex shader mode."
-msgstr "'emission_transform' syöteparametri kärkipistesävytintilaan."
+#, fuzzy
+msgid "'%s' input parameter for light shader mode."
+msgstr "'normal' syöteparametri valosävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'index' input parameter for vertex shader mode."
-msgstr "'index' syöteparametri kärkipistesävytintilaan."
+#, fuzzy
+msgid "'%s' input parameter for vertex shader mode."
+msgstr "'custom' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'lifetime' input parameter for vertex shader mode."
-msgstr "'lifetime' syöteparametri kärkipistesävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'restart' input parameter for vertex shader mode."
-msgstr "'restart' syöteparametri kärkipistesävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'time' input parameter for vertex shader mode."
-msgstr "'time' syöteparametri kärkipistesävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'transform' input parameter for vertex shader mode."
-msgstr "'transform' syöteparametri kärkipistesävytintilaan."
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "'velocity' input parameter for vertex shader mode."
-msgstr "'velocity' syöteparametri kärkipistesävytintilaan."
+#, fuzzy
+msgid "'%s' input parameter for vertex and fragment shader mode."
+msgstr "'custom' syöteparametri kärkipistesävytintilaan."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar function."
@@ -9918,6 +9756,11 @@ msgid "Add Child Node"
 msgstr "Lisää alisolmu"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Expand/Collapse All"
+msgstr "Tiivistä kaikki"
+
+#: editor/scene_tree_dock.cpp
 msgid "Change Type"
 msgstr "Muuta tyyppiä"
 
@@ -9946,7 +9789,8 @@ msgid "Delete (No Confirm)"
 msgstr "Poista (ei varmistusta)"
 
 #: editor/scene_tree_dock.cpp
-msgid "Add/Create a New Node"
+#, fuzzy
+msgid "Add/Create a New Node."
 msgstr "Lisää/Luo uusi solmu"
 
 #: editor/scene_tree_dock.cpp
@@ -11432,6 +11276,17 @@ msgstr ""
 "Tältä luulta puuttuu kunnollinen lepoasento (REST). Mene Skeleton2D solmuun "
 "ja aseta sellainen."
 
+#: scene/2d/tile_map.cpp
+#, fuzzy
+msgid ""
+"TileMap with Use Parent on needs a parent CollisionObject2D to give shapes "
+"to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, "
+"KinematicBody2D, etc. to give them a shape."
+msgstr ""
+"CollisionShape2D toimii törmäysmuotona ainoastaan CollisionObject2D solmusta "
+"perityille solmuille. Käytä sitä ainoastaan Area2D, StaticBody2D, "
+"RigidBody2D, KinematicBody2D, jne. alla antaaksesi niille muodon."
+
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
@@ -11739,8 +11594,13 @@ msgid "Pick a color from the screen."
 msgstr "Valitse väri ruudulta."
 
 #: scene/gui/color_picker.cpp
-msgid "Raw Mode"
-msgstr "Raakatila"
+msgid "HSV"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Raw"
+msgstr "Käännös (yaw)"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
@@ -11753,7 +11613,7 @@ msgstr "Lisää nykyinen väri esiasetukseksi."
 #: scene/gui/container.cpp
 #, fuzzy
 msgid ""
-"Container by itself serves no purpose unless a script configures it's "
+"Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
 "If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
@@ -11762,6 +11622,12 @@ msgstr ""
 "alisolmujen sijoitustapaa.\n"
 "Jos et aio lisätä skriptiä, ole hyvä ja käytä sen sijaan tavallista "
 "'Control' solmua."
+
+#: scene/gui/control.cpp
+msgid ""
+"The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
+"\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
+msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -11858,6 +11724,72 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Enabled Classes"
+#~ msgstr "Käytössä olevat luokat"
+
+#~ msgid "Update Always"
+#~ msgstr "Päivitä aina"
+
+#~ msgid "'light_uv' input parameter for light shader mode."
+#~ msgstr "'light_uv' syöteparametri valosävytintilaan."
+
+#~ msgid "'light_vec' input parameter for light shader mode."
+#~ msgstr "'light_vec' syöteparametri valosävytintilaan."
+
+#~ msgid "'shadow_color' input parameter for light shader mode."
+#~ msgstr "'shadow_color' syöteparametri valosävytintilaan."
+
+#~ msgid "'extra' input parameter for vertex shader mode."
+#~ msgstr "'extra' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'projection' input parameter for vertex shader mode."
+#~ msgstr "'projection' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'vertex' input parameter for vertex shader mode."
+#~ msgstr "'vertex' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'world' input parameter for vertex shader mode."
+#~ msgstr "'world' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'active' input parameter for vertex shader mode."
+#~ msgstr "'active' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'alpha' input parameter for vertex shader mode."
+#~ msgstr "'alpha' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'color' input parameter for vertex shader mode."
+#~ msgstr "'color' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'custom_alpha' input parameter for vertex shader mode."
+#~ msgstr "'custom_alpha' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'delta' input parameter for vertex shader mode."
+#~ msgstr "'delta' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'emission_transform' input parameter for vertex shader mode."
+#~ msgstr "'emission_transform' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'index' input parameter for vertex shader mode."
+#~ msgstr "'index' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'lifetime' input parameter for vertex shader mode."
+#~ msgstr "'lifetime' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'restart' input parameter for vertex shader mode."
+#~ msgstr "'restart' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'time' input parameter for vertex shader mode."
+#~ msgstr "'time' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'transform' input parameter for vertex shader mode."
+#~ msgstr "'transform' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "'velocity' input parameter for vertex shader mode."
+#~ msgstr "'velocity' syöteparametri kärkipistesävytintilaan."
+
+#~ msgid "Raw Mode"
+#~ msgstr "Raakatila"
 
 #~ msgid "Path to Node:"
 #~ msgstr "Polku solmuun:"
@@ -12406,9 +12338,6 @@ msgstr ""
 
 #~ msgid "Toggle Spatial Visible"
 #~ msgstr "Aseta Spatial näkyvyys päälle/pois"
-
-#~ msgid "Toggle CanvasItem Visible"
-#~ msgstr "Aseta CanvasItem näkyvyys päälle/pois"
 
 #~ msgid "Condition"
 #~ msgstr "Ehtolause"
