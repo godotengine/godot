@@ -303,6 +303,8 @@ File extracted from upstream release tarball `mbedtls-2.16.0-apache.tgz`:
 - Applied the patch in `thirdparty/mbedtls/padlock.diff`. This disables VIA
   padlock support which defines a symbol `unsupported` which clashes with
   a symbol in libwebsockets.
+- Added 2 files `godot_core_mbedtls_platform.{c,h}` providing configuration
+  for light bundling with core.
 
 
 ## miniupnpc
@@ -340,15 +342,7 @@ Collection of single-file libraries used in Godot components.
 
 ### core
 
-- `aes256.{cpp,h}`
-  * Upstream: http://www.literatecode.com/aes256
-  * Version: latest, as of April 2017
-  * License: ISC
-- `base64.{c,h}`
-  * Upstream: http://episec.com/people/edelkind/c.html
-  * Version: latest, as of April 2017
-  * License: Public Domain
- - `clipper.{cpp,hpp}`
+- `clipper.{cpp,hpp}`
   * Upstream: https://sourceforge.net/projects/polyclipping
   * Version: 6.4.2 + Godot changes (added optional exceptions handling)
   * License: BSL-1.0
@@ -360,10 +354,6 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/brunexgeek/hqx
   * Version: TBD, file structure differs
   * License: Apache 2.0
-- `md5.{cpp,h}`
-  * Upstream: http://www.efgh.com/software/md5.htm
-  * Version: TBD, might not be latest from above URL
-  * License: RSA Message-Digest License
 - `open-simplex-noise.{c,h}`
   * Upstream: https://github.com/smcameron/open-simplex-noise-in-c
   * Version: git (0d555e7, 2015)
@@ -372,10 +362,6 @@ Collection of single-file libraries used in Godot components.
   * Upstream: http://www.pcg-random.org
   * Version: minimal C implementation, http://www.pcg-random.org/download.html
   * License: Apache 2.0
-- `sha256.{c,h}`
-  * Upstream: https://github.com/ilvn/SHA256
-  * Version: git (35ff823, 2015)
-  * License: ISC
 - `smaz.{c,h}`
   * Upstream: https://github.com/antirez/smaz
   * Version: git (150e125, 2009)
