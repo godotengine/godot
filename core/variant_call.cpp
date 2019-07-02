@@ -33,10 +33,10 @@
 #include "core/color_names.inc"
 #include "core/core_string_names.h"
 #include "core/io/compression.h"
+#include "core/math/crypto_core.h"
 #include "core/object.h"
 #include "core/os/os.h"
 #include "core/script_language.h"
-#include "thirdparty/misc/sha256.h"
 
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);
@@ -598,10 +598,7 @@ struct _VariantCall {
 		PoolByteArray::Read r = ba->read();
 		String s;
 		unsigned char hash[32];
-		sha256_context sha256;
-		sha256_init(&sha256);
-		sha256_hash(&sha256, (unsigned char *)r.ptr(), ba->size());
-		sha256_done(&sha256, hash);
+		CryptoCore::sha256((unsigned char *)r.ptr(), ba->size(), hash);
 		s = String::hex_encode_buffer(hash, 32);
 		r_ret = s;
 	}

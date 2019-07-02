@@ -47,15 +47,11 @@ env_thirdparty.disable_warnings()
 thirdparty_misc_dir = "#thirdparty/misc/"
 thirdparty_misc_sources = [
     # C sources
-    "base64.c",
     "fastlz.c",
-    "sha256.c",
     "smaz.c",
 
     # C++ sources
-    "aes256.cpp",
     "hq2x.cpp",
-    "md5.cpp",
     "pcg.cpp",
     "triangulator.cpp",
     "clipper.cpp",

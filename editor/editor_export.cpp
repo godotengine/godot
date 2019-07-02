@@ -34,6 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
+#include "core/math/crypto_core.h"
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
@@ -43,7 +44,6 @@
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "scene/resources/resource_format_text.h"
-#include "thirdparty/misc/md5.h"
 
 static int _get_pad(int p_alignment, int p_n) {
 
@@ -323,13 +323,11 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 	}
 
 	{
-		MD5_CTX ctx;
-		MD5Init(&ctx);
-		MD5Update(&ctx, (unsigned char *)p_data.ptr(), p_data.size());
-		MD5Final(&ctx);
+		unsigned char hash[16];
+		CryptoCore::md5(p_data.ptr(), p_data.size(), hash);
 		sd.md5.resize(16);
 		for (int i = 0; i < 16; i++) {
-			sd.md5.write[i] = ctx.digest[i];
+			sd.md5.write[i] = hash[i];
 		}
 	}
 

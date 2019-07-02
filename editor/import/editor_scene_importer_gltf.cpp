@@ -30,6 +30,7 @@
 
 #include "editor_scene_importer_gltf.h"
 #include "core/io/json.h"
+#include "core/math/crypto_core.h"
 #include "core/math/math_defs.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
@@ -37,7 +38,6 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/surface_tool.h"
-#include "thirdparty/misc/base64.h"
 
 uint32_t EditorSceneImporterGLTF::get_import_flags() const {
 
@@ -279,7 +279,8 @@ static Vector<uint8_t> _parse_base64_uri(const String &uri) {
 	Vector<uint8_t> buf;
 	buf.resize(strlen / 4 * 3 + 1 + 1);
 
-	int len = base64_decode((char *)buf.ptr(), (char *)substr.get_data(), strlen);
+	size_t len = 0;
+	ERR_FAIL_COND_V(CryptoCore::b64_decode(buf.ptrw(), buf.size(), &len, (unsigned char *)substr.get_data(), strlen) != OK, Vector<uint8_t>());
 
 	buf.resize(len);
 
