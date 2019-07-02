@@ -28,17 +28,17 @@ matrix:
           packages:
             - clang-format-8
 
-    - name: Linux editor (debug, GCC 8, with Mono)
-      env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no warnings=extra werror=yes"
+    - name: Linux editor (debug, GCC 9, with Mono)
+      env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no warnings=extra werror=yes"
       os: linux
-      compiler: gcc-8
+      compiler: gcc-9
       addons:
         apt:
           sources:
             - mono
             - ubuntu-toolchain-r-test
           packages:
-            - &gcc8_deps [gcc-8, g++-8]
+            - &gcc9_deps [gcc-9, g++-9]
             - &linux_deps [libasound2-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
             - &linux_mono_deps [mono-devel, msbuild, nuget]
 
@@ -75,16 +75,16 @@ matrix:
       os: osx
       compiler: clang
 
-    - name: Linux headless editor (release_debug, GCC 8)
-      env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="warnings=extra werror=yes"
+    - name: Linux headless editor (release_debug, GCC 9)
+      env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
-      compiler: gcc-8
+      compiler: gcc-9
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - *gcc8_deps
+            - *gcc9_deps
             - *linux_deps
 
     - name: Linux export template (release_debug, GCC 5, without 3D support)
