@@ -571,4 +571,5 @@ GIProbe::GIProbe() {
 }
 
 GIProbe::~GIProbe() {
+	VS::get_singleton()->free(gi_probe);
 }

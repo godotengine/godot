@@ -77,6 +77,8 @@ void VisualServerRaster::free(RID p_rid) {
 		return;
 	if (VSG::scene->free(p_rid))
 		return;
+	if (VSG::scene_render->free(p_rid))
+		return;
 }
 
 /* EVENT QUEUING */
