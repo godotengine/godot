@@ -187,6 +187,15 @@
 				Given the two 2D segments ([code]p1[/code], [code]p2[/code]) and ([code]q1[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PoolVector2Array] that contains this point on ([code]p1[/code], [code]p2[/code]) as well the accompanying point on ([code]q1[/code], [code]q2[/code]).
 			</description>
 		</method>
+		<method name="get_polygon_area">
+			<return type="float">
+			</return>
+			<argument index="0" name="polygon" type="PoolVector2Array">
+			</argument>
+			<description>
+				Returns [code]polygon[/code]'s positive or negative area depending on whether vertices are ordered in counterclockwise or anticlockwise order. See also [method is_polygon_clockwise].
+			</description>
+		</method>
 		<method name="get_uv84_normal_bit">
 			<return type="int">
 			</return>
@@ -249,7 +258,7 @@
 			<argument index="0" name="polygon" type="PoolVector2Array">
 			</argument>
 			<description>
-				Returns [code]true[/code] if [code]polygon[/code]'s vertices are ordered in clockwise order, otherwise returns [code]false[/code].
+				Returns [code]true[/code] if [code]polygon[/code]'s vertices are ordered in clockwise order, otherwise returns [code]false[/code]. If the order is clockwise, the polygon can be interpreted as an inner polygon (hole), otherwise it's an outer polygon (boundary).
 			</description>
 		</method>
 		<method name="line_intersects_line_2d">

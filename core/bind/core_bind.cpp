@@ -1606,6 +1606,11 @@ PoolVector<Vector3> _Geometry::segment_intersects_convex(const Vector3 &p_from, 
 	return r;
 }
 
+real_t _Geometry::get_polygon_area(const Vector<Vector2> &p_polygon) {
+
+	return Geometry::get_polygon_area(p_polygon);
+}
+
 bool _Geometry::is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
 
 	return Geometry::is_polygon_clockwise(p_polygon);
@@ -1793,6 +1798,7 @@ void _Geometry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("segment_intersects_convex", "from", "to", "planes"), &_Geometry::segment_intersects_convex);
 	ClassDB::bind_method(D_METHOD("point_is_inside_triangle", "point", "a", "b", "c"), &_Geometry::point_is_inside_triangle);
 
+	ClassDB::bind_method(D_METHOD("get_polygon_area", "polygon"), &_Geometry::get_polygon_area);
 	ClassDB::bind_method(D_METHOD("is_polygon_clockwise", "polygon"), &_Geometry::is_polygon_clockwise);
 	ClassDB::bind_method(D_METHOD("is_point_in_polygon", "point", "polygon"), &_Geometry::is_point_in_polygon);
 	ClassDB::bind_method(D_METHOD("triangulate_polygon", "polygon"), &_Geometry::triangulate_polygon);

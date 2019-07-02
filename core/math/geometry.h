@@ -852,6 +852,11 @@ public:
 			return Vector<int>(); //fail
 		return triangles;
 	}
+	
+	static real_t get_polygon_area(const Vector<Vector2> &p_polygon) {
+		ERR_FAIL_COND_V_MSG(p_polygon.size() < 3, 0.0, "Bad polygon: cannot compute area with less than 3 vertices.");
+		return Triangulate::get_area(p_polygon);
+	}
 
 	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
 		int c = p_polygon.size();
@@ -864,7 +869,6 @@ public:
 			const Vector2 &v2 = p[(i + 1) % c];
 			sum += (v2.x - v1.x) * (v2.y + v1.y);
 		}
-
 		return sum > 0.0f;
 	}
 

@@ -401,6 +401,7 @@ public:
 	real_t segment_intersects_circle(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_circle_pos, real_t p_circle_radius);
 	int get_uv84_normal_bit(const Vector3 &p_vector);
 
+	real_t get_polygon_area(const Vector<Vector2> &p_polygon);
 	bool is_polygon_clockwise(const Vector<Vector2> &p_polygon);
 	bool is_point_in_polygon(const Point2 &p_point, const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon);
