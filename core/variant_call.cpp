@@ -275,8 +275,10 @@ struct _VariantCall {
 	VCALL_LOCALMEM2(String, erase);
 	VCALL_LOCALMEM0R(String, hash);
 	VCALL_LOCALMEM0R(String, md5_text);
+	VCALL_LOCALMEM0R(String, sha1_text);
 	VCALL_LOCALMEM0R(String, sha256_text);
 	VCALL_LOCALMEM0R(String, md5_buffer);
+	VCALL_LOCALMEM0R(String, sha1_buffer);
 	VCALL_LOCALMEM0R(String, sha256_buffer);
 	VCALL_LOCALMEM0R(String, empty);
 	VCALL_LOCALMEM0R(String, is_abs_path);
@@ -1539,8 +1541,10 @@ void register_variant_methods() {
 	ADDFUNC2(STRING, NIL, String, erase, INT, "position", INT, "chars", varray());
 	ADDFUNC0R(STRING, INT, String, hash, varray());
 	ADDFUNC0R(STRING, STRING, String, md5_text, varray());
+	ADDFUNC0R(STRING, STRING, String, sha1_text, varray());
 	ADDFUNC0R(STRING, STRING, String, sha256_text, varray());
 	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, md5_buffer, varray());
+	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, sha1_buffer, varray());
 	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, sha256_buffer, varray());
 	ADDFUNC0R(STRING, BOOL, String, empty, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_abs_path, varray());

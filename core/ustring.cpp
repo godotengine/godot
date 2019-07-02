@@ -2257,6 +2257,13 @@ String String::md5_text() const {
 	return String::hex_encode_buffer(hash, 16);
 }
 
+String String::sha1_text() const {
+	CharString cs = utf8();
+	unsigned char hash[20];
+	CryptoCore::sha1((unsigned char *)cs.ptr(), cs.length(), hash);
+	return String::hex_encode_buffer(hash, 20);
+}
+
 String String::sha256_text() const {
 	CharString cs = utf8();
 	unsigned char hash[32];
@@ -2277,6 +2284,20 @@ Vector<uint8_t> String::md5_buffer() const {
 	}
 	return ret;
 };
+
+Vector<uint8_t> String::sha1_buffer() const {
+	CharString cs = utf8();
+	unsigned char hash[20];
+	CryptoCore::sha1((unsigned char *)cs.ptr(), cs.length(), hash);
+
+	Vector<uint8_t> ret;
+	ret.resize(20);
+	for (int i = 0; i < 20; i++) {
+		ret.write[i] = hash[i];
+	}
+
+	return ret;
+}
 
 Vector<uint8_t> String::sha256_buffer() const {
 	CharString cs = utf8();
