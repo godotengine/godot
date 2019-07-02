@@ -52,6 +52,7 @@ name is available.
     Clay John (clayjohn)
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
+    Daniel Rakos (aqnuep)
     Dharkael (lupoDharkael)
     Dmitry Koteroff (Krakean)
     DualMatrix
