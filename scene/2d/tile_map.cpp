@@ -234,6 +234,25 @@ void TileMap::_fix_cell_transform(Transform2D &xform, const Cell &p_cell, const 
 	Size2 s = p_sc;
 	Vector2 offset = p_offset;
 
+	if (compatibility_mode && !centered_textures) {
+
+		if (tile_origin == TILE_ORIGIN_BOTTOM_LEFT) {
+			offset.y += cell_size.y;
+		} else if (tile_origin == TILE_ORIGIN_CENTER) {
+			offset += cell_size / 2;
+		}
+
+		if (s.y > s.x) {
+			if ((p_cell.flip_h && (p_cell.flip_v || p_cell.transpose)) || (p_cell.flip_v && !p_cell.transpose)) {
+				offset.y += s.y - s.x;
+			}
+		} else if (s.y < s.x) {
+			if ((p_cell.flip_v && (p_cell.flip_h || p_cell.transpose)) || (p_cell.flip_h && !p_cell.transpose)) {
+				offset.x += s.x - s.y;
+			}
+		}
+	}
+
 	if (p_cell.transpose) {
 		SWAP(xform.elements[0].x, xform.elements[0].y);
 		SWAP(xform.elements[1].x, xform.elements[1].y);
@@ -244,16 +263,36 @@ void TileMap::_fix_cell_transform(Transform2D &xform, const Cell &p_cell, const 
 	if (p_cell.flip_h) {
 		xform.elements[0].x = -xform.elements[0].x;
 		xform.elements[1].x = -xform.elements[1].x;
-		offset.x = s.x - offset.x;
+		if (compatibility_mode && !centered_textures) {
+			if (tile_origin == TILE_ORIGIN_TOP_LEFT || tile_origin == TILE_ORIGIN_BOTTOM_LEFT) {
+				offset.x = s.x - offset.x;
+			} else if (tile_origin == TILE_ORIGIN_CENTER) {
+				offset.x = s.x - offset.x / 2;
+			}
+		} else {
+			offset.x = s.x - offset.x;
+		}
 	}
 
 	if (p_cell.flip_v) {
 		xform.elements[0].y = -xform.elements[0].y;
 		xform.elements[1].y = -xform.elements[1].y;
-		offset.y = s.y - offset.y;
+		if (compatibility_mode && !centered_textures) {
+			if (tile_origin == TILE_ORIGIN_TOP_LEFT) {
+				offset.y = s.y - offset.y;
+			} else if (tile_origin == TILE_ORIGIN_BOTTOM_LEFT) {
+				offset.y += s.y;
+			} else if (tile_origin == TILE_ORIGIN_CENTER) {
+				offset.y += s.y;
+			}
+		} else {
+			offset.y = s.y - offset.y;
+		}
 	}
-	/* For a future CheckBox to Center Texture:
-	offset += cell_size / 2 - s / 2; */
+
+	if (centered_textures) {
+		offset += cell_size / 2 - s / 2;
+	}
 	xform.elements[2] += offset;
 }
 
@@ -434,13 +473,24 @@ void TileMap::update_dirty_quadrants() {
 			rect.size.x += fp_adjust;
 			rect.size.y += fp_adjust;
 
+			if (compatibility_mode && !centered_textures) {
+				if (rect.size.y > rect.size.x) {
+					if ((c.flip_h && (c.flip_v || c.transpose)) || (c.flip_v && !c.transpose))
+						tile_ofs.y += rect.size.y - rect.size.x;
+				} else if (rect.size.y < rect.size.x) {
+					if ((c.flip_v && (c.flip_h || c.transpose)) || (c.flip_h && !c.transpose))
+						tile_ofs.x += rect.size.x - rect.size.y;
+				}
+			}
+
 			if (c.transpose) {
 				SWAP(tile_ofs.x, tile_ofs.y);
-				/* For a future CheckBox to Center Texture:
-				rect.position.x += cell_size.x / 2 - rect.size.y / 2;
-				rect.position.y += cell_size.y / 2 - rect.size.x / 2;
-			} else {
-				rect.position += cell_size / 2 - rect.size / 2; */
+				if (centered_textures) {
+					rect.position.x += cell_size.x / 2 - rect.size.y / 2;
+					rect.position.y += cell_size.y / 2 - rect.size.x / 2;
+				}
+			} else if (centered_textures) {
+				rect.position += cell_size / 2 - rect.size / 2;
 			}
 
 			if (c.flip_h) {
@@ -453,7 +503,43 @@ void TileMap::update_dirty_quadrants() {
 				tile_ofs.y = -tile_ofs.y;
 			}
 
-			rect.position += tile_ofs;
+			if (compatibility_mode && !centered_textures) {
+				if (tile_origin == TILE_ORIGIN_TOP_LEFT) {
+					rect.position += tile_ofs;
+
+				} else if (tile_origin == TILE_ORIGIN_BOTTOM_LEFT) {
+
+					rect.position += tile_ofs;
+
+					if (c.transpose) {
+						if (c.flip_h)
+							rect.position.x -= cell_size.x;
+						else
+							rect.position.x += cell_size.x;
+					} else {
+						if (c.flip_v)
+							rect.position.y -= cell_size.y;
+						else
+							rect.position.y += cell_size.y;
+					}
+
+				} else if (tile_origin == TILE_ORIGIN_CENTER) {
+
+					rect.position += tile_ofs;
+
+					if (c.flip_h)
+						rect.position.x -= cell_size.x / 2;
+					else
+						rect.position.x += cell_size.x / 2;
+
+					if (c.flip_v)
+						rect.position.y -= cell_size.y / 2;
+					else
+						rect.position.y += cell_size.y / 2;
+				}
+			} else {
+				rect.position += tile_ofs;
+			}
 
 			Ref<Texture> normal_map = tile_set->tile_get_normal_map(c.id);
 			Color modulate = tile_set->tile_get_modulate(c.id);
@@ -1156,10 +1242,7 @@ void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 			coord_x = decode_uint16(&local[8]);
 			coord_y = decode_uint16(&local[10]);
 		}
-		/*
-		if (x<-20 || y <-20 || x>4000 || y>4000)
-			continue;
-		*/
+
 		set_cell(x, y, v, flip_h, flip_v, transpose, Vector2(coord_x, coord_y));
 	}
 
@@ -1570,6 +1653,32 @@ bool TileMap::is_y_sort_mode_enabled() const {
 	return y_sort_mode;
 }
 
+void TileMap::set_compatibility_mode(bool p_enable) {
+
+	_clear_quadrants();
+	compatibility_mode = p_enable;
+	_recreate_quadrants();
+	emit_signal("settings_changed");
+}
+
+bool TileMap::is_compatibility_mode_enabled() const {
+
+	return compatibility_mode;
+}
+
+void TileMap::set_centered_textures(bool p_enable) {
+
+	_clear_quadrants();
+	centered_textures = p_enable;
+	_recreate_quadrants();
+	emit_signal("settings_changed");
+}
+
+bool TileMap::is_centered_textures_enabled() const {
+
+	return centered_textures;
+}
+
 Array TileMap::get_used_cells() const {
 
 	Array a;
@@ -1707,6 +1816,12 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_y_sort_mode", "enable"), &TileMap::set_y_sort_mode);
 	ClassDB::bind_method(D_METHOD("is_y_sort_mode_enabled"), &TileMap::is_y_sort_mode_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_compatibility_mode", "enable"), &TileMap::set_compatibility_mode);
+	ClassDB::bind_method(D_METHOD("is_compatibility_mode_enabled"), &TileMap::is_compatibility_mode_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_centered_textures", "enable"), &TileMap::set_centered_textures);
+	ClassDB::bind_method(D_METHOD("is_centered_textures_enabled"), &TileMap::is_centered_textures_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_collision_use_kinematic", "use_kinematic"), &TileMap::set_collision_use_kinematic);
 	ClassDB::bind_method(D_METHOD("get_collision_use_kinematic"), &TileMap::get_collision_use_kinematic);
 
@@ -1775,6 +1890,8 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_half_offset", PROPERTY_HINT_ENUM, "Offset X,Offset Y,Disabled,Offset Negative X,Offset Negative Y"), "set_half_offset", "get_half_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_tile_origin", PROPERTY_HINT_ENUM, "Top Left,Center,Bottom Left"), "set_tile_origin", "get_tile_origin");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_y_sort"), "set_y_sort_mode", "is_y_sort_mode_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "compatibility_mode"), "set_compatibility_mode", "is_compatibility_mode_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered_textures"), "set_centered_textures", "is_centered_textures_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_clip_uv"), "set_clip_uv", "get_clip_uv");
 
 	ADD_GROUP("Collision", "collision_");
@@ -1832,6 +1949,8 @@ TileMap::TileMap() {
 	use_kinematic = false;
 	navigation = NULL;
 	y_sort_mode = false;
+	compatibility_mode = false;
+	centered_textures = false;
 	occluder_light_mask = 1;
 	clip_uv = false;
 	format = FORMAT_1; //Always initialize with the lowest format
