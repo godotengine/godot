@@ -2183,7 +2183,55 @@ void EditorPropertyResource::_menu_option(int p_which) {
 		case OBJ_MENU_NEW_SCRIPT: {
 
 			if (Object::cast_to<Node>(get_edited_object())) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(get_edited_object()));
+				if (get_edited_property() == "script") {
+					EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(get_edited_object()));
+				} else {
+					// Copied from editor/scene_tree_dock.cpp#L380 and edited for our purposes
+					// There's a good chance we could merge this back into that code with some modifications
+					//Ref<Script> existing = get_edited_object()->get(get_edited_property());
+					//Script *existing = Object::cast_to<Script>(get_edited_object()->get(get_edited_property()));
+					RES existing = get_edited_object()->get(get_edited_property());
+
+					String inherits;
+					if (existing.is_valid()) {
+						//inherits = existing->get_class();
+						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+							ScriptLanguage *l = ScriptServer::get_language(i);
+							if (l->get_type() == existing->get_class()) {
+								String name = l->get_global_class_name(existing->get_path());
+								if (ScriptServer::is_global_class(name) && EDITOR_GET("interface/editors/derive_script_globals_by_name").operator bool()) {
+									inherits = name;
+								} else if (l->can_inherit_from_file()) {
+									inherits = "\"" + existing->get_path() + "\"";
+								}
+								break;
+							}
+						}
+					} else {
+						inherits = "Resource";
+					}
+
+					Node *edited_node = Object::cast_to<Node>(get_edited_object());
+
+					String path = edited_node->get_filename().get_basename();
+					if (path == "") {
+						String root_path = EditorNode::get_singleton()->get_editor_data().get_edited_scene_root()->get_filename();
+						if (root_path == "") {
+							path = String("res://").plus_file(edited_node->get_name());
+						} else {
+							path = root_path.get_base_dir().plus_file(edited_node->get_name());
+						}
+					}
+					// path = <node_or_scene_name>.<property_name>.
+					// The extra period at the end is to prevent the property name from being seen as the type by ScriptCreateDialog
+					path = path + "." + get_edited_property() + ".";
+
+					ScriptCreateDialog *script_create_dialog = EditorNode::get_singleton()->get_scene_tree_dock()->get_script_create_dialog();
+					script_create_dialog->connect("script_created", this, "_script_created");
+					script_create_dialog->connect("popup_hide", this, "_script_creation_closed");
+					script_create_dialog->config(inherits, path);
+					script_create_dialog->popup_centered();
+				}
 			}
 
 		} break;
@@ -2306,6 +2354,19 @@ void EditorPropertyResource::_resource_preview(const String &p_path, const Ref<T
 			assign->set_text("");
 		}
 	}
+}
+
+void EditorPropertyResource::_script_created(Ref<Script> p_script) {
+
+	// Based partially upon editor/scene_tree_dock.cpp#L1628
+	emit_changed(get_edited_property(), p_script);
+	update_property();
+}
+
+void EditorPropertyResource::_script_creation_closed() {
+	ScriptCreateDialog *script_create_dialog = EditorNode::get_singleton()->get_scene_tree_dock()->get_script_create_dialog();
+	script_create_dialog->disconnect("script_created", this, "_script_created");
+	script_create_dialog->disconnect("popup_hide", this, "_script_creation_closed");
 }
 
 void EditorPropertyResource::_update_menu_items() {
@@ -2833,6 +2894,8 @@ void EditorPropertyResource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_resource_preview"), &EditorPropertyResource::_resource_preview);
 	ClassDB::bind_method(D_METHOD("_resource_selected"), &EditorPropertyResource::_resource_selected);
 	ClassDB::bind_method(D_METHOD("_viewport_selected"), &EditorPropertyResource::_viewport_selected);
+	ClassDB::bind_method(D_METHOD("_script_created"), &EditorPropertyResource::_script_created);
+	ClassDB::bind_method(D_METHOD("_script_creation_closed"), &EditorPropertyResource::_script_creation_closed);
 	ClassDB::bind_method(D_METHOD("_sub_inspector_property_keyed"), &EditorPropertyResource::_sub_inspector_property_keyed);
 	ClassDB::bind_method(D_METHOD("_sub_inspector_resource_selected"), &EditorPropertyResource::_sub_inspector_resource_selected);
 	ClassDB::bind_method(D_METHOD("_sub_inspector_object_id_selected"), &EditorPropertyResource::_sub_inspector_object_id_selected);
