@@ -7,19 +7,20 @@
 # Elias <eliasnykrem@gmail.com>, 2018.
 # flesk <eivindkn@gmail.com>, 2017, 2019.
 # Frank T. Rambol <frank@d-fect.com>, 2018.
-# Jørgen Aarmo Lund <jorgen.aarmo@gmail.com>, 2016.
+# Jørgen Aarmo Lund <jorgen.aarmo@gmail.com>, 2016, 2019.
 # NicolaiF <nico-fre@hotmail.com>, 2017-2018, 2019.
 # Norwegian Disaster <stian.furu.overbye@gmail.com>, 2017.
 # passeride <lukas@passeride.com>, 2017.
 # Byzantin <kasper-hoel@hotmail.com>, 2018.
 # Hans-Marius Øverås <hansmariusoveras@gmail.com>, 2019.
 # Revolution <revosw@gmail.com>, 2019.
+# Petter Reinholdtsen <pere-weblate@hungry.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-05-04 13:48+0000\n"
-"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
+"PO-Revision-Date: 2019-07-02 10:51+0000\n"
+"Last-Translator: Petter Reinholdtsen <pere-weblate@hungry.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -27,12 +28,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.7-dev\n"
+"X-Generator: Weblate 3.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Ugyldig typeargument til convert(), bruk TYPE_*-konstantene."
+msgstr "Ugyldig argumenttype til convert(), bruk TYPE_*-konstantene."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -969,7 +970,7 @@ msgstr "Ressurs"
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
 msgid "Path"
-msgstr "Søkesti"
+msgstr "Bane"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
@@ -1154,7 +1155,7 @@ msgid ""
 "is an exhaustive list of all such thirdparty components with their "
 "respective copyright statements and license terms."
 msgstr ""
-"Godot Engine avhenger av en rekke tredjeparts fri og åpen kildekode-"
+"Godot Engine avhenger av en rekke tredjeparts frie og åpne kildekode-"
 "biblioteker, alle kompatible med begrepene i MIT-lisensen. Følgende er en "
 "utfyllende liste over alle slike tredjepartskomponenter med sine respektive "
 "opphavsrettserklæringer og lisensbegreper."

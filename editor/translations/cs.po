@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-16 11:42+0000\n"
+"PO-Revision-Date: 2019-07-02 10:49+0000\n"
 "Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -76,18 +76,16 @@ msgid "Balanced"
 msgstr "Vyvážený"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Mirror"
-msgstr "Zrcadlit X"
+msgstr "Zrcadlit"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
 msgstr "Čas:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Value:"
-msgstr "Hodnota"
+msgstr "Hodnota:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -102,14 +100,12 @@ msgid "Delete Selected Key(s)"
 msgstr "Smazat klíč(e)"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Add Bezier Point"
-msgstr "Přidat bod"
+msgstr "Přidat bod Bézierovy křivky"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Přesunout body"
+msgstr "Přesunout body Bézierovy křivky"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -173,12 +169,10 @@ msgid "Animation Playback Track"
 msgstr "Stopa přehrávání animace"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Délka animace (v sekundách)"
+msgstr "Délka animace (ve snímcích)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
 msgstr "Délka animace (v sekundách)"
 
@@ -460,9 +454,8 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "Seskupit stopy podle uzlu nebo je zobrazit jako jednoduchý seznam."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "Přichytit"
+msgstr "Přichycení:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."

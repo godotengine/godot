@@ -46,12 +46,13 @@
 # qjyqjyqjyqjy <qjyqjyqjyqjy@sina.com.cn>, 2019.
 # liushuyu011 <liushuyu011@gmail.com>, 2019.
 # DS <dseqrasd@126.com>, 2019.
+# ZeroAurora <zeroaurora@qq.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-06-16 19:42+0000\n"
-"Last-Translator: yzt <834950797@qq.com>\n"
+"PO-Revision-Date: 2019-07-02 10:51+0000\n"
+"Last-Translator: ZeroAurora <zeroaurora@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -59,7 +60,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.7-dev\n"
+"X-Generator: Weblate 3.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -118,9 +119,8 @@ msgid "Time:"
 msgstr "时间:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Value:"
-msgstr "值"
+msgstr "值："
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -1527,111 +1527,95 @@ msgid "Script Editor"
 msgstr "打开脚本编辑器"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Asset Library"
-msgstr "打开资源商店"
+msgstr "资产库"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Scene Tree Editing"
-msgstr "场景树:"
+msgstr "场景树编辑"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Dock"
-msgstr "导入"
+msgstr "导入面板"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Node Dock"
-msgstr "节点已移动"
+msgstr "节点面板"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
 msgid "Filesystem Dock"
-msgstr "文件系统"
+msgstr "文件系统面板"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Erase profile '%s'? (no undo)"
-msgstr "全部替换（无法撤销）"
+msgstr "删除配置文件 '%s'? （无法撤销）"
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
-msgstr ""
+msgstr "配置文件必须是有效的文件名，并且不能包含 '.'"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Profile with this name already exists."
-msgstr "同名的文件夹已经存在。"
+msgstr "同名的配置文件已经存在。"
 
 #: editor/editor_feature_profile.cpp
 msgid "(Editor Disabled, Properties Disabled)"
-msgstr ""
+msgstr "（编辑器已禁用，属性已禁用）"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(Properties Disabled)"
-msgstr "仅属性"
+msgstr "（属性已禁用）"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(Editor Disabled)"
-msgstr "禁用剪辑"
+msgstr "（编辑器已禁用）"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Options:"
-msgstr "类说明："
+msgstr "类选项："
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enable Contextual Editor"
-msgstr "打开下一个编辑器"
+msgstr "启用上下文编辑器"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Properties:"
-msgstr "属性:"
+msgstr "启用的属性："
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Features:"
-msgstr "功能"
+msgstr "启用的功能："
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Classes:"
-msgstr "搜索类型"
+msgstr "启用的类："
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
-msgstr ""
+msgstr "文件 '%s' 格式无效，导入中止。"
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Profile '%s' already exists. Remote it first before importing, import "
 "aborted."
-msgstr ""
+msgstr "配置文件 '%s' 已存在。在导入之前首先远程处理，导入已中止。"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Error saving profile to path: '%s'."
-msgstr "加载模板 %s 时出错"
+msgstr "将配置文件保存到路径时出错： '%s'。"
 
 #: editor/editor_feature_profile.cpp
 msgid "Unset"
-msgstr ""
+msgstr "未设置"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Current Profile"
-msgstr "当前版本:"
+msgstr "当前配置文件"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Make Current"
-msgstr "当前:"
+msgstr "设为当前"
 
 #: editor/editor_feature_profile.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -1649,44 +1633,36 @@ msgid "Export"
 msgstr "导出"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Available Profiles"
-msgstr "有效节点："
+msgstr "可用配置文件"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Classes"
-msgstr "搜索类型"
+msgstr "启用的类"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Options"
-msgstr "类说明"
+msgstr "类选项"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "New profile name:"
-msgstr "新名称:"
+msgstr "新的配置文件名称："
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Erase Profile"
-msgstr "擦除区域"
+msgstr "删除配置文件"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Profile(s)"
-msgstr "已导入的项目"
+msgstr "导入配置文件"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Export Profile"
-msgstr "导出项目"
+msgstr "导出配置文件"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Manage Editor Feature Profiles"
-msgstr "管理导出模板"
+msgstr "管理编辑器功能配置文件"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
@@ -3785,11 +3761,11 @@ msgstr "另存为..."
 
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
-msgstr "拷贝参数"
+msgstr "复制参数"
 
 #: editor/inspector_dock.cpp
 msgid "Paste Params"
-msgstr "粘贴帧"
+msgstr "粘贴参数"
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
@@ -6344,7 +6320,7 @@ msgstr "信号"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Target"
-msgstr "平台"
+msgstr "构建目标"
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7817,9 +7793,8 @@ msgid "Scalar"
 msgstr "缩放："
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector"
-msgstr "属性面板"
+msgstr "向量"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"

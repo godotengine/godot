@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-05-28 10:40+0000\n"
+"PO-Revision-Date: 2019-07-02 10:51+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.7-dev\n"
+"X-Generator: Weblate 3.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -924,7 +924,7 @@ msgstr "Dependencias:"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Broken"
-msgstr "Arreglar Rota(s)"
+msgstr "Corregir Errores"
 
 #: editor/dependency_editor.cpp
 msgid "Dependency Editor"
@@ -976,19 +976,19 @@ msgstr "Fallo la carga debido a dependencias faltantes:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
-msgstr "Abrir de Todos Modos"
+msgstr "Abrir Igualmente"
 
 #: editor/dependency_editor.cpp
 msgid "Which action should be taken?"
-msgstr "Que Acción Se Debería Tomar?"
+msgstr "¿Qué acciones se deberían tomar?"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Dependencies"
-msgstr "Arreglar Dependencias"
+msgstr "Corregir Dependencias"
 
 #: editor/dependency_editor.cpp
 msgid "Errors loading!"
-msgstr "Errores al cargar!"
+msgstr "¡Errores al cargar!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
@@ -1130,7 +1130,7 @@ msgstr "El Paquete se instaló exitosamente!"
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr "¡Conseguido!"
+msgstr "¡Éxito!"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -1163,7 +1163,7 @@ msgstr "Act./Desact. Solo de Bus de Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
-msgstr "Slienciar/Desilenciar Bus de Audio"
+msgstr "Act./Desact. Silencio de Bus de Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
@@ -1306,7 +1306,7 @@ msgstr "Cargar el Bus Layout predeterminado."
 
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
-msgstr "Crear un nuevo Layout Bus."
+msgstr "Crear un nuevo Bus Layout."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1718,7 +1718,7 @@ msgstr "Refrescar"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
-msgstr "Todas Reconocidas"
+msgstr "Todos Reconocidos"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Files (*)"
@@ -1836,7 +1836,7 @@ msgstr "Debe ser una extensión válida."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
-msgstr "EscanearFuentes"
+msgstr "Escanear Fuentes"
 
 #: editor/editor_file_system.cpp
 msgid ""
@@ -1967,7 +1967,7 @@ msgid ""
 "There is currently no description for this method. Please help us by [color="
 "$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Actualmente no existe descripción para este método. Por favor ayudanos "
+"Actualmente no existe descripción para este método. Por favor ayúdanos "
 "[color=$color][url=$url]contribuyendo una[/url][/color]!"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
@@ -2080,11 +2080,11 @@ msgstr "No se puede abrir el archivo para escribir:"
 
 #: editor/editor_node.cpp
 msgid "Requested file format unknown:"
-msgstr "Formato requerido de archivo desconocido:"
+msgstr "Formato de archivo requerido desconocido:"
 
 #: editor/editor_node.cpp
 msgid "Error while saving."
-msgstr "Error al grabar."
+msgstr "Error al guardar."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Can't open '%s'. The file could have been moved or deleted."
@@ -2101,7 +2101,7 @@ msgstr "Final de archivo inesperado en '%s'."
 
 #: editor/editor_node.cpp
 msgid "Missing '%s' or its dependencies."
-msgstr "No se encuentra '%s' o sus dependecias."
+msgstr "No se encuentra '%s' o sus dependencias."
 
 #: editor/editor_node.cpp
 msgid "Error while loading '%s'."
@@ -2166,7 +2166,7 @@ msgstr "Error al tratar de guardar el layout!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr "Layout por defecto del editor sobreescrito."
+msgstr "Se ha sobreescrito el layout del editor por defecto."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -2251,17 +2251,16 @@ msgid "Open Base Scene"
 msgstr "Abrir Escena Base"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Quick Open..."
-msgstr "Abrir Escena Rapido..."
+msgstr "Apertura Rápida..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
-msgstr "Abrir Escena Rapido..."
+msgstr "Apertura Rápida de Escena..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script..."
-msgstr "Abrir Script Rapido..."
+msgstr "Apertura Rápida de Script..."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -2329,11 +2328,11 @@ msgstr "Revertir"
 
 #: editor/editor_node.cpp
 msgid "This action cannot be undone. Revert anyway?"
-msgstr "Esta acción no se puede deshacer. Revertir de todos modos?"
+msgstr "Esta acción no se puede deshacer. ¿Revertir de todos modos?"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
-msgstr "Ejecutar Escena Rapido..."
+msgstr "Ejecución Rápida de Escena..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
@@ -2442,9 +2441,9 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"No se ha definido ninguna escena principal, ¿elegir una?\n"
+"No se ha definido ninguna escena principal, ¿seleccionar una?\n"
 "Es posible cambiarla más tarde en \"Ajustes del Proyecto\" bajo la categoría "
-"'aplicación'."
+"'application'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2452,9 +2451,9 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"La escena '%s' seleccionada no existe, ¿seleccionar una válida?\n"
-"Es posible cambiarla más tarde en \"Ajustes del Proyecto\" bajo la categoria "
-"'aplicacion'."
+"La escena seleccionada '%s' no existe, ¿seleccionar una válida?\n"
+"Es posible cambiarla más tarde en \"Ajustes del Proyecto\" bajo la categoría "
+"'application'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2464,8 +2463,8 @@ msgid ""
 msgstr ""
 "La escena '%s' seleccionada no es un archivo de escena, ¿seleccionar uno "
 "válido?\n"
-"Es posible cambiarla más tarde en \"Ajustes del Proyecto\" bajo la categoria "
-"'aplicacion'."
+"Es posible cambiarla más tarde en \"Ajustes del Proyecto\" bajo la categoría "
+"'application'."
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
@@ -2821,7 +2820,7 @@ msgstr "Pausar la escena"
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
-msgstr "Pausar la Escena"
+msgstr "Pausar Escena"
 
 #: editor/editor_node.cpp
 msgid "Stop the scene."
@@ -3026,7 +3025,7 @@ msgstr "Medida:"
 
 #: editor/editor_profiler.cpp
 msgid "Frame Time (sec)"
-msgstr "Duracion de Frame (seg)"
+msgstr "Duración de Frame (seg)"
 
 #: editor/editor_profiler.cpp
 msgid "Average Time (sec)"
@@ -4412,7 +4411,7 @@ msgstr "Incluir Gizmos (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
-msgstr "Pinear el AnimationPlayer"
+msgstr "Fijar AnimationPlayer"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -5131,12 +5130,12 @@ msgstr "Alinear a guías"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock the selected object in place (can't be moved)."
-msgstr "Inmovilizar Objeto."
+msgstr "Bloquear el objeto seleccionado en su sitio (no se puede mover)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
-msgstr "Desinmovilizar Objeto."
+msgstr "Desbloquear el objeto seleccionado (puede ser movido)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5481,11 +5480,11 @@ msgstr "¡El Mesh está vacío!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
-msgstr "Crear Trimesh Body Estático"
+msgstr "Crear  Static Trimesh Body"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Convex Body"
-msgstr "Crear Body Convexo Estático"
+msgstr "Crear Static Convex Body"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -5501,13 +5500,12 @@ msgid "Failed creating shapes!"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Convex Shape(s)"
-msgstr "Crear Shape Convexa"
+msgstr "Crear Shape(s) Convexo(s)"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
-msgstr "Crear Mesh de Navegación"
+msgstr "Crear Navigation Mesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Contained Mesh is not of type ArrayMesh."
@@ -6473,11 +6471,11 @@ msgstr "Buscar Símbolo"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Pick Color"
-msgstr "Elegir Color"
+msgstr "Seleccionar Color"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Convert Case"
-msgstr "Convertir Mayusculas"
+msgstr "Convertir Mayúsculas"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Uppercase"
@@ -6493,7 +6491,7 @@ msgstr "Capitalizar"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Syntax Highlighter"
-msgstr "Resaltador de sintaxis"
+msgstr "Resaltador de Sintaxis"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
@@ -6826,7 +6824,7 @@ msgstr "Mostrar Overdraw"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Unshaded"
-msgstr "Mostrar sin Sombreado"
+msgstr "Mostrar Sin Sombreado"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Environment"
@@ -7207,14 +7205,12 @@ msgid "Settings:"
 msgstr "Configuración:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "No Frames Selected"
-msgstr "Encuadrar Selección"
+msgstr "No hay Frames Seleccionados"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Add %d Frame(s)"
-msgstr "Agregar Frame"
+msgstr "Agregar %d Frame(s)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
@@ -7345,7 +7341,7 @@ msgstr "Snap de Grilla"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Auto Slice"
-msgstr "Auto Rebanar"
+msgstr "Corte Automático"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Offset:"
@@ -7398,7 +7394,7 @@ msgstr "Agregar Items de Clases"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Class Items"
-msgstr "Quitar Items de Clases"
+msgstr "Quitar Ítems de Clases"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Template"
@@ -7424,7 +7420,7 @@ msgstr "Botón del Medio"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Item"
-msgstr "Item"
+msgstr "Ítem"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -7437,15 +7433,15 @@ msgstr "Tildar Item"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Checked Item"
-msgstr "Item Tildado"
+msgstr "Ítem Tildado"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Radio Item"
-msgstr "Radio Item"
+msgstr "Radio Ítem"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Checked Radio Item"
-msgstr "Radio Item Tildado"
+msgstr "Radio Ítem Tildado"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Named Sep."
@@ -7497,7 +7493,7 @@ msgstr "Hijos Editables"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Subtree"
-msgstr ""
+msgstr "Subárbol"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has,Many,Options"
@@ -7554,7 +7550,7 @@ msgstr "Pintar Rectángulo"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Bucket Fill"
-msgstr "Balde"
+msgstr "Bote de Relleno"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase TileMap"
@@ -7577,9 +7573,8 @@ msgid "Mirror Y"
 msgstr "Espejar Y"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Disable Autotile"
-msgstr "Autotiles"
+msgstr "Desactivar Autotile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
@@ -7740,11 +7735,11 @@ msgstr "No elegiste una textura para remover."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr "¿Crear desde escena? Esto sobreescribirá todos los tiles actuales."
+msgstr "¿Crear desde escena? Esto sobrescribirá todos los tiles actuales."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
-msgstr "¿Mergear desde escena?"
+msgstr "¿Unir desde escena?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Texture"
@@ -7854,11 +7849,11 @@ msgstr "Reestablecer Máscara de Bits de Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Make Polygon Concave"
-msgstr "Hacer el Polígono Cóncavo"
+msgstr "Crear Polígono Cóncavo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Make Polygon Convex"
-msgstr "Hacer el Póligono Convexo"
+msgstr "Crear Polígono Convexo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Tile"
@@ -7911,9 +7906,8 @@ msgid "Add output +"
 msgstr "Agregar Entrada"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Scalar"
-msgstr "Escala:"
+msgstr "Escalar"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -11683,15 +11677,15 @@ msgstr "(Tiempo Restante: %d:%02d s)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
-msgstr "Ploteando Meshes: "
+msgstr "Trazando Meshes: "
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Lights:"
-msgstr "Ploteando Luces:"
+msgstr "Trazando Luces:"
 
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 msgid "Finishing Plot"
-msgstr "Terminando Ploteo"
+msgstr "Finalizar Trazado"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Lighting Meshes: "
@@ -11763,7 +11757,7 @@ msgstr ""
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
-msgstr "Ploteando Meshes"
+msgstr "Trazando Meshes"
 
 #: scene/3d/gi_probe.cpp
 msgid ""

@@ -27,12 +27,13 @@
 # Aiden Demir <dnm00110011@hotmail.com>, 2019.
 # Anton Semchenko <semchenkoanton@protonmail.com>, 2019.
 # Enes Can Yerlikaya <enescanyerlikaya@gmail.com>, 2019.
+# Ömer Akgöz <omerakgoz34@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-06-16 19:41+0000\n"
-"Last-Translator: Anton Semchenko <semchenkoanton@protonmail.com>\n"
+"PO-Revision-Date: 2019-07-02 10:47+0000\n"
+"Last-Translator: Ömer Akgöz <omerakgoz34@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -40,7 +41,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.7-dev\n"
+"X-Generator: Weblate 3.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -62,9 +63,8 @@ msgid "self can't be used because instance is null (not passed)"
 msgstr "\"self\" ifadesi kullanılamaz, çünkü nesne \"null\" (tanımlandı)."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Geçersiz işlenen operatörler %s, %s ve %s"
+msgstr "%s, %s ve %s operatörleri için geçersiz işlem."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -84,7 +84,6 @@ msgstr "'%s' çağrıldığında:"
 
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Free"
 msgstr "Ücretsiz"
 
@@ -101,9 +100,8 @@ msgid "Time:"
 msgstr "Süre:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Value:"
-msgstr "Değer"
+msgstr "Değer:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -163,9 +161,8 @@ msgid "Change Animation Loop"
 msgstr "Animasyon Döngüsünü Değiştir"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Property Track"
-msgstr "Özellik:"
+msgstr "Özellik Parçası"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
@@ -458,10 +455,19 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
+"Bu animasyon içe aktarılmış bir sahneye ait, bu yüzden içe aktarılan "
+"parçalara yapılan değişiklikler kaydedilmeyecek.\n"
+"\n"
+"Özel parça ekleme özelliğini aktif etmek için, sahnenin içe aktarma "
+"ayarlarına gidin ve \"Animasyon > Depolama\" ayarını \"Dosyalama\" olarak "
+"ayarlayın, \"Animasyon > Özel Parçaları Sakla\"ayarını aktif edin ve sonra "
+"tekrar içe aktarın.\n"
+"Alternatif olarak, animasyonları ayrı dosyalara aktaran bir içe aktarma "
+"hazır ayarı kullanabilirsiniz."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr ""
+msgstr "Uyarı: İçe aktarılan animasyonu düzenleme"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -668,7 +674,7 @@ msgstr "Yalnızca Seçim"
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
 msgid "Standard"
-msgstr ""
+msgstr "Standart"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -695,38 +701,32 @@ msgid "Line and column numbers."
 msgstr "Satır ve sütun numaraları."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method in target node must be specified."
-msgstr "Hedef Düğümdeki Metot tanımlanmış olmalı!"
+msgstr "Hedef düğümdeki metod tanımlanmalı."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"Amaçlanan metot bulunamadı! Geçerli bir metot tanımla ya da amaçlanan düğüme "
-"bir betik iliştirin."
+"Hedef metod bulunamadı. Geçerli bir metod tanımlayın ya da hedef düğüme bir "
+"komut bağlayın."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Node:"
 msgstr "Düğüme Bağla:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Script:"
-msgstr "Ana makineye bağlanılamadı:"
+msgstr "Komuta Bağla:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "From Signal:"
 msgstr "Sinyaller:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Scene does not contain any script."
-msgstr "Düğüm uzambilgisi içermiyor."
+msgstr "Sahne hiç komut içermiyor."
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
@@ -754,9 +754,8 @@ msgid "Extra Call Arguments:"
 msgstr "Ekstra Çağrı Argümanları:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Advanced"
-msgstr "Yapışma ayarları"
+msgstr "Gelişmiş"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
