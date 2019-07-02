@@ -31,7 +31,7 @@
 #include "texture_loader_dds.h"
 #include "core/os/file_access.h"
 
-#define PF_FOURCC(s) (((s)[3] << 24U) | ((s)[2] << 16U) | ((s)[1] << 8U) | ((s)[0]))
+#define PF_FOURCC(s) ((uint32_t)(((s)[3] << 24U) | ((s)[2] << 16U) | ((s)[1] << 8U) | ((s)[0])))
 
 enum {
 	DDS_MAGIC = 0x20534444,
