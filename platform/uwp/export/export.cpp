@@ -32,6 +32,7 @@
 #include "core/bind/core_bind.h"
 #include "core/io/marshalls.h"
 #include "core/io/zip_io.h"
+#include "core/math/crypto_core.h"
 #include "core/object.h"
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
@@ -42,8 +43,6 @@
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
-#include "thirdparty/misc/base64.h"
-#include "thirdparty/misc/sha256.h"
 
 #include <zlib.h>
 
@@ -198,15 +197,12 @@ public:
 
 String AppxPackager::hash_block(const uint8_t *p_block_data, size_t p_block_len) {
 
-	char hash[32];
+	unsigned char hash[32];
 	char base64[45];
 
-	sha256_context ctx;
-	sha256_init(&ctx);
-	sha256_hash(&ctx, (uint8_t *)p_block_data, p_block_len);
-	sha256_done(&ctx, (uint8_t *)hash);
-
-	base64_encode(base64, hash, 32);
+	CryptoCore::sha256(p_block_data, p_block_len, hash);
+	size_t len = 0;
+	CryptoCore::b64_encode((unsigned char *)base64, 45, &len, (unsigned char *)hash, 32);
 	base64[44] = '\0';
 
 	return String(base64);

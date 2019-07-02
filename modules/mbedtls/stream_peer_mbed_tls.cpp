@@ -33,8 +33,6 @@
 #include "core/io/stream_peer_tcp.h"
 #include "core/os/file_access.h"
 
-#include <mbedtls/platform_util.h>
-
 static void my_debug(void *ctx, int level,
 		const char *file, int line,
 		const char *str) {

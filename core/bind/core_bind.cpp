@@ -34,12 +34,11 @@
 #include "core/io/file_access_encrypted.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
+#include "core/math/crypto_core.h"
 #include "core/math/geometry.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
-
-#include "thirdparty/misc/base64.h"
 
 /**
  *  Time constants borrowed from loc_time.h
@@ -2438,7 +2437,8 @@ String _Marshalls::variant_to_base64(const Variant &p_var, bool p_full_objects) 
 	b64buff.resize(b64len);
 	PoolVector<uint8_t>::Write w64 = b64buff.write();
 
-	int strlen = base64_encode((char *)(&w64[0]), (char *)(&w[0]), len);
+	size_t strlen = 0;
+	ERR_FAIL_COND_V(CryptoCore::b64_encode(&w64[0], b64len, &strlen, &w[0], len) != OK, String());
 	//OS::get_singleton()->print("len is %i, vector size is %i\n", b64len, strlen);
 	w64[strlen] = 0;
 	String ret = (char *)&w64[0];
@@ -2455,7 +2455,8 @@ Variant _Marshalls::base64_to_variant(const String &p_str, bool p_allow_objects)
 	buf.resize(strlen / 4 * 3 + 1);
 	PoolVector<uint8_t>::Write w = buf.write();
 
-	int len = base64_decode((char *)(&w[0]), (char *)cstr.get_data(), strlen);
+	size_t len = 0;
+	ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &len, (unsigned char *)cstr.get_data(), strlen) != OK, Variant());
 
 	Variant v;
 	Error err = decode_variant(v, &w[0], len, NULL, p_allow_objects);
@@ -2474,7 +2475,8 @@ String _Marshalls::raw_to_base64(const PoolVector<uint8_t> &p_arr) {
 	b64buff.resize(b64len);
 	PoolVector<uint8_t>::Write w64 = b64buff.write();
 
-	int strlen = base64_encode((char *)(&w64[0]), (char *)(&r[0]), len);
+	size_t strlen = 0;
+	ERR_FAIL_COND_V(CryptoCore::b64_encode(&w64[0], b64len, &strlen, &r[0], len) != OK, String());
 	w64[strlen] = 0;
 	String ret = (char *)&w64[0];
 
@@ -2486,17 +2488,16 @@ PoolVector<uint8_t> _Marshalls::base64_to_raw(const String &p_str) {
 	int strlen = p_str.length();
 	CharString cstr = p_str.ascii();
 
-	int arr_len;
+	size_t arr_len = 0;
 	PoolVector<uint8_t> buf;
 	{
 		buf.resize(strlen / 4 * 3 + 1);
 		PoolVector<uint8_t>::Write w = buf.write();
 
-		arr_len = base64_decode((char *)(&w[0]), (char *)cstr.get_data(), strlen);
-	};
+		ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &arr_len, (unsigned char *)cstr.get_data(), strlen) != OK, PoolVector<uint8_t>());
+	}
 	buf.resize(arr_len);
 
-	// conversion from PoolVector<uint8_t> to raw array?
 	return buf;
 };
 
@@ -2510,7 +2511,8 @@ String _Marshalls::utf8_to_base64(const String &p_str) {
 	b64buff.resize(b64len);
 	PoolVector<uint8_t>::Write w64 = b64buff.write();
 
-	int strlen = base64_encode((char *)(&w64[0]), (char *)cstr.get_data(), len);
+	size_t strlen = 0;
+	ERR_FAIL_COND_V(CryptoCore::b64_encode(&w64[0], b64len, &strlen, (unsigned char *)cstr.get_data(), len) != OK, String());
 
 	w64[strlen] = 0;
 	String ret = (char *)&w64[0];
@@ -2527,7 +2529,8 @@ String _Marshalls::base64_to_utf8(const String &p_str) {
 	buf.resize(strlen / 4 * 3 + 1 + 1);
 	PoolVector<uint8_t>::Write w = buf.write();
 
-	int len = base64_decode((char *)(&w[0]), (char *)cstr.get_data(), strlen);
+	size_t len = 0;
+	ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &len, (unsigned char *)cstr.get_data(), strlen) != OK, String());
 
 	w[len] = 0;
 	String ret = String::utf8((char *)&w[0]);

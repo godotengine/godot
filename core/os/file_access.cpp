@@ -32,11 +32,9 @@
 
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
+#include "core/math/crypto_core.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
-
-#include "thirdparty/misc/md5.h"
-#include "thirdparty/misc/sha256.h"
 
 FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = { 0, 0 };
 
@@ -637,8 +635,8 @@ String FileAccess::get_md5(const String &p_file) {
 	if (!f)
 		return String();
 
-	MD5_CTX md5;
-	MD5Init(&md5);
+	CryptoCore::MD5Context ctx;
+	ctx.start();
 
 	unsigned char step[32768];
 
@@ -647,24 +645,24 @@ String FileAccess::get_md5(const String &p_file) {
 		int br = f->get_buffer(step, 32768);
 		if (br > 0) {
 
-			MD5Update(&md5, step, br);
+			ctx.update(step, br);
 		}
 		if (br < 4096)
 			break;
 	}
 
-	MD5Final(&md5);
-
-	String ret = String::md5(md5.digest);
+	unsigned char hash[16];
+	ctx.finish(hash);
 
 	memdelete(f);
-	return ret;
+
+	return String::md5(hash);
 }
 
 String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
 
-	MD5_CTX md5;
-	MD5Init(&md5);
+	CryptoCore::MD5Context ctx;
+	ctx.start();
 
 	for (int i = 0; i < p_file.size(); i++) {
 		FileAccess *f = FileAccess::open(p_file[i], READ);
@@ -677,7 +675,7 @@ String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
 			int br = f->get_buffer(step, 32768);
 			if (br > 0) {
 
-				MD5Update(&md5, step, br);
+				ctx.update(step, br);
 			}
 			if (br < 4096)
 				break;
@@ -685,11 +683,10 @@ String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
 		memdelete(f);
 	}
 
-	MD5Final(&md5);
+	unsigned char hash[16];
+	ctx.finish(hash);
 
-	String ret = String::md5(md5.digest);
-
-	return ret;
+	return String::md5(hash);
 }
 
 String FileAccess::get_sha256(const String &p_file) {
@@ -698,8 +695,8 @@ String FileAccess::get_sha256(const String &p_file) {
 	if (!f)
 		return String();
 
-	sha256_context sha256;
-	sha256_init(&sha256);
+	CryptoCore::SHA256Context ctx;
+	ctx.start();
 
 	unsigned char step[32768];
 
@@ -708,15 +705,14 @@ String FileAccess::get_sha256(const String &p_file) {
 		int br = f->get_buffer(step, 32768);
 		if (br > 0) {
 
-			sha256_hash(&sha256, step, br);
+			ctx.update(step, br);
 		}
 		if (br < 4096)
 			break;
 	}
 
 	unsigned char hash[32];
-
-	sha256_done(&sha256, hash);
+	ctx.finish(hash);
 
 	memdelete(f);
 	return String::hex_encode_buffer(hash, 32);

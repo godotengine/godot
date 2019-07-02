@@ -250,20 +250,6 @@ Copyright: 1998-2010, Gilles Vollant
  2009-2010, Mathias Svensson
 License: Zlib
 
-Files: ./thirdparty/misc/aes256.cpp
- ./thirdparty/misc/aes256.h
- ./thirdparty/misc/sha256.c
- ./thirdparty/misc/sha256.h
-Comment: AES-256 and SHA-256 implementation
-Copyright: 2007-2011, Ilya O. Levin
-License: ISC
-
-Files: ./thirdparty/misc/base64.c
- ./thirdparty/misc/base64.h
-Comment: BASE64 conversion methods
-Copyright: Ari Edelkind
-License: public-domain
-
 Files: ./thirdparty/misc/clipper.cpp
  ./thirdparty/misc/clipper.hpp
 Comment: Clipper
@@ -298,12 +284,6 @@ Files: ./thirdparty/misc/ifaddrs-android.cc
 Comment: libjingle
 Copyright: 2012-2013, Google Inc.
 License: BSD-3-clause
-
-Files: ./thirdparty/misc/md5.cpp
- ./thirdparty/misc/md5.h
-Comment: MD5 Message Digest Algorithm
-Copyright: 1990, RSA Data Security, Inc.
-License: RSA-MD
 
 Files: ./thirdparty/misc/mikktspace.c
  ./thirdparty/misc/mikktspace.h
@@ -1071,19 +1051,6 @@ License: FTL
    David Turner      <david.turner@freetype.org>
    Robert Wilhelm    <robert.wilhelm@freetype.org>
    Werner Lemberg    <werner.lemberg@freetype.org>
-
-License: ISC
- Permission to use, copy, modify, and/or distribute this software for any
- purpose with or without fee is hereby granted, provided that the above
- copyright notice and this permission notice appear in all copies.
- .
- THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 License: LGPL-2.1+SLE (libwebsockets)
  Libwebsockets and included programs are provided under the terms of the GNU
@@ -2100,24 +2067,6 @@ License: OFL-1.1
  INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
  DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE.
-
-License: RSA-MD
- License to copy and use this software is granted provided that it is
- identified as the "RSA Data Security, Inc. MD5 Message-Digest Algorithm"
- in all material mentioning or referencing this software or this function.
- .
- License is also granted to make and use derivative works provided that such
- works are identified as "derived from the RSA Data Security, Inc. MD5
- Message-Digest Algorithm" in all material mentioning or referencing the
- derived work.
- .
- RSA Data Security, Inc. makes no representations concerning either the
- merchantability of this software or the suitability of this software for
- any particular purpose. It is provided "as is" without express or implied
- warranty of any kind.
- .
- These notices must be retained in any copies of any part of this
- documentation and/or software.
 
 License: Zlib
  This software is provided 'as-is', without any express or implied

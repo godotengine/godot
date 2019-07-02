@@ -31,15 +31,13 @@
 #include "ustring.h"
 
 #include "core/color.h"
+#include "core/math/crypto_core.h"
 #include "core/math/math_funcs.h"
 #include "core/os/memory.h"
 #include "core/print_string.h"
 #include "core/translation.h"
 #include "core/ucaps.h"
 #include "core/variant.h"
-
-#include "thirdparty/misc/md5.h"
-#include "thirdparty/misc/sha256.h"
 
 #include <wchar.h>
 
@@ -2254,54 +2252,42 @@ uint64_t String::hash64() const {
 String String::md5_text() const {
 
 	CharString cs = utf8();
-	MD5_CTX ctx;
-	MD5Init(&ctx);
-	MD5Update(&ctx, (unsigned char *)cs.ptr(), cs.length());
-	MD5Final(&ctx);
-	return String::md5(ctx.digest);
+	unsigned char hash[16];
+	CryptoCore::md5((unsigned char *)cs.ptr(), cs.length(), hash);
+	return String::hex_encode_buffer(hash, 16);
 }
 
 String String::sha256_text() const {
 	CharString cs = utf8();
 	unsigned char hash[32];
-	sha256_context ctx;
-	sha256_init(&ctx);
-	sha256_hash(&ctx, (unsigned char *)cs.ptr(), cs.length());
-	sha256_done(&ctx, hash);
+	CryptoCore::sha256((unsigned char *)cs.ptr(), cs.length(), hash);
 	return String::hex_encode_buffer(hash, 32);
 }
 
 Vector<uint8_t> String::md5_buffer() const {
 
 	CharString cs = utf8();
-	MD5_CTX ctx;
-	MD5Init(&ctx);
-	MD5Update(&ctx, (unsigned char *)cs.ptr(), cs.length());
-	MD5Final(&ctx);
+	unsigned char hash[16];
+	CryptoCore::md5((unsigned char *)cs.ptr(), cs.length(), hash);
 
 	Vector<uint8_t> ret;
 	ret.resize(16);
 	for (int i = 0; i < 16; i++) {
-		ret.write[i] = ctx.digest[i];
-	};
-
+		ret.write[i] = hash[i];
+	}
 	return ret;
 };
 
 Vector<uint8_t> String::sha256_buffer() const {
 	CharString cs = utf8();
 	unsigned char hash[32];
-	sha256_context ctx;
-	sha256_init(&ctx);
-	sha256_hash(&ctx, (unsigned char *)cs.ptr(), cs.length());
-	sha256_done(&ctx, hash);
+	CryptoCore::sha256((unsigned char *)cs.ptr(), cs.length(), hash);
 
 	Vector<uint8_t> ret;
 	ret.resize(32);
 	for (int i = 0; i < 32; i++) {
 		ret.write[i] = hash[i];
 	}
-
 	return ret;
 }
 

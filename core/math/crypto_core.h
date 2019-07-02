@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_mbed_tls.h                                               */
+/*  crypto_core.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,67 +28,62 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STREAM_PEER_OPEN_SSL_H
-#define STREAM_PEER_OPEN_SSL_H
+#ifndef CRYPTO_CORE_H
+#define CRYPTO_CORE_H
 
-#include "core/io/stream_peer_ssl.h"
+#include "core/reference.h"
 
-#include <mbedtls/config.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/debug.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ssl.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-
-class StreamPeerMbedTLS : public StreamPeerSSL {
-private:
-	Status status;
-	String hostname;
-
-	Ref<StreamPeer> base;
-
-	static StreamPeerSSL *_create_func();
-	static void _load_certs(const PoolByteArray &p_array);
-
-	static int bio_recv(void *ctx, unsigned char *buf, size_t len);
-	static int bio_send(void *ctx, const unsigned char *buf, size_t len);
-	void _cleanup();
-
-protected:
-	static mbedtls_x509_crt cacert;
-
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_context ssl;
-	mbedtls_ssl_config conf;
-
-	static void _bind_methods();
-
-	Error _do_handshake();
+class CryptoCore {
 
 public:
-	virtual void poll();
-	virtual Error accept_stream(Ref<StreamPeer> p_base);
-	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String());
-	virtual Status get_status() const;
+	class MD5Context {
 
-	virtual void disconnect_from_stream();
+	private:
+		void *ctx; // To include, or not to include...
 
-	virtual Error put_data(const uint8_t *p_data, int p_bytes);
-	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
+	public:
+		MD5Context();
+		~MD5Context();
 
-	virtual Error get_data(uint8_t *p_buffer, int p_bytes);
-	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
+		Error start();
+		Error update(uint8_t *p_src, size_t p_len);
+		Error finish(unsigned char r_hash[16]);
+	};
 
-	virtual int get_available_bytes() const;
+	class SHA256Context {
 
-	static void initialize_ssl();
-	static void finalize_ssl();
+	private:
+		void *ctx; // To include, or not to include...
 
-	StreamPeerMbedTLS();
-	~StreamPeerMbedTLS();
+	public:
+		SHA256Context();
+		~SHA256Context();
+
+		Error start();
+		Error update(uint8_t *p_src, size_t p_len);
+		Error finish(unsigned char r_hash[16]);
+	};
+
+	class AESContext {
+
+	private:
+		void *ctx; // To include, or not to include...
+
+	public:
+		AESContext();
+		~AESContext();
+
+		Error set_encode_key(const uint8_t *p_key, size_t p_bits);
+		Error set_decode_key(const uint8_t *p_key, size_t p_bits);
+		Error encrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]);
+		Error decrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]);
+	};
+
+	static Error b64_encode(uint8_t *r_dst, int p_dst_len, size_t *r_len, const uint8_t *p_src, int p_src_len);
+	static Error b64_decode(uint8_t *r_dst, int p_dst_len, size_t *r_len, const uint8_t *p_src, int p_src_len);
+
+	static Error md5(const uint8_t *p_src, int p_src_len, unsigned char r_hash[16]);
+	static Error sha1(const uint8_t *p_src, int p_src_len, unsigned char r_hash[20]);
+	static Error sha256(const uint8_t *p_src, int p_src_len, unsigned char r_hash[32]);
 };
-
-#endif // STREAM_PEER_SSL_H
+#endif // CRYPTO_CORE_H

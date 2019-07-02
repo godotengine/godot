@@ -30,12 +30,10 @@
 
 #include "file_access_encrypted.h"
 
+#include "core/math/crypto_core.h"
 #include "core/os/copymem.h"
 #include "core/print_string.h"
 #include "core/variant.h"
-
-#include "thirdparty/misc/aes256.h"
-#include "thirdparty/misc/md5.h"
 
 #include <stdio.h>
 
@@ -83,25 +81,21 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 		uint32_t blen = p_base->get_buffer(data.ptrw(), ds);
 		ERR_FAIL_COND_V(blen != ds, ERR_FILE_CORRUPT);
 
-		aes256_context ctx;
-		aes256_init(&ctx, key.ptrw());
+		CryptoCore::AESContext ctx;
+		ctx.set_decode_key(key.ptrw(), 256);
 
 		for (size_t i = 0; i < ds; i += 16) {
 
-			aes256_decrypt_ecb(&ctx, &data.write[i]);
+			ctx.decrypt_ecb(&data.write[i], &data.write[i]);
 		}
-
-		aes256_done(&ctx);
 
 		data.resize(length);
 
-		MD5_CTX md5;
-		MD5Init(&md5);
-		MD5Update(&md5, (uint8_t *)data.ptr(), data.size());
-		MD5Final(&md5);
+		unsigned char hash[16];
+		ERR_FAIL_COND_V(CryptoCore::md5(data.ptr(), data.size(), hash) != OK, ERR_BUG);
 
 		ERR_EXPLAIN("The MD5 sum of the decrypted file does not match the expected value. It could be that the file is corrupt, or that the provided decryption key is invalid.");
-		ERR_FAIL_COND_V(String::md5(md5.digest) != String::md5(md5d), ERR_FILE_CORRUPT);
+		ERR_FAIL_COND_V(String::md5(hash) != String::md5(md5d), ERR_FILE_CORRUPT);
 
 		file = p_base;
 	}
@@ -140,10 +134,8 @@ void FileAccessEncrypted::close() {
 			len += 16 - (len % 16);
 		}
 
-		MD5_CTX md5;
-		MD5Init(&md5);
-		MD5Update(&md5, (uint8_t *)data.ptr(), data.size());
-		MD5Final(&md5);
+		unsigned char hash[16];
+		ERR_FAIL_COND(CryptoCore::md5(data.ptr(), data.size(), hash) != OK); // Bug?
 
 		compressed.resize(len);
 		zeromem(compressed.ptrw(), len);
@@ -151,20 +143,18 @@ void FileAccessEncrypted::close() {
 			compressed.write[i] = data[i];
 		}
 
-		aes256_context ctx;
-		aes256_init(&ctx, key.ptrw());
+		CryptoCore::AESContext ctx;
+		ctx.set_encode_key(key.ptrw(), 256);
 
 		for (size_t i = 0; i < len; i += 16) {
 
-			aes256_encrypt_ecb(&ctx, &compressed.write[i]);
+			ctx.encrypt_ecb(&compressed.write[i], &compressed.write[i]);
 		}
-
-		aes256_done(&ctx);
 
 		file->store_32(COMP_MAGIC);
 		file->store_32(mode);
 
-		file->store_buffer(md5.digest, 16);
+		file->store_buffer(hash, 16);
 		file->store_64(data.size());
 
 		file->store_buffer(compressed.ptr(), compressed.size());
