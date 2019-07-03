@@ -221,6 +221,15 @@ Vector3 BakedLightmap::get_extents() const {
 	return extents;
 }
 
+void BakedLightmap::set_bake_default_texels_per_unit(const float &p_bake_texels_per_unit) {
+	bake_default_texels_per_unit = p_bake_texels_per_unit;
+	update_gizmo();
+}
+
+float BakedLightmap::get_bake_default_texels_per_unit() const {
+	return bake_default_texels_per_unit;
+}
+
 void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, List<PlotMesh> &plot_meshes, List<PlotLight> &plot_lights) {
 
 	MeshInstance *mi = Object::cast_to<MeshInstance>(p_at_node);
@@ -236,7 +245,7 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, List<PlotMesh> &plo
 				}
 			}
 
-			if (all_have_uv2 && mesh->get_lightmap_size_hint() != Size2()) {
+			if (all_have_uv2) {
 				//READY TO BAKE! size hint could be computed if not found, actually..
 
 				AABB aabb = mesh->get_aabb();
@@ -463,7 +472,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 			btd.text = RTR("Lighting Meshes: ") + mesh_name + " (" + itos(pmc) + "/" + itos(mesh_list.size()) + ")";
 			btd.pass = step;
 			btd.last_step = 0;
-			err = baker.make_lightmap(E->get().local_xform, E->get().mesh, lm, _bake_time, &btd);
+			err = baker.make_lightmap(E->get().local_xform, E->get().mesh, bake_default_texels_per_unit, lm, _bake_time, &btd);
 			if (err != OK) {
 				bake_end_function();
 				if (err == ERR_SKIP)
@@ -473,7 +482,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 			step += 100;
 		} else {
 
-			err = baker.make_lightmap(E->get().local_xform, E->get().mesh, lm);
+			err = baker.make_lightmap(E->get().local_xform, E->get().mesh, bake_default_texels_per_unit, lm);
 		}
 
 		if (err == OK) {
@@ -790,6 +799,9 @@ void BakedLightmap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &BakedLightmap::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &BakedLightmap::get_extents);
 
+	ClassDB::bind_method(D_METHOD("set_bake_default_texels_per_unit", "texels"), &BakedLightmap::set_bake_default_texels_per_unit);
+	ClassDB::bind_method(D_METHOD("get_bake_default_texels_per_unit"), &BakedLightmap::get_bake_default_texels_per_unit);
+
 	ClassDB::bind_method(D_METHOD("set_propagation", "propagation"), &BakedLightmap::set_propagation);
 	ClassDB::bind_method(D_METHOD("get_propagation"), &BakedLightmap::get_propagation);
 
@@ -814,6 +826,7 @@ void BakedLightmap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bake_energy", PROPERTY_HINT_RANGE, "0,32,0.01"), "set_energy", "get_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_hdr"), "set_hdr", "is_hdr");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "bake_extents"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bake_default_texels_per_unit"), "set_bake_default_texels_per_unit", "get_bake_default_texels_per_unit");
 	ADD_GROUP("Capture", "capture_");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "capture_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_capture_cell_size", "get_capture_cell_size");
 	ADD_GROUP("Data", "");
@@ -836,6 +849,7 @@ void BakedLightmap::_bind_methods() {
 BakedLightmap::BakedLightmap() {
 
 	extents = Vector3(10, 10, 10);
+	bake_default_texels_per_unit = 20;
 	bake_cell_size = 0.25;
 	capture_cell_size = 0.5;
 
