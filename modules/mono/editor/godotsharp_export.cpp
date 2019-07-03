@@ -106,13 +106,14 @@ void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug
 		Map<String, String> dependencies;
 
 		String project_dll_name = ProjectSettings::get_singleton()->get("application/config/name");
-		if (project_dll_name.empty()) {
-			project_dll_name = "UnnamedProject";
+		String project_dll_name_safe = OS::get_singleton()->get_safe_dir_name(project_dll_name);
+		if (project_dll_name_safe.empty()) {
+			project_dll_name_safe = "UnnamedProject";
 		}
 
 		String project_dll_src_dir = GodotSharpDirs::get_res_temp_assemblies_base_dir().plus_file(build_config);
-		String project_dll_src_path = project_dll_src_dir.plus_file(project_dll_name + ".dll");
-		dependencies.insert(project_dll_name, project_dll_src_path);
+		String project_dll_src_path = project_dll_src_dir.plus_file(project_dll_name_safe + ".dll");
+		dependencies.insert(project_dll_name_safe, project_dll_src_path);
 
 		{
 			MonoDomain *export_domain = GDMonoUtils::create_domain("GodotEngine.ProjectExportDomain");
@@ -122,10 +123,10 @@ void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug
 			_GDMONO_SCOPE_DOMAIN_(export_domain);
 
 			GDMonoAssembly *scripts_assembly = NULL;
-			bool load_success = GDMono::get_singleton()->load_assembly_from(project_dll_name,
+			bool load_success = GDMono::get_singleton()->load_assembly_from(project_dll_name_safe,
 					project_dll_src_path, &scripts_assembly, /* refonly: */ true);
 
-			ERR_EXPLAIN("Cannot load assembly (refonly): " + project_dll_name);
+			ERR_EXPLAIN("Cannot load assembly (refonly): " + project_dll_name_safe);
 			ERR_FAIL_COND(!load_success);
 
 			Vector<String> search_dirs;

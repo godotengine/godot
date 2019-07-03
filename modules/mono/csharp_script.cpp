@@ -682,19 +682,20 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 
 	GDMonoAssembly *proj_assembly = gdmono->get_project_assembly();
 
-	String name = ProjectSettings::get_singleton()->get("application/config/name");
-	if (name.empty()) {
-		name = "UnnamedProject";
+	String appname = ProjectSettings::get_singleton()->get("application/config/name");
+	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
+	if (appname_safe.empty()) {
+		appname_safe = "UnnamedProject";
 	}
 
-	name += ".dll";
+	appname_safe += ".dll";
 
 	if (proj_assembly) {
 		String proj_asm_path = proj_assembly->get_path();
 
 		if (!FileAccess::exists(proj_assembly->get_path())) {
 			// Maybe it wasn't loaded from the default path, so check this as well
-			proj_asm_path = GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(name);
+			proj_asm_path = GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(appname_safe);
 			if (!FileAccess::exists(proj_asm_path))
 				return false; // No assembly to load
 		}
@@ -702,7 +703,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 		if (FileAccess::get_modified_time(proj_asm_path) <= proj_assembly->get_modified_time())
 			return false; // Already up to date
 	} else {
-		if (!FileAccess::exists(GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(name)))
+		if (!FileAccess::exists(GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(appname_safe)))
 			return false; // No assembly to load
 	}
 

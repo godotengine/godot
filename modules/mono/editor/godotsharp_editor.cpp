@@ -63,16 +63,17 @@ bool GodotSharpEditor::_create_project_solution() {
 	pr.step(TTR("Generating C# project..."));
 
 	String path = OS::get_singleton()->get_resource_dir();
-	String name = ProjectSettings::get_singleton()->get("application/config/name");
-	if (name.empty()) {
-		name = "UnnamedProject";
+	String appname = ProjectSettings::get_singleton()->get("application/config/name");
+	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
+	if (appname_safe.empty()) {
+		appname_safe = "UnnamedProject";
 	}
 
-	String guid = CSharpProject::generate_game_project(path, name);
+	String guid = CSharpProject::generate_game_project(path, appname_safe);
 
 	if (guid.length()) {
 
-		DotNetSolution solution(name);
+		DotNetSolution solution(appname_safe);
 
 		if (!solution.set_path(path)) {
 			show_error_dialog(TTR("Failed to create solution."));
@@ -81,12 +82,12 @@ bool GodotSharpEditor::_create_project_solution() {
 
 		DotNetSolution::ProjectInfo proj_info;
 		proj_info.guid = guid;
-		proj_info.relpath = name + ".csproj";
+		proj_info.relpath = appname_safe + ".csproj";
 		proj_info.configs.push_back("Debug");
 		proj_info.configs.push_back("Release");
 		proj_info.configs.push_back("Tools");
 
-		solution.add_new_project(name, proj_info);
+		solution.add_new_project(appname_safe, proj_info);
 
 		Error sln_error = solution.save();
 

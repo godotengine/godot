@@ -39,6 +39,10 @@
 #include "editor/editor_settings.h"
 #endif
 
+#ifdef __ANDROID__
+#include "utils/android_utils.h"
+#endif
+
 namespace GodotSharpDirs {
 
 String _get_expected_build_config() {
@@ -129,15 +133,16 @@ private:
 		mono_solutions_dir = mono_user_dir.plus_file("solutions");
 		build_logs_dir = mono_user_dir.plus_file("build_logs");
 
-		String name = ProjectSettings::get_singleton()->get("application/config/name");
-		if (name.empty()) {
-			name = "UnnamedProject";
+		String appname = ProjectSettings::get_singleton()->get("application/config/name");
+		String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
+		if (appname_safe.empty()) {
+			appname_safe = "UnnamedProject";
 		}
 
 		String base_path = ProjectSettings::get_singleton()->globalize_path("res://");
 
-		sln_filepath = base_path.plus_file(name + ".sln");
-		csproj_filepath = base_path.plus_file(name + ".csproj");
+		sln_filepath = base_path.plus_file(appname_safe + ".sln");
+		csproj_filepath = base_path.plus_file(appname_safe + ".csproj");
 #endif
 
 		String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
@@ -150,7 +155,12 @@ private:
 
 		String data_mono_root_dir = data_dir_root.plus_file("Mono");
 		data_mono_etc_dir = data_mono_root_dir.plus_file("etc");
+
+#if __ANDROID__
+		data_mono_lib_dir = GDMonoUtils::Android::get_app_native_lib_dir();
+#else
 		data_mono_lib_dir = data_mono_root_dir.plus_file("lib");
+#endif
 
 #ifdef WINDOWS_ENABLED
 		data_mono_bin_dir = data_mono_root_dir.plus_file("bin");
@@ -173,15 +183,21 @@ private:
 
 #else
 
-		String appname = OS::get_singleton()->get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
-		String data_dir_root = exe_dir.plus_file("data_" + appname);
+		String appname = ProjectSettings::get_singleton()->get("application/config/name");
+		String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
+		String data_dir_root = exe_dir.plus_file("data_" + appname_safe);
 		if (!DirAccess::exists(data_dir_root)) {
 			data_dir_root = exe_dir.plus_file("data_Godot");
 		}
 
 		String data_mono_root_dir = data_dir_root.plus_file("Mono");
 		data_mono_etc_dir = data_mono_root_dir.plus_file("etc");
+
+#if __ANDROID__
+		data_mono_lib_dir = GDMonoUtils::Android::get_app_native_lib_dir();
+#else
 		data_mono_lib_dir = data_mono_root_dir.plus_file("lib");
+#endif
 
 #ifdef WINDOWS_ENABLED
 		data_mono_bin_dir = data_mono_root_dir.plus_file("bin");
