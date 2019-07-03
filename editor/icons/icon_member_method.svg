@@ -1,3 +1,31 @@
-<svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<path d="m6.0215 3c-0.40133-0.0028518-0.79916 0.074854-1.1699 0.22852-1.1208 0.46444-1.8516 1.5582-1.8516 2.7715v7h2v-3h2v-2h-2v-2c0-0.55228 0.44772-1 1-1 0.2652 4.01e-5 0.51953 0.10542 0.70703 0.29297l1.4141-1.4141c-0.55724-0.5574-1.3115-0.87312-2.0996-0.87891zm2.9785 3c-1.3263 2.6586-1.3404 4.3252 0 7h2c-1.3404-2.6748-1.3263-4.3414 0-7h-2zm4 0c1.3263 2.6586 1.3404 4.3252 0 7h2c1.3404-2.6748 1.3263-4.3414 0-7h-2zm-12 5a1 1 0 0 0 -1 1 1 1 0 0 0 1 1 1 1 0 0 0 1 -1 1 1 0 0 0 -1 -1z" fill="#e0e0e0" stroke-width="0"/>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.5, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="16px"
+	 height="16px" viewBox="0 0 16 16" enable-background="new 0 0 16 16" xml:space="preserve">
+<g id="Layer_3" display="none">
+	<rect x="-48.197" y="-30.833" display="inline" fill="#46495C" width="119.333" height="81.167"/>
+</g>
+<g id="Layer_1">
+	<polyline opacity="0.5" fill="#E66BFF" points="13.361,6.775 13.361,9.514 8,14.875 2.638,9.514 2.638,6.535 4.533,7.32 
+		4.533,8.729 8,12.194 11.466,8.729 11.466,7.32 	"/>
+	<g>
+		<polyline fill="#E0E0E0" points="2.638,6.987 8,1.625 13.361,6.987 11.466,7.772 8,4.305 4.533,7.772 		"/>
+		<g>
+			<polygon fill="#E0E0E0" points="8.168,8.769 3.016,3.616 4.545,3.617 8.178,7.251 			"/>
+		</g>
+	</g>
+	<g opacity="0.6">
+		<line fill="none" stroke="#E0E0E0" stroke-miterlimit="10" x1="8" y1="14.085" x2="8" y2="9.915"/>
+		<line fill="none" stroke="#E0E0E0" stroke-miterlimit="10" x1="10.085" y1="12.001" x2="5.915" y2="12.001"/>
+	</g>
+</g>
+<g id="Layer_2" display="none">
+	<g display="inline">
+		<path fill="#E0E0E0" d="M7.166,11.689"/>
+		<path fill="#E0E0E0" d="M8.212,11.341"/>
+		<polyline fill="#E0E0E0" points="8.212,11.341 8.211,14.182 7.249,13.257 7.166,11.689 6.288,12.333 5.325,11.41 6.855,10.056 
+			6.855,7.211 7.817,8.134 7.901,9.704 8.78,9.059 9.741,9.98 8.212,11.341 		"/>
+	</g>
+</g>
 </svg>
