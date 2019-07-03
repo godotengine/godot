@@ -148,8 +148,7 @@ def configure(env):
     ## Flags
 
     env.Prepend(CPPPATH=['#platform/haiku'])
-    env.Append(CPPFLAGS=['-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED'])
-    env.Append(CPPFLAGS=['-DMEDIA_KIT_ENABLED'])
-    # env.Append(CPPFLAGS=['-DFREETYPE_ENABLED'])
-    env.Append(CPPFLAGS=['-DPTHREAD_NO_RENAME'])  # TODO: enable when we have pthread_setname_np
+    env.Append(CPPDEFINES=['UNIX_ENABLED', 'OPENGL_ENABLED', 'GLES_ENABLED'])
+    env.Append(CPPDEFINES=['MEDIA_KIT_ENABLED'])
+    env.Append(CPPDEFINES=['PTHREAD_NO_RENAME'])  # TODO: enable when we have pthread_setname_np
     env.Append(LIBS=['be', 'game', 'media', 'network', 'bnetapi', 'z', 'GL'])

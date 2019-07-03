@@ -60,13 +60,13 @@ def configure(env):
     elif (env["target"] == "release_debug"):
         env.Append(CCFLAGS=['/O2', '/Zi'])
         env.Append(CCFLAGS=['/MD'])
-        env.Append(CPPFLAGS=['/DDEBUG_ENABLED'])
+        env.Append(CPPDEFINES=['DEBUG_ENABLED'])
         env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
 
     elif (env["target"] == "debug"):
         env.Append(CCFLAGS=['/Zi'])
         env.Append(CCFLAGS=['/MDd'])
-        env.Append(CPPFLAGS=['/DDEBUG_ENABLED', '/DDEBUG_MEMORY_ENABLED'])
+        env.Append(CPPDEFINES=['DEBUG_ENABLED', 'DEBUG_MEMORY_ENABLED'])
         env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
         env.Append(LINKFLAGS=['/DEBUG'])
 
@@ -138,18 +138,18 @@ def configure(env):
     ## Compile flags
 
     env.Prepend(CPPPATH=['#platform/uwp', '#drivers/windows'])
-    env.Append(CPPFLAGS=['/DUWP_ENABLED', '/DWINDOWS_ENABLED', '/DTYPED_METHOD_BIND'])
-    env.Append(CPPFLAGS=['/DGLES_ENABLED', '/DGL_GLEXT_PROTOTYPES', '/DEGL_EGLEXT_PROTOTYPES', '/DANGLE_ENABLED'])
+    env.Append(CPPDEFINES=['UWP_ENABLED', 'WINDOWS_ENABLED', 'TYPED_METHOD_BIND'])
+    env.Append(CPPDEFINES=['GLES_ENABLED', 'GL_GLEXT_PROTOTYPES', 'EGL_EGLEXT_PROTOTYPES', 'ANGLE_ENABLED'])
     winver = "0x0602" # Windows 8 is the minimum target for UWP build
-    env.Append(CPPFLAGS=['/DWINVER=%s' % winver, '/D_WIN32_WINNT=%s' % winver])
+    env.Append(CPPDEFINES=[('WINVER', winver), ('_WIN32_WINNT', winver), 'WIN32'])
 
-    env.Append(CPPFLAGS=['/D__WRL_NO_DEFAULT_LIB__', '/DWIN32', '/DPNG_ABORT=abort'])
+    env.Append(CPPDEFINES=['__WRL_NO_DEFAULT_LIB__', ('PNG_ABORT', 'abort')])
 
     env.Append(CPPFLAGS=['/AI', vc_base_path + 'lib/store/references'])
     env.Append(CPPFLAGS=['/AI', vc_base_path + 'lib/x86/store/references'])
 
     env.Append(CCFLAGS='/FS /MP /GS /wd"4453" /wd"28204" /wd"4291" /Zc:wchar_t /Gm- /fp:precise /errorReport:prompt /WX- /Zc:forScope /Gd /EHsc /nologo'.split())
-    env.Append(CPPFLAGS=['/D_UNICODE', '/DUNICODE', '/D "WINAPI_FAMILY=WINAPI_FAMILY_APP"'])
+    env.Append(CPPDEFINES=['_UNICODE', 'UNICODE', ('WINAPI_FAMILY', 'WINAPI_FAMILY_APP')])
     env.Append(CXXFLAGS=['/ZW'])
     env.Append(CCFLAGS=['/AI', vc_base_path + '\\vcpackages', '/AI', os.environ['WINDOWSSDKDIR'] + '\\References\\CommonConfiguration\\Neutral'])
 

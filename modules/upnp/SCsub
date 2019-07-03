@@ -26,8 +26,8 @@ if env['builtin_miniupnpc']:
     thirdparty_sources = [thirdparty_dir + "miniupnpc/" + file for file in thirdparty_sources]
 
     env_upnp.Prepend(CPPPATH=[thirdparty_dir])
-    env_upnp.Append(CPPFLAGS=["-DMINIUPNP_STATICLIB"])
-    env_upnp.Append(CPPFLAGS=["-DMINIUPNPC_SET_SOCKET_TIMEOUT"])
+    env_upnp.Append(CPPDEFINES=["MINIUPNP_STATICLIB"])
+    env_upnp.Append(CPPDEFINES=["MINIUPNPC_SET_SOCKET_TIMEOUT"])
 
     env_thirdparty = env_upnp.Clone()
     env_thirdparty.disable_warnings()

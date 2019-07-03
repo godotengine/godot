@@ -173,7 +173,7 @@ def configure(env, env_mono):
             if not mono_lib:
                 raise RuntimeError('Could not find mono library in: ' + mono_lib_path)
 
-            env_mono.Append(CPPFLAGS=['-D_REENTRANT'])
+            env_mono.Append(CPPDEFINES=['_REENTRANT'])
 
             if mono_static:
                 mono_lib_file = os.path.join(mono_lib_path, 'lib' + mono_lib + '.a')
@@ -398,7 +398,7 @@ def configure_for_mono_version(env, mono_version):
             raise RuntimeError("Mono JIT compiler version not found; specify one manually with the 'MONO_VERSION' environment variable")
     print('Found Mono JIT compiler version: ' + str(mono_version))
     if mono_version >= LooseVersion('5.12.0'):
-        env.Append(CPPFLAGS=['-DHAS_PENDING_EXCEPTIONS'])
+        env.Append(CPPDEFINES=['HAS_PENDING_EXCEPTIONS'])
 
 
 def pkgconfig_try_find_mono_root(mono_lib_names, sharedlib_ext):

@@ -192,7 +192,7 @@ if env['builtin_bullet']:
     else:
         env_bullet.Prepend(CPPPATH=[thirdparty_dir])
     # if env['target'] == "debug" or env['target'] == "release_debug":
-    #     env_bullet.Append(CPPFLAGS=['-DBT_DEBUG'])
+    #     env_bullet.Append(CPPDEFINES=['BT_DEBUG'])
 
     env_thirdparty = env_bullet.Clone()
     env_thirdparty.disable_warnings()

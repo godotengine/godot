@@ -12,8 +12,8 @@ if (env["platform"] in ["haiku", "osx", "windows", "x11"]):
 
     env.Prepend(CPPPATH=[thirdparty_dir])
 
-    env.Append(CPPFLAGS=['-DGLAD_ENABLED'])
-    env.Append(CPPFLAGS=['-DGLES_OVER_GL'])
+    env.Append(CPPDEFINES=['GLAD_ENABLED'])
+    env.Append(CPPDEFINES=['GLES_OVER_GL'])
 
     env_thirdparty = env.Clone()
     env_thirdparty.disable_warnings()
