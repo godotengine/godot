@@ -270,7 +270,18 @@ Error GDMonoAssembly::load(bool p_refonly) {
 	Vector<uint8_t> data = FileAccess::get_file_as_array(path);
 	ERR_FAIL_COND_V(data.empty(), ERR_FILE_CANT_READ);
 
-	String image_filename = ProjectSettings::get_singleton()->globalize_path(path);
+	String image_filename;
+
+#ifdef ANDROID_ENABLED
+	if (path.begins_with("res://")) {
+		image_filename = path.substr(6, path.length());
+	} else {
+		image_filename = ProjectSettings::get_singleton()->globalize_path(path);
+	}
+#else
+	// FIXME: globalize_path does not work on exported games
+	image_filename = ProjectSettings::get_singleton()->globalize_path(path);
+#endif
 
 	MonoImageOpenStatus status = MONO_IMAGE_OK;
 

@@ -914,12 +914,12 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, 
 
 	// Generate sources from compressed files
 
-	Map<String, CompressedFile> compressed_files;
+	Map<String, GodotCsCompressedFile> compressed_files;
 	get_compressed_files(compressed_files);
 
-	for (Map<String, CompressedFile>::Element *E = compressed_files.front(); E; E = E->next()) {
+	for (Map<String, GodotCsCompressedFile>::Element *E = compressed_files.front(); E; E = E->next()) {
 		const String &file_name = E->key();
-		const CompressedFile &file_data = E->value();
+		const GodotCsCompressedFile &file_data = E->value();
 
 		String output_file = path_join(core_dir, file_name);
 
