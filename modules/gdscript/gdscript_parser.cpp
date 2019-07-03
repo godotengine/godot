@@ -125,7 +125,7 @@ bool GDScriptParser::_enter_indent_block(BlockNode *p_block) {
 	}
 }
 
-bool GDScriptParser::_parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete) {
+bool GDScriptParser::_parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete, bool p_parsing_constant) {
 
 	if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
 		tokenizer->advance();
@@ -149,7 +149,7 @@ bool GDScriptParser::_parse_arguments(Node *p_parent, Vector<Node *> &p_args, bo
 				return false;
 			}
 
-			Node *arg = _parse_expression(p_parent, p_static);
+			Node *arg = _parse_expression(p_parent, p_static, false, p_parsing_constant);
 			if (!arg) {
 				return false;
 			}
@@ -639,7 +639,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					id->name = identifier;
 					op->arguments.push_back(id);
 
-					if (!_parse_arguments(op, op->arguments, p_static, true))
+					if (!_parse_arguments(op, op->arguments, p_static, true, p_parsing_constant))
 						return NULL;
 
 					expr = op;
@@ -731,7 +731,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				completion_node = op;
 			}
 			if (!replaced) {
-				if (!_parse_arguments(op, op->arguments, p_static, true))
+				if (!_parse_arguments(op, op->arguments, p_static, true, p_parsing_constant))
 					return NULL;
 				expr = op;
 			}
@@ -1112,7 +1112,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				}
 			} else {
 				tokenizer->advance();
-				if (!_parse_arguments(op, op->arguments, p_static)) {
+				if (!_parse_arguments(op, op->arguments, p_static, false, p_parsing_constant)) {
 					return NULL;
 				}
 			}
@@ -1164,21 +1164,13 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					tokenizer->advance();
 
 					IdentifierNode *id = alloc_node<IdentifierNode>();
-					if (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_FUNC) {
-						//small hack so built in funcs don't obfuscate methods
-
-						id->name = GDScriptFunctions::get_func_name(tokenizer->get_token_built_in_func());
-						tokenizer->advance();
-
-					} else {
-						StringName identifier;
-						if (_get_completable_identifier(COMPLETION_METHOD, identifier)) {
-							completion_node = op;
-							//indexing stuff
-						}
-
-						id->name = identifier;
+					StringName identifier;
+					if (_get_completable_identifier(COMPLETION_METHOD, identifier)) {
+						completion_node = op;
+						//indexing stuff
 					}
+
+					id->name = identifier;
 
 					op->arguments.push_back(expr); // call what
 					op->arguments.push_back(id); // call func
@@ -1188,7 +1180,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 						_make_completable_call(0);
 						completion_node = op;
 					}
-					if (!_parse_arguments(op, op->arguments, p_static, true))
+					if (!_parse_arguments(op, op->arguments, p_static, true, p_parsing_constant))
 						return NULL;
 					expr = op;
 
