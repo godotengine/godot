@@ -2526,7 +2526,7 @@ void OS_Windows::GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, 
 	DeleteDC(hMainDC);
 }
 
-Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_hide_cmd) {
 
 	if (p_blocking && r_pipe) {
 
@@ -2586,7 +2586,9 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	modstr.resize(cmdline.size());
 	for (int i = 0; i < cmdline.size(); i++)
 		modstr.write[i] = cmdline[i];
-	int ret = CreateProcessW(NULL, modstr.ptrw(), NULL, NULL, 0, NORMAL_PRIORITY_CLASS, NULL, NULL, si_w, &pi.pi);
+
+	int flags = p_hide_cmd ? NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW : NORMAL_PRIORITY_CLASS
+	int ret = CreateProcessW(NULL, modstr.ptrw(), NULL, NULL, 0, flags, NULL, NULL, si_w, &pi.pi);
 	ERR_FAIL_COND_V(ret == 0, ERR_CANT_FORK);
 
 	if (p_blocking) {
