@@ -268,6 +268,11 @@ changes are marked with `// -- GODOT --` comments.
 - Version: 1.1.0
 - License: MIT
 
+File extracted from upstream releaze tarball:
+
+- All `*.c` and `*.h` in `lib/` and `lib/includes/`
+- `wslay.h` has a small Godot addition to fix MSVC build.
+  See `thirdparty/wslay/msvcfix.diff`
 
 ## mbedtls
 
