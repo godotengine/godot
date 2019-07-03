@@ -119,7 +119,7 @@ public:
 
 	void set_spatial_node(Spatial *p_node);
 	Spatial *get_spatial_node() const { return spatial_node; }
-	EditorSpatialGizmoPlugin *get_plugin() const { return gizmo_plugin; }
+	Ref<EditorSpatialGizmoPlugin> get_plugin() const { return gizmo_plugin; }
 	Vector3 get_handle_pos(int p_idx) const;
 	bool intersect_frustum(const Camera *p_camera, const Vector<Plane> &p_frustum);
 	bool intersect_ray(Camera *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle = NULL, bool p_sec_first = false);

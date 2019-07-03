@@ -87,7 +87,7 @@ public:
 
 	EditorSelection *get_selection();
 	//EditorImportExport *get_import_export();
-	EditorSettings *get_editor_settings();
+	Ref<EditorSettings> get_editor_settings();
 	EditorResourcePreview *get_resource_previewer();
 	EditorFileSystem *get_resource_file_system();
 
