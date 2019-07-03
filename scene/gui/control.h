@@ -160,6 +160,7 @@ private:
 		float rotation;
 		Vector2 scale;
 		Vector2 pivot_offset;
+		Vector2 relative_pivot;
 
 		bool pending_resize;
 
@@ -362,6 +363,9 @@ public:
 	void set_rotation_degrees(float p_degrees);
 	float get_rotation() const;
 	float get_rotation_degrees() const;
+
+	void set_relative_pivot(const Vector2 &p_relative_pivot);
+	Vector2 get_relative_pivot() const;
 
 	void set_h_grow_direction(GrowDirection p_direction);
 	GrowDirection get_h_grow_direction() const;

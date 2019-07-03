@@ -54,6 +54,7 @@ Dictionary Control::_edit_get_state() const {
 	s["rotation"] = get_rotation();
 	s["scale"] = get_scale();
 	s["pivot"] = get_pivot_offset();
+	s["relative_pivot"] = get_relative_pivot();
 	Array anchors;
 	anchors.push_back(get_anchor(MARGIN_LEFT));
 	anchors.push_back(get_anchor(MARGIN_TOP));
@@ -76,6 +77,7 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 	set_rotation(state["rotation"]);
 	set_scale(state["scale"]);
 	set_pivot_offset(state["pivot"]);
+	set_relative_pivot(state["relative_pivot"]);
 	Array anchors = state["anchors"];
 	data.anchor[MARGIN_LEFT] = anchors[0];
 	data.anchor[MARGIN_TOP] = anchors[1];
@@ -142,14 +144,14 @@ bool Control::_edit_use_rotation() const {
 }
 
 void Control::_edit_set_pivot(const Point2 &p_pivot) {
-	Vector2 delta_pivot = p_pivot - get_pivot_offset();
+	Vector2 delta_pivot = p_pivot - get_pivot_offset() + get_size() * get_relative_pivot();
 	Vector2 move = Vector2((cos(data.rotation) - 1.0) * delta_pivot.x - sin(data.rotation) * delta_pivot.y, sin(data.rotation) * delta_pivot.x + (cos(data.rotation) - 1.0) * delta_pivot.y);
 	set_position(get_position() + move);
 	set_pivot_offset(p_pivot);
 }
 
 Point2 Control::_edit_get_pivot() const {
-	return get_pivot_offset();
+	return get_pivot_offset() + get_size() * get_relative_pivot();
 }
 
 bool Control::_edit_use_pivot() const {
@@ -204,7 +206,7 @@ Transform2D Control::_get_internal_transform() const {
 	Transform2D rot_scale;
 	rot_scale.set_rotation_and_scale(data.rotation, data.scale);
 	Transform2D offset;
-	offset.set_origin(-data.pivot_offset);
+	offset.set_origin(-data.pivot_offset - get_size() * get_relative_pivot());
 
 	return offset.affine_inverse() * (rot_scale * offset);
 }
@@ -2695,6 +2697,17 @@ Vector2 Control::get_scale() const {
 	return data.scale;
 }
 
+void Control::set_relative_pivot(const Vector2 &p_relative_pivot) {
+	data.relative_pivot = p_relative_pivot;
+	update();
+	_notify_transform();
+	_change_notify("rect_relative_pivot");
+}
+
+Vector2 Control::get_relative_pivot() const {
+	return data.relative_pivot;
+}
+
 Control *Control::get_root_parent_control() const {
 
 	const CanvasItem *ci = this;
@@ -2845,6 +2858,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rotation_degrees", "degrees"), &Control::set_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Control::set_scale);
 	ClassDB::bind_method(D_METHOD("set_pivot_offset", "pivot_offset"), &Control::set_pivot_offset);
+	ClassDB::bind_method(D_METHOD("set_relative_pivot", "relative_pivot"), &Control::set_relative_pivot);
 	ClassDB::bind_method(D_METHOD("get_margin", "margin"), &Control::get_margin);
 	ClassDB::bind_method(D_METHOD("get_begin"), &Control::get_begin);
 	ClassDB::bind_method(D_METHOD("get_end"), &Control::get_end);
@@ -2854,6 +2868,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rotation_degrees"), &Control::get_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Control::get_scale);
 	ClassDB::bind_method(D_METHOD("get_pivot_offset"), &Control::get_pivot_offset);
+	ClassDB::bind_method(D_METHOD("get_relative_pivot"), &Control::get_relative_pivot);
 	ClassDB::bind_method(D_METHOD("get_custom_minimum_size"), &Control::get_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_parent_area_size"), &Control::get_parent_area_size);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Control::get_global_position);
@@ -2987,6 +3002,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rect_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater"), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_scale"), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_pivot_offset"), "set_pivot_offset", "get_pivot_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_relative_pivot"), "set_relative_pivot", "get_relative_pivot");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rect_clip_content"), "set_clip_contents", "is_clipping_contents");
 
 	ADD_GROUP("Hint", "hint_");
