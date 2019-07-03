@@ -121,6 +121,7 @@ public:
 	_FORCE_INLINE_ const GDMonoAssembly *get_assembly() const { return assembly; }
 
 	GDMonoClass *get_parent_class();
+	GDMonoClass *get_nesting_class();
 
 #ifdef TOOLS_ENABLED
 	Vector<MonoClassField *> get_enum_fields();

@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{27B00618-A6F2-4828-B922-05CAEB08C286}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>GodotTools</RootNamespace>
+    <AssemblyName>GodotTools</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>
+    <GodotApiConfiguration>Debug</GodotApiConfiguration>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>portable</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="GodotSharp">
+      <HintPath>$(GodotSourceRootPath)/bin/GodotSharp/Api/$(GodotApiConfiguration)/GodotSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="GodotSharpEditor">
+      <HintPath>$(GodotSourceRootPath)/bin/GodotSharp/Api/$(GodotApiConfiguration)/GodotSharpEditor.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Build\MsBuildFinder.cs" />
+    <Compile Include="Internals\BindingsGenerator.cs" />
+    <Compile Include="Internals\EditorProgress.cs" />
+    <Compile Include="Internals\GodotSharpDirs.cs" />
+    <Compile Include="Internals\Internal.cs" />
+    <Compile Include="Internals\ScriptClassParser.cs" />
+    <Compile Include="MonoDevelopInstance.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Build\BuildSystem.cs" />
+    <Compile Include="Utils\Directory.cs" />
+    <Compile Include="Utils\File.cs" />
+    <Compile Include="Utils\OS.cs" />
+    <Compile Include="GodotSharpEditor.cs" />
+    <Compile Include="GodotSharpBuilds.cs" />
+    <Compile Include="HotReloadAssemblyWatcher.cs" />
+    <Compile Include="MonoBuildInfo.cs" />
+    <Compile Include="MonoBuildTab.cs" />
+    <Compile Include="MonoBottomPanel.cs" />
+    <Compile Include="GodotSharpExport.cs" />
+    <Compile Include="CSharpProject.cs" />
+    <Compile Include="Utils\CollectionExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GodotTools.BuildLogger\GodotTools.BuildLogger.csproj">
+      <Project>{6ce9a984-37b1-4f8a-8fe9-609f05f071b3}</Project>
+      <Name>GodotTools.BuildLogger</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GodotTools.ProjectEditor\GodotTools.ProjectEditor.csproj">
+      <Project>{A8CDAD94-C6D4-4B19-A7E7-76C53CC92984}</Project>
+      <Name>GodotTools.ProjectEditor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GodotTools.Core\GodotTools.Core.csproj">
+      <Project>{639E48BD-44E5-4091-8EDD-22D36DC0768D}</Project>
+      <Name>GodotTools.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Editor" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>

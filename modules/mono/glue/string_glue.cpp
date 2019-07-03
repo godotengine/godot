@@ -68,12 +68,12 @@ MonoString *godot_icall_String_sha256_text(MonoString *p_str) {
 }
 
 void godot_register_string_icalls() {
-	mono_add_internal_call("Godot.String::godot_icall_String_md5_buffer", (void *)godot_icall_String_md5_buffer);
-	mono_add_internal_call("Godot.String::godot_icall_String_md5_text", (void *)godot_icall_String_md5_text);
-	mono_add_internal_call("Godot.String::godot_icall_String_rfind", (void *)godot_icall_String_rfind);
-	mono_add_internal_call("Godot.String::godot_icall_String_rfindn", (void *)godot_icall_String_rfindn);
-	mono_add_internal_call("Godot.String::godot_icall_String_sha256_buffer", (void *)godot_icall_String_sha256_buffer);
-	mono_add_internal_call("Godot.String::godot_icall_String_sha256_text", (void *)godot_icall_String_sha256_text);
+	mono_add_internal_call("Godot.StringExtensions::godot_icall_String_md5_buffer", (void *)godot_icall_String_md5_buffer);
+	mono_add_internal_call("Godot.StringExtensions::godot_icall_String_md5_text", (void *)godot_icall_String_md5_text);
+	mono_add_internal_call("Godot.StringExtensions::godot_icall_String_rfind", (void *)godot_icall_String_rfind);
+	mono_add_internal_call("Godot.StringExtensions::godot_icall_String_rfindn", (void *)godot_icall_String_rfindn);
+	mono_add_internal_call("Godot.StringExtensions::godot_icall_String_sha256_buffer", (void *)godot_icall_String_sha256_buffer);
+	mono_add_internal_call("Godot.StringExtensions::godot_icall_String_sha256_text", (void *)godot_icall_String_sha256_text);
 }
 
 #endif // MONO_GLUE_ENABLED

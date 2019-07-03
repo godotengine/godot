@@ -1579,6 +1579,8 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_recent_dirs"), &EditorSettings::get_recent_dirs);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
+
+	BIND_CONSTANT(NOTIFICATION_EDITOR_SETTINGS_CHANGED);
 }
 
 EditorSettings::EditorSettings() {

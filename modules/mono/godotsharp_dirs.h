@@ -37,6 +37,7 @@ namespace GodotSharpDirs {
 
 String get_res_data_dir();
 String get_res_metadata_dir();
+String get_res_assemblies_base_dir();
 String get_res_assemblies_dir();
 String get_res_config_dir();
 String get_res_temp_dir();

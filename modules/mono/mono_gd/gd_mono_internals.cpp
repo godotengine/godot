@@ -74,15 +74,14 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 		script_binding.type_name = NATIVE_GDMONOCLASS_NAME(klass);
 		script_binding.wrapper_class = klass;
 		script_binding.gchandle = MonoGCHandle::create_strong(managed);
+		script_binding.owner = unmanaged;
 
-		Reference *kref = Object::cast_to<Reference>(unmanaged);
-		if (kref) {
+		if (ref) {
 			// Unsafe refcount increment. The managed instance also counts as a reference.
 			// This way if the unmanaged world has no references to our owner
 			// but the managed instance is alive, the refcount will be 1 instead of 0.
 			// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
-
-			kref->reference();
+			ref->reference();
 		}
 
 		// The object was just created, no script instance binding should have been attached

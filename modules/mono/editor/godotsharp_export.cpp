@@ -30,180 +30,28 @@
 
 #include "godotsharp_export.h"
 
-#include "core/version.h"
+#include <mono/metadata/image.h>
 
-#include "../csharp_script.h"
-#include "../godotsharp_defs.h"
-#include "../godotsharp_dirs.h"
-#include "../mono_gd/gd_mono_class.h"
-#include "../mono_gd/gd_mono_marshal.h"
-#include "csharp_project.h"
-#include "godotsharp_builds.h"
+#include "../mono_gd/gd_mono.h"
+#include "../mono_gd/gd_mono_assembly.h"
 
-static MonoString *godot_icall_GodotSharpExport_GetTemplatesDir() {
-	String current_version = VERSION_FULL_CONFIG;
-	String templates_dir = EditorSettings::get_singleton()->get_templates_dir().plus_file(current_version);
-	return GDMonoMarshal::mono_string_from_godot(ProjectSettings::get_singleton()->globalize_path(templates_dir));
+String get_assemblyref_name(MonoImage *p_image, int index) {
+	const MonoTableInfo *table_info = mono_image_get_table_info(p_image, MONO_TABLE_ASSEMBLYREF);
+
+	uint32_t cols[MONO_ASSEMBLYREF_SIZE];
+
+	mono_metadata_decode_row(table_info, index, cols, MONO_ASSEMBLYREF_SIZE);
+
+	return String::utf8(mono_metadata_string_heap(p_image, cols[MONO_ASSEMBLYREF_NAME]));
 }
 
-static MonoString *godot_icall_GodotSharpExport_GetDataDirName() {
-	String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-	return GDMonoMarshal::mono_string_from_godot("data_" + appname_safe);
-}
-
-void GodotSharpExport::register_internal_calls() {
-	static bool registered = false;
-	ERR_FAIL_COND(registered);
-	registered = true;
-
-	mono_add_internal_call("GodotSharpTools.Editor.GodotSharpExport::GetTemplatesDir", (void *)godot_icall_GodotSharpExport_GetTemplatesDir);
-	mono_add_internal_call("GodotSharpTools.Editor.GodotSharpExport::GetDataDirName", (void *)godot_icall_GodotSharpExport_GetDataDirName);
-}
-
-void GodotSharpExport::_export_file(const String &p_path, const String &p_type, const Set<String> &) {
-
-	if (p_type != CSharpLanguage::get_singleton()->get_type())
-		return;
-
-	ERR_FAIL_COND(p_path.get_extension() != CSharpLanguage::get_singleton()->get_extension());
-
-	// TODO what if the source file is not part of the game's C# project
-
-	if (!GLOBAL_GET("mono/export/include_scripts_content")) {
-		// We don't want to include the source code on exported games
-		add_file(p_path, Vector<uint8_t>(), false);
-		skip();
-	}
-}
-
-void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug, const String &p_path, int p_flags) {
-
-	// TODO right now there is no way to stop the export process with an error
-
-	ERR_FAIL_COND(!GDMono::get_singleton()->is_runtime_initialized());
-	ERR_FAIL_NULL(TOOLS_DOMAIN);
-	ERR_FAIL_NULL(GDMono::get_singleton()->get_editor_tools_assembly());
-
-	if (FileAccess::exists(GodotSharpDirs::get_project_sln_path())) {
-		String build_config = p_debug ? "Debug" : "Release";
-
-		String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata." + String(p_debug ? "debug" : "release"));
-		Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path);
-		ERR_FAIL_COND(metadata_err != OK);
-
-		ERR_FAIL_COND(!_add_file(scripts_metadata_path, scripts_metadata_path));
-
-		// Turn export features into defines
-		Vector<String> godot_defines;
-		for (Set<String>::Element *E = p_features.front(); E; E = E->next()) {
-			godot_defines.push_back(E->get());
-		}
-		ERR_FAIL_COND(!GodotSharpBuilds::build_project_blocking(build_config, godot_defines));
-
-		// Add dependency assemblies
-
-		Map<String, String> dependencies;
-
-		String project_dll_name = ProjectSettings::get_singleton()->get("application/config/name");
-		String project_dll_name_safe = OS::get_singleton()->get_safe_dir_name(project_dll_name);
-		if (project_dll_name_safe.empty()) {
-			project_dll_name_safe = "UnnamedProject";
-		}
-
-		String project_dll_src_dir = GodotSharpDirs::get_res_temp_assemblies_base_dir().plus_file(build_config);
-		String project_dll_src_path = project_dll_src_dir.plus_file(project_dll_name_safe + ".dll");
-		dependencies.insert(project_dll_name_safe, project_dll_src_path);
-
-		{
-			MonoDomain *export_domain = GDMonoUtils::create_domain("GodotEngine.ProjectExportDomain");
-			ERR_FAIL_NULL(export_domain);
-			_GDMONO_SCOPE_EXIT_DOMAIN_UNLOAD_(export_domain);
-
-			_GDMONO_SCOPE_DOMAIN_(export_domain);
-
-			GDMonoAssembly *scripts_assembly = NULL;
-			bool load_success = GDMono::get_singleton()->load_assembly_from(project_dll_name_safe,
-					project_dll_src_path, &scripts_assembly, /* refonly: */ true);
-
-			ERR_EXPLAIN("Cannot load assembly (refonly): " + project_dll_name_safe);
-			ERR_FAIL_COND(!load_success);
-
-			Vector<String> search_dirs;
-			String templates_dir = EditorSettings::get_singleton()->get_templates_dir().plus_file(VERSION_FULL_CONFIG);
-			String android_bcl_dir = templates_dir.plus_file("android-bcl");
-
-			String custom_lib_dir;
-
-			if (p_features.find("Android") && DirAccess::exists(android_bcl_dir)) {
-				custom_lib_dir = android_bcl_dir;
-			}
-
-			GDMonoAssembly::fill_search_dirs(search_dirs, build_config, custom_lib_dir);
-
-			Error depend_error = _get_assembly_dependencies(scripts_assembly, search_dirs, dependencies);
-			ERR_FAIL_COND(depend_error != OK);
-		}
-
-		for (Map<String, String>::Element *E = dependencies.front(); E; E = E->next()) {
-			String depend_src_path = E->value();
-			String depend_dst_path = GodotSharpDirs::get_res_assemblies_dir().plus_file(depend_src_path.get_file());
-			ERR_FAIL_COND(!_add_file(depend_src_path, depend_dst_path));
-		}
-	}
-
-	// Mono specific export template extras (data dir)
-
-	GDMonoClass *export_class = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Editor", "GodotSharpExport");
-	ERR_FAIL_NULL(export_class);
-	GDMonoMethod *export_begin_method = export_class->get_method("_ExportBegin", 4);
-	ERR_FAIL_NULL(export_begin_method);
-
-	MonoArray *features = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(String), p_features.size());
-	int i = 0;
-	for (const Set<String>::Element *E = p_features.front(); E; E = E->next()) {
-		MonoString *boxed = GDMonoMarshal::mono_string_from_godot(E->get());
-		mono_array_setref(features, i, boxed);
-		i++;
-	}
-
-	MonoBoolean debug = p_debug;
-	MonoString *path = GDMonoMarshal::mono_string_from_godot(p_path);
-	uint32_t flags = p_flags;
-	void *args[4] = { features, &debug, path, &flags };
-	MonoException *exc = NULL;
-	export_begin_method->invoke_raw(NULL, args, &exc);
-
-	if (exc) {
-		GDMonoUtils::debug_print_unhandled_exception(exc);
-		ERR_FAIL();
-	}
-}
-
-bool GodotSharpExport::_add_file(const String &p_src_path, const String &p_dst_path, bool p_remap) {
-
-	FileAccessRef f = FileAccess::open(p_src_path, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, false);
-
-	Vector<uint8_t> data;
-	data.resize(f->get_len());
-	f->get_buffer(data.ptrw(), data.size());
-
-	add_file(p_dst_path, data, p_remap);
-
-	return true;
-}
-
-Error GodotSharpExport::_get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String> &p_search_dirs, Map<String, String> &r_dependencies) {
-
+Error GodotSharpExport::get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String> &p_search_dirs, Dictionary &r_dependencies) {
 	MonoImage *image = p_assembly->get_image();
 
 	for (int i = 0; i < mono_image_get_table_rows(image, MONO_TABLE_ASSEMBLYREF); i++) {
-		MonoAssemblyName *ref_aname = aname_prealloc;
-		mono_assembly_get_assemblyref(image, i, ref_aname);
-		String ref_name = mono_assembly_name_get_name(ref_aname);
+		String ref_name = get_assemblyref_name(image, i);
 
-		if (r_dependencies.find(ref_name))
+		if (r_dependencies.has(ref_name))
 			continue;
 
 		GDMonoAssembly *ref_assembly = NULL;
@@ -242,9 +90,9 @@ Error GodotSharpExport::_get_assembly_dependencies(GDMonoAssembly *p_assembly, c
 			ERR_FAIL_V(ERR_CANT_RESOLVE);
 		}
 
-		r_dependencies.insert(ref_name, ref_assembly->get_path());
+		r_dependencies[ref_name] = ref_assembly->get_path();
 
-		Error err = _get_assembly_dependencies(ref_assembly, p_search_dirs, r_dependencies);
+		Error err = get_assembly_dependencies(ref_assembly, p_search_dirs, r_dependencies);
 		if (err != OK) {
 			ERR_EXPLAIN("Cannot load one of the dependencies for the assembly: " + ref_name);
 			ERR_FAIL_V(err);
@@ -254,14 +102,22 @@ Error GodotSharpExport::_get_assembly_dependencies(GDMonoAssembly *p_assembly, c
 	return OK;
 }
 
-GodotSharpExport::GodotSharpExport() {
-	// MonoAssemblyName is an incomplete type (internal to mono), so we can't allocate it ourselves.
-	// There isn't any api to allocate an empty one either, so we need to do it this way.
-	aname_prealloc = mono_assembly_name_new("whatever");
-	mono_assembly_name_free(aname_prealloc); // "it does not frees the object itself, only the name members" (typo included)
-}
+Error GodotSharpExport::get_exported_assembly_dependencies(const String &p_project_dll_name, const String &p_project_dll_src_path, const String &p_build_config, const String &p_custom_lib_dir, Dictionary &r_dependencies) {
+	MonoDomain *export_domain = GDMonoUtils::create_domain("GodotEngine.ProjectExportDomain");
+	ERR_FAIL_NULL_V(export_domain, FAILED);
+	_GDMONO_SCOPE_EXIT_DOMAIN_UNLOAD_(export_domain);
 
-GodotSharpExport::~GodotSharpExport() {
-	if (aname_prealloc)
-		mono_free(aname_prealloc);
+	_GDMONO_SCOPE_DOMAIN_(export_domain);
+
+	GDMonoAssembly *scripts_assembly = NULL;
+	bool load_success = GDMono::get_singleton()->load_assembly_from(p_project_dll_name,
+			p_project_dll_src_path, &scripts_assembly, /* refonly: */ true);
+
+	ERR_EXPLAIN("Cannot load assembly (refonly): " + p_project_dll_name);
+	ERR_FAIL_COND_V(!load_success, ERR_CANT_RESOLVE);
+
+	Vector<String> search_dirs;
+	GDMonoAssembly::fill_search_dirs(search_dirs, p_build_config, p_custom_lib_dir);
+
+	return get_assembly_dependencies(scripts_assembly, search_dirs, r_dependencies);
 }

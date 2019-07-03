@@ -44,66 +44,54 @@
 
 namespace CSharpProject {
 
-String generate_core_api_project(const String &p_dir, const Vector<String> &p_files) {
+bool generate_api_solution_impl(const String &p_solution_dir, const String &p_core_proj_dir, const Vector<String> &p_core_compile_items,
+		const String &p_editor_proj_dir, const Vector<String> &p_editor_compile_items,
+		GDMonoAssembly *p_tools_project_editor_assembly) {
 
-	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
+	GDMonoClass *klass = p_tools_project_editor_assembly->get_class("GodotTools.ProjectEditor", "ApiSolutionGenerator");
 
-	GDMonoClass *klass = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Project", "ProjectGenerator");
-
-	Variant dir = p_dir;
-	Variant compile_items = p_files;
-	const Variant *args[2] = { &dir, &compile_items };
+	Variant solution_dir = p_solution_dir;
+	Variant core_proj_dir = p_core_proj_dir;
+	Variant core_compile_items = p_core_compile_items;
+	Variant editor_proj_dir = p_editor_proj_dir;
+	Variant editor_compile_items = p_editor_compile_items;
+	const Variant *args[5] = { &solution_dir, &core_proj_dir, &core_compile_items, &editor_proj_dir, &editor_compile_items };
 	MonoException *exc = NULL;
-	MonoObject *ret = klass->get_method("GenCoreApiProject", 2)->invoke(NULL, args, &exc);
+	klass->get_method("GenerateApiSolution", 5)->invoke(NULL, args, &exc);
 
 	if (exc) {
 		GDMonoUtils::debug_print_unhandled_exception(exc);
-		ERR_FAIL_V(String());
+		ERR_FAIL_V(false);
 	}
 
-	return ret ? GDMonoMarshal::mono_string_to_godot((MonoString *)ret) : String();
+	return true;
 }
 
-String generate_editor_api_project(const String &p_dir, const String &p_core_proj_path, const Vector<String> &p_files) {
+bool generate_api_solution(const String &p_solution_dir, const String &p_core_proj_dir, const Vector<String> &p_core_compile_items,
+		const String &p_editor_proj_dir, const Vector<String> &p_editor_compile_items) {
 
-	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
+	if (GDMono::get_singleton()->get_tools_project_editor_assembly()) {
+		return generate_api_solution_impl(p_solution_dir, p_core_proj_dir, p_core_compile_items,
+				p_editor_proj_dir, p_editor_compile_items,
+				GDMono::get_singleton()->get_tools_project_editor_assembly());
+	} else {
+		MonoDomain *temp_domain = GDMonoUtils::create_domain("GodotEngine.ApiSolutionGenerationDomain");
+		CRASH_COND(temp_domain == NULL);
+		_GDMONO_SCOPE_EXIT_DOMAIN_UNLOAD_(temp_domain);
 
-	GDMonoClass *klass = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Project", "ProjectGenerator");
+		_GDMONO_SCOPE_DOMAIN_(temp_domain);
 
-	Variant dir = p_dir;
-	Variant core_proj_path = p_core_proj_path;
-	Variant compile_items = p_files;
-	const Variant *args[3] = { &dir, &core_proj_path, &compile_items };
-	MonoException *exc = NULL;
-	MonoObject *ret = klass->get_method("GenEditorApiProject", 3)->invoke(NULL, args, &exc);
+		GDMonoAssembly *tools_project_editor_assembly = NULL;
 
-	if (exc) {
-		GDMonoUtils::debug_print_unhandled_exception(exc);
-		ERR_FAIL_V(String());
+		if (!GDMono::get_singleton()->load_assembly("GodotTools.ProjectEditor", &tools_project_editor_assembly)) {
+			ERR_EXPLAIN("Failed to load assembly: 'GodotTools.ProjectEditor'");
+			ERR_FAIL_V(false);
+		}
+
+		return generate_api_solution_impl(p_solution_dir, p_core_proj_dir, p_core_compile_items,
+				p_editor_proj_dir, p_editor_compile_items,
+				tools_project_editor_assembly);
 	}
-
-	return ret ? GDMonoMarshal::mono_string_to_godot((MonoString *)ret) : String();
-}
-
-String generate_game_project(const String &p_dir, const String &p_name, const Vector<String> &p_files) {
-
-	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
-
-	GDMonoClass *klass = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Project", "ProjectGenerator");
-
-	Variant dir = p_dir;
-	Variant name = p_name;
-	Variant compile_items = p_files;
-	const Variant *args[3] = { &dir, &name, &compile_items };
-	MonoException *exc = NULL;
-	MonoObject *ret = klass->get_method("GenGameProject", 3)->invoke(NULL, args, &exc);
-
-	if (exc) {
-		GDMonoUtils::debug_print_unhandled_exception(exc);
-		ERR_FAIL_V(String());
-	}
-
-	return ret ? GDMonoMarshal::mono_string_to_godot((MonoString *)ret) : String();
 }
 
 void add_item(const String &p_project_path, const String &p_item_type, const String &p_include) {
@@ -111,9 +99,9 @@ void add_item(const String &p_project_path, const String &p_item_type, const Str
 	if (!GLOBAL_DEF("mono/project/auto_update_project", true))
 		return;
 
-	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
+	GDMonoAssembly *tools_project_editor_assembly = GDMono::get_singleton()->get_tools_project_editor_assembly();
 
-	GDMonoClass *klass = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Project", "ProjectUtils");
+	GDMonoClass *klass = tools_project_editor_assembly->get_class("GodotTools.ProjectEditor", "ProjectUtils");
 
 	Variant project_path = p_project_path;
 	Variant item_type = p_item_type;
@@ -126,128 +114,6 @@ void add_item(const String &p_project_path, const String &p_item_type, const Str
 		GDMonoUtils::debug_print_unhandled_exception(exc);
 		ERR_FAIL();
 	}
-}
-
-Error generate_scripts_metadata(const String &p_project_path, const String &p_output_path) {
-
-	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
-
-	if (FileAccess::exists(p_output_path)) {
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		Error rm_err = da->remove(p_output_path);
-
-		ERR_EXPLAIN("Failed to remove old scripts metadata file");
-		ERR_FAIL_COND_V(rm_err != OK, rm_err);
-	}
-
-	GDMonoClass *project_utils = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Project", "ProjectUtils");
-
-	void *args[2] = {
-		GDMonoMarshal::mono_string_from_godot(p_project_path),
-		GDMonoMarshal::mono_string_from_godot("Compile")
-	};
-
-	MonoException *exc = NULL;
-	MonoArray *ret = (MonoArray *)project_utils->get_method("GetIncludeFiles", 2)->invoke_raw(NULL, args, &exc);
-
-	if (exc) {
-		GDMonoUtils::debug_print_unhandled_exception(exc);
-		ERR_FAIL_V(FAILED);
-	}
-
-	PoolStringArray project_files = GDMonoMarshal::mono_array_to_PoolStringArray(ret);
-	PoolStringArray::Read r = project_files.read();
-
-	Dictionary old_dict = CSharpLanguage::get_singleton()->get_scripts_metadata_or_nothing();
-	Dictionary new_dict;
-
-	for (int i = 0; i < project_files.size(); i++) {
-		const String &project_file = ("res://" + r[i]).simplify_path();
-
-		uint64_t modified_time = FileAccess::get_modified_time(project_file);
-
-		const Variant *old_file_var = old_dict.getptr(project_file);
-		if (old_file_var) {
-			Dictionary old_file_dict = old_file_var->operator Dictionary();
-
-			if (old_file_dict["modified_time"].operator uint64_t() == modified_time) {
-				// No changes so no need to parse again
-				new_dict[project_file] = old_file_dict;
-				continue;
-			}
-		}
-
-		ScriptClassParser scp;
-		Error err = scp.parse_file(project_file);
-		if (err != OK) {
-			ERR_PRINTS("Parse error: " + scp.get_error());
-			ERR_EXPLAIN("Failed to determine namespace and class for script: " + project_file);
-			ERR_FAIL_V(err);
-		}
-
-		Vector<ScriptClassParser::ClassDecl> classes = scp.get_classes();
-
-		bool found = false;
-		Dictionary class_dict;
-
-		String search_name = project_file.get_file().get_basename();
-
-		for (int j = 0; j < classes.size(); j++) {
-			const ScriptClassParser::ClassDecl &class_decl = classes[j];
-
-			if (class_decl.base.size() == 0)
-				continue; // Does not inherit nor implement anything, so it can't be a script class
-
-			String class_cmp;
-
-			if (class_decl.nested) {
-				class_cmp = class_decl.name.get_slice(".", class_decl.name.get_slice_count(".") - 1);
-			} else {
-				class_cmp = class_decl.name;
-			}
-
-			if (class_cmp != search_name)
-				continue;
-
-			class_dict["namespace"] = class_decl.namespace_;
-			class_dict["class_name"] = class_decl.name;
-			class_dict["nested"] = class_decl.nested;
-
-			found = true;
-			break;
-		}
-
-		if (found) {
-			Dictionary file_dict;
-			file_dict["modified_time"] = modified_time;
-			file_dict["class"] = class_dict;
-			new_dict[project_file] = file_dict;
-		}
-	}
-
-	if (new_dict.size()) {
-		String json = JSON::print(new_dict, "", false);
-
-		String base_dir = p_output_path.get_base_dir();
-
-		if (!DirAccess::exists(base_dir)) {
-			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-
-			Error err = da->make_dir_recursive(base_dir);
-			ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
-		}
-
-		Error ferr;
-		FileAccess *f = FileAccess::open(p_output_path, FileAccess::WRITE, &ferr);
-		ERR_EXPLAIN("Cannot open file for writing: " + p_output_path);
-		ERR_FAIL_COND_V(ferr != OK, ferr);
-		f->store_string(json);
-		f->flush();
-		f->close();
-		memdelete(f);
-	}
-
-	return OK;
 }
 
 } // namespace CSharpProject
