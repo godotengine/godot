@@ -34,8 +34,16 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
+WSLServer::PendingPeer::PendingPeer() {
+	time = 0;
+	has_request = false;
+	response_sent = 0;
+	req_pos = 0;
+	memset(req_buf, 0, sizeof(req_buf));
+}
+
 bool WSLServer::PendingPeer::_parse_request(String &r_key) {
-	Vector<String> psa = request.trim_suffix("\r\n\r\n").split("\r\n");
+	Vector<String> psa = String((char *)req_buf).split("\r\n");
 	int len = psa.size();
 	if (len < 4) {
 		ERR_EXPLAIN("Not enough response headers.");
@@ -87,34 +95,35 @@ Error WSLServer::PendingPeer::do_handshake() {
 	if (OS::get_singleton()->get_ticks_msec() - time > WSL_SERVER_TIMEOUT)
 		return ERR_TIMEOUT;
 	if (!has_request) {
-		uint8_t byte = 0;
 		int read = 0;
 		while (true) {
-			Error err = connection->get_partial_data(&byte, 1, read);
+			if (req_pos >= WSL_MAX_HEADER_SIZE) {
+				// Header is too big
+				ERR_EXPLAIN("Response headers too big");
+				ERR_FAIL_V(ERR_OUT_OF_MEMORY);
+			}
+			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
 			if (err != OK) // Got an error
 				return FAILED;
 			else if (read != 1) // Busy, wait next poll
 				return ERR_BUSY;
-			request += byte;
-
-			if (request.size() > WSL_MAX_HEADER_SIZE) {
-				ERR_EXPLAIN("Response headers too big");
-				ERR_FAIL_V(ERR_OUT_OF_MEMORY);
-			}
-			if (request.ends_with("\r\n\r\n")) {
+			char *r = (char *)req_buf;
+			int l = req_pos;
+			if (l > 3 && r[l] == '\n' && r[l - 1] == '\r' && r[l - 2] == '\n' && r[l - 3] == '\r') {
+				r[l - 3] = '\0';
 				if (!_parse_request(key)) {
 					return FAILED;
 				}
-				String r = "HTTP/1.1 101 Switching Protocols\r\n";
-				r += "Upgrade: websocket\r\n";
-				r += "Connection: Upgrade\r\n";
-				r += "Sec-WebSocket-Accept: " + WSLPeer::compute_key_response(key) + "\r\n";
-				r += "\r\n";
-				response = r.utf8();
+				String s = "HTTP/1.1 101 Switching Protocols\r\n";
+				s += "Upgrade: websocket\r\n";
+				s += "Connection: Upgrade\r\n";
+				s += "Sec-WebSocket-Accept: " + WSLPeer::compute_key_response(key) + "\r\n";
+				s += "\r\n";
+				response = s.utf8();
 				has_request = true;
-				WARN_PRINTS("Parsed, " + key);
 				break;
 			}
+			req_pos += 1;
 		}
 	}
 	if (has_request && response_sent < response.size() - 1) {

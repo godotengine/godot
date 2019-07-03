@@ -55,17 +55,14 @@ private:
 		Ref<StreamPeer> connection;
 
 		int time;
-		String request;
+		uint8_t req_buf[WSL_MAX_HEADER_SIZE];
+		int req_pos;
 		String key;
 		bool has_request;
 		CharString response;
 		int response_sent;
 
-		PendingPeer() {
-			time = 0;
-			has_request = false;
-			response_sent = 0;
-		}
+		PendingPeer();
 
 		Error do_handshake();
 	};

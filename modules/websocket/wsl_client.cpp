@@ -47,11 +47,16 @@ void WSLClient::_do_handshake() {
 		_requested += sent;
 
 	} else {
-		uint8_t byte = 0;
 		int read = 0;
-
 		while (true) {
-			Error err = _connection->get_partial_data(&byte, 1, read);
+			if (_resp_pos >= WSL_MAX_HEADER_SIZE) {
+				// Header is too big
+				disconnect_from_host();
+				_on_error();
+				ERR_EXPLAIN("Response headers too big");
+				ERR_FAIL();
+			}
+			Error err = _connection->get_partial_data(&_resp_buf[_resp_pos], 1, read);
 			if (err == ERR_FILE_EOF) {
 				// We got a disconnect.
 				disconnect_from_host();
@@ -66,16 +71,11 @@ void WSLClient::_do_handshake() {
 				// Busy, wait next poll.
 				break;
 			}
-			// TODO lots of allocs. Use a buffer.
-			_response += byte;
-			if (_response.size() > WSL_MAX_HEADER_SIZE) {
-				// Header is too big
-				disconnect_from_host();
-				_on_error();
-				ERR_EXPLAIN("Response headers too big");
-				ERR_FAIL();
-			}
-			if (_response.ends_with("\r\n\r\n")) {
+			// Check "\r\n\r\n" header terminator
+			char *r = (char *)_resp_buf;
+			int l = _resp_pos;
+			if (l > 3 && r[l] == '\n' && r[l - 1] == '\r' && r[l - 2] == '\n' && r[l - 3] == '\r') {
+				r[l - 3] = '\0';
 				String protocol;
 				// Response is over, verify headers and create peer.
 				if (!_verify_headers(protocol)) {
@@ -93,12 +93,14 @@ void WSLClient::_do_handshake() {
 				_peer->make_context(data, _in_buf_size, _in_pkt_size, _out_buf_size, _out_pkt_size);
 				_on_connect(protocol);
 			}
+			_resp_pos += 1;
 		}
 	}
 }
 
 bool WSLClient::_verify_headers(String &r_protocol) {
-	Vector<String> psa = _response.trim_suffix("\r\n\r\n").split("\r\n");
+	String s = (char *)_resp_buf;
+	Vector<String> psa = s.split("\r\n");
 	int len = psa.size();
 	if (len < 4) {
 		ERR_EXPLAIN("Not enough response headers.");
@@ -305,12 +307,17 @@ void WSLClient::disconnect_from_host(int p_code, String p_reason) {
 	_peer->close(p_code, p_reason);
 	_connection = Ref<StreamPeer>(NULL);
 	_tcp = Ref<StreamPeerTCP>(memnew(StreamPeerTCP));
-	_request = "";
-	_response = "";
+
 	_key = "";
 	_host = "";
+	_protocols.resize(0);
 	_use_ssl = false;
+
+	_request = "";
 	_requested = 0;
+
+	memset(_resp_buf, 0, sizeof(_resp_buf));
+	_resp_pos = 0;
 }
 
 IP_Address WSLClient::get_connected_host() const {
@@ -325,7 +332,7 @@ uint16_t WSLClient::get_connected_port() const {
 
 Error WSLClient::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) {
 	ERR_EXPLAIN("Buffers sizes can only be set before listening or connecting");
-	ERR_FAIL_COND_V(_ctx != NULL, FAILED);
+	ERR_FAIL_COND_V(_connection.is_valid(), FAILED);
 
 	_in_buf_size = nearest_shift(p_in_buffer - 1) + 10;
 	_in_pkt_size = nearest_shift(p_in_packets - 1);
@@ -340,10 +347,9 @@ WSLClient::WSLClient() {
 	_out_buf_size = nearest_shift((int)GLOBAL_GET(WSC_OUT_BUF) - 1) + 10;
 	_out_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_OUT_PKT) - 1);
 
-	_ctx = NULL;
 	_peer.instance();
 	_tcp.instance();
-	_requested = 0;
+	disconnect_from_host();
 }
 
 WSLClient::~WSLClient() {
