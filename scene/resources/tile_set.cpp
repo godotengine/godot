@@ -731,6 +731,8 @@ void TileSet::tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_sha
 Ref<Shape2D> TileSet::tile_get_shape(int p_id, int p_shape_id) const {
 
 	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<Shape2D>());
+	ERR_FAIL_COND_V(p_shape_id < 0, Ref<Shape2D>());
+
 	if (p_shape_id < tile_map[p_id].shapes_data.size())
 		return tile_map[p_id].shapes_data[p_shape_id].shape;
 
@@ -740,6 +742,7 @@ Ref<Shape2D> TileSet::tile_get_shape(int p_id, int p_shape_id) const {
 void TileSet::tile_set_shape_transform(int p_id, int p_shape_id, const Transform2D &p_offset) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
+	ERR_FAIL_COND(p_shape_id < 0);
 
 	if (p_shape_id >= tile_map[p_id].shapes_data.size())
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
@@ -750,6 +753,8 @@ void TileSet::tile_set_shape_transform(int p_id, int p_shape_id, const Transform
 Transform2D TileSet::tile_get_shape_transform(int p_id, int p_shape_id) const {
 
 	ERR_FAIL_COND_V(!tile_map.has(p_id), Transform2D());
+	ERR_FAIL_COND_V(p_shape_id < 0, Transform2D());
+
 	if (p_shape_id < tile_map[p_id].shapes_data.size())
 		return tile_map[p_id].shapes_data[p_shape_id].shape_transform;
 
@@ -780,6 +785,8 @@ void TileSet::tile_set_shape_one_way(int p_id, int p_shape_id, const bool p_one_
 bool TileSet::tile_get_shape_one_way(int p_id, int p_shape_id) const {
 
 	ERR_FAIL_COND_V(!tile_map.has(p_id), false);
+	ERR_FAIL_COND_V(p_shape_id < 0, false);
+
 	if (p_shape_id < tile_map[p_id].shapes_data.size())
 		return tile_map[p_id].shapes_data[p_shape_id].one_way_collision;
 
@@ -800,6 +807,8 @@ void TileSet::tile_set_shape_one_way_margin(int p_id, int p_shape_id, float p_ma
 float TileSet::tile_get_shape_one_way_margin(int p_id, int p_shape_id) const {
 
 	ERR_FAIL_COND_V(!tile_map.has(p_id), 0);
+	ERR_FAIL_COND_V(p_shape_id < 0, 0);
+
 	if (p_shape_id < tile_map[p_id].shapes_data.size())
 		return tile_map[p_id].shapes_data[p_shape_id].one_way_collision_margin;
 
