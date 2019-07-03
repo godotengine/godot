@@ -854,8 +854,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * scale);
 	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * scale);
 
-	theme->set_icon("logo", "Icons", make_icon(logo_png));
-
 	// Visual Node Ports
 	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 48 * scale);
 	theme->set_constant("port_grab_distance_vertical", "GraphEdit", 6 * scale);
