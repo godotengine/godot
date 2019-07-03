@@ -2326,6 +2326,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.is_enum = true;
 			} else if (return_info.class_name != StringName()) {
 				imethod.return_type.cname = return_info.class_name;
+				if (!imethod.is_virtual && ClassDB::is_parent_class(return_info.class_name, name_cache.type_Reference) && return_info.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+					/* clang-format off */
+					ERR_PRINTS("Return type is reference but hint is not " _STR(PROPERTY_HINT_RESOURCE_TYPE) "."
+							" Are you returning a reference type by pointer? Method: " + itype.name + "." + imethod.name);
+					/* clang-format on */
+					ERR_FAIL();
+				}
 			} else if (return_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 				imethod.return_type.cname = return_info.hint_string;
 			} else if (return_info.type == Variant::NIL && return_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
