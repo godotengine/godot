@@ -49,17 +49,22 @@ private:
 	int _in_pkt_size;
 	int _out_buf_size;
 	int _out_pkt_size;
-	wslay_event_context_ptr _ctx;
+
 	Ref<WSLPeer> _peer;
-	// XXX we could use HTTPClient with some hacking instead...
 	Ref<StreamPeerTCP> _tcp;
+	Ref<StreamPeer> _connection;
+
 	CharString _request;
+	int _requested;
+
+	uint8_t _resp_buf[WSL_MAX_HEADER_SIZE];
+	int _resp_pos;
+
 	String _response;
+
 	String _key;
 	String _host;
 	PoolVector<String> _protocols;
-	Ref<StreamPeer> _connection;
-	int _requested;
 	bool _use_ssl;
 
 	void _do_handshake();
