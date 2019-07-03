@@ -95,6 +95,7 @@ void PathSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_p
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
 
+	// Setting curve point positions
 	if (p_idx < c->get_point_count()) {
 
 		Plane p(gt.xform(original), p_camera->get_transform().basis.get_axis(2));
@@ -126,6 +127,7 @@ void PathSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_p
 
 	Vector3 inters;
 
+	// Setting curve in/out positions
 	if (p.intersects_ray(ray_from, ray_dir, &inters)) {
 
 		if (!PathEditorPlugin::singleton->is_handle_clicked()) {
@@ -135,9 +137,13 @@ void PathSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_p
 		}
 
 		Vector3 local = gi.xform(inters) - base;
+		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+			float snap = SpatialEditor::get_singleton()->get_translate_snap();
+			local.snap(Vector3(snap, snap, snap));
+		}
+
 		if (t == 0) {
 			c->set_point_in(idx, local);
-
 			if (PathEditorPlugin::singleton->mirror_angle_enabled())
 				c->set_point_out(idx, PathEditorPlugin::singleton->mirror_length_enabled() ? -local : (-local.normalized() * orig_out_length));
 		} else {
