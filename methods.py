@@ -26,7 +26,7 @@ def disable_warnings(self):
         warn_flags = ['/Wall', '/W4', '/W3', '/W2', '/W1', '/WX']
         self.Append(CCFLAGS=['/w'])
         self.Append(CFLAGS=['/w'])
-        self.Append(CPPFLAGS=['/w'])
+        self.Append(CXXFLAGS=['/w'])
         self['CCFLAGS'] = [x for x in self['CCFLAGS'] if not x in warn_flags]
         self['CFLAGS'] = [x for x in self['CFLAGS'] if not x in warn_flags]
         self['CXXFLAGS'] = [x for x in self['CXXFLAGS'] if not x in warn_flags]

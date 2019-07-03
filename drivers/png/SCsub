@@ -34,9 +34,9 @@ if env['builtin_libpng']:
     import os
     use_neon = "neon_enabled" in env and env["neon_enabled"] and os.name != "nt"
     if use_neon:
-        env_png.Append(CPPFLAGS=["-DPNG_ARM_NEON_OPT=2"])
+        env_png.Append(CPPDEFINES=[("PNG_ARM_NEON_OPT", 2)])
     else:
-        env_png.Append(CPPFLAGS=["-DPNG_ARM_NEON_OPT=0"])
+        env_png.Append(CPPDEFINES=[("PNG_ARM_NEON_OPT", 0)])
 
     env_thirdparty = env_png.Clone()
     env_thirdparty.disable_warnings()
