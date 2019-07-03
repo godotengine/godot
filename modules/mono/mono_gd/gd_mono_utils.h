@@ -41,7 +41,7 @@
 #include "core/object.h"
 #include "core/reference.h"
 
-#define UNLIKELY_UNHANDLED_EXCEPTION(m_exc)            \
+#define UNHANDLED_EXCEPTION(m_exc)                     \
 	if (unlikely(m_exc != NULL)) {                     \
 		GDMonoUtils::debug_unhandled_exception(m_exc); \
 		GD_UNREACHABLE();                              \
@@ -78,16 +78,16 @@ typedef void (*GenericIDictionaryToDictionary)(MonoObject *, Dictionary *, MonoE
 
 namespace Marshal {
 
-MonoBoolean type_is_generic_array(MonoReflectionType *p_reftype);
-MonoBoolean type_is_generic_dictionary(MonoReflectionType *p_reftype);
+bool type_is_generic_array(MonoReflectionType *p_reftype);
+bool type_is_generic_dictionary(MonoReflectionType *p_reftype);
 
 void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype);
 void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
 
-MonoBoolean generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype);
-MonoBoolean generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype);
-MonoBoolean generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_elem_reftype);
-MonoBoolean generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
+bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype);
+bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype);
+bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_elem_reftype);
+bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
 
 GDMonoClass *make_generic_array_type(MonoReflectionType *p_elem_reftype);
 GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
@@ -157,6 +157,7 @@ struct MonoCache {
 	GDMonoClass *class_Array;
 	GDMonoClass *class_Dictionary;
 	GDMonoClass *class_MarshalUtils;
+	GDMonoClass *class_ISerializationListener;
 
 #ifdef DEBUG_ENABLED
 	GDMonoClass *class_DebuggingUtils;
@@ -235,8 +236,17 @@ void update_godot_api_cache();
 inline void clear_corlib_cache() {
 	mono_cache.clear_corlib_cache();
 }
+
 inline void clear_godot_api_cache() {
 	mono_cache.clear_godot_api_cache();
+}
+
+_FORCE_INLINE_ bool tools_godot_api_check() {
+#ifdef TOOLS_ENABLED
+	return mono_cache.godot_api_cache_updated;
+#else
+	return true; // Assume it's updated if this was called, otherwise it's a bug
+#endif
 }
 
 _FORCE_INLINE_ void hash_combine(uint32_t &p_hash, const uint32_t &p_with_hash) {

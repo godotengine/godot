@@ -159,7 +159,7 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 
 			// The order in which we check the following interfaces is very important (dictionaries and generics first)
 
-			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type_class->get_mono_type());
+			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), type_class->get_mono_type());
 
 			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype)) {
 				return Variant::DICTIONARY;
@@ -179,7 +179,7 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 		} break;
 
 		case MONO_TYPE_GENERICINST: {
-			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, p_type.type_class->get_mono_type());
+			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), p_type.type_class->get_mono_type());
 
 			if (GDMonoUtils::Marshal::type_is_generic_dictionary(reftype)) {
 				return Variant::DICTIONARY;
@@ -217,7 +217,7 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_elem_type) {
 	switch (p_array_type.type_encoding) {
 		case MONO_TYPE_GENERICINST: {
-			MonoReflectionType *array_reftype = mono_type_get_object(SCRIPTS_DOMAIN, p_array_type.type_class->get_mono_type());
+			MonoReflectionType *array_reftype = mono_type_get_object(mono_domain_get(), p_array_type.type_class->get_mono_type());
 
 			if (GDMonoUtils::Marshal::type_is_generic_array(array_reftype)) {
 				MonoReflectionType *elem_reftype;
@@ -244,7 +244,7 @@ bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_
 bool try_get_dictionary_key_value_types(const ManagedType &p_dictionary_type, ManagedType &r_key_type, ManagedType &r_value_type) {
 	switch (p_dictionary_type.type_encoding) {
 		case MONO_TYPE_GENERICINST: {
-			MonoReflectionType *dict_reftype = mono_type_get_object(SCRIPTS_DOMAIN, p_dictionary_type.type_class->get_mono_type());
+			MonoReflectionType *dict_reftype = mono_type_get_object(mono_domain_get(), p_dictionary_type.type_class->get_mono_type());
 
 			if (GDMonoUtils::Marshal::type_is_generic_dictionary(dict_reftype)) {
 				MonoReflectionType *key_reftype;
@@ -539,7 +539,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 
 			// The order in which we check the following interfaces is very important (dictionaries and generics first)
 
-			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type_class->get_mono_type());
+			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), type_class->get_mono_type());
 
 			MonoReflectionType *key_reftype, *value_reftype;
 			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype, &key_reftype, &value_reftype)) {
@@ -558,7 +558,11 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			}
 
 			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
-				return GDMonoUtils::create_managed_from(p_var->operator Array(), CACHED_CLASS(Array));
+				if (GDMonoUtils::tools_godot_api_check()) {
+					return GDMonoUtils::create_managed_from(p_var->operator Array(), CACHED_CLASS(Array));
+				} else {
+					return (MonoObject *)GDMonoMarshal::Array_to_mono_array(p_var->operator Array());
+				}
 			}
 		} break;
 		case MONO_TYPE_OBJECT: {
@@ -652,7 +656,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			}
 			break;
 			case MONO_TYPE_GENERICINST: {
-				MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, p_type.type_class->get_mono_type());
+				MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), p_type.type_class->get_mono_type());
 
 				if (GDMonoUtils::Marshal::type_is_generic_dictionary(reftype)) {
 					return GDMonoUtils::create_managed_from(p_var->operator Dictionary(), p_type.type_class);
@@ -681,7 +685,11 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 				}
 
 				if (p_type.type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
-					return GDMonoUtils::create_managed_from(p_var->operator Array(), CACHED_CLASS(Array));
+					if (GDMonoUtils::tools_godot_api_check()) {
+						return GDMonoUtils::create_managed_from(p_var->operator Array(), CACHED_CLASS(Array));
+					} else {
+						return (MonoObject *)GDMonoMarshal::Array_to_mono_array(p_var->operator Array());
+					}
 				}
 			} break;
 		} break;
@@ -831,20 +839,20 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 			if (CACHED_CLASS(Array) == type_class) {
 				MonoException *exc = NULL;
 				Array *ptr = invoke_method_thunk(CACHED_METHOD_THUNK(Array, GetPtr), p_obj, &exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
+				UNHANDLED_EXCEPTION(exc);
 				return ptr ? Variant(*ptr) : Variant();
 			}
 
 			if (CACHED_CLASS(Dictionary) == type_class) {
 				MonoException *exc = NULL;
 				Dictionary *ptr = invoke_method_thunk(CACHED_METHOD_THUNK(Dictionary, GetPtr), p_obj, &exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
+				UNHANDLED_EXCEPTION(exc);
 				return ptr ? Variant(*ptr) : Variant();
 			}
 
 			// The order in which we check the following interfaces is very important (dictionaries and generics first)
 
-			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type_class->get_mono_type());
+			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), type_class->get_mono_type());
 
 			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype)) {
 				return GDMonoUtils::Marshal::generic_idictionary_to_dictionary(p_obj);
@@ -864,19 +872,19 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 		} break;
 
 		case MONO_TYPE_GENERICINST: {
-			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type.type_class->get_mono_type());
+			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), type.type_class->get_mono_type());
 
 			if (GDMonoUtils::Marshal::type_is_generic_dictionary(reftype)) {
 				MonoException *exc = NULL;
 				MonoObject *ret = type.type_class->get_method("GetPtr")->invoke(p_obj, &exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
+				UNHANDLED_EXCEPTION(exc);
 				return *unbox<Dictionary *>(ret);
 			}
 
 			if (GDMonoUtils::Marshal::type_is_generic_array(reftype)) {
 				MonoException *exc = NULL;
 				MonoObject *ret = type.type_class->get_method("GetPtr")->invoke(p_obj, &exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
+				UNHANDLED_EXCEPTION(exc);
 				return *unbox<Array *>(ret);
 			}
 

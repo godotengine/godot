@@ -315,7 +315,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 
 			// The order in which we check the following interfaces is very important (dictionaries and generics first)
 
-			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type_class->get_mono_type());
+			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), type_class->get_mono_type());
 
 			MonoReflectionType *key_reftype, *value_reftype;
 			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype, &key_reftype, &value_reftype)) {
@@ -340,9 +340,15 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 			}
 
 			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
-				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(), CACHED_CLASS(Array));
-				mono_field_set_value(p_object, mono_field, managed);
-				break;
+				if (GDMonoUtils::tools_godot_api_check()) {
+					MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(), CACHED_CLASS(Array));
+					mono_field_set_value(p_object, mono_field, managed);
+					break;
+				} else {
+					MonoObject *managed = (MonoObject *)GDMonoMarshal::Array_to_mono_array(p_value.operator Array());
+					mono_field_set_value(p_object, mono_field, managed);
+					break;
+				}
 			}
 
 			ERR_EXPLAIN(String() + "Attempted to set the value of a field of unmarshallable type: " + type_class->get_name());
@@ -450,7 +456,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 		} break;
 
 		case MONO_TYPE_GENERICINST: {
-			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type.type_class->get_mono_type());
+			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), type.type_class->get_mono_type());
 
 			if (GDMonoUtils::Marshal::type_is_generic_dictionary(reftype)) {
 				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Dictionary(), type.type_class);
@@ -489,9 +495,15 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 			}
 
 			if (type.type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
-				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(), CACHED_CLASS(Array));
-				mono_field_set_value(p_object, mono_field, managed);
-				break;
+				if (GDMonoUtils::tools_godot_api_check()) {
+					MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(), CACHED_CLASS(Array));
+					mono_field_set_value(p_object, mono_field, managed);
+					break;
+				} else {
+					MonoObject *managed = (MonoObject *)GDMonoMarshal::Array_to_mono_array(p_value.operator Array());
+					mono_field_set_value(p_object, mono_field, managed);
+					break;
+				}
 			}
 		} break;
 

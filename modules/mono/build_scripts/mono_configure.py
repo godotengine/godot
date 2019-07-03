@@ -1,10 +1,8 @@
-import imp
 import os
 import os.path
 import sys
 import subprocess
 
-from distutils.version import LooseVersion
 from SCons.Script import Dir, Environment
 
 if os.name == 'nt':
@@ -58,6 +56,12 @@ def configure(env, env_mono):
 
     mono_lib_names = ['mono-2.0-sgen', 'monosgen-2.0']
 
+    is_travis = os.environ.get('TRAVIS') == 'true'
+
+    if is_travis:
+        # Travis CI may have a Mono version lower than 5.12
+        env_mono.Append(CPPDEFINES=['NO_PENDING_EXCEPTIONS'])
+
     if is_android and not env['android_arch'] in android_arch_dirs:
         raise RuntimeError('This module does not support for the specified \'android_arch\': ' + env['android_arch'])
 
@@ -82,9 +86,6 @@ def configure(env, env_mono):
             raise RuntimeError("Mono installation directory not found; specify one manually with the 'mono_prefix' SCons parameter")
 
         print('Found Mono root directory: ' + mono_root)
-
-        mono_version = mono_root_try_find_mono_version(mono_root)
-        configure_for_mono_version(env_mono, mono_version)
 
         mono_lib_path = os.path.join(mono_root, 'lib')
 
@@ -164,9 +165,6 @@ def configure(env, env_mono):
         if mono_root:
             print('Found Mono root directory: ' + mono_root)
 
-            mono_version = mono_root_try_find_mono_version(mono_root)
-            configure_for_mono_version(env_mono, mono_version)
-
             mono_lib_path = os.path.join(mono_root, 'lib')
 
             env.Append(LIBPATH=mono_lib_path)
@@ -208,9 +206,6 @@ def configure(env, env_mono):
 
             # TODO: Add option to force using pkg-config
             print('Mono root directory not found. Using pkg-config instead')
-
-            mono_version = pkgconfig_try_find_mono_version()
-            configure_for_mono_version(env_mono, mono_version)
 
             env.ParseConfig('pkg-config monosgen-2 --libs')
             env_mono.ParseConfig('pkg-config monosgen-2 --cflags')
@@ -401,17 +396,6 @@ def copy_mono_shared_libs(env, mono_root, target_mono_root_dir):
                 copy_if_exists(os.path.join(mono_root, 'lib', lib_file_name), target_mono_lib_dir)
 
 
-def configure_for_mono_version(env, mono_version):
-    if mono_version is None:
-        if os.getenv('MONO_VERSION'):
-            mono_version = os.getenv('MONO_VERSION')
-        else:
-            raise RuntimeError("Mono JIT compiler version not found; specify one manually with the 'MONO_VERSION' environment variable")
-    print('Found Mono JIT compiler version: ' + str(mono_version))
-    if mono_version >= LooseVersion('5.12.0'):
-        env.Append(CPPDEFINES=['HAS_PENDING_EXCEPTIONS'])
-
-
 def pkgconfig_try_find_mono_root(mono_lib_names, sharedlib_ext):
     tmpenv = Environment()
     tmpenv.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
@@ -421,36 +405,3 @@ def pkgconfig_try_find_mono_root(mono_lib_names, sharedlib_ext):
         if name_found and os.path.isdir(os.path.join(hint_dir, '..', 'include', 'mono-2.0')):
             return os.path.join(hint_dir, '..')
     return ''
-
-
-def pkgconfig_try_find_mono_version():
-    from compat import decode_utf8
-
-    lines = subprocess.check_output(['pkg-config', 'monosgen-2', '--modversion']).splitlines()
-    greater_version = None
-    for line in lines:
-        try:
-            version = LooseVersion(decode_utf8(line))
-            if greater_version is None or version > greater_version:
-                greater_version = version
-        except ValueError:
-            pass
-    return greater_version
-
-
-def mono_root_try_find_mono_version(mono_root):
-    from compat import decode_utf8
-
-    mono_bin = os.path.join(mono_root, 'bin')
-    if os.path.isfile(os.path.join(mono_bin, 'mono')):
-        mono_binary = os.path.join(mono_bin, 'mono')
-    elif os.path.isfile(os.path.join(mono_bin, 'mono.exe')):
-        mono_binary = os.path.join(mono_bin, 'mono.exe')
-    else:
-        return None
-    output = subprocess.check_output([mono_binary, '--version'])
-    first_line = decode_utf8(output.splitlines()[0])
-    try:
-        return LooseVersion(first_line.split()[len('Mono JIT compiler version'.split())])
-    except (ValueError, IndexError):
-        return None

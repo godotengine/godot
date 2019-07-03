@@ -59,6 +59,20 @@ String _get_expected_build_config() {
 #endif
 }
 
+String _get_expected_api_build_config() {
+#ifdef TOOLS_ENABLED
+	return "Debug";
+#else
+
+#ifdef DEBUG_ENABLED
+	return "Debug";
+#else
+	return "Release";
+#endif
+
+#endif
+}
+
 String _get_mono_user_dir() {
 #ifdef TOOLS_ENABLED
 	if (EditorSettings::get_singleton()) {
@@ -88,6 +102,7 @@ class _GodotSharpDirs {
 public:
 	String res_data_dir;
 	String res_metadata_dir;
+	String res_assemblies_base_dir;
 	String res_assemblies_dir;
 	String res_config_dir;
 	String res_temp_dir;
@@ -118,7 +133,8 @@ private:
 	_GodotSharpDirs() {
 		res_data_dir = "res://.mono";
 		res_metadata_dir = res_data_dir.plus_file("metadata");
-		res_assemblies_dir = res_data_dir.plus_file("assemblies");
+		res_assemblies_base_dir = res_data_dir.plus_file("assemblies");
+		res_assemblies_dir = res_assemblies_base_dir.plus_file(_get_expected_api_build_config());
 		res_config_dir = res_data_dir.plus_file("etc").plus_file("mono");
 
 		// TODO use paths from csproj
@@ -229,6 +245,10 @@ String get_res_data_dir() {
 
 String get_res_metadata_dir() {
 	return _GodotSharpDirs::get_singleton().res_metadata_dir;
+}
+
+String get_res_assemblies_base_dir() {
+	return _GodotSharpDirs::get_singleton().res_assemblies_base_dir;
 }
 
 String get_res_assemblies_dir() {

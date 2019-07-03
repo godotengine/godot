@@ -41,7 +41,7 @@ String GDMonoClass::get_full_name(MonoClass *p_mono_class) {
 
 	MonoException *exc = NULL;
 	MonoString *str = GDMonoUtils::object_to_string((MonoObject *)type_obj, &exc);
-	UNLIKELY_UNHANDLED_EXCEPTION(exc);
+	UNHANDLED_EXCEPTION(exc);
 
 	return GDMonoMarshal::mono_string_to_godot(str);
 }
@@ -74,16 +74,13 @@ bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
 }
 
 GDMonoClass *GDMonoClass::get_parent_class() {
+	MonoClass *parent_mono_class = mono_class_get_parent(mono_class);
+	return parent_mono_class ? GDMono::get_singleton()->get_class(parent_mono_class) : NULL;
+}
 
-	if (assembly) {
-		MonoClass *parent_mono_class = mono_class_get_parent(mono_class);
-
-		if (parent_mono_class) {
-			return GDMono::get_singleton()->get_class(parent_mono_class);
-		}
-	}
-
-	return NULL;
+GDMonoClass *GDMonoClass::get_nesting_class() {
+	MonoClass *nesting_type = mono_class_get_nesting_type(mono_class);
+	return nesting_type ? GDMono::get_singleton()->get_class(nesting_type) : NULL;
 }
 
 #ifdef TOOLS_ENABLED
