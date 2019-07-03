@@ -56,6 +56,10 @@
 #include "main/main.h"
 #endif
 
+#ifdef ANDROID_ENABLED
+#include "android_mono_config.gen.h"
+#endif
+
 #define OUT_OF_SYNC_ERR_MESSAGE(m_assembly_name) "The assembly '" m_assembly_name "' is out of sync. "                    \
 												 "This error is expected if you just upgraded to a newer Godot version. " \
 												 "Building the project will update the assembly to the correct version."
@@ -287,7 +291,11 @@ void GDMono::initialize() {
 	gdmono_debug_init();
 #endif
 
+#ifdef ANDROID_ENABLED
+	mono_config_parse_memory(get_godot_android_mono_config().utf8().get_data());
+#else
 	mono_config_parse(NULL);
+#endif
 
 	mono_install_unhandled_exception_hook(&unhandled_exception_hook, NULL);
 
@@ -651,12 +659,13 @@ bool GDMono::_load_project_assembly() {
 	if (project_assembly)
 		return true;
 
-	String name = ProjectSettings::get_singleton()->get("application/config/name");
-	if (name.empty()) {
-		name = "UnnamedProject";
+	String appname = ProjectSettings::get_singleton()->get("application/config/name");
+	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
+	if (appname_safe.empty()) {
+		appname_safe = "UnnamedProject";
 	}
 
-	bool success = load_assembly(name, &project_assembly);
+	bool success = load_assembly(appname_safe, &project_assembly);
 
 	if (success) {
 		mono_assembly_set_main(project_assembly->get_assembly());
