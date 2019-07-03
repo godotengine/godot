@@ -23,8 +23,6 @@ android_files = [
 ]
 
 env_android = env.Clone()
-if env['target'] == "profile":
-    env_android.Append(CPPFLAGS=['-DPROFILER_ENABLED'])
 
 android_objects = []
 for x in android_files:

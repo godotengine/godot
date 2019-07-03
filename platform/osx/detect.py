@@ -56,7 +56,7 @@ def configure(env):
             env.Prepend(CCFLAGS=['-O2'])
         else: #optimize for size
             env.Prepend(CCFLAGS=['-Os'])
-        env.Prepend(CPPFLAGS=['-DDEBUG_ENABLED'])
+        env.Prepend(CPPDEFINES=['DEBUG_ENABLED'])
         if (env["debug_symbols"] == "yes"):
             env.Prepend(CCFLAGS=['-g1'])
         if (env["debug_symbols"] == "full"):
@@ -64,7 +64,7 @@ def configure(env):
 
     elif (env["target"] == "debug"):
         env.Prepend(CCFLAGS=['-g3'])
-        env.Prepend(CPPFLAGS=['-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Prepend(CPPDEFINES=['DEBUG_ENABLED', 'DEBUG_MEMORY_ENABLED'])
 
     ## Architecture
 
@@ -90,7 +90,7 @@ def configure(env):
             env['AR'] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ar"
             env['RANLIB'] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ranlib"
             env['AS'] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-as"
-            env.Append(CPPFLAGS=['-D__MACPORTS__']) #hack to fix libvpx MM256_BROADCASTSI128_SI256 define
+            env.Append(CPPDEFINES=['__MACPORTS__']) #hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
         detect_darwin_sdk_path('osx', env)
         env.Append(CCFLAGS=['-isysroot', '$MACOS_SDK_PATH'])
@@ -112,10 +112,10 @@ def configure(env):
         env['AR'] = basecmd + "ar"
         env['RANLIB'] = basecmd + "ranlib"
         env['AS'] = basecmd + "as"
-        env.Append(CPPFLAGS=['-D__MACPORTS__']) #hack to fix libvpx MM256_BROADCASTSI128_SI256 define
+        env.Append(CPPDEFINES=['__MACPORTS__']) #hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
     if (env["CXX"] == "clang++"):
-        env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
+        env.Append(CPPDEFINES=['TYPED_METHOD_BIND'])
         env["CC"] = "clang"
         env["LINK"] = "clang++"
 
@@ -127,7 +127,7 @@ def configure(env):
     ## Flags
 
     env.Prepend(CPPPATH=['#platform/osx'])
-    env.Append(CPPFLAGS=['-DOSX_ENABLED', '-DUNIX_ENABLED', '-DGLES_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED'])
+    env.Append(CPPDEFINES=['OSX_ENABLED', 'UNIX_ENABLED', 'GLES_ENABLED', 'APPLE_STYLE_KEYS', 'COREAUDIO_ENABLED', 'COREMIDI_ENABLED'])
     env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-framework', 'OpenGL', '-framework', 'AGL', '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-framework', 'CoreMIDI', '-lz', '-framework', 'IOKit', '-framework', 'ForceFeedback', '-framework', 'AVFoundation', '-framework', 'CoreMedia', '-framework', 'CoreVideo'])
     env.Append(LIBS=['pthread'])
 

@@ -98,7 +98,7 @@ def configure(env):
             env.Prepend(CCFLAGS=['-O2'])
         else: #optimize for size
             env.Prepend(CCFLAGS=['-Os'])
-        env.Prepend(CPPFLAGS=['-DDEBUG_ENABLED'])
+        env.Prepend(CPPDEFINES=['DEBUG_ENABLED'])
 
         if (env["debug_symbols"] == "yes"):
             env.Prepend(CCFLAGS=['-g1'])
@@ -107,7 +107,7 @@ def configure(env):
 
     elif (env["target"] == "debug"):
         env.Prepend(CCFLAGS=['-g3'])
-        env.Prepend(CPPFLAGS=['-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Prepend(CPPDEFINES=['DEBUG_ENABLED', 'DEBUG_MEMORY_ENABLED'])
         env.Append(LINKFLAGS=['-rdynamic'])
 
     ## Architecture
@@ -127,7 +127,7 @@ def configure(env):
             env["CC"] = "clang"
             env["CXX"] = "clang++"
             env["LINK"] = "clang++"
-        env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
+        env.Append(CPPDEFINES=['TYPED_METHOD_BIND'])
         env.extra_suffix = ".llvm" + env.extra_suffix
 
     if env['use_lld']:
@@ -197,7 +197,7 @@ def configure(env):
     env.ParseConfig('pkg-config xi --cflags --libs')
 
     if (env['touch']):
-        env.Append(CPPFLAGS=['-DTOUCH_ENABLED'])
+        env.Append(CPPDEFINES=['TOUCH_ENABLED'])
 
     # FIXME: Check for existence of the libs before parsing their flags with pkg-config
 
@@ -283,7 +283,7 @@ def configure(env):
 
     if (os.system("pkg-config --exists alsa") == 0): # 0 means found
         print("Enabling ALSA")
-        env.Append(CPPFLAGS=["-DALSA_ENABLED", "-DALSAMIDI_ENABLED"])
+        env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
 	# Don't parse --cflags, we don't need to add /usr/include/alsa to include path
         env.ParseConfig('pkg-config alsa --libs')
     else:
@@ -292,18 +292,18 @@ def configure(env):
     if env['pulseaudio']:
         if (os.system("pkg-config --exists libpulse") == 0): # 0 means found
             print("Enabling PulseAudio")
-            env.Append(CPPFLAGS=["-DPULSEAUDIO_ENABLED"])
+            env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
             env.ParseConfig('pkg-config --cflags --libs libpulse')
         else:
             print("PulseAudio development libraries not found, disabling driver")
 
     if (platform.system() == "Linux"):
-        env.Append(CPPFLAGS=["-DJOYDEV_ENABLED"])
+        env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
 
         if env['udev']:
             if (os.system("pkg-config --exists libudev") == 0): # 0 means found
                 print("Enabling udev support")
-                env.Append(CPPFLAGS=["-DUDEV_ENABLED"])
+                env.Append(CPPDEFINES=["UDEV_ENABLED"])
                 env.ParseConfig('pkg-config libudev --cflags --libs')
             else:
                 print("libudev development libraries not found, disabling udev support")
@@ -313,7 +313,7 @@ def configure(env):
         env.ParseConfig('pkg-config zlib --cflags --libs')
 
     env.Prepend(CPPPATH=['#platform/x11'])
-    env.Append(CPPFLAGS=['-DX11_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED'])
+    env.Append(CPPDEFINES=['X11_ENABLED', 'UNIX_ENABLED', 'OPENGL_ENABLED', 'GLES_ENABLED'])
     env.Append(LIBS=['GL', 'pthread'])
 
     if (platform.system() == "Linux"):

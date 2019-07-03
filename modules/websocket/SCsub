@@ -84,7 +84,7 @@ if env['builtin_libwebsockets'] and not env["platform"] == "javascript": # alrea
         env_lws.Prepend(CPPPATH=[thirdparty_dir + helper_dir])
 
     if env["platform"] == "uwp":
-        env_lws.Append(CPPFLAGS=["/DLWS_MINGW_SUPPORT"])
+        env_lws.Append(CPPDEFINES=["LWS_MINGW_SUPPORT"])
 
     env_thirdparty = env_lws.Clone()
     env_thirdparty.disable_warnings()

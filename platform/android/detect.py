@@ -144,20 +144,21 @@ def configure(env):
         if (env["optimize"] == "speed"): #optimize for speed (default)
             env.Append(LINKFLAGS=['-O2'])
             env.Append(CCFLAGS=['-O2', '-fomit-frame-pointer'])
-            env.Append(CPPFLAGS=['-DNDEBUG'])
+            env.Append(CPPDEFINES=['NDEBUG'])
         else: #optimize for size
             env.Append(CCFLAGS=['-Os'])
-            env.Append(CPPFLAGS=['-DNDEBUG'])
+            env.Append(CPPDEFINES=['NDEBUG'])
             env.Append(LINKFLAGS=['-Os'])
 
         if (can_vectorize):
             env.Append(CCFLAGS=['-ftree-vectorize'])
         if (env["target"] == "release_debug"):
-            env.Append(CPPFLAGS=['-DDEBUG_ENABLED'])
+            env.Append(CPPDEFINES=['DEBUG_ENABLED'])
     elif (env["target"] == "debug"):
         env.Append(LINKFLAGS=['-O0'])
         env.Append(CCFLAGS=['-O0', '-g', '-fno-limit-debug-info'])
-        env.Append(CPPFLAGS=['-D_DEBUG', '-UNDEBUG', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Append(CPPDEFINES=['_DEBUG', 'DEBUG_ENABLED', 'DEBUG_MEMORY_ENABLED'])
+        env.Append(CPPFLAGS=['-UNDEBUG'])
 
     ## Compiler configuration
 
@@ -215,7 +216,7 @@ def configure(env):
     else:
         env.Append(CXXFLAGS=['-fno-rtti', '-fno-exceptions'])
         # Don't use dynamic_cast, necessary with no-rtti.
-        env.Append(CPPFLAGS=['-DNO_SAFE_CAST'])
+        env.Append(CPPDEFINES=['NO_SAFE_CAST'])
 
     ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
     if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("15.0.4075724"):
@@ -225,13 +226,13 @@ def configure(env):
         env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include/" + abi_subpath])
         env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/android/support/include"])
         # For unified headers this define has to be set manually
-        env.Append(CPPFLAGS=["-D__ANDROID_API__=" + str(get_platform(env['ndk_platform']))])
+        env.Append(CPPDEFINES=[('__ANDROID_API__', str(get_platform(env['ndk_platform'])))])
     else:
         print("Using NDK deprecated headers")
         env.Append(CPPFLAGS=["-isystem", lib_sysroot + "/usr/include"])
 
     env.Append(CCFLAGS='-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing'.split())
-    env.Append(CPPFLAGS='-DNO_STATVFS -DGLES_ENABLED'.split())
+    env.Append(CPPDEFINES=['NO_STATVFS', 'GLES_ENABLED'])
 
     env['neon_enabled'] = False
     if env['android_arch'] == 'x86':
@@ -245,18 +246,18 @@ def configure(env):
     elif env["android_arch"] == "armv7":
         target_opts = ['-target', 'armv7-none-linux-androideabi']
         env.Append(CCFLAGS='-march=armv7-a -mfloat-abi=softfp'.split())
-        env.Append(CPPFLAGS='-D__ARM_ARCH_7__ -D__ARM_ARCH_7A__'.split())
+        env.Append(CPPDEFINES=['__ARM_ARCH_7__', '__ARM_ARCH_7A__'])
         if env['android_neon']:
             env['neon_enabled'] = True
             env.Append(CCFLAGS=['-mfpu=neon'])
-            env.Append(CPPFLAGS=['-D__ARM_NEON__'])
+            env.Append(CPPDEFINES=['__ARM_NEON__'])
         else:
             env.Append(CCFLAGS=['-mfpu=vfpv3-d16'])
 
     elif env["android_arch"] == "arm64v8":
         target_opts = ['-target', 'aarch64-none-linux-android']
         env.Append(CCFLAGS=['-mfix-cortex-a53-835769'])
-        env.Append(CPPFLAGS=['-D__ARM_ARCH_8A__'])
+        env.Append(CPPDEFINES=['__ARM_ARCH_8A__'])
 
     env.Append(CCFLAGS=target_opts)
     env.Append(CCFLAGS=common_opts)
@@ -289,7 +290,7 @@ def configure(env):
                         '/toolchains/' + target_subpath + '/prebuilt/' + host_subpath + '/' + abi_subpath + '/lib'])
 
     env.Prepend(CPPPATH=['#platform/android'])
-    env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL'])
+    env.Append(CPPDEFINES=['ANDROID_ENABLED', 'UNIX_ENABLED', 'NO_FCNTL'])
     env.Append(LIBS=['OpenSLES', 'EGL', 'GLESv3', 'GLESv2', 'android', 'log', 'z', 'dl'])
 
 # Return NDK version string in source.properties (adapted from the Chromium project).
