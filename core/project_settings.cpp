@@ -83,6 +83,10 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		// `plus_file("")` is an easy way to ensure we have a trailing '/'.
 		const String res_path = resource_path.plus_file("");
 
+		// DirAccess::get_current_dir() is not guaranteed to return a path that with a trailing '/',
+		// so we must make sure we have it as well in order to compare with 'res_path'.
+		cwd = cwd.plus_file("");
+
 		if (!cwd.begins_with(res_path)) {
 			return p_path;
 		};
