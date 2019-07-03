@@ -346,8 +346,10 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 				snap_ignore = false;
 			}
 
-			if (!snap_ignore) {
-				cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
+			if (!snap_ignore && SpatialEditor::get_singleton()->is_snap_enabled()) {
+				cpoint = cpoint.snapped(Vector2(
+						SpatialEditor::get_singleton()->get_translate_snap(),
+						SpatialEditor::get_singleton()->get_translate_snap()));
 			}
 			edited_point_pos = cpoint;
 
