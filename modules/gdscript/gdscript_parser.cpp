@@ -826,11 +826,12 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					}
 
 					// Check parents for the constant
-					if (!bfn && cln->extends_file != StringName()) {
-						Ref<GDScript> parent = ResourceLoader::load(cln->extends_file);
-						if (parent.is_valid() && parent->is_valid()) {
+					if (!bfn) {
+						// Using current_class instead of cln here, since cln is const*
+						_determine_inheritance(current_class, false);
+						if (cln->base_type.has_type && cln->base_type.kind == DataType::GDSCRIPT && cln->base_type.script_type->is_valid()) {
 							Map<StringName, Variant> parent_constants;
-							parent->get_constants(&parent_constants);
+							current_class->base_type.script_type->get_constants(&parent_constants);
 							if (parent_constants.has(identifier)) {
 								ConstantNode *constant = alloc_node<ConstantNode>();
 								constant->value = parent_constants[identifier];
@@ -5150,9 +5151,11 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 	}
 }
 
-void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
+void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive) {
 
-	if (p_class->extends_used) {
+	if (p_class->base_type.has_type) {
+		// Already determined
+	} else if (p_class->extends_used) {
 		//do inheritance
 		String path = p_class->extends_file;
 
@@ -5347,9 +5350,11 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
 		p_class->base_type.native_type = "Reference";
 	}
 
-	// Recursively determine subclasses
-	for (int i = 0; i < p_class->subclasses.size(); i++) {
-		_determine_inheritance(p_class->subclasses[i]);
+	if (p_recursive) {
+		// Recursively determine subclasses
+		for (int i = 0; i < p_class->subclasses.size(); i++) {
+			_determine_inheritance(p_class->subclasses[i], p_recursive);
+		}
 	}
 }
 

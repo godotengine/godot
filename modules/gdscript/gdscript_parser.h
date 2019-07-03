@@ -599,7 +599,7 @@ private:
 	void _parse_class(ClassNode *p_class);
 	bool _end_statement();
 
-	void _determine_inheritance(ClassNode *p_class);
+	void _determine_inheritance(ClassNode *p_class, bool p_recursive = true);
 	bool _parse_type(DataType &r_type, bool p_can_be_void = false);
 	DataType _resolve_type(const DataType &p_source, int p_line);
 	DataType _type_from_variant(const Variant &p_value) const;
