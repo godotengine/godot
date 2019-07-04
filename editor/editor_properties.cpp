@@ -2186,7 +2186,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				if (get_edited_property() == "script") {
 					EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(get_edited_object()));
 				} else {
-					// Copied from editor/scene_tree_dock.cpp#L380 and edited for our purposes
+					// Copied from editor/scene_tree_dock.cpp#_tool_selected and edited for our purposes
 					// There's a good chance we could merge this back into that code with some modifications
 					//Ref<Script> existing = get_edited_object()->get(get_edited_property());
 					//Script *existing = Object::cast_to<Script>(get_edited_object()->get(get_edited_property()));
@@ -2358,7 +2358,7 @@ void EditorPropertyResource::_resource_preview(const String &p_path, const Ref<T
 
 void EditorPropertyResource::_script_created(Ref<Script> p_script) {
 
-	// Based partially upon editor/scene_tree_dock.cpp#L1628
+	// Based partially upon editor/scene_tree_dock.cpp#_script_created
 	emit_changed(get_edited_property(), p_script);
 	update_property();
 }
