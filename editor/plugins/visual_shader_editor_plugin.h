@@ -36,6 +36,7 @@
 #include "editor/property_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/visual_shader.h"
@@ -58,10 +59,13 @@ class VisualShaderEditor : public VBoxContainer {
 	CustomPropertyEditor *property_editor;
 	int editing_node;
 	int editing_port;
+	int custom_function_input_count;
 
 	Ref<VisualShader> visual_shader;
 	GraphEdit *graph;
 	ToolButton *add_node;
+	ToolButton *add_function;
+	ToolButton *remove_function;
 
 	OptionButton *edit_type;
 
@@ -74,20 +78,45 @@ class VisualShaderEditor : public VBoxContainer {
 
 	ConfirmationDialog *members_dialog;
 	MenuButton *tools;
+	ConfirmationDialog *function_create_dialog;
+	ConfirmationDialog *function_remove_dialog;
 
 	enum ToolsMenuOptions {
 		EXPAND_ALL,
 		COLLAPSE_ALL
 	};
 
+	// node's member dialog entries
 	Tree *members;
 	AcceptDialog *alert;
 	LineEdit *node_filter;
 	RichTextLabel *node_desc;
 
+	// function create dialog entries
+	LineEdit *func_name_box;
+	OptionButton *func_output_type_box;
+	VBoxContainer *func_input_vbox;
+
+	// function change dialog entries
+	LineEdit *func_name_box2;
+	OptionButton *func_output_type_box2;
+	VBoxContainer *func_input_vbox2;
+
+	// function delete dialog entries
+	Label *function_remove_attention;
+
+	void _set_current_function(int p_idx);
 	void _tools_menu_option(int p_idx);
 	void _show_members_dialog(bool at_mouse_pos);
+	void _show_function_create_dialog();
+	void _show_function_setup_dialog();
+	void _show_function_remove_dialog();
 
+	void _add_func_input();
+	void _remove_func_input(int p_idx);
+	void _deselect_input_names();
+
+	void _update_func_list();
 	void _update_graph();
 
 	struct AddOption {
@@ -111,6 +140,7 @@ class VisualShaderEditor : public VBoxContainer {
 			sub_category = p_sub_category;
 			description = p_description;
 			sub_func = p_sub_func;
+			sub_func_str = String("");
 			return_type = p_return_type;
 			mode = p_mode;
 			func = p_func;
@@ -191,6 +221,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _remove_output_port(int p_node, int p_port);
 	void _change_output_port_type(int p_type, int p_node, int p_port);
 	void _change_output_port_name(const String &p_text, Object *line_edit, int p_node, int p_port);
+	void _set_call(int p_id, int p_node);
+	void _goto_call(int p_node);
 
 	void _expression_focus_out(Object *text_edit, int p_node);
 
@@ -206,6 +238,15 @@ class VisualShaderEditor : public VBoxContainer {
 	void _member_unselected();
 	void _member_create();
 	void _member_cancel();
+
+	int _get_function_index() const;
+
+	bool _check_func_name(const String &p_name, ConfirmationDialog *caller);
+	void _function_create();
+	void _function_remove();
+
+	String _get_current_func_name() const;
+	int _get_current_func_type() const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

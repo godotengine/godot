@@ -68,9 +68,24 @@ private:
 	};
 
 	struct Graph {
+		String name;
+		int index;
+
 		Map<int, Node> nodes;
 		List<Connection> connections;
-	} graph[TYPE_MAX];
+
+		struct Port {
+			int type;
+			String name;
+			String string;
+		};
+
+		List<Port> inputs;
+		String inputs_str;
+		int output_type;
+	};
+
+	List<Graph *> graph;
 
 	Shader::Mode shader_mode;
 
@@ -127,11 +142,40 @@ public:
 	Vector2 get_node_position(Type p_type, int p_id) const;
 	Ref<VisualShaderNode> get_node(Type p_type, int p_id) const;
 
+	const VisualShader::Graph *get_graph(Type p_type) const;
+	VisualShader::Graph *get_graph_set(Type p_type);
+	void clear_custom_funcs();
+
 	Vector<int> get_node_list(Type p_type) const;
 	int get_valid_node_id(Type p_type) const;
 
 	int find_node_id(Type p_type, const Ref<VisualShaderNode> &p_node) const;
 	void remove_node(Type p_type, int p_id);
+
+	bool is_valid_type_index(int p_type) const;
+	int get_function_count() const;
+	bool has_function_name(const String &p_name) const;
+	String get_function_name(int p_id) const;
+	String get_function_name_by_index(int p_id) const;
+	int get_function_index_by_name(const String &p_name) const;
+
+	int get_function_input_port_count(const int p_func_id) const;
+	String get_function_input_port_name(int p_func_id, int p_port_id) const;
+	int get_function_input_port_type(int p_func_id, int p_port_id) const;
+	int get_function_output_port_type(int p_func_id) const;
+
+	void add_custom_input(const String &p_func_name, const String &p_name, int p_type);
+	void fill_input_node(int p_id);
+
+	void add_function(const String &p_name);
+	void set_function_index(const String &p_func_name, int p_index);
+	int get_function_index(int p_func_id) const;
+	void set_function_output_type(const String &p_func_name, int p_type);
+	void remove_function(const String &p_name);
+	void rename_function(const String &p_name, const String &p_new_name);
+	void move_func_up(int p_func_id);
+	void move_func_down(int p_func_id);
+	void commit_function(int p_func_id);
 
 	bool is_node_connection(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
 	bool can_connect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
@@ -221,18 +265,22 @@ class VisualShaderNodeInput : public VisualShaderNode {
 
 	friend class VisualShader;
 	VisualShader::Type shader_type;
+	String shader_name;
 	Shader::Mode shader_mode;
 
 	struct Port {
 		Shader::Mode mode;
 		VisualShader::Type shader_type;
 		PortType type;
-		const char *name;
-		const char *string;
+		String name;
+		String string;
 	};
 
-	static const Port ports[];
+	static const Port temp_ports[];
 	static const Port preview_ports[];
+	static Map<String, List<VisualShaderNodeInput::Port> > ports;
+
+	static void _init_default_ports();
 
 	String input_name;
 
@@ -244,6 +292,18 @@ public:
 	virtual int get_input_port_count() const;
 	virtual PortType get_input_port_type(int p_port) const;
 	virtual String get_input_port_name(int p_port) const;
+
+	static void rename_ports_func(const String &p_func_name, const String &p_new_func_name);
+	static bool is_custom_func(const String &p_func_name);
+	static void clear_custom_funcs();
+	static void remove_func(const String &p_func_name);
+	static int get_func_port_count(const String &p_func_name);
+	static String get_func_port_name(const String &p_func_name, int p_id);
+	static int get_func_port_type(const String &p_func_name, int p_id);
+
+	static void add_custom_port(const String &p_shader_name, const String &p_name, int p_type);
+	static void set_custom_port_name(const String &p_func_name, int p_port_id, const String &p_name);
+	static void set_custom_port_type(const String &p_func_name, int p_port_id, int p_type);
 
 	virtual int get_output_port_count() const;
 	virtual PortType get_output_port_type(int p_port) const;
@@ -274,20 +334,30 @@ class VisualShaderNodeOutput : public VisualShaderNode {
 
 public:
 	friend class VisualShader;
-	VisualShader::Type shader_type;
+	String shader_name;
 	Shader::Mode shader_mode;
 
 	struct Port {
 		Shader::Mode mode;
 		VisualShader::Type shader_type;
 		PortType type;
-		const char *name;
-		const char *string;
+		String name;
+		String string;
 	};
 
-	static const Port ports[];
+	static const Port temp_ports[];
+	static Map<String, List<VisualShaderNodeOutput::Port> > ports;
+
+	static void _init_default_ports();
 
 public:
+	virtual void add_port(const String &p_shader_name, const String &p_name, PortType p_type);
+
+	static void rename_ports_func(const String &p_func_name, const String &p_new_func_name);
+	static bool is_custom_func(const String &p_func_name);
+	static void clear_custom_funcs();
+	static void remove_func(const String &p_func_name);
+
 	virtual int get_input_port_count() const;
 	virtual PortType get_input_port_type(int p_port) const;
 	virtual String get_input_port_name(int p_port) const;
@@ -332,6 +402,9 @@ protected:
 	String inputs;
 	String outputs;
 
+	bool editable;
+	bool resizable;
+
 	struct Port {
 		PortType type;
 		String name;
@@ -355,6 +428,12 @@ public:
 
 	void set_outputs(const String &p_outputs);
 	String get_outputs() const;
+
+	void set_editable(bool p_enabled);
+	bool is_editable() const;
+
+	void set_resizable(bool p_enabled);
+	bool is_resizable() const;
 
 	bool is_valid_port_name(const String &p_name) const;
 
@@ -411,6 +490,29 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
 
 	VisualShaderNodeExpression();
+};
+
+class VisualShaderNodeCall : public VisualShaderNodeGroupBase {
+	GDCLASS(VisualShaderNodeCall, VisualShaderNodeGroupBase);
+
+private:
+	int function_id;
+	String function_name;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const;
+
+	void set_function_id(int p_function_id);
+	int get_function_id() const;
+	void set_function_name(const String &p_function_name);
+	String get_function_name() const;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
+
+	VisualShaderNodeCall();
 };
 
 #endif // VISUAL_SHADER_H
