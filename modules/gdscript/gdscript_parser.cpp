@@ -516,6 +516,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			expr = constant;
 		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_YIELD) {
+			//standalone yield - yield() and yield(subject, signal)
 
 			if (!current_function) {
 				_set_error("yield() can only be used inside function blocks.");
@@ -1153,10 +1154,80 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 				//indexing using "."
 
-				if (tokenizer->get_token(1) != GDScriptTokenizer::TK_CURSOR && !tokenizer->is_token_literal(1)) {
+				if (tokenizer->get_token(1) != GDScriptTokenizer::TK_CURSOR &&
+						tokenizer->get_token(1) != GDScriptTokenizer::TK_PR_YIELD &&
+						!tokenizer->is_token_literal(1)) {
 					// We check with is_token_literal, as this allows us to use match/sync/etc. as a name
 					_set_error("Expected identifier as member");
 					return NULL;
+				} else if (tokenizer->get_token(1) == GDScriptTokenizer::TK_PR_YIELD) {
+					//fluent yield - subject.yield(signal = "completed")
+
+					if (!current_function) {
+						_set_error("yield() can only be used inside function blocks.");
+						return NULL;
+					}
+
+					current_function->has_yield = true;
+
+					tokenizer->advance(2);
+
+					if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
+						_set_error("Expected '(' after 'yield'");
+						return NULL;
+					}
+
+					tokenizer->advance();
+
+					OperatorNode *yield = alloc_node<OperatorNode>();
+					yield->op = OperatorNode::OP_YIELD;
+					yield->arguments.push_back(expr);
+
+					while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE) {
+						tokenizer->advance();
+					}
+
+					if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+
+						// default signal argument is "completed" to make waiting on GDScriptFunctionState cleaner
+						ConstantNode *cn = alloc_node<ConstantNode>();
+						cn->value = StringName("completed");
+						cn->datatype = _type_from_variant(cn->value);
+						yield->arguments.push_back(cn);
+					} else {
+
+						parenthesis++;
+
+						if (tokenizer->get_token() == GDScriptTokenizer::TK_CURSOR) {
+							completion_cursor = StringName();
+							completion_node = expr;
+							completion_type = COMPLETION_YIELD;
+							completion_class = current_class;
+							completion_function = current_function;
+							completion_line = tokenizer->get_token_line();
+							completion_argument = 0;
+							completion_block = current_block;
+							completion_found = true;
+							tokenizer->advance();
+						}
+
+						Node *signal = _parse_and_reduce_expression(p_parent, p_static);
+						if (!signal)
+							return NULL;
+						yield->arguments.push_back(signal);
+
+						if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+							_set_error("Expected ')' after first argument of yield()");
+							return NULL;
+						}
+
+						parenthesis--;
+					}
+
+					tokenizer->advance();
+
+					expr = yield;
+
 				} else if (tokenizer->get_token(2) == GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
 					//call!!
 					OperatorNode *op = alloc_node<OperatorNode>();

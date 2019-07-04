@@ -1284,11 +1284,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 					if (argobj->get_type() != Variant::OBJECT) {
-						err_text = "First argument of yield() not of type object.";
+						err_text = "Subject of yield() not of type object.";
 						OPCODE_BREAK;
 					}
 					if (argname->get_type() != Variant::STRING) {
-						err_text = "Second argument of yield() not a string (for signal name).";
+						err_text = "Signal name in yield() not a string.";
 						OPCODE_BREAK;
 					}
 #endif
@@ -1298,18 +1298,18 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 					if (!obj) {
-						err_text = "First argument of yield() is null.";
+						err_text = "Subject of yield() is null.";
 						OPCODE_BREAK;
 					}
 					if (ScriptDebugger::get_singleton()) {
 						if (!ObjectDB::instance_validate(obj)) {
-							err_text = "First argument of yield() is a previously freed instance.";
+							err_text = "Subject of yield() is a previously freed instance.";
 							OPCODE_BREAK;
 						}
 					}
 					if (signal.length() == 0) {
 
-						err_text = "Second argument of yield() is an empty string (for signal name).";
+						err_text = "Signal name in yield() is an empty string.";
 						OPCODE_BREAK;
 					}
 

@@ -1920,6 +1920,12 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 		r_result.insert(option.display, option);
 	}
 
+	if (!_static && base_type.kind != GDScriptParser::DataType::BUILTIN) {
+		ScriptCodeCompletionOption option("yield", ScriptCodeCompletionOption::KIND_FUNCTION);
+		option.insert_text += "(";
+		r_result.insert(option.display, option);
+	}
+
 	while (base_type.has_type) {
 		switch (base_type.kind) {
 			case GDScriptParser::DataType::CLASS: {
@@ -2169,7 +2175,7 @@ static void _find_identifiers(const GDScriptCompletionContext &p_context, bool p
 
 	static const char *_keywords[] = {
 		"and", "in", "not", "or", "false", "PI", "TAU", "INF", "NAN", "self", "true", "as", "assert",
-		"breakpoint", "class", "extends", "is", "func", "preload", "setget", "signal", "tool", "yield",
+		"breakpoint", "class", "extends", "is", "func", "preload", "setget", "signal", "tool",
 		"const", "enum", "export", "onready", "static", "var", "break", "continue", "if", "elif",
 		"else", "for", "pass", "return", "match", "while", "remote", "sync", "master", "puppet", "slave",
 		"remotesync", "mastersync", "puppetsync",
@@ -2779,6 +2785,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 					}
 				}
 			}
+			r_forced = options.size() > 0;
 		} break;
 		case GDScriptParser::COMPLETION_RESOURCE_PATH: {
 			if (EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths")) {

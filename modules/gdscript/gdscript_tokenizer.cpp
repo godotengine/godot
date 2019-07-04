@@ -277,7 +277,6 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_PR_FUNCTION:
 		case TK_PR_EXTENDS:
 		case TK_PR_ASSERT:
-		case TK_PR_YIELD:
 		case TK_PR_VAR:
 
 		case TK_CF_IF:
