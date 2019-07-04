@@ -2188,9 +2188,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				} else {
 					// Copied from editor/scene_tree_dock.cpp#_tool_selected and edited for our purposes
 					// There's a good chance we could merge this back into that code with some modifications
-					//Ref<Script> existing = get_edited_object()->get(get_edited_property());
-					//Script *existing = Object::cast_to<Script>(get_edited_object()->get(get_edited_property()));
-					RES existing = get_edited_object()->get(get_edited_property());
+					Ref<Script> existing = get_edited_object()->get(get_edited_property());
 
 					String inherits;
 					if (existing.is_valid()) {
