@@ -2228,7 +2228,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 
 					ScriptCreateDialog *script_create_dialog = EditorNode::get_singleton()->get_scene_tree_dock()->get_script_create_dialog();
 					script_create_dialog->connect("script_created", this, "_script_created");
-					script_create_dialog->connect("popup_hide", this, "_script_creation_closed");
+					script_create_dialog->connect("popup_hide", this, "_script_creation_closed", varray(), CONNECT_ONESHOT);
 					script_create_dialog->config(inherits, path);
 					script_create_dialog->popup_centered();
 				}
@@ -2366,7 +2366,6 @@ void EditorPropertyResource::_script_created(Ref<Script> p_script) {
 void EditorPropertyResource::_script_creation_closed() {
 	ScriptCreateDialog *script_create_dialog = EditorNode::get_singleton()->get_scene_tree_dock()->get_script_create_dialog();
 	script_create_dialog->disconnect("script_created", this, "_script_created");
-	script_create_dialog->disconnect("popup_hide", this, "_script_creation_closed");
 }
 
 void EditorPropertyResource::_update_menu_items() {
