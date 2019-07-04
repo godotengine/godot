@@ -2622,6 +2622,13 @@ void EditorNode::_exit_editor() {
 	exiting = true;
 	resource_preview->stop(); //stop early to avoid crashes
 	_save_docks();
+
+	// Dim the editor window while it's quitting to make it clearer that it's busy.
+	// No transition is applied, as the effect needs to be visible immediately
+	float c = 1.0f - float(EDITOR_GET("interface/editor/dim_amount"));
+	Color dim_color = Color(c, c, c);
+	gui_base->set_modulate(dim_color);
+
 	get_tree()->quit();
 }
 
