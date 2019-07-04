@@ -2206,7 +2206,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 							}
 						}
 					} else {
-						inherits = "Resource";
+						inherits = "Reference";
 					}
 
 					Node *edited_node = Object::cast_to<Node>(get_edited_object());
@@ -2222,7 +2222,9 @@ void EditorPropertyResource::_menu_option(int p_which) {
 					}
 					// path = <node_or_scene_name>.<property_name>.
 					// The extra period at the end is to prevent the property name from being seen as the type by ScriptCreateDialog
-					path = path + "." + get_edited_property() + ".";
+					String path_property_name = get_edited_property();
+					path_property_name = path_property_name.replace(":", ".").replace("/", ".").replace("\\", ".");
+					path = path + "." + path_property_name + ".";
 
 					ScriptCreateDialog *script_create_dialog = EditorNode::get_singleton()->get_scene_tree_dock()->get_script_create_dialog();
 					script_create_dialog->connect("script_created", this, "_script_created");
