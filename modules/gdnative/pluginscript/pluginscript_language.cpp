@@ -159,7 +159,7 @@ String PluginScriptLanguage::make_function(const String &p_class, const String &
 	return String();
 }
 
-Error PluginScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<String> *r_options, bool &r_force, String &r_call_hint) {
+Error PluginScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) {
 	if (_desc.complete_code) {
 		Array options;
 		godot_error tmp = _desc.complete_code(
@@ -171,7 +171,8 @@ Error PluginScriptLanguage::complete_code(const String &p_code, const String &p_
 				&r_force,
 				(godot_string *)&r_call_hint);
 		for (int i = 0; i < options.size(); i++) {
-			r_options->push_back(String(options[i]));
+			ScriptCodeCompletionOption option(options[i], ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+			r_options->push_back(option);
 		}
 		return (Error)tmp;
 	}

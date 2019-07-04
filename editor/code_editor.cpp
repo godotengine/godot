@@ -724,7 +724,7 @@ void CodeTextEditor::_code_complete_timer_timeout() {
 
 void CodeTextEditor::_complete_request() {
 
-	List<String> entries;
+	List<ScriptCodeCompletionOption> entries;
 	String ctext = text_editor->get_text_for_completion();
 	_code_complete_script(ctext, &entries);
 	bool forced = false;
@@ -733,15 +733,16 @@ void CodeTextEditor::_complete_request() {
 	}
 	if (entries.size() == 0)
 		return;
-	Vector<String> strs;
-	strs.resize(entries.size());
-	int i = 0;
-	for (List<String>::Element *E = entries.front(); E; E = E->next()) {
 
-		strs.write[i++] = E->get();
+	Vector<String> options;
+	options.resize(entries.size());
+	size_t i = 0;
+	for (List<ScriptCodeCompletionOption>::Element *E = entries.front(); E; E = E->next()) {
+		options.write[i] = E->get().insert_text;
+		i++;
 	}
 
-	text_editor->code_complete(strs, forced);
+	text_editor->code_complete(options, forced);
 }
 
 void CodeTextEditor::_font_resize_timeout() {

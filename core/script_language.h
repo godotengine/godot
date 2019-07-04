@@ -200,6 +200,34 @@ public:
 	virtual ~ScriptInstance();
 };
 
+struct ScriptCodeCompletionOption {
+	enum Kind {
+		KIND_CLASS,
+		KIND_FUNCTION,
+		KIND_SIGNAL,
+		KIND_VARIABLE,
+		KIND_MEMBER,
+		KIND_ENUM,
+		KIND_CONSTANT,
+		KIND_NODE_PATH,
+		KIND_FILE_PATH,
+		KIND_PLAIN_TEXT,
+	};
+	Kind kind;
+	String display;
+	String insert_text;
+
+	ScriptCodeCompletionOption() {
+		kind = KIND_PLAIN_TEXT;
+	}
+
+	ScriptCodeCompletionOption(const String &p_text, Kind p_kind) {
+		display = p_text;
+		insert_text = p_text;
+		kind = p_kind;
+	}
+};
+
 class ScriptCodeCompletionCache {
 
 	static ScriptCodeCompletionCache *singleton;
@@ -250,7 +278,7 @@ public:
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
 	virtual bool overrides_external_editor() { return false; }
 
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<String> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
 
 	struct LookupResult {
 		enum Type {
