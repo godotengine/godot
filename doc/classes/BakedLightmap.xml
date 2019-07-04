@@ -31,6 +31,8 @@
 		<member name="bake_cell_size" type="float" setter="set_bake_cell_size" getter="get_bake_cell_size" default="0.25">
 			Grid subdivision size for lightmapper calculation. The default value will work for most cases. Increase for better lighting on small details or if your scene is very large.
 		</member>
+		<member name="bake_default_texels_per_unit" type="float" setter="set_bake_default_texels_per_unit" getter="get_bake_default_texels_per_unit" default="20.0">
+		</member>
 		<member name="bake_energy" type="float" setter="set_energy" getter="get_energy" default="1.0">
 		</member>
 		<member name="bake_extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 10, 10, 10 )">

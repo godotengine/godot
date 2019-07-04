@@ -274,12 +274,7 @@
 		<member name="cell_y_sort" type="bool" setter="set_y_sort_mode" getter="is_y_sort_mode_enabled" default="false">
 			If [code]true[/code], the TileMap's children will be drawn in order of their Y coordinate.
 		</member>
-		<member name="compatibility_mode" type="bool" setter="set_compatibility_mode" getter="is_compatibility_mode_enabled">
-			If [code]true[/code], the compatibility with the tilemaps made in Godot 3.1 or earlier is maintained (textures move when the tile origin changes and rotate if the texture size is not homogeneous). This mode presents problems when doing [code]flip_h[/code], [code]flip_v[/code] and [code]transpose[/code] tile operations on non-homogeneous isometric tiles (e.g. 2:1), in which the texture could not coincide with the collision, thus it is not recommended for isometric or non-square tiles. 
-			If [code]false[/code], the textures do not move when doing [code]flip_h[/code], [code]flip_v[/code] operations if no offset is used, nor when changing the tile origin. 
-			The compatibility mode doesn't work with the [member centered_textures] option, because displacing textures with the [member cell_tile_origin] option or in irregular tiles is not relevant when centering those textures.
-		</member>
-		<member name="centered_textures" type="bool" setter="set_centered_textures" getter="is_centered_textures_enabled">
+		<member name="centered_textures" type="bool" setter="set_centered_textures" getter="is_centered_textures_enabled" default="false">
 			If [code]true[/code], the textures will be centered in the middle of each tile. This is useful for certain isometric or top-down modes when textures are made larger or smaller than the tiles (e.g. to avoid flickering on tile edges). The offset is still applied, but from the center of the tile. If used, [member compatibility_mode] is ignored.
 			If [code]false[/code], the texture position start in the top-left corner unless [member compatibility_mode] is enabled.
 		</member>
@@ -299,6 +294,11 @@
 			If [code]true[/code], TileMap collisions will be handled as a kinematic body. If [code]false[/code], collisions will be handled as static body.
 		</member>
 		<member name="collision_use_parent" type="bool" setter="set_collision_use_parent" getter="get_collision_use_parent" default="false">
+		</member>
+		<member name="compatibility_mode" type="bool" setter="set_compatibility_mode" getter="is_compatibility_mode_enabled" default="false">
+			If [code]true[/code], the compatibility with the tilemaps made in Godot 3.1 or earlier is maintained (textures move when the tile origin changes and rotate if the texture size is not homogeneous). This mode presents problems when doing [code]flip_h[/code], [code]flip_v[/code] and [code]transpose[/code] tile operations on non-homogeneous isometric tiles (e.g. 2:1), in which the texture could not coincide with the collision, thus it is not recommended for isometric or non-square tiles.
+			If [code]false[/code], the textures do not move when doing [code]flip_h[/code], [code]flip_v[/code] operations if no offset is used, nor when changing the tile origin.
+			The compatibility mode doesn't work with the [member centered_textures] option, because displacing textures with the [member cell_tile_origin] option or in irregular tiles is not relevant when centering those textures.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="TileMap.Mode" default="0">
 			The TileMap orientation mode. See [enum Mode] for possible values.
