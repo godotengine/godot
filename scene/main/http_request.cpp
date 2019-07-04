@@ -96,6 +96,11 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 		ERR_FAIL_V(ERR_BUSY);
 	}
 
+	if (timeout > 0) {
+		timer->stop();
+		timer->start(timeout);
+	}
+
 	method = p_method;
 
 	Error err = _parse_url(p_url);
@@ -152,6 +157,8 @@ void HTTPRequest::_thread_func(void *p_userdata) {
 }
 
 void HTTPRequest::cancel_request() {
+
+	timer->stop();
 
 	if (!requesting)
 		return;
@@ -479,6 +486,23 @@ int HTTPRequest::get_body_size() const {
 	return body_len;
 }
 
+void HTTPRequest::set_timeout(int p_timeout) {
+
+	ERR_FAIL_COND(p_timeout < 0);
+	timeout = p_timeout;
+}
+
+int HTTPRequest::get_timeout() {
+
+	return timeout;
+}
+
+void HTTPRequest::_timeout() {
+
+	cancel_request();
+	call_deferred("_request_done", RESULT_TIMEOUT, 0, PoolStringArray(), PoolByteArray());
+}
+
 void HTTPRequest::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "ssl_validate_domain", "method", "request_data"), &HTTPRequest::request, DEFVAL(PoolStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(String()));
@@ -504,10 +528,16 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_redirect_request"), &HTTPRequest::_redirect_request);
 	ClassDB::bind_method(D_METHOD("_request_done"), &HTTPRequest::_request_done);
 
+	ClassDB::bind_method(D_METHOD("set_timeout", "timeout"), &HTTPRequest::set_timeout);
+	ClassDB::bind_method(D_METHOD("get_timeout"), &HTTPRequest::get_timeout);
+
+	ClassDB::bind_method(D_METHOD("_timeout"), &HTTPRequest::_timeout);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE), "set_download_file", "get_download_file");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_threads"), "set_use_threads", "is_using_threads");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_size_limit", PROPERTY_HINT_RANGE, "-1,2000000000"), "set_body_size_limit", "get_body_size_limit");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redirects", PROPERTY_HINT_RANGE, "-1,64"), "set_max_redirects", "get_max_redirects");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "timeout", PROPERTY_HINT_RANGE, "0,86400"), "set_timeout", "get_timeout");
 
 	ADD_SIGNAL(MethodInfo("request_completed", PropertyInfo(Variant::INT, "result"), PropertyInfo(Variant::INT, "response_code"), PropertyInfo(Variant::POOL_STRING_ARRAY, "headers"), PropertyInfo(Variant::POOL_BYTE_ARRAY, "body")));
 
@@ -524,6 +554,7 @@ void HTTPRequest::_bind_methods() {
 	BIND_ENUM_CONSTANT(RESULT_DOWNLOAD_FILE_CANT_OPEN);
 	BIND_ENUM_CONSTANT(RESULT_DOWNLOAD_FILE_WRITE_ERROR);
 	BIND_ENUM_CONSTANT(RESULT_REDIRECT_LIMIT_REACHED);
+	BIND_ENUM_CONSTANT(RESULT_TIMEOUT);
 }
 
 HTTPRequest::HTTPRequest() {
@@ -546,6 +577,12 @@ HTTPRequest::HTTPRequest() {
 	downloaded = 0;
 	body_size_limit = -1;
 	file = NULL;
+
+	timer = memnew(Timer);
+	timer->set_one_shot(true);
+	timer->connect("timeout", this, "_timeout");
+	add_child(timer);
+	timeout = 0;
 }
 
 HTTPRequest::~HTTPRequest() {
