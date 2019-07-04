@@ -16,6 +16,13 @@
 				Returns [code]true[/code] if a connection is available for taking.
 			</description>
 		</method>
+		<method name="is_listening" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the server is currently listening for connections.
+			</description>
+		</method>
 		<method name="listen">
 			<return type="int" enum="Error">
 			</return>

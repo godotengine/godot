@@ -69,7 +69,7 @@
 			</argument>
 			<description>
 				Starts listening on the given port.
-				You can specify the desired subprotocols via the "protocols" array. If the list empty (default), "binary" will be used.
+				You can specify the desired subprotocols via the "protocols" array. If the list empty (default), no sub-protocol will be requested.
 				If [code]true[/code] is passed as [code]gd_mp_api[/code], the server will behave like a network peer for the [MultiplayerAPI], connections from non-Godot clients will not work, and [signal data_received] will not be emitted.
 				If [code]false[/code] is passed instead (default), you must call [PacketPeer] functions ([code]put_packet[/code], [code]get_packet[/code], etc.), on the [WebSocketPeer] returned via [code]get_peer(id)[/code] to communicate with the peer with given [code]id[/code] (e.g. [code]get_peer(id).get_available_packet_count[/code]).
 			</description>

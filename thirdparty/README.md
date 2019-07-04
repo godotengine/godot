@@ -262,32 +262,17 @@ changes to ensure they build for Javascript/HTML5. Those
 changes are marked with `// -- GODOT --` comments.
 
 
-## libwebsockets
+## wslay
 
-- Upstream: https://github.com/warmcat/libwebsockets
-- Version: 3.0.1
-- License: LGPLv2.1 + static linking exception
+- Upstream: https://github.com/tatsuhiro-t/wslay
+- Version: 1.1.0
+- License: MIT
 
-File extracted from upstream source:
-- From `lib/` into `thirdparty/libwebsockets`:
-  - Everything from `core`
-  - From `event-libs` only the `poll` subfolder
-  - From `misc` only `base64-decode.c`, `getifaddrs.c`, `getifaddrs.h`, `lejp.c`, and `sha-1.c`
-  - From `plat` only `lws-plat-unix.c` and `lws-plat-win.c`
-  - From `roles` only `private.h`, `h1`, `http`, `listen`, `pipe`, `raw`, `ws`
-    - From `roles/http` exclude `minilex.c`
-    - From `roles/http/server` exclude `access-log.c`, `lws-spa.c`, `ranges.c`, and `rewrite.c`
-    - From `roles/ws` exclude `ext` folder.
-  - From `tls` exclude `openssl` folder.
-- Also copy `win32helpers/` from `win32port/` inside `thirdparty/libwebsockets`
-- A fix has been added to allow building for 32-bits UWP, replacing `GetFileSize[Ex]` and `CreateFileW` with supported functions.
-  There is a diff for this change in `thirdparty/libwebsockets/uwp_fixes.diff`
-- A fix to disable V6ONLY flag from IPv6 sockets (on by default on some systems) has been also applied.
-  The diff for this change can be found in `thirdparty/libwebsockets/ipv6_fixes.diff`
+File extracted from upstream releaze tarball:
 
-Important: `lws_config.h` and `lws_config_private.h` contains custom
-Godot build configurations, check them out when updating.
-
+- All `*.c` and `*.h` in `lib/` and `lib/includes/`
+- `wslay.h` has a small Godot addition to fix MSVC build.
+  See `thirdparty/wslay/msvcfix.diff`
 
 ## mbedtls
 

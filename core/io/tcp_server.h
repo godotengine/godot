@@ -50,6 +50,7 @@ protected:
 
 public:
 	Error listen(uint16_t p_port, const IP_Address &p_bind_address = IP_Address("*"));
+	bool is_listening() const;
 	bool is_connection_available() const;
 	Ref<StreamPeerTCP> take_connection();
 
