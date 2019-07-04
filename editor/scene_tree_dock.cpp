@@ -439,6 +439,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 			script_create_dialog->connect("script_created", this, "_script_created");
 			script_create_dialog->connect("popup_hide", this, "_script_creation_closed");
+			script_create_dialog->set_inheritance_base_type("Node");
 			script_create_dialog->config(inherits, path);
 			script_create_dialog->popup_centered();
 
