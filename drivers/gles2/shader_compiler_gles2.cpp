@@ -318,7 +318,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 				// use highp if no precision is specified to prevent different default values in fragment and vertex shader
 				SL::DataPrecision precision = E->get().precision;
-				if (precision == SL::PRECISION_DEFAULT) {
+				if (precision == SL::PRECISION_DEFAULT && E->get().type != SL::TYPE_BOOL) {
 					precision = SL::PRECISION_HIGHP;
 				}
 
