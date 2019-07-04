@@ -60,6 +60,8 @@
 	</methods>
 	<members>
 		<member name="allow_object_decoding" type="bool" setter="set_allow_object_decoding" getter="is_object_decoding_allowed">
+			If [code]true[/code] the PacketPeer will allow encoding and decoding of object via [method get_var] and [method put_var].
+			[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 		</member>
 	</members>
 	<constants>
