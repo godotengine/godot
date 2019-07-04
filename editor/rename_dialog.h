@@ -32,7 +32,6 @@
 #define RENAME_DIALOG_H
 
 #include "scene/gui/check_box.h"
-#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
@@ -75,9 +74,9 @@ class RenameDialog : public ConfirmationDialog {
 
 	TabContainer *tabc_features;
 
-	CheckButton *cbut_substitute;
-	CheckButton *cbut_regex;
-	CheckButton *cbut_process;
+	CheckBox *cbut_substitute;
+	CheckBox *cbut_regex;
+	CheckBox *cbut_process;
 	CheckBox *chk_per_level_counter;
 
 	Button *but_insert_name;

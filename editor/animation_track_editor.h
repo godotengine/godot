@@ -439,9 +439,9 @@ class AnimationTrackEditor : public VBoxContainer {
 	SpinBox *optimize_max_angle;
 
 	ConfirmationDialog *cleanup_dialog;
-	CheckButton *cleanup_keys;
-	CheckButton *cleanup_tracks;
-	CheckButton *cleanup_all;
+	CheckBox *cleanup_keys;
+	CheckBox *cleanup_tracks;
+	CheckBox *cleanup_all;
 
 	ConfirmationDialog *scale_dialog;
 	SpinBox *scale;

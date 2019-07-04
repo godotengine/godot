@@ -131,7 +131,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc_substitute->set_name(TTR("Substitute"));
 	tabc_features->add_child(vbc_substitute);
 
-	cbut_substitute = memnew(CheckButton);
+	cbut_substitute = memnew(CheckBox);
 	cbut_substitute->set_text(TTR("Substitute"));
 	vbc_substitute->add_child(cbut_substitute);
 
@@ -246,7 +246,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc_regex->set_custom_minimum_size(Size2(0, feature_min_height));
 	tabc_features->add_child(vbc_regex);
 
-	cbut_regex = memnew(CheckButton);
+	cbut_regex = memnew(CheckBox);
 	cbut_regex->set_text(TTR("Regular Expressions"));
 	vbc_regex->add_child(cbut_regex);
 
@@ -258,7 +258,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc_process->set_custom_minimum_size(Size2(0, feature_min_height));
 	tabc_features->add_child(vbc_process);
 
-	cbut_process = memnew(CheckButton);
+	cbut_process = memnew(CheckBox);
 	cbut_process->set_text(TTR("Post-Process"));
 	vbc_process->add_child(cbut_process);
 
