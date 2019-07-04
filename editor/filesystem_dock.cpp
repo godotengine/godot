@@ -1324,13 +1324,13 @@ void FileSystemDock::_duplicate_operation_confirm() {
 		return;
 	}
 
-	String new_path;
 	String base_dir = to_duplicate.path.get_base_dir();
-	if (to_duplicate.is_file) {
-		new_path = base_dir.plus_file(new_name);
-	} else {
-		new_path = base_dir.substr(0, base_dir.find_last("/")).plus_file(new_name);
+	// get_base_dir() returns "some/path" if the original path was "some/path/", so work it around.
+	if (to_duplicate.path.ends_with("/")) {
+		base_dir = base_dir.get_base_dir();
 	}
+
+	String new_path = base_dir.plus_file(new_name);
 
 	//Present a more user friendly warning for name conflict
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
