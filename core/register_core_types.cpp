@@ -190,6 +190,8 @@ void register_core_types() {
 
 	ClassDB::register_class<JSONParseResult>();
 
+	ClassDB::register_virtual_class<ResourceImporter>();
+
 	ip = IP::create();
 
 	_geometry = memnew(_Geometry);
