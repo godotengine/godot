@@ -341,7 +341,11 @@ bool FindReplaceBar::search_prev() {
 bool FindReplaceBar::search_next() {
 
 	uint32_t flags = 0;
-	String text = get_search_text();
+	String text;
+	if (replace_all_mode)
+		text = get_replace_text();
+	else
+		text = get_search_text();
 
 	if (is_whole_words())
 		flags |= TextEdit::SEARCH_WHOLE_WORDS;
