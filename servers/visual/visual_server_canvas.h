@@ -49,6 +49,7 @@ public:
 		int index;
 		bool children_order_dirty;
 		int ysort_children_count;
+		Color ysort_modulate;
 		Transform2D ysort_xform;
 		Vector2 ysort_pos;
 
