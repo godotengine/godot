@@ -742,8 +742,8 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	/* Built-in Script */
 
-	internal = memnew(CheckButton);
-	internal->set_h_size_flags(0);
+	internal = memnew(CheckBox);
+	internal->set_text(TTR("On"));
 	internal->connect("pressed", this, "_built_in_pressed");
 	internal_label = memnew(Label(TTR("Built-in Script")));
 	internal_label->set_align(Label::ALIGN_RIGHT);

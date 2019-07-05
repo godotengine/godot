@@ -330,7 +330,7 @@ private:
 	EditorFileDialog *file_export;
 	EditorFileDialog *file_export_lib;
 	EditorFileDialog *file_script;
-	CheckButton *file_export_lib_merge;
+	CheckBox *file_export_lib_merge;
 	LineEdit *file_export_password;
 	String current_path;
 	MenuButton *update_spinner;

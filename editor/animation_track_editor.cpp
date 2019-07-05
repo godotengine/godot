@@ -5273,17 +5273,17 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	VBoxContainer *cleanup_vb = memnew(VBoxContainer);
 	cleanup_dialog->add_child(cleanup_vb);
 
-	cleanup_keys = memnew(CheckButton);
+	cleanup_keys = memnew(CheckBox);
 	cleanup_keys->set_text(TTR("Remove invalid keys"));
 	cleanup_keys->set_pressed(true);
 	cleanup_vb->add_child(cleanup_keys);
 
-	cleanup_tracks = memnew(CheckButton);
+	cleanup_tracks = memnew(CheckBox);
 	cleanup_tracks->set_text(TTR("Remove unresolved and empty tracks"));
 	cleanup_tracks->set_pressed(true);
 	cleanup_vb->add_child(cleanup_tracks);
 
-	cleanup_all = memnew(CheckButton);
+	cleanup_all = memnew(CheckBox);
 	cleanup_all->set_text(TTR("Clean-up all animations"));
 	cleanup_vb->add_child(cleanup_all);
 
