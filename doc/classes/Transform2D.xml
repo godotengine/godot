@@ -172,10 +172,13 @@
 	</members>
 	<constants>
 		<constant name="IDENTITY" value="Transform2D( 1, 0, 0, 1, 0, 0 )">
+			[Transform2D] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
 		</constant>
 		<constant name="FLIP_X" value="Transform2D( -1, 0, 0, 1, 0, 0 )">
+			[Transform2D] with mirroring applied parallel to the X axis.
 		</constant>
 		<constant name="FLIP_Y" value="Transform2D( 1, 0, 0, -1, 0, 0 )">
+			[Transform2D] with mirroring applied parallel to the Y axis.
 		</constant>
 	</constants>
 </class>
