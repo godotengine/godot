@@ -573,6 +573,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				Node *node = E->get();
 				Node *parent = node->get_parent();
+				Node *selection_tail = _get_selection_group_tail(node, selection);
 
 				List<Node *> owned;
 				node->get_owned_by(node->get_owner(), &owned);
@@ -590,7 +591,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				dup->set_name(parent->validate_child_name(dup));
 
-				editor_data->get_undo_redo().add_do_method(parent, "add_child_below_node", node, dup);
+				editor_data->get_undo_redo().add_do_method(parent, "add_child_below_node", selection_tail, dup);
 				for (List<Node *>::Element *F = owned.front(); F; F = F->next()) {
 
 					if (!duplimap.has(F->get())) {
@@ -598,7 +599,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 						continue;
 					}
 					Node *d = duplimap[F->get()];
-					editor_data->get_undo_redo().add_do_method(d, "set_owner", node->get_owner());
+					editor_data->get_undo_redo().add_do_method(d, "set_owner", selection_tail->get_owner());
 				}
 				editor_data->get_undo_redo().add_do_method(editor_selection, "add_node", dup);
 				editor_data->get_undo_redo().add_undo_method(parent, "remove_child", dup);
@@ -1883,6 +1884,23 @@ void SceneTreeDock::_selection_changed() {
 		editor->push_item(NULL);
 	}
 	_update_script_button();
+}
+
+Node *SceneTreeDock::_get_selection_group_tail(Node *p_node, List<Node *> p_list) {
+
+	Node *tail = p_node;
+	Node *parent = tail->get_parent();
+
+	for (int i = p_node->get_position_in_parent(); i < parent->get_child_count(); i++) {
+		Node *sibling = parent->get_child(i);
+
+		if (p_list.find(sibling))
+			tail = sibling;
+		else
+			break;
+	}
+
+	return tail;
 }
 
 void SceneTreeDock::_create() {
