@@ -554,7 +554,7 @@ public:
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) = 0;
 	virtual bool uniform_set_is_valid(RID p_uniform_set) = 0;
 
-	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, void *p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
+	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size,const void *p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
 
 	/*************************/
 	/**** RENDER PIPELINE ****/
