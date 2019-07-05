@@ -35,6 +35,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "core/script_language.h"
 #include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
@@ -1362,13 +1363,18 @@ void TextEdit::_notification(int p_what) {
 
 				if (completion_options.size() < 50) {
 					for (int i = 0; i < completion_options.size(); i++) {
-						int w2 = MIN(cache.font->get_string_size(completion_options[i]).x, cmax_width);
+						int w2 = MIN(cache.font->get_string_size(completion_options[i].display).x, cmax_width);
 						if (w2 > w)
 							w = w2;
 					}
 				} else {
 					w = cmax_width;
 				}
+
+				//  Add space for completion icons
+				const int icon_hsep = get_constant("hseparation", "ItemList");
+				Size2 icon_area_size(get_row_height(), get_row_height());
+				w += icon_area_size.width + icon_hsep;
 
 				int th = h + csb->get_minimum_size().y;
 
@@ -1405,12 +1411,26 @@ void TextEdit::_notification(int p_what) {
 					ERR_CONTINUE(l < 0 || l >= completion_options.size());
 					Color text_color = cache.completion_font_color;
 					for (int j = 0; j < color_regions.size(); j++) {
-						if (completion_options[l].begins_with(color_regions[j].begin_key)) {
+						if (completion_options[l].insert_text.begins_with(color_regions[j].begin_key)) {
 							text_color = color_regions[j].color;
 						}
 					}
 					int yofs = (get_row_height() - cache.font->get_height()) / 2;
-					draw_string(cache.font, Point2(completion_rect.position.x, completion_rect.position.y + i * get_row_height() + cache.font->get_ascent() + yofs), completion_options[l], text_color, completion_rect.size.width);
+					Point2 title_pos(completion_rect.position.x, completion_rect.position.y + i * get_row_height() + cache.font->get_ascent() + yofs);
+
+					//draw completion icon if it is valid
+					Ref<Texture> icon = completion_options[l].icon;
+					Rect2 icon_area(completion_rect.position.x, completion_rect.position.y + i * get_row_height(), icon_area_size.width, icon_area_size.height);
+					if (icon.is_valid()) {
+						const real_t max_scale = 0.7f;
+						const real_t side = max_scale * icon_area.size.width;
+						real_t scale = MIN(side / icon->get_width(), side / icon->get_height());
+						Size2 icon_size = icon->get_size() * scale;
+						draw_texture_rect(icon, Rect2(icon_area.position + (icon_area.size - icon_size) / 2, icon_size));
+					}
+
+					title_pos.x = icon_area.position.x + icon_area.size.width + icon_hsep;
+					draw_string(cache.font, title_pos, completion_options[l].display, text_color, completion_rect.size.width);
 				}
 
 				if (scrollw) {
@@ -5925,12 +5945,12 @@ void TextEdit::_confirm_completion() {
 
 	_remove_text(cursor.line, cursor.column - completion_base.length(), cursor.line, cursor.column);
 	cursor_set_column(cursor.column - completion_base.length(), false);
-	insert_text_at_cursor(completion_current);
+	insert_text_at_cursor(completion_current.insert_text);
 
 	// When inserted into the middle of an existing string/method, don't add an unnecessary quote/bracket.
 	String line = text[cursor.line];
 	CharType next_char = line[cursor.column];
-	CharType last_completion_char = completion_current[completion_current.length() - 1];
+	CharType last_completion_char = completion_current.insert_text[completion_current.insert_text.length() - 1];
 
 	if ((last_completion_char == '"' || last_completion_char == '\'') && last_completion_char == next_char) {
 		_base_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
@@ -6066,39 +6086,41 @@ void TextEdit::_update_completion_candidates() {
 	completion_base = s;
 	Vector<float> sim_cache;
 	bool single_quote = s.begins_with("'");
-	Vector<String> completion_options_casei;
+	Vector<ScriptCodeCompletionOption> completion_options_casei;
 
-	for (int i = 0; i < completion_strings.size(); i++) {
-		if (single_quote && completion_strings[i].is_quoted()) {
-			completion_strings.write[i] = completion_strings[i].unquote().quote("'");
+	for (List<ScriptCodeCompletionOption>::Element *E = completion_sources.front(); E; E = E->next()) {
+		ScriptCodeCompletionOption &option = E->get();
+
+		if (single_quote && option.display.is_quoted()) {
+			option.display = option.display.unquote().quote("'");
 		}
 
-		if (inquote && restore_quotes == 1 && !completion_strings[i].is_quoted()) {
+		if (inquote && restore_quotes == 1 && !option.display.is_quoted()) {
 			String quote = single_quote ? "'" : "\"";
-			completion_strings.write[i] = completion_strings[i].quote(quote);
+			option.display = option.display.quote(quote);
 		}
 
-		if (completion_strings[i].begins_with(s)) {
-			completion_options.push_back(completion_strings[i]);
-		} else if (completion_strings[i].to_lower().begins_with(s.to_lower())) {
-			completion_options_casei.push_back(completion_strings[i]);
+		if (option.display.begins_with(s)) {
+			completion_options.push_back(option);
+		} else if (option.display.to_lower().begins_with(s.to_lower())) {
+			completion_options_casei.push_back(option);
 		}
 	}
 
 	completion_options.append_array(completion_options_casei);
 
 	if (completion_options.size() == 0) {
-		for (int i = 0; i < completion_strings.size(); i++) {
-			if (s.is_subsequence_of(completion_strings[i])) {
-				completion_options.push_back(completion_strings[i]);
+		for (int i = 0; i < completion_sources.size(); i++) {
+			if (s.is_subsequence_of(completion_sources[i].display)) {
+				completion_options.push_back(completion_sources[i]);
 			}
 		}
 	}
 
 	if (completion_options.size() == 0) {
-		for (int i = 0; i < completion_strings.size(); i++) {
-			if (s.is_subsequence_ofi(completion_strings[i])) {
-				completion_options.push_back(completion_strings[i]);
+		for (int i = 0; i < completion_sources.size(); i++) {
+			if (s.is_subsequence_ofi(completion_sources[i].display)) {
+				completion_options.push_back(completion_sources[i]);
 			}
 		}
 	}
@@ -6109,7 +6131,7 @@ void TextEdit::_update_completion_candidates() {
 		return;
 	}
 
-	if (completion_options.size() == 1 && s == completion_options[0]) {
+	if (completion_options.size() == 1 && s == completion_options[0].display) {
 		// A perfect match, stop completion
 		_cancel_completion();
 		return;
@@ -6147,12 +6169,12 @@ void TextEdit::set_code_hint(const String &p_hint) {
 	update();
 }
 
-void TextEdit::code_complete(const Vector<String> &p_strings, bool p_forced) {
+void TextEdit::code_complete(const List<ScriptCodeCompletionOption> &p_strings, bool p_forced) {
 
-	completion_strings = p_strings;
+	completion_sources = p_strings;
 	completion_active = true;
 	completion_forced = p_forced;
-	completion_current = "";
+	completion_current = ScriptCodeCompletionOption();
 	completion_index = 0;
 	_update_completion_candidates();
 }

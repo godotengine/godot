@@ -734,15 +734,54 @@ void CodeTextEditor::_complete_request() {
 	if (entries.size() == 0)
 		return;
 
-	Vector<String> options;
-	options.resize(entries.size());
-	size_t i = 0;
 	for (List<ScriptCodeCompletionOption>::Element *E = entries.front(); E; E = E->next()) {
-		options.write[i] = E->get().insert_text;
-		i++;
+		E->get().icon = _get_completion_icon(E->get());
 	}
+	text_editor->code_complete(entries, forced);
+}
 
-	text_editor->code_complete(options, forced);
+Ref<Texture> CodeTextEditor::_get_completion_icon(const ScriptCodeCompletionOption &p_option) {
+	Ref<Texture> tex;
+	switch (p_option.kind) {
+		case ScriptCodeCompletionOption::KIND_CLASS: {
+			if (has_icon(p_option.display, "EditorIcons")) {
+				tex = get_icon(p_option.display, "EditorIcons");
+			} else {
+				tex = get_icon("Object", "EditorIcons");
+			}
+		} break;
+		case ScriptCodeCompletionOption::KIND_ENUM:
+			tex = get_icon("Enum", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_FILE_PATH:
+			tex = get_icon("File", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_NODE_PATH:
+			tex = get_icon("NodePath", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_VARIABLE:
+			tex = get_icon("Variant", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_CONSTANT:
+			tex = get_icon("MemberConstant", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_MEMBER:
+			tex = get_icon("MemberProperty", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_SIGNAL:
+			tex = get_icon("MemberSignal", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_FUNCTION:
+			tex = get_icon("MemberMethod", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_PLAIN_TEXT:
+			tex = get_icon("CubeMesh", "EditorIcons");
+			break;
+		default:
+			tex = get_icon("String", "EditorIcons");
+			break;
+	}
+	return tex;
 }
 
 void CodeTextEditor::_font_resize_timeout() {

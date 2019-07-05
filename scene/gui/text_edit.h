@@ -255,11 +255,11 @@ private:
 
 	Set<String> completion_prefixes;
 	bool completion_enabled;
-	Vector<String> completion_strings;
-	Vector<String> completion_options;
+	List<ScriptCodeCompletionOption> completion_sources;
+	Vector<ScriptCodeCompletionOption> completion_options;
 	bool completion_active;
 	bool completion_forced;
-	String completion_current;
+	ScriptCodeCompletionOption completion_current;
 	String completion_base;
 	int completion_index;
 	Rect2i completion_rect;
@@ -704,7 +704,7 @@ public:
 	void set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata);
 
 	void set_completion(bool p_enabled, const Vector<String> &p_prefixes);
-	void code_complete(const Vector<String> &p_strings, bool p_forced = false);
+	void code_complete(const List<ScriptCodeCompletionOption> &p_strings, bool p_forced = false);
 	void set_code_hint(const String &p_hint);
 	void query_code_comple();
 
