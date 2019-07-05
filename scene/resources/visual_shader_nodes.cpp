@@ -357,9 +357,13 @@ int VisualShaderNodeTexture::get_output_port_count() const {
 	return 2;
 }
 VisualShaderNodeTexture::PortType VisualShaderNodeTexture::get_output_port_type(int p_port) const {
+	if (p_port == 0 && source == SOURCE_DEPTH)
+		return PORT_TYPE_SCALAR;
 	return p_port == 0 ? PORT_TYPE_VECTOR : PORT_TYPE_SCALAR;
 }
 String VisualShaderNodeTexture::get_output_port_name(int p_port) const {
+	if (p_port == 0 && source == SOURCE_DEPTH)
+		return "depth";
 	return p_port == 0 ? "rgb" : "alpha";
 }
 
@@ -475,6 +479,41 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 		return code;
 	}
 
+	if (p_for_preview) // DEPTH_TEXTURE is not supported in preview(canvas_item) shader
+	{
+		if (source == SOURCE_DEPTH) {
+			String code;
+			code += "\t" + p_output_vars[0] + " = 0.0;\n";
+			code += "\t" + p_output_vars[1] + " = 1.0;\n";
+			return code;
+		}
+	}
+
+	if (source == SOURCE_DEPTH && p_mode == Shader::MODE_SPATIAL && p_type == VisualShader::TYPE_FRAGMENT) {
+
+		String code = "\t{\n";
+		if (p_input_vars[0] == String()) { //none bound, do nothing
+
+			code += "\t\tfloat _depth = 0.0;\n";
+
+		} else if (p_input_vars[1] == String()) {
+			//no lod
+			code += "\t\tfloat _depth = texture( DEPTH_TEXTURE , " + p_input_vars[0] + ".xy ).r;\n";
+		} else {
+			code += "\t\tfloat _depth = textureLod( DEPTH_TEXTURE , " + p_input_vars[0] + ".xy , " + p_input_vars[1] + " ).r;\n";
+		}
+
+		code += "\t\t" + p_output_vars[0] + " = _depth;\n";
+		code += "\t\t" + p_output_vars[1] + " = 1.0;\n";
+		code += "\t}\n";
+		return code;
+	} else if (source == SOURCE_DEPTH) {
+		String code;
+		code += "\t" + p_output_vars[0] + " = 0.0;\n";
+		code += "\t" + p_output_vars[1] + " = 1.0;\n";
+		return code;
+	}
+
 	//none
 	String code;
 	code += "\t" + p_output_vars[0] + " = vec3(0.0);\n";
@@ -543,6 +582,14 @@ String VisualShaderNodeTexture::get_warning(Shader::Mode p_mode, VisualShader::T
 		return String(); // all good
 	}
 
+	if (source == SOURCE_DEPTH && p_mode == Shader::MODE_SPATIAL && p_type == VisualShader::TYPE_FRAGMENT) {
+
+		if (get_output_port_for_preview() == 0) { // DEPTH_TEXTURE is not supported in preview(canvas_item) shader
+			return TTR("Invalid source for preview.");
+		}
+		return String(); // all good
+	}
+
 	return TTR("Invalid source for shader.");
 }
 
@@ -557,7 +604,7 @@ void VisualShaderNodeTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_type", "value"), &VisualShaderNodeTexture::set_texture_type);
 	ClassDB::bind_method(D_METHOD("get_texture_type"), &VisualShaderNodeTexture::get_texture_type);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "source", PROPERTY_HINT_ENUM, "Texture,Screen,Texture2D,NormalMap2D"), "set_source", "get_source");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "source", PROPERTY_HINT_ENUM, "Texture,Screen,Texture2D,NormalMap2D,Depth"), "set_source", "get_source");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normalmap"), "set_texture_type", "get_texture_type");
 
@@ -565,6 +612,7 @@ void VisualShaderNodeTexture::_bind_methods() {
 	BIND_ENUM_CONSTANT(SOURCE_SCREEN);
 	BIND_ENUM_CONSTANT(SOURCE_2D_TEXTURE);
 	BIND_ENUM_CONSTANT(SOURCE_2D_NORMAL);
+	BIND_ENUM_CONSTANT(SOURCE_DEPTH);
 	BIND_ENUM_CONSTANT(TYPE_DATA);
 	BIND_ENUM_CONSTANT(TYPE_COLOR);
 	BIND_ENUM_CONSTANT(TYPE_NORMALMAP);
