@@ -4,3 +4,5 @@ Import('env')
 
 if 'RD_GLSL' in env['BUILDERS']:
     env.RD_GLSL('canvas.glsl');
+    env.RD_GLSL('canvas_occlusion.glsl');
+    env.RD_GLSL('canvas_occlusion_fix.glsl');
