@@ -500,7 +500,7 @@ void VisualServerCanvas::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		line->points[0] = p_from;
 		line->points[1] = p_to;
 	}
-	for (int i = 0; i < line->point_count; i++) {
+	for (uint32_t i = 0; i < line->point_count; i++) {
 		line->colors[i] = p_color;
 	}
 	line->specular_shininess = Color(1, 1, 1, 1);
@@ -991,7 +991,7 @@ void VisualServerCanvas::canvas_item_set_use_parent_material(RID p_item, bool p_
 RID VisualServerCanvas::canvas_light_create() {
 
 	RasterizerCanvas::Light *clight = memnew(RasterizerCanvas::Light);
-	clight->light_internal = VSG::canvas_render->light_internal_create();
+	clight->light_internal = VSG::canvas_render->light_create();
 	return canvas_light_owner.make_rid(clight);
 }
 void VisualServerCanvas::canvas_light_attach_to_canvas(RID p_light, RID p_canvas) {
@@ -1044,6 +1044,7 @@ void VisualServerCanvas::canvas_light_set_texture(RID p_light, RID p_texture) {
 	ERR_FAIL_COND(!clight);
 
 	clight->texture = p_texture;
+	VSG::canvas_render->light_set_texture(clight->light_internal, p_texture);
 }
 void VisualServerCanvas::canvas_light_set_texture_offset(RID p_light, const Vector2 &p_offset) {
 
@@ -1116,15 +1117,14 @@ void VisualServerCanvas::canvas_light_set_shadow_enabled(RID p_light, bool p_ena
 	RasterizerCanvas::Light *clight = canvas_light_owner.getornull(p_light);
 	ERR_FAIL_COND(!clight);
 
-	if (clight->shadow_buffer.is_valid() == p_enabled)
+	if (clight->use_shadow == p_enabled) {
 		return;
-	if (p_enabled) {
-		clight->shadow_buffer = VSG::storage->canvas_light_shadow_buffer_create(clight->shadow_buffer_size);
-	} else {
-		VSG::storage->free(clight->shadow_buffer);
-		clight->shadow_buffer = RID();
 	}
+	clight->use_shadow = p_enabled;
+
+	VSG::canvas_render->light_set_use_shadow(clight->light_internal, clight->use_shadow, clight->shadow_buffer_size);
 }
+
 void VisualServerCanvas::canvas_light_set_shadow_buffer_size(RID p_light, int p_size) {
 
 	ERR_FAIL_COND(p_size < 32 || p_size > 16384);
@@ -1138,10 +1138,7 @@ void VisualServerCanvas::canvas_light_set_shadow_buffer_size(RID p_light, int p_
 
 	clight->shadow_buffer_size = next_power_of_2(p_size);
 
-	if (clight->shadow_buffer.is_valid()) {
-		VSG::storage->free(clight->shadow_buffer);
-		clight->shadow_buffer = VSG::storage->canvas_light_shadow_buffer_create(clight->shadow_buffer_size);
-	}
+	VSG::canvas_render->light_set_use_shadow(clight->light_internal, clight->use_shadow, clight->shadow_buffer_size);
 }
 
 void VisualServerCanvas::canvas_light_set_shadow_gradient_length(RID p_light, float p_length) {
@@ -1223,7 +1220,7 @@ void VisualServerCanvas::canvas_light_occluder_set_polygon(RID p_occluder, RID p
 	}
 
 	occluder->polygon = p_polygon;
-	occluder->polygon_buffer = RID();
+	occluder->occluder = RID();
 
 	if (occluder->polygon.is_valid()) {
 		LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.getornull(p_polygon);
@@ -1232,7 +1229,7 @@ void VisualServerCanvas::canvas_light_occluder_set_polygon(RID p_occluder, RID p
 			ERR_FAIL_COND(!occluder_poly);
 		} else {
 			occluder_poly->owners.insert(occluder);
-			occluder->polygon_buffer = occluder_poly->occluder;
+			occluder->occluder = occluder_poly->occluder;
 			occluder->aabb_cache = occluder_poly->aabb;
 			occluder->cull_cache = occluder_poly->cull_mode;
 		}
@@ -1256,7 +1253,7 @@ void VisualServerCanvas::canvas_light_occluder_set_light_mask(RID p_occluder, in
 RID VisualServerCanvas::canvas_occluder_polygon_create() {
 
 	LightOccluderPolygon *occluder_poly = memnew(LightOccluderPolygon);
-	occluder_poly->occluder = VSG::storage->canvas_light_occluder_create();
+	occluder_poly->occluder = VSG::canvas_render->occluder_polygon_create();
 	return canvas_light_occluder_polygon_owner.make_rid(occluder_poly);
 }
 void VisualServerCanvas::canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const PoolVector<Vector2> &p_shape, bool p_closed) {
@@ -1307,7 +1304,7 @@ void VisualServerCanvas::canvas_occluder_polygon_set_shape_as_lines(RID p_occlud
 		}
 	}
 
-	VSG::storage->canvas_light_occluder_set_polylines(occluder_poly->occluder, p_shape);
+	VSG::canvas_render->occluder_polygon_set_shape_as_lines(occluder_poly->occluder, p_shape);
 	for (Set<RasterizerCanvas::LightOccluderInstance *>::Element *E = occluder_poly->owners.front(); E; E = E->next()) {
 		E->get()->aabb_cache = occluder_poly->aabb;
 	}
@@ -1318,6 +1315,7 @@ void VisualServerCanvas::canvas_occluder_polygon_set_cull_mode(RID p_occluder_po
 	LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.getornull(p_occluder_polygon);
 	ERR_FAIL_COND(!occluder_poly);
 	occluder_poly->cull_mode = p_mode;
+	VSG::canvas_render->occluder_polygon_set_cull_mode(occluder_poly->occluder, p_mode);
 	for (Set<RasterizerCanvas::LightOccluderInstance *>::Element *E = occluder_poly->owners.front(); E; E = E->next()) {
 		E->get()->cull_cache = p_mode;
 	}
@@ -1407,10 +1405,7 @@ bool VisualServerCanvas::free(RID p_rid) {
 				canvas->lights.erase(canvas_light);
 		}
 
-		if (canvas_light->shadow_buffer.is_valid())
-			VSG::storage->free(canvas_light->shadow_buffer);
-
-		VSG::canvas_render->light_internal_free(canvas_light->light_internal);
+		VSG::canvas_render->free(canvas_light->light_internal);
 
 		canvas_light_owner.free(p_rid);
 		memdelete(canvas_light);
@@ -1441,7 +1436,7 @@ bool VisualServerCanvas::free(RID p_rid) {
 
 		LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.getornull(p_rid);
 		ERR_FAIL_COND_V(!occluder_poly, true);
-		VSG::storage->free(occluder_poly->occluder);
+		VSG::canvas_render->free(occluder_poly->occluder);
 
 		while (occluder_poly->owners.size()) {
 
