@@ -2226,22 +2226,19 @@ void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 
 void SceneTreeDock::_nodes_dragged(Array p_nodes, NodePath p_to, int p_type) {
 
-	Vector<Node *> nodes;
-	Node *to_node;
+	List<Node *> selection = editor_selection->get_selected_node_list();
 
-	for (int i = 0; i < p_nodes.size(); i++) {
-		Node *n = get_node((p_nodes[i]));
-		if (n) {
-			nodes.push_back(n);
-		}
-	}
+	if (selection.empty())
+		return; //nothing to reparent
 
-	if (nodes.size() == 0)
-		return;
-
-	to_node = get_node(p_to);
+	Node *to_node = get_node(p_to);
 	if (!to_node)
 		return;
+
+	Vector<Node *> nodes;
+	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+		nodes.push_back(E->get());
+	}
 
 	int to_pos = -1;
 
