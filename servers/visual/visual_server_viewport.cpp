@@ -63,7 +63,10 @@ static Transform2D _canvas_get_transform(VisualServerViewport::Viewport *p_viewp
 }
 
 void VisualServerViewport::_draw_3d(Viewport *p_viewport, ARVRInterface::Eyes p_eye) {
-	Ref<ARVRInterface> arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
+	Ref<ARVRInterface> arvr_interface;
+	if (ARVRServer::get_singleton() != NULL) {
+		arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
+	}
 
 	if (p_viewport->use_arvr && arvr_interface.is_valid()) {
 		VSG::scene->render_camera(arvr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
@@ -260,11 +263,16 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 }
 
 void VisualServerViewport::draw_viewports() {
-	// get our arvr interface in case we need it
-	Ref<ARVRInterface> arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
 
-	// process all our active interfaces
-	ARVRServer::get_singleton()->_process();
+	// get our arvr interface in case we need it
+	Ref<ARVRInterface> arvr_interface;
+
+	if (ARVRServer::get_singleton() != NULL) {
+		arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
+
+		// process all our active interfaces
+		ARVRServer::get_singleton()->_process();
+	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		clear_color = GLOBAL_GET("rendering/environment/default_clear_color");
