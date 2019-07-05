@@ -2458,6 +2458,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			settings_config_dialog->popup_edit_settings();
 		} break;
+		case SETTINGS_USER_DATA_FOLDER: {
+
+			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_user_data_dir());
+		} break;
 		case SETTINGS_EDITOR_DATA_FOLDER: {
 
 			OS::get_singleton()->shell_open(String("file://") + EditorSettings::get_singleton()->get_data_dir());
@@ -5944,6 +5948,7 @@ EditorNode::EditorNode() {
 #endif
 	p->add_separator();
 
+	p->add_item(TTR("Open User Data Folder"), SETTINGS_USER_DATA_FOLDER);
 	if (OS::get_singleton()->get_data_path() == OS::get_singleton()->get_config_path()) {
 		// Configuration and data folders are located in the same place (Windows/macOS)
 		p->add_item(TTR("Open Editor Data/Settings Folder"), SETTINGS_EDITOR_DATA_FOLDER);
