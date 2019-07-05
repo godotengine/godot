@@ -1613,6 +1613,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		}
 
 		if (p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT && !(flags & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
+			printf("vkformat: %x\n", image_create_info.format);
 			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as depth-stencil attachment.");
 		}
 
@@ -1664,7 +1665,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	//set bound and unbound layouts
 	if (p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-		texture.aspect_mask = TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		texture.aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
 		if (p_format.usage_bits & TEXTURE_USAGE_SAMPLING_BIT) {
 			texture.unbound_layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
@@ -3168,7 +3169,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 		} break;*/
 		default: {
 
-			if (reflection.getType()->getQualifier().hasOffset()) {
+			if (reflection.getType()->getQualifier().hasOffset() || reflection.name.find(".") != std::string::npos) {
 				//member of uniform block?
 				return true;
 			}
@@ -4127,7 +4128,7 @@ bool RenderingDeviceVulkan::uniform_set_is_valid(RID p_uniform_set) {
 	return uniform_set_owner.owns(p_uniform_set);
 }
 
-Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, void *p_data, bool p_sync_with_draw) {
+Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_sync_with_draw) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V_MSG(draw_list && p_sync_with_draw, ERR_INVALID_PARAMETER,
