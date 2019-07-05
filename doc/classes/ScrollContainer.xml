@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScrollContainer" inherits="Container" category="Core" version="3.1.1">
+<class name="ScrollContainer" inherits="Container" category="Core" version="3.1.2">
 	<brief_description>
 		A helper node for displaying scrollable elements (e.g. lists).
 	</brief_description>
