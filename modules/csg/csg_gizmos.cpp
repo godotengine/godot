@@ -34,8 +34,18 @@
 
 CSGShapeSpatialGizmoPlugin::CSGShapeSpatialGizmoPlugin() {
 
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/csg", Color(0.2, 0.5, 1, 0.1));
-	create_material("shape_material", gizmo_color);
+	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/csg", Color(0.0, 0.4, 1, 0.15));
+	create_material("shape_union_material", gizmo_color);
+	create_material("shape_union_solid_material", gizmo_color);
+	gizmo_color.invert();
+	create_material("shape_subtraction_material", gizmo_color);
+	create_material("shape_subtraction_solid_material", gizmo_color);
+	gizmo_color.r = 0.95;
+	gizmo_color.g = 0.95;
+	gizmo_color.b = 0.95;
+	create_material("shape_intersection_material", gizmo_color);
+	create_material("shape_intersection_solid_material", gizmo_color);
+
 	create_handle_material("handles");
 }
 
@@ -311,7 +321,19 @@ void CSGShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	Ref<Material> material = get_material("shape_material", p_gizmo);
+	Ref<Material> material;
+	switch (cs->get_operation()) {
+		case CSGShape::OPERATION_UNION:
+			material = get_material("shape_union_material", p_gizmo);
+			break;
+		case CSGShape::OPERATION_INTERSECTION:
+			material = get_material("shape_intersection_material", p_gizmo);
+			break;
+		case CSGShape::OPERATION_SUBTRACTION:
+			material = get_material("shape_subtraction_material", p_gizmo);
+			break;
+	}
+
 	Ref<Material> handles_material = get_material("handles");
 
 	PoolVector<Vector3> faces = cs->get_brush_faces();
@@ -333,6 +355,30 @@ void CSGShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	p_gizmo->add_lines(lines, material);
 	p_gizmo->add_collision_segments(lines);
+
+	if (p_gizmo->is_selected()) {
+		// Draw a translucent representation of the CSG node
+		Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+		Array array;
+		array.resize(Mesh::ARRAY_MAX);
+		array[Mesh::ARRAY_VERTEX] = faces;
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
+
+		Ref<Material> solid_material;
+		switch (cs->get_operation()) {
+			case CSGShape::OPERATION_UNION:
+				solid_material = get_material("shape_union_solid_material", p_gizmo);
+				break;
+			case CSGShape::OPERATION_INTERSECTION:
+				solid_material = get_material("shape_intersection_solid_material", p_gizmo);
+				break;
+			case CSGShape::OPERATION_SUBTRACTION:
+				solid_material = get_material("shape_subtraction_solid_material", p_gizmo);
+				break;
+		}
+
+		p_gizmo->add_mesh(mesh, false, RID(), solid_material);
+	}
 
 	if (Object::cast_to<CSGSphere>(cs)) {
 		CSGSphere *s = Object::cast_to<CSGSphere>(cs);
