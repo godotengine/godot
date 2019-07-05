@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import build_scripts.tls_configure as tls_configure
+import build_scripts.mono_configure as mono_configure
+
 Import('env')
 Import('env_modules')
 
@@ -26,14 +29,12 @@ if env_mono['mono_glue']:
 
     import os.path
     if not os.path.isfile('glue/mono_glue.gen.cpp'):
-        raise RuntimeError('Missing mono glue sources. Did you forget to generate them?')
+        raise RuntimeError("Mono glue sources not found. Did you forget to run '--generate-mono-glue'?")
 
 if env_mono['tools'] or env_mono['target'] != 'release':
     env_mono.Append(CPPDEFINES=['GD_MONO_HOT_RELOAD'])
 
 # Configure Thread Local Storage
-
-import build_scripts.tls_configure as tls_configure
 
 conf = Configure(env_mono)
 tls_configure.configure(conf)
@@ -41,12 +42,23 @@ env_mono = conf.Finish()
 
 # Configure Mono
 
-import build_scripts.mono_configure as mono_configure
-
 mono_configure.configure(env, env_mono)
 
-# Build GodotSharpTools
+# Build Godot API solution
 
-import build_scripts.godotsharptools_build as godotsharptools_build
+if env_mono['tools'] and env_mono['mono_glue']:
+    import build_scripts.api_solution_build as api_solution_build
+    api_solution_build.build(env_mono)
 
-godotsharptools_build.build(env_mono)
+# Build GodotTools
+
+if env_mono['tools']:
+    import build_scripts.godot_tools_build as godot_tools_build
+    if env_mono['mono_glue']:
+        godot_tools_build.build(env_mono)
+    else:
+        # Building without the glue sources so the Godot API solution may be missing.
+        # GodotTools depends on the Godot API solution. As such, we will only build
+        # GodotTools.ProjectEditor which doesn't depend on the Godot API solution and
+        # is required by the bindings generator in order to be able to generated it.
+        godot_tools_build.build_project_editor_only(env_mono)

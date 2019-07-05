@@ -39,7 +39,8 @@
 #define API_SOLUTION_NAME "GodotSharp"
 #define CORE_API_ASSEMBLY_NAME "GodotSharp"
 #define EDITOR_API_ASSEMBLY_NAME "GodotSharpEditor"
-#define EDITOR_TOOLS_ASSEMBLY_NAME "GodotSharpTools"
+#define TOOLS_ASSEMBLY_NAME "GodotTools"
+#define TOOLS_PROJECT_EDITOR_ASSEMBLY_NAME "GodotTools.ProjectEditor"
 
 #define BINDINGS_CLASS_NATIVECALLS "NativeCalls"
 #define BINDINGS_CLASS_NATIVECALLS_EDITOR "EditorNativeCalls"

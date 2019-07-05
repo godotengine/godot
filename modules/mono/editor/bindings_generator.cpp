@@ -861,26 +861,22 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 	p_output.append("\n#pragma warning restore CS1591\n");
 }
 
-Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, DotNetSolution &r_solution) {
-
-	String proj_dir = p_solution_dir.plus_file(CORE_API_ASSEMBLY_NAME);
+Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir, Vector<String> &r_compile_items) {
 
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
 
-	if (!DirAccess::exists(proj_dir)) {
-		Error err = da->make_dir_recursive(proj_dir);
+	if (!DirAccess::exists(p_proj_dir)) {
+		Error err = da->make_dir_recursive(p_proj_dir);
 		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 	}
 
-	da->change_dir(proj_dir);
+	da->change_dir(p_proj_dir);
 	da->make_dir("Core");
 	da->make_dir("ObjectType");
 
-	String core_dir = path_join(proj_dir, "Core");
-	String obj_type_dir = path_join(proj_dir, "ObjectType");
-
-	Vector<String> compile_items;
+	String core_dir = path_join(p_proj_dir, "Core");
+	String obj_type_dir = path_join(p_proj_dir, "ObjectType");
 
 	// Generate source file for global scope constants and enums
 	{
@@ -891,7 +887,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, 
 		if (save_err != OK)
 			return save_err;
 
-		compile_items.push_back(output_file);
+		r_compile_items.push_back(output_file);
 	}
 
 	for (OrderedHashMap<StringName, TypeInterface>::Element E = obj_types.front(); E; E = E.next()) {
@@ -909,7 +905,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, 
 		if (err != OK)
 			return err;
 
-		compile_items.push_back(output_file);
+		r_compile_items.push_back(output_file);
 	}
 
 	// Generate sources from compressed files
@@ -939,7 +935,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, 
 		file->store_buffer(data.ptr(), data.size());
 		file->close();
 
-		compile_items.push_back(output_file);
+		r_compile_items.push_back(output_file);
 	}
 
 	StringBuilder cs_icalls_content;
@@ -981,43 +977,27 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, 
 	if (err != OK)
 		return err;
 
-	compile_items.push_back(internal_methods_file);
-
-	String guid = CSharpProject::generate_core_api_project(proj_dir, compile_items);
-
-	DotNetSolution::ProjectInfo proj_info;
-	proj_info.guid = guid;
-	proj_info.relpath = String(CORE_API_ASSEMBLY_NAME).plus_file(CORE_API_ASSEMBLY_NAME ".csproj");
-	proj_info.configs.push_back("Debug");
-	proj_info.configs.push_back("Release");
-
-	r_solution.add_new_project(CORE_API_ASSEMBLY_NAME, proj_info);
-
-	_log("The solution and C# project for the Core API was generated successfully\n");
+	r_compile_items.push_back(internal_methods_file);
 
 	return OK;
 }
 
-Error BindingsGenerator::generate_cs_editor_project(const String &p_solution_dir, DotNetSolution &r_solution) {
-
-	String proj_dir = p_solution_dir.plus_file(EDITOR_API_ASSEMBLY_NAME);
+Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir, Vector<String> &r_compile_items) {
 
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
 
-	if (!DirAccess::exists(proj_dir)) {
-		Error err = da->make_dir_recursive(proj_dir);
+	if (!DirAccess::exists(p_proj_dir)) {
+		Error err = da->make_dir_recursive(p_proj_dir);
 		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 	}
 
-	da->change_dir(proj_dir);
+	da->change_dir(p_proj_dir);
 	da->make_dir("Core");
 	da->make_dir("ObjectType");
 
-	String core_dir = path_join(proj_dir, "Core");
-	String obj_type_dir = path_join(proj_dir, "ObjectType");
-
-	Vector<String> compile_items;
+	String core_dir = path_join(p_proj_dir, "Core");
+	String obj_type_dir = path_join(p_proj_dir, "ObjectType");
 
 	for (OrderedHashMap<StringName, TypeInterface>::Element E = obj_types.front(); E; E = E.next()) {
 		const TypeInterface &itype = E.get();
@@ -1034,7 +1014,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_solution_dir
 		if (err != OK)
 			return err;
 
-		compile_items.push_back(output_file);
+		r_compile_items.push_back(output_file);
 	}
 
 	StringBuilder cs_icalls_content;
@@ -1077,57 +1057,55 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_solution_dir
 	if (err != OK)
 		return err;
 
-	compile_items.push_back(internal_methods_file);
-
-	String guid = CSharpProject::generate_editor_api_project(proj_dir, "../" CORE_API_ASSEMBLY_NAME "/" CORE_API_ASSEMBLY_NAME ".csproj", compile_items);
-
-	DotNetSolution::ProjectInfo proj_info;
-	proj_info.guid = guid;
-	proj_info.relpath = String(EDITOR_API_ASSEMBLY_NAME).plus_file(EDITOR_API_ASSEMBLY_NAME ".csproj");
-	proj_info.configs.push_back("Debug");
-	proj_info.configs.push_back("Release");
-
-	r_solution.add_new_project(EDITOR_API_ASSEMBLY_NAME, proj_info);
-
-	_log("The solution and C# project for the Editor API was generated successfully\n");
+	r_compile_items.push_back(internal_methods_file);
 
 	return OK;
 }
 
 Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 
+	String output_dir = DirAccess::get_full_path(p_output_dir, DirAccess::ACCESS_FILESYSTEM);
+
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
 
-	if (!DirAccess::exists(p_output_dir)) {
-		Error err = da->make_dir_recursive(p_output_dir);
+	if (!DirAccess::exists(output_dir)) {
+		Error err = da->make_dir_recursive(output_dir);
 		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 	}
 
-	DotNetSolution solution(API_SOLUTION_NAME);
-
-	if (!solution.set_path(p_output_dir))
-		return ERR_FILE_NOT_FOUND;
-
 	Error proj_err;
 
-	proj_err = generate_cs_core_project(p_output_dir, solution);
+	// Generate GodotSharp source files
+
+	String core_proj_dir = output_dir.plus_file(CORE_API_ASSEMBLY_NAME);
+	Vector<String> core_compile_items;
+
+	proj_err = generate_cs_core_project(core_proj_dir, core_compile_items);
 	if (proj_err != OK) {
 		ERR_PRINT("Generation of the Core API C# project failed");
 		return proj_err;
 	}
 
-	proj_err = generate_cs_editor_project(p_output_dir, solution);
+	// Generate GodotSharpEditor source files
+
+	String editor_proj_dir = output_dir.plus_file(EDITOR_API_ASSEMBLY_NAME);
+	Vector<String> editor_compile_items;
+
+	proj_err = generate_cs_editor_project(editor_proj_dir, editor_compile_items);
 	if (proj_err != OK) {
 		ERR_PRINT("Generation of the Editor API C# project failed");
 		return proj_err;
 	}
 
-	Error sln_error = solution.save();
-	if (sln_error != OK) {
-		ERR_PRINT("Failed to save API solution");
-		return sln_error;
+	// Generate solution
+
+	if (!CSharpProject::generate_api_solution(output_dir,
+				core_proj_dir, core_compile_items, editor_proj_dir, editor_compile_items)) {
+		return ERR_CANT_CREATE;
 	}
+
+	_log("The solution for the Godot API was generated successfully\n");
 
 	return OK;
 }
@@ -1311,8 +1289,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output.append(MEMBER_BEGIN "private static Godot.Object singleton;\n");
 		output.append(MEMBER_BEGIN "public static Godot.Object Singleton\n" INDENT2 "{\n" INDENT3
 								   "get\n" INDENT3 "{\n" INDENT4 "if (singleton == null)\n" INDENT5
-								   "singleton = Engine.GetSingleton(" BINDINGS_NATIVE_NAME_FIELD ");\n" INDENT4
-								   "return singleton;\n" INDENT3 "}\n" INDENT2 "}\n");
+								   "singleton = Engine.GetSingleton(typeof(");
+		output.append(itype.proxy_name);
+		output.append(").Name);\n" INDENT4 "return singleton;\n" INDENT3 "}\n" INDENT2 "}\n");
 
 		output.append(MEMBER_BEGIN "private const string " BINDINGS_NATIVE_NAME_FIELD " = \"");
 		output.append(itype.name);
@@ -2347,6 +2326,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.is_enum = true;
 			} else if (return_info.class_name != StringName()) {
 				imethod.return_type.cname = return_info.class_name;
+				if (!imethod.is_virtual && ClassDB::is_parent_class(return_info.class_name, name_cache.type_Reference) && return_info.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+					/* clang-format off */
+					ERR_PRINTS("Return type is reference but hint is not " _STR(PROPERTY_HINT_RESOURCE_TYPE) "."
+							" Are you returning a reference type by pointer? Method: " + itype.name + "." + imethod.name);
+					/* clang-format on */
+					ERR_FAIL();
+				}
 			} else if (return_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 				imethod.return_type.cname = return_info.hint_string;
 			} else if (return_info.type == Variant::NIL && return_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
@@ -3018,36 +3004,49 @@ void BindingsGenerator::_initialize() {
 void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) {
 
 	const int NUM_OPTIONS = 2;
-	String mono_glue_option = "--generate-mono-glue";
-	String cs_api_option = "--generate-cs-api";
+	String generate_all_glue_option = "--generate-mono-glue";
+	String generate_cs_glue_option = "--generate-mono-cs-glue";
+	String generate_cpp_glue_option = "--generate-mono-cpp-glue";
 
-	String mono_glue_path;
-	String cs_api_path;
+	String glue_dir_path;
+	String cs_dir_path;
+	String cpp_dir_path;
 
 	int options_left = NUM_OPTIONS;
 
 	const List<String>::Element *elem = p_cmdline_args.front();
 
 	while (elem && options_left) {
-		if (elem->get() == mono_glue_option) {
+		if (elem->get() == generate_all_glue_option) {
 			const List<String>::Element *path_elem = elem->next();
 
 			if (path_elem) {
-				mono_glue_path = path_elem->get();
+				glue_dir_path = path_elem->get();
 				elem = elem->next();
 			} else {
-				ERR_PRINTS(mono_glue_option + ": No output directory specified");
+				ERR_PRINTS(generate_all_glue_option + ": No output directory specified (expected path to {GODOT_ROOT}/modules/mono/glue)");
 			}
 
 			--options_left;
-		} else if (elem->get() == cs_api_option) {
+		} else if (elem->get() == generate_cs_glue_option) {
 			const List<String>::Element *path_elem = elem->next();
 
 			if (path_elem) {
-				cs_api_path = path_elem->get();
+				cs_dir_path = path_elem->get();
 				elem = elem->next();
 			} else {
-				ERR_PRINTS(cs_api_option + ": No output directory specified");
+				ERR_PRINTS(generate_cs_glue_option + ": No output directory specified");
+			}
+
+			--options_left;
+		} else if (elem->get() == generate_cpp_glue_option) {
+			const List<String>::Element *path_elem = elem->next();
+
+			if (path_elem) {
+				cpp_dir_path = path_elem->get();
+				elem = elem->next();
+			} else {
+				ERR_PRINTS(generate_cpp_glue_option + ": No output directory specified");
 			}
 
 			--options_left;
@@ -3056,18 +3055,26 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 		elem = elem->next();
 	}
 
-	if (mono_glue_path.length() || cs_api_path.length()) {
+	if (glue_dir_path.length() || cs_dir_path.length() || cpp_dir_path.length()) {
 		BindingsGenerator bindings_generator;
 		bindings_generator.set_log_print_enabled(true);
 
-		if (mono_glue_path.length()) {
-			if (bindings_generator.generate_glue(mono_glue_path) != OK)
-				ERR_PRINTS(mono_glue_option + ": Failed to generate mono glue");
+		if (glue_dir_path.length()) {
+			if (bindings_generator.generate_glue(glue_dir_path) != OK)
+				ERR_PRINTS(generate_all_glue_option + ": Failed to generate the C++ glue");
+
+			if (bindings_generator.generate_cs_api(glue_dir_path.plus_file("Managed/Generated")) != OK)
+				ERR_PRINTS(generate_all_glue_option + ": Failed to generate the C# API");
 		}
 
-		if (cs_api_path.length()) {
-			if (bindings_generator.generate_cs_api(cs_api_path) != OK)
-				ERR_PRINTS(cs_api_option + ": Failed to generate the C# API");
+		if (cs_dir_path.length()) {
+			if (bindings_generator.generate_cs_api(cs_dir_path) != OK)
+				ERR_PRINTS(generate_cs_glue_option + ": Failed to generate the C# API");
+		}
+
+		if (cpp_dir_path.length()) {
+			if (bindings_generator.generate_glue(cpp_dir_path) != OK)
+				ERR_PRINTS(generate_cpp_glue_option + ": Failed to generate the C++ glue");
 		}
 
 		// Exit once done

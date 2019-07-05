@@ -33,7 +33,6 @@
 
 #include "core/class_db.h"
 #include "core/string_builder.h"
-#include "dotnet_solution.h"
 #include "editor/doc/doc_data.h"
 #include "editor/editor_help.h"
 
@@ -614,12 +613,13 @@ class BindingsGenerator {
 	void _initialize();
 
 public:
-	Error generate_cs_core_project(const String &p_solution_dir, DotNetSolution &r_solution);
-	Error generate_cs_editor_project(const String &p_solution_dir, DotNetSolution &r_solution);
+	Error generate_cs_core_project(const String &p_proj_dir, Vector<String> &r_compile_files);
+	Error generate_cs_editor_project(const String &p_proj_dir, Vector<String> &r_compile_items);
 	Error generate_cs_api(const String &p_output_dir);
 	Error generate_glue(const String &p_output_dir);
 
-	void set_log_print_enabled(bool p_enabled) { log_print_enabled = p_enabled; }
+	_FORCE_INLINE_ bool is_log_print_enabled() { return log_print_enabled; }
+	_FORCE_INLINE_ void set_log_print_enabled(bool p_enabled) { log_print_enabled = p_enabled; }
 
 	static uint32_t get_version();
 
