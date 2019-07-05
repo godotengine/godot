@@ -1932,13 +1932,15 @@ PoolVector<uint8_t> _File::get_buffer(int p_length) const {
 	ERR_FAIL_COND_V(p_length < 0, data);
 	if (p_length == 0)
 		return data;
+
 	Error err = data.resize(p_length);
 	ERR_FAIL_COND_V(err != OK, data);
+
 	PoolVector<uint8_t>::Write w = data.write();
 	int len = f->get_buffer(&w[0], p_length);
 	ERR_FAIL_COND_V(len < 0, PoolVector<uint8_t>());
 
-	w = PoolVector<uint8_t>::Write();
+	w.release();
 
 	if (len < p_length)
 		data.resize(p_length);
@@ -2113,11 +2115,11 @@ void _File::store_var(const Variant &p_var, bool p_full_objects) {
 
 	PoolVector<uint8_t> buff;
 	buff.resize(len);
-	PoolVector<uint8_t>::Write w = buff.write();
 
+	PoolVector<uint8_t>::Write w = buff.write();
 	err = encode_variant(p_var, &w[0], len, p_full_objects);
 	ERR_FAIL_COND(err != OK);
-	w = PoolVector<uint8_t>::Write();
+	w.release();
 
 	store_32(len);
 	store_buffer(buff);

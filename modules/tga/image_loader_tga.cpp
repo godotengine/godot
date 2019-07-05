@@ -199,7 +199,7 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 		}
 	}
 
-	image_data_w = PoolVector<uint8_t>::Write();
+	image_data_w.release();
 
 	p_image->create(width, height, 0, Image::FORMAT_RGBA8, image_data);
 

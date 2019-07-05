@@ -73,7 +73,7 @@ void SoftBodyVisualServerHandler::open() {
 }
 
 void SoftBodyVisualServerHandler::close() {
-	write_buffer = PoolVector<uint8_t>::Write();
+	write_buffer.release();
 }
 
 void SoftBodyVisualServerHandler::commit_changes() {

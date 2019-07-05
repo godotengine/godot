@@ -79,7 +79,7 @@ Array StreamPeer::_get_data(int p_bytes) {
 
 	PoolVector<uint8_t>::Write w = data.write();
 	Error err = get_data(&w[0], p_bytes);
-	w = PoolVector<uint8_t>::Write();
+	w.release();
 	ret.push_back(err);
 	ret.push_back(data);
 	return ret;
@@ -101,7 +101,7 @@ Array StreamPeer::_get_partial_data(int p_bytes) {
 	PoolVector<uint8_t>::Write w = data.write();
 	int received;
 	Error err = get_partial_data(&w[0], p_bytes, received);
-	w = PoolVector<uint8_t>::Write();
+	w.release();
 
 	if (err != OK) {
 		data.resize(0);

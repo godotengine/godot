@@ -410,7 +410,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			PoolVector<uint8_t>::Write w = array.write();
 			f->get_buffer(w.ptr(), len);
 			_advance_padding(len);
-			w = PoolVector<uint8_t>::Write();
+			w.release();
 			r_v = array;
 
 		} break;
@@ -432,7 +432,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			}
 
 #endif
-			w = PoolVector<int>::Write();
+			w.release();
 			r_v = array;
 		} break;
 		case VARIANT_REAL_ARRAY: {
@@ -454,7 +454,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 
 #endif
 
-			w = PoolVector<real_t>::Write();
+			w.release();
 			r_v = array;
 		} break;
 		case VARIANT_STRING_ARRAY: {
@@ -465,7 +465,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			PoolVector<String>::Write w = array.write();
 			for (uint32_t i = 0; i < len; i++)
 				w[i] = get_unicode_string();
-			w = PoolVector<String>::Write();
+			w.release();
 			r_v = array;
 
 		} break;
@@ -493,7 +493,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				ERR_EXPLAIN("Vector2 size is NOT 8!");
 				ERR_FAIL_V(ERR_UNAVAILABLE);
 			}
-			w = PoolVector<Vector2>::Write();
+			w.release();
 			r_v = array;
 
 		} break;
@@ -521,7 +521,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				ERR_EXPLAIN("Vector3 size is NOT 12!");
 				ERR_FAIL_V(ERR_UNAVAILABLE);
 			}
-			w = PoolVector<Vector3>::Write();
+			w.release();
 			r_v = array;
 
 		} break;
@@ -549,7 +549,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				ERR_EXPLAIN("Color size is NOT 16!");
 				ERR_FAIL_V(ERR_UNAVAILABLE);
 			}
-			w = PoolVector<Color>::Write();
+			w.release();
 			r_v = array;
 		} break;
 #ifndef DISABLE_DEPRECATED
@@ -584,7 +584,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				PoolVector<uint8_t>::Write w = imgdata.write();
 				f->get_buffer(w.ptr(), datalen);
 				_advance_padding(datalen);
-				w = PoolVector<uint8_t>::Write();
+				w.release();
 
 				Ref<Image> image;
 				image.instance();
@@ -597,7 +597,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				data.resize(f->get_32());
 				PoolVector<uint8_t>::Write w = data.write();
 				f->get_buffer(w.ptr(), data.size());
-				w = PoolVector<uint8_t>::Write();
+				w.release();
 
 				Ref<Image> image;
 

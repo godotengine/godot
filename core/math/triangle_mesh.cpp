@@ -182,7 +182,7 @@ void TriangleMesh::create(const PoolVector<Vector3> &p_faces) {
 	int max_alloc = fc;
 	_create_bvh(bw.ptr(), bwp.ptr(), 0, fc, 1, max_depth, max_alloc);
 
-	bw = PoolVector<BVH>::Write(); //clearup
+	bw.release(); //clearup
 	bvh.resize(max_alloc); //resize back
 
 	valid = true;
@@ -751,7 +751,7 @@ PoolVector<Face3> TriangleMesh::get_faces() const {
 		}
 	}
 
-	w = PoolVector<Face3>::Write();
+	w.release();
 	return faces;
 }
 
