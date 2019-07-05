@@ -557,6 +557,7 @@ void CSGShape::set_operation(Operation p_operation) {
 
 	operation = p_operation;
 	_make_dirty();
+	update_gizmo();
 }
 
 CSGShape::Operation CSGShape::get_operation() const {
