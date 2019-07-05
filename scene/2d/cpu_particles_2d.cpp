@@ -661,8 +661,9 @@ void CPUParticles2D::_particles_process(float p_delta) {
 					//do none
 				} break;
 				case EMISSION_SHAPE_SPHERE: {
-					Vector3 sphere_shape = Vector3(Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0).normalized() * emission_sphere_radius;
-					p.transform[2] = Vector2(sphere_shape.x, sphere_shape.y);
+					float s = Math::randf(), t = 2.0 * Math_PI * Math::randf();
+					float radius = emission_sphere_radius * Math::sqrt(1.0 - s * s);
+					p.transform[2] = Vector2(Math::cos(t), Math::sin(t)) * radius;
 				} break;
 				case EMISSION_SHAPE_RECTANGLE: {
 					p.transform[2] = Vector2(Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0) * emission_rect_extents;
