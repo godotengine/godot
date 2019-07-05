@@ -149,13 +149,13 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 						cl->filter_next_ptr = lights;
 						lights = cl;
-						cl->texture_cache = NULL;
+						//						cl->texture_cache = NULL;
 						Transform2D scale;
 						scale.scale(cl->rect_cache.size);
 						scale.elements[2] = cl->rect_cache.position;
-						cl->light_shader_xform = (cl->xform_cache * scale).affine_inverse();
-						cl->light_shader_pos = cl->xform_cache[2];
-						if (cl->shadow_buffer.is_valid()) {
+						cl->light_shader_xform = cl->xform * scale;
+						//cl->light_shader_pos = cl->xform_cache[2];
+						if (cl->use_shadow) {
 
 							cl->shadows_next_ptr = lights_with_shadow;
 							if (lights_with_shadow == NULL) {
@@ -174,7 +174,8 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 						light_count++;
 					}
 
-					VSG::canvas_render->light_internal_update(cl->light_internal, cl);
+					//guess this is not needed, but keeping because it may be
+					//VSG::canvas_render->light_internal_update(cl->light_internal, cl);
 				}
 			}
 
@@ -208,7 +209,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 			RasterizerCanvas::Light *light = lights_with_shadow;
 			while (light) {
 
-				VSG::canvas_render->canvas_light_shadow_buffer_update(light->shadow_buffer, light->xform_cache.affine_inverse(), light->item_shadow_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, occluders, &light->shadow_matrix_cache);
+				VSG::canvas_render->light_update_shadow(light->light_internal, light->xform_cache.affine_inverse(), light->item_shadow_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, occluders);
 				light = light->shadows_next_ptr;
 			}
 
