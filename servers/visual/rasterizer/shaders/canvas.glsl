@@ -23,6 +23,7 @@ layout(location = 7) in vec4 bone_weights_attrib;
 
 layout(location=0) out vec2 uv_interp;
 layout(location=1) out vec4 color_interp;
+layout(location=2) out vec2 vertex_interp;
 
 #ifdef USE_NINEPATCH
 
@@ -206,12 +207,12 @@ VERTEX_SHADER_CODE
 #endif
 #endif
 
+	vertex = (canvas_data.canvas_transform * vec4(vertex,0.0,1.0)).xy;
+
+	vertex_interp = vertex;
 	uv_interp = uv;
-#if !defined(SKIP_TRANSFORM_USED)
-	gl_Position = (canvas_data.screen_transform * canvas_data.canvas_transform) * vec4(vertex,0.0,1.0);
-#else
-	gl_Position = vec4(vertex,0.0,1.0);
-#endif
+
+	gl_Position = canvas_data.screen_transform * vec4(vertex,0.0,1.0);
 
 #ifdef USE_POINT_SIZE
 	gl_PointSize=point_size;
@@ -232,6 +233,7 @@ VERSION_DEFINES
 
 layout(location=0) in vec2 uv_interp;
 layout(location=1) in vec4 color_interp;
+layout(location=2) in vec2 vertex_interp;
 
 #ifdef USE_NINEPATCH
 
@@ -315,6 +317,7 @@ void main() {
 
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
+	vec2 vertex = vertex_interp;
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 
@@ -347,6 +350,8 @@ void main() {
 #endif
 
 
+	uint light_count = (draw_data.flags>>FLAGS_LIGHT_COUNT_SHIFT)&0xF; //max 16 lights
+
 
 	vec3 normal;
 
@@ -357,17 +362,32 @@ void main() {
 	bool normal_used = false;
 #endif
 
-#if 0
-	if (false /*normal_used || canvas_data.light_count > 0*/ ) {
-		normal.xy = texture(sampler2D(normal_texture,texture_sampler	), uv).xy * 2.0 - 1.0;
+
+	if (normal_used || (light_count > 0 && bool(draw_data.flags&FLAGS_DEFAULT_NORMAL_MAP_USED))) {
+		normal.xy = texture(sampler2D(normal_texture,texture_sampler), uv).xy * vec2(2.0,-2.0) - vec2(1.0,-1.0);
 		normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
 		normal_used = true;
 	} else {
-#endif
 		normal = vec3(0.0, 0.0, 1.0);
-#if 0
 	}
+
+	vec4 specular_shininess;
+
+#if defined(SPECULAR_SHININESS_USED)
+
+	bool specular_shininess_used = true;
+#else
+	bool specular_shininess_used = false;
 #endif
+
+	if (specular_shininess_used || (light_count > 0 && normal_used && bool(draw_data.flags&FLAGS_DEFAULT_SPECULAR_MAP_USED))) {
+		specular_shininess = texture(sampler2D(specular_texture,texture_sampler	), uv);
+		specular_shininess *= unpackUnorm4x8(draw_data.specular_shininess);
+		specular_shininess_used=true;
+	} else {
+		specular_shininess = vec4(1.0);
+	}
+
 
 #if defined(SCREEN_UV_USED)
 	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
@@ -392,13 +412,104 @@ FRAGMENT_SHADER_CODE
 #endif
 	}
 
-#if 0
-	if (canvas_data.light_count > 0 ) {
-		//do lighting
-
+	if (normal_used) {
+		//convert by item transform
+		normal.xy = mat2(normalize(draw_data.world_x), normalize(draw_data.world_y)) * normal.xy;
+		//convert by canvas transform
+		normal = normalize((canvas_data.canvas_normal_transform *  vec4(normal,0.0)).xyz);
 	}
-#endif
-	//color.rgb *= color.a;
+
+
+	vec4 base_color=color;
+	if (bool(draw_data.flags&FLAGS_USING_LIGHT_MASK)) {
+		color=vec4(0.0); //inivisible by default due to using light mask
+	}
+
+	color*=canvas_data.canvas_modulation;
+
+	for(uint i=0;i<light_count;i++) {
+		uint light_base;
+		if (i<8) {
+			if (i<4) {
+				light_base=draw_data.lights[0];
+			} else {
+				light_base=draw_data.lights[1];
+			}
+		} else {
+			if (i<12) {
+				light_base=draw_data.lights[2];
+			} else {
+				light_base=draw_data.lights[3];
+			}
+		}
+		light_base>>=(i&3)*8;
+		light_base&=0xFF;
+
+#define LIGHT_FLAGS_BLEND_MASK (3<<16)
+#define LIGHT_FLAGS_BLEND_MODE_ADD (0<<16)
+#define LIGHT_FLAGS_BLEND_MODE_SUB (1<<16)
+#define LIGHT_FLAGS_BLEND_MODE_MIX (2<<16)
+#define LIGHT_FLAGS_BLEND_MODE_MASK (3<<16)
+
+
+		vec2 tex_uv = (vec4(vertex,0.0,1.0) * mat4(light_array.data[light_base].matrix[0],light_array.data[light_base].matrix[1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
+		uint texture_idx = light_array.data[light_base].flags&LIGHT_FLAGS_TEXTURE_MASK;
+		vec4 light_color = texture(sampler2D(light_textures[texture_idx],texture_sampler),tex_uv);
+		vec4 light_base_color = light_array.data[light_base].color;
+		light_color.rgb*=light_base_color.rgb*light_base_color.a;
+
+		if (normal_used) {
+
+			vec3 light_pos = vec3(light_array.data[light_base].position,light_array.data[light_base].height);
+			vec3 pos = vec3(vertex,0.0);
+			vec3 light_vec = normalize(light_pos-pos);
+			float cNdotL = max(0.0,dot(normal,light_vec));
+
+			if (specular_shininess_used) {
+				//blinn
+				vec3 view = vec3(0.0,0.0,1.0);// not great but good enough
+				vec3 half_vec = normalize(view+light_vec);
+
+				float cNdotV = max(dot(normal, view), 0.0);
+				float cNdotH = max(dot(normal, half_vec), 0.0);
+				float cVdotH = max(dot(view, half_vec), 0.0);
+				float cLdotH = max(dot(light_vec, half_vec), 0.0);
+				float shininess = exp2(15.0 * specular_shininess.a + 1.0) * 0.25;
+				float blinn = pow(cNdotH, shininess);
+				blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
+				float s = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
+
+				light_color.rgb = specular_shininess.rgb * light_base_color.rgb * s + light_color.rgb * cNdotL;
+			} else {
+				light_color.rgb *= cNdotL;
+			}
+
+		}
+
+		if (any(lessThan(tex_uv, vec2(0.0, 0.0))) || any(greaterThanEqual(tex_uv, vec2(1.0, 1.0)))) {
+			//if outside the light texture, light color is zero
+			light_color.a = 0.0;
+		}
+
+		uint blend_mode = light_array.data[light_base].flags&LIGHT_FLAGS_BLEND_MASK;
+
+		switch(blend_mode) {
+			case LIGHT_FLAGS_BLEND_MODE_ADD: {
+				color.rgb+=light_color.rgb*light_color.a;
+			} break;
+			case LIGHT_FLAGS_BLEND_MODE_SUB: {
+				color.rgb-=light_color.rgb*light_color.a;
+			} break;
+			case LIGHT_FLAGS_BLEND_MODE_MIX: {
+				color.rgb=mix(color.rgb,light_color.rgb,light_color.a);
+			} break;
+			case LIGHT_FLAGS_BLEND_MODE_MASK: {
+				light_color.a*=base_color.a;
+				color.rgb=mix(color.rgb,light_color.rgb,light_color.a);
+			} break;
+		}
+	}
+
 	frag_color = color;
 
 }
