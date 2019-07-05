@@ -765,6 +765,7 @@ public:
 
 				set_title(TTR("Install Project:") + " " + zip_title);
 				get_ok()->set_text(TTR("Install & Edit"));
+				project_name->set_text(zip_title);
 				name_container->show();
 				install_path_container->hide();
 				rasterizer_container->hide();
