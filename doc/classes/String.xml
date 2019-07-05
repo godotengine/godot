@@ -696,6 +696,20 @@
 				Returns a copy of the string with characters removed from the right.
 			</description>
 		</method>
+		<method name="sha1_buffer">
+			<return type="PoolByteArray">
+			</return>
+			<description>
+				Returns the SHA-1 hash of the string as an array of bytes.
+			</description>
+		</method>
+		<method name="sha1_text">
+			<return type="String">
+			</return>
+			<description>
+				Returns the SHA-1 hash of the string as a string.
+			</description>
+		</method>
 		<method name="sha256_buffer">
 			<return type="PoolByteArray">
 			</return>
