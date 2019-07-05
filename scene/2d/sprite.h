@@ -40,6 +40,9 @@ class Sprite : public Node2D {
 
 	Ref<Texture2D> texture;
 	Ref<Texture2D> normal_map;
+	Ref<Texture2D> specular;
+	Color specular_color;
+	float shininess;
 
 	bool centered;
 	Point2 offset;
@@ -87,6 +90,15 @@ public:
 
 	void set_normal_map(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_normal_map() const;
+
+	void set_specular_map(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_specular_map() const;
+
+	void set_specular_color(const Color &p_color);
+	Color get_specular_color() const;
+
+	void set_shininess(float p_shininess);
+	float get_shininess() const;
 
 	void set_centered(bool p_center);
 	bool is_centered() const;

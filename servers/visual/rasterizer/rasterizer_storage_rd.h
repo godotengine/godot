@@ -647,15 +647,6 @@ public:
 	Size2 render_target_get_size(RID p_render_target);
 	RID render_target_get_rd_framebuffer(RID p_render_target);
 
-	/* CANVAS SHADOW */
-
-	RID canvas_light_shadow_buffer_create(int p_width) { return RID(); }
-
-	/* LIGHT SHADOW MAPPING */
-
-	RID canvas_light_occluder_create() { return RID(); }
-	void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines) {}
-
 	VS::InstanceType get_base_type(RID p_rid) const {
 		if (mesh_owner.owns(p_rid)) {
 			return VS::INSTANCE_MESH;

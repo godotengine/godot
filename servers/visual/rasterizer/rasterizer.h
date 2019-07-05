@@ -562,15 +562,6 @@ public:
 	virtual void render_target_disable_clear_request(RID p_render_target) = 0;
 	virtual void render_target_do_clear_request(RID p_render_target) = 0;
 
-	/* CANVAS SHADOW */
-
-	virtual RID canvas_light_shadow_buffer_create(int p_width) = 0;
-
-	/* LIGHT SHADOW MAPPING */
-
-	virtual RID canvas_light_occluder_create() = 0;
-	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines) = 0;
-
 	virtual VS::InstanceType get_base_type(RID p_rid) const = 0;
 	virtual bool free(RID p_rid) = 0;
 
@@ -625,21 +616,21 @@ public:
 		RID texture;
 		Vector2 texture_offset;
 		RID canvas;
-		RID shadow_buffer;
+		bool use_shadow;
 		int shadow_buffer_size;
 		float shadow_gradient_length;
 		VS::CanvasLightShadowFilter shadow_filter;
 		Color shadow_color;
 		float shadow_smooth;
 
-		void *texture_cache; // implementation dependent
+		//void *texture_cache; // implementation dependent
 		Rect2 rect_cache;
 		Transform2D xform_cache;
 		float radius_cache; //used for shadow far plane
-		CameraMatrix shadow_matrix_cache;
+		//CameraMatrix shadow_matrix_cache;
 
 		Transform2D light_shader_xform;
-		Vector2 light_shader_pos;
+		//Vector2 light_shader_pos;
 
 		Light *shadows_next_ptr;
 		Light *filter_next_ptr;
@@ -647,6 +638,8 @@ public:
 		Light *mask_next_ptr;
 
 		RID light_internal;
+
+		int32_t render_index_cache;
 
 		Light() {
 			enabled = true;
@@ -662,20 +655,18 @@ public:
 			energy = 1.0;
 			item_shadow_mask = -1;
 			mode = VS::CANVAS_LIGHT_MODE_ADD;
-			texture_cache = NULL;
+			//			texture_cache = NULL;
 			next_ptr = NULL;
 			mask_next_ptr = NULL;
 			filter_next_ptr = NULL;
+			use_shadow = false;
 			shadow_buffer_size = 2048;
 			shadow_gradient_length = 0;
 			shadow_filter = VS::CANVAS_LIGHT_FILTER_NONE;
 			shadow_smooth = 0.0;
+			render_index_cache = -1;
 		}
 	};
-
-	virtual RID light_internal_create() = 0;
-	virtual void light_internal_update(RID p_rid, Light *p_light) = 0;
-	virtual void light_internal_free(RID p_rid) = 0;
 
 	typedef uint64_t TextureBindingID;
 
@@ -957,7 +948,7 @@ public:
 					case Item::Command::TYPE_PRIMITIVE: {
 
 						const Item::CommandPrimitive *primitive = static_cast<const Item::CommandPrimitive *>(c);
-						for (int j = 0; j < primitive->point_count; j++) {
+						for (uint32_t j = 0; j < primitive->point_count; j++) {
 							if (j == 0) {
 								r.position = primitive->points[0];
 							} else {
@@ -1085,7 +1076,7 @@ public:
 				c = n;
 			}
 			{
-				uint32_t cbc = MIN((current_block + 1), blocks.size());
+				uint32_t cbc = MIN((current_block + 1), (uint32_t)blocks.size());
 				CommandBlock *blockptr = blocks.ptrw();
 				for (uint32_t i = 0; i < cbc; i++) {
 					blockptr[i].usage = 0;
@@ -1139,7 +1130,7 @@ public:
 		bool enabled;
 		RID canvas;
 		RID polygon;
-		RID polygon_buffer;
+		RID occluder;
 		Rect2 aabb_cache;
 		Transform2D xform;
 		Transform2D xform_cache;
@@ -1156,12 +1147,18 @@ public:
 		}
 	};
 
-	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache) = 0;
+	virtual RID light_create() = 0;
+	virtual void light_set_texture(RID p_rid, RID p_texture) = 0;
+	virtual void light_set_use_shadow(RID p_rid, bool p_enable, int p_resolution) = 0;
+	virtual void light_update_shadow(RID p_rid, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) = 0;
 
-	virtual void reset_canvas() = 0;
+	virtual RID occluder_polygon_create() = 0;
+	virtual void occluder_polygon_set_shape_as_lines(RID p_occluder, const PoolVector<Vector2> &p_lines) = 0;
+	virtual void occluder_polygon_set_cull_mode(RID p_occluder, VS::CanvasOccluderPolygonCullMode p_mode) = 0;
 
 	virtual void draw_window_margins(int *p_margins, RID *p_margin_textures) = 0;
 
+	virtual bool free(RID p_rid) = 0;
 	virtual void update() = 0;
 
 	RasterizerCanvas() { singleton = this; }

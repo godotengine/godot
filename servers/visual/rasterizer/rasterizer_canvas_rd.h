@@ -5,6 +5,8 @@
 #include "servers/visual/rasterizer/rasterizer_storage_rd.h"
 #include "servers/visual/rasterizer/render_pipeline_vertex_format_cache_rd.h"
 #include "servers/visual/rasterizer/shaders/canvas.glsl.gen.h"
+#include "servers/visual/rasterizer/shaders/canvas_occlusion.glsl.gen.h"
+#include "servers/visual/rasterizer/shaders/canvas_occlusion_fix.glsl.gen.h"
 #include "servers/visual/rendering_device.h"
 
 class RasterizerCanvasRD : public RasterizerCanvas {
@@ -37,13 +39,37 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 		FLAGS_CLIP_RECT_UV = (1 << 9),
 		FLAGS_TRANSPOSE_RECT = (1 << 10),
+		FLAGS_USING_LIGHT_MASK = (1 << 11),
+
 		FLAGS_NINEPACH_DRAW_CENTER = (1 << 12),
 		FLAGS_USING_PARTICLES = (1 << 13),
 		FLAGS_USE_PIXEL_SNAP = (1 << 14),
 
 		FLAGS_USE_SKELETON = (1 << 15),
 		FLAGS_NINEPATCH_H_MODE_SHIFT = 16,
-		FLAGS_NINEPATCH_V_MODE_SHIFT = 18
+		FLAGS_NINEPATCH_V_MODE_SHIFT = 18,
+		FLAGS_LIGHT_COUNT_SHIFT = 20,
+
+		FLAGS_DEFAULT_NORMAL_MAP_USED = (1 << 26),
+		FLAGS_DEFAULT_SPECULAR_MAP_USED = (1 << 27)
+
+	};
+
+	enum {
+		LIGHT_FLAGS_TEXTURE_MASK = 0xFFFF,
+		LIGHT_FLAGS_BLEND_SHIFT = 16,
+		LIGHT_FLAGS_BLEND_MASK = (3 << 16),
+		LIGHT_FLAGS_BLEND_MODE_ADD = (0 << 16),
+		LIGHT_FLAGS_BLEND_MODE_SUB = (1 << 16),
+		LIGHT_FLAGS_BLEND_MODE_MIX = (2 << 16),
+		LIGHT_FLAGS_BLEND_MODE_MASK = (3 << 16)
+	};
+
+	enum {
+		MAX_RENDER_ITEMS = 256 * 1024,
+		MAX_LIGHT_TEXTURES = 1024,
+		MAX_LIGHTS_PER_ITEM = 16,
+		MAX_RENDER_LIGHTS = 256
 	};
 
 	/****************/
@@ -183,18 +209,66 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	/**** LIGHTING ****/
 	/******************/
 
-	enum {
-		LIGHT_GRID_WIDTH = 16,
-		LIGHT_GRID_HEIGHT = 16,
-		MAX_LIGHTS = 128
+	struct CanvasLight {
+
+		int32_t texture_index;
+		RID texture;
+		struct {
+			int size;
+			RID texture;
+
+			RID render_depth;
+			RID render_fb[4];
+			RID render_textures[4];
+			RID fix_fb;
+			RID uniform_set;
+
+		} shadow;
 	};
 
+	RID_Owner<CanvasLight> canvas_light_owner;
+
+	struct ShadowRenderPushConstant {
+		float projection[16];
+		float modelview[16];
+	};
+
+	struct OccluderPolygon {
+
+		VS::CanvasOccluderPolygonCullMode cull_mode;
+		int point_count;
+		RID vertex_buffer;
+		RID vertex_array;
+		RID index_buffer;
+		RID index_array;
+	};
+
+	struct LightUniform {
+		float matrix[8]; //light to texture coordinate matrix
+		float color[4];
+		float shadow_color[4];
+		float position[2];
+		uint32_t flags; //index to light texture
+		float height;
+		float shadow_softness;
+		float shadow_pixel_size;
+		float pad[2];
+	};
+
+	RID_Owner<OccluderPolygon> occluder_polygon_owner;
+
 	struct {
-		RID grid_texture;
-		RID grid_buffer;
-		PoolVector<uint8_t> grid_texture_data;
-		PoolVector<uint8_t> grid_buffer_data;
-	} lighting;
+		CanvasOcclusionShaderRD shader;
+		RID shader_version;
+		RID render_pipelines[3];
+		RD::VertexFormatID vertex_format;
+		RD::FramebufferFormatID framebuffer_format;
+
+		CanvasOcclusionFixShaderRD shader_fix;
+		RD::FramebufferFormatID framebuffer_fix_format;
+		RID shader_fix_version;
+		RID shader_fix_pipeline;
+	} shadow_render;
 
 	/***************/
 	/**** STATE ****/
@@ -208,12 +282,16 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		struct Buffer {
 			float canvas_transform[16];
 			float screen_transform[16];
+			float canvas_normal_transform[16];
+			float canvas_modulate[4];
 			//uint32_t light_count;
 			//uint32_t pad[3];
 		};
+
+		LightUniform light_uniforms[MAX_RENDER_LIGHTS];
+
+		RID lights_uniform_buffer;
 		RID canvas_state_buffer;
-		//light buffer
-		RID canvas_state_light_buffer;
 
 		//uniform set for all the above
 		RID canvas_state_uniform_set;
@@ -234,8 +312,8 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 			};
 			//primitive
 			struct {
-				float points[6]; // vec2 points[4]
-				float uvs[6]; // vec2 points[4]
+				float points[6]; // vec2 points[3]
+				float uvs[6]; // vec2 points[3]
 				uint32_t colors[6]; // colors encoded as half
 			};
 		};
@@ -248,21 +326,19 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		float skeleton_inverse[16];
 	};
 
-	enum {
-		MAX_RENDER_ITEMS = 256 * 1024
-	};
-
 	Item *items[MAX_RENDER_ITEMS];
 
-	Size2i _bind_texture_binding(TextureBindingID p_binding, RenderingDevice::DrawListID p_draw_list);
-	void _render_item(RenderingDevice::DrawListID p_draw_list, const Item *p_item, RenderTargetFormat p_render_target_format, RenderingDevice::TextureSamples p_samples, const Color &p_modulate, const Transform2D &p_canvas_transform_inverse, Item *&current_clip);
-	void _render_items(RID p_to_render_target, int p_item_count, const Color &p_modulate, const Transform2D &p_transform);
+	Size2i _bind_texture_binding(TextureBindingID p_binding, RenderingDevice::DrawListID p_draw_list, uint32_t &flags);
+	void _render_item(RenderingDevice::DrawListID p_draw_list, const Item *p_item, RenderTargetFormat p_render_target_format, RenderingDevice::TextureSamples p_samples, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights);
+	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights);
 
-	void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);
-	void _update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3);
+	_FORCE_INLINE_ void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);
+	_FORCE_INLINE_ void _update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3);
 
-	void _update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4);
-	void _update_transform_to_mat4(const Transform &p_transform, float *p_mat4);
+	_FORCE_INLINE_ void _update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4);
+	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform &p_transform, float *p_mat4);
+
+	_FORCE_INLINE_ void _update_specular_shininess(const Color &p_transform, uint32_t *r_ss);
 
 	void _update_canvas_state_uniform_set();
 
@@ -273,21 +349,23 @@ public:
 	PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>());
 	void free_polygon(PolygonID p_polygon);
 
-	RID light_internal_create() { return RID(); }
-	void light_internal_update(RID p_rid, Light *p_light) {}
-	void light_internal_free(RID p_rid) {}
+	RID light_create();
+	void light_set_texture(RID p_rid, RID p_texture);
+	void light_set_use_shadow(RID p_rid, bool p_enable, int p_resolution);
+	void light_update_shadow(RID p_rid, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders);
+
+	RID occluder_polygon_create();
+	void occluder_polygon_set_shape_as_lines(RID p_occluder, const PoolVector<Vector2> &p_lines);
+	void occluder_polygon_set_cull_mode(RID p_occluder, VS::CanvasOccluderPolygonCullMode p_mode);
 
 	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform);
 
 	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow){};
 
-	void canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache) {}
-
-	void reset_canvas() {}
-
 	void draw_window_margins(int *p_margins, RID *p_margin_textures) {}
 
 	void update();
+	bool free(RID p_rid);
 	RasterizerCanvasRD(RasterizerStorageRD *p_storage);
 	~RasterizerCanvasRD();
 };

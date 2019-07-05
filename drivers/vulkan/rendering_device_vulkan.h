@@ -769,7 +769,7 @@ public:
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
 	virtual bool uniform_set_is_valid(RID p_uniform_set);
 
-	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, void *p_data, bool p_sync_with_draw = false); //works for any buffer
+	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_sync_with_draw = false); //works for any buffer
 
 	/*************************/
 	/**** RENDER PIPELINE ****/

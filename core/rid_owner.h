@@ -141,6 +141,16 @@ public:
 		free_list_chunks[alloc_count / elements_in_chunk][alloc_count % elements_in_chunk] = idx;
 	}
 
+	_FORCE_INLINE_ uint32_t get_rid_count() const {
+		return alloc_count;
+	}
+
+	_FORCE_INLINE_ T *get_rid_by_index(uint32_t p_index) {
+		ERR_FAIL_INDEX_V(p_index, alloc_count, NULL);
+		uint64_t idx = free_list_chunks[p_index / elements_in_chunk][p_index % elements_in_chunk];
+		return &chunks[idx / elements_in_chunk][idx % elements_in_chunk];
+	}
+
 	void get_owned_list(List<RID> *p_owned) {
 		for (size_t i = 0; i < alloc_count; i++) {
 			uint64_t idx = free_list_chunks[i / elements_in_chunk][i % elements_in_chunk];
@@ -248,6 +258,14 @@ public:
 
 	_FORCE_INLINE_ void free(const RID &p_rid) {
 		alloc.free(p_rid);
+	}
+
+	_FORCE_INLINE_ uint32_t get_rid_count() const {
+		return alloc.get_rid_count();
+	}
+
+	_FORCE_INLINE_ T *get_rid_by_index(uint32_t p_index) {
+		return alloc.get_rid_by_index(p_index);
 	}
 
 	_FORCE_INLINE_ void get_owned_list(List<RID> *p_owned) {
