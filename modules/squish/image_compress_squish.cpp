@@ -198,8 +198,8 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::Compres
 			h = MAX(h / 2, 1);
 		}
 
-		rb = PoolVector<uint8_t>::Read();
-		wb = PoolVector<uint8_t>::Write();
+		rb.release();
+		wb.release();
 
 		p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 	}

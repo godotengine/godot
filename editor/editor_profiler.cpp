@@ -340,7 +340,7 @@ void EditorProfiler::_update_plot() {
 		}
 	}
 
-	wr = PoolVector<uint8_t>::Write();
+	wr.release();
 
 	Ref<Image> img;
 	img.instance();

@@ -96,7 +96,7 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 	else
 		fmt = Image::FORMAT_RGB8;
 
-	dw = PoolVector<uint8_t>::Write();
+	dw.release();
 	p_image->create(image_width, image_height, 0, fmt, data);
 
 	return OK;
@@ -116,8 +116,6 @@ Error ImageLoaderJPG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	f->close();
 
 	Error err = jpeg_load_image_from_buffer(p_image.ptr(), w.ptr(), src_image_len);
-
-	w = PoolVector<uint8_t>::Write();
 
 	return err;
 }

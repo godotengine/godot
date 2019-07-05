@@ -495,8 +495,8 @@ void Image::convert(Format p_new_format) {
 		case FORMAT_RGBA8 | (FORMAT_RGB8 << 8): _convert<3, true, 3, false, false, false>(width, height, rptr, wptr); break;
 	}
 
-	r = PoolVector<uint8_t>::Read();
-	w = PoolVector<uint8_t>::Write();
+	r.release();
+	w.release();
 
 	bool gen_mipmaps = mipmaps;
 
@@ -1091,8 +1091,8 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 		} break;
 	}
 
-	r = PoolVector<uint8_t>::Read();
-	w = PoolVector<uint8_t>::Write();
+	r.release();
+	w.release();
 
 	if (interpolate_mipmaps) {
 		dst._copy_internals_from(dst2);
@@ -2394,7 +2394,7 @@ void Image::lock() {
 
 void Image::unlock() {
 
-	write_lock = PoolVector<uint8_t>::Write();
+	write_lock.release();
 }
 
 Color Image::get_pixelv(const Point2 &p_src) const {

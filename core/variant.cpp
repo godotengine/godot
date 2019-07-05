@@ -2418,9 +2418,6 @@ Variant::Variant(const PoolVector<Face3> &p_face_array) {
 			for (int j = 0; j < 3; j++)
 				w[i * 3 + j] = r[i].vertex[j];
 		}
-
-		r = PoolVector<Face3>::Read();
-		w = PoolVector<Vector3>::Write();
 	}
 
 	type = NIL;
