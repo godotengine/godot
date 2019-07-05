@@ -643,7 +643,9 @@ void CPUParticles::_particles_process(float p_delta) {
 					//do none
 				} break;
 				case EMISSION_SHAPE_SPHERE: {
-					p.transform.origin = Vector3(Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0).normalized() * emission_sphere_radius;
+					float s = 2.0 * Math::randf() - 1.0, t = 2.0 * Math_PI * Math::randf();
+					float radius = emission_sphere_radius * Math::sqrt(1.0 - s * s);
+					p.transform.origin = Vector3(radius * Math::cos(t), radius * Math::sin(t), emission_sphere_radius * s);
 				} break;
 				case EMISSION_SHAPE_BOX: {
 					p.transform.origin = Vector3(Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0) * emission_box_extents;
