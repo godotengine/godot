@@ -167,12 +167,16 @@
 	</members>
 	<constants>
 		<constant name="IDENTITY" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
 		</constant>
 		<constant name="FLIP_X" value="Transform( -1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform] with mirroring applied perpendicular to the YZ plane.
 		</constant>
 		<constant name="FLIP_Y" value="Transform( 1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform] with mirroring applied perpendicular to the XZ plane.
 		</constant>
 		<constant name="FLIP_Z" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0 )">
+			[Transform] with mirroring applied perpendicular to the XY plane.
 		</constant>
 	</constants>
 </class>
